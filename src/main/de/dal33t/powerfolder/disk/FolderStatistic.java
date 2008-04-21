@@ -348,7 +348,7 @@ public class FolderStatistic extends PFComponent {
                 // "\nother: "
                 // + otherMemberFile.toDetailString() + "\nidentical? "
                 // + otherMemberFile.isCompletelyIdentical(fInfo));
-                if (otherMemberFile.isSameVersion(fInfo)) {
+                if (otherMemberFile.isCompletelyIdentical(fInfo)) {
                     // File already added to totals
                     nIdenticals++;
                     addToTotals = false;

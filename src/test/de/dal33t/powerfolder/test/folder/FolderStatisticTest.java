@@ -73,6 +73,33 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         assertSyncPercentages(0, 100, 0, 0, 0);
     }
 
+    /**
+     * Tests the sync percentage with one file that gets updated
+     */
+    public void testOneFileSameVersion() {
+        setSyncProfile(SyncProfile.MANUAL_DOWNLOAD);
+        File testFileBart = TestHelper.createRandomFile(getFolderAtBart()
+            .getLocalBase(), 1000);
+        scanFolder(getFolderAtBart());
+
+        File testFileLisa = TestHelper.createTestFile(getFolderAtLisa()
+            .getLocalBase(), testFileBart.getName(), "TEST CONTENT".getBytes());
+        testFileLisa.setLastModified(System.currentTimeMillis() + 1000 * 20);
+        scanFolder(getFolderAtLisa());
+
+        // Give the members time broadcast changes
+        TestHelper.waitMilliSeconds(1000);
+
+        forceStatsCals();
+
+        assertTotalFileCount(1);
+        assertTotalSize(12);
+        assertTotalSyncPercentage(20);
+        assertMemberSizesActual(0, 1000, 0, 12, 0);
+        assertMemberSizesInSync(0, 0, 0, 12, 0);
+        assertSyncPercentages(0, 0, 0, 100, 0);
+    }
+
     public void testInitialSync() throws IOException {
         File testFile = TestHelper.createRandomFile(getFolderAtBart()
             .getLocalBase(), 1000);

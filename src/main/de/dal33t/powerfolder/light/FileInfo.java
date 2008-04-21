@@ -455,10 +455,6 @@ public class FileInfo implements Serializable, DiskItem {
         return (getVersion() > ofInfo.getVersion());
     }
 
-    public boolean isSameVersion(FileInfo fInfo) {
-        return this.version == fInfo.version;
-    }
-
     /**
      * Also considers myself.
      * 
