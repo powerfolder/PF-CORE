@@ -3,6 +3,7 @@
 package de.dal33t.powerfolder.ui;
 
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
@@ -606,7 +607,7 @@ public class Icons {
 
     /** converts Icon to red, note: first convert to gray * */
     public static ImageIcon convertToRed(Icon icon) {
-        Image image = ((ImageIcon) icon).getImage();
+        Image image = getImageFromIcon(icon);
         BufferedImage src = toBufferedImage(image);
 
         int targetColor = 0x00FF0000; // Red; format: 0x00RRGGBB in hex
@@ -800,12 +801,21 @@ public class Icons {
                 return getImageFromIcon(inner);
             } catch (Exception e) {
                 log.error("Could not get icon from IconUIResource", e);
-                return null;
             }
         }
-
-        log.error("icon is of unidentified type " + icon.getClass().getName());
-        return null;
+        
+        // Fallback
+        int w = icon.getIconWidth();
+        int h = icon.getIconHeight();
+        GraphicsEnvironment ge = GraphicsEnvironment
+            .getLocalGraphicsEnvironment();
+        GraphicsDevice gd = ge.getDefaultScreenDevice();
+        GraphicsConfiguration gc = gd.getDefaultConfiguration();
+        BufferedImage image = gc.createCompatibleImage(w, h);
+        Graphics2D g = image.createGraphics();
+        icon.paintIcon(null, g, 0, 0);
+        g.dispose();
+        return image;
     }
 
     // This method returns a buffered image with the contents of an image.
