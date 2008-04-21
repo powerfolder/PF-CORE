@@ -282,9 +282,10 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
             .getTranslation("foldercreate.dialog.create_desktop_shortcut"));
 
         createDesktopShortcutBox.setOpaque(false);
+    }
 
-        setPicto((Icon) getWizardContext().getAttribute(PFWizard.PICTO_ICON));
-
+    protected Icon getPicto() {
+        return (Icon) getWizardContext().getAttribute(PFWizard.PICTO_ICON);
     }
 
     protected String getTitle() {

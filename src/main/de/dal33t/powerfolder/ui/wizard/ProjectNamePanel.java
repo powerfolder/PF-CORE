@@ -87,8 +87,10 @@ public class ProjectNamePanel extends PFWizardPanel {
 
         // Ensure minimum dimension
         UIUtil.ensureMinimumWidth(107, nameField);
+    }
 
-        setPicto((Icon) getWizardContext().getAttribute(PFWizard.PICTO_ICON));
+    protected Icon getPicto() {
+        return (Icon) getWizardContext().getAttribute(PFWizard.PICTO_ICON);    
     }
 
     protected String getTitle() {

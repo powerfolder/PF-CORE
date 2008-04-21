@@ -143,7 +143,10 @@ public class FolderCreatePanel extends PFWizardPanel {
     }
 
     protected void initComponents() {
-        setPicto((Icon) getWizardContext().getAttribute(PFWizard.PICTO_ICON));
+    }
+
+    protected Icon getPicto() {
+        return (Icon) getWizardContext().getAttribute(PFWizard.PICTO_ICON);
     }
 
     protected String getTitle() {

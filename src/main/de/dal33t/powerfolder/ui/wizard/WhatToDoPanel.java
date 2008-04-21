@@ -319,8 +319,10 @@ public class WhatToDoPanel extends PFWizardPanel {
                 "documentation.html");
         SimpleComponentFactory.setFontSize(documentationLink,
             PFWizard.MED_FONT_SIZE);
+    }
 
-        setPicto(Icons.FILESHARING_PICTO);
+    protected Icon getPicto() {
+        return Icons.FILESHARING_PICTO;
     }
 
     protected String getTitle() {

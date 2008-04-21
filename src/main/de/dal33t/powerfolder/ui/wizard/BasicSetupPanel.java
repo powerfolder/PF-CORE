@@ -155,12 +155,15 @@ public class BasicSetupPanel extends PFWizardPanel {
                     .setEnabled(e.getItem() instanceof PrivateNetworking);
             }
         });
-
-        setPicto(Icons.PROJECT_WORK_PICTO);
     }
 
     protected String getTitle() {
         return Translation.getTranslation("wizard.basicsetup.title");
+    }
+
+
+    protected Icon getPicto() {
+        return Icons.PROJECT_WORK_PICTO;
     }
 
     // Helper classes *********************************************************

@@ -128,8 +128,10 @@ public class FolderSetupPanel extends PFWizardPanel {
             .getTranslation("wizard.setup_folder.sendinvitation"));
         sendInviteAfterCB.setOpaque(false);
         sendInviteAfterCB.setSelected(true);
+    }
 
-        setPicto((Icon) getWizardContext().getAttribute(PFWizard.PICTO_ICON));
+    protected Icon getPicto() {
+        return (Icon) getWizardContext().getAttribute(PFWizard.PICTO_ICON);
     }
 
     protected String getTitle() {

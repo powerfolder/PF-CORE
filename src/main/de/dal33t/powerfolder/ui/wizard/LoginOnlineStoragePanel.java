@@ -141,8 +141,10 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
                 updateButtons();
             }
         });
+    }
 
-        setPicto(Icons.WEBSERVICE_PICTO);
+    protected Icon getPicto() {
+        return Icons.WEBSERVICE_PICTO;
     }
 
     protected String getTitle() {

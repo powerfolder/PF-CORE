@@ -65,7 +65,10 @@ public class TextPanelPanel extends PFWizardPanel {
      * Initalizes all nessesary components
      */
     protected void initComponents() {
-        setPicto((Icon) getWizardContext().getAttribute(PFWizard.PICTO_ICON));
+    }
+
+    protected Icon getPicto() {
+        return (Icon) getWizardContext().getAttribute(PFWizard.PICTO_ICON);
     }
 
     protected String getTitle() {

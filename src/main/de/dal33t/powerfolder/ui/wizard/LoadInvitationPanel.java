@@ -231,8 +231,10 @@ public class LoadInvitationPanel extends PFWizardPanel {
                     .setEnabled(!previewOnlyCB.isSelected());
             }
         });
+    }
 
-        setPicto((Icon) getWizardContext().getAttribute(PFWizard.PICTO_ICON));
+    protected Icon getPicto() {
+        return (Icon) getWizardContext().getAttribute(PFWizard.PICTO_ICON);
     }
 
     protected String getTitle() {

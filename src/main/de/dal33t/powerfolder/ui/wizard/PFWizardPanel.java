@@ -29,7 +29,6 @@ public abstract class PFWizardPanel extends WizardPanel {
     private Controller controller;
     private Logger log;
     private boolean initalized;
-    private Icon picto;
 
     /**
      * Initalization
@@ -46,6 +45,9 @@ public abstract class PFWizardPanel extends WizardPanel {
         setBackground(Color.WHITE);
     }
 
+    /**
+     * Shows the wizard panel.
+     */
     public final synchronized void display() {
         if (!initalized) {
             buildUI();
@@ -53,21 +55,46 @@ public abstract class PFWizardPanel extends WizardPanel {
         afterDisplay();
     }
 
+    /**
+     * Override if this panel can finish
+     *
+     * @return
+     */
     public boolean canFinish() {
         return false;
     }
 
+    /**
+     * Override if validation is required.
+     *
+     * @param list
+     * @return
+     */
     public boolean validateNext(List list) {
         return true;
     }
 
+    /**
+     * Override if finish validation is required.
+     *
+     * @param list
+     * @return
+     */
     public boolean validateFinish(List list) {
         return true;
     }
 
+    /**
+     * Override if finish processing is required.
+     */
     public void finish() {
     }
 
+    /**
+     * This builds the actual content panel that is displayed below the title.
+     *
+     * @return
+     */
     protected abstract JPanel buildContent();
 
     /**
@@ -76,10 +103,18 @@ public abstract class PFWizardPanel extends WizardPanel {
     protected void afterDisplay() {
     }
 
-    protected void setPicto(Icon picto) {
-        this.picto = picto;
-    }
+    /**
+     * Returns the picto for the panel. Can be null.
+     *
+     * @return
+     */
+    protected abstract Icon getPicto();
 
+    /**
+     * Returns the title for the panel
+     *
+     * @return
+     */
     protected abstract String getTitle();
 
     /**
@@ -114,6 +149,7 @@ public abstract class PFWizardPanel extends WizardPanel {
         pageBuilder.add(createTitleLabel(title), cc.xy(4, 2));
 
         // Add current wizard pico
+        Icon picto = getPicto();
         if (picto != null) {
             pageBuilder.add(new JLabel(picto), cc.xy(2, 4, CellConstraints.DEFAULT,
                 CellConstraints.TOP));

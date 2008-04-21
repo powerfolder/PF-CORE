@@ -219,10 +219,11 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
             }
         });
 
-        setPicto((Icon) getWizardContext().getAttribute(PFWizard.PICTO_ICON));
-
         loadInvitation();
+    }
 
+    protected Icon getPicto() {
+        return (Icon) getWizardContext().getAttribute(PFWizard.PICTO_ICON);
     }
 
     protected String getTitle() {
