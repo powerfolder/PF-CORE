@@ -228,7 +228,7 @@ public class FoldersTableModel extends PFUIComponent implements TableModel {
 
         public void folderRemoved(FolderRepositoryEvent e) {
             Folder folder = e.getFolder();
-            if (folders.contains(folder) && hideFolder(folder)) {
+            if (folders.contains(folder)) {
                 removeFolder(folder);
             }
         }
