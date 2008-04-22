@@ -14,6 +14,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.TimerTask;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
 
 import javax.swing.Action;
 import javax.swing.Icon;
@@ -33,28 +35,13 @@ import org.jdesktop.jdic.tray.TrayIcon;
 import com.jgoodies.looks.plastic.PlasticTheme;
 import com.jgoodies.looks.plastic.PlasticXPLookAndFeel;
 import com.jgoodies.looks.plastic.theme.ExperienceBlue;
+import com.jgoodies.binding.value.ValueModel;
+import com.jgoodies.binding.value.ValueHolder;
 
-import de.dal33t.powerfolder.Constants;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.*;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.ui.action.ConnectAction;
-import de.dal33t.powerfolder.ui.action.CreateShortcutAction;
-import de.dal33t.powerfolder.ui.action.FolderCreateAction;
-import de.dal33t.powerfolder.ui.action.FolderRemoveAction;
-import de.dal33t.powerfolder.ui.action.OpenAboutBoxAction;
-import de.dal33t.powerfolder.ui.action.OpenPreferencesAction;
-import de.dal33t.powerfolder.ui.action.OpenWizardAction;
-import de.dal33t.powerfolder.ui.action.PreviewFolderRemoveAction;
-import de.dal33t.powerfolder.ui.action.PreviewJoinAction;
-import de.dal33t.powerfolder.ui.action.ReconnectAction;
-import de.dal33t.powerfolder.ui.action.RequestReportAction;
-import de.dal33t.powerfolder.ui.action.SendInvitationAction;
-import de.dal33t.powerfolder.ui.action.SyncAllFoldersAction;
-import de.dal33t.powerfolder.ui.action.ToggleSilentModeAction;
+import de.dal33t.powerfolder.ui.action.*;
 import de.dal33t.powerfolder.ui.chat.ChatModel;
 import de.dal33t.powerfolder.ui.folder.FileNameProblemHandlerDefaultImpl;
 import de.dal33t.powerfolder.ui.friends.AskForFriendshipHandlerDefaultImpl;
@@ -105,6 +92,7 @@ public class UIController extends PFComponent {
     private FolderRepositoryModel folderRepoModel;
     private TransferManagerModel transferManagerModel;
     private ServerClientModel serverClientModel;
+    private final ValueModel hidePreviewsVM;
 
     /**
      * Initializes a new UI controller. open UI with #start
@@ -202,6 +190,18 @@ public class UIController extends PFComponent {
         }
 
         started = false;
+
+        hidePreviewsVM = new ValueHolder();
+        hidePreviewsVM.setValue(Boolean.FALSE);
+        hidePreviewsVM.addValueChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                ConfigurationEntry.HIDE_PREVIEW_FOLDERS.setValue(getController(),
+                        Boolean.valueOf((Boolean) evt.getNewValue()).toString());
+                getController().saveConfig();
+                folderRepoModel.folderStructureChanged();
+                getFolderRepositoryModel().getMyFoldersTableModel().folderStructureChanged();
+            }
+        });
     }
 
     /**
@@ -323,6 +323,8 @@ public class UIController extends PFComponent {
         // Goes to the homepage if required.
         gotoHPIfRequired();
         detectAndShowLimitDialog();
+
+        hidePreviewsVM.setValue(ConfigurationEntry.HIDE_PREVIEW_FOLDERS.getValueBoolean(getController()));
     }
 
     private void gotoHPIfRequired() {
@@ -478,10 +480,18 @@ public class UIController extends PFComponent {
 
     }
 
-    public void hideSplash() {
+    public void hideSplash() {                                                                               
         if (splash != null) {
             splash.shutdown();
         }
+    }
+
+    public ValueModel getHidePreviewsValueModel() {
+        return hidePreviewsVM;
+    }
+
+    public boolean isHidePreviews() {
+        return (Boolean) hidePreviewsVM.getValue();
     }
 
     private class UpdateSystrayTask extends TimerTask {
@@ -695,6 +705,7 @@ public class UIController extends PFComponent {
     private Action previewJoinAction;
     private Action openAboutAction;
     private Action toggleSilentModeAction;
+    private Action hidePreviewsAction;
 
     // on folders
     private Action syncAllFoldersAction;
@@ -770,6 +781,13 @@ public class UIController extends PFComponent {
             toggleSilentModeAction = new ToggleSilentModeAction(getController());
         }
         return toggleSilentModeAction;
+    }
+
+    public Action getHidePreviewsAction() {
+        if (hidePreviewsAction == null) {
+            hidePreviewsAction = new ShowHidePreviewFoldersAction(hidePreviewsVM, getController());
+        }
+        return hidePreviewsAction;
     }
 
     public Action getFolderCreateShortcutAction() {

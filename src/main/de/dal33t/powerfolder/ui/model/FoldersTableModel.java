@@ -1,10 +1,6 @@
 package de.dal33t.powerfolder.ui.model;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.TimerTask;
+import java.util.*;
 
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
@@ -23,6 +19,9 @@ import de.dal33t.powerfolder.event.NodeManagerAdapter;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.UIUtil;
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PFUIComponent;
 
 /**
  * Maps all joined Folders to a table model
@@ -30,7 +29,7 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.3 $
  */
-public class FoldersTableModel implements TableModel {
+public class FoldersTableModel extends PFUIComponent implements TableModel {
     private static final long UPDATE_TIME_MS = 300;
 
     private final Collection<TableModelListener> listeners;
@@ -49,16 +48,17 @@ public class FoldersTableModel implements TableModel {
     private boolean[] defaultVisibility = new boolean[]{true, true, true, true,
         true, true, false, true, true};
     // 0 1 2 3 4 5 6 7 8 9
-    private List<Folder> folders;
+    private final List<Folder> folders;
     private FolderRepository repository;
     private FolderListener folderListener;
     private FolderMembershipListener folderMembershipListener;
 
-    public FoldersTableModel(FolderRepository repository) {
+    public FoldersTableModel(FolderRepository repository, Controller controller) {
+        super(controller);
         this.listeners = Collections
             .synchronizedList(new LinkedList<TableModelListener>());
         this.repository = repository;
-        folders = repository.getFoldersAsSortedList();
+        folders = filterPreviews(repository.getFoldersAsSortedList());
         repository
             .addFolderRepositoryListener(new MyFolderRepositoryListener());
         folderListener = new MyFolderListener();
@@ -69,6 +69,16 @@ public class FoldersTableModel implements TableModel {
             new MyNodeManagerListner());
         repository.getController().scheduleAndRepeat(new UpdateTask(),
             UPDATE_TIME_MS);
+    }
+
+    private List<Folder> filterPreviews(List<Folder> foldersAsSortedList) {
+        List<Folder> folders = new ArrayList<Folder>();
+        for (Folder folder : foldersAsSortedList) {
+            if (!hideFolder(folder)) {
+                folders.add(folder);
+            }
+        }
+        return folders;
     }
 
     private void addListeners(List<Folder> somefolders) {
@@ -193,23 +203,34 @@ public class FoldersTableModel implements TableModel {
         }
     }
 
+    public void folderStructureChanged() {
+        synchronized(folders) {
+            List<Folder> list = repository.getFoldersAsSortedList();
+            for (Folder folder : list) {
+                if (folders.contains(folder) && hideFolder(folder)) {
+                    removeFolder(folder);
+                } else if (!folders.contains(folder) && !hideFolder(folder)) {
+                    addFolder(folder);
+                }
+            }
+        }
+    }    
+
     private class MyFolderRepositoryListener implements
         FolderRepositoryListener
     {
         public void folderCreated(FolderRepositoryEvent e) {
-            folders = repository.getFoldersAsSortedList();
-            modelChanged(new TableModelEvent(FoldersTableModel.this));
             Folder folder = e.getFolder();
-            folder.addFolderListener(folderListener);
-            folder.addMembershipListener(folderMembershipListener);
+            if (!folders.contains(folder) && !hideFolder(folder)) {
+                addFolder(folder);
+            }
         }
 
         public void folderRemoved(FolderRepositoryEvent e) {
-            folders = repository.getFoldersAsSortedList();
-            modelChanged(new TableModelEvent(FoldersTableModel.this));
             Folder folder = e.getFolder();
-            folder.removeFolderListener(folderListener);
-            folder.addMembershipListener(folderMembershipListener);
+            if (folders.contains(folder) && hideFolder(folder)) {
+                removeFolder(folder);
+            }
         }
 
         public void maintenanceStarted(FolderRepositoryEvent e) {
@@ -250,6 +271,32 @@ public class FoldersTableModel implements TableModel {
                 fireFullModelChanged();
             }
         }
+    }
+
+    /**
+     * Only show folders if not preview or show preview config is true.
+     *
+     * @param folder
+     * @return
+     */
+    private boolean hideFolder(Folder folder) {
+        return folder.isPreviewOnly() &&
+                ConfigurationEntry.HIDE_PREVIEW_FOLDERS
+                        .getValueBoolean(getController());
+    }
+
+    private void addFolder(Folder folder) {
+        folders.add(folder);
+        folder.addFolderListener(folderListener);
+        folder.addMembershipListener(folderMembershipListener);
+        modelChanged(new TableModelEvent(this));
+    }
+
+    private void removeFolder(Folder folder) {
+        folders.remove(folder);
+        folder.removeFolderListener(folderListener);
+        folder.removeMembershipListener(folderMembershipListener);
+        modelChanged(new TableModelEvent(this));
     }
 
 }

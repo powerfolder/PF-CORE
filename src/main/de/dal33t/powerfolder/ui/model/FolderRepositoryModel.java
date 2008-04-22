@@ -7,6 +7,7 @@ import javax.swing.tree.TreeNode;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.ScanResult;
 import de.dal33t.powerfolder.disk.SyncProfile;
@@ -55,7 +56,7 @@ public class FolderRepositoryModel extends PFUIComponent {
 
         // Table model initalization
         myFoldersTableModel = new FoldersTableModel(getController()
-            .getFolderRepository());
+            .getFolderRepository(), getController());
 
         // UI Updating code for single folders
         myFolderListener = new MyFolderListener();
@@ -75,9 +76,11 @@ public class FolderRepositoryModel extends PFUIComponent {
         // Add inital model state
         Folder[] folders = getController().getFolderRepository().getFolders();
         for (Folder folder : folders) {
-            myFoldersTreeNode.addChild(folder.getTreeNode());
-            folder.addFolderListener(myFolderListener);
-            folder.addMembershipListener(myFolderListener);
+            if (!hideFolder(folder)) {
+                myFoldersTreeNode.addChild(folder.getTreeNode());
+                folder.addFolderListener(myFolderListener);
+                folder.addMembershipListener(myFolderListener);
+            }
         }
 
         Runnable runner = new Runnable() {
@@ -149,6 +152,17 @@ public class FolderRepositoryModel extends PFUIComponent {
             .triggerFileRequesting(folder.getInfo());
     }
 
+    public void folderStructureChanged() {
+        Folder[] folders = getController().getFolderRepository().getFolders();
+        for (Folder folder : folders) {
+            if (hideFolder(folder) && myFoldersTreeNode.contains(folder.getTreeNode())) {
+                removeFolder(folder, this);
+            } else if (!hideFolder(folder) && !myFoldersTreeNode.contains(folder.getTreeNode())) {
+                addFolder(folder, this, false);
+            }
+        }
+    }
+
     // Internal code **********************************************************
 
     /**
@@ -160,19 +174,11 @@ public class FolderRepositoryModel extends PFUIComponent {
     {
         public void folderRemoved(FolderRepositoryEvent e) {
             Folder folder = e.getFolder();
+            if (!myFoldersTreeNode.contains(folder.getTreeNode())) {
+                return;
+            }
 
-            folder.removeFolderListener(myFolderListener);
-            folder.removeMembershipListener(myFolderListener);
-            TreeNodeList tnl = myFoldersTreeNode;
-            myFoldersTreeNode.remove(folder.getTreeNode());
-
-            // Fire tree model event
-            TreeModelEvent te = new TreeModelEvent(e.getSource(), tnl
-                .getPathTo());
-            navTreeModel.fireTreeStructureChanged(te);
-
-            // Select my folders
-            getUIController().getControlQuarter().setSelected(tnl);
+            removeFolder(folder, e.getSource());
         }
 
         public void folderCreated(FolderRepositoryEvent e) {
@@ -181,19 +187,9 @@ public class FolderRepositoryModel extends PFUIComponent {
                 return;
             }
 
-            folder.addFolderListener(myFolderListener);
-            folder.addMembershipListener(myFolderListener);
-
-            myFoldersTreeNode.addChild(folder.getTreeNode());
-            // Fire tree model event
-            TreeModelEvent te = new TreeModelEvent(e.getSource(),
-                    myFoldersTreeNode.getPathTo());
-            navTreeModel.fireTreeStructureChanged(te);
-
-            expandFolderRepository();
-
-            // Select folder
-            getUIController().getControlQuarter().setSelected(folder);
+            if (!hideFolder(folder)) {
+                addFolder(folder, e.getSource(), true);
+            }
         }
 
         public void maintenanceStarted(FolderRepositoryEvent e) {
@@ -211,6 +207,9 @@ public class FolderRepositoryModel extends PFUIComponent {
         private void updateFolderTreeNode(FolderRepositoryEvent event) {
             Folder folder = event.getFolder();
             if (folder == null) {
+                return;
+            }
+            if (!myFoldersTreeNode.contains(folder.getTreeNode())) {
                 return;
             }
             if (folder.isTransferring() || folder.isScanning()) {
@@ -281,4 +280,52 @@ public class FolderRepositoryModel extends PFUIComponent {
             return true;
         }
     }
+
+    /**
+     * Only show folders if not preview or show preview config is true.
+     *
+     * @param folder
+     * @return
+     */
+    private boolean hideFolder(Folder folder) {
+        return folder.isPreviewOnly() &&
+                ConfigurationEntry.HIDE_PREVIEW_FOLDERS
+                        .getValueBoolean(getController());
+    }
+
+    private void removeFolder(Folder folder, Object eventSource) {
+        folder.removeFolderListener(myFolderListener);
+        folder.removeMembershipListener(myFolderListener);
+        TreeNodeList tnl = myFoldersTreeNode;
+        myFoldersTreeNode.remove(folder.getTreeNode());
+
+        // Fire tree model event
+        TreeModelEvent te = new TreeModelEvent(eventSource, tnl
+            .getPathTo());
+        navTreeModel.fireTreeStructureChanged(te);
+
+        // Select my folders
+        getUIController().getControlQuarter().setSelected(tnl);
+    }
+
+    private void addFolder(Folder folder, Object eventSource, boolean select) {
+        folder.addFolderListener(myFolderListener);
+        folder.addMembershipListener(myFolderListener);
+
+        myFoldersTreeNode.addChild(folder.getTreeNode());
+        // Fire tree model event
+        TreeModelEvent te = new TreeModelEvent(eventSource,
+                myFoldersTreeNode.getPathTo());
+        navTreeModel.fireTreeStructureChanged(te);
+
+        expandFolderRepository();
+
+        if (select) {
+
+            // Select folder
+            getUIController().getControlQuarter().setSelected(folder);
+        }
+    }
+
+
 }

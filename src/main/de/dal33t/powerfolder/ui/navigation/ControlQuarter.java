@@ -227,6 +227,7 @@ public class ControlQuarter extends PFUIComponent {
         myFoldersMenu = new JPopupMenu();
         myFoldersMenu.add(getUIController().getSyncAllFoldersAction());
         myFoldersMenu.add(getUIController().getFolderCreateAction());
+        myFoldersMenu.add(getUIController().getHidePreviewsAction());
 
         // create popup menu for (my) folder
         myFolderMenu = new JPopupMenu();

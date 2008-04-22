@@ -260,6 +260,12 @@ public enum ConfigurationEntry {
         .toString()),
 
     /**
+     * Whether to show preview folders in nav / folders panles.
+     */
+    HIDE_PREVIEW_FOLDERS("show.preview.folders", Boolean.FALSE
+        .toString()),
+
+    /**
      * The age of a deleted file until it gets removed by the folder db
      * maintenance. In Seconds! TODO Implement.
      */

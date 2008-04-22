@@ -5,18 +5,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 
-import javax.swing.AbstractAction;
-import javax.swing.DefaultCellEditor;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.SwingConstants;
+import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -25,6 +14,7 @@ import javax.swing.table.TableColumnModel;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.factories.Borders;
+import com.jgoodies.binding.adapter.BasicComponentFactory;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
@@ -71,6 +61,7 @@ public class MyFoldersPanel extends PFUIPanel {
     private CustomTableModel customTableModel;
     private FoldersTableModel myFoldersTableModel;
     private DefaultCellEditor syncProfileEditor;
+    private JCheckBox hidePreviewsCB;
 
     public MyFoldersPanel(Controller controller) {
         super(controller);
@@ -89,7 +80,7 @@ public class MyFoldersPanel extends PFUIPanel {
         return panel;
     }
 
-    public String getTitle() {
+    public static String getTitle() {
         return Translation.getTranslation("title.my.folders");
     }
 
@@ -130,6 +121,9 @@ public class MyFoldersPanel extends PFUIPanel {
         // popup appears on the table header
         table.getTableHeader().addMouseListener(new PopupMenuOpener(popup));
 
+        hidePreviewsCB = BasicComponentFactory.createCheckBox(getUIController().getHidePreviewsValueModel(),
+                Translation.getTranslation("my_folders_panel.hide_previews"));
+
         // Create toolbar
         toolbar = createToolBar();
 
@@ -155,6 +149,8 @@ public class MyFoldersPanel extends PFUIPanel {
         bar.addRelatedGap();
         bar.addGridded(new JButton(new PreviewJoinAction(getController(),
             selectionModel)));
+        bar.addUnrelatedGap();
+        bar.addFixed(hidePreviewsCB);
 
         JPanel barPanel = bar.getPanel();
         barPanel.setBorder(Borders.DLU4_BORDER);
