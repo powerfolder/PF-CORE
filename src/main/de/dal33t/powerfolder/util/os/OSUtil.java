@@ -1,28 +1,15 @@
 package de.dal33t.powerfolder.util.os;
 
+import java.awt.SystemTray;
 import java.io.File;
-import java.lang.reflect.Field;
-
-import org.jdesktop.jdic.tray.SystemTray;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Util;
 
 public class OSUtil {
-    // This really should only be executed once per VM
-    static {
-        if (!isAnroidSystem()) {
-            //LOG.warn("Resouce copy not supported on Android plattform");
-            installThirdPartyLibraries();
-            System.setProperty("java.library.path", Controller.getTempFilesLocation()
-                .getAbsolutePath()
-                + System.getProperty("path.separator")
-                + System.getProperty("java.library.path"));
-            hackUnlockLibraryPath(Logger.getLogger(Controller.class));
-        }
-    }
-    
+    private static boolean sysTraySupport = true;
+
     // no instances
     private OSUtil() {
     }
@@ -104,15 +91,22 @@ public class OSUtil {
      * main-window error"
      */
     public static boolean isSystraySupported() {
-        try {
-            return SystemTray.getDefaultSystemTray() != null;
-        } catch (NoClassDefFoundError e) {
+        if (!sysTraySupport) {
             return false;
-        } catch (UnsatisfiedLinkError e) {
+        }
+        try {
+            return SystemTray.isSupported();
+        } catch (LinkageError e) {
             return false;
         }
     }
 
+    /**
+     * Disable Systray support. 
+     */
+    public static void disableSystray() {
+        sysTraySupport = false;
+    }
 
     private static boolean loadLibrary(Logger log, String file, boolean absPath, boolean logErrorsVerbose) {
         try {
@@ -163,45 +157,5 @@ public class OSUtil {
         }  
         log.error("Completely failed to load " + lib + " - see error above!");
         return false;
-    }
-
-    public static void installThirdPartyLibraries() {
-        String dir = "";
-        if (OSUtil.isWindowsSystem()) {
-            dir = "win32libs";
-        } else if (OSUtil.isMacOS() || OSUtil.isLinux()) { 
-            dir = "lin32libs";
-        }
-        String[] libraries = new String[] {
-            "jdic", "tray"
-        };
-        for (String file: libraries) {
-            if (Util.copyResourceTo(System.mapLibraryName(file), dir, Controller.getTempFilesLocation(), true) == null) {
-                System.err.println("Failed to load " + file);
-            }
-        }
-    }
-    
-    /**
-     * Calling this will unlock the java.library.path property.
-     * <b>NOTE:</b>This method accesses a java internal private variable. 
-     * If SUN decides to change this code in the future, this method will do
-     * nothing at all, besides logging an error.
-     * Suns code on the other hand might throw Exceptions!
-     * @param log
-     */
-    public static void hackUnlockLibraryPath(Logger log) {
-        try {
-            Field sys_paths = ClassLoader.class.getDeclaredField("sys_paths");
-            sys_paths.setAccessible(true);
-            sys_paths.set(ClassLoader.getSystemClassLoader(), null);
-            sys_paths.setAccessible(false);
-        } catch (Exception e) {
-            if (log != null) {
-                log.error(e);
-            } else {
-                e.printStackTrace();
-            }
-        }
     }
 }

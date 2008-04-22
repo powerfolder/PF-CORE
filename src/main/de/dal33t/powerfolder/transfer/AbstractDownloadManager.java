@@ -482,7 +482,10 @@ public abstract class AbstractDownloadManager extends Loggable implements
 
         // Check for valid values!
         Reject.ifNull(fileInfo, "fileInfo is null");
-        Reject.ifNull(getTempFile(), "tempFile is null");
+        
+        if (getTempFile() == null) {
+            throw new IOException("Couldn't create a temporary file for " + fileInfo);
+        }
 
         // If it's an old download, don't create a temporary file
         if (isCompleted()) {

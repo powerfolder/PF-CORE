@@ -24,7 +24,12 @@ public class WinUtilsTest extends TestCase {
 		if (!OSUtil.isWindowsSystem())
 			return;
 		ShellLink sl = new ShellLink("test1 test2", "Link creation test", "Dummy", null);
-		WinUtils wu = WinUtils.getInstance();
+		WinUtils wu = null;
+        try {
+            wu = WinUtils.getInstance();
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
 		File f = new File(TestHelper.getTestDir(), "test.lnk");
 		f.getParentFile().mkdirs();
 		wu.createLink(sl, f.getAbsolutePath());

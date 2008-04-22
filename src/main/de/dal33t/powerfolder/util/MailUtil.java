@@ -1,12 +1,15 @@
 package de.dal33t.powerfolder.util;
 
+import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import org.apache.commons.lang.StringUtils;
-import org.jdesktop.jdic.desktop.DesktopException;
-import org.jdesktop.jdic.desktop.Message;
+
+import sun.util.logging.resources.logging;
 
 import de.dal33t.powerfolder.util.os.OSUtil;
 
@@ -57,33 +60,50 @@ public class MailUtil {
     public static boolean sendMail(String to, String subject, String body,
         File attachment)
     {
-        Message msg = new Message();
-        if (!StringUtils.isBlank(to)) {
-            msg.setToAddrs(Arrays.asList(new String[] { to }));
-        }
-        
-        if (!StringUtils.isBlank(subject)) {
-            msg.setSubject(subject);
-        }
-        
-        if (!StringUtils.isBlank(body)) {
-            msg.setBody(body);
-        }
-        
-        if (attachment != null) {
-            try {
-                msg.setAttachments(Arrays.asList(new String[] { attachment.getAbsolutePath() }));
-            } catch (IOException e) {
-                throw new IllegalArgumentException(
-                    "sendmail file attachment ("
-                        + attachment.getAbsolutePath() + ") not readable or not existant.");
-            }
-        }
         try {
-            org.jdesktop.jdic.desktop.Desktop.mail(msg);
-        } catch (DesktopException e) {
+            if (!Desktop.isDesktopSupported()) {
+                return false;
+            }
+        } catch (LinkageError err) {
+            LOG.verbose(err);
+            return false;
+        }
+        
+        StringBuilder headers = new StringBuilder();
+        char separator = '?';
+        
+        try {
+            if (!StringUtils.isBlank(to)) {
+                headers.append(separator).append("to=").append(Util.encodeURI(to));
+                separator = '&';
+            }
+            
+            if (!StringUtils.isBlank(subject)) {
+                headers.append(separator).append("subject=").append(Util.encodeURI(subject));
+                separator = '&';
+            }
+    
+            if (!StringUtils.isBlank(body)) {
+                headers.append(separator).append("body=").append(Util.encodeURI(body));
+                separator = '&';
+            }
+            
+            if (attachment != null) {
+                headers.append(separator).append("attachments=").append(Util.encodeURI(attachment.getAbsolutePath()));
+                separator = '&';
+            }
+
+            LOG.debug("mailto:" + headers);
+            Desktop.getDesktop().mail(new URI("mailto:" + headers));
+        } catch (UnsupportedEncodingException e) {
             LOG.error(e);
             return false;
+        } catch (IOException e) {
+            LOG.error(e);
+            return false;
+        } catch (URISyntaxException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
         return true;
     }

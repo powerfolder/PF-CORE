@@ -2,11 +2,19 @@
  */
 package de.dal33t.powerfolder.ui;
 
+import java.awt.AWTException;
 import java.awt.EventQueue;
+import java.awt.Image;
+import java.awt.MenuItem;
+import java.awt.PopupMenu;
+import java.awt.SystemTray;
+import java.awt.TrayIcon;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
@@ -14,34 +22,46 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.TimerTask;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
 
+import javax.imageio.ImageIO;
 import javax.swing.Action;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JFrame;
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
 import javax.swing.LookAndFeel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
 import org.apache.commons.lang.StringUtils;
-import org.jdesktop.jdic.tray.SystemTray;
-import org.jdesktop.jdic.tray.TrayIcon;
 
+import com.jgoodies.binding.value.ValueHolder;
+import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.looks.plastic.PlasticTheme;
 import com.jgoodies.looks.plastic.PlasticXPLookAndFeel;
 import com.jgoodies.looks.plastic.theme.ExperienceBlue;
-import com.jgoodies.binding.value.ValueModel;
-import com.jgoodies.binding.value.ValueHolder;
 
-import de.dal33t.powerfolder.*;
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Constants;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.ui.action.*;
+import de.dal33t.powerfolder.ui.action.ConnectAction;
+import de.dal33t.powerfolder.ui.action.CreateShortcutAction;
+import de.dal33t.powerfolder.ui.action.FolderCreateAction;
+import de.dal33t.powerfolder.ui.action.FolderRemoveAction;
+import de.dal33t.powerfolder.ui.action.OpenAboutBoxAction;
+import de.dal33t.powerfolder.ui.action.OpenPreferencesAction;
+import de.dal33t.powerfolder.ui.action.OpenWizardAction;
+import de.dal33t.powerfolder.ui.action.PreviewFolderRemoveAction;
+import de.dal33t.powerfolder.ui.action.PreviewJoinAction;
+import de.dal33t.powerfolder.ui.action.ReconnectAction;
+import de.dal33t.powerfolder.ui.action.RequestReportAction;
+import de.dal33t.powerfolder.ui.action.SendInvitationAction;
+import de.dal33t.powerfolder.ui.action.ShowHidePreviewFoldersAction;
+import de.dal33t.powerfolder.ui.action.SyncAllFoldersAction;
+import de.dal33t.powerfolder.ui.action.ToggleSilentModeAction;
 import de.dal33t.powerfolder.ui.chat.ChatModel;
 import de.dal33t.powerfolder.ui.folder.FileNameProblemHandlerDefaultImpl;
 import de.dal33t.powerfolder.ui.friends.AskForFriendshipHandlerDefaultImpl;
@@ -75,8 +95,8 @@ public class UIController extends PFComponent {
     private static final PlasticTheme DEFAULT_THEME = new ExperienceBlue();
 
     private SplashScreen splash;
-    private Icon defaultIcon;
-    private Icon currentIcon;
+    private Image defaultIcon;
+    private Image currentIcon;
     private TrayIcon sysTrayMenu;
     private MainFrame mainFrame;
     private BlinkManager blinkManager;
@@ -195,11 +215,13 @@ public class UIController extends PFComponent {
         hidePreviewsVM.setValue(Boolean.FALSE);
         hidePreviewsVM.addValueChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
-                ConfigurationEntry.HIDE_PREVIEW_FOLDERS.setValue(getController(),
-                        Boolean.valueOf((Boolean) evt.getNewValue()).toString());
+                ConfigurationEntry.HIDE_PREVIEW_FOLDERS.setValue(
+                    getController(), Boolean.valueOf(
+                        (Boolean) evt.getNewValue()).toString());
                 getController().saveConfig();
                 folderRepoModel.folderStructureChanged();
-                getFolderRepositoryModel().getMyFoldersTableModel().folderStructureChanged();
+                getFolderRepositoryModel().getMyFoldersTableModel()
+                    .folderStructureChanged();
             }
         });
     }
@@ -324,7 +346,8 @@ public class UIController extends PFComponent {
         gotoHPIfRequired();
         detectAndShowLimitDialog();
 
-        hidePreviewsVM.setValue(ConfigurationEntry.HIDE_PREVIEW_FOLDERS.getValueBoolean(getController()));
+        hidePreviewsVM.setValue(ConfigurationEntry.HIDE_PREVIEW_FOLDERS
+            .getValueBoolean(getController()));
     }
 
     private void gotoHPIfRequired() {
@@ -374,14 +397,22 @@ public class UIController extends PFComponent {
     }
 
     private void initalizeSystray() {
-        defaultIcon = new ImageIcon(Util.getResource(Icons.ST_POWERFOLDER,
-            "icons"));
+        try {
+            defaultIcon = ImageIO.read(Util.getResource(Icons.ST_POWERFOLDER,
+                "icons"));
+        } catch (IOException e) {
+            log().error(e);
+            OSUtil.disableSystray();
+            return;
+        }
         sysTrayMenu = new TrayIcon(defaultIcon);
+        sysTrayMenu.setImageAutoSize(true);
         sysTrayMenu.setToolTip(getController().getMySelf().getNick()
             + " | "
             + Translation.getTranslation("systray.powerfolder",
                 Controller.PROGRAM_VERSION));
-        JPopupMenu menu = new JPopupMenu();
+        PopupMenu menu = new PopupMenu();
+
         sysTrayMenu.setPopupMenu(menu);
 
         ActionListener systrayActionHandler = new ActionListener() {
@@ -408,24 +439,26 @@ public class UIController extends PFComponent {
                 }
             }
         };
-        JMenuItem item = menu.add("PowerFolder.com");
+        MenuItem item = menu.add(new MenuItem("PowerFolder.com"));
         item.setActionCommand("gotohp");
         item.addActionListener(systrayActionHandler);
 
         menu.addSeparator();
 
-        item = menu.add(Translation.getTranslation("systray.syncall"));
+        item = menu.add(new MenuItem(Translation
+            .getTranslation("systray.syncall")));
         item.setActionCommand("syncall");
         item.addActionListener(systrayActionHandler);
 
-        final JMenuItem opentUI = menu.add(Translation
-            .getTranslation("systray.show"));
+        final MenuItem opentUI = menu.add(new MenuItem(Translation
+            .getTranslation("systray.show")));
         opentUI.setActionCommand("openui");
         opentUI.addActionListener(systrayActionHandler);
 
         menu.addSeparator();
 
-        item = menu.add(Translation.getTranslation("systray.exit"));
+        item = menu
+            .add(new MenuItem(Translation.getTranslation("systray.exit")));
         item.setActionCommand("exit");
         item.addActionListener(systrayActionHandler);
 
@@ -444,19 +477,24 @@ public class UIController extends PFComponent {
             }
         });
 
-        SystemTray.getDefaultSystemTray().addTrayIcon(sysTrayMenu);
+        try {
+            SystemTray.getSystemTray().add(sysTrayMenu);
+        } catch (AWTException e) {
+            log().error(e);
+            OSUtil.disableSystray();
+            return;
+        }
         getController().scheduleAndRepeat(new UpdateSystrayTask(), 5000);
 
         // Switch Systray show/hide menuitem dynamically
         mainFrame.getUIComponent().addComponentListener(new ComponentAdapter() {
             public void componentShown(ComponentEvent arg0) {
-                opentUI.setText(Translation.getTranslation("systray.hide"));
+                opentUI.setLabel(Translation.getTranslation("systray.hide"));
                 opentUI.setActionCommand("hideui");
-
             }
 
             public void componentHidden(ComponentEvent arg0) {
-                opentUI.setText(Translation.getTranslation("systray.show"));
+                opentUI.setLabel(Translation.getTranslation("systray.show"));
                 opentUI.setActionCommand("openui");
 
             }
@@ -480,7 +518,7 @@ public class UIController extends PFComponent {
 
     }
 
-    public void hideSplash() {                                                                               
+    public void hideSplash() {
         if (splash != null) {
             splash.shutdown();
         }
@@ -548,9 +586,7 @@ public class UIController extends PFComponent {
 
             // Close systray
             if (OSUtil.isSystraySupported()) {
-                SystemTray.getDefaultSystemTray().removeTrayIcon(sysTrayMenu);
-                // DO not DISPOSE: #557
-                // SysTrayMenu.dispose();
+                SystemTray.getSystemTray().remove(sysTrayMenu);
             }
         }
 
@@ -662,13 +698,19 @@ public class UIController extends PFComponent {
         if (!StringUtils.isBlank(iconName)) {
             // Install Icon if nessesary from jar
             String iconFileName = iconName;
-            currentIcon = new ImageIcon(Util.getResource(iconFileName, "icons"));
+            try {
+                currentIcon = ImageIO.read(Util.getResource(iconFileName,
+                    "icons"));
+            } catch (IOException e) {
+                log().error(e);
+                return;
+            }
             if (sysTrayMenu != null) {
-                sysTrayMenu.setIcon(currentIcon);
+                sysTrayMenu.setImage(currentIcon);
             }
         } else {
             if (sysTrayMenu != null) {
-                sysTrayMenu.setIcon(defaultIcon);
+                sysTrayMenu.setImage(defaultIcon);
             }
             currentIcon = null;
         }
@@ -785,7 +827,8 @@ public class UIController extends PFComponent {
 
     public Action getHidePreviewsAction() {
         if (hidePreviewsAction == null) {
-            hidePreviewsAction = new ShowHidePreviewFoldersAction(hidePreviewsVM, getController());
+            hidePreviewsAction = new ShowHidePreviewFoldersAction(
+                hidePreviewsVM, getController());
         }
         return hidePreviewsAction;
     }

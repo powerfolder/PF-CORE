@@ -1,11 +1,10 @@
 package de.dal33t.powerfolder.util;
 
+import java.awt.Desktop;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-
-import org.jdesktop.jdic.desktop.Desktop;
-import org.jdesktop.jdic.desktop.DesktopException;
+import java.lang.reflect.Method;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 /**
  * Bare Bones Browser Launch
@@ -21,21 +20,56 @@ import org.jdesktop.jdic.desktop.DesktopException;
  * <p>
  * Public Domain Software -- Free to Use as You Like
  * 
- * Bytekeeper 04.08: Changed to jdesktop style
- * 
  * @version $Revision: 1.5 $
  */
 public class BrowserLauncher {
-    
+
+    private static final String errMsg = "Error attempting to launch web browser";
+
     public static void openURL(String url) throws IOException {
+        if (java6impl(url)) {
+            return;
+        }
+        String osName = System.getProperty("os.name");
         try {
-            Desktop.browse(new URL(url));
-        } catch (MalformedURLException e) {
-            throw new IOException(e);
-        } catch (DesktopException e) {
-            throw new IOException(e);
-        } catch (UnsatisfiedLinkError e) {
+            if (osName.startsWith("Mac OS")) {
+                Class fileMgr = Class.forName("com.apple.eio.FileManager");
+                Method openURL = fileMgr.getDeclaredMethod("openURL",
+                    new Class[]{String.class});
+                openURL.invoke(null, new Object[]{url});
+            } else if (osName.startsWith("Windows")) {
+                Runtime.getRuntime().exec(
+                    "rundll32 url.dll,FileProtocolHandler " + url);
+            } else { // assume Unix or Linux
+                String[] browsers = {"firefox", "opera", "konqueror",
+                    "epiphany", "mozilla", "netscape"};
+                String browser = null;
+                for (int count = 0; count < browsers.length && browser == null; count++)
+                    if (Runtime.getRuntime().exec(
+                        new String[]{"which", browsers[count]}).waitFor() == 0)
+                        browser = browsers[count];
+                if (browser == null) {
+                    throw new Exception("Could not find web browser");
+                }
+                Runtime.getRuntime().exec(new String[]{browser, url});
+            }
+        } catch (Exception e) {
+            throw (IOException) new IOException(errMsg).initCause(e);
+        }
+    }
+
+    private static boolean java6impl(String url) throws IOException {
+        Logger log = Logger.getLogger(BrowserLauncher.class); 
+        try {
+            if (Desktop.isDesktopSupported()) {
+                log.debug("Using Java6 Desktop.browse()");
+                Desktop.getDesktop().browse(new URI(url));
+            }
+        } catch (LinkageError err) {
+            log.verbose(err);
+        } catch (URISyntaxException e) {
             throw new IOException(e);
         }
+        return false;
     }
 }

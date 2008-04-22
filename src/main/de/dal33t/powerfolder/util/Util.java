@@ -14,6 +14,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -359,6 +360,19 @@ public class Util {
         return result;
     }
 
+    public static String encodeURI(String string) {
+        StringBuilder b = new StringBuilder();
+        byte[] bin = string.getBytes(Charset.forName("UTF8"));
+        for (int i = 0; i < bin.length; i++) {
+            if (Character.isLetterOrDigit(bin[i] & 0xff)) {
+                b.append((char) (bin[i] & 0xff));
+            } else {
+                b.append('%').append(DIGITS[bin[i] >> 4]).append(DIGITS[bin[i] & 0xf]);
+            }
+        }
+        return b.toString();
+    }
+    
     /**
      * Decodes a url fragment, thus special characters are tranferred from a url
      * compatible style
