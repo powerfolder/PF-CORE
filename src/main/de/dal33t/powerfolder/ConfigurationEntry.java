@@ -10,6 +10,8 @@ import com.jgoodies.binding.value.ValueModel;
 
 import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.os.OSUtil;
+import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 
 /**
  * Refelects a entry setting in the configuration file. Provides basic method
@@ -126,8 +128,24 @@ public enum ConfigurationEntry {
     /**
      * The basedir for all powerfolder.
      */
-    FOLDER_BASEDIR("foldersbase", System.getProperty("user.home")
-        + System.getProperty("file.separator") + "PowerFolders"),
+    // FOLDER_BASEDIR("foldersbase", System.getProperty("user.home")
+    // + System.getProperty("file.separator") + "PowerFolders"),
+    FOLDER_BASEDIR("foldersbase") {
+        @Override
+        protected void setDefaults() {
+            if (OSUtil.isWindowsSystem()) {
+                WinUtils util = WinUtils.getInstance();
+                if (util != null) {
+                    defaultValue = util.getSystemFolderPath(
+                        WinUtils.CSIDL_PERSONAL, false)
+                        + System.getProperty("file.separator") + "PowerFolders";
+                    return;
+                }
+            }
+            defaultValue = System.getProperty("user.home")
+                + System.getProperty("file.separator") + "PowerFolders";
+        }
+    },
 
     /**
      * Contains a comma-separated list of all plugins to load.
@@ -262,8 +280,7 @@ public enum ConfigurationEntry {
     /**
      * Whether to show preview folders in nav / folders panles.
      */
-    HIDE_PREVIEW_FOLDERS("show.preview.folders", Boolean.FALSE
-        .toString()),
+    HIDE_PREVIEW_FOLDERS("show.preview.folders", Boolean.FALSE.toString()),
 
     /**
      * The age of a deleted file until it gets removed by the folder db
@@ -277,7 +294,7 @@ public enum ConfigurationEntry {
         .getLogger(ConfigurationEntry.class);
 
     private String configKey;
-    private String defaultValue;
+    protected String defaultValue;
 
     ConfigurationEntry(String aConfigKey) {
         this(aConfigKey, null);
@@ -287,6 +304,10 @@ public enum ConfigurationEntry {
         Reject.ifBlank(aConfigKey, "Config key is blank");
         configKey = aConfigKey;
         defaultValue = theDefaultValue;
+
+        if (theDefaultValue == null) {
+            setDefaults();
+        }
     }
 
     /**
@@ -392,5 +413,8 @@ public enum ConfigurationEntry {
     public void removeValue(Controller controller) {
         Reject.ifNull(controller, "Controller is null");
         controller.getConfig().remove(configKey);
+    }
+
+    protected void setDefaults() {
     }
 }
