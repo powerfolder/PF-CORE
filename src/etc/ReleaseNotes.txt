@@ -1,26 +1,19 @@
-PowerFolder Version 3.0.0 - http://www.powerfolder.com
+PowerFolder Version 3.0.1 - http://www.powerfolder.com
 
 Minimum Java version is 5.0.
 Tested on Windows Vista, Windows XP, Windows 2000, Linux (Fedora 4) and MacOS X
 
-New Features:
- * Major connectivity improvement: Router / Port forwarding setup procedure
-   is now obsolete!
- * Router/Firewall piercing UDP/UDT network protocol support.
- * Support for relayed connections over the PowerFolder servers.
- * PRO only: Added CSV-filelist writer: Dumps a CSV/Excel readable file of
-   new/changed files into the root directory of a PowerFolder.
- * PRO only: Multi-Instance guide: This HOWTO explains how to setup multiple
-   instance of PowerFolder on one computer.
- * Folder preview: Take a look into the folders before joining them!
- * Sortable tables: Downloads, Uploads, Recycle bin
- * New splash screens
-
-Bugfixes:
- * PRO only: Fixed several system service problems. 
-
+Bugfixes and enhancements
+ * Added full Portuguese missing other translations.
+ * Connections are now stable
+ * Fixed directory selection on Mac and Linux
+ * Fixed LAN-IP list problems
+ * Fixed several issues on Mac
+ * Fixed Outlook default directory selection
+ * Several other minor bugfixes
+ 
 The full change log:
-http://dev.powerfolder.com/projects/powerfolder/query?status=closed&milestone=PowerFolder+3.0
+http://dev.powerfolder.com/projects/powerfolder/query?status=closed&milestone=PowerFolder+3.0.1
 
 
 Please give us feedback and request improvements at our forum:
@@ -54,6 +47,28 @@ External libaries used:
 
 
 History:
+
+Version 3.0.0
+-------------
+New Features:
+ * Major connectivity improvement: Router / Port forwarding setup procedure
+   is now obsolete!
+ * Router/Firewall piercing UDP/UDT network protocol support.
+ * Support for relayed connections over the PowerFolder servers.
+ * PRO only: Added CSV-filelist writer: Dumps a CSV/Excel readable file of
+   new/changed files into the root directory of a PowerFolder.
+ * PRO only: Multi-Instance guide: This HOWTO explains how to setup multiple
+   instance of PowerFolder on one computer.
+ * Folder preview: Take a look into the folders before joining them!
+ * Sortable tables: Downloads, Uploads, Recycle bin
+ * New splash screens
+
+Bugfixes:
+ * PRO only: Fixed several system service problems. 
+
+The full change log:
+http://dev.powerfolder.com/projects/powerfolder/query?status=closed&milestone=PowerFolder+3.0
+
 
 Version 2.2.0
 -------------
