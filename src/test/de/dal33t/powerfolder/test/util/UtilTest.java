@@ -39,49 +39,82 @@ public class UtilTest extends TestCase {
         assertEquals("MACHT_", new String(output.get(3), "UTF-8"));
         assertEquals("NIXEX", new String(output.get(4), "UTF-8"));
     }
-    
+
     public void testMergeArray() throws UnsupportedEncodingException {
         List<byte[]> arrayList = new ArrayList<byte[]>();
         arrayList.add("TEST".getBytes("UTF-8"));
         arrayList.add("1".getBytes("UTF-8"));
         arrayList.add("|||HEYHO".getBytes("UTF-8"));
         arrayList.add("XXX".getBytes("UTF-8"));
-        
+
         byte[] output = Util.mergeArrayList(arrayList);
         String outputStr = new String(output, "UTF-8");
         assertEquals("TEST1|||HEYHOXXX", outputStr);
     }
-    
+
     public void testTimeEstimation() throws InterruptedException {
-    	TimeEstimator t = new TimeEstimator();
-    	int warmup = Constants.ESTIMATION_MINVALUES;
-    	for (long value = 0; value < 100; value += 10) {
-    		Thread.sleep(100);
-    		t.addValue(value);
-    		long est = t.estimatedMillis(100);
-    		if (est < 0) {
-    			assertTrue(warmup-- > 0);
-    		} else {
-	    		long exp = (100 - value) * 10; 
-	    		assertTrue("expected " + exp * 1.2 + " > " + est, est < exp * 1.2);
-	    		assertTrue("expected " + exp * 0.8 + " < " + est, est > exp * 0.8);
-    		}
-    	}
-    	
-    	t = new TimeEstimator(20);
-    	warmup = Constants.ESTIMATION_MINVALUES;
-    	long time = System.currentTimeMillis();
-    	for (long value = 0; value < 100; value += 1) {
-    		Thread.sleep(50);
-    		t.addValue(value);
-    		long est = t.estimatedMillis(100);
-    		if (est < 0) {
-    			assertTrue(warmup-- > 0);
-    		} else {
-	    		long exp = (System.currentTimeMillis() - time) * (100 - value) / (value + 1);
-	    		assertTrue("expected " + exp * 1.2 + " > " + est, est < exp * 1.2);
-	    		assertTrue("expected " + exp * 0.8 + " < " + est, est > exp * 0.2);
-    		}
-    	}
+        TimeEstimator t = new TimeEstimator();
+        int warmup = Constants.ESTIMATION_MINVALUES;
+        for (long value = 0; value < 100; value += 10) {
+            Thread.sleep(100);
+            t.addValue(value);
+            long est = t.estimatedMillis(100);
+            if (est < 0) {
+                assertTrue(warmup-- > 0);
+            } else {
+                long exp = (100 - value) * 10;
+                assertTrue("expected " + exp * 1.2 + " > " + est,
+                    est < exp * 1.2);
+                assertTrue("expected " + exp * 0.8 + " < " + est,
+                    est > exp * 0.8);
+            }
+        }
+
+        t = new TimeEstimator(20);
+        warmup = Constants.ESTIMATION_MINVALUES;
+        long time = System.currentTimeMillis();
+        for (long value = 0; value < 100; value += 1) {
+            Thread.sleep(50);
+            t.addValue(value);
+            long est = t.estimatedMillis(100);
+            if (est < 0) {
+                assertTrue(warmup-- > 0);
+            } else {
+                long exp = (System.currentTimeMillis() - time) * (100 - value)
+                    / (value + 1);
+                assertTrue("expected " + exp * 1.2 + " > " + est,
+                    est < exp * 1.2);
+                assertTrue("expected " + exp * 0.8 + " < " + est,
+                    est > exp * 0.2);
+            }
+        }
+    }
+
+    public void testCompare() {
+        // null because it's a static method
+        assertTrue(Util.compareVersions("1", "0.9.3"));
+        assertTrue(Util.compareVersions("1 devel", "0.9.3"));
+        assertFalse(Util.compareVersions("0.3 devel", "0.9.3"));
+        assertFalse(Util.compareVersions("0.3.0", "0.9.3"));
+        assertFalse(Util.compareVersions("0.3", "0.9.3"));
+        assertFalse(Util.compareVersions("0", "0.9.3"));
+        assertFalse(Util.compareVersions("0.9.3", "0.9.3"));
+        assertTrue(Util.compareVersions("1.0.0", "0.9.3"));
+        assertFalse(Util.compareVersions("0.9.3", "1.0.0"));
+        assertTrue(Util.compareVersions("0.9.3", "0.9.3 devel"));
+        assertTrue(Util.compareVersions("0.9.4", "0.9.3 devel"));
+        assertFalse(Util.compareVersions("1.0.1 devel", "1.0.1"));
+        assertTrue(Util.compareVersions("1.0.1", "1.0.0"));
+        assertTrue(Util.compareVersions("1.0.2", "1.0.1"));
+        assertTrue(Util.compareVersions("1.0.2", "1.0.2 devel"));
+        assertFalse(Util.compareVersions("1.0.2 devel", "1.1"));
+        assertTrue(Util.compareVersions("1.1", "1.0.2 devel"));
+        assertTrue(Util.compareVersions("1.1.0", "1.1.0 devel"));
+        assertTrue(Util.compareVersions("1.1.1", "1.1 devel"));
+        assertTrue(Util.compareVersions("1.1.1", "1.1.1 devel"));
+        assertTrue(Util.compareVersions("1.1.2", "1.1.1"));
+        assertTrue(Util.compareVersions("2", "1.1.1"));
+        assertTrue(Util.compareVersions("2.0.1", "2.0.0"));
+        assertFalse(Util.compareVersions("2.0.0", "2.0.1"));
     }
 }
