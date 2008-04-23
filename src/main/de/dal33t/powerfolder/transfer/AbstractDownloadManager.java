@@ -482,9 +482,10 @@ public abstract class AbstractDownloadManager extends Loggable implements
 
         // Check for valid values!
         Reject.ifNull(fileInfo, "fileInfo is null");
-        
+
         if (getTempFile() == null) {
-            throw new IOException("Couldn't create a temporary file for " + fileInfo);
+            throw new IOException("Couldn't create a temporary file for "
+                + fileInfo);
         }
 
         // If it's an old download, don't create a temporary file
@@ -644,13 +645,13 @@ public abstract class AbstractDownloadManager extends Loggable implements
                 .getTime(), getTempFile().lastModified()))
         {
             // If something's wrong with the tempfile, kill the meta data file
-            // if
-            // it exists
+            // if it exists
             deleteMetaData();
             if (getTempFile() != null && getTempFile().exists()
                 && !getTempFile().delete())
             {
-                throw new IOException("Couldn't delete temp file.");
+                throw new IOException("Couldn't delete temp file: "
+                    + getTempFile());
             }
             return;
         }
@@ -658,7 +659,8 @@ public abstract class AbstractDownloadManager extends Loggable implements
         File mf = getMetaFile();
         if (mf == null || !mf.exists()) {
             if (!getTempFile().delete()) {
-                throw new IOException("Couldn't delete temp file.");
+                throw new IOException("Couldn't delete temp file: "
+                    + getTempFile());
             }
             return;
         }
@@ -680,11 +682,12 @@ public abstract class AbstractDownloadManager extends Loggable implements
         }
 
         if (filePartsState != null) {
-            log().info(
-                "Resuming download - already got "
-                    + filePartsState.countPartStates(filePartsState.getRange(),
-                        PartState.AVAILABLE) + " of "
-                    + getFileInfo().getSize());
+            log()
+                .info(
+                    "Resuming download - already got "
+                        + filePartsState.countPartStates(filePartsState
+                            .getRange(), PartState.AVAILABLE) + " of "
+                        + getFileInfo().getSize());
         }
     }
 
