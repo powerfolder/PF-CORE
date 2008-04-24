@@ -15,6 +15,7 @@ import de.dal33t.powerfolder.ui.dialog.SyncFolderPanel;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.ui.SwingWorker;
 import jwf.Wizard;
@@ -196,7 +197,7 @@ public class FolderCreatePanel extends PFWizardPanel {
                             .getValueBoolean(getController()))
                     {
                         folder.getBlacklist().addPattern(
-                            Folder.DESKTOP_INI_FILENAME);
+                            FileUtils.DESKTOP_INI_FILENAME);
                     }
                 }
                 if (backupByOS && getController().getOSClient().isLastLoginOK())

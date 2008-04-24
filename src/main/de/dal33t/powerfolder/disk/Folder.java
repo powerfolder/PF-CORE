@@ -85,7 +85,6 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
 public class Folder extends PFComponent {
     public static final String DB_FILENAME = ".PowerFolder.db";
     public static final String DB_BACKUP_FILENAME = ".PowerFolder.db.bak";
-    public static final String DESKTOP_INI_FILENAME = "desktop.ini";
     public static final String THUMBS_DB = "*thumbs.db";
 
     /** The base location of the folder. */
@@ -261,7 +260,7 @@ public class Folder extends PFComponent {
         loadFolderDB(); // will also read the blacklist
 
         // Check desktop ini in Windows environments
-        maintainDesktopIni();
+        FileUtils.maintainDesktopIni(getController(), localBase);
 
         // Force the next time scan if autodetect is set
         // and in regular sync mode (not daily sync).
@@ -300,71 +299,6 @@ public class Folder extends PFComponent {
         }
 
         previewOnly = folderSettings.isPreviewOnly();
-    }
-
-    /**
-     * Set / remove desktop ini in managed folders.
-     */
-    private void maintainDesktopIni() {
-        // Only works on Windows, and not Vista
-        if (!OSUtil.isWindowsSystem() || OSUtil.isWindowsVistaSystem()
-            || OSUtil.isWebStart())
-        {
-            return;
-        }
-
-        // Look for a desktop ini in the folder.
-        File desktopIniFile = new File(localBase, DESKTOP_INI_FILENAME);
-        boolean iniExists = desktopIniFile.exists();
-        boolean usePfIcon = ConfigurationEntry.USE_PF_ICON
-            .getValueBoolean(getController());
-        if (!iniExists && usePfIcon) {
-            // Need to set up desktop ini.
-            PrintWriter pw = null;
-            try {
-                // @todo Does anyone know a nicer way of finding the run time
-                // directory?
-                File hereFile = new File("");
-                String herePath = hereFile.getAbsolutePath();
-                File powerFolderFile = new File(herePath, "PowerFolder.exe");
-                if (!powerFolderFile.exists()) {
-                    getLogger().error(
-                        "Could not find PowerFolder.exe at "
-                            + powerFolderFile.getAbsolutePath());
-                    return;
-                }
-
-                // Write desktop ini file
-                pw = new PrintWriter(new FileWriter(new File(localBase,
-                    DESKTOP_INI_FILENAME)));
-                pw.println("[.ShellClassInfo]");
-                pw.println("ConfirmFileOp=0");
-                pw.println("IconFile=" + powerFolderFile.getAbsolutePath());
-                pw.println("IconIndex=0");
-                pw.println("InfoTip="
-                    + Translation.getTranslation("folder.info_tip"));
-                pw.flush();
-
-                // Hide the files
-                FileUtils.makeHiddenOnWindows(desktopIniFile);
-
-                // Now need to set folder as system for desktop.ini to work.
-                FileUtils.makeSystemOnWindows(localBase);
-            } catch (IOException e) {
-                getLogger().error("Problem writing Desktop.ini file(s)", e);
-            } finally {
-                if (pw != null) {
-                    try {
-                        pw.close();
-                    } catch (Exception e) {
-                        // Ignore
-                    }
-                }
-            }
-        } else if (iniExists && !usePfIcon) {
-            // Need to remove desktop ini.
-            desktopIniFile.delete();
-        }
     }
 
     /**

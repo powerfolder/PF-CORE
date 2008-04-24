@@ -1,6 +1,5 @@
 package de.dal33t.powerfolder.util.ui;
 
-import static de.dal33t.powerfolder.disk.Folder.DESKTOP_INI_FILENAME;
 import static de.dal33t.powerfolder.disk.Folder.THUMBS_DB;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
@@ -12,6 +11,7 @@ import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
@@ -105,7 +105,7 @@ public abstract class FolderCreateWorker extends ActivityVisualizationWorker {
                     && ConfigurationEntry.USE_PF_ICON
                         .getValueBoolean(controller))
                 {
-                    folder.getBlacklist().addPattern(DESKTOP_INI_FILENAME);
+                    folder.getBlacklist().addPattern(FileUtils.DESKTOP_INI_FILENAME);
                 }
             }
         } catch (FolderException ex) {

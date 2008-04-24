@@ -16,6 +16,7 @@ import java.awt.event.ComponentEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.Iterator;
@@ -75,10 +76,7 @@ import de.dal33t.powerfolder.ui.recyclebin.RecycleBinConfirmationHandlerDefaultI
 import de.dal33t.powerfolder.ui.render.BlinkManager;
 import de.dal33t.powerfolder.ui.webservice.ServerClientModel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
-import de.dal33t.powerfolder.util.BrowserLauncher;
-import de.dal33t.powerfolder.util.Format;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
@@ -348,6 +346,15 @@ public class UIController extends PFComponent {
 
         hidePreviewsVM.setValue(ConfigurationEntry.HIDE_PREVIEW_FOLDERS
             .getValueBoolean(getController()));
+
+        // Set the folders base with a desktop ini.
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                FileUtils.maintainDesktopIni(getController(),
+                        new File(getController().getFolderRepository()
+                                .getFoldersBasedir()));
+            }
+        });
     }
 
     private void gotoHPIfRequired() {

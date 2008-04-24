@@ -1,22 +1,14 @@
 package de.dal33t.powerfolder.util;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.EOFException;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.RandomAccessFile;
+import java.io.*;
 import java.net.URL;
 import java.util.Date;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
-import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.util.os.OSUtil;
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Controller;
 
 public class FileUtils {
     
@@ -24,7 +16,8 @@ public class FileUtils {
     private static final int BYTE_CHUNK_SIZE = 8192;
 
     public static final String DOWNLOAD_META_FILE = "(downloadmeta) ";
-    
+    public static final String DESKTOP_INI_FILENAME = "desktop.ini";
+
     //no instances
     private FileUtils() {
         
@@ -434,5 +427,79 @@ public class FileUtils {
             }
         }
     }
+
+    /**
+     * Set / remove desktop ini in managed folders.
+     */
+    public static void maintainDesktopIni(Controller controller, File directory) {
+
+        // Only works on Windows, and not Vista
+        if (!OSUtil.isWindowsSystem() || OSUtil.isWindowsVistaSystem()
+            || OSUtil.isWebStart())
+        {
+            return;
+        }
+
+        // Safty checks.
+        if (directory == null || !directory.exists() ||
+                !directory.isDirectory()) {
+            return;
+        }
+
+        // Look for a desktop ini in the folder.
+        File desktopIniFile = new File(directory, DESKTOP_INI_FILENAME);
+        boolean iniExists = desktopIniFile.exists();
+        boolean usePfIcon = ConfigurationEntry.USE_PF_ICON
+            .getValueBoolean(controller);
+        if (!iniExists && usePfIcon) {
+            // Need to set up desktop ini.
+            PrintWriter pw = null;
+            try {
+                // @todo Does anyone know a nicer way of finding the run time
+                // directory?
+                File hereFile = new File("");
+                String herePath = hereFile.getAbsolutePath();
+                File powerFolderFile = new File(herePath, "PowerFolder.exe");
+                if (!powerFolderFile.exists()) {
+                    LOG.error(
+                        "Could not find PowerFolder.exe at "
+                            + powerFolderFile.getAbsolutePath());
+                    return;
+                }
+
+                // Write desktop ini directory
+                pw = new PrintWriter(new FileWriter(new File(directory,
+                    DESKTOP_INI_FILENAME)));
+                pw.println("[.ShellClassInfo]");
+                pw.println("ConfirmFileOp=0");
+                pw.println("IconFile=" + powerFolderFile.getAbsolutePath());
+                pw.println("IconIndex=0");
+                pw.println("InfoTip="
+                    + Translation.getTranslation("folder.info_tip"));
+                pw.flush();
+
+                // Hide the files
+                makeHiddenOnWindows(desktopIniFile);
+
+                // Now need to set folder as system for desktop.ini to work.
+                makeSystemOnWindows(directory);
+            } catch (IOException e) {
+                LOG.error("Problem writing Desktop.ini file(s)", e);
+            } finally {
+                if (pw != null) {
+                    try {
+                        pw.close();
+                    } catch (Exception e) {
+                        // Ignore
+                    }
+                }
+            }
+        } else if (iniExists && !usePfIcon) {
+            // Need to remove desktop ini.
+            desktopIniFile.delete();
+        }
+    }
+
+
 
 }
