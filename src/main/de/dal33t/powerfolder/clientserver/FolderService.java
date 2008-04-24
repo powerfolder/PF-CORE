@@ -34,6 +34,16 @@ public interface FolderService {
     void removeFolder(FolderInfo foInfo, boolean deleteFiles);
 
     /**
+     * Invites a user to a folder.
+     * The invited user gains read/write permissions.
+     * 
+     * @param user the name of the user to be invited
+     * @param foInfo the folder to be invited to
+     */
+    void inviteUser(FolderInfo foInfo, String user) 
+        throws FolderException;
+    
+    /**
      * Changes the sync profile on the remote server for this folder.
      * 
      * @param foInfo
