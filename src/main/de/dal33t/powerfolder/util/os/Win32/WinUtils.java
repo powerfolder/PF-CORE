@@ -10,7 +10,7 @@ import de.dal33t.powerfolder.util.os.OSUtil;
 /**
  * Utilities for windows.
  * http://vbnet.mvps.org/index.html?code/browse/csidl.htm
- * 
+ *
  * @author <A HREF="mailto:bytekeeper@powerfolder.com">Dennis Waldherr</A>
  * @version $Revision$
  */
@@ -37,13 +37,19 @@ public class WinUtils {
 
     public final static int CSIDL_DESKTOP = 0x0000;
 
-    // Eigenen Dateinen / My Documents
+    // Eigenen Dokumente / My Documents
     public final static int CSIDL_PERSONAL = 0x0005;
 
+    // Favoriten / Favorites
     public final static int CSIDL_FAVORITES = 0x0006;
 
+    // Meine Musik / My Music
     public final static int CSIDL_MYMUSIC = 0x000d;
+
+    // Meine Videos / My Videaos
     public final static int CSIDL_MYVIDEO = 0x000e;
+
+    // Meine Bilder / My Pictures
     public final static int CSIDL_MYPICTURES = 0x0027;
 
     // Program files
@@ -55,7 +61,7 @@ public class WinUtils {
 
     private WinUtils() {
 	}
-	
+
 	public static synchronized WinUtils getInstance() {
 		if (instance == null && !error) {
 			if (OSUtil.loadLibrary(LOG, "desktoputils")) {
@@ -67,7 +73,7 @@ public class WinUtils {
 		}
 		return instance;
 	}
-	
+
 	/**
 	 * Retrieve a path from Windows.
 	 * @param id the path-id to retrieve
@@ -79,11 +85,11 @@ public class WinUtils {
 	private native void init();
 
 	public void setPFStartup(boolean setup) throws IOException {
-		File pfile = new File( 
+		File pfile = new File(
 			new File(System.getProperty("java.class.path")).getParentFile(),
 			"PowerFolder.exe");
 		if (!pfile.exists()) {
-			LOG.error("Couldn't find PowerFolder executable! " 
+			LOG.error("Couldn't find PowerFolder executable! "
 					+ "Note: Setting up a shortcut only works "
 					+ "when PowerFolder was started by PowerFolder.exe");
 			return;
