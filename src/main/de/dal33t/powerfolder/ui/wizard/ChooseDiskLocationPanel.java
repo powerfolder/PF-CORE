@@ -53,25 +53,25 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
     private static final String USER_DIR_FAVORITES = "Favorites";
     private static final String USER_DIR_LINKS = "Links";
     private static final String USER_DIR_MUSIC = "Music";
-    private static final String USER_DIR_MY_DOCUMENTS =
-            WinUtils.getInstance()
-                    .getSystemFolderPath(WinUtils.CSIDL_PERSONAL, false);
-    private static final String USER_DIR_MY_MUSIC = "My Documents"
-        + File.separator + "My Music";
-    private static final String USER_DIR_MY_PICTURES = "My Documents"
-        + File.separator + "My Pictures";
-    private static final String USER_DIR_MY_VIDEOS = "My Documents"
-        + File.separator + "My Videos";
     private static final String USER_DIR_PICTURES = "Pictures";
     private static final String USER_DIR_RECENT_DOCUMENTS = "Recent Documents";
     private static final String USER_DIR_VIDEOS = "Videos";
+
+    private static final String USER_DIR_MY_DOCUMENTS = WinUtils.getInstance()
+                    .getSystemFolderPath(WinUtils.CSIDL_PERSONAL, false);
+    private static final String USER_DIR_MY_MUSIC = WinUtils.getInstance()
+                    .getSystemFolderPath(WinUtils.CSIDL_MYMUSIC, false);
+    private static final String USER_DIR_MY_PICTURES = WinUtils.getInstance()
+                    .getSystemFolderPath(WinUtils.CSIDL_MYPICTURES, false);
+    private static final String USER_DIR_MY_VIDEOS = WinUtils.getInstance()
+                    .getSystemFolderPath(WinUtils.CSIDL_MYVIDEO, false);
 
     private static final String APPS_DIR_FIREFOX = "Mozilla" + File.separator
         + "Firefox";
     private static final String APPS_DIR_SUNBIRD = "Mozilla" + File.separator
         + "Sunbird";
     private static final String APPS_DIR_THUNDERBIRD = "Thunderbird";
-    private static String APPS_DIR_OUTLOOK;
+    private static String appsDirOutlook;
     private static final String APPS_DIR_FIREFOX2 = "firefox"; // Linux
     private static final String APPS_DIR_SUNBIRD2 = "sunbird"; // Linux
     private static final String APPS_DIR_THUNDERBIRD2 = "thunderbird"; // Linux
@@ -79,7 +79,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
     static {
         // Outlook mail files are in a stupid place.
         if (WinUtils.getInstance() != null) {
-            APPS_DIR_OUTLOOK = WinUtils.getInstance().getSystemFolderPath(
+            appsDirOutlook = WinUtils.getInstance().getSystemFolderPath(
                 WinUtils.CSIDL_LOCAL_SETTINGS_APP_DATA, false)
                 + File.separator + "Microsoft" + File.separator + "Outlook";
         }
@@ -360,11 +360,11 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
             .getTranslation("user.dir.music"), false);
         addTargetDirectory(new File(USER_DIR_MY_DOCUMENTS), Translation
             .getTranslation("user.dir.my_documents"), false);
-        addTargetDirectory(userHome, USER_DIR_MY_MUSIC, Translation
+        addTargetDirectory(new File(USER_DIR_MY_MUSIC), Translation
             .getTranslation("user.dir.my_music"), false);
-        addTargetDirectory(userHome, USER_DIR_MY_PICTURES, Translation
+        addTargetDirectory(new File(USER_DIR_MY_PICTURES), Translation
             .getTranslation("user.dir.my_pictures"), false);
-        addTargetDirectory(userHome, USER_DIR_MY_VIDEOS, Translation
+        addTargetDirectory(new File(USER_DIR_MY_VIDEOS), Translation
             .getTranslation("user.dir.my_videos"), false);
         addTargetDirectory(userHome, USER_DIR_PICTURES, Translation
             .getTranslation("user.dir.pictures"), false);
@@ -380,8 +380,8 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
                 .getTranslation("apps.dir.sunbird"), false);
             addTargetDirectory(appData, APPS_DIR_THUNDERBIRD, Translation
                 .getTranslation("apps.dir.thunderbird"), false);
-            if (APPS_DIR_OUTLOOK != null) {
-                addTargetDirectory(appData, APPS_DIR_OUTLOOK, Translation
+            if (appsDirOutlook != null) {
+                addTargetDirectory(appData, appsDirOutlook, Translation
                     .getTranslation("apps.dir.outlook"), false);
             }
         } else if (OSUtil.isLinux()) {

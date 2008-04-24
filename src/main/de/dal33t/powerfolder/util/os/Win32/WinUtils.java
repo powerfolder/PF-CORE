@@ -9,6 +9,7 @@ import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
  * Utilities for windows.
+ * http://vbnet.mvps.org/index.html?code/browse/csidl.htm
  * 
  * @author <A HREF="mailto:bytekeeper@powerfolder.com">Dennis Waldherr</A>
  * @version $Revision$
@@ -39,6 +40,13 @@ public class WinUtils {
     // Eigenen Dateinen / My Documents
     public final static int CSIDL_PERSONAL = 0x0005;
 
+    public final static int CSIDL_FAVORITES = 0x0006;
+
+    public final static int CSIDL_MYMUSIC = 0x000d;
+    public final static int CSIDL_MYVIDEO = 0x000e;
+    public final static int CSIDL_MYPICTURES = 0x0027;
+
+    // Program files
     public final static int CSIDL_APP_DATA = 26;
     public final static int CSIDL_LOCAL_SETTINGS_APP_DATA = 28;
 
