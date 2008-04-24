@@ -18,6 +18,7 @@ import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.event.NodeManagerAdapter;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.compare.FolderComparator;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
@@ -287,6 +288,7 @@ public class FoldersTableModel extends PFUIComponent implements TableModel {
 
     private void addFolder(Folder folder) {
         folders.add(folder);
+        Collections.sort(folders, new FolderComparator());
         folder.addFolderListener(folderListener);
         folder.addMembershipListener(folderMembershipListener);
         modelChanged(new TableModelEvent(this));
