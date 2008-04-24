@@ -53,7 +53,9 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
     private static final String USER_DIR_FAVORITES = "Favorites";
     private static final String USER_DIR_LINKS = "Links";
     private static final String USER_DIR_MUSIC = "Music";
-    private static final String USER_DIR_MY_DOCUMENTS = "My Documents";
+    private static final String USER_DIR_MY_DOCUMENTS =
+            WinUtils.getInstance()
+                    .getSystemFolderPath(WinUtils.CSIDL_PERSONAL, false);
     private static final String USER_DIR_MY_MUSIC = "My Documents"
         + File.separator + "My Music";
     private static final String USER_DIR_MY_PICTURES = "My Documents"
@@ -356,7 +358,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
             .getTranslation("user.dir.links"), false);
         addTargetDirectory(userHome, USER_DIR_MUSIC, Translation
             .getTranslation("user.dir.music"), false);
-        addTargetDirectory(userHome, USER_DIR_MY_DOCUMENTS, Translation
+        addTargetDirectory(new File(USER_DIR_MY_DOCUMENTS), Translation
             .getTranslation("user.dir.my_documents"), false);
         addTargetDirectory(userHome, USER_DIR_MY_MUSIC, Translation
             .getTranslation("user.dir.my_music"), false);
@@ -397,7 +399,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
 
     /**
      * Adds a generic user directory if if exists for this os.
-     * 
+     *
      * @param root
      * @param subdir
      * @param translation
@@ -409,6 +411,19 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
     {
 
         File directory = new File(root + File.separator + subdir);
+        addTargetDirectory(directory, translation, allowHidden);
+    }
+
+    /**
+     * Adds a generic user directory if if exists for this os.
+     *
+     * @param translation
+     * @param allowHidden
+     *            allow display of hidden dirs
+     */
+    private void addTargetDirectory(File directory,
+        String translation, boolean allowHidden)
+    {
 
         // See if any folders already exists for this directory.
         // No reason to show if already subscribed.

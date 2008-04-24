@@ -35,6 +35,8 @@ public class WinUtils {
     public final static int CSIDL_STARTUP = 0x0007;
 
     public final static int CSIDL_DESKTOP = 0x0000;
+
+    // Eigenen Dateinen / My Documents
     public final static int CSIDL_PERSONAL = 0x0005;
 
     public final static int CSIDL_APP_DATA = 26;
