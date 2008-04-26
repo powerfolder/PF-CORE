@@ -19,11 +19,12 @@ import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.message.MemberChatMessage;
 import de.dal33t.powerfolder.ui.action.ChangeFriendStatusAction;
+import de.dal33t.powerfolder.ui.action.ReconnectAction;
 import de.dal33t.powerfolder.ui.friends.NodeQuickInfoPanel;
 import de.dal33t.powerfolder.ui.render.BlinkManager;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.UIPanel;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
+import de.dal33t.powerfolder.util.ui.UIPanel;
 
 /**
  * Chat with a member.
@@ -35,6 +36,7 @@ import de.dal33t.powerfolder.util.ui.SelectionModel;
 public class MemberChatPanel extends ChatPanel implements UIPanel {
     private NodeQuickInfoPanel quickInfoPanel;
     private ChangeFriendStatusAction changeFriendStatusAction;
+    private ReconnectAction reconnectAction;
     /** The blink manager that takes care of blinking icons in the tree for chat. */
     private BlinkManager treeBlinkManager;
     /**
@@ -56,6 +58,7 @@ public class MemberChatPanel extends ChatPanel implements UIPanel {
         memberSelectionModel = new SelectionModel();
         changeFriendStatusAction = new ChangeFriendStatusAction(controller,
             memberSelectionModel);
+        reconnectAction = new ReconnectAction(controller, memberSelectionModel);
     }
 
     public JComponent getUIComponent() {
@@ -71,7 +74,7 @@ public class MemberChatPanel extends ChatPanel implements UIPanel {
             builder.add(quickInfoPanel.getUIComponent(), cc.xy(1, 1));
             builder.addSeparator(null, cc.xy(1, 2));
             builder.addSeparator(null, cc.xy(1, 4));
-            
+
             builder.add(scrollPaneOutput, cc.xy(1, 5));
             builder.addSeparator(null, cc.xy(1, 6));
             builder.addSeparator(null, cc.xy(1, 8));
@@ -94,8 +97,9 @@ public class MemberChatPanel extends ChatPanel implements UIPanel {
 
     private JPanel createToolBar() {
         ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
-        bar.addRelatedGap();
         bar.addFixed(new JButton(changeFriendStatusAction));
+        bar.addRelatedGap();
+        bar.addFixed(new JButton(reconnectAction));
         bar.setBorder(Borders.DLU4_BORDER);
         return bar.getPanel();
     }
@@ -134,7 +138,8 @@ public class MemberChatPanel extends ChatPanel implements UIPanel {
     private void updateChat() {
         ChatModel.ChatLine[] lines = null;
         if (getChatPartner() != null) {
-            lines = getUIController().getChatModel().getChatText(getChatPartner());
+            lines = getUIController().getChatModel().getChatText(
+                getChatPartner());
             if (lines != null) {
                 updateChat(lines);
             }
@@ -163,7 +168,8 @@ public class MemberChatPanel extends ChatPanel implements UIPanel {
             Object source = event.getSource();
             if (source instanceof Member) {
                 Member member = (Member) source;
-                if (getChatPartner() != null && getChatPartner().equals(source)) {
+                if (getChatPartner() != null && getChatPartner().equals(source))
+                {
                     // only update if the source is the current chat
                     updateChat();
                 }
