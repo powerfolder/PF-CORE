@@ -1,7 +1,5 @@
 package de.dal33t.powerfolder.util;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -13,6 +11,7 @@ import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
 import de.dal33t.powerfolder.util.ui.NeverAskAgainResponse;
+import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
  * Detects if PowerFolder is running out of memory.
@@ -47,21 +46,32 @@ public class MemoryMonitor implements Runnable {
             if (maxMemory == totalMemory && !DialogFactory.isDialogInUse()) {
                 JFrame parent = controller.getUIController().getMainFrame()
                     .getUIComponent();
-                NeverAskAgainResponse response = DialogFactory.genericDialog(
-                    parent, Translation.getTranslation("lowmemory.title"),
-                    Translation.getTranslation("lowmemory.text"), new String[]{
-                        Translation.getTranslation("lowmemory.increase"),
-                        Translation.getTranslation("lowmemory.do_nothing")}, 0,
-                    GenericDialogType.WARN, Translation
-                        .getTranslation("lowmemory.dont_autodetect"));
+                NeverAskAgainResponse response;
+                if (OSUtil.isWindowsSystem()) {
+                    response = DialogFactory.genericDialog(
+                        parent, Translation.getTranslation("lowmemory.title"),
+                        Translation.getTranslation("lowmemory.text"), new String[]{
+                            Translation.getTranslation("lowmemory.increase"),
+                            Translation.getTranslation("lowmemory.do_nothing")}, 0,
+                        GenericDialogType.WARN, Translation
+                            .getTranslation("lowmemory.dont_autodetect"));
+                    if (response.getButtonIndex() == 0) { // Increase memory
+                        increaseAvailableMemory();
+                    }
+                } else {
+                    // No ini - Can only warn user.
+                    response = DialogFactory.genericDialog(
+                        parent, Translation.getTranslation("lowmemory.title"),
+                        Translation.getTranslation("lowmemory.warn"), new String[]{
+                            Translation.getTranslation("general.ok")}, 0,
+                        GenericDialogType.WARN, Translation
+                            .getTranslation("lowmemory.dont_autodetect"));
+                }
+
                 if (response.isNeverAskAgain()) {
                     // Foolish user!
                     PreferencesEntry.DETECT_LOW_MEMORY.setValue(controller,
                         false);
-                }
-
-                if (response.getButtonIndex() == 0) { // Increase memory
-                    increaseAvailableMemory();
                 }
 
                 // Do not show dialog repeatedly.
@@ -77,7 +87,6 @@ public class MemoryMonitor implements Runnable {
 
         // Read the current ini file.
         boolean wroteNewIni = false;
-        BufferedReader br = null;
         PrintWriter pw = null;
         try {
             log.debug("Looking for ini...");
@@ -93,7 +102,7 @@ public class MemoryMonitor implements Runnable {
             // }
             // }
 
-            boolean alreadyMax = (Runtime.getRuntime().totalMemory() / 1024 / 1024) > 500;
+            boolean alreadyMax = Runtime.getRuntime().totalMemory() / 1024 / 1024 > 500;
             // Write a new one if found.
             if (!alreadyMax) {
                 pw = new PrintWriter(new FileWriter("PowerFolder.ini"));
