@@ -89,8 +89,6 @@ public class RootNode extends TreeNodeList {
             .getUploadsTreeNode());
         addChild(controller.getUIController().getNodeManagerModel()
             .getFriendsTreeNode());
-        addChild(controller.getUIController().getNodeManagerModel()
-            .getNotInFriendsTreeNodes());
 
         // Only add if verbose mode.
         if (controller.isVerbose()) {

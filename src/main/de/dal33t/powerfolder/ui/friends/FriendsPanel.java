@@ -2,38 +2,15 @@
  */
 package de.dal33t.powerfolder.ui.friends;
 
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.ListSelectionModel;
-import javax.swing.SwingUtilities;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.table.JTableHeader;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableModel;
-
 import com.jgoodies.binding.adapter.BasicComponentFactory;
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.factories.Borders;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
-import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.builder.ContentPanelBuilder;
-import de.dal33t.powerfolder.ui.model.FriendsNodeTableModel;
 import de.dal33t.powerfolder.ui.model.NodeManagerModel;
 import de.dal33t.powerfolder.util.PFUIPanel;
 import de.dal33t.powerfolder.util.Translation;
@@ -41,6 +18,12 @@ import de.dal33t.powerfolder.util.ui.DoubleClickAction;
 import de.dal33t.powerfolder.util.ui.PopupMenuOpener;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.ui.UIUtil;
+
+import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import java.awt.*;
+import java.awt.event.ActionEvent;
 
 /**
  * Displays all friends in a list.
@@ -69,7 +52,7 @@ public class FriendsPanel extends PFUIPanel {
 
     // Actions
     private ChatAction chatAction;
-    private BaseAction findFriendsAction;
+    private Action findFriendsAction;
     private RemoveFriendAction removeFriendAction;
 
     public FriendsPanel(Controller controller) {
@@ -96,8 +79,7 @@ public class FriendsPanel extends PFUIPanel {
     private void initComponents() {
         // Actions
         chatAction = new ChatAction();
-        findFriendsAction = getUIController().getNodeManagerModel()
-            .getFindFriendAction();
+        findFriendsAction = getUIController().getFindFriendAction();
         removeFriendAction = new RemoveFriendAction();
 
         quickinfo = new FriendsQuickInfoPanel(getController(), Translation

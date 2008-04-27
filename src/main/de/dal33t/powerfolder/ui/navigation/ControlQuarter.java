@@ -67,7 +67,6 @@ public class ControlQuarter extends PFUIComponent {
     private JPopupMenu myFolderMenu;
     private JPopupMenu previewFolderMenu;
     private JPopupMenu friendsListMenu;
-    private JPopupMenu notOnFrendsListMenu;
     private JPopupMenu directoryMenu;
     /* Models */
     /** The parent of the currently selected value in our selection model */
@@ -256,12 +255,7 @@ public class ControlQuarter extends PFUIComponent {
 
         // Friends list popup menu
         friendsListMenu = new JPopupMenu();
-        friendsListMenu.add(getUIController().getNodeManagerModel()
-            .getFindFriendAction());
-
-        // not On Friends list popup menu
-        notOnFrendsListMenu = new JPopupMenu();
-        notOnFrendsListMenu.add(new ConnectAction(getController()));
+        friendsListMenu.add(getUIController().getFindFriendAction());
     }
 
     // Exposing ***************************************************************
@@ -614,12 +608,6 @@ public class ControlQuarter extends PFUIComponent {
                         .warn(
                             "Not displaing friendlist/master user selection context menu");
                 }
-            } else if (selection == getUIController().getNodeManagerModel()
-                .getNotInFriendsTreeNodes())
-            {
-                // System.out.println("NotInFriends");
-                notOnFrendsListMenu.show(evt.getComponent(), evt.getX(), evt
-                    .getY());
             } else if (selection instanceof Directory) {
                 if (OSUtil.isWindowsSystem() || OSUtil.isMacOS()) {
                     directoryMenu.show(evt.getComponent(), evt.getX(), evt

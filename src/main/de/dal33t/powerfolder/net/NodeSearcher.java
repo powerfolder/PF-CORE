@@ -24,12 +24,10 @@ import de.dal33t.powerfolder.util.Reject;
  * @author Dennis "Dante" Waldherr
  * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
  */
-public final class NodeSearcher extends PFComponent {
+public class NodeSearcher extends PFComponent {
     private String pattern;
-    /** for convienience a reference to the member representing myself */
-    private Member myself;
     /** indicates that we want to interrupt a search */
-    private boolean stopSearching = false;
+    private boolean stopSearching;
     /** exclude friends from this search result */
     private boolean ignoreFriends;
     /** exclude offline users from search result */
@@ -58,24 +56,24 @@ public final class NodeSearcher extends PFComponent {
      * @param hideOffline
      *            hides the users that are offline
      */
-    public NodeSearcher(Controller controller, String thePattern,
+    public NodeSearcher(Controller controller, String pattern,
         List<Member> resultListModel, boolean ignoreFriends, boolean hideOffline)
     {
         super(controller);
         Reject.ifNull(resultListModel, "Result list model is null");
-        Reject.ifBlank(thePattern, "The search pattern is blank");
+        Reject.ifBlank(pattern, "The search pattern is blank");
 
         nodeListener = new MyNodeManagerListener();
         searchThread = new Thread(new Searcher(),
             "NodeSearcher - searching for " + pattern);
         searchThread.setDaemon(true);
-        pattern = thePattern;
+        this.pattern = pattern;
         canidatesFromSupernodes = new LinkedList<Member>();
         searchResultListModel = resultListModel;
 
         this.ignoreFriends = ignoreFriends;
         this.hideOffline = hideOffline;
-        this.nodeSearchFilter = new NodeSearchFilter();
+        nodeSearchFilter = new NodeSearchFilter();
     }
 
     /**
@@ -124,15 +122,14 @@ public final class NodeSearcher extends PFComponent {
         if (ignoreFriends && member.isFriend()) {
             return;
         }
-        if (!member.matches(pattern) || member.equals(myself)
-            || searchResultListModel.contains(member))
+        if (!member.matches(pattern) || searchResultListModel.contains(member))
         {
             return;
         }
         searchResultListModel.add(member);
     }
 
-    private final class NodeSearchFilter implements NodeFilter {
+    private class NodeSearchFilter implements NodeFilter {
         public boolean shouldAddNode(MemberInfo nodeInfo) {
             return nodeInfo.matches(pattern);
         }

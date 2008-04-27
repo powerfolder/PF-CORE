@@ -32,7 +32,6 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.ui.chat.MemberChatPanel;
 import de.dal33t.powerfolder.ui.folder.FolderPanel;
 import de.dal33t.powerfolder.ui.friends.FriendsPanel;
-import de.dal33t.powerfolder.ui.friends.FriendsSearchPanel;
 import de.dal33t.powerfolder.ui.home.RootPanel;
 import de.dal33t.powerfolder.ui.myfolders.MyFoldersPanel;
 import de.dal33t.powerfolder.ui.navigation.ControlQuarter;
@@ -65,7 +64,6 @@ public class InformationQuarter extends PFUIComponent {
     private static final String UPLOADS_PANEL = "uploads";
     private static final String CHAT_PANEL = "chat";
     private static final String FRIENDS_PANEL = "friends";
-    private static final String FRIENDSSEARCH_PANEL = "friendssearch";
     private static final String NETWORKSTATSISTICS_PANEL = "netstats";
     private static final String TEXT_PANEL = "text";
     private static final String RECYCLE_BIN_PANEL = "recycle";
@@ -109,7 +107,6 @@ public class InformationQuarter extends PFUIComponent {
 
     // friends
     private FriendsPanel friendsPanel;
-    private FriendsSearchPanel friendsSearchPanel;
 
     // netstats
     private NetworkStatisticsPanel networkStatisticsPanel;
@@ -245,10 +242,6 @@ public class InformationQuarter extends PFUIComponent {
             .getFriendsTreeNode())
         {
             displayFriendsPanel();
-        } else if (selection == getUIController().getNodeManagerModel()
-            .getNotInFriendsTreeNodes())
-        {
-            displayFriendsSearchPanel();
         } else if (getController().isVerbose()
             && selection == getUIController().getNodeManagerModel()
                 .getConnectedTreeNode())
@@ -314,7 +307,6 @@ public class InformationQuarter extends PFUIComponent {
 
         // friends
         friendsPanel = new FriendsPanel(getController());
-        friendsSearchPanel = new FriendsSearchPanel(getController());
 
         // Down/uploads panel
         downloadsPanel = new DownloadsPanel(getController());
@@ -333,7 +325,6 @@ public class InformationQuarter extends PFUIComponent {
         uninitializedPanels.put(UPLOADS_PANEL, uploadsPanel);
         uninitializedPanels.put(CHAT_PANEL, memberChatPanel);
         uninitializedPanels.put(FRIENDS_PANEL, friendsPanel);
-        uninitializedPanels.put(FRIENDSSEARCH_PANEL, friendsSearchPanel);
         uninitializedPanels.put(NETWORKSTATSISTICS_PANEL,
             networkStatisticsPanel);
         uninitializedPanels.put(TEXT_PANEL, textPanel);
@@ -510,12 +501,6 @@ public class InformationQuarter extends PFUIComponent {
         showCard(FRIENDS_PANEL);
         setDisplayTarget(friendsPanel);
         setTitle(friendsPanel.getTitle());
-    }
-
-    public void displayFriendsSearchPanel() {
-        showCard(FRIENDSSEARCH_PANEL);
-        setDisplayTarget(friendsSearchPanel);
-        setTitle(friendsSearchPanel.getTitle());
     }
 
     /**

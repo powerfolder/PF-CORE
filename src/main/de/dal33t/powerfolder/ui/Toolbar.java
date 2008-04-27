@@ -1,6 +1,5 @@
 package de.dal33t.powerfolder.ui;
 
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -75,7 +74,7 @@ public class Toolbar extends PFUIComponent {
             .getOpenWizardAction(), Icons.WIZARD_OPEN);
 
         JButton searchNodesButton = createToolbarButton(getUIController()
-            .getNodeManagerModel().getFindFriendAction(), Icons.SEARCH_NODES);
+            .getFindFriendAction(), Icons.SEARCH_NODES);
 
         JButton syncFoldersButton = createToolbarButton(getUIController()
             .getSyncAllFoldersAction(), Icons.SYNC_NOW_ACTIVE);

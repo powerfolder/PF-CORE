@@ -13,9 +13,9 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.*;
 
-public class FriendsSearchTable extends JTable {
+public class FindUsersTable extends JTable {
 
-    public FriendsSearchTable(SearchNodeTableModel tableModel) {
+    public FindUsersTable(SearchNodeTableModel tableModel) {
         super(tableModel);
         setRowHeight(Icons.NODE_NON_FRIEND_CONNECTED
             .getIconHeight() + 3);

@@ -1,7 +1,6 @@
 package de.dal33t.powerfolder.ui.model;
 
 import java.awt.EventQueue;
-import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
@@ -21,7 +20,6 @@ import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.net.NodeManager;
-import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.chat.ChatModel;
 import de.dal33t.powerfolder.ui.chat.ChatModel.ChatModelEvent;
 import de.dal33t.powerfolder.ui.chat.ChatModel.ChatModelListener;
@@ -48,7 +46,6 @@ public class NodeManagerModel extends PFUIComponent {
     private FriendsNodeTableModel friendsTableModel;
     private ValueModel hideOfflineUsersModel;
 
-    private FindFriendAction findFriendsAction;
     private boolean expandedFriends;
 
     public NodeManagerModel(Controller controller,
@@ -419,33 +416,6 @@ public class NodeManagerModel extends PFUIComponent {
         public boolean fireInEventDispathThread() {
             return true;
         }
-    }
-
-    // Actions ****************************************************************
-
-    /** Switches to the find friends panel */
-    private class FindFriendAction extends BaseAction {
-        public FindFriendAction(Controller controller) {
-            super("findfriends", controller);
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            findFriends();
-        }
-    }
-
-    /** called if button removeFriend clicked or if selected in popupmenu */
-    private void findFriends() {
-        // TODO Uarg, this is ugly (tm)
-        getUIController().getControlQuarter().setSelected(
-            getNotInFriendsTreeNodes());
-    }
-
-    public FindFriendAction getFindFriendAction() {
-        if (findFriendsAction == null) {
-            findFriendsAction = new FindFriendAction(getController());
-        }
-        return findFriendsAction;
     }
 
 }

@@ -191,10 +191,6 @@ public class NavTreeCellRenderer extends DefaultTreeCellRenderer {
             text = Translation.getTranslation("navtree.onlinenodes", String
                 .valueOf(nmModel.getConnectedTreeNode().getChildCount()));
             icon = Icons.KNOWN_NODES;
-        } else if (value == nmModel.getNotInFriendsTreeNodes()) {
-            text = Translation.getTranslation("general.notonfriends") + " ("
-                + nmModel.getNotInFriendsTreeNodes().getChildCount() + ')';
-            icon = Icons.NODE_NON_FRIEND_CONNECTED;
         } else {
             LOG.warn("Unknown content: " + userObject);
         }

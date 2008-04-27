@@ -48,21 +48,7 @@ import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.ui.action.ConnectAction;
-import de.dal33t.powerfolder.ui.action.CreateShortcutAction;
-import de.dal33t.powerfolder.ui.action.FolderCreateAction;
-import de.dal33t.powerfolder.ui.action.FolderRemoveAction;
-import de.dal33t.powerfolder.ui.action.OpenAboutBoxAction;
-import de.dal33t.powerfolder.ui.action.OpenPreferencesAction;
-import de.dal33t.powerfolder.ui.action.OpenWizardAction;
-import de.dal33t.powerfolder.ui.action.PreviewFolderRemoveAction;
-import de.dal33t.powerfolder.ui.action.PreviewJoinAction;
-import de.dal33t.powerfolder.ui.action.ReconnectAction;
-import de.dal33t.powerfolder.ui.action.RequestReportAction;
-import de.dal33t.powerfolder.ui.action.SendInvitationAction;
-import de.dal33t.powerfolder.ui.action.ShowHidePreviewFoldersAction;
-import de.dal33t.powerfolder.ui.action.SyncAllFoldersAction;
-import de.dal33t.powerfolder.ui.action.ToggleSilentModeAction;
+import de.dal33t.powerfolder.ui.action.*;
 import de.dal33t.powerfolder.ui.chat.ChatModel;
 import de.dal33t.powerfolder.ui.folder.FileNameProblemHandlerDefaultImpl;
 import de.dal33t.powerfolder.ui.friends.AskForFriendshipHandlerDefaultImpl;
@@ -755,6 +741,7 @@ public class UIController extends PFComponent {
     private Action openAboutAction;
     private Action toggleSilentModeAction;
     private Action hidePreviewsAction;
+    private Action findFriendAction;
 
     // on folders
     private Action syncAllFoldersAction;
@@ -838,6 +825,13 @@ public class UIController extends PFComponent {
                 hidePreviewsVM, getController());
         }
         return hidePreviewsAction;
+    }
+
+    public Action getFindFriendAction() {
+        if (findFriendAction == null) {
+            findFriendAction = new FindFriendAction(getController());
+        }
+        return findFriendAction;
     }
 
     public Action getFolderCreateShortcutAction() {

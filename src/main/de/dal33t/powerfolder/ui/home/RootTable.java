@@ -108,12 +108,6 @@ public class RootTable extends JTable {
                 {
                     newValue = Translation.getTranslation("rootpanel.friends");
                     setIcon(Icons.NODE_FRIEND_CONNECTED);
-                } else if (value == controller.getUIController()
-                    .getNodeManagerModel().getNotInFriendsTreeNodes())
-                {
-                    newValue = Translation
-                        .getTranslation("general.notonfriends");
-                    setIcon(Icons.NODE_NON_FRIEND_CONNECTED);
                 }
             } else {// size
                 setIcon(null);

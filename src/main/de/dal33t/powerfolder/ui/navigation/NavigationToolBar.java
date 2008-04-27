@@ -203,13 +203,6 @@ public class NavigationToolBar extends PFUIComponent implements
                     String.valueOf(getUIController().getNodeManagerModel()
                             .getConnectedTreeNode().getChildCount()));
 
-        } else if (navObject == getUIController().getNodeManagerModel()
-            .getNotInFriendsTreeNodes())
-        {
-            return Translation.getTranslation("general.notonfriends")
-                + " ("
-                + getUIController().getNodeManagerModel()
-                    .getNotInFriendsTreeNodes().getChildCount() + ')';
         } else if (userObject == RootNode.DEBUG_NODE_LABEL) {
             return "Debug";
         } else {

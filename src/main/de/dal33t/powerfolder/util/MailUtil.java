@@ -9,8 +9,6 @@ import java.net.URISyntaxException;
 
 import org.apache.commons.lang.StringUtils;
 
-import sun.util.logging.resources.logging;
-
 import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
