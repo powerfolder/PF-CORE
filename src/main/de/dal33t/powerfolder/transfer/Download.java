@@ -141,8 +141,14 @@ public class Download extends Transfer {
             if (pendingRequests.size() >= MAX_REQUESTS_QUEUED) {
                 return false;
             }
-
-            rp = new RequestPart(getFile(), range, Math.max(0, transferState.getProgress()));
+           
+            try {
+                rp = new RequestPart(getFile(), range, Math.max(0, transferState.getProgress()));
+            } catch (IllegalArgumentException e) {
+                // I need to do this because FileInfos are NOT immutable...
+                log().warn(e);
+                return false;
+            }
             pendingRequests.add(rp);
         }
         getPartner().sendMessagesAsynchron(rp);

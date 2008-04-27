@@ -224,7 +224,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
     
     public void testConcurrentModificationsLargeSwarmDeltaSync() throws IOException {
         Random prng = new Random();
-        final int numC = 2;
+        final int numC = 3;
         nSetupControllers(numC);
         setConfigurationEntry(ConfigurationEntry.USE_SWARMING_ON_LAN, "true");
         setConfigurationEntry(ConfigurationEntry.USE_DELTA_ON_LAN, "true");

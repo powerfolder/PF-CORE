@@ -977,6 +977,11 @@ public class TransferManager extends PFComponent {
                 oldUpload = queuedUploads.get(oldUploadIndex);
                 queuedUploads.remove(oldUploadIndex);
             }
+
+            log().debug(
+                "Upload enqueud: " + dl.file.toDetailString() + ", startOffset: "
+                    + dl.startOffset + ", to: " + from);
+            queuedUploads.add(upload);
         } finally {
             uploadsLock.unlock();
         }
@@ -989,16 +994,6 @@ public class TransferManager extends PFComponent {
             oldUpload.abort();
             oldUpload.shutdown();
             setBroken(oldUpload, TransferProblem.OLD_UPLOAD, from.getNick());
-        }
-
-        log().debug(
-            "Upload enqueud: " + dl.file.toDetailString() + ", startOffset: "
-                + dl.startOffset + ", to: " + from);
-        uploadsLock.lock();
-        try {
-            queuedUploads.add(upload);
-        } finally {
-            uploadsLock.unlock();
         }
 
         // Trigger working thread on upload enqueued
@@ -1192,9 +1187,7 @@ public class TransferManager extends PFComponent {
         man.removeSource(download);
         if (!man.hasSources()) {
             log().verbose("No further sources in that manager, removing it!");
-            if (!wasAborted) {
-                man.shutdown();
-            }
+            man.shutdown();
             removeDownloadManager(man);
             if (!download.isRequestedAutomatic() && !wasAborted) {
                 enquePendingDownload(download);
@@ -1554,6 +1547,9 @@ public class TransferManager extends PFComponent {
     private void removeDownloadManager(DownloadManager manager) {
         // log().debug("Removing: " + manager);
         // Debug.dumpCurrentStackTrace();
+        if (!manager.isDone()) {
+            throw new IllegalStateException("Removing manager that is NOT done!");
+        }
         if (!dlManagers.remove(manager.getFileInfo(), manager)) {
             throw new NoSuchElementException("Manager not found: "
                 + Debug.detailedObjectState(manager));

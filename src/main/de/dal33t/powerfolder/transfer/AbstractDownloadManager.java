@@ -97,7 +97,9 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         for (Download d : getDownloads()) {
             d.abort();
         }
-        shutdown();
+//        Not required since the aborts above handle it
+//        TODO Move some abort code of TransferManager in here
+//        shutdown();
         getController().getTransferManager().downloadAborted(this);
 
     }
@@ -203,7 +205,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         if (isNeedingFilePartsRecord()) {
             requestFilePartsRecord(download);
         }
-
+        
         sendPartRequests();
     }
 
@@ -337,6 +339,11 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                     };
                     FilePartsState state = pStateWorker.call();
                     synchronized (AbstractDownloadManager.this) {
+                        if (state.getFileLength() != fileInfo.getSize()) {
+                            setBroken(TransferProblem.GENERAL_EXCEPTION, "Local concurrent modification of downloading file.");
+                            return;
+                        }
+                        
                         setFilePartsState(state);
                         counter = new TransferCounter(filePartsState
                             .countPartStates(filePartsState.getRange(),
@@ -421,7 +428,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             + isAborted() + "; shutdown: " + shutdown;
     }
 
-    protected void checkCompleted() {
+    protected synchronized void checkCompleted() {
         log().debug("Checking for completed " + fileInfo);
         if (isDone()) {
             return;

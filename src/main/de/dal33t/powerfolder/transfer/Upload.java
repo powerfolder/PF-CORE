@@ -174,29 +174,30 @@ public class Upload extends Transfer {
                         } catch (ConnectionException e) {
                             throw new TransferException(e);
                         }
-                        waitForRequests();
-                        log().info("Checking for parts request.");
-
-                        // Check if the first request is for a FilePartsRecord
-                        if (checkForFilePartsRecordRequest()) {
-                            transferState
-                                .setState(TransferState.REMOTEMATCHING);
-                            log().verbose("Waiting for initial part requests!");
-                            waitForRequests();
+                        if (waitForRequests()) {
+                            log().info("Checking for parts request.");
+    
+                            // Check if the first request is for a FilePartsRecord
+                            if (checkForFilePartsRecordRequest()) {
+                                transferState
+                                    .setState(TransferState.REMOTEMATCHING);
+                                log().verbose("Waiting for initial part requests!");
+                                waitForRequests();
+                            }
+                            log().info("Upload started " + this);
+                            long startTime = System.currentTimeMillis();
+    
+                            // FIXME: It shouldn't be possible to loop endlessly
+                            // This fixme has to solved somewhere else partly since
+                            // it's like:
+                            // "How long do we allow to upload to some party" -
+                            // which can't be decided here.
+                            while (sendPart()) {
+                            }
+                            long took = System.currentTimeMillis() - startTime;
+                            getTransferManager().logTransfer(false, took,
+                                getFile(), getPartner());
                         }
-                        log().info("Upload started " + this);
-                        long startTime = System.currentTimeMillis();
-
-                        // FIXME: It shouldn't be possible to loop endlessly
-                        // This fixme has to solved somewhere else partly since
-                        // it's like:
-                        // "How long do we allow to upload to some party" -
-                        // which can't be decided here.
-                        while (sendPart()) {
-                        }
-                        long took = System.currentTimeMillis() - startTime;
-                        getTransferManager().logTransfer(false, took,
-                            getFile(), getPartner());
                     } else {
                         transferState.setState(TransferState.UPLOADING);
                         sendChunks();
@@ -346,13 +347,13 @@ public class Upload extends Transfer {
         return true;
     }
 
-    protected void waitForRequests() {
+    protected boolean waitForRequests() {
         if (isBroken() || aborted) {
-            return;
+            return false;
         }
         synchronized (pendingRequests) {
             if (!pendingRequests.isEmpty()) {
-                return;
+                return true;
             }
             try {
                 pendingRequests.wait();
@@ -360,6 +361,7 @@ public class Upload extends Transfer {
                 log().error(e);
             }
         }
+        return !pendingRequests.isEmpty();
     }
 
     /**
