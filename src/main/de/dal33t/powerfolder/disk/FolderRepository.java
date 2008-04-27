@@ -23,7 +23,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.swing.JFrame;
+import javax.swing.*;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -47,6 +47,7 @@ import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.compare.FolderComparator;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
@@ -250,6 +251,15 @@ public class FolderRepository extends PFComponent implements Runnable {
                 showFolderException(config, folderName, e, foInfo);
             }
         }
+
+        // Set the folders base with a desktop ini.
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                FileUtils.maintainDesktopIni(getController(),
+                        new File(getFoldersBasedir()));
+            }
+        });
+
     }
 
     public FolderSettings loadFolderSettings(String folderName) {
