@@ -13,7 +13,6 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.Loggable;
-import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.TransferCounter;
 
@@ -87,10 +86,8 @@ public abstract class Transfer extends Loggable implements Serializable {
          * @param progress
          */
         public synchronized void setProgress(double progress) {
-            if (progress > 1) {
-                Logger.getLogger(TransferState.class).error(
+            Reject.ifTrue(progress > 1, 
                     "Process set to illegal value: " + progress);
-            }
             this.progress = progress;
         }
 

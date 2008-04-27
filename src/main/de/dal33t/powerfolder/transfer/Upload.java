@@ -85,8 +85,7 @@ public class Upload extends Transfer {
         }
 
         if (!isSupportingPartRequests()) {
-            log().warn("Downloader sent a PartRequest (Protocol violation).");
-            return;
+            log().warn("Downloader sent a PartRequest (Protocol violation). Upload is not started but requests will be stored until it is.");
         }
         // Requests for different files on the same transfer connection are not
         // supported currently
@@ -225,7 +224,8 @@ public class Upload extends Transfer {
         RequestFilePartsRecord r = null;
         synchronized (pendingRequests) {
             if (pendingRequests.isEmpty()) {
-                throw new TransferException("Cancelled message too fast");
+                log().warn("Cancelled message too fast");
+                return false;
             }
             if (pendingRequests.peek() instanceof RequestFilePartsRecord) {
                 r = (RequestFilePartsRecord) pendingRequests.remove();
@@ -347,6 +347,9 @@ public class Upload extends Transfer {
     }
 
     protected void waitForRequests() {
+        if (isBroken() || aborted) {
+            return;
+        }
         synchronized (pendingRequests) {
             if (!pendingRequests.isEmpty()) {
                 return;

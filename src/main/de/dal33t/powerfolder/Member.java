@@ -1266,6 +1266,14 @@ public class Member extends PFComponent {
                         FileInfo file = changes.added[i];
                         cachedFileList.remove(file);
                         cachedFileList.put(file, file);
+
+                        // file "changed" so if downloading break the download
+                        if (logVerbose) {
+                            log().verbose(
+                                "downloading changed file, breaking it! " + file
+                                    + " " + this);
+                        }
+                        tm.abortDownload(file, this);
                     }
                 }
                 if (changes.removed != null) {
@@ -1276,7 +1284,7 @@ public class Member extends PFComponent {
                         // file removed so if downloading break the download
                         if (logVerbose) {
                             log().verbose(
-                                "downloading removed file breaking it! " + file
+                                "downloading removed file, breaking it! " + file
                                     + " " + this);
                         }
                         tm.abortDownload(file, this);

@@ -12,6 +12,7 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.RequestPart;
 import de.dal33t.powerfolder.transfer.Transfer.TransferState;
+import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.Range;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
@@ -67,6 +68,7 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
                 .debug(
                     "Empty file detected, setting transfers completed immediately.");
             setCompleted();
+            return;
         }
 
         if (isCompleted()) {
@@ -131,7 +133,9 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
         // Maybe we're done for, update the tempfile just in case
         if (!hasSources()) {
             updateTempFile();
+            return;
         }
+        
         if (isUsingPartRequests()) {
             // All pending requests from that download are void.
             if (filePartsState != null) {
@@ -140,7 +144,7 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
                         PartState.NEEDED);
                 }
             }
-            if (pendingPartRecordFrom == download) {
+            if (remotePartRecord == null && pendingPartRecordFrom == download) {
                 pendingPartRecordFrom = null;
                 requestFilePartsRecord(null);
             }
@@ -154,7 +158,8 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
 
     @Override
     public String toString() {
-        return super.toString() + "; #sources=" + downloads.values().size();
+        return Debug.detailedObjectState(this);
+//        return super.toString() + "; #sources=" + downloads.values().size();
     }
 
     /**

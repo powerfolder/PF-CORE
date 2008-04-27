@@ -18,6 +18,7 @@ import java.util.concurrent.Future;
 
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.disk.FolderStatistic;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.message.FileChunk;
@@ -44,7 +45,7 @@ import de.dal33t.powerfolder.util.delta.FilePartsState.PartState;
  * 
  * @author Dennis "Bytekeeper" Waldherr
  */
-public abstract class AbstractDownloadManager extends Loggable implements
+public abstract class AbstractDownloadManager extends PFComponent implements
     DownloadManager
 {
     private enum InternalState {
@@ -217,6 +218,11 @@ public abstract class AbstractDownloadManager extends Loggable implements
             return;
         }
 
+        if (!getDownloads().contains(download)) {
+            log().warn("Received chunk from download which is not source: " + download);
+            return;
+        }
+        
         if (filePartsState == null) {
             log().warn(
                 "Not ready to receive data, but received " + chunk + " from "
@@ -280,6 +286,10 @@ public abstract class AbstractDownloadManager extends Loggable implements
     {
         Reject.noNullElements(download, record);
         if (isDone()) {
+            return;
+        }
+        if (remotePartRecord != null) {
+            log().warn("Received multiple part records!");
             return;
         }
         setStarted();
@@ -647,21 +657,13 @@ public abstract class AbstractDownloadManager extends Loggable implements
             // If something's wrong with the tempfile, kill the meta data file
             // if it exists
             deleteMetaData();
-            if (getTempFile() != null && getTempFile().exists()
-                && !getTempFile().delete())
-            {
-                throw new IOException("Couldn't delete temp file: "
-                    + getTempFile());
-            }
+            killTempFile();
             return;
         }
 
         File mf = getMetaFile();
         if (mf == null || !mf.exists()) {
-            if (!getTempFile().delete()) {
-                throw new IOException("Couldn't delete temp file: "
-                    + getTempFile());
-            }
+            killTempFile();
             return;
         }
 
@@ -688,6 +690,21 @@ public abstract class AbstractDownloadManager extends Loggable implements
                         + filePartsState.countPartStates(filePartsState
                             .getRange(), PartState.AVAILABLE) + " of "
                         + getFileInfo().getSize());
+        }
+    }
+
+    /**
+     * @throws FileNotFoundException
+     * @throws IOException
+     */
+    private void killTempFile() throws FileNotFoundException, IOException {
+        if (getTempFile() != null && getTempFile().exists()
+            && !getTempFile().delete())
+        {
+            log().warn("Couldn't delete old temporary file, some other process could be using it! Trying to set it's length to 0.");
+            RandomAccessFile f = new RandomAccessFile(getTempFile(), "rw");
+            f.setLength(0);
+            f.close();
         }
     }
 

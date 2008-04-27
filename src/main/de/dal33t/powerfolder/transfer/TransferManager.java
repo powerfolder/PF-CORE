@@ -515,7 +515,6 @@ public class TransferManager extends PFComponent {
                 transferFound = dl.getDownloadManager() != null
                     && dl.getDownloadManager().getSourceFor(
                         transfer.getPartner()) != null;
-                dl.shutdown();
                 removeDownload(dl, false);
 
             } finally {
@@ -918,6 +917,7 @@ public class TransferManager extends PFComponent {
      * @return the enqued upload, or null if not queued.
      */
     public Upload queueUpload(Member from, RequestDownload dl) {
+        log().debug("Received download request from " + from + ": " + Debug.detailedObjectState(dl));
         if (dl == null || dl.file == null) {
             throw new NullPointerException("Downloadrequest/File is null");
         }
@@ -941,6 +941,8 @@ public class TransferManager extends PFComponent {
         File diskFile = upload.getFile().getDiskFile(repo);
         boolean fileInSyncWithDisk = upload.getFile().inSyncWithDisk(diskFile);
         if (!fileInSyncWithDisk) {
+            // This should free up an otherwise waiting for download partner
+            setBroken(upload, TransferProblem.BROKEN_UPLOAD);
             Folder folder = upload.getFile().getFolder(repo);
             folder.recommendScanOnNextMaintenance();
             log().warn(
@@ -968,7 +970,6 @@ public class TransferManager extends PFComponent {
             if (oldUploadIndex >= 0) {
                 if (oldUpload != null) {
                     // Should never happen
-                    uploadsLock.unlock();
                     throw new IllegalStateException(
                         "Found illegal upload. is in list of queued AND active uploads: "
                             + oldUpload);
@@ -1189,11 +1190,13 @@ public class TransferManager extends PFComponent {
             return;
         }
         man.removeSource(download);
-        if (!man.hasSources() && !wasAborted) {
+        if (!man.hasSources()) {
             log().verbose("No further sources in that manager, removing it!");
-            man.shutdown();
+            if (!wasAborted) {
+                man.shutdown();
+            }
             removeDownloadManager(man);
-            if (!download.isRequestedAutomatic()) {
+            if (!download.isRequestedAutomatic() && !wasAborted) {
                 enquePendingDownload(download);
             }
         }
@@ -1414,11 +1417,6 @@ public class TransferManager extends PFComponent {
     private void requestDownload(Download download, Member from) {
         FileInfo fInfo = download.getFile();
 
-        if (logEnabled) {
-            log().debug(
-                "Requesting " + fInfo.toDetailString() + " from " + from);
-        }
-
         // Lock/Disable transfer checker
         downloadsLock.lock();
         try {
@@ -1427,6 +1425,7 @@ public class TransferManager extends PFComponent {
 
             if (man == null || fInfo.isNewerThan(man.getFileInfo())) {
                 if (man != null) {
+                    log().debug("Got active download of older file version, aborting.");
                     man.abortAndCleanup();
                 }
                 try {
@@ -1449,6 +1448,11 @@ public class TransferManager extends PFComponent {
             }
 
             if (man.allowsSourceFor(from)) {
+                if (logEnabled) {
+                    log().debug(
+                        "Requesting " + fInfo.toDetailString() + " from " + from);
+                }
+
                 if (download.getFile().isNewerThan(man.getFileInfo())) {
                     log().error(
                         "Requested newer download: " + download + " than "

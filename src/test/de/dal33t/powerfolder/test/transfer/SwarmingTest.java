@@ -2,6 +2,9 @@ package de.dal33t.powerfolder.test.transfer;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.util.Arrays;
+import java.util.Random;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
@@ -10,16 +13,19 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.transfer.DownloadManager;
+import de.dal33t.powerfolder.transfer.TransferManager;
+import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
-import de.dal33t.powerfolder.util.test.FiveControllerTestCase;
+import de.dal33t.powerfolder.util.test.MultipleControllerTestCase;
 import de.dal33t.powerfolder.util.test.TestHelper;
 
-public class SwarmingTest extends FiveControllerTestCase {
+public class SwarmingTest extends MultipleControllerTestCase {
     public void xtestAlotOfControllers() throws Exception {
-        joinTestFolder(SyncProfile.SYNCHRONIZE_PCS);
+        joinNTestFolder(SyncProfile.SYNCHRONIZE_PCS);
         
         for (int i = 0; i < 10; i++) {
+            nSetupControllers(5);
             connectAll();
             TestHelper.waitMilliSeconds(2000);
             tearDown();
@@ -35,7 +41,7 @@ public class SwarmingTest extends FiveControllerTestCase {
         connectAll();
         
         joinNTestFolder(SyncProfile.MANUAL_DOWNLOAD);
-        Folder barts = getFolderOf(getContollerBart()); 
+        Folder barts = getFolderOf("0"); 
 
         File tmpFile = TestHelper.createRandomFile(barts.getLocalBase(), 1000000);
         scanFolder(barts);
@@ -57,26 +63,24 @@ public class SwarmingTest extends FiveControllerTestCase {
     }
     
     public void testFiveSwarmDownload() throws IOException {
+        nSetupControllers(5);
         setConfigurationEntry(ConfigurationEntry.USE_SWARMING_ON_LAN, "true");
-
         connectAll();
 
-        joinTestFolder(SyncProfile.MANUAL_DOWNLOAD);
+        joinNTestFolder(SyncProfile.MANUAL_DOWNLOAD);
 
-        File tmpFile = TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 10000000);
-        scanFolder(getFolderAtBart());
-        final FileInfo fInfo = getFolderAtBart().getKnowFilesAsArray()[0];
+        File tmpFile = TestHelper.createRandomFile(getFolderOf("0").getLocalBase(), 10000000);
+        scanFolder(getFolderOf("0"));
+        final FileInfo fInfo = getFolderOf("0").getKnowFilesAsArray()[0];
 
-        getFolderAtBart().setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
-        getFolderAtLisa().setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
-        getFolderAtMaggie().setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
-        getFolderAtMarge().setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
-        getFolderAtHomer().setSyncProfile(SyncProfile.MANUAL_DOWNLOAD);
+        for (int i = 0; i < 4; i++) {
+            getFolderOf("" + i).setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
+        }
         
         TestHelper.waitForCondition(20, new Condition() {
             public boolean reached() {
                 for (Controller c: getControllers()) {
-                    if (c == getContollerHomer()) {
+                    if (c == getContoller("5")) {
                         continue;
                     }
                     if (c.getFolderRepository().getFolders()[0].getKnownFilesCount() != 1) {
@@ -88,22 +92,22 @@ public class SwarmingTest extends FiveControllerTestCase {
         });
 
         setConfigurationEntry(ConfigurationEntry.UPLOADLIMIT_LAN, "50");
-        getFolderAtHomer().setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
+        getFolderOf("5").setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
         
         TestHelper.waitForCondition(20, new ConditionWithMessage() {
             public boolean reached() {
-                DownloadManager man = getContollerHomer().getTransferManager().getActiveDownload(fInfo);
+                DownloadManager man = getContoller("5").getTransferManager().getActiveDownload(fInfo);
                 return man != null && man.getSources().size() == 4;
             }
 
             public String message() {
-                return "" + getContollerHomer().getTransferManager().getActiveDownload(fInfo);
+                return "" + getContoller("5").getTransferManager().getActiveDownload(fInfo);
             }
         });
 
         TestHelper.waitForCondition(20, new Condition() {
             public boolean reached() {
-                DownloadManager man = getContollerHomer().getTransferManager().getActiveDownload(fInfo);
+                DownloadManager man = getContoller("5").getTransferManager().getActiveDownload(fInfo);
                 for (Download src: man.getSources()) {
                     if (src.getPendingRequests().isEmpty()) {
                         return false;
@@ -115,7 +119,7 @@ public class SwarmingTest extends FiveControllerTestCase {
 
         TestHelper.waitForCondition(20, new Condition() {
             public boolean reached() {
-                DownloadManager man = getContollerHomer().getTransferManager().getActiveDownload(fInfo);
+                DownloadManager man = getContoller("5").getTransferManager().getActiveDownload(fInfo);
                 for (Download dl: man.getSources()) {
                     if (dl.getCounter().getBytesTransferred() <= 0) {
                         return false;
@@ -124,12 +128,12 @@ public class SwarmingTest extends FiveControllerTestCase {
                 return true;
             }
         });
-        assertEquals(1, getContollerHomer().getTransferManager().getActiveDownloadCount());
+        assertEquals(1, getContoller("5").getTransferManager().getActiveDownloadCount());
 
         disconnectAll();
 
         // Was auto download
-        assertEquals(0, getContollerHomer().getTransferManager().getPendingDownloads().size());
+        assertEquals(0, getContoller("5").getTransferManager().getPendingDownloads().size());
         
         connectAll();
 
@@ -137,15 +141,15 @@ public class SwarmingTest extends FiveControllerTestCase {
         
         TestHelper.waitForCondition(20, new ConditionWithMessage() {
             public boolean reached() {
-                return getContollerHomer().getTransferManager().countCompletedDownloads() == 1;
+                return getContoller("5").getTransferManager().countCompletedDownloads() == 1;
             }
 
             public String message() {
-                return "" + getContollerHomer().getTransferManager().countCompletedDownloads();
+                return "" + getContoller("5").getTransferManager().countCompletedDownloads();
             }
         });
         DownloadManager man;
-        man = getContollerHomer().getTransferManager().getCompletedDownloadsCollection().get(0);
+        man = getContoller("5").getTransferManager().getCompletedDownloadsCollection().get(0);
         for (Download dl: man.getSources()) {
             assertTrue(dl.getCounter().getBytesTransferred() > 0);
         }
@@ -156,54 +160,56 @@ public class SwarmingTest extends FiveControllerTestCase {
 
         connectAll();
 
-        joinTestFolder(SyncProfile.MANUAL_DOWNLOAD);
+        joinNTestFolder(SyncProfile.MANUAL_DOWNLOAD);
 
-        File tmpFile = TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 10000000);
-        scanFolder(getFolderAtBart());
-        final FileInfo fInfo = getFolderAtBart().getKnowFilesAsArray()[0];
+        File tmpFile = TestHelper.createRandomFile(getFolderOf("0").getLocalBase(), 10000000);
+        scanFolder(getFolderOf("0"));
+        final FileInfo fInfo = getFolderOf("0").getKnowFilesAsArray()[0];
         
-        setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
+        setNSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
 
         TestHelper.waitForCondition(100, new Condition() {
             public boolean reached() {
-                return getFolderAtLisa().getKnownFilesCount() == 1
-                && getFolderAtHomer().getKnownFilesCount() == 1
-                && getFolderAtMaggie().getKnownFilesCount() == 1
-                && getFolderAtMarge().getKnownFilesCount() == 1;
+                for (int i = 1; i < 5; i++) {
+                    if (getFolderOf("" + i).getKnownFilesCount() != 1) {
+                        return false;
+                    }
+                }
+                return true;
             }
             
         });
 
         disconnectAll();
-        tmpFile = getFolderAtLisa().getFile(fInfo).getDiskFile(getContollerLisa().getFolderRepository());
+        tmpFile = getFolderOf("1").getFile(fInfo).getDiskFile(getContoller("1").getFolderRepository());
         assertTrue(tmpFile.delete());
         
         tmpFile = TestHelper.createRandomFile(tmpFile.getParentFile(), tmpFile.getName());
-        scanFolder(getFolderAtLisa());
+        scanFolder(getFolderOf("1"));
         
-        assertTrue(tryToConnect(getContollerLisa(), getContollerHomer()));
+        assertTrue(tryToConnect(getContoller("1"), getContoller("5")));
 
         TestHelper.waitForCondition(10, new ConditionWithMessage() {
             public boolean reached() {
-                return getFolderAtHomer().getKnownFiles().iterator().next().getVersion() == 1;
+                return getFolderOf("5").getKnownFiles().iterator().next().getVersion() == 1;
             }
 
             public String message() {
-                return "Homer version:" + getFolderAtHomer().getKnownFiles().iterator().next().getVersion();
+                return "Homer version:" + getFolderOf("5").getKnownFiles().iterator().next().getVersion();
             }
         });
         
-        tmpFile = getFolderAtHomer().getFile(fInfo).getDiskFile(getContollerHomer().getFolderRepository());
+        tmpFile = getFolderOf("5").getFile(fInfo).getDiskFile(getContoller("5").getFolderRepository());
         assertTrue(tmpFile.delete());
         
         tmpFile = TestHelper.createRandomFile(tmpFile.getParentFile(), tmpFile.getName());
-        scanFolder(getFolderAtHomer());
+        scanFolder(getFolderOf("5"));
         
-        assertTrue(tryToConnect(getContollerMaggie(), getContollerHomer()));
+        assertTrue(tryToConnect(getContoller("4"), getContoller("5")));
 
         TestHelper.waitForCondition(10, new Condition() {
             public boolean reached() {
-                return getFolderAtHomer().getKnownFiles().iterator().next().getVersion() == 2;
+                return getFolderOf("5").getKnownFiles().iterator().next().getVersion() == 2;
             }
         });
     }
@@ -213,6 +219,141 @@ public class SwarmingTest extends FiveControllerTestCase {
             testFileAlterations();
             tearDown();
             setUp();
+        }
+    }
+    
+    public void testConcurrentModificationsLargeSwarmDeltaSync() throws IOException {
+        Random prng = new Random();
+        final int numC = 2;
+        nSetupControllers(numC);
+        setConfigurationEntry(ConfigurationEntry.USE_SWARMING_ON_LAN, "true");
+        setConfigurationEntry(ConfigurationEntry.USE_DELTA_ON_LAN, "true");
+        setConfigurationEntry(ConfigurationEntry.DOWNLOADLIMIT_LAN, "100");
+        setConfigurationEntry(ConfigurationEntry.UPLOADLIMIT_LAN, "100");
+        
+        connectAll();
+
+        joinNTestFolder(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
+
+        File tmpFile = TestHelper.createRandomFile(getFolderOf("0").getLocalBase(), 1000000);
+        scanFolder(getFolderOf("0"));
+        final FileInfo fInfo = getFolderOf("0").getKnowFilesAsArray()[0];
+
+        for (int tries = 0; tries < 4; tries++) {
+            
+            for (int i = 0; i < 50; i++) {
+                TestHelper.waitMilliSeconds(200);
+                String cont = "" + prng.nextInt(numC);
+                FileInfo[] fi = getFolderOf(cont).getKnowFilesAsArray();
+                if (fi.length > 0 && fi[0].diskFileExists(getContoller(cont))) {
+                    RandomAccessFile raf = new RandomAccessFile(fi[0].getDiskFile(getContoller(cont).getFolderRepository()), "rw");
+                    if (prng.nextDouble() > 0.3) {
+                        raf.seek(prng.nextInt(1000000 - 1000));
+                        for (int j = 0; j < 1000; j++) {
+                            raf.write(prng.nextInt(256));
+                        }
+                    } else {
+                        raf.setLength(prng.nextInt(1000000));
+                    }
+                    raf.close();
+                    if (prng.nextDouble() < 0.5) {
+                        scanFolder(getFolderOf(cont));
+                    }
+                }
+            }
+            for (int i = 0; i < numC; i++) {
+                scanFolder(getFolderOf("" + i));
+            }
+    
+            TestHelper.waitForCondition(numC * 4, new ConditionWithMessage() {
+                public boolean reached() {
+                    for (int i = 0; i < numC; i++) {
+                        if (getFolderOf("" + i).getKnownFilesCount() != 1) {
+                            return false;
+                        }
+                    }
+                    return true;
+                }
+    
+                public String message() {
+                    StringBuilder b = new StringBuilder();
+                    for (int i = 0; i < numC; i++) {
+                        if (i > 0) {
+                            b.append("\n");
+                        }
+                        b.append(i).append(": ").append(getFolderOf("" + i).getKnownFilesCount());
+                        b.append(", ").append(
+                            getContoller("" + i).getTransferManager().getActiveDownloads());
+                        b.append(", ").append(
+                            Arrays.toString(getContoller("" + i).getTransferManager().getActiveUploads()));
+                    }
+                    return b.toString();
+                }
+            });
+        }    
+        
+        
+        int newestVersion = 0;
+        for (int i = 0; i < numC; i++) {
+            scanFolder(getFolderOf("" + i));
+            int v = getFolderOf("" + i).getKnowFilesAsArray()[0].getVersion(); 
+            if (v > newestVersion) {
+                newestVersion = v;
+            }
+        }
+        final int version = newestVersion;
+        
+        setConfigurationEntry(ConfigurationEntry.DOWNLOADLIMIT_LAN, "500");
+        setConfigurationEntry(ConfigurationEntry.UPLOADLIMIT_LAN, "500");
+
+        TestHelper.waitForCondition(numC * 10, new ConditionWithMessage() {
+            public boolean reached() {
+                for (int i = 0; i < numC; i++) {
+                    if (getFolderOf("" + i).getKnowFilesAsArray()[0].getVersion() != version) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+
+            public String message() {
+                StringBuilder b = new StringBuilder();
+                for (int i = 0; i < numC; i++) {
+                    if (i > 0) {
+                        b.append(", ");
+                    }
+                    b.append(i).append(": ").append(getFolderOf("" + i).getKnowFilesAsArray()[0].getVersion());
+                }
+                return b.toString();
+            }
+        });
+        TestHelper.waitForCondition(numC * 4, new ConditionWithMessage() {
+            public boolean reached() {
+                for (int i = 0; i < numC; i++) {
+                    TransferManager tm = getContoller("" + i).getTransferManager(); 
+                    if (tm.getActiveDownloadCount() != 0 || tm.getActiveUploads().length != 0) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+
+            public String message() {
+                StringBuilder b = new StringBuilder();
+                for (int i = 0; i < numC; i++) {
+                    if (i > 0) {
+                        b.append(", ");
+                    }
+                    TransferManager tm = getContoller("" + i).getTransferManager(); 
+                    b.append(i).append(": ").append(tm.getActiveDownloadCount() + "|" + tm.getActiveUploads().length);
+                }
+                return b.toString();
+            }
+        });
+        File a = getFolderOf("0").getKnowFilesAsArray()[0].getDiskFile(getContoller("0").getFolderRepository());
+        for (int i = 1; i < numC; i++) {
+            TestHelper.compareFiles(a, 
+                getFolderOf("" + i).getKnowFilesAsArray()[0].getDiskFile(getContoller("" + i).getFolderRepository()));
         }
     }
 }

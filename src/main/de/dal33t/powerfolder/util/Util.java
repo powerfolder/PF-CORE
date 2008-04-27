@@ -26,6 +26,7 @@ import org.apache.commons.lang.Validate;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.message.Identity;
 import de.dal33t.powerfolder.transfer.Transfer;
 import de.dal33t.powerfolder.util.os.Win32.ShellLink;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
@@ -160,15 +161,23 @@ public class Util {
     }
 
     public static boolean usePartRequests(Controller c, Transfer t) {
-        Reject.noNullElements(c, t);
-        Validate.notNull(t.getPartner());
-        Validate.notNull(t.getPartner().getIdentity());
-        return t.getPartner().getIdentity().isSupportingPartRequests()
+        Reject.noNullElements(c, t, t.getPartner());
+        // ID seems to be dropped on disconnect sometimes
+        Identity id = t.getPartner().getIdentity();
+        if (id == null) {
+            return false;
+        }
+        return id.isSupportingPartRequests()
             && allowPartRequests(c, t.getPartner().isOnLAN());
     }
 
     public static boolean useDeltaSync(Controller c, Transfer t) {
-        Reject.noNullElements(c, t);
+        Reject.noNullElements(c, t, t.getPartner());
+        // ID seems to be dropped on disconnect sometimes
+        Identity id = t.getPartner().getIdentity();
+        if (id == null) {
+            return false;
+        }
         return t.getPartner().isSupportingPartTransfers()
             && allowDeltaSync(c, t.getPartner().isOnLAN());
     }

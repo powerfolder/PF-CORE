@@ -3,7 +3,6 @@
 package de.dal33t.powerfolder.transfer;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -222,9 +221,6 @@ public class Download extends Transfer {
      * Requests to abort this dl
      */
     public void abort() {
-        if (getPartner() != null && getPartner().isCompleteyConnected()) {
-            getPartner().sendMessageAsynchron(new AbortDownload(getFile()), null);
-        }
         shutdown();
         getController().getTransferManager().downloadAborted(this);
     }
@@ -245,6 +241,15 @@ public class Download extends Transfer {
         super.setCompleted();
     }
 
+    @Override
+    void shutdown() {
+        // This shouldn't be necessary... 
+        if (getPartner() != null && getPartner().isCompleteyConnected()) {
+            getPartner().sendMessageAsynchron(new AbortDownload(getFile()), null);
+        }
+        super.shutdown();
+    }
+    
     /**
      * @return if this is a pending download
      */
