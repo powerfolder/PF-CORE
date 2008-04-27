@@ -4,6 +4,7 @@ package de.dal33t.powerfolder.ui.wizard;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.Icons;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
@@ -15,9 +16,10 @@ import jwf.WizardListener;
 import jwf.WizardPanel;
 
 import javax.swing.*;
-import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
+import java.awt.*;
 
 /**
  * The main wizard class
@@ -73,7 +75,7 @@ public class PFWizard extends PFUIComponent {
 
     /**
      * Opens the send-invitation wizard.
-     * 
+     *
      * @param controller
      *            the controller.
      * @param foInfo
@@ -96,6 +98,33 @@ public class PFWizard extends PFUIComponent {
             successPanel);
 
         wizard.open(new SendInvitationsPanel(controller, false));
+    }
+
+    /**
+     * Opens the send-invitation wizard.
+     *
+     * @param controller
+     *            the controller.
+     * @param foInfo
+     *            the folder to send the invitation for.
+     */
+    public static void openSelectInvitationWizard(Controller controller,
+                                                  Member member,
+                                                  List<FolderInfo> possibleFolders)
+    {
+        PFWizard wizard = new PFWizard(controller);
+        wizard.getWizardContext().setAttribute(PICTO_ICON,
+            Icons.PROJECT_WORK_PICTO);
+
+        TextPanelPanel successPanel = new TextPanelPanel(controller,
+            Translation.getTranslation("wizard.sendinvitations.sendsuccess"),
+            Translation
+                .getTranslation("wizard.sendinvitations.sendsuccessinfo"));
+        wizard.getWizardContext().setAttribute(SUCCESS_PANEL,
+            successPanel);
+
+        wizard.open(new SelectInvitationPanel(controller, member,
+                possibleFolders));
     }
 
     /**

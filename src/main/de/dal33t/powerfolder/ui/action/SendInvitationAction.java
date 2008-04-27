@@ -2,26 +2,21 @@
  */
 package de.dal33t.powerfolder.ui.action;
 
-import java.awt.event.ActionEvent;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.swing.Icon;
-import javax.swing.JOptionPane;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
-import de.dal33t.powerfolder.util.InvitationUtil;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
-import de.dal33t.powerfolder.util.ui.SelectionModel;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
+import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
+import de.dal33t.powerfolder.util.ui.SelectionModel;
+
+import java.awt.event.ActionEvent;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Invites a user to a folder<BR>
@@ -86,24 +81,8 @@ public class SendInvitationAction extends SelectionBaseAction {
                             member.getNick()),
                     GenericDialogType.WARN);
         } else {
-            Object result = JOptionPane.showInputDialog(getUIController()
-                    .getMainFrame().getUIComponent(), Translation.getTranslation(
-                    "sendinvitation.user.text", member.getNick()), Translation
-                    .getTranslation("sendinvitation.user.title", member.getNick()),
-                    JOptionPane.QUESTION_MESSAGE,
-                    (Icon) getValue(SMALL_ICON), possibleInvitations
-                    .toArray(), null);
-            if (result != null) {
-                FolderInfo folder = (FolderInfo) result;
-                Invitation invitation = folder.getFolder(getController())
-                        .createInvitation();
-                invitation.setSuggestedLocalBase(folder.getFolder(
-                        getController()).getLocalBase());
-                InvitationUtil.invitationToNode(getController(), invitation,
-                        member);
-                log().debug("Invited " + member.getNick() +
-                        " to folder " + folder.name);
-            }
+            PFWizard.openSelectInvitationWizard(getController(), member,
+                    possibleInvitations);
         }
     }
 }
