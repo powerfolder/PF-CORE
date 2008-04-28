@@ -37,8 +37,7 @@ public class ServerClientModel extends PFUIComponent {
     private ArrayListModel mirroredFolders;
     private FolderMembershipListener membershipListener;
 
-    public ServerClientModel(Controller controller, ServerClient client)
-    {
+    public ServerClientModel(Controller controller, ServerClient client) {
         super(controller);
         Reject.ifNull(client, "Client is null");
         mirroredFolders = new ArrayListModel();
@@ -83,6 +82,7 @@ public class ServerClientModel extends PFUIComponent {
 
             @Override
             public Object construct() {
+                // FIXME Use separate account stores for diffrent servers?
                 loginOK = client.login(
                     ConfigurationEntry.WEBSERVICE_USERNAME
                         .getValue(getController()),
