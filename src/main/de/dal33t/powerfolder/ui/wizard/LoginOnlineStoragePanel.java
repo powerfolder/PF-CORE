@@ -59,20 +59,22 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
         boolean loginOk = false;
         try {
             loginOk = getController().getOSClient().login(
-                usernameField.getText(), new String(passwordField.getPassword()))
-                .isLoginOK();
+                usernameField.getText(),
+                new String(passwordField.getPassword())).isLoginOK();
             if (!loginOk) {
-                list.add(Translation.getTranslation("online_storage.account_data"));
+                list.add(Translation
+                    .getTranslation("online_storage.account_data"));
             }
+            // FIXME Use separate account stores for diffrent servers?
             ConfigurationEntry.WEBSERVICE_USERNAME.setValue(getController(),
                 usernameField.getText());
             ConfigurationEntry.WEBSERVICE_PASSWORD.setValue(getController(),
                 new String(passwordField.getPassword()));
             getController().saveConfig();
         } catch (Exception e) {
-            log().error("Problem logging in" , e);
+            log().error("Problem logging in", e);
             list.add(Translation.getTranslation("online_storage.general_error",
-                    e.getMessage()));
+                e.getMessage()));
         }
         return loginOk;
     }
@@ -82,15 +84,13 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
     }
 
     protected JPanel buildContent() {
-        FormLayout layout = new FormLayout(
-            "right:pref, 5dlu, pref, 0:grow",
+        FormLayout layout = new FormLayout("right:pref, 5dlu, pref, 0:grow",
             "pref, 10dlu, pref, 5dlu, pref, 5dlu, pref, 15dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
         builder.addLabel(Translation
-            .getTranslation("wizard.webservice.enteraccount"), cc
-            .xyw(1, 1, 4));
+            .getTranslation("wizard.webservice.enteraccount"), cc.xyw(1, 1, 4));
 
         builder.addLabel(Translation
             .getTranslation("wizard.webservice.username"), cc.xy(1, 3));
@@ -117,9 +117,10 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
      * Initalizes all nessesary components
      */
     protected void initComponents() {
-        ValueModel usernameModel =
-                new ValueHolder(ConfigurationEntry.WEBSERVICE_USERNAME
-                .getValue(getController()), true);
+        // FIXME Use separate account stores for diffrent servers?
+        ValueModel usernameModel = new ValueHolder(
+            ConfigurationEntry.WEBSERVICE_USERNAME.getValue(getController()),
+            true);
         usernameField = BasicComponentFactory.createTextField(usernameModel);
         passwordField = new JPasswordField(
             ConfigurationEntry.WEBSERVICE_PASSWORD.getValue(getController()));
