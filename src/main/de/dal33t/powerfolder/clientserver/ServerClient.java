@@ -179,6 +179,7 @@ public class ServerClient extends PFComponent {
      * @return true if the account data has been set
      */
     public boolean isAccountSet() {
+        // FIXME Use separate account stores for diffrent servers?
         return !StringUtils.isEmpty(ConfigurationEntry.WEBSERVICE_USERNAME
             .getValue(getController()))
             && !StringUtils.isEmpty(ConfigurationEntry.WEBSERVICE_USERNAME
@@ -235,6 +236,7 @@ public class ServerClient extends PFComponent {
         public void nodeConnected(NodeManagerEvent e) {
             if (isServer(e.getNode())) {
                 if (isAccountSet()) {
+                    // FIXME Use separate account stores for diffrent servers?
                     String username = ConfigurationEntry.WEBSERVICE_USERNAME
                         .getValue(getController());
                     String password = ConfigurationEntry.WEBSERVICE_PASSWORD
