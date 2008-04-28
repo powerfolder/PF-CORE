@@ -253,13 +253,8 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
 
         // Set the folders base with a desktop ini.
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                FileUtils.maintainDesktopIni(getController(),
-                        new File(getFoldersBasedir()));
-            }
-        });
-
+        FileUtils.maintainDesktopIni(getController(),
+                new File(getFoldersBasedir()));
     }
 
     public FolderSettings loadFolderSettings(String folderName) {
