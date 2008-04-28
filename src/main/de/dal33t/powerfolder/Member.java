@@ -299,6 +299,16 @@ public class Member extends PFComponent {
             return true;
         }
 
+        Identity id = getIdentity();
+        if (id != null) {
+            if (Util.compareVersions("2.0.0", id.getProgramVersion())) {
+                log().warn(
+                    "Rejecting connection to old program client: " + id + " v"
+                        + id.getProgramVersion());
+                return false;
+            }
+        }
+
         if (getController().getIOProvider().getRelayedConnectionManager()
             .isRelay(getInfo()))
         {
@@ -431,8 +441,9 @@ public class Member extends PFComponent {
      * removes the peer handler, and shuts down connection
      */
     private void shutdownPeer() {
-        if (peer != null) {
-            peer.shutdown();
+        ConnectionHandler thisPeer = peer;
+        if (thisPeer != null) {
+            thisPeer.shutdown();
             synchronized (peerInitalizeLock) {
                 peer = null;
             }
@@ -1054,7 +1065,8 @@ public class Member extends PFComponent {
                 targetFolder = getController().getFolderRepository().getFolder(
                     targetedFolderInfo);
             } else {
-                log().error("Got folder message without FolderInfo: " + message);    
+                log()
+                    .error("Got folder message without FolderInfo: " + message);
             }
         }
 
