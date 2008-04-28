@@ -193,6 +193,7 @@ public class IOProvider extends PFComponent {
             try {
                 SecurityManager secMan = getController().getSecurityManager();
                 if (secMan != null) {
+                    // FIXME:  log().warn("FIXME: Destroying sessing");
                     secMan.destroySession();
                 }
                 ioWorker.run();
