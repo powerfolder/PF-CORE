@@ -133,7 +133,7 @@ public abstract class PFWizardPanel extends WizardPanel {
 
         JComponent content = buildContent();
         content.setOpaque(true);
-        content.setBackground(Color.white);
+        content.setBackground(Color.WHITE);
 
         String title = getTitle();
 
@@ -142,21 +142,22 @@ public abstract class PFWizardPanel extends WizardPanel {
 
         setBorder(Borders.EMPTY_BORDER);
 
-        FormLayout layout = new FormLayout("20dlu, pref, 15dlu, left:pref",
-            "5dlu, pref, 15dlu, pref, pref:grow");
+        FormLayout layout = new FormLayout("pref, 15dlu, fill:pref:grow",
+            "pref, 15dlu, pref, fill:pref:grow");
         PanelBuilder pageBuilder = new PanelBuilder(layout, this);
+        pageBuilder.setBorder(Borders.createEmptyBorder("5dlu, 20dlu, 0dlu, 20dlu"));
         CellConstraints cc = new CellConstraints();
 
-        pageBuilder.add(createTitleLabel(title), cc.xy(4, 2));
+        pageBuilder.add(createTitleLabel(title), cc.xy(3, 1));
 
         // Add current wizard pico
         Icon picto = getPicto();
         if (picto != null) {
-            pageBuilder.add(new JLabel(picto), cc.xy(2, 4, CellConstraints.DEFAULT,
+            pageBuilder.add(new JLabel(picto), cc.xy(1, 3, CellConstraints.DEFAULT,
                 CellConstraints.TOP));
         }
 
-        pageBuilder.add(content, cc.xy(4, 4, CellConstraints.DEFAULT,
+        pageBuilder.add(content, cc.xy(3, 3, CellConstraints.DEFAULT,
                 CellConstraints.TOP));
 
         // initalized
