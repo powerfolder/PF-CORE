@@ -11,6 +11,7 @@ import com.jgoodies.binding.beans.Model;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.os.OnlineStorageSubscriptionType;
 import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Reject;
 
@@ -36,6 +37,7 @@ public class Account extends Model implements Serializable {
     public Account() {
         this.permissions = new CopyOnWriteArrayList<Permission>();
         this.osSubscription = new OnlineStorageSubscription();
+        this.osSubscription.setType(OnlineStorageSubscriptionType.NONE);
     }
 
     // Basic permission stuff *************************************************
@@ -126,7 +128,7 @@ public class Account extends Model implements Serializable {
     }
 
     // Convinience ************************************************************
-
+    
     /**
      * @param controller
      * @return the total size used by this user
