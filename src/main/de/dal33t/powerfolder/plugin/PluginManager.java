@@ -175,9 +175,9 @@ public class PluginManager extends PFComponent {
             plugins.add(plugin);
             plugin.start();
         } else {
-            plugin.stop();
             plugins.remove(plugin);
             disabledPlugins.add(plugin);
+            plugin.stop();
         }
         saveConfig();
         firePluginStatusChange(plugin);
