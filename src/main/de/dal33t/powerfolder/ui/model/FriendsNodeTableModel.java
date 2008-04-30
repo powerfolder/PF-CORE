@@ -27,6 +27,7 @@ SortedTableModel {
     private List<TableModelListener> listeners = new LinkedList<TableModelListener>();
     private List<Member> friends = new ArrayList<Member>();
     private boolean hideOffline = false;
+    private boolean includeLan = false;
     private boolean sortAscending = true;
     private int sortColumn;
     private Comparator comparator;
@@ -61,25 +62,36 @@ SortedTableModel {
         reset();
     }
 
+    /**
+     * Clear list and repopulate with freinds and connected nodes.
+     */
     private void reset() {
         friends.clear();
+
         Member[] allFriends = getController().getNodeManager().getFriends();
-        if (hideOffline) {
-            for (Member friend : allFriends) {
-                if (friend.isConnectedToNetwork()) {
-                    friends.add(friend);
-                }
-            }
-        } else {
-            friends.addAll(Arrays.asList(allFriends));
+        for (Member friend : allFriends) {
+            addNode(friend);
         }
+
+        Collection<Member> connectedNodes = getController().getNodeManager().getConnectedNodes();
+        for (Member connectedNode : connectedNodes) {
+            addNode(connectedNode);
+        }
+
         sort();
     }
 
+    public void setIncludeLan(boolean include) {
+        if (include != includeLan) {
+            includeLan = include;
+            reset();
+            fireModelStructureChanged();
+        }
+    }
+                
     public void setHideOffline(boolean hide) {
-        boolean old = this.hideOffline;
-        this.hideOffline = hide;
-        if (old != this.hideOffline) {
+        if (hide != hideOffline) {
+            hideOffline = hide;
             reset();
             fireModelStructureChanged();
         }
@@ -206,8 +218,7 @@ SortedTableModel {
     private void fireTableModelEvent(final TableModelEvent te) {
         Runnable runner = new Runnable() {
             public void run() {
-                for (int i = 0; i < listeners.size(); i++) {
-                    TableModelListener listener = listeners.get(i);
+                for (TableModelListener listener : listeners) {
                     listener.tableChanged(te);
                 }
             }
@@ -223,78 +234,107 @@ SortedTableModel {
         return sortAscending;
     }
 
+    private void removeNode(Member node) {
+
+        // Do not remove if not in list
+        if (!friends.contains(node)) {
+            return;
+        }
+
+        // Remove if not wanted
+        if (!wantedNode(node)) {
+            friends.remove(node);
+        }
+
+        // Fire anyway incase it is a status change.
+        fireModelStructureChanged();
+    }
+
+    private void addNode(Member node) {
+
+        // Do not add if already in list
+        if (friends.contains(node)) {
+            return;
+        }
+
+        // Add if wanted
+        if (wantedNode(node)) {
+            friends.add(node);
+            sort();
+        }
+
+        // Fire anyway incase it is a status change.
+        fireModelStructureChanged();
+    }
+
+    /**
+     * Returns true if the node is wanted,
+     * that is, if it should be in the table.
+     *
+     * @param node
+     * @return
+     */
+    private boolean wantedNode(Member node) {
+
+        boolean friend = node.isFriend();
+        boolean connected = node.isConnectedToNetwork();
+        boolean onLan = node.isOnLAN();
+
+        if (hideOffline) {
+            if (includeLan) {
+                // want online (friends or lan users)
+                if (connected && (friend || onLan)) {
+                    return true;
+                }
+            } else {
+                // want online friends
+                if (connected && friend) {
+                    return true;
+                }
+            }
+        } else {
+            if (includeLan) {
+                // want friends or lan users
+                if (friend || onLan) {
+                    return true;
+                }
+            } else {
+                // want friends
+                if (friend) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     /**
      * Adapter between TableModel and NodeManager. Listens on changes of the
      * nodes and fires tablemodel events.
      */
     private final class MyNodeManagerListener implements NodeManagerListener {
         public void nodeRemoved(NodeManagerEvent e) {
-            friends.remove(e.getNode());
+            removeNode(e.getNode());
         }
 
         public void nodeAdded(NodeManagerEvent e) {
-            if (e.getNode().isFriend()) {
-                if (hideOffline) {
-                    if (e.getNode().isConnectedToNetwork()) {
-                        if (!friends.contains(e.getNode())) {
-                            friends.add(e.getNode());
-                        }
-                    }
-                } else {
-                    if (!friends.contains(e.getNode())) {
-                        friends.add(e.getNode());
-                    }
-                }
-                sort();
-                fireModelStructureChanged();
-            }
+            addNode(e.getNode());
         }
 
         public void nodeConnected(NodeManagerEvent e) {
-            if (e.getNode().isFriend()) {
-                if (hideOffline) {
-                    if (e.getNode().isConnectedToNetwork()) {
-                        if (!friends.contains(e.getNode())) {
-                            friends.add(e.getNode());
-                        }
-                    }
-                } else {
-                    if (!friends.contains(e.getNode())) {
-                        friends.add(e.getNode());
-                    }
-                }
-                sort();
-                fireModelStructureChanged();
-            }
+            addNode(e.getNode());
         }
 
         public void nodeDisconnected(NodeManagerEvent e) {
-            if (hideOffline) {
-                friends.remove(e.getNode());
-                fireModelStructureChanged();
-            }
-
+            removeNode(e.getNode());
         }
 
         public void friendAdded(NodeManagerEvent e) {
-            if (hideOffline) {
-                if (e.getNode().isConnectedToNetwork()) {
-                    if (!friends.contains(e.getNode())) {
-                        friends.add(e.getNode());
-                    }
-                }
-            } else {
-                if (!friends.contains(e.getNode())) {
-                    friends.add(e.getNode());
-                }
-            }
-            sort();
-            fireModelStructureChanged();
+            addNode(e.getNode());
         }
 
         public void friendRemoved(NodeManagerEvent e) {
-            friends.remove(e.getNode());
-            fireModelStructureChanged();
+            removeNode(e.getNode());
         }
 
         public void settingsChanged(NodeManagerEvent e) {
@@ -307,5 +347,6 @@ SortedTableModel {
         public boolean fireInEventDispathThread() {
             return false;
         }
+
     }
 }

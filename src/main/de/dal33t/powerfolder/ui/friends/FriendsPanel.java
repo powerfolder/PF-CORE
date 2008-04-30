@@ -10,14 +10,12 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.ui.action.BaseAction;
+import de.dal33t.powerfolder.ui.action.ChangeFriendStatusAction;
 import de.dal33t.powerfolder.ui.builder.ContentPanelBuilder;
 import de.dal33t.powerfolder.ui.model.NodeManagerModel;
 import de.dal33t.powerfolder.util.PFUIPanel;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.DoubleClickAction;
-import de.dal33t.powerfolder.util.ui.PopupMenuOpener;
-import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
-import de.dal33t.powerfolder.util.ui.UIUtil;
+import de.dal33t.powerfolder.util.ui.*;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
@@ -48,15 +46,28 @@ public class FriendsPanel extends PFUIPanel {
      * the toggle button that indicates if the offline friends should be hidden
      * or not
      */
-    private JCheckBox hideOffline;
+    private JCheckBox hideOfflineCB;
+
+    /**
+     * the toggle button that indicates if all lan users should be displayed
+     * or not
+     */
+    private JCheckBox includeLanCB;
 
     // Actions
     private ChatAction chatAction;
     private Action findFriendsAction;
-    private RemoveFriendAction removeFriendAction;
+    private ChangeFriendStatusAction changeFriendStatusAction;
+    private SelectionModel memberSelectionModel;
+
 
     public FriendsPanel(Controller controller) {
         super(controller);
+
+        memberSelectionModel = new SelectionModel();
+        changeFriendStatusAction = new ChangeFriendStatusAction(controller,
+            memberSelectionModel);
+
     }
 
     public String getTitle() {
@@ -80,7 +91,6 @@ public class FriendsPanel extends PFUIPanel {
         // Actions
         chatAction = new ChatAction();
         findFriendsAction = getUIController().getFindFriendAction();
-        removeFriendAction = new RemoveFriendAction();
 
         quickinfo = new FriendsQuickInfoPanel(getController(), Translation
             .getTranslation("general.friendlist"));
@@ -121,20 +131,27 @@ public class FriendsPanel extends PFUIPanel {
     private JComponent createToolBar() {
         // Create toolbar
         ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
+        bar.addGridded(new JButton(findFriendsAction));
+        bar.addUnrelatedGap();
         bar.addGridded(new JButton(chatAction));
         bar.addRelatedGap();
-        bar.addGridded(new JButton(findFriendsAction));
-        bar.addRelatedGap();
-        bar.addGridded(new JButton(removeFriendAction));
+        bar.addGridded(new JButton(changeFriendStatusAction));
         bar.addRelatedGap();
 
         NodeManagerModel nmModel = getUIController().getNodeManagerModel();
-        hideOffline = BasicComponentFactory.createCheckBox(nmModel
+
+        hideOfflineCB = BasicComponentFactory.createCheckBox(nmModel
             .getHideOfflineUsersModel(), Translation
             .getTranslation("hideoffline.name"));
-        // hideOffline.setAction(nmModel.getHideOfflineUsersAction());
 
-        bar.addFixed(hideOffline);
+        bar.addFixed(hideOfflineCB);
+        bar.addRelatedGap();
+
+        includeLanCB = BasicComponentFactory.createCheckBox(nmModel
+            .getIncludeLanUsersModel(), Translation
+            .getTranslation("include_lan.name"));
+
+        bar.addFixed(includeLanCB);
         JPanel barPanel = bar.getPanel();
         barPanel.setBorder(Borders.DLU4_BORDER);
         return barPanel;
@@ -146,7 +163,7 @@ public class FriendsPanel extends PFUIPanel {
     private JPopupMenu createPopupMenu() {
         JPopupMenu popupMenu = SimpleComponentFactory.createPopupMenu();
         popupMenu.add(chatAction);
-        popupMenu.add(removeFriendAction);
+        popupMenu.add(changeFriendStatusAction);
         return popupMenu;
     }
 
@@ -184,10 +201,9 @@ public class FriendsPanel extends PFUIPanel {
             .getFriendsTableModel())
         {
             int[] selectedIndexes = friendsTable.getSelectedRows();
-            for (int i = 0; i < selectedIndexes.length; i++) {
-                int index = selectedIndexes[i];
+            for (int index : selectedIndexes) {
                 Object item = getUIController().getNodeManagerModel()
-                    .getFriendsTableModel().getDataAt(index);
+                        .getFriendsTableModel().getDataAt(index);
                 if (item instanceof Member) {
                     Member newFriend = (Member) item;
                     newFriend.setFriend(false, null);
@@ -209,17 +225,6 @@ public class FriendsPanel extends PFUIPanel {
 
         public void actionPerformed(ActionEvent e) {
             chatWithSelected();
-        }
-    }
-
-    /** The removes friends action for button and popup menu Item */
-    private class RemoveFriendAction extends BaseAction {
-        public RemoveFriendAction() {
-            super("removefriend", FriendsPanel.this.getController());
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            removeFriend();
         }
     }
 
@@ -268,7 +273,7 @@ public class FriendsPanel extends PFUIPanel {
      */
     private void updateActions() {
         chatAction.setEnabled(false);
-        removeFriendAction.setEnabled(false);
+        changeFriendStatusAction.setEnabled(false);
         int[] selectedIndexes = friendsTable.getSelectedRows();
 
         // only single selection for chat and with connected members
@@ -283,13 +288,13 @@ public class FriendsPanel extends PFUIPanel {
         }
 
         // if at least one member selected
-        for (int i = 0; i < selectedIndexes.length; i++) {
-            int index = selectedIndexes[i];
+        for (int index : selectedIndexes) {
             Object item = getUIController().getNodeManagerModel()
-                .getFriendsTableModel().getDataAt(index);
+                    .getFriendsTableModel().getDataAt(index);
             if (item instanceof Member) {
                 Member user = (Member) item;
-                removeFriendAction.setEnabled(user.isFriend());
+                changeFriendStatusAction.setEnabled(true);
+                memberSelectionModel.setSelection(user);
                 break;
             }
         }

@@ -45,6 +45,7 @@ public class NodeManagerModel extends PFUIComponent {
     private TreeNodeList notInFriendsTreeNodes;
     private FriendsNodeTableModel friendsTableModel;
     private ValueModel hideOfflineUsersModel;
+    private ValueModel includeLanUsersModel;
 
     private boolean expandedFriends;
 
@@ -66,6 +67,15 @@ public class NodeManagerModel extends PFUIComponent {
         hideOfflineUsersModel = PreferencesEntry.NODEMANAGERMODEL_HIDEOFFLINEFRIENDS
             .getModel(getController());
         hideOfflineUsersModel
+            .addValueChangeListener(new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    rebuildFriendslist();
+                }
+            });
+
+        includeLanUsersModel = PreferencesEntry.NODE_MANAGER_MODEL_INCLUDE_LAN_USERS
+            .getModel(getController());
+        includeLanUsersModel
             .addValueChangeListener(new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
                     rebuildFriendslist();
@@ -132,6 +142,13 @@ public class NodeManagerModel extends PFUIComponent {
     }
 
     /**
+     * @return if offline friends should be shown.
+     */
+    public ValueModel getIncludeLanUsersModel() {
+        return includeLanUsersModel;
+    }
+
+    /**
      * @return the tablemodel containing the friends
      */
     public FriendsNodeTableModel getFriendsTableModel() {
@@ -180,8 +197,13 @@ public class NodeManagerModel extends PFUIComponent {
         return (Boolean) hideOfflineUsersModel.getValue();
     }
 
+    private boolean isIncludeLanUsers() {
+        return (Boolean) includeLanUsersModel.getValue();
+    }
+
     private void rebuildFriendslist() {
         friendsTableModel.setHideOffline(isHideOfflineFriends());
+        friendsTableModel.setIncludeLan(isIncludeLanUsers());
         // setting changed
         Member[] friends = getController().getNodeManager().getFriends();
         // remove all:
