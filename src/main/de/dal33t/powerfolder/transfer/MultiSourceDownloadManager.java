@@ -12,12 +12,10 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.RequestPart;
 import de.dal33t.powerfolder.transfer.Transfer.TransferState;
-import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.Range;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.delta.FilePartsRecord;
-import de.dal33t.powerfolder.util.delta.FilePartsState;
 import de.dal33t.powerfolder.util.delta.FilePartsState.PartState;
 
 /**
@@ -38,10 +36,8 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
         super(controller, file, automatic);
     }
 
-    public synchronized void addSource(Download download) {
-        Reject.ifNull(download, "Download is null!");
-        Reject.ifFalse(download.isCompleted()
-            || allowsSourceFor(download.getPartner()), "Illegal addSource() call!!");
+    @Override
+    protected void addSourceImpl(Download download) {
 
         // log().debug("Adding source: " + download);
 
@@ -56,53 +52,18 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
             setAutomatic(false);
         }
 
-        // Was this download restored from database ?
-        if (download.isCompleted()) {
-            setCompleteOnLoad();
-            return;
-        }
-
-        // Don't really request data for empty files
-        if (getFileInfo().getSize() == 0) {
-            log()
-                .debug(
-                    "Empty file detected, setting transfers completed immediately.");
-            setCompleted();
-            return;
-        }
-
-        if (isCompleted()) {
-            return;
-        }
-
         if (isUsingPartRequests()
             || Util.usePartRequests(getController(), download))
         {
             usingPartRequests = true;
         }
-        
-        // At this point we need a "valid" filePartsState
-        if (filePartsState == null && !isUsingPartRequests()) {
-            setFilePartsState(new FilePartsState(getFileInfo().getSize()));
-        }
-
-        Range r = filePartsState == null ? null : filePartsState
-            .findFirstPart(PartState.NEEDED);
-        if (r != null) {
-            download.request(r.getStart());
-        } else {
-            download.request(0);
-        }
-
-        sendPartRequests();
-
-        // log().debug("Now having " + downloads.values().size() + " sources!");
     }
 
     public boolean allowsSourceFor(Member member) {
         Reject.ifNull(member, "Member is null");
-        return downloads.isEmpty() || (member.isSupportingPartRequests())
-            && isUsingPartRequests();
+        return downloads.isEmpty() || (member.isSupportingPartRequests()
+            && isUsingPartRequests()
+            && Util.allowSwarming(getController(), member.isOnLAN()));
     }
 
     public Download getSourceFor(Member member) {
@@ -123,11 +84,13 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
         return !downloads.isEmpty();
     }
 
-    public synchronized void removeSource(Download download) {
+    @Override
+    protected void removeSourceImpl(Download download) {
         Reject.ifNull(download, "Download is null");
 
         if (downloads.remove(download.getPartner().getInfo()) == null) {
-            log().error("Removed non-managed download:" + download);
+            log().error("Removed non-managed download:" + download + " " + download.getPartner().getInfo());
+            throw new RuntimeException(downloads.toString());
         }
         // log().debug("Sources left: " + downloads.values().size());
         // Maybe we're done for, update the tempfile just in case
@@ -135,7 +98,7 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
             updateTempFile();
             return;
         }
-        
+
         if (isUsingPartRequests()) {
             // All pending requests from that download are void.
             if (filePartsState != null) {
@@ -144,22 +107,12 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
                         PartState.NEEDED);
                 }
             }
-            if (remotePartRecord == null && pendingPartRecordFrom == download) {
-                pendingPartRecordFrom = null;
-                requestFilePartsRecord(null);
-            }
         }
-        sendPartRequests();
-    }
-
-    public void setBroken() {
-        setBroken(TransferProblem.BROKEN_DOWNLOAD, "");
     }
 
     @Override
     public String toString() {
-        return Debug.detailedObjectState(this);
-//        return super.toString() + "; #sources=" + downloads.values().size();
+        return super.toString() + "; #sources=" + downloads.values().size();
     }
 
     /**
@@ -170,7 +123,8 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
      */
     protected Download findPartRecordSource(Download download) {
         for (Download d : downloads.values()) {
-            if (d.isStarted() && !d.isBroken() && d.usePartialTransfers()) {
+            if (d.isStarted() && !d.isBroken() && d.usePartialTransfers()
+                && Util.allowDeltaSync(getController(), d.getPartner().isOnLAN())) {
                 download = d;
                 break;
             }
@@ -216,20 +170,10 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
         setStarted();
     }
 
-    protected synchronized void sendPartRequests() {
-        if (isDone()) {
-            return;
-        }
-        // If we aren't allowed to send requests, just don't do it
-        if (!isUsingPartRequests()) {
-            return;
-        }
-        // We also won't request while waiting for part state initialization
-        if (filePartsState == null) {
-            return;
-        }
-        
-//        log().debug("Sending part requests: " + filePartsState.countPartStates(filePartsState.getRange(), PartState.NEEDED));
+    protected void sendPartRequests() {
+        // log().debug("Sending part requests: " +
+        // filePartsState.countPartStates(filePartsState.getRange(),
+        // PartState.NEEDED));
 
         setTransferState(TransferState.DOWNLOADING);
 
@@ -249,8 +193,6 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
                 break;
             }
         }
-
-        setStarted();
     }
 
     private boolean findAndRequestDownloadFor(Range range) {
@@ -259,13 +201,30 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
                 continue;
             }
             if (d.requestPart(range)) {
+                if (d.getPendingRequests().isEmpty()) {
+                    throw new AssertionError("Pending list is emtpy!");
+                }
                 return true;
             }
         }
         return false;
     }
 
-    private boolean isUsingPartRequests() {
+    @Override
+    protected boolean isUsingPartRequests() {
         return usingPartRequests;
+    }
+
+    @Override
+    protected boolean isUsingDeltaSync() {
+        for (Download d: downloads.values()) {
+            if (d.isBroken() || d.isCompleted()) {
+                continue;
+            }
+            if (Util.allowDeltaSync(getController(), d.getPartner().isOnLAN())) {
+                return true;
+            }
+        }
+        return false;
     }
 }

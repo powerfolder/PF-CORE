@@ -23,6 +23,8 @@ public interface DownloadManager {
      * Aborts the download and deletes any temporary file used.
      */
     void abortAndCleanup();
+    
+    void stop();
 
     /**
      * Called when a new download source is available.
@@ -149,11 +151,6 @@ public interface DownloadManager {
      * @param download
      */
     void removeSource(Download download);
-
-    /**
-     * Shuts down the download and frees resources taken by it.
-     */
-    void shutdown();
 
     /**
      * @return true if this manager is done, either by completing the file or by being aborted/broken

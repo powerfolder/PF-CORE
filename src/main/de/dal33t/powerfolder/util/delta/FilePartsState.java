@@ -93,6 +93,9 @@ public class FilePartsState implements Serializable {
 	}
 	
 	public synchronized boolean isCompleted() {
+	    if (parts.getPartionedRange().getLength() == 0) {
+	        return true;
+	    }
 		Range r = parts.search(parts.getPartionedRange(), PartState.AVAILABLE);
 		if (r == null) {
 			return false;

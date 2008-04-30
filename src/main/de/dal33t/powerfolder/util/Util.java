@@ -146,12 +146,17 @@ public class Util {
         return a.equals(b);
     }
 
+    public static boolean allowSwarming(Controller c, boolean partnerIsOnLan) {
+        Reject.ifNull(c, "Controller is null");
+        return (ConfigurationEntry.USE_SWARMING_ON_INTERNET.getValueBoolean(c) && !partnerIsOnLan)
+            || (ConfigurationEntry.USE_SWARMING_ON_LAN.getValueBoolean(c) && partnerIsOnLan);
+    }
+    
     public static boolean allowPartRequests(Controller c, boolean partnerIsOnLan)
     {
         Validate.notNull(c);
         return allowDeltaSync(c, partnerIsOnLan)
-            || (ConfigurationEntry.USE_SWARMING_ON_INTERNET.getValueBoolean(c) && !partnerIsOnLan)
-            || (ConfigurationEntry.USE_SWARMING_ON_LAN.getValueBoolean(c) && partnerIsOnLan);
+            || allowSwarming(c, partnerIsOnLan);
     }
 
     public static boolean allowDeltaSync(Controller c, boolean partnerIsOnLan) {

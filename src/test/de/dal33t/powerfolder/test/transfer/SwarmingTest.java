@@ -14,7 +14,6 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.transfer.TransferManager;
-import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.MultipleControllerTestCase;
@@ -65,6 +64,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
     public void testFiveSwarmDownload() throws IOException {
         nSetupControllers(5);
         setConfigurationEntry(ConfigurationEntry.USE_SWARMING_ON_LAN, "true");
+        setConfigurationEntry(ConfigurationEntry.DOWNLOADLIMIT_LAN, "100");
         connectAll();
 
         joinNTestFolder(SyncProfile.MANUAL_DOWNLOAD);
@@ -80,7 +80,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
         TestHelper.waitForCondition(20, new Condition() {
             public boolean reached() {
                 for (Controller c: getControllers()) {
-                    if (c == getContoller("5")) {
+                    if (c == getContoller("4")) {
                         continue;
                     }
                     if (c.getFolderRepository().getFolders()[0].getKnownFilesCount() != 1) {
@@ -91,24 +91,24 @@ public class SwarmingTest extends MultipleControllerTestCase {
             }
         });
 
-        setConfigurationEntry(ConfigurationEntry.UPLOADLIMIT_LAN, "50");
-        getFolderOf("5").setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
+        getFolderOf("4").setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
         
         TestHelper.waitForCondition(20, new ConditionWithMessage() {
             public boolean reached() {
-                DownloadManager man = getContoller("5").getTransferManager().getActiveDownload(fInfo);
+                DownloadManager man = getContoller("4").getTransferManager().getActiveDownload(fInfo);
                 return man != null && man.getSources().size() == 4;
             }
 
             public String message() {
-                return "" + getContoller("5").getTransferManager().getActiveDownload(fInfo);
+                return "" + getContoller("4").getTransferManager().getActiveDownload(fInfo);
             }
         });
 
         TestHelper.waitForCondition(20, new Condition() {
             public boolean reached() {
-                DownloadManager man = getContoller("5").getTransferManager().getActiveDownload(fInfo);
+                DownloadManager man = getContoller("4").getTransferManager().getActiveDownload(fInfo);
                 for (Download src: man.getSources()) {
+                    System.err.println(src + " " + src.getPendingRequests().size());
                     if (src.getPendingRequests().isEmpty()) {
                         return false;
                     }
@@ -119,7 +119,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
 
         TestHelper.waitForCondition(20, new Condition() {
             public boolean reached() {
-                DownloadManager man = getContoller("5").getTransferManager().getActiveDownload(fInfo);
+                DownloadManager man = getContoller("4").getTransferManager().getActiveDownload(fInfo);
                 for (Download dl: man.getSources()) {
                     if (dl.getCounter().getBytesTransferred() <= 0) {
                         return false;
@@ -128,12 +128,12 @@ public class SwarmingTest extends MultipleControllerTestCase {
                 return true;
             }
         });
-        assertEquals(1, getContoller("5").getTransferManager().getActiveDownloadCount());
+        assertEquals(1, getContoller("4").getTransferManager().getActiveDownloadCount());
 
         disconnectAll();
 
         // Was auto download
-        assertEquals(0, getContoller("5").getTransferManager().getPendingDownloads().size());
+        assertEquals(0, getContoller("4").getTransferManager().getPendingDownloads().size());
         
         connectAll();
 
@@ -141,21 +141,22 @@ public class SwarmingTest extends MultipleControllerTestCase {
         
         TestHelper.waitForCondition(20, new ConditionWithMessage() {
             public boolean reached() {
-                return getContoller("5").getTransferManager().countCompletedDownloads() == 1;
+                return getContoller("4").getTransferManager().countCompletedDownloads() == 1;
             }
 
             public String message() {
-                return "" + getContoller("5").getTransferManager().countCompletedDownloads();
+                return "" + getContoller("4").getTransferManager().countCompletedDownloads();
             }
         });
         DownloadManager man;
-        man = getContoller("5").getTransferManager().getCompletedDownloadsCollection().get(0);
+        man = getContoller("4").getTransferManager().getCompletedDownloadsCollection().get(0);
         for (Download dl: man.getSources()) {
             assertTrue(dl.getCounter().getBytesTransferred() > 0);
         }
     }
     
-    public void testFileAlterations() {
+    public void testFileAlterations() throws IOException {
+        nSetupControllers(6);
         setConfigurationEntry(ConfigurationEntry.USE_SWARMING_ON_LAN, "true");
 
         connectAll();
@@ -265,7 +266,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
                 scanFolder(getFolderOf("" + i));
             }
     
-            TestHelper.waitForCondition(numC * 4, new ConditionWithMessage() {
+            TestHelper.waitForCondition(numC * 10, new ConditionWithMessage() {
                 public boolean reached() {
                     for (int i = 0; i < numC; i++) {
                         if (getFolderOf("" + i).getKnownFilesCount() != 1) {
@@ -303,9 +304,6 @@ public class SwarmingTest extends MultipleControllerTestCase {
         }
         final int version = newestVersion;
         
-        setConfigurationEntry(ConfigurationEntry.DOWNLOADLIMIT_LAN, "500");
-        setConfigurationEntry(ConfigurationEntry.UPLOADLIMIT_LAN, "500");
-
         TestHelper.waitForCondition(numC * 10, new ConditionWithMessage() {
             public boolean reached() {
                 for (int i = 0; i < numC; i++) {

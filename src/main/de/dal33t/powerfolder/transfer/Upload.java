@@ -16,6 +16,7 @@ import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.message.AbortUpload;
 import de.dal33t.powerfolder.message.FileChunk;
 import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.message.ReplyFilePartsRecord;
@@ -84,8 +85,10 @@ public class Upload extends Transfer {
             return;
         }
 
-        if (!isSupportingPartRequests()) {
-            log().warn("Downloader sent a PartRequest (Protocol violation). Upload is not started but requests will be stored until it is.");
+        if (!Util.usePartRequests(getController(), this)) {
+            log().warn("Downloader sent a PartRequest (Protocol violation). Aborting.");
+            getPartner().sendMessagesAsynchron(new AbortUpload(pr.getFile()));
+            return;
         }
         // Requests for different files on the same transfer connection are not
         // supported currently
@@ -653,14 +656,4 @@ public class Upload extends Transfer {
                 + Convert.convertToGlobalPrecision(f.lastModified()));
         }
     }
-
-    /**
-     * Returns true if part transfers are being used
-     * 
-     * @return
-     */
-    private boolean isSupportingPartRequests() {
-        return Util.usePartRequests(getController(), this);
-    }
-
 }

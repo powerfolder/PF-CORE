@@ -14,7 +14,6 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
 
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
@@ -27,7 +26,6 @@ import de.dal33t.powerfolder.transfer.Transfer.TransferState;
 import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.FileCheckWorker;
 import de.dal33t.powerfolder.util.FileUtils;
-import de.dal33t.powerfolder.util.Loggable;
 import de.dal33t.powerfolder.util.Range;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.TransferCounter;
@@ -49,7 +47,16 @@ public abstract class AbstractDownloadManager extends PFComponent implements
     DownloadManager
 {
     private enum InternalState {
-        ACTIVE, COMPLETED, BROKEN, ABORTED;
+        WAITING_FOR_SOURCE,
+        WAITING_FOR_UPLOAD_READY,
+        WAITING_FOR_FILEPARTSRECORD,
+        
+        COMPLETED, BROKEN, ABORTED, STOPPED, 
+        
+        /**
+         * Receive chunks in linear fashion from one source only 
+         */
+        PASSIVE_DOWNLOAD, ACTIVE_DOWNLOAD, MATCHING_AND_COPYING, CHECKING_FILE_VALIDITY;
     }
 
     /**
@@ -70,12 +77,11 @@ public abstract class AbstractDownloadManager extends PFComponent implements
     private Controller controller;
     private RandomAccessFile tempFile = null;
 
-    private InternalState state = InternalState.ACTIVE;
+    private InternalState state = InternalState.WAITING_FOR_SOURCE;
 
-    private boolean shutdown;
     private boolean started;
-
-    private Future<?> worker;
+    
+    private Thread worker;
 
     public AbstractDownloadManager(Controller controller, FileInfo file,
         boolean automatic) throws IOException
@@ -85,36 +91,27 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         this.fileInfo = file;
         this.automatic = automatic;
 
-        init(controller);
+        this.controller = controller;
+        
+        init();
     }
 
-    public synchronized void abort() {
-        if (isDone()) {
-            return;
+    public void abort() {
+//        illegalState("abort");
+        switch (state) {
+            default:
+                setAborted(false);
+                break;
         }
-        setAborted();
-
-        for (Download d : getDownloads()) {
-            d.abort();
-        }
-//        Not required since the aborts above handle it
-//        TODO Move some abort code of TransferManager in here
-//        shutdown();
-        getController().getTransferManager().downloadAborted(this);
-
     }
-
-    public synchronized void abortAndCleanup() {
-        if (isDone()) {
-            return;
+    
+    public void abortAndCleanup() {
+//        illegalState("abortAndCleanup");
+        switch (state) {
+            default:
+                setAborted(true);
+            break;
         }
-        abort();
-
-        if (!getTempFile().delete()) {
-            log().error("Failed to delete temporary file:" + getTempFile());
-        }
-
-        deleteMetaData();
     }
 
     public Controller getController() {
@@ -179,9 +176,10 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             case ABORTED :
             case BROKEN :
             case COMPLETED :
+            case STOPPED:
                 return true;
         }
-        return shutdown;
+        return false;
     }
 
     public synchronized boolean isRequestedAutomatic() {
@@ -194,49 +192,42 @@ public abstract class AbstractDownloadManager extends PFComponent implements
 
     public synchronized void readyForRequests(Download download) {
         Reject.ifNull(download, "Download is null!!!");
-        if (isDone()) {
-            log()
-                .info(
-                    "Got ready download, but manager is done. Aborting "
-                        + download);
-            download.abort();
-            return;
+        switch (state) {
+            case ACTIVE_DOWNLOAD:
+                sendPartRequests();
+                break;
+            case WAITING_FOR_UPLOAD_READY:
+                if (isNeedingFilePartsRecord()) {
+                    requestFilePartsRecord(download);
+                    setState(InternalState.WAITING_FOR_FILEPARTSRECORD);
+                } else {
+                    if (filePartsState == null) {
+                        setFilePartsState(new FilePartsState(fileInfo.getSize()));
+                    }
+                    log().debug("Not requesting record for this download.");
+                    startActiveDownload();
+                }
+                break;
+            default:
+                protocolStateError(download, "readyForRequests");
+            break;
         }
-        if (isNeedingFilePartsRecord()) {
-            requestFilePartsRecord(download);
-        }
-        
-        sendPartRequests();
     }
 
-    public synchronized void receivedChunk(Download download, FileChunk chunk) {
-        Reject.noNullElements(download, chunk);
-        // log().debug("Received " + chunk + " from " + download);
+    protected abstract boolean isUsingDeltaSync();
 
-        // Note: None of these checks should throw an exception.
-        // We can't rely on the remote side to send the
-        // right thing at the right time!
-        if (isDone()) {
-            return;
-        }
+    private void protocolStateError(Download cause, String operation) {
+        String msg = "PROTOCOL ERROR caused by " + cause + ": " + operation + " not allowed in state " + state; 
+        log().warn(msg);
+        getController().getTransferManager().setBroken(cause, TransferProblem.BROKEN_DOWNLOAD);
+    }
 
+    protected void storeFileChunk(Download download, FileChunk chunk) {
         if (!getDownloads().contains(download)) {
             log().warn("Received chunk from download which is not source: " + download);
             return;
         }
         
-        if (filePartsState == null) {
-            log().warn(
-                "Not ready to receive data, but received " + chunk + " from "
-                    + download + " detail:" + Debug.detailedObjectState(this));
-            return;
-        }
-
-        if (filePartsState.isCompleted()) {
-            log().error("Received chunk while file was completed already!");
-            return;
-        }
-
         setStarted();
 
         try {
@@ -265,138 +256,116 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         if (stat != null) {
             stat.getDownloadCounter().chunkTransferred(chunk);
         }
-
-        // log().debug("Remaining: " + (fileInfo.getSize() - avs) + " " +
-        // filePartsState.isCompleted());
-
-        // Maybe we're done already ?
-        if (filePartsState.isCompleted()) {
-            log().debug(
-                "Download of " + fileInfo
-                    + " completed, awaiting verification.");
-            // Debug.dumpCurrentStackTrace();
-            checkCompleted();
-            return;
+    }
+    
+    public synchronized void receivedChunk(Download download, FileChunk chunk) {
+        Reject.noNullElements(download, chunk);
+        switch (state) {
+            case ABORTED:
+            case BROKEN:
+                log().debug("Aborted download of " + fileInfo + " received chunk from " + download);
+                download.abort();
+                break;
+            case PASSIVE_DOWNLOAD:
+                storeFileChunk(download, chunk);
+                if (filePartsState.isCompleted()) {
+                    setCompleted();
+                }
+                break;
+            case ACTIVE_DOWNLOAD:
+                storeFileChunk(download, chunk);
+                if (filePartsState.isCompleted()) {
+                    checkFileValidity();
+                } else {
+                    sendPartRequests();
+                }
+                break;
+            default:
+                protocolStateError(download, "receivedChunk");
+            break;
         }
+    }
 
-        // Finally request more if needed.
-        sendPartRequests();
+    /**
+     * 
+     */
+    private void checkFileValidity() {
+        setState(InternalState.CHECKING_FILE_VALIDITY);
+        worker = new Thread(new Runnable() {
+            public void run() {
+                if (checkCompleted()) {
+                    synchronized (AbstractDownloadManager.this) {
+                        setCompleted();
+                    }
+                } else {
+                    synchronized (AbstractDownloadManager.this) {
+                        startActiveDownload();
+                    }
+                }
+            }
+        }, "Downloadmanager file checker");
+        worker.start();
     }
 
     public synchronized void receivedFilePartsRecord(Download download,
         final FilePartsRecord record)
     {
         Reject.noNullElements(download, record);
-        if (isDone()) {
-            return;
-        }
-        if (remotePartRecord != null) {
-            log().warn("Received multiple part records!");
-            return;
-        }
-        setStarted();
-
-        log().debug("Received FilePartsRecord.");
-        if (remotePartRecord != null) {
-            log().warn("Received unrequested FilePartsRecord from " + download);
-            if (!remotePartRecord.equals(record)) {
-                log().error("The new and the old record differ!!");
-            }
-        }
-        remotePartRecord = record;
-        worker = getController().getThreadPool().submit(new Runnable() {
-            public void run() {
-                try {
-                    File src = getFile();
-
-                    setTransferState(TransferState.MATCHING);
-                    Callable<List<MatchInfo>> mInfoWorker = new MatchResultWorker(
-                        record, src)
-                    {
-
-                        @Override
-                        protected void setProgress(int percent) {
-                            setTransferState(percent / 100.0);
-                        }
-                    };
-                    List<MatchInfo> mInfoRes = null;
-                    mInfoRes = mInfoWorker.call();
-
-                    // log().debug("Records: " + record.getInfos().length);
-                    log().debug(
-                        "Matches: " + mInfoRes.size() + " which are "
-                            + (record.getPartLength() * mInfoRes.size())
-                            + " bytes (bit less maybe).");
-
-                    setTransferState(TransferState.COPYING);
-                    Callable<FilePartsState> pStateWorker = new MatchCopyWorker(
-                        src, getTempFile(), record, mInfoRes)
-                    {
-                        @Override
-                        protected void setProgress(int percent) {
-                            setTransferState(percent / 100.0);
-                        }
-                    };
-                    FilePartsState state = pStateWorker.call();
-                    synchronized (AbstractDownloadManager.this) {
-                        if (state.getFileLength() != fileInfo.getSize()) {
-                            setBroken(TransferProblem.GENERAL_EXCEPTION, "Local concurrent modification of downloading file.");
-                            return;
-                        }
-                        
-                        setFilePartsState(state);
-                        counter = new TransferCounter(filePartsState
-                            .countPartStates(filePartsState.getRange(),
-                                PartState.AVAILABLE), fileInfo.getSize());
-
-                        if (filePartsState.isCompleted()) {
-                            log().debug(
-                                "Download completed (no change detected): "
-                                    + this);
-                            checkCompleted();
-                        } else {
-                            log().info(
-                                "Matched file not complete, requesting...");
-                            sendPartRequests();
+        switch (state) {
+            case WAITING_FOR_FILEPARTSRECORD:
+                log().debug("Matching and copying...");
+                setState(InternalState.MATCHING_AND_COPYING);
+                remotePartRecord = record;
+                worker = new Thread(new Runnable() {
+                    public void run() {
+                        try {
+                            matchAndCopyData();
+                            synchronized (AbstractDownloadManager.this) {
+                                if (filePartsState.isCompleted()) {
+                                    checkFileValidity();
+                                } else {
+                                    startActiveDownload();
+                                }
+                            }
+                        } catch (BrokenDownloadException e) {
+                            synchronized (AbstractDownloadManager.this) {
+                                setBroken(TransferProblem.IO_EXCEPTION, e.toString());
+                            }
+                        } catch (InterruptedException e) {
+//                            TODO Maybe it should be setBroken
+//                            setBroken(TransferProblem.GENERAL_EXCEPTION, e.toString());
                         }
                     }
-                } catch (NoSuchAlgorithmException e) {
-                    log().error("SHA Digest not found. Fatal error", e);
-                    throw new RuntimeException(
-                        "SHA Digest not found. Fatal error", e);
-                } catch (FileNotFoundException e) {
-                    log().error(e);
-                    setBroken(TransferProblem.FILE_NOT_FOUND_EXCEPTION, e
-                        .getMessage());
-                } catch (IOException e) {
-                    log().error(e);
-                    setBroken(TransferProblem.IO_EXCEPTION, e.getMessage());
-                } catch (InterruptedException e) {
-                    log().verbose(e);
-                } catch (Exception e) {
-                    log().error(e);
-                    setBroken(TransferProblem.GENERAL_EXCEPTION, e.getMessage());
-                }
-            }
-        });
+                }, "Downloadmanager matching and copying");
+                worker.start();
+                break;
+            default:
+                protocolStateError(download, "receivedFilePartsRecord");
+            break;
+        }
     }
 
+    protected void startActiveDownload() {
+        setState(InternalState.ACTIVE_DOWNLOAD);
+        
+        log().debug("Requesting parts");
+        sendPartRequests();
+    }
+
+    public synchronized void stop() {
+        setState(InternalState.STOPPED);
+        shutdown();
+    }
+    
     /**
      * Releases resources not required anymore
      */
-    public synchronized void shutdown() {
-        if (shutdown) {
-            return;
-        }
-        log().debug("Shutting down");
-        if (worker != null) {
-            worker.cancel(true);
-            if (!worker.isDone()) {
-                log().error("Couldn't stop current worker!");
-            }
-        }
-        shutdown = true;
+    protected void shutdown() {
+        log().debug("Shutting down " + fileInfo);
         try {
+            if (worker != null) {
+                worker.interrupt();
+            }
             if (tempFile != null) {
                 // log().error("Closing temp file!");
                 tempFile.close();
@@ -421,70 +390,55 @@ public abstract class AbstractDownloadManager extends PFComponent implements
 
     @Override
     public String toString() {
-        return "[" + getClass().getName() + "; super.toString()= "
-            + super.toString() + " file=" + getFileInfo() + "; tempFileRAF: "
+        return "[" + getClass().getSimpleName() + "; state= "
+            + state + " file=" + getFileInfo() + "; tempFileRAF: "
             + tempFile + "; tempFile: " + getTempFile() + "; broken: "
             + isBroken() + "; completed: " + isCompleted() + "; aborted: "
-            + isAborted() + "; shutdown: " + shutdown;
+            + isAborted();
     }
 
-    protected synchronized void checkCompleted() {
-        log().debug("Checking for completed " + fileInfo);
-        if (isDone()) {
-            return;
-        }
+    protected boolean checkCompleted() {
         setTransferState(TransferState.VERIFYING);
-        log().debug("Verifying file hash for " + this);
-        worker = getController().getThreadPool().submit(new Runnable() {
-            public void run() {
-                try {
-                    Callable<Boolean> fileChecker = null;
-                    synchronized (AbstractDownloadManager.this) {
-                        if (remotePartRecord != null) {
-                            fileChecker = new FileCheckWorker(getTempFile(),
-                                MessageDigest.getInstance("MD5"),
-                                remotePartRecord.getFileDigest())
-                            {
-                                @Override
-                                protected void setProgress(int percent) {
-                                    setTransferState(percent / 100.0);
-                                }
-                            };
-                        }
+//        log().debug("Verifying file hash for " + this);
+        try {
+            Callable<Boolean> fileChecker = null;
+            if (remotePartRecord != null) {
+                fileChecker = new FileCheckWorker(getTempFile(),
+                    MessageDigest.getInstance("MD5"),
+                    remotePartRecord.getFileDigest())
+                {
+                    @Override
+                    protected void setProgress(int percent) {
+                        setTransferState(percent / 100.0);
                     }
-                    // If we don't have a record, the file is assumed to be
-                    // "valid"
-                    if (fileChecker == null || fileChecker.call()) {
-                        synchronized (AbstractDownloadManager.this) {
-                            if (!isDone()) {
-                                setCompleted();
-                            }
-                        }
-                    } else {
-                        log().warn(
-                            "Checking FAILED, file will be re-downloaded!");
-                        synchronized (AbstractDownloadManager.this) {
-                            counter = new TransferCounter(0, fileInfo.getSize());
-                            filePartsState.setPartState(Range.getRangeByLength(
-                                0, filePartsState.getFileLength()),
-                                PartState.NEEDED);
-                            sendPartRequests();
-                        }
-                    }
-                } catch (NoSuchAlgorithmException e) {
-                    // If this error occurs, no downloads will ever succeed.
-                    log().error(e);
-                    throw new RuntimeException(e);
-                } catch (InterruptedException e) {
-                    log().verbose(e);
-                } catch (Exception e) {
-                    log().error(e);
-                    setBroken(TransferProblem.GENERAL_EXCEPTION, e.getMessage());
-                } finally {
-                    log().debug("DONE - Validating file hash.");
-                }
+                };
             }
-        });
+            // If we don't have a record, the file is assumed to be
+            // "valid"
+            if (fileChecker == null || fileChecker.call()) {
+                return true;
+            }
+            log().warn(
+                "Checking FAILED, file will be re-downloaded!");
+            counter = new TransferCounter(0, fileInfo.getSize());
+            filePartsState.setPartState(Range.getRangeByLength(
+                0, filePartsState.getFileLength()),
+                PartState.NEEDED);
+            
+            return false;
+        } catch (NoSuchAlgorithmException e) {
+            // If this error occurs, no downloads will ever succeed.
+            log().error(e);
+            throw new RuntimeException(e);
+        } catch (InterruptedException e) {
+            log().verbose(e);
+        } catch (Exception e) {
+            log().error(e);
+            setBroken(TransferProblem.GENERAL_EXCEPTION, e.getMessage());
+        } finally {
+//            log().debug("DONE - Validating file hash.");
+        }
+        return false;
     }
 
     protected abstract Collection<Download> getDownloads();
@@ -493,10 +447,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         return fileInfo.getDiskFile(getController().getFolderRepository());
     }
 
-    protected void init(Controller controller) throws IOException {
-        Reject.ifNull(controller, "Controller is null");
-        this.controller = controller;
-
+    protected void init() throws IOException {
         // Check for valid values!
         Reject.ifNull(fileInfo, "fileInfo is null");
 
@@ -524,14 +475,6 @@ public abstract class AbstractDownloadManager extends PFComponent implements
 
         loadMetaData();
 
-        // Check if we won't create a filePartsState later and haven't got one
-        // from loading
-        if (!isNeedingFilePartsRecord() && filePartsState == null) {
-            log().verbose(
-                "Won't send FPR request: Minimum requirements not fulfilled!");
-            setFilePartsState(new FilePartsState(fileInfo.getSize()));
-        }
-
         tempFile = new RandomAccessFile(getTempFile(), "rw");
     }
 
@@ -549,44 +492,27 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         automatic = auto;
     }
 
-    protected synchronized void setBroken(TransferProblem problem,
+    protected void setBroken(TransferProblem problem,
         String message)
     {
-        if (isDone()) {
-            log().warn("Multiple calls to setBroken()");
-            return;
-        }
-        state = InternalState.BROKEN;
-
-        for (Download d : getDownloads()) {
-            getController().getTransferManager().setBroken(d, problem, message);
-        }
+        shutdown();
+        log().debug("Download broken: " + fileInfo);
+        setState(InternalState.BROKEN);
 
         getController().getTransferManager().setBroken(this, problem, message);
-        shutdown();
     }
 
-    protected synchronized void setCompleted() {
-        if (isDone()) {
-            throw new IllegalStateException("Already done");
-        }
-        state = InternalState.COMPLETED;
-
+    protected void setCompleted() {
+        setState(InternalState.COMPLETED);
+        log().debug("Completed download of " + fileInfo + ".");
+        
         shutdown();
         deleteMetaData();
 
         getController().getTransferManager().setCompleted(this);
-
-        for (Download d : getDownloads()) {
-            getController().getTransferManager().setCompleted(d);
-        }
     }
 
-    protected synchronized void setCompleteOnLoad() {
-        state = InternalState.COMPLETED;
-    }
-
-    protected void setStarted() {
+    protected synchronized void setStarted() {
         started = true;
     }
 
@@ -649,7 +575,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         }
     }
 
-    private boolean isAborted() {
+    private synchronized boolean isAborted() {
         return state == InternalState.ABORTED;
     }
 
@@ -739,6 +665,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         try {
             List<Object> list = new LinkedList<Object>();
             if (filePartsState != null) {
+                filePartsState.purgePending();
                 list.add(filePartsState);
             }
             if (remotePartRecord != null) {
@@ -750,14 +677,214 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         }
     }
 
-    private void setAborted() {
-        state = InternalState.ABORTED;
+    private void setAborted(boolean cleanup) {
+        shutdown();
+
+        log().debug("Download aborted: " + fileInfo);
+        synchronized (AbstractDownloadManager.this) {
+            setState(InternalState.ABORTED);
+        }
+        if (cleanup) {
+            try {
+                killTempFile();
+            } catch (FileNotFoundException e) {
+                log().error(e);
+            } catch (IOException e) {
+                log().error(e);
+            }
+            deleteMetaData();
+        }
+        
+//        Not required since the aborts above handle it
+//        TODO Move some abort code of TransferManager in here
+//        shutdown();
+        getController().getTransferManager().downloadAborted(this);
     }
 
+    private Exception tmp;
     protected synchronized void setFilePartsState(FilePartsState state) {
         if (filePartsState != null) {
-            throw new IllegalStateException("Partstate already set!");
+            log().error(new IllegalStateException("Partstate already set!", tmp));
+            throw new IllegalStateException("Partstate already set!", tmp);
         }
+        tmp = new RuntimeException();
         filePartsState = state;
+    }
+    
+    public synchronized void addSource(Download download) {
+        Reject.ifNull(download, "Download is null!");
+        Reject.ifFalse(download.isCompleted()
+            || allowsSourceFor(download.getPartner()), "Illegal addSource() call!!");
+        switch (state) {
+            case ACTIVE_DOWNLOAD:
+                addSourceImpl(download);
+                sendPartRequests();
+                break;
+            case WAITING_FOR_UPLOAD_READY:
+            case WAITING_FOR_FILEPARTSRECORD:
+                addSourceImpl(download);
+                break;
+            case WAITING_FOR_SOURCE:
+                addSourceImpl(download);
+                long offset = 0;
+                if (filePartsState != null) {
+                    if (filePartsState.isCompleted()) {
+                        // Completed already ?
+                        setCompleted();
+                        break;
+                    }
+                    Range range = filePartsState.findFirstPart(PartState.NEEDED);
+                    if (range != null) {
+                        offset = range.getStart();
+                    } else {
+                        if (filePartsState.isCompleted() ||
+                            filePartsState.findFirstPart(PartState.PENDING) != null) {
+                            log().error(new AssertionError("FILEPARTSSTATE ERROR!"));
+                            throw new AssertionError("FILEPARTSSTATE ERROR!");
+                        }
+                    }
+                }
+                download.request(offset);
+                if (isUsingPartRequests()) {
+                    setState(InternalState.WAITING_FOR_UPLOAD_READY);
+                } else {
+                    setState(InternalState.PASSIVE_DOWNLOAD);
+                    if (filePartsState == null) {
+                        setFilePartsState(new FilePartsState(fileInfo.getSize()));
+                    }
+                }
+                break;
+            default:
+                illegalState("addSource");
+            break;
+        }
+    }
+    
+    private void setState(InternalState newState) {
+        if (!Thread.holdsLock(this)) {
+            log().error(new RuntimeException("NOT HOLDING LOCK WHILE SETTING STATE!"));
+            throw new RuntimeException("NOT HOLDING LOCK WHILE SETTING STATE!");
+        }
+        switch (newState) {
+            case PASSIVE_DOWNLOAD:
+                if (getDownloads().isEmpty()) {
+                    log().error(new AssertionError("old state: " + state + " - new state: " + newState + " not possible: no sources!"));
+                    throw new AssertionError("old state: " + state + " - new state: " + newState + " not possible: no sources!");
+                }
+                break;
+        }
+//        log().warn("STATE " + newState + " for " + fileInfo);
+        state = newState;
+    }
+
+    protected abstract boolean isUsingPartRequests();
+
+    private void illegalState(String operation) {
+        log().error(new IllegalStateException(operation + " not allowed in state " + state));
+        throw new IllegalStateException(operation + " not allowed in state " + state);
+    }
+
+    public synchronized void removeSource(Download download) {
+        Reject.ifNull(download, "Download is null!");
+        switch (state) {
+            case WAITING_FOR_UPLOAD_READY:
+                removeSourceImpl(download);
+                if (!hasSources()) {
+                    // If we're out of sources, wait for additional ones again
+                    // Actually the TransferManager will break this transfer, but with 
+                    // the following code this manager could also be reused.
+                    setState(InternalState.WAITING_FOR_SOURCE);
+                }
+                break;
+            case PASSIVE_DOWNLOAD:
+                removeSourceImpl(download);
+                setBroken(TransferProblem.BROKEN_DOWNLOAD, "Broken single-source download!");
+                break;
+            case ACTIVE_DOWNLOAD:
+                removeSourceImpl(download);
+                if (hasSources()) {
+                    sendPartRequests();
+                }
+                break;
+            case MATCHING_AND_COPYING:
+            case CHECKING_FILE_VALIDITY:
+            case BROKEN:
+            case ABORTED:
+                removeSourceImpl(download);
+                break;
+            default:
+                illegalState("removeSource");
+            break;
+        }
+    }
+    
+    protected abstract void removeSourceImpl(Download source);
+
+    protected abstract void addSourceImpl(Download source);
+
+    protected void validateDownload() {
+        if (filePartsState != null) {
+            Reject.ifTrue(filePartsState.getFileLength() != fileInfo.getSize(), "Concurrent file modification");
+        }
+        if (remotePartRecord != null) {
+            Reject.ifTrue(remotePartRecord.getFileLength() != fileInfo.getSize(), "Concurrent file modification");
+        }
+    }
+
+    protected void matchAndCopyData() throws BrokenDownloadException, InterruptedException {
+        try {
+            File src = getFile();
+
+            setTransferState(TransferState.MATCHING);
+            Callable<List<MatchInfo>> mInfoWorker = new MatchResultWorker(
+                remotePartRecord, src)
+            {
+
+                @Override
+                protected void setProgress(int percent) {
+                    setTransferState(percent / 100.0);
+                }
+            };
+            List<MatchInfo> mInfoRes = null;
+            mInfoRes = mInfoWorker.call();
+
+            // log().debug("Records: " + record.getInfos().length);
+            log().debug(
+                "Matches: " + mInfoRes.size() + " which are "
+                    + (remotePartRecord.getPartLength() * mInfoRes.size())
+                    + " bytes (bit less maybe).");
+
+            setTransferState(TransferState.COPYING);
+            Callable<FilePartsState> pStateWorker = new MatchCopyWorker(
+                src, getTempFile(), remotePartRecord, mInfoRes)
+            {
+                @Override
+                protected void setProgress(int percent) {
+                    setTransferState(percent / 100.0);
+                }
+            };
+            FilePartsState state = pStateWorker.call();
+            if (state.getFileLength() != fileInfo.getSize()) {
+                // Concurrent file modification
+                throw new BrokenDownloadException();
+            }
+            
+            setFilePartsState(state);
+            counter = new TransferCounter(filePartsState
+                .countPartStates(filePartsState.getRange(),
+                    PartState.AVAILABLE), fileInfo.getSize());
+
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(
+                "SHA Digest not found. Fatal error", e);
+        } catch (FileNotFoundException e) {
+            throw new BrokenDownloadException(TransferProblem.FILE_NOT_FOUND_EXCEPTION, e);
+        } catch (IOException e) {
+            throw new BrokenDownloadException(TransferProblem.IO_EXCEPTION, e);
+        } catch (InterruptedException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new BrokenDownloadException(TransferProblem.GENERAL_EXCEPTION, e);
+        }
     }
 }

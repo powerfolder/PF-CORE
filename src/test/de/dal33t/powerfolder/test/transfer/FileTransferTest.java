@@ -215,9 +215,9 @@ public class FileTransferTest extends TwoControllerTestCase {
         // assertEquals(1, tm1Listener.uploadRequested);
         // assertEquals(1, tm1Listener.uploadStarted);
         // assertEquals(1, tm1Listener.uploadCompleted);
-        assertEquals(0, tm1Listener.uploadRequested);
-        assertEquals(0, tm1Listener.uploadStarted);
-        assertEquals(0, tm1Listener.uploadCompleted);
+        assertEquals(2, tm1Listener.uploadRequested);
+        assertEquals(2, tm1Listener.uploadStarted);
+        assertEquals(2, tm1Listener.uploadCompleted);
         assertEquals(0, tm1Listener.uploadAborted);
         assertEquals(0, tm1Listener.uploadBroken);
 
@@ -489,9 +489,11 @@ public class FileTransferTest extends TwoControllerTestCase {
 
     public void testMultipleManPow2() throws Exception {
         for (int i = 0; i < 10; i++) {
+            if (i > 0) {
+                tearDown();
+                setUp();
+            }
             testManyPow2FilesCopy();
-            tearDown();
-            setUp();
         }
     }
 

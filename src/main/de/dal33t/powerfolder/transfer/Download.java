@@ -146,7 +146,7 @@ public class Download extends Transfer {
                 rp = new RequestPart(getFile(), range, Math.max(0, transferState.getProgress()));
             } catch (IllegalArgumentException e) {
                 // I need to do this because FileInfos are NOT immutable...
-                log().warn(e);
+                log().warn("Concurrent file change while requesting:" + e);
                 return false;
             }
             pendingRequests.add(rp);
