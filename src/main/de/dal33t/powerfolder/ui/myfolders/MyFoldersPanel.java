@@ -263,6 +263,12 @@ public class MyFoldersPanel extends PFUIPanel {
                         + "";
                     break;
                 }
+                case 9 : {// new files
+                    int count = getController().getTransferManager()
+                            .countCompletedDownloads(folder);
+                    newValue = String.valueOf(count);
+                    break;
+                }
             }
             return super.getTableCellRendererComponent(table1, newValue,
                 isSelected, hasFocus, row, column);

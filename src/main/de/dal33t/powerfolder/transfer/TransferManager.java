@@ -1846,6 +1846,17 @@ public class TransferManager extends PFComponent {
         return completedDownloads.size();
     }
 
+    public int countCompletedDownloads(Folder folder) {
+        int count = 0;
+        for (DownloadManager completedDownload : completedDownloads) {
+            Folder f = completedDownload.getFileInfo().getFolder(getController().getFolderRepository());
+            if (f != null && f.getInfo().equals(folder.getInfo())) {
+                count++;
+            }
+        }
+        return count;
+    }
+
     /**
      * @return an unmodifiable collection reffering to the internal completed
      *         downloads list. May change after returned.

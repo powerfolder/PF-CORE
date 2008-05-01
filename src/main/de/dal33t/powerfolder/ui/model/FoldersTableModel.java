@@ -43,11 +43,12 @@ public class FoldersTableModel extends PFUIComponent implements TableModel {
         Translation.getTranslation("myfolderstable.local_size"), // 5
         Translation.getTranslation("myfolderstable.number_of_incoming_files"), // 6
         Translation.getTranslation("myfolderstable._total_number_of_files"), // 7
-        Translation.getTranslation("myfolderstable.total_size")}; // 8
+        Translation.getTranslation("myfolderstable.total_size"), // 8
+        Translation.getTranslation("myfolderstable.new_files")}; // 9
 
     // TODO: Is this a good place?
     private boolean[] defaultVisibility = new boolean[]{true, true, true, true,
-        true, true, false, true, true};
+        true, true, false, true, true, true};
     // 0 1 2 3 4 5 6 7 8 9
     private final List<Folder> folders;
     private FolderRepository repository;
