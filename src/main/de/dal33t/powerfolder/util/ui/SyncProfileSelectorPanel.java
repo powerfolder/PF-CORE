@@ -5,6 +5,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -107,6 +108,14 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
         helpLabel = Help.createHelpLinkLabel(Translation
             .getTranslation("general.what_is_this"), "node/syncoptions");
 
+        // Warn if changing to delete type profiles
+        addModelValueChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (!isOkToSwitchToProfile((SyncProfile) evt.getNewValue())) {
+                    setSyncProfile((SyncProfile) evt.getOldValue(), false);
+                }
+            }
+        });
     }
 
     private void udateSyncProfile() {
@@ -196,36 +205,6 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
         bar.setOpaque(false);
 
         return bar.getPanel();
-    }
-
-    /**
-     * Called to allow the user to cancel changes.
-     *
-     * @param folder
-     *            The folder the user wants to change the SyncProfile. Folder
-     *            may be null for not yet created folders.
-     * @param syncProfile
-     *            The new profile to apply
-     * @return true if the changes were applied (Calling objects may consider to
-     *         undo their selection if this returns false).
-     */
-    public static boolean vetoableFolderSyncProfileChange(Folder folder,
-        SyncProfile syncProfile)
-    {
-
-        // See if anything has changed.
-        if (folder != null && folder.getSyncProfile().equals(syncProfile)) {
-            // Okay
-            return true;
-        }
-
-        if (isOkToSwitchToProfile(syncProfile)) {
-            if (folder != null) {
-                folder.setSyncProfile(syncProfile);
-            }
-            return true;
-        }
-        return false;
     }
 
     /**
@@ -439,4 +418,5 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
             openCustomSyncProfileDialog(true);
         }
     }
+
 }

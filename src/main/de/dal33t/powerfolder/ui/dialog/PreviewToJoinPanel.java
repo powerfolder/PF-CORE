@@ -63,19 +63,6 @@ public class PreviewToJoinPanel extends BaseDialog {
         syncProfileSelectorPanel = new SyncProfileSelectorPanel(
             getController(), folderSettings.getSyncProfile());
 
-        syncProfileSelectorPanel
-            .addModelValueChangeListener(new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    if (!SyncProfileSelectorPanel
-                        .vetoableFolderSyncProfileChange(null,
-                            (SyncProfile) evt.getNewValue()))
-                    {
-                        syncProfileSelectorPanel.setSyncProfile(
-                            (SyncProfile) evt.getOldValue(), false);
-                    }
-                }
-            });
-
         locationModel = new ValueHolder(folderSettings
                 .getLocalBaseDir().getAbsolutePath());
 
