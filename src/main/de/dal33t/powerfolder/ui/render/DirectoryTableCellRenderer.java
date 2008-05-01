@@ -155,7 +155,6 @@ public class DirectoryTableCellRenderer extends DefaultTableCellRenderer {
             case 4 : {// modified date
                 newValue = Format.formatDate(fileInfo.getModifiedDate());
                 setHorizontalAlignment(SwingConstants.RIGHT);
-                // if (Math.random() > 0.5) setIcon(Icons.STAR);
                 break;
             }
             case 5 : { // availability
