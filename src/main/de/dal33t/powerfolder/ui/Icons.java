@@ -105,6 +105,8 @@ public class Icons {
     public static final Icon SORT_DOWN = getIconById("sort_down.icon");
     public static final Icon SORT_BLANK = getIconById("sort_blank.icon");
 
+    public static final Icon STAR = getIconById("star.icon");
+
     // Sync icons for FolderQuickInfoPanel
     public static final Icon[] SYNC_ICONS = new Icon[]{
         getIconById("sync_0.icon"), getIconById("sync_1.icon"),
