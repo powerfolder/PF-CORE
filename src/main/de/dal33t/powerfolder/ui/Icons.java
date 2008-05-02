@@ -105,8 +105,6 @@ public class Icons {
     public static final Icon SORT_DOWN = getIconById("sort_down.icon");
     public static final Icon SORT_BLANK = getIconById("sort_blank.icon");
 
-    public static final Icon STAR = getIconById("star.icon");
-
     // Sync icons for FolderQuickInfoPanel
     public static final Icon[] SYNC_ICONS = new Icon[]{
         getIconById("sync_0.icon"), getIconById("sync_1.icon"),
@@ -169,6 +167,7 @@ public class Icons {
     public static final Icon DIRECTORY_OPEN_GRAY = getIcon("icons/Directory_open_gray.gif");
     public static final Icon DIRECTORY_RED = getIcon("icons/Directory_red.gif");
     public static final Icon DIRECTORY_OPEN_RED = getIcon("icons/Directory_open_red.gif");
+    public static final Icon DIRECTORY_NEW = getIconById("directory_new.icon");
 
     // Node icons
     public static final Icon NODE_FRIEND_CONNECTED = getIcon("icons/Node_Friend_Connected.gif");

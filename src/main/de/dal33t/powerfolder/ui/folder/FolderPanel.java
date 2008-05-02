@@ -26,6 +26,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class FolderPanel extends PFUIPanel {
     public static final int HOME_TAB = 0;
     public static final int FILES_TAB = 1;
+    //public static final int NEW_FILES_TAB = 2;
     public static final int MEMBERS_TAB = 2;
     public static final int CHAT_TAB = 3;
     public static final int SETTINGS_TAB = 4;
@@ -36,6 +37,7 @@ public class FolderPanel extends PFUIPanel {
     private Folder folder;
     private HomeTab homeTab;
     private FilesTab filesTab;
+    //private NewFilesTab newFilesTab;
     private MembersTab membersTab;
     private FolderChatPanel folderChatPanel;
     private SettingsTab settingsTab;
@@ -54,6 +56,7 @@ public class FolderPanel extends PFUIPanel {
      */
     public void setFolder(Folder folder) {        
         filesTab.setDirectory(folder.getDirectory());
+        //newFilesTab.setDirectory(folder.getDirectory());
         setFolder0(folder);
     }
 
@@ -97,6 +100,7 @@ public class FolderPanel extends PFUIPanel {
     public void setDirectory(Directory directory) {
         setFolder0(directory.getRootFolder());
         filesTab.setDirectory(directory);
+        //newFilesTab.setDirectory(directory);
         tabbedPanel.setSelectedIndex(FILES_TAB);
     }
 
@@ -119,7 +123,7 @@ public class FolderPanel extends PFUIPanel {
      * @param tab ta to show
      */
     public void setTab(int tab) {
-        if (tab == CHAT_TAB || tab == HOME_TAB || tab == FILES_TAB
+        if (tab == CHAT_TAB || tab == HOME_TAB || tab == FILES_TAB //|| tab == NEW_FILES_TAB
             || tab == MEMBERS_TAB || tab == SETTINGS_TAB ) //|| tab == PROBLEMS_TAB)
         {
             tabbedPanel.setSelectedIndex(tab);
@@ -132,6 +136,8 @@ public class FolderPanel extends PFUIPanel {
         switch (tabbedPanel.getSelectedIndex()) {
             case FILES_TAB :
                 return filesTab;
+            //case NEW_FILES_TAB :
+                //return newFilesTab;
             case HOME_TAB :
                 return homeTab;
             case MEMBERS_TAB :
@@ -166,6 +172,7 @@ public class FolderPanel extends PFUIPanel {
     private void initComponents() {
         tabbedPanel = new JTabbedPane();
         filesTab = new FilesTab(getController(), this);
+        //newFilesTab = new NewFilesTab(getController(), this);
         membersTab = new MembersTab(getController());
         folderChatPanel = new FolderChatPanel(getController(),
             getUIController().getChatModel());
@@ -185,6 +192,13 @@ public class FolderPanel extends PFUIPanel {
         tabbedPanel.setMnemonicAt(FILES_TAB,
                 Translation.getTranslation("folderpanel.files.key").charAt(0));
         tabbedPanel.setIconAt(FILES_TAB, Icons.DIRECTORY);
+
+        //tabbedPanel.add(
+        //        ' ' + newFilesTab.getTitle() + ' ', newFilesTab
+        //        .getUIComponent());
+        //tabbedPanel.setMnemonicAt(NEW_FILES_TAB,
+        //        Translation.getTranslation("folderpanel.new_files.key").charAt(0));
+        //tabbedPanel.setIconAt(NEW_FILES_TAB, Icons.DIRECTORY_NEW);
 
         tabbedPanel.add(' '
                 + membersTab.getTitle() + ' ',
@@ -212,6 +226,10 @@ public class FolderPanel extends PFUIPanel {
     public FilesTab getFilesTab() {
         return filesTab;
     }
+
+    //public NewFilesTab getNewFilesTab() {
+    //    return newFilesTab;
+    //}
 
     /**
      * Called by the FilesTab to add new ignore patterns to the Settings tab.
@@ -241,6 +259,8 @@ public class FolderPanel extends PFUIPanel {
     public void toggleDetails() {
         if (getCurrentTab().equals(filesTab)) {
             filesTab.toggeDetails();
+        //} else if (getCurrentTab().equals(newFilesTab)) {
+        //    newFilesTab.toggeDetails();
         }
     }
 }
