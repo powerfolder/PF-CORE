@@ -92,13 +92,6 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
             log().error("Removed non-managed download:" + download + " " + download.getPartner().getInfo());
             throw new RuntimeException(downloads.toString());
         }
-        // log().debug("Sources left: " + downloads.values().size());
-        // Maybe we're done for, update the tempfile just in case
-        if (!hasSources()) {
-            updateTempFile();
-            return;
-        }
-
         if (isUsingPartRequests()) {
             // All pending requests from that download are void.
             if (filePartsState != null) {
@@ -130,11 +123,6 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
             }
         }
         return download;
-    }
-
-    @Override
-    protected Collection<Download> getDownloads() {
-        return downloads.values();
     }
 
     protected void requestFilePartsRecord(Download download) {
@@ -170,7 +158,7 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
         setStarted();
     }
 
-    protected void sendPartRequests() {
+    protected void sendPartRequests() throws BrokenDownloadException {
         // log().debug("Sending part requests: " +
         // filePartsState.countPartStates(filePartsState.getRange(),
         // PartState.NEEDED));
@@ -195,15 +183,12 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
         }
     }
 
-    private boolean findAndRequestDownloadFor(Range range) {
+    private boolean findAndRequestDownloadFor(Range range) throws BrokenDownloadException {
         for (Download d : downloads.values()) {
             if (!d.isStarted() || d.isBroken()) {
                 continue;
             }
             if (d.requestPart(range)) {
-                if (d.getPendingRequests().isEmpty()) {
-                    throw new AssertionError("Pending list is emtpy!");
-                }
                 return true;
             }
         }

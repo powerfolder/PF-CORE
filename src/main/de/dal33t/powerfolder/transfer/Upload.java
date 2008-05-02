@@ -210,6 +210,15 @@ public class Upload extends Transfer {
                     // log().warn("Upload broken: " + Upload.this, e);
                     getTransferManager().setBroken(Upload.this,
                         TransferProblem.TRANSFER_EXCEPTION, e.getMessage());
+                } finally {
+                    // TODO Aborts don't seem to shutdown properly 
+                    if (raf != null) {
+                        try {
+                            raf.close();
+                        } catch (IOException e) {
+                            log().error(e);
+                        }
+                    }
                 }
             }
 
@@ -308,6 +317,10 @@ public class Upload extends Transfer {
                 return false;
             }
             pr = (RequestPart) pendingRequests.remove();
+            
+            if (isBroken()) {
+                return false;
+            }
         }
         try {
 
@@ -431,7 +444,7 @@ public class Upload extends Transfer {
                     + getPartner().getLastConnectTime());
             return true;
         }
-
+        
         return !stillQueuedAtPartner();
     }
 

@@ -101,11 +101,16 @@ public class Download extends Transfer {
 
     /**
      * Called when the partner supports part-transfers and is ready to upload
+     * @param usedFileInfo 
      */
-    public void uploadStarted() {
+    public void uploadStarted(FileInfo usedFileInfo) {
         lastTouch.setTime(System.currentTimeMillis());
         if (isStarted()) {
             log().warn("Received multiple upload start messages!");
+            return;
+        }
+        if (!usedFileInfo.isCompletelyIdentical(getFile())) {
+            getController().getTransferManager().setBroken(this, TransferProblem.BROKEN_DOWNLOAD, "Concurrent modification");
             return;
         }
         log().info(
@@ -133,8 +138,9 @@ public class Download extends Transfer {
      * Requests a single part from the remote peer.
      * @param range
      * @return
+     * @throws BrokenDownloadException 
      */
-    public boolean requestPart(Range range) {
+    public boolean requestPart(Range range) throws BrokenDownloadException {
         Validate.notNull(range);
         RequestPart rp;
         synchronized (pendingRequests) {
@@ -147,7 +153,7 @@ public class Download extends Transfer {
             } catch (IllegalArgumentException e) {
                 // I need to do this because FileInfos are NOT immutable...
                 log().warn("Concurrent file change while requesting:" + e);
-                return false;
+                throw new BrokenDownloadException("Concurrent file change while requesting: " + e);
             }
             pendingRequests.add(rp);
         }
@@ -358,10 +364,6 @@ public class Download extends Transfer {
         return msg;
     }
 
-    public File getTempFile() {
-        return manager.getTempFile();
-    }
-    
     @Override
     public FileInfo getFile() {
         // This is necessary, because FileInfo also contains version information (which might be old at this point)

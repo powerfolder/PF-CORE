@@ -64,7 +64,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
     public void testFiveSwarmDownload() throws IOException {
         nSetupControllers(5);
         setConfigurationEntry(ConfigurationEntry.USE_SWARMING_ON_LAN, "true");
-        setConfigurationEntry(ConfigurationEntry.DOWNLOADLIMIT_LAN, "100");
+
         connectAll();
 
         joinNTestFolder(SyncProfile.MANUAL_DOWNLOAD);
@@ -91,12 +91,45 @@ public class SwarmingTest extends MultipleControllerTestCase {
             }
         });
 
+        TestHelper.waitForCondition(2, new Condition() {
+            public boolean reached() {
+                for (Controller c: getControllers()) {
+                    if (c == getContoller("4")) {
+                        if (c.getTransferManager().getActiveDownloadCount() != 0) {
+                            return false;
+                        }
+                    }
+                    if (c.getTransferManager().getActiveDownloadCount() != 0
+                        || c.getTransferManager().getActiveUploads().length != 0) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        });
+
+        for (Controller c: getControllers()) {
+            c.getTransferManager().setAllowedDownloadCPSForLAN(500000);
+            c.getTransferManager().setAllowedUploadCPSForLAN(500000);
+        }
+        TestHelper.waitMilliSeconds(1000);
         getFolderOf("4").setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
         
-        TestHelper.waitForCondition(20, new ConditionWithMessage() {
+        TestHelper.waitForCondition(5, new ConditionWithMessage() {
             public boolean reached() {
                 DownloadManager man = getContoller("4").getTransferManager().getActiveDownload(fInfo);
-                return man != null && man.getSources().size() == 4;
+                if (man == null || man.getSources().size() != 4) {
+                    return false;
+                }
+                for (Controller c: getControllers()) {
+                    if (c == getContoller("4")) {
+                        continue;
+                    }
+                    if (c.getTransferManager().getActiveUploads().length != 1) {
+                        return false;
+                    }
+                }
+                return true;
             }
 
             public String message() {
@@ -108,7 +141,6 @@ public class SwarmingTest extends MultipleControllerTestCase {
             public boolean reached() {
                 DownloadManager man = getContoller("4").getTransferManager().getActiveDownload(fInfo);
                 for (Download src: man.getSources()) {
-                    System.err.println(src + " " + src.getPendingRequests().size());
                     if (src.getPendingRequests().isEmpty()) {
                         return false;
                     }
@@ -225,12 +257,15 @@ public class SwarmingTest extends MultipleControllerTestCase {
     
     public void testConcurrentModificationsLargeSwarmDeltaSync() throws IOException {
         Random prng = new Random();
-        final int numC = 3;
+        final int numC = 4;
         nSetupControllers(numC);
         setConfigurationEntry(ConfigurationEntry.USE_SWARMING_ON_LAN, "true");
         setConfigurationEntry(ConfigurationEntry.USE_DELTA_ON_LAN, "true");
-        setConfigurationEntry(ConfigurationEntry.DOWNLOADLIMIT_LAN, "100");
-        setConfigurationEntry(ConfigurationEntry.UPLOADLIMIT_LAN, "100");
+
+        for (Controller c: getControllers()) {
+            c.getTransferManager().setAllowedDownloadCPSForLAN(500000);
+            c.getTransferManager().setAllowedUploadCPSForLAN(500000);
+        }
         
         connectAll();
 
@@ -318,9 +353,10 @@ public class SwarmingTest extends MultipleControllerTestCase {
                 StringBuilder b = new StringBuilder();
                 for (int i = 0; i < numC; i++) {
                     if (i > 0) {
-                        b.append(", ");
+                        b.append("\n");
                     }
                     b.append(i).append(": ").append(getFolderOf("" + i).getKnowFilesAsArray()[0].getVersion());
+                    b.append(Arrays.toString(getContoller("" + i).getTransferManager().getActiveUploads()));
                 }
                 return b.toString();
             }

@@ -1417,7 +1417,7 @@ public class Member extends PFComponent {
             Download dl = getController().getTransferManager().getDownload(
                 this, su.getFile());
             if (dl != null) {
-                dl.uploadStarted();
+                dl.uploadStarted(su.getFile());
             } else {
                 log().warn("Download not found: " + su.getFile());
             }

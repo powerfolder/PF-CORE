@@ -18,7 +18,12 @@ public class BrokenDownloadException extends Exception {
 
     public BrokenDownloadException(Throwable cause) {
         super(cause);
-        problem = TransferProblem.GENERAL_EXCEPTION;
+        problem = TransferProblem.BROKEN_DOWNLOAD;
+    }
+
+    public BrokenDownloadException(String message) {
+        super(message);
+        problem = TransferProblem.BROKEN_DOWNLOAD;
     }
 
 }

@@ -31,9 +31,10 @@ public class MatchCopyWorker implements Callable<FilePartsState> {
     }
 
     public FilePartsState call() throws Exception {
-        src = new RandomAccessFile(srcFile, "r");
-        dst = new RandomAccessFile(dstFile, "rw");
         try {
+            src = new RandomAccessFile(srcFile, "r");
+            dst = new RandomAccessFile(dstFile, "rw");
+
             FilePartsState result = new FilePartsState(record.getFileLength());
             int index = 0;
             for (MatchInfo info: matchInfoList) {
