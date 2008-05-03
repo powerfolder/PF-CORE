@@ -572,9 +572,6 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
             log().warn("Identity rejected by remote peer. " + this);
         }
 
-        getController().getIOProvider().getRelayedConnectionManager()
-            .removePedingRelayedConnectionHandler(this);
-
         return identityReply.accepted;
     }
 
@@ -635,6 +632,9 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
     }
 
     public boolean acceptHandshake() {
+        // IS not longer pending. Now connected to Member.
+        getController().getIOProvider().getRelayedConnectionManager()
+            .removePedingRelayedConnectionHandler(this);
         return true;
     }
 
