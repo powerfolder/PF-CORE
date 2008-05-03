@@ -23,11 +23,12 @@ import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.event.TransferAdapter;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.TransferCounter;
 
 /**
  * Class to hold pre-calculated static data for a folder. Only freshly
- * calculated if needed
+ * calculated if needed.
  * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.22 $
@@ -165,8 +166,7 @@ public class FolderStatistic extends PFComponent {
         }
 
         public void nodeConnected(NodeManagerEvent e) {
-            // Do not calculate, since memberJoined is always fired
-            // calculateIfRequired(e);
+            calculateIfRequired(e);
         }
 
         public void nodeDisconnected(NodeManagerEvent e) {
@@ -237,6 +237,7 @@ public class FolderStatistic extends PFComponent {
     }
 
     private void setCalculateIn(long timeToWait) {
+      //  log().war
         if (task != null) {
             return;
         }
@@ -290,15 +291,24 @@ public class FolderStatistic extends PFComponent {
 
     // Set<FileInfo> considered = new HashSet<FileInfo>();
 
+    private boolean inSync(FileInfo fInfo) {
+        if (fInfo == null) {
+            return false;
+        }
+        FileInfo newestFileInfo = fInfo.getNewestVersion(getController()
+            .getFolderRepository());
+        return !newestFileInfo.isNewerThan(fInfo);
+    }
+
+    private boolean outOfSync(FileInfo fInfo) {
+        return !inSync(fInfo);
+    }
+
     private void calculateMemberStats(Member member,
         Collection<Member> alreadyConsidered)
     {
         Collection<FileInfo> files;
-        if (member.isMySelf()) {
-            files = folder.getKnownFiles();
-        } else {
-            files = member.getLastFileListAsCollection(folder.getInfo());
-        }
+        files = folder.getFilesAsCollection(member);
         if (files == null) {
             log().verbose(
                 "Unable to calc stats on member, no filelist yet: " + member);
@@ -307,6 +317,7 @@ public class FolderStatistic extends PFComponent {
 
         FolderRepository repo = getController().getFolderRepository();
         int memberFilesCount = 0;
+        int memberFilesCountInSync = 0;
         // The total size of the folder at the member (including files not in
         // sync).
         long memberSize = 0;
@@ -319,38 +330,95 @@ public class FolderStatistic extends PFComponent {
             if (folder.getBlacklist().isIgnored(fInfo)) {
                 continue;
             }
-            memberFilesCount++;
-            memberSize += fInfo.getSize();
+
             FileInfo newestFileInfo = fInfo.getNewestVersion(repo);
-            boolean isNewestVersion = !newestFileInfo.isNewerThan(fInfo);
-            if (!isNewestVersion) {
-                // Don't count file size to member and totals
-                if (!newestFileInfo.isDeleted() && member.isMySelf()) {
+            FileInfo myFileInfo = folder.getFile(fInfo);
+
+            boolean inSync = inSync(fInfo);
+
+            if (getController().getMySelf().getNick().equalsIgnoreCase(
+                "sprajc-neu")
+                && newestFileInfo.getName().endsWith("Setup.mpq"))
+            {
+                log().warn(
+                    "My file: " + myFileInfo.toDetailString() + ", newest: "
+                        + newestFileInfo.toDetailString() + " insync? "
+                        + inSync);
+            }
+
+            if (inSync && !newestFileInfo.isDeleted()) {
+                // if (getController().getMySelf().getNick().equalsIgnoreCase(
+                // "sprajc-neu"))
+                // {
+                // System.err.println("HOMER");
+                // }
+                boolean incoming = true;
+                for (Member alreadyM : alreadyConsidered) {
+                    FileInfo otherMemberFile = alreadyM.getFile(fInfo);
+                    if (otherMemberFile == null) {
+                        continue;
+                    }
+
+                    boolean otherInSync = inSync(otherMemberFile);
+                    if (otherInSync) {
+                        incoming = false;
+                        break;
+                    }
+                }
+                if (incoming
+                    && (myFileInfo == null || newestFileInfo
+                        .isNewerThan(myFileInfo)))
+                {
                     calculating.incomingFilesCount++;
                 }
-                continue;
-            } else if (fInfo.isExpected(repo)) {
-                calculating.incomingFilesCount++;
             }
-            memberSizeInSync += fInfo.getSize();
+            // if (!isNewestVersion) {
+            // if (!newestFileInfo.isDeleted() && member.isMySelf()) {
+            // calculating.incomingFilesCount++;
+            // }
+            // inSync = false;
+            // } else if (fInfo.isExpected(repo)) {
+            // log().warn("file expected: " + newestFileInfo.toDetailString());
+            // calculating.incomingFilesCount++;
+            // inSync = false;
+            // }
 
-            boolean addToTotals = true;
-            int nIdenticals = 0;
-            int nOthers = 0;
+            // Count file
+            memberFilesCount++;
+            memberSize += fInfo.getSize();
+            if (inSync) {
+                memberFilesCountInSync++;
+                memberSizeInSync += fInfo.getSize();
+            }
+
+            if (!inSync) {
+                // Not in sync, therefore not added to totals
+                continue;
+            }
+
+            boolean addToTotals = !newestFileInfo.isDeleted();
             for (Member alreadyM : alreadyConsidered) {
                 // System.err.println(alreadyConsidered);
                 FileInfo otherMemberFile = alreadyM.getFile(fInfo);
                 if (otherMemberFile == null) {
                     continue;
                 }
-                nOthers++;
+
+                boolean otherInSync = inSync(otherMemberFile);
+
+                // if (!otherMemberFile.isNewerThan(fInfo)) {
+                // continue;
+                // }
+                // nOthers++;
+                // addToTotals= false;
+                // break;
                 // System.out.println("My: " + fInfo.toDetailString() +
                 // "\nother: "
                 // + otherMemberFile.toDetailString() + "\nidentical? "
                 // + otherMemberFile.isCompletelyIdentical(fInfo));
-                if (otherMemberFile.isCompletelyIdentical(fInfo)) {
+
+                if (otherInSync) {
                     // File already added to totals
-                    nIdenticals++;
                     addToTotals = false;
                     break;
                 }
@@ -360,26 +428,16 @@ public class FolderStatistic extends PFComponent {
             if (addToTotals) {
                 calculating.totalFilesCount++;
                 calculating.totalSize += fInfo.getSize();
-                // if (considered.contains(fInfo)) {
-                //
-                // System.out.println("("
-                // + nOthers
-                // + ", "
-                // + nIdenticals
-                // + ") DUPE: "
-                // + fInfo.toDetailString()
-                // + ": "
-                // + ((lastNonIdentical != null) ? lastNonIdentical
-                // .toDetailString() : "n/a"));
-                // // System.err.println("GOT DUPE: " + fInfo);
-                // }
-                // considered.add(fInfo);
-            } else {
-                // System.out.println("Skipping " + fInfo.toDetailString());
             }
         }
-
+        //
+        // if (member.isMySelf()) {
+        // calculating.incomingFilesCount = folder.getIncomingFiles(
+        // folder.getSyncProfile().getConfiguration()
+        // .isAutoDownloadFromOthers()).size();
+        // }
         calculating.filesCount.put(member, memberFilesCount);
+        calculating.filesCountInSync.put(member, memberFilesCountInSync);
         calculating.sizes.put(member, memberSize);
         calculating.sizesInSync.put(member, memberSizeInSync);
     }
@@ -396,10 +454,16 @@ public class FolderStatistic extends PFComponent {
             double sync = ((double) sizeInSync) / calculating.totalSize * 100;
             if (sync > 100) {
                 log().warn(
-                    "Over 100% sync: " + sync + "% sync: " + member.getNick()
-                        + ", size(in sync): " + sizeInSync + ", size: "
-                        + calculating.sizesInSync.get(member) + ", totalsize: "
-                        + calculating.totalSize);
+                    "Over 100% sync: "
+                        + sync
+                        + "% sync: "
+                        + member.getNick()
+                        + ", size(in sync): "
+                        + Format.formatBytesShort(sizeInSync)
+                        + ", size: "
+                        + Format.formatBytesShort(calculating.sizesInSync
+                            .get(member)) + ", totalsize: "
+                        + Format.formatBytesShort(calculating.totalSize));
             }
             if (calculating.totalSize == 0) {
                 log().verbose("Got total size 0");
@@ -437,6 +501,15 @@ public class FolderStatistic extends PFComponent {
      */
     public int getFilesCount(Member member) {
         Integer count = current.filesCount.get(member);
+        return count != null ? count.intValue() : 0;
+    }
+
+    /**
+     * @param member
+     * @return the number of files this member has in sync
+     */
+    public int getFilesCountInSync(Member member) {
+        Integer count = current.filesCountInSync.get(member);
         return count != null ? count.intValue() : 0;
     }
 
@@ -548,6 +621,10 @@ public class FolderStatistic extends PFComponent {
         // Number of files
         // Member -> Integer
         public Map<Member, Integer> filesCount = new HashMap<Member, Integer>();
+
+        // Number of files in sync
+        // Member -> Integer
+        public Map<Member, Integer> filesCountInSync = new HashMap<Member, Integer>();
 
         // Size of folder per member
         // member -> Long
