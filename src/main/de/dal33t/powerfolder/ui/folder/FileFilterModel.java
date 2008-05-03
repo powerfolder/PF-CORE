@@ -16,6 +16,8 @@ import de.dal33t.powerfolder.ui.FilterModel;
 
 /**
  * Based on the settings in this model it filters a filelist.
+ * <p>
+ * FIXME: CLEAN UP THIS MESS!!!!!!
  * 
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.1 $
@@ -207,7 +209,9 @@ public class FileFilterModel extends FilterModel {
                     // remote)
                     deletedCount += isDeleted && folder != null
                         && folder.isKnown(fInfo) ? 1 : 0;
-                    expectedCount += isExpected ? 1 : 0;
+                    if (!folder.getBlacklist().isIgnored(fInfo)) {
+                        expectedCount += isExpected ? 1 : 0;
+                    }
                     normalCount += isNormal ? 1 : 0;
 
                     if (showFile) {
@@ -266,7 +270,9 @@ public class FileFilterModel extends FilterModel {
                         // from remote)
                         tmpDeletedCount += isDeleted && folder != null
                             && folder.isKnown(fInfo) ? 1 : 0;
-                        tmpExpectedCount += isExpected ? 1 : 0;
+                        if (!folder.getBlacklist().isIgnored(fInfo)) {
+                            tmpExpectedCount += isExpected ? 1 : 0;
+                        }
                         tmpNormalCount += isNormal ? 1 : 0;
                     }
                 }

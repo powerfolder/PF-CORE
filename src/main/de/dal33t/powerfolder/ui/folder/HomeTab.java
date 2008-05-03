@@ -153,7 +153,8 @@ public class HomeTab extends PFUIComponent implements FolderTab {
         localFolderField = new JTextField();
         localFolderField.setEditable(false);
         localFolderButton = new JButton(Icons.DIRECTORY);
-        localFolderButton.setToolTipText(Translation.getTranslation("folderpanel.hometab.select_directory.text"));
+        localFolderButton.setToolTipText(Translation
+            .getTranslation("folderpanel.hometab.select_directory.text"));
         localFolderButton.addActionListener(new MyActionListener());
 
         toolbar = createToolBar();
@@ -488,7 +489,7 @@ public class HomeTab extends PFUIComponent implements FolderTab {
         totalSizeLabel.setText(Format.formatBytes(folderStatistic
             .getTotalSize()));
         fileCountLabel.setText(String.valueOf(folderStatistic
-            .getFilesCount(getController().getMySelf())));
+            .getFilesCountInSync(getController().getMySelf())));
         sizeLabel.setText(Format.formatBytes(folderStatistic
             .getSizeInSync(getController().getMySelf())));
 

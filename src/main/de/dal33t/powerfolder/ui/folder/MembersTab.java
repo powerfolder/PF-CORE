@@ -3,6 +3,7 @@ package de.dal33t.powerfolder.ui.folder;
 import java.awt.Component;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -33,6 +34,7 @@ import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.action.ChangeFriendStatusAction;
 import de.dal33t.powerfolder.ui.action.OpenChatAction;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.compare.MemberComparator;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
@@ -145,6 +147,7 @@ public class MembersTab extends PFUIComponent implements FolderTab,
         this.folder = folder;
         syncStatusPanel.setFolder(folder);
         Member[] members = folder.getMembers();
+        Arrays.sort(members, MemberComparator.IN_GUI);
         memberListModel.setMembers(members);
         if (members.length > -1) {
             memberList.setSelectedIndex(0);

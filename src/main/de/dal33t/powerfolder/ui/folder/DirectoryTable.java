@@ -32,10 +32,10 @@ public class DirectoryTable extends JTable {
         setColumnSizes();
         setRowHeight(Icons.NODE_FRIEND_CONNECTED.getIconHeight() + 3);
         setShowGrid(false);
-        
+
         // Associate a header renderer with all columns.
         SortedTableHeaderRenderer.associateHeaderRenderer(directoryTableModel,
-                        getColumnModel(), 1);
+            getColumnModel(), 1);
     }
 
     /**
