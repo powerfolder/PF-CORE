@@ -174,13 +174,14 @@ public class Util {
      */
     public static boolean allowPartRequests(Controller c, boolean otherIsOnLAN) {
         Reject.ifNull(c, "Controller is null");
+        // FIXME The && should be || but the current implementation requires this
         return allowSwarming(c, otherIsOnLAN) 
             || allowDeltaSync(c, otherIsOnLAN);
     }
     
     public static boolean useSwarming(Controller c, Member other) {
         Reject.ifNull(c, "Controller is null");
-        return other.isSupportingPartRequests() 
+        return other.isSupportingPartTransfers() 
             && allowSwarming(c, other.isOnLAN());
     }
     

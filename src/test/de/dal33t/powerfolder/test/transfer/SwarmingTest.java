@@ -373,7 +373,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
         }
         final int version = newestVersion;
 
-        TestHelper.waitForCondition(numC * 10, new ConditionWithMessage() {
+        TestHelper.waitForCondition(numC * 20, new ConditionWithMessage() {
             public boolean reached() {
                 for (int i = 0; i < numC; i++) {
                     if (getFolderOf("" + i).getKnowFilesAsArray()[0]

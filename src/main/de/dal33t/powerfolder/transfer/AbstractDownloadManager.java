@@ -250,7 +250,10 @@ public abstract class AbstractDownloadManager extends PFComponent implements
     }
 
     private void protocolStateError(Download cause, String operation) {
-        String msg = "PROTOCOL ERROR caused by " + cause + ": " + operation + " not allowed in state " + state; 
+        String msg = "PROTOCOL ERROR caused by " + cause + ": " + operation + " not allowed in state " + state;
+        msg += " " + cause.getPartner().isSupportingPartTransfers();
+        msg += " " + Util.useDeltaSync(getController(), cause.getPartner()) + " " 
+            + Util.useSwarming(getController(), cause.getPartner()); 
         log().warn(msg);
         getController().getTransferManager().setBroken(cause, TransferProblem.BROKEN_DOWNLOAD);
     }
@@ -414,12 +417,12 @@ public abstract class AbstractDownloadManager extends PFComponent implements
     protected void shutdown() {
         assert Thread.holdsLock(this);
         assert isDone();
-        assert tempFile != null;
-        
         if (isShutDown()) {
             return;
         }
 
+        assert tempFile != null;
+        
         shutdown = true;
 //        log().debug("Shutting down " + fileInfo);
         try {
@@ -555,7 +558,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
     protected void setBroken(TransferProblem problem,
         String message)
     {
-        if (isDone()) {
+        if (isBroken()) {
             return;
         }
         log().debug("Download broken: " + fileInfo);
@@ -677,8 +680,16 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                 killTempFile();
                 deleteMetaData();
             }
+        } catch (ClassCastException e) {
+            remotePartRecord = null;
+            filePartsState = null;
+            in.close();
+            deleteMetaData();
         } catch (ClassNotFoundException e) {
-            throw new IOException(e);
+            remotePartRecord = null;
+            filePartsState = null;
+            in.close();
+            deleteMetaData();
         } finally {
             in.close();
         }
@@ -795,7 +806,6 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                     // We can use offset 0 here since the transfer will use requests
                     // anyways
                     download.request(0);
-                    sendPartRequests();
                     break;
                 case WAITING_FOR_UPLOAD_READY:
                 case WAITING_FOR_FILEPARTSRECORD:
@@ -805,7 +815,17 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                     download.request(0);
                     break;
                 case WAITING_FOR_SOURCE:
+                    // Required for complete on load downloads
+                    if (download.isCompleted()) {
+                        setState(InternalState.COMPLETED);
+                    }
+
                     addSourceImpl(download);
+                    
+                    if (isDone()) {
+                        break;
+                    }
+                    
                     long offset = 0;
                     if (filePartsState != null) {
                         if (filePartsState.isCompleted()) {
@@ -833,6 +853,10 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                             setFilePartsState(new FilePartsState(fileInfo.getSize()));
                         }
                     }
+                    break;
+                case COMPLETED:
+                    assert download.isCompleted();
+                    addSourceImpl(download);
                     break;
                 default:
                     illegalState("addSource");
@@ -923,8 +947,6 @@ public abstract class AbstractDownloadManager extends PFComponent implements
     protected abstract void addSourceImpl(Download source);
 
     protected void matchAndCopyData() throws BrokenDownloadException, InterruptedException {
-        assert state == InternalState.MATCHING_AND_COPYING;
-        
         try {
             File src = getFile();
 

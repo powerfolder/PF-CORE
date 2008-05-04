@@ -49,13 +49,8 @@ public class Identity extends Message {
     // TODO: The current code is a bit crappy in that it denies the remote side to use delta sync, 
     //       or request parts, if the user has disabled delta sync/swarming locally.
     
-    // Actually: Will support delta sync on this connection
+    // Actually: Will support delta sync and part requests on this connection
     private boolean supportingPartTransfers;
-
-    // True if the sender supports sending requests for parts.
-    // The value of this variable is meaningless if supportingPartTransfers above is true,
-    // in that case it's getter will always return true.
-    private boolean supportingPartRequests;
 
     public Identity() {
         // Serialisation constructor
@@ -69,8 +64,8 @@ public class Identity extends Message {
         this.magicId = magicId;
         this.supportsEncryption = supportsEncryption;
         this.tunneled = tunneled;
-        this.supportingPartTransfers = Util.allowDeltaSync(controller, handler.isOnLAN());
-        this.supportingPartRequests = Util.allowPartRequests(controller, handler.isOnLAN());
+        this.supportingPartTransfers = Util.allowDeltaSync(controller, handler.isOnLAN())
+            || Util.allowSwarming(controller, handler.isOnLAN());
 
         // Always true for newer versions #559
         this.acknowledgesHandshakeCompletion = true;
@@ -115,14 +110,7 @@ public class Identity extends Message {
      * @return true if partial transfers of data are supported
      */
     public boolean isSupportingPartTransfers() {
-        return supportingPartTransfers || supportingPartRequests;
-    }
-
-    /**
-     * @return true if requests of single file-chunks is supported.
-     */
-    public boolean isSupportingPartRequests() {
-        return supportingPartRequests || supportingPartTransfers;
+        return supportingPartTransfers;
     }
 
     /**

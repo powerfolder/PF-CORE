@@ -73,7 +73,7 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
         Reject.ifNull(member, "Member is null");
         return downloads.isEmpty() || (
             isUsingPartRequests()
-            && Util.usePartRequests(getController(), member));
+            && Util.useSwarming(getController(), member));
     }
 
     public Download getSourceFor(Member member) {
@@ -114,7 +114,17 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
 
     @Override
     public String toString() {
-        return super.toString() + "; #sources=" + downloads.values().size();
+        String string = super.toString() + "; #sources=" + downloads.values().size() + "; pending requested bytes: ";
+        synchronized (this) {
+            if (filePartsState != null) {
+                string += filePartsState.countPartStates(filePartsState.getRange(), PartState.PENDING)
+                    + "; available: "
+                    + filePartsState.countPartStates(filePartsState.getRange(), PartState.AVAILABLE)
+                    + "; needed: "
+                    + filePartsState.countPartStates(filePartsState.getRange(), PartState.NEEDED);
+            }
+        }
+        return string;
     }
 
     /**
@@ -181,7 +191,7 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
             range = filePartsState.findFirstPart(PartState.NEEDED);
             if (range == null) {
                 // File completed, or only pending requests left
-                return;
+                break;
             }
             range = Range.getRangeByLength(range.getStart(), Math.min(
                 TransferManager.MAX_CHUNK_SIZE, range.getLength()));
@@ -192,6 +202,24 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
                 break;
             }
         }
+        assert filePartsState.isCompleted() 
+            || filePartsState.countPartStates(filePartsState.getRange(), PartState.PENDING) > 0
+            || isNoSourcesAreReady()
+            : "AVAIL: " + filePartsState.countPartStates(filePartsState.getRange(), PartState.AVAILABLE)
+            + ", NEED : " + filePartsState.countPartStates(filePartsState.getRange(), PartState.NEEDED)
+            + ", PEND : " + filePartsState.countPartStates(filePartsState.getRange(), PartState.PENDING);
+    }
+    
+    /**
+     * Checks if all sources are not available for requests.
+     */
+    private boolean isNoSourcesAreReady() {
+        for (Download d: downloads.values()) {
+            if (d.isStarted() && !d.isBroken()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private boolean findAndRequestDownloadFor(Range range) throws BrokenDownloadException {

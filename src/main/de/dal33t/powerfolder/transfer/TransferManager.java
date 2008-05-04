@@ -541,7 +541,6 @@ public class TransferManager extends PFComponent {
             } finally {
                 downloadsLock.unlock();
             }
-            log().debug("Will fire broken dl: " + transferFound);
             // Tell remote peer if possible
             FileInfo fInfo = dl.getFile();
             Member from = dl.getPartner();
@@ -674,6 +673,7 @@ public class TransferManager extends PFComponent {
                 downloadsLock.lock();
                 try {
                     download.broken();
+                    assert !dlManagers.containsValue(download);
                     return;
                 } catch (AssertionError e) {
                     log().error(e);
@@ -1041,7 +1041,6 @@ public class TransferManager extends PFComponent {
         boolean fileInSyncWithDisk = upload.getFile().inSyncWithDisk(diskFile);
         if (!fileInSyncWithDisk) {
             // This should free up an otherwise waiting for download partner
-            setBroken(upload, TransferProblem.BROKEN_UPLOAD);
             Folder folder = upload.getFile().getFolder(repo);
             folder.recommendScanOnNextMaintenance();
             log().warn(
@@ -1566,6 +1565,7 @@ public class TransferManager extends PFComponent {
         } finally {
             downloadsLock.unlock();
         }
+        log().debug("Aborting uploads of file to be downloaded.");
         uploadsLock.lock();
         try {
             for (Upload u : activeUploads) {
@@ -1684,10 +1684,11 @@ public class TransferManager extends PFComponent {
             if (dlManagers.containsValue(manager)) {
                 removeDownloadManager(manager);
             }
-            if (!manager.isRequestedAutomatic()) {
-                enquePendingDownload(new Download(this, manager.getFileInfo(),
-                    false));
-            }
+//            Shouldn't try to download again
+//            if (!manager.isRequestedAutomatic()) {
+//                enquePendingDownload(new Download(this, manager.getFileInfo(),
+//                    false));
+//            }
         } catch (AssertionError e) {
             log().error(e);
             throw e;
@@ -2120,8 +2121,8 @@ public class TransferManager extends PFComponent {
                                 download.getFile(), download.isRequestedAutomatic());
                             completedDownloads.add(man);
                         }
-                        man.addSource(download);
                         download.setDownloadManager(man);
+                        man.addSource(download);
                     } catch (AssertionError e) {
                         log().error(e);
                         throw e;
@@ -2267,7 +2268,11 @@ public class TransferManager extends PFComponent {
                         setBroken(download, TransferProblem.BROKEN_DOWNLOAD);
                     }
                 }
-                assert !man.getSources().isEmpty() || man.isDone();
+                assert (!man.getSources().isEmpty() && !man.isDone()) || !dlManagers.containsValue(man)
+                    : "sources: " + man.getSources().size() + " " 
+                    + "isDone: " + man.isDone() + " "
+                    + "isActive: " + dlManagers.containsValue(man) + " "
+                    + " toString: " + man;
             }
         } catch (AssertionError e) {
             log().error(e);

@@ -388,16 +388,6 @@ public class Member extends PFComponent {
     }
 
     /**
-     * Returns true if this member supports requests for single parts.
-     * 
-     * @return
-     */
-    public boolean isSupportingPartRequests() {
-        return isCompleteyConnected()
-            && getIdentity().isSupportingPartRequests();
-    }
-
-    /**
      * Answers if this member is on the local area network.
      * 
      * @return true if this member is on LAN.
