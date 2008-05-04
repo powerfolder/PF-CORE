@@ -24,8 +24,6 @@ public interface DownloadManager {
      */
     void abortAndCleanup();
     
-    void stop();
-
     /**
      * Called when a new download source is available.
      * If the given download is completed, this manager should set itself to completed

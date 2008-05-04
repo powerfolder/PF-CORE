@@ -303,7 +303,6 @@ public class Download extends Transfer {
                 getController().getFolderRepository());
             if (newerFileAvailable) {
                 log().warn("Abort cause: Newer version available. " + Debug.detailedObjectState(getFile()));
-                log().warn(Debug.detailedObjectState(getFile()) + " - VS - " + Debug.detailedObjectState(getFile().getNewestVersion(getController().getFolderRepository())));
                 return true;
 //                throw new RuntimeException("ABORT: " + this);
             }

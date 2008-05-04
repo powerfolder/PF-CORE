@@ -50,12 +50,18 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         WAITING_FOR_UPLOAD_READY,
         WAITING_FOR_FILEPARTSRECORD,
         
-        COMPLETED, BROKEN, ABORTED, STOPPED, 
+        COMPLETED, BROKEN, ABORTED, 
         
         /**
          * Receive chunks in linear fashion from one source only 
          */
-        PASSIVE_DOWNLOAD, ACTIVE_DOWNLOAD, MATCHING_AND_COPYING, CHECKING_FILE_VALIDITY;
+        PASSIVE_DOWNLOAD, 
+        
+        /**
+         * Request chunks 
+         */
+        ACTIVE_DOWNLOAD, 
+        MATCHING_AND_COPYING, CHECKING_FILE_VALIDITY;
     }
 
     /**
@@ -82,7 +88,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
     
     private Thread worker;
 
-    private int failedChecks;
+    private boolean shutdown;
 
     public AbstractDownloadManager(Controller controller, FileInfo file,
         boolean automatic) throws IOException
@@ -185,7 +191,6 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             case ABORTED :
             case BROKEN :
             case COMPLETED :
-            case STOPPED:
                 return true;
         }
         return false;
@@ -244,8 +249,6 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         }
     }
 
-    protected abstract boolean isUsingDeltaSync();
-
     private void protocolStateError(Download cause, String operation) {
         String msg = "PROTOCOL ERROR caused by " + cause + ": " + operation + " not allowed in state " + state; 
         log().warn(msg);
@@ -255,10 +258,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
     protected void storeFileChunk(Download download, FileChunk chunk) {
         assert download != null;
         assert chunk != null;
-        if (!getSources().contains(download)) {
-            log().warn("Received chunk from download which is not source: " + download);
-            return;
-        }
+        assert getSources().contains(download) : "Invalid source!";
         
         setStarted();
 
@@ -327,7 +327,8 @@ public abstract class AbstractDownloadManager extends PFComponent implements
      * 
      */
     private void checkFileValidity() {
-        assert !isDone();
+        assert state == InternalState.ACTIVE_DOWNLOAD 
+            || state == InternalState.MATCHING_AND_COPYING : "Invalid state: " + state;
         
         setState(InternalState.CHECKING_FILE_VALIDITY);
         worker = new Thread(new Runnable() {
@@ -341,11 +342,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                     }
                 } else {
                     synchronized (AbstractDownloadManager.this) {
-                        try {
-                            startActiveDownload();
-                        } catch (BrokenDownloadException e) {
-                            setBroken(TransferProblem.BROKEN_DOWNLOAD, e.toString());
-                        }
+                        setBroken(TransferProblem.MD5_ERROR, "File hash mismatch!");
                     }
                 }
             }
@@ -372,7 +369,9 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                                     if (filePartsState.isCompleted()) {
                                         checkFileValidity();
                                     } else {
-                                        startActiveDownload();
+                                        if (!isDone()) {
+                                            startActiveDownload();
+                                        }
                                     }
                                 }
                             } catch (BrokenDownloadException e) {
@@ -398,6 +397,8 @@ public abstract class AbstractDownloadManager extends PFComponent implements
     }
 
     protected void startActiveDownload() throws BrokenDownloadException {
+        assert !getSources().isEmpty();
+        assert !isDone();
         assert Util.usePartRequests(getController(), getSources().iterator().next().getPartner());
         
         setState(InternalState.ACTIVE_DOWNLOAD);
@@ -407,35 +408,32 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         sendPartRequests();
     }
 
-    public synchronized void stop() {
-        setState(InternalState.STOPPED);
-        shutdown();
-    }
-    
     /**
      * Releases resources not required anymore
      */
     protected void shutdown() {
         assert Thread.holdsLock(this);
         assert isDone();
-
+        assert tempFile != null;
+        
         if (isShutDown()) {
             return;
         }
 
         shutdown = true;
-        log().debug("Shutting down " + fileInfo);
+//        log().debug("Shutting down " + fileInfo);
         try {
             if (worker != null) {
                 worker.interrupt();
             }
-            if (tempFile != null) {
-                // log().error("Closing temp file!");
-                tempFile.close();
-                tempFile = null;
-            }
-            if (!isCompleted()) {
+            // log().error("Closing temp file!");
+            tempFile.close();
+            tempFile = null;
+
+            if (isBroken()) {
                 saveMetaData();
+            } else {
+                deleteMetaData();
             }
         } catch (IOException e) {
             log().error(e);
@@ -449,6 +447,9 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         // folders database or so)
         remotePartRecord = null;
         updateTempFile();
+        
+        assert tempFile == null;
+        assert !isCompleted() && !isAborted() || !getMetaFile().exists(); 
     }
 
     @Override
@@ -482,11 +483,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                 return true;
             }
             log().warn(
-                "Checking FAILED, file will be re-downloaded!");
-            if (failedChecks > 1) {
-                throw new BrokenDownloadException("Filecheck failed after redownloading " + failedChecks + " times, remote part record seems to be corrupted.");
-            }
-            failedChecks++;
+                "Checking FAILED");
             counter = new TransferCounter(0, fileInfo.getSize());
             filePartsState.setPartState(Range.getRangeByLength(
                 0, filePartsState.getFileLength()),
@@ -525,9 +522,8 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             return;
         }
 
-        if (isDone()) {
-            throw new IllegalStateException("File broken/aborted before init!");
-        }
+        // This has to happen here since "completed" is valid
+        assert !isDone() : "File broken/aborted before init!";
 
         // Create temp-file directory structure if necessary
         if (!getTempFile().getParentFile().exists()) {
@@ -574,6 +570,8 @@ public abstract class AbstractDownloadManager extends PFComponent implements
     }
 
     protected void setCompleted() {
+        assert !isDone();
+        
         log().debug("Completed download of " + fileInfo + ".");
         
         setState(InternalState.COMPLETED);
@@ -587,7 +585,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         }
     }
     
-    public void broken() {
+    public synchronized void broken() {
         setBroken(TransferProblem.BROKEN_DOWNLOAD, "Broken by external code");
     }
 
@@ -773,7 +771,6 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         getController().getTransferManager().downloadAborted(this);
     }
 
-    private boolean shutdown;
     protected synchronized void setFilePartsState(FilePartsState state) {
         assert filePartsState == null;
 
@@ -896,6 +893,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                 case CHECKING_FILE_VALIDITY:
                 case BROKEN:
                 case ABORTED:
+                case COMPLETED: // If a remote side sends an abort this can happen
                     removeSourceImpl(download);
                     break;
                 default:
@@ -925,6 +923,8 @@ public abstract class AbstractDownloadManager extends PFComponent implements
     protected abstract void addSourceImpl(Download source);
 
     protected void matchAndCopyData() throws BrokenDownloadException, InterruptedException {
+        assert state == InternalState.MATCHING_AND_COPYING;
+        
         try {
             File src = getFile();
 

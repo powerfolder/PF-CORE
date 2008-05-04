@@ -46,7 +46,9 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
 
     @Override
     protected void addSourceImpl(Download download) {
-
+        assert download != null;
+        assert allowsSourceFor(download.getPartner());
+        
         // log().debug("Adding source: " + download);
 
         if (downloads.put(download.getPartner().getInfo(), download) != null) {
@@ -94,11 +96,10 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
 
     @Override
     protected void removeSourceImpl(Download download) {
-        Reject.ifNull(download, "Download is null");
-
+        assert download != null;
+        
         if (downloads.remove(download.getPartner().getInfo()) == null) {
-            log().error("Removed non-managed download:" + download + " " + download.getPartner().getInfo());
-            throw new RuntimeException(downloads.toString());
+            throw new AssertionError("Removed non-managed download:" + download + " " + download.getPartner().getInfo());
         }
         if (isUsingPartRequests()) {
             // All pending requests from that download are void.
@@ -123,6 +124,8 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
      * @return
      */
     protected Download findPartRecordSource(Download download) {
+        assert download != null;
+        
         for (Download d : downloads.values()) {
             if (d.isStarted() && !d.isBroken()
                 && Util.useDeltaSync(getController(), d.getPartner())) {
@@ -134,11 +137,9 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
     }
 
     protected void requestFilePartsRecord(Download download) {
-        // log().debug("Requesting record: " + isUsingPartRequests());
-        if (!isUsingPartRequests()) {
-            return;
-        }
-
+        assert download == null || Util.useDeltaSync(getController(), download.getPartner());
+        assert isUsingPartRequests();
+        
         if (pendingPartRecordFrom != null) {
             // log().debug("Pending FPR from: " + pendingPartRecordFrom);
 
@@ -157,13 +158,15 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
         // log().debug("Selected FPR source: " + download);
 
         if (download != null) {
+            assert Util.useDeltaSync(getController(), download.getPartner());
+            
             log().debug("Requesting Filepartsrecord from " + download);
             setTransferState(TransferState.FILERECORD_REQUEST);
             pendingPartRecordFrom = download;
             pendingPartRecordFrom.requestFilePartsRecord();
-        }
 
-        setStarted();
+            setStarted();
+        }
     }
 
     protected void sendPartRequests() throws BrokenDownloadException {
@@ -192,6 +195,8 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
     }
 
     private boolean findAndRequestDownloadFor(Range range) throws BrokenDownloadException {
+        assert range != null;
+        
         for (Download d : downloads.values()) {
             if (!d.isStarted() || d.isBroken()) {
                 continue;
@@ -206,18 +211,5 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
     @Override
     protected boolean isUsingPartRequests() {
         return usingPartRequests;
-    }
-
-    @Override
-    protected boolean isUsingDeltaSync() {
-        for (Download d: downloads.values()) {
-            if (d.isBroken() || d.isCompleted()) {
-                continue;
-            }
-            if (Util.useDeltaSync(getController(), d.getPartner())) {
-                return true;
-            }
-        }
-        return false;
     }
 }

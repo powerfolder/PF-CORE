@@ -279,6 +279,9 @@ public class TransferManager extends PFComponent {
             for (DownloadManager man : dlManagers.values()) {
                 man.abort();
             }
+        } catch (AssertionError e) {
+            log().error(e);
+            throw e;
         } finally {
             downloadsLock.unlock();
         }
@@ -442,6 +445,9 @@ public class TransferManager extends PFComponent {
                 // Fire
                 fireDownloadQueued(new TransferManagerEvent(this, dl));
             }
+        } catch (AssertionError e) {
+            log().error(e);
+            throw e;
         } finally {
             downloadsLock.unlock();
         }
@@ -487,6 +493,9 @@ public class TransferManager extends PFComponent {
                 enquePendingDownload(new Download(this, dlMan.getFileInfo(),
                     dlMan.isRequestedAutomatic()));
             }
+        } catch (AssertionError e) {
+            log().error(e);
+            throw e;
         } finally {
             downloadsLock.unlock();
         }
@@ -526,6 +535,9 @@ public class TransferManager extends PFComponent {
                 if (transferFound) {
                     removeDownload(dl);
                 }
+            } catch (AssertionError e) {
+                log().error(e);
+                throw e;
             } finally {
                 downloadsLock.unlock();
             }
@@ -614,6 +626,9 @@ public class TransferManager extends PFComponent {
                     }
                 }
             }
+        } catch (AssertionError e) {
+            log().error(e);
+            throw e;
         } finally {
             downloadsLock.unlock();
         }
@@ -660,6 +675,9 @@ public class TransferManager extends PFComponent {
                 try {
                     download.broken();
                     return;
+                } catch (AssertionError e) {
+                    log().error(e);
+                    throw e;
                 } finally {
                     downloadsLock.unlock();
                 }
@@ -669,6 +687,9 @@ public class TransferManager extends PFComponent {
         try {
             completedDownloads.add(download);
             removeDownloadManager(download);
+        } catch (AssertionError e) {
+            log().error(e);
+            throw e;
         } finally {
             downloadsLock.unlock();
         }
@@ -1008,6 +1029,9 @@ public class TransferManager extends PFComponent {
                         "Not queuing upload, active download of the file is in progress.");
                 return null;
             }
+        } catch (AssertionError e) {
+            log().error(e);
+            throw e;
         } finally {
             downloadsLock.unlock();
         }
@@ -1267,7 +1291,7 @@ public class TransferManager extends PFComponent {
         if (!man.hasSources()) {
             log().debug("No further sources in that manager, removing it!");
             if (!man.isDone()) {
-                man.stop();
+                man.broken();
             }
             // If the downloadmanager itself got broken it may happen that it's
             // still managed. 
@@ -1334,6 +1358,9 @@ public class TransferManager extends PFComponent {
                 contained = false;
                 pendingDownloads.add(0, download);
             }
+        } catch (AssertionError e) {
+            log().error(e);
+            throw e;
         } finally {
             downloadsLock.unlock();
         }
@@ -1490,6 +1517,9 @@ public class TransferManager extends PFComponent {
                 return null;
             }
             return getActiveDownload(fInfo);
+        } catch (AssertionError e) {
+            log().error(e);
+            throw e;
         } finally {
             downloadsLock.unlock();
         }
@@ -1513,6 +1543,7 @@ public class TransferManager extends PFComponent {
 
             if (man == null || fInfo.isNewerThan(man.getFileInfo())) {
                 if (man != null) {
+                    assert !man.isDone();
                     log().debug(
                         "Got active download of older file version, aborting.");
                     man.abortAndCleanup();
@@ -1529,6 +1560,9 @@ public class TransferManager extends PFComponent {
                     throw new AssertionError("Found old manager!");
                 }
             }
+        } catch (AssertionError e) {
+            log().error(e);
+            throw e;
         } finally {
             downloadsLock.unlock();
         }
@@ -1566,6 +1600,9 @@ public class TransferManager extends PFComponent {
                 download.setDownloadManager(manager);
                 manager.addSource(download);
             }
+        } catch (AssertionError e) {
+            log().error(e);
+            throw e;
         } finally {
             downloadsLock.unlock();
         }
@@ -1629,6 +1666,9 @@ public class TransferManager extends PFComponent {
                     aborted++;
                 }
             }
+        } catch (AssertionError e) {
+            log().error(e);
+            throw e;
         } finally {
             downloadsLock.unlock();
         }
@@ -1648,6 +1688,9 @@ public class TransferManager extends PFComponent {
                 enquePendingDownload(new Download(this, manager.getFileInfo(),
                     false));
             }
+        } catch (AssertionError e) {
+            log().error(e);
+            throw e;
         } finally {
             downloadsLock.unlock();
         }
@@ -1674,6 +1717,9 @@ public class TransferManager extends PFComponent {
         try {
             removeDownload(download);
             pendingDownloads.remove(download);
+        } catch (AssertionError e) {
+            log().error(e);
+            throw e;
         } finally {
             downloadsLock.unlock();
         }
@@ -1781,7 +1827,7 @@ public class TransferManager extends PFComponent {
                 // Add to calculator
                 downloadCounter.chunkTransferred(chunk);
             }
-        } catch (Error e) {
+        } catch (AssertionError e) {
             log().error(e);
             throw e;
         } finally {
@@ -1811,6 +1857,9 @@ public class TransferManager extends PFComponent {
                 }
             }
             return false;
+        } catch (AssertionError e) {
+            log().error(e);
+            throw e;
         } finally {
             downloadsLock.unlock();
         }
@@ -2073,6 +2122,9 @@ public class TransferManager extends PFComponent {
                         }
                         man.addSource(download);
                         download.setDownloadManager(man);
+                    } catch (AssertionError e) {
+                        log().error(e);
+                        throw e;
                     } finally {
                         downloadsLock.unlock();
                     }
@@ -2217,6 +2269,9 @@ public class TransferManager extends PFComponent {
                 }
                 assert !man.getSources().isEmpty() || man.isDone();
             }
+        } catch (AssertionError e) {
+            log().error(e);
+            throw e;
         } finally {
             downloadsLock.unlock();
         }
@@ -2328,6 +2383,9 @@ public class TransferManager extends PFComponent {
                     log().warn("Pending download removed: " + fInfo);
                     pendingDownloads.remove(dl);
                 }
+            } catch (AssertionError e) {
+                log().error(e);
+                throw e;
             } finally {
                 downloadsLock.unlock();
             }
