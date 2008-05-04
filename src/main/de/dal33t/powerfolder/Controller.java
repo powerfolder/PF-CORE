@@ -13,19 +13,11 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.security.Security;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-import java.util.ResourceBundle;
-import java.util.StringTokenizer;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.prefs.Preferences;
+import java.text.SimpleDateFormat;
 
 import javax.swing.JOptionPane;
 
@@ -512,15 +504,14 @@ public class Controller extends PFComponent {
         // enabled verbose mode if in config
         verbose = ConfigurationEntry.VERBOSE.getValueBoolean(getController());
         if (verbose) {
-            // Remove debug directory
-            Logger.deleteDebugDir();
-
             // Enable logging
             Logger.setEnabledTextPanelLogging(true);
             Logger.setEnabledConsoleLogging(true);
             Logger.setEnabledToFileLogging(true);
             // MORE LOG
-            String logFilename = getConfigName() + ".log.txt";
+            SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
+            String logFilename = getConfigName() + '-'
+                    + sdf.format(new Date()) + "-log.txt";
             Logger.setLogFile(logFilename);
             if (Logger.isLogToFileEnabled()) {
                 log().info(
@@ -677,24 +668,30 @@ public class Controller extends PFComponent {
         // Test the connectivity after a while.
         LimitedConnectivityChecker.install(this);
 
-        if (isVerbose()) {
-            // Thread printThreads = new Thread() {
-            // @Override
-            // public void run() {
-            // while (!isInterrupted()) {
-            // Debug.dumpThreadStacks();
-            // try {
-            // Thread.sleep(20000);
-            // } catch (InterruptedException e) {
-            // return;
-            // }
-            // }
-            //
-            // }
-            // };
-            // printThreads.setDaemon(true);
-            // printThreads.start();
-        }
+        // Schedule a task to reconfigure the Logger file every day.
+        Calendar cal = new GregorianCalendar();
+        Date now = cal.getTime();
+
+        // Midnight tomorrow morning.
+        cal.set(Calendar.MILLISECOND, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.add(Calendar.DATE, 1);
+
+        // Add a few seconds to be sure the file name definately is for tomorrow.
+        cal.add(Calendar.SECOND, 2);
+
+        Date tomorrowMorning = cal.getTime();
+        long initialDelay = tomorrowMorning.getTime() - now.getTime();
+        log().info("Initial log reconfigure in " + initialDelay +
+                " milliseconds");
+        scheduleAndRepeat(new TimerTask() {
+            public void run() {
+                initLogger();
+                log().info("Reconfigured log file");
+            }
+        }, initialDelay, 1000 * 24 * 3600); // Once a day.
     }
 
     /**

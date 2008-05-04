@@ -247,6 +247,7 @@ public class Logger {
      * @param logFilename
      */
     public static final void setLogFile(String logFilename) {
+
         File debugDir = getDebugDir();
         debugDir.mkdir();
         // make sure to create a valid filename
@@ -258,10 +259,12 @@ public class Logger {
             parent.mkdirs();
         }
         try {
-            if (logFile.exists()) {
-                logFile.delete();
+            if (!logFile.exists()) {
+                logFile.createNewFile();
+
+                // Ensure the output goes to the new file.
+                logFileOut = null;
             }
-            logFile.createNewFile();
         } catch (IOException e) {
             System.err.println("Unable to create logfile '"
                 + logFile.getAbsolutePath() + "'");
