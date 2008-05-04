@@ -26,8 +26,7 @@ import org.apache.commons.lang.Validate;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.message.Identity;
-import de.dal33t.powerfolder.transfer.Transfer;
+import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.util.os.Win32.ShellLink;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 
@@ -146,45 +145,57 @@ public class Util {
         return a.equals(b);
     }
 
-    public static boolean allowSwarming(Controller c, boolean partnerIsOnLan) {
+    /**
+     * @param c
+     * @param otherIsOnLAN
+     * @return true, if this client may request parts from multiple sources 
+     */
+    public static boolean allowSwarming(Controller c, boolean otherIsOnLAN) {
         Reject.ifNull(c, "Controller is null");
-        return (ConfigurationEntry.USE_SWARMING_ON_INTERNET.getValueBoolean(c) && !partnerIsOnLan)
-            || (ConfigurationEntry.USE_SWARMING_ON_LAN.getValueBoolean(c) && partnerIsOnLan);
+        return (ConfigurationEntry.USE_SWARMING_ON_INTERNET.getValueBoolean(c) && !otherIsOnLAN)
+            || (ConfigurationEntry.USE_SWARMING_ON_LAN.getValueBoolean(c) && otherIsOnLAN);
     }
     
-    public static boolean allowPartRequests(Controller c, boolean partnerIsOnLan)
+    /**
+     * @param c
+     * @param otherIsOnLAN
+     * @return true, if this client may request parts and a file parts record
+     */
+    public static boolean allowDeltaSync(Controller c, boolean otherIsOnLAN) {
+        Reject.ifNull(c, "Controller is null");
+        return  (ConfigurationEntry.USE_DELTA_ON_INTERNET.getValueBoolean(c) && !otherIsOnLAN)
+            || (ConfigurationEntry.USE_DELTA_ON_LAN.getValueBoolean(c) && otherIsOnLAN);
+    }
+    
+    /**
+     * @param c
+     * @param otherIsOnLAN
+     * @return true, if this client may request parts
+     */
+    public static boolean allowPartRequests(Controller c, boolean otherIsOnLAN) {
+        Reject.ifNull(c, "Controller is null");
+        return allowSwarming(c, otherIsOnLAN) 
+            || allowDeltaSync(c, otherIsOnLAN);
+    }
+    
+    public static boolean useSwarming(Controller c, Member other) {
+        Reject.ifNull(c, "Controller is null");
+        return other.isSupportingPartRequests() 
+            && allowSwarming(c, other.isOnLAN());
+    }
+    
+    public static boolean usePartRequests(Controller c, Member other)
     {
         Validate.notNull(c);
-        return allowDeltaSync(c, partnerIsOnLan)
-            || allowSwarming(c, partnerIsOnLan);
+        return useDeltaSync(c, other)
+            || useSwarming(c, other);
     }
 
-    public static boolean allowDeltaSync(Controller c, boolean partnerIsOnLan) {
+    public static boolean useDeltaSync(Controller c, Member other) {
         Validate.notNull(c);
-        return (ConfigurationEntry.USE_DELTA_ON_INTERNET.getValueBoolean(c) && !partnerIsOnLan)
-            || (ConfigurationEntry.USE_DELTA_ON_LAN.getValueBoolean(c) && partnerIsOnLan);
-    }
-
-    public static boolean usePartRequests(Controller c, Transfer t) {
-        Reject.noNullElements(c, t, t.getPartner());
-        // ID seems to be dropped on disconnect sometimes
-        Identity id = t.getPartner().getIdentity();
-        if (id == null) {
-            return false;
-        }
-        return id.isSupportingPartRequests()
-            && allowPartRequests(c, t.getPartner().isOnLAN());
-    }
-
-    public static boolean useDeltaSync(Controller c, Transfer t) {
-        Reject.noNullElements(c, t, t.getPartner());
-        // ID seems to be dropped on disconnect sometimes
-        Identity id = t.getPartner().getIdentity();
-        if (id == null) {
-            return false;
-        }
-        return t.getPartner().isSupportingPartTransfers()
-            && allowDeltaSync(c, t.getPartner().isOnLAN());
+        return other.isSupportingPartTransfers() 
+            && (ConfigurationEntry.USE_DELTA_ON_INTERNET.getValueBoolean(c) && !other.isOnLAN())
+            || (ConfigurationEntry.USE_DELTA_ON_LAN.getValueBoolean(c) && other.isOnLAN());
     }
 
     /**

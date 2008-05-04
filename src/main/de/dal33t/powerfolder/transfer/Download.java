@@ -123,8 +123,10 @@ public class Download extends Transfer {
      * Requests a FPR from the remote side.
      */
     public void requestFilePartsRecord() {
-        Reject.ifFalse(usePartialTransfers(), "Requesting FilePartsRecord from a client that doesn't support that!");
-        getPartner().sendMessagesAsynchron(
+        assert Util.useDeltaSync(getController(), getPartner()) :
+            "Requesting FilePartsRecord from a client that doesn't support that!";
+
+            getPartner().sendMessagesAsynchron(
             new RequestFilePartsRecord(getFile()));
     }
     
@@ -211,16 +213,6 @@ public class Download extends Transfer {
     }
 
     /**
-     * Returns true if both sides allow and support part transfers.
-     * @return true only if both clients allow part transfers
-     */
-    public boolean usePartialTransfers() {
-        return getPartner().isSupportingPartTransfers()
-            && ConfigurationEntry.USE_DELTA_ON_INTERNET
-                .getValueBoolean(getController());
-    }
-
-    /**
      * Requests this download from the partner.
      * @param startOffset
      */
@@ -247,7 +239,7 @@ public class Download extends Transfer {
 
     @Override
     void setCompleted() {
-        if (Util.usePartRequests(getController(), this)) {
+        if (Util.usePartRequests(getController(), getPartner())) {
             getPartner().sendMessagesAsynchron(new StopUpload(getFile()));
         }
         super.setCompleted();

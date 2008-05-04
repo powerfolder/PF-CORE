@@ -30,6 +30,14 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
 
     private boolean usingPartRequests;
 
+    public static final DownloadManagerFactory factory = new DownloadManagerFactory() {
+        public DownloadManager createDownloadManager(Controller controller,
+            FileInfo file, boolean automatic) throws IOException
+        {
+            return new MultiSourceDownloadManager(controller, file, automatic);
+        }
+    };
+    
     public MultiSourceDownloadManager(Controller controller, FileInfo file,
         boolean automatic) throws IOException
     {
@@ -53,7 +61,7 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
         }
 
         if (isUsingPartRequests()
-            || Util.usePartRequests(getController(), download))
+            || Util.usePartRequests(getController(), download.getPartner()))
         {
             usingPartRequests = true;
         }
@@ -61,9 +69,9 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
 
     public boolean allowsSourceFor(Member member) {
         Reject.ifNull(member, "Member is null");
-        return downloads.isEmpty() || (member.isSupportingPartRequests()
-            && isUsingPartRequests()
-            && Util.allowSwarming(getController(), member.isOnLAN()));
+        return downloads.isEmpty() || (
+            isUsingPartRequests()
+            && Util.usePartRequests(getController(), member));
     }
 
     public Download getSourceFor(Member member) {
@@ -116,8 +124,8 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
      */
     protected Download findPartRecordSource(Download download) {
         for (Download d : downloads.values()) {
-            if (d.isStarted() && !d.isBroken() && d.usePartialTransfers()
-                && Util.allowDeltaSync(getController(), d.getPartner().isOnLAN())) {
+            if (d.isStarted() && !d.isBroken()
+                && Util.useDeltaSync(getController(), d.getPartner())) {
                 download = d;
                 break;
             }
@@ -206,7 +214,7 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
             if (d.isBroken() || d.isCompleted()) {
                 continue;
             }
-            if (Util.allowDeltaSync(getController(), d.getPartner().isOnLAN())) {
+            if (Util.useDeltaSync(getController(), d.getPartner())) {
                 return true;
             }
         }

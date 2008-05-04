@@ -46,6 +46,9 @@ public class Identity extends Message {
 
     private Calendar timeGMT = Calendar.getInstance();
 
+    // TODO: The current code is a bit crappy in that it denies the remote side to use delta sync, 
+    //       or request parts, if the user has disabled delta sync/swarming locally.
+    
     // Actually: Will support delta sync on this connection
     private boolean supportingPartTransfers;
 
@@ -112,7 +115,7 @@ public class Identity extends Message {
      * @return true if partial transfers of data are supported
      */
     public boolean isSupportingPartTransfers() {
-        return supportingPartTransfers;
+        return supportingPartTransfers || supportingPartRequests;
     }
 
     /**

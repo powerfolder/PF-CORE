@@ -156,4 +156,6 @@ public interface DownloadManager {
      * @return true if this manager is done, either by completing the file or by being aborted/broken
      */
     boolean isDone();
+
+    void broken();
 }

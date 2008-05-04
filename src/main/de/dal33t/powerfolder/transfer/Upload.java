@@ -85,7 +85,7 @@ public class Upload extends Transfer {
             return;
         }
 
-        if (!Util.usePartRequests(getController(), this)) {
+        if (!Util.usePartRequests(getController(), this.getPartner())) {
             log().warn("Downloader sent a PartRequest (Protocol violation). Aborting.");
             getPartner().sendMessagesAsynchron(new AbortUpload(pr.getFile()));
             return;
@@ -154,7 +154,7 @@ public class Upload extends Transfer {
             public void run() {
                 try {
                     // If our partner supports requests, let him request. This is required for swarming to work.
-                    if (Util.usePartRequests(getController(), Upload.this)) {
+                    if (Util.usePartRequests(getController(), getPartner())) {
 
                         if (raf == null) {
                             try {

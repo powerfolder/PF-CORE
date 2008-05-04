@@ -471,11 +471,18 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(nFiles, getFolderAtBart().getKnownFilesCount());
 
         // Wait for copy
-        TestHelper.waitForCondition(200, new Condition() {
+        TestHelper.waitForCondition(200, new ConditionWithMessage() {
             public boolean reached() {
                 return tm2Listener.downloadRequested >= nFiles
                     && tm2Listener.downloadCompleted >= nFiles
                     && tm1Listener.uploadCompleted >= nFiles;
+            }
+
+            public String message() {
+                return "tm2.dreq: " + tm2Listener.downloadRequested 
+                    + " tm2.dcomp: " + tm2Listener.downloadCompleted
+                    + " tm1.upcomp: " + tm1Listener.uploadCompleted
+                    + " vs " + nFiles;
             }
         });
 

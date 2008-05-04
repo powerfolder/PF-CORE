@@ -400,6 +400,31 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
         if (current != useDeltaSyncOnLanCheckBox.isSelected()) {
             ConfigurationEntry.USE_DELTA_ON_LAN.setValue(getController(),
                 useDeltaSyncOnLanCheckBox.isSelected() + "");
+            needsRestart = true;
+        }
+
+        current = ConfigurationEntry.USE_DELTA_ON_INTERNET.getValueBoolean(getController());
+        if (current != useDeltaSyncOnInternetCheckBox.isSelected()) {
+            ConfigurationEntry.USE_DELTA_ON_INTERNET.setValue(
+                getController(), Boolean.toString(useDeltaSyncOnInternetCheckBox.isSelected()));
+            needsRestart = true;
+        }
+        
+        
+        // Swarming
+        current = ConfigurationEntry.USE_SWARMING_ON_LAN.getValueBoolean(
+            getController());
+        if (current != useSwarmingOnLanCheckBox.isSelected()) {
+            ConfigurationEntry.USE_SWARMING_ON_LAN.setValue(getController(),
+                useSwarmingOnLanCheckBox.isSelected() + "");
+            needsRestart = true;
+        }
+    
+        current = ConfigurationEntry.USE_SWARMING_ON_INTERNET.getValueBoolean(getController());
+        if (current != useSwarmingOnInternetCheckBox.isSelected()) {
+            ConfigurationEntry.USE_SWARMING_ON_INTERNET.setValue(
+                getController(), Boolean.toString(useSwarmingOnInternetCheckBox.isSelected()));
+            needsRestart = true;
         }
 
         current = ConfigurationEntry.NET_BIND_RANDOM_PORT.getValueBoolean(
@@ -427,9 +452,6 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
         }
         ConfigurationEntry.VERBOSE.setValue(getController(), Boolean
             .toString(verboseBox.isSelected()));
-
-        ConfigurationEntry.USE_DELTA_ON_INTERNET.setValue(
-            getController(), Boolean.toString(useDeltaSyncOnInternetCheckBox.isSelected()));
 
         ConfigurationEntry.VERBOSE.setValue(
             getController(), Boolean.toString(verboseBox.isSelected()));
