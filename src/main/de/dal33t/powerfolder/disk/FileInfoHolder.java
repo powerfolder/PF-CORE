@@ -79,32 +79,32 @@ public class FileInfoHolder {
         this.fileInfo = fileInfo;
     }
 
-    public void put(Member member, FileInfo fileInfo) {
-        memberHasFileInfoMap.put(member, fileInfo);
+    public void put(Member member, FileInfo newFileInfo) {
+        memberHasFileInfoMap.put(member, newFileInfo);
         if (fileInfoIsMyOwn) { // do not overwite myself
             calcAvailability();
             return;
         }
         if (member.isMySelf()) { // use myself as info
-            this.fileInfo = fileInfo;
+            this.fileInfo = newFileInfo;
             fileInfoIsMyOwn = true;
             calcAvailability();
             return;
         }
-        if (!fileInfo.isCompletelyIdentical(this.fileInfo)) {
-            if (fileInfo.getVersion() > this.fileInfo.getVersion()) {
-                this.fileInfo = fileInfo;
+        if (newFileInfo.isNewerThan(this.fileInfo)) {
+            if (newFileInfo.getVersion() > this.fileInfo.getVersion()) {
+                this.fileInfo = newFileInfo;
             } else {
-                if (fileInfo.getSize() != this.fileInfo.getSize()
-                    || !fileInfo.getModifiedBy().equals(
+                if (newFileInfo.getSize() != this.fileInfo.getSize()
+                    || !newFileInfo.getModifiedBy().equals(
                         this.fileInfo.getModifiedBy())
-                    || fileInfo.getModifiedDate().equals(
+                    || newFileInfo.getModifiedDate().equals(
                         this.fileInfo.getModifiedDate()))
                 {
                     // versions equal but filesize or modifier/date has
                     // changed! use the most recent one
-                    if (fileInfo.isNewerThan(this.fileInfo)) {
-                        this.fileInfo = fileInfo;
+                    if (newFileInfo.isNewerThan(this.fileInfo)) {
+                        this.fileInfo = newFileInfo;
                     }
                 }
             }
