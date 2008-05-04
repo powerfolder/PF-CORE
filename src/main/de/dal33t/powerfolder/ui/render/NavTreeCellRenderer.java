@@ -12,7 +12,6 @@ import javax.swing.tree.TreeNode;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.transfer.TransferManager;
@@ -21,6 +20,7 @@ import de.dal33t.powerfolder.ui.TopLevelItem;
 import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.ui.model.FolderRepositoryModel;
 import de.dal33t.powerfolder.ui.model.NodeManagerModel;
+import de.dal33t.powerfolder.ui.model.DirectoryModel;
 import de.dal33t.powerfolder.ui.navigation.RootNode;
 import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Translation;
@@ -77,19 +77,17 @@ public class NavTreeCellRenderer extends DefaultTreeCellRenderer {
             text = (String) item.getTitelModel().getValue();
             toolTip = (String) item.getTooltipModel().getValue();
         } else if (userObject instanceof RootNode) {
-            // Render rootnode
+            // Render root node
             icon = Icons.ROOT;
             text = Translation.getTranslation("navtree.node", controller
                 .getNodeManager().getMySelf().getNick());
-        } else if (userObject instanceof Directory) {
-            Directory directory = (Directory) userObject;
-            // setIcon(Icons.getIconFor(directory, expanded));
-            // this mimicks the behavior of windows file explorer:
-            setIcon(Icons.getIconFor(directory, selected, controller));
+        } else if (userObject instanceof DirectoryModel) {
+            DirectoryModel directoryModel = (DirectoryModel) userObject;
+            setIcon(Icons.getIconFor(directoryModel.getDirectory(), selected, controller));
             if (!selected) {
-                if (directory.isDeleted()) {
+                if (directoryModel.getDirectory().isDeleted()) {
                     setForeground(Color.RED);
-                } else if (directory.isExpected(controller
+                } else if (directoryModel.getDirectory().isExpected(controller
                     .getFolderRepository()))
                 {
                     setForeground(Color.GRAY);

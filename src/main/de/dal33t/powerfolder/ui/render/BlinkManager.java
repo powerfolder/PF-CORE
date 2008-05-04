@@ -17,6 +17,7 @@ import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.UIController;
+import de.dal33t.powerfolder.ui.model.FolderModel;
 import de.dal33t.powerfolder.ui.chat.ChatModel;
 import de.dal33t.powerfolder.ui.chat.MemberChatPanel;
 import de.dal33t.powerfolder.ui.chat.ChatModel.ChatModelEvent;
@@ -280,7 +281,9 @@ public class BlinkManager extends PFUIComponent {
     }
 
     private void fireUpdate(NavTreeModel treeModel, Folder folder) {
-        TreeModelEvent te = new TreeModelEvent(this, UIUtil.getPathTo(folder
+        FolderModel folderModel = getController().getUIController()
+                .getFolderRepositoryModel().locateFolderModel(folder);
+        TreeModelEvent te = new TreeModelEvent(this, UIUtil.getPathTo(folderModel
             .getTreeNode()));
         treeModel.fireTreeNodesChangedEvent(te);
     }

@@ -25,11 +25,14 @@ import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.compare.FolderComparator;
 import de.dal33t.powerfolder.util.ui.TreeNodeList;
 
+import java.util.Map;
+import java.util.Collections;
+import java.util.HashMap;
+
 /**
  * Prepares core data as (swing) ui models. e.g. <code>TreeModel</code>
  * <p>
- * TODO Move table models for public and my folders in here.
- * 
+ *
  * @see de.dal33t.powerfolder.disk.FolderRepository
  * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
@@ -42,6 +45,9 @@ public class FolderRepositoryModel extends PFUIComponent {
 
     private MyFolderListener myFolderListener;
     private boolean expandedMyFolders;
+
+    private Map<Folder, FolderModel> folderModelMap =
+            Collections.synchronizedMap(new HashMap<Folder, FolderModel>());
 
     public FolderRepositoryModel(Controller controller,
         NavTreeModel aNavTreeModel)
@@ -77,7 +83,9 @@ public class FolderRepositoryModel extends PFUIComponent {
         Folder[] folders = getController().getFolderRepository().getFolders();
         for (Folder folder : folders) {
             if (!hideFolder(folder)) {
-                myFoldersTreeNode.addChild(folder.getTreeNode());
+                FolderModel folderModel = new FolderModel(getController(), folder);
+                folderModelMap.put(folder, folderModel);
+                myFoldersTreeNode.addChild(folderModel.getTreeNode());
                 folder.addFolderListener(myFolderListener);
                 folder.addMembershipListener(myFolderListener);
             }
@@ -105,6 +113,20 @@ public class FolderRepositoryModel extends PFUIComponent {
     }
 
     // Helper methods *********************************************************
+
+    /**
+     * Gets a folder model fro a folder from the map.
+     *
+     * @param folder
+     * @return
+     */
+    public FolderModel locateFolderModel(Folder folder) {
+        Reject.ifNull(folder, "Folder is required");
+        FolderModel folderModel = folderModelMap.get(folder);
+        Reject.ifNull(folderModel, "Could not locate model for "
+                + folder.getName());
+        return folderModel;
+    }
 
     /**
      * Expands the folder repository, only done once
@@ -152,12 +174,19 @@ public class FolderRepositoryModel extends PFUIComponent {
             .triggerFileRequesting(folder.getInfo());
     }
 
+    /**
+     * Add or remove folder models from the tree depending on the folder
+     * preview state.
+     */
     public void folderStructureChanged() {
         Folder[] folders = getController().getFolderRepository().getFolders();
         for (Folder folder : folders) {
-            if (hideFolder(folder) && myFoldersTreeNode.contains(folder.getTreeNode())) {
+            FolderModel folderModel = locateFolderModel(folder);
+            if (hideFolder(folder) && myFoldersTreeNode
+                    .contains(folderModel.getTreeNode())) {
                 removeFolder(folder, this);
-            } else if (!hideFolder(folder) && !myFoldersTreeNode.contains(folder.getTreeNode())) {
+            } else if (!hideFolder(folder) && !myFoldersTreeNode
+                    .contains(folderModel.getTreeNode())) {
                 addFolder(folder, this, false);
             }
         }
@@ -172,9 +201,11 @@ public class FolderRepositoryModel extends PFUIComponent {
     private class MyFolderRepositoryListener implements
         FolderRepositoryListener
     {
+
         public void folderRemoved(FolderRepositoryEvent e) {
             Folder folder = e.getFolder();
-            if (!myFoldersTreeNode.contains(folder.getTreeNode())) {
+            FolderModel folderModel = locateFolderModel(folder);
+            if (!myFoldersTreeNode.contains(folderModel.getTreeNode())) {
                 return;
             }
 
@@ -183,7 +214,8 @@ public class FolderRepositoryModel extends PFUIComponent {
 
         public void folderCreated(FolderRepositoryEvent e) {
             Folder folder = e.getFolder();
-            if (myFoldersTreeNode.contains(folder.getTreeNode())) {
+            FolderModel folderModel = locateFolderModel(folder);
+            if (myFoldersTreeNode.contains(folderModel.getTreeNode())) {
                 return;
             }
 
@@ -209,7 +241,8 @@ public class FolderRepositoryModel extends PFUIComponent {
             if (folder == null) {
                 return;
             }
-            if (!myFoldersTreeNode.contains(folder.getTreeNode())) {
+            FolderModel folderModel = locateFolderModel(folder);
+            if (!myFoldersTreeNode.contains(folderModel.getTreeNode())) {
                 return;
             }
             if (folder.isTransferring() || folder.isScanning()) {
@@ -270,8 +303,9 @@ public class FolderRepositoryModel extends PFUIComponent {
             FolderRepositoryModel folderRepositoryModel = getUIController()
                 .getFolderRepositoryModel();
             TreeNodeList list = folderRepositoryModel.getMyFoldersTreeNode();
+            FolderModel folderModel = locateFolderModel(folder);
             Object[] path = new Object[]{navTreeModel.getRoot(), list,
-                folder.getTreeNode()};
+                folderModel.getTreeNode()};
             TreeModelEvent te = new TreeModelEvent(this, path);
             navTreeModel.fireTreeStructureChanged(te);
         }
@@ -297,7 +331,8 @@ public class FolderRepositoryModel extends PFUIComponent {
         folder.removeFolderListener(myFolderListener);
         folder.removeMembershipListener(myFolderListener);
         TreeNodeList tnl = myFoldersTreeNode;
-        myFoldersTreeNode.remove(folder.getTreeNode());
+        FolderModel folderModel = locateFolderModel(folder);
+        myFoldersTreeNode.remove(folderModel.getTreeNode());
 
         // Fire tree model event
         TreeModelEvent te = new TreeModelEvent(eventSource, tnl
@@ -312,7 +347,9 @@ public class FolderRepositoryModel extends PFUIComponent {
         folder.addFolderListener(myFolderListener);
         folder.addMembershipListener(myFolderListener);
 
-        myFoldersTreeNode.addChild(folder.getTreeNode());
+        FolderModel folderModel = new FolderModel(getController(), folder);
+        folderModelMap.put(folder, folderModel);
+        myFoldersTreeNode.addChild(folderModel.getTreeNode());
         // Fire tree model event
         TreeModelEvent te = new TreeModelEvent(eventSource,
                 myFoldersTreeNode.getPathTo());

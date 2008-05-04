@@ -5,9 +5,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
-import javax.swing.tree.MutableTreeNode;
-import javax.swing.tree.TreeNode;
-
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.DiskItem;
 import de.dal33t.powerfolder.light.FileInfo;
@@ -26,7 +23,7 @@ import de.dal33t.powerfolder.util.Translation;
  * @author <a href="mailto:schaatser@powerfolder.com">Jan van Oosterom </a>
  * @version $Revision: 1.43 $
  */
-public class Directory implements Comparable<Directory>, MutableTreeNode, DiskItem {
+public class Directory implements Comparable<Directory>, DiskItem {
     /**
      * The files (FileInfoHolder s) in this Directory key = fileInfo value =
      * FileInfoHolder
@@ -662,105 +659,6 @@ public class Directory implements Comparable<Directory>, MutableTreeNode, DiskIt
             str += (tabChars);
         }
         return str;
-    }
-
-    public Directory[] getDirectoryPath() {
-        List<Directory> path = getTreeNodePath();
-        Directory[] pathArray = new Directory[path.size()];
-        int index = path.size() - 1;
-        for (Directory directory : path) {
-            pathArray[index--] = directory;
-        }
-        return pathArray;
-    }
-
-    // TreeNode
-    /**
-     * NOTE: this is a reversed list! deepest path item first. First path
-     * element is this Directory 2nd is parent etc.
-     */
-    public List<Directory> getTreeNodePath() {
-        Directory dir = this;
-        List<Directory> treeNodes = new LinkedList<Directory>();
-        treeNodes.add(dir);
-        while (dir.hasParent()) {
-            dir = dir.getParentDirectory();
-            if (dir.hasParent()) {// do not include the root "files"
-                treeNodes.add(dir);
-            }
-        }
-        return treeNodes;
-    }
-
-    public Enumeration children() {
-        return new MyChildrenEnum(listSubDirectories());
-    }
-
-    public boolean getAllowsChildren() {
-        return true;
-    }
-
-    public TreeNode getChildAt(int childIndex) {
-        return listSubDirectories().get(childIndex);
-
-    }
-
-    public int getChildCount() {
-        return listSubDirectories().size();
-    }
-
-    public int getIndex(TreeNode treeNode) {
-        if (!(treeNode instanceof Directory)) {
-            return -1;
-        }
-        return listSubDirectories().indexOf(treeNode);
-    }
-
-    public boolean isLeaf() {
-        return listSubDirectories().size() != 0;
-    }
-
-    public TreeNode getParent() {
-        if (parent == null) {
-            return rootFolder.getTreeNode();
-        }
-        return parent;
-    }
-
-    private static class MyChildrenEnum implements Enumeration {
-        private List childs;
-        private int index = -1;
-
-        public MyChildrenEnum(List childs) {
-            this.childs = childs;
-        }
-
-        public boolean hasMoreElements() {
-            return index < childs.size() - 1;
-        }
-
-        public Object nextElement() {
-            return childs.get(++index);
-        }
-    }
-
-    // not mutable ignore this
-    public void insert(MutableTreeNode child, int index) {
-    }
-
-    public void remove(int index) {
-    }
-
-    public void remove(MutableTreeNode node) {
-    }
-
-    public void removeFromParent() {
-    }
-
-    public void setParent(MutableTreeNode newParent) {
-    }
-
-    public void setUserObject(Object object) {
     }
 
     //////////////////////////////

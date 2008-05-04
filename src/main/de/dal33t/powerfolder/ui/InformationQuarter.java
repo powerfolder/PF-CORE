@@ -41,6 +41,7 @@ import de.dal33t.powerfolder.ui.recyclebin.RecycleBinPanel;
 import de.dal33t.powerfolder.ui.transfer.DownloadsPanel;
 import de.dal33t.powerfolder.ui.transfer.UploadsPanel;
 import de.dal33t.powerfolder.ui.webservice.OnlineStoragePanel;
+import de.dal33t.powerfolder.ui.model.DirectoryModel;
 import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
@@ -207,8 +208,8 @@ public class InformationQuarter extends PFUIComponent {
      */
     private void setSelected(Object selection) {
         // TODO #621 Refactor this
-        if (selection instanceof Directory) {
-            displayDirectory((Directory) selection);
+        if (selection instanceof DirectoryModel) {
+            displayDirectory(((DirectoryModel) selection).getDirectory());
         } else if (selection instanceof Folder) {
             displayFolder((Folder) selection);
         } else if (selection instanceof Member) {

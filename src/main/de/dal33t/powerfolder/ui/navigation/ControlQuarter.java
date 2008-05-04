@@ -13,6 +13,8 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.event.NavigationEvent;
 import de.dal33t.powerfolder.event.NavigationListener;
 import de.dal33t.powerfolder.ui.DebugPanel;
+import de.dal33t.powerfolder.ui.model.FolderModel;
+import de.dal33t.powerfolder.ui.model.DirectoryModel;
 import de.dal33t.powerfolder.ui.dialog.PreviewToJoinPanel;
 import de.dal33t.powerfolder.ui.action.*;
 import de.dal33t.powerfolder.ui.folder.FilesTab;
@@ -43,7 +45,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.*;
 import java.util.List;
 import java.util.prefs.Preferences;
 
@@ -315,15 +317,13 @@ public class ControlQuarter extends PFUIComponent {
         log().verbose("setSelected:" + directory);
         if (directory != null) {
             Folder folder = directory.getRootFolder();
-            List<Directory> pathToDirTreeNode = directory.getTreeNodePath();
-            TreeNode[] path = new TreeNode[3 + pathToDirTreeNode.size()];
+            FolderModel folderModel = getController().getUIController()
+                    .getFolderRepositoryModel().locateFolderModel(folder);
+            TreeNode[] path = new TreeNode[3];
             path[0] = navTreeModel.getRootNode();
             path[1] = getUIController().getFolderRepositoryModel()
                 .getMyFoldersTreeNode();
-            path[2] = folder.getTreeNode();
-            for (int i = 0; i < pathToDirTreeNode.size(); i++) {
-                path[path.length - (i + 1)] = pathToDirTreeNode.get(i);
-            }
+            path[2] = folderModel.getTreeNode();
             setSelectedPath(path);
         }
     }
@@ -336,7 +336,9 @@ public class ControlQuarter extends PFUIComponent {
     }
 
     public void setSelected(Folder folder) {
-        MutableTreeNode node = folder.getTreeNode();
+        FolderModel folderModel = getController().getUIController()
+                .getFolderRepositoryModel().locateFolderModel(folder);
+        MutableTreeNode node = folderModel.getTreeNode();
         TreeNode[] path = new TreeNode[3];
         path[0] = navTreeModel.getRootNode();
         path[1] = getUIController().getFolderRepositoryModel()

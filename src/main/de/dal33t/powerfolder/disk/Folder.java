@@ -10,13 +10,11 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -33,8 +31,6 @@ import java.util.SortedMap;
 import java.util.TimerTask;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
-
-import javax.swing.tree.MutableTreeNode;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
@@ -73,7 +69,6 @@ import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
 import de.dal33t.powerfolder.util.ui.NeverAskAgainResponse;
-import de.dal33t.powerfolder.util.ui.TreeNodeList;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
@@ -120,11 +115,8 @@ public class Folder extends PFComponent {
     /** All members of this folder */
     private Set<Member> members;
 
-    /** The ui node */
-    private TreeNodeList treeNode;
-
     /** cached Directory object */
-    private Directory rootDirectory;
+    private final Directory rootDirectory;
 
     /**
      * the folder info, contains important information about
@@ -299,6 +291,10 @@ public class Folder extends PFComponent {
         }
 
         previewOnly = folderSettings.isPreviewOnly();
+
+        rootDirectory = Directory.buildDirsRecursive(getController()
+            .getNodeManager().getMySelf(), knownFiles.values(), this);
+                   String bob = "";
     }
 
     /**
@@ -2213,9 +2209,6 @@ public class Folder extends PFComponent {
      * @return Directory with all sub dirs and treeNodes set
      */
     public Directory getDirectory() {
-        if (rootDirectory == null) {
-            return getDirectory0(false);
-        }
         return rootDirectory;
     }
 
@@ -2223,38 +2216,6 @@ public class Folder extends PFComponent {
      * This is a HACK. #698
      */
     public void refreshRootDirectory() {
-        if (treeNode == null) {
-            return;
-        }
-        if (treeNode.getChildCount() > 0) {
-            treeNode.removeAllChildren();
-        }
-        List<Directory> subs = getDirectory().listSubDirectories();
-        for (int i = 0; i < subs.size(); i++) {
-            treeNode.insert(subs.get(i), i);
-        }
-    }
-
-    /**
-     * Initernal method //TODO: add a task to read this in the background?
-     * 
-     * @param initalizeCall
-     * @return the dir
-     */
-    private Directory getDirectory0(boolean initalizeCall) {
-        Directory directory = Directory.buildDirsRecursive(getController()
-            .getNodeManager().getMySelf(), knownFiles.values(), this);
-        if (treeNode != null) {
-            if (!initalizeCall && treeNode.getChildCount() > 0) {
-                treeNode.remove(0);
-            }
-            List<Directory> subs = directory.listSubDirectories();
-            for (int i = 0; i < subs.size(); i++) {
-                treeNode.insert(subs.get(i), i);
-            }
-        }
-
-        return directory;
     }
 
     /**
@@ -2498,33 +2459,6 @@ public class Folder extends PFComponent {
 
     public String getLoggerName() {
         return "Folder '" + getName() + '\'';
-    }
-
-    // UI-Swing methods *******************************************************
-
-    /**
-     * TODO Move this into a <code>FolderModel</code> similar to
-     * <code>NodeManagerModel</code> and <code>FolderRepositoryModel</code>
-     * 
-     * @return the treenode representation of this object.
-     */
-    public MutableTreeNode getTreeNode() {
-        if (treeNode == null) {
-            // Initalize treenode now lazily
-            treeNode = new TreeNodeList(this, getController().getUIController()
-                .getFolderRepositoryModel().getMyFoldersTreeNode());
-            // treeNode.sortBy(MemberComparator.IN_GUI);
-
-            // first make sure we have a fresh copy
-            rootDirectory = getDirectory0(true);//
-
-            // Now sort
-            treeNode.sort();
-        } // else {
-        // getDirectory();
-        // }
-
-        return treeNode;
     }
 
     // Inner classes **********************************************************
