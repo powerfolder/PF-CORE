@@ -43,14 +43,22 @@ public class FolderDBDebug {
             : null;
         String fName = folderInfo != null ? folderInfo.name : "-unknown-";
 
+        long totalSize = 0;
+        for (FileInfo fileInfo : files) {
+            if (fileInfo.isDeleted()) {
+                continue;
+            }
+            totalSize += fileInfo.getSize();
+        }
         // Write filelist to disk
         File debugFile = new File(Logger.getDebugDir().getAbsolutePath()
             + "/Folder '" + fName + "'.list.txt");
         Debug.writeFileListCSV(Arrays.asList(files), "FileList of folder "
             + fName, debugFile);
 
-        System.out.println("Read " + files.length + " files from " + args[0]
-            + " to " + debugFile.getAbsolutePath());
+        System.out.println("Read " + files.length + " files ("
+            + Format.formatBytesShort(totalSize) + ") from " + args[0] + " to "
+            + debugFile.getAbsolutePath());
     }
 
     private static boolean checkForDupes(FileInfo[] list) {
