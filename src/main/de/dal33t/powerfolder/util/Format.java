@@ -18,7 +18,7 @@ public class Format {
 				"[HH:mm:ss]"));
 	private static final DateFormat DETAILED_TIME_FORMAT = 
 		new SynchronizedDateFormat(new SimpleDateFormat(
-				"[HH:mm:ss:SS]"));
+				"[HH:mm:ss:SSS]"));
 	private static final DateFormat FULL_DATE_FORMAT = 
 		new SynchronizedDateFormat(new SimpleDateFormat(
 				"dd.MM.yyyy HH:mm:ss"));
