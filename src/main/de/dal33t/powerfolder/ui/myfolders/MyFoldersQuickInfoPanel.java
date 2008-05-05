@@ -65,38 +65,30 @@ public class MyFoldersQuickInfoPanel extends QuickInfoPanel {
      * Updates the info fields
      */
     private void updateText() {
-        StringBuilder foldersText = new StringBuilder();
-        int nTotalFiles = 0;
         long nTotalBytes = 0;
         FolderRepository repo = getController().getFolderRepository();
         Folder[] folders = repo.getFolders();
 
-        // FIXME: i18n support right to left reading languages
+        int synchronizingFolders = 0;
         for (Folder folder : folders) {
             if (folder.isTransferring()) {
-                foldersText.append(folder.getName());
-                foldersText.append(", ");
+                synchronizingFolders++;
             }
-
-            nTotalFiles += folder.getStatistic().getTotalFilesCount();
             nTotalBytes += folder.getStatistic().getTotalSize();
         }
 
         String text1;
-        if (foldersText.length() == 0) {
-            text1 = Translation.getTranslation("quickinfo.myfolders.insyncall");
+        if (synchronizingFolders == 0) {
+            text1 = Translation.getTranslation("quickinfo.myfolders.in_sync_all");
         } else {
-            int maxlen = Math.min(foldersText.length(), 40);
-            foldersText.replace(maxlen - 2, foldersText.length(), "...");
-            text1 = Translation.getTranslation("quickinfo.myfolders.syncing",
-                foldersText);
+            text1 = Translation.getTranslation("quickinfo.myfolders.syncing", synchronizingFolders);
         }
 
         infoText1.setText(text1);
 
         String text2 = Translation.getTranslation(
-            "quickinfo.myfolders.folders", Format.formatBytes(nTotalBytes),
-            Integer.valueOf(folders.length));
+            "quickinfo.myfolders.powerfolders", Format.formatBytes(nTotalBytes),
+                folders.length);
         infoText2.setText(text2);
     }
 
