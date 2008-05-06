@@ -73,6 +73,8 @@ public class NodesSelectDialog extends PFUIComponent {
             }
         });
 
+        // OK is the default
+        uiComponent.getRootPane().setDefaultButton(okButton);
         okButton.addActionListener(new MyOkListener());
 
         // Layout
@@ -97,6 +99,11 @@ public class NodesSelectDialog extends PFUIComponent {
         });
         nodesSelectTableModel = new NodesSelectTableModel(getController());
         nodesSelectTable = new NodesSelectTable(nodesSelectTableModel);
+
+        // Autoselect row if there is only one member.
+        if (nodesSelectTableModel.getRowCount() == 1) {
+            nodesSelectTable.setRowSelectionInterval(0, 0);
+        }
         JScrollPane pane = new JScrollPane(nodesSelectTable);
         pane.setPreferredSize(new Dimension(400, 200));
 
