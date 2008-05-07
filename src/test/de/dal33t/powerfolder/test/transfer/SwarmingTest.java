@@ -286,7 +286,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
         throws IOException
     {
         Random prng = new Random();
-        final int numC = 4;
+        final int numC = 20;
         nSetupControllers(numC);
         setConfigurationEntry(ConfigurationEntry.USE_SWARMING_ON_LAN, "true");
         setConfigurationEntry(ConfigurationEntry.USE_DELTA_ON_LAN, "true");

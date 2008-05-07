@@ -16,7 +16,6 @@ import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.message.AbortUpload;
 import de.dal33t.powerfolder.message.FileChunk;
 import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.message.ReplyFilePartsRecord;
@@ -27,6 +26,7 @@ import de.dal33t.powerfolder.message.StartUpload;
 import de.dal33t.powerfolder.message.StopUpload;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.util.Convert;
+import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.delta.FilePartsRecord;
 
@@ -41,7 +41,9 @@ public class Upload extends Transfer {
     public final static int MAX_REQUESTS_QUEUED = 20;
 
     private boolean aborted;
-    private Queue<Message> pendingRequests = new LinkedList<Message>();
+    private transient Queue<Message> pendingRequests = new LinkedList<Message>();
+
+    protected transient RandomAccessFile raf;
 
     /**
      * Constructs a new uploads, package protected, can only be called by
@@ -80,6 +82,8 @@ public class Upload extends Transfer {
     }
 
     public void enqueuePartRequest(RequestPart pr) {
+        Reject.ifNull(pr, "Message is null");
+        
         // If the download was aborted
         if (aborted || !isStarted()) {
             return;
@@ -87,7 +91,7 @@ public class Upload extends Transfer {
 
         if (!Util.usePartRequests(getController(), this.getPartner())) {
             log().warn("Downloader sent a PartRequest (Protocol violation). Aborting.");
-            getPartner().sendMessagesAsynchron(new AbortUpload(pr.getFile()));
+            getTransferManager().setBroken(this, TransferProblem.TRANSFER_EXCEPTION);
             return;
         }
         // Requests for different files on the same transfer connection are not
@@ -105,6 +109,8 @@ public class Upload extends Transfer {
     }
 
     public void receivedFilePartsRecordRequest(RequestFilePartsRecord r) {
+        Reject.ifNull(r, "Record is null");
+        
         log().info("Received request for a parts record.");
         // If the download was aborted
         if (aborted || !isStarted()) {
@@ -122,6 +128,8 @@ public class Upload extends Transfer {
     }
 
     public void stopUploadRequest(StopUpload su) {
+        Reject.ifNull(su, "Message is null");
+        
         synchronized (pendingRequests) {
             pendingRequests.clear();
             pendingRequests.add(su);
@@ -130,6 +138,8 @@ public class Upload extends Transfer {
     }
 
     public void cancelPartRequest(RequestPart pr) {
+        Reject.ifNull(pr, "Message is null");
+        
         synchronized (pendingRequests) {
             pendingRequests.remove(pr);
             pendingRequests.notifyAll();
@@ -153,19 +163,18 @@ public class Upload extends Transfer {
         Runnable uploadPerfomer = new Runnable() {
             public void run() {
                 try {
+                    try {
+                        raf = new RandomAccessFile(getFile()
+                            .getDiskFile(
+                                getController().getFolderRepository()),
+                            "r");
+                    } catch (FileNotFoundException e) {
+                        throw new TransferException(e);
+                    }
+                    
+                    
                     // If our partner supports requests, let him request. This is required for swarming to work.
                     if (Util.usePartRequests(getController(), getPartner())) {
-
-                        if (raf == null) {
-                            try {
-                                raf = new RandomAccessFile(getFile()
-                                    .getDiskFile(
-                                        getController().getFolderRepository()),
-                                    "r");
-                            } catch (FileNotFoundException e) {
-                                throw new TransferException(e);
-                            }
-                        }
 
                         if (logVerbose) {
                             log().verbose(
@@ -211,13 +220,10 @@ public class Upload extends Transfer {
                     getTransferManager().setBroken(Upload.this,
                         TransferProblem.TRANSFER_EXCEPTION, e.getMessage());
                 } finally {
-                    // TODO Aborts don't seem to shutdown properly 
-                    if (raf != null) {
-                        try {
-                            raf.close();
-                        } catch (IOException e) {
-                            log().error(e);
-                        }
+                    try {
+                        raf.close();
+                    } catch (IOException e) {
+                        log().error(e);
                     }
                 }
             }
@@ -297,7 +303,7 @@ public class Upload extends Transfer {
         transferState.setState(TransferState.UPLOADING);
         RequestPart pr = null;
         synchronized (pendingRequests) {
-            if (pendingRequests.isEmpty()) {
+            while (pendingRequests.isEmpty() && !isBroken() && !isAborted()) {
                 try {
                     pendingRequests.wait(Constants.UPLOAD_PART_REQUEST_TIMEOUT);
                 } catch (InterruptedException e) {
@@ -372,7 +378,9 @@ public class Upload extends Transfer {
                 return true;
             }
             try {
-                pendingRequests.wait();
+                while (pendingRequests.isEmpty() && !isBroken() && !aborted) {
+                    pendingRequests.wait();
+                }
             } catch (InterruptedException e) {
                 log().error(e);
             }
@@ -394,7 +402,6 @@ public class Upload extends Transfer {
      * Shuts down this upload if currently active
      */
     void shutdown() {
-        abort();
         super.shutdown();
         // "Forget" all requests from the client
         stopUploads();
@@ -489,17 +496,8 @@ public class Upload extends Transfer {
      *             if something unexepected occoured.
      */
     private void sendChunks() throws TransferException {
-        // FIXME: This test can't result in "true" unless the VM is bugged, not
-        // ?
-        if (this == null) {
-            throw new NullPointerException("Upload is null");
-        }
-        if (getPartner() == null) {
-            throw new NullPointerException("Upload member is null");
-        }
-        if (getFile() == null) {
-            throw new NullPointerException("Upload file is null");
-        }
+        assert getPartner() != null : "Upload member is null";
+        assert getFile() != null : "Upload file is null";
 
         if (isBroken()) {
             throw new TransferException("Upload broken: " + this);
@@ -558,10 +556,6 @@ public class Upload extends Transfer {
 
                 if (chunkSize <= 0) {
                     log().error("Illegal chunk size: " + chunkSize);
-                }
-
-                if (raf == null) {
-                    raf = new RandomAccessFile(f, "r");
                 }
 
                 // InputStream fin = new BufferedInputStream(
@@ -654,6 +648,9 @@ public class Upload extends Transfer {
     private void checkLastModificationDate(FileInfo theFile, File f)
         throws TransferException
     {
+        assert theFile != null;
+        assert f != null;
+        
         boolean lastModificationDataMismatch = !Util
             .equalsFileDateCrossPlattform(f.lastModified(), theFile
                 .getModifiedDate().getTime());

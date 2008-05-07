@@ -1406,8 +1406,8 @@ public class Member extends PFComponent {
             StartUpload su = (StartUpload) message;
             Download dl = getController().getTransferManager().getDownload(
                 this, su.getFile());
-            if (dl != null) {
-                dl.uploadStarted(su.getFile());
+            if (dl != null && su.getFile().isCompletelyIdentical(dl.getFile())) {
+                dl.uploadStarted();
             } else {
                 log().warn("Download not found: " + su.getFile());
             }
@@ -1429,8 +1429,10 @@ public class Member extends PFComponent {
             ReplyFilePartsRecord rep = (ReplyFilePartsRecord) message;
             Download dl = getController().getTransferManager().getDownload(
                 this, rep.getFile());
-            if (dl != null) {
+            if (dl != null && dl.getFile().isCompletelyIdentical(rep.getFile())) {
                 dl.receivedFilePartsRecord(rep.getRecord());
+            } else if (dl != null) {
+                log().info("Received record for old download");
             } else {
                 log().warn("Download not found: " + dl);
             }

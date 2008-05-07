@@ -2,7 +2,6 @@
  */
 package de.dal33t.powerfolder.transfer;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -12,7 +11,6 @@ import java.util.Queue;
 
 import org.apache.commons.lang.Validate;
 
-import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
@@ -103,14 +101,10 @@ public class Download extends Transfer {
      * Called when the partner supports part-transfers and is ready to upload
      * @param usedFileInfo 
      */
-    public void uploadStarted(FileInfo usedFileInfo) {
+    public void uploadStarted() {
         lastTouch.setTime(System.currentTimeMillis());
         if (isStarted()) {
             log().warn("Received multiple upload start messages!");
-            return;
-        }
-        if (!usedFileInfo.isCompletelyIdentical(getFile())) {
-            getController().getTransferManager().setBroken(this, TransferProblem.BROKEN_DOWNLOAD, "Concurrent modification");
             return;
         }
         log().info(
@@ -126,11 +120,13 @@ public class Download extends Transfer {
         assert Util.useDeltaSync(getController(), getPartner()) :
             "Requesting FilePartsRecord from a client that doesn't support that!";
 
-            getPartner().sendMessagesAsynchron(
+        getPartner().sendMessagesAsynchron(
             new RequestFilePartsRecord(getFile()));
     }
     
-    public void receivedFilePartsRecord(final FilePartsRecord record) {
+    public void receivedFilePartsRecord(FilePartsRecord record) {
+        Reject.ifNull(record, "Record is null");
+        
         lastTouch.setTime(System.currentTimeMillis());
         log().info("Received parts record");
         manager.receivedFilePartsRecord(this, record);
@@ -177,6 +173,8 @@ public class Download extends Transfer {
      */
     public synchronized boolean addChunk(FileChunk chunk) {
         Reject.ifNull(chunk, "Chunk is null");
+        assert chunk.file.isCompletelyIdentical(getFile());
+        
         if (isBroken()) {
             return false;
         }
@@ -302,7 +300,7 @@ public class Download extends Transfer {
             boolean newerFileAvailable = getFile().isNewerAvailable(
                 getController().getFolderRepository());
             if (newerFileAvailable) {
-                log().warn("Abort cause: Newer version available. " + Debug.detailedObjectState(getFile()));
+                log().warn("Abort cause: Newer version available. " + getFile());
                 return true;
 //                throw new RuntimeException("ABORT: " + this);
             }

@@ -530,8 +530,6 @@ public class TransferManager extends PFComponent {
             try {
                 // transferFound = downloads.remove(transfer.getFile()) != null;
                 transferFound = dl.getDownloadManager() != null;
-                assert !transferFound || dl.getDownloadManager().getSourceFor(
-                        transfer.getPartner()) != null;
                 if (transferFound) {
                     removeDownload(dl);
                 }
@@ -634,6 +632,8 @@ public class TransferManager extends PFComponent {
     }
 
     void setCompleted(DownloadManager download) {
+        assert download.isDone();
+
         FileInfo fInfo = download.getFileInfo();
         // Inform other folder member of added file
         Folder folder = fInfo.getFolder(getController().getFolderRepository());
@@ -641,39 +641,31 @@ public class TransferManager extends PFComponent {
             // scan in new downloaded file
             // TODO React on failed scan?
             // TODO PREVENT further uploads of this file unless it's "there"
-            uploadsLock.lock();
-            try {
-                // Search for active uploads of the file and break them
-                boolean abortedDL;
-                do {
-                    abortedDL = false;
-                    for (Upload u : activeUploads) {
-                        if (u.getFile().equals(fInfo)) {
-                            u.abort();
-                            abortedDL = true;
-                        }
+            // Search for active uploads of the file and break them
+            boolean abortedDL;
+            do {
+                abortedDL = false;
+                for (Upload u : activeUploads) {
+                    if (u.getFile().equals(fInfo)) {
+                        abortDownload(fInfo, u.getPartner());
+                        abortedDL = true;
                     }
-                    if (abortedDL) {
-                        try {
-                            synchronized (uploadsLock) {
-                                uploadsLock.wait(50);
-                            }
-                        } catch (InterruptedException e) {
-                        }
+                }
+                if (abortedDL) {
+                    try {
+                        Thread.sleep(50);
+                    } catch (InterruptedException e) {
                     }
-                } while (abortedDL);
-            } finally {
-                uploadsLock.unlock();
-            }
-            assert download.isDone();
+                }
+            } while (abortedDL);
+
             assert getActiveUploads(fInfo).size() == 0;
             
             if (!folder.scanDownloadFile(fInfo, download.getTempFile())) {
                 log().debug("Scanning of completed file failed.");
                 downloadsLock.lock();
                 try {
-                    download.broken();
-                    assert !dlManagers.containsValue(download);
+                    download.broken("Failed to scan downloaded file");
                     return;
                 } catch (AssertionError e) {
                     log().error(e);
@@ -685,6 +677,10 @@ public class TransferManager extends PFComponent {
         }
         downloadsLock.lock();
         try {
+            // Might be broken in the meantime
+            if (!download.isCompleted()) {
+                return;
+            }
             completedDownloads.add(download);
             removeDownloadManager(download);
         } catch (AssertionError e) {
@@ -1273,8 +1269,7 @@ public class TransferManager extends PFComponent {
     private void removeDownload(Download download) {
         assert downloadsLock.isHeldByCurrentThread();
 
-        DownloadManager man = dlManagers.get(download.getFile());
-        assert man == download.getDownloadManager() : man + " != " + dlManagers.get(download.getFile());
+        DownloadManager man = download.getDownloadManager();
         
         if (!man.getFileInfo().isCompletelyIdentical(download.getFile())) {
             log().debug("Got abort for old download, ignoring.");
@@ -1282,7 +1277,7 @@ public class TransferManager extends PFComponent {
         }
         if (man.getSourceFor(download.getPartner()) == null) {
             log()
-                .warn(
+                .info(
                     "Not removing source of invalid partner! (Maybe got removed before)");
             return;
         }
@@ -1290,7 +1285,7 @@ public class TransferManager extends PFComponent {
         if (!man.hasSources()) {
             log().debug("No further sources in that manager, removing it!");
             if (!man.isDone()) {
-                man.broken();
+                man.broken("Out of sources for download");
             }
             // If the downloadmanager itself got broken it may happen that it's
             // still managed. 
@@ -1565,17 +1560,22 @@ public class TransferManager extends PFComponent {
         } finally {
             downloadsLock.unlock();
         }
-        log().debug("Aborting uploads of file to be downloaded.");
+        boolean uploadAborted = false;
         uploadsLock.lock();
         try {
             for (Upload u : activeUploads) {
                 if (u.getFile().equals(fInfo)) {
-                    u.abort();
+                    uploadAborted = true;
+                    abortUpload(fInfo, u.getPartner());
                 }
             }
         } finally {
             uploadsLock.unlock();
         }
+        if (uploadAborted) {
+            log().debug("Aborted uploads of file to be downloaded. DLMan: " + man);
+        }
+
         downloadsLock.lock();
         try {
             final DownloadManager manager = man;
@@ -1607,6 +1607,7 @@ public class TransferManager extends PFComponent {
             downloadsLock.unlock();
         }
         if (dlWasRequested) {
+            log().debug("File really was requested!");
             // Fire event
             fireDownloadRequested(new TransferManagerEvent(this, download));
         }
@@ -1697,6 +1698,7 @@ public class TransferManager extends PFComponent {
         }
     }
 
+    private Map<FileInfo, Throwable> debug = new HashMap<FileInfo, Throwable>();
     /**
      * @param manager
      */
@@ -1705,8 +1707,13 @@ public class TransferManager extends PFComponent {
         // Debug.dumpCurrentStackTrace();
         assert manager.isDone() : "Manager to remove is NOT done!";
         if (!dlManagers.remove(manager.getFileInfo(), manager)) {
-            throw new AssertionError("Manager not found: "
-                + Debug.detailedObjectState(manager));
+            // FIXME This can happen if inbetween COMPLETED an abort message is received!
+//            throw new Error(debug.get(manager.getFileInfo()));
+//            throw new AssertionError("Manager not found: "
+//                + Debug.detailedObjectState(manager);
+            return;
+        } else {
+            debug.put(manager.getFileInfo(), new RuntimeException());
         }
     }
 
@@ -2258,9 +2265,9 @@ public class TransferManager extends PFComponent {
                 "Checking " + getActiveDownloadCount() + " download(s)");
         }
 
-        downloadsLock.lock();
-        try {
-            for (DownloadManager man : dlManagers.values()) {
+        for (DownloadManager man : dlManagers.values()) {
+            downloadsLock.lock();
+            try {
                 downloadNewestVersion(man.getFileInfo(), true);
                 for (Download download : man.getSources()) {
                     if (download.isBroken()) {
@@ -2268,17 +2275,14 @@ public class TransferManager extends PFComponent {
                         setBroken(download, TransferProblem.BROKEN_DOWNLOAD);
                     }
                 }
-                assert (!man.getSources().isEmpty() && !man.isDone()) || !dlManagers.containsValue(man)
-                    : "sources: " + man.getSources().size() + " " 
-                    + "isDone: " + man.isDone() + " "
-                    + "isActive: " + dlManagers.containsValue(man) + " "
-                    + " toString: " + man;
+//                assert (!man.getSources().isEmpty() && !man.isDone()) || !dlManagers.containsValue(man)
+//                    : "sources: " + man.getSources().size() + " " 
+//                    + "isDone: " + man.isDone() + " "
+//                    + "isActive: " + dlManagers.containsValue(man) + " "
+//                    + " toString: " + man;
+            } finally {
+                downloadsLock.unlock();
             }
-        } catch (AssertionError e) {
-            log().error(e);
-            throw e;
-        } finally {
-            downloadsLock.unlock();
         }
     }
 

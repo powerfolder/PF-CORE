@@ -42,7 +42,6 @@ public abstract class Transfer extends Loggable implements Serializable {
     private String problemInformation;
 
     protected final State transferState = new State();
-    protected transient RandomAccessFile raf;
 
     public enum TransferState {
         NONE("None"), FILERECORD_REQUEST("transfers.requested"), MATCHING(
@@ -87,7 +86,7 @@ public abstract class Transfer extends Loggable implements Serializable {
          */
         public synchronized void setProgress(double progress) {
             Reject.ifTrue(progress > 1, 
-                    "Process set to illegal value: " + progress);
+                    "Progress set to illegal value: " + progress);
             this.progress = progress;
         }
 
@@ -187,25 +186,9 @@ public abstract class Transfer extends Loggable implements Serializable {
     }
 
     void shutdown() {
-        if (raf != null) {
-            try {
-                raf.close();
-            } catch (IOException e) {
-                log().warn("Failed to close transfer file on abort!, e");
-            }
-        }
     }
 
     void setCompleted() {
-        // Make sure the file is closed
-        if (raf != null) {
-            try {
-                raf.close();
-            } catch (IOException e) {
-                log().warn("Failes to close transfer file!", e);
-            }
-        }
-
         // Set final state.
         transferState.setState(TransferState.DONE);
         transferState.setProgress(1);

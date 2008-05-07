@@ -115,14 +115,12 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
     @Override
     public String toString() {
         String string = super.toString() + "; #sources=" + downloads.values().size() + "; pending requested bytes: ";
-        synchronized (this) {
-            if (filePartsState != null) {
-                string += filePartsState.countPartStates(filePartsState.getRange(), PartState.PENDING)
-                    + "; available: "
-                    + filePartsState.countPartStates(filePartsState.getRange(), PartState.AVAILABLE)
-                    + "; needed: "
-                    + filePartsState.countPartStates(filePartsState.getRange(), PartState.NEEDED);
-            }
+        if (filePartsState != null) {
+            string += filePartsState.countPartStates(filePartsState.getRange(), PartState.PENDING)
+                + "; available: "
+                + filePartsState.countPartStates(filePartsState.getRange(), PartState.AVAILABLE)
+                + "; needed: "
+                + filePartsState.countPartStates(filePartsState.getRange(), PartState.NEEDED);
         }
         return string;
     }

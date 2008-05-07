@@ -155,5 +155,5 @@ public interface DownloadManager {
      */
     boolean isDone();
 
-    void broken();
+    void broken(String reason);
 }
