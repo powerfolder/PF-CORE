@@ -2,8 +2,7 @@
  */
 package de.dal33t.powerfolder;
 
-import java.awt.Component;
-import java.awt.GraphicsEnvironment;
+import java.awt.*;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -14,6 +13,7 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.security.Security;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.prefs.Preferences;
@@ -41,6 +41,7 @@ import de.dal33t.powerfolder.plugin.PluginManager;
 import de.dal33t.powerfolder.security.SecurityManager;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.UIController;
+import de.dal33t.powerfolder.ui.notification.NotificationHandler;
 import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.ForcedLanguageFileResourceBundle;
@@ -1851,11 +1852,54 @@ public class Controller extends PFComponent {
      * 
      * @return The time to wait
      */
-    public long getWaitTime() {
+    public static long getWaitTime() {
         return WAIT_TIME;
     }
 
     public String toString() {
         return "Controller '" + getMySelf() + '\'';
     }
+
+
+    /**
+     * Shows a notification message only if the UI is minimized.
+     *
+     * @param title
+     *          The title to display under 'PowerFolder'.
+     * @param message
+     *          Message to show if notification is displayed.
+     */
+    public void notifyMessage(String title, String message)
+    {
+        if (uiController.getMainFrame().isIconifiedOrHidden()) {
+            NotificationHandler notificationHandler = new NotificationHandler(
+                    getController(), title, message);
+            notificationHandler.show();
+        }
+    }
+
+    /**
+     * Run a task via the notification system. If the UI is minimized,
+     * a notification message will appear. If the user selects the accept button,
+     * the task runs. If the UI is not minimized, the task runs anyway.
+     *
+     * @param title
+     *          The title to display under 'PowerFolder'.
+     * @param message
+     *          Message to show if notification is displayed.
+     * @param task
+     *          Task to do if user selects 'accept' option or if UI is not minimized.
+     */
+    public void notifyMessage(String title, String message,
+                              TimerTask task)
+    {
+        if (uiController.getMainFrame().isIconifiedOrHidden()) {
+            NotificationHandler notificationHandler = new NotificationHandler(
+                    getController(), title, message, task);
+            notificationHandler.show();
+        } else {
+            task.run();
+        }
+    }
+
 }

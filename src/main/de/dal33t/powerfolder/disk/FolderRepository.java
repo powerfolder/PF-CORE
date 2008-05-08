@@ -859,11 +859,9 @@ public class FolderRepository extends PFComponent implements Runnable {
      * @param processSilently
      *            if the invitation should be processed silently if already on
      *            folder (no error)
-     * @param forcePopup
-     *            popup application (even when minimized)
      */
     public void invitationReceived(final Invitation invitation,
-        final boolean processSilently, final boolean forcePopup)
+        final boolean processSilently)
     {
         if (invitationReceivedHandler == null) {
             // No invitation handler? do nothing.
@@ -871,7 +869,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
         Reject.ifNull(invitation, "Invitation is null");
         InvitationReceivedEvent event = new InvitationReceivedEvent(this,
-            invitation, processSilently, forcePopup);
+            invitation, processSilently);
         invitationReceivedHandler.invitationReceived(event);
     }
 

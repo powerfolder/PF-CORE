@@ -1331,7 +1331,7 @@ public class Member extends PFComponent {
             invitation.setInvitor(this.getInfo());
 
             getController().getFolderRepository().invitationReceived(
-                invitation, true, false);
+                invitation, true);
 
         } else if (message instanceof Problem) {
             lastProblem = (Problem) message;

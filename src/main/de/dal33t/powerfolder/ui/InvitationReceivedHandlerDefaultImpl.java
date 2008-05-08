@@ -1,23 +1,20 @@
 package de.dal33t.powerfolder.ui;
 
-import java.awt.Frame;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowFocusListener;
-
-import javax.swing.*;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.event.InvitationReceivedEvent;
 import de.dal33t.powerfolder.event.InvitationReceivedHandler;
 import de.dal33t.powerfolder.message.Invitation;
-import de.dal33t.powerfolder.ui.wizard.ReceivedInvitationPanel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
+import de.dal33t.powerfolder.ui.wizard.ReceivedInvitationPanel;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
-import de.dal33t.powerfolder.util.os.OSUtil;
+
+import javax.swing.*;
+import java.awt.*;
+import java.util.TimerTask;
 
 /**
  * The default handler when an invitation is received by the
@@ -25,8 +22,7 @@ import de.dal33t.powerfolder.util.os.OSUtil;
  * join the folder.
  */
 public class InvitationReceivedHandlerDefaultImpl extends PFComponent implements
-    InvitationReceivedHandler
-{
+        InvitationReceivedHandler {
     public InvitationReceivedHandlerDefaultImpl(Controller controller) {
         super(controller);
     }
@@ -38,14 +34,12 @@ public class InvitationReceivedHandlerDefaultImpl extends PFComponent implements
      * joined.
      */
     public void invitationReceived(
-        InvitationReceivedEvent invitationRecievedEvent)
-    {
+            InvitationReceivedEvent invitationRecievedEvent) {
         final Invitation invitation = invitationRecievedEvent.getInvitation();
         final boolean processSilently = invitationRecievedEvent
-            .isProcessSilently();
-        final boolean forcePopup = invitationRecievedEvent.isProcessSilently();
+                .isProcessSilently();
         final FolderRepository repository = invitationRecievedEvent
-            .getFolderRepository();
+                .getFolderRepository();
         if (invitation == null || invitation.folder == null) {
             throw new NullPointerException("Invitation/Folder is null");
         }
@@ -62,9 +56,9 @@ public class InvitationReceivedHandlerDefaultImpl extends PFComponent implements
                     if (!processSilently) {
                         // Popup application
                         getController().getUIController().getMainFrame()
-                            .getUIComponent().setVisible(true);
+                                .getUIComponent().setVisible(true);
                         getController().getUIController().getMainFrame()
-                            .getUIComponent().setExtendedState(Frame.NORMAL);
+                                .getUIComponent().setExtendedState(Frame.NORMAL);
 
                         DialogFactory.genericDialog(
                                 getController().getUIController().getMainFrame().getUIComponent(),
@@ -75,35 +69,18 @@ public class InvitationReceivedHandlerDefaultImpl extends PFComponent implements
                     return;
                 }
                 final ReceivedInvitationPanel panel = new ReceivedInvitationPanel(
-                    getController(), invitation);
-                final JFrame jFrame = getController().getUIController()
-                    .getMainFrame().getUIComponent();
-                if (forcePopup
-                    || !(OSUtil.isSystraySupported() && !jFrame.isVisible()))
-                {
-                    // Popup whole application
-                    MainFrame mf = getController().getUIController()
-                        .getMainFrame();
-                    if (mf.isIconifiedOrHidden()) {
-                        mf.deiconify();
+                        getController(), invitation);
+                TimerTask task = new TimerTask() {
+                    public void run() {
+                        PFWizard wizard = new PFWizard(getController());
+                        wizard.open(panel);
                     }
-                    PFWizard wizard = new PFWizard(getController());
-                    wizard.open(panel);
-                } else {
-                    // Only show systray blinking
-                    getController().getUIController().getBlinkManager()
-                        .setBlinkingTrayIcon(Icons.ST_NODE);
-                    jFrame.addWindowFocusListener(new WindowFocusListener() {
-                        public void windowGainedFocus(WindowEvent e) {
-                            jFrame.removeWindowFocusListener(this);
-                            PFWizard wizard = new PFWizard(getController());
-                            wizard.open(panel);
-                        }
-
-                        public void windowLostFocus(WindowEvent e) {
-                        }
-                    });
-                }
+                };
+                getController().notifyMessage(
+                        Translation.getTranslation("invite_received_handler.notify.title")
+                        , Translation.getTranslation("invite_received_handler.notify.message",
+                        invitation.getInvitor().getNode(getController()).getNick()),
+                        task);
             }
         };
 
