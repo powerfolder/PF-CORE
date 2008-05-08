@@ -46,11 +46,10 @@ public class Identity extends Message {
 
     private Calendar timeGMT = Calendar.getInstance();
 
-    // TODO: The current code is a bit crappy in that it denies the remote side to use delta sync, 
-    //       or request parts, if the user has disabled delta sync/swarming locally.
-    
-    // Actually: Will support delta sync and part requests on this connection
-    private boolean supportingPartTransfers;
+    // Supports requests for single parts and filepartsrecords.
+    // Earlier this was based on a user setting, but that's wrong since we shouldn't deny the 
+    // remote side to decide how it wants to download.
+    private boolean supportingPartTransfers = true;
 
     public Identity() {
         // Serialisation constructor
@@ -64,8 +63,6 @@ public class Identity extends Message {
         this.magicId = magicId;
         this.supportsEncryption = supportsEncryption;
         this.tunneled = tunneled;
-        this.supportingPartTransfers = Util.allowDeltaSync(controller, handler.isOnLAN())
-            || Util.allowSwarming(controller, handler.isOnLAN());
 
         // Always true for newer versions #559
         this.acknowledgesHandshakeCompletion = true;

@@ -150,7 +150,7 @@ public class Util {
      * @param otherIsOnLAN
      * @return true, if this client may request parts from multiple sources 
      */
-    public static boolean allowSwarming(Controller c, boolean otherIsOnLAN) {
+    private static boolean allowSwarming(Controller c, boolean otherIsOnLAN) {
         Reject.ifNull(c, "Controller is null");
         return (ConfigurationEntry.USE_SWARMING_ON_INTERNET.getValueBoolean(c) && !otherIsOnLAN)
             || (ConfigurationEntry.USE_SWARMING_ON_LAN.getValueBoolean(c) && otherIsOnLAN);
@@ -161,22 +161,10 @@ public class Util {
      * @param otherIsOnLAN
      * @return true, if this client may request parts and a file parts record
      */
-    public static boolean allowDeltaSync(Controller c, boolean otherIsOnLAN) {
+    private static boolean allowDeltaSync(Controller c, boolean otherIsOnLAN) {
         Reject.ifNull(c, "Controller is null");
         return  (ConfigurationEntry.USE_DELTA_ON_INTERNET.getValueBoolean(c) && !otherIsOnLAN)
             || (ConfigurationEntry.USE_DELTA_ON_LAN.getValueBoolean(c) && otherIsOnLAN);
-    }
-    
-    /**
-     * @param c
-     * @param otherIsOnLAN
-     * @return true, if this client may request parts
-     */
-    public static boolean allowPartRequests(Controller c, boolean otherIsOnLAN) {
-        Reject.ifNull(c, "Controller is null");
-        // FIXME The && should be || but the current implementation requires this
-        return allowSwarming(c, otherIsOnLAN) 
-            || allowDeltaSync(c, otherIsOnLAN);
     }
     
     public static boolean useSwarming(Controller c, Member other) {
@@ -195,8 +183,7 @@ public class Util {
     public static boolean useDeltaSync(Controller c, Member other) {
         Validate.notNull(c);
         return other.isSupportingPartTransfers() 
-            && (ConfigurationEntry.USE_DELTA_ON_INTERNET.getValueBoolean(c) && !other.isOnLAN())
-            || (ConfigurationEntry.USE_DELTA_ON_LAN.getValueBoolean(c) && other.isOnLAN());
+            && allowDeltaSync(c, other.isOnLAN());
     }
 
     /**
