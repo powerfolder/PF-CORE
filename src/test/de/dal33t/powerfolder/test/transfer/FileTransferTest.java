@@ -603,6 +603,68 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(nFiles, lisasListener.downloadsCompletedRemoved);
     }
 
+    public void testMany0SizeFilesCopyDeltaSync() {
+        ConfigurationEntry.USE_DELTA_ON_LAN.setValue(getContollerBart(), "true");
+        ConfigurationEntry.USE_DELTA_ON_LAN.setValue(getContollerLisa(), "true");
+
+        // Register listeners
+        final MyTransferManagerListener bartsListener = new MyTransferManagerListener();
+        getContollerBart().getTransferManager().addListener(bartsListener);
+        final MyTransferManagerListener lisasListener = new MyTransferManagerListener();
+        getContollerLisa().getTransferManager().addListener(lisasListener);
+
+        final int nFiles = 450;
+        for (int i = 0; i < nFiles; i++) {
+            TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 0);
+        }
+        System.err.println("Created!");
+
+        // Let him scan the new content
+        scanFolder(getFolderAtBart());
+        assertEquals(nFiles, getFolderAtBart().getKnownFilesCount());
+
+        // Wait for copy
+        TestHelper.waitForCondition(100, new Condition() {
+            public boolean reached() {
+                return lisasListener.downloadCompleted >= nFiles
+                    && lisasListener.downloadRequested >= nFiles
+                    && lisasListener.downloadRequested >= nFiles;
+                /* && tm1Listener.uploadCompleted >= nFiles */
+            }
+        });
+
+        // Test ;)
+        assertEquals(nFiles, getFolderAtLisa().getKnownFilesCount());
+        // test physical files (1 + 1 system dir)
+        assertEquals(nFiles + 1, getFolderAtLisa().getLocalBase().list().length);
+
+        // Check correct event fireing
+        assertEquals(0, bartsListener.uploadAborted);
+        assertEquals(0, bartsListener.uploadBroken);
+        // assertEquals(nFiles, tm1Listener.uploadRequested);
+        // assertEquals(nFiles, tm1Listener.uploadStarted);
+        // assertEquals(nFiles, tm1Listener.uploadCompleted);
+
+        // Check correct event fireing
+        assertEquals(0, lisasListener.downloadAborted);
+        assertEquals(0, lisasListener.downloadBroken);
+        assertEquals(0, lisasListener.downloadsCompletedRemoved);
+        assertEquals(nFiles, lisasListener.downloadRequested);
+        // We can't rely on that all downloads have been queued.
+        // Might be started fast! So now queued message is sent
+        // assertEquals(nFiles, tm2Listener.downloadQueued);
+        // assertEquals(nFiles, tm2Listener.downloadStarted);
+        assertEquals(nFiles, lisasListener.downloadCompleted);
+
+        // No active downloads?!
+        assertEquals(0, getContollerLisa().getTransferManager()
+            .getActiveDownloadCount());
+
+        clearCompletedDownloadsAtLisa();
+        assertEquals(nFiles, lisasListener.downloadsCompletedRemoved);
+    }
+    
+    
     public void testMultipleResumeTransfer() throws Exception {
         for (int i = 0; i < 10; i++) {
             testResumeTransfer();

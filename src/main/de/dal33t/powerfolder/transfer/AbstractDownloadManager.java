@@ -724,6 +724,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
      */
     private void checkFileValidity() {
         assert state == InternalState.ACTIVE_DOWNLOAD
+            || state == InternalState.WAITING_FOR_UPLOAD_READY && filePartsState.getFileLength() == 0
             || state == InternalState.MATCHING_AND_COPYING : "Invalid state: "
             + state;
 
@@ -891,8 +892,13 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                             setFilePartsState(new FilePartsState(fileInfo
                                 .getSize()));
                         }
-                        log().debug("Not requesting record for this download.");
-                        startActiveDownload();
+                        if (filePartsState.isCompleted()) {
+                            log().debug("Not requesting anything, seems to be a zero file: " + fileInfo);
+                            checkFileValidity();
+                        } else {
+                            log().debug("Not requesting record for this download.");
+                            startActiveDownload();
+                        }
                     }
                     break;
                 case BROKEN :
