@@ -121,6 +121,26 @@ public class UDTTest extends TestCase {
         assertTrue(serv.isClosed());
     }
 
+    
+    public void testRendezvousOverhead() throws IOException {
+        if (!NetworkUtil.isUDTSupported()) {
+            return;
+        }
+        UDTSocket s = new UDTSocket();
+        s.setSoRendezvous(true);
+        int tmp = bindSocket(s);
+        for (int i = 0; i < 10; i++) {
+            try {
+                s.connect(new InetSocketAddress("localhost", tmp + 1));
+            } catch (IOException e) {
+                if (i < 10) {
+                    System.err.println("Next connect.");
+                }
+            }
+        }
+        s.close();
+    }
+    
     /**
      * Potential NAT traversal test.
      */
