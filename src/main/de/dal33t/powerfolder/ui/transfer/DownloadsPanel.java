@@ -14,6 +14,7 @@ import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.ui.QuickInfoPanel;
+import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.action.HasDetailsPanel;
 import de.dal33t.powerfolder.ui.action.ShowHideFileDetailsAction;
@@ -70,7 +71,6 @@ public class DownloadsPanel extends PFUIPanel implements HasDetailsPanel {
     // The actions
     private Action startDownloadsAction;
     private Action abortDownloadsAction;
-    private Action showHideFileDetailsAction;
     private Action clearCompletedAction;
     private Action openLocalFolderAction;
     private JCheckBox autoCleanupCB;
@@ -133,8 +133,8 @@ public class DownloadsPanel extends PFUIPanel implements HasDetailsPanel {
         // Initalize actions
         abortDownloadsAction = new AbortDownloadAction();
         startDownloadsAction = new StartDownloadsAction();
-        showHideFileDetailsAction = new ShowHideFileDetailsAction(this,
-            getController());
+        Action showHideFileDetailsAction = new ShowHideFileDetailsAction(this,
+                getController());
         showHideFileDetailsButton = new JToggleButton(showHideFileDetailsAction);
 
         clearCompletedAction = new ClearCompletedAction();
@@ -458,50 +458,57 @@ public class DownloadsPanel extends PFUIPanel implements HasDetailsPanel {
 
     public void clearDownloads() {
 
-        // Clear completed downloads
-        SwingWorker worker = new SwingWorker() {
-            @Override
-            public Object construct() {
-                int rowCount = table.getRowCount();
-                if (rowCount == 0) {
-                    return null;
-                }
+        ActivityVisualizationWorker avw =
+                new ActivityVisualizationWorker(getUIController()) {
 
-                // If no rows are selected,
-                // arrange for all downloads to be cleared.
-                boolean noneSelected = true;
-                for (int i = 0; i < table.getRowCount(); i++) {
-                    if (table.isRowSelected(i)) {
-                        noneSelected = false;
-                        break;
+                    @Override
+                    protected String getTitle() {
+                        return Translation.getTranslation("downloads_panel.cleanup_activity.title");
                     }
-                }
 
-                // Do in two passes so changes to the model do not affect
-                // the process.
-                List<Download> downloadsToClear = new ArrayList<Download>();
+                    @Override
+                    protected String getWorkingText() {
+                        return Translation.getTranslation("downloads_panel.cleanup_activity.description");
+                    }
 
-                for (int i = 0; i < table.getRowCount(); i++) {
-                    if (noneSelected || table.isRowSelected(i)) {
-                        Download dl = tableModel.getDownloadAtRow(i);
-                        if (dl.isCompleted()) {
-                            downloadsToClear.add(dl);
+                    public Object construct() {
+                        int rowCount = table.getRowCount();
+                        if (rowCount == 0) {
+                            return null;
                         }
-                    }
-                }
-                for (Download dl : downloadsToClear) {
-                    getController().getTransferManager()
-                        .clearCompletedDownload(dl.getDownloadManager());
-                }
-                return null;
-            }
 
-            @Override
-            public void finished() {
-                updateActions();
-            }
-        };
-        worker.start();
+                        // If no rows are selected,
+                        // arrange for all downloads to be cleared.
+                        boolean noneSelected = true;
+                        for (int i = 0; i < table.getRowCount(); i++) {
+                            if (table.isRowSelected(i)) {
+                                noneSelected = false;
+                                break;
+                            }
+                        }
+
+                        // Do in two passes so changes to the model do not affect
+                        // the process.
+                        List<Download> downloadsToClear = new ArrayList<Download>();
+
+                        for (int i = 0; i < table.getRowCount(); i++) {
+                            if (noneSelected || table.isRowSelected(i)) {
+                                Download dl = tableModel.getDownloadAtRow(i);
+                                if (dl.isCompleted()) {
+                                    downloadsToClear.add(dl);
+                                }
+                            }
+                        }
+                        for (Download dl : downloadsToClear) {
+                            getController().getTransferManager()
+                                    .clearCompletedDownload(dl.getDownloadManager());
+                        }
+                        return null;
+                    }
+                };
+
+        // Clear completed downloads
+        avw.start();
     }
 
     /**
