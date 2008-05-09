@@ -16,6 +16,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.TimerTask;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.imageio.ImageIO;
 import javax.swing.Action;
@@ -39,6 +40,8 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.event.FolderRepositoryListener;
+import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.ui.action.*;
@@ -227,6 +230,8 @@ public class UIController extends PFComponent {
             chatModel);
         blinkManager = new BlinkManager(getController(), chatModel);
         new ChatNotificationManager(getController(), chatModel);
+        getController().getFolderRepository().addFolderRepositoryListener(
+            new MyFolderRepositoryListener());
         folderRepoModel = new FolderRepositoryModel(getController(),
             navTreeModel);
         folderRepoModel.initalize();
@@ -889,6 +894,77 @@ public class UIController extends PFComponent {
 
         public boolean fireInEventDispathThread() {
             return true;
+        }
+    }
+
+    private class MyFolderRepositoryListener implements FolderRepositoryListener {
+
+        private final AtomicBoolean synchronizing = new AtomicBoolean();
+
+        public void folderRemoved(FolderRepositoryEvent e) {
+            checkStatus();
+        }
+
+        public void folderCreated(FolderRepositoryEvent e) {
+            checkStatus();
+        }
+
+        public void maintenanceStarted(FolderRepositoryEvent e) {
+            checkStatus();
+        }
+
+        public void maintenanceFinished(FolderRepositoryEvent e) {
+            checkStatus();
+        }
+
+        public boolean fireInEventDispathThread() {
+            return true;
+        }
+
+        /**
+         * Display folder synchronization info.
+         * A copy of the MyFolders quick info panel text.
+         */
+        private void checkStatus() {
+            long nTotalBytes = 0;
+            FolderRepository repo = getController().getFolderRepository();
+            Folder[] folders = repo.getFolders();
+
+            int synchronizingFolders = 0;
+            for (Folder folder : folders) {
+                if (folder.isTransferring()) {
+                    synchronizingFolders++;
+                }
+                nTotalBytes += folder.getStatistic().getTotalSize();
+            }
+
+            String text1;
+            boolean changed = false;
+            synchronized (synchronizing) {
+                if (synchronizingFolders == 0) {
+                    text1 = Translation.getTranslation("quickinfo.myfolders.in_sync_all");
+                    if (synchronizing.get()) {
+                        changed = true;
+                        synchronizing.set(false);
+                    }
+                } else {
+                    text1 = Translation.getTranslation("quickinfo.myfolders.syncing",
+                            synchronizingFolders);
+                    if (!synchronizing.get()) {
+                        changed = true;
+                        synchronizing.set(true);
+                    }
+                }
+            }
+
+            if (changed) {
+                String text2 = Translation.getTranslation(
+                    "quickinfo.myfolders.powerfolders", Format.formatBytes(nTotalBytes),
+                        folders.length);
+
+                getController().notifyMessage("Folder Synchronization",
+                        text1 + "\n\n" + text2);
+            }
         }
     }
 }
