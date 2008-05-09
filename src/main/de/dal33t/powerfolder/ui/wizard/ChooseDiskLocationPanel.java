@@ -57,31 +57,35 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
     private static final String USER_DIR_RECENT_DOCUMENTS = "Recent Documents";
     private static final String USER_DIR_VIDEOS = "Videos";
 
-    private static final String USER_DIR_MY_DOCUMENTS = WinUtils.getInstance()
-                    .getSystemFolderPath(WinUtils.CSIDL_PERSONAL, false);
-    private static final String USER_DIR_MY_MUSIC = WinUtils.getInstance()
-                    .getSystemFolderPath(WinUtils.CSIDL_MYMUSIC, false);
-    private static final String USER_DIR_MY_PICTURES = WinUtils.getInstance()
-                    .getSystemFolderPath(WinUtils.CSIDL_MYPICTURES, false);
-    private static final String USER_DIR_MY_VIDEOS = WinUtils.getInstance()
-                    .getSystemFolderPath(WinUtils.CSIDL_MYVIDEO, false);
+    // Vista has issues with these, so instantiate separately
+    private static String userDirMyDocuments;
+    private static String userDirMyMusic;
+    private static String userDirMyPictures;
+    private static String userDirMyVideos;
+    private static String appsDirOutlook;
 
     private static final String APPS_DIR_FIREFOX = "Mozilla" + File.separator
         + "Firefox";
     private static final String APPS_DIR_SUNBIRD = "Mozilla" + File.separator
         + "Sunbird";
     private static final String APPS_DIR_THUNDERBIRD = "Thunderbird";
-    private static String appsDirOutlook;
     private static final String APPS_DIR_FIREFOX2 = "firefox"; // Linux
     private static final String APPS_DIR_SUNBIRD2 = "sunbird"; // Linux
     private static final String APPS_DIR_THUNDERBIRD2 = "thunderbird"; // Linux
 
     static {
-        // Outlook mail files are in a stupid place.
         if (WinUtils.getInstance() != null) {
             appsDirOutlook = WinUtils.getInstance().getSystemFolderPath(
                 WinUtils.CSIDL_LOCAL_SETTINGS_APP_DATA, false)
                 + File.separator + "Microsoft" + File.separator + "Outlook";
+            userDirMyDocuments = WinUtils.getInstance()
+                            .getSystemFolderPath(WinUtils.CSIDL_PERSONAL, false);
+            userDirMyMusic = WinUtils.getInstance()
+                            .getSystemFolderPath(WinUtils.CSIDL_MYMUSIC, false);
+            userDirMyPictures = WinUtils.getInstance()
+                            .getSystemFolderPath(WinUtils.CSIDL_MYPICTURES, false);
+            userDirMyVideos = WinUtils.getInstance()
+                            .getSystemFolderPath(WinUtils.CSIDL_MYVIDEO, false);
         }
     }
     
@@ -358,14 +362,22 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
             .getTranslation("user.dir.links"), false);
         addTargetDirectory(userHome, USER_DIR_MUSIC, Translation
             .getTranslation("user.dir.music"), false);
-        addTargetDirectory(new File(USER_DIR_MY_DOCUMENTS), Translation
-            .getTranslation("user.dir.my_documents"), false);
-        addTargetDirectory(new File(USER_DIR_MY_MUSIC), Translation
-            .getTranslation("user.dir.my_music"), false);
-        addTargetDirectory(new File(USER_DIR_MY_PICTURES), Translation
-            .getTranslation("user.dir.my_pictures"), false);
-        addTargetDirectory(new File(USER_DIR_MY_VIDEOS), Translation
-            .getTranslation("user.dir.my_videos"), false);
+        if (userDirMyDocuments != null) {
+            addTargetDirectory(new File(userDirMyDocuments), Translation
+                .getTranslation("user.dir.my_documents"), false);
+        }
+        if (userDirMyDocuments != null) {
+            addTargetDirectory(new File(userDirMyMusic), Translation
+                .getTranslation("user.dir.my_music"), false);
+        }
+        if (userDirMyDocuments != null) {
+            addTargetDirectory(new File(userDirMyPictures), Translation
+                .getTranslation("user.dir.my_pictures"), false);
+            }
+        if (userDirMyDocuments != null) {
+            addTargetDirectory(new File(userDirMyVideos), Translation
+                .getTranslation("user.dir.my_videos"), false);
+        }
         addTargetDirectory(userHome, USER_DIR_PICTURES, Translation
             .getTranslation("user.dir.pictures"), false);
         addTargetDirectory(userHome, USER_DIR_RECENT_DOCUMENTS, Translation

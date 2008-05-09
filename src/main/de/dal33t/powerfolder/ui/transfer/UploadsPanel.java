@@ -9,6 +9,8 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.event.TransferAdapter;
+import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.transfer.Upload;
 import de.dal33t.powerfolder.ui.QuickInfoPanel;
 import de.dal33t.powerfolder.ui.model.TransferManagerModel;
@@ -177,6 +179,10 @@ public class UploadsPanel extends PFUIPanel implements HasDetailsPanel {
                 }
             });
 
+        // Listener on transfer manager
+        getController().getTransferManager().addListener(
+            new MyTransferManagerListener());
+
         // setup inital actions state
         updateActions();
     }
@@ -318,5 +324,40 @@ public class UploadsPanel extends PFUIPanel implements HasDetailsPanel {
         boolean rowsExist = table.getRowCount() > 0;
         clearCompletedAction.setEnabled(rowsExist);
     }
+
+    /**
+     * TransferManagerListener to respond to upload changes.
+     */
+    private class MyTransferManagerListener extends TransferAdapter {
+
+        public void uploadRequested(TransferManagerEvent event) {
+            updateActions();
+        }
+
+        public void uploadStarted(TransferManagerEvent event) {
+            updateActions();
+        }
+
+        public void uploadAborted(TransferManagerEvent event) {
+            updateActions();
+        }
+
+        public void uploadBroken(TransferManagerEvent event) {
+            updateActions();
+        }
+
+        public void uploadCompleted(TransferManagerEvent event) {
+            updateActions();
+        }
+
+        public void completedUploadRemoved(TransferManagerEvent event) {
+            updateActions();
+        }
+
+        public boolean fireInEventDispathThread() {
+            return true;
+        }
+    }
+
 
 }

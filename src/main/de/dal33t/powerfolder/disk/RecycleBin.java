@@ -234,7 +234,7 @@ public class RecycleBin extends PFComponent {
     /**
      * removes all files from the powerfolder recyclebin. Only files that are
      * marked deleted in the powerfolder data base of a folder and if the file
-     * is in the Powerfolder Recycle bin are deleted. If we support the OS
+     * is in the PowerFolder Recycle bin are deleted. If we support the OS
      * recycle bin like on windows the files are moved there.
      */
     public void emptyRecycleBin() {

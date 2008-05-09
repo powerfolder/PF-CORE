@@ -9,6 +9,8 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.event.TransferAdapter;
+import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.ui.QuickInfoPanel;
@@ -186,6 +188,10 @@ public class DownloadsPanel extends PFUIPanel implements HasDetailsPanel {
                     }
                 }
             });
+
+        // Listener on transfer manager
+        getController().getTransferManager().addListener(
+            new MyTransferManagerListener());
 
         // setup inital actions state
         updateActions();
@@ -544,6 +550,48 @@ public class DownloadsPanel extends PFUIPanel implements HasDetailsPanel {
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * TransferManagerListener to respond to download changes.
+     */
+    private class MyTransferManagerListener extends TransferAdapter {
+
+        public void downloadRequested(TransferManagerEvent event) {
+            updateActions();
+        }
+
+        public void downloadQueued(TransferManagerEvent event) {
+            updateActions();
+        }
+
+        public void downloadStarted(TransferManagerEvent event) {
+            updateActions();
+        }
+
+        public void downloadAborted(TransferManagerEvent event) {
+            updateActions();
+        }
+
+        public void downloadBroken(TransferManagerEvent event) {
+            updateActions();
+        }
+
+        public void downloadCompleted(TransferManagerEvent event) {
+            updateActions();
+        }
+
+        public void completedDownloadRemoved(TransferManagerEvent event) {
+            updateActions();
+        }
+
+        public void pendingDownloadEnqueud(TransferManagerEvent event) {
+            updateActions();
+        }
+
+        public boolean fireInEventDispathThread() {
+            return true;
         }
     }
 }
