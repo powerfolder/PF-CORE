@@ -962,7 +962,8 @@ public class UIController extends PFComponent {
                     "quickinfo.myfolders.powerfolders", Format.formatBytes(nTotalBytes),
                         folders.length);
 
-                getController().notifyMessage("Folder Synchronization",
+                getController().notifyMessage(Translation
+                        .getTranslation("quickinfo.myfolders.title"),
                         text1 + "\n\n" + text2);
             }
         }
