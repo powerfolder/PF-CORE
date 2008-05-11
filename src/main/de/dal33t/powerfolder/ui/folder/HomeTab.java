@@ -80,6 +80,7 @@ public class HomeTab extends PFUIComponent implements FolderTab {
     private JTextField localFolderField;
     private JButton localFolderButton;
     private JLabel expectedFilesCountLabel;
+    private JLabel lastFileChangeDateLabel;
     private JLabel totalNormalFilesCountLabel;
     private JLabel totalSizeLabel;
     private JLabel fileCountLabel;
@@ -144,6 +145,7 @@ public class HomeTab extends PFUIComponent implements FolderTab {
         JLabel locFolderLabel = new JLabel(Translation
             .getTranslation("folderpanel.hometab.local_folder_location"));
         expectedFilesCountLabel = new JLabel();
+        lastFileChangeDateLabel = new JLabel();
         totalNormalFilesCountLabel = new JLabel();
         totalSizeLabel = new JLabel();
         fileCountLabel = new JLabel();
@@ -161,7 +163,7 @@ public class HomeTab extends PFUIComponent implements FolderTab {
 
         FormLayout layout = new FormLayout(
             "4dlu, pref, 4dlu, 120dlu, 4dlu, pref, pref:grow",
-            "pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref");
+            "pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
         builder.setBorder(Borders.createEmptyBorder("4dlu, 0, 0, 0"));
         CellConstraints cc = new CellConstraints();
@@ -187,6 +189,11 @@ public class HomeTab extends PFUIComponent implements FolderTab {
         builder.addLabel(Translation.getTranslation("folderpanel.hometab."
             + "number_of_available_files_at_other_members"), cc.xy(2, row));
         builder.add(expectedFilesCountLabel, cc.xyw(4, row, 2));
+
+        row += 2;
+        builder.addLabel(Translation.getTranslation("folderpanel.hometab."
+            + "last_file_change_date"), cc.xy(2, row));
+        builder.add(lastFileChangeDateLabel, cc.xyw(4, row, 2));
 
         row += 2;
         builder.addLabel(Translation
@@ -484,6 +491,7 @@ public class HomeTab extends PFUIComponent implements FolderTab {
         FolderStatistic folderStatistic = folder.getStatistic();
         expectedFilesCountLabel.setText(MessageFormat.format("{0}",
             folderStatistic.getIncomingFilesCount()));
+        lastFileChangeDateLabel.setText(Format.formatDate(folder.getLastFileChangeDate()));
         totalNormalFilesCountLabel.setText(String.valueOf(folderStatistic
             .getLocalFilesCount()));
         totalSizeLabel.setText(Format.formatBytes(folderStatistic

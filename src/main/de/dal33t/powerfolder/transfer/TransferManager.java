@@ -730,6 +730,7 @@ public class TransferManager extends PFComponent {
             fireDownloadCompleted(new TransferManagerEvent(this,
                 (Download) transfer));
 
+
             Integer nDlFromNode = countNodesActiveAndQueuedDownloads().get(
                 transfer.getPartner());
             boolean requestMoreFiles = nDlFromNode == null

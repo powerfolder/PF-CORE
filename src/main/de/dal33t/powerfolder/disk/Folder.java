@@ -176,6 +176,11 @@ public class Folder extends PFComponent {
     private boolean previewOnly;
 
     /**
+     * The Date of the lastchange to a folder file.
+     */
+    private Date lastFileChangeDate;
+
+    /**
      * Constructor for folder.
      * 
      * @param controller
@@ -1173,6 +1178,22 @@ public class Folder extends PFComponent {
                     log().error("read ignore error: " + this + e.getMessage(),
                         e);
                 }
+
+                try {
+                    Object object = in.readObject();
+                    if (object instanceof Date) {
+                        lastFileChangeDate = (Date) object;
+                        if (logEnabled) {
+                            log().verbose("lastFileChangeDate" + lastFileChangeDate);
+                        }
+                    }
+                } catch (java.io.EOFException e) {
+                    // ignore nothing available for ignore
+                    log().debug("ignore nothing for " + this);
+                } catch (Exception e) {
+                    log().error("read ignore error: " + this + e.getMessage(),
+                        e);
+                }
                 in.close();
                 fIn.close();
 
@@ -1285,6 +1306,17 @@ public class Folder extends PFComponent {
                         log().verbose("write time: " + lastScan);
                     }
                     oOut.writeObject(lastScan);
+                }
+                if (lastFileChangeDate == null) {
+                    if (logEnabled) {
+                        log().verbose("write default time: " + new Date());
+                    }
+                    oOut.writeObject(new Date());
+                } else {
+                    if (logEnabled) {
+                        log().verbose("write time: " + lastFileChangeDate);
+                    }
+                    oOut.writeObject(lastFileChangeDate);
                 }
                 oOut.close();
                 fOut.close();
@@ -2213,12 +2245,6 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * This is a HACK. #698
-     */
-    public void refreshRootDirectory() {
-    }
-
-    /**
      * Common file delete method. Either deletes the file or moves it to the
      * recycle bin.
      * 
@@ -2419,6 +2445,15 @@ public class Folder extends PFComponent {
     }
 
     /**
+     * Date of the last file change for this folder.
+     * 
+     * @return
+     */
+    public Date getLastFileChangeDate() {
+        return lastFileChangeDate;
+    }
+
+    /**
      * @return the info object of this folder
      */
     public FolderInfo getInfo() {
@@ -2542,33 +2577,37 @@ public class Folder extends PFComponent {
     }
 
     private void fireFileChanged(FileInfo fileInfo) {
-        // HACK until #883
-        refreshRootDirectory();
-        // log().debug("fireChanged: " + this);
+        if (log().isVerbose()) {
+            log().verbose("fireFileChanged: " + this);
+        }
+        lastFileChangeDate = new Date();
         FolderEvent folderEvent = new FolderEvent(this, fileInfo);
         folderListenerSupport.fileChanged(folderEvent);
     }
 
     private void fireFilesDeleted(Collection<FileInfo> fileInfos) {
-        // HACK until #883
-        refreshRootDirectory();
-        // log().debug("fireChanged: " + this);
+        if (log().isVerbose()) {
+            log().verbose("fireFilesDeleted: " + this);
+        }
+        lastFileChangeDate = new Date();
         FolderEvent folderEvent = new FolderEvent(this, fileInfos);
         folderListenerSupport.filesDeleted(folderEvent);
     }
 
     private void fireRemoteContentsChanged(FileList list) {
-        // HACK until #883
-        refreshRootDirectory();
-        // log().debug("fireRemoteContentsChanged: " + this);
+        if (log().isVerbose()) {
+            log().verbose("fireRemoteContentsChanged: " + this);
+        }
+        lastFileChangeDate = new Date();
         FolderEvent folderEvent = new FolderEvent(this, list);
         folderListenerSupport.remoteContentsChanged(folderEvent);
     }
 
     private void fireRemoteContentsChanged(FolderFilesChanged list) {
-        // HACK until #883
-        refreshRootDirectory();
-        // log().debug("fireRemoteContentsChanged: " + this);
+        if (log().isVerbose()) {
+            log().verbose("fireRemoteContentsChanged: " + this);
+        }
+        lastFileChangeDate = new Date();
         FolderEvent folderEvent = new FolderEvent(this, list);
         folderListenerSupport.remoteContentsChanged(folderEvent);
     }
@@ -2579,9 +2618,9 @@ public class Folder extends PFComponent {
     }
 
     private void fireScanResultCommited(ScanResult scanResult) {
-        // HACK until #883
-        refreshRootDirectory();
-        // log().debug("fireRemoteContentsChanged: " + this);
+        if (log().isVerbose()) {
+            log().debug("fireScanResultCommited: " + this);
+        }
         FolderEvent folderEvent = new FolderEvent(this, scanResult);
         folderListenerSupport.scanResultCommited(folderEvent);
     }
