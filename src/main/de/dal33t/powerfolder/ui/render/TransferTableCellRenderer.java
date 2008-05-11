@@ -185,7 +185,7 @@ public class TransferTableCellRenderer extends DefaultTableCellRenderer {
                 Folder folder = fInfo.getFolder(controller
                     .getFolderRepository());
                 if (folder != null && folder.getBlacklist().isIgnored(fInfo)) {
-                    setIcon(Icons.IGNORE);
+                    setIcon(Icons.BLACK_LIST);
                 } else {
                     setIcon(null);
                 }

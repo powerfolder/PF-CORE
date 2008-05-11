@@ -194,6 +194,8 @@ public class Icons {
     public static final Icon KNOWN_NODES = getIcon("icons/KnownNodes.gif");
     public static final Icon RECYCLE_BIN = getIcon("icons/KnownNodes.gif");
 
+    public static final Icon BLACK_LIST = getIconById("black_list.icon");
+    public static final Icon WHITE_LIST = getIconById("white_list.icon");
     public static final Icon DOWNLOAD = getIcon("icons/Download.gif");
     public static final Icon DOWNLOAD_ACTIVE = getIcon("icons/Download_active.gif");
     public static final Icon UPLOAD = getIcon("icons/Upload.gif");
@@ -201,7 +203,6 @@ public class Icons {
     public static final Icon IN_ACTIVE = getIcon("icons/In_active.gif");
     public static final Icon EXPECTED = getIcon("icons/Expected.gif");
     public static final Icon DELETE = getIcon("icons/Delete.gif");
-    public static final Icon IGNORE = getIcon("icons/Forbid.gif");
     public static final Icon PATTERN = getIconById("pattern");
 
     // Folder syncs

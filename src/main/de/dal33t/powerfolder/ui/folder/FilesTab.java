@@ -132,8 +132,8 @@ public class FilesTab extends PFUIComponent implements FolderTab,
     /** The currently selected items */
     private SelectionModel selectionModel;
     private DownloadFileAction downloadFileAction;
-    private IgnoreFileAction ignoreFileAction;
-    private UnignoreFileAction unignoreFileAction;
+    private BlackWhiteListAction blackWhiteListAction;
+    private UnBlackWhiteListAction unBlackWhiteListAction;
     private StartFileAction startFileAction;
     private RemoveFileAction removeFileAction;
     private RestoreFileAction restoreFileAction;
@@ -198,8 +198,8 @@ public class FilesTab extends PFUIComponent implements FolderTab,
     private void initComponents() {
         downloadFileAction = new DownloadFileAction(getController(),
             selectionModel);
-        ignoreFileAction = new IgnoreFileAction(getController(), selectionModel);
-        unignoreFileAction = new UnignoreFileAction(getController(),
+        blackWhiteListAction = new BlackWhiteListAction(getController(), selectionModel);
+        unBlackWhiteListAction = new UnBlackWhiteListAction(getController(),
             selectionModel);
         startFileAction = new StartFileAction(getController(), selectionModel);
         removeFileAction = new RemoveFileAction(getController(), selectionModel);
@@ -399,8 +399,8 @@ public class FilesTab extends PFUIComponent implements FolderTab,
             fileMenu.add(openLocalFolder);
         }
         fileMenu.add(downloadFileAction);
-        fileMenu.add(ignoreFileAction);
-        fileMenu.add(unignoreFileAction);
+        fileMenu.add(blackWhiteListAction);
+        fileMenu.add(unBlackWhiteListAction);
         fileMenu.add(abortTransferAction);
         fileMenu.add(removeFileAction);
         fileMenu.add(restoreFileAction);
@@ -1086,10 +1086,10 @@ public class FilesTab extends PFUIComponent implements FolderTab,
 
     }
 
-    private class IgnoreFileAction extends SelectionBaseAction {
+    private class BlackWhiteListAction extends SelectionBaseAction {
 
-        IgnoreFileAction(Controller controller, SelectionModel selectionModel) {
-            super("ignorefile", controller, selectionModel);
+        BlackWhiteListAction(Controller controller, SelectionModel selectionModel) {
+            super("black_list", controller, selectionModel);
             setEnabled(false);
         }
 
@@ -1134,11 +1134,11 @@ public class FilesTab extends PFUIComponent implements FolderTab,
         }
     }
 
-    private class UnignoreFileAction extends SelectionBaseAction {
+    private class UnBlackWhiteListAction extends SelectionBaseAction {
 
-        UnignoreFileAction(Controller controller, SelectionModel selectionModel)
+        UnBlackWhiteListAction(Controller controller, SelectionModel selectionModel)
         {
-            super("unignorefile", controller, selectionModel);
+            super("un_black_list", controller, selectionModel);
             setEnabled(false);
         }
 
@@ -1188,8 +1188,8 @@ public class FilesTab extends PFUIComponent implements FolderTab,
         Object[] selections = getSelectionModel().getSelections();
 
         if (selections == null || selections.length == 0) {
-            ignoreFileAction.setEnabled(false);
-            unignoreFileAction.setEnabled(false);
+            blackWhiteListAction.setEnabled(false);
+            unBlackWhiteListAction.setEnabled(false);
             return;
         }
 
@@ -1224,8 +1224,8 @@ public class FilesTab extends PFUIComponent implements FolderTab,
             }
         }
 
-        ignoreFileAction.setEnabled(enableIgnore);
-        unignoreFileAction.setEnabled(enableUnignore);
+        blackWhiteListAction.setEnabled(enableIgnore);
+        unBlackWhiteListAction.setEnabled(enableUnignore);
 
     }
 

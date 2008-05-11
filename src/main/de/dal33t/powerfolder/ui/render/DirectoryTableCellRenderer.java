@@ -188,12 +188,12 @@ public class DirectoryTableCellRenderer extends DefaultTableCellRenderer {
     private Component render(Directory directory, int columnInModel,
         JTable table, boolean isSelected, boolean hasFocus, int row, int column)
     {
-        String newValue = "";
         setIcon(null);
+        String newValue = "";
         switch (columnInModel) {
             case 0 : { // file type
                 setIcon(Icons.getIconFor(directory, false, controller));
-                setHorizontalAlignment(SwingConstants.LEFT);
+                setHorizontalAlignment(LEFT);
                 break;
             }
             case 1 : {// filename
@@ -204,7 +204,7 @@ public class DirectoryTableCellRenderer extends DefaultTableCellRenderer {
                     setIcon(Icons.DELETE);
                 }
                 if (directory.isBlackListed()) {
-                    setIcon(Icons.IGNORE);
+                    setIcon(Icons.BLACK_LIST);
                 } else if (directory.isExpected(controller
                     .getFolderRepository()))
                 {
@@ -214,7 +214,7 @@ public class DirectoryTableCellRenderer extends DefaultTableCellRenderer {
                     setForeground(NORMAL);
                 }
                 setToolTipText(newValue);
-                setHorizontalAlignment(SwingConstants.LEFT);
+                setHorizontalAlignment(LEFT);
                 break;
             }
             case 2 : { // file size
@@ -278,7 +278,7 @@ public class DirectoryTableCellRenderer extends DefaultTableCellRenderer {
             statusForTooltip = Translation.getTranslation("fileinfo.deleted");
 
         } else if (folder.getBlacklist().isIgnored(fInfo)) {
-            setIcon(Icons.IGNORE);
+            setIcon(Icons.BLACK_LIST);
             statusForTooltip = replaceSpacesWithNBSP(Translation
                 .getTranslation("fileinfo.ignore"));
         } else if (fInfo.isExpected(controller.getFolderRepository())) {
