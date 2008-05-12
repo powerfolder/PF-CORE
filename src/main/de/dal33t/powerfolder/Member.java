@@ -389,16 +389,6 @@ public class Member extends PFComponent {
     }
 
     /**
-     * Returns true if this member supports requests for single parts.
-     * 
-     * @return
-     */
-    public boolean isSupportingPartRequests() {
-        return isCompleteyConnected()
-            && getIdentity().isSupportingPartRequests();
-    }
-
-    /**
      * Answers if this member is on the local area network.
      * 
      * @return true if this member is on LAN.
@@ -1366,7 +1356,7 @@ public class Member extends PFComponent {
             invitation.setInvitor(this.getInfo());
 
             getController().getFolderRepository().invitationReceived(
-                invitation, true, false);
+                invitation, true);
 
         } else if (message instanceof Problem) {
             lastProblem = (Problem) message;
@@ -1464,8 +1454,10 @@ public class Member extends PFComponent {
             ReplyFilePartsRecord rep = (ReplyFilePartsRecord) message;
             Download dl = getController().getTransferManager().getDownload(
                 this, rep.getFile());
-            if (dl != null) {
+            if (dl != null && dl.getFile().isCompletelyIdentical(rep.getFile())) {
                 dl.receivedFilePartsRecord(rep.getRecord());
+            } else if (dl != null) {
+                log().info("Received record for old download");
             } else {
                 log().warn("Download not found: " + dl);
             }
