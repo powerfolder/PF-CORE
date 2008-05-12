@@ -252,8 +252,8 @@ public class FileTransferTest extends TwoControllerTestCase {
      */
     private void clearCompletedDownloadsAtLisa() {
         // Clear completed downloads
-        List<DownloadManager> list = getContollerLisa()
-            .getTransferManager().getCompletedDownloadsCollection();
+        List<DownloadManager> list = getContollerLisa().getTransferManager()
+            .getCompletedDownloadsCollection();
         for (DownloadManager download : list) {
             getContollerLisa().getTransferManager().clearCompletedDownload(
                 download);
@@ -681,8 +681,8 @@ public class FileTransferTest extends TwoControllerTestCase {
     public void testResumeTransfer() {
         getContollerBart().setSilentMode(true);
         getContollerLisa().setSilentMode(true);
-        ConfigurationEntry.UPLOADLIMIT_LAN.setValue(getContollerBart(), "2000");
-        ConfigurationEntry.UPLOADLIMIT_LAN.setValue(getContollerLisa(), "2000");
+        ConfigurationEntry.UPLOADLIMIT_LAN.setValue(getContollerBart(), "1000");
+        ConfigurationEntry.UPLOADLIMIT_LAN.setValue(getContollerLisa(), "1000");
 
         // Register listeners
         final MyTransferManagerListener bartsListener = new MyTransferManagerListener();
@@ -726,6 +726,12 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         // Disconnected
         disconnectBartAndLisa();
+
+        assertTrue(incompleteFile.exists());
+        assertTrue(incompleteFile.length() > 0);
+        assertTrue("Size inc. file: " + incompleteFile.length()
+            + ", size testfile: " + testFile.length(),
+            incompleteFile.length() < testFile.length());
 
         assertEquals(1, bartsListener.uploadRequested);
         assertEquals(1, bartsListener.uploadStarted);
@@ -1250,7 +1256,9 @@ public class FileTransferTest extends TwoControllerTestCase {
             return false;
         }
 
-        public synchronized void completedUploadRemoved(TransferManagerEvent event) {
+        public synchronized void completedUploadRemoved(
+            TransferManagerEvent event)
+        {
             uploadsCompletedRemoved++;
         }
 
