@@ -1,19 +1,16 @@
-PowerFolder Version 3.0.1 - http://www.powerfolder.com
+PowerFolder Version 3.0.2 - http://www.powerfolder.com
 
 Minimum Java version is 5.0.
 Tested on Windows Vista, Windows XP, Windows 2000, Linux (Fedora 4) and MacOS X
 
-Bugfixes and enhancements
- * Added full Portuguese missing other translations.
- * Connections are now stable
- * Fixed directory selection on Mac and Linux
- * Fixed LAN-IP list problems
- * Fixed several issues on Mac
- * Fixed Outlook default directory selection
- * Several other minor bugfixes
- 
+Bugfixes / Changes
+ * Sync percentage now displays correctly
+ * Fixed bug in LAN-detection
+ * Fixed rare bug, which prevented sync after startup
+ * Rolling logfile (one logfile per day) 
+
 The full change log:
-http://dev.powerfolder.com/projects/powerfolder/query?status=closed&milestone=PowerFolder+3.0.1
+http://dev.powerfolder.com/projects/powerfolder/query?status=closed&milestone=PowerFolder+3.0.2
 
 
 Please give us feedback and request improvements at our forum:
@@ -26,7 +23,7 @@ even more if you keep requesting them for the next version.
 
 
 Offical Roadmap:
-http://dev.powerfolder.com/projects/powerfolder/roadmap
+http://www.powerfolder.com/roadmap.html
 
 Please remember: You agree to keep us free of any (legal) issues involved with downloading
 and using this PowerFolder!
@@ -47,6 +44,21 @@ External libaries used:
 
 
 History:
+
+Version 3.0.1
+-------------
+Bugfixes and enhancements
+ * Added full Portuguese missing other translations.
+ * Connections are now stable
+ * Fixed directory selection on Mac and Linux
+ * Fixed LAN-IP list problems
+ * Fixed several issues on Mac
+ * Fixed Outlook default directory selection
+ * Several other minor bugfixes
+ 
+The full change log:
+http://dev.powerfolder.com/projects/powerfolder/query?status=closed&milestone=PowerFolder+3.0.1
+
 
 Version 3.0.0
 -------------
