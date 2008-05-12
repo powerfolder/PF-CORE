@@ -22,6 +22,7 @@ import org.apache.commons.lang.StringUtils;
 
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
+import de.dal33t.powerfolder.disk.ScanResult;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
@@ -385,6 +386,16 @@ public class Member extends PFComponent {
     public boolean isSupportingPartTransfers() {
         return isCompleteyConnected()
             && getPeer().getIdentity().isSupportingPartTransfers();
+    }
+
+    /**
+     * Returns true if this member supports requests for single parts.
+     * 
+     * @return
+     */
+    public boolean isSupportingPartRequests() {
+        return isCompleteyConnected()
+            && getIdentity().isSupportingPartRequests();
     }
 
     /**
@@ -773,6 +784,8 @@ public class Member extends PFComponent {
                         + joinedFolders);
         }
         for (Folder folder : joinedFolders) {
+            // FIX for #924
+            waitForScan(folder);
             // Send filelist of joined folders
             sendMessagesAsynchron(FileList.createFileListMessages(folder));
         }
@@ -857,6 +870,28 @@ public class Member extends PFComponent {
         }
 
         return handshaked;
+    }
+
+    private boolean waitForScan(Folder folder) {
+        ScanResult.ResultState lastScanResultState = folder
+            .getLastScanResultState();
+        log().warn("Scanning " + folder + "? " + folder.isScanning());
+        if (!folder.isScanning()) {
+            // folder OK!
+            return true;
+        }
+        log().debug("Waiting for " + folder + " to complete scan");
+        while (folder.isScanning()
+            && lastScanResultState == folder.getLastScanResultState())
+        {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                return false;
+            }
+        }
+        log().debug("Scan completed on " + folder + ". Continue with connect.");
+        return true;
     }
 
     /**
@@ -1272,8 +1307,8 @@ public class Member extends PFComponent {
                         // file "changed" so if downloading break the download
                         if (logVerbose) {
                             log().verbose(
-                                "downloading changed file, breaking it! " + file
-                                    + " " + this);
+                                "downloading changed file, breaking it! "
+                                    + file + " " + this);
                         }
                         tm.abortDownload(file, this);
                     }
@@ -1286,8 +1321,8 @@ public class Member extends PFComponent {
                         // file removed so if downloading break the download
                         if (logVerbose) {
                             log().verbose(
-                                "downloading removed file, breaking it! " + file
-                                    + " " + this);
+                                "downloading removed file, breaking it! "
+                                    + file + " " + this);
                         }
                         tm.abortDownload(file, this);
                     }
@@ -1331,7 +1366,7 @@ public class Member extends PFComponent {
             invitation.setInvitor(this.getInfo());
 
             getController().getFolderRepository().invitationReceived(
-                invitation, true);
+                invitation, true, false);
 
         } else if (message instanceof Problem) {
             lastProblem = (Problem) message;
@@ -1429,10 +1464,8 @@ public class Member extends PFComponent {
             ReplyFilePartsRecord rep = (ReplyFilePartsRecord) message;
             Download dl = getController().getTransferManager().getDownload(
                 this, rep.getFile());
-            if (dl != null && dl.getFile().isCompletelyIdentical(rep.getFile())) {
+            if (dl != null) {
                 dl.receivedFilePartsRecord(rep.getRecord());
-            } else if (dl != null) {
-                log().info("Received record for old download");
             } else {
                 log().warn("Download not found: " + dl);
             }
