@@ -91,6 +91,11 @@ public class Folder extends PFComponent {
     private Date lastScan;
 
     /**
+     * The result state of the last scan
+     */
+    private ScanResult.ResultState lastScanResultState;
+
+    /**
      * The last time the db was cleaned up.
      */
     private Date lastDBMaintenance;
@@ -481,6 +486,10 @@ public class Folder extends PFComponent {
         return blacklist;
     }
 
+    public ScanResult.ResultState getLastScanResultState() {
+        return lastScanResultState;
+    }
+
     /**
      * Checks the basedir is valid
      * 
@@ -644,24 +653,29 @@ public class Folder extends PFComponent {
             log().verbose("Scan result: " + result.getResultState());
         }
 
-        if (result.getResultState().equals(ScanResult.ResultState.SCANNED)) {
-            if (result.getProblemFiles().size() > 0) {
-                FileNameProblemHandler handler = getController()
-                    .getFolderRepository().getFileNameProblemHandler();
-                if (handler != null) {
-                    handler.fileNameProblemsDetected(new FileNameProblemEvent(
-                        this, result));
+        try {
+            if (result.getResultState().equals(ScanResult.ResultState.SCANNED))
+            {
+                if (result.getProblemFiles().size() > 0) {
+                    FileNameProblemHandler handler = getController()
+                        .getFolderRepository().getFileNameProblemHandler();
+                    if (handler != null) {
+                        handler
+                            .fileNameProblemsDetected(new FileNameProblemEvent(
+                                this, result));
+                    }
                 }
+                commitScanResult(result);
+                lastScan = new Date();
+                dirty = true;
+                findSameFilesOnRemote();
+                return true;
             }
-            commitScanResult(result);
-            lastScan = new Date();
-            dirty = true;
-            findSameFilesOnRemote();
-            return true;
+            // scan aborted or hardware broken?
+            return false;
+        } finally {
+            lastScanResultState = result.getResultState();
         }
-
-        // scan aborted or hardware broken?
-        return false;
     }
 
     /**
@@ -1709,12 +1723,10 @@ public class Folder extends PFComponent {
             for (FileInfo remoteFile : fileList) {
                 boolean modifiedByFriend = remoteFile
                     .isModifiedByFriend(getController());
-                boolean syncFromMemberAllowed = modifiedByFriend
-                    && syncProfile.getConfiguration()
-                        .isSyncDeletionWithFriends()
-                    || !modifiedByFriend
-                    && syncProfile.getConfiguration()
-                        .isSyncDeletionWithOthers() || force;
+                boolean syncFromMemberAllowed = (modifiedByFriend && syncProfile
+                    .getConfiguration().isSyncDeletionWithFriends())
+                    || (!modifiedByFriend && syncProfile.getConfiguration()
+                        .isSyncDeletionWithOthers()) || force;
 
                 if (!syncFromMemberAllowed) {
                     // Not allowed to sync from that guy.
@@ -1869,10 +1881,12 @@ public class Folder extends PFComponent {
                 broadcastMessages(msgs);
             }
         }
-        log().warn(
-            "Broadcasted folder changes " + addedMsgs + " addedmsgs, "
-                + changedMsgs + " changedmsgs, " + deletedMsgs
-                + " deletedmsgs, " + restoredMsgs + " restoredmsgs");
+        if (logDebug) {
+            log().debug(
+                "Broadcasted folder changes " + addedMsgs + " addedmsgs, "
+                    + changedMsgs + " changedmsgs, " + deletedMsgs
+                    + " deletedmsgs, " + restoredMsgs + " restoredmsgs");
+        }
     }
 
     /**
@@ -1907,6 +1921,10 @@ public class Folder extends PFComponent {
 
         // Handle remote deleted files
         if (getSyncProfile().isSyncDeletion()) {
+            // FIXME: Is wrong, since it syncs with completely connected members
+            // only
+            // FIXME: Is called too often, should be called after finish of
+            // filelist sending only.
             syncRemoteDeletedFiles(false);
         }
 
@@ -1975,6 +1993,10 @@ public class Folder extends PFComponent {
 
         // Handle remote deleted files
         if (getSyncProfile().isSyncDeletion()) {
+            // FIXME: Is wrong, since it syncs with completely connected members
+            // only
+            // FIXME: Is called too often, should be called after finish of
+            // filelist sending only.
             syncRemoteDeletedFiles(false);
         }
 
