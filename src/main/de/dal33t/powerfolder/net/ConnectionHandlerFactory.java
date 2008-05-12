@@ -3,6 +3,7 @@
 package de.dal33t.powerfolder.net;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
@@ -55,24 +56,23 @@ public class ConnectionHandlerFactory extends PFComponent {
         } catch (ConnectionException e) {
             log().verbose(e);
         }
-        
+
         try {
-            if (useUDTConnections()) {
+            if (useUDTConnections() && !isOnLAN(remoteNode)) {
                 return tryToConnectUDTSocket(remoteNode);
             }
         } catch (ConnectionException e) {
             log().verbose(e);
         }
-        
+
         try {
-            if (useRelayedConnections()) {
+            if (useRelayedConnections() && !isOnLAN(remoteNode)) {
                 return tryToConnectRelayed(remoteNode);
             }
         } catch (ConnectionException e) {
             log().verbose(e);
         }
-        throw new ConnectionException(
-            "No further connection alternatives.");
+        throw new ConnectionException("No further connection alternatives.");
     }
 
     /**
@@ -290,5 +290,15 @@ public class ConnectionHandlerFactory extends PFComponent {
                 .getValueBoolean(getController())
             && !getController().getIOProvider().getRelayedConnectionManager()
                 .isRelay(getController().getMySelf().getInfo());
+    }
+
+    protected boolean isOnLAN(MemberInfo node) {
+        InetAddress adr = node.getConnectAddress() != null
+            && node.getConnectAddress().getAddress() != null ? node
+            .getConnectAddress().getAddress() : null;
+        if (adr == null) {
+            return false;
+        }
+        return getController().getNodeManager().isOnLANorConfiguredOnLAN(adr);
     }
 }
