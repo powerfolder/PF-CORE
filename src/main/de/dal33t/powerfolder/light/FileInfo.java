@@ -111,7 +111,7 @@ public class FileInfo implements Serializable, DiskItem {
 
         while (!folderBase.equals(parent)) {
             if (parent == null) {
-                throw new NullPointerException(
+                throw new IllegalArgumentException(
                     "Local file seems not to be in a subdir of the local powerfolder copy");
             }
             fileName = parent.getName() + "/" + fileName;
@@ -452,7 +452,7 @@ public class FileInfo implements Serializable, DiskItem {
             return Util.isNewerFileDateCrossPlattform(getModifiedDate(), ofInfo
                 .getModifiedDate());
         }
-        return (getVersion() > ofInfo.getVersion());
+        return getVersion() > ofInfo.getVersion();
     }
 
     /**
@@ -588,10 +588,18 @@ public class FileInfo implements Serializable, DiskItem {
      */
 
     /**
+     * ATTENTION: BE WARNED USING THIS METHOD! It is possible that FileInfos
+     * with version 0, same date BUT DIFFRENT modifier exists! This is caused by
+     * initial scans on both sides. WHO wins then? NOBODY, FileInfos then have
+     * version 0 same date but DIFFRENT modifiers. If you are seeking a way of
+     * checking if a FileInfo is newer/or in sync use the methdo
+     * <code>{@link #isNewerThan(FileInfo)}</code>
+     * 
      * @param otherFile
      *            the other file to compare with
      * @return if the the two files are completely identical, also checks
      *         version, date and modified user
+     * @see #isNewerThan(FileInfo)
      */
     public boolean isCompletelyIdentical(FileInfo otherFile) {
         if (otherFile == null) {
@@ -603,9 +611,18 @@ public class FileInfo implements Serializable, DiskItem {
             return false;
         }
 
-        return this.getVersion() == otherFile.getVersion()
+        boolean identical = this.getVersion() == otherFile.getVersion()
             && this.getModifiedDate().equals(otherFile.getModifiedDate())
             && this.getModifiedBy().equals(otherFile.getModifiedBy());
+
+        if (this.getVersion() == otherFile.getVersion()
+            && this.getModifiedDate().equals(otherFile.getModifiedDate())
+            && !this.getModifiedBy().equals(otherFile.getModifiedBy()))
+        {
+            LOG.error("Found identical files, but diffrent modifier:"
+                + toDetailString() + " other: " + otherFile.toDetailString());
+        }
+        return identical;
     }
 
     public int hashCode() {
