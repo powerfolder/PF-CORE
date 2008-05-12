@@ -27,6 +27,7 @@ public class Translation {
     public static final Locale SWEDISH = new Locale("sv");
     public static final Locale ARABIC = new Locale("ar");
     public static final Locale POLISH = new Locale("pl");
+    public static final Locale PORTUGUESE = new Locale("pt");
 
     /** List of all supported locales */
     private static Locale[] supportedLocales;
@@ -46,7 +47,7 @@ public class Translation {
      */
     public synchronized static Locale[] getSupportedLocales() {
         if (supportedLocales == null) {
-            supportedLocales = new Locale[13];
+            supportedLocales = new Locale[14];
             supportedLocales[0] = Locale.ENGLISH;
             supportedLocales[1] = Locale.UK;
             supportedLocales[2] = Locale.GERMAN;
@@ -60,6 +61,7 @@ public class Translation {
             supportedLocales[10] = SWEDISH;
             supportedLocales[11] = ARABIC;
             supportedLocales[12] = POLISH;
+            supportedLocales[13] = PORTUGUESE;
         }
         Arrays.sort(supportedLocales, new Comparator<Locale>() {
             public int compare(Locale o1, Locale o2) {
