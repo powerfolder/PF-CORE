@@ -131,8 +131,9 @@ public class TestHelper extends Loggable {
      *            the contition to wait for
      * @throws RuntimeException
      *             if timeout occoured
+     * @return the number of miliseconds waited.
      */
-    public static void waitForCondition(int secondsTimeout, Condition condition)
+    public static long waitForCondition(int secondsTimeout, Condition condition)
     {
         Reject.ifNull(condition, "Task is null");
 
@@ -157,6 +158,7 @@ public class TestHelper extends Loggable {
                 throw new RuntimeException(msg);
             }
         }
+        return System.currentTimeMillis() - start;
     }
 
     /**
