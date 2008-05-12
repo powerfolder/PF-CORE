@@ -404,6 +404,7 @@ public class FileUtils {
             } else if (!originalFile.isDirectory() && !targetFile.isDirectory()) {
                 FileInputStream fis = null;
                 FileOutputStream fos = null;
+                long originalDate = originalFile.lastModified();
                 try {
                     fis = new FileInputStream(originalFile);
                     fos = new FileOutputStream(targetFile);
@@ -418,6 +419,15 @@ public class FileUtils {
                     }
                     if (fos != null) {
                         fos.close();
+                    }
+
+                    // Set the last modified date so that PF does not sync after move.
+                    try {
+                        targetFile.setLastModified(originalDate);
+                    } catch (Exception e) {
+                        // Not fatal.
+                        LOG.warn("Could not set the last modified date for " +
+                        targetFile.getAbsolutePath());
                     }
                 }
             } else {
