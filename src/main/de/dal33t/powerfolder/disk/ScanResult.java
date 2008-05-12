@@ -30,6 +30,12 @@ public class ScanResult {
 
     private int totalFilesCount = 0;
 
+    public boolean isChangeDetected() {
+        return changedFiles.size() > 0 || deletedFiles.size() > 0
+            || newFiles.size() > 0 || movedFiles.size() > 0
+            || restoredFiles.size() > 0;
+    }
+
     public List<FileInfo> getChangedFiles() {
         return changedFiles;
     }
