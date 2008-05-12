@@ -105,8 +105,10 @@ public class FolderStatistic extends PFComponent {
         }
 
         public void scanResultCommited(FolderEvent folderEvent) {
-            // Recalculate statistics
-            scheduleCalculate();
+            if (folderEvent.getScanResult().isChangeDetected()) {
+                // Recalculate statistics
+                scheduleCalculate();
+            }
         }
 
         public void fileChanged(FolderEvent folderEvent) {
@@ -213,9 +215,6 @@ public class FolderStatistic extends PFComponent {
             log().warn("Unable to calc stats. Folder not joined");
             return;
         }
-        // if (true) {
-        // return;
-        // }
         long millisPast = System.currentTimeMillis() - lastCalc;
         if (task != null) {
             return;
@@ -237,7 +236,7 @@ public class FolderStatistic extends PFComponent {
     }
 
     private void setCalculateIn(long timeToWait) {
-      //  log().war
+        // log().war
         if (task != null) {
             return;
         }
@@ -291,17 +290,11 @@ public class FolderStatistic extends PFComponent {
 
     // Set<FileInfo> considered = new HashSet<FileInfo>();
 
-    private boolean inSync(FileInfo fInfo) {
+    private boolean inSync(FileInfo fInfo, FileInfo newestFileInfo) {
         if (fInfo == null) {
             return false;
         }
-        FileInfo newestFileInfo = fInfo.getNewestVersion(getController()
-            .getFolderRepository());
         return !newestFileInfo.isNewerThan(fInfo);
-    }
-
-    private boolean outOfSync(FileInfo fInfo) {
-        return !inSync(fInfo);
     }
 
     private void calculateMemberStats(Member member,
@@ -334,17 +327,7 @@ public class FolderStatistic extends PFComponent {
             FileInfo newestFileInfo = fInfo.getNewestVersion(repo);
             FileInfo myFileInfo = folder.getFile(fInfo);
 
-            boolean inSync = inSync(fInfo);
-
-            if (getController().getMySelf().getNick().equalsIgnoreCase(
-                "sprajc-neu")
-                && newestFileInfo.getName().endsWith("Setup.mpq"))
-            {
-                log().warn(
-                    "My file: " + myFileInfo.toDetailString() + ", newest: "
-                        + newestFileInfo.toDetailString() + " insync? "
-                        + inSync);
-            }
+            boolean inSync = inSync(fInfo, newestFileInfo);
 
             if (inSync && !newestFileInfo.isDeleted()) {
                 // if (getController().getMySelf().getNick().equalsIgnoreCase(
@@ -359,7 +342,8 @@ public class FolderStatistic extends PFComponent {
                         continue;
                     }
 
-                    boolean otherInSync = inSync(otherMemberFile);
+                    boolean otherInSync = inSync(otherMemberFile,
+                        newestFileInfo);
                     if (otherInSync) {
                         incoming = false;
                         break;
@@ -398,32 +382,16 @@ public class FolderStatistic extends PFComponent {
 
             boolean addToTotals = !newestFileInfo.isDeleted();
             for (Member alreadyM : alreadyConsidered) {
-                // System.err.println(alreadyConsidered);
                 FileInfo otherMemberFile = alreadyM.getFile(fInfo);
                 if (otherMemberFile == null) {
                     continue;
                 }
-
-                boolean otherInSync = inSync(otherMemberFile);
-
-                // if (!otherMemberFile.isNewerThan(fInfo)) {
-                // continue;
-                // }
-                // nOthers++;
-                // addToTotals= false;
-                // break;
-                // System.out.println("My: " + fInfo.toDetailString() +
-                // "\nother: "
-                // + otherMemberFile.toDetailString() + "\nidentical? "
-                // + otherMemberFile.isCompletelyIdentical(fInfo));
-
+                boolean otherInSync = inSync(otherMemberFile, newestFileInfo);
                 if (otherInSync) {
                     // File already added to totals
                     addToTotals = false;
                     break;
                 }
-                // lastNonIdentical = otherMemberFile;
-
             }
             if (addToTotals) {
                 calculating.totalFilesCount++;
