@@ -2,7 +2,8 @@
  */
 package de.dal33t.powerfolder;
 
-import java.awt.*;
+import java.awt.Component;
+import java.awt.GraphicsEnvironment;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -12,12 +13,22 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.security.Security;
-import java.util.*;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Properties;
+import java.util.ResourceBundle;
+import java.util.StringTokenizer;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.prefs.Preferences;
-import java.text.SimpleDateFormat;
 
 import javax.swing.JOptionPane;
 
@@ -510,9 +521,9 @@ public class Controller extends PFComponent {
             Logger.setEnabledConsoleLogging(true);
             Logger.setEnabledToFileLogging(true);
             // MORE LOG
-            SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
-            String logFilename = getConfigName() + '-'
-                    + sdf.format(new Date()) + "-log.txt";
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            String logFilename = getConfigName() + '-' + sdf.format(new Date())
+                + "-log.txt";
             Logger.setLogFile(logFilename);
             if (Logger.isLogToFileEnabled()) {
                 log().info(
@@ -680,19 +691,19 @@ public class Controller extends PFComponent {
         cal.set(Calendar.HOUR_OF_DAY, 0);
         cal.add(Calendar.DATE, 1);
 
-        // Add a few seconds to be sure the file name definately is for tomorrow.
-        cal.add(Calendar.SECOND, 2);
+        // Add a few seconds to be sure the file name definately is for
+        // tomorrow.
+        cal.add(Calendar.SECOND, 1);
 
         Date tomorrowMorning = cal.getTime();
-        long initialDelay = tomorrowMorning.getTime() - now.getTime();
-        log().info("Initial log reconfigure in " + initialDelay +
-                " milliseconds");
-        scheduleAndRepeat(new TimerTask() {
+        log().info(
+            "Initial log reconfigure at " + tomorrowMorning + " milliseconds");
+        timer.scheduleAtFixedRate(new TimerTask() {
             public void run() {
                 initLogger();
                 log().info("Reconfigured log file");
             }
-        }, initialDelay, 1000 * 24 * 3600); // Once a day.
+        }, tomorrowMorning, 1000L * 24 * 3600);
     }
 
     /**
@@ -825,6 +836,7 @@ public class Controller extends PFComponent {
             log().error(
                 "Unable to open incoming port from the portlist: " + ports);
             exit(1);
+            return;
         }
         switch (DialogFactory.genericDialog(null, Translation
             .getTranslation("dialog.binderror.option.title"), Translation
@@ -1484,6 +1496,7 @@ public class Controller extends PFComponent {
      * Connects to a remote peer, with ip and port
      * 
      * @param address
+     * @return the node that connected
      * @throws ConnectionException
      *             if connection failed
      * @returns the connected node
