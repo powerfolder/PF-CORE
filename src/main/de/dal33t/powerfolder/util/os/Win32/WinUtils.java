@@ -100,7 +100,7 @@ public class WinUtils {
 			LOG.verbose("Deleting startup link.");
 			pflnk.delete();
 		} else {
-		    ShellLink sl = new ShellLink(null, Translation
+		    ShellLink sl = new ShellLink("--minimized", Translation
                 .getTranslation("winutils.shortcut.description"), pfile
                 .getAbsolutePath(), pfile.getParent());
             LOG.verbose("Creating startup link: " + pflnk.getAbsolutePath());
