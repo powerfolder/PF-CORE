@@ -155,13 +155,12 @@ public class AboutDialog extends PFUIComponent {
         SimpleComponentFactory.setFontSize(docLink,
             SimpleComponentFactory.BIG_FONT_SIZE);
         homeLink = new LinkLabel(Translation
-            .getTranslation("about.dialog.homepage"),
-            "http://www.powerfolder.com");
+            .getTranslation("about.dialog.homepage"), Constants.POWERFOLDER_URL);
         SimpleComponentFactory.setFontSize(homeLink,
             SimpleComponentFactory.BIG_FONT_SIZE);
         supportLink = new LinkLabel(Translation
             .getTranslation("about.dialog.support"),
-            "http://www.powerfolder.com/?q=node/support");
+            "http://docs.powerfolder.com");
         SimpleComponentFactory.setFontSize(supportLink,
             SimpleComponentFactory.BIG_FONT_SIZE);
 
