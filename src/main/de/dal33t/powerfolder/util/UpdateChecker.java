@@ -141,11 +141,13 @@ public class UpdateChecker extends Thread {
                         return;
                     }
                 }
-                try {
-                    // Open explorer
-                    BrowserLauncher.openURL(Constants.POWERFOLDER_URL);
-                } catch (IOException e) {
-                    log.verbose(e);
+                if (!Util.isRunningProVersion()) {
+                    try {
+                        // Open explorer
+                        BrowserLauncher.openURL(Constants.POWERFOLDER_URL);
+                    } catch (IOException e) {
+                        log.verbose(e);
+                    }
                 }
             } else if (option == gotoHomepage) {
                 try {
