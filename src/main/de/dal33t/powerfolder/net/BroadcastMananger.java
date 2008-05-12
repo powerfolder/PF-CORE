@@ -14,8 +14,7 @@ import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.TimerTask;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -43,12 +42,8 @@ public class BroadcastMananger extends PFComponent implements Runnable {
     private Thread myThread;
     private long waitTime;
     private ArrayList<InetAddress> localAddresses;
-    private ArrayList oldLocalAddresses;
+    private ArrayList<InetAddress> oldLocalAddresses;
     private ArrayList<NetworkInterface> localNICList;
-
-    // List of recently received broadcasts
-    // FIXME: Remove old ones after some time
-    private List<String> recentBroadcastAddresses;
 
     /**
      * Builds a new broadcast listener
@@ -63,8 +58,6 @@ public class BroadcastMananger extends PFComponent implements Runnable {
 
             localNICList = new ArrayList<NetworkInterface>();
             localAddresses = new ArrayList<InetAddress>();
-
-            recentBroadcastAddresses = new LinkedList<String>();
 
             waitTime = controller.getWaitTime() * 3;
             group = InetAddress.getByName("224.0.0.1");
@@ -96,18 +89,18 @@ public class BroadcastMananger extends PFComponent implements Runnable {
         try {
             // open multicast socket
             socket = new MulticastSocket(DEFAULT_BROADCAST_PORT);
-            
+
             InetAddress bindAddr;
-            String bindIP = ConfigurationEntry.NET_BIND_ADDRESS.getValue(getController());;
+            String bindIP = ConfigurationEntry.NET_BIND_ADDRESS
+                .getValue(getController());
             if (!StringUtils.isEmpty(bindIP)) {
                 bindAddr = InetAddress.getByName(bindIP);
             } else {
                 // TRAC #466 - Windows Vista
                 bindAddr = InetAddress.getLocalHost();
             }
-            
-            log().verbose(
-                "Binding multicast on address: " + bindAddr);
+
+            log().verbose("Binding multicast on address: " + bindAddr);
             socket.setInterface(bindAddr);
             socket.setSoTimeout((int) waitTime);
             socket.joinGroup(group);
@@ -126,6 +119,20 @@ public class BroadcastMananger extends PFComponent implements Runnable {
         myThread.setPriority(Thread.MIN_PRIORITY);
         myThread.start();
         log().debug("Started");
+
+        getController().scheduleAndRepeat(new TimerTask() {
+            @Override
+            public void run() {
+                if (socket == null || socket.isClosed()) {
+                    return;
+                }
+                if (broadCastString == null) {
+                    log().warn("Not sending network broadcast");
+                    return;
+                }
+                getController().getIOProvider().startIO(new BroadcastSender());
+            }
+        }, 10L * 1000);
     }
 
     /**
@@ -141,18 +148,6 @@ public class BroadcastMananger extends PFComponent implements Runnable {
         log().debug("Stopped");
     }
 
-    /**
-     * Answers if this address is on lan (received any broadcasts from there the
-     * last time)
-     * 
-     * @param address
-     * @return
-     */
-    public boolean receivedBroadcastFrom(InetAddress address) {
-        // recentBroadcastAddresses
-        return recentBroadcastAddresses.contains(address.getHostAddress());
-    }
-
     public void run() {
         // check subnet ip
         if (subnetIP == null) {
@@ -163,32 +158,8 @@ public class BroadcastMananger extends PFComponent implements Runnable {
         byte[] inBuffer = new byte[IN_BUFFER_SIZE];
         DatagramPacket inPacket = new DatagramPacket(inBuffer, inBuffer.length);
 
-        // prepare sending out package
-
-        DatagramPacket broadcast = null;
-        if (broadCastString != null) {
-            byte[] msg = broadCastString.getBytes();
-            broadcast = new DatagramPacket(msg, msg.length, group,
-                DEFAULT_BROADCAST_PORT);
-            log().debug("Listening/Sending broadcasts on local net");
-        } else {
-            log().debug("Listening for broadcasts on local net. " + subnetIP);
-        }
-
-        long receiveTook = waitTime;
         while (!Thread.currentThread().isInterrupted()) {
-            long startReceive = System.currentTimeMillis();
-
             try {
-                if (broadcast != null && (receiveTook + 1000) >= waitTime) {
-
-                    // check for added or removed net interfaces
-                    // and update our internal list of sender sockets
-                    updateSenderSockets();
-
-                    sendBroadcast(broadcast);
-                }
-
                 // received new packet
                 socket.receive(inPacket);
 
@@ -201,8 +172,6 @@ public class BroadcastMananger extends PFComponent implements Runnable {
                 log().verbose("Closing broadcastmanager", e);
                 break;
             }
-
-            receiveTook = System.currentTimeMillis() - startReceive;
         }
 
         // cleanup
@@ -281,8 +250,8 @@ public class BroadcastMananger extends PFComponent implements Runnable {
 
         String message = new String(content);
 
-        if (logVerbose) {
-            log().verbose(
+        if (logDebug) {
+            log().debug(
                 "Received broadcast: " + message + ", " + packet.getAddress());
         }
 
@@ -314,15 +283,10 @@ public class BroadcastMananger extends PFComponent implements Runnable {
 
         InetSocketAddress address = new InetSocketAddress(packet.getAddress(),
             port);
-
-        // Add to list of recently received broadcasts
-        // log().warn("Address is on LAN: " +
-        // address.getAddress().getHostAddress());
-        recentBroadcastAddresses.add(address.getAddress().getHostAddress());
-
         Member node = getController().getNodeManager().getNode(id);
-
-        if (node == null || (!node.isMySelf() && !node.isConnected())) {
+        if (node == null
+            || (!node.isMySelf() && !node.isConnected()))
+        {
             log().info(
                 "Found user on local network: " + address
                     + ((node != null) ? ", " + node : ""));
@@ -357,8 +321,8 @@ public class BroadcastMananger extends PFComponent implements Runnable {
      * @param addrListOld
      * @return true if different, false otherwise.
      */
-    private boolean compareLocalAddresses(ArrayList addrListNew,
-        ArrayList addrListOld)
+    private boolean compareLocalAddresses(ArrayList<InetAddress> addrListNew,
+        ArrayList<InetAddress> addrListOld)
     {
 
         if (addrListOld == null) {
@@ -372,8 +336,8 @@ public class BroadcastMananger extends PFComponent implements Runnable {
         }
 
         for (int i = 0; i < addrsize; i++) {
-            InetAddress addr1 = (InetAddress) addrListNew.get(i);
-            InetAddress addr2 = (InetAddress) addrListOld.get(i);
+            InetAddress addr1 = addrListNew.get(i);
+            InetAddress addr2 = addrListOld.get(i);
 
             if (Util.compareIpAddresses(addr1.getAddress(), addr2.getAddress()))
             {
@@ -388,6 +352,7 @@ public class BroadcastMananger extends PFComponent implements Runnable {
      * checks for added or removed net interfaces and updates our internal list
      * of sender sockets.
      */
+    @SuppressWarnings("unchecked")
     private void updateSenderSockets() {
 
         updateLocalAddresses();
@@ -429,7 +394,7 @@ public class BroadcastMananger extends PFComponent implements Runnable {
                     senderSockets[i] = null;
                 }
             }
-            oldLocalAddresses = (ArrayList) localAddresses.clone();
+            oldLocalAddresses = (ArrayList<InetAddress>) localAddresses.clone();
         }
     }
 
@@ -466,8 +431,7 @@ public class BroadcastMananger extends PFComponent implements Runnable {
      */
 
     private void updateNetworkInterfaces() {
-
-        Enumeration en;
+        Enumeration<NetworkInterface> en;
 
         // clears the previos content of the network interfaces list
         localNICList.clear();
@@ -482,8 +446,23 @@ public class BroadcastMananger extends PFComponent implements Runnable {
         }
 
         while (en.hasMoreElements()) {
-            NetworkInterface ni = (NetworkInterface) en.nextElement();
+            NetworkInterface ni = en.nextElement();
             localNICList.add(ni);
+        }
+    }
+
+    private class BroadcastSender implements Runnable {
+        public void run() {
+            DatagramPacket broadcast = null;
+            byte[] msg = broadCastString.getBytes();
+            broadcast = new DatagramPacket(msg, msg.length, group,
+                DEFAULT_BROADCAST_PORT);
+            log().debug("Sending network broadcast");
+
+            // check for added or removed net interfaces
+            // and update our internal list of sender sockets
+            updateSenderSockets();
+            sendBroadcast(broadcast);
         }
     }
 }
