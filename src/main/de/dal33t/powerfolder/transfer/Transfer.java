@@ -85,8 +85,8 @@ public abstract class Transfer extends Loggable implements Serializable {
          * @param progress
          */
         public synchronized void setProgress(double progress) {
-            Reject.ifTrue(progress > 1, 
-                    "Progress set to illegal value: " + progress);
+            Reject.ifTrue(progress > 1, "Process set to illegal value: "
+                + progress);
             this.progress = progress;
         }
 
@@ -144,8 +144,7 @@ public abstract class Transfer extends Loggable implements Serializable {
             this.partner = null;
         }
         this.startTime = null;
-        
-        
+
         // FIX for #878
         if (isCompleted()) {
             transferState.setProgress(1);
@@ -258,8 +257,8 @@ public abstract class Transfer extends Loggable implements Serializable {
      * @return if this download is completed
      */
     public boolean isCompleted() {
-        return transferState != null && transferState.getState()
-                .equals(TransferState.DONE);
+        return transferState != null && transferState.getState() != null
+            && transferState.getState().equals(TransferState.DONE);
     }
 
     /**
