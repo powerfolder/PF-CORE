@@ -665,7 +665,7 @@ public class NodeManager extends PFComponent {
             return friendsArr;
         }
     }
-
+    
     /**
      * Called by member. Not getting this event from event handling because we
      * have to handle things definitivily before other elements work on that
@@ -681,8 +681,12 @@ public class NodeManager extends PFComponent {
             return;
         }
 
+        boolean wasFriend = node.isFriend();
+        boolean nodesChanged = false;
+
         if (friend) {
             friends.add(node);
+            nodesChanged = true;
             fireFriendAdded(node);
 
             // Mark node for immediate connection
@@ -699,12 +703,13 @@ public class NodeManager extends PFComponent {
                 new SendMessageTask(new Notification(
                     Notification.Event.ADDED_TO_FRIENDS, personalMessage), node
                     .getId()));
-        } else {
+        } else if (wasFriend) {
             friends.remove(node);
+            nodesChanged = true;
             fireFriendRemoved(node);
         }
 
-        if (nodefileLoaded) {
+        if (nodefileLoaded && nodesChanged) {
             // Only store after start
             // Store nodes
             storeNodes();
