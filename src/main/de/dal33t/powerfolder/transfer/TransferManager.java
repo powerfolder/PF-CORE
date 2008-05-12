@@ -521,11 +521,9 @@ public class TransferManager extends PFComponent {
         if (transfer instanceof Download) {
             Download dl = (Download) transfer;
             log().warn(
-                "Download broken: "
-                    + transfer
-                    + " "
-                    + (transferProblem == null ? "" : transferProblem
-                        .getTranslationId()));
+                "Download broken: " + transfer + " "
+                    + (transferProblem == null ? "" : transferProblem) + ": "
+                    + problemInformation);
             downloadsLock.lock();
             try {
                 // transferFound = downloads.remove(transfer.getFile()) != null;
@@ -555,11 +553,9 @@ public class TransferManager extends PFComponent {
             }
         } else if (transfer instanceof Upload) {
             log().warn(
-                "Upload broken: "
-                    + transfer
-                    + " "
-                    + (transferProblem == null ? "" : transferProblem
-                        .getTranslationId()));
+                "Upload broken: " + transfer + " "
+                    + (transferProblem == null ? "" : transferProblem) + ": "
+                    + problemInformation);
             uploadsLock.lock();
             try {
                 transferFound = queuedUploads.remove(transfer);
@@ -1428,8 +1424,7 @@ public class TransferManager extends PFComponent {
 
                 // Check if we have the file already downloaded in the meantime.
                 FileInfo localFile = folder.getFile(fInfo);
-                if (localFile != null && localFile.isCompletelyIdentical(fInfo))
-                {
+                if (localFile != null && !fInfo.isNewerThan(localFile)) {
                     log().verbose(
                         "NOT requesting download, already have: "
                             + fInfo.toDetailString());
@@ -2183,7 +2178,9 @@ public class TransferManager extends PFComponent {
             File transferFile = new File(Controller.getMiscFilesLocation(),
                 getController().getConfigName() + ".transfers");
             // for testing we should support getConfigName() with subdirs
-            if (!new File(transferFile.getParent()).mkdirs()) {
+            if (!transferFile.getParentFile().exists()
+                && !new File(transferFile.getParent()).mkdirs())
+            {
                 log().error("Failed to mkdir misc directory!");
             }
             OutputStream fOut = new BufferedOutputStream(new FileOutputStream(
