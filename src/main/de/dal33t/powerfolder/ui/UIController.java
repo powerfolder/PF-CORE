@@ -58,6 +58,7 @@ import de.dal33t.powerfolder.ui.recyclebin.RecycleBinConfirmationHandlerDefaultI
 import de.dal33t.powerfolder.ui.render.BlinkManager;
 import de.dal33t.powerfolder.ui.webservice.ServerClientModel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
+import de.dal33t.powerfolder.ui.notification.NotificationHandler;
 import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
@@ -881,12 +882,12 @@ public class UIController extends PFComponent {
             
             if (event.getSource() instanceof Member) {
                 Member m = (Member) event.getSource();
-                controller.notifyMessage(
+                notifyMessage(
                         Translation.getTranslation("chat.notification.title"),
                         Translation.getTranslation("chat.notification.member_message",
                         m.getNick()));
             } else {
-                controller.notifyMessage(
+                notifyMessage(
                         Translation.getTranslation("chat.notification.title"),
                         Translation.getTranslation("chat.notification.message"));
             }
@@ -962,10 +963,55 @@ public class UIController extends PFComponent {
                     "quickinfo.myfolders.powerfolders", Format.formatBytes(nTotalBytes),
                         folders.length);
 
-                getController().notifyMessage(Translation
+                notifyMessage(Translation
                         .getTranslation("quickinfo.myfolders.title"),
                         text1 + "\n\n" + text2);
             }
         }
     }
+
+
+
+    /**
+     * Shows a notification message only if the UI is minimized.
+     *
+     * @param title
+     *          The title to display under 'PowerFolder'.
+     * @param message
+     *          Message to show if notification is displayed.
+     */
+    public void notifyMessage(String title, String message)
+    {
+        if (getMainFrame().isIconifiedOrHidden()) {
+            NotificationHandler notificationHandler = new NotificationHandler(
+                    getController(), title, message);
+            notificationHandler.show();
+        }
+    }
+
+    /**
+     * Run a task via the notification system. If the UI is minimized,
+     * a notification message will appear. If the user selects the accept button,
+     * the task runs. If the UI is not minimized, the task runs anyway.
+     *
+     * @param title
+     *          The title to display under 'PowerFolder'.
+     * @param message
+     *          Message to show if notification is displayed.
+     * @param task
+     *          Task to do if user selects 'accept' option or if UI is not minimized.
+     */
+    public void notifyMessage(String title, String message,
+                              TimerTask task)
+    {
+        if (getMainFrame().isIconifiedOrHidden()) {
+            NotificationHandler notificationHandler = new NotificationHandler(
+                    getController(), title, message, task);
+            notificationHandler.show();
+        } else {
+            task.run();
+        }
+    }
+
+
 }

@@ -76,7 +76,7 @@ public class InvitationReceivedHandlerDefaultImpl extends PFComponent implements
                         wizard.open(panel);
                     }
                 };
-                getController().notifyMessage(
+                getController().getUIController().notifyMessage(
                         Translation.getTranslation("invite_received_handler.notify.title")
                         , Translation.getTranslation("invite_received_handler.notify.message",
                         invitation.getInvitor().getNode(getController()).getNick()),

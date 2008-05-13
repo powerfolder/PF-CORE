@@ -1872,47 +1872,4 @@ public class Controller extends PFComponent {
     public String toString() {
         return "Controller '" + getMySelf() + '\'';
     }
-
-
-    /**
-     * Shows a notification message only if the UI is minimized.
-     *
-     * @param title
-     *          The title to display under 'PowerFolder'.
-     * @param message
-     *          Message to show if notification is displayed.
-     */
-    public void notifyMessage(String title, String message)
-    {
-        if (uiController.getMainFrame().isIconifiedOrHidden()) {
-            NotificationHandler notificationHandler = new NotificationHandler(
-                    getController(), title, message);
-            notificationHandler.show();
-        }
-    }
-
-    /**
-     * Run a task via the notification system. If the UI is minimized,
-     * a notification message will appear. If the user selects the accept button,
-     * the task runs. If the UI is not minimized, the task runs anyway.
-     *
-     * @param title
-     *          The title to display under 'PowerFolder'.
-     * @param message
-     *          Message to show if notification is displayed.
-     * @param task
-     *          Task to do if user selects 'accept' option or if UI is not minimized.
-     */
-    public void notifyMessage(String title, String message,
-                              TimerTask task)
-    {
-        if (uiController.getMainFrame().isIconifiedOrHidden()) {
-            NotificationHandler notificationHandler = new NotificationHandler(
-                    getController(), title, message, task);
-            notificationHandler.show();
-        } else {
-            task.run();
-        }
-    }
-
 }
