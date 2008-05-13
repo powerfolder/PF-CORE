@@ -20,7 +20,7 @@ public enum PreferencesEntry {
      * Include all LAN users
      */
     NODE_MANAGER_MODEL_INCLUDE_LAN_USERS("NodeManagerModel_IncludeLanUsers",
-        false),
+        true),
 
     /** find offline users */
     FRIENDSEARCH_HIDEOFFLINE("FriendsSearch_HideOfflineUsers", false),
