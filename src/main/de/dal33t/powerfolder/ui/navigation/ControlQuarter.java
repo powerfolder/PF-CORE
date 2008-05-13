@@ -14,7 +14,6 @@ import de.dal33t.powerfolder.event.NavigationEvent;
 import de.dal33t.powerfolder.event.NavigationListener;
 import de.dal33t.powerfolder.ui.DebugPanel;
 import de.dal33t.powerfolder.ui.model.FolderModel;
-import de.dal33t.powerfolder.ui.model.DirectoryModel;
 import de.dal33t.powerfolder.ui.dialog.PreviewToJoinPanel;
 import de.dal33t.powerfolder.ui.action.*;
 import de.dal33t.powerfolder.ui.folder.FilesTab;
@@ -751,11 +750,11 @@ public class ControlQuarter extends PFUIComponent {
                     if (f.isPreviewOnly()) {
                         FolderPanel folderPanel = getUIController()
                             .getInformationQuarter().getPreviewFolderPanel();
-                        folderPanel.setTab(FolderPanel.FILES_TAB);
+                        folderPanel.setTab(folderPanel.getFilesTabId());
                     } else {
                         FolderPanel folderPanel = getUIController()
                             .getInformationQuarter().getMyFolderPanel();
-                        folderPanel.setTab(FolderPanel.FILES_TAB);
+                        folderPanel.setTab(folderPanel.getFilesTabId());
                     }
                 } else if (selection instanceof Directory) {
                     if (uiTree.isCollapsed(path)) {
@@ -769,11 +768,11 @@ public class ControlQuarter extends PFUIComponent {
                     if (f.isPreviewOnly()) {
                         FolderPanel folderPanel = getUIController()
                             .getInformationQuarter().getPreviewFolderPanel();
-                        folderPanel.setTab(FolderPanel.FILES_TAB);
+                        folderPanel.setTab(folderPanel.getFilesTabId());
                     } else {
                         FolderPanel folderPanel = getUIController()
                             .getInformationQuarter().getMyFolderPanel();
-                        folderPanel.setTab(FolderPanel.FILES_TAB);
+                        folderPanel.setTab(folderPanel.getFilesTabId());
                     }
                 }
             }

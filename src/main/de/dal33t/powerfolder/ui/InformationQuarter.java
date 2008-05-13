@@ -512,9 +512,9 @@ public class InformationQuarter extends PFUIComponent {
     public void displayChat(Folder folder) {
         displayFolder(folder);
         if (folder.isPreviewOnly()) {
-            previewFolderPanel.setTab(FolderPanel.CHAT_TAB);
+            previewFolderPanel.setTab(previewFolderPanel.getChatTabId());
         } else {
-            myFolderPanel.setTab(FolderPanel.CHAT_TAB);
+            myFolderPanel.setTab(myFolderPanel.getChatTabId());
         }
     }
 

@@ -24,12 +24,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @version $Revision: 1.2 $
  */
 public class FolderPanel extends PFUIPanel {
-    public static final int HOME_TAB = 0;
-    public static final int FILES_TAB = 1;
-    public static final int NEW_FILES_TAB = 2;
-    public static final int MEMBERS_TAB = 3;
-    public static final int CHAT_TAB = 4;
-    public static final int SETTINGS_TAB = 5;
+
+    private final int homeTabId;
+    private final int filesTabId;
+    private final int newFilesTabId;
+    private final int membersTabId;
+    private final int chatTabId;
+    private final int settingsTabId;
 
     private final boolean previewMode;
 
@@ -46,6 +47,21 @@ public class FolderPanel extends PFUIPanel {
     public FolderPanel(Controller controller, boolean previewMode) {
         super(controller);
         this.previewMode = previewMode;
+        if (previewMode) {
+            homeTabId = 0;
+            filesTabId = 1;
+            newFilesTabId = -1;
+            membersTabId = 2;
+            chatTabId = 3;
+            settingsTabId = 4;
+        } else {
+            homeTabId = 0;
+            filesTabId = 1;
+            newFilesTabId = 2;
+            membersTabId = 3;
+            chatTabId = 4;
+            settingsTabId = 5;
+        }
     }
 
     /**
@@ -65,13 +81,13 @@ public class FolderPanel extends PFUIPanel {
         membersTab.setFolder(folder);
         folderChatPanel.setFolder(folder);
         homeTab.setFolder(folder);
-        tabbedPanel.setIconAt(HOME_TAB, Icons.FOLDER);
+        tabbedPanel.setIconAt(homeTabId, Icons.FOLDER);
 
         // Do not show settings tab in preview
         if (folder.isPreviewOnly()) {
             synchronized (settingsTabSet) {
                 if (settingsTabSet.get()) {
-                    tabbedPanel.remove(SETTINGS_TAB);
+                    tabbedPanel.remove(settingsTabId);
                     settingsTabSet.set(false);
                 }
             }
@@ -82,9 +98,9 @@ public class FolderPanel extends PFUIPanel {
                 if (!settingsTabSet.get()) {
                     tabbedPanel.add(' ' + settingsTab.getTitle() + ' ',
                             settingsComponent);
-                    tabbedPanel.setMnemonicAt(SETTINGS_TAB,
+                    tabbedPanel.setMnemonicAt(settingsTabId,
                             Translation.getTranslation("folderpanel.settings.key").charAt(0));
-                    tabbedPanel.setIconAt(SETTINGS_TAB, Icons.SETTINGS);
+                    tabbedPanel.setIconAt(settingsTabId, Icons.SETTINGS);
                     settingsTabSet.set(true);
                 }
             }
@@ -100,7 +116,7 @@ public class FolderPanel extends PFUIPanel {
     public void setDirectory(Directory directory) {
         setFolder0(directory.getRootFolder());
         filesTab.setDirectory(directory);
-        tabbedPanel.setSelectedIndex(FILES_TAB);
+        tabbedPanel.setSelectedIndex(filesTabId);
     }
 
     /**
@@ -117,13 +133,37 @@ public class FolderPanel extends PFUIPanel {
         return tabbedPanel;
     }
 
+    public int getChatTabId() {
+        return chatTabId;
+    }
+
+    public int getFilesTabId() {
+        return filesTabId;
+    }
+
+    public int getHomeTabId() {
+        return homeTabId;
+    }
+
+    public int getMembersTabId() {
+        return membersTabId;
+    }
+
+    public int getNewFilesTabId() {
+        return newFilesTabId;
+    }
+
+    public int getSettingsTabId() {
+        return settingsTabId;
+    }
+
     /**
      *
      * @param tab tab to show
      */
     public void setTab(int tab) {
-        if (tab == CHAT_TAB || tab == HOME_TAB || tab == FILES_TAB || tab == NEW_FILES_TAB
-            || tab == MEMBERS_TAB || tab == SETTINGS_TAB ) //|| tab == PROBLEMS_TAB)
+        if (tab == chatTabId || tab == homeTabId || tab == filesTabId || tab == newFilesTabId
+            || tab == membersTabId || tab == settingsTabId)
         {
             tabbedPanel.setSelectedIndex(tab);
         } else {
@@ -132,34 +172,31 @@ public class FolderPanel extends PFUIPanel {
     }
 
     private FolderTab getCurrentTab() {
-        switch (tabbedPanel.getSelectedIndex()) {
-            case FILES_TAB :
-                return filesTab;
-            case NEW_FILES_TAB :
-                return newFilesTab;
-            case HOME_TAB :
-                return homeTab;
-            case MEMBERS_TAB :
-                return membersTab;
-            case CHAT_TAB :
-                return folderChatPanel;
-            case SETTINGS_TAB :
-                return settingsTab;
-            //case PROBLEMS_TAB :
-            //    return problemsTab;
-            default :
-                throw new IllegalStateException("invalid tab:"
+        int tab = tabbedPanel.getSelectedIndex();
+        if (tab == filesTabId) {
+            return filesTab;
+        } else if (tab == newFilesTabId) {
+            return newFilesTab;
+        } else if (tab == homeTabId) {
+            return homeTab;
+        } else if (tab == membersTabId) {
+            return membersTab;
+        } else if (tab == chatTabId) {
+            return folderChatPanel;
+        } else if (tab == settingsTabId) {
+            return settingsTab;
+        } else {
+            throw new IllegalStateException("invalid tab:"
                     + tabbedPanel.getSelectedIndex());
         }
-
     }
 
     /**
-     * returns the title the InformationQarter should display It uses the
-     * selected Tab and the folder name in the title.
-     *
-     * @return the title
-     */
+    * returns the title the InformationQarter should display It uses the
+    * selected Tab and the folder name in the title.
+    *
+    * @return the title
+    */
     public String getTitle() {
         if (folder != null) {
             return Translation.getTranslation("title.my.folders") + " > "
@@ -182,36 +219,41 @@ public class FolderPanel extends PFUIPanel {
                 + homeTab.getTitle() + ' ',
             homeTab.getUIComponent());
 
-        tabbedPanel.setMnemonicAt(HOME_TAB,
+        tabbedPanel.setMnemonicAt(homeTabId,
                 Translation.getTranslation("folderpanel.home.key").charAt(0));
 
         tabbedPanel.add(
                 ' ' + filesTab.getTitle() + ' ', filesTab
                 .getUIComponent());
-        tabbedPanel.setMnemonicAt(FILES_TAB,
+        tabbedPanel.setMnemonicAt(filesTabId,
                 Translation.getTranslation("folderpanel.files.key").charAt(0));
-        tabbedPanel.setIconAt(FILES_TAB, Icons.DIRECTORY);
+        tabbedPanel.setIconAt(filesTabId, Icons.DIRECTORY);
 
-        tabbedPanel.add(
-                ' ' + newFilesTab.getTitle() + ' ', newFilesTab
-                .getUIComponent());
-        tabbedPanel.setMnemonicAt(NEW_FILES_TAB,
-                Translation.getTranslation("folderpanel.new_files.key").charAt(0));
-        tabbedPanel.setIconAt(NEW_FILES_TAB, Icons.DIRECTORY_NEW);
-
+        if (!previewMode) {
+            tabbedPanel.add(
+                    ' ' + newFilesTab.getTitle() + ' ', newFilesTab
+                    .getUIComponent());
+            tabbedPanel.setMnemonicAt(newFilesTabId,
+                    Translation.getTranslation("folderpanel.new_files.key").charAt(0));
+            tabbedPanel.setIconAt(newFilesTabId, Icons.DIRECTORY_NEW);
+            if (!previewMode) {
+                tabbedPanel.getComponentAt(newFilesTabId).setVisible(false);
+            }
+        }
+        
         tabbedPanel.add(' '
                 + membersTab.getTitle() + ' ',
             membersTab.getUIComponent());
-        tabbedPanel.setMnemonicAt(MEMBERS_TAB,
+        tabbedPanel.setMnemonicAt(membersTabId,
                 Translation.getTranslation("folderpanel.members.key").charAt(0));
-        tabbedPanel.setIconAt(MEMBERS_TAB, Icons.NODE_FRIEND_CONNECTED);
+        tabbedPanel.setIconAt(membersTabId, Icons.NODE_FRIEND_CONNECTED);
 
         tabbedPanel.add(
                 ' ' + folderChatPanel.getTitle() + ' ',
             folderChatPanel.getUIComponent());
-        tabbedPanel.setMnemonicAt(CHAT_TAB,
+        tabbedPanel.setMnemonicAt(chatTabId,
                 Translation.getTranslation("folderpanel.chat.key").charAt(0));
-        tabbedPanel.setIconAt(CHAT_TAB, Icons.CHAT);
+        tabbedPanel.setIconAt(chatTabId, Icons.CHAT);
 
         UIUtil.removeBorder(tabbedPanel);
 
@@ -237,7 +279,7 @@ public class FolderPanel extends PFUIPanel {
      * @param pattern
      */
     public void addPatterns(String patterns) {
-        setTab(SETTINGS_TAB);
+        setTab(settingsTabId);
         settingsTab.showAddPane(patterns);
     }
 
@@ -248,7 +290,7 @@ public class FolderPanel extends PFUIPanel {
      * @param pattern
      */
     public void removePatterns(String patterns) {
-        setTab(SETTINGS_TAB);
+        setTab(settingsTabId);
         settingsTab.removePatterns(patterns);
     }
 
