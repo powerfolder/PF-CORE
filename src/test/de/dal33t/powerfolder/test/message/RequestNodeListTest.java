@@ -12,7 +12,6 @@ import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.net.NodeFilter;
 import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.IdGenerator;
-import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
@@ -86,10 +85,13 @@ public class RequestNodeListTest extends TwoControllerTestCase {
             randomNode.setConnectedToNetwork(false);
         }
 
-        // +1 = lisa
-        assertEquals(N_TOTAL_NODES + 1, getContollerBart().getNodeManager()
+        // +1 = lisa and Online Storage
+        for (Member member : getContollerBart().getNodeManager()
+                .getNodesAsCollection()) {
+        }
+        assertEquals(N_TOTAL_NODES + 2, getContollerBart().getNodeManager()
             .getNodesAsCollection().size());
-        assertEquals(1, getContollerLisa().getNodeManager()
+        assertEquals(2, getContollerLisa().getNodeManager()
             .getNodesAsCollection().size());
 
         // Convenience var
@@ -129,9 +131,9 @@ public class RequestNodeListTest extends TwoControllerTestCase {
         assertEquals(N_CON_SUPERNODES, getContollerLisa().getNodeManager()
             .countSupernodes());
 
-        // And all other online nodes
-        assertEquals(// N_CON_NORMAL_NODES +
-            N_CON_SUPERNODES + 1, getContollerLisa().getNodeManager()
+        // And all other online nodes (with bart and online storage)
+        assertEquals(
+            N_CON_SUPERNODES + 2, getContollerLisa().getNodeManager()
                 .getNodesAsCollection().size());
     }
 
@@ -182,15 +184,16 @@ public class RequestNodeListTest extends TwoControllerTestCase {
             }
         });
 
-        // Should have 10 +1 (bart)
-        assertEquals(nNodes + 1, getContollerLisa().getNodeManager()
+        // Should have 10 +2 (bart and Online Storage)
+        assertEquals(nNodes + 2, getContollerLisa().getNodeManager()
             .getNodesAsCollection().size());
 
         for (Member nodeAtLisa : getContollerLisa().getNodeManager()
             .getNodesAsCollection())
         {
             if (!testNodes.contains(nodeAtLisa)
-                && !nodeAtLisa.getNick().equals("Bart"))
+                && !nodeAtLisa.getNick().equals("Bart")
+                && !nodeAtLisa.getNick().equals("Online Storage"))
             {
                 fail("Not requested: " + nodeAtLisa);
             }
@@ -227,8 +230,8 @@ public class RequestNodeListTest extends TwoControllerTestCase {
         assertEquals(N_CON_SUPERNODES + N_OFFLINE_SUPERNODES,
             getContollerLisa().getNodeManager().countSupernodes());
 
-        // And all nodes
-        assertEquals(N_TOTAL_NODES + 1, getContollerLisa().getNodeManager()
+        // And all nodes (with bart and online storage)
+        assertEquals(N_TOTAL_NODES + 2, getContollerLisa().getNodeManager()
             .getNodesAsCollection().size());
 
         // This one fails, because the memberinfos received are all marked as
