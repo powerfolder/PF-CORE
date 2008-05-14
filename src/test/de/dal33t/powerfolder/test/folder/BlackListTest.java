@@ -12,6 +12,8 @@ public class BlackListTest extends TestCase {
         for (int i = 0; i < 100000; i++) {
             testBlackList();
             testBlacklistPatterns();
+            testWhiteList();
+            testWhitelistPatterns();
             tearDown();
             setUp();
         }
