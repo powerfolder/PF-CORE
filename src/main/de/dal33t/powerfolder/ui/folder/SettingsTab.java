@@ -2,22 +2,16 @@ package de.dal33t.powerfolder.ui.folder;
 
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_DONT_RECYCLE;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX;
+import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_WHITELIST;
 
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
-import javax.swing.AbstractAction;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
+import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -62,11 +56,17 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
     private JCheckBox useRecycleBinBox;
     private boolean previewMode;
 
-    public SettingsTab(Controller controller, boolean previewMode) {
+    private JRadioButton blacklistRB;
+    private JRadioButton whitelistRB;
+
+    private final FolderPanel folderPanel;
+
+    public SettingsTab(Controller controller, boolean previewMode, FolderPanel folderPanel) {
         super(controller);
         selectionModel = new SelectionModel();
         myFolderListener = new MyFolderListener();
         this.previewMode = previewMode;
+        this.folderPanel = folderPanel;
     }
 
     public String getTitle() {
@@ -89,6 +89,8 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
         folder.addFolderListener(myFolderListener);
         syncProfileSelectorPanel.setUpdateableFolder(folder);
         useRecycleBinBox.setSelected(folder.isUseRecycleBin());
+        blacklistRB.setSelected(!folder.isWhitelist());
+        whitelistRB.setSelected(folder.isWhitelist());
         update();
     }
 
@@ -101,7 +103,7 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
 
     private void initComponents() {
         FormLayout layout = new FormLayout("4dlu, right:pref, 4dlu, pref",
-            "4dlu, pref, 4dlu, pref, 4dlu, pref");
+            "4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
@@ -121,6 +123,22 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
 
         builder.add(createPatternsPanel(), cc.xy(4, 6));
 
+        builder.add(new JLabel(Translation
+            .getTranslation("folderpanel.settingstab.ignore_pattern_type")), cc.xy(
+            2, 8));
+
+        FormLayout layout2 = new FormLayout("pref, 4dlu, pref",
+            "pref");
+        PanelBuilder builder2 = new PanelBuilder(layout2);
+        CellConstraints cc2 = new CellConstraints();
+        createBlackWhiteRadioButtons();
+        ButtonGroup bg = new ButtonGroup();
+        bg.add(blacklistRB);
+        bg.add(whitelistRB);
+        builder2.add(blacklistRB, cc2.xy(1, 1));
+        builder2.add(whitelistRB, cc2.xy(3, 1));
+        builder.add(builder2.getPanel(), cc.xy(4, 8));
+
         panel = builder.getPanel();
     }
 
@@ -138,6 +156,14 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
                 getController().saveConfig();
             }
         });
+    }
+
+    private void createBlackWhiteRadioButtons() {
+        blacklistRB = new JRadioButton("Blacklist");
+        whitelistRB = new JRadioButton("Whitelist");
+        MyActionListener listener = new MyActionListener();
+        blacklistRB.addActionListener(listener);
+        whitelistRB.addActionListener(listener);
     }
 
     private JPanel createPatternsPanel() {
@@ -368,6 +394,7 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
         if (jListPatterns != null) {
             blackListPatternsListModel.fireUpdate();
         }
+        folderPanel.getFilesTab().updateBlackWhiteActions(folder.isWhitelist());
     }
 
     /** listens to changes of the sync profile */
@@ -382,4 +409,37 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
             return true;
         }
     }
+
+    /**
+     * Class to handle black/whitelist RB selections.
+     */
+    class MyActionListener implements ActionListener {
+            public void actionPerformed(ActionEvent e) {
+
+                // Check that the user understands
+                boolean change = true;
+                if (whitelistRB.isSelected()) {
+                    int result = DialogFactory.genericDialog(getController().getUIController().getMainFrame().getUIComponent(),
+                            Translation.getTranslation("folderpanel.settingstab.white_list.title"),
+                            Translation.getTranslation("folderpanel.settingstab.white_list.message"),
+                            new String[]{Translation.getTranslation("general.ok"),
+                            Translation.getTranslation("general.cancel")},
+                            0, GenericDialogType.WARN);
+                    change = result == 0;
+                }
+
+                if (change) {
+                    folder.setWhitelist(whitelistRB.isSelected());
+                    Properties config = getController().getConfig();
+                    config.setProperty(FOLDER_SETTINGS_PREFIX + folder.getName()
+                        + FOLDER_SETTINGS_WHITELIST, String
+                        .valueOf(whitelistRB.isSelected()));
+                    getController().saveConfig();
+                    update();
+                } else {
+                    // User vetoed change.
+                    blacklistRB.setSelected(true);
+                }
+            }
+        }
 }

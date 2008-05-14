@@ -212,7 +212,7 @@ public class ServerClient extends PFComponent {
                 continue;
             }
             FolderSettings settings = new FolderSettings(new File("."),
-                SyncProfile.SYNCHRONIZE_PCS, true, true, true);
+                SyncProfile.SYNCHRONIZE_PCS, true, true, true, false);
             try {
                 log().warn("Adding as preview: " + foInfo);
                 getController().getFolderRepository().createPreviewFolder(

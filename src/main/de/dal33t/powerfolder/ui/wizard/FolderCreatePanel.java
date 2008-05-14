@@ -129,7 +129,7 @@ public class FolderCreatePanel extends PFWizardPanel {
         sendInvitations = sendInvsAtt == null || sendInvsAtt;
 
         folderSettings = new FolderSettings(localBase, syncProfile,
-            useRecycleBin, true, previewFolder);
+            useRecycleBin, true, previewFolder, false);
 
         // Reset
         folder = null;

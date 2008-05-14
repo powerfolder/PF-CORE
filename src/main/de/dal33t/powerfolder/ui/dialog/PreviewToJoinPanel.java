@@ -86,7 +86,8 @@ public class PreviewToJoinPanel extends BaseDialog {
                 FolderSettings newFolderSettings = new FolderSettings(
                         new File((String) locationModel.getValue()),
                         syncProfileSelectorPanel.getSyncProfile(),
-                        false, existingFoldersSettings.isUseRecycleBin(), false);
+                        false, existingFoldersSettings.isUseRecycleBin(), false,
+                        existingFoldersSettings.isWhitelist());
 
                 FolderPreviewHelper.convertFolderFromPreview(getController(),
                         folder, newFolderSettings, false);

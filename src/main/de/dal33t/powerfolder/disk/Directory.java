@@ -83,7 +83,11 @@ public class Directory implements Comparable<Directory>, DiskItem {
     }
 
     public boolean isBlackListed() {
-        return rootFolder.getBlacklist().isIgnored(this);
+        return rootFolder.getBlacklist().isIgnored(this) ^ rootFolder.getBlacklist().isWhitelist();
+    }
+
+    public boolean isFolderWhitelist() {
+        return rootFolder.isWhitelist();
     }
 
     /** returns a File object to the diretory in the filesystem */

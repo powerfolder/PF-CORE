@@ -63,6 +63,7 @@ import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
+import de.dal33t.powerfolder.disk.Blacklist;
 import de.dal33t.powerfolder.event.FolderAdapter;
 import de.dal33t.powerfolder.event.FolderEvent;
 import de.dal33t.powerfolder.event.FolderMembershipEvent;
@@ -132,8 +133,8 @@ public class FilesTab extends PFUIComponent implements FolderTab,
     /** The currently selected items */
     private SelectionModel selectionModel;
     private DownloadFileAction downloadFileAction;
-    private BlackWhiteListAction blackWhiteListAction;
-    private UnBlackWhiteListAction unBlackWhiteListAction;
+    private BlackWhitelistAction blackWhitelistAction;
+    private UnBlackWhitelistAction unBlackWhitelistAction;
     private StartFileAction startFileAction;
     private RemoveFileAction removeFileAction;
     private RestoreFileAction restoreFileAction;
@@ -198,8 +199,8 @@ public class FilesTab extends PFUIComponent implements FolderTab,
     private void initComponents() {
         downloadFileAction = new DownloadFileAction(getController(),
             selectionModel);
-        blackWhiteListAction = new BlackWhiteListAction(getController(), selectionModel);
-        unBlackWhiteListAction = new UnBlackWhiteListAction(getController(),
+        blackWhitelistAction = new BlackWhitelistAction(getController(), selectionModel);
+        unBlackWhitelistAction = new UnBlackWhitelistAction(getController(),
             selectionModel);
         startFileAction = new StartFileAction(getController(), selectionModel);
         removeFileAction = new RemoveFileAction(getController(), selectionModel);
@@ -346,6 +347,12 @@ public class FilesTab extends PFUIComponent implements FolderTab,
 
     public void setFolder(Folder folder) {
         setDirectory(folder.getDirectory());
+        updateBlackWhiteActions(folder.isWhitelist());
+    }
+
+    public void updateBlackWhiteActions(boolean whitelist) {
+        blackWhitelistAction.setWhitelist(whitelist);
+        unBlackWhitelistAction.setWhitelist(whitelist);
     }
 
     public String getTitle() {
@@ -399,8 +406,8 @@ public class FilesTab extends PFUIComponent implements FolderTab,
             fileMenu.add(openLocalFolder);
         }
         fileMenu.add(downloadFileAction);
-        fileMenu.add(blackWhiteListAction);
-        fileMenu.add(unBlackWhiteListAction);
+        fileMenu.add(blackWhitelistAction);
+        fileMenu.add(unBlackWhitelistAction);
         fileMenu.add(abortTransferAction);
         fileMenu.add(removeFileAction);
         fileMenu.add(restoreFileAction);
@@ -1086,9 +1093,9 @@ public class FilesTab extends PFUIComponent implements FolderTab,
 
     }
 
-    private class BlackWhiteListAction extends SelectionBaseAction {
+    private class BlackWhitelistAction extends SelectionBaseAction {
 
-        BlackWhiteListAction(Controller controller, SelectionModel selectionModel) {
+        BlackWhitelistAction(Controller controller, SelectionModel selectionModel) {
             super("black_list", controller, selectionModel);
             setEnabled(false);
         }
@@ -1132,11 +1139,15 @@ public class FilesTab extends PFUIComponent implements FolderTab,
         public void selectionChanged(SelectionChangeEvent event) {
             enableIgnoreUnignore();
         }
+
+        public void setWhitelist(boolean whitelist) {
+            configureFromActionId(whitelist ? "white_list" : "black_list");
+        }
     }
 
-    private class UnBlackWhiteListAction extends SelectionBaseAction {
+    private class UnBlackWhitelistAction extends SelectionBaseAction {
 
-        UnBlackWhiteListAction(Controller controller, SelectionModel selectionModel)
+        UnBlackWhitelistAction(Controller controller, SelectionModel selectionModel)
         {
             super("un_black_list", controller, selectionModel);
             setEnabled(false);
@@ -1181,6 +1192,10 @@ public class FilesTab extends PFUIComponent implements FolderTab,
         public void selectionChanged(SelectionChangeEvent event) {
             enableIgnoreUnignore();
         }
+
+        public void setWhitelist(boolean whitelist) {
+            configureFromActionId(whitelist ? "un_white_list" : "un_black_list");
+        }
     }
 
     private void enableIgnoreUnignore() {
@@ -1188,8 +1203,8 @@ public class FilesTab extends PFUIComponent implements FolderTab,
         Object[] selections = getSelectionModel().getSelections();
 
         if (selections == null || selections.length == 0) {
-            blackWhiteListAction.setEnabled(false);
-            unBlackWhiteListAction.setEnabled(false);
+            blackWhitelistAction.setEnabled(false);
+            unBlackWhitelistAction.setEnabled(false);
             return;
         }
 
@@ -1207,25 +1222,30 @@ public class FilesTab extends PFUIComponent implements FolderTab,
         boolean enableIgnore = true;
         boolean enableUnignore = true;
         if (folder != null) {
+            Blacklist blacklist = folder.getBlacklist();
             for (Object selection : selections) {
                 if (selection instanceof FileInfo) {
 
                     // Only enable if not already ignored.
                     FileInfo fileInfo = (FileInfo) selection;
-                    enableIgnore &= !folder.getBlacklist().isIgnored(fileInfo);
-                    enableUnignore &= folder.getBlacklist().isIgnored(fileInfo);
+                    enableIgnore &= !(blacklist.isIgnored(fileInfo) ^
+                            blacklist.isWhitelist());
+                    enableUnignore &= blacklist.isIgnored(fileInfo) ^
+                            blacklist.isWhitelist();
                 } else if (selection instanceof Directory) {
 
                     // Only enable if subs not ignored.
                     Directory dir = (Directory) selection;
-                    enableIgnore &= !folder.getBlacklist().isIgnored(dir);
-                    enableUnignore &= folder.getBlacklist().isIgnored(dir);
+                    enableIgnore &= !(blacklist.isIgnored(dir) ^
+                            blacklist.isWhitelist());
+                    enableUnignore &= blacklist.isIgnored(dir) ^
+                            blacklist.isWhitelist();
                 }
             }
         }
 
-        blackWhiteListAction.setEnabled(enableIgnore);
-        unBlackWhiteListAction.setEnabled(enableUnignore);
+        blackWhitelistAction.setEnabled(enableIgnore);
+        unBlackWhitelistAction.setEnabled(enableUnignore);
 
     }
 

@@ -9,6 +9,7 @@ import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREVIEW;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_SECRET;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_SYNC_PROFILE;
+import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_WHITELIST;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -294,11 +295,15 @@ public class FolderRepository extends PFComponent implements Runnable {
             .getProperty(FOLDER_SETTINGS_PREFIX + folderName
                 + FOLDER_SETTINGS_PREVIEW));
 
+        boolean whitelist = "true".equalsIgnoreCase(config
+            .getProperty(FOLDER_SETTINGS_PREFIX + folderName
+                + FOLDER_SETTINGS_WHITELIST));
+
         if (folderDir == null) {
             System.err.println(folderName);
         }
         return new FolderSettings(new File(folderDir), syncProfile, false,
-            useRecycleBin, preview);
+            useRecycleBin, preview, whitelist);
     }
 
     /**
@@ -637,6 +642,9 @@ public class FolderRepository extends PFComponent implements Runnable {
         config.setProperty(FOLDER_SETTINGS_PREFIX + folderInfo.name
             + FOLDER_SETTINGS_PREVIEW, String.valueOf(folderSettings
             .isPreviewOnly()));
+        config.setProperty(FOLDER_SETTINGS_PREFIX + folderInfo.name
+            + FOLDER_SETTINGS_WHITELIST, String.valueOf(folderSettings
+            .isWhitelist()));
 
         if (saveConfig) {
             getController().saveConfig();

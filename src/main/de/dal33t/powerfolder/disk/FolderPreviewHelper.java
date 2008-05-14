@@ -33,7 +33,7 @@ public class FolderPreviewHelper {
 
         File localBase = makePreviewBaseDir(folderName);
         return new FolderSettings(localBase, SyncProfile.NO_SYNC, false, false,
-                true);
+                true, false);
     }
 
     // Creates a preview folder directory for a folderName.
@@ -74,7 +74,8 @@ public class FolderPreviewHelper {
                 initialFolderSettings.getSyncProfile(),
                 initialFolderSettings.isCreateInvitationFile(),
                 initialFolderSettings.isUseRecycleBin(),
-                true);
+                true,
+                initialFolderSettings.isWhitelist());
 
         try {
             folderRepository.removeFolder(folder, deleteSystemSubDir);

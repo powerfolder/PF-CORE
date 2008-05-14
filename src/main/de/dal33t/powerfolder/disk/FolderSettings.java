@@ -17,7 +17,8 @@ public class FolderSettings {
     public static final String FOLDER_SETTINGS_DONT_RECYCLE = ".dontuserecyclebin";
     public static final String FOLDER_SETTINGS_SYNC_PROFILE = ".syncprofile";
     public static final String FOLDER_SETTINGS_DIR = ".dir";
-    public static final String FOLDER_SETTINGS_LAST_LOCAL = ".last-localbase";    
+    public static final String FOLDER_SETTINGS_LAST_LOCAL = ".last-localbase";
+    public static final String FOLDER_SETTINGS_WHITELIST = ".whitelist";
 
     /**
      * Base location of files in the folder.
@@ -46,18 +47,25 @@ public class FolderSettings {
     private boolean previewOnly;
 
     /**
+     * Whether the folder is a black- or white-list.
+     */
+    private boolean whitelist;
+
+    /**
      * Constructor. Creates a new FolderSettings object.
      * @param localBaseDir
      * @param syncProfile
      * @param createInvitationFile
      * @param useRecycleBin
      * @param previewOnly
+     * @param whitelist
      */
     public FolderSettings(File localBaseDir,
                           SyncProfile syncProfile,
                           boolean createInvitationFile,
                           boolean useRecycleBin,
-                          boolean previewOnly) {
+                          boolean previewOnly,
+                          boolean whitelist) {
         Reject.ifNull(localBaseDir, "Local base dir required");
         Reject.ifNull(syncProfile, "Sync profile required");
         this.localBaseDir = localBaseDir;
@@ -65,6 +73,7 @@ public class FolderSettings {
         this.createInvitationFile = createInvitationFile;
         this.useRecycleBin = useRecycleBin;
         this.previewOnly = previewOnly;
+        this.whitelist = whitelist;
     }
     
     /**
@@ -78,7 +87,7 @@ public class FolderSettings {
                           SyncProfile syncProfile,
                           boolean createInvitationFile,
                           boolean useRecycleBin) {
-       this(localBaseDir, syncProfile, createInvitationFile, useRecycleBin, false);
+       this(localBaseDir, syncProfile, createInvitationFile, useRecycleBin, false, false);
     }
 
     ///////////////
@@ -103,5 +112,9 @@ public class FolderSettings {
 
     public boolean isPreviewOnly() {
         return previewOnly;
+    }
+
+    public boolean isWhitelist() {
+        return whitelist;
     }
 }

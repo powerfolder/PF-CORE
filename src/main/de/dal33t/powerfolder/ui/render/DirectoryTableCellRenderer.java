@@ -204,7 +204,11 @@ public class DirectoryTableCellRenderer extends DefaultTableCellRenderer {
                     setIcon(Icons.DELETE);
                 }
                 if (directory.isBlackListed()) {
-                    setIcon(Icons.BLACK_LIST);
+                    if (directory.isFolderWhitelist()) {
+                        setIcon(Icons.WHITE_LIST);
+                    } else {
+                        setIcon(Icons.BLACK_LIST);
+                    }
                 } else if (directory.isExpected(controller
                     .getFolderRepository()))
                 {
@@ -277,10 +281,15 @@ public class DirectoryTableCellRenderer extends DefaultTableCellRenderer {
             setIcon(Icons.DELETE);
             statusForTooltip = Translation.getTranslation("fileinfo.deleted");
 
-        } else if (folder.getBlacklist().isIgnored(fInfo)) {
-            setIcon(Icons.BLACK_LIST);
-            statusForTooltip = replaceSpacesWithNBSP(Translation
-                .getTranslation("fileinfo.ignore"));
+        } else if (folder.getBlacklist().isIgnored(fInfo) ^
+                folder.getBlacklist().isWhitelist()) {
+            if (folder.isWhitelist()) {
+                setIcon(Icons.WHITE_LIST);
+            } else {
+                setIcon(Icons.BLACK_LIST);
+                statusForTooltip = replaceSpacesWithNBSP(Translation
+                    .getTranslation("fileinfo.ignore"));
+            }
         } else if (fInfo.isExpected(controller.getFolderRepository())) {
             setForeground(AVAILEBLE);
 
@@ -311,7 +320,12 @@ public class DirectoryTableCellRenderer extends DefaultTableCellRenderer {
             }
         } else {
             setForeground(NORMAL);
-            statusForTooltip = "";
+            if (folder.isWhitelist()) {
+                statusForTooltip = replaceSpacesWithNBSP(Translation
+                    .getTranslation("fileinfo.ignore"));
+            } else {
+                statusForTooltip = "";
+            }
         }
 
         // Okay basic infos added

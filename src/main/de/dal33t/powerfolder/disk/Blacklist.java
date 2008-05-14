@@ -59,6 +59,11 @@ public class Blacklist {
     private boolean dirty;
 
     /**
+     * Whether the Blacklist is acting as a whitelist.
+     */
+    private boolean whitelist;
+
+    /**
      * Loads patterns from file.
      *
      * @param directory
@@ -178,15 +183,16 @@ public class Blacklist {
      * Will check if this FileInfo matches a pattern.
      * 
      * @return true if is ignored by a pattern, false if not
+     *         or oposite if whitelist.
      */
     public boolean isIgnored(FileInfo fileInfo) {
 
         for (String pattern : patterns) {
             if (PatternMatch.isMatch(fileInfo.getName(), pattern)) {
-                return true;
+                return !whitelist;
             }
         }
-        return false;
+        return whitelist;
     }
 
     /**
@@ -197,10 +203,10 @@ public class Blacklist {
     public boolean isIgnored(Directory dir) {
         for (String pattern : patterns) {
             if (PatternMatch.isMatch(dir.getName() + "/*", pattern)) {
-                return true;
+                return !whitelist;
             }
         }
-        return false;
+        return whitelist;
     }
 
     /**
@@ -237,4 +243,16 @@ public class Blacklist {
         return n;
     }
 
+    /**
+     * Causes the Blacklist to function as a whitelist.
+     * 
+     * @param whitelist
+     */
+    public void setWhitelist(boolean whitelist) {
+        this.whitelist = whitelist;
+    }
+
+    public boolean isWhitelist() {
+        return whitelist;
+    }
 }

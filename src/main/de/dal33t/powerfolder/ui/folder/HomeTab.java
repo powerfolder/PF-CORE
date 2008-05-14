@@ -374,7 +374,7 @@ public class HomeTab extends PFUIComponent implements FolderTab {
             // Create the new Folder in the repository.
             FolderInfo fi = new FolderInfo(folder);
             FolderSettings fs = new FolderSettings(newDirectory, folder
-                .getSyncProfile(), false, folder.isUseRecycleBin(), false);
+                .getSyncProfile(), false, folder.isUseRecycleBin(), false, false);
             folder = repository.createFolder(fi, fs);
 
             if (moveContent) {
