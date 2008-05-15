@@ -7,10 +7,13 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.transfer.TransferManager;
+import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.ui.action.*;
 import de.dal33t.powerfolder.ui.builder.ContentPanelBuilder;
 import de.dal33t.powerfolder.ui.dialog.FileDetailsPanel;
+import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
 import de.dal33t.powerfolder.util.ui.UIUtil;
@@ -18,6 +21,9 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import java.awt.event.ActionEvent;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * Shows folder details from new downloads.
@@ -36,6 +42,8 @@ public class NewFilesTab extends PFUIComponent implements FolderTab,
     private JToggleButton showHideFileDetailsButton;
 
     private JComponent fileDetailsPanelComp;
+
+    private Action clearCompletedAction;
 
     /** The currently selected items */
     private SelectionModel selectionModel;
@@ -88,8 +96,11 @@ public class NewFilesTab extends PFUIComponent implements FolderTab,
             getController());
         showHideFileDetailsButton = new JToggleButton(showHideFileDetailsAction);
 
+        clearCompletedAction = new ClearCompletedAction();
+
         toolbar = createToolBar();
 
+        updateActions();
     }
 
     private JPanel createToolBar() {
@@ -98,15 +109,13 @@ public class NewFilesTab extends PFUIComponent implements FolderTab,
         bar.addRelatedGap();
 
         bar.addGridded(showHideFileDetailsButton);
-
+        bar.addRelatedGap();
+        bar.addGridded(new JButton(clearCompletedAction));
+                      
         JPanel barPanel = bar.getPanel();
         barPanel.setBorder(Borders.DLU4_BORDER);
 
         return barPanel;
-    }
-
-    public FolderDownloadsTable getFolderDownloadsTable() {
-        return folderDownloadsTable;
     }
 
     /**
@@ -133,39 +142,94 @@ public class NewFilesTab extends PFUIComponent implements FolderTab,
 
     // Actions ****************************************************************
 
-    /**
-     * Returns the selection model. Changes upon selection.
-     *
-     * @return
-     */
-    public SelectionModel getSelectionModel() {
-        return selectionModel;
-    }
-
     /** updates the SelectionModel if some selection has changed in the table */
     private class DirectoryListSelectionListener implements
         ListSelectionListener
     {
         public void valueChanged(ListSelectionEvent e) {
-            int[] selectedRows = folderDownloadsTable.getSelectedRows();
-            if (selectedRows.length != 0 && !e.getValueIsAdjusting()) {
-                Object[] selectedObjects = new Object[selectedRows.length];
+            if (!e.getValueIsAdjusting()) {
+                updateActions();
+            }
+        }
+    }
 
-                for (int i = 0; i < selectedRows.length; i++) {
-                    selectedObjects[i] = folderDownloadsTable
+    private void updateActions() {
+        int[] selectedRows = folderDownloadsTable.getSelectedRows();
+        if (selectedRows.length == 0) {
+            selectionModel.setSelection(null);
+        } else {
+            Object[] selectedObjects = new Object[selectedRows.length];
+
+            for (int i = 0; i < selectedRows.length; i++) {
+                selectedObjects[i] = folderDownloadsTable
                         .getFolderDownloadsTableModel()
                         .getValueAt(selectedRows[i], 0);
 
-                }
-                selectionModel.setSelections(selectedObjects);
-            } else {
-                selectionModel.setSelection(null);
             }
+            selectionModel.setSelections(selectedObjects);
         }
+
+        clearCompletedAction.setEnabled(selectedRows.length > 0);
     }
 
     public void toggeDetails() {
         fileDetailsPanelComp.setVisible(!fileDetailsPanelComp.isVisible());
         showHideFileDetailsButton.setSelected(fileDetailsPanelComp.isVisible());
+    }
+
+    /**
+     * Clears completed downloads. 
+     */
+    private class ClearCompletedAction extends BaseAction {
+        ClearCompletedAction() {
+            super("clearcompleteddownloads", NewFilesTab.this
+                .getController());
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            clearDownloads();
+        }
+    }
+
+    private void clearDownloads() {
+
+        ActivityVisualizationWorker avw =
+                new ActivityVisualizationWorker(getUIController()) {
+
+                    @Override
+                    protected String getTitle()
+                    {
+                        return Translation.getTranslation("new_files_tab.cleanup_activity.title");
+                    }
+
+                    @Override
+                    protected String getWorkingText()
+                    {
+                        return Translation.getTranslation("new_files_tab.cleanup_activity.description");
+                    }
+
+                    public Object construct()
+                    {
+
+                        TransferManager transferManager = getController().getTransferManager();
+                        List<FileInfo> fileInfos = new ArrayList<FileInfo>();
+                        for (int i = 0; i < selectionModel.getSelections().length; i++)
+                        {
+                            FileInfo fileInfo = (FileInfo) selectionModel.getSelections()[i];
+                            fileInfos.add(fileInfo);
+                        }
+
+                        for (FileInfo fileInfo : fileInfos)
+                        {
+                            transferManager.clearCompletedDownload(fileInfo);
+                        }
+                        return null;
+
+                    }
+                };
+
+        // Clear completed downloads
+        avw.start();
+
     }
 }

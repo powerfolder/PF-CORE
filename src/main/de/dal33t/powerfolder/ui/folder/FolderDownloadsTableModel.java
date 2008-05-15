@@ -1,6 +1,5 @@
 package de.dal33t.powerfolder.ui.folder;
 
-import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferAdapter;
@@ -8,7 +7,6 @@ import de.dal33t.powerfolder.ui.model.TransferManagerModel;
 import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.ui.UIUtil;
@@ -87,40 +85,12 @@ public class FolderDownloadsTableModel extends PFComponent implements TableModel
 
     public int getRowCount() {
         synchronized (displayList) {
-            if (displayList.isEmpty()) {
-                return 1; // a row for the status message
-            }
             return displayList.size();
         }
     }
 
     public Object getValueAt(int rowIndex, int columnIndex) {
         synchronized (displayList) {
-            if (rowIndex == 0 && displayList.isEmpty()) {
-                // status line
-                FolderInfo folderInfo = folder.getInfo();
-                Member[] members = folder.getMembers();
-                for (Member member : members) {
-                    if (member.isConnected()
-                            && !member.hasFileListFor(folderInfo)) {
-                        // if a file list is received from a member
-                        return Translation
-                                .getTranslation("filelist.status.no_files_available_add_files_in_folder");
-
-                    }
-                }
-                // no fileslist received
-                if (members.length > 1) { // myself is always in this list
-                    // there are other members
-                    return Translation
-                            .getTranslation("filelist.status.no_files_available_yet_fetching_filelist");
-
-                }
-                // no other members
-                return Translation
-                        .getTranslation("filelist.status.no_files_available_add_files_and_invite");
-
-            }
             if (rowIndex >= displayList.size() || rowIndex < 0) {
                 log().error(
                         "Illegal access. want to get row " + rowIndex + ", have "

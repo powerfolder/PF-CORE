@@ -2193,6 +2193,24 @@ public class TransferManager extends PFComponent {
         }
     }
 
+    /**
+     * Removes completed download for a fileInfo.
+     *
+     * @param fileInfo
+     */
+    public void clearCompletedDownload(FileInfo fileInfo) {
+        for (DownloadManager completedDownload : completedDownloads) {
+            if (completedDownload.getFileInfo().equals(fileInfo)) {
+                if (completedDownloads.remove(completedDownload)) {
+                    for (Download download : completedDownload.getSources()) {
+                        fireCompletedDownloadRemoved(new TransferManagerEvent(this,
+                            download));
+                    }
+                }                          
+            }
+        }
+    }
+
     // Worker code ************************************************************
 
     /**
