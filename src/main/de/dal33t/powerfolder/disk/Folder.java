@@ -55,6 +55,8 @@ import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.message.ScanCommand;
 import de.dal33t.powerfolder.transfer.DownloadManager;
+import de.dal33t.powerfolder.transfer.TransferPriorities;
+import de.dal33t.powerfolder.transfer.TransferPriorities.TransferPriority;
 import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.FileCopier;
@@ -109,6 +111,12 @@ public class Folder extends PFComponent {
     /** files that should not be downloaded in auto download */
     private Blacklist blacklist;
 
+    /** 
+     * Stores the priorities for downloading 
+     * of the files in this folder.  
+     */
+    private TransferPriorities transferPriorities;
+    
     /** Lock for scan */
     private final Object scanLock = new Object();
 
@@ -263,6 +271,8 @@ public class Folder extends PFComponent {
         blacklist.loadPatternsFrom(getSystemSubDir());
         blacklist.setWhitelist(whitelist);
 
+        transferPriorities = new TransferPriorities();
+        
         // Load folder database
         loadFolderDB(); // will also read the blacklist
 
@@ -488,6 +498,14 @@ public class Folder extends PFComponent {
 
     public Blacklist getBlacklist() {
         return blacklist;
+    }
+
+    /**
+     * Retrieves the transferpriorities for file in this folder.
+     * @return the associated TransferPriorities object
+     */
+    public TransferPriorities getTransferPriorities() {
+        return transferPriorities;
     }
 
     public ScanResult.ResultState getLastScanResultState() {
@@ -1036,7 +1054,10 @@ public class Folder extends PFComponent {
 
         FileInfo old = knownFiles.put(fInfo, fInfo);
 
+        TransferPriority prio = TransferPriority.NORMAL; 
+        
         if (old != null) {
+            prio = transferPriorities.getPriority(old);
             // Remove old file from info
             currentInfo.removeFile(old);
         }
@@ -1046,6 +1067,7 @@ public class Folder extends PFComponent {
         // Add file to folder
         currentInfo.addFile(fInfo);
 
+        transferPriorities.setPriority(fInfo, prio);
     }
 
     /**
@@ -1420,6 +1442,7 @@ public class Folder extends PFComponent {
                 // log().warn("Would remove file: " + file.toDetailString());
                 deleted++;
                 knownFiles.remove(file);
+                transferPriorities.removeFile(file);
             }
         }
         log().warn(

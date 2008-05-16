@@ -1,7 +1,10 @@
 package de.dal33t.powerfolder.transfer;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Queue;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -167,6 +170,7 @@ public class FileRequestor extends PFComponent {
 
         Collection<FileInfo> incomingFiles = folder.getIncomingFiles(folder
             .getSyncProfile().getConfiguration().isAutoDownloadFromOthers());
+        List<FileInfo> filesToDownload = new ArrayList<FileInfo>(incomingFiles.size());
         TransferManager tm = getController().getTransferManager();
         for (FileInfo fInfo : incomingFiles) {
             if (fInfo.isDeleted() || tm.isDownloadingActive(fInfo)
@@ -184,8 +188,12 @@ public class FileRequestor extends PFComponent {
                 && fInfo.getModifiedBy().getNode(getController()).isFriend();
 
             if (download) {
-                tm.downloadNewestVersion(fInfo, true);
+                filesToDownload.add(fInfo);
             }
+        }
+        Collections.sort(filesToDownload, folder.getTransferPriorities().getComparator());
+        for (FileInfo fInfo : filesToDownload) {
+            tm.downloadNewestVersion(fInfo, true);
         }
     }
 

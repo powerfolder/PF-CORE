@@ -145,8 +145,22 @@ public class TwoControllerTestCase extends TestCase {
 
     // Helpers ****************************************************************
 
+    /**
+     * Allows overriding controller creation
+     */
+    protected Controller createControllerLisa() {
+        return Controller.createController();
+    }
+
+    /**
+     * Allows overriding controller creation
+     */
+    protected Controller createControllerBart() {
+        return Controller.createController();
+    }
+
     protected void startControllerBart() {
-        controllerBart = Controller.createController();
+        controllerBart = createControllerBart();
         controllerBart.startConfig("build/test/ControllerBart/PowerFolder");
         waitForStart(controllerBart);
         assertNotNull(controllerBart.getConnectionListener());
@@ -156,7 +170,7 @@ public class TwoControllerTestCase extends TestCase {
     }
 
     protected void startControllerLisa() {
-        controllerLisa = Controller.createController();
+        controllerLisa = createControllerLisa();
         controllerLisa.startConfig("build/test/ControllerLisa/PowerFolder");
         waitForStart(controllerLisa);
         assertNotNull(controllerLisa.getConnectionListener());

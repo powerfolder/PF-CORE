@@ -2284,7 +2284,7 @@ public class TransferManager extends PFComponent {
         for (DownloadManager man : dlManagers.values()) {
             downloadsLock.lock();
             try {
-                downloadNewestVersion(man.getFileInfo(), true);
+                downloadNewestVersion(man.getFileInfo(), man.isRequestedAutomatic());
                 for (Download download : man.getSources()) {
                     if (download.isBroken()) {
                         // Set broken

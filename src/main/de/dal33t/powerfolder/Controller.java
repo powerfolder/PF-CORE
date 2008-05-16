@@ -26,6 +26,7 @@ import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.prefs.Preferences;
@@ -58,6 +59,7 @@ import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.ForcedLanguageFileResourceBundle;
 import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.PropertiesUtil;
+import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.UpdateChecker;
 import de.dal33t.powerfolder.util.Util;
@@ -182,6 +184,12 @@ public class Controller extends PFComponent {
 
     private PersistentTaskManager taskManager;
 
+    
+    private Callable<TransferManager> transferManagerFactory = new Callable<TransferManager>() {
+        public TransferManager call() throws Exception {
+            return new TransferManager(Controller.this);
+        }
+    };
     /** Handels the up and downloads */
     private TransferManager transferManager;
 
@@ -376,8 +384,13 @@ public class Controller extends PFComponent {
         dyndnsManager = new DynDnsManager(this);
 
         // initialize transfer manager
-        transferManager = new TransferManager(this);
-
+        // If this is a unit test it might have been set before.
+        try {
+            transferManager = transferManagerFactory.call();
+        } catch (Exception e) {
+            log().error(e);
+        }
+        
         setLoadingCompletion(10, 20);
 
         // start node manager
@@ -1475,6 +1488,17 @@ public class Controller extends PFComponent {
      */
     public TransferManager getTransferManager() {
         return transferManager;
+    }
+    
+    /**
+     * ONLY USE THIS METHOD FOR TESTING PURPOSES!
+     */
+    public void setTransferManagerFactory(Callable<TransferManager> factory) {
+        Reject.ifNull(factory, "TransferManager factory is null");
+        if (transferManager != null) {
+            throw new IllegalStateException("TransferManager was already set!");
+        }
+        transferManagerFactory = factory;
     }
 
     public SecurityManager getSecurityManager() {
