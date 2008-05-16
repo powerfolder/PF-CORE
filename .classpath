@@ -14,7 +14,6 @@
 	<classpathentry exported="true" kind="lib" path="lib/looks-2.1.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/validation-2.0.0.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/3.8.1"/>
-	<classpathentry kind="lib" path="lib/jmock/cglib-2.1_3-src.jar"/>
 	<classpathentry kind="lib" path="lib/jmock/cglib-nodep-2.1_3.jar"/>
 	<classpathentry kind="lib" path="lib/jmock/hamcrest-core-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/jmock/hamcrest-library-1.1.jar"/>

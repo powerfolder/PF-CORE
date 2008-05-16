@@ -81,6 +81,17 @@ For creation of the installer:
 			<include name="validation-2.0.0.jar" />
 		</fileset>
 
+		<fileset id="testlibs" dir="lib" casesensitive="yes">
+			<include name="jmock/cglib-nodep-2.1_3.jar" />
+			<include name="jmock/hamcrest-core-1.1.jar" />
+			<include name="jmock/hamcrest-library-1.1.jar" />
+			<include name="jmock/jmock-2.4.0.jar" />
+			<include name="jmock/jmock-junit3-2.4.0.jar" />
+			<include name="jmock/jmock-junit4-2.4.0.jar" />
+			<include name="jmock/jmock-legacy-2.4.0.jar" />
+			<include name="jmock/objenesis-1.0.jar" />
+		</fileset>
+
 		<!-- Output dirs -->
 		<property name="build.dir" location="${output.dir}/build" />
 		<property name="build.test.dir" location="${output.dir}/test" />
@@ -106,6 +117,7 @@ For creation of the installer:
 
 			<classpath>
 				<fileset refid="libs" />
+				<fileset refid="testlibs" />
 			</classpath>
 
 			<src path="${main.src.dir}" />
@@ -212,6 +224,7 @@ For creation of the installer:
 				<pathelement location="${build.dir}" />
 				<pathelement location="${junit.lib}" />
 				<fileset refid="libs" />
+				<fileset refid="testlibs" />
 			</classpath>
 		</javac>
 		<mkdir dir="${build.reports.dir}/raw" />
