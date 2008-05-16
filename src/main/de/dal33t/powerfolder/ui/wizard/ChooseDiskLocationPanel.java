@@ -513,7 +513,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         public Object construct() {
             try {
                 File f = new File(initial);
-                directorySize = FileUtils.calculateDirectorySize(f);
+                directorySize = FileUtils.calculateDirectorySize(f, 0);
             } catch (Exception e) {
                 // Not fatal.
             }

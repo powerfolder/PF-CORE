@@ -516,12 +516,18 @@ public class FileUtils {
      * @param directory
      * @return
      */
-    public static long calculateDirectorySize(File directory) {
+    public static long calculateDirectorySize(File directory, int depth) {
+
+        // Limit evil recursive symbolic links.
+        if (depth == 100) {
+            return 0;
+        }
+
         File[] files = directory.listFiles();
         long sum = 0;
         for (File file : files) {
             if (file.isDirectory()) {
-                sum += calculateDirectorySize(file);
+                sum += calculateDirectorySize(file, depth + 1);
             } else {
                 sum += file.length();
             }
