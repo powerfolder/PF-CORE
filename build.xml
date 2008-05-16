@@ -235,6 +235,7 @@ For creation of the installer:
 			<classpath>
 				<pathelement location="${build.dir}" />
 				<fileset refid="libs" />
+				<fileset refid="testlibs" />
 			</classpath>
 
 			<formatter type="xml" />
