@@ -17,24 +17,27 @@ import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.PROMPT_TEXT_ATTRIBUTE;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
-import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.ui.*;
+import de.dal33t.powerfolder.util.ui.SwingWorker;
 import jwf.WizardPanel;
 import org.apache.commons.lang.StringUtils;
 
 import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
+import java.awt.event.ItemListener;
+import java.awt.event.ItemEvent;
+import java.awt.*;
 
 /**
  * A generally used wizard panel for choosing a disk location for a folder.
@@ -105,6 +108,8 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
 
     private JComponent locationField;
 
+    private JLabel folderSizeLabel;
+
     /**
      * Creates a new disk location wizard panel. Name of new folder is
      * automatically generated, folder will be secret
@@ -148,14 +153,14 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         StringBuilder verticalUserDirectoryLayout = new StringBuilder();
         // Include cutom button in size calculations.
         // Two buttons every row.
-        for (int i = 0; i < 1 + userDirectories.size() / 2; i++) {
+        for (int i = 0; i < 1 + userDirectories.size() / 3; i++) {
             verticalUserDirectoryLayout.append("pref, 5dlu, ");
         }
 
         String verticalLayout = verticalUserDirectoryLayout
-            + "5dlu, pref, 5dlu, pref, 15dlu, pref, 5dlu, pref";
+            + "5dlu, pref, 5dlu, pref, 5dlu, pref, 15dlu, pref, 5dlu, pref";
 
-        FormLayout layout = new FormLayout("pref, 15dlu, pref, 0:grow",
+        FormLayout layout = new FormLayout("pref, 15dlu, pref, 15dlu, pref, 0:grow",
             verticalLayout);
 
         PanelBuilder builder = new PanelBuilder(layout);
@@ -173,6 +178,8 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
             builder.add(button, cc.xy(col, row));
             if (col == 1) {
                 col = 3;
+            } else if (col == 3) {
+                col = 5;
             } else {
                 row += 2;
                 col = 1;
@@ -205,18 +212,21 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
             infoText = Translation
                 .getTranslation("wizard.choose_location.select");
         }
-        builder.addLabel(infoText, cc.xyw(1, row, 4));
+        builder.addLabel(infoText, cc.xyw(1, row, 6));
         row += 2;
 
-        builder.add(locationField, cc.xyw(1, row, 4));
+        builder.add(locationField, cc.xyw(1, row, 6));
+
+        row += 2;
+        builder.add(folderSizeLabel, cc.xyw(1, row, 6));
 
         row += 2;
         if (!getController().isLanOnly()) {
-            builder.add(backupByOnlineStorageBox, cc.xyw(1, row, 4));
+            builder.add(backupByOnlineStorageBox, cc.xyw(1, row, 6));
         }
 
         row += 2;
-        builder.add(createDesktopShortcutBox, cc.xyw(1, row, 3));
+        builder.add(createDesktopShortcutBox, cc.xyw(1, row, 5));
 
         return builder.getPanel();
     }
@@ -266,6 +276,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
             public void propertyChange(PropertyChangeEvent evt) {
                 updateLocationComponents();
                 updateButtons();
+                startFolderSizeCalculator();
             }
         });
 
@@ -274,6 +285,9 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         dims.width = Sizes.dialogUnitXAsPixel(147, locationField);
         locationField.setPreferredSize(dims);
         locationField.setBackground(Color.WHITE);
+
+        folderSizeLabel = new JLabel();
+        startFolderSizeCalculator();
 
         // Online Storage integration
         backupByOnlineStorageBox = new JCheckBox(Translation
@@ -294,6 +308,11 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
             .getTranslation("foldercreate.dialog.create_desktop_shortcut"));
 
         createDesktopShortcutBox.setOpaque(false);
+    }
+
+    private void startFolderSizeCalculator() {
+        SwingWorker worker = new MySwingWorker();
+        worker.start();
     }
 
     protected Icon getPicto() {
@@ -362,22 +381,25 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
             .getTranslation("user.dir.links"), false);
         addTargetDirectory(userHome, USER_DIR_MUSIC, Translation
             .getTranslation("user.dir.music"), false);
-        if (userDirMyDocuments != null) {
+
+        // Hidden by Vista.
+        if (userDirMyDocuments != null && !OSUtil.isWindowsVistaSystem()) {
             addTargetDirectory(new File(userDirMyDocuments), Translation
                 .getTranslation("user.dir.my_documents"), false);
         }
-        if (userDirMyDocuments != null) {
+        if (userDirMyMusic != null && !OSUtil.isWindowsVistaSystem()) {
             addTargetDirectory(new File(userDirMyMusic), Translation
                 .getTranslation("user.dir.my_music"), false);
         }
-        if (userDirMyDocuments != null) {
+        if (userDirMyPictures != null && !OSUtil.isWindowsVistaSystem()) {
             addTargetDirectory(new File(userDirMyPictures), Translation
                 .getTranslation("user.dir.my_pictures"), false);
             }
-        if (userDirMyDocuments != null) {
+        if (userDirMyVideos != null && !OSUtil.isWindowsVistaSystem()) {
             addTargetDirectory(new File(userDirMyVideos), Translation
                 .getTranslation("user.dir.my_videos"), false);
         }
+        
         addTargetDirectory(userHome, USER_DIR_PICTURES, Translation
             .getTranslation("user.dir.pictures"), false);
         addTargetDirectory(userHome, USER_DIR_RECENT_DOCUMENTS, Translation
@@ -470,6 +492,44 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
             // Update this so that if the user clicks other user dirs
             // and then 'Custom', the selected dir will show.
             transientDirectory = file;
+        }
+    }
+
+    private class MySwingWorker extends SwingWorker {
+
+        private String initial;
+        private long directorySize;
+
+        private MySwingWorker() {
+            initial = (String) locationModel.getValue();
+        }
+
+        protected void beforeConstruct() {
+            folderSizeLabel.setText(Translation
+                    .getTranslation("wizard.choosedisklocation.calculating_directory_size"));
+        }
+
+        @Override
+        public Object construct() {
+            try {
+                File f = new File(initial);
+                directorySize = FileUtils.calculateDirectorySize(f);
+            } catch (Exception e) {
+                // Not fatal.
+            }
+            return null;
+        }
+
+        public void finished() {
+            try {
+                if (initial.equals(locationModel.getValue())) {
+                    folderSizeLabel.setText(Translation
+                            .getTranslation("wizard.choosedisklocation.directory_size",
+                            Format.formatBytes(directorySize)));
+                }
+            } catch (Exception e) {
+                // Not fatal.
+            }
         }
     }
 }

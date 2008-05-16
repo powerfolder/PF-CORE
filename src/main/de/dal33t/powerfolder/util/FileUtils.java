@@ -510,6 +510,22 @@ public class FileUtils {
         }
     }
 
-
-
+    /**
+     * Scans a directory and gets full size of all files.
+     * 
+     * @param directory
+     * @return
+     */
+    public static long calculateDirectorySize(File directory) {
+        File[] files = directory.listFiles();
+        long sum = 0;
+        for (File file : files) {
+            if (file.isDirectory()) {
+                sum += calculateDirectorySize(file);
+            } else {
+                sum += file.length();
+            }
+        }
+        return sum;
+    }
 }
