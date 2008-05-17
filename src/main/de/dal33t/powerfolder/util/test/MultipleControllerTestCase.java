@@ -121,28 +121,31 @@ public abstract class MultipleControllerTestCase extends TestCase {
         controller.startConfig(config);
         waitForStart(controller);
         assertNotNull(controller.getConnectionListener());
-      //  triggerAndWaitForInitialMaitenenace(controller);
+        // triggerAndWaitForInitialMaitenenace(controller);
         controller.getPreferences().putBoolean("createdesktopshortcuts", false);
         controllers.put(id, controller);
         return controller;
     }
-    
-    protected Controller startControllerWithDefaultConfig(String id) throws IOException {
+
+    protected Controller startControllerWithDefaultConfig(String id)
+        throws IOException
+    {
         Reject.ifTrue(controllers.containsKey(id),
             "Already got controller with id '" + id + "'");
         Properties conf = new Properties();
-        FileReader r = new FileReader("src/test-resources/ControllerBart.config");
+        FileReader r = new FileReader(
+            "src/test-resources/ControllerBart.config");
         conf.load(r);
         r.close();
         conf.put("nodeid", "randomstringController" + id);
         conf.put("nick", "Controller" + id);
         conf.put("port", "" + port++);
-        File f = new File("build/test/Controller" + id
-            + "/PowerFolder.config");
+        File f = new File("build/test/Controller" + id + "/PowerFolder.config");
         assertTrue(f.getParentFile().mkdirs());
         PropertiesUtil.saveConfig(f, conf, "PF Test config");
-        
-        return startController(id, "build/test/Controller" + id + "/PowerFolder");
+
+        return startController(id, "build/test/Controller" + id
+            + "/PowerFolder");
     }
 
     protected Controller getContoller(String id) {
@@ -286,45 +289,45 @@ public abstract class MultipleControllerTestCase extends TestCase {
         for (int i = 0; i < n; i++)
             startControllerWithDefaultConfig("" + i);
     }
-    
+
     protected Collection<Controller> getControllers() {
         return controllers.values();
     }
-    
+
     protected void joinNTestFolder(SyncProfile profile) {
         Reject.ifTrue(mctFolder != null, "Reject already setup a testfolder!");
-        mctFolder = new FolderInfo("testFolder", UUID.randomUUID().toString(),
-            true);
-        for (Entry<String, Controller> e: controllers.entrySet()) {
-            joinFolder(mctFolder, new File(TestHelper
-                .getTestDir(), "Controller" + e.getKey() + "/testFolder"), e.getValue(),
+        mctFolder = new FolderInfo("testFolder", UUID.randomUUID().toString());
+        for (Entry<String, Controller> e : controllers.entrySet()) {
+            joinFolder(mctFolder, new File(TestHelper.getTestDir(),
+                "Controller" + e.getKey() + "/testFolder"), e.getValue(),
                 profile);
         }
     }
-    
+
     protected Folder getFolderOf(String id) {
         return getContoller(id).getFolderRepository().getFolder(mctFolder);
     }
-    
+
     protected Folder getFolderOf(Controller c) {
         return c.getFolderRepository().getFolder(mctFolder);
     }
-    
+
     protected void setNSyncProfile(SyncProfile profile) {
-        for (String id: controllers.keySet()) {
+        for (String id : controllers.keySet()) {
             getFolderOf(id).setSyncProfile(profile);
-        }        
+        }
     }
-    
+
     /**
      * Set a configuration for all controllers
      */
-    protected void setConfigurationEntry(ConfigurationEntry entry, String value) {
-        for (Controller c: controllers.values()) {
+    protected void setConfigurationEntry(ConfigurationEntry entry, String value)
+    {
+        for (Controller c : controllers.values()) {
             entry.setValue(c, value);
         }
     }
-    
+
     @SuppressWarnings("unchecked")
     protected void connectAll() {
         Controller entries[] = controllers.values().toArray(new Controller[0]);
@@ -333,17 +336,16 @@ public abstract class MultipleControllerTestCase extends TestCase {
                 tryToConnect(entries[i], entries[j]);
             }
         }
-        
+
     }
-    
+
     protected void disconnectAll() {
-        final Controller entries[] = controllers.values().toArray(new Controller[0]);
+        final Controller entries[] = controllers.values().toArray(
+            new Controller[0]);
         for (int i = 0; i < entries.length; i++) {
             for (int j = 0; j < i; j++) {
                 entries[j].getNodeManager().getNode(
-                    entries[i].getNodeManager()
-                    .getMySelf().getId())
-                    .shutdown();
+                    entries[i].getNodeManager().getMySelf().getId()).shutdown();
             }
         }
         TestHelper.waitForCondition(10, new Condition() {
@@ -351,9 +353,9 @@ public abstract class MultipleControllerTestCase extends TestCase {
                 for (int i = 0; i < entries.length; i++) {
                     for (int j = 0; j < i; j++) {
                         if (entries[j].getNodeManager().getNode(
-                            entries[i].getNodeManager()
-                            .getMySelf().getId())
-                            .isConnected()) {
+                            entries[i].getNodeManager().getMySelf().getId())
+                            .isConnected())
+                        {
                             return false;
                         }
                     }
@@ -364,7 +366,7 @@ public abstract class MultipleControllerTestCase extends TestCase {
         TestHelper.waitMilliSeconds(500);
         System.out.println("All Controllers Disconnected");
     }
-    
+
     /**
      * Scans a folder and waits for the scan to complete.
      */

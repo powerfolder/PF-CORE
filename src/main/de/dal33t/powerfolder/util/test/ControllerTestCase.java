@@ -126,7 +126,7 @@ public class ControllerTestCase extends TestCase {
         boolean useRecycleBin)
     {
         FolderInfo testFolder = new FolderInfo("testFolder", UUID.randomUUID()
-            .toString(), true);
+            .toString());
         folder = joinFolder(testFolder, TESTFOLDER_BASEDIR, syncprofile,
             useRecycleBin);
         System.out.println(folder.getLocalBase());

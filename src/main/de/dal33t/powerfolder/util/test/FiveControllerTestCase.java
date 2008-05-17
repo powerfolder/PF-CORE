@@ -70,7 +70,7 @@ public abstract class FiveControllerTestCase extends MultipleControllerTestCase
         System.out
             .println("-------------- Controllers started -----------------");
     }
-    
+
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
@@ -178,8 +178,7 @@ public abstract class FiveControllerTestCase extends MultipleControllerTestCase
      */
     protected void joinTestFolder(SyncProfile profile) {
         Reject.ifTrue(testFolder != null, "Reject already setup a testfolder!");
-        testFolder = new FolderInfo("testFolder", UUID.randomUUID().toString(),
-            true);
+        testFolder = new FolderInfo("testFolder", UUID.randomUUID().toString());
         joinFolder(testFolder, TESTFOLDER_BASEDIR_BART, getContollerBart(),
             profile);
         joinFolder(testFolder, TESTFOLDER_BASEDIR_HOMER, getContollerHomer(),
@@ -190,25 +189,25 @@ public abstract class FiveControllerTestCase extends MultipleControllerTestCase
             profile);
         joinFolder(testFolder, TESTFOLDER_BASEDIR_MAGGIE, getContollerMaggie(),
             profile);
-//        try {
-//            // Give them time to join
-//            TestHelper.waitForCondition(5, new Condition() {
-//                public boolean reached() {
-//                    return getFolderAtBart().getMembersCount() >= 5
-//                        && getFolderAtHomer().getMembersCount() >= 5
-//                        && getFolderAtMarge().getMembersCount() >= 5
-//                        && getFolderAtLisa().getMembersCount() >= 5
-//                        && getFolderAtMaggie().getMembersCount() >= 5;
-//                }
-//            });
-//        } catch (Exception e) {
-//            throw new IllegalStateException("Homer: "
-//                + getFolderAtHomer().getMembersCount() + ", Bart: "
-//                + getFolderAtBart().getMembersCount() + ", Marge: "
-//                + getFolderAtMarge().getMembersCount() + ", Lisa: "
-//                + getFolderAtLisa().getMembersCount() + ", Maggie: "
-//                + getFolderAtMaggie().getMembersCount() + ". Folder: "
-//                + testFolder + " id: " + testFolder.id);
-//        }
+        // try {
+        // // Give them time to join
+        // TestHelper.waitForCondition(5, new Condition() {
+        // public boolean reached() {
+        // return getFolderAtBart().getMembersCount() >= 5
+        // && getFolderAtHomer().getMembersCount() >= 5
+        // && getFolderAtMarge().getMembersCount() >= 5
+        // && getFolderAtLisa().getMembersCount() >= 5
+        // && getFolderAtMaggie().getMembersCount() >= 5;
+        // }
+        // });
+        // } catch (Exception e) {
+        // throw new IllegalStateException("Homer: "
+        // + getFolderAtHomer().getMembersCount() + ", Bart: "
+        // + getFolderAtBart().getMembersCount() + ", Marge: "
+        // + getFolderAtMarge().getMembersCount() + ", Lisa: "
+        // + getFolderAtLisa().getMembersCount() + ", Maggie: "
+        // + getFolderAtMaggie().getMembersCount() + ". Folder: "
+        // + testFolder + " id: " + testFolder.id);
+        // }
     }
 }
