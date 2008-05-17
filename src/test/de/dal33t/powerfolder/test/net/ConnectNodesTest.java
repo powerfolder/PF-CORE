@@ -156,7 +156,7 @@ public class ConnectNodesTest extends FiveControllerTestCase {
         }
     }
 
-    public void testPublicInfrastructureConnect() {
+    public void noTestPublicInfrastructureConnect() {
         getContollerBart().setNetworkingMode(NetworkingMode.PRIVATEMODE);
         ConfigurationEntry.NET_BIND_ADDRESS.setValue(getContollerBart(), "");
         for (int i = 0; i < 50; i++) {
