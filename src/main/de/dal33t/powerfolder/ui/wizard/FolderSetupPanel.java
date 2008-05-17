@@ -57,7 +57,7 @@ public class FolderSetupPanel extends PFWizardPanel {
 
         // Set FolderInfo
         FolderInfo folderInfo = new FolderInfo(folderNameTextField.getText()
-            .trim(), '[' + IdGenerator.makeId() + ']', true);
+            .trim(), '[' + IdGenerator.makeId() + ']');
         getWizardContext().setAttribute(FOLDERINFO_ATTRIBUTE, folderInfo);
 
         // Set sync profile
@@ -82,8 +82,7 @@ public class FolderSetupPanel extends PFWizardPanel {
     }
 
     protected JPanel buildContent() {
-        FormLayout layout = new FormLayout(
-            "right:pref, 5dlu, pref",
+        FormLayout layout = new FormLayout("right:pref, 5dlu, pref",
             "pref, 5dlu, pref, 5dlu, pref, 5dlu, pref");
 
         PanelBuilder builder = new PanelBuilder(layout);

@@ -31,7 +31,7 @@ import java.io.File;
  * <p>
  * Extracts the settings for the folder from the
  * <code>WizardContextAttributes</code>.
- *
+ * 
  * @author Christian Sprajc
  * @version $Revision$
  */
@@ -62,8 +62,7 @@ public class FolderCreatePanel extends PFWizardPanel {
 
     protected JPanel buildContent() {
 
-        FormLayout layout = new FormLayout(
-            "pref, 5dlu, pref",
+        FormLayout layout = new FormLayout("pref, 5dlu, pref",
             "pref, 5dlu, pref, 5dlu, pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
@@ -107,9 +106,7 @@ public class FolderCreatePanel extends PFWizardPanel {
                 + localBase.getName();
 
             String folderId = '[' + IdGenerator.makeId() + ']';
-            boolean secrect = true;
-
-            foInfo = new FolderInfo(name, folderId, secrect);
+            foInfo = new FolderInfo(name, folderId);
             getWizardContext().setAttribute(
                 WizardContextAttributes.FOLDERINFO_ATTRIBUTE, foInfo);
         }
@@ -185,8 +182,8 @@ public class FolderCreatePanel extends PFWizardPanel {
                     // Add thumbs to ignore pattern on windows systems
                     // Don't duplicate thumbs (like when moving a preview
                     // folder)
-                    if (!folder.getBlacklist().getPatterns().contains(
-                        THUMBS_DB))
+                    if (!folder.getBlacklist().getPatterns()
+                        .contains(THUMBS_DB))
                     {
                         folder.getBlacklist().addPattern(THUMBS_DB);
                     }
@@ -204,7 +201,8 @@ public class FolderCreatePanel extends PFWizardPanel {
                 {
                     try {
                         getController().getOSClient().getFolderService()
-                            .createFolder(folder.getInfo(), SyncProfile.BACKUP_TARGET);
+                            .createFolder(folder.getInfo(),
+                                SyncProfile.BACKUP_TARGET);
                     } catch (FolderException e) {
                         errorArea
                             .setText(Translation

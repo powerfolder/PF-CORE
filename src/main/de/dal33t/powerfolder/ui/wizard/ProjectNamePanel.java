@@ -43,7 +43,7 @@ public class ProjectNamePanel extends PFWizardPanel {
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
         builder.addLabel(Translation
-                .getTranslation("wizard.projectname.entername"), cc.xy(1, 1));
+            .getTranslation("wizard.projectname.entername"), cc.xy(1, 1));
         builder.add(nameField, cc.xy(1, 3));
 
         return builder.getPanel();
@@ -59,12 +59,11 @@ public class ProjectNamePanel extends PFWizardPanel {
         // Create new folder info
         String name = "Project-" + nameField.getText();
         String folderId = '[' + IdGenerator.makeId() + ']';
-        boolean secrect = true;
-        FolderInfo folder = new FolderInfo(name, folderId, secrect);
+        FolderInfo folder = new FolderInfo(name, folderId);
         getWizardContext().setAttribute(FOLDERINFO_ATTRIBUTE, folder);
 
-        FolderSetupPanel setupPanel = new FolderSetupPanel(
-            getController(), folder.name);
+        FolderSetupPanel setupPanel = new FolderSetupPanel(getController(),
+            folder.name);
 
         // Choose location...
         return new ChooseDiskLocationPanel(getController(), null, setupPanel);
@@ -90,7 +89,7 @@ public class ProjectNamePanel extends PFWizardPanel {
     }
 
     protected Icon getPicto() {
-        return getContextPicto(); 
+        return getContextPicto();
     }
 
     protected String getTitle() {
