@@ -559,9 +559,9 @@ public class FolderStatisticTest extends FiveControllerTestCase {
                 return "Not identical! Node "
                     + folder.getController().getMySelf().getNick()
                     + " has has not received full fileslists. Homer: "
-                    + filesOnHomer + ", Bart: " + filesOnBart + ", Marge: "
-                    + filesOnMarge + ", Lisa: " + filesOnLisa + ", Maggie: "
-                    + filesOnMaggie;
+                    + filesOnHomer.size() + ", Bart: " + filesOnBart.size()
+                    + ", Marge: " + filesOnMarge.size() + ", Lisa: "
+                    + filesOnLisa.size() + ", Maggie: " + filesOnMaggie.size();
             }
 
             public boolean reached() {
