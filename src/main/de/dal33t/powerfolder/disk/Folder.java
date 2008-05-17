@@ -111,12 +111,11 @@ public class Folder extends PFComponent {
     /** files that should not be downloaded in auto download */
     private Blacklist blacklist;
 
-    /** 
-     * Stores the priorities for downloading 
-     * of the files in this folder.  
+    /**
+     * Stores the priorities for downloading of the files in this folder.
      */
     private TransferPriorities transferPriorities;
-    
+
     /** Lock for scan */
     private final Object scanLock = new Object();
 
@@ -197,7 +196,7 @@ public class Folder extends PFComponent {
 
     /**
      * Constructor for folder.
-     *
+     * 
      * @param controller
      * @param fInfo
      * @param folderSettings
@@ -214,7 +213,7 @@ public class Folder extends PFComponent {
         if (controller == null) {
             throw new NullPointerException("Controller is null");
         }
-        this.currentInfo = new FolderInfo(fInfo.name, fInfo.id, fInfo.secret);
+        this.currentInfo = new FolderInfo(fInfo.name, fInfo.id);
 
         if (fInfo.name == null) {
             throw new NullPointerException("Folder name is null");
@@ -272,7 +271,7 @@ public class Folder extends PFComponent {
         blacklist.setWhitelist(whitelist);
 
         transferPriorities = new TransferPriorities();
-        
+
         // Load folder database
         loadFolderDB(); // will also read the blacklist
 
@@ -325,7 +324,7 @@ public class Folder extends PFComponent {
      * Commits the scan results into the internal file database. Changes get
      * broadcasted to other members if nessesary. public because also called
      * from SyncFolderPanel (until that class maybe handles that itself)
-     *
+     * 
      * @param scanResult
      *            the scanresult to commit.
      */
@@ -502,6 +501,7 @@ public class Folder extends PFComponent {
 
     /**
      * Retrieves the transferpriorities for file in this folder.
+     * 
      * @return the associated TransferPriorities object
      */
     public TransferPriorities getTransferPriorities() {
@@ -509,7 +509,7 @@ public class Folder extends PFComponent {
     }
 
     public ScanResult.ResultState getLastScanResultState() {
-            return lastScanResultState;
+        return lastScanResultState;
     }
 
     public boolean isWhitelist() {
@@ -523,7 +523,7 @@ public class Folder extends PFComponent {
 
     /**
      * Checks the basedir is valid
-     *
+     * 
      * @param baseDir
      *            the base dir to test
      * @throws FolderException
@@ -572,7 +572,7 @@ public class Folder extends PFComponent {
 
     /**
      * Scans a new File, eg from (drag and) drop.
-     *
+     * 
      * @param fileInfo
      *            the file to scan
      */
@@ -584,7 +584,7 @@ public class Folder extends PFComponent {
 
     /**
      * Scans a file that was restored from the recyle bin
-     *
+     * 
      * @param fileInfo
      *            the file to scan
      */
@@ -598,7 +598,7 @@ public class Folder extends PFComponent {
     /**
      * Scans a downloaded file, renames tempfile to real name Moves possible
      * existing file to PowerFolder recycle bin.
-     *
+     * 
      * @param fInfo
      * @param tempFile
      * @return true if the download could be completed and the file got scanned.
@@ -672,7 +672,7 @@ public class Folder extends PFComponent {
      * Scans the local directory for new files. Be carefull! This method is not
      * Thread save. In most cases you want to use
      * recommendScanOnNextMaintenance() followed by maintain().
-     *
+     * 
      * @return if the local files where scanned
      */
     public boolean scanLocalFiles() {
@@ -823,7 +823,7 @@ public class Folder extends PFComponent {
      * <p>
      * Package protected because used by Recylcebin to tell, that file was
      * restored
-     *
+     * 
      * @param fInfo
      *            the file to be scanned
      * @return true if the file was successfully scanned
@@ -965,7 +965,7 @@ public class Folder extends PFComponent {
 
     /**
      * Checks a single filename if there are problems with the name
-     *
+     * 
      * @param fileInfo
      */
     private void checkFileName(FileInfo fileInfo) {
@@ -1042,7 +1042,7 @@ public class Folder extends PFComponent {
 
     /**
      * Adds a file to the internal database, does NOT store the DB
-     *
+     * 
      * @param fInfo
      */
     private void addFile(FileInfo fInfo) {
@@ -1054,8 +1054,8 @@ public class Folder extends PFComponent {
 
         FileInfo old = knownFiles.put(fInfo, fInfo);
 
-        TransferPriority prio = TransferPriority.NORMAL; 
-        
+        TransferPriority prio = TransferPriority.NORMAL;
+
         if (old != null) {
             prio = transferPriorities.getPriority(old);
             // Remove old file from info
@@ -1081,7 +1081,7 @@ public class Folder extends PFComponent {
     /**
      * Removes a file on local folder, diskfile will be removed and file tagged
      * as deleted
-     *
+     * 
      * @param fInfo
      * @return true if the folder was changed
      */
@@ -1123,7 +1123,7 @@ public class Folder extends PFComponent {
 
     /**
      * Removes files from the local disk
-     *
+     * 
      * @param fInfos
      */
     public void removeFilesLocal(FileInfo... fInfos) {
@@ -1156,7 +1156,7 @@ public class Folder extends PFComponent {
 
     /**
      * Loads the folder database from disk
-     *
+     * 
      * @param dbFile
      *            the file to load as db file
      * @return true if succeeded
@@ -1233,7 +1233,8 @@ public class Folder extends PFComponent {
                     if (object instanceof Date) {
                         lastFileChangeDate = (Date) object;
                         if (logEnabled) {
-                            log().verbose("lastFileChangeDate" + lastFileChangeDate);
+                            log().verbose(
+                                "lastFileChangeDate" + lastFileChangeDate);
                         }
                     }
                 } catch (java.io.EOFException e) {
@@ -1420,7 +1421,7 @@ public class Folder extends PFComponent {
     /**
      * Cleans up fileinfos of deleted files that are old than the configured max
      * age.
-     *
+     * 
      * @see ConfigurationEntry#MAX_FILEINFO_DELETED_AGE_SECONDS
      */
     private void maintainFolderDB() {
@@ -1458,7 +1459,7 @@ public class Folder extends PFComponent {
     /**
      * Set the needed folder/file attributes on windows systems, if we have a
      * desktop.ini
-     *
+     * 
      * @param desktopIni
      */
     private void makeFolderIcon(File desktopIni) {
@@ -1483,7 +1484,7 @@ public class Folder extends PFComponent {
     /**
      * Creates or removes a desktop shortcut for this folder. currently only
      * available on windows systems.
-     *
+     * 
      * @param active
      *            true if the desktop shortcut should be created.
      * @return true if succeeded
@@ -1531,7 +1532,7 @@ public class Folder extends PFComponent {
 
     /**
      * Gets the sync profile.
-     *
+     * 
      * @return the syncprofile of this folder
      */
     public SyncProfile getSyncProfile() {
@@ -1540,7 +1541,7 @@ public class Folder extends PFComponent {
 
     /**
      * Sets the synchronisation profile for this folder
-     *
+     * 
      * @param aSyncProfile
      */
     public void setSyncProfile(SyncProfile aSyncProfile) {
@@ -1625,7 +1626,7 @@ public class Folder extends PFComponent {
      */
     /**
      * Joins a member to the folder,
-     *
+     * 
      * @param member
      */
     public void join(Member member) {
@@ -1637,7 +1638,7 @@ public class Folder extends PFComponent {
 
     /**
      * Joins a member to the folder. Does not fire the event
-     *
+     * 
      * @param member
      */
     private void join0(Member member) {
@@ -1660,7 +1661,7 @@ public class Folder extends PFComponent {
 
     /**
      * Removes a member from this folder
-     *
+     * 
      * @param member
      */
     public void remove(Member member) {
@@ -1685,7 +1686,7 @@ public class Folder extends PFComponent {
 
     /**
      * Checks if the folder is in Sync, called by FolderRepository
-     *
+     * 
      * @return if this folder synchronizing
      */
     public boolean isTransferring() {
@@ -1704,7 +1705,7 @@ public class Folder extends PFComponent {
 
     /**
      * Checks if the folder is in Downloading, called by FolderRepository
-     *
+     * 
      * @return if this folder downloading
      */
     public boolean isDownloading() {
@@ -1714,7 +1715,7 @@ public class Folder extends PFComponent {
 
     /**
      * Checks if the folder is in Uploading, called by FolderRepository
-     *
+     * 
      * @return if this folder uploading
      */
     public boolean isUploading() {
@@ -1723,7 +1724,7 @@ public class Folder extends PFComponent {
 
     /**
      * Synchronizes the deleted files with local folder
-     *
+     * 
      * @param force
      *            true if the sync is forced with ALL connected members of the
      *            folder. otherwise it checks the modifier.
@@ -1847,7 +1848,7 @@ public class Folder extends PFComponent {
 
     /**
      * Broadcasts a message through the folder
-     *
+     * 
      * @param message
      */
     public void broadcastMessages(Message... message) {
@@ -1927,7 +1928,7 @@ public class Folder extends PFComponent {
 
     /**
      * Callback method from member. Called when a new filelist was send
-     *
+     * 
      * @param from
      * @param newList
      */
@@ -1969,7 +1970,7 @@ public class Folder extends PFComponent {
 
     /**
      * Callback method from member. Called when a filelist delta received
-     *
+     * 
      * @param from
      * @param changes
      */
@@ -2251,10 +2252,6 @@ public class Folder extends PFComponent {
 
     public String getName() {
         return currentInfo.name;
-    }
-
-    public boolean isSecret() {
-        return currentInfo.secret;
     }
 
     public int getKnownFilesCount() {

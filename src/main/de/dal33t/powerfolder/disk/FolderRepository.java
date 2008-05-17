@@ -7,7 +7,6 @@ import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_DONT_REC
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_ID;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREVIEW;
-import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_SECRET;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_SYNC_PROFILE;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_WHITELIST;
 
@@ -24,7 +23,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.swing.*;
+import javax.swing.JFrame;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -42,13 +41,13 @@ import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.transfer.FileRequestor;
+import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.wizard.ChooseDiskLocationPanel;
 import de.dal33t.powerfolder.ui.wizard.FolderSetupPanel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
-import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.compare.FolderComparator;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
@@ -57,7 +56,7 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * Repository of all known power folders. Local and unjoined.
- *
+ * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.75 $
  */
@@ -84,11 +83,11 @@ public class FolderRepository extends PFComponent implements Runnable {
     /** The disk scanner */
     private FolderScanner folderScanner;
 
-    /** Field list for backup taget pre #777. Used to convert to new
-     * backup target for #787.
+    /**
+     * Field list for backup taget pre #777. Used to convert to new backup
+     * target for #787.
      */
-    private static final String PRE_777_BACKUP_TARGET_FIELD_LIST =
-            "true,true,true,true,0,false,12,0,m";
+    private static final String PRE_777_BACKUP_TARGET_FIELD_LIST = "true,true,true,true,0,false,12,0,m";
 
     public FolderRepository(Controller controller) {
         super(controller);
@@ -233,11 +232,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
             String folderId = config.getProperty(FOLDER_SETTINGS_PREFIX
                 + folderName + FOLDER_SETTINGS_ID);
-            boolean folderSecret = "true".equalsIgnoreCase(config
-                .getProperty(FOLDER_SETTINGS_PREFIX + folderName
-                    + FOLDER_SETTINGS_SECRET));
-            FolderInfo foInfo = new FolderInfo(folderName, folderId,
-                folderSecret);
+            FolderInfo foInfo = new FolderInfo(folderName, folderId);
 
             FolderSettings folderSettings = loadFolderSettings(folderName);
 
@@ -254,8 +249,8 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
 
         // Set the folders base with a desktop ini.
-        FileUtils.maintainDesktopIni(getController(),
-                new File(getFoldersBasedir()));
+        FileUtils.maintainDesktopIni(getController(), new File(
+            getFoldersBasedir()));
     }
 
     public FolderSettings loadFolderSettings(String folderName) {
@@ -270,8 +265,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         // Migration for #603
         if ("autodownload_friends".equals(syncProfConfig)) {
-            syncProfConfig = SyncProfile.AUTO_DOWNLOAD_FRIENDS
-                    .getFieldList();
+            syncProfConfig = SyncProfile.AUTO_DOWNLOAD_FRIENDS.getFieldList();
         }
 
         SyncProfile syncProfile;
@@ -308,7 +302,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     /**
      * Folder creation exception. Log and
-     *
+     * 
      * @param config
      * @param folderName
      * @param e
@@ -348,7 +342,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     /**
      * Removes unused folder infos from the config.
-     *
+     * 
      * @param config
      * @param errorFolderNames
      */
@@ -474,7 +468,7 @@ public class FolderRepository extends PFComponent implements Runnable {
     /**
      * TODO Experimetal: Hands out a indirect reference to the value of internal
      * hashmap.
-     *
+     * 
      * @return the folders as unmodifiable collection
      */
     public Collection<Folder> getFoldersAsCollection() {
@@ -500,7 +494,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      * <p>
      * Also stores a invitation file for the folder in the local directory if
      * wanted.
-     *
+     * 
      * @param folderInfo
      *            the folder info object
      * @param folderSettings
@@ -519,7 +513,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      * Used when creating a preview folder. FolderSettings should be as required
      * for the preview folder. Note that settings are not stored and the caller
      * is responsible for setting the preview config.
-     *
+     * 
      * @param folderInfo
      * @param folderSettings
      * @return
@@ -536,7 +530,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      * <p>
      * Also stores a invitation file for the folder in the local directory if
      * wanted.
-     *
+     * 
      * @param folderInfo
      *            the folder info object
      * @param folderSettings
@@ -558,10 +552,10 @@ public class FolderRepository extends PFComponent implements Runnable {
         // silently remove the preview.
         if (!folderSettings.isPreviewOnly()) {
             for (Folder folder : getFoldersAsSortedList()) {
-                if (folder.isPreviewOnly() &&
-                        folder.getInfo().equals(folderInfo)) {
-                    log().info("Removed preview folder " +
-                    folder.getName());
+                if (folder.isPreviewOnly()
+                    && folder.getInfo().equals(folderInfo))
+                {
+                    log().info("Removed preview folder " + folder.getName());
                     removeFolder(folder, true);
                     break;
                 }
@@ -613,7 +607,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     /**
      * Saves settings and info details to the config.
-     *
+     * 
      * @param folderInfo
      * @param folderSettings
      * @param saveConfig
@@ -629,12 +623,10 @@ public class FolderRepository extends PFComponent implements Runnable {
         config.setProperty(FOLDER_SETTINGS_PREFIX + folderInfo.name
             + FOLDER_SETTINGS_DIR, folderSettings.getLocalBaseDir()
             .getAbsolutePath());
-        config.setProperty(FOLDER_SETTINGS_PREFIX + folderInfo.name
-            + FOLDER_SETTINGS_SECRET, String.valueOf(folderInfo.secret));
         // Save sync profiles as internal configuration for custom profiles.
-        config.setProperty(FOLDER_SETTINGS_PREFIX + folderInfo.name +
-                FOLDER_SETTINGS_SYNC_PROFILE, folderSettings.getSyncProfile()
-                .getFieldList());
+        config.setProperty(FOLDER_SETTINGS_PREFIX + folderInfo.name
+            + FOLDER_SETTINGS_SYNC_PROFILE, folderSettings.getSyncProfile()
+            .getFieldList());
         // Inverse logic for backward compatability.
         config.setProperty(FOLDER_SETTINGS_PREFIX + folderInfo.name
             + FOLDER_SETTINGS_DONT_RECYCLE, String.valueOf(!folderSettings
@@ -653,7 +645,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     /**
      * Removes a folder from active folders, will be added as non-local folder
-     *
+     * 
      * @param folder
      * @param deleteSystemSubDir
      */

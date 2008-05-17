@@ -1113,7 +1113,7 @@ public class Member extends PFComponent {
                 folderListWaiter.notifyAll();
             }
         } else if (message instanceof RequestFileList) {
-            if (targetFolder != null && !targetFolder.isSecret()) {
+            if (targetFolder != null) {
                 // a file list of a folder
                 if (logVerbose) {
                     log().verbose(
@@ -1431,7 +1431,8 @@ public class Member extends PFComponent {
             StartUpload su = (StartUpload) message;
             Download dl = getController().getTransferManager().getDownload(
                 this, su.getFile());
-            if (dl != null && su.getFile().isCompletelyIdentical(dl.getFile())) {
+            if (dl != null && su.getFile().isCompletelyIdentical(dl.getFile()))
+            {
                 dl.uploadStarted();
             } else {
                 log().warn("Download not found: " + su.getFile());
@@ -1454,7 +1455,8 @@ public class Member extends PFComponent {
             ReplyFilePartsRecord rep = (ReplyFilePartsRecord) message;
             Download dl = getController().getTransferManager().getDownload(
                 this, rep.getFile());
-            if (dl != null && dl.getFile().isCompletelyIdentical(rep.getFile())) {
+            if (dl != null && dl.getFile().isCompletelyIdentical(rep.getFile()))
+            {
                 dl.receivedFilePartsRecord(rep.getRecord());
             } else if (dl != null) {
                 log().info("Received record for old download");
@@ -1611,9 +1613,6 @@ public class Member extends PFComponent {
                 // Step 1: Calculate secure folder ids for local secret folders
                 Map<FolderInfo, Folder> localSecretFolders = new HashMap<FolderInfo, Folder>();
                 for (Folder folder : localFolders) {
-                    if (!folder.isSecret()) {
-                        continue;
-                    }
                     FolderInfo secretFolderCanidate = (FolderInfo) folder
                         .getInfo().clone();
                     // Calculate id with my magic id

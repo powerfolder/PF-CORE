@@ -288,10 +288,11 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
             if ("file".equalsIgnoreCase(type)) {
                 // Decode the url form
                 String name = Util.decodeFromURL(nizer.nextToken());
-                boolean secret = nizer.nextToken().equalsIgnoreCase("s");
+                // SECRET /PUBLIC (depcrecated)
+                nizer.nextToken();
                 String id = Util.decodeFromURL(nizer.nextToken());
 
-                FolderInfo folder = new FolderInfo(name, id, secret);
+                FolderInfo folder = new FolderInfo(name, id);
 
                 String filename = Util.decodeFromURL(nizer.nextToken());
                 FileInfo fInfo = new FileInfo(folder, filename);
