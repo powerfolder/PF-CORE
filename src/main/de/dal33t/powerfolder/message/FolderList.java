@@ -20,7 +20,7 @@ public class FolderList extends Message {
 
     /** List of public folders. LEFT for backward compatibility */
     public FolderInfo[] folders = new FolderInfo[0];
-    
+
     /** Secret folders, Folder IDs are encrypted with magic Id */
     public FolderInfo[] secretFolders;
 
@@ -46,10 +46,7 @@ public class FolderList extends Message {
             allFolders.length);
 
         for (int i = 0; i < allFolders.length; i++) {
-            if (!allFolders[i].secret) {
-                // Public folder, no encryption
-                publicFos.add(allFolders[i]);
-            } else if (!StringUtils.isBlank(remoteMagicId)) {
+            if (!StringUtils.isBlank(remoteMagicId)) {
                 // Send secret folder infos if magic id is not empty
 
                 // Clone folderinfo

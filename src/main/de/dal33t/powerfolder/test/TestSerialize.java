@@ -84,6 +84,6 @@ public class TestSerialize {
 
     private static FolderInfo generateFolderInfo() {
         return new FolderInfo("TestFolder" + Math.random(), IdGenerator
-            .makeId(), false);
+            .makeId());
     }
 }
