@@ -516,7 +516,8 @@ public class HomeTab extends PFUIComponent implements FolderTab {
             syncPercentageLabel.setIcon(SyncProfileUtil.getSyncIcon(sync));
         }
 
-        if (folderStatistic.getDownloadCounter() == null || sync >= 100) {
+        if (folderStatistic.getDownloadCounter() == null || sync >= 100 ||
+                !folder.getSyncProfile().isAutodownload()) {
             syncETALabel.setText("");
         } else {
             syncETAEstimator.addValue(folderStatistic.getLocalSyncPercentage());
