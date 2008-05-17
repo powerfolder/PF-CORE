@@ -23,7 +23,7 @@ public class BlackListTest extends TestCase {
 
     public void testBlackList() {
         Blacklist blacklist = new Blacklist();
-        FolderInfo folderInfo = new FolderInfo("foldername", "id", true);
+        FolderInfo folderInfo = new FolderInfo("foldername", "id");
         FileInfo fileInfo = new FileInfo(folderInfo, "thumbs.db");
         FileInfo fileInfo2 = new FileInfo(folderInfo, "thumbs.db");
         FileInfo fileInfo3 = new FileInfo(folderInfo, "somefile.txt");
@@ -45,7 +45,7 @@ public class BlackListTest extends TestCase {
 
     public void testBlacklistPatterns() {
         Blacklist blacklist = new Blacklist();
-        FolderInfo folderInfo = new FolderInfo("foldername", "id", true);
+        FolderInfo folderInfo = new FolderInfo("foldername", "id");
         blacklist.addPattern("*thumbs.db");
         blacklist.addPattern("*THAMBS.db");
 
@@ -82,7 +82,7 @@ public class BlackListTest extends TestCase {
     public void testWhiteList() {
         Blacklist blacklist = new Blacklist();
         blacklist.setWhitelist(true);
-        FolderInfo folderInfo = new FolderInfo("foldername", "id", true);
+        FolderInfo folderInfo = new FolderInfo("foldername", "id");
         FileInfo fileInfo = new FileInfo(folderInfo, "thumbs.db");
         FileInfo fileInfo2 = new FileInfo(folderInfo, "thumbs.db");
         FileInfo fileInfo3 = new FileInfo(folderInfo, "somefile.txt");
@@ -105,7 +105,7 @@ public class BlackListTest extends TestCase {
     public void testWhitelistPatterns() {
         Blacklist blacklist = new Blacklist();
         blacklist.setWhitelist(true);
-        FolderInfo folderInfo = new FolderInfo("foldername", "id", true);
+        FolderInfo folderInfo = new FolderInfo("foldername", "id");
         blacklist.addPattern("*thumbs.db");
         blacklist.addPattern("*THAMBS.db");
 

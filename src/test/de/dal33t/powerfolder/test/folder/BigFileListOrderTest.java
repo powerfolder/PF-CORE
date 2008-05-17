@@ -38,15 +38,14 @@ public class BigFileListOrderTest extends TwoControllerTestCase {
     private List<Message> receiveMessages = new ArrayList<Message>();
 
     @Override
-    protected void setUp() throws Exception
-    {
+    protected void setUp() throws Exception {
         super.setUp();
         connectBartAndLisa();
     }
 
     public void testTransferBigFileList() throws ConnectionException {
         FolderInfo foInfo = new FolderInfo("TestFolder / " + UUID.randomUUID(),
-            IdGenerator.makeId(), true);
+            IdGenerator.makeId());
 
         getContollerBart().getNodeManager().addMessageListenerToAllNodes(
             new MyMessageListener());

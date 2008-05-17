@@ -21,8 +21,7 @@ public class PowerFolderInvitationTest extends TwoControllerTestCase {
     private Folder folderAtLisa;
 
     @Override
-    protected void setUp() throws Exception
-    {
+    protected void setUp() throws Exception {
         super.setUp();
         connectBartAndLisa();
         // implement a replacement for the UI
@@ -39,8 +38,8 @@ public class PowerFolderInvitationTest extends TwoControllerTestCase {
                             .removeInvalidFilenameChars(invitationRecievedEvent
                                 .getInvitation().folder.name));
                     try {
-                        FolderSettings folderSettings = 
-                                new FolderSettings(dir, SyncProfile.MANUAL_DOWNLOAD, false, true);
+                        FolderSettings folderSettings = new FolderSettings(dir,
+                            SyncProfile.MANUAL_DOWNLOAD, false, true);
                         invitationRecievedEvent.getFolderRepository()
                             .createFolder(
                                 invitationRecievedEvent.getInvitation().folder,
@@ -55,11 +54,10 @@ public class PowerFolderInvitationTest extends TwoControllerTestCase {
             });
 
         FolderInfo testFolder = new FolderInfo("testFolder", IdGenerator
-            .makeId(), true);
+            .makeId());
 
-        FolderSettings folderSettings =
-                new FolderSettings(TESTFOLDER_BASEDIR_LISA,
-                        SyncProfile.MANUAL_DOWNLOAD, false, true);
+        FolderSettings folderSettings = new FolderSettings(
+            TESTFOLDER_BASEDIR_LISA, SyncProfile.MANUAL_DOWNLOAD, false, true);
         folderAtLisa = getContollerLisa().getFolderRepository().createFolder(
             testFolder, folderSettings);
 
@@ -97,11 +95,10 @@ public class PowerFolderInvitationTest extends TwoControllerTestCase {
 
         // Send invitation over PF to bart.
         getContollerLisa().getTaskManager().scheduleTask(
-        	new SendMessageTask(invitation, 
-        			getContollerLisa().getNodeManager()
-        			.getConnectedNodes().iterator().next().getId()));
-//        getContollerLisa().getNodeManager().getConnectedNodes().get(0)
-//            .sendMessage(invitation);
+            new SendMessageTask(invitation, getContollerLisa().getNodeManager()
+                .getConnectedNodes().iterator().next().getId()));
+        // getContollerLisa().getNodeManager().getConnectedNodes().get(0)
+        // .sendMessage(invitation);
 
         Thread.sleep(1000);
 
