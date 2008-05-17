@@ -7,6 +7,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderStatistic;
@@ -21,11 +22,7 @@ import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.QuickInfoPanel;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
-import de.dal33t.powerfolder.util.ui.SelectionChangeListener;
-import de.dal33t.powerfolder.util.ui.SelectionModel;
-import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
-import de.dal33t.powerfolder.util.ui.SyncProfileUtil;
+import de.dal33t.powerfolder.util.ui.*;
 
 /**
  * Show concentrated information about the whole folder repository
@@ -48,6 +45,8 @@ public class FolderQuickInfoPanel extends QuickInfoPanel {
     private Folder currentFolder;
     private MyFolderListener myFolderListener;
 
+    private TimeEstimator syncETAEstimator;
+
     protected FolderQuickInfoPanel(Controller controller) {
         super(controller);
         myFolderListener = new MyFolderListener();
@@ -57,6 +56,8 @@ public class FolderQuickInfoPanel extends QuickInfoPanel {
      * Initalizes the components
      */
     protected void initComponents() {
+        syncETAEstimator = new TimeEstimator(Constants.ESTIMATION_WINDOW_MILLIS);
+        
         headerText = SimpleComponentFactory.createBiggerTextLabel("");
         infoText1 = SimpleComponentFactory.createBigTextLabel("");
         infoText2 = SimpleComponentFactory.createBigTextLabel("");
@@ -92,12 +93,25 @@ public class FolderQuickInfoPanel extends QuickInfoPanel {
             boolean isMembersConnected = currentFolder.getConnectedMembers().length > 0;
 
             StringBuilder text1 = new StringBuilder();
+            boolean showDownloads = true;
             if (!isMembersConnected) {
                 text1.append(Translation
                     .getTranslation("quickinfo.folder.disconnected"));
             } else if (currentFolder.isTransferring()) {
                 text1.append(Translation
                     .getTranslation("quickinfo.folder.is_synchronizing"));
+                FolderStatistic folderStatistic = currentFolder.getStatistic();
+                double sync = currentFolder.getStatistic().getHarmonizedSyncPercentage();
+
+                if (folderStatistic.getDownloadCounter() != null && sync < 100
+                        && currentFolder.getSyncProfile().isAutodownload()) {
+                    syncETAEstimator.addValue(folderStatistic.getLocalSyncPercentage());
+                    text1.append(", " + Translation
+                            .getTranslation("quickinfo.folder.up_to_date_in",
+                                    new EstimatedTime(syncETAEstimator
+                                            .estimatedMillis(100.0), true).toString()));
+                    showDownloads = false;
+                }
             } else if (currentFolder.isPreviewOnly()) {
                 text1.append(Translation
                     .getTranslation("quickinfo.folder.preview"));
@@ -106,13 +120,15 @@ public class FolderQuickInfoPanel extends QuickInfoPanel {
                     .getTranslation("quickinfo.folder.is_in_sync"));
             }
 
-            int nCompletedDls = countCompletedDownloads();
-            if (nCompletedDls > 0) {
-                // This is a hack(tm)
-                text1.append(", "
-                    + Translation.getTranslation(
-                        "quickinfo.folder.downloads_recently_completed",
-                        nCompletedDls));
+            if (showDownloads) {
+                int nCompletedDls = countCompletedDownloads();
+                if (nCompletedDls > 0) {
+                    // This is a hack(tm)
+                    text1.append(", "
+                        + Translation.getTranslation(
+                            "quickinfo.folder.downloads_recently_completed",
+                            nCompletedDls));
+                }
             }
 
             infoText1.setText(text1.toString());
