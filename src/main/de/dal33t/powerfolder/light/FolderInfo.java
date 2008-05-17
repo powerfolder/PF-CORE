@@ -17,24 +17,21 @@ import de.dal33t.powerfolder.util.Util;
  */
 public class FolderInfo implements Serializable, Cloneable, Comparable {
     private static final long serialVersionUID = 102L;
-    
+
     public String name;
     public String id;
     public int filesCount;
     public long bytesTotal;
-    public boolean secret;
 
     public FolderInfo(Folder folder) {
         name = folder.getName();
         id = folder.getId();
         filesCount = folder.getKnownFilesCount();
-        secret = folder.isSecret();
     }
 
-    public FolderInfo(String name, String id, boolean secret) {
+    public FolderInfo(String name, String id) {
         this.name = name;
         this.id = id;
-        this.secret = secret;
     }
 
     /**
@@ -105,7 +102,7 @@ public class FolderInfo implements Serializable, Cloneable, Comparable {
      */
 
     public Object clone() {
-        FolderInfo fi = new FolderInfo(name, id, secret);
+        FolderInfo fi = new FolderInfo(name, id);
         fi.bytesTotal = bytesTotal;
         fi.filesCount = filesCount;
         return fi;

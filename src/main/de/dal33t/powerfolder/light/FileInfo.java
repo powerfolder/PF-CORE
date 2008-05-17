@@ -592,7 +592,7 @@ public class FileInfo implements Serializable, DiskItem {
      * with version 0, same date BUT DIFFRENT modifier exists! This is caused by
      * initial scans on both sides. WHO wins then? NOBODY, FileInfos then have
      * version 0 same date but DIFFRENT modifiers. If you are seeking a way of
-     * checking if a FileInfo is newer/or in sync use the methdo
+     * checking if a FileInfo is newer/or in sync use the method
      * <code>{@link #isNewerThan(FileInfo)}</code>
      * 
      * @param otherFile
@@ -694,8 +694,7 @@ public class FileInfo implements Serializable, DiskItem {
      */
     public String toPowerFolderLink() {
         return "PowerFolder://|file|" + Util.endcodeForURL(folderInfo.name)
-            + "|" + (folderInfo.secret ? "S" : "P") + "|"
-            + Util.endcodeForURL(folderInfo.id) + "|"
+            + "|" + Util.endcodeForURL(folderInfo.id) + "|"
             + Util.endcodeForURL(this.fileName);
     }
 
