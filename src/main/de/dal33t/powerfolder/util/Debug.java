@@ -309,7 +309,7 @@ public class Debug {
                     + Format.formatBytes(tm.getDownloadCounter()
                         .getBytesTransferred()) + " bytes total):");
                 for (DownloadManager man : downloads) {
-                    for (Download dl: man.getSources()) {
+                    for (Download dl : man.getSources()) {
                         b.append("\n ");
                         b.append(dl.isStarted() ? "(active)" : (dl.isQueued()
                             ? "(queued)"
@@ -518,14 +518,11 @@ public class Debug {
             return;
         }
         b.append(f);
-        if (f.isSecret()) {
-            b.append(", ID: XXX-erased-XXX");
-        } else {
-            b.append(", ID: " + f.getId());
-        }
+        b.append(", ID: XXX-erased-XXX");
         b.append(", files: " + f.getKnownFilesCount() + ", size: "
             + Format.formatBytes(f.getInfo().bytesTotal) + ", members: "
-            + f.getMembers().length + ", sync: " + f.getSyncProfile().getProfileName());
+            + f.getMembers().length + ", sync: "
+            + f.getSyncProfile().getProfileName());
     }
 
     /**
@@ -681,23 +678,23 @@ public class Debug {
         }
         showGroupInfo(top);
     }
-    
+
     public static void dumpCurrentStackTrace() {
-        for (StackTraceElement e: Thread.currentThread().getStackTrace()) {
+        for (StackTraceElement e : Thread.currentThread().getStackTrace()) {
             LOG.debug(e.toString());
         }
     }
-    
+
     private static String detailedObjectState0(Class<?> c, Object o) {
         if (c == Object.class) {
             return "";
         }
-        
+
         StringBuffer buffer = new StringBuffer();
         buffer.append(detailedObjectState0(c.getSuperclass(), o));
-        
+
         Field[] fields = c.getDeclaredFields();
-        for (Field fld: fields) {
+        for (Field fld : fields) {
             fld.setAccessible(true);
             buffer.append("; [").append("Field: ").append(fld.getName());
             buffer.append(", toString: ");
@@ -713,9 +710,9 @@ public class Debug {
             fld.setAccessible(false);
         }
         return buffer.toString();
-        
+
     }
-    
+
     public static String detailedObjectState(Object o) {
         StringBuffer buffer = new StringBuffer();
         buffer.append("Class: ").append(o.getClass().getName());

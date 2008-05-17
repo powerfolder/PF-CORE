@@ -23,7 +23,7 @@ public class FolderComparator extends Loggable implements Comparator {
 
         if (o1 instanceof Folder) {
             Folder f1 = (Folder) o1;
-            value -= (f1.isSecret() ? 2000 : 1000);
+            value -= 2000;
             name1 = f1.getName();
         } else if (o1 instanceof FolderInfo) {
             value -= 500;
@@ -35,7 +35,7 @@ public class FolderComparator extends Loggable implements Comparator {
 
         if (o2 instanceof Folder) {
             Folder f2 = (Folder) o2;
-            value += (f2.isSecret() ? 2000 : 1000);
+            value += 2000;
             name2 = f2.getName();
         } else if (o2 instanceof FolderInfo) {
             value += 500;
