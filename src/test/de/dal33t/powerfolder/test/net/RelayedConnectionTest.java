@@ -63,7 +63,7 @@ public class RelayedConnectionTest extends FiveControllerTestCase {
         });
     }
 
-    public void testPublicRelayedConnection() throws ConnectionException {
+    public void noTestPublicRelayedConnection() throws ConnectionException {
         getContollerLisa().setNetworkingMode(NetworkingMode.PRIVATEMODE);
         ConfigurationEntry.NET_BIND_ADDRESS.setValue(getContollerLisa(), "");
         getContollerMarge().setNetworkingMode(NetworkingMode.PRIVATEMODE);
@@ -117,7 +117,7 @@ public class RelayedConnectionTest extends FiveControllerTestCase {
         assertTrue(conHan.getMember().isCompleteyConnected());
     }
 
-    public void testRelayConnectionToOS() throws ConnectionException {
+    public void noTestRelayConnectionToOS() throws ConnectionException {
         getContollerLisa().setNetworkingMode(NetworkingMode.PRIVATEMODE);
         ConfigurationEntry.NET_BIND_ADDRESS.setValue(getContollerLisa(), "");
         assertTrue(getContollerLisa().connect(TestHelper.INFRASTRUCTURE_CONNECT_STRING)
