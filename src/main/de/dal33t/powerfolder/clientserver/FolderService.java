@@ -34,15 +34,16 @@ public interface FolderService {
     void removeFolder(FolderInfo foInfo, boolean deleteFiles);
 
     /**
-     * Invites a user to a folder.
-     * The invited user gains read/write permissions.
+     * Invites a user to a folder. The invited user gains read/write
+     * permissions.
      * 
-     * @param user the name of the user to be invited
-     * @param foInfo the folder to be invited to
+     * @param user
+     *            the name of the user to be invited
+     * @param foInfo
+     *            the folder to be invited to
      */
-    void inviteUser(FolderInfo foInfo, String user) 
-        throws FolderException;
-    
+    void inviteUser(FolderInfo foInfo, String user) throws FolderException;
+
     /**
      * Changes the sync profile on the remote server for this folder.
      * 
@@ -50,6 +51,18 @@ public interface FolderService {
      * @param profile
      */
     void setSyncProfile(FolderInfo foInfo, SyncProfile profile);
+
+    /**
+     * TRAC #991
+     * <p>
+     * To get the default synchronized folder use
+     * <code>Account.getDefaultSynchronizedFolder()</code>.
+     * 
+     * @param foInfo
+     *            the folder that should be used as default synchronized folder
+     *            for the current account.
+     */
+    void setDefaultSynchronizedFolder(FolderInfo foInfo);
 
     /**
      * Grants the currently logged in user access to folder. the folder is NOT

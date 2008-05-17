@@ -31,6 +31,13 @@ public class Account extends Model implements Serializable {
     private boolean newsLetter;
     private boolean proUser;
 
+    /**
+     * The default-synced folder of the user. May be empty.
+     * <p>
+     * TRAC #991.
+     */
+    private FolderInfo defaultSynchronizedFolder;
+
     private Collection<Permission> permissions;
     private OnlineStorageSubscription osSubscription;
 
@@ -70,14 +77,14 @@ public class Account extends Model implements Serializable {
     }
 
     // Accessing / API ********************************************************
-    
+
     /**
      * @return true if this is a valid account
      */
     public boolean isLoginOK() {
         return username != null;
     }
-    
+
     public String getPassword() {
         return password;
     }
@@ -122,13 +129,23 @@ public class Account extends Model implements Serializable {
         this.proUser = proUser;
     }
 
+    public FolderInfo getDefaultSynchronizedFolder() {
+        return defaultSynchronizedFolder;
+    }
+
+    public void setDefaultSynchronizedFolder(
+        FolderInfo defaultSynchronizedFolder)
+    {
+        this.defaultSynchronizedFolder = defaultSynchronizedFolder;
+    }
+
     public String toString() {
         return "Account '" + username + "', pro: " + proUser + ", "
             + permissions.size() + " permissions";
     }
 
     // Convinience ************************************************************
-    
+
     /**
      * @param controller
      * @return the total size used by this user
