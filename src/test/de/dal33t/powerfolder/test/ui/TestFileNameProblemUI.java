@@ -95,11 +95,10 @@ public class TestFileNameProblemUI {
     /**
      * Joins the controller into a testfolder. get these testfolder with
      * <code>getFolder()</code>.
-     * 
      */
     protected void setupTestFolder(SyncProfile syncprofile) {
         FolderInfo testFolder = new FolderInfo("testFolder", UUID.randomUUID()
-            .toString(), true);
+            .toString());
         folder = joinFolder(testFolder, TESTFOLDER_BASEDIR, syncprofile);
         System.out.println(folder.getLocalBase());
     }
@@ -120,8 +119,8 @@ public class TestFileNameProblemUI {
     {
         final Folder aFolder;
         try {
-            FolderSettings folderSettings =
-                    new FolderSettings(baseDir, profile, false, true);
+            FolderSettings folderSettings = new FolderSettings(baseDir,
+                profile, false, true);
             aFolder = controller.getFolderRepository().createFolder(foInfo,
                 folderSettings);
         } catch (FolderException e) {
