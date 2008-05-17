@@ -1078,13 +1078,13 @@ public class FileTransferTest extends TwoControllerTestCase {
         connectBartAndLisa();
 
         // Problem detection should happen
-        if (OSUtil.isWindowsSystem()) {
+        //if (OSUtil.isWindowsSystem()) {
             assertEquals(0, lisasHandler.events.size());
             assertEquals(0, bartsHandler.events.size());
-        } else {
-            assertEquals(1, lisasHandler.events.size());
-            assertEquals(1, bartsHandler.events.size());
-        }
+       // } else {
+       //     assertEquals(1, lisasHandler.events.size());
+       //     assertEquals(1, bartsHandler.events.size());
+        //}
     }
 
     /**
