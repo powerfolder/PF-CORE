@@ -549,9 +549,19 @@ public class FolderStatisticTest extends FiveControllerTestCase {
      */
     private void waitForFilelistReceived(final Folder folder) {
         TestHelper.waitForCondition(10, new ConditionWithMessage() {
+            Collection<FileInfo> filesOnHomer;
+            Collection<FileInfo> filesOnBart;
+            Collection<FileInfo> filesOnMarge;
+            Collection<FileInfo> filesOnLisa;
+            Collection<FileInfo> filesOnMaggie;
 
             public String message() {
-                return "not identical!";
+                return "Not identical! Node "
+                    + folder.getController().getMySelf().getNick()
+                    + " has has not received full fileslists. Homer: "
+                    + filesOnHomer + ", Bart: " + filesOnBart + ", Marge: "
+                    + filesOnMarge + ", Lisa: " + filesOnLisa + ", Maggie: "
+                    + filesOnMaggie;
             }
 
             public boolean reached() {
@@ -559,16 +569,16 @@ public class FolderStatisticTest extends FiveControllerTestCase {
                 MemberInfo source = folder.getController().getMySelf()
                     .getInfo();
 
-                Collection<FileInfo> filesOnHomer = getFileList(
-                    getContollerHomer(), folder.getInfo(), source);
-                Collection<FileInfo> filesOnBart = getFileList(
-                    getContollerBart(), folder.getInfo(), source);
-                Collection<FileInfo> filesOnMarge = getFileList(
-                    getContollerMarge(), folder.getInfo(), source);
-                Collection<FileInfo> filesOnLisa = getFileList(
-                    getContollerLisa(), folder.getInfo(), source);
-                Collection<FileInfo> filesOnMaggie = getFileList(
-                    getContollerMaggie(), folder.getInfo(), source);
+                filesOnHomer = getFileList(getContollerHomer(), folder
+                    .getInfo(), source);
+                filesOnBart = getFileList(getContollerBart(), folder.getInfo(),
+                    source);
+                filesOnMarge = getFileList(getContollerMarge(), folder
+                    .getInfo(), source);
+                filesOnLisa = getFileList(getContollerLisa(), folder.getInfo(),
+                    source);
+                filesOnMaggie = getFileList(getContollerMaggie(), folder
+                    .getInfo(), source);
 
                 return identicalFileList(filesLocal, filesOnHomer)
                     && identicalFileList(filesLocal, filesOnBart)
