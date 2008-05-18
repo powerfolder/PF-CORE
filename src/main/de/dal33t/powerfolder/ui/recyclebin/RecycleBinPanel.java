@@ -5,26 +5,22 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
 
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
+import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
+import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
+import com.jgoodies.forms.layout.FormLayout;
+import com.jgoodies.forms.layout.CellConstraints;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.RecycleBin;
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.QuickInfoPanel;
-import de.dal33t.powerfolder.ui.action.EmptyRecycleBinAction;
-import de.dal33t.powerfolder.ui.action.RestoreFileAction;
-import de.dal33t.powerfolder.ui.action.SelectionBaseAction;
+import de.dal33t.powerfolder.ui.dialog.FileDetailsPanel;
+import de.dal33t.powerfolder.ui.action.*;
 import de.dal33t.powerfolder.ui.builder.ContentPanelBuilder;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.PFUIPanel;
@@ -44,7 +40,7 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.1 $
  */
-public class RecycleBinPanel extends PFUIPanel {
+public class RecycleBinPanel extends PFUIPanel implements HasDetailsPanel {
     private JComponent panel;
     private QuickInfoPanel quickInfo;
     private RecycleBinTable table;
@@ -55,7 +51,9 @@ public class RecycleBinPanel extends PFUIPanel {
     private RestoreFileAction restoreFileAction;
     private RemoveFromRecycleBinAction removeFromRecycleBinAction;
     private OpenRecycleFolderAction openRecycleFolderAction;
-    private JPopupMenu fileMenu;
+    private JComponent fileDetailsPanelComp;
+    private FileDetailsPanel fileDetailsPanel;
+    private JToggleButton showHideFileDetailsButton;
 
     public RecycleBinPanel(Controller controller) {
         super(controller);
@@ -69,13 +67,29 @@ public class RecycleBinPanel extends PFUIPanel {
             ContentPanelBuilder builder = new ContentPanelBuilder();
             builder.setQuickInfo(quickInfo.getUIComponent());
             builder.setToolbar(toolbar);
-            builder.setContent(tableScroller);
+            builder.setContent(createContentPanel());
             panel = builder.getPanel();
         }
         return panel;
     }
 
+    private JComponent createContentPanel() {
+        FormLayout layout = new FormLayout("fill:pref:grow",
+            "fill:0:grow, pref");
+        PanelBuilder builder = new PanelBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+        builder.add(tableScroller, cc.xy(1, 1));
+        builder.add(fileDetailsPanelComp, cc.xy(1, 2));
+        return builder.getPanel();
+    }
+
     private void initComponents() {
+        fileDetailsPanelComp = getFileDetailsPanelComp();
+        fileDetailsPanelComp.setVisible(false);
+        Action showHideFileDetailsAction = new ShowHideFileDetailsAction(this,
+                getController());
+        showHideFileDetailsButton = new JToggleButton(showHideFileDetailsAction);
+
         quickInfo = new RecycleBinQuickInfoPanel(getController());
         table = new RecycleBinTable(getController(), new RecycleBinTableModel(getController(),
             getController().getRecycleBin()));
@@ -103,6 +117,29 @@ public class RecycleBinPanel extends PFUIPanel {
         return Translation.getTranslation("general.recyclebin");
     }
 
+    private JComponent getFileDetailsPanelComp() {
+        if (fileDetailsPanelComp == null) {
+            fileDetailsPanelComp = createFileDetailsPanel();
+        }
+        return fileDetailsPanelComp;
+    }
+
+    /**
+     * @return the file panel
+     */
+    private JComponent createFileDetailsPanel() {
+        fileDetailsPanel = new FileDetailsPanel(getController());
+
+        FormLayout layout = new FormLayout("fill:pref:grow",
+            "pref, 3dlu, pref, fill:pref");
+        PanelBuilder builder = new PanelBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+        builder.addSeparator(null, cc.xy(1, 1));
+        builder.addSeparator(null, cc.xy(1, 3));
+        builder.add(fileDetailsPanel.getEmbeddedPanel(), cc.xy(1, 4));
+        return builder.getPanel();
+    }
+
     /**
      * Creates the toolbar
      * 
@@ -116,10 +153,12 @@ public class RecycleBinPanel extends PFUIPanel {
         bar.addRelatedGap();
         bar.addGridded(new JButton(restoreFileAction));
         bar.addRelatedGap();
+        bar.addGridded(showHideFileDetailsButton);
+        bar.addRelatedGap();
         // FileUtils.executeFile only works on Win or Mac.
         if (OSUtil.isWindowsSystem() || OSUtil.isMacOS()) {
             bar.addGridded(new JButton(openRecycleFolderAction));
-            bar.addRelatedGap();            
+            bar.addRelatedGap();
         }
         bar.setBorder(Borders.DLU4_BORDER);
         return bar.getPanel();
@@ -129,11 +168,18 @@ public class RecycleBinPanel extends PFUIPanel {
      * Builds the popup menus
      */
     private void buildPopupMenus() {
-        fileMenu = new JPopupMenu();
+        JPopupMenu fileMenu = new JPopupMenu();
         fileMenu.add(restoreFileAction);
         fileMenu.add(removeFromRecycleBinAction);
         table.addMouseListener(new PopupMenuOpener(fileMenu));
 
+    }
+
+    public void toggeDetails() {
+        // Ensure the component is created.
+        JComponent comp = getFileDetailsPanelComp();
+        comp.setVisible(!comp.isVisible());
+        showHideFileDetailsButton.setSelected(comp.isVisible());
     }
 
     /** updates the SelectionModel if some selection has changed in the table */
@@ -149,14 +195,17 @@ public class RecycleBinPanel extends PFUIPanel {
                         selectedRows[i], 0);
                 }
                 selectionModel.setSelections(selectedObjects);
+                if (selectedObjects.length == 1) {
+                    fileDetailsPanel.setFile((FileInfo) selectedObjects[0]);
+                }
             } else {
                 selectionModel.setSelection(null);
             }
         }
     }
 
-    private class RemoveFromRecycleBinAction extends SelectionBaseAction {
-        public RemoveFromRecycleBinAction(Controller controller,
+    private static class RemoveFromRecycleBinAction extends SelectionBaseAction {
+        RemoveFromRecycleBinAction(Controller controller,
             SelectionModel selectionModel)
         {
             super("remove_from_recycle_bin", controller, selectionModel);
@@ -181,12 +230,12 @@ public class RecycleBinPanel extends PFUIPanel {
                 titleKey = "delete_confimation.title";
                 textKey = "delete_confimation.text";
             }
-            String filesText = "";
+            StringBuilder filesText = new StringBuilder();
             String separetor = "";
             for (Object selection : selections) {
                 if (selection instanceof FileInfo) {
                     FileInfo fileInfo = (FileInfo) selection;
-                    filesText += separetor + fileInfo.getFilenameOnly();
+                    filesText.append(separetor + fileInfo.getFilenameOnly());
                     separetor = "\n";
                 }
             }
@@ -195,7 +244,7 @@ public class RecycleBinPanel extends PFUIPanel {
             .showScrollableOkCancelDialog(
                 getController().getUIController().getMainFrame().getUIComponent(),
                 Translation.getTranslation(titleKey),
-                Translation.getTranslation(textKey), filesText);
+                Translation.getTranslation(textKey), filesText.toString());
                    
             if (choice == 0) { // OK
                 for (Object selection : selections) {
@@ -215,7 +264,7 @@ public class RecycleBinPanel extends PFUIPanel {
          */
         public void selectionChanged(SelectionChangeEvent event) {
             Object[] selections = getSelectionModel().getSelections();
-            if ((selections == null) || selections.length == 0) {
+            if (selections == null || selections.length == 0) {
                 setEnabled(false);
                 return;
             }
@@ -236,7 +285,7 @@ public class RecycleBinPanel extends PFUIPanel {
     /**
      * Helper class; Opens the recycle folder on an ActionEvent.
      */
-    private class OpenRecycleFolderAction extends SelectionBaseAction {
+    private static class OpenRecycleFolderAction extends SelectionBaseAction {
 
         /**
          * Constructor.
@@ -244,7 +293,7 @@ public class RecycleBinPanel extends PFUIPanel {
          * @param controller the PowerFolder controler
          * @param selectionModel the selection model of FileInfo objects
          */
-        public OpenRecycleFolderAction(Controller controller, SelectionModel selectionModel) {
+        OpenRecycleFolderAction(Controller controller, SelectionModel selectionModel) {
             super("open_local_folder", controller, selectionModel);
             setEnabled(false);
         }

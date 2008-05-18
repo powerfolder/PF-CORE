@@ -95,7 +95,7 @@ public class OnlineStoragePanel extends PFUIPanel {
         bar.addRelatedGap();
         bar.addGridded(new JButton(new SyncFolderRightsAction(getController()
             .getOSClient())));
-        bar.addUnrelatedGap();
+        bar.addRelatedGap();
         bar.addGridded(new JButton(new AboutWebServiceAction(getController())));
 
         // bar.addRelatedGap();

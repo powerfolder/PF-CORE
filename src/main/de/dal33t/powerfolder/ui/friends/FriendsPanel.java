@@ -132,7 +132,7 @@ public class FriendsPanel extends PFUIPanel {
         // Create toolbar
         ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
         bar.addGridded(new JButton(findFriendsAction));
-        bar.addUnrelatedGap();
+        bar.addRelatedGap();
         bar.addGridded(new JButton(chatAction));
         bar.addRelatedGap();
         bar.addGridded(new JButton(changeFriendStatusAction));

@@ -229,7 +229,7 @@ public class DownloadsPanel extends PFUIPanel implements HasDetailsPanel {
         bar.addGridded(new JButton(startDownloadsAction));
         bar.addRelatedGap();
         bar.addGridded(new JButton(abortDownloadsAction));
-        bar.addUnrelatedGap();
+        bar.addRelatedGap();
         bar.addGridded(showHideFileDetailsButton);
 
         if (OSUtil.isWindowsSystem() || OSUtil.isMacOS()) {
