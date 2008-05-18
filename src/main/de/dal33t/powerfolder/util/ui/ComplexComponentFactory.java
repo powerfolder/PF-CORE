@@ -30,8 +30,6 @@ import com.jgoodies.forms.layout.Sizes;
 
 import de.dal33t.powerfolder.Controller;
 import static de.dal33t.powerfolder.disk.FolderSettings.*;
-import de.dal33t.powerfolder.event.NodeManagerEvent;
-import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.TransferCounter;
 import de.dal33t.powerfolder.util.Translation;
@@ -153,7 +151,7 @@ public class ComplexComponentFactory {
     /**
      * Creates a file selection field. A browse button is attached at the right
      * side
-     * 
+     *
      * @param title
      *            the title of the filechoose if pressed the browse button
      * @param fileSelectionModel
@@ -278,94 +276,6 @@ public class ComplexComponentFactory {
             }
         });
         return panel;
-    }
-
-    /**
-     * Creates a label which shows the online state of a controller
-     * 
-     * @param controller
-     *            the controller.
-     * @return the label.
-     */
-    public static JLabel createOnlineStateLabel(final Controller controller) {
-        final JLabel label = SimpleComponentFactory.createLabel();
-
-        NodeManagerListener nodeListener = new NodeManagerListener() {
-            public void friendAdded(NodeManagerEvent e) {
-            }
-
-            public void friendRemoved(NodeManagerEvent e) {
-            }
-
-            public void nodeAdded(NodeManagerEvent e) {
-                updateOnlineStateLabel(label, controller);
-            }
-
-            public void nodeConnected(NodeManagerEvent e) {
-                updateOnlineStateLabel(label, controller);
-            }
-
-            public void nodeDisconnected(NodeManagerEvent e) {
-                updateOnlineStateLabel(label, controller);
-            }
-
-            public void nodeRemoved(NodeManagerEvent e) {
-                updateOnlineStateLabel(label, controller);
-            }
-
-            public void settingsChanged(NodeManagerEvent e) {
-            }
-
-            public void startStop(NodeManagerEvent e) {
-                updateOnlineStateLabel(label, controller);
-            }
-
-            public boolean fireInEventDispathThread() {
-                return true;
-            }
-        };
-        // set initial values
-        updateOnlineStateLabel(label, controller);
-
-        // Add behavior
-        controller.getNodeManager().addNodeManagerListener(nodeListener);
-
-        return label;
-    }
-
-    private static void updateOnlineStateLabel(JLabel label,
-        Controller controller)
-    {
-        // Get connectes node count
-        int nOnlineUser = controller.getNodeManager().countConnectedNodes();
-
-        // System.err.println("Got " + nOnlineUser + " online users");
-        if (!controller.getNodeManager().isStarted()) {
-            label.setText(Translation.getTranslation("onlinelabel.disabled"));
-            label.setIcon(Icons.WARNING);
-            label.setToolTipText(Translation
-                .getTranslation("onlinelabel.disabled.text"));
-        } else if (nOnlineUser > 0) {
-            String text = Translation.getTranslation("onlinelabel.online");
-            if (controller.isLanOnly()) {
-                text += " (" + Translation.getTranslation("general.lan_only")
-                    + ")";
-            }
-            label.setText(text);
-            label.setIcon(Icons.CONNECTED);
-            label.setToolTipText(Translation
-                .getTranslation("onlinelabel.online.text"));
-        } else {
-            String text = Translation.getTranslation("onlinelabel.connecting");
-            if (controller.isLanOnly()) {
-                text += " (" + Translation.getTranslation("general.lan_only")
-                    + ")";
-            }
-            label.setText(text);
-            label.setIcon(Icons.DISCONNECTED);
-            label.setToolTipText(Translation
-                .getTranslation("onlinelabel.connecting.text"));
-        }
     }
 
     public static JLabel createTransferCounterLabel(

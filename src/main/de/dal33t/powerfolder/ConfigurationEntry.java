@@ -214,6 +214,11 @@ public enum ConfigurationEntry {
     USE_PF_ICON("use.pf.icon", Boolean.TRUE.toString()),
 
     /**
+     * Whether to show notifications when minimized.
+     */
+    SHOW_NOTIFICATIONS("show.notifications", Boolean.TRUE.toString()),
+
+    /**
      * Whether to log verbose.
      */
     VERBOSE("verbose", Boolean.FALSE.toString()),

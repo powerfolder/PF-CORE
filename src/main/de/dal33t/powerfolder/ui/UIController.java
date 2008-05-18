@@ -982,7 +982,8 @@ public class UIController extends PFComponent {
      */
     public void notifyMessage(String title, String message)
     {
-        if (getMainFrame().isIconifiedOrHidden()) {
+        if (mainFrame.isIconifiedOrHidden() && started &&
+                ConfigurationEntry.SHOW_NOTIFICATIONS.getValueBoolean(getController())) {
             NotificationHandler notificationHandler = new NotificationHandler(
                     getController(), title, message);
             notificationHandler.show();
@@ -1004,7 +1005,8 @@ public class UIController extends PFComponent {
     public void notifyMessage(String title, String message,
                               TimerTask task)
     {
-        if (getMainFrame().isIconifiedOrHidden()) {
+        if (mainFrame.isIconifiedOrHidden() && started &&
+                ConfigurationEntry.SHOW_NOTIFICATIONS.getValueBoolean(getController())) {
             NotificationHandler notificationHandler = new NotificationHandler(
                     getController(), title, message, task);
             notificationHandler.show();

@@ -7,6 +7,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.swing.JLabel;
 import javax.swing.JSeparator;
@@ -22,6 +23,8 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
+import de.dal33t.powerfolder.event.NodeManagerListener;
+import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.net.ConnectionListener;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
@@ -36,11 +39,24 @@ import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker;
  * @version $Revision: 1.5 $
  */
 public class StatusBar extends PFUIComponent implements UIPanel {
+
+    private static final int UNKNOWN = -1;
+    private static final int DISABLED = 0;
+    private static final int CONNECTED = 1;
+    private static final int DISCONNECTED = 2;
+
     private Component comp;
 
     /** Online state info field */
-    private JLabel onlineStateInfo, limitedConnectivityLabel, syncLabel,
-        upStats, downStats, portLabel;
+    private JLabel onlineStateInfo;
+    private JLabel limitedConnectivityLabel;
+    private JLabel syncLabel;
+    private JLabel upStats;
+    private JLabel downStats;
+    private JLabel portLabel;
+
+    /** Connection state */
+    private final AtomicInteger state = new AtomicInteger(UNKNOWN);
 
     protected StatusBar(Controller controller) {
         super(controller);
@@ -48,7 +64,6 @@ public class StatusBar extends PFUIComponent implements UIPanel {
 
     public Component getUIComponent() {
         if (comp == null) {
-            int col = 1;
             boolean showPort = ConfigurationEntry.NET_BIND_RANDOM_PORT
                 .getValueBoolean(getController())
                 && getController().getConnectionListener().getPort() != ConnectionListener.DEFAULT_PORT;
@@ -68,6 +83,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             b.setBorder(Borders.createEmptyBorder("0, 1dlu, 0, 2dlu"));
 
             CellConstraints cc = new CellConstraints();
+            int col = 1;
             b.add(onlineStateInfo, cc.xy(col, 1));
             col += 2;
 
@@ -90,6 +106,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             b.add(sep1, cc.xy(col, 1));
             col += 2;
             b.add(upStats, cc.xy(col, 1));
+            comp = b.getPanel();
             return b.getPanel();
         }
         return comp;
@@ -97,8 +114,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
 
     private void initComponents() {
         // Create online state info
-        onlineStateInfo = ComplexComponentFactory
-            .createOnlineStateLabel(getController());
+        onlineStateInfo = createOnlineStateLabel(getController());
         // Add behavior
         onlineStateInfo.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
@@ -179,6 +195,121 @@ public class StatusBar extends PFUIComponent implements UIPanel {
         } else {
             limitedConnectivityLabel.setText("");
             limitedConnectivityLabel.setIcon(null);
+        }
+    }
+
+    /**
+     * Creates a label which shows the online state of a controller
+     *
+     * @param controller
+     *            the controller.
+     * @return the label.
+     */
+    private JLabel createOnlineStateLabel(final Controller controller) {
+
+        final JLabel label = new JLabel();
+
+        NodeManagerListener nodeListener = new NodeManagerListener() {
+            public void friendAdded(NodeManagerEvent e) {
+            }
+
+            public void friendRemoved(NodeManagerEvent e) {
+            }
+
+            public void nodeAdded(NodeManagerEvent e) {
+                updateOnlineStateLabel(label, controller);
+            }
+
+            public void nodeConnected(NodeManagerEvent e) {
+                updateOnlineStateLabel(label, controller);
+            }
+
+            public void nodeDisconnected(NodeManagerEvent e) {
+                updateOnlineStateLabel(label, controller);
+            }
+
+            public void nodeRemoved(NodeManagerEvent e) {
+                updateOnlineStateLabel(label, controller);
+            }
+
+            public void settingsChanged(NodeManagerEvent e) {
+            }
+
+            public void startStop(NodeManagerEvent e) {
+                updateOnlineStateLabel(label, controller);
+            }
+
+            public boolean fireInEventDispathThread() {
+                return true;
+            }
+        };
+        // set initial values
+        updateOnlineStateLabel(label, controller);
+
+        // Add behavior
+        controller.getNodeManager().addNodeManagerListener(nodeListener);
+
+        return label;
+    }
+
+    private void updateOnlineStateLabel(JLabel label,
+        Controller controller)
+    {
+        // Get connectes node count
+        int nOnlineUser = controller.getNodeManager().countConnectedNodes();
+
+        int newState;
+
+        // System.err.println("Got " + nOnlineUser + " online users");
+        if (!controller.getNodeManager().isStarted()) {
+            label.setText(Translation.getTranslation("onlinelabel.disabled"));
+            label.setIcon(Icons.WARNING);
+            label.setToolTipText(Translation
+                .getTranslation("onlinelabel.disabled.text"));
+            newState = DISABLED;
+        } else if (nOnlineUser > 0) {
+            String text = Translation.getTranslation("onlinelabel.online");
+            if (controller.isLanOnly()) {
+                text += " (" + Translation.getTranslation("general.lan_only")
+                    + ')';
+            }
+            label.setText(text);
+            label.setIcon(Icons.CONNECTED);
+            label.setToolTipText(Translation
+                .getTranslation("onlinelabel.online.text"));
+            newState = CONNECTED;
+        } else {
+            String text = Translation.getTranslation("onlinelabel.connecting");
+            if (controller.isLanOnly()) {
+                text += " (" + Translation.getTranslation("general.lan_only")
+                    + ')';
+            }
+            label.setText(text);
+            label.setIcon(Icons.DISCONNECTED);
+            label.setToolTipText(Translation
+                .getTranslation("onlinelabel.connecting.text"));
+            newState = DISCONNECTED;
+        }
+
+        synchronized (state) {
+            int oldState = state.getAndSet(newState);
+            if (oldState != newState) {
+                // State changed, notify ui.
+                String notificationText;
+                if (newState == DISABLED) {
+                    notificationText = Translation
+                            .getTranslation("statusbar.status_change.disabled");
+                } else if (newState == CONNECTED) {
+                    notificationText = Translation
+                            .getTranslation("statusbar.status_change.connected");
+                } else {
+                    notificationText = Translation
+                            .getTranslation("statusbar.status_change.disconnected");
+                }
+                getUIController().notifyMessage(Translation
+                        .getTranslation("statusbar.status_change.title"),
+                        notificationText);
+            }
         }
     }
 

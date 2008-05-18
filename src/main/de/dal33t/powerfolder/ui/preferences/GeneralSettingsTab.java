@@ -54,7 +54,8 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     private JCheckBox createDesktopShortcutsBox;
 
     private JCheckBox startWithWindowsBox;
-    private ValueModel startWithWindowsVM;
+
+    private JCheckBox showNotificationBox;
 
     private JComboBox languageChooser;
     private JComboBox colorThemeChooser;
@@ -195,8 +196,8 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                         .getTranslation("preferences.dialog.createdesktopshortcuts"));
 
             if (WinUtils.getInstance() != null) {
-                startWithWindowsVM = new ValueHolder(WinUtils.getInstance()
-                    .isPFStartup());
+                ValueModel startWithWindowsVM = new ValueHolder(WinUtils.getInstance()
+                        .isPFStartup());
                 startWithWindowsVM
                     .addValueChangeListener(new PropertyChangeListener() {
                         public void propertyChange(PropertyChangeEvent evt) {
@@ -211,11 +212,19 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                         }
                     });
                 ValueModel tmpModel = new BufferedValueModel(
-                    startWithWindowsVM, writeTrigger);
+                        startWithWindowsVM, writeTrigger);
                 startWithWindowsBox = BasicComponentFactory.createCheckBox(
                     tmpModel, Translation
                         .getTranslation("preferences.dialog.startwithwindows"));
             }
+
+            // Show notifications when minimized
+            ValueModel snModel = new ValueHolder(
+                ConfigurationEntry.SHOW_NOTIFICATIONS
+                    .getValueBoolean(getController()));
+            showNotificationBox = BasicComponentFactory.createCheckBox(
+                new BufferedValueModel(snModel, writeTrigger), Translation
+                    .getTranslation("preferences.dialog.show_notifications"));
 
             // DesktopIni does not work on Vista
             if (OSUtil.isWindowsSystem() && !OSUtil.isWindowsVistaSystem()) {
@@ -237,7 +246,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         if (panel == null) {
             FormLayout layout = new FormLayout(
                 "right:100dlu, 3dlu, 30dlu, 3dlu, 15dlu, 10dlu, 30dlu, 30dlu, pref",
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, top:pref, 3dlu, top:pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, top:pref, 3dlu, top:pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
 
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
@@ -305,6 +314,9 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                     row += 2;
                     builder.add(startWithWindowsBox, cc.xywh(3, row, 7, 1));
                 }
+
+                row += 2;
+                builder.add(showNotificationBox, cc.xywh(3, row, 7, 1));
 
                 if (!OSUtil.isWindowsVistaSystem()) {
                     builder.appendRow("3dlu");
@@ -376,6 +388,10 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         // UseRecycleBin
         ConfigurationEntry.USE_RECYCLE_BIN.setValue(getController(), Boolean
             .toString(useRecycleBinBox.isSelected()));
+
+        // Show Notifications
+        ConfigurationEntry.SHOW_NOTIFICATIONS.setValue(getController(), Boolean
+            .toString(showNotificationBox.isSelected()));
 
         if (OSUtil.isWindowsSystem() && !OSUtil.isWindowsVistaSystem()) {
             // PowerFolder icon
