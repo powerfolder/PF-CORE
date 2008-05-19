@@ -21,7 +21,7 @@ public class Constants {
     /**
      * URL of the PowerFolder Pro page
      */
-    public static final String POWERFOLDER_PRO_URL = "http://www.powerfolder.com/node/pro_edition";
+    public static final String POWERFOLDER_PRO_URL = "http://www.powerfolder.com/buynow.html";
 
     /**
      * URL of the page to report bugs.
@@ -53,7 +53,7 @@ public class Constants {
      * The official ID of the online storage.
      */
     public static final String ONLINE_STORAGE_NODE_ID = "WEBSERVICE03";
-   // public static final String ONLINE_STORAGE_NODE_ID = "INFRASTRUCTURE01";
+    // public static final String ONLINE_STORAGE_NODE_ID = "INFRASTRUCTURE01";
 
     /**
      * The name of the subdirectory in every folder to store powerfolder
@@ -236,8 +236,9 @@ public class Constants {
 
     /**
      * The upload timeout of a part request. After thet time of inactivity the
-     * upload is assumed to be timed out. This value is very large since delta sync allows for
-     * quite alot of time to pass before requesting. (time it takes to hash)
+     * upload is assumed to be timed out. This value is very large since delta
+     * sync allows for quite alot of time to pass before requesting. (time it
+     * takes to hash)
      */
     public static final long UPLOAD_PART_REQUEST_TIMEOUT = 5L * 60 * 60 * 1000;
 
