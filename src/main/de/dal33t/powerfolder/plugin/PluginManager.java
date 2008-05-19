@@ -65,6 +65,9 @@ public class PluginManager extends PFComponent {
         StringTokenizer nizer = new StringTokenizer(pluginsStr, ",");
         while (nizer.hasMoreElements()) {
             String pluginClassName = nizer.nextToken().trim();
+            if (alreadyLoaded(pluginClassName)) {
+                continue;
+            }
             Plugin plugin = initalizePlugin(pluginClassName);
             if (plugin != null) {
                 plugins.add(plugin);
@@ -96,6 +99,9 @@ public class PluginManager extends PFComponent {
         StringTokenizer nizer = new StringTokenizer(pluginsStr, ",");
         while (nizer.hasMoreElements()) {
             String pluginClassName = nizer.nextToken();
+            if (alreadyLoaded(pluginClassName)) {
+                continue;
+            }
             Plugin plugin = initalizePlugin(pluginClassName);
             if (plugin != null) {
                 log().debug("Found disabled plugin: " + plugin.getName());
@@ -238,6 +244,20 @@ public class PluginManager extends PFComponent {
         for (PluginManagerListener listener : listeners) {
             listener.pluginStatusChanged(new PluginEvent(this, plugin));
         }
+    }
+
+    private boolean alreadyLoaded(String pluginClassName) {
+        for (Plugin p : plugins) {
+            if (p.getClass().getName().equals(pluginClassName)) {
+                return true;
+            }
+        }
+        for (Plugin p : disabledPlugins) {
+            if (p.getClass().getName().equals(pluginClassName)) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }
