@@ -190,6 +190,7 @@ public class Controller extends PFComponent {
             return new TransferManager(Controller.this);
         }
     };
+    
     /** Handels the up and downloads */
     private TransferManager transferManager;
 
