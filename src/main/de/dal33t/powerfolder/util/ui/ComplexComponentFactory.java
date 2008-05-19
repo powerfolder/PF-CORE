@@ -52,82 +52,6 @@ public class ComplexComponentFactory {
     }
 
     /**
-     * Creates a fileselection field especsially built to select basedir of a
-     * folder. Suggests a basedir depending on name and recent settings about
-     * folder
-     * 
-     * @param folderNameModel
-     *            the model of folders name
-     * @param fileBaseModel
-     *            the model containing the base directory (Class File)
-     * @param controller
-     *            the controller
-     * @return the selection field
-     */
-    public static JComponent createFolderBaseDirSelectionField(
-        final ValueModel folderNameModel, final ValueModel fileBaseModel,
-        final Controller controller)
-    {
-        if (controller == null) {
-            throw new NullPointerException("Controller is null");
-        }
-        if (folderNameModel == null) {
-            throw new NullPointerException("FolderNameModel is null");
-        }
-        if (fileBaseModel == null) {
-            throw new NullPointerException("FileBaseModel is null");
-        }
-        ActionListener suggestor = new ActionListener() {
-            private boolean shouldSuggest = true;
-
-            public void actionPerformed(ActionEvent e) {
-                // Suggest base dir only if basedir is currently empty
-                shouldSuggest = StringUtils.isBlank((String) fileBaseModel
-                    .getValue());
-                if (shouldSuggest) {
-                    String suggestedBase = null;
-                    // Set base dir
-                    String lastLocalBase = controller.getPreferences().get(
-                        FOLDER_SETTINGS_PREFIX + folderNameModel.getValue()
-                            + FOLDER_SETTINGS_LAST_LOCAL, null);
-                    if (lastLocalBase != null) {
-
-                        suggestedBase = lastLocalBase;
-                    } else {
-                        suggestedBase = controller.getFolderRepository()
-                            .getFoldersBasedir()
-                            + System.getProperty("file.separator")
-                            + Util
-                                .removeInvalidFilenameChars((String) folderNameModel
-                                    .getValue());
-                    }
-
-                    if (suggestedBase != null) {
-                        fileBaseModel.setValue(suggestedBase);
-                    }
-                }
-
-                if (e != null) {
-                    // Event was not manually in code fired. HACK
-                    File fileBase = new File((String) fileBaseModel.getValue());
-                    if (!fileBase.exists()) {
-                        fileBase.mkdirs();
-                    }
-                }
-            }
-        };
-
-        // Directly suggest if name is set
-        if (!StringUtils.isBlank((String) folderNameModel.getValue())) {
-            suggestor.actionPerformed(null);
-        }
-
-        return createDirectorySelectionField(Translation
-            .getTranslation("general.localcopyplace"), fileBaseModel,
-            suggestor, null, controller);
-    }
-
-    /**
      * Creates a file selection field. A browse button is attached at the right
      * side
      * 
@@ -151,7 +75,7 @@ public class ComplexComponentFactory {
     /**
      * Creates a file selection field. A browse button is attached at the right
      * side
-     *
+     * 
      * @param title
      *            the title of the filechoose if pressed the browse button
      * @param fileSelectionModel
