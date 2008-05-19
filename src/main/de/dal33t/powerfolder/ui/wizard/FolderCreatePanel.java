@@ -61,7 +61,6 @@ public class FolderCreatePanel extends PFWizardPanel {
     }
 
     protected JPanel buildContent() {
-
         FormLayout layout = new FormLayout("pref, 5dlu, pref",
             "pref, 5dlu, pref, 5dlu, pref");
 
