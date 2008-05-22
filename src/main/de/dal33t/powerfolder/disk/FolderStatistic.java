@@ -320,7 +320,7 @@ public class FolderStatistic extends PFComponent {
             if (fInfo.isDeleted()) {
                 continue;
             }
-            if (folder.getBlacklist().isIgnored(fInfo)) {
+            if (folder.getDiskItemFilter().isExcluded(fInfo)) {
                 continue;
             }
 

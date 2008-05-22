@@ -209,7 +209,7 @@ public class FileFilterModel extends FilterModel {
                     // remote)
                     deletedCount += isDeleted && folder != null
                         && folder.isKnown(fInfo) ? 1 : 0;
-                    if (!folder.getBlacklist().isIgnored(fInfo)) {
+                    if (folder.getDiskItemFilter().isRetained(fInfo)) {
                         expectedCount += isExpected ? 1 : 0;
                     }
                     normalCount += isNormal ? 1 : 0;
@@ -270,7 +270,7 @@ public class FileFilterModel extends FilterModel {
                         // from remote)
                         tmpDeletedCount += isDeleted && folder != null
                             && folder.isKnown(fInfo) ? 1 : 0;
-                        if (!folder.getBlacklist().isIgnored(fInfo)) {
+                        if (folder.getDiskItemFilter().isRetained(fInfo)) {
                             tmpExpectedCount += isExpected ? 1 : 0;
                         }
                         tmpNormalCount += isNormal ? 1 : 0;

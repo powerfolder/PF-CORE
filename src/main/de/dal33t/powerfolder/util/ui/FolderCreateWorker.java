@@ -96,8 +96,8 @@ public abstract class FolderCreateWorker extends ActivityVisualizationWorker {
             if (OSUtil.isWindowsSystem()) {
                 // Add thumbs to ignore pattern on windows systems
                 // Don't duplicate thumbs (like when moving a preview folder)
-                if (!folder.getBlacklist().getPatterns().contains(THUMBS_DB)) {
-                    folder.getBlacklist().addPattern(THUMBS_DB);
+                if (!folder.getDiskItemFilter().getPatterns().contains(THUMBS_DB)) {
+                    folder.getDiskItemFilter().addPattern(THUMBS_DB);
                 }
 
                 // Add desktop.ini to ignore pattern on windows systems
@@ -105,7 +105,7 @@ public abstract class FolderCreateWorker extends ActivityVisualizationWorker {
                     && ConfigurationEntry.USE_PF_ICON
                         .getValueBoolean(controller))
                 {
-                    folder.getBlacklist().addPattern(FileUtils.DESKTOP_INI_FILENAME);
+                    folder.getDiskItemFilter().addPattern(FileUtils.DESKTOP_INI_FILENAME);
                 }
             }
         } catch (FolderException ex) {

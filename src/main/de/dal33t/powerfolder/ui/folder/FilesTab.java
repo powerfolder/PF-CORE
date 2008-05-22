@@ -63,7 +63,6 @@ import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.disk.Blacklist;
 import de.dal33t.powerfolder.event.FolderAdapter;
 import de.dal33t.powerfolder.event.FolderEvent;
 import de.dal33t.powerfolder.event.FolderMembershipEvent;
@@ -1222,24 +1221,22 @@ public class FilesTab extends PFUIComponent implements FolderTab,
         boolean enableIgnore = true;
         boolean enableUnignore = true;
         if (folder != null) {
-            Blacklist blacklist = folder.getBlacklist();
             for (Object selection : selections) {
                 if (selection instanceof FileInfo) {
-
                     // Only enable if not already ignored.
                     FileInfo fileInfo = (FileInfo) selection;
-                    enableIgnore &= !(blacklist.isIgnored(fileInfo) ^
-                            blacklist.isWhitelist());
-                    enableUnignore &= blacklist.isIgnored(fileInfo) ^
-                            blacklist.isWhitelist();
+                    enableIgnore &= folder.getDiskItemFilter().isRetained(fileInfo)
+                            ^ folder.isWhitelist();
+                    enableUnignore &= folder.getDiskItemFilter().isRetained(fileInfo)
+                            ^ !folder.isWhitelist();
                 } else if (selection instanceof Directory) {
 
                     // Only enable if subs not ignored.
                     Directory dir = (Directory) selection;
-                    enableIgnore &= !(blacklist.isIgnored(dir) ^
-                            blacklist.isWhitelist());
-                    enableUnignore &= blacklist.isIgnored(dir) ^
-                            blacklist.isWhitelist();
+                    enableIgnore &= folder.getDiskItemFilter().isRetained(dir)
+                            ^ folder.isWhitelist();
+                    enableUnignore &= folder.getDiskItemFilter().isRetained(dir)
+                            ^ !folder.isWhitelist();
                 }
             }
         }

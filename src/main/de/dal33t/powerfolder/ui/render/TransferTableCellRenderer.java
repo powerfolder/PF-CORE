@@ -184,7 +184,7 @@ public class TransferTableCellRenderer extends DefaultTableCellRenderer {
                 setText(fInfo.getFilenameOnly());
                 Folder folder = fInfo.getFolder(controller
                     .getFolderRepository());
-                if (folder != null && folder.getBlacklist().isIgnored(fInfo)) {
+                if (folder != null && folder.getDiskItemFilter().isExcluded(fInfo)) {
                     if (folder.isWhitelist()) {
                         setIcon(Icons.WHITE_LIST);
                     } else {

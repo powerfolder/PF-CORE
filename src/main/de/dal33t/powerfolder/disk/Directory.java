@@ -82,8 +82,8 @@ public class Directory implements Comparable<Directory>, DiskItem {
         return dataFlavor;
     }
 
-    public boolean isBlackListed() {
-        return rootFolder.getBlacklist().isIgnored(this) ^ rootFolder.getBlacklist().isWhitelist();
+    public boolean isRetained() {
+        return rootFolder.getDiskItemFilter().isRetained(this);
     }
 
     public boolean isFolderWhitelist() {

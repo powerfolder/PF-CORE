@@ -14,10 +14,7 @@ import org.apache.commons.lang.StringUtils;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.disk.Directory;
-import de.dal33t.powerfolder.disk.FileInfoHolder;
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.disk.*;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.ImageFileInfo;
 import de.dal33t.powerfolder.light.MP3FileInfo;
@@ -199,16 +196,20 @@ public class DirectoryTableCellRenderer extends DefaultTableCellRenderer {
             case 1 : {// filename
                 newValue = directory.getName();
                 // preference goes to deleted, then ignored then available icon
-                if (directory.isDeleted()) {
+                if (directory.isDeleted())
+                {
                     setForeground(DELETED);
                     setIcon(Icons.DELETE);
-                }
-                if (directory.isBlackListed()) {
-                    if (directory.isFolderWhitelist()) {
-                        setIcon(Icons.WHITE_LIST);
-                    } else {
-                        setIcon(Icons.BLACK_LIST);
-                    }
+                } else if (directory.isRetained() &&
+                        directory.isFolderWhitelist())
+                {
+                    setIcon(Icons.WHITE_LIST);
+                    setForeground(NORMAL);
+                } else if (!directory.isRetained() &&
+                        !directory.isFolderWhitelist())
+                {
+                    setIcon(Icons.BLACK_LIST);
+                    setForeground(NORMAL);
                 } else if (directory.isExpected(controller
                     .getFolderRepository()))
                 {
@@ -240,7 +241,7 @@ public class DirectoryTableCellRenderer extends DefaultTableCellRenderer {
     }
 
     private final void render0(FileInfo fInfo, String fileNameForTooltip) {
-        String statusForTooltip = null;
+
         // Obtain the newest version of this file
         FileInfo newestVersion = null;
         FileInfo newestDeletedVersion = null;
@@ -254,6 +255,7 @@ public class DirectoryTableCellRenderer extends DefaultTableCellRenderer {
         }
         setIcon(null);
 
+        String statusForTooltip = null;
         if (fInfo.isDownloading(controller)) {
             setForeground(DOWNLOADING);
             DownloadManager dl = controller.getTransferManager().getActiveDownload(
@@ -281,15 +283,20 @@ public class DirectoryTableCellRenderer extends DefaultTableCellRenderer {
             setIcon(Icons.DELETE);
             statusForTooltip = Translation.getTranslation("fileinfo.deleted");
 
-        } else if (folder.getBlacklist().isIgnored(fInfo) ^
-                folder.getBlacklist().isWhitelist()) {
-            if (folder.isWhitelist()) {
-                setIcon(Icons.WHITE_LIST);
-            } else {
-                setIcon(Icons.BLACK_LIST);
-                statusForTooltip = replaceSpacesWithNBSP(Translation
+        } else if (folder.getDiskItemFilter().isExcluded(fInfo) &&
+                !folder.isWhitelist()) {
+            // Blacklist and file filtered out by blacklist.
+            setIcon(Icons.BLACK_LIST);
+            statusForTooltip = replaceSpacesWithNBSP(Translation
                     .getTranslation("fileinfo.ignore"));
-            }
+            setForeground(NORMAL);
+        } else if (!folder.getDiskItemFilter().isExcluded(fInfo) &&
+                folder.isWhitelist()) {
+            // Whitelist and file not filtered out by whitelist.
+            setIcon(Icons.WHITE_LIST);
+            statusForTooltip = replaceSpacesWithNBSP(Translation
+                    .getTranslation("fileinfo.ignore"));
+            setForeground(NORMAL);
         } else if (fInfo.isExpected(controller.getFolderRepository())) {
             setForeground(AVAILEBLE);
 
@@ -320,12 +327,6 @@ public class DirectoryTableCellRenderer extends DefaultTableCellRenderer {
             }
         } else {
             setForeground(NORMAL);
-            if (folder.isWhitelist()) {
-                statusForTooltip = replaceSpacesWithNBSP(Translation
-                    .getTranslation("fileinfo.ignore"));
-            } else {
-                statusForTooltip = "";
-            }
         }
 
         // Okay basic infos added

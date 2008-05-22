@@ -20,7 +20,6 @@ import de.dal33t.powerfolder.message.RequestDownload;
 import de.dal33t.powerfolder.message.RequestFilePartsRecord;
 import de.dal33t.powerfolder.message.RequestPart;
 import de.dal33t.powerfolder.message.StopUpload;
-import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.Range;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
@@ -273,9 +272,9 @@ public class Download extends Transfer {
         }
         // timeout is, when dl is not enqued at remote side,
         // and has timeout
-        boolean timedOut = ((System.currentTimeMillis() - Constants.DOWNLOAD_REQUEST_TIMEOUT_LIMIT) > lastTouch
-            .getTime())
-            && !this.queued;
+        boolean timedOut = System.currentTimeMillis() - 
+                Constants.DOWNLOAD_REQUEST_TIMEOUT_LIMIT > lastTouch.getTime()
+            && !queued;
         if (timedOut) {
             log().warn("Abort cause: Timeout.");
             return true;
@@ -290,7 +289,7 @@ public class Download extends Transfer {
         if (automatic) {
             Folder folder = getFile().getFolder(
                 getController().getFolderRepository());
-            boolean onBlacklist = folder.getBlacklist().isIgnored(getFile());
+            boolean onBlacklist = folder.getDiskItemFilter().isExcluded(getFile());
             if (onBlacklist) {
                 log().warn("Abort cause: On blacklist.");
                 return true;

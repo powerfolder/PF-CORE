@@ -1,46 +1,30 @@
 package de.dal33t.powerfolder.disk;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import de.dal33t.powerfolder.util.Logger;
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.PatternMatch;
+import de.dal33t.powerfolder.DiskItem;
+import de.dal33t.powerfolder.light.FileInfo;
+
+import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.regex.PatternSyntaxException;
-
-import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.util.PatternMatch;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.Logger;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.io.*;
 
 /**
- * Holds the file patterns that must not be shared or not downloaded:
- * <TABLE>
- * <TR>
- * <TD valign=top>thumbs.db</TD>
- * <TD> Will filter the file thumbs.db</TD>
- * </TR>
- * <TR>
- * <TD valign=top>*thumbs.db</TD>
- * <TD>Will filter the file thumbs.db in any subdirectory or filename that ends
- * with thumbs.db</TD>
- * </TR>
- * <TR>
- * <TD valign=top>images/*thumbs.db</TD>
- * <TD> Will filter the file thumbs.db in any subdirectory or filename that ends
- * with thumbs.db if its located below the subfolder images.</TD>
- * </TR>
- * </TABLE>
+ * Class to hold a number of patterns to filter DiskItems with.
+ * The class has two modes:
+ * excludeByDefault - DiskItems will be excluded unless they match a pattern (a white list).
+ * retainByDefault - DiskItems will be retained unless they match a pattern (a black list).
  */
-public class Blacklist {
+public class DiskItemFilter {
 
     /**
      * Logger
      */
-    private static final Logger LOG = Logger.getLogger(Blacklist.class);
+    private static final Logger LOG = Logger.getLogger(DiskItemFilter.class);
 
     /**
      * Patterns file name.
@@ -48,8 +32,14 @@ public class Blacklist {
     private static final String PATTERNS_FILENAME = "ignore.patterns";
 
     /**
-     * The patterns that may match files so that files won't be downloaded
-     * (See class definition for explanation of the patterns)
+     * The mode of the filter.
+     * If true, items will be excluded unless they match a pattern.
+     * If false, items will be retained unless they match a pattern.
+     */
+    private boolean excludeByDefault;
+
+    /**
+     * The patterns that will be used to match DiskItems with.
      */
     private final List<String> patterns = new CopyOnWriteArrayList<String>();
 
@@ -59,9 +49,13 @@ public class Blacklist {
     private boolean dirty;
 
     /**
-     * Whether the Blacklist is acting as a whitelist.
+     * Constructor
+     *
+     * @param excludeByDefault
      */
-    private boolean whitelist;
+    public DiskItemFilter(boolean excludeByDefault) {
+        this.excludeByDefault = excludeByDefault;
+    }
 
     /**
      * Loads patterns from file.
@@ -130,13 +124,10 @@ public class Blacklist {
         }
     }
 
-    // Mutators of blacklist **************************************************
-
     /**
-     * Add a pattern to the list of patterns that will filter FileInfos so will
-     * be ignored when matching this pattern
+     * Add a patterns to the list for filtering.
      *
-     * NOTE: This should probably be called through the Folder.addPatterns method,
+     * NOTE: This should probably be called through the Folder.removePattern method,
      * so that the folder becomes dirty and persists the change.
      *
      * @param pattern
@@ -156,19 +147,26 @@ public class Blacklist {
     }
 
     /**
-     * Remove a pattern from the list of patterns that will filter FileInfos
-     * 
+     * Remove a pattern from the list.
+     *
      * NOTE: This should probably be called through the Folder.removePattern method,
      * so that the folder becomes dirty and persists the change.
      *
-     * @param strPattern
+     * @param pattern
      */
-    public void removePattern(String strPattern) {
-        patterns.remove(strPattern);
+    public void removePattern(String pattern) {
+        patterns.remove(pattern);
         dirty = true;
     }
 
-    // Accessors **************************************************************
+    /**
+     * Sets the mode of the filter.
+     *
+     * @param excludeByDefault
+     */
+    public void setExcludeByDefault(boolean excludeByDefault) {
+        this.excludeByDefault = excludeByDefault;
+    }
 
     /**
      * True if patterns have been changed.
@@ -180,62 +178,53 @@ public class Blacklist {
     }
 
     /**
-     * Will check if this FileInfo matches a pattern.
-     * 
-     * @return true if is ignored by a pattern, false if not
-     *         or oposite if whitelist.
-     */
-    public boolean isIgnored(FileInfo fileInfo) {
-
-        for (String pattern : patterns) {
-            if (PatternMatch.isMatch(fileInfo.getName(), pattern)) {
-                return !whitelist;
-            }
-        }
-        return whitelist;
-    }
-
-    /**
-     * Will check if this Directory matches a pattern.
+     * Pattern matches diskItem against patterns.
+     * Note that Directories have "/*" appended for matching.
      *
-     * @return true if is ignored by a pattern, false if not
+     * @param diskItem
+     * @return
      */
-    public boolean isIgnored(Directory dir) {
-        for (String pattern : patterns) {
-            if (PatternMatch.isMatch(dir.getName() + "/*", pattern)) {
-                return !whitelist;
+    private boolean isMatches(DiskItem diskItem) {
+        if (diskItem instanceof Directory) {
+            Directory dir = (Directory) diskItem;
+            String dirName = dir.getName() + "/*";
+
+            for (String pattern : patterns) {
+                if (PatternMatch.isMatch(dirName, pattern)) {
+                    return true;
+                }
+            }
+        } else {
+            String name = diskItem.getName();
+
+            for (String pattern : patterns) {
+                if (PatternMatch.isMatch(name, pattern)) {
+                    return true;
+                }
             }
         }
-        return whitelist;
+
+        return false;
     }
 
     /**
      * Returns patterns.
      *
-     * @return the list of patterns that may match files that should br ignored
+     * @return the list of patterns that may match files that should be ignored
      */
     public List<String> getPatterns() {
         return new ArrayList<String>(patterns);
     }
 
     /**
-     * Applies the blacklisting settings to the list. After calling this method
-     * the original list does not longer contain any files that match the ignore
-     * blacklistings.
-     * <p>
-     * ATTENTION: This method changes the content the input list, be sure to act
-     * on a copy of your original list if you want to leave the original list
-     * untouched.
-     * 
-     * @param fileInfos
-     *            the list that gets filtered.
-     * @return the number of removed files from the list
+     * Returns the number of items that were filtered out(removed) from the
+     * List when the patterns were applied.
      */
-    public int applyPatterns(List<FileInfo> fileInfos) {
+    public int filterDirectories(List<Directory> directories) {
         int n = 0;
-        for (Iterator<FileInfo> it = fileInfos.iterator(); it.hasNext();) {
-            FileInfo fInfo = it.next();
-            if (isIgnored(fInfo)) {
+        for (Iterator<Directory> it = directories.iterator(); it.hasNext();) {
+            DiskItem diskItem = it.next();
+            if (isExcluded(diskItem)) {
                 it.remove();
                 n++;
             }
@@ -244,15 +233,38 @@ public class Blacklist {
     }
 
     /**
-     * Causes the Blacklist to function as a whitelist.
-     * 
-     * @param whitelist
+     * Returns the number of items that were filtered out (removed) from the
+     * List when the patterns were applied.
      */
-    public void setWhitelist(boolean whitelist) {
-        this.whitelist = whitelist;
+    public int filterFileInfos(List<FileInfo> fileInfos) {
+        int n = 0;
+        for (Iterator<FileInfo> it = fileInfos.iterator(); it.hasNext();) {
+            DiskItem diskItem = it.next();
+            if (isExcluded(diskItem)) {
+                it.remove();
+                n++;
+            }
+        }
+        return n;
     }
 
-    public boolean isWhitelist() {
-        return whitelist;
+    /**
+     * Returns true if the item is excluded by this filter (is filtered out).
+     *
+     * @param diskItem
+     * @return
+     */
+    public boolean isExcluded(DiskItem diskItem) {
+        return isMatches(diskItem) ^ excludeByDefault;
+    }
+
+    /**
+     * Returns true if the item is retained by this filter (is not filtered out).
+     *
+     * @param diskItem
+     * @return
+     */
+    public boolean isRetained(DiskItem diskItem) {
+        return !isExcluded(diskItem);
     }
 }

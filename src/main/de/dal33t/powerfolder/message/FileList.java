@@ -7,8 +7,8 @@ import java.util.Collection;
 import java.util.List;
 
 import de.dal33t.powerfolder.Constants;
-import de.dal33t.powerfolder.disk.Blacklist;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.DiskItemFilter;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.Logger;
@@ -58,7 +58,7 @@ public class FileList extends FolderRelatedMessage {
     public static Message[] createFileListMessages(Folder folder) {
         // Create filelist with blacklist
         return createFileListMessages(folder.getInfo(), folder.getKnownFiles(),
-            folder.getBlacklist());
+            folder.getDiskItemFilter());
     }
 
     /**
@@ -75,11 +75,11 @@ public class FileList extends FolderRelatedMessage {
      * @return the splitted list
      */
     public static Message[] createFileListMessages(FolderInfo foInfo,
-        Collection<FileInfo> files, Blacklist blacklist)
+        Collection<FileInfo> files, DiskItemFilter diskItemFilter)
     {
         Reject.ifNull(foInfo, "Folder info is null");
         Reject.ifNull(files, "Files is null");
-        Reject.ifNull(blacklist, "Blacklist is null");
+        Reject.ifNull(diskItemFilter, "DiskItemFilter is null");
         Reject.ifTrue(Constants.FILE_LIST_MAX_FILES_PER_MESSAGE <= 0,
             "Unable to split filelist. nFilesPerMessage: "
                 + Constants.FILE_LIST_MAX_FILES_PER_MESSAGE);
@@ -94,7 +94,7 @@ public class FileList extends FolderRelatedMessage {
         int curMsgIndex = 0;
         FileInfo[] messageFiles = new FileInfo[Constants.FILE_LIST_MAX_FILES_PER_MESSAGE];
         for (FileInfo fileInfo : files) {
-            if (blacklist.isIgnored(fileInfo)) {
+            if (diskItemFilter.isExcluded(fileInfo)) {
                 continue;
             }
             messageFiles[curMsgIndex] = fileInfo;

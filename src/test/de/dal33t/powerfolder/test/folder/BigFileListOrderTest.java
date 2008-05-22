@@ -8,7 +8,7 @@ import java.util.UUID;
 
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.disk.Blacklist;
+import de.dal33t.powerfolder.disk.DiskItemFilter;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
@@ -60,7 +60,7 @@ public class BigFileListOrderTest extends TwoControllerTestCase {
         }
         // Now split
         final Message[] msgs = FileList.createFileListMessages(foInfo, Arrays
-            .asList(files), new Blacklist());
+            .asList(files), new DiskItemFilter(false));
 
         for (int i = 0; i < msgs.length; i++) {
             Message message = msgs[i];

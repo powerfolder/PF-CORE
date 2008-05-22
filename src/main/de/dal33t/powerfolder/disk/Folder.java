@@ -108,8 +108,8 @@ public class Folder extends PFComponent {
      */
     private Map<FileInfo, FileInfo> knownFiles;
 
-    /** files that should not be downloaded in auto download */
-    private Blacklist blacklist;
+    /** files that should(not) be downloaded in auto download */
+    private DiskItemFilter diskItemFilter;
 
     /**
      * Stores the priorities for downloading of the files in this folder.
@@ -266,9 +266,8 @@ public class Folder extends PFComponent {
             hasOwnDatabase = true;
         }
 
-        blacklist = new Blacklist();
-        blacklist.loadPatternsFrom(getSystemSubDir());
-        blacklist.setWhitelist(whitelist);
+        diskItemFilter = new DiskItemFilter(whitelist);
+        diskItemFilter.loadPatternsFrom(getSystemSubDir());
 
         transferPriorities = new TransferPriorities();
 
@@ -495,8 +494,8 @@ public class Folder extends PFComponent {
         return hasOwnDatabase;
     }
 
-    public Blacklist getBlacklist() {
-        return blacklist;
+    public DiskItemFilter getDiskItemFilter() {
+        return diskItemFilter;
     }
 
     /**
@@ -518,7 +517,7 @@ public class Folder extends PFComponent {
 
     public void setWhitelist(boolean whitelist) {
         this.whitelist = whitelist;
-        blacklist.setWhitelist(whitelist);
+        diskItemFilter.setExcludeByDefault(whitelist);
     }
 
     /**
@@ -1145,7 +1144,7 @@ public class Folder extends PFComponent {
             setDBDirty();
 
             // Broadcast to members
-            getBlacklist().applyPatterns(removedFiles);
+            diskItemFilter.filterFileInfos(removedFiles);
             FolderFilesChanged changes = new FolderFilesChanged(getInfo());
             changes.removed = removedFiles.toArray(new FileInfo[0]);
             if (changes.removed.length > 0) {
@@ -1200,7 +1199,7 @@ public class Folder extends PFComponent {
                     Object object = in.readObject();
                     Collection<FileInfo> infos = (Collection<FileInfo>) object;
                     for (FileInfo info : infos) {
-                        blacklist.addPattern(info.getName());
+                        diskItemFilter.addPattern(info.getName());
                         if (logEnabled) {
                             log().verbose("ignore@" + info.getName());
                         }
@@ -1306,8 +1305,8 @@ public class Folder extends PFComponent {
         if (dirty) {
             persist();
         }
-        if (blacklist.isDirty()) {
-            blacklist.savePatternsTo(getSystemSubDir());
+        if (diskItemFilter.isDirty()) {
+            diskItemFilter.savePatternsTo(getSystemSubDir());
         }
         removeAllListeners();
     }
@@ -1839,7 +1838,7 @@ public class Folder extends PFComponent {
             setDBDirty();
 
             // Broadcast to members
-            blacklist.applyPatterns(removedFiles);
+            diskItemFilter.filterFileInfos(removedFiles);
             FolderFilesChanged changes = new FolderFilesChanged(getInfo());
             changes.removed = removedFiles.toArray(new FileInfo[0]);
             broadcastMessages(changes);
@@ -1885,7 +1884,7 @@ public class Folder extends PFComponent {
         if (scanResult.getNewFiles().size() > 0) {
             Message[] msgs = FolderFilesChanged
                 .createFolderFilesChangedMessages(this.currentInfo, scanResult
-                    .getNewFiles(), blacklist, true);
+                    .getNewFiles(), diskItemFilter, true);
             if (msgs != null) {
                 addedMsgs += msgs.length;
                 broadcastMessages(msgs);
@@ -1894,7 +1893,7 @@ public class Folder extends PFComponent {
         if (scanResult.getChangedFiles().size() > 0) {
             Message[] msgs = FolderFilesChanged
                 .createFolderFilesChangedMessages(this.currentInfo, scanResult
-                    .getChangedFiles(), blacklist, true);
+                    .getChangedFiles(), diskItemFilter, true);
             if (msgs != null) {
                 changedMsgs += msgs.length;
                 broadcastMessages(msgs);
@@ -1903,7 +1902,7 @@ public class Folder extends PFComponent {
         if (scanResult.getDeletedFiles().size() > 0) {
             Message[] msgs = FolderFilesChanged
                 .createFolderFilesChangedMessages(this.currentInfo, scanResult
-                    .getDeletedFiles(), blacklist, false);
+                    .getDeletedFiles(), diskItemFilter, false);
             if (msgs != null) {
                 deletedMsgs += msgs.length;
                 broadcastMessages(msgs);
@@ -1912,7 +1911,7 @@ public class Folder extends PFComponent {
         if (scanResult.getRestoredFiles().size() > 0) {
             Message[] msgs = FolderFilesChanged
                 .createFolderFilesChangedMessages(this.currentInfo, scanResult
-                    .getRestoredFiles(), blacklist, true);
+                    .getRestoredFiles(), diskItemFilter, true);
             if (msgs != null) {
                 restoredMsgs += msgs.length;
                 broadcastMessages(msgs);
@@ -2562,8 +2561,8 @@ public class Folder extends PFComponent {
             if (dirty) {
                 persist();
             }
-            if (blacklist.isDirty()) {
-                blacklist.savePatternsTo(getSystemSubDir());
+            if (diskItemFilter.isDirty()) {
+                diskItemFilter.savePatternsTo(getSystemSubDir());
             }
         }
     }
@@ -2626,7 +2625,7 @@ public class Folder extends PFComponent {
 
         // TODO FIXME Check if this is necessary
         FileInfo localInfo = getFile(fileInfo);
-        if (!getBlacklist().isIgnored(localInfo)) {
+        if (diskItemFilter.isRetained(localInfo)) {
             broadcastMessages(new FolderFilesChanged(localInfo));
         }
     }

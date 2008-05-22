@@ -11,6 +11,7 @@ import java.util.Date;
  */
 public interface DiskItem {
     String getExtension();
+    String getName();
     String getLowerCaseName();
     long getSize();
     MemberInfo getModifiedBy();

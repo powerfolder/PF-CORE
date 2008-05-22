@@ -6,7 +6,7 @@ import java.util.UUID;
 
 import junit.framework.TestCase;
 import de.dal33t.powerfolder.Constants;
-import de.dal33t.powerfolder.disk.Blacklist;
+import de.dal33t.powerfolder.disk.DiskItemFilter;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.FileList;
@@ -50,7 +50,7 @@ public class FileListTest extends TestCase {
 
         // Now split. Empty blacklist
         Message[] msgs = FileList.createFileListMessages(
-            createRandomFolderInfo(), files, new Blacklist());
+            createRandomFolderInfo(), files, new DiskItemFilter(false));
 
         // Test
         assertTrue(msgs[0] instanceof FileList);
@@ -105,7 +105,7 @@ public class FileListTest extends TestCase {
 
         // Now split. Empty blacklist
         Message[] msgs = FolderFilesChanged.createFolderFilesChangedMessages(
-            createRandomFolderInfo(), files, new Blacklist(), true);
+            createRandomFolderInfo(), files, new DiskItemFilter(false), true);
 
         // Test
         for (int i = 0; i < msgs.length; i++) {
@@ -129,7 +129,7 @@ public class FileListTest extends TestCase {
 
         // Now split. Empty blacklist
         Message[] msgs = FolderFilesChanged.createFolderFilesChangedMessages(
-            createRandomFolderInfo(), files, new Blacklist(), false);
+            createRandomFolderInfo(), files, new DiskItemFilter(false), false);
 
         // Test
         for (int i = 0; i < msgs.length; i++) {

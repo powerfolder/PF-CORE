@@ -29,7 +29,7 @@ import de.dal33t.powerfolder.event.FolderAdapter;
 import de.dal33t.powerfolder.event.FolderEvent;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.action.SelectionBaseAction;
-import de.dal33t.powerfolder.ui.model.BlackListPatternsListModel;
+import de.dal33t.powerfolder.ui.model.DiskItemFilterPatternsListModel;
 import de.dal33t.powerfolder.util.PatternMatch;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
@@ -50,7 +50,7 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
     private SyncProfileSelectorPanel syncProfileSelectorPanel;
     private JList jListPatterns;
     /** Maps the blacklist of the current folder to a ListModel */
-    private BlackListPatternsListModel blackListPatternsListModel;
+    private DiskItemFilterPatternsListModel patternsListModel;
     /** listens to changes in the syncprofile */
     private MyFolderListener myFolderListener;
     private JCheckBox useRecycleBinBox;
@@ -85,7 +85,7 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
         }
 
         this.folder = folder;
-        blackListPatternsListModel.setBlacklist(folder.getBlacklist());
+        patternsListModel.setDiskItemFilter(folder.getDiskItemFilter());
         folder.addFolderListener(myFolderListener);
         syncProfileSelectorPanel.setUpdateableFolder(folder);
         useRecycleBinBox.setSelected(folder.isUseRecycleBin());
@@ -167,8 +167,8 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
     }
 
     private JPanel createPatternsPanel() {
-        blackListPatternsListModel = new BlackListPatternsListModel(null);
-        jListPatterns = new JList(blackListPatternsListModel);
+        patternsListModel = new DiskItemFilterPatternsListModel(null);
+        jListPatterns = new JList(patternsListModel);
         jListPatterns.addListSelectionListener(new ListSelectionListener() {
 
             public void valueChanged(ListSelectionEvent listSelectionEvent) {
@@ -239,8 +239,8 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
                 getUIController().getMainFrame().getUIComponent(), text, title,
                 JOptionPane.PLAIN_MESSAGE, null, null, pattern);
             if (!StringUtils.isBlank(patternResult)) {
-                folder.getBlacklist().addPattern(patternResult);
-                blackListPatternsListModel.fireUpdate();
+                folder.getDiskItemFilter().addPattern(patternResult);
+                patternsListModel.fireUpdate();
             }
 
         } else {
@@ -271,9 +271,9 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
             if (result == 0) {
                 StringTokenizer st2 = new StringTokenizer(initialPatterns, "\n");
                 while (st2.hasMoreTokens()) {
-                    folder.getBlacklist().addPattern(st2.nextToken());
+                    folder.getDiskItemFilter().addPattern(st2.nextToken());
                 }
-                blackListPatternsListModel.fireUpdate();
+                patternsListModel.fireUpdate();
             }
         }
 
@@ -292,9 +292,9 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
         public void actionPerformed(ActionEvent e) {
             for (Object object : selectionModel.getSelections()) {
                 String selection = (String) object;
-                folder.getBlacklist().removePattern(selection);
+                folder.getDiskItemFilter().removePattern(selection);
             }
-            blackListPatternsListModel.fireUpdate();
+            patternsListModel.fireUpdate();
             jListPatterns.getSelectionModel().clearSelection();
         }
 
@@ -322,7 +322,7 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
             String pattern = st.nextToken();
 
             // Match any patterns for this file.
-            for (Iterator<String> iter = folder.getBlacklist().getPatterns()
+            for (Iterator<String> iter = folder.getDiskItemFilter().getPatterns()
                 .iterator(); iter.hasNext();)
             {
                 String blackListPattern = iter.next();
@@ -340,8 +340,8 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
                                                                             // remove.
                     if (result == 0) { // Remove
                         // Remove pattern and update.
-                        folder.getBlacklist().removePattern(blackListPattern);
-                        blackListPatternsListModel.fireUpdate();
+                        folder.getDiskItemFilter().removePattern(blackListPattern);
+                        patternsListModel.fireUpdate();
                     } else if (result == 2) { // Cancel
                         // Abort for all other patterns.
                         break;
@@ -371,10 +371,10 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
                 // the text to edit:
                 selectionModel.getSelection());
             if (!StringUtils.isBlank(pattern)) {
-                folder.getBlacklist().removePattern(
+                folder.getDiskItemFilter().removePattern(
                     (String) selectionModel.getSelection());
-                folder.getBlacklist().addPattern(pattern);
-                blackListPatternsListModel.fireUpdate();
+                folder.getDiskItemFilter().addPattern(pattern);
+                patternsListModel.fireUpdate();
             }
             jListPatterns.getSelectionModel().clearSelection();
         }
@@ -392,7 +392,7 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
                 false);
         }
         if (jListPatterns != null) {
-            blackListPatternsListModel.fireUpdate();
+            patternsListModel.fireUpdate();
         }
         folderPanel.getFilesTab().updateBlackWhiteActions(folder.isWhitelist());
     }

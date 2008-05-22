@@ -49,7 +49,6 @@ import de.dal33t.powerfolder.message.FileChunk;
 import de.dal33t.powerfolder.message.RequestDownload;
 import de.dal33t.powerfolder.message.TransferStatus;
 import de.dal33t.powerfolder.net.ConnectionHandler;
-import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.TransferCounter;
@@ -1418,7 +1417,7 @@ public class TransferManager extends PFComponent {
         try {
             if (automatic) {
                 // return null if in blacklist on automatic download
-                if (folder.getBlacklist().isIgnored(fInfo)) {
+                if (folder.getDiskItemFilter().isExcluded(fInfo)) {
                     return null;
                 }
 
