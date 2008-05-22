@@ -1,23 +1,16 @@
 package de.dal33t.powerfolder.ui.preferences;
 
-import java.awt.Component;
+import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.Locale;
 
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.SwingConstants;
-import javax.swing.UIManager;
+import javax.swing.*;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -33,6 +26,7 @@ import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.RowSpec;
+import com.jgoodies.forms.layout.Sizes;
 import com.jgoodies.looks.plastic.PlasticTheme;
 import com.jgoodies.looks.plastic.PlasticXPLookAndFeel;
 
@@ -42,11 +36,12 @@ import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.StartPanel;
 import de.dal33t.powerfolder.ui.theme.ThemeSupport;
+import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
-import de.dal33t.powerfolder.util.ui.ComplexComponentFactory;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
 
 public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     private JPanel panel;
@@ -61,8 +56,9 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     private JComboBox colorThemeChooser;
     private JComboBox xBehaviorChooser;
     private JComboBox startPanelChooser;
-    private JComponent localBaseSelectField;
-    private ValueModel localBaseHolder;
+    private JTextField locationTF;
+    private ValueModel locationModel;
+    private JComponent locationField;
 
     private JCheckBox showAdvancedSettingsBox;
     private ValueModel showAdvancedSettingsModel;
@@ -160,13 +156,21 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         startPanelChooser = createStartPanelChooser();
 
         // Local base selection
-        localBaseHolder = new ValueHolder(getController().getFolderRepository()
+        locationModel = new ValueHolder(getController().getFolderRepository()
             .getFoldersBasedir());
-        localBaseSelectField = ComplexComponentFactory
-            .createDirectorySelectionField(Translation
-                .getTranslation("preferences.dialog.basedir.title"),
-                localBaseHolder, null, null, getController());
 
+        // Behavior
+        locationModel.addValueChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                updateLocationComponents();
+            }
+        });
+
+        locationField = createLocationField();
+        Dimension dims = locationField.getPreferredSize();
+        dims.width = Sizes.dialogUnitXAsPixel(147, locationField);
+        locationField.setPreferredSize(dims);
+        
         ValueModel smallToolbarModel = new ValueHolder(
             PreferencesEntry.SMALL_TOOLBAR.getValueBoolean(getController()));
         originalSmallToolbar = (Boolean) smallToolbarModel.getValue();
@@ -285,7 +289,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             row += 2;
             builder.add(new JLabel(Translation
                 .getTranslation("preferences.dialog.basedir")), cc.xy(1, row));
-            builder.add(localBaseSelectField, cc.xywh(3, row, 7, 1));
+            builder.add(locationField, cc.xywh(3, row, 7, 1));
 
             row += 2;
             builder.add(showAdvancedSettingsBox, cc.xywh(3, row, 7, 1));
@@ -338,6 +342,40 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         return panel;
     }
 
+    /**
+     * Called when the location model changes value. Sets the location text
+     * field value and enables the location button.
+     */
+    private void updateLocationComponents() {
+        String value = (String) locationModel.getValue();
+        locationTF.setText(value);
+    }
+
+    /**
+     * Creates a pair of location text field and button.
+     *
+     * @param folderInfo
+     * @return
+     */
+    private JComponent createLocationField() {
+        FormLayout layout = new FormLayout("100dlu, 4dlu, 15dlu", "pref");
+
+        PanelBuilder builder = new PanelBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+
+        locationTF = new JTextField();
+        locationTF.setEditable(false);
+        locationTF.setText((String) locationModel.getValue());
+        builder.add(locationTF, cc.xy(1, 1));
+
+        JButton locationButton = new JButton(Icons.DIRECTORY);
+        locationButton.setToolTipText(Translation
+            .getTranslation("foldercreate.dialog.select_file.text"));
+        locationButton.addActionListener(new MyActionListener());
+        builder.add(locationButton, cc.xy(3, 1));
+        return builder.getPanel();
+    }
+
     public void save() {
         // Write properties into core
         writeTrigger.triggerCommit();
@@ -354,7 +392,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         }
 
         // Set folder base
-        String folderbase = (String) localBaseHolder.getValue();
+        String folderbase = (String) locationModel.getValue();
         ConfigurationEntry.FOLDER_BASEDIR.setValue(getController(), folderbase);
 
         // Store ui theme
@@ -389,11 +427,13 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         ConfigurationEntry.USE_RECYCLE_BIN.setValue(getController(), Boolean
             .toString(useRecycleBinBox.isSelected()));
 
-        // Show Notifications
-        ConfigurationEntry.SHOW_NOTIFICATIONS.setValue(getController(), Boolean
-            .toString(showNotificationBox.isSelected()));
+        if (showNotificationBox != null) {
+            // Show Notifications
+            ConfigurationEntry.SHOW_NOTIFICATIONS.setValue(getController(), Boolean
+                .toString(showNotificationBox.isSelected()));
+        }
 
-        if (OSUtil.isWindowsSystem() && !OSUtil.isWindowsVistaSystem()) {
+        if (usePowerFolderIconBox != null) {
             // PowerFolder icon
             ConfigurationEntry.USE_PF_ICON.setValue(getController(), Boolean
                 .toString(usePowerFolderIconBox.isSelected()));
@@ -485,6 +525,19 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             }
         });
         return chooser;
+    }
+
+    /**
+     * Action listener for the location button. Opens a choose dir dialog and
+     * sets the location model with the result.
+     */
+    private class MyActionListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            String initial = (String) locationModel.getValue();
+            String file = DialogFactory.chooseDirectory(getController(),
+                initial);
+            locationModel.setValue(file);
+        }
     }
 
     /**

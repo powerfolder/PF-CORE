@@ -57,27 +57,6 @@ public class ComplexComponentFactory {
      * 
      * @param title
      *            the title of the filechoose if pressed the browse button
-     * @param fileBaseModel
-     *            the file base value model, will get/write base as String
-     * @param additionalBrowseButtonListener
-     *            an optional additional listern for the browse button
-     * @return the create field.
-     */
-    public static JComponent createDirectorySelectionField(final String title,
-        final ValueModel fileBaseModel, final ActionListener preEventListener,
-        final ActionListener postEventListener, final Controller controller)
-    {
-        return createFileSelectionField(title, fileBaseModel,
-            JFileChooser.DIRECTORIES_ONLY, null, preEventListener,
-            postEventListener, controller);
-    }
-
-    /**
-     * Creates a file selection field. A browse button is attached at the right
-     * side
-     * 
-     * @param title
-     *            the title of the filechoose if pressed the browse button
      * @param fileSelectionModel
      *            the file base value model, will get/write base as String
      * @param fileSelectionMode
@@ -129,55 +108,34 @@ public class ComplexComponentFactory {
                     preEventListener.actionPerformed(e);
                 }
 
-                // Temporary hack to fix possible issue with Leopard OS
-                // if (fileSelectionMode == JFileChooser.DIRECTORIES_ONLY) {
-                if (fileSelectionMode == JFileChooser.DIRECTORIES_ONLY
-                    && OSUtil.isWindowsSystem())
+                File fileSelection = null;
+                if (fileSelectionModel.getValue() != null) {
+                    fileSelection = new File((String) fileSelectionModel
+                        .getValue());
+                }
+
+                JFileChooser fileChooser = DialogFactory
+                    .createFileChooser();
+                fileChooser.setFileSelectionMode(fileSelectionMode);
+
+                if (fileSelection != null) {
+                    fileChooser.setSelectedFile(fileSelection);
+                    fileChooser.setCurrentDirectory(fileSelection);
+                }
+
+                fileChooser.setDialogTitle(title);
+                fileChooser.setFileSelectionMode(fileSelectionMode);
+                if (fileFilter != null) {
+                    fileChooser.setFileFilter(fileFilter);
+                }
+                int result = fileChooser.showOpenDialog(button);
+                File selectedFile = fileChooser.getSelectedFile();
+
+                if (result == JFileChooser.APPROVE_OPTION
+                    && selectedFile != null)
                 {
-
-                    // Use the new Directory tree dialog
-                    String file;
-                    if (fileSelectionModel.getValue() == null) {
-                        file = DialogFactory.chooseDirectory(controller, null);
-                    } else {
-                        file = DialogFactory.chooseDirectory(controller,
-                            (String) fileSelectionModel.getValue());
-                    }
-
-                    fileSelectionModel.setValue(file);
-
-                } else {
-
-                    File fileSelection = null;
-                    if (fileSelectionModel.getValue() != null) {
-                        fileSelection = new File((String) fileSelectionModel
-                            .getValue());
-                    }
-
-                    JFileChooser fileChooser = DialogFactory
-                        .createFileChooser();
-                    fileChooser.setFileSelectionMode(fileSelectionMode);
-
-                    if (fileSelection != null) {
-                        fileChooser.setSelectedFile(fileSelection);
-                        fileChooser.setCurrentDirectory(fileSelection);
-                    }
-
-                    fileChooser.setDialogTitle(title);
-                    fileChooser.setFileSelectionMode(fileSelectionMode);
-                    if (fileFilter != null) {
-                        fileChooser.setFileFilter(fileFilter);
-                    }
-                    int result = fileChooser.showOpenDialog(button);
-                    File selectedFile = fileChooser.getSelectedFile();
-
-                    if (result == JFileChooser.APPROVE_OPTION
-                        && selectedFile != null)
-                    {
-                        fileSelectionModel.setValue(selectedFile
-                            .getAbsolutePath());
-                    }
-
+                    fileSelectionModel.setValue(selectedFile
+                        .getAbsolutePath());
                 }
 
                 if (postEventListener != null) {
