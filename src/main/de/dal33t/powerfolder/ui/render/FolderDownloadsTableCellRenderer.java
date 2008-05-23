@@ -70,26 +70,32 @@ public class FolderDownloadsTableCellRenderer extends DefaultTableCellRenderer {
                              JTable table, boolean isSelected, boolean hasFocus, int row, int column) {
         String newValue = "";
         switch (columnInModel) {
-            case 0: { // filename
+            case 0 : { // file type
+                Icon icon = Icons.getIconFor(fileInfo, controller);
+                setIcon(icon);
+                setHorizontalAlignment(LEFT);
+                break;
+            }
+            case 1: { // filename
 
                 newValue = fileInfo.getFilenameOnly();
                 setHorizontalAlignment(LEFT);
                 break;
             }
-            case 1: { // file size
+            case 2: { // file size
                 newValue = Format.formatBytesShort(fileInfo.getSize());
                 setToolTipText(String.valueOf(fileInfo.getSize()));
                 setHorizontalAlignment(RIGHT);
                 break;
             }
-            case 2: { // member nick
+            case 3: { // member nick
                 MemberInfo member = fileInfo.getModifiedBy();
                 newValue = member.nick;
                 setIcon(Icons.getSimpleIconFor(member.getNode(controller)));
                 setHorizontalAlignment(LEFT);
                 break;
             }
-            case 3: {// modified date
+            case 4: {// modified date
                 newValue = Format.formatDate(fileInfo.getModifiedDate());
                 setHorizontalAlignment(RIGHT);
                 break;

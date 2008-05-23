@@ -27,7 +27,7 @@ public class FolderDownloadsTableModel extends PFComponent implements TableModel
     private Set<TableModelListener> tableListener = new HashSet<TableModelListener>();
     private Folder folder;
 
-    private String[] columns = new String[]{
+    private String[] columns = new String[]{"",
             Translation.getTranslation("filelist.name"),
             Translation.getTranslation("general.size"),
             Translation.getTranslation("filelist.modifiedby"),

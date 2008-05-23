@@ -43,12 +43,16 @@ public class FolderDownloadsTable extends JTable {
         // otherwise the table header may not be visible:
         getTableHeader().setPreferredSize(new Dimension(totalWidth, 20));
         TableColumn column = getColumn(getColumnName(0));
-        column.setPreferredWidth(totalWidth / 2);
+        column.setPreferredWidth(20);
+        column.setMinWidth(20);
+        column.setMaxWidth(20);
         column = getColumn(getColumnName(1));
-        column.setPreferredWidth(totalWidth / 4);
+        column.setPreferredWidth(totalWidth / 2);
         column = getColumn(getColumnName(2));
         column.setPreferredWidth(totalWidth / 8);
         column = getColumn(getColumnName(3));
+        column.setPreferredWidth(totalWidth / 8);
+        column = getColumn(getColumnName(4));
         column.setPreferredWidth(totalWidth / 8);
     }
 
