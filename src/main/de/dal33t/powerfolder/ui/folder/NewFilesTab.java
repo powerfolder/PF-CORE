@@ -125,10 +125,12 @@ public class NewFilesTab extends PFUIComponent implements FolderTab,
         FileDetailsPanel fileDetailsPanel = new FileDetailsPanel(
             getController(), selectionModel);
         FormLayout layout = new FormLayout("fill:pref:grow",
-            "fill:pref");
+            "pref, 3dlu, pref, fill:pref, pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
-        builder.add(fileDetailsPanel.getEmbeddedPanel(), cc.xy(1, 1));
+        builder.addSeparator(null, cc.xy(1, 1));
+        builder.addSeparator(null, cc.xy(1, 3));
+        builder.add(fileDetailsPanel.getEmbeddedPanel(), cc.xy(1, 4));
         return builder.getPanel();
     }
 
