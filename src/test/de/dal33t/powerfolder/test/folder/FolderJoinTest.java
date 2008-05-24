@@ -63,7 +63,6 @@ public class FolderJoinTest extends TwoControllerTestCase {
             System.err.println("Joining folder: " + testFolder);
             // joinFolder(testFolder, folderDirBart, folderDirLisa);
 
-            try {
                 FolderSettings folderSettings1 = new FolderSettings(
                     folderDirBart, SyncProfile.MANUAL_DOWNLOAD, false, true);
                 folder1 = getContollerBart().getFolderRepository()
@@ -73,11 +72,8 @@ public class FolderJoinTest extends TwoControllerTestCase {
                     folderDirLisa, SyncProfile.MANUAL_DOWNLOAD, false, true);
                 folder2 = getContollerLisa().getFolderRepository()
                     .createFolder(testFolder, folderSettings2);
-            } catch (FolderException e) {
-                e.printStackTrace();
-                fail("Unable to join both controller to " + testFolder + ". "
-                    + e.toString());
-                return;
+            if (folder1.isInvalidBaseDir() || folder2.isInvalidBaseDir()) {
+                fail("Unable to join both controller to " + testFolder + ".");
             }
         }
 

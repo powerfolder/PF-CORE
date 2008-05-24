@@ -4,7 +4,6 @@ import static de.dal33t.powerfolder.disk.Folder.THUMBS_DB;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.FolderException;
 import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
@@ -24,8 +23,7 @@ import de.dal33t.powerfolder.util.os.OSUtil;
  * longer.
  * <p>
  * Basically you only need to override <code>finish()</code> to react on
- * results of the folder creation process. Exceptions can be retrieved with
- * <code>getFolderException()</code>
+ * results of the folder creation process. 
  * <p>
  * It is highly recommended that you disable any buttons, that trigger this
  * worker before you actually start it. E.g. the "Ok" button in the folder join
@@ -38,7 +36,6 @@ public abstract class FolderCreateWorker extends ActivityVisualizationWorker {
     private Controller controller;
     private FolderInfo foInfo;
     private FolderSettings folderSettings;
-    private FolderException exception;
     private Folder folder;
     private boolean createShortcut;
 
@@ -55,13 +52,6 @@ public abstract class FolderCreateWorker extends ActivityVisualizationWorker {
         this.foInfo = folderInfo;
         this.folderSettings = folderSettings;
         this.createShortcut = createShortcut;
-    }
-
-    /**
-     * @return the folder exception if problem while folde creation occoured
-     */
-    protected FolderException getFolderException() {
-        return exception;
     }
 
     /**
@@ -87,30 +77,25 @@ public abstract class FolderCreateWorker extends ActivityVisualizationWorker {
 
     @Override
     public Object construct() {
-        try {
-            folder = controller.getFolderRepository().createFolder(foInfo,
-                folderSettings);
-            if (createShortcut) {
-                folder.setDesktopShortcut(true);
+        folder = controller.getFolderRepository().createFolder(foInfo,
+            folderSettings);
+        if (createShortcut) {
+            folder.setDesktopShortcut(true);
+        }
+        if (OSUtil.isWindowsSystem()) {
+            // Add thumbs to ignore pattern on windows systems
+            // Don't duplicate thumbs (like when moving a preview folder)
+            if (!folder.getDiskItemFilter().getPatterns().contains(THUMBS_DB)) {
+                folder.getDiskItemFilter().addPattern(THUMBS_DB);
             }
-            if (OSUtil.isWindowsSystem()) {
-                // Add thumbs to ignore pattern on windows systems
-                // Don't duplicate thumbs (like when moving a preview folder)
-                if (!folder.getDiskItemFilter().getPatterns().contains(THUMBS_DB)) {
-                    folder.getDiskItemFilter().addPattern(THUMBS_DB);
-                }
 
-                // Add desktop.ini to ignore pattern on windows systems
-                if (!OSUtil.isWindowsVistaSystem()
-                    && ConfigurationEntry.USE_PF_ICON
-                        .getValueBoolean(controller))
-                {
-                    folder.getDiskItemFilter().addPattern(FileUtils.DESKTOP_INI_FILENAME);
-                }
+            // Add desktop.ini to ignore pattern on windows systems
+            if (!OSUtil.isWindowsVistaSystem()
+                && ConfigurationEntry.USE_PF_ICON
+                    .getValueBoolean(controller))
+            {
+                folder.getDiskItemFilter().addPattern(FileUtils.DESKTOP_INI_FILENAME);
             }
-        } catch (FolderException ex) {
-            exception = ex;
-            LOG.error("Unable to create new folder " + foInfo, ex);
         }
         return null;
     }

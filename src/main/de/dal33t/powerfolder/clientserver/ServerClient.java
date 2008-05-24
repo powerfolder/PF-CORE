@@ -16,7 +16,6 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.FolderException;
 import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
@@ -212,14 +211,10 @@ public class ServerClient extends PFComponent {
                 continue;
             }
             FolderSettings settings = new FolderSettings(new File("."),
-                SyncProfile.SYNCHRONIZE_PCS, true, true, true, false);
-            try {
-                log().warn("Adding as preview: " + foInfo);
-                getController().getFolderRepository().createPreviewFolder(
-                    foInfo, settings);
-            } catch (FolderException e1) {
-                log().error(e1);
-            }
+            SyncProfile.SYNCHRONIZE_PCS, true, true, true, false);
+            log().warn("Adding as preview: " + foInfo);
+            getController().getFolderRepository().createPreviewFolder(
+                foInfo, settings);
         }
     }
 

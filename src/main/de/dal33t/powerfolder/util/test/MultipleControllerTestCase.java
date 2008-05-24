@@ -20,7 +20,6 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.FolderException;
 import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
@@ -271,18 +270,10 @@ public abstract class MultipleControllerTestCase extends TestCase {
     protected static Folder joinFolder(FolderInfo foInfo, File baseDir,
         Controller controller, SyncProfile profile)
     {
-        final Folder folder;
-        try {
-            FolderSettings folderSettings = new FolderSettings(baseDir,
+        FolderSettings folderSettings = new FolderSettings(baseDir,
                 profile, false, true, false, false);
-            folder = controller.getFolderRepository().createFolder(foInfo,
+        return controller.getFolderRepository().createFolder(foInfo,
                 folderSettings);
-        } catch (FolderException e) {
-            e.printStackTrace();
-            fail("Unable to join folder " + foInfo + ". " + e.toString());
-            return null;
-        }
-        return folder;
     }
 
     protected void nSetupControllers(int n) throws IOException {

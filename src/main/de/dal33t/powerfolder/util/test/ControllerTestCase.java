@@ -13,7 +13,6 @@ import org.apache.commons.io.FileUtils;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.FolderException;
 import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
@@ -21,7 +20,6 @@ import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.Format;
-import de.dal33t.powerfolder.util.Logger;
 
 /**
  * Provides basic testcase-setup with a controller.
@@ -156,18 +154,10 @@ public class ControllerTestCase extends TestCase {
     protected Folder joinFolder(FolderInfo foInfo, File baseDir,
         SyncProfile profile, boolean useRecycleBin)
     {
-        final Folder afolder;
-        try {
-            FolderSettings folderSettings = new FolderSettings(baseDir,
-                profile, false, useRecycleBin, false, false);
-            afolder = getController().getFolderRepository().createFolder(
+        FolderSettings folderSettings = new FolderSettings(baseDir,
+            profile, false, useRecycleBin, false, false);
+        return getController().getFolderRepository().createFolder(
                 foInfo, folderSettings);
-        } catch (FolderException e) {
-            e.printStackTrace();
-            fail("Unable to join controller to " + foInfo + ". " + e.toString());
-            return null;
-        }
-        return afolder;
     }
 
     /**

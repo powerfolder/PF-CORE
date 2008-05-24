@@ -177,6 +177,7 @@ public class Icons {
 
     // Folder icons
     public static final Icon FOLDERS = getIconById("folders.icon");
+    public static final Icon FOLDER_INVALID = getIconById("folder_invalid.icon");
 
     public static final Icon FOLDER = getIcon("icons/Folder.gif");
     public static final Icon FOLDER_PREVIEW = getIcon("icons/Folder_disconnected.gif");
@@ -645,6 +646,8 @@ public class Icons {
 
         if (folder.isPreviewOnly()) {
             return Icons.FOLDER_PREVIEW;
+        } else if (folder.isInvalidBaseDir()) {
+            return FOLDER_INVALID;
         }
 
         boolean isMembersConnected = folder.getConnectedMembers().length > 0;

@@ -31,6 +31,7 @@ import java.util.SortedMap;
 import java.util.TimerTask;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
@@ -194,6 +195,15 @@ public class Folder extends PFComponent {
      */
     private Date lastFileChangeDate;
 
+    public boolean isInvalidBaseDir() {
+        return invalidBaseDir.get();
+    }
+
+    /**
+     * True if the base dir is inaccessible.
+     */
+    private final AtomicBoolean invalidBaseDir = new AtomicBoolean();
+
     /**
      * Constructor for folder.
      * 
@@ -203,7 +213,7 @@ public class Folder extends PFComponent {
      * @throws FolderException
      */
     Folder(Controller controller, FolderInfo fInfo,
-        FolderSettings folderSettings) throws FolderException
+        FolderSettings folderSettings)
     {
         super(controller);
 
@@ -247,7 +257,12 @@ public class Folder extends PFComponent {
         whitelist = folderSettings.isWhitelist();
 
         // Check base dir
-        checkBaseDir(localBase);
+        try {
+            checkBaseDir(localBase);
+        } catch (FolderException e) {
+            getLogger().warn("local base inaccessible for " + fInfo.name);
+            invalidBaseDir.set(true);
+        }
 
         statistic = new FolderStatistic(this);
         knownFiles = new ConcurrentHashMap<FileInfo, FileInfo>();
@@ -675,6 +690,18 @@ public class Folder extends PFComponent {
      * @return if the local files where scanned
      */
     public boolean scanLocalFiles() {
+
+        /**
+         * Check that we still have a good local base.
+         */
+        try {
+            checkBaseDir(localBase);
+            invalidBaseDir.set(false);
+        } catch (FolderException e) {
+            invalidBaseDir.set(true);
+            return false;
+        }
+
         ScanResult result;
         synchronized (scanLock) {
             FolderScanner scanner = getController().getFolderRepository()
@@ -686,7 +713,7 @@ public class Folder extends PFComponent {
         try {
             if (result.getResultState().equals(ScanResult.ResultState.SCANNED))
             {
-                if (result.getProblemFiles().size() > 0) {
+                if (!result.getProblemFiles().isEmpty()) {
                     FileNameProblemHandler handler = getController()
                         .getFolderRepository().getFileNameProblemHandler();
                     if (handler != null) {

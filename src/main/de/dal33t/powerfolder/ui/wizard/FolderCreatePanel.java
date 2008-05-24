@@ -44,7 +44,6 @@ public class FolderCreatePanel extends PFWizardPanel {
     private FolderSettings folderSettings;
 
     private Folder folder;
-    private FolderException exception;
 
     private JLabel statusLabel;
     private JTextArea errorArea;
@@ -129,7 +128,6 @@ public class FolderCreatePanel extends PFWizardPanel {
 
         // Reset
         folder = null;
-        exception = null;
 
         SwingWorker worker = new MyFolderCreateWorker();
         bar.setVisible(true);
@@ -171,49 +169,44 @@ public class FolderCreatePanel extends PFWizardPanel {
 
         @Override
         public Object construct() {
-            try {
-                folder = getController().getFolderRepository().createFolder(
-                    foInfo, folderSettings);
-                if (createShortcut) {
-                    folder.setDesktopShortcut(true);
-                }
-                if (OSUtil.isWindowsSystem()) {
-                    // Add thumbs to ignore pattern on windows systems
-                    // Don't duplicate thumbs (like when moving a preview
-                    // folder)
-                    if (!folder.getDiskItemFilter().getPatterns()
-                        .contains(THUMBS_DB))
-                    {
-                        folder.getDiskItemFilter().addPattern(THUMBS_DB);
-                    }
-
-                    // Add desktop.ini to ignore pattern on windows systems
-                    if (!OSUtil.isWindowsVistaSystem()
-                        && ConfigurationEntry.USE_PF_ICON
-                            .getValueBoolean(getController()))
-                    {
-                        folder.getDiskItemFilter().addPattern(
-                            FileUtils.DESKTOP_INI_FILENAME);
-                    }
-                }
-                if (backupByOS && getController().getOSClient().isLastLoginOK())
+            folder = getController().getFolderRepository().createFolder(
+                foInfo, folderSettings);
+            if (createShortcut) {
+                folder.setDesktopShortcut(true);
+            }
+            if (OSUtil.isWindowsSystem()) {
+                // Add thumbs to ignore pattern on windows systems
+                // Don't duplicate thumbs (like when moving a preview
+                // folder)
+                if (!folder.getDiskItemFilter().getPatterns()
+                    .contains(THUMBS_DB))
                 {
-                    try {
-                        getController().getOSClient().getFolderService()
-                            .createFolder(folder.getInfo(),
-                                SyncProfile.BACKUP_TARGET);
-                    } catch (FolderException e) {
-                        errorArea
-                            .setText(Translation
-                                .getTranslation("foldercreate.dialog.backuperror.text"));
-                        errorPane.setVisible(true);
-                        log().error(
-                            "Unable to backup folder to online storage", e);
-                    }
+                    folder.getDiskItemFilter().addPattern(THUMBS_DB);
                 }
-            } catch (FolderException ex) {
-                exception = ex;
-                log().error("Unable to create new folder " + foInfo, ex);
+
+                // Add desktop.ini to ignore pattern on windows systems
+                if (!OSUtil.isWindowsVistaSystem()
+                    && ConfigurationEntry.USE_PF_ICON
+                        .getValueBoolean(getController()))
+                {
+                    folder.getDiskItemFilter().addPattern(
+                        FileUtils.DESKTOP_INI_FILENAME);
+                }
+            }
+            if (backupByOS && getController().getOSClient().isLastLoginOK())
+            {
+                try {
+                    getController().getOSClient().getFolderService()
+                        .createFolder(folder.getInfo(),
+                            SyncProfile.BACKUP_TARGET);
+                } catch (FolderException e) {
+                    errorArea
+                        .setText(Translation
+                            .getTranslation("foldercreate.dialog.backuperror.text"));
+                    errorPane.setVisible(true);
+                    log().error(
+                        "Unable to backup folder to online storage", e);
+                }
             }
             return null;
         }
@@ -236,9 +229,7 @@ public class FolderCreatePanel extends PFWizardPanel {
 
                 statusLabel.setText(Translation
                     .getTranslation("wizard.create_folder.failed"));
-                String details = exception != null
-                    ? exception.getMessage()
-                    : "";
+                String details = "";
                 errorArea.setText(details);
                 errorPane.setVisible(true);
             }

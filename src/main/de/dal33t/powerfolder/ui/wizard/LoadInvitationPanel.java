@@ -10,7 +10,6 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.Sizes;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.disk.FolderException;
 import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.message.Invitation;
@@ -102,18 +101,11 @@ public class LoadInvitationPanel extends PFWizardPanel {
     private boolean createPreviewFolder() {
 
         FolderSettings folderSettings = new FolderSettings(
-            invitation.getSuggestedLocalBase(), syncProfileSelectorPanel
-                .getSyncProfile(), false, true, true, false);
+        invitation.getSuggestedLocalBase(), syncProfileSelectorPanel
+            .getSyncProfile(), false, true, true, false);
 
-        try {
-            getController().getFolderRepository().createFolder(
-                invitation.folder, folderSettings);
-        } catch (FolderException ex) {
-            log().error("Unable to create new folder " + invitation.folder, ex);
-            ex.show(getController());
-            return false;
-        }
-
+        getController().getFolderRepository().createFolder(
+            invitation.folder, folderSettings);
         return true;
     }
 

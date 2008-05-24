@@ -94,7 +94,10 @@ public class FolderQuickInfoPanel extends QuickInfoPanel {
 
             StringBuilder text1 = new StringBuilder();
             boolean showDownloads = true;
-            if (!isMembersConnected) {
+            if (currentFolder.isInvalidBaseDir()) {
+                text1.append(Translation
+                    .getTranslation("quickinfo.folder.invalid_base_dir"));
+            } else if (!isMembersConnected) {
                 text1.append(Translation
                     .getTranslation("quickinfo.folder.disconnected"));
             } else if (currentFolder.isTransferring()) {

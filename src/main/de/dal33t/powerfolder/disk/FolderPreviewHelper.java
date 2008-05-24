@@ -77,16 +77,11 @@ public class FolderPreviewHelper {
                 true,
                 initialFolderSettings.isWhitelist());
 
-        try {
-            folderRepository.removeFolder(folder, deleteSystemSubDir);
-            folderRepository.createPreviewFolder(folderInfo,
-                    previewFolderSettings);
-            folderRepository.saveFolderConfig(folderInfo, 
-                    savedFolderSettings, true);
-
-        } catch (FolderException e) {
-            e.show(controller);
-        }
+        folderRepository.removeFolder(folder, deleteSystemSubDir);
+        folderRepository.createPreviewFolder(folderInfo,
+                previewFolderSettings);
+        folderRepository.saveFolderConfig(folderInfo,
+                savedFolderSettings, true);
     }
 
     /**
@@ -113,10 +108,6 @@ public class FolderPreviewHelper {
 
         folderRepository.removeFolder(folder, deleteSystemSubDir);
 
-        try {
-            folderRepository.createFolder(folderInfo, newFolderSettings);
-        } catch (FolderException e) {
-            e.show(controller);
-        }
+        folderRepository.createFolder(folderInfo, newFolderSettings);
     }
 }

@@ -41,10 +41,6 @@ import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.transfer.FileRequestor;
-import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.ui.wizard.ChooseDiskLocationPanel;
-import de.dal33t.powerfolder.ui.wizard.FolderSetupPanel;
-import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
@@ -236,15 +232,9 @@ public class FolderRepository extends PFComponent implements Runnable {
 
             FolderSettings folderSettings = loadFolderSettings(folderName);
 
-            try {
-                // Do not add if already added
-                if (!hasJoinedFolder(foInfo) && folderId != null) {
-                    createFolder0(foInfo, folderSettings, false);
-                }
-            } catch (FolderException e) {
-
-                // Bad / corrupt folder config?
-                showFolderException(config, folderName, e, foInfo);
+            // Do not add if already added
+            if (!hasJoinedFolder(foInfo) && folderId != null) {
+                createFolder0(foInfo, folderSettings, false);
             }
         }
 
@@ -298,46 +288,6 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
         return new FolderSettings(new File(folderDir), syncProfile, false,
             useRecycleBin, preview, whitelist);
-    }
-
-    /**
-     * Folder creation exception. Log and
-     * 
-     * @param config
-     * @param folderName
-     * @param e
-     * @param foInfo
-     */
-    private void showFolderException(final Properties config,
-        final String folderName, final FolderException e,
-        final FolderInfo foInfo)
-    {
-
-        // log it.
-        log().error(e);
-
-        // Delete the bad folder config and advise user.
-        Runnable runner = new Runnable() {
-            public void run() {
-                // TODO Possibly takeover settings from folder into wizard.
-                FolderSettings settings = loadFolderSettings(folderName);
-                removeFolderFromConfig(config, folderName);
-                // Show error
-                e.show(getController(), Translation
-                    .getTranslation("folderrepository.please_recreate"));
-
-                FolderSetupPanel setupPanel = new FolderSetupPanel(
-                    getController(), foInfo.name);
-                ChooseDiskLocationPanel panel = new ChooseDiskLocationPanel(
-                    getController(), settings.getLocalBaseDir()
-                        .getAbsolutePath(), setupPanel);
-                PFWizard wizard = new PFWizard(getController());
-                wizard.getWizardContext().setAttribute(PFWizard.PICTO_ICON,
-                    Icons.FILESHARING_PICTO);
-                wizard.open(panel);
-            }
-        };
-        getController().getUIController().invokeLater(runner);
     }
 
     /**
@@ -500,11 +450,9 @@ public class FolderRepository extends PFComponent implements Runnable {
      * @param folderSettings
      *            the settings for the folder
      * @return the freshly created folder
-     * @throws FolderException
-     *             if something went wrong
      */
     public Folder createFolder(FolderInfo folderInfo,
-        FolderSettings folderSettings) throws FolderException
+        FolderSettings folderSettings)
     {
         return createFolder0(folderInfo, folderSettings, true);
     }
@@ -517,10 +465,9 @@ public class FolderRepository extends PFComponent implements Runnable {
      * @param folderInfo
      * @param folderSettings
      * @return
-     * @throws FolderException
      */
     public Folder createPreviewFolder(FolderInfo folderInfo,
-        FolderSettings folderSettings) throws FolderException
+        FolderSettings folderSettings)
     {
         return createFolder0(folderInfo, folderSettings, false);
     }
@@ -538,12 +485,9 @@ public class FolderRepository extends PFComponent implements Runnable {
      * @param saveConfig
      *            true if the configuration file should be saved after creation.
      * @return the freshly created folder
-     * @throws FolderException
-     *             if something went wrong
      */
     private Folder createFolder0(FolderInfo folderInfo,
         FolderSettings folderSettings, boolean saveConfig)
-        throws FolderException
     {
         Reject.ifNull(folderInfo, "FolderInfo is null");
         Reject.ifNull(folderSettings, "FolderSettings is null");
@@ -563,7 +507,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
 
         if (hasJoinedFolder(folderInfo)) {
-            throw new FolderException(folderInfo, "Already joined folder");
+            return folders.get(folderInfo);
         }
 
         // Make name that can be used as part of file name.

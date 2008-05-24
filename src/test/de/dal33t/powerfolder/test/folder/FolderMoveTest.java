@@ -3,7 +3,6 @@ package de.dal33t.powerfolder.test.folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.FolderSettings;
-import de.dal33t.powerfolder.disk.FolderException;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.test.ControllerTestCase;
 
@@ -133,8 +132,6 @@ public class FolderMoveTest extends ControllerTestCase {
             // The old location should be gone.
             assertTrue(!oldLocalBase.exists());
 
-        } catch (FolderException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }

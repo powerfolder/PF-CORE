@@ -15,11 +15,8 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.FolderException;
 import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
-import de.dal33t.powerfolder.event.FolderRepositoryEvent;
-import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.net.ConnectionException;
@@ -408,7 +405,6 @@ public class TwoControllerTestCase extends TestCase {
     {
         final Folder folder1;
         final Folder folder2;
-        try {
             FolderSettings folderSettings1 = new FolderSettings(baseDir1,
                 profile, false, true, false, false);
             folder1 = getContollerBart().getFolderRepository().createFolder(
@@ -418,11 +414,8 @@ public class TwoControllerTestCase extends TestCase {
                 profile, false, true, false, false);
             folder2 = getContollerLisa().getFolderRepository().createFolder(
                 foInfo, folderSettings2);
-        } catch (FolderException e) {
-            e.printStackTrace();
-            fail("Unable to join both controller to " + foInfo + ". "
-                + e.toString());
-            return;
+        if (folder1.isInvalidBaseDir() || folder2.isInvalidBaseDir()) {
+            fail("Unable to join both controller to " + foInfo);
         }
 
         try {
