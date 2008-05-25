@@ -282,6 +282,120 @@ public class SwarmingTest extends MultipleControllerTestCase {
         }
     }
 
+    public void testMultifileSwarmingWithHeavyModifications() throws IOException {
+        Random prng = new Random();
+        final int numC = 2;
+        nSetupControllers(numC);
+        setConfigurationEntry(ConfigurationEntry.USE_SWARMING_ON_LAN, "true");
+        setConfigurationEntry(ConfigurationEntry.USE_DELTA_ON_LAN, "true");
+
+        for (Controller c : getControllers()) {
+            c.getTransferManager().setAllowedDownloadCPSForLAN(500000);
+            c.getTransferManager().setAllowedUploadCPSForLAN(500000);
+        }
+
+        connectAll();
+
+        joinNTestFolder(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
+        
+        for (int i = 0; i < 10; i++) {
+            TestHelper.createRandomFile(getFolderOf("0").getLocalBase());
+        }
+        scanFolder(getFolderOf("0"));
+        
+        assertEquals(10, getFolderOf("0").getKnownFilesCount());
+        
+        for (int tries = 0; tries < 4; tries++) {
+
+            for (int i = 0; i < 50; i++) {
+                TestHelper.waitMilliSeconds(200);
+                String cont = "" + prng.nextInt(numC);
+                FileInfo[] fi = getFolderOf(cont).getKnowFilesAsArray();
+                if (fi.length > 0) {
+                    FileInfo chosen = fi[prng.nextInt(fi.length)];
+                    if (chosen.diskFileExists(getContoller(cont))) {
+                        RandomAccessFile raf = new RandomAccessFile(chosen
+                            .getDiskFile(getContoller(cont).getFolderRepository()),
+                            "rw");
+                        if (prng.nextDouble() > 0.3) {
+                            raf.seek(prng.nextInt(1000000 - 1000));
+                            for (int j = 0; j < 1000; j++) {
+                                raf.write(prng.nextInt(256));
+                            }
+                        } else {
+                            raf.setLength(prng.nextInt(1000000));
+                        }
+                        raf.close();
+                        if (prng.nextDouble() < 0.5) {
+                            scanFolder(getFolderOf(cont));
+                        }
+                    }
+                }
+            }
+            for (int i = 0; i < numC; i++) {
+                scanFolder(getFolderOf("" + i));
+            }
+
+            TestHelper.waitForCondition(numC * 50, new ConditionWithMessage() {
+                public boolean reached() {
+                    for (int i = 0; i < numC; i++) {
+                        if (getFolderOf("" + i).getKnownFilesCount() != 10) {
+                            return false;
+                        }
+                    }
+                    return true;
+                }
+
+                public String message() {
+                    StringBuilder b = new StringBuilder();
+                    for (int i = 0; i < numC; i++) {
+                        if (i > 0) {
+                            b.append("\n");
+                        }
+                        b.append(i).append(": ").append(
+                            getFolderOf("" + i).getKnownFilesCount());
+                        b.append(", ").append(
+                            getContoller("" + i).getTransferManager()
+                                .getActiveDownloads());
+                        b.append(", ").append(
+                            Arrays.toString(getContoller("" + i)
+                                .getTransferManager().getActiveUploads()));
+                    }
+                    return b.toString();
+                }
+            });
+        }
+        TestHelper.waitForCondition(numC * 4, new ConditionWithMessage() {
+            public boolean reached() {
+                for (int i = 0; i < numC; i++) {
+                    TransferManager tm = getContoller("" + i)
+                        .getTransferManager();
+                    if (tm.getActiveDownloadCount() != 0
+                        || tm.getActiveUploads().length != 0)
+                    {
+                        return false;
+                    }
+                }
+                return true;
+            }
+
+            public String message() {
+                StringBuilder b = new StringBuilder();
+                for (int i = 0; i < numC; i++) {
+                    if (i > 0) {
+                        b.append(", ");
+                    }
+                    TransferManager tm = getContoller("" + i)
+                        .getTransferManager();
+                    b.append(i).append(": ").append(
+                        tm.getActiveDownloadCount() + "|"
+                            + tm.getActiveUploads().length);
+                }
+                return b.toString();
+            }
+        });
+    }
+    
     public void testConcurrentModificationsLargeSwarmDeltaSync()
         throws IOException
     {
