@@ -107,7 +107,7 @@ public class FolderMoveTest extends ControllerTestCase {
             repository.createFolder(getFolder().getInfo(), folderSettings);
 
             // Move the folder.
-            FileUtils.recursiveCopy(oldLocalBase, testFolder2);
+            FileUtils.recursiveMove(oldLocalBase, testFolder2);
 
             // The folder should have the test files.
             assertEquals(2, getFolder().getKnownFilesCount());

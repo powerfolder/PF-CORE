@@ -23,14 +23,10 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.disk.FolderSettings;
-import de.dal33t.powerfolder.disk.FolderStatistic;
-import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.disk.*;
 import de.dal33t.powerfolder.event.FolderAdapter;
 import de.dal33t.powerfolder.event.FolderEvent;
-import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.QuickInfoPanel;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.action.BaseAction;
@@ -263,7 +259,13 @@ public class HomeTab extends PFUIComponent implements FolderTab {
 
         // Find out if the user wants to move the content of the current folder
         // to the new one.
-        boolean moveContent = shouldMoveContent();
+        int moveContent = shouldMoveContent();
+
+        if (moveContent == 2) {
+            // Cancel
+            return;
+        }
+
         File originalDirectory = folder.getLocalBase();
 
         // Select the new folder.
@@ -284,8 +286,10 @@ public class HomeTab extends PFUIComponent implements FolderTab {
                     // Confirm move.
                     if (shouldMoveLocal(newDirectory)) {
                         try {
+                            // Move contentes selected
+                            boolean move = moveContent == 0;
                             ActivityVisualizationWorker worker = new MyActivityVisualizationWorker(
-                                moveContent, originalDirectory, newDirectory);
+                                move, originalDirectory, newDirectory);
                             worker.start();
                         } catch (Exception e) {
                             // Probably failed to create temp directory.
@@ -313,25 +317,13 @@ public class HomeTab extends PFUIComponent implements FolderTab {
      * @param tempDirectory
      *            temp directory. different message if files there.
      */
-    private void displayError(Exception e, File tempDirectory) {
-        if (tempDirectory != null && tempDirectory.exists()
-            && tempDirectory.listFiles().length > 0)
-        {
-            DialogFactory.genericDialog(getController().getUIController()
-                .getMainFrame().getUIComponent(), Translation
-                .getTranslation("folderpanel.hometab.move_error.title"),
-                Translation.getTranslation(
-                    "folderpanel.hometab.move_error.other_temp",
-                    e.getMessage(), tempDirectory.getAbsolutePath()),
-                GenericDialogType.WARN);
-        } else {
-            DialogFactory.genericDialog(getController().getUIController()
-                .getMainFrame().getUIComponent(), Translation
-                .getTranslation("folderpanel.hometab.move_error.title"),
-                Translation.getTranslation(
-                    "folderpanel.hometab.move_error.other", e.getMessage()),
-                GenericDialogType.WARN);
-        }
+    private void displayError(Exception e) {
+        DialogFactory.genericDialog(getController().getUIController()
+            .getMainFrame().getUIComponent(), Translation
+            .getTranslation("folderpanel.hometab.move_error.title"),
+            Translation.getTranslation(
+                "folderpanel.hometab.move_error.other", e.getMessage()),
+            GenericDialogType.WARN);
     }
 
     /**
@@ -344,31 +336,24 @@ public class HomeTab extends PFUIComponent implements FolderTab {
      * @return
      */
     private Object transferFolder(boolean moveContent, File originalDirectory,
-        File newDirectory, File tempDirectory)
+        File newDirectory)
     {
         try {
-            if (moveContent) {
-                FileUtils.recursiveCopy(originalDirectory, tempDirectory);
+            
+            // Copy the files from the temp directory to the new local base
+            if (!newDirectory.exists()) {
+                if (!newDirectory.mkdirs()) {
+                    throw new IOException("Failed to create directory: " + newDirectory);
+                }
             }
 
             // Remove the old folder from the repository.
             FolderRepository repository = getController().getFolderRepository();
             repository.removeFolder(folder, false);
 
+            // Move it.
             if (moveContent) {
-                // Delete the old files.
-                FileUtils.recursiveDelete(originalDirectory);
-            }
-
-            // Copy the files from the temp directory to the new local base
-            if (!newDirectory.exists()) {
-                if (!newDirectory.mkdirs()) {
-                    log().error("Failed to create directory: " + newDirectory);
-                }
-            }
-
-            if (moveContent) {
-                FileUtils.recursiveCopy(tempDirectory, newDirectory);
+                FileUtils.recursiveMove(originalDirectory, newDirectory);
             }
 
             // Create the new Folder in the repository.
@@ -377,13 +362,9 @@ public class HomeTab extends PFUIComponent implements FolderTab {
                 .getSyncProfile(), false, folder.isUseRecycleBin(), false, false);
             folder = repository.createFolder(fi, fs);
 
-            if (moveContent) {
-                // Finally delete the temp files.
-                FileUtils.recursiveDelete(tempDirectory);
-            }
-
             // Update with new folder info.
             update();
+
         } catch (Exception e) {
             return e;
         }
@@ -395,7 +376,7 @@ public class HomeTab extends PFUIComponent implements FolderTab {
      * 
      * @return true if should move.
      */
-    private boolean shouldMoveContent() {
+    private int shouldMoveContent() {
         int result = DialogFactory.genericDialog(getController()
             .getUIController().getMainFrame().getUIComponent(), Translation
             .getTranslation("folderpanel.hometab.move_content.title"),
@@ -403,10 +384,13 @@ public class HomeTab extends PFUIComponent implements FolderTab {
             new String[]{
                 Translation
                     .getTranslation("folderpanel.hometab.move_content.move"),
-                Translation
-                    .getTranslation("folderpanel.hometab.move_content.dont")},
+                    Translation
+                        .getTranslation("folderpanel.hometab.move_content.dont"),
+                    Translation
+                        .getTranslation("general.cancel"),
+            },
             0, GenericDialogType.INFO); // Default is move content.
-        return result == 0;
+        return result;
     }
 
     /**
@@ -575,7 +559,6 @@ public class HomeTab extends PFUIComponent implements FolderTab {
         private final boolean moveContent;
         private final File originalDirectory;
         private final File newDirectory;
-        private final File tempDirectory;
 
         MyActivityVisualizationWorker(boolean moveContent,
             File originalDirectory, File newDirectory) throws IOException
@@ -584,13 +567,11 @@ public class HomeTab extends PFUIComponent implements FolderTab {
             this.moveContent = moveContent;
             this.originalDirectory = originalDirectory;
             this.newDirectory = newDirectory;
-            tempDirectory = FileUtils.createTemporaryDirectory();
         }
 
         @Override
         public Object construct() {
-            return transferFolder(moveContent, originalDirectory, newDirectory,
-                tempDirectory);
+            return transferFolder(moveContent, originalDirectory, newDirectory);
         }
 
         @Override
@@ -608,7 +589,7 @@ public class HomeTab extends PFUIComponent implements FolderTab {
         @Override
         public void finished() {
             if (get() != null) {
-                displayError((Exception) get(), tempDirectory);
+                displayError((Exception) get());
             }
         }
     }

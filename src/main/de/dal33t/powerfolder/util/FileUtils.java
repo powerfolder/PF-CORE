@@ -374,7 +374,7 @@ public class FileUtils {
      * @param targetFile
      * @throws IOException
      */
-    public static void recursiveCopy(File originalFile, File targetFile) throws IOException {
+    public static void recursiveMove(File originalFile, File targetFile) throws IOException {
         if (originalFile != null && targetFile != null) {
             if (originalFile.isDirectory() && targetFile.isDirectory()) {
                 if (!targetFile.exists()) {
@@ -398,38 +398,11 @@ public class FileUtils {
                             makeHiddenOnWindows(nextTargetFile);
                         }
                     }
-                    recursiveCopy(nextOriginalFile, nextTargetFile);
+                    recursiveMove(nextOriginalFile, nextTargetFile);
                 }
 
             } else if (!originalFile.isDirectory() && !targetFile.isDirectory()) {
-                FileInputStream fis = null;
-                FileOutputStream fos = null;
-                long originalDate = originalFile.lastModified();
-                try {
-                    fis = new FileInputStream(originalFile);
-                    fos = new FileOutputStream(targetFile);
-                    byte[] buf = new byte[1024];
-                    int i;
-                    while ((i = fis.read(buf)) != -1) {
-                        fos.write(buf, 0, i);
-                    }
-                } finally {
-                    if (fis != null) {
-                        fis.close();
-                    }
-                    if (fos != null) {
-                        fos.close();
-                    }
-
-                    // Set the last modified date so that PF does not sync after move.
-                    try {
-                        targetFile.setLastModified(originalDate);
-                    } catch (Exception e) {
-                        // Not fatal.
-                        LOG.warn("Could not set the last modified date for " +
-                        targetFile.getAbsolutePath());
-                    }
-                }
+                originalFile.renameTo(targetFile);
             } else {
                 throw new UnsupportedOperationException("Can only copy directory to directory or file to file: " +
                         originalFile.getAbsolutePath() + " --> " +
