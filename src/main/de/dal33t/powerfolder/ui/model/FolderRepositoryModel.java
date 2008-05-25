@@ -122,10 +122,7 @@ public class FolderRepositoryModel extends PFUIComponent {
      */
     public FolderModel locateFolderModel(Folder folder) {
         Reject.ifNull(folder, "Folder is required");
-        FolderModel folderModel = folderModelMap.get(folder);
-        Reject.ifNull(folderModel, "Could not locate model for "
-                + folder.getName());
-        return folderModel;
+        return folderModelMap.get(folder);
     }
 
     /**
@@ -215,7 +212,8 @@ public class FolderRepositoryModel extends PFUIComponent {
         public void folderCreated(FolderRepositoryEvent e) {
             Folder folder = e.getFolder();
             FolderModel folderModel = locateFolderModel(folder);
-            if (myFoldersTreeNode.contains(folderModel.getTreeNode())) {
+            if (folderModel != null && 
+                    myFoldersTreeNode.contains(folderModel.getTreeNode())) {
                 return;
             }
 

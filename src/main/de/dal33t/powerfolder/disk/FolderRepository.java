@@ -32,6 +32,8 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.ui.model.FolderModel;
+import de.dal33t.powerfolder.ui.model.FolderRepositoryModel;
 import de.dal33t.powerfolder.event.FileNameProblemHandler;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
