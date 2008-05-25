@@ -7,6 +7,7 @@ import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import static de.dal33t.powerfolder.disk.Folder.THUMBS_DB;
+import static de.dal33t.powerfolder.disk.Folder.DS_STORE;
 import de.dal33t.powerfolder.disk.FolderException;
 import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
@@ -191,6 +192,17 @@ public class FolderCreatePanel extends PFWizardPanel {
                 {
                     folder.getDiskItemFilter().addPattern(
                         FileUtils.DESKTOP_INI_FILENAME);
+                }
+            }
+
+            if (OSUtil.isMacOS()) {
+                // Add dsstore to ignore pattern on mac systems
+                // Don't duplicate dsstore (like when moving a preview
+                // folder)
+                if (!folder.getDiskItemFilter().getPatterns()
+                    .contains(DS_STORE))
+                {
+                    folder.getDiskItemFilter().addPattern(DS_STORE);
                 }
             }
             if (backupByOS && getController().getOSClient().isLastLoginOK())

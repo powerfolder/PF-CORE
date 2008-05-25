@@ -1,6 +1,7 @@
 package de.dal33t.powerfolder.util.ui;
 
 import static de.dal33t.powerfolder.disk.Folder.THUMBS_DB;
+import static de.dal33t.powerfolder.disk.Folder.DS_STORE;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
@@ -95,6 +96,13 @@ public abstract class FolderCreateWorker extends ActivityVisualizationWorker {
                     .getValueBoolean(controller))
             {
                 folder.getDiskItemFilter().addPattern(FileUtils.DESKTOP_INI_FILENAME);
+            }
+        }
+        if (OSUtil.isMacOS()) {
+            // Add dsstore to ignore pattern on mac systems
+            // Don't duplicate dsstore (like when moving a preview folder)
+            if (!folder.getDiskItemFilter().getPatterns().contains(DS_STORE)) {
+                folder.getDiskItemFilter().addPattern(DS_STORE);
             }
         }
         return null;
