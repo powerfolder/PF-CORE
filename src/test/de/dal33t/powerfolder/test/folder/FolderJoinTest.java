@@ -72,7 +72,7 @@ public class FolderJoinTest extends TwoControllerTestCase {
                     folderDirLisa, SyncProfile.MANUAL_DOWNLOAD, false, true);
                 folder2 = getContollerLisa().getFolderRepository()
                     .createFolder(testFolder, folderSettings2);
-            if (folder1.isInvalidBaseDir() || folder2.isInvalidBaseDir()) {
+            if (folder1.isDeviceDisconnected() || folder2.isDeviceDisconnected()) {
                 fail("Unable to join both controller to " + testFolder + ".");
             }
         }

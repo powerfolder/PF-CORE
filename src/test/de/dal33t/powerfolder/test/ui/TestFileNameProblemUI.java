@@ -121,7 +121,7 @@ public class TestFileNameProblemUI {
                 profile, false, true);
             aFolder = controller.getFolderRepository().createFolder(foInfo,
                 folderSettings);
-        if (aFolder.isInvalidBaseDir()) {
+        if (aFolder.isDeviceDisconnected()) {
             System.out.println("Unable to join controller to " + foInfo + '.');
         }
         return aFolder;

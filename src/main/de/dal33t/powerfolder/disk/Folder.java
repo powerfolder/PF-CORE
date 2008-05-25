@@ -31,7 +31,6 @@ import java.util.SortedMap;
 import java.util.TimerTask;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
@@ -195,14 +194,10 @@ public class Folder extends PFComponent {
      */
     private Date lastFileChangeDate;
 
-    public boolean isInvalidBaseDir() {
-        return invalidBaseDir.get();
-    }
-
     /**
      * True if the base dir is inaccessible.
      */
-    private final AtomicBoolean invalidBaseDir = new AtomicBoolean();
+    private boolean deviceDisconnected;
 
     /**
      * Constructor for folder.
@@ -261,7 +256,7 @@ public class Folder extends PFComponent {
             checkBaseDir(localBase);
         } catch (FolderException e) {
             getLogger().warn("local base inaccessible for " + fInfo.name);
-            invalidBaseDir.set(true);
+            deviceDisconnected = true;
         }
 
         statistic = new FolderStatistic(this);
@@ -569,15 +564,6 @@ public class Folder extends PFComponent {
             throw new FolderException(getInfo(), Translation.getTranslation(
                 "foldercreate.error.it_is_base_dir", baseDir.getAbsolutePath()));
         }
-        // FIXME This one does not happen here (Jan)
-        // I can choose a base dir that allready has a powerfolder in it
-        for (Folder folder : repo.getFolders()) {
-            if (folder.getLocalBase().equals(baseDir)) {
-                throw new FolderException(getInfo(), Translation
-                    .getTranslation("foldercreate.error.already_taken", folder
-                        .getName(), baseDir.getAbsolutePath()));
-            }
-        }
     }
 
     /*
@@ -696,9 +682,10 @@ public class Folder extends PFComponent {
          */
         try {
             checkBaseDir(localBase);
-            invalidBaseDir.set(false);
+            deviceDisconnected = false;
         } catch (FolderException e) {
-            invalidBaseDir.set(true);
+            getLogger().warn("invalid local base", e);
+            deviceDisconnected = true;
             return false;
         }
 
@@ -2272,8 +2259,7 @@ public class Folder extends PFComponent {
      * @return true if this folder is disconnected/not available at the moment.
      */
     public boolean isDeviceDisconnected() {
-        boolean disco = !localBase.isDirectory();
-        return disco;
+        return deviceDisconnected;
     }
 
     public String getName() {

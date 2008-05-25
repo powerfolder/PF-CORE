@@ -414,7 +414,7 @@ public class TwoControllerTestCase extends TestCase {
                 profile, false, true, false, false);
             folder2 = getContollerLisa().getFolderRepository().createFolder(
                 foInfo, folderSettings2);
-        if (folder1.isInvalidBaseDir() || folder2.isInvalidBaseDir()) {
+        if (folder1.isDeviceDisconnected() || folder2.isDeviceDisconnected()) {
             fail("Unable to join both controller to " + foInfo);
         }
 

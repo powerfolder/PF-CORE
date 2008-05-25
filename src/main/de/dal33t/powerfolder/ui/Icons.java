@@ -646,7 +646,7 @@ public class Icons {
 
         if (folder.isPreviewOnly()) {
             return Icons.FOLDER_PREVIEW;
-        } else if (folder.isInvalidBaseDir()) {
+        } else if (folder.isDeviceDisconnected()) {
             return FOLDER_INVALID;
         }
 
