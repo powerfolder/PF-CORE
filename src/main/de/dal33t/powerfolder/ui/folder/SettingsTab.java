@@ -123,21 +123,22 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
 
         builder.add(createPatternsPanel(), cc.xy(4, 6));
 
-        builder.add(new JLabel(Translation
-            .getTranslation("folderpanel.settingstab.ignore_pattern_type")), cc.xy(
-            2, 8));
-
-        FormLayout layout2 = new FormLayout("pref, 4dlu, pref",
-            "pref");
-        PanelBuilder builder2 = new PanelBuilder(layout2);
-        CellConstraints cc2 = new CellConstraints();
         createBlackWhiteRadioButtons();
-        ButtonGroup bg = new ButtonGroup();
-        bg.add(blacklistRB);
-        bg.add(whitelistRB);
-        builder2.add(blacklistRB, cc2.xy(1, 1));
-        builder2.add(whitelistRB, cc2.xy(3, 1));
-        builder.add(builder2.getPanel(), cc.xy(4, 8));
+        // On hold until version 4 (#1016)
+//        builder.add(new JLabel(Translation
+//            .getTranslation("folderpanel.settingstab.ignore_pattern_type")), cc.xy(
+//            2, 8));
+//
+//        FormLayout layout2 = new FormLayout("pref, 4dlu, pref",
+//            "pref");
+//        PanelBuilder builder2 = new PanelBuilder(layout2);
+//        CellConstraints cc2 = new CellConstraints();
+//        ButtonGroup bg = new ButtonGroup();
+//        bg.add(blacklistRB);
+//        bg.add(whitelistRB);
+//        builder2.add(blacklistRB, cc2.xy(1, 1));
+//        builder2.add(whitelistRB, cc2.xy(3, 1));
+//        builder.add(builder2.getPanel(), cc.xy(4, 8));
 
         panel = builder.getPanel();
     }
