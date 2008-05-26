@@ -73,7 +73,7 @@ public class FolderModel extends PFUIComponent {
             for (Directory subDirectory : subDirectories) {
                 directoryModel = new DirectoryModel(treeNode, subDirectory);
                 treeNode.addChild(directoryModel);
-                scanDirectory(subDirectory, directoryModel);
+                buildSubDirectoryModels(subDirectory, directoryModel);
             }
         }
     }
@@ -85,14 +85,14 @@ public class FolderModel extends PFUIComponent {
         return directoryModel;
     }
 
-    private static void scanDirectory(Directory directory, DirectoryModel model)
+    private static void buildSubDirectoryModels(Directory directory, DirectoryModel model)
     {
         List<Directory> subDirectories = directory.listSubDirectories();
         for (Directory subDirectory : subDirectories) {
             DirectoryModel subdirectoryModel = new DirectoryModel(model,
                 subDirectory);
             model.addChild(subdirectoryModel);
-            scanDirectory(subDirectory, subdirectoryModel);
+            buildSubDirectoryModels(subDirectory, subdirectoryModel);
         }
     }
 
