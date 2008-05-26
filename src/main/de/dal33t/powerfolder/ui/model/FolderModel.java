@@ -13,14 +13,13 @@ import javax.swing.tree.MutableTreeNode;
 import java.util.List;
 
 /**
- * UI-Model for a folder. Prepare folder data in a
- * "swing-compatible" way. E.g. as <code>TreeNode</code> or
- * <code>TableModel</code>.
- *
+ * UI-Model for a folder. Prepare folder data in a "swing-compatible" way. E.g.
+ * as <code>TreeNode</code> or <code>TableModel</code>.
+ * 
  * @author <a href="mailto:hglasgow@powerfolder.com">Harry Glasgow</a>
  * @version $Revision: 3.1 $
  */
-public class FolderModel extends PFUIComponent implements FolderListener {
+public class FolderModel extends PFUIComponent {
 
     /** The folder associated with this model. */
     private Folder folder;
@@ -33,7 +32,7 @@ public class FolderModel extends PFUIComponent implements FolderListener {
 
     /**
      * Constructor. Takes controller and the associated folder.
-     *
+     * 
      * @param controller
      * @param folder
      */
@@ -41,7 +40,7 @@ public class FolderModel extends PFUIComponent implements FolderListener {
         super(controller);
         Reject.ifNull(folder, "Folder can not be null");
         this.folder = folder;
-        folder.addFolderListener(this);
+        folder.addFolderListener(new MyFolderListener());
     }
 
     /**
@@ -69,7 +68,8 @@ public class FolderModel extends PFUIComponent implements FolderListener {
     private void rebuild() {
         synchronized (treeNode) {
             treeNode.removeAllChildren();
-            List<Directory> subDirectories = folder.getDirectory().listSubDirectories();
+            List<Directory> subDirectories = folder.getDirectory()
+                .listSubDirectories();
             for (Directory subDirectory : subDirectories) {
                 directoryModel = new DirectoryModel(treeNode, subDirectory);
                 treeNode.addChild(directoryModel);
@@ -85,42 +85,45 @@ public class FolderModel extends PFUIComponent implements FolderListener {
         return directoryModel;
     }
 
-    private static void scanDirectory(Directory directory,
-                               DirectoryModel model) {
+    private static void scanDirectory(Directory directory, DirectoryModel model)
+    {
         List<Directory> subDirectories = directory.listSubDirectories();
         for (Directory subDirectory : subDirectories) {
-            DirectoryModel subdirectoryModel =
-                    new DirectoryModel(model, subDirectory);
+            DirectoryModel subdirectoryModel = new DirectoryModel(model,
+                subDirectory);
             model.addChild(subdirectoryModel);
             scanDirectory(subDirectory, subdirectoryModel);
         }
     }
 
-    public void statisticsCalculated(FolderEvent folderEvent) {
-        rebuild();
-    }
+    private class MyFolderListener implements FolderListener {
 
-    public void syncProfileChanged(FolderEvent folderEvent) {
-        rebuild();
-    }
+        public void statisticsCalculated(FolderEvent folderEvent) {
+            rebuild();
+        }
 
-    public void remoteContentsChanged(FolderEvent folderEvent) {
-        rebuild();
-    }
+        public void syncProfileChanged(FolderEvent folderEvent) {
+            rebuild();
+        }
 
-    public void scanResultCommited(FolderEvent folderEvent) {
-        rebuild();
-    }
+        public void remoteContentsChanged(FolderEvent folderEvent) {
+            rebuild();
+        }
 
-    public void fileChanged(FolderEvent folderEvent) {
-        rebuild();
-    }
+        public void scanResultCommited(FolderEvent folderEvent) {
+            rebuild();
+        }
 
-    public void filesDeleted(FolderEvent folderEvent) {
-        rebuild();
-    }
+        public void fileChanged(FolderEvent folderEvent) {
+            rebuild();
+        }
 
-    public boolean fireInEventDispathThread() {
-        return false;
+        public void filesDeleted(FolderEvent folderEvent) {
+            rebuild();
+        }
+
+        public boolean fireInEventDispathThread() {
+            return false;
+        }
     }
 }
