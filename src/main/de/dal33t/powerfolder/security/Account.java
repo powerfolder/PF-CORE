@@ -32,7 +32,16 @@ public class Account extends Model implements Serializable {
     private boolean proUser;
 
     /**
-     * The default-synced folder of the user. May be empty.
+     * The possible license keys of this account.
+     * <p>
+     * Transient because of security reasons (should never leave the server VM).
+     * to obtain a valid license key use
+     * <code>UserService.getValidLicenseKey</code>.
+     */
+    private transient Collection<String> licenseKeys;
+
+    /**
+     * The default-synced folder of the user. May be null.
      * <p>
      * TRAC #991.
      */
@@ -45,6 +54,7 @@ public class Account extends Model implements Serializable {
         this.permissions = new CopyOnWriteArrayList<Permission>();
         this.osSubscription = new OnlineStorageSubscription();
         this.osSubscription.setType(OnlineStorageSubscriptionType.NONE);
+        this.licenseKeys = new CopyOnWriteArrayList<String>();
     }
 
     // Basic permission stuff *************************************************
@@ -66,7 +76,7 @@ public class Account extends Model implements Serializable {
 
         // TODO Solve this a better way.
         if (permissions.contains(Permissions.ADMIN_PERMISSIONS)) {
-            // Admin has access to evetrything
+            // Admin- everything allowed.
             return true;
         }
         return permissions.contains(permission);
@@ -81,7 +91,7 @@ public class Account extends Model implements Serializable {
     /**
      * @return true if this is a valid account
      */
-    public boolean isLoginOK() {
+    public boolean isValid() {
         return username != null;
     }
 
@@ -137,6 +147,10 @@ public class Account extends Model implements Serializable {
         FolderInfo defaultSynchronizedFolder)
     {
         this.defaultSynchronizedFolder = defaultSynchronizedFolder;
+    }
+
+    public Collection<String> getLicenseKeys() {
+        return licenseKeys;
     }
 
     public String toString() {
@@ -221,4 +235,5 @@ public class Account extends Model implements Serializable {
         Reject.ifNull(foInfo, "Folder info is null");
         return hasPermission(new FolderAdminPermission(foInfo));
     }
+
 }

@@ -450,6 +450,7 @@ public class Controller extends PFComponent {
 
         initOnlineStorageClient();
         if (Feature.OS_CLIENT.isEnabled()) {
+            osClient.loginWithDefault();
             osClient.start();
         } else {
             log().warn(

@@ -83,4 +83,10 @@ public interface UserService {
      *            the username of the users to check.
      */
     void checkAccounts(String... usernames);
+
+    /**
+     * @return all license key content for this account. or null if no key was
+     *         found.
+     */
+    String[] getLicenseKeyContents();
 }

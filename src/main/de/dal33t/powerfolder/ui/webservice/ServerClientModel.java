@@ -9,7 +9,6 @@ import javax.swing.ListModel;
 
 import com.jgoodies.binding.list.ArrayListModel;
 
-import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.clientserver.ServerClient;
@@ -72,28 +71,22 @@ public class ServerClientModel extends PFUIComponent {
             return;
         }
 
-        if (!client.isAccountSet()) {
+        if (!client.isDefaultAccountSet()) {
             PFWizard.openLoginWebServiceWizard(getController(),
                 folderSetupAfterwards);
             return;
         }
         SwingWorker worker = new SwingWorker() {
-            boolean loginOK;
 
             @Override
             public Object construct() {
-                // FIXME Use separate account stores for diffrent servers?
-                loginOK = client.login(
-                    ConfigurationEntry.WEBSERVICE_USERNAME
-                        .getValue(getController()),
-                    ConfigurationEntry.WEBSERVICE_PASSWORD
-                        .getValue(getController())).isLoginOK();
-                return null;
+                // FIXME Use separate account stores for different servers?
+                return client.loginWithDefault().isValid();
             }
 
             @Override
             public void finished() {
-                if (!loginOK) {
+                if (!(Boolean) get()) {
                     PFWizard.openLoginWebServiceWizard(getController(),
                         folderSetupAfterwards);
                 }
@@ -139,7 +132,7 @@ public class ServerClientModel extends PFUIComponent {
         }
 
         public void actionPerformed(ActionEvent e) {
-            if (client.isAccountSet()) {
+            if (client.isDefaultAccountSet()) {
                 PFWizard.openMirrorFolderWizard(getController());
             } else {
                 PFWizard.openLoginWebServiceWizard(getController(), true);

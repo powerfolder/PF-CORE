@@ -60,7 +60,7 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
         try {
             loginOk = getController().getOSClient().login(
                 usernameField.getText(),
-                new String(passwordField.getPassword())).isLoginOK();
+                new String(passwordField.getPassword())).isValid();
             if (!loginOk) {
                 list.add(Translation
                     .getTranslation("online_storage.account_data"));

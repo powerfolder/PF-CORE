@@ -3,7 +3,6 @@ package de.dal33t.powerfolder.clientserver;
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.TimerTask;
@@ -40,6 +39,11 @@ import de.dal33t.powerfolder.util.Util;
  * @version $Revision: 1.5 $
  */
 public class ServerClient extends PFComponent {
+    // The last used username and password.
+    // Tries to re-login with these if re-connection happens
+    private String username;
+    private String password;
+
     private Member server;
     private AccountDetails accountDetails;
     private UserService userService;
@@ -60,6 +64,8 @@ public class ServerClient extends PFComponent {
         this.accountDetails = new AccountDetails(new InvalidAccount(), 0, 0);
     }
 
+    // Basics *****************************************************************
+
     public void start() {
         getController().scheduleAndRepeat(new OnlineStorageConnectTask(), 0,
             1000L * 20);
@@ -70,37 +76,98 @@ public class ServerClient extends PFComponent {
     }
 
     /**
-     * Logs into the server and saves the identity as my login.
-     * 
-     * @param username
-     * @param password
-     * @return the identity with this username or <code>NullAccount</code> if
-     *         login failed.
+     * @param node
+     * @return true if the node is the server.
      */
-    public Account login(String username, String password) {
+    public boolean isServer(Member node) {
+        return server.equals(node);
+    }
+
+    /**
+     * @return if the server is connected
+     */
+    public boolean isConnected() {
+        return server.isCompleteyConnected();
+    }
+
+    // Login ******************************************************************
+
+    /**
+     * @return true if the default account data has been set
+     */
+    public boolean isDefaultAccountSet() {
+        // FIXME Use separate account stores for diffrent servers?
+        return !StringUtils.isEmpty(ConfigurationEntry.WEBSERVICE_USERNAME
+            .getValue(getController()))
+            && !StringUtils.isEmpty(ConfigurationEntry.WEBSERVICE_USERNAME
+                .getValue(getController()));
+    }
+
+    /**
+     * Logs into the server with the default username and password in config.
+     * <p>
+     * If the server is not connected and invalid account is returned and the
+     * login data saved for auto-login on reconnect.
+     * 
+     * @return the identity with this username or <code>InvalidAccount</code>
+     *         if login failed. NEVER returns <code>null</code>
+     */
+    public Account loginWithDefault() {
+        return login(ConfigurationEntry.WEBSERVICE_USERNAME
+            .getValue(getController()), ConfigurationEntry.WEBSERVICE_PASSWORD
+            .getValue(getController()));
+    }
+
+    /**
+     * Logs into the server and saves the identity as my login.
+     * <p>
+     * If the server is not connected and invalid account is returned and the
+     * login data saved for auto-login on reconnect.
+     * 
+     * @param theUsername
+     * @param thePassword
+     * @return the identity with this username or <code>InvalidAccount</code>
+     *         if login failed. NEVER returns <code>null</code>
+     */
+    public Account login(String theUsername, String thePassword) {
+        username = theUsername;
+        password = thePassword;
+        if (!isConnected()) {
+            accountDetails = new AccountDetails(new InvalidAccount(), 0, 0);
+            return accountDetails.getAccount();
+        }
         String salt = IdGenerator.makeId() + IdGenerator.makeId();
-        String mix = salt + password + salt;
+        String mix = salt + thePassword + salt;
         String passwordMD5;
         try {
             passwordMD5 = new String(Util.md5(mix.getBytes("UTF-8")), "UTF-8");
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException("UTF-8 not found", e);
         }
-        boolean loginOk = userService.login(username, passwordMD5, salt);
+        boolean loginOk = userService.login(theUsername, passwordMD5, salt);
         if (!loginOk) {
-            log().warn("Login to server (" + username + ") failed!");
+            log().warn("Login to server (" + theUsername + ") failed!");
             accountDetails = new AccountDetails(new InvalidAccount(), 0, 0);
             return accountDetails.getAccount();
         }
         AccountDetails newAccountDetails = userService.getAccountDetails();
         log().warn(
-            "Login to server (" + username + ") result: " + accountDetails);
+            "Login to server (" + theUsername + ") result: " + accountDetails);
         if (newAccountDetails != null) {
             accountDetails = newAccountDetails;
         } else {
             accountDetails = new AccountDetails(new InvalidAccount(), 0, 0);
         }
         return accountDetails.getAccount();
+    }
+
+    /**
+     * @return true if the last attempt to login to the online storage was ok.
+     *         false if not or no login tried yet.
+     */
+    public boolean isLastLoginOK() {
+        return accountDetails != null
+            && (!(accountDetails.getAccount() instanceof InvalidAccount));
     }
 
     /**
@@ -127,7 +194,7 @@ public class ServerClient extends PFComponent {
     // Conviniece *************************************************************
 
     /**
-     * @return the joined folders by the OS.
+     * @return the joined folders by the Server.
      */
     public List<Folder> getJoinedFolders() {
         List<Folder> mirroredFolders = new ArrayList<Folder>();
@@ -151,54 +218,19 @@ public class ServerClient extends PFComponent {
     }
 
     /**
-     * @return true if the last attempt to login to the online storage was ok.
-     *         false if not or no login tried yet.
-     */
-    public boolean isLastLoginOK() {
-        return accountDetails != null
-            && (!(accountDetails.getAccount() instanceof InvalidAccount));
-    }
-
-    /**
-     * @param node
-     * @return true if the node is the server.
-     */
-    public boolean isServer(Member node) {
-        return server.equals(node);
-    }
-
-    /**
-     * @return if the server is connected
-     */
-    public boolean isConnected() {
-        return server.isCompleteyConnected();
-    }
-
-    /**
-     * @return true if the account data has been set
-     */
-    public boolean isAccountSet() {
-        // FIXME Use separate account stores for diffrent servers?
-        return !StringUtils.isEmpty(ConfigurationEntry.WEBSERVICE_USERNAME
-            .getValue(getController()))
-            && !StringUtils.isEmpty(ConfigurationEntry.WEBSERVICE_USERNAME
-                .getValue(getController()));
-    }
-
-    /**
      * Syncs the folder memberships with the FolderAdminPermissions on the
      * server.
      */
     public void syncFolderRights() {
         Reject.ifFalse(isLastLoginOK(), "Last login not ok");
-        FolderInfo[] myFolders = getController().getFolderRepository()
-            .getJoinedFolderInfos();
-
-        if (logWarn) {
-            log().warn(
-                "Granting admin permission on: " + Arrays.asList(myFolders));
-        }
-        getFolderService().grantAdmin(myFolders);
+        // FolderInfo[] myFolders = getController().getFolderRepository()
+        // .getJoinedFolderInfos();
+        //
+        // if (logWarn) {
+        // log().warn(
+        // "Granting admin permission on: " + Arrays.asList(myFolders));
+        // }
+        // getFolderService().grantAdmin(myFolders);
 
         log().warn("Rights: " + getAccount().getPermissions().size());
         // TODO Also get READ/WRITE permission folder
@@ -230,12 +262,7 @@ public class ServerClient extends PFComponent {
     private class MyNodeManagerListener implements NodeManagerListener {
         public void nodeConnected(NodeManagerEvent e) {
             if (isServer(e.getNode())) {
-                if (isAccountSet()) {
-                    // FIXME Use separate account stores for diffrent servers?
-                    String username = ConfigurationEntry.WEBSERVICE_USERNAME
-                        .getValue(getController());
-                    String password = ConfigurationEntry.WEBSERVICE_PASSWORD
-                        .getValue(getController());
+                if (username != null) {
                     login(username, password);
                 }
             }
@@ -250,21 +277,27 @@ public class ServerClient extends PFComponent {
         }
 
         public void friendAdded(NodeManagerEvent e) {
+            // NOP
         }
 
         public void friendRemoved(NodeManagerEvent e) {
+            // NOP
         }
 
         public void nodeAdded(NodeManagerEvent e) {
+            // NOP
         }
 
         public void nodeRemoved(NodeManagerEvent e) {
+            // NOP
         }
 
         public void settingsChanged(NodeManagerEvent e) {
+            // NOP
         }
 
         public void startStop(NodeManagerEvent e) {
+            // NOP
         }
 
         public boolean fireInEventDispathThread() {

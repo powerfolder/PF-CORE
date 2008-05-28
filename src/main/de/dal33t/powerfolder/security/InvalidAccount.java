@@ -15,7 +15,7 @@ public class InvalidAccount extends Account {
     }
 
     @Override
-    public boolean isLoginOK() {
+    public boolean isValid() {
         return false;
     }
 
