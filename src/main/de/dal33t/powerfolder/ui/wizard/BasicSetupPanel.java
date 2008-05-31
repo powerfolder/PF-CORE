@@ -17,6 +17,7 @@ import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SYNC_PROFI
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDER_LOCAL_BASE;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.CREATE_DESKTOP_SHORTCUT;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SEND_INVIATION_AFTER_ATTRIBUTE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.BASIC_SETUP_ATTIRBUTE;
 import static de.dal33t.powerfolder.ui.wizard.PFWizard.SUCCESS_PANEL;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Help;
@@ -148,6 +149,7 @@ public class BasicSetupPanel extends PFWizardPanel {
         {
 
             // Build default folder first.
+            getWizardContext().setAttribute(BASIC_SETUP_ATTIRBUTE, true);
             getWizardContext().setAttribute(SUCCESS_PANEL, osPanel);
             getWizardContext().setAttribute(SYNC_PROFILE_ATTRIBUTE,
                     SYNCHRONIZE_PCS);

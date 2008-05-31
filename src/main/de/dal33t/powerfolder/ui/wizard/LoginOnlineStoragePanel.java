@@ -10,8 +10,12 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.disk.Folder;
+import static de.dal33t.powerfolder.disk.SyncProfile.SYNCHRONIZE_PCS;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
 import de.dal33t.powerfolder.ui.Icons;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDER_LOCAL_BASE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.BASIC_SETUP_ATTIRBUTE;
 import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.Translation;
 import jwf.WizardPanel;
@@ -23,6 +27,7 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.io.File;
 import java.util.List;
 
 public class LoginOnlineStoragePanel extends PFWizardPanel {
@@ -55,7 +60,7 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
         if (!entryRequired && StringUtils.isEmpty(usernameField.getText())) {
             return true;
         }
-        // TODO Move this into worker. Make nicer
+        // TODO Move this into worker. Make nicer. Difficult because function returns loginOk.
         boolean loginOk = false;
         try {
             loginOk = getController().getOSClient().login(
@@ -71,6 +76,36 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
             ConfigurationEntry.WEBSERVICE_PASSWORD.setValue(getController(),
                 new String(passwordField.getPassword()));
             getController().saveConfig();
+
+            // Configure default folder for OS.
+            // If come from FolderCreate of default folder in basic mode.
+            Object object = getWizardContext().getAttribute(BASIC_SETUP_ATTIRBUTE);
+            if (object instanceof Boolean && (Boolean) object)
+            {
+                object = getWizardContext().getAttribute(FOLDER_LOCAL_BASE);
+                if (object != null && object instanceof File)
+                {
+                    File defaultSynchronizedFolder = (File) object;
+                    if (defaultSynchronizedFolder.exists())
+                    {
+                        for (Folder folder : getController()
+                                .getFolderRepository().getFolders())
+                        {
+                            if (folder.getLocalBase()
+                                    .equals(defaultSynchronizedFolder))
+                            {
+                                getController().getOSClient().getAccount()
+                                        .setDefaultSynchronizedFolder(folder
+                                                .getInfo());
+                                getController().getOSClient().getFolderService()
+                                        .createFolder(folder.getInfo(),
+                                                SYNCHRONIZE_PCS);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
         } catch (Exception e) {
             log().error("Problem logging in", e);
             list.add(Translation.getTranslation("online_storage.general_error",
