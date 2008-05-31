@@ -48,7 +48,7 @@ public class TestFileNameProblemUI {
         controller.startConfig("ControllerBart");
         waitForStart(controller);
 
-        setupTestFolder(SyncProfile.MANUAL_DOWNLOAD);
+        setupTestFolder(SyncProfile.HOST_FILES);
 
         FileNameProblemHandler handler = controller.getFolderRepository()
             .getFileNameProblemHandler();

@@ -12,7 +12,7 @@ public class MirrorFolderTest extends FiveControllerTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         assertTrue(tryToConnectSimpsons());
-        joinTestFolder(SyncProfile.SYNCHRONIZE_PCS);
+        joinTestFolder(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
     }
     
     public void testRandomSyncOperationsMultiple() throws Exception {

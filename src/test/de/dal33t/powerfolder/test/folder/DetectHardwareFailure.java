@@ -16,7 +16,7 @@ public class DetectHardwareFailure extends ControllerTestCase {
         
         super.setUp();     
 
-        setupTestFolder(SyncProfile.MANUAL_DOWNLOAD);
+        setupTestFolder(SyncProfile.HOST_FILES);
         
         File localbase = getFolder().getLocalBase();
         // create 100 random files

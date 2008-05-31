@@ -26,7 +26,7 @@ public class FileNameProblemLinuxTest extends ControllerTestCase {
             System.out.println("running linux specific Filename problem test");
             super.setUp();
 
-            setupTestFolder(SyncProfile.MANUAL_DOWNLOAD);
+            setupTestFolder(SyncProfile.HOST_FILES);
 
             getController().getFolderRepository().setFileNameProblemHandler(
                 new MyFileNameProblemHandler());

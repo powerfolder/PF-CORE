@@ -29,7 +29,7 @@ public class FileUpdateTest extends TwoControllerTestCase {
         super.setUp();
         connectBartAndLisa();
         // Join on testfolder
-        joinTestFolder(SyncProfile.MANUAL_DOWNLOAD);
+        joinTestFolder(SyncProfile.HOST_FILES);
     }
 
     /**
@@ -69,8 +69,8 @@ public class FileUpdateTest extends TwoControllerTestCase {
             getContollerLisa());
 
         // Now let them sync with auto-download
-        getFolderAtBart().setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
-        getFolderAtLisa().setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
+        getFolderAtBart().setSyncProfile(SyncProfile.AUTOMATIC_DOWNLOAD);
+        getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_DOWNLOAD);
 
         // Let the copy
         TestHelper.waitForCondition(5, new Condition() {
@@ -127,7 +127,7 @@ public class FileUpdateTest extends TwoControllerTestCase {
             .getSize());
 
         // Change sync profile = auto download.
-        getFolderAtLisa().setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
+        getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_DOWNLOAD);
 
         // Abort of upload should have been sent to lisa = NO download.
         TestHelper.waitForCondition(10, new Condition() {

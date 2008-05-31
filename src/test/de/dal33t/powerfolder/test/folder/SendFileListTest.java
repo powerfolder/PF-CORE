@@ -34,7 +34,7 @@ public class SendFileListTest extends TwoControllerTestCase {
     }
 
     public void testAfterFolderJoin() {
-        joinTestFolder(SyncProfile.MANUAL_DOWNLOAD);
+        joinTestFolder(SyncProfile.HOST_FILES);
         TestHelper.waitForCondition(20, new Condition() {
             public boolean reached() {
                 return !lisasListener.messages.isEmpty();
@@ -48,7 +48,7 @@ public class SendFileListTest extends TwoControllerTestCase {
     }
 
     public void testSendAfterScan() {
-        joinTestFolder(SyncProfile.MANUAL_DOWNLOAD);
+        joinTestFolder(SyncProfile.HOST_FILES);
         TestHelper.waitForCondition(20, new Condition() {
             public boolean reached() {
                 return !lisasListener.messages.isEmpty();

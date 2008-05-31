@@ -28,7 +28,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         connectBartAndLisa();
         // Note: Don't make friends, SYNC_PC profile should sync even if PCs are
         // not friends.
-        joinTestFolder(SyncProfile.MANUAL_DOWNLOAD);
+        joinTestFolder(SyncProfile.HOST_FILES);
     }
 
     public void xtestMultipleDeleteAndRestore() throws Exception {
@@ -43,8 +43,8 @@ public class DeletionSyncTest extends TwoControllerTestCase {
      * TRAC #394
      */
     public void testDeleteAndRestore() {
-        getFolderAtBart().setSyncProfile(SyncProfile.SYNCHRONIZE_PCS);
-        getFolderAtLisa().setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
+        getFolderAtBart().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
+        getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_DOWNLOAD);
         final Member lisaAtBart = getContollerBart().getNodeManager().getNode(
             getContollerLisa().getMySelf().getInfo());
 
@@ -139,8 +139,8 @@ public class DeletionSyncTest extends TwoControllerTestCase {
      * Tests the synchronization of file deletions of one file.
      */
     public void testSingleFileDeleteSync() {
-        getFolderAtBart().setSyncProfile(SyncProfile.SYNCHRONIZE_PCS);
-        getFolderAtLisa().setSyncProfile(SyncProfile.SYNCHRONIZE_PCS);
+        getFolderAtBart().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
+        getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
 
         File testFileBart = TestHelper.createRandomFile(getFolderAtBart()
             .getLocalBase());
@@ -194,8 +194,8 @@ public class DeletionSyncTest extends TwoControllerTestCase {
      * Tests the synchronization of file deletions of one file.
      */
     public void testMultipleFileDeleteSync() {
-        getFolderAtBart().setSyncProfile(SyncProfile.SYNCHRONIZE_PCS);
-        getFolderAtLisa().setSyncProfile(SyncProfile.SYNCHRONIZE_PCS);
+        getFolderAtBart().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
+        getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
 
         final int nFiles = 35;
         for (int i = 0; i < nFiles; i++) {
@@ -255,8 +255,8 @@ public class DeletionSyncTest extends TwoControllerTestCase {
      */
     public void testDeletionSyncScenario() {
         // file "host" and "client"
-        getFolderAtBart().setSyncProfile(SyncProfile.MANUAL_DOWNLOAD);
-        getFolderAtLisa().setSyncProfile(SyncProfile.SYNCHRONIZE_PCS);
+        getFolderAtBart().setSyncProfile(SyncProfile.HOST_FILES);
+        getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
 
         File file1 = TestHelper.createTestFile(
             getFolderAtBart().getLocalBase(), "/TestFile.txt",
@@ -331,8 +331,8 @@ public class DeletionSyncTest extends TwoControllerTestCase {
             getContollerLisa().getRecycleBin().countAllRecycledFiles(), 3);
 
         // switch profiles
-        getFolderAtLisa().setSyncProfile(SyncProfile.MANUAL_DOWNLOAD);
-        getFolderAtBart().setSyncProfile(SyncProfile.SYNCHRONIZE_PCS);
+        getFolderAtLisa().setSyncProfile(SyncProfile.HOST_FILES);
+        getFolderAtBart().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
 
         RecycleBin recycleBin = getContollerLisa().getRecycleBin();
         List<FileInfo> deletedFilesAtLisa = getContollerLisa().getRecycleBin()
@@ -382,7 +382,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
     public void testDeleteCustomProfile() {
         getFolderAtBart().setSyncProfile(SyncProfile.
                 getSyncProfileByFieldList("false,false,true,true,60"));
-        getFolderAtLisa().setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
+        getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_DOWNLOAD);
         final Member lisaAtBart = getContollerBart().getNodeManager().getNode(
             getContollerLisa().getMySelf().getInfo());
 

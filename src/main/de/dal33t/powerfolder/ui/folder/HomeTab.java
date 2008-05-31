@@ -490,7 +490,7 @@ public class HomeTab extends PFUIComponent implements FolderTab {
         if (previewMode) {
 
             // Folder uses NO_SYNC profile in preview mode,
-            // but this is identical to PROJECT_WORK, so show NO_SYNC text.
+            // but this is identical to MANUAL_SYNCHRONIZATION, so show NO_SYNC text.
             syncPercentageLabel.setText(SyncProfile.NO_SYNC.getProfileName());
             syncPercentageLabel.setIcon(SyncProfileUtil.getSyncIcon(0));
         } else {

@@ -61,52 +61,51 @@ public class SyncProfile extends Loggable implements Serializable {
     public static final String FIELD_LIST_DELIMITER = ",";
 
     /**
-     * Manual download preset profile.
+     * Host files preset profile.
      */
-    public static final SyncProfile MANUAL_DOWNLOAD = new SyncProfile(
-            "manualdownload", false,
+    public static final SyncProfile HOST_FILES = new SyncProfile(
+            "host_files", false,
             new SyncProfileConfiguration(false, false, false, false, 30));
 
     /**
-     * Autodownload download preset profile.
+     * Automatic download preset profile.
      */
-    public static final SyncProfile AUTO_DOWNLOAD_FROM_ALL = new SyncProfile(
-            "autodownload_all", false,
+    public static final SyncProfile AUTOMATIC_DOWNLOAD = new SyncProfile(
+            "automatic_download", false,
             new SyncProfileConfiguration(true, true, false, false, 30));
 
     /**
-     * The "Mirror" preset profile.
-     * Name still this one because of historic reasons.
+     * Automatic synchronization preset profile.
      */
-    public static final SyncProfile SYNCHRONIZE_PCS = new SyncProfile(
-            "syncpcs", false,
+    public static final SyncProfile AUTOMATIC_SYNCHRONIZATION = new SyncProfile(
+            "automatic_synchronization", false,
             new SyncProfileConfiguration(true, true, true, true, 5));
 
     /**
      * Backup source preset profile.
      */
     public static final SyncProfile BACKUP_SOURCE = new SyncProfile(
-            "backupsource", false,
+            "backup_source", false,
             new SyncProfileConfiguration(false, false, false, false, 5));
 
     /**
      * Backup target preset profile.
      */
     public static final SyncProfile BACKUP_TARGET = new SyncProfile(
-            "backuptarget", false,
+            "backup_target", false,
             new SyncProfileConfiguration(true, true, true, true, 60));
 
     /**
-     * Project work preset profile.
+     * Manual synchronization preset profile.
      */
-    public static final SyncProfile PROJECT_WORK = new SyncProfile(
-            "projectwork", false,
+    public static final SyncProfile MANUAL_SYNCHRONIZATION = new SyncProfile(
+            "manual_synchronization", false,
             new SyncProfileConfiguration(false, false, false, false, 0));
 
     // All preset sync profiles
     private static final SyncProfile[] PRESET_SYNC_PROFILES = new SyncProfile[]{
-        SYNCHRONIZE_PCS, BACKUP_SOURCE, BACKUP_TARGET, AUTO_DOWNLOAD_FROM_ALL,
-        MANUAL_DOWNLOAD, PROJECT_WORK};
+            AUTOMATIC_SYNCHRONIZATION, MANUAL_SYNCHRONIZATION,
+            BACKUP_SOURCE, BACKUP_TARGET, AUTOMATIC_DOWNLOAD, HOST_FILES};
 
     /** Migration for #603 */
     public static final SyncProfile AUTO_DOWNLOAD_FRIENDS = new SyncProfile(

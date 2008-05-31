@@ -19,7 +19,7 @@ public class PersistentTaskManagerTestCase extends ControllerTestCase {
 		assertFalse(man.hasTasks());
 		assertEquals(man.activeTaskCount(), 0);
 		
-		setupTestFolder(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
+		setupTestFolder(SyncProfile.AUTOMATIC_DOWNLOAD);
 		MemberInfo inf = new MemberInfo("Nobody", "0");
 		getController().getNodeManager().addNode(inf);
 		

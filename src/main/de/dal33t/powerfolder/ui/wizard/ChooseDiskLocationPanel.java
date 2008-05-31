@@ -11,10 +11,13 @@ import com.jgoodies.forms.layout.Sizes;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.SyncProfile;
+import static de.dal33t.powerfolder.disk.SyncProfile.AUTOMATIC_SYNCHRONIZATION;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.Icons;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.PROMPT_TEXT_ATTRIBUTE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SYNC_PROFILE_ATTRIBUTE;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.FileUtils;
@@ -105,6 +108,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
     private JRadioButton customRB;
     private JCheckBox backupByOnlineStorageBox;
     private JCheckBox createDesktopShortcutBox;
+    private JCheckBox manualSyncCheckBox;
 
     private JComponent locationField;
 
@@ -145,6 +149,12 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         getWizardContext().setAttribute(
             WizardContextAttributes.CREATE_DESKTOP_SHORTCUT,
             createDesktopShortcutBox.isSelected());
+
+        // Change to manual sync if requested.
+        if (manualSyncCheckBox.isSelected()) {
+            getWizardContext().setAttribute(SYNC_PROFILE_ATTRIBUTE,
+                    SyncProfile.MANUAL_SYNCHRONIZATION);
+        }
         return true;
     }
 
@@ -158,7 +168,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         }
 
         String verticalLayout = verticalUserDirectoryLayout
-            + "5dlu, pref, 5dlu, pref, 5dlu, pref, 15dlu, pref, 5dlu, pref";
+            + "5dlu, pref, 5dlu, pref, 5dlu, pref, 15dlu, pref, 5dlu, pref, 5dlu, pref";
 
         FormLayout layout = new FormLayout("pref, 15dlu, pref, 15dlu, pref, 0:grow",
             verticalLayout);
@@ -227,6 +237,13 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
 
         row += 2;
         builder.add(createDesktopShortcutBox, cc.xyw(1, row, 5));
+
+        row += 2;
+
+        Object object = getWizardContext().getAttribute(SYNC_PROFILE_ATTRIBUTE);
+        if (object != null && object.equals(AUTOMATIC_SYNCHRONIZATION)) {
+            builder.add(manualSyncCheckBox, cc.xyw(1, row, 5));
+        }
 
         return builder.getPanel();
     }
@@ -308,6 +325,12 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
             .getTranslation("foldercreate.dialog.create_desktop_shortcut"));
 
         createDesktopShortcutBox.setOpaque(false);
+
+        // Create manual sync cb
+        manualSyncCheckBox = new JCheckBox(Translation
+            .getTranslation("foldercreate.dialog.maual_sync"));
+
+        manualSyncCheckBox.setOpaque(false);
     }
 
     private void startFolderSizeCalculator() {

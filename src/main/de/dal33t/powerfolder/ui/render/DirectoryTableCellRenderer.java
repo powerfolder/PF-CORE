@@ -316,7 +316,7 @@ public class DirectoryTableCellRenderer extends DefaultTableCellRenderer {
             } else {
                 if (newestVersion != newestDeletedVersion) {
                     if (folder != null
-                        && SyncProfile.PROJECT_WORK.equals(folder.getSyncProfile()))
+                        && SyncProfile.MANUAL_SYNCHRONIZATION.equals(folder.getSyncProfile()))
                     {
                         // Show remote deletions when in project work sync
                         setIcon(Icons.DELETE);

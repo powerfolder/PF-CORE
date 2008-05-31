@@ -228,7 +228,7 @@ public class FolderCreatePanel extends PFWizardPanel {
             bar.setVisible(false);
 
             if (folder != null) {
-                if (SyncProfile.PROJECT_WORK.equals(folder.getSyncProfile())) {
+                if (SyncProfile.MANUAL_SYNCHRONIZATION.equals(folder.getSyncProfile())) {
                     // Show sync folder panel after created a project folder
                     new SyncFolderPanel(getController(), folder).open();
                 }

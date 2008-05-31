@@ -29,14 +29,14 @@ public class FolderStatisticTest extends FiveControllerTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         assertTrue(tryToConnectSimpsons());
-        joinTestFolder(SyncProfile.MANUAL_DOWNLOAD);
+        joinTestFolder(SyncProfile.HOST_FILES);
     }
 
     /**
      * Tests the sync percentage with one file that gets updated
      */
     public void testOneFile() {
-        setSyncProfile(SyncProfile.SYNCHRONIZE_PCS);
+        setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         File testFile = TestHelper.createRandomFile(getFolderAtBart()
             .getLocalBase(), 1000);
         scanFolder(getFolderAtBart());
@@ -45,7 +45,7 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         forceStatsCals();
         assertAllInSync(1, testFile.length());
 
-        setSyncProfile(SyncProfile.MANUAL_DOWNLOAD);
+        setSyncProfile(SyncProfile.HOST_FILES);
         TestHelper.changeFile(testFile, 500);
         scanFolder(getFolderAtHomer());
         scanFolder(getFolderAtBart());
@@ -63,7 +63,7 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         assertMemberSizesActual(1000, 500, 1000, 1000, 1000);
         assertSyncPercentages(0, 100, 0, 0, 0);
 
-        setSyncProfile(SyncProfile.SYNCHRONIZE_PCS);
+        setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         waitForCompletedDownloads(2, 0, 2, 2, 2);
         waitForFileListOnTestFolder();
         forceStatsCals();
@@ -74,7 +74,7 @@ public class FolderStatisticTest extends FiveControllerTestCase {
      * Tests the sync percentage with one file that gets updated
      */
     public void testOneFileSameVersion() {
-        setSyncProfile(SyncProfile.MANUAL_DOWNLOAD);
+        setSyncProfile(SyncProfile.HOST_FILES);
         File testFileBart = TestHelper.createRandomFile(getFolderAtBart()
             .getLocalBase(), 1000);
         scanFolder(getFolderAtBart());
@@ -94,7 +94,7 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         assertSyncPercentages(0, 0, 0, 100, 0);
 
         // Bring them in sync
-        setSyncProfile(SyncProfile.SYNCHRONIZE_PCS);
+        setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         waitForCompletedDownloads(1, 1, 1, 0, 1);
         waitForFileListOnTestFolder();
         forceStatsCals();
@@ -136,7 +136,7 @@ public class FolderStatisticTest extends FiveControllerTestCase {
             .getTotalSyncPercentage());
 
         // Bring them in sync
-        setSyncProfile(SyncProfile.SYNCHRONIZE_PCS);
+        setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         waitForCompletedDownloads(1, 0, 1, 1, 1);
         waitForFileListOnTestFolder();
         forceStatsCals();
@@ -153,7 +153,7 @@ public class FolderStatisticTest extends FiveControllerTestCase {
             files.add(f);
             totalSize += f.length();
         }
-        setSyncProfile(SyncProfile.SYNCHRONIZE_PCS);
+        setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         scanFolder(getFolderAtBart());
         waitForCompletedDownloads(nFiles, 0, nFiles, nFiles, nFiles);
         waitForFileListOnTestFolder();
@@ -207,7 +207,7 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         assertIncomingFiles(1, 0, 1, 1, 1);
 
         // Bring them in sync
-        setSyncProfile(SyncProfile.SYNCHRONIZE_PCS);
+        setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         waitForCompletedDownloads(1, 0, 1, 1, 1);
         waitForFileListOnTestFolder();
         forceStatsCals();
@@ -215,7 +215,7 @@ public class FolderStatisticTest extends FiveControllerTestCase {
     }
 
     public void testBuggyFilelist() {
-        setSyncProfile(SyncProfile.SYNCHRONIZE_PCS);
+        setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 1000);
         scanFolder(getFolderAtBart());
         waitForCompletedDownloads(1, 0, 1, 1, 1);
@@ -239,7 +239,7 @@ public class FolderStatisticTest extends FiveControllerTestCase {
 
     public void testDeletedFiles() {
         // 1) Sync ONE file to all simpsons
-        setSyncProfile(SyncProfile.SYNCHRONIZE_PCS);
+        setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         File testFile1 = TestHelper.createRandomFile(getFolderAtBart()
             .getLocalBase(), 1000);
         scanFolder(getFolderAtBart());
@@ -255,7 +255,7 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         assertAllInSync(1, 1000);
 
         // 2) Switch to manual sync and delete the file at Bart
-        setSyncProfile(SyncProfile.MANUAL_DOWNLOAD);
+        setSyncProfile(SyncProfile.HOST_FILES);
         testFile1.delete();
         scanFolder(getFolderAtBart());
         assertEquals(1, getFolderAtBart().getKnownFiles().iterator().next()
@@ -283,7 +283,7 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         assertIncomingFiles(1, 0, 1, 1, 1);
 
         // 4) Let them sync all changes. 1 deleted file and 1 existing file
-        setSyncProfile(SyncProfile.SYNCHRONIZE_PCS);
+        setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         waitForCompletedDownloads(2, 0, 2, 2, 2);
         waitForFileListOnTestFolder();
         forceStatsCals();
@@ -292,7 +292,7 @@ public class FolderStatisticTest extends FiveControllerTestCase {
 
     public void testAutodownload() {
         // 1) Sync ONE file to all simpsons
-        setSyncProfile(SyncProfile.SYNCHRONIZE_PCS);
+        setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         File testFile1 = TestHelper.createRandomFile(getFolderAtBart()
             .getLocalBase(), 500);
         scanFolder(getFolderAtBart());
@@ -302,7 +302,7 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         assertAllInSync(1, 500);
 
         // 2) Set to auto-download and delete the file.
-        setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
+        setSyncProfile(SyncProfile.AUTOMATIC_DOWNLOAD);
         testFile1.delete();
         scanFolder(getFolderAtBart());
         waitForFileListOnTestFolder();
@@ -320,7 +320,7 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         assertIncomingFiles(0, 0, 0, 0, 0);
 
         // 3) Let them sync all changes.
-        setSyncProfile(SyncProfile.SYNCHRONIZE_PCS);
+        setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         waitForCompletedDownloads(1, 0, 1, 1, 1);
         waitForFileListOnTestFolder();
         forceStatsCals();
@@ -347,8 +347,8 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         }
 
         scanFolder(getFolderAtBart());
-        getFolderAtHomer().setSyncProfile(SyncProfile.SYNCHRONIZE_PCS);
-        getFolderAtLisa().setSyncProfile(SyncProfile.SYNCHRONIZE_PCS);
+        getFolderAtHomer().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
+        getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         connectSimpsons();
         // Give the members time broadcast changes
         waitForCompletedDownloads(nFiles, 0, 0, nFiles, 0);
@@ -370,8 +370,8 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         }
         File testFile = TestHelper.createRandomFile(getFolderAtBart()
             .getLocalBase());
-        getFolderAtMarge().setSyncProfile(SyncProfile.SYNCHRONIZE_PCS);
-        getFolderAtMaggie().setSyncProfile(SyncProfile.SYNCHRONIZE_PCS);
+        getFolderAtMarge().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
+        getFolderAtMaggie().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         scanFolder(getFolderAtBart());
         TestHelper.waitMilliSeconds(5000);
         waitForFileListOnTestFolder();

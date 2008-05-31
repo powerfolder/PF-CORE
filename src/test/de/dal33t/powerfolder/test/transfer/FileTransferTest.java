@@ -19,7 +19,6 @@ import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
@@ -39,7 +38,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         deleteTestFolderContents();
         connectBartAndLisa();
         // Join on testfolder
-        joinTestFolder(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
+        joinTestFolder(SyncProfile.AUTOMATIC_DOWNLOAD);
     }
 
     public void testFileCopyCert8() throws IOException {
@@ -1094,7 +1093,7 @@ public class FileTransferTest extends TwoControllerTestCase {
      */
     public void testPendingDownloadsResotre() {
         // Prepare
-        getFolderAtLisa().setSyncProfile(SyncProfile.MANUAL_DOWNLOAD);
+        getFolderAtLisa().setSyncProfile(SyncProfile.HOST_FILES);
         TestHelper.createRandomFile(getFolderAtBart().getLocalBase(),
             8 * 1024 * 1024);
         scanFolder(getFolderAtBart());

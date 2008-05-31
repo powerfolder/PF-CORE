@@ -21,7 +21,7 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
     {
         super.setUp();
         connectBartAndLisa();
-        joinTestFolder(SyncProfile.PROJECT_WORK);
+        joinTestFolder(SyncProfile.MANUAL_SYNCHRONIZATION);
     }
 
     /**
@@ -71,7 +71,7 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
         }
 
         // Scan files on bart
-        getFolderAtBart().setSyncProfile(SyncProfile.MANUAL_DOWNLOAD);
+        getFolderAtBart().setSyncProfile(SyncProfile.HOST_FILES);
         scanFolder(getFolderAtBart());
 
         assertEquals(expectedFilesAtBart, getFolderAtBart()
@@ -124,14 +124,14 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
         makeFriends();
 
         // Scan files
-        getFolderAtBart().setSyncProfile(SyncProfile.MANUAL_DOWNLOAD);
-        getFolderAtLisa().setSyncProfile(SyncProfile.MANUAL_DOWNLOAD);
+        getFolderAtBart().setSyncProfile(SyncProfile.HOST_FILES);
+        getFolderAtLisa().setSyncProfile(SyncProfile.HOST_FILES);
         scanFolder(getFolderAtBart());
         scanFolder(getFolderAtLisa());
         assertEquals(3, getFolderAtBart().getKnownFilesCount());
         assertEquals(2, getFolderAtLisa().getKnownFilesCount());
-        getFolderAtBart().setSyncProfile(SyncProfile.PROJECT_WORK);
-        getFolderAtLisa().setSyncProfile(SyncProfile.PROJECT_WORK);
+        getFolderAtBart().setSyncProfile(SyncProfile.MANUAL_SYNCHRONIZATION);
+        getFolderAtLisa().setSyncProfile(SyncProfile.MANUAL_SYNCHRONIZATION);
 
         // Wait for filelists
         TestHelper.waitForCondition(2, new Condition() {
@@ -174,14 +174,14 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
 
         // Scan files
 
-        getFolderAtBart().setSyncProfile(SyncProfile.MANUAL_DOWNLOAD);
+        getFolderAtBart().setSyncProfile(SyncProfile.HOST_FILES);
         scanFolder(getFolderAtBart());
-        getFolderAtBart().setSyncProfile(SyncProfile.PROJECT_WORK);
+        getFolderAtBart().setSyncProfile(SyncProfile.MANUAL_SYNCHRONIZATION);
         assertEquals(2, countDeleted(getFolderAtBart().getKnowFilesAsArray()));
         
-        getFolderAtLisa().setSyncProfile(SyncProfile.MANUAL_DOWNLOAD);
+        getFolderAtLisa().setSyncProfile(SyncProfile.HOST_FILES);
         scanFolder(getFolderAtLisa());
-        getFolderAtLisa().setSyncProfile(SyncProfile.PROJECT_WORK);
+        getFolderAtLisa().setSyncProfile(SyncProfile.MANUAL_SYNCHRONIZATION);
         assertEquals(1, countDeleted(getFolderAtLisa().getKnowFilesAsArray()));
 
         // Filelist transfer

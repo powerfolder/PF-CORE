@@ -10,7 +10,7 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.NetworkingMode;
-import static de.dal33t.powerfolder.disk.SyncProfile.SYNCHRONIZE_PCS;
+import static de.dal33t.powerfolder.disk.SyncProfile.AUTOMATIC_SYNCHRONIZATION;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.Icons;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SYNC_PROFILE_ATTRIBUTE;
@@ -152,7 +152,7 @@ public class BasicSetupPanel extends PFWizardPanel {
             getWizardContext().setAttribute(BASIC_SETUP_ATTIRBUTE, true);
             getWizardContext().setAttribute(SUCCESS_PANEL, osPanel);
             getWizardContext().setAttribute(SYNC_PROFILE_ATTRIBUTE,
-                    SYNCHRONIZE_PCS);
+                    AUTOMATIC_SYNCHRONIZATION);
             getWizardContext().setAttribute(FOLDER_LOCAL_BASE, defaultSynchronizedFolder);
             getWizardContext().setAttribute(CREATE_DESKTOP_SHORTCUT, false);
             getWizardContext().setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE,

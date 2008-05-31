@@ -2547,8 +2547,8 @@ public class Folder extends PFComponent {
             inv.setSuggestedSyncProfile(SyncProfile.BACKUP_TARGET);
         } else if (syncProfile.equals(SyncProfile.BACKUP_TARGET)) {
             inv.setSuggestedSyncProfile(SyncProfile.BACKUP_SOURCE);
-        } else if (syncProfile.equals(SyncProfile.MANUAL_DOWNLOAD)) {
-            inv.setSuggestedSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
+        } else if (syncProfile.equals(SyncProfile.HOST_FILES)) {
+            inv.setSuggestedSyncProfile(SyncProfile.AUTOMATIC_DOWNLOAD);
         }
         inv.setSuggestedLocalBase(localBase);
         return inv;

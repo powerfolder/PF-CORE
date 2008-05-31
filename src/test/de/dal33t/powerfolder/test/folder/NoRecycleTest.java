@@ -19,7 +19,7 @@ public class NoRecycleTest extends ControllerTestCase {
 
         super.setUp();
 
-        setupTestFolder(SyncProfile.MANUAL_DOWNLOAD, false);
+        setupTestFolder(SyncProfile.HOST_FILES, false);
         File localbase = getFolder().getLocalBase();
         File testFile = new File(localbase, "test.txt");
         if (testFile.exists()) {

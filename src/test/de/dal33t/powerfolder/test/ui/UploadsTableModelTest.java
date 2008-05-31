@@ -35,7 +35,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         getContollerBart().setSilentMode(true);
         connectBartAndLisa();
         // Join on testfolder
-        joinTestFolder(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
+        joinTestFolder(SyncProfile.AUTOMATIC_DOWNLOAD);
 
         bartModelListener = new MyUploadTableModelListener();
         bartModel = new UploadsTableModel(new TransferManagerModel(
@@ -144,7 +144,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         // Abort
         DownloadManager download = getContollerLisa().getTransferManager()
             .getActiveDownloads().iterator().next();
-        getFolderAtLisa().setSyncProfile(SyncProfile.MANUAL_DOWNLOAD);
+        getFolderAtLisa().setSyncProfile(SyncProfile.HOST_FILES);
         download.abort();
 
         TestHelper.waitForCondition(50, new Condition() {

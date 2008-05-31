@@ -382,7 +382,7 @@ public class TwoControllerTestCase extends TestCase {
         File lisaFolderDir)
     {
         joinFolder(foInfo, bartFolderDir, lisaFolderDir,
-            SyncProfile.MANUAL_DOWNLOAD);
+            SyncProfile.HOST_FILES);
     }
 
     /**

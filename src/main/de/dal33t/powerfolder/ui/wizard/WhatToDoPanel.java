@@ -34,16 +34,14 @@ public class WhatToDoPanel extends PFWizardPanel {
     static final int PICTO_FONT_SIZE = 6;
 
     // The options of this screen
-    private static final Object mirrorOption = new Object();
+    private static final Object synchronizedOption = new Object();
     private static final Object backupOption = new Object();
-    private static final Object projectOption = new Object();
     private static final Object hostOption = new Object();
     private static final Object customOption = new Object();
     private static final Object inviteOption = new Object();
 
-    private JLabel mirrorLink;
+    private JLabel synchronizedLink;
     private JLabel backupLink;
-    private JLabel projectLink;
     private JLabel hostLink;
     private JLabel customLink;
     private JLabel inviteLink;
@@ -66,19 +64,18 @@ public class WhatToDoPanel extends PFWizardPanel {
     protected JPanel buildContent() {
 
         FormLayout layout = new FormLayout("pref",
-                "pref, 10dlu, pref, 10dlu, pref, 10dlu, pref, 10dlu, pref, " +
+                "pref, 10dlu, pref, 10dlu, pref, 10dlu, pref, " +
                         "30dlu, pref, 10dlu, pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
-        builder.add(mirrorLink, cc.xy(1, 1));
+        builder.add(synchronizedLink, cc.xy(1, 1));
         builder.add(backupLink, cc.xy(1, 3));
         builder.add(hostLink, cc.xy(1, 5));
-        builder.add(projectLink, cc.xy(1, 7));
-        builder.add(customLink, cc.xy(1, 9));
-        builder.add(inviteLink, cc.xy(1, 11));
-        builder.add(documentationLink, cc.xy(1, 13));
+        builder.add(customLink, cc.xy(1, 7));
+        builder.add(inviteLink, cc.xy(1, 9));
+        builder.add(documentationLink, cc.xy(1, 11));
         return builder.getPanel();
     }
 
@@ -86,7 +83,7 @@ public class WhatToDoPanel extends PFWizardPanel {
 
         Object option = decision.getValue();
 
-        if (option == mirrorOption) {
+        if (option == synchronizedOption) {
 
             getWizardContext().setAttribute(PFWizard.PICTO_ICON,
                 Icons.SYNC_PCS_PICTO);
@@ -96,7 +93,7 @@ public class WhatToDoPanel extends PFWizardPanel {
 
             // This is sync pcs (mirror) profile!
             getWizardContext().setAttribute(SYNC_PROFILE_ATTRIBUTE,
-                SyncProfile.SYNCHRONIZE_PCS);
+                SyncProfile.AUTOMATIC_SYNCHRONIZATION);
 
             // Prompt for send invitation afterwards
             getWizardContext().setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE,
@@ -104,7 +101,7 @@ public class WhatToDoPanel extends PFWizardPanel {
 
             // Setup choose disk location panel
             getWizardContext().setAttribute(PROMPT_TEXT_ATTRIBUTE,
-                Translation.getTranslation("wizard.syncpcspanel.select"));
+                Translation.getTranslation("wizard.sync_pcs_panel.select"));
 
             // Setup sucess panel of this wizard path
             TextPanelPanel successPanel = new TextPanelPanel(getController(),
@@ -164,7 +161,7 @@ public class WhatToDoPanel extends PFWizardPanel {
 
             // This is hosting (manual download) profile!
             getWizardContext().setAttribute(SYNC_PROFILE_ATTRIBUTE,
-                SyncProfile.MANUAL_DOWNLOAD);
+                SyncProfile.HOST_FILES);
 
             // Setup choose disk location panel
             getWizardContext().setAttribute(PROMPT_TEXT_ATTRIBUTE,
@@ -186,38 +183,6 @@ public class WhatToDoPanel extends PFWizardPanel {
                 getController(), "");
 
             return new ChooseDiskLocationPanel(getController(), null, setupPanel);
-
-        } else if (option == projectOption) {
-
-            getWizardContext().setAttribute(PFWizard.PICTO_ICON,
-                Icons.PROJECT_WORK_PICTO);
-
-            // Reset folderinfo for disk location
-            getWizardContext().setAttribute(FOLDERINFO_ATTRIBUTE, null);
-
-            // This is project profile!
-            getWizardContext().setAttribute(SYNC_PROFILE_ATTRIBUTE,
-                SyncProfile.PROJECT_WORK);
-
-            // Setup choose disk location panel
-            getWizardContext().setAttribute(PROMPT_TEXT_ATTRIBUTE,
-                Translation.getTranslation("wizard.project_panel.select"));
-
-            // Prompt for send invitation afterwards
-            getWizardContext().setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE,
-                true);
-
-            // Setup sucess panel of this wizard path
-            TextPanelPanel successPanel = new TextPanelPanel(
-                getController(),
-                Translation.getTranslation("wizard.setupsuccess"),
-                Translation
-                    .getTranslation("wizard.project_panel.folder_project_success")
-                    + Translation.getTranslation("wizard.backup_panel.pcsjoin"));
-            getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL,
-                successPanel);
-
-            return new ProjectNamePanel(getController());
 
         } else if (option == customOption) {
 
@@ -285,20 +250,15 @@ public class WhatToDoPanel extends PFWizardPanel {
             }
         });
 
-        mirrorLink = new ActionLabel(new WhatToDoAction(Translation
-                .getTranslation("wizard.whattodo.mirror_folder"), mirrorOption,
+        synchronizedLink = new ActionLabel(new WhatToDoAction(Translation
+                .getTranslation("wizard.whattodo.synchronized_folder"), synchronizedOption,
                 decision));
-        SimpleComponentFactory.setFontSize(mirrorLink, PFWizard.MED_FONT_SIZE);
+        SimpleComponentFactory.setFontSize(synchronizedLink, PFWizard.MED_FONT_SIZE);
 
         backupLink = new ActionLabel(new WhatToDoAction(Translation
                 .getTranslation("wizard.whattodo.backup_folder"), backupOption,
                 decision));
         SimpleComponentFactory.setFontSize(backupLink, PFWizard.MED_FONT_SIZE);
-
-        projectLink = new ActionLabel(new WhatToDoAction(Translation
-                .getTranslation("wizard.whattodo.projectwork"), projectOption,
-                decision));
-        SimpleComponentFactory.setFontSize(projectLink, PFWizard.MED_FONT_SIZE);
 
         hostLink = new ActionLabel(new WhatToDoAction(Translation
                 .getTranslation("wizard.whattodo.hostwork"), hostOption, decision));

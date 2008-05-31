@@ -153,7 +153,7 @@ public class FolderRepositoryModel extends PFUIComponent {
         folder.broadcastScanCommand();
 
         // Ask for more sync options on that folder if on project sync
-        if (SyncProfile.PROJECT_WORK.equals(folder.getSyncProfile())) {
+        if (SyncProfile.MANUAL_SYNCHRONIZATION.equals(folder.getSyncProfile())) {
             new SyncFolderPanel(getController(), folder).open();
         } else {
             // Recommend scan on this

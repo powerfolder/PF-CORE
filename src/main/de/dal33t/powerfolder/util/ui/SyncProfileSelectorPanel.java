@@ -56,7 +56,7 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
     }
 
     public SyncProfileSelectorPanel(Controller controller) {
-        this(controller, SyncProfile.SYNCHRONIZE_PCS);
+        this(controller, SyncProfile.AUTOMATIC_SYNCHRONIZATION);
     }
 
     /**

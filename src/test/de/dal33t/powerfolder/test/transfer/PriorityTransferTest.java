@@ -76,7 +76,7 @@ public class PriorityTransferTest extends TwoControllerTestCase {
     
     public void testPriorityRequests() {
         connectBartAndLisa();
-        joinTestFolder(SyncProfile.MANUAL_DOWNLOAD);
+        joinTestFolder(SyncProfile.HOST_FILES);
         TestHelper.createRandomFile(getFolderAtLisa().getLocalBase());
         TestHelper.createRandomFile(getFolderAtLisa().getLocalBase());
         TestHelper.createRandomFile(getFolderAtLisa().getLocalBase());
@@ -98,7 +98,7 @@ public class PriorityTransferTest extends TwoControllerTestCase {
             one(helperBart).downloadNewestVersion(fInfos[0], true); inSequence(dlSeq);
         }});
         
-        getFolderAtBart().setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
+        getFolderAtBart().setSyncProfile(SyncProfile.AUTOMATIC_DOWNLOAD);
         
         // Wait a fixed amount of time so if something fails 
         // above it'll be thrown by assertIsSatisfied below.

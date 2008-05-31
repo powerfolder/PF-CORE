@@ -539,7 +539,7 @@ public class FolderStatistic extends PFComponent {
      *         -1 if unknown
      */
     public double getHarmonizedSyncPercentage() {
-        if (SyncProfile.SYNCHRONIZE_PCS.equals(folder.getSyncProfile())) {
+        if (SyncProfile.AUTOMATIC_SYNCHRONIZATION.equals(folder.getSyncProfile())) {
             return getTotalSyncPercentage();
         } else if (SyncProfile.BACKUP_SOURCE.equals(folder.getSyncProfile())) {
             // In this case only remote sides matter.

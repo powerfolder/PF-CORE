@@ -26,7 +26,7 @@ public class FolderMoveTest extends ControllerTestCase {
         super.setUp();
 
         // Setup a test folder; delete previous tests.
-        setupTestFolder(SyncProfile.MANUAL_DOWNLOAD, true);
+        setupTestFolder(SyncProfile.HOST_FILES, true);
         File localBase = getFolder().getLocalBase();
 
         // Create a test.txt file

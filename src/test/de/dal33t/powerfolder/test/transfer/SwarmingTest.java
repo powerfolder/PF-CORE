@@ -21,7 +21,7 @@ import de.dal33t.powerfolder.util.test.TestHelper;
 
 public class SwarmingTest extends MultipleControllerTestCase {
     public void xtestAlotOfControllers() throws Exception {
-        joinNTestFolder(SyncProfile.SYNCHRONIZE_PCS);
+        joinNTestFolder(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
 
         for (int i = 0; i < 10; i++) {
             nSetupControllers(5);
@@ -39,7 +39,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
 
         connectAll();
 
-        joinNTestFolder(SyncProfile.MANUAL_DOWNLOAD);
+        joinNTestFolder(SyncProfile.HOST_FILES);
         Folder barts = getFolderOf("0");
 
         File tmpFile = TestHelper.createRandomFile(barts.getLocalBase(),
@@ -47,7 +47,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
         scanFolder(barts);
         final FileInfo fInfo = barts.getKnowFilesAsArray()[0];
 
-        setNSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
+        setNSyncProfile(SyncProfile.AUTOMATIC_DOWNLOAD);
 
         TestHelper.waitForCondition(100, new Condition() {
             public boolean reached() {
@@ -68,7 +68,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
 
         connectAll();
 
-        joinNTestFolder(SyncProfile.MANUAL_DOWNLOAD);
+        joinNTestFolder(SyncProfile.HOST_FILES);
 
         File tmpFile = TestHelper.createRandomFile(getFolderOf("0")
             .getLocalBase(), 10000000);
@@ -77,7 +77,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
 
         for (int i = 0; i < 4; i++) {
             getFolderOf("" + i).setSyncProfile(
-                SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
+                SyncProfile.AUTOMATIC_DOWNLOAD);
         }
 
         TestHelper.waitForCondition(20, new Condition() {
@@ -120,7 +120,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
             c.getTransferManager().setAllowedUploadCPSForLAN(500000);
         }
         TestHelper.waitMilliSeconds(1000);
-        getFolderOf("4").setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
+        getFolderOf("4").setSyncProfile(SyncProfile.AUTOMATIC_DOWNLOAD);
 
         TestHelper.waitForCondition(5, new ConditionWithMessage() {
             public boolean reached() {
@@ -211,14 +211,14 @@ public class SwarmingTest extends MultipleControllerTestCase {
 
         connectAll();
 
-        joinNTestFolder(SyncProfile.MANUAL_DOWNLOAD);
+        joinNTestFolder(SyncProfile.HOST_FILES);
 
         File tmpFile = TestHelper.createRandomFile(getFolderOf("0")
             .getLocalBase(), 10000000);
         scanFolder(getFolderOf("0"));
         final FileInfo fInfo = getFolderOf("0").getKnowFilesAsArray()[0];
 
-        setNSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
+        setNSyncProfile(SyncProfile.AUTOMATIC_DOWNLOAD);
 
         TestHelper.waitForCondition(100, new Condition() {
             public boolean reached() {
@@ -296,7 +296,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
 
         connectAll();
 
-        joinNTestFolder(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
+        joinNTestFolder(SyncProfile.AUTOMATIC_DOWNLOAD);
         
         for (int i = 0; i < 10; i++) {
             TestHelper.createRandomFile(getFolderOf("0").getLocalBase());
@@ -412,7 +412,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
 
         connectAll();
 
-        joinNTestFolder(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
+        joinNTestFolder(SyncProfile.AUTOMATIC_DOWNLOAD);
 
         File tmpFile = TestHelper.createRandomFile(getFolderOf("0")
             .getLocalBase(), 1000000);

@@ -48,7 +48,7 @@ public class SyncAllFoldersAction extends BaseAction {
             // Never sync preview folders
             if (folder != null && !folder.isPreviewOnly()) {
                 // Ask for more sync options on that folder if on project sync
-                if (folder.getSyncProfile().equals(SyncProfile.PROJECT_WORK)) {
+                if (folder.getSyncProfile().equals(SyncProfile.MANUAL_SYNCHRONIZATION)) {
                     askAndPerfomsSync(folder);
                 } else {
                     // Recommend scan on this

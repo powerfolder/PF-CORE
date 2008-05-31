@@ -95,7 +95,7 @@ public class FolderSetupPanel extends PFWizardPanel {
 
         // Sync
         builder.add(new JLabel(Translation
-            .getTranslation("general.synchonisation")), cc.xy(1, 3));
+            .getTranslation("wizard.setup_folder.transfer_mode")), cc.xy(1, 3));
         JPanel p = (JPanel) syncProfileSelectorPanel.getUIComponent();
         p.setOpaque(false);
         builder.add(p, cc.xy(3, 3));
@@ -119,8 +119,14 @@ public class FolderSetupPanel extends PFWizardPanel {
         folderNameTextField.addKeyListener(new MyKeyListener());
 
         // Sync profile
-        syncProfileSelectorPanel = new SyncProfileSelectorPanel(
-            getController(), SyncProfile.SYNCHRONIZE_PCS);
+        Object object = getWizardContext().getAttribute(SYNC_PROFILE_ATTRIBUTE);
+        if (object != null && object instanceof SyncProfile) {
+            syncProfileSelectorPanel = new SyncProfileSelectorPanel(
+                getController(), (SyncProfile) object);
+        } else {
+            syncProfileSelectorPanel = new SyncProfileSelectorPanel(
+                getController(), SyncProfile.AUTOMATIC_SYNCHRONIZATION);
+        }
 
         // Send Invite
         sendInviteAfterCB = SimpleComponentFactory.createCheckBox(Translation

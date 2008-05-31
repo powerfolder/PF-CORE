@@ -108,7 +108,7 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
         CellConstraints cc = new CellConstraints();
 
         builder.add(new JLabel(Translation
-            .getTranslation("folderpanel.settingstab.choose_sync_profile")), cc
+            .getTranslation("folderpanel.settingstab.choose_transfer_mode")), cc
             .xy(2, 2));
 
         syncProfileSelectorPanel = new SyncProfileSelectorPanel(getController());

@@ -15,7 +15,7 @@ public class RecycleTest extends ControllerTestCase {
 
         super.setUp();
 
-        setupTestFolder(SyncProfile.MANUAL_DOWNLOAD);
+        setupTestFolder(SyncProfile.HOST_FILES);
         File localbase = getFolder().getLocalBase();
         File testFile = new File(localbase, "test.txt");
         if (testFile.exists()) {

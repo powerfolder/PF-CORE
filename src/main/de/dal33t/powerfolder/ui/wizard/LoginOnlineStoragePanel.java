@@ -11,7 +11,7 @@ import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
-import static de.dal33t.powerfolder.disk.SyncProfile.SYNCHRONIZE_PCS;
+import static de.dal33t.powerfolder.disk.SyncProfile.AUTOMATIC_SYNCHRONIZATION;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
 import de.dal33t.powerfolder.ui.Icons;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDER_LOCAL_BASE;
@@ -99,7 +99,7 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
                                                 .getInfo());
                                 getController().getOSClient().getFolderService()
                                         .createFolder(folder.getInfo(),
-                                                SYNCHRONIZE_PCS);
+                                                AUTOMATIC_SYNCHRONIZATION);
                                 break;
                             }
                         }

@@ -47,12 +47,12 @@ public class UDTConnectionTest extends FiveControllerTestCase {
         assertNotNull(conHan.getMember());
         assertTrue(conHan.getMember().isCompleteyConnected());
 
-        joinTestFolder(SyncProfile.MANUAL_DOWNLOAD);
+        joinTestFolder(SyncProfile.HOST_FILES);
         TestHelper.createRandomFile(getFolderAtMarge().getLocalBase(),
             10 * 1024 * 1024);
         scanFolder(getFolderAtMarge());
 
-        getFolderAtLisa().setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
+        getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_DOWNLOAD);
 
         TestHelper.waitForCondition(40, new ConditionWithMessage() {
             public String message() {

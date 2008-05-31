@@ -65,7 +65,7 @@ public class Invitation extends FolderRelatedMessage {
     public SyncProfile getSuggestedSyncProfile() {
         if (suggestedSyncProfileConfig == null) {
             // For backward compatibility.
-            return SyncProfile.SYNCHRONIZE_PCS;
+            return SyncProfile.AUTOMATIC_SYNCHRONIZATION;
         }
         return SyncProfile
             .getSyncProfileByFieldList(suggestedSyncProfileConfig);

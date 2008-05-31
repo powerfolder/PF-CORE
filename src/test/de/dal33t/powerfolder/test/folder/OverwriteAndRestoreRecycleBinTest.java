@@ -22,7 +22,7 @@ public class OverwriteAndRestoreRecycleBinTest extends TwoControllerTestCase {
         super.setUp();
         connectBartAndLisa();
         makeFriends();
-        joinTestFolder(SyncProfile.SYNCHRONIZE_PCS);
+        joinTestFolder(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
     }
 
     /**

@@ -27,7 +27,7 @@ public class ScanFolderTest extends ControllerTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         getController().setSilentMode(true);
-        setupTestFolder(SyncProfile.MANUAL_DOWNLOAD);
+        setupTestFolder(SyncProfile.HOST_FILES);
     }
 
     public void testScanSingleFileMulti() throws Exception {

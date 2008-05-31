@@ -39,7 +39,7 @@ public class PowerFolderInvitationTest extends TwoControllerTestCase {
                                 .getInvitation().folder.name));
                     try {
                         FolderSettings folderSettings = new FolderSettings(dir,
-                            SyncProfile.MANUAL_DOWNLOAD, false, true);
+                            SyncProfile.HOST_FILES, false, true);
                         invitationRecievedEvent.getFolderRepository()
                             .createFolder(
                                 invitationRecievedEvent.getInvitation().folder,
@@ -57,7 +57,7 @@ public class PowerFolderInvitationTest extends TwoControllerTestCase {
             .makeId());
 
         FolderSettings folderSettings = new FolderSettings(
-            TESTFOLDER_BASEDIR_LISA, SyncProfile.MANUAL_DOWNLOAD, false, true);
+            TESTFOLDER_BASEDIR_LISA, SyncProfile.HOST_FILES, false, true);
         folderAtLisa = getContollerLisa().getFolderRepository().createFolder(
             testFolder, folderSettings);
 

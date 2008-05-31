@@ -16,7 +16,7 @@ public class FolderScannerTest extends ControllerTestCase {
     public void setUp() throws Exception {
         super.setUp();
         // use project profiel so no unwanted scanning
-        setupTestFolder(SyncProfile.PROJECT_WORK);
+        setupTestFolder(SyncProfile.MANUAL_SYNCHRONIZATION);
     }
 
     public void testScanFilesMultiple() throws Exception {
@@ -67,7 +67,7 @@ public class FolderScannerTest extends ControllerTestCase {
         System.out.println("Scan result: " + result);
         // new Scan should find 4
         assertEquals(result.toString(), 4, newFiles.size());
-        getFolder().setSyncProfile(SyncProfile.MANUAL_DOWNLOAD);
+        getFolder().setSyncProfile(SyncProfile.HOST_FILES);
         scanFolder(getFolder());
 
         System.out.print("New files old scanning: ");
