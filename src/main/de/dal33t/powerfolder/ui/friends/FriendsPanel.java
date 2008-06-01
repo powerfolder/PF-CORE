@@ -2,9 +2,9 @@
  */
 package de.dal33t.powerfolder.ui.friends;
 
-import com.jgoodies.binding.adapter.BasicComponentFactory;
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.factories.Borders;
+import com.jgoodies.binding.value.ValueModel;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
@@ -22,6 +22,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 /**
  * Displays all friends in a list.
@@ -42,17 +43,7 @@ public class FriendsPanel extends PFUIPanel {
     private FriendsTable friendsTable;
     private JScrollPane friendsPane;
 
-    /**
-     * the toggle button that indicates if the offline friends should be hidden
-     * or not
-     */
-    private JCheckBox hideOfflineCB;
-
-    /**
-     * the toggle button that indicates if all lan users should be displayed
-     * or not
-     */
-    private JCheckBox includeLanCB;
+    private JComboBox statusFilterCombo;
 
     // Actions
     private ChatAction chatAction;
@@ -138,20 +129,55 @@ public class FriendsPanel extends PFUIPanel {
         bar.addGridded(new JButton(changeFriendStatusAction));
         bar.addRelatedGap();
 
-        NodeManagerModel nmModel = getUIController().getNodeManagerModel();
+        statusFilterCombo = new JComboBox();
+        statusFilterCombo.addItem(Translation.getTranslation("friends_panel.show_all_friends_and_connected_lan"));
+        statusFilterCombo.addItem(Translation.getTranslation("friends_panel.show_online_friends_only"));
+        statusFilterCombo.addItem(Translation.getTranslation("friends_panel.show_online_friends_and_connected_lan"));
 
-        hideOfflineCB = BasicComponentFactory.createCheckBox(nmModel
-            .getHideOfflineUsersModel(), Translation
-            .getTranslation("hideoffline.name"));
+        NodeManagerModel model = getController().getUIController().getNodeManagerModel();
+        final ValueModel hideOfflineUsersModel = model.getHideOfflineUsersModel();
+        final ValueModel includeLanUsersModel = model.getIncludeLanUsersModel();
+        if ((Boolean) hideOfflineUsersModel.getValue()) {
+            if ((Boolean) includeLanUsersModel.getValue()) {
+                // Show online friends and connected LAN computers
+                statusFilterCombo.setSelectedIndex(2);
+            } else {
+                // Show online friends only
+                statusFilterCombo.setSelectedIndex(1);
+            }
+        } else {
+            // Show all friends and connected LAN computers
+            statusFilterCombo.setSelectedIndex(0);
+        }
+        statusFilterCombo.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                int selection = statusFilterCombo.getSelectedIndex();
 
-        bar.addFixed(hideOfflineCB);
+                switch (selection) {
+                    case 1:
+                        // Show online friends only
+                        hideOfflineUsersModel.setValue(true);
+                        includeLanUsersModel.setValue(false);
+                        break;
+
+                    case 2:
+                        // Show online friends and connected LAN computers
+                        hideOfflineUsersModel.setValue(true);
+                        includeLanUsersModel.setValue(true);
+                        break;
+
+                    case 0:
+                    default:
+                        // Show all friends and connected LAN computers
+                        hideOfflineUsersModel.setValue(false);
+                        includeLanUsersModel.setValue(true);
+                        break;
+                }
+            }
+        });
+        bar.addFixed(statusFilterCombo);
         bar.addRelatedGap();
 
-        includeLanCB = BasicComponentFactory.createCheckBox(nmModel
-            .getIncludeLanUsersModel(), Translation
-            .getTranslation("include_lan.name"));
-
-        bar.addFixed(includeLanCB);
         JPanel barPanel = bar.getPanel();
         barPanel.setBorder(Borders.DLU4_BORDER);
         return barPanel;
@@ -192,26 +218,6 @@ public class FriendsPanel extends PFUIPanel {
             }
         }
 
-        updateActions();
-    }
-
-    /** called if button removeFriend clicked or if selected in popupmenu */
-    private void removeFriend() {
-        synchronized (getUIController().getNodeManagerModel()
-            .getFriendsTableModel())
-        {
-            int[] selectedIndexes = friendsTable.getSelectedRows();
-            for (int index : selectedIndexes) {
-                Object item = getUIController().getNodeManagerModel()
-                        .getFriendsTableModel().getDataAt(index);
-                if (item instanceof Member) {
-                    Member newFriend = (Member) item;
-                    newFriend.setFriend(false, null);
-                }
-            }
-        }
-
-        // Update actions
         updateActions();
     }
 
