@@ -250,8 +250,8 @@ public class BroadcastMananger extends PFComponent implements Runnable {
 
         String message = new String(content);
 
-        if (logDebug) {
-            log().debug(
+        if (logVerbose) {
+            log().verbose(
                 "Received broadcast: " + message + ", " + packet.getAddress());
         }
 
@@ -284,9 +284,7 @@ public class BroadcastMananger extends PFComponent implements Runnable {
         InetSocketAddress address = new InetSocketAddress(packet.getAddress(),
             port);
         Member node = getController().getNodeManager().getNode(id);
-        if (node == null
-            || (!node.isMySelf() && !node.isConnected()))
-        {
+        if (node == null || (!node.isMySelf() && !node.isConnected())) {
             log().info(
                 "Found user on local network: " + address
                     + ((node != null) ? ", " + node : ""));
@@ -457,8 +455,9 @@ public class BroadcastMananger extends PFComponent implements Runnable {
             byte[] msg = broadCastString.getBytes();
             broadcast = new DatagramPacket(msg, msg.length, group,
                 DEFAULT_BROADCAST_PORT);
-            log().debug("Sending network broadcast");
-
+            if (logVerbose) {
+                log().verbose("Sending network broadcast");
+            }
             // check for added or removed net interfaces
             // and update our internal list of sender sockets
             updateSenderSockets();
