@@ -8,6 +8,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import static de.dal33t.powerfolder.disk.Folder.THUMBS_DB;
 import static de.dal33t.powerfolder.disk.Folder.DS_STORE;
+import static de.dal33t.powerfolder.disk.Folder.WORD_TEMP;
 import de.dal33t.powerfolder.disk.FolderException;
 import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
@@ -183,6 +184,13 @@ public class FolderCreatePanel extends PFWizardPanel {
                     .contains(THUMBS_DB))
                 {
                     folder.getDiskItemFilter().addPattern(THUMBS_DB);
+                }
+
+                // .. and temporary word files.
+                if (!folder.getDiskItemFilter().getPatterns()
+                    .contains(WORD_TEMP))
+                {
+                    folder.getDiskItemFilter().addPattern(WORD_TEMP);
                 }
 
                 // Add desktop.ini to ignore pattern on windows systems

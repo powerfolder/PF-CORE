@@ -2,6 +2,7 @@ package de.dal33t.powerfolder.util.ui;
 
 import static de.dal33t.powerfolder.disk.Folder.THUMBS_DB;
 import static de.dal33t.powerfolder.disk.Folder.DS_STORE;
+import static de.dal33t.powerfolder.disk.Folder.WORD_TEMP;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
@@ -88,6 +89,11 @@ public abstract class FolderCreateWorker extends ActivityVisualizationWorker {
             // Don't duplicate thumbs (like when moving a preview folder)
             if (!folder.getDiskItemFilter().getPatterns().contains(THUMBS_DB)) {
                 folder.getDiskItemFilter().addPattern(THUMBS_DB);
+            }
+
+            // ... and temporary word files
+            if (!folder.getDiskItemFilter().getPatterns().contains(WORD_TEMP)) {
+                folder.getDiskItemFilter().addPattern(WORD_TEMP);
             }
 
             // Add desktop.ini to ignore pattern on windows systems

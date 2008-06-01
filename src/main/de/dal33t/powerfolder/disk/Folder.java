@@ -83,6 +83,7 @@ public class Folder extends PFComponent {
     public static final String DB_FILENAME = ".PowerFolder.db";
     public static final String DB_BACKUP_FILENAME = ".PowerFolder.db.bak";
     public static final String THUMBS_DB = "*thumbs.db";
+    public static final String WORD_TEMP = "*~*.tmp";
     public static final String DS_STORE = "*.DS_Store";
 
     /** The base location of the folder. */
