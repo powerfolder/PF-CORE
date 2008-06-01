@@ -181,7 +181,8 @@ public class UDTSocketConnectionManager extends PFComponent {
             synchronized (this) {
                 res = ports.search(ports.getPartionedRange(), null);
                 if (res != null) {
-                    // Lock the port. Either this gets overridden below or it stays locked for good.
+                    // Lock the port. Either this gets overridden below or it
+                    // stays locked for good.
                     ports.insert(Range.getRangeByNumbers(res.getStart(), res
                         .getStart()), PortSlot.LOCKED);
                 }
@@ -246,8 +247,10 @@ public class UDTSocketConnectionManager extends PFComponent {
     private void handleMessageForMyself(final Member sender,
         final UDTMessage msg)
     {
-        log().debug("Received UDT message for me: " + msg);
-        log().debug("Replies: " + replies.size());
+        if (logVerbose) {
+            log().verbose("Received UDT message for me: " + msg);
+            log().verbose("Replies: " + replies.size());
+        }
         if (!UDTSocket.isSupported()) {
             log().warn("UDT sockets not supported on this platform.");
             return;
@@ -313,8 +316,10 @@ public class UDTSocketConnectionManager extends PFComponent {
                 }
                 throw new TimeoutException();
             } finally {
-                log()
-                    .debug("waitForReply remaining entries: " + replies.size());
+                if (logVerbose) {
+                    log().verbose(
+                        "waitForReply remaining entries: " + replies.size());
+                }
                 // Always remove the entry
                 replies.remove(destination);
             }
