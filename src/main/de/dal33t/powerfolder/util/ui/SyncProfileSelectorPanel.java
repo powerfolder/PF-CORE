@@ -4,10 +4,10 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
 import java.util.List;
 import java.util.ArrayList;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
 
 import javax.swing.*;
 
@@ -47,6 +47,7 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
     private EditAction editAction;
     private DeleteAction deleteAction;
     private boolean enabled = true;
+    private boolean settingSyncProfile;
 
     public SyncProfileSelectorPanel(Controller controller,
         SyncProfile syncProfile)
@@ -90,7 +91,7 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
      */
     private void initComponents(SyncProfile syncProfile) {
 
-       createAction = new CreateAction(getController());
+        createAction = new CreateAction(getController());
         editAction = new EditAction(getController());
         deleteAction = new DeleteAction(getController());
 
@@ -215,9 +216,15 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
      * @return true only if the profile doesn't sync deletion or the user
      *         approved it
      */
-    public static boolean isOkToSwitchToProfile(SyncProfile syncProfile) {
+    public boolean isOkToSwitchToProfile(SyncProfile syncProfile) {
 
         if (!syncProfile.isSyncDeletion()) {
+            return true;
+        }
+
+        // If the sync profile is being changed, do not ask.
+        // Only interested with manual changes to dropdown.
+        if (settingSyncProfile) {
             return true;
         }
 
@@ -244,6 +251,7 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
      */
     public void setSyncProfile(SyncProfile syncProfile, boolean updateFolder) {
 
+        settingSyncProfile = true;
         valueModel.setValue(syncProfile);
 
         if (updateFolder) {
@@ -256,6 +264,7 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
         // Cannot use a change listener becaue the sync profile name may have
         // changed, which is not a listen-able 'event' :-(
         configureCombo(syncProfile);
+        settingSyncProfile = false;
     }
 
     /**

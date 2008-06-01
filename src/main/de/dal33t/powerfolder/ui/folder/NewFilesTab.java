@@ -139,6 +139,9 @@ public class NewFilesTab extends PFUIComponent implements FolderTab,
     }
 
     public void setFolder(Folder folder) {
+        if (panel == null) {
+            initComponents();
+        }
         folderDownloadsTable.getFolderDownloadsTableModel().setFolder(folder);
         folderDownloadsTable.setColumnSizes();
     }
