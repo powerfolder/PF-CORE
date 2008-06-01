@@ -1,7 +1,6 @@
 package de.dal33t.powerfolder.ui.render;
 
-import java.awt.Color;
-import java.awt.Component;
+import java.awt.*;
 import java.io.File;
 import java.util.List;
 
@@ -15,6 +14,7 @@ import org.apache.commons.lang.StringUtils;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.*;
+import static de.dal33t.powerfolder.disk.SyncProfile.MANUAL_SYNCHRONIZATION;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.ImageFileInfo;
 import de.dal33t.powerfolder.light.MP3FileInfo;
@@ -23,6 +23,7 @@ import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.folder.DirectoryTableModel;
+import de.dal33t.powerfolder.ui.folder.DirectoryTableFileBean;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.UIUtil;
@@ -36,12 +37,12 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
 public class DirectoryTableCellRenderer extends DefaultTableCellRenderer {
     private Controller controller;
     private DirectoryTableModel tableModel;
-    private final Color AVAILEBLE = Color.GRAY;
-    private final Color DOWNLOADING = new Color(40, 170, 40);
-    private final Color DELETED = Color.RED;
-    private final Color NORMAL = Color.BLACK;
-    private final Color NEWER_AVAILABLE = Color.BLUE;
-    private final Color STATUS = Color.GRAY;
+    private static final Color AVAILABLE = Color.GRAY;
+    private static final Color DOWNLOADING = new Color(40, 170, 40);
+    private static final Color DELETED = Color.RED;
+    private static final Color NORMAL = Color.BLACK;
+    private static final Color NEWER_AVAILABLE = Color.BLUE;
+    private static final Color STATUS = Color.GRAY;
 
     /**
      * Initalizes a FileTableCellrenderer upon a <code>FileListTableModel</code>
@@ -63,21 +64,20 @@ public class DirectoryTableCellRenderer extends DefaultTableCellRenderer {
     {
         setIcon(null);
         setToolTipText(null);
-        Object fileDirOrStatus = value;
         int columnInModel = UIUtil.toModel(table, column);
-        if (fileDirOrStatus instanceof FileInfo) {
-            return render((FileInfo) fileDirOrStatus, columnInModel, table,
+        if (value instanceof DirectoryTableFileBean) {
+            return render((DirectoryTableFileBean) value, columnInModel, table,
                 isSelected, hasFocus, row, column);
-        } else if (fileDirOrStatus instanceof Directory) {
-            return render((Directory) fileDirOrStatus, columnInModel, table,
+        } else if (value instanceof Directory) {
+            return render((Directory) value, columnInModel, table,
                 isSelected, hasFocus, row, column);
-        } else if (fileDirOrStatus instanceof String) {
-            return render((String) fileDirOrStatus, columnInModel, table,
+        } else if (value instanceof String) {
+            return render((String) value, columnInModel, table,
                 isSelected, hasFocus, row, column);
         }
         throw new IllegalStateException(
-            "expected FileInfo, Directory or String not: "
-                + fileDirOrStatus.getClass().getName());
+            "expected DirectoryTableFileBean, Directory or String not: "
+                + value.getClass().getName());
 
     }
 
@@ -99,15 +99,18 @@ public class DirectoryTableCellRenderer extends DefaultTableCellRenderer {
 
     }
 
-    private Component render(FileInfo fileInfo, int columnInModel,
-        JTable table, boolean isSelected, boolean hasFocus, int row, int column)
+    private Component render(DirectoryTableFileBean directoryTableFileBean,
+                             int columnInModel, JTable table,
+                             boolean isSelected, boolean hasFocus, int row,
+                             int column)
     {
         String newValue = "";
+        FileInfo fileInfo = directoryTableFileBean.getFileInfo();
         switch (columnInModel) {
             case 0 : { // file type
                 Icon icon = Icons.getIconFor(fileInfo, controller);
                 setIcon(icon);
-                setHorizontalAlignment(SwingConstants.LEFT);
+                setHorizontalAlignment(LEFT);
                 break;
             }
             case 1 : {// filename
@@ -132,7 +135,8 @@ public class DirectoryTableCellRenderer extends DefaultTableCellRenderer {
                 } else {
                     fileNameForTooltip = replaceSpacesWithNBSP(newValue);
                 }
-                render0(fileInfo, fileNameForTooltip);
+                render0(fileInfo, fileNameForTooltip, directoryTableFileBean
+                        .isRecentlyDownloaded());
                 setHorizontalAlignment(SwingConstants.LEFT);
                 break;
             }
@@ -178,8 +182,15 @@ public class DirectoryTableCellRenderer extends DefaultTableCellRenderer {
                 }
             }
         }
-        return super.getTableCellRendererComponent(table, newValue, isSelected,
-            hasFocus, row, column);
+
+        // Make new files bold.
+        Component rendererComponent = super.getTableCellRendererComponent(table,
+                newValue, isSelected, hasFocus, row, column);
+        if (directoryTableFileBean.isRecentlyDownloaded()) {
+            rendererComponent.setFont(new Font(getFont().getName(), Font.BOLD,
+                    getFont().getSize()));
+        }
+        return rendererComponent;
     }
 
     private Component render(Directory directory, int columnInModel,
@@ -213,7 +224,7 @@ public class DirectoryTableCellRenderer extends DefaultTableCellRenderer {
                 } else if (directory.isExpected(controller
                     .getFolderRepository()))
                 {
-                    setForeground(AVAILEBLE);
+                    setForeground(AVAILABLE);
                     setIcon(Icons.EXPECTED);
                 } else {
                     setForeground(NORMAL);
@@ -240,7 +251,8 @@ public class DirectoryTableCellRenderer extends DefaultTableCellRenderer {
             hasFocus, row, column);
     }
 
-    private final void render0(FileInfo fInfo, String fileNameForTooltip) {
+    private final void render0(FileInfo fInfo, String fileNameForTooltip,
+                               boolean recentlyDownloaded) {
 
         // Obtain the newest version of this file
         FileInfo newestVersion = null;
@@ -298,7 +310,7 @@ public class DirectoryTableCellRenderer extends DefaultTableCellRenderer {
                     .getTranslation("fileinfo.ignore"));
             setForeground(NORMAL);
         } else if (fInfo.isExpected(controller.getFolderRepository())) {
-            setForeground(AVAILEBLE);
+            setForeground(AVAILABLE);
 
             setIcon(Icons.EXPECTED);
             statusForTooltip = Translation.getTranslation("fileinfo.expected");
@@ -309,24 +321,26 @@ public class DirectoryTableCellRenderer extends DefaultTableCellRenderer {
             // newer (e.g. v9) is available
             // DONE? Should be fixed with exclusion of deleted newer files
             setForeground(NEWER_AVAILABLE);
-            if (!newestVersion.isDeleted()) {
-                setIcon(Icons.EXPECTED);
-                statusForTooltip = Translation
-                    .getTranslation("fileinfo.newversion_availeble");
-            } else {
+            if (newestVersion.isDeleted()) {
                 if (newestVersion != newestDeletedVersion) {
-                    if (folder != null
-                        && SyncProfile.MANUAL_SYNCHRONIZATION.equals(folder.getSyncProfile()))
-                    {
+                    if (MANUAL_SYNCHRONIZATION.equals(folder.getSyncProfile())) {
                         // Show remote deletions when in project work sync
                         setIcon(Icons.DELETE);
                         statusForTooltip = Translation
-                            .getTranslation("fileinfo.remote_deleted");
+                                .getTranslation("fileinfo.remote_deleted");
                     }
                 }
+            } else {
+                setIcon(Icons.EXPECTED);
+                statusForTooltip = Translation
+                        .getTranslation("fileinfo.newversion_availeble");
             }
         } else {
             setForeground(NORMAL);
+            if (recentlyDownloaded) {
+                statusForTooltip = Translation
+                            .getTranslation("file_info.recently_downloaded");
+            }
         }
 
         // Okay basic infos added
@@ -553,7 +567,7 @@ public class DirectoryTableCellRenderer extends DefaultTableCellRenderer {
         return textInHTML.toString();
     }
 
-    private final static String replaceNullWithNA(String original) {
+    private static String replaceNullWithNA(String original) {
         return original == null ? "n/a" : original;
     }
 }

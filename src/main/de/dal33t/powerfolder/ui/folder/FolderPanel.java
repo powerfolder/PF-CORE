@@ -27,7 +27,6 @@ public class FolderPanel extends PFUIPanel {
 
     private final int homeTabId;
     private final int filesTabId;
-    private final int newFilesTabId;
     private final int membersTabId;
     private final int chatTabId;
     private final int settingsTabId;
@@ -38,7 +37,6 @@ public class FolderPanel extends PFUIPanel {
     private Folder folder;
     private HomeTab homeTab;
     private FilesTab filesTab;
-    private NewFilesTab newFilesTab;
     private MembersTab membersTab;
     private FolderChatPanel folderChatPanel;
     private SettingsTab settingsTab;
@@ -47,21 +45,11 @@ public class FolderPanel extends PFUIPanel {
     public FolderPanel(Controller controller, boolean previewMode) {
         super(controller);
         this.previewMode = previewMode;
-        if (previewMode) {
-            homeTabId = 0;
-            filesTabId = 1;
-            newFilesTabId = -1;
-            membersTabId = 2;
-            chatTabId = 3;
-            settingsTabId = 4;
-        } else {
-            homeTabId = 0;
-            filesTabId = 1;
-            newFilesTabId = 2;
-            membersTabId = 3;
-            chatTabId = 4;
-            settingsTabId = 5;
-        }
+        homeTabId = 0;
+        filesTabId = 1;
+        membersTabId = 2;
+        chatTabId = 3;
+        settingsTabId = 4;
     }
 
     /**
@@ -72,7 +60,6 @@ public class FolderPanel extends PFUIPanel {
      */
     public void setFolder(Folder folder) {        
         filesTab.setDirectory(folder.getDirectory());
-        newFilesTab.setFolder(folder);
         setFolder0(folder);
     }
 
@@ -149,10 +136,6 @@ public class FolderPanel extends PFUIPanel {
         return membersTabId;
     }
 
-    public int getNewFilesTabId() {
-        return newFilesTabId;
-    }
-
     public int getSettingsTabId() {
         return settingsTabId;
     }
@@ -162,7 +145,7 @@ public class FolderPanel extends PFUIPanel {
      * @param tab tab to show
      */
     public void setTab(int tab) {
-        if (tab == chatTabId || tab == homeTabId || tab == filesTabId || tab == newFilesTabId
+        if (tab == chatTabId || tab == homeTabId || tab == filesTabId
             || tab == membersTabId || tab == settingsTabId)
         {
             tabbedPanel.setSelectedIndex(tab);
@@ -175,8 +158,6 @@ public class FolderPanel extends PFUIPanel {
         int tab = tabbedPanel.getSelectedIndex();
         if (tab == filesTabId) {
             return filesTab;
-        } else if (tab == newFilesTabId) {
-            return newFilesTab;
         } else if (tab == homeTabId) {
             return homeTab;
         } else if (tab == membersTabId) {
@@ -208,7 +189,6 @@ public class FolderPanel extends PFUIPanel {
     private void initComponents() {
         tabbedPanel = new JTabbedPane();
         filesTab = new FilesTab(getController(), this);
-        newFilesTab = new NewFilesTab(getController());
         membersTab = new MembersTab(getController());
         folderChatPanel = new FolderChatPanel(getController(),
             getUIController().getChatModel());
@@ -229,18 +209,6 @@ public class FolderPanel extends PFUIPanel {
                 Translation.getTranslation("folderpanel.files.key").charAt(0));
         tabbedPanel.setIconAt(filesTabId, Icons.DIRECTORY);
 
-        if (!previewMode) {
-            tabbedPanel.add(
-                    ' ' + newFilesTab.getTitle() + ' ', newFilesTab
-                    .getUIComponent());
-            tabbedPanel.setMnemonicAt(newFilesTabId,
-                    Translation.getTranslation("folderpanel.new_files.key").charAt(0));
-            tabbedPanel.setIconAt(newFilesTabId, Icons.DIRECTORY_NEW);
-            if (!previewMode) {
-                tabbedPanel.getComponentAt(newFilesTabId).setVisible(false);
-            }
-        }
-        
         tabbedPanel.add(' '
                 + membersTab.getTitle() + ' ',
             membersTab.getUIComponent());
@@ -266,10 +234,6 @@ public class FolderPanel extends PFUIPanel {
 
     public FilesTab getFilesTab() {
         return filesTab;
-    }
-
-    public NewFilesTab getNewFilesTab() {
-        return newFilesTab;
     }
 
     /**
@@ -300,8 +264,6 @@ public class FolderPanel extends PFUIPanel {
     public void toggleDetails() {
         if (getCurrentTab().equals(filesTab)) {
             filesTab.toggeDetails();
-        } else if (getCurrentTab().equals(newFilesTab)) {
-            newFilesTab.toggeDetails();
         }
     }
 }

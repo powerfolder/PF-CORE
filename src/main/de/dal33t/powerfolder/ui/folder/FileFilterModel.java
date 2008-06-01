@@ -10,6 +10,8 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.event.FileFilterChangeListener;
 import de.dal33t.powerfolder.event.FilterChangedEvent;
+import de.dal33t.powerfolder.event.TransferAdapter;
+import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.MP3FileInfo;
 import de.dal33t.powerfolder.ui.FilterModel;
@@ -23,8 +25,9 @@ import de.dal33t.powerfolder.ui.FilterModel;
  * @version $Revision: 1.1 $
  */
 public class FileFilterModel extends FilterModel {
-    private List filelist;
-    private List filteredFilelist;
+    private List<FileInfo> downloadedFileList;
+    private List fileList;
+    private List filteredFileList;
     private Folder folder;
 
     private List<FileFilterChangeListener> listeners = new LinkedList<FileFilterChangeListener>();
@@ -39,6 +42,9 @@ public class FileFilterModel extends FilterModel {
 
     public FileFilterModel(Controller controller) {
         super(controller);
+        downloadedFileList = new ArrayList<FileInfo>();
+        controller.getTransferManager().addListener(
+                new MyTransferManagerListener());
     }
 
     /** reset to empty filter */
@@ -90,18 +96,18 @@ public class FileFilterModel extends FilterModel {
         return normalCount;
     }
 
-    public List filter(Folder folder, List filelist) {
+    public List filter(Folder folder, List fileList) {
 
         this.folder = folder;
-        this.filelist = filelist;
+        this.fileList = fileList;
         filter();
-        return filteredFilelist;
+        return filteredFileList;
     }
 
     Thread filterThread;
 
     public void filter() {
-        if (filelist != null) {
+        if (fileList != null) {
             if (filteringNeeded()) {
                 if (filterThread != null) {
                     filterThread.interrupt();
@@ -116,9 +122,9 @@ public class FileFilterModel extends FilterModel {
                 expectedCount = -1;
                 normalCount = -1;
                 countFiles();
-                List old = filteredFilelist;
-                filteredFilelist = filelist;
-                if (old != filteredFilelist) {
+                List old = filteredFileList;
+                filteredFileList = fileList;
+                if (old != filteredFileList) {
                     fireFileFilterChanged();
                 }
             }
@@ -126,11 +132,11 @@ public class FileFilterModel extends FilterModel {
     }
 
     public class FilterThread extends Thread {
-        boolean intteruppedFiltering = false;
+        boolean interruptedFiltering = false;
 
         public void run() {
-            filteredFilelist = filter0();
-            if (!intteruppedFiltering) {
+            filteredFileList = filter0();
+            if (!interruptedFiltering) {
                 fireFileFilterChanged();
             } else {
             }
@@ -138,19 +144,19 @@ public class FileFilterModel extends FilterModel {
         }
 
         private List filter0() {
-            if (filelist == null)
+            if (fileList == null)
                 throw new IllegalStateException("file list = null");
 
             expectedCount = 0;
             deletedCount = 0;
             normalCount = 0;
 
-            if (filelist.size() == 0) {
-                return filelist;
+            if (fileList.isEmpty()) {
+                return fileList;
             }
 
             List tmpFilteredFilelist = Collections
-                .synchronizedList(new ArrayList(filelist.size()));
+                .synchronizedList(new ArrayList(fileList.size()));
             // Prepare keywords from text filter
             String textFilter = (String) getSearchField().getValue();
             String[] keywords = null;
@@ -169,14 +175,14 @@ public class FileFilterModel extends FilterModel {
             }
 
             FolderRepository repo = getController().getFolderRepository();
-            for (int i = 0; i < filelist.size(); i++) {
+            for (int i = 0; i < fileList.size(); i++) {
                 if (Thread.interrupted()) {
-                    intteruppedFiltering = true;
+                    interruptedFiltering = true;
                     break;
                 }
-                Object obj = filelist.get(i);
+                Object obj = fileList.get(i);
                 if (obj instanceof FileInfo) {
-                    FileInfo fInfo = (FileInfo) filelist.get(i);
+                    FileInfo fInfo = (FileInfo) fileList.get(i);
 
                     boolean showFile = true;
                     boolean isDeleted = fInfo.isDeleted();
@@ -215,7 +221,9 @@ public class FileFilterModel extends FilterModel {
                     normalCount += isNormal ? 1 : 0;
 
                     if (showFile) {
-                        tmpFilteredFilelist.add(fInfo);
+                        boolean newFile = downloadedFileList.contains(fInfo);
+                        tmpFilteredFilelist.add(new DirectoryTableFileBean(fInfo, 
+                                newFile));
                     }
                 } else if (obj instanceof Directory) {
                     Directory directory = (Directory) obj;
@@ -255,8 +263,8 @@ public class FileFilterModel extends FilterModel {
                 int tmpDeletedCount = 0;
                 int tmpNormalCount = 0;
 
-                for (int i = 0; i < filelist.size(); i++) {
-                    Object obj = filelist.get(i);
+                for (int i = 0; i < fileList.size(); i++) {
+                    Object obj = fileList.get(i);
                     if (obj instanceof FileInfo) {
                         FileInfo fInfo = (FileInfo) obj;
 
@@ -468,9 +476,9 @@ public class FileFilterModel extends FilterModel {
 
     private void fireFileFilterChanged() {
         synchronized (this) {
-            if (filteredFilelist != null) {
+            if (filteredFileList != null) {
                 FilterChangedEvent event = new FilterChangedEvent(this,
-                    filteredFilelist);
+                        filteredFileList);
                 for (int i = 0; i < listeners.size(); i++) {
                     FileFilterChangeListener listener = listeners.get(i);
                     listener.filterChanged(event);
@@ -481,9 +489,9 @@ public class FileFilterModel extends FilterModel {
 
     private void fireFileCountChanged() {
         synchronized (this) {
-            if (filteredFilelist != null) {
+            if (filteredFileList != null) {
                 FilterChangedEvent event = new FilterChangedEvent(this,
-                    filteredFilelist);
+                        filteredFileList);
                 for (int i = 0; i < listeners.size(); i++) {
                     FileFilterChangeListener listener = listeners.get(i);
                     listener.countChanged(event);
@@ -491,4 +499,32 @@ public class FileFilterModel extends FilterModel {
             }
         }
     }
+
+    private class MyTransferManagerListener extends TransferAdapter {
+
+        public void downloadCompleted(TransferManagerEvent event) {
+            FileInfo fileInfo = event.getDownload().getFile();
+            if (fileInfo.getFolderInfo().equals(folder.getInfo())) {
+                if (!downloadedFileList.contains(fileInfo)) {
+                    downloadedFileList.add(fileInfo);
+                    filter();
+                }
+            }
+        }
+
+        public void completedDownloadRemoved(TransferManagerEvent event) {
+            FileInfo fileInfo = event.getDownload().getFile();
+            if (fileInfo.getFolderInfo().equals(folder.getInfo())) {
+                if (downloadedFileList.contains(fileInfo)) {
+                    downloadedFileList.remove(fileInfo);
+                    filter();
+                }
+            }
+        }
+
+        public boolean fireInEventDispathThread() {
+            return true;
+        }
+    }
+
 }
