@@ -10,11 +10,12 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.disk.Folder;
 import static de.dal33t.powerfolder.disk.SyncProfile.AUTOMATIC_SYNCHRONIZATION;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
 import de.dal33t.powerfolder.ui.Icons;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDER_LOCAL_BASE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.BASIC_SETUP_ATTIRBUTE;
 import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.Translation;
@@ -82,28 +83,13 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
             Object object = getWizardContext().getAttribute(BASIC_SETUP_ATTIRBUTE);
             if (object instanceof Boolean && (Boolean) object)
             {
-                object = getWizardContext().getAttribute(FOLDER_LOCAL_BASE);
-                if (object != null && object instanceof File)
-                {
-                    File defaultSynchronizedFolder = (File) object;
-                    if (defaultSynchronizedFolder.exists())
-                    {
-                        for (Folder folder : getController()
-                                .getFolderRepository().getFolders())
-                        {
-                            if (folder.getLocalBase()
-                                    .equals(defaultSynchronizedFolder))
-                            {
-                                getController().getOSClient().getAccount()
-                                        .setDefaultSynchronizedFolder(folder
-                                                .getInfo());
-                                getController().getOSClient().getFolderService()
-                                        .createFolder(folder.getInfo(),
-                                                AUTOMATIC_SYNCHRONIZATION);
-                                break;
-                            }
-                        }
-                    }
+                object = getWizardContext().getAttribute(FOLDERINFO_ATTRIBUTE);
+                if (object != null && object instanceof FolderInfo) {
+                    FolderInfo folderInfo = (FolderInfo) object;
+                    getController().getOSClient().getAccount()
+                            .setDefaultSynchronizedFolder(folderInfo);
+                    getController().getOSClient().getFolderService()
+                            .createFolder(folderInfo, AUTOMATIC_SYNCHRONIZATION);
                 }
             }
         } catch (Exception e) {
