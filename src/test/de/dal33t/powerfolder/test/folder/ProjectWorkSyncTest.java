@@ -1,6 +1,7 @@
 package de.dal33t.powerfolder.test.folder;
 
 import java.io.File;
+import java.util.Arrays;
 
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
@@ -17,8 +18,7 @@ import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 public class ProjectWorkSyncTest extends TwoControllerTestCase {
 
     @Override
-    protected void setUp() throws Exception
-    {
+    protected void setUp() throws Exception {
         super.setUp();
         connectBartAndLisa();
         joinTestFolder(SyncProfile.MANUAL_SYNCHRONIZATION);
@@ -178,7 +178,7 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
         scanFolder(getFolderAtBart());
         getFolderAtBart().setSyncProfile(SyncProfile.MANUAL_SYNCHRONIZATION);
         assertEquals(2, countDeleted(getFolderAtBart().getKnowFilesAsArray()));
-        
+
         getFolderAtLisa().setSyncProfile(SyncProfile.HOST_FILES);
         scanFolder(getFolderAtLisa());
         getFolderAtLisa().setSyncProfile(SyncProfile.MANUAL_SYNCHRONIZATION);
@@ -197,8 +197,10 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
         assertEquals(2, countExisting(getFolderAtLisa().getKnowFilesAsArray()));
         // Check deleted files.
         // Directory should contain onyl 2 files (+2 = system dir)
-        assertEquals(2 + 1, getFolderAtLisa().getLocalBase().list().length);
-        assertEquals(2 + 1, getFolderAtBart().getLocalBase().list().length);
+        assertEquals("Files at lisa: " + Arrays.asList(getFolderAtLisa().getLocalBase().list()),
+            2 + 1, getFolderAtLisa().getLocalBase().list().length);
+        assertEquals("File at bart: " + Arrays.asList(getFolderAtBart().getLocalBase().list()),
+            2 + 1, getFolderAtBart().getLocalBase().list().length);
     }
 
     private int countDeleted(FileInfo[] files) {
