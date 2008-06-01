@@ -164,7 +164,11 @@ public class TransferCounter extends Loggable implements Serializable {
         {
             switchActiveCounter();
         }
-        return ((double) bytes) * 1000 / took;
+        if (took == 0) {
+            return 0;
+        } else {
+            return ((double) bytes) * 1000 / took;
+        }
     }
 
     /**
