@@ -135,8 +135,16 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
     // From WizardPanel *******************************************************
 
     public boolean hasNext() {
-        return locationModel.getValue() != null
-            && !StringUtils.isBlank(locationModel.getValue().toString());
+        if (locationModel.getValue() != null
+            && !StringUtils.isBlank(locationModel.getValue().toString()))
+        {
+            String location = locationModel.getValue().toString();
+
+            // Do not allow user to select folder base dir.
+            return !location.equals(getController().getFolderRepository()
+                    .getFoldersBasedir()); 
+        }
+        return false;
     }
 
     public boolean validateNext(List list) {
