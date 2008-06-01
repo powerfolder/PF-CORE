@@ -511,6 +511,18 @@ public class Folder extends PFComponent {
     }
 
     /**
+     * Convenience method to add a pattern if it does not exist.
+     * 
+     * @param pattern
+     */
+    private void addPattern(String pattern) {
+        List<String> patterns = diskItemFilter.getPatterns();
+        if (!patterns.contains(pattern)) {
+            patterns.add(pattern);
+        }
+    }
+
+    /**
      * Retrieves the transferpriorities for file in this folder.
      * 
      * @return the associated TransferPriorities object
@@ -2563,6 +2575,34 @@ public class Folder extends PFComponent {
 
     public String getLoggerName() {
         return "Folder '" + getName() + '\'';
+    }
+
+    /**
+     * Ensures that default ignore patterns are set.
+     */
+    public void addDefaultExcludes() {
+        if (OSUtil.isWindowsSystem()) {
+            // Add thumbs to ignore pattern on windows systems
+            // Don't duplicate thumbs (like when moving a preview folder)
+            addPattern(THUMBS_DB);
+
+            // ... and temporary word files
+            addPattern(WORD_TEMP);
+
+            // Add desktop.ini to ignore pattern on windows systems
+            if (!OSUtil.isWindowsVistaSystem()
+                && ConfigurationEntry.USE_PF_ICON
+                    .getValueBoolean(getController()))
+            {
+                addPattern(FileUtils.DESKTOP_INI_FILENAME);
+            }
+        }
+        if (OSUtil.isMacOS()) {
+            // Add dsstore to ignore pattern on mac systems
+            // Don't duplicate dsstore (like when moving a preview folder)
+            addPattern(DS_STORE);
+        }
+
     }
 
     // Inner classes **********************************************************

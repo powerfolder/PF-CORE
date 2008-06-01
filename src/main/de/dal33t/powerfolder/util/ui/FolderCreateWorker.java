@@ -1,9 +1,5 @@
 package de.dal33t.powerfolder.util.ui;
 
-import static de.dal33t.powerfolder.disk.Folder.THUMBS_DB;
-import static de.dal33t.powerfolder.disk.Folder.DS_STORE;
-import static de.dal33t.powerfolder.disk.Folder.WORD_TEMP;
-import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderSettings;
@@ -12,8 +8,6 @@ import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.FileUtils;
-import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
  * Worker that helps to create a folder in the UI environment.
@@ -84,33 +78,7 @@ public abstract class FolderCreateWorker extends ActivityVisualizationWorker {
         if (createShortcut) {
             folder.setDesktopShortcut(true);
         }
-        if (OSUtil.isWindowsSystem()) {
-            // Add thumbs to ignore pattern on windows systems
-            // Don't duplicate thumbs (like when moving a preview folder)
-            if (!folder.getDiskItemFilter().getPatterns().contains(THUMBS_DB)) {
-                folder.getDiskItemFilter().addPattern(THUMBS_DB);
-            }
-
-            // ... and temporary word files
-            if (!folder.getDiskItemFilter().getPatterns().contains(WORD_TEMP)) {
-                folder.getDiskItemFilter().addPattern(WORD_TEMP);
-            }
-
-            // Add desktop.ini to ignore pattern on windows systems
-            if (!OSUtil.isWindowsVistaSystem()
-                && ConfigurationEntry.USE_PF_ICON
-                    .getValueBoolean(controller))
-            {
-                folder.getDiskItemFilter().addPattern(FileUtils.DESKTOP_INI_FILENAME);
-            }
-        }
-        if (OSUtil.isMacOS()) {
-            // Add dsstore to ignore pattern on mac systems
-            // Don't duplicate dsstore (like when moving a preview folder)
-            if (!folder.getDiskItemFilter().getPatterns().contains(DS_STORE)) {
-                folder.getDiskItemFilter().addPattern(DS_STORE);
-            }
-        }
+        folder.addDefaultExcludes();
         return null;
     }
 }

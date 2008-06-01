@@ -6,9 +6,6 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
-import static de.dal33t.powerfolder.disk.Folder.THUMBS_DB;
-import static de.dal33t.powerfolder.disk.Folder.DS_STORE;
-import static de.dal33t.powerfolder.disk.Folder.WORD_TEMP;
 import de.dal33t.powerfolder.disk.FolderException;
 import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
@@ -17,8 +14,6 @@ import de.dal33t.powerfolder.ui.dialog.SyncFolderPanel;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.FileUtils;
-import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.ui.SwingWorker;
 import jwf.Wizard;
 import jwf.WizardPanel;
@@ -176,43 +171,9 @@ public class FolderCreatePanel extends PFWizardPanel {
             if (createShortcut) {
                 folder.setDesktopShortcut(true);
             }
-            if (OSUtil.isWindowsSystem()) {
-                // Add thumbs to ignore pattern on windows systems
-                // Don't duplicate thumbs (like when moving a preview
-                // folder)
-                if (!folder.getDiskItemFilter().getPatterns()
-                    .contains(THUMBS_DB))
-                {
-                    folder.getDiskItemFilter().addPattern(THUMBS_DB);
-                }
 
-                // .. and temporary word files.
-                if (!folder.getDiskItemFilter().getPatterns()
-                    .contains(WORD_TEMP))
-                {
-                    folder.getDiskItemFilter().addPattern(WORD_TEMP);
-                }
+            folder.addDefaultExcludes();
 
-                // Add desktop.ini to ignore pattern on windows systems
-                if (!OSUtil.isWindowsVistaSystem()
-                    && ConfigurationEntry.USE_PF_ICON
-                        .getValueBoolean(getController()))
-                {
-                    folder.getDiskItemFilter().addPattern(
-                        FileUtils.DESKTOP_INI_FILENAME);
-                }
-            }
-
-            if (OSUtil.isMacOS()) {
-                // Add dsstore to ignore pattern on mac systems
-                // Don't duplicate dsstore (like when moving a preview
-                // folder)
-                if (!folder.getDiskItemFilter().getPatterns()
-                    .contains(DS_STORE))
-                {
-                    folder.getDiskItemFilter().addPattern(DS_STORE);
-                }
-            }
             if (backupByOS && getController().getOSClient().isLastLoginOK())
             {
                 try {

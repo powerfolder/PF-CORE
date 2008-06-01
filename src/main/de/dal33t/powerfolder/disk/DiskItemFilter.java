@@ -7,7 +7,6 @@ import de.dal33t.powerfolder.DiskItem;
 import de.dal33t.powerfolder.light.FileInfo;
 
 import java.util.List;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.regex.PatternSyntaxException;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -213,7 +212,7 @@ public class DiskItemFilter {
      * @return the list of patterns that may match files that should be ignored
      */
     public List<String> getPatterns() {
-        return new ArrayList<String>(patterns);
+        return patterns;
     }
 
     /**
