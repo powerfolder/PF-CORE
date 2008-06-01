@@ -13,6 +13,7 @@ import org.apache.commons.lang.StringUtils;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.util.Reject;
 
 /** @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A> */
 public class PluginManager extends PFComponent {
@@ -121,6 +122,7 @@ public class PluginManager extends PFComponent {
             throw new IllegalArgumentException("Plugin string blank");
         }
 
+        log().warn("Initializing plugin:  " + pluginClassName);
         try {
             Class pluginClass = Class.forName(pluginClassName);
             Plugin plugin;
@@ -167,7 +169,18 @@ public class PluginManager extends PFComponent {
         if (plugin == null) {
             return false;
         }
-        return plugins.contains(plugin);
+        for (Plugin canidate : plugins) {
+            if (canidate.equals(plugin)) {
+                return true;
+            }
+            if (canidate instanceof PluginWrapper) {
+                PluginWrapper wrapper = (PluginWrapper) canidate;
+                if (wrapper.getDeligate().equals(plugin)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**
@@ -226,6 +239,31 @@ public class PluginManager extends PFComponent {
     /** the total number of installed plugins */
     public int countPlugins() {
         return plugins.size() + disabledPlugins.size();
+    }
+
+    /**
+     * @param searchClass
+     * @return the first plugin with the given class.
+     */
+    public Plugin findPluginByClass(Class<?> searchClass) {
+        Reject.ifNull(searchClass, "Clazz is null");
+        for (Plugin plugin : plugins) {
+            if (plugin instanceof PluginWrapper) {
+                plugin = ((PluginWrapper) plugin).getDeligate();
+            }
+            if (searchClass.isInstance(plugin)) {
+                return plugin;
+            }
+        }
+        for (Plugin plugin : disabledPlugins) {
+            if (plugin instanceof PluginWrapper) {
+                plugin = ((PluginWrapper) plugin).getDeligate();
+            }
+            if (searchClass.isInstance(plugin)) {
+                return plugin;
+            }
+        }
+        return null;
     }
 
     public void addPluginManagerListener(
