@@ -134,8 +134,10 @@ public class PluginSettingsTab extends PFUIComponent implements PreferenceTab,
                         // Enable
                         getController().getPluginManager().setEnabled(plugin,
                             true);
+                        if (plugin.hasOptionsDialog()) {
+                            plugin.showOptionsDialog(preferencesDialog);
+                        }
                     }
-
                 }
             }
         });
