@@ -32,8 +32,6 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
-import de.dal33t.powerfolder.ui.model.FolderModel;
-import de.dal33t.powerfolder.ui.model.FolderRepositoryModel;
 import de.dal33t.powerfolder.event.FileNameProblemHandler;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
@@ -600,6 +598,9 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         // Remove the desktop shortcut
         folder.removeDesktopShortcut();
+
+        // Remove desktop ini if it exists
+        FileUtils.deleteDesktopIni(folder.getLocalBase());
 
         // remove folder from config
         Properties config = getController().getConfig();

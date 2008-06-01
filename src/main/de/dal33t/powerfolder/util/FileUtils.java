@@ -484,6 +484,19 @@ public class FileUtils {
     }
 
     /**
+     * Method to remove the desktop ini if it exists
+     * @param directory
+     */
+    public static void deleteDesktopIni(File directory) {
+        // Look for a desktop ini in the folder.
+        File desktopIniFile = new File(directory, DESKTOP_INI_FILENAME);
+        boolean iniExists = desktopIniFile.exists();
+        if (iniExists) {
+            desktopIniFile.delete();
+        }
+    }
+
+    /**
      * Scans a directory and gets full size of all files.
      * 
      * @param directory
