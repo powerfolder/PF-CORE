@@ -71,18 +71,20 @@ public class OnlineStorageQuickInfoPanel extends QuickInfoPanel {
                 .getTranslation("quickinfo.webservice.notconnected");
         }
         String text2;
-        if (con) {
+        if (!con) {
             int nMirrored = client.getJoinedFolders().size();
             int nFolders = getController().getFolderRepository()
                 .getFoldersCount();
             AccountDetails ad = client.getAccountDetails();
             String usedPerc = "? %";
             if (ad != null) {
-                double perc = ((double) ad.getSpaceUsed())
-                    * 100
-                    / ad.getAccount().getOSSubscription().getType()
+                long storageSize = ad.getAccount().getOSSubscription().getType()
                         .getStorageSize();
-                usedPerc = Format.formatNumber(perc) + " %";
+                if (storageSize != 0) {
+                    double perc = (double) ad.getSpaceUsed() * 100
+                            / storageSize;
+                    usedPerc = Format.formatNumber(perc) + " %";
+                }
             }
             text2 = Translation.getTranslation(
                 "quickinfo.webservice.foldersmirrored", nMirrored, nFolders,
