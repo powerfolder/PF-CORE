@@ -21,6 +21,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
@@ -184,13 +185,13 @@ public class Controller extends PFComponent {
 
     private PersistentTaskManager taskManager;
 
-    
-    private Callable<TransferManager> transferManagerFactory = new Callable<TransferManager>() {
+    private Callable<TransferManager> transferManagerFactory = new Callable<TransferManager>()
+    {
         public TransferManager call() throws Exception {
             return new TransferManager(Controller.this);
         }
     };
-    
+
     /** Handels the up and downloads */
     private TransferManager transferManager;
 
@@ -391,7 +392,7 @@ public class Controller extends PFComponent {
         } catch (Exception e) {
             log().error(e);
         }
-        
+
         setLoadingCompletion(10, 20);
 
         // start node manager
@@ -507,13 +508,39 @@ public class Controller extends PFComponent {
     }
 
     private void initOnlineStorageClient() {
-        // TODO Find a better way to detect and ensure OS login.
-        Member osNode = nodeManager.getNode(Constants.ONLINE_STORAGE_NODE_ID);
-        if (osNode == null) {
-            osNode = new MemberInfo("Online Storage",
-                Constants.ONLINE_STORAGE_NODE_ID).getNode(this, true);
+        Member server = null;
+        String serverConfig = config.getProperty("server");
+
+        if (!StringUtils.isBlank(serverConfig)) {
+            try {
+                StringTokenizer nizer = new StringTokenizer(serverConfig, ",");
+                String name = nizer.nextToken();
+                String address = nizer.nextToken();
+
+                String id = "";
+                if (nizer.hasMoreElements()) {
+                    id = nizer.nextToken();
+                }
+                MemberInfo serverInfo = new MemberInfo(name, id);
+                serverInfo.setConnectAddress(Util
+                    .parseConnectionString(address));
+                log().warn(
+                    "Loaded server from config: " + serverInfo + ", ID: " + id);
+                server = serverInfo.getNode(this, true);
+            } catch (NoSuchElementException e) {
+                log().error("Illegal 'server' in config: " + serverConfig);
+            }
         }
-        osClient = new ServerClient(this, osNode);
+
+        if (server == null) {
+            // Fallback to default OS
+            MemberInfo osInfo = new MemberInfo("Online Storage",
+                Constants.ONLINE_STORAGE_NODE_ID);
+            osInfo.setConnectAddress(Constants.ONLINE_STORAGE_ADDRESS);
+            server = osInfo.getNode(this, true);
+        }
+
+        osClient = new ServerClient(this, server);
     }
 
     private void setupProPlugins() {
@@ -1491,7 +1518,7 @@ public class Controller extends PFComponent {
     public TransferManager getTransferManager() {
         return transferManager;
     }
-    
+
     /**
      * ONLY USE THIS METHOD FOR TESTING PURPOSES!
      */
@@ -1558,42 +1585,7 @@ public class Controller extends PFComponent {
      * @returns the connected node
      */
     public Member connect(final String connectStr) throws ConnectionException {
-        return connect(parseConnectionString(connectStr));
-    }
-
-    /**
-     * Interprets a string as connection string and returns the address. null is
-     * returns if parse failed. Format is expeced as ' <connect ip>' or '
-     * <connect ip>: <port>'
-     * 
-     * @param connectStr
-     *            The connectStr to parse
-     * @return a InetSocketAddress created based on the connecStr
-     */
-    private InetSocketAddress parseConnectionString(String connectStr) {
-        if (connectStr == null) {
-            return null;
-        }
-        String ip = connectStr.trim();
-        int remotePort = ConnectionListener.DEFAULT_PORT;
-
-        // format <ip/dns> or <ip/dns>:<port> expected
-        // e.g. localhost:544
-        int dotdot = connectStr.indexOf(':');
-        if (dotdot >= 0 && dotdot < connectStr.length()) {
-            ip = connectStr.substring(0, dotdot);
-            try {
-                remotePort = Integer.parseInt(connectStr.substring(dotdot + 1,
-                    connectStr.length()));
-            } catch (NumberFormatException e) {
-                log().warn(
-                    "Illegal port in " + connectStr + ", triing default port");
-            }
-        }
-
-        // try to connect
-        InetSocketAddress connectAddress = new InetSocketAddress(ip, remotePort);
-        return connectAddress;
+        return connect(Util.parseConnectionString(connectStr));
     }
 
     /**
