@@ -88,7 +88,8 @@ public class RootTable extends JTable {
                     newValue = Translation.getTranslation("general.recyclebin");
                     setIcon(Icons.RECYCLE_BIN);
                 } else if (userObject == RootNode.WEBSERVICE_NODE_LABEL) {
-                    newValue = Translation.getTranslation("general.webservice");
+                    newValue = controller.getOSClient().getServer().getNick();
+                    //newValue = Translation.getTranslation("general.webservice");
                     setIcon(Icons.WEBSERVICE);
                 } else if (userObject == RootNode.DIALOG_TESTING_NODE_LABEL) {
                     newValue = "Dialog Testing";
