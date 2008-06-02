@@ -146,7 +146,7 @@ public class InformationQuarter extends PFUIComponent {
      * 
      * @param tree
      */
-   public void registerNavTreeListener(JTree tree) {
+    public void registerNavTreeListener(JTree tree) {
         tree.addTreeSelectionListener(new MyTreeSelectionListener());
     }
 
@@ -225,7 +225,8 @@ public class InformationQuarter extends PFUIComponent {
         } else if (selection instanceof RootNode) {
             displayRootPanel();
         } else if (selection == getUIController().getFolderRepositoryModel()
-            .getMyFoldersTreeNode()) {
+            .getMyFoldersTreeNode())
+        {
             displayMyFolders();
         } else if (selection == RootNode.DOWNLOADS_NODE_LABEL) {
             displayDownloads();
@@ -300,7 +301,8 @@ public class InformationQuarter extends PFUIComponent {
         myFoldersPanel = new MyFoldersPanel(getController());
 
         recycleBinPanel = new RecycleBinPanel(getController());
-        osPanel = new OnlineStoragePanel(getController(), getUIController().getServerClientModel());
+        osPanel = new OnlineStoragePanel(getController(), getUIController()
+            .getServerClientModel());
         debugPanel = new DebugPanel(getController());
         dialogTestingPanel = new DialogTestingPanel(getController());
         // chat
@@ -429,7 +431,11 @@ public class InformationQuarter extends PFUIComponent {
     public void displayOnlineStoragePanel() {
         showCard(ONLINE_STORAGE_PANEL);
         setDisplayTarget(osPanel);
-        getUIController().getServerClientModel().checkAndSetupAccount(true);
+        if (getUIController().getServerClientModel().getClient().isConnected())
+        {
+            // Only popup if connected
+            getUIController().getServerClientModel().checkAndSetupAccount(true);
+        }
         setTitle(osPanel.getTitle());
     }
 
