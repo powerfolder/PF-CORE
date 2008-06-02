@@ -17,12 +17,22 @@ public class Constants {
      * URL of the PowerFolder homepage
      */
     public static final String POWERFOLDER_URL = "http://www.powerfolder.com";
+    
+    /**
+     * Quickstart guides to PowerFolder
+     */
+    public static final String POWERFOLDER_QUICKSTART_URL = "http://www.powerfolder.com/quickstart.html";
+    
+    /**
+     * URL of the PowerFolder Wiki
+     */
+    public static final String POWERFOLDER_WIKI_URL = "http://wiki.powerfolder.com/wiki";
 
     /**
      * URL of the PowerFolder Pro page
      */
     public static final String POWERFOLDER_PRO_URL = "http://www.powerfolder.com/buynow.html";
-
+    
     /**
      * URL of the page to report bugs.
      */
