@@ -61,8 +61,26 @@ public class Help {
     public static LinkLabel createHelpLinkLabel(String labelText,
         String homepageNodeId)
     {
-        LinkLabel label = new LinkLabel(labelText, Constants.POWERFOLDER_URL + "/"
-            + homepageNodeId);
+        LinkLabel label = new LinkLabel(labelText, Constants.POWERFOLDER_URL
+            + "/" + homepageNodeId);
+        label.setBorder(Borders.createEmptyBorder("0,1,0,0"));
+        return label;
+    }
+
+    /**
+     * Creates a linklabel, which links to a article on the PowerFolder wiki.
+     * 
+     * @param labelText
+     *            the text of the lable
+     * @param article
+     *            The article url. e.g. LAN-IP-List for
+     *            http://wiki.powerfolder.com/wiki/LAN-IP-List
+     * @return a lable that is clickable
+     */
+    public static LinkLabel createWikiLinkLabel(String labelText, String article)
+    {
+        LinkLabel label = new LinkLabel(labelText, Constants.POWERFOLDER_WIKI_URL
+            + "/" + article);
         label.setBorder(Borders.createEmptyBorder("0,1,0,0"));
         return label;
     }
