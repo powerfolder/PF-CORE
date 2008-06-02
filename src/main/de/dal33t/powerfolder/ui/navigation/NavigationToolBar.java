@@ -187,7 +187,8 @@ public class NavigationToolBar extends PFUIComponent implements
             return Translation.getTranslation("general.recyclebin") + " ("
                 + getController().getRecycleBin().countAllRecycledFiles() + ')';
         } else if (userObject == RootNode.WEBSERVICE_NODE_LABEL) {
-            return Translation.getTranslation("general.webservice");
+            return getController().getOSClient().getServer().getNick();
+            // return Translation.getTranslation("general.webservice");
         } else if (navObject == getUIController().getNodeManagerModel()
             .getFriendsTreeNode())
         {

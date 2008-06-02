@@ -44,6 +44,10 @@ public class ServerClientModel extends PFUIComponent {
         initalizeEventhandling();
         updateMirroredFolders();
     }
+    
+    public ServerClient getClient() {
+        return client;
+    }
 
     public ListModel getMirroredFoldersModel() {
         return mirroredFolders;

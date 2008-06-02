@@ -83,12 +83,13 @@ public class NavTreeCellRenderer extends DefaultTreeCellRenderer {
                 .getNodeManager().getMySelf().getNick());
         } else if (userObject instanceof DirectoryModel) {
             DirectoryModel directoryModel = (DirectoryModel) userObject;
-            setIcon(Icons.getIconFor(directoryModel.getDirectory(), selected, controller));
+            setIcon(Icons.getIconFor(directoryModel.getDirectory(), selected,
+                controller));
             if (!selected) {
                 if (directoryModel.getDirectory().isDeleted()) {
                     setForeground(Color.RED);
-                } else if (directoryModel.getDirectory().isExpected(controller
-                    .getFolderRepository()))
+                } else if (directoryModel.getDirectory().isExpected(
+                    controller.getFolderRepository()))
                 {
                     setForeground(Color.GRAY);
                 }
@@ -107,8 +108,9 @@ public class NavTreeCellRenderer extends DefaultTreeCellRenderer {
                 text += " (";
                 if (node.isMySelf()) {
                     text += Translation.getTranslation("navtree.me");
-//                } else if (!node.isCompleteyConnected()) {
-//                    text += Translation.getTranslation("general.disconnected");
+                    // } else if (!node.isCompleteyConnected()) {
+                    // text +=
+                    // Translation.getTranslation("general.disconnected");
                 } else {
                     text += node.isOnLAN() ? Translation
                         .getTranslation("general.localnet") : Translation
@@ -171,7 +173,8 @@ public class NavTreeCellRenderer extends DefaultTreeCellRenderer {
                 + controller.getRecycleBin().countAllRecycledFiles() + ')';
             icon = Icons.RECYCLE_BIN;
         } else if (userObject == RootNode.WEBSERVICE_NODE_LABEL) {
-            text = Translation.getTranslation("general.webservice");
+            // text = Translation.getTranslation("general.webservice");
+            text = controller.getOSClient().getServer().getNick();
             icon = Icons.WEBSERVICE;
         } else if (userObject == RootNode.DEBUG_NODE_LABEL) {
             text = "Debug";
