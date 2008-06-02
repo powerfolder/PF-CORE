@@ -296,7 +296,7 @@ public class Member extends PFComponent {
         }
 
         if (getController().getOSClient().isServer(this)) {
-            // Always interesting is the webservice!
+            // Always interesting is the server!
             return true;
         }
 
@@ -865,7 +865,9 @@ public class Member extends PFComponent {
     private boolean waitForScan(Folder folder) {
         ScanResult.ResultState lastScanResultState = folder
             .getLastScanResultState();
-        log().warn("Scanning " + folder + "? " + folder.isScanning());
+        if (logVerbose) {
+            log().verbose("Scanning " + folder + "? " + folder.isScanning());
+        }
         if (!folder.isScanning()) {
             // folder OK!
             return true;
