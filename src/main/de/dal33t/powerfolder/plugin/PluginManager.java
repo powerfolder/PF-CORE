@@ -122,7 +122,9 @@ public class PluginManager extends PFComponent {
             throw new IllegalArgumentException("Plugin string blank");
         }
 
-        log().warn("Initializing plugin:  " + pluginClassName);
+        if (logDebug) {
+            log().debug("Initializing plugin: " + pluginClassName);
+        }
         try {
             Class pluginClass = Class.forName(pluginClassName);
             Plugin plugin;
