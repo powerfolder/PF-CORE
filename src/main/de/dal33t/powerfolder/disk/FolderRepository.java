@@ -658,11 +658,15 @@ public class FolderRepository extends PFComponent implements Runnable {
      * @param member
      */
     public void removeFromAllFolders(Member member) {
-        log().warn("Removing node from all folders: " + member);
+        if (logVerbose) {
+            log().verbose("Removing node from all folders: " + member);
+        }
         for (Folder folder : getFolders()) {
             folder.remove(member);
         }
-        log().warn("Node removed from all folders: " + member);
+        if (logVerbose) {
+            log().warn("Node removed from all folders: " + member);
+        }
     }
 
     /**
