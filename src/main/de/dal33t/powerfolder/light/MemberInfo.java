@@ -85,10 +85,8 @@ public class MemberInfo implements Serializable {
     // Logic ******************************************************************
 
     /**
-     * Answers if this memberinfo matches the member
-     * 
      * @param member
-     * @return
+     * @return true if this memberinfo is equal to the memberinfo of the member.
      */
     public boolean matches(Member member) {
         if (member == null) {
@@ -122,7 +120,8 @@ public class MemberInfo implements Serializable {
     }
 
     /**
-     * @param Controller
+     * @param controller
+     *            the controller
      * @return if this member is invalid
      */
     public boolean isInvalid(Controller controller) {
@@ -171,7 +170,7 @@ public class MemberInfo implements Serializable {
      * member is not longer available on nodemanager
      * 
      * @param controller
-     * @return
+     * @return the node
      */
     public Member getNode(Controller controller) {
         return controller.getNodeManager().getNode(this);
@@ -185,7 +184,7 @@ public class MemberInfo implements Serializable {
      * @param controller
      * @param addIfNessesary
      * if a new node should be added if not available @ nodemanager
-     * @return
+     * @return the node
      */
     public Member getNode(Controller controller, boolean addIfNessesary) {
         Member node = getNode(controller);
