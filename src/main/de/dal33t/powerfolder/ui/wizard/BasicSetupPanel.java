@@ -145,6 +145,7 @@ public class BasicSetupPanel extends PFWizardPanel {
             getController(), new WhatToDoPanel(getController()), false);
 
         if ((Boolean) setupDefaultModel.getValue()) {
+            
 
             // Build default folder first.
             getWizardContext().setAttribute(BASIC_SETUP_ATTIRBUTE, true);
