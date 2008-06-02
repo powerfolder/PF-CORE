@@ -306,6 +306,9 @@ public class UIController extends PFComponent {
             }
         }
 
+        // Open quickstart guides on first start
+        gotoQuickstartGuidesIfFirstStart();
+        
         // Open wizard on first start
         if (getController().getPreferences().getBoolean("openwizard2", true)) {
             hideSplash();
@@ -330,6 +333,24 @@ public class UIController extends PFComponent {
 
         hidePreviewsVM.setValue(ConfigurationEntry.HIDE_PREVIEW_FOLDERS
             .getValueBoolean(getController()));
+    }
+
+    private void gotoQuickstartGuidesIfFirstStart() {
+        boolean first = getController().getPreferences().getBoolean(
+            "first_start", true);
+        if (!first) {
+            return;
+        }
+        if (!getController().getPreferences().getBoolean("openwizard2", true)) {
+            getController().getPreferences().putBoolean("first_start", false);
+            return;
+        }
+        try {
+            BrowserLauncher.openURL(Constants.POWERFOLDER_QUICKSTART_URL);
+        } catch (IOException e1) {
+            log().warn("Unable to goto PowerFolder homepage", e1);
+        }
+        getController().getPreferences().putBoolean("first_start", false);
     }
 
     private void gotoHPIfRequired() {
@@ -861,12 +882,15 @@ public class UIController extends PFComponent {
         return inviteAction;
     }
 
-    private class ChatNotificationManager implements ChatModel.ChatModelListener {
+    private class ChatNotificationManager implements
+        ChatModel.ChatModelListener
+    {
 
         private Controller controller;
 
         private ChatNotificationManager(Controller controller,
-                                         ChatModel chatModel) {
+            ChatModel chatModel)
+        {
             this.controller = controller;
             chatModel.addChatModelListener(this);
         }
@@ -879,17 +903,17 @@ public class UIController extends PFComponent {
             }
 
             System.out.println(event.getMessage());
-            
+
             if (event.getSource() instanceof Member) {
                 Member m = (Member) event.getSource();
-                notifyMessage(
-                        Translation.getTranslation("chat.notification.title"),
-                        Translation.getTranslation("chat.notification.member_message",
-                        m.getNick()));
+                notifyMessage(Translation
+                    .getTranslation("chat.notification.title"), Translation
+                    .getTranslation("chat.notification.member_message", m
+                        .getNick()));
             } else {
-                notifyMessage(
-                        Translation.getTranslation("chat.notification.title"),
-                        Translation.getTranslation("chat.notification.message"));
+                notifyMessage(Translation
+                    .getTranslation("chat.notification.title"), Translation
+                    .getTranslation("chat.notification.message"));
             }
         }
 
@@ -898,7 +922,9 @@ public class UIController extends PFComponent {
         }
     }
 
-    private class MyFolderRepositoryListener implements FolderRepositoryListener {
+    private class MyFolderRepositoryListener implements
+        FolderRepositoryListener
+    {
 
         private final AtomicBoolean synchronizing = new AtomicBoolean();
 
@@ -923,8 +949,8 @@ public class UIController extends PFComponent {
         }
 
         /**
-         * Display folder synchronization info.
-         * A copy of the MyFolders quick info panel text.
+         * Display folder synchronization info. A copy of the MyFolders quick
+         * info panel text.
          */
         private void checkStatus() {
             long nTotalBytes = 0;
@@ -943,14 +969,15 @@ public class UIController extends PFComponent {
             boolean changed = false;
             synchronized (synchronizing) {
                 if (synchronizingFolders == 0) {
-                    text1 = Translation.getTranslation("quickinfo.myfolders.in_sync_all");
+                    text1 = Translation
+                        .getTranslation("quickinfo.myfolders.in_sync_all");
                     if (synchronizing.get()) {
                         changed = true;
                         synchronizing.set(false);
                     }
                 } else {
-                    text1 = Translation.getTranslation("quickinfo.myfolders.syncing",
-                            synchronizingFolders);
+                    text1 = Translation.getTranslation(
+                        "quickinfo.myfolders.syncing", synchronizingFolders);
                     if (!synchronizing.get()) {
                         changed = true;
                         synchronizing.set(true);
@@ -960,60 +987,61 @@ public class UIController extends PFComponent {
 
             if (changed) {
                 String text2 = Translation.getTranslation(
-                    "quickinfo.myfolders.powerfolders", Format.formatBytes(nTotalBytes),
-                        folders.length);
+                    "quickinfo.myfolders.powerfolders", Format
+                        .formatBytes(nTotalBytes), folders.length);
 
                 notifyMessage(Translation
-                        .getTranslation("quickinfo.myfolders.title"),
-                        text1 + "\n\n" + text2);
+                    .getTranslation("quickinfo.myfolders.title"), text1
+                    + "\n\n" + text2);
             }
         }
     }
 
-
-
     /**
      * Shows a notification message only if the UI is minimized.
-     *
+     * 
      * @param title
-     *          The title to display under 'PowerFolder'.
+     *            The title to display under 'PowerFolder'.
      * @param message
-     *          Message to show if notification is displayed.
+     *            Message to show if notification is displayed.
      */
-    public void notifyMessage(String title, String message)
-    {
-        if (mainFrame.isIconifiedOrHidden() && started &&
-                ConfigurationEntry.SHOW_NOTIFICATIONS.getValueBoolean(getController())) {
+    public void notifyMessage(String title, String message) {
+        if (mainFrame.isIconifiedOrHidden()
+            && started
+            && ConfigurationEntry.SHOW_NOTIFICATIONS
+                .getValueBoolean(getController()))
+        {
             NotificationHandler notificationHandler = new NotificationHandler(
-                    getController(), title, message);
+                getController(), title, message);
             notificationHandler.show();
         }
     }
 
     /**
-     * Run a task via the notification system. If the UI is minimized,
-     * a notification message will appear. If the user selects the accept button,
+     * Run a task via the notification system. If the UI is minimized, a
+     * notification message will appear. If the user selects the accept button,
      * the task runs. If the UI is not minimized, the task runs anyway.
-     *
+     * 
      * @param title
-     *          The title to display under 'PowerFolder'.
+     *            The title to display under 'PowerFolder'.
      * @param message
-     *          Message to show if notification is displayed.
+     *            Message to show if notification is displayed.
      * @param task
-     *          Task to do if user selects 'accept' option or if UI is not minimized.
+     *            Task to do if user selects 'accept' option or if UI is not
+     *            minimized.
      */
-    public void notifyMessage(String title, String message,
-                              TimerTask task)
-    {
-        if (mainFrame.isIconifiedOrHidden() && started &&
-                ConfigurationEntry.SHOW_NOTIFICATIONS.getValueBoolean(getController())) {
+    public void notifyMessage(String title, String message, TimerTask task) {
+        if (mainFrame.isIconifiedOrHidden()
+            && started
+            && ConfigurationEntry.SHOW_NOTIFICATIONS
+                .getValueBoolean(getController()))
+        {
             NotificationHandler notificationHandler = new NotificationHandler(
-                    getController(), title, message, task);
+                getController(), title, message, task);
             notificationHandler.show();
         } else {
             task.run();
         }
     }
-
 
 }
