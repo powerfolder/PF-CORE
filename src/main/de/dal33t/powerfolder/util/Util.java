@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.InetSocketAddress;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -27,6 +28,7 @@ import org.apache.commons.lang.Validate;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.net.ConnectionListener;
 import de.dal33t.powerfolder.util.os.Win32.ShellLink;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 
@@ -54,8 +56,8 @@ public class Util {
      * @return true if the pro version is running.
      */
     public static final boolean isRunningProVersion() {
-            return Util.class.getClassLoader().getResourceAsStream(
-                "web-resources/js/ajax.js") != null;
+        return Util.class.getClassLoader().getResourceAsStream(
+            "web-resources/js/ajax.js") != null;
     }
 
     /**
@@ -148,14 +150,14 @@ public class Util {
     /**
      * @param c
      * @param otherIsOnLAN
-     * @return true, if this client may request parts from multiple sources 
+     * @return true, if this client may request parts from multiple sources
      */
     private static boolean allowSwarming(Controller c, boolean otherIsOnLAN) {
         Reject.ifNull(c, "Controller is null");
         return (ConfigurationEntry.USE_SWARMING_ON_INTERNET.getValueBoolean(c) && !otherIsOnLAN)
             || (ConfigurationEntry.USE_SWARMING_ON_LAN.getValueBoolean(c) && otherIsOnLAN);
     }
-    
+
     /**
      * @param c
      * @param otherIsOnLAN
@@ -163,26 +165,24 @@ public class Util {
      */
     private static boolean allowDeltaSync(Controller c, boolean otherIsOnLAN) {
         Reject.ifNull(c, "Controller is null");
-        return  (ConfigurationEntry.USE_DELTA_ON_INTERNET.getValueBoolean(c) && !otherIsOnLAN)
+        return (ConfigurationEntry.USE_DELTA_ON_INTERNET.getValueBoolean(c) && !otherIsOnLAN)
             || (ConfigurationEntry.USE_DELTA_ON_LAN.getValueBoolean(c) && otherIsOnLAN);
     }
-    
+
     public static boolean useSwarming(Controller c, Member other) {
         Reject.ifNull(c, "Controller is null");
-        return other.isSupportingPartTransfers() 
+        return other.isSupportingPartTransfers()
             && allowSwarming(c, other.isOnLAN());
     }
-    
-    public static boolean usePartRequests(Controller c, Member other)
-    {
+
+    public static boolean usePartRequests(Controller c, Member other) {
         Validate.notNull(c);
-        return useDeltaSync(c, other)
-            || useSwarming(c, other);
+        return useDeltaSync(c, other) || useSwarming(c, other);
     }
 
     public static boolean useDeltaSync(Controller c, Member other) {
         Validate.notNull(c);
-        return other.isSupportingPartTransfers() 
+        return other.isSupportingPartTransfers()
             && allowDeltaSync(c, other.isOnLAN());
     }
 
@@ -381,12 +381,13 @@ public class Util {
             if (Character.isLetterOrDigit(bin[i] & 0xff)) {
                 b.append((char) (bin[i] & 0xff));
             } else {
-                b.append('%').append(DIGITS[bin[i] >> 4]).append(DIGITS[bin[i] & 0xf]);
+                b.append('%').append(DIGITS[bin[i] >> 4]).append(
+                    DIGITS[bin[i] & 0xf]);
             }
         }
         return b.toString();
     }
-    
+
     /**
      * Decodes a url fragment, thus special characters are tranferred from a url
      * compatible style
@@ -479,19 +480,6 @@ public class Util {
     }
 
     /**
-     * @param email
-     *            the email string to check.
-     * @return true if the input is a valid email address.
-     */
-    public static boolean isValidEmail(String email) {
-        if (email == null) {
-            return false;
-        }
-        int etIndex = email.indexOf('@');
-        return etIndex > 0 && email.lastIndexOf('.') > etIndex;
-    }
-
-    /**
      * Converts an array of bytes into an array of characters representing the
      * hexidecimal values of each byte in order. The returned array will be
      * double the length of the passed array, as it takes two characters to
@@ -568,8 +556,7 @@ public class Util {
      * @param versionStr2
      * @return true if versionStr1 is greater than versionStr2
      */
-    public static boolean compareVersions(String versionStr1,
-        String versionStr2)
+    public static boolean compareVersions(String versionStr1, String versionStr2)
     {
         Reject.ifNull(versionStr1, "Version1 is null");
         Reject.ifNull(versionStr2, "Version2 is null");
@@ -641,6 +628,41 @@ public class Util {
             return minor1 > minor2;
         }
         return major1 > major2;
+    }
+
+    /**
+     * Interprets a string as connection string and returns the address. null is
+     * returns if parse failed. Format is expeced as ' <connect ip>' or '
+     * <connect ip>: <port>'
+     * 
+     * @param connectStr
+     *            The connectStr to parse
+     * @return a InetSocketAddress created based on the connecStr
+     */
+    public static InetSocketAddress parseConnectionString(String connectStr) {
+        if (connectStr == null) {
+            return null;
+        }
+        String ip = connectStr.trim();
+        int remotePort = ConnectionListener.DEFAULT_PORT;
+
+        // format <ip/dns> or <ip/dns>:<port> expected
+        // e.g. localhost:544
+        int dotdot = connectStr.indexOf(':');
+        if (dotdot >= 0 && dotdot < connectStr.length()) {
+            ip = connectStr.substring(0, dotdot);
+            try {
+                remotePort = Integer.parseInt(connectStr.substring(dotdot + 1,
+                    connectStr.length()));
+            } catch (NumberFormatException e) {
+                LOG.warn("Illegal port in " + connectStr
+                    + ", triing default port");
+            }
+        }
+
+        // try to connect
+        InetSocketAddress connectAddress = new InetSocketAddress(ip, remotePort);
+        return connectAddress;
     }
 
 }
