@@ -616,8 +616,10 @@ public class NodeManager extends PFComponent {
      * 
      * @param node
      */
-    private void removeNode(Member node) {
-        log().warn("Removing " + node.getNick() + " from nodelist");
+    public void removeNode(Member node) {
+        if (logVerbose) {
+            log().verbose("Removing " + node.getNick() + " from nodelist");
+        }
         // Shut down node
         node.shutdown();
 
@@ -630,7 +632,7 @@ public class NodeManager extends PFComponent {
 
         // Fire event
         fireNodeRemoved(node);
-        log().debug("Node remove complete. " + node);
+        log().debug(node + " removed from from know nodes list");
     }
 
     /**
@@ -665,7 +667,7 @@ public class NodeManager extends PFComponent {
             return friendsArr;
         }
     }
-    
+
     /**
      * Called by member. Not getting this event from event handling because we
      * have to handle things definitivily before other elements work on that
@@ -751,7 +753,7 @@ public class NodeManager extends PFComponent {
             // Remove from list
             connectedNodes.remove(node);
             nodesWentOnline.remove(node.getInfo());
-            
+
             getController().getTransferManager().breakTransfers(node);
         }
 
@@ -765,7 +767,7 @@ public class NodeManager extends PFComponent {
 
     /**
      * Callback method from Member.
-     *
+     * 
      * @param from
      * @param message
      */
@@ -775,7 +777,7 @@ public class NodeManager extends PFComponent {
 
     /**
      * Processes a request for nodelist.
-     *
+     * 
      * @param request
      *            the request.
      * @param from
@@ -794,7 +796,7 @@ public class NodeManager extends PFComponent {
      * <p>
      * Attention: This method synchronizes on the internal friendlist. Avoid
      * holding a lock while calling this method.
-     *
+     * 
      * @return the message.
      */
     public RequestNodeList createDefaultNodeListRequestMessage() {
@@ -812,7 +814,7 @@ public class NodeManager extends PFComponent {
 
     /**
      * Processes new node informations. Reconnects if required.
-     *
+     * 
      * @param newNodes
      *            the new nodes to queue.
      */
@@ -913,7 +915,7 @@ public class NodeManager extends PFComponent {
     /**
      * Accpets a node, method does not block like
      * <code>acceptNode(Socket)</code>
-     *
+     * 
      * @see #acceptConnection(Socket)
      * @param socket
      */
@@ -966,7 +968,7 @@ public class NodeManager extends PFComponent {
     /**
      * Main method for a new member connection. Connection will be validated
      * against own member database. Duplicate connections will be dropped.
-     *
+     * 
      * @param socket
      * @throws ConnectionException
      */
@@ -1085,14 +1087,15 @@ public class NodeManager extends PFComponent {
                     // Only accept hanlder, if our one is disco! or our is not
                     // on LAN
                     acceptHandler = true;
-                    // #841 NOT isCompletelyConnected() 
+                    // #841 NOT isCompletelyConnected()
                 } else if (member.isConnected()) {
                     rejectCause = "Duplicate connection detected to " + member
                         + ", disconnecting";
                     // Not accept node
                     acceptHandler = false;
                 } else if (member.isReconnecting()) {
-                    log().warn("NOT ACCEPTING, already connecting to :" + member);
+                    log().warn(
+                        "NOT ACCEPTING, already connecting to :" + member);
                     acceptHandler = false;
                 } else {
                     // Otherwise accept. (our member = disco)
