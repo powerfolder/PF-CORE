@@ -5,13 +5,14 @@ import java.util.*;
 import org.apache.commons.lang.StringUtils;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.disk.Directory;
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.FolderRepository;
+import de.dal33t.powerfolder.DiskItem;
+import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.event.FileFilterChangeListener;
 import de.dal33t.powerfolder.event.FilterChangedEvent;
 import de.dal33t.powerfolder.event.TransferAdapter;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
+import de.dal33t.powerfolder.disk.Directory;
+import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.MP3FileInfo;
 import de.dal33t.powerfolder.ui.FilterModel;
@@ -19,295 +20,49 @@ import de.dal33t.powerfolder.ui.FilterModel;
 /**
  * Based on the settings in this model it filters a filelist.
  * <p>
- * FIXME: CLEAN UP THIS MESS!!!!!!
  * 
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.1 $
  */
 public class FileFilterModel extends FilterModel {
-    private List<FileInfo> downloadedFileList;
-    private List fileList;
-    private List filteredFileList;
-    private Folder folder;
 
-    private List<FileFilterChangeListener> listeners = new LinkedList<FileFilterChangeListener>();
-    private boolean showNormal = true;
-    private boolean showExpected = true;
-    private boolean showDeleted = false;
+    public static final int MODE_LOCAL_AND_INCOMING = 0;
+    public static final int MODE_LOCAL_ONLY = 1;
+    public static final int MODE_INCOMING_ONLY = 2;
+    public static final int MODE_NEW_ONLY = 3;
+    public static final int MODE_DELETED_PREVIOUS = 4;
 
-    // The number of files
-    private int deletedCount;
-    private int expectedCount;
-    private int normalCount;
+    private final List<FileFilterChangeListener> listeners;
+    private final List<DiskItem> fileList;
+    private int mode;
 
+    /**
+     * Constructor.
+     *
+     * @param controller
+     */
     public FileFilterModel(Controller controller) {
         super(controller);
-        downloadedFileList = new ArrayList<FileInfo>();
-        controller.getTransferManager().addListener(
-                new MyTransferManagerListener());
+        fileList = new ArrayList<DiskItem>();
+        listeners = new ArrayList<FileFilterChangeListener>();
+        getController().getTransferManager().addListener(new MyTransferAdapter());
     }
 
-    /** reset to empty filter */
+    /**
+     * Clear the search value.
+     */
     public void reset() {
-        showNormal = true;
-        showExpected = true;
-        showDeleted = false;
         getSearchField().setValue("");
     }
 
-    public boolean isShowDeleted() {
-        return showDeleted;
-    }
-
-    public void setShowDeleted(boolean showDeleted) {
-        this.showDeleted = showDeleted;
-        filter();
-    }
-
-    public boolean isShowExpected() {
-        return showExpected;
-    }
-
-    public void setShowExpected(boolean showExpected) {
-        this.showExpected = showExpected;
-        filter();
-    }
-
-    public boolean isShowNormal() {
-        return showNormal;
-    }
-
-    public void setShowNormal(boolean showNormal) {
-        this.showNormal = showNormal;
-        filter();
-    }
-
-    // Totals *****************************************************************
-
-    public int getDeletedCount() {
-        return deletedCount;
-    }
-
-    public int getExpectedCount() {
-        return expectedCount;
-    }
-
-    public int getNormalCount() {
-        return normalCount;
-    }
-
-    public List filter(Folder folder, List fileList) {
-
-        this.folder = folder;
-        this.fileList = fileList;
-        filter();
-        return filteredFileList;
-    }
-
-    Thread filterThread;
-
+    /**
+     * Do the actual filtering.
+     */
     public void filter() {
-        if (fileList != null) {
-            if (filteringNeeded()) {
-                if (filterThread != null) {
-                    filterThread.interrupt();
-                    filterThread = null;
-                }
-
-                filterThread = new FilterThread();
-                filterThread.setName("FileFilter");
-                filterThread.start();
-            } else {
-                deletedCount = -1;
-                expectedCount = -1;
-                normalCount = -1;
-                countFiles();
-                List old = filteredFileList;
-                filteredFileList = fileList;
-                if (old != filteredFileList) {
-                    fireFileFilterChanged();
-                }
-            }
-        }
+        new FilterThread().start();
     }
 
-    public class FilterThread extends Thread {
-        boolean interruptedFiltering = false;
-
-        public void run() {
-            filteredFileList = filter0();
-            if (!interruptedFiltering) {
-                fireFileFilterChanged();
-            } else {
-            }
-            filterThread = null;
-        }
-
-        private List filter0() {
-            if (fileList == null)
-                throw new IllegalStateException("file list = null");
-
-            expectedCount = 0;
-            deletedCount = 0;
-            normalCount = 0;
-
-            if (fileList.isEmpty()) {
-                return fileList;
-            }
-
-            List tmpFilteredFilelist = Collections
-                .synchronizedList(new ArrayList(fileList.size()));
-            // Prepare keywords from text filter
-            String textFilter = (String) getSearchField().getValue();
-            String[] keywords = null;
-            if (StringUtils.isBlank(textFilter)) {
-                // Set to null to improve performance later in loop
-                textFilter = null;
-            } else {
-                // Match lowercase
-                textFilter = textFilter.toLowerCase();
-                StringTokenizer nizer = new StringTokenizer(textFilter, " ");
-                keywords = new String[nizer.countTokens()];
-                int i = 0;
-                while (nizer.hasMoreTokens()) {
-                    keywords[i++] = nizer.nextToken();
-                }
-            }
-
-            FolderRepository repo = getController().getFolderRepository();
-            for (int i = 0; i < fileList.size(); i++) {
-                if (Thread.interrupted()) {
-                    interruptedFiltering = true;
-                    break;
-                }
-                Object obj = fileList.get(i);
-                if (obj instanceof FileInfo) {
-                    FileInfo fInfo = (FileInfo) fileList.get(i);
-
-                    boolean showFile = true;
-                    boolean isDeleted = fInfo.isDeleted();
-                    boolean isExpected = fInfo.isExpected(repo);
-                    boolean isNormal = !isDeleted && !isExpected;
-
-                    // text filter
-                    if (textFilter != null) {
-                        // Check for match
-                        showFile = matches(fInfo, keywords)
-                            || matchesMeta(fInfo, keywords);
-                    }
-
-                    if (isDeleted && folder != null && !folder.isKnown(fInfo)) {
-                        // Do never show deleted files from remote members
-                        showFile = false;
-                    }
-
-                    if (isDeleted && !showDeleted) {
-                        showFile = false;
-                    }
-                    if (isExpected && !showExpected) {
-                        showFile = false;
-                    }
-                    if (isNormal && !showNormal) {
-                        showFile = false;
-                    }
-                    // Calculate number of files in category
-                    // Deleted only counted if known, (never count deleted from
-                    // remote)
-                    deletedCount += isDeleted && folder != null
-                        && folder.isKnown(fInfo) ? 1 : 0;
-                    if (folder.getDiskItemFilter().isRetained(fInfo)) {
-                        expectedCount += isExpected ? 1 : 0;
-                    }
-                    normalCount += isNormal ? 1 : 0;
-
-                    if (showFile) {
-                        boolean newFile = downloadedFileList.contains(fInfo);
-                        tmpFilteredFilelist.add(new DirectoryTableFileBean(fInfo, 
-                                newFile));
-                    }
-                } else if (obj instanceof Directory) {
-                    Directory directory = (Directory) obj;
-                    // text filter
-                    if (textFilter != null) {
-                        // Check for match
-                        if (!matches(directory, keywords)) {
-                            continue;
-                        }
-                    }
-                    boolean isDeleted = directory.isDeleted();
-                    boolean isExpected = directory.isExpected(repo);
-                    boolean isNormal = !isDeleted && !isExpected;
-                    if (isDeleted && !showDeleted) {
-                        continue;
-                    }
-                    if (isExpected && !showExpected) {
-                        continue;
-                    }
-                    if (isNormal && !showNormal) {
-                        continue;
-                    }
-                    tmpFilteredFilelist.add(directory);
-                } else
-                    throw new IllegalStateException(
-                        "Unknown type, cannot filter");
-            }
-            return tmpFilteredFilelist;
-        }
-
-    }
-
-    private void countFiles() {
-        Runnable runner = new Runnable() {
-            public void run() {
-                int tmpExpectedCount = 0;
-                int tmpDeletedCount = 0;
-                int tmpNormalCount = 0;
-
-                for (int i = 0; i < fileList.size(); i++) {
-                    Object obj = fileList.get(i);
-                    if (obj instanceof FileInfo) {
-                        FileInfo fInfo = (FileInfo) obj;
-
-                        boolean isDeleted = fInfo.isDeleted();
-                        boolean isExpected = fInfo.isExpected(getController()
-                            .getFolderRepository());
-                        boolean isNormal = !isDeleted && !isExpected;
-
-                        // Calculate number of files in category
-                        // Deleted only counted if known, (never count deleted
-                        // from remote)
-                        tmpDeletedCount += isDeleted && folder != null
-                            && folder.isKnown(fInfo) ? 1 : 0;
-                        if (folder.getDiskItemFilter().isRetained(fInfo)) {
-                            tmpExpectedCount += isExpected ? 1 : 0;
-                        }
-                        tmpNormalCount += isNormal ? 1 : 0;
-                    }
-                }
-                expectedCount = tmpExpectedCount;
-                deletedCount = tmpDeletedCount;
-                normalCount = tmpNormalCount;
-                fireFileCountChanged();
-            }
-        };
-        Thread countThread = new Thread(runner);
-        countThread.setName("FileFilter.Counter");
-        countThread.start();
-    }
-
-    private boolean filteringNeeded() {
-        if (!showNormal || !showExpected || !showDeleted) {
-            return true;
-        }
-        String textFilter = (String) getSearchField().getValue();
-        if (!StringUtils.isBlank(textFilter)) {
-            return true;
-        }
-        return false;
-    }
-
-    // Helper code ************************************************************
-    private static final boolean matches(Directory directory, String[] keywords)
+    private static boolean matches(Directory directory, String[] keywords)
     {
         if (keywords == null || keywords.length == 0) {
             return true;
@@ -324,7 +79,7 @@ public class FileFilterModel extends FilterModel {
                 keyword = keyword.substring(1);
                 // must be something left
                 if (keyword.length() != 0) {
-                    // Match for directoryname
+                    // Match for directory name
                     String directoryname = directory.getName().toLowerCase();
                     if (directoryname.indexOf(keyword) >= 0) {
                         // matches nagative search
@@ -337,7 +92,7 @@ public class FileFilterModel extends FilterModel {
                 continue;
             }
 
-            // Match for directoryname
+            // Match for directory name
             String directoryname = directory.getName().toLowerCase();
             if (directoryname.indexOf(keyword) >= 0) {
                 // Match by name. Ok, continue
@@ -349,17 +104,15 @@ public class FileFilterModel extends FilterModel {
         return true;
     }
 
-    private static final boolean matchesMeta(FileInfo file, String[] keywords) {
+    private static boolean matchesMeta(FileInfo file, String[] keywords) {
         if (keywords == null || keywords.length == 0) {
             return true;
         }
-        if (file instanceof MP3FileInfo) {
-            return matchesMP3((MP3FileInfo) file, keywords);
-        }
-        return false;
+        return file instanceof MP3FileInfo &&
+                matchesMP3((MP3FileInfo) file, keywords);
     }
 
-    private static final boolean matchesMP3(MP3FileInfo file, String[] keywords)
+    private static boolean matchesMP3(MP3FileInfo file, String[] keywords)
     {
         for (int i = 0; i < keywords.length; i++) {
             String keyword = keywords[i];
@@ -407,7 +160,7 @@ public class FileFilterModel extends FilterModel {
      *            the keyword array, all lowercase
      * @return the file matches the keywords
      */
-    private static final boolean matches(FileInfo file, String[] keywords) {
+    private static boolean matches(FileInfo file, String[] keywords) {
         if (keywords == null || keywords.length == 0) {
             return true;
         }
@@ -466,60 +219,159 @@ public class FileFilterModel extends FilterModel {
         return true;
     }
 
-    public void addFileFilterChangeListener(FileFilterChangeListener l) {
-        listeners.add(l);
+    /**
+     * Add a FileFilterChangeListener.
+     *
+     * @param fileFilterChangeListener
+     */
+    public void addFileFilterChangeListener(FileFilterChangeListener fileFilterChangeListener) {
+       listeners.add(fileFilterChangeListener);
     }
 
-    public void removeFileFilterChangeListener(FileFilterChangeListener l) {
-        listeners.remove(l);
+    /**
+     * Sets the files to filter.
+     *
+     * @param fileListArg
+     */
+    public void setFiles(List<DiskItem> fileListArg) {
+        synchronized (fileList) {
+            fileList.clear();
+            fileList.addAll(fileListArg);
+        }
     }
 
-    private void fireFileFilterChanged() {
-        synchronized (this) {
-            if (filteredFileList != null) {
-                FilterChangedEvent event = new FilterChangedEvent(this,
-                        filteredFileList);
-                for (int i = 0; i < listeners.size(); i++) {
-                    FileFilterChangeListener listener = listeners.get(i);
+    /**
+     * Sets the filter mode.
+     *
+     * @param mode
+     */
+    public void setMode(int mode) {
+        this.mode = mode;
+    }
+
+    /**
+     * Class to do the actual filtering in a thread.
+     */
+    private class FilterThread extends Thread {
+
+        public void run() {
+            List<DiskItem> resultList = new ArrayList<DiskItem>();
+
+            // Prepare keywords from text filter
+            String textFilter = (String) getSearchField().getValue();
+            String[] keywords = null;
+            if (StringUtils.isBlank(textFilter)) {
+                // Set to null to improve performance later in loop
+                textFilter = null;
+            } else {
+                // Match lowercase
+                textFilter = textFilter.toLowerCase();
+                StringTokenizer nizer = new StringTokenizer(textFilter, " ");
+                keywords = new String[nizer.countTokens()];
+                int i = 0;
+                while (nizer.hasMoreTokens()) {
+                    keywords[i++] = nizer.nextToken();
+                }
+            }
+
+            FolderRepository repo = getController().getFolderRepository();
+
+            for (DiskItem diskItem : fileList) {
+                if (diskItem instanceof FileInfo) {
+                    FileInfo fInfo = (FileInfo) diskItem;
+
+                    // text filter
+                    boolean showFile = true;
+                    if (textFilter != null) {
+                        // Check for match
+                        showFile = matches(fInfo, keywords)
+                                || matchesMeta(fInfo, keywords);
+                    }
+
+                    if (showFile) {
+                        boolean isNew = recentlyDownloaded(fInfo);
+                        boolean isDeleted = fInfo.isDeleted();
+                        boolean isIncoming = fInfo.isNewerAvailable(repo);
+                        switch (mode)
+                        {
+                            case MODE_LOCAL_ONLY:
+                                showFile = !isIncoming && !isDeleted;
+                                break;
+                            case MODE_INCOMING_ONLY:
+                                showFile = isIncoming;
+                                break;
+                            case MODE_NEW_ONLY:
+                                showFile = isNew;
+                                break;
+                            case MODE_DELETED_PREVIOUS:
+                                showFile = isDeleted;
+                                break;
+                            case MODE_LOCAL_AND_INCOMING:
+                            default:
+                                showFile = !isDeleted;
+                                break;
+                        }
+
+                        if (showFile) {
+                            resultList.add(fInfo);
+                        }
+                    }
+
+                } else if (diskItem instanceof Directory) {
+                    Directory directory = (Directory) diskItem;
+                    // text filter
+                    if (textFilter != null) {
+                        // Check for match
+                        if (!matches(directory, keywords)) {
+                            continue;
+                        }
+                    }
+                    resultList.add(directory);
+                } else {
+                    throw new IllegalStateException(
+                            "Unknown type, cannot filter");
+                }
+
+            }
+
+            // Check that the filter text has not changed.
+            String finalTextFilter = (String) getSearchField().getValue();
+            if (StringUtils.isBlank(finalTextFilter)) {
+                finalTextFilter = null;
+            }
+            if (finalTextFilter == null || finalTextFilter.equals(textFilter)) {
+                FilterChangedEvent event = new FilterChangedEvent(FileFilterModel.this, resultList);
+                for (FileFilterChangeListener listener : listeners) {
                     listener.filterChanged(event);
                 }
             }
         }
     }
 
-    private void fireFileCountChanged() {
-        synchronized (this) {
-            if (filteredFileList != null) {
-                FilterChangedEvent event = new FilterChangedEvent(this,
-                        filteredFileList);
-                for (int i = 0; i < listeners.size(); i++) {
-                    FileFilterChangeListener listener = listeners.get(i);
-                    listener.countChanged(event);
-                }
+    /**
+     * Return true if there is a download manager for this file info.
+     *
+     * @param fInfo
+     * @return
+     */
+    private boolean recentlyDownloaded(FileInfo fInfo) {
+        for (DownloadManager downloadManager : getController()
+                .getTransferManager().getCompletedDownloadsCollection()) {
+            if (downloadManager.getFileInfo().equals(fInfo)) {
+                return true;
             }
         }
+        return false;
     }
 
-    private class MyTransferManagerListener extends TransferAdapter {
-
-        public void downloadCompleted(TransferManagerEvent event) {
-            FileInfo fileInfo = event.getDownload().getFile();
-            if (fileInfo.getFolderInfo().equals(folder.getInfo())) {
-                if (!downloadedFileList.contains(fileInfo)) {
-                    downloadedFileList.add(fileInfo);
-                    filter();
-                }
-            }
-        }
+    private class MyTransferAdapter extends TransferAdapter {
 
         public void completedDownloadRemoved(TransferManagerEvent event) {
-            FileInfo fileInfo = event.getDownload().getFile();
-            if (fileInfo.getFolderInfo().equals(folder.getInfo())) {
-                if (downloadedFileList.contains(fileInfo)) {
-                    downloadedFileList.remove(fileInfo);
-                    filter();
-                }
-            }
+            filter();
+        }
+
+        public void downloadCompleted(TransferManagerEvent event) {
+            filter();
         }
 
         public boolean fireInEventDispathThread() {

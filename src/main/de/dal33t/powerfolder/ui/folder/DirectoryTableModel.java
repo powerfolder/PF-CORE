@@ -14,6 +14,7 @@ import javax.swing.table.TableModel;
 
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.DiskItem;
 import de.dal33t.powerfolder.ui.model.SortedTableModel;
 import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.disk.Folder;
@@ -53,7 +54,7 @@ public class DirectoryTableModel extends PFComponent implements TableModel,
         Translation.getTranslation("filelist.availability")};
 
     private boolean recursive;
-    private List displayList = Collections.synchronizedList(new ArrayList());
+    private final List<DiskItem> displayList = Collections.synchronizedList(new ArrayList<DiskItem>());
     private FileFilterModel fileFilterModel;
     private DirectoryTable table;
     /**
@@ -74,10 +75,11 @@ public class DirectoryTableModel extends PFComponent implements TableModel,
         fileFilterModel
             .addFileFilterChangeListener(new FileFilterChangeListener() {
                 public void filterChanged(FilterChangedEvent event) {
-                    List filterdList = event.getFilteredList();
+                    List<DiskItem> filterdList = event.getFilteredList();
                     sort(filterdList);
                     synchronized (displayList) {
-                        displayList = filterdList;
+                        displayList.clear();
+                        displayList.addAll(filterdList);
                     }
                     fireModelChanged();
                     Runnable runner = new Runnable() {
@@ -111,9 +113,6 @@ public class DirectoryTableModel extends PFComponent implements TableModel,
                     } else {
                         EventQueue.invokeLater(runner);
                     }
-                }
-
-                public void countChanged(FilterChangedEvent event) {
                 }
             });
     }
@@ -184,16 +183,17 @@ public class DirectoryTableModel extends PFComponent implements TableModel,
     }
 
     private void createDisplayList() {
-        List allFiles;
+        List<DiskItem> allFiles = new ArrayList<DiskItem>();
         if (recursive) {
-            allFiles = directory.getFilesRecursive();
+            allFiles.addAll(directory.getFilesRecursive());
         } else {
-            allFiles = directory.getValidFiles();
+            allFiles.addAll(directory.getValidFiles());
         }
         if (!recursive) { // add the subdirectories
             allFiles.addAll(0, directory.listSubDirectories());
         }
-        fileFilterModel.filter(directory.getRootFolder(), allFiles);
+        fileFilterModel.setFiles(allFiles);
+        fileFilterModel.filter();
     }
 
     public Class getColumnClass(int columnIndex) {
@@ -379,7 +379,7 @@ public class DirectoryTableModel extends PFComponent implements TableModel,
      *            the list to sort
      * @return if the model was freshly sorted
      */
-    private boolean sort(List dispList) {
+    private boolean sort(List<DiskItem> dispList) {
         if (fileInfoComparatorType != -1) {
             DiskItemComparator comparator = new DiskItemComparator(
                 fileInfoComparatorType, directory);
@@ -399,14 +399,15 @@ public class DirectoryTableModel extends PFComponent implements TableModel,
      */
     public void reverseList() {
         sortAscending = !sortAscending;
-        List tmpDisplayList = Collections.synchronizedList(new ArrayList(
+        List<DiskItem> tmpDisplayList = Collections.synchronizedList(new ArrayList<DiskItem>(
             displayList.size()));
         synchronized (displayList) {
             int size = displayList.size();
             for (int i = 0; i < size; i++) {
                 tmpDisplayList.add(displayList.get(size - 1 - i));
             }
-            displayList = tmpDisplayList;
+            displayList.clear();
+            displayList.addAll(tmpDisplayList);
         }
         fireModelChanged();
     }

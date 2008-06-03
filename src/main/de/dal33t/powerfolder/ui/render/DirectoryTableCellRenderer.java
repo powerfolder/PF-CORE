@@ -23,7 +23,6 @@ import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.folder.DirectoryTableModel;
-import de.dal33t.powerfolder.ui.folder.DirectoryTableFileBean;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.UIUtil;
@@ -65,8 +64,8 @@ public class DirectoryTableCellRenderer extends DefaultTableCellRenderer {
         setIcon(null);
         setToolTipText(null);
         int columnInModel = UIUtil.toModel(table, column);
-        if (value instanceof DirectoryTableFileBean) {
-            return render((DirectoryTableFileBean) value, columnInModel, table,
+        if (value instanceof FileInfo) {
+            return render((FileInfo) value, columnInModel, table,
                 isSelected, hasFocus, row, column);
         } else if (value instanceof Directory) {
             return render((Directory) value, columnInModel, table,
@@ -88,7 +87,7 @@ public class DirectoryTableCellRenderer extends DefaultTableCellRenderer {
         if (columnInModel == 1) {
             // filename column is the most visible so insert status line there..
             setForeground(STATUS);
-            setHorizontalAlignment(SwingConstants.LEFT);
+            setHorizontalAlignment(LEFT);
             setToolTipText(statusLine);
             return super.getTableCellRendererComponent(table, statusLine,
                 isSelected, hasFocus, row, column);
@@ -99,13 +98,12 @@ public class DirectoryTableCellRenderer extends DefaultTableCellRenderer {
 
     }
 
-    private Component render(DirectoryTableFileBean directoryTableFileBean,
+    private Component render(FileInfo fileInfo,
                              int columnInModel, JTable table,
                              boolean isSelected, boolean hasFocus, int row,
                              int column)
     {
         String newValue = "";
-        FileInfo fileInfo = directoryTableFileBean.getFileInfo();
         switch (columnInModel) {
             case 0 : { // file type
                 Icon icon = Icons.getIconFor(fileInfo, controller);
@@ -135,8 +133,7 @@ public class DirectoryTableCellRenderer extends DefaultTableCellRenderer {
                 } else {
                     fileNameForTooltip = replaceSpacesWithNBSP(newValue);
                 }
-                render0(fileInfo, fileNameForTooltip, directoryTableFileBean
-                        .isRecentlyDownloaded());
+                render0(fileInfo, fileNameForTooltip, recentlyDownloaded(fileInfo));
                 setHorizontalAlignment(SwingConstants.LEFT);
                 break;
             }
@@ -186,11 +183,27 @@ public class DirectoryTableCellRenderer extends DefaultTableCellRenderer {
         // Make new files bold.
         Component rendererComponent = super.getTableCellRendererComponent(table,
                 newValue, isSelected, hasFocus, row, column);
-        if (directoryTableFileBean.isRecentlyDownloaded()) {
+        if (recentlyDownloaded(fileInfo)) {
             rendererComponent.setFont(new Font(getFont().getName(), Font.BOLD,
                     getFont().getSize()));
         }
         return rendererComponent;
+    }
+
+    /**
+     * Return true if there is a download manager for this file info.
+     *
+     * @param fInfo
+     * @return
+     */
+    private boolean recentlyDownloaded(FileInfo fInfo) {
+        for (DownloadManager downloadManager : controller
+                .getTransferManager().getCompletedDownloadsCollection()) {
+            if (downloadManager.getFileInfo().equals(fInfo)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private Component render(Directory directory, int columnInModel,
