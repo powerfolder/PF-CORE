@@ -7,10 +7,9 @@ import java.util.StringTokenizer;
 import org.apache.commons.lang.StringUtils;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.event.FilterChangedEvent;
+import de.dal33t.powerfolder.event.FolderInfoChangedEvent;
 import de.dal33t.powerfolder.event.FolderInfoFilterChangeListener;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.light.MemberInfo;
 
 /**
  * Based on the settings in this model it filters a Folder info List
@@ -177,7 +176,7 @@ public class FolderInfoFilterModel extends FilterModel {
 
     private void fireFolderInfoFilterChanged() {
         if (filteredFolderList != null) {
-            FilterChangedEvent event = new FilterChangedEvent(this,
+            FolderInfoChangedEvent event = new FolderInfoChangedEvent(this,
                 filteredFolderList);
             for (int i = 0; i < listeners.size(); i++) {
 

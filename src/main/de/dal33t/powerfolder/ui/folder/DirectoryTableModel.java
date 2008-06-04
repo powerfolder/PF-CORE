@@ -19,7 +19,7 @@ import de.dal33t.powerfolder.ui.model.SortedTableModel;
 import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.event.FileFilterChangeListener;
-import de.dal33t.powerfolder.event.FilterChangedEvent;
+import de.dal33t.powerfolder.event.FileFilterChangedEvent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.Translation;
@@ -74,7 +74,7 @@ public class DirectoryTableModel extends PFComponent implements TableModel,
         this.fileFilterModel = fileFilterModel;
         fileFilterModel
             .addFileFilterChangeListener(new FileFilterChangeListener() {
-                public void filterChanged(FilterChangedEvent event) {
+                public void filterChanged(FileFilterChangedEvent event) {
                     List<DiskItem> filterdList = event.getFilteredList();
                     sort(filterdList);
                     synchronized (displayList) {

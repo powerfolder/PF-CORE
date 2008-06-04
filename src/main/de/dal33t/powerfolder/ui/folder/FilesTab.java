@@ -1,8 +1,6 @@
 package de.dal33t.powerfolder.ui.folder;
 
-import java.awt.Cursor;
-import java.awt.Point;
-import java.awt.Rectangle;
+import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
@@ -30,19 +28,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.TimerTask;
 
-import javax.swing.Action;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComponent;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JToggleButton;
-import javax.swing.JViewport;
-import javax.swing.ListSelectionModel;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.JTableHeader;
@@ -63,14 +49,7 @@ import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.event.FolderAdapter;
-import de.dal33t.powerfolder.event.FolderEvent;
-import de.dal33t.powerfolder.event.FolderMembershipEvent;
-import de.dal33t.powerfolder.event.FolderMembershipListener;
-import de.dal33t.powerfolder.event.NodeManagerEvent;
-import de.dal33t.powerfolder.event.NodeManagerListener;
-import de.dal33t.powerfolder.event.TransferAdapter;
-import de.dal33t.powerfolder.event.TransferManagerEvent;
+import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.ui.PreviewPanel;
 import de.dal33t.powerfolder.ui.action.AbortTransferAction;
@@ -103,8 +82,7 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * @version $Revision: 1.8 $ *
  */
 public class FilesTab extends PFUIComponent implements FolderTab,
-    HasDetailsPanel
-{
+    HasDetailsPanel, FileFilterChangeListener {
 
     /** enable/disable drag and drop */
     public static final boolean ENABLE_DRAG_N_DROP = false;
@@ -126,6 +104,7 @@ public class FilesTab extends PFUIComponent implements FolderTab,
     private JPanel filterBar;
     private JPanel toolbar;
     private JToggleButton showHideFileDetailsButton;
+    private JPanel fileStatusPanel;
 
     private JComponent fileDetailsPanelComp;
 
@@ -153,6 +132,11 @@ public class FilesTab extends PFUIComponent implements FolderTab,
     private static final long DELAY = DateUtils.MILLIS_PER_MINUTE;
     /** time in milli sec of last update finish */
     private long lastUpdate;
+
+    private JLabel localFilesLabel;
+    private JLabel incomingFilesLabel;
+    private JLabel deletedFilesLabel;
+    private JLabel recycledFilesLabel;
 
     private MyTimerTask task;
 
@@ -183,12 +167,13 @@ public class FilesTab extends PFUIComponent implements FolderTab,
 
     private JComponent createContentPanel() {
         FormLayout layout = new FormLayout("fill:pref:grow",
-            "pref, fill:0:grow, pref");
+            "pref, fill:0:grow, pref, pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
         builder.add(filterBar, cc.xy(1, 1));
         builder.add(directoryTableScrollPane, cc.xy(1, 2));
         builder.add(fileDetailsPanelComp, cc.xy(1, 3));
+        builder.add(fileStatusPanel, cc.xy(1, 4));
         return builder.getPanel();
     }
 
@@ -228,6 +213,11 @@ public class FilesTab extends PFUIComponent implements FolderTab,
                     true);
             }
         });
+
+        // Add self as FileFilderChangeListener to FileFilterModel,
+        // respond to changes in # files.
+        fileFilterModel.addFileFilterChangeListener(this);
+
         // Add selection listener for updating selection model
         directoryTable.getSelectionModel().addListSelectionListener(
             new DirectoryListSelectionListener());
@@ -239,6 +229,14 @@ public class FilesTab extends PFUIComponent implements FolderTab,
         fileDetailsPanelComp = createFileDetailsPanel();
         // Details not visible @ start
         fileDetailsPanelComp.setVisible(false);
+
+        localFilesLabel = new JLabel("", SwingConstants.CENTER);
+        incomingFilesLabel = new JLabel("", SwingConstants.CENTER);
+        deletedFilesLabel = new JLabel("", SwingConstants.CENTER);
+        recycledFilesLabel = new JLabel("", SwingConstants.CENTER);
+        updateFileNumbers(0, 0, 0, 0);
+
+        fileStatusPanel = createFileStatusPanel();
 
         Action showHideFileDetailsAction = new ShowHideFileDetailsAction(this,
             getController());
@@ -261,6 +259,22 @@ public class FilesTab extends PFUIComponent implements FolderTab,
                 new MyDropTargetListener(), true);
         }
 
+    }
+
+    private JPanel createFileStatusPanel() {
+        FormLayout layout = new FormLayout("pref:grow, 3dlu, pref:grow, 3dlu, pref:grow, 3dlu, pref:grow",
+            "pref, pref");
+        PanelBuilder builder = new PanelBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+
+        builder.addSeparator(null, cc.xyw(1, 1, 7));
+
+        builder.add(localFilesLabel, cc.xy(1, 2));
+        builder.add(incomingFilesLabel, cc.xy(3, 2));
+        builder.add(deletedFilesLabel, cc.xy(5, 2));
+        builder.add(recycledFilesLabel, cc.xy(7, 2));
+
+        return builder.getPanel();
     }
 
     private JPanel createFilterBar() {
@@ -416,8 +430,6 @@ public class FilesTab extends PFUIComponent implements FolderTab,
             selectionModel));
     }
 
-    // Actions ****************************************************************
-
     /**
      * Returns the selection model. Changes upon selection.
      * 
@@ -425,6 +437,27 @@ public class FilesTab extends PFUIComponent implements FolderTab,
      */
     public SelectionModel getSelectionModel() {
         return selectionModel;
+    }
+
+    /**
+     * Respond to changes in numbers of files.
+     * @param event
+     */
+    public void filterChanged(FileFilterChangedEvent event) {
+        updateFileNumbers(event.getLocalFiles(), event.getIncomingFiles(),
+                event.getDeletedFiles(), event.getRecycledFiles());
+    }
+
+    private void updateFileNumbers(int localFiles, int incomingFiles,
+                                   int deletedFiles, int recycledFiles) {
+        localFilesLabel.setText(Translation
+                .getTranslation("files_tab.local_files", localFiles));
+        incomingFilesLabel.setText(Translation
+                .getTranslation("files_tab.incoming_files", incomingFiles));
+        deletedFilesLabel.setText(Translation
+                .getTranslation("files_tab.deleted_files", deletedFiles));
+        recycledFilesLabel.setText(Translation
+                .getTranslation("files_tab.recycled_files", recycledFiles));
     }
 
     /** updates the SelectionModel if some selection has changed in the table */
@@ -1199,7 +1232,7 @@ public class FilesTab extends PFUIComponent implements FolderTab,
 
     private void enableIgnoreUnignore() {
 
-        Object[] selections = getSelectionModel().getSelections();
+        Object[] selections = selectionModel.getSelections();
 
         if (selections == null || selections.length == 0) {
             blackWhitelistAction.setEnabled(false);

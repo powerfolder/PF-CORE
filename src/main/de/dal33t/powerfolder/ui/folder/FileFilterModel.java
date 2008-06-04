@@ -7,12 +7,10 @@ import org.apache.commons.lang.StringUtils;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.DiskItem;
 import de.dal33t.powerfolder.transfer.DownloadManager;
-import de.dal33t.powerfolder.event.FileFilterChangeListener;
-import de.dal33t.powerfolder.event.FilterChangedEvent;
-import de.dal33t.powerfolder.event.TransferAdapter;
-import de.dal33t.powerfolder.event.TransferManagerEvent;
+import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.disk.FolderRepository;
+import de.dal33t.powerfolder.disk.RecycleBin;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.MP3FileInfo;
 import de.dal33t.powerfolder.ui.FilterModel;
@@ -255,6 +253,7 @@ public class FileFilterModel extends FilterModel {
     private class FilterThread extends Thread {
 
         public void run() {
+
             List<DiskItem> resultList = new ArrayList<DiskItem>();
 
             // Prepare keywords from text filter
@@ -275,6 +274,12 @@ public class FileFilterModel extends FilterModel {
             }
 
             FolderRepository repo = getController().getFolderRepository();
+            RecycleBin recycleBin = getController().getRecycleBin();
+
+            int localFiles = 0;
+            int incomingFiles = 0;
+            int deletedFiles = 0;
+            int recycledFiles = 0;
 
             for (DiskItem diskItem : fileList) {
                 if (diskItem instanceof FileInfo) {
@@ -312,6 +317,17 @@ public class FileFilterModel extends FilterModel {
                                 break;
                         }
 
+                        if (isDeleted) {
+                            deletedFiles++;
+                            if (recycleBin.isInRecycleBin(fInfo)) {
+                                recycledFiles++;
+                            }
+                        } else if (isIncoming) {
+                            incomingFiles++;
+                        } else {
+                            localFiles++;
+                        }
+
                         if (showFile) {
                             resultList.add(fInfo);
                         }
@@ -340,7 +356,9 @@ public class FileFilterModel extends FilterModel {
                 finalTextFilter = null;
             }
             if (finalTextFilter == null || finalTextFilter.equals(textFilter)) {
-                FilterChangedEvent event = new FilterChangedEvent(FileFilterModel.this, resultList);
+                FileFilterChangedEvent event = new FileFilterChangedEvent(
+                        FileFilterModel.this, resultList, localFiles,
+                        incomingFiles, deletedFiles, recycledFiles);
                 for (FileFilterChangeListener listener : listeners) {
                     listener.filterChanged(event);
                 }
@@ -364,6 +382,9 @@ public class FileFilterModel extends FilterModel {
         return false;
     }
 
+    /**
+     * Respond to changes in completed downloads.
+     */
     private class MyTransferAdapter extends TransferAdapter {
 
         public void completedDownloadRemoved(TransferManagerEvent event) {
