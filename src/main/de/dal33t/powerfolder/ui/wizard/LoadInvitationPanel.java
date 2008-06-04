@@ -88,8 +88,12 @@ public class LoadInvitationPanel extends PFWizardPanel {
             return (WizardPanel) getWizardContext().getAttribute(
                 PFWizard.SUCCESS_PANEL);
         } else {
+            File base = invitation.getSuggestedLocalBase();
+            if (base == null) {
+                base = new File(getController().getFolderRepository().getFoldersBasedir());
+            }
             return new ChooseDiskLocationPanel(getController(),
-                invitation.getSuggestedLocalBase().getAbsolutePath(),
+                base.getAbsolutePath(),
                 new FolderCreatePanel(getController()));
         }
     }
