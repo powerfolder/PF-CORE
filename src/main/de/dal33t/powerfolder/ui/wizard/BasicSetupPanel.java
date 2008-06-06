@@ -10,17 +10,9 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.NetworkingMode;
-import static de.dal33t.powerfolder.disk.SyncProfile.AUTOMATIC_SYNCHRONIZATION;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.Icons;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SYNC_PROFILE_ATTRIBUTE;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDER_LOCAL_BASE;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.CREATE_DESKTOP_SHORTCUT;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SEND_INVIATION_AFTER_ATTRIBUTE;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.BASIC_SETUP_ATTIRBUTE;
-import static de.dal33t.powerfolder.ui.wizard.PFWizard.SUCCESS_PANEL;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Help;
 import de.dal33t.powerfolder.util.ui.*;
 import jwf.WizardPanel;
 import org.apache.commons.lang.StringUtils;
@@ -28,11 +20,9 @@ import org.apache.commons.lang.StringUtils;
 import javax.swing.*;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
-import java.io.File;
 
 /**
  * Panel for basic setup like nick, networking mode, etc.
@@ -47,10 +37,6 @@ public class BasicSetupPanel extends PFWizardPanel {
     private LineSpeedSelectionPanel wanLineSpeed;
     private JTextField nameField;
     private JComboBox networkingModeChooser;
-    private ValueModel setupDefaultModel;
-    private JCheckBox setupDefaultCB;
-
-    private File defaultSynchronizedFolder;
 
     public BasicSetupPanel(Controller controller) {
         super(controller);
@@ -94,27 +80,6 @@ public class BasicSetupPanel extends PFWizardPanel {
             .getTranslation("preferences.dialog.linesettings"), cc.xy(1, 9));
         builder.add(wanLineSpeed, cc.xy(1, 11));
 
-        if (defaultSynchronizedFolder.exists()) {
-            // Hmmm. User has already created this???
-            setupDefaultCB.setSelected(false);
-        } else {
-            builder.add(createSetupDefultPanel(), cc.xy(1, 13));
-        }
-
-        return builder.getPanel();
-    }
-
-    private Component createSetupDefultPanel() {
-        FormLayout layout = new FormLayout("pref, 3dlu, pref", "pref");
-        PanelBuilder builder = new PanelBuilder(layout);
-        CellConstraints cc = new CellConstraints();
-        builder.add(setupDefaultCB, cc.xy(1, 1));
-        builder.add(Help.createWikiLinkLabel(Translation
-            .getTranslation("general.what_is_this"), "Default_Folder"), cc.xy(
-            3, 1));
-        builder.setOpaque(true);
-        builder.setBackground(Color.white);
-
         return builder.getPanel();
     }
 
@@ -140,27 +105,10 @@ public class BasicSetupPanel extends PFWizardPanel {
         tm.setAllowedUploadCPSForWAN(wanLineSpeed.getUploadSpeedKBPS());
         tm.setAllowedDownloadCPSForWAN(wanLineSpeed.getDownloadSpeedKBPS());
 
-        // Next is OS panel (no entry required) and the whattodo
-        LoginOnlineStoragePanel osPanel = new LoginOnlineStoragePanel(
+        getWizardContext().setAttribute(WizardContextAttributes
+                .BASIC_SETUP_ATTIRBUTE, true);
+        return new LoginOnlineStoragePanel(
             getController(), new WhatToDoPanel(getController()), false);
-
-        if ((Boolean) setupDefaultModel.getValue()) {
-            
-
-            // Build default folder first.
-            getWizardContext().setAttribute(BASIC_SETUP_ATTIRBUTE, true);
-            getWizardContext().setAttribute(SUCCESS_PANEL, osPanel);
-            getWizardContext().setAttribute(SYNC_PROFILE_ATTRIBUTE,
-                AUTOMATIC_SYNCHRONIZATION);
-            getWizardContext().setAttribute(FOLDER_LOCAL_BASE,
-                defaultSynchronizedFolder);
-            getWizardContext().setAttribute(CREATE_DESKTOP_SHORTCUT, false);
-            getWizardContext().setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE,
-                false);
-            return new FolderCreatePanel(getController());
-        } else {
-            return osPanel;
-        }
     }
 
     /**
@@ -208,17 +156,6 @@ public class BasicSetupPanel extends PFWizardPanel {
                     .setEnabled(e.getItem() instanceof PrivateNetworking);
             }
         });
-
-        defaultSynchronizedFolder = new File(getController()
-            .getFolderRepository().getFoldersBasedir(), Translation
-            .getTranslation("wizard.basicsetup.default_folder_name"));
-
-        setupDefaultModel = new ValueHolder(true);
-        setupDefaultCB = BasicComponentFactory.createCheckBox(
-            setupDefaultModel, Translation
-                .getTranslation("wizard.basicsetup.setup_default"));
-        setupDefaultCB.setOpaque(true);
-        setupDefaultCB.setBackground(Color.white);
 
     }
 

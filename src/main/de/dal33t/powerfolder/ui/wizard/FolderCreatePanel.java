@@ -5,12 +5,14 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderException;
 import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.dialog.SyncFolderPanel;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.BASIC_SETUP_ATTIRBUTE;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
@@ -20,6 +22,7 @@ import jwf.WizardPanel;
 
 import javax.swing.*;
 import java.io.File;
+import java.util.List;
 
 /**
  * A panel that actually starts the creation process of a folder on display.
@@ -164,6 +167,8 @@ public class FolderCreatePanel extends PFWizardPanel {
 
     private class MyFolderCreateWorker extends SwingWorker {
 
+        private boolean problems;
+
         @Override
         public Object construct() {
             folder = getController().getFolderRepository().createFolder(
@@ -173,14 +178,34 @@ public class FolderCreatePanel extends PFWizardPanel {
             }
 
             folder.addDefaultExcludes();
-
-            if (backupByOS && getController().getOSClient().isLastLoginOK())
+            ServerClient client = getController().getOSClient();
+            if (backupByOS && client.isLastLoginOK())
             {
                 try {
-                    getController().getOSClient().getFolderService()
-                        .createFolder(folder.getInfo(),
+
+                    // Try to back this up by online storage.
+                    List<Folder> folders = client.getJoinedFolders();
+                    for (Folder folder1 : folders) {
+                        if (folder1.getInfo().name.equals(foInfo.name))
+                        {
+
+                            // Already have this os folder.
+                            log().warn("Already have os folder " + foInfo.name);
+                            return null;
+                        }
+                    }
+                    client.getFolderService().createFolder(foInfo,
                             SyncProfile.BACKUP_TARGET);
+
+                    // If in basic setup mode, set this as the account
+                    // default sync folder.
+                    Object attribute = getWizardContext()
+                            .getAttribute(BASIC_SETUP_ATTIRBUTE);
+                    if (attribute != null && (Boolean) attribute) {
+                        client.getAccount().setDefaultSynchronizedFolder(foInfo);
+                    }
                 } catch (FolderException e) {
+                    problems = true;
                     errorArea
                         .setText(Translation
                             .getTranslation("foldercreate.dialog.backuperror.text"));
@@ -196,23 +221,23 @@ public class FolderCreatePanel extends PFWizardPanel {
         public void finished() {
             bar.setVisible(false);
 
-            if (folder != null) {
+            if (problems) {
+                updateButtons();
+
+                statusLabel.setText(Translation
+                        .getTranslation("wizard.create_folder.failed"));
+                String details = "";
+                errorArea.setText(details);
+                errorPane.setVisible(true);
+            } else {
                 if (SyncProfile.MANUAL_SYNCHRONIZATION.equals(folder.getSyncProfile())) {
                     // Show sync folder panel after created a project folder
                     new SyncFolderPanel(getController(), folder).open();
                 }
 
                 Wizard wiz = (Wizard) getWizardContext().getAttribute(
-                    Wizard.WIZARD_ATTRIBUTE);
+                        Wizard.WIZARD_ATTRIBUTE);
                 wiz.next();
-            } else {
-                updateButtons();
-
-                statusLabel.setText(Translation
-                    .getTranslation("wizard.create_folder.failed"));
-                String details = "";
-                errorArea.setText(details);
-                errorPane.setVisible(true);
             }
         }
     }
