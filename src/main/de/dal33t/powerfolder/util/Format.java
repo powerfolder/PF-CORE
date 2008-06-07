@@ -15,27 +15,27 @@ import java.util.Formatter;
 public class Format {
 	private static final DateFormat TIME_ONLY_DATE_FORMAT =
 		new SynchronizedDateFormat(new SimpleDateFormat(
-				"[HH:mm:ss]"));
+				Translation.getTranslation("date_format.time_only_date")));
 	private static final DateFormat DETAILED_TIME_FORMAT = 
 		new SynchronizedDateFormat(new SimpleDateFormat(
-				"[HH:mm:ss:SSS]"));
+				Translation.getTranslation("date_format.detailed_time")));
 	private static final DateFormat FULL_DATE_FORMAT = 
 		new SynchronizedDateFormat(new SimpleDateFormat(
-				"dd.MM.yyyy HH:mm:ss"));
+				Translation.getTranslation("date_format.full_date")));
 	// format of the added by date
 	private static final DateFormat FILE_DATE_FORMAT = 
 		new SynchronizedDateFormat(new SimpleDateFormat(
-				"dd.MM.yyyy HH:mm"));
-	private static final DateFormat FILE_DATE_FORMAT_HOURS = 
+				Translation.getTranslation("date_format.file_date")));
+	private static final DateFormat FILE_DATE_HOURS_FORMAT =
 		new SynchronizedDateFormat(new SimpleDateFormat(
-				"HH:mm"));
+				Translation.getTranslation("date_format.file_date_hours")));
 
 	// default number format for all numbers
 	public static final DecimalFormat NUMBER_FORMATS = new DecimalFormat(
-	"#,###,###,###.##");
+	Translation.getTranslation("number_format.number"));
 
 	public static final DecimalFormat LONG_FORMATS = new DecimalFormat(
-	"#,###,###,###");
+	Translation.getTranslation("number_format.long"));
 
 	/**
 	 * Returns a count of bytes in a string
@@ -204,6 +204,6 @@ public class Format {
 	 * @return the fILE_DATE_FORMAT_HOURS
 	 */
 	private static DateFormat getFileDateFormatHours() {
-		return FILE_DATE_FORMAT_HOURS;
+		return FILE_DATE_HOURS_FORMAT;
 	}
 }
