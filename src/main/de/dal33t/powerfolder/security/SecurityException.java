@@ -9,19 +9,19 @@ package de.dal33t.powerfolder.security;
  */
 public class SecurityException extends RuntimeException {
 
-    private SecurityException() {
+    public SecurityException() {
         super();
     }
 
-    private SecurityException(String message, Throwable cause) {
+    public SecurityException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    private SecurityException(String message) {
+    public SecurityException(String message) {
         super(message);
     }
 
-    private SecurityException(Throwable cause) {
+    public SecurityException(Throwable cause) {
         super(cause);
     }
 }

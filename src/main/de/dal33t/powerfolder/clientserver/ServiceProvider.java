@@ -22,24 +22,26 @@ public class ServiceProvider {
      * Constructs a stub implementing the given service interface. All calls are
      * executed against the remote service repository of the remote site.
      * 
-     * @param serviceId
+     * @param <T>
+     *            The interface class of the service
+     * @param controller
+     *            the controller
      * @param serviceInterface
      * @param remoteSide
-     * @return
+     * @return the remote stub implementing the service interface
      */
     @SuppressWarnings("unchecked")
-    public static Object createRemoteStub(Controller controller,
-        String serviceId, Class serviceInterface, Member remoteSide)
+    public static <T> T createRemoteStub(Controller controller,
+        Class<? extends T> serviceInterface, Member remoteSide)
     {
         Reject.ifNull(controller, "Controller is null");
-        Reject.ifBlank(serviceId, "Service Id is null");
         Reject.ifNull(remoteSide, "Remote site is null");
         Reject.ifFalse(serviceInterface.isInterface(),
             "Service interface class is not a interface! " + serviceInterface);
         InvocationHandler handler = new RemoteInvocationHandler(controller,
-            serviceId, remoteSide);
-        return Proxy.newProxyInstance(ServiceProvider.class.getClassLoader(),
-            new Class[]{serviceInterface}, handler);
+            serviceInterface.getName(), remoteSide);
+        return (T) Proxy.newProxyInstance(ServiceProvider.class
+            .getClassLoader(), new Class[]{serviceInterface}, handler);
     }
 
     private static class RemoteInvocationHandler implements InvocationHandler {

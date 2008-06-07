@@ -6,16 +6,12 @@ import de.dal33t.powerfolder.message.clientserver.AccountDetails;
 import de.dal33t.powerfolder.security.Account;
 
 /**
- * Contins all methods to modify/alter, create or notify users.
- * <p>
- * FIXME: Move to correct package: de.dal33t.powerfolder.clientserver
+ * Contins all methods to modify/alter, create or notify Accounts.
  * 
  * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
-public interface UserService {
-    static final String SERVICE_ID = "userservice.id";
-
+public interface AccountService {
     /**
      * Tries to register a new account.
      * 

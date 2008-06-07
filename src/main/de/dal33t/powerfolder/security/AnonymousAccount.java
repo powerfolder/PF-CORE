@@ -4,13 +4,15 @@ import de.dal33t.powerfolder.os.OnlineStorageSubscriptionType;
 
 /**
  * Empty/Null account to avoid NPEs on not logged in users.
+ * <p>
+ * Its the default account for every unauthenticated call.
  * 
  * @author Christian Sprajc
  * @version $Revision$
  */
-public class InvalidAccount extends Account {
+public class AnonymousAccount extends Account {
 
-    public InvalidAccount() {
+    public AnonymousAccount() {
         getOSSubscription().setType(OnlineStorageSubscriptionType.NONE);
     }
 

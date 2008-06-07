@@ -11,7 +11,6 @@ import de.dal33t.powerfolder.light.FolderInfo;
  * @version $Revision: 1.5 $
  */
 public interface FolderService {
-    static final String SERVICE_ID = "folderservice.id";
 
     /**
      * Creates a new folder to be mirrored by the server. Default Sync
@@ -41,6 +40,7 @@ public interface FolderService {
      *            the name of the user to be invited
      * @param foInfo
      *            the folder to be invited to
+     * @throws FolderException 
      */
     void inviteUser(FolderInfo foInfo, String user) throws FolderException;
 

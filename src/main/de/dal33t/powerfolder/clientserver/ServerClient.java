@@ -6,11 +6,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.TimerTask;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.lang.StringUtils;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
@@ -24,8 +24,8 @@ import de.dal33t.powerfolder.message.clientserver.AccountDetails;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.security.Account;
+import de.dal33t.powerfolder.security.AnonymousAccount;
 import de.dal33t.powerfolder.security.FolderAdminPermission;
-import de.dal33t.powerfolder.security.InvalidAccount;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
@@ -34,6 +34,8 @@ import de.dal33t.powerfolder.util.Util;
  * Client to a server.
  * <p>
  * TODO Finalize Request <-> Response code.
+ * <p>
+ * Maybe FIXME: Check if MemberInfos with ID = "" cause problems. (Temporary for
  * 
  * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
@@ -46,31 +48,34 @@ public class ServerClient extends PFComponent {
 
     private Member server;
     private AccountDetails accountDetails;
-    private UserService userService;
+    private AccountService userService;
     private FolderService folderService;
-    private boolean tringToConnect;
+
+    // Construction ***********************************************************
 
     public ServerClient(Controller controller, Member serverNode) {
         super(controller);
         Reject.ifNull(serverNode, "Server node is null");
         this.server = serverNode;
-        userService = (UserService) ServiceProvider.createRemoteStub(
-            controller, UserService.SERVICE_ID, UserService.class, serverNode);
-        folderService = (FolderService) ServiceProvider.createRemoteStub(
-            controller, FolderService.SERVICE_ID, FolderService.class,
-            serverNode);
+        initializeServiceStubs();
         getController().getNodeManager().addNodeManagerListener(
             new MyNodeManagerListener());
-        this.accountDetails = new AccountDetails(new InvalidAccount(), 0, 0);
+        this.accountDetails = new AccountDetails(new AnonymousAccount(), 0, 0);
     }
 
     // Basics *****************************************************************
 
     public void start() {
-        getController().scheduleAndRepeat(new OnlineStorageConnectTask(), 0,
-            1000L * 20);
+        // FIXME: Produces duplicate connection tries if started more than once.
+        // Start after 5 seconds to avoid first connect conflict with
+        // nodemanager restart.
+        getController().scheduleAndRepeat(new OnlineStorageConnectTask(),
+            1000L * 5, 1000L * 20);
     }
 
+    /**
+     * @return the server to connect to.
+     */
     public Member getServer() {
         return server;
     }
@@ -133,7 +138,7 @@ public class ServerClient extends PFComponent {
         username = theUsername;
         password = thePassword;
         if (!isConnected()) {
-            accountDetails = new AccountDetails(new InvalidAccount(), 0, 0);
+            accountDetails = new AccountDetails(new AnonymousAccount(), 0, 0);
             return accountDetails.getAccount();
         }
         String salt = IdGenerator.makeId() + IdGenerator.makeId();
@@ -147,7 +152,7 @@ public class ServerClient extends PFComponent {
         boolean loginOk = userService.login(theUsername, passwordMD5, salt);
         if (!loginOk) {
             log().warn("Login to server (" + theUsername + ") failed!");
-            accountDetails = new AccountDetails(new InvalidAccount(), 0, 0);
+            accountDetails = new AccountDetails(new AnonymousAccount(), 0, 0);
             return accountDetails.getAccount();
         }
         AccountDetails newAccountDetails = userService.getAccountDetails();
@@ -156,7 +161,7 @@ public class ServerClient extends PFComponent {
         if (newAccountDetails != null) {
             accountDetails = newAccountDetails;
         } else {
-            accountDetails = new AccountDetails(new InvalidAccount(), 0, 0);
+            accountDetails = new AccountDetails(new AnonymousAccount(), 0, 0);
         }
         return accountDetails.getAccount();
     }
@@ -167,7 +172,7 @@ public class ServerClient extends PFComponent {
      */
     public boolean isLastLoginOK() {
         return accountDetails != null
-            && (!(accountDetails.getAccount() instanceof InvalidAccount));
+            && (!(accountDetails.getAccount() instanceof AnonymousAccount));
     }
 
     /**
@@ -183,7 +188,7 @@ public class ServerClient extends PFComponent {
 
     // Services ***************************************************************
 
-    public UserService getUserService() {
+    public AccountService getUserService() {
         return userService;
     }
 
@@ -243,11 +248,26 @@ public class ServerClient extends PFComponent {
                 continue;
             }
             FolderSettings settings = new FolderSettings(new File("."),
-            SyncProfile.AUTOMATIC_SYNCHRONIZATION, true, true, true, false);
+                SyncProfile.AUTOMATIC_SYNCHRONIZATION, true, true, true, false);
             log().warn("Adding as preview: " + foInfo);
-            getController().getFolderRepository().createPreviewFolder(
-                foInfo, settings);
+            getController().getFolderRepository().createPreviewFolder(foInfo,
+                settings);
         }
+    }
+
+    // Internal ***************************************************************
+
+    private void initializeServiceStubs() {
+        userService = ServiceProvider.createRemoteStub(getController(),
+            AccountService.class, server);
+        folderService = ServiceProvider.createRemoteStub(getController(),
+            FolderService.class, server);
+    }
+
+    // General ****************************************************************
+
+    public String toString() {
+        return "ServerClient to " + (server != null ? server : "n/a");
     }
 
     // Inner classes **********************************************************
@@ -305,44 +325,74 @@ public class ServerClient extends PFComponent {
         }
     }
 
-    // Internal classes *******************************************************
-
     private class OnlineStorageConnectTask extends TimerTask {
+        private ReentrantLock alreadyConnectingLock = new ReentrantLock();
+
         @Override
         public void run() {
             if (isConnected()) {
                 return;
             }
-            if (isServer(getController().getMySelf())) {
+            if (server.isMySelf()) {
+                // Don't connect to myself
                 return;
             }
-            if (getController().isLanOnly()) {
+            if (getController().isLanOnly() && !server.isOnLAN()) {
+                log().warn(
+                    "NOT connecting to server: " + server
+                        + ". Reason: Not on LAN");
                 return;
             }
-            if (tringToConnect) {
+            // if (!ConfigurationEntry.AUTO_CONNECT
+            // .getValueBoolean(getController()))
+            // {
+            // return;
+            // }
+            if (alreadyConnectingLock.isLocked()) {
+                // Already triing
                 return;
             }
-            if (!ConfigurationEntry.AUTO_CONNECT
-                .getValueBoolean(getController()))
-            {
-                return;
-            }
-            tringToConnect = true;
+
             Runnable connector = new Runnable() {
                 public void run() {
                     try {
-                        log().debug(
-                            "Triing to connect to Online Storage ("
-                                + Constants.ONLINE_STORAGE_ADDRESS + ")");
-                        ConnectionHandler conHan = getController()
-                            .getIOProvider().getConnectionHandlerFactory()
-                            .tryToConnect(Constants.ONLINE_STORAGE_ADDRESS);
-                        getController().getNodeManager().acceptConnection(
-                            conHan);
+                        if (isConnected()) {
+                            return;
+                        }
+                        if (!alreadyConnectingLock.tryLock()) {
+                            // Already triing
+                            return;
+                        }
+                        if (!StringUtils.isEmpty(server.getId())) {
+                            log().warn(
+                                "Triing to reconnect to Server (" + server
+                                    + ")");
+                            // With ID directly connect
+                            server.reconnect();
+                        } else {
+                            log().warn(
+                                "Triing to connect to Server by address ("
+                                    + server + ")");
+                            // Get "full" Member with ID. after direct connect
+                            // to IP.
+                            ConnectionHandler conHan = getController()
+                                .getIOProvider().getConnectionHandlerFactory()
+                                .tryToConnect(server.getReconnectAddress());
+                            Member oldServer = server;
+                            server = getController().getNodeManager()
+                                .acceptConnection(conHan);
+                            // Remove old temporary server entry without ID.
+                            getController().getNodeManager().removeNode(
+                                oldServer);
+                            // Re-initalize the service stubs on new server
+                            // node.
+                            initializeServiceStubs();
+                        }
                     } catch (ConnectionException e) {
-                        log().warn("Unable to connect to online storage", e);
+                        log().warn("Unable to connect to " + ServerClient.this,
+                            e);
                     } finally {
-                        tringToConnect = false;
+                        alreadyConnectingLock.unlock();
                     }
                 }
             };
