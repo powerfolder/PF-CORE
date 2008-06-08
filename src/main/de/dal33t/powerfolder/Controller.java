@@ -509,7 +509,7 @@ public class Controller extends PFComponent {
 
     private void initOnlineStorageClient() {
         Member server = null;
-        String serverConfig = config.getProperty("server");
+        String serverConfig = ConfigurationEntry.SERVER.getValue(this);
 
         if (!StringUtils.isBlank(serverConfig)) {
             try {

@@ -291,7 +291,19 @@ public enum ConfigurationEntry {
      * The age of a deleted file until it gets removed by the folder db
      * maintenance. In Seconds! TODO Implement.
      */
-    MAX_FILEINFO_DELETED_AGE_SECONDS("filedb.deleted.maxage", "" + 10);
+    MAX_FILEINFO_DELETED_AGE_SECONDS("filedb.deleted.maxage", "" + 10),
+
+    /**
+     * The optional server to connect to. Otherwise defaults to Online Storage
+     * (access.powerfolder.com).
+     * <p>
+     * Format: <name>,<hostname>,(<ID>)
+     * <p>
+     * Example:
+     * <p>
+     * server=Infrastructure,server.powerfolder.com
+     */
+    SERVER("server");
 
     // Methods/Constructors ***************************************************
 
