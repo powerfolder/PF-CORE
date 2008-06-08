@@ -66,11 +66,8 @@ public class ServerClient extends PFComponent {
     // Basics *****************************************************************
 
     public void start() {
-        // FIXME: Produces duplicate connection tries if started more than once.
-        // Start after 2 seconds to avoid first connect conflict with
-        // nodemanager restart.
-        getController().scheduleAndRepeat(new OnlineStorageConnectTask(),
-            1000L * 2, 1000L * 20);
+        getController().scheduleAndRepeat(new OnlineStorageConnectTask(), 0,
+            1000L * 20);
     }
 
     /**

@@ -209,6 +209,16 @@ public class ReconnectManager extends PFComponent {
         if (!node.isInteresting()) {
             return false;
         }
+        if (getController().getOSClient().isServer(node)) {
+            // Server node gets reconnected by own thread
+            return false;
+        }
+        if (getController().getIOProvider().getRelayedConnectionManager()
+            .isRelay(node))
+        {
+            // Relay nodes get reconnected by own thread
+            return false;
+        }
         // Always add friends
         if (node.isFriend()) {
             // Always try to connect to friends

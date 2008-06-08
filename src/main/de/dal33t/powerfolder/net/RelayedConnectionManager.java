@@ -177,8 +177,13 @@ public class RelayedConnectionManager extends PFComponent {
     }
 
     public boolean isRelay(MemberInfo node) {
+        Reject.ifNull(node, "Node info is null");
         return node.id.toUpperCase().contains("INFRASTRUCTURE")
             || node.id.toUpperCase().contains("RELAY");
+    }
+
+    public boolean isRelay(Member node) {
+        return isRelay(node.getInfo());
     }
 
     public TransferCounter getTransferCounter() {
