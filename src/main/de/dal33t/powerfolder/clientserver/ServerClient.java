@@ -67,10 +67,10 @@ public class ServerClient extends PFComponent {
 
     public void start() {
         // FIXME: Produces duplicate connection tries if started more than once.
-        // Start after 5 seconds to avoid first connect conflict with
+        // Start after 2 seconds to avoid first connect conflict with
         // nodemanager restart.
         getController().scheduleAndRepeat(new OnlineStorageConnectTask(),
-            1000L * 5, 1000L * 20);
+            1000L * 2, 1000L * 20);
     }
 
     /**
@@ -368,7 +368,13 @@ public class ServerClient extends PFComponent {
                                 "Triing to reconnect to Server (" + server
                                     + ")");
                             // With ID directly connect
-                            server.reconnect();
+                            if (!server.isReconnecting()) {
+                                server.reconnect();
+                            } else {
+                                log().debug(
+                                    "Not reconnecting. Already triing to connect to "
+                                        + server);
+                            }
                         } else {
                             log().warn(
                                 "Triing to connect to Server by address ("
