@@ -206,6 +206,18 @@ public class DirectoryTableCellRenderer extends DefaultTableCellRenderer {
         return false;
     }
 
+    private boolean recentlyDownloaded(Directory directory) {
+        for (DownloadManager downloadManager : controller
+                .getTransferManager().getCompletedDownloadsCollection()) {
+            for (FileInfo fileInfo : directory.getFilesRecursive()) {
+                if (downloadManager.getFileInfo().equals(fileInfo)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     private Component render(Directory directory, int columnInModel,
         JTable table, boolean isSelected, boolean hasFocus, int row, int column)
     {
@@ -260,8 +272,14 @@ public class DirectoryTableCellRenderer extends DefaultTableCellRenderer {
             }
         }
 
-        return super.getTableCellRendererComponent(table, newValue, isSelected,
-            hasFocus, row, column);
+        // Make new files bold.
+        Component rendererComponent = super.getTableCellRendererComponent(table,
+                newValue, isSelected, hasFocus, row, column);
+        if (recentlyDownloaded(directory)) {
+            rendererComponent.setFont(new Font(getFont().getName(), Font.BOLD,
+                    getFont().getSize()));
+        }
+        return rendererComponent;
     }
 
     private final void render0(FileInfo fInfo, String fileNameForTooltip,
