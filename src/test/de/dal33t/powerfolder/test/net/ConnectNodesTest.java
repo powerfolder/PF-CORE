@@ -99,39 +99,39 @@ public class ConnectNodesTest extends FiveControllerTestCase {
         // Reconnect manager has to be started therefore!
         getContollerHomer().getReconnectManager().start();
 
-        final Member bartAtHomer = getContollerBart().getMySelf().getInfo()
+        final Member margeAtHomer = getContollerMarge().getMySelf().getInfo()
             .getNode(getContollerHomer(), true);
-        assertFalse(bartAtHomer.isCompleteyConnected());
+        assertFalse(margeAtHomer.isCompleteyConnected());
 
         // Make friend
-        bartAtHomer.setFriend(true, "");
+        margeAtHomer.setFriend(true, "");
 
         TestHelper.waitForCondition(100, new ConditionWithMessage() {
             public String message() {
-                return "Bart has not beed reconnected. Nodes in recon queue at Homer: "
+                return "Marge has not beed reconnected. Nodes in recon queue at Homer: "
                     + getContollerHomer().getReconnectManager()
                         .getReconnectionQueue().size();
             }
 
             public boolean reached() {
-                return bartAtHomer.isCompleteyConnected();
+                return margeAtHomer.isCompleteyConnected();
             }
         });
 
         // Again shutdown
-        bartAtHomer.shutdown();
+        margeAtHomer.shutdown();
 
         // RECONNECT should happen!
         // Both are friends so connect!
         TestHelper.waitForCondition(100, new ConditionWithMessage() {
             public String message() {
-                return "Bart has not beed reconnected. Nodes in recon queue at Homer: "
+                return "Marge has not beed reconnected. Nodes in recon queue at Homer: "
                     + getContollerHomer().getReconnectManager()
                         .getReconnectionQueue().size();
             }
 
             public boolean reached() {
-                return bartAtHomer.isCompleteyConnected();
+                return margeAtHomer.isCompleteyConnected();
             }
         });
     }
