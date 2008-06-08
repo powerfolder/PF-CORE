@@ -262,7 +262,9 @@ public class FolderStatistic extends PFComponent {
         // clear statistics before
         calculating = new CalculationResult();
 
-        List<Member> members = Arrays.asList(folder.getMembers());
+        List<Member> members = new ArrayList<Member>(Arrays.asList(folder
+            .getConnectedMembers()));
+        members.add(getController().getMySelf());
         Collection<Member> membersCalulated = new ArrayList<Member>(members
             .size());
         // considered.clear();
@@ -539,7 +541,9 @@ public class FolderStatistic extends PFComponent {
      *         -1 if unknown
      */
     public double getHarmonizedSyncPercentage() {
-        if (SyncProfile.AUTOMATIC_SYNCHRONIZATION.equals(folder.getSyncProfile())) {
+        if (SyncProfile.AUTOMATIC_SYNCHRONIZATION.equals(folder
+            .getSyncProfile()))
+        {
             return getTotalSyncPercentage();
         } else if (SyncProfile.BACKUP_SOURCE.equals(folder.getSyncProfile())) {
             // In this case only remote sides matter.
