@@ -3,6 +3,8 @@ package de.dal33t.powerfolder.net;
 import java.util.Collection;
 import java.util.TimerTask;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
@@ -36,6 +38,7 @@ public class RelayedConnectionManager extends PFComponent {
      * ConnectionHanlder which is not yet connected with it's member (node).
      */
     private Collection<AbstractRelayedConnectionHandler> pendingConHans;
+    private Lock pendingConHansLock = new ReentrantLock();
     private TransferCounter counter;
     private boolean printStats;
     private long nRelayedMsgs;
@@ -91,7 +94,10 @@ public class RelayedConnectionManager extends PFComponent {
             .getIOProvider().getConnectionHandlerFactory()
             .createRelayedConnectionHandler(destination, connectionId, relay);
 
+        pendingConHansLock.lock();
         pendingConHans.add(relHan);
+        pendingConHansLock.unlock();
+
         if (pendingConHans.size() > 20) {
             log().error(
                 pendingConHans.size()
@@ -126,7 +132,9 @@ public class RelayedConnectionManager extends PFComponent {
     {
         Reject.ifNull(conHan, "ConnectionHandler is null");
         // log().warn("Removing pend. con han: " + conHan);
+        pendingConHansLock.lock();
         pendingConHans.remove(conHan);
+        pendingConHansLock.unlock();
     }
 
     /**
@@ -263,7 +271,10 @@ public class RelayedConnectionManager extends PFComponent {
                     .createRelayedConnectionHandler(message.getSource(),
                         message.getConnectionId(), receivedFrom);
 
+                pendingConHansLock.lock();
                 pendingConHans.add(relHan);
+                pendingConHansLock.unlock();
+
                 Runnable initializer = new ConnectionInitializer(message,
                     relHan, receivedFrom);
                 getController().getIOProvider().startIO(initializer);
@@ -341,14 +352,20 @@ public class RelayedConnectionManager extends PFComponent {
 
         if (peer == null) {
             // Search in pending con handlers
-            for (AbstractRelayedConnectionHandler relHel : pendingConHans) {
-                if (relHel.getRemote().equals(message.getSource())
-                    && (relHel.getConnectionId() == message.getConnectionId()))
-                {
-                    // Found in pending!
-                    peer = relHel;
-                    break;
+            try {
+                pendingConHansLock.lock();
+                for (AbstractRelayedConnectionHandler relHel : pendingConHans) {
+                    if (relHel.getRemote().equals(message.getSource())
+                        && (relHel.getConnectionId() == message
+                            .getConnectionId()))
+                    {
+                        // Found in pending!
+                        peer = relHel;
+                        break;
+                    }
                 }
+            } finally {
+                pendingConHansLock.unlock();
             }
         }
 
@@ -478,10 +495,16 @@ public class RelayedConnectionManager extends PFComponent {
                         }
 
                         try {
-                            log().debug(
-                                "Triing to connect to relay: " + canidate);
-                            if (canidate.reconnect()) {
-                                break;
+                            if (!canidate.isReconnecting()) {
+                                log().debug(
+                                    "Triing to connect to relay: " + canidate);
+                                if (canidate.reconnect()) {
+                                    break;
+                                }
+                            } else {
+                                log().debug(
+                                    "Not reconnecting. Already triing to connect to "
+                                        + canidate);
                             }
                         } catch (ConnectionException e) {
                             log().warn(
