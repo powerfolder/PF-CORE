@@ -1095,7 +1095,7 @@ public class NodeManager extends PFComponent {
                     acceptHandler = false;
                 } else if (member.isReconnecting()) {
                     log().warn(
-                        "NOT ACCEPTING, already connecting to :" + member);
+                        "Not accepting, already connecting to :" + member);
                     acceptHandler = false;
                 } else {
                     // Otherwise accept. (our member = disco)
