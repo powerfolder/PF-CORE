@@ -23,7 +23,7 @@ public class SyncProfileUtil {
     public static final String renderSyncPercentage(double syncPercentage) {
         if (syncPercentage >= 0) {
             return Translation.getTranslation("percent.place.holder",
-                    Format.NUMBER_FORMATS.format(syncPercentage));
+                    Format.getNumberFormat().format(syncPercentage));
         }
         return Translation.getTranslation("percent.place.holder", "?");
     }

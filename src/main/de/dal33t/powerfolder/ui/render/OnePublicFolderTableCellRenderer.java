@@ -197,7 +197,7 @@ public class OnePublicFolderTableCellRenderer extends DefaultTableCellRenderer {
         textInHTML.append("<TD valign=top class=bold>&nbsp;"
             + Translation.getTranslation("mp3fileinfo.samplerate")
             + ":</TD><TD valign=top  class=" + style + " align=rigth>"
-            + Format.NUMBER_FORMATS.format(mp3FileInfo.getSamplerate())
+            + Format.getNumberFormat().format(mp3FileInfo.getSamplerate())
             + "&nbsp;</TD></TR>");
         String text;
         if (mp3FileInfo.isStereo()) {

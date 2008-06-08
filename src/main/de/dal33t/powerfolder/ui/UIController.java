@@ -556,19 +556,19 @@ public class UIController extends PFComponent {
 
             if (totalCPSdownKB > 1024) {
                 downText = Translation.getTranslation(
-                    "systray.tooltip.down.mb", Format.NUMBER_FORMATS
+                    "systray.tooltip.down.mb", Format.getNumberFormat()
                         .format(totalCPSdownKB / 1024));
             } else {
                 downText = Translation.getTranslation("systray.tooltip.down",
-                    Format.NUMBER_FORMATS.format(totalCPSdownKB));
+                    Format.getNumberFormat().format(totalCPSdownKB));
             }
 
             if (totalCPSupKB > 1024) {
                 upText = Translation.getTranslation("systray.tooltip.up.mb",
-                    Format.NUMBER_FORMATS.format(totalCPSupKB / 1024));
+                    Format.getNumberFormat().format(totalCPSupKB / 1024));
             } else {
                 upText = Translation.getTranslation("systray.tooltip.up",
-                    Format.NUMBER_FORMATS.format(totalCPSupKB));
+                    Format.getNumberFormat().format(totalCPSupKB));
             }
 
             tooltip += " " + upText + " " + downText;

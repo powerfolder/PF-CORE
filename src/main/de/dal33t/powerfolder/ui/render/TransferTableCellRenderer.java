@@ -127,7 +127,7 @@ public class TransferTableCellRenderer extends DefaultTableCellRenderer {
 //                                .calculateEstimatedMillisToCompletion(),
 //                                !download.isCompleted() && download.isStarted());
                             String kbs = Translation.getTranslation(
-                                "transfers.kbs", Format.NUMBER_FORMATS
+                                "transfers.kbs", Format.getNumberFormat()
                                     .format(counter.calculateCurrentKBS()));
                             String text = (et.isActive() ? et.toString()
                                 + " - " : "")
@@ -165,7 +165,7 @@ public class TransferTableCellRenderer extends DefaultTableCellRenderer {
                                 .getTranslation("transfers.completed"));
                         } else if (upload.isStarted()) {
                             bar.setString(Translation.getTranslation(
-                                "transfers.kbs", Format.NUMBER_FORMATS
+                                "transfers.kbs", Format.getNumberFormat()
                                     .format(counter.calculateCurrentKBS())));
                         } else {
                             bar.setString(Translation

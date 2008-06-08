@@ -2248,7 +2248,7 @@ public class TransferManager extends PFComponent {
                             + " active upload(s), "
                             + queuedUploads.size()
                             + " in queue, "
-                            + Format.NUMBER_FORMATS.format(getUploadCounter()
+                            + Format.getNumberFormat().format(getUploadCounter()
                                 .calculateCurrentKBS()) + " KByte/s");
                 }
 
@@ -2454,10 +2454,10 @@ public class TransferManager extends PFComponent {
             }
         }
 
-        synchronized (Format.NUMBER_FORMATS) {
+        synchronized (Format.getNumberFormat()) {
             log().info(
                 (download ? "Download" : "Upload") + " completed: "
-                    + Format.NUMBER_FORMATS.format(fInfo.getSize())
+                    + Format.getNumberFormat().format(fInfo.getSize())
                     + " bytes in " + (took / 1000) + "s (" + cpsStr
                     + " KByte/s): " + fInfo + memberInfo);
         }

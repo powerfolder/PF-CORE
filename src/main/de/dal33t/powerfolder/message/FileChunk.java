@@ -36,7 +36,7 @@ public class FileChunk extends Message implements LimitBandwidth {
 
     public String toString() {
         return "FileChunk: " + file + " ("
-            + Format.NUMBER_FORMATS.format(file.getSize())
+            + Format.getNumberFormat().format(file.getSize())
             + " total bytes), offset: " + offset + ", chunk size: "
             + data.length;
     }

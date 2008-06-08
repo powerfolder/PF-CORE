@@ -13,29 +13,56 @@ import java.util.Formatter;
  * @version $Revision: 1.6 $
  */
 public class Format {
-	private static final DateFormat TIME_ONLY_DATE_FORMAT =
-		new SynchronizedDateFormat(new SimpleDateFormat(
-				Translation.getTranslation("date_format.time_only_date")));
-	private static final DateFormat DETAILED_TIME_FORMAT = 
-		new SynchronizedDateFormat(new SimpleDateFormat(
-				Translation.getTranslation("date_format.detailed_time")));
-	private static final DateFormat FULL_DATE_FORMAT = 
-		new SynchronizedDateFormat(new SimpleDateFormat(
-				Translation.getTranslation("date_format.full_date")));
-	// format of the added by date
-	private static final DateFormat FILE_DATE_FORMAT = 
-		new SynchronizedDateFormat(new SimpleDateFormat(
-				Translation.getTranslation("date_format.file_date")));
-	private static final DateFormat FILE_DATE_HOURS_FORMAT =
-		new SynchronizedDateFormat(new SimpleDateFormat(
-				Translation.getTranslation("date_format.file_date_hours")));
+    
+    private static DateFormat timeOnlyDateFormat;
+	private static DateFormat detailedTimeFormat;
+	private static DateFormat fullDateFormat;
+	private static DateFormat fileDateFormat;
+	private static DateFormat fileDateHoursFormat;
 
-	// default number format for all numbers
-	public static final DecimalFormat NUMBER_FORMATS = new DecimalFormat(
-	Translation.getTranslation("number_format.number"));
+    private static DecimalFormat numberFormat;
+	private static DecimalFormat longFormat;
 
-	public static final DecimalFormat LONG_FORMATS = new DecimalFormat(
-	Translation.getTranslation("number_format.long"));
+    static {
+        try {
+            timeOnlyDateFormat =
+                    new SynchronizedDateFormat(new SimpleDateFormat(
+                            Translation.getTranslation("date_format.time_only_date")));
+            detailedTimeFormat =
+                    new SynchronizedDateFormat(new SimpleDateFormat(
+                            Translation.getTranslation("date_format.detailed_time")));
+            fullDateFormat =
+                    new SynchronizedDateFormat(new SimpleDateFormat(
+                            Translation.getTranslation("date_format.full_date")));
+            fileDateFormat =
+                    new SynchronizedDateFormat(new SimpleDateFormat(
+                            Translation.getTranslation("date_format.file_date")));
+            fileDateHoursFormat =
+                    new SynchronizedDateFormat(new SimpleDateFormat(
+                            Translation.getTranslation("date_format.file_date_hours")));
+            numberFormat = new DecimalFormat(
+                    Translation.getTranslation("number_format.number"));
+
+            longFormat = new DecimalFormat(
+                    Translation.getTranslation("number_format.long"));
+        } catch (Exception e) {
+            System.err.println("Could not initializ formats");
+
+            // Use defaults. Testcases need this.
+            timeOnlyDateFormat = new SynchronizedDateFormat(new SimpleDateFormat(
+                    "[HH:mm:ss]"));
+            detailedTimeFormat = new SynchronizedDateFormat(new SimpleDateFormat(
+                    "[HH:mm:ss:SSS]"));
+            fullDateFormat = new SynchronizedDateFormat(new SimpleDateFormat(
+                    "MM/dd/yyyy HH:mm:ss"));
+            fileDateFormat = new SynchronizedDateFormat(new SimpleDateFormat(
+                    "MM/dd/yyyy HH:mm"));
+            fileDateHoursFormat = new SynchronizedDateFormat(new SimpleDateFormat(
+                    "HH:mm"));
+            numberFormat = new DecimalFormat("#,###,###,###.##");
+            longFormat = new DecimalFormat("#,###,###,###");
+        }
+    }
 
 	/**
 	 * Returns a count of bytes in a string
@@ -48,19 +75,19 @@ public class Format {
 		String suffix = "Bytes";
 
 		if (number > 800) {
-			number = number / 1024;
+            number /= 1024;
 			suffix = "KBytes";
 		}
 		if (number > 800) {
-			number = number / 1024;
+            number /= 1024;
 			suffix = "MBytes";
 		}
 		if (number > 800) {
-			number = number / 1024;
+            number /= 1024;
 			suffix = "GBytes";
 		}
-		String str = NUMBER_FORMATS.format(number);
-		return str + " " + suffix;
+		String str = numberFormat.format(number);
+		return str + ' ' + suffix;
 	}
 
 	/**
@@ -72,18 +99,18 @@ public class Format {
 	public static String formatBytesShort(long bytes) {
 		double number = bytes;
 
-		number = number / 1024;
+        number /= 1024;
 		String suffix = "KB";
 		if (number > 800) {
-			number = number / 1024;
+            number /= 1024;
 			suffix = "MB";
 		}
 		if (number > 800) {
-			number = number / 1024;
+            number /= 1024;
 			suffix = "GB";
 		}
-		String str = NUMBER_FORMATS.format(number);
-		return str + " " + suffix;
+		String str = numberFormat.format(number);
+		return str + ' ' + suffix;
 	}
 
 	/**
@@ -103,16 +130,16 @@ public class Format {
 			int dayDiffer = calDate.get(Calendar.DAY_OF_YEAR)
 			- calNow.get(Calendar.DAY_OF_YEAR);
 			if (dayDiffer == 0) {
-				return Translation.getTranslation("general.today") + " "
-				+ getFileDateFormatHours().format(date);
+				return Translation.getTranslation("general.today") + ' '
+				+ fileDateHoursFormat.format(date);
 			} else if (dayDiffer == -1) {
-				return Translation.getTranslation("general.yesterday") + " "
-				+ getFileDateFormatHours().format(date);
+				return Translation.getTranslation("general.yesterday") + ' '
+				+ fileDateHoursFormat.format(date);
 			}
 
 		}
 		// otherwise use default format
-		return getFileDateFormat().format(date);
+		return fileDateFormat.format(date);
 	}
 
 	/**
@@ -122,15 +149,14 @@ public class Format {
 	 * @return
 	 */
 	public static String formatNumber(double n) {
-		synchronized (NUMBER_FORMATS) {
-			return NUMBER_FORMATS.format(n);
+		synchronized (numberFormat) {
+			return numberFormat.format(n);
 		}
-
 	}
 
 	public static String formatLong(long n) {
-		synchronized (LONG_FORMATS) {
-			return LONG_FORMATS.format(n);
+		synchronized (longFormat) {
+			return longFormat.format(n);
 		}
 	}
 
@@ -168,7 +194,7 @@ public class Format {
 	 * @return the tIME_ONLY_DATE_FOMRAT
 	 */
 	public static DateFormat getTimeOnlyDateFormat() {
-		return TIME_ONLY_DATE_FORMAT;
+		return timeOnlyDateFormat;
 	}
 
 	/**
@@ -177,7 +203,7 @@ public class Format {
 	 * @return the dETAILED_TIME_FOMRAT
 	 */
 	public static DateFormat getDetailedTimeFormat() {
-		return DETAILED_TIME_FORMAT;
+		return detailedTimeFormat;
 	}
 
 	/**
@@ -186,7 +212,7 @@ public class Format {
 	 * @return the fULL_DATE_FOMRAT
 	 */
 	public static DateFormat getFullDateFormat() {
-		return FULL_DATE_FORMAT;
+		return fullDateFormat;
 	}
 
 	/**
@@ -195,7 +221,7 @@ public class Format {
 	 * @return the fILE_DATE_FORMAT
 	 */
 	private static DateFormat getFileDateFormat() {
-		return FILE_DATE_FORMAT;
+		return fileDateFormat;
 	}
 
 	/**
@@ -203,7 +229,15 @@ public class Format {
 	 * 
 	 * @return the fILE_DATE_FORMAT_HOURS
 	 */
-	private static DateFormat getFileDateFormatHours() {
-		return FILE_DATE_HOURS_FORMAT;
+	private static DateFormat getFileDateHoursFormat() {
+		return fileDateHoursFormat;
 	}
+
+    public static DecimalFormat getLongFormat() {
+        return longFormat;
+    }
+
+    public static DecimalFormat getNumberFormat() {
+        return numberFormat;
+    }
 }
