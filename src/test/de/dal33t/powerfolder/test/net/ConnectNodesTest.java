@@ -28,13 +28,14 @@ public class ConnectNodesTest extends FiveControllerTestCase {
                 + getContollerLisa().getNodeManager().getConnectedNodes(),
                 getContollerLisa().getNodeManager().getConnectedNodes()
                     .isEmpty());
-            connectSimpsons();
+            boolean connectOk = tryToConnectSimpsons();
             assertEquals("Connected nodes at bart: "
                 + getContollerBart().getNodeManager().getConnectedNodes(), 4,
                 getContollerBart().getNodeManager().getConnectedNodes().size());
             assertEquals("Connected nodes at lisa: "
                 + getContollerLisa().getNodeManager().getConnectedNodes(), 4,
                 getContollerLisa().getNodeManager().getConnectedNodes().size());
+            assertTrue("Connection of Simpsons failed", connectOk);
             getContollerBart().getNodeManager().shutdown();
             getContollerBart().getNodeManager().start();
             getContollerLisa().getNodeManager().shutdown();
