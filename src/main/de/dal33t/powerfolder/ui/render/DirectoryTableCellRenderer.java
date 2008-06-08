@@ -75,7 +75,7 @@ public class DirectoryTableCellRenderer extends DefaultTableCellRenderer {
                 isSelected, hasFocus, row, column);
         }
         throw new IllegalStateException(
-            "expected DirectoryTableFileBean, Directory or String not: "
+            "expected FileInfo, Directory or String not: "
                 + value.getClass().getName());
 
     }
