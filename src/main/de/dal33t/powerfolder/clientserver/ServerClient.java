@@ -82,7 +82,9 @@ public class ServerClient extends PFComponent {
      * @return true if the node is the server.
      */
     public boolean isServer(Member node) {
-        return server.equals(node);
+        return server.equals(node)
+        // Compare by address, ID might be empty at start.
+            || server.getReconnectAddress().equals(node.getReconnectAddress());
     }
 
     /**
