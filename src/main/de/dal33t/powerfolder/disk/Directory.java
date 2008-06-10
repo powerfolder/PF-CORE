@@ -275,7 +275,7 @@ public class Directory implements Comparable<Directory>, DiskItem {
     {
         String dirName;
         String rest;
-        int index = restPath.indexOf("/");
+        int index = restPath.indexOf('/');
         if (index == -1) {
             dirName = restPath;
             rest = "";
@@ -294,11 +294,15 @@ public class Directory implements Comparable<Directory>, DiskItem {
             + fileInfo.getName());
     }
 
+    public Collection<Directory> getSubDirectories() {
+        return subDirectoriesMap.values();
+    }
+
     /** */
     public Directory getSubDirectory(String dirName) {
         String tmpDirName;
         String rest;
-        int index = dirName.indexOf("/");
+        int index = dirName.indexOf('/');
         if (index == -1) {
             tmpDirName = dirName;
             rest = "";

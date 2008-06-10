@@ -11,6 +11,8 @@ import de.dal33t.powerfolder.disk.Directory;
 
 import javax.swing.tree.MutableTreeNode;
 import java.util.List;
+import java.util.Collections;
+import java.util.ArrayList;
 
 /**
  * UI-Model for a folder. Prepare folder data in a "swing-compatible" way. E.g.
@@ -27,8 +29,10 @@ public class FolderModel extends PFUIComponent {
     /** The ui node */
     private TreeNodeList treeNode;
 
-    /** The base directory model for this folder. */
-    private DirectoryModel directoryModel;
+    /** sub directory models */
+    private final List<DirectoryModel> subdirectories = Collections
+            .synchronizedList(new ArrayList<DirectoryModel>());
+
 
     /**
      * Constructor. Takes controller and the associated folder.
@@ -68,21 +72,19 @@ public class FolderModel extends PFUIComponent {
     private void rebuild() {
         synchronized (treeNode) {
             treeNode.removeAllChildren();
-            List<Directory> subDirectories = folder.getDirectory()
+            List<Directory> folderSubdirectories = folder.getDirectory()
                 .listSubDirectories();
-            for (Directory subDirectory : subDirectories) {
-                directoryModel = new DirectoryModel(treeNode, subDirectory);
+            for (Directory subdirectory : folderSubdirectories) {
+                DirectoryModel directoryModel = new DirectoryModel(treeNode, subdirectory);
                 treeNode.addChild(directoryModel);
-                buildSubDirectoryModels(subDirectory, directoryModel);
+                buildSubDirectoryModels(subdirectory, directoryModel);
+                subdirectories.add(directoryModel);
             }
         }
     }
 
-    public DirectoryModel getDirectoryModel() {
-        if (treeNode == null) {
-            initialize();
-        }
-        return directoryModel;
+    public List<DirectoryModel> getSubdirectories() {
+        return subdirectories;
     }
 
     private static void buildSubDirectoryModels(Directory directory, DirectoryModel model)

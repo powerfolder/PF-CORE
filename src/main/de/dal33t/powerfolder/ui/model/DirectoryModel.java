@@ -23,7 +23,7 @@ public class DirectoryModel implements TreeNode {
     private Directory directory;
 
     /** sub directory models */
-    private final List<DirectoryModel> subDirectories = Collections
+    private final List<DirectoryModel> subdirectories = Collections
             .synchronizedList(new ArrayList<DirectoryModel>());
 
     /**
@@ -54,7 +54,7 @@ public class DirectoryModel implements TreeNode {
      * @param child
      */
     public void addChild(DirectoryModel child) {
-        subDirectories.add(child);
+        subdirectories.add(child);
     }
 
     public String toString() {
@@ -62,11 +62,11 @@ public class DirectoryModel implements TreeNode {
     }
 
     public TreeNode getChildAt(int childIndex) {
-        return subDirectories.get(childIndex);
+        return subdirectories.get(childIndex);
     }
 
     public int getChildCount() {
-        return subDirectories.size();
+        return subdirectories.size();
     }
 
     public TreeNode getParent() {
@@ -77,7 +77,7 @@ public class DirectoryModel implements TreeNode {
         if (!(node instanceof DirectoryModel)) {
             return -1;
         }
-        return subDirectories.indexOf(node);
+        return subdirectories.indexOf(node);
     }
 
     public boolean getAllowsChildren() {
@@ -85,11 +85,11 @@ public class DirectoryModel implements TreeNode {
     }
 
     public boolean isLeaf() {
-        return !subDirectories.isEmpty();
+        return !subdirectories.isEmpty();
     }
 
     public Enumeration children() {
-        return new MyChildrenEnum(subDirectories);
+        return new MyChildrenEnum(subdirectories);
     }
 
     private static class MyChildrenEnum implements Enumeration {
@@ -110,5 +110,26 @@ public class DirectoryModel implements TreeNode {
         }
     }
 
+    /**
+     * Returns a tree node list for this folder up to the directory.
+     *
+     * @param candidateDirectory
+     * @return
+     */
+    public TreeNode[] getPathTo(Directory candidateDirectory) {
+        if (candidateDirectory.equals(directory)) {
+            return new TreeNode[]{this};
+        }
 
+        for (DirectoryModel subDirectory : subdirectories) {
+            TreeNode[] to = subDirectory.getPathTo(candidateDirectory);
+            if (to != null) {
+                TreeNode[] path = new TreeNode[to.length + 1];
+                path[0] = this;
+                System.arraycopy(to, 0, path, 1, to.length);
+                return path;
+            }
+        }
+        return null;
+    }
 }

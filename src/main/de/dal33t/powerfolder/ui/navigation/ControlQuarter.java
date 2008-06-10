@@ -14,6 +14,7 @@ import de.dal33t.powerfolder.event.NavigationEvent;
 import de.dal33t.powerfolder.event.NavigationListener;
 import de.dal33t.powerfolder.ui.DebugPanel;
 import de.dal33t.powerfolder.ui.model.FolderModel;
+import de.dal33t.powerfolder.ui.model.DirectoryModel;
 import de.dal33t.powerfolder.ui.dialog.PreviewToJoinPanel;
 import de.dal33t.powerfolder.ui.action.*;
 import de.dal33t.powerfolder.ui.folder.FilesTab;
@@ -45,7 +46,6 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-import java.util.List;
 import java.util.prefs.Preferences;
 
 /**
@@ -318,6 +318,19 @@ public class ControlQuarter extends PFUIComponent {
             Folder folder = directory.getRootFolder();
             FolderModel folderModel = getController().getUIController()
                     .getFolderRepositoryModel().locateFolderModel(folder);
+            for (DirectoryModel directoryModel : folderModel.getSubdirectories()) {
+                TreeNode[] subpath = directoryModel.getPathTo(directory);
+                if (subpath != null) {
+                    TreeNode[] path = new TreeNode[3 + subpath.length];
+                    path[0] = navTreeModel.getRootNode();
+                    path[1] = getUIController().getFolderRepositoryModel()
+                        .getMyFoldersTreeNode();
+                    path[2] = folderModel.getTreeNode();
+                    System.arraycopy(subpath, 0, path, 3, subpath.length);
+                    setSelectedPath(path);
+                    return;
+                }
+            }
             TreeNode[] path = new TreeNode[3];
             path[0] = navTreeModel.getRootNode();
             path[1] = getUIController().getFolderRepositoryModel()
@@ -653,26 +666,24 @@ public class ControlQuarter extends PFUIComponent {
                 }
             } else if (selection instanceof Directory) {
                 Directory directory = (Directory) selection;
-                if (directory != null) {
-                    Folder folder = directory.getRootFolder();
-                    File localBase = folder.getLocalBase();
-                    File path = new File(localBase.getAbsolutePath() + '/'
-                        + directory.getPath());
-                    while (!path.exists()) { // try finding the first path
-                        // that
-                        // exists
-                        String pathStr = path.getAbsolutePath();
-                        int index = pathStr.lastIndexOf(File.separatorChar);
-                        if (index == -1) {
-                            return;
-                        }
-                        path = new File(pathStr.substring(0, index));
+                Folder folder = directory.getRootFolder();
+                File localBase = folder.getLocalBase();
+                File path = new File(localBase.getAbsolutePath() + '/'
+                    + directory.getPath());
+                while (!path.exists()) { // try finding the first path
+                    // that
+                    // exists
+                    String pathStr = path.getAbsolutePath();
+                    int index = pathStr.lastIndexOf(File.separatorChar);
+                    if (index == -1) {
+                        return;
                     }
-                    try {
-                        FileUtils.executeFile(path);
-                    } catch (IOException ioe) {
-                        ioe.printStackTrace();
-                    }
+                    path = new File(pathStr.substring(0, index));
+                }
+                try {
+                    FileUtils.executeFile(path);
+                } catch (IOException ioe) {
+                    ioe.printStackTrace();
                 }
             }
         }
