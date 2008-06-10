@@ -10,6 +10,7 @@ import com.jgoodies.binding.beans.Model;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.os.OnlineStorageSubscriptionType;
 import de.dal33t.powerfolder.util.Logger;
@@ -158,7 +159,7 @@ public class Account extends Model implements Serializable {
             + permissions.size() + " permissions";
     }
 
-    // Convinience ************************************************************
+    // Convenience/Applogic ***************************************************
 
     /**
      * @param controller
@@ -197,6 +198,38 @@ public class Account extends Model implements Serializable {
             }
         }
         return nFolders;
+    }
+
+    /**
+     * Enables the selected account:
+     * <p>
+     * The Online Storage subscription
+     * <P>
+     * Sets all folders to SyncProfile.BACKUP_TARGET.
+     * 
+     * @param controller
+     *            the controller
+     */
+    public void enable(Controller controller) {
+        Reject.ifNull(controller, "Controller is null");
+
+        getOSSubscription().setWarnedUsageDate(null);
+        getOSSubscription().setDisabledUsageDate(null);
+        getOSSubscription().setWarnedExpirationDate(null);
+        getOSSubscription().setDisabledExpirationDate(null);
+        controller.getSecurityManager().saveIdentity(this);
+
+        for (Permission p : getPermissions()) {
+            if (!(p instanceof FolderAdminPermission)) {
+                continue;
+            }
+            FolderAdminPermission fp = (FolderAdminPermission) p;
+            Folder f = fp.getFolder().getFolder(controller);
+            if (f == null) {
+                continue;
+            }
+            f.setSyncProfile(SyncProfile.BACKUP_TARGET);
+        }
     }
 
     // Permission convenience ************************************************

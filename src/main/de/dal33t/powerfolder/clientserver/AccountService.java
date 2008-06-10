@@ -64,6 +64,19 @@ public interface AccountService {
     void store(Account user);
 
     /**
+     * Enables the selected account:
+     * <p>
+     * The Online Storage subscription
+     * <P>
+     * Sets all folders to SyncProfile.BACKUP_TARGET.
+     * 
+     * @see Account#enable(de.dal33t.powerfolder.Controller)
+     * @param username
+     *            the username of the account to enable
+     */
+    void enable(String username);
+
+    /**
      * Removes a user with the given username from the database
      * 
      * @param username
