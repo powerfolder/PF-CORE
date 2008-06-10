@@ -73,7 +73,13 @@ public class DeltaTest extends TestCase {
         assertEquals(r1, r3);
     }
 */
-    
+    public void testAdlerMultiple() throws Exception {
+        for (int i = 0; i < 40; i++) {
+            testAdler();
+            tearDown();
+            setUp();
+        }
+    }
     public void testAdler() throws UnsupportedEncodingException {
         // Reference implementation from SUN, too bad it doesn't support rolling
         Adler32 ref = new Adler32();
