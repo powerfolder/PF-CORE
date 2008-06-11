@@ -9,6 +9,8 @@ import java.io.IOException;
 
 import de.dal33t.powerfolder.util.BrowserLauncher;
 
+import javax.swing.*;
+
 /**
  * A Label which opens a given link by click it
  * 
@@ -16,7 +18,23 @@ import de.dal33t.powerfolder.util.BrowserLauncher;
  * @version $Revision: 1.4 $
  */
 public class LinkLabel extends AntialiasedLabel {
+
     private String url;
+
+    public LinkLabel(Icon icon, String toolTips, final String url) {
+        super(icon);
+        addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                try {
+                    BrowserLauncher.openURL(url);
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+            }
+        });
+        setToolTipText(toolTips);
+        setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+    }
 
     public LinkLabel(String aText, String aUrl) {
         super("<html><font color=\"#00000\"><a href=\"" + aUrl + "\">" + aText

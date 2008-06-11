@@ -20,7 +20,6 @@ import org.apache.commons.lang.StringUtils;
 import javax.swing.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.List;
 
 /**
  * Panel where user may choose the name of the project

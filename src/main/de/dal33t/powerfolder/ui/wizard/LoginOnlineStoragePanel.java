@@ -166,8 +166,7 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
         builder.add(setupDefaultCB, cc.xy(1, 1));
-        builder.add(Help.createWikiLinkLabel(Translation
-            .getTranslation("general.what_is_this"), "Default_Folder"), cc.xy(
+        builder.add(Help.createWikiLinkLabel("Default_Folder"), cc.xy(
             3, 1));
         builder.setOpaque(true);
         builder.setBackground(Color.white);

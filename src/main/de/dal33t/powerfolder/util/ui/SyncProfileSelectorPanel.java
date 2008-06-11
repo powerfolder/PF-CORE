@@ -106,8 +106,7 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
         valueModel = new ValueHolder();
         valueModel.setValue(syncProfile);
 
-        helpLabel = Help.createWikiLinkLabel(Translation
-            .getTranslation("general.what_is_this"), "Sync_Profiles");
+        helpLabel = Help.createWikiLinkLabel("Sync_Profiles");
 
         // Warn if changing to delete type profiles
         addModelValueChangeListener(new PropertyChangeListener() {

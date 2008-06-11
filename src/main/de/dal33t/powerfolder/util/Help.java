@@ -8,6 +8,7 @@ import com.jgoodies.forms.factories.Borders;
 
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
+import de.dal33t.powerfolder.ui.Icons;
 
 /**
  * A general class to open help topics.
@@ -77,11 +78,13 @@ public class Help {
      *            http://wiki.powerfolder.com/wiki/LAN-IP-List
      * @return a lable that is clickable
      */
-    public static LinkLabel createWikiLinkLabel(String labelText, String article)
+    public static LinkLabel createWikiLinkLabel(String article)
     {
-        LinkLabel label = new LinkLabel(labelText, Constants.POWERFOLDER_WIKI_URL
+        String toolTips = Translation
+                .getTranslation("general.what_is_this");
+        return new LinkLabel(Icons.QUESTION,
+                toolTips,
+                Constants.POWERFOLDER_WIKI_URL
             + "/" + article);
-        label.setBorder(Borders.createEmptyBorder("0,1,0,0"));
-        return label;
     }
 }
