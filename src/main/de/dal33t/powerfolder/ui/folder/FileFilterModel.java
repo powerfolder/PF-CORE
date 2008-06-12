@@ -281,73 +281,75 @@ public class FileFilterModel extends FilterModel {
             int deletedFiles = 0;
             int recycledFiles = 0;
 
-            for (DiskItem diskItem : fileList) {
-                if (diskItem instanceof FileInfo) {
-                    FileInfo fInfo = (FileInfo) diskItem;
-
-                    // text filter
-                    boolean showFile = true;
-                    if (textFilter != null) {
-                        // Check for match
-                        showFile = matches(fInfo, keywords)
-                                || matchesMeta(fInfo, keywords);
-                    }
-
-                    if (showFile) {
-                        boolean isNew = recentlyDownloaded(fInfo);
-                        boolean isDeleted = fInfo.isDeleted();
-                        boolean isIncoming = fInfo.isNewerAvailable(repo);
-                        switch (mode)
-                        {
-                            case MODE_LOCAL_ONLY:
-                                showFile = !isIncoming && !isDeleted;
-                                break;
-                            case MODE_INCOMING_ONLY:
-                                showFile = isIncoming;
-                                break;
-                            case MODE_NEW_ONLY:
-                                showFile = isNew;
-                                break;
-                            case MODE_DELETED_PREVIOUS:
-                                showFile = isDeleted;
-                                break;
-                            case MODE_LOCAL_AND_INCOMING:
-                            default:
-                                showFile = !isDeleted;
-                                break;
-                        }
-
-                        if (isDeleted) {
-                            deletedFiles++;
-                            if (recycleBin.isInRecycleBin(fInfo)) {
-                                recycledFiles++;
-                            }
-                        } else if (isIncoming) {
-                            incomingFiles++;
-                        } else {
-                            localFiles++;
+            synchronized (fileList) {
+                for (DiskItem diskItem : fileList) {
+                    if (diskItem instanceof FileInfo) {
+                        FileInfo fInfo = (FileInfo) diskItem;
+    
+                        // text filter
+                        boolean showFile = true;
+                        if (textFilter != null) {
+                            // Check for match
+                            showFile = matches(fInfo, keywords)
+                                    || matchesMeta(fInfo, keywords);
                         }
 
                         if (showFile) {
-                            resultList.add(fInfo);
+                            boolean isNew = recentlyDownloaded(fInfo);
+                            boolean isDeleted = fInfo.isDeleted();
+                            boolean isIncoming = fInfo.isNewerAvailable(repo);
+                            switch (mode)
+                            {
+                                case MODE_LOCAL_ONLY:
+                                    showFile = !isIncoming && !isDeleted;
+                                    break;
+                                case MODE_INCOMING_ONLY:
+                                    showFile = isIncoming;
+                                    break;
+                                case MODE_NEW_ONLY:
+                                    showFile = isNew;
+                                    break;
+                                case MODE_DELETED_PREVIOUS:
+                                    showFile = isDeleted;
+                                    break;
+                                case MODE_LOCAL_AND_INCOMING:
+                                default:
+                                    showFile = !isDeleted;
+                                    break;
+                            }
+
+                            if (isDeleted) {
+                                deletedFiles++;
+                                if (recycleBin.isInRecycleBin(fInfo)) {
+                                    recycledFiles++;
+                                }
+                            } else if (isIncoming) {
+                                incomingFiles++;
+                            } else {
+                                localFiles++;
+                            }
+
+                            if (showFile) {
+                                resultList.add(fInfo);
+                            }
                         }
+
+                    } else if (diskItem instanceof Directory) {
+                        Directory directory = (Directory) diskItem;
+                        // text filter
+                        if (textFilter != null) {
+                            // Check for match
+                            if (!matches(directory, keywords)) {
+                                continue;
+                            }
+                        }
+                        resultList.add(directory);
+                    } else {
+                        throw new IllegalStateException(
+                                "Unknown type, cannot filter");
                     }
 
-                } else if (diskItem instanceof Directory) {
-                    Directory directory = (Directory) diskItem;
-                    // text filter
-                    if (textFilter != null) {
-                        // Check for match
-                        if (!matches(directory, keywords)) {
-                            continue;
-                        }
-                    }
-                    resultList.add(directory);
-                } else {
-                    throw new IllegalStateException(
-                            "Unknown type, cannot filter");
                 }
-
             }
 
             // Check that the filter text has not changed.
