@@ -49,27 +49,25 @@ public class ListenerSupportFactory {
                     try {
                         Thread.sleep(60000);
                         int i = 0;
-                        if (!PERFORMANCE_MAP.isEmpty()) {
-                            if (Logger.isDebugLevelEnabled()) {
+                        if (Logger.isDebugLevelEnabled()) {
+                            if (PERFORMANCE_MAP.isEmpty()) {
+                                LOG.debug("No performance statistics");
+                            } else {
                                 LOG.debug("Performance statistics") ;
                                 LOG.debug("======================");
-                                if (PERFORMANCE_MAP.isEmpty()) {
-                                    LOG.debug("No statistics");
-                                } else {
-                                    for (Double time : PERFORMANCE_MAP.keySet()) {
-                                        String s = PERFORMANCE_MAP.get(time);
-                                        LOG.debug(s);
-                                        if (i++ > 100) {
-                                            // Only display the top 100 offenders.
-                                            // Keys are negative, so longest running
-                                            // task is displayed first.
-                                            break;
-                                        }
+                                for (Double time : PERFORMANCE_MAP.keySet()) {
+                                    String s = PERFORMANCE_MAP.get(time);
+                                    LOG.debug(s);
+                                    if (i++ > 100) {
+                                        // Only display the top 100 offenders.
+                                        // Keys are negative, so longest running
+                                        // task is displayed first.
+                                        break;
                                     }
                                 }
                                 LOG.debug("======================");
+                                PERFORMANCE_MAP.clear();
                             }
-                            PERFORMANCE_MAP.clear();
                         }
                     } catch (InterruptedException e) {
                         interrupted = true;
@@ -448,7 +446,7 @@ public class ListenerSupportFactory {
                                 Object[] args, CoreListener listener) {
 
         // Calculate how long it took.
-        long time = endDate.getTime() - startDate.getTime();
+        long time = (endDate.getTime() - startDate.getTime()) / 1000;
 
         // Report invokations that take time.
         if (time > 0) {
@@ -463,7 +461,7 @@ public class ListenerSupportFactory {
                     + " [" + sb.toString() + "]"
                     + " invoked on listener "
                     + listener + " in " + time
-                    + "ns on " + endDate.toString();
+                    + "ms on " + endDate.toString();
 
             // Include random part so duplicate times do not eject entries.
             // Negate, so longest gets displayed first.
