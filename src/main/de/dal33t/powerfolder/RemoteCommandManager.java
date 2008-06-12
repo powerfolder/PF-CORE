@@ -257,11 +257,16 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
                 getController().getUIController().getMainFrame()
                     .getUIComponent().setExtendedState(Frame.NORMAL);
             }
+            String nick = getController().getMySelf().getNick();
             for (String s : folders.split(";")) {
-                makeFolder(s);
+                File file = new File(s);
+                String lastPart = file.getName();
+
+                // Folder name = nick + '-' + last part of folder path.
+                makeFolder(nick + '-' + lastPart, s);
             }
         } else {
-            log().warn("Remote command not recognizable '" + command + "'");
+            log().warn("Remote command not recognizable '" + command + '\'');
         }
     }
 
@@ -304,7 +309,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
                     fInfo);
             }
         } catch (NoSuchElementException e) {
-            log().error("Illegal link '" + link + "'");
+            log().error("Illegal link '" + link + '\'');
         }
     }
 
@@ -342,10 +347,10 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
      * @param folder
      *            the location of the folder
      */
-    private void makeFolder(String folder) {
+    private void makeFolder(String name, String folder) {
         if (getController().isUIEnabled()) {
             FolderSetupPanel setupPanel = new FolderSetupPanel(getController(),
-                folder);
+                name);
             ChooseDiskLocationPanel panel = new ChooseDiskLocationPanel(
                 getController(), folder, setupPanel);
             PFWizard wizard = new PFWizard(getController());
