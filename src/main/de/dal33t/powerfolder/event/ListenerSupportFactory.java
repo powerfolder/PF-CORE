@@ -7,7 +7,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.swing.SwingUtilities;
@@ -36,6 +36,52 @@ public class ListenerSupportFactory {
 
     // AWT system check
     private static final boolean awtAvailable = UIUtil.isAWTAvailable();
+
+    private static final Map<Double, String> PERFORMANCE_MAP =
+            Collections.synchronizedMap(new TreeMap<Double, String>());
+
+    // Start a thread to dump stats to the log.
+    static {
+        Thread t = new Thread() {
+            public void run() {
+                boolean interrupted = false;
+                while (!interrupted) {
+                    try {
+                        Thread.sleep(60000);
+                        int i = 0;
+                        if (!PERFORMANCE_MAP.isEmpty()) {
+                            if (Logger.isDebugLevelEnabled()) {
+                                LOG.debug("Performance statistics") ;
+                                LOG.debug("======================");
+                                if (PERFORMANCE_MAP.isEmpty()) {
+                                    LOG.debug("No statistics");
+                                } else {
+                                    for (Double time : PERFORMANCE_MAP.keySet()) {
+                                        String s = PERFORMANCE_MAP.get(time);
+                                        LOG.debug(s);
+                                        if (i++ > 100) {
+                                            // Only display the top 100 offenders.
+                                            // Keys are negative, so longest running
+                                            // task is displayed first.
+                                            break;
+                                        }
+                                    }
+                                }
+                                LOG.debug("======================");
+                            }
+                            PERFORMANCE_MAP.clear();
+                        }
+                    } catch (InterruptedException e) {
+                        interrupted = true;
+                    } catch (Exception e) {
+                        LOG.error("Problem with performance statistics", e);
+                    }
+                }
+            }
+        };
+        t.setDaemon(true);
+        t.start();
+    }
 
     /**
      * No instance allowed
@@ -308,7 +354,12 @@ public class ListenerSupportFactory {
                         for (CoreListener listener : listenersInDispatchThread)
                         {
                             try {
+                                Date startDate = new Date();
                                 method.invoke(listener, args);
+                                if (Logger.isDebugLevelEnabled()) {
+                                    Date endDate = new Date();
+                                    logTime(startDate, endDate, method, args, listener);
+                                }
                             } catch (IllegalArgumentException e) {
                                 LOG.error(
                                     "Received an exception from listener '"
@@ -345,7 +396,12 @@ public class ListenerSupportFactory {
 
                 for (CoreListener listener : listenersNotInDispatchThread) {
                     try {
+                        Date startDate = new Date();
                         method.invoke(listener, args);
+                        if (Logger.isDebugLevelEnabled()) {
+                            Date endDate = new Date();
+                            logTime(startDate, endDate, method, args, listener);
+                        }
                     } catch (IllegalArgumentException e) {
                         LOG.error("Received an exception from listener '"
                             + listener + "', class '"
@@ -375,6 +431,44 @@ public class ListenerSupportFactory {
 
         public void setSuspended(boolean suspended) {
             this.suspended = suspended;
+        }
+
+    }
+
+    /**
+     * Log suspicious long-running methods.
+     *
+     * @param startDate
+     * @param endDate
+     * @param method
+     * @param args
+     * @param listener
+     */
+    private static void logTime(Date startDate, Date endDate, Method method,
+                                Object[] args, CoreListener listener) {
+
+        // Calculate how long it took.
+        long time = endDate.getTime() - startDate.getTime();
+
+        // Report invokations that take time.
+        if (time > 0) {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < args.length; i++) {
+                sb.append(args[i].toString());
+                if (i < args.length - 1) {
+                    sb.append(", ");
+                }
+            }
+            String message = "Method " + method.getName()
+                    + " [" + sb.toString() + "]"
+                    + " invoked on listener "
+                    + listener + " in " + time
+                    + "ns on " + endDate.toString();
+
+            // Include random part so duplicate times do not eject entries.
+            // Negate, so longest gets displayed first.
+            Double key = -(time + Math.random());
+            PERFORMANCE_MAP.put(key, message);
         }
     }
 }
