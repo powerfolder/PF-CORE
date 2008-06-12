@@ -18,7 +18,7 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
 /**
  * Factory used to created event/listener support upon eventlistner interfaces.
  * <P>
- * Created Listenersupport implementaion maintains a listener list and handles
+ * Created Listenersupport implementation maintains a listener list and handles
  * swing thread wrapping issues.
  * <p>
  * Listenersupport implementaion can be created upon an event listener
@@ -26,7 +26,7 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * Listenersupport implementaion will fire events to all registered listeners.
  * Just call the event method for the eventlistner interface on the
  * implementation returned by <code>createListenerSupport</code>
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.8 $
  */
@@ -89,13 +89,13 @@ public class ListenerSupportFactory {
     }
 
     /**
-     * Creats a listener support for the listener event interface. Returned
+     * Creates a listener support for the listener event interface. Returned
      * object can directly be casted into the listener event interface.
      * <p>
      * All calls to methods on that object will fire that event to its
      * registered listeners.
      * <p>
-     * 
+     *
      * @param listenerInterface
      * @return
      */
@@ -119,11 +119,11 @@ public class ListenerSupportFactory {
 
     /**
      * Suspends (or resumes) a listener support, it set to true this listener
-     * supoort will not file events until set to false. The listener support has
+     * support will not file events until set to false. The listener support has
      * to be created via <code>createListenerSupport</code> before. Also the
      * listener needs to implement the listener event interface. Otherwise an
      * exception is thrown
-     * 
+     *
      * @param listenerSupport
      * @param suspended
      */
@@ -152,9 +152,9 @@ public class ListenerSupportFactory {
      * created via <code>createListenerSupport</code> factory method. Also the
      * listener needs to implement the listener event interface otherwise an
      * exception is thrown (see ListenerSupportInvocationHandler.checkListener).
-     * 
+     *
      * @param listenerSupport
-     *      The listenerSupport where the listener should be added to. 
+     *      The listenerSupport where the listener should be added to.
      * @param listener
      *      The event listener to add.
      */
@@ -185,7 +185,7 @@ public class ListenerSupportFactory {
      * be created via <code>createListenerSupport</code> factory method. Also the
      * listener needs to implement the listener event interface otherwise an
      * exception is thrown (see ListenerSupportInvocationHandler.checkListener).
-     * 
+     *
      * @param listenerSupport
      * @param listener
      */
@@ -215,7 +215,7 @@ public class ListenerSupportFactory {
      * Removes all listeners from a listener support. The listener support has
      * to be created via <code>createListenerSupport</code> before. Otherwise
      * an exception is thrown
-     * 
+     *
      * @param listenerSupport
      * @param listener
      */
@@ -242,9 +242,9 @@ public class ListenerSupportFactory {
     // Inner classes **********************************************************
 
     /**
-     * The invocation handler, which deligates fire event method calls to the
+     * The invocation handler, which delegates fire event method calls to the
      * listener. Maybe suspended, in this state it will not fire events.
-     * 
+     *
      * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      */
     private static class ListenerSupportInvocationHandler implements
@@ -258,7 +258,7 @@ public class ListenerSupportFactory {
         /**
          * Creates an invocation handler which basically handles the event
          * support.
-         * 
+         *
          * @param listenerInterface
          *            the listener event interface
          */
@@ -270,7 +270,7 @@ public class ListenerSupportFactory {
 
         /**
          * Adds a listener to this support impl
-         * 
+         *
          * @param listener
          */
         public void addListener(CoreListener listener) {
@@ -286,7 +286,7 @@ public class ListenerSupportFactory {
 
         /**
          * Removes a listener from this support impl
-         * 
+         *
          * @param listener
          */
         public void removeListener(CoreListener listener) {
@@ -311,9 +311,9 @@ public class ListenerSupportFactory {
         /**
          * Checks if the listener is an instance of our supported listener
          * interface.
-         * 
+         *
          * @param listener The listener to check
-         * @return true if succeded, otherwise exception is thrown
+         * @return true if succeeded, otherwise exception is thrown
          * @throws IllegalArgumentException
          *             if both do not match
          */
@@ -330,8 +330,8 @@ public class ListenerSupportFactory {
         }
 
         /**
-         * Deligates calls to registered listners
-         * 
+         * Delegates calls to registered listeners
+         *
          * @see java.lang.reflect.InvocationHandler#invoke(java.lang.Object,
          *      java.lang.reflect.Method, java.lang.Object[])
          */
@@ -356,7 +356,8 @@ public class ListenerSupportFactory {
                                 method.invoke(listener, args);
                                 if (Logger.isDebugLevelEnabled()) {
                                     Date endDate = new Date();
-                                    logTime(startDate, endDate, method, args, listener);
+                                    logTime(startDate, endDate, method, args,
+                                            listener, true);
                                 }
                             } catch (IllegalArgumentException e) {
                                 LOG.error(
@@ -398,7 +399,8 @@ public class ListenerSupportFactory {
                         method.invoke(listener, args);
                         if (Logger.isDebugLevelEnabled()) {
                             Date endDate = new Date();
-                            logTime(startDate, endDate, method, args, listener);
+                            logTime(startDate, endDate, method, args, listener,
+                                    false);
                         }
                     } catch (IllegalArgumentException e) {
                         LOG.error("Received an exception from listener '"
@@ -430,7 +432,6 @@ public class ListenerSupportFactory {
         public void setSuspended(boolean suspended) {
             this.suspended = suspended;
         }
-
     }
 
     /**
@@ -441,9 +442,11 @@ public class ListenerSupportFactory {
      * @param method
      * @param args
      * @param listener
+     * @param dispatchThread
      */
     private static void logTime(Date startDate, Date endDate, Method method,
-                                Object[] args, CoreListener listener) {
+                                Object[] args, CoreListener listener,
+                                boolean dispatchThread) {
 
         // Calculate how long it took.
         long time = (endDate.getTime() - startDate.getTime()) / 1000;
@@ -461,7 +464,8 @@ public class ListenerSupportFactory {
                     + " [" + sb.toString() + "]"
                     + " invoked on listener "
                     + listener + " in " + time
-                    + "ms on " + endDate.toString();
+                    + "ms on " + endDate.toString()
+                    + " dispatch thread " + dispatchThread;
 
             // Include random part so duplicate times do not eject entries.
             // Negate, so longest gets displayed first.
