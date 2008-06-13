@@ -707,7 +707,8 @@ public class FileTransferTest extends TwoControllerTestCase {
         FileInfo fInfo = getFolderAtLisa().getIncomingFiles(true).iterator()
             .next();
         File file = fInfo.getDiskFile(getContollerLisa().getFolderRepository());
-        final File incompleteFile = getFolderAtLisa().getSystemSubDir().listFiles(
+        final File incompleteFile = 
+            new File(getFolderAtLisa().getSystemSubDir(), "transfers").listFiles(
             new FilenameFilter() {
 
                 public boolean accept(File dir, String name) {

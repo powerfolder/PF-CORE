@@ -185,11 +185,31 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             return null;
         }
         if (tempFile == null) {
-            tempFile = new File(getFileInfo().getFolder(
-                getController().getFolderRepository()).getSystemSubDir(),
-                "(incomplete) " + getFileID());
+            try {
+                tempFile = new File(getMetaDataBaseDir(),
+                    "(incomplete) " + getFileID());
+            } catch (IOException e) {
+                log().error(e);
+                return null;
+            }
         }
         return tempFile;
+    }
+
+    /**
+     * Returns the base directory for transfer specific meta data.
+     * If the directory doesn't exist, it's created.
+     * @return the base directory
+     * @throws IOException if the directory couldn't be created
+     */
+    private File getMetaDataBaseDir() throws IOException {
+        File baseDir = new File(getFileInfo().getFolder(
+            getController().getFolderRepository()).getSystemSubDir(),
+            "transfers");
+        if (!baseDir.exists() && !baseDir.mkdirs()) {
+            throw new IOException("Couldn't create base directory for transfer meta data!");
+        }
+        return baseDir;
     }
 
     public boolean isBroken() {
@@ -768,9 +788,13 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             return null;
         }
         if (metaFile == null) {
-            metaFile = new File(getFileInfo().getFolder(
-                getController().getFolderRepository()).getSystemSubDir(),
-                FileUtils.DOWNLOAD_META_FILE + getFileID());
+            try {
+                metaFile = new File(getMetaDataBaseDir(),
+                    FileUtils.DOWNLOAD_META_FILE + getFileID());
+            } catch (IOException e) {
+                log().error(e);
+                return null;
+            }
         }
 //        metaFile = new File(diskFile.getParentFile(),
 //            FileUtils.DOWNLOAD_META_FILE + diskFile.getName());
