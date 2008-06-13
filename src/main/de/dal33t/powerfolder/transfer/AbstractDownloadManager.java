@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.RandomAccessFile;
+import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.LinkedList;
@@ -71,7 +72,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
 
     private final FileInfo fileInfo;
     private Controller controller;
-    private RandomAccessFile tempFile = null;
+    private RandomAccessFile tempRAF = null;
 
     private volatile InternalState state = InternalState.WAITING_FOR_SOURCE;
 
@@ -81,6 +82,12 @@ public abstract class AbstractDownloadManager extends PFComponent implements
     private Thread worker;
 
     private boolean shutdown;
+
+    private File metaFile;
+
+    private String fileID;
+
+    private File tempFile;
 
     public AbstractDownloadManager(Controller controller, FileInfo file,
         boolean automatic) throws IOException
@@ -177,8 +184,11 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         if (diskFile == null) {
             return null;
         }
-        File tempFile = new File(diskFile.getParentFile(), "(incomplete) "
-            + diskFile.getName());
+        if (tempFile == null) {
+            tempFile = new File(getFileInfo().getFolder(
+                getController().getFolderRepository()).getSystemSubDir(),
+                "(incomplete) " + getFileID());
+        }
         return tempFile;
     }
 
@@ -259,7 +269,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
     @Override
     public String toString() {
         return "[" + getClass().getSimpleName() + "; state= " + state
-            + " file=" + getFileInfo() + "; tempFileRAF: " + tempFile
+            + " file=" + getFileInfo() + "; tempFileRAF: " + tempRAF
             + "; tempFile: " + getTempFile() + "; broken: " + isBroken()
             + "; completed: " + isCompleted() + "; aborted: " + isAborted();
     }
@@ -326,14 +336,15 @@ public abstract class AbstractDownloadManager extends PFComponent implements
 
         // This has to happen here since "completed" is valid
         assert !isDone() : "File broken/aborted before init!";
-
+        assert getTempFile().getParentFile().exists() : "Missing PowerFolder system directory";
+        
         // Create temp-file directory structure if necessary
-        if (!getTempFile().getParentFile().exists()) {
-            if (!getTempFile().getParentFile().mkdirs()) {
-                throw new FileNotFoundException(
-                    "Couldn't create parent directory!");
-            }
-        }
+//        if (!getTempFile().getParentFile().exists()) {
+//            if (!getTempFile().getParentFile().mkdirs()) {
+//                throw new FileNotFoundException(
+//                    "Couldn't create parent directory!");
+//            }
+//        }
 
         lock.lock();
         try {
@@ -342,7 +353,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             lock.unlock();
         }
 
-        tempFile = new RandomAccessFile(getTempFile(), "rw");
+        tempRAF = new RandomAccessFile(getTempFile(), "rw");
     }
 
     protected boolean isNeedingFilePartsRecord() {
@@ -529,7 +540,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             return;
         }
 
-        assert tempFile != null;
+        assert tempRAF != null;
 
         shutdown = true;
         // log().debug("Shutting down " + fileInfo);
@@ -538,8 +549,8 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                 worker.interrupt();
             }
             // log().error("Closing temp file!");
-            tempFile.close();
-            tempFile = null;
+            tempRAF.close();
+            tempRAF = null;
 
             if (isBroken()) {
                 saveMetaData();
@@ -559,7 +570,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         remotePartRecord = null;
         updateTempFile();
 
-        assert tempFile == null;
+        assert tempRAF == null;
         assert !isCompleted() && !isAborted() || !getMetaFile().exists();
     }
 
@@ -586,8 +597,8 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         setStarted();
 
         try {
-            tempFile.seek(chunk.offset);
-            tempFile.write(chunk.data);
+            tempRAF.seek(chunk.offset);
+            tempRAF.write(chunk.data);
         } catch (IOException e) {
             log().error(e);
             setBroken(TransferProblem.IO_EXCEPTION,
@@ -756,9 +767,31 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         if (diskFile == null) {
             return null;
         }
-        File metaFile = new File(diskFile.getParentFile(),
-            FileUtils.DOWNLOAD_META_FILE + diskFile.getName());
+        if (metaFile == null) {
+            metaFile = new File(getFileInfo().getFolder(
+                getController().getFolderRepository()).getSystemSubDir(),
+                FileUtils.DOWNLOAD_META_FILE + getFileID());
+        }
+//        metaFile = new File(diskFile.getParentFile(),
+//            FileUtils.DOWNLOAD_META_FILE + diskFile.getName());
         return metaFile;
+    }
+
+    /**
+     * @param id
+     * @return
+     * @throws Error
+     */
+    private String getFileID() throws Error {
+        if (fileID == null) {
+            try {
+                fileID = new String(Util.encodeHex(
+                    Util.md5(getFileInfo().getName().getBytes("ISO-8859-1"))));
+            } catch (UnsupportedEncodingException e) {
+                throw new Error(e);
+            }
+        }
+        return fileID;
     }
 
     private void illegalState(String operation) {

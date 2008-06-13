@@ -623,6 +623,10 @@ public class Folder extends PFComponent {
             // rename file
             File targetFile = fInfo.getDiskFile(getController()
                 .getFolderRepository());
+            if (!targetFile.getParentFile().exists() && 
+                !targetFile.getParentFile().mkdirs()) {
+                log().error("Couldn't create directory structure for " + targetFile);
+            }
             synchronized (deleteLock) {
                 if (targetFile.exists()) {
                     // if file was a "newer file" the file already esists here

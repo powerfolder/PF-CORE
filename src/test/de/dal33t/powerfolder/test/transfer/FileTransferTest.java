@@ -3,6 +3,7 @@ package de.dal33t.powerfolder.test.transfer;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
@@ -706,8 +707,14 @@ public class FileTransferTest extends TwoControllerTestCase {
         FileInfo fInfo = getFolderAtLisa().getIncomingFiles(true).iterator()
             .next();
         File file = fInfo.getDiskFile(getContollerLisa().getFolderRepository());
-        final File incompleteFile = new File(file.getParentFile(),
-            "(incomplete) " + file.getName());
+        final File incompleteFile = getFolderAtLisa().getSystemSubDir().listFiles(
+            new FilenameFilter() {
+
+                public boolean accept(File dir, String name) {
+                    return name.contains("(incomplete) ");
+                }
+                
+            })[0];
         FileInfo bartFInfo = getFolderAtBart().getKnownFiles().iterator()
             .next();
         File bartFile = bartFInfo.getDiskFile(getContollerBart()
