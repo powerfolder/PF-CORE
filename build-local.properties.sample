@@ -24,6 +24,7 @@ MinorVersion=0
 RevisionVersion=2
 KeystoreLocation=<directory to my keystore>
 SignPassword=<your keystore password>
+SignAlias=<sign alias>
 
 # InstallerGeneratorProgram=<location of makensisw.exe>
 # e.g. InstallerGeneratorProgram=C:\\Program Files\\NSIS\\makensisw.exe
