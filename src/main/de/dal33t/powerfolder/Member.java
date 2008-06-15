@@ -1257,20 +1257,21 @@ public class Member extends PFComponent {
             lastFiles.put(remoteFileList.folder, cachedFileList);
 
             // Trigger requesting
-            // FIXME: Really inform folder on first list messag on complete file
+            // FIXME: Really inform folder on first list message on complete file
             // list?.
             if (targetFolder != null) {
-                // Write filelist
-                if (Logger.isLogToFileEnabled()) {
-                    // Write filelist to disk
-                    File debugFile = new File(Logger.getDebugDir(),
-                        targetFolder.getName() + "/" + getNick() + ".list.txt");
-                    Debug.writeFileListCSV(cachedFileList.keySet(),
-                        "FileList of folder " + targetFolder.getName()
-                            + ", member " + this + ":", debugFile);
-                }
                 // Inform folder
                 targetFolder.fileListChanged(this, remoteFileList);
+                // Write filelist
+                // if (Logger.isLogToFileEnabled()) {
+                // // Write filelist to disk
+                // File debugFile = new File(Logger.getDebugDir(),
+                // targetFolder.getName() + "/" + getNick() + ".list.txt");
+                // Debug.writeFileListCSV(cachedFileList.keySet(),
+                // "FileList of folder " + targetFolder.getName()
+                // + ", member " + this + ":", debugFile);
+                // }
+
             }
         } else if (message instanceof FolderFilesChanged) {
             FolderFilesChanged changes = (FolderFilesChanged) message;
@@ -1325,18 +1326,18 @@ public class Member extends PFComponent {
                 // Inform folder
                 targetFolder.fileListChanged(this, changes);
 
-                if (nExpected.intValue() <= 0) {
-                    // Write filelist
-                    if (Logger.isLogToFileEnabled()) {
-                        // Write filelist to disk
-                        File debugFile = new File(Logger.getDebugDir(),
-                            targetFolder.getName() + "/" + getNick()
-                                + ".list.txt");
-                        Debug.writeFileListCSV(cachedFileList.keySet(),
-                            "FileList of folder " + targetFolder.getName()
-                                + ", member " + this + ":", debugFile);
-                    }
-                }
+//                if (nExpected.intValue() <= 0) {
+//                    // Write filelist
+//                    if (Logger.isLogToFileEnabled()) {
+//                        // Write filelist to disk
+//                        File debugFile = new File(Logger.getDebugDir(),
+//                            targetFolder.getName() + "/" + getNick()
+//                                + ".list.txt");
+//                        Debug.writeFileListCSV(cachedFileList.keySet(),
+//                            "FileList of folder " + targetFolder.getName()
+//                                + ", member " + this + ":", debugFile);
+//                    }
+//                }
             }
 
             if (logDebug) {
