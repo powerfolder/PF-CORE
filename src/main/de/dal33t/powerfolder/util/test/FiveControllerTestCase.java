@@ -15,6 +15,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.util.Reject;
 
 /**
@@ -210,7 +211,23 @@ public abstract class FiveControllerTestCase extends MultipleControllerTestCase
         // + testFolder + " id: " + testFolder.id);
         // }
     }
-    
+
+    protected void clearCompletedDownloads() {
+        clearCompletedDownloads(getContollerHomer());
+        clearCompletedDownloads(getContollerBart());
+        clearCompletedDownloads(getContollerMarge());
+        clearCompletedDownloads(getContollerLisa());
+        clearCompletedDownloads(getContollerMaggie());
+    }
+
+    private void clearCompletedDownloads(Controller controller) {
+        for (DownloadManager dm : controller.getTransferManager()
+            .getCompletedDownloadsCollection())
+        {
+            controller.getTransferManager().clearCompletedDownload(dm);
+        }
+    }
+
     protected void waitForCompletedDownloads(final int h, final int b,
         final int mar, final int l, final int mag)
     {

@@ -1,6 +1,10 @@
 package de.dal33t.powerfolder.test.folder;
 
 import java.io.File;
+import java.io.FileFilter;
+import java.util.Arrays;
+
+import org.apache.commons.io.filefilter.FileFilterUtils;
 
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
@@ -27,33 +31,7 @@ public class MirrorFolderTest extends FiveControllerTestCase {
         performRandomOperations(100, 70, 0, getFolderAtBart().getLocalBase());
         scanFolder(getFolderAtBart());
 
-        TestHelper.waitForCondition(50, new ConditionWithMessage() {
-            public String message() {
-                return "Downloads not completed: Homer "
-                    + getContollerHomer().getTransferManager()
-                        .getCompletedDownloadsCollection().size()
-                    + ", Marge "
-                    + getContollerMarge().getTransferManager()
-                        .getCompletedDownloadsCollection().size()
-                    + ", Lisa "
-                    + getContollerLisa().getTransferManager()
-                        .getCompletedDownloadsCollection().size()
-                    + ", Maggie "
-                    + getContollerMaggie().getTransferManager()
-                        .getCompletedDownloadsCollection().size();
-            }
-
-            public boolean reached() {
-                return getContollerHomer().getTransferManager()
-                    .getCompletedDownloadsCollection().size() == 100
-                    && getContollerMarge().getTransferManager()
-                        .getCompletedDownloadsCollection().size() == 100
-                    && getContollerLisa().getTransferManager()
-                        .getCompletedDownloadsCollection().size() == 100
-                    && getContollerMaggie().getTransferManager()
-                        .getCompletedDownloadsCollection().size() == 100;
-            }
-        });
+        waitForCompletedDownloads(100, 0, 100, 100, 100);
         assertIdenticalTestFolder();
 
         // Step 2) Remove operations
@@ -81,6 +59,7 @@ public class MirrorFolderTest extends FiveControllerTestCase {
         });
 
         assertIdenticalTestFolder();
+        clearCompletedDownloads();
 
         // Step 3) Change operations
         performRandomOperations(0, 50, 0, getFolderAtBart().getLocalBase());
@@ -103,15 +82,33 @@ public class MirrorFolderTest extends FiveControllerTestCase {
 
     private static void assertIdenticalContent(File dir1, File dir2) {
         assertEquals(dir1.listFiles().length, dir2.listFiles().length);
-        int size1 = 0;
-        for (File file : dir1.listFiles()) {
-            size1 += file.length();
+        String[] files1 = dir1.list();
+        Arrays.sort(files1);
+        String[] files2 = dir2.list();
+        Arrays.sort(files2);
+
+        for (int i = 0; i < files1.length; i++) {
+
+            File file1 = new File(dir1, files1[i]);
+            File file2 = new File(dir2, files2[i]);
+            if (file1.isDirectory() && file2.isDirectory()) {
+                // Skip
+                continue;
+            }
+            assertEquals("File lenght mismatch: " + file1.getAbsolutePath(),
+                file1.length(), file2.length());
         }
-        int size2 = 0;
-        for (File file : dir2.listFiles()) {
-            size2 += file.length();
-        }
-        assertEquals(size1, size2);
+        //        
+        // int size1 = 0;
+        // for (File file : ) {
+        // size1 += file.length();
+        // }
+        // int size2 = 0;
+        // for (File file : dir2.listFiles()) {
+        // size2 += file.length();
+        // }
+        // assertEquals(Arrays.asList(dir1.list()) + " <-> "
+        // + Arrays.asList(dir2.list()), size1, size2);
     }
 
     private static void performRandomOperations(int nAdded, int nChanged,
@@ -152,15 +149,13 @@ public class MirrorFolderTest extends FiveControllerTestCase {
         }
 
         public void run() {
-            File[] files = dir.listFiles();
+            File[] files = dir.listFiles((FileFilter) FileFilterUtils
+                .fileFileFilter());
             if (files.length == 0) {
                 return;
             }
             File file = files[index % files.length];
-            if (file.isFile()) {
-                TestHelper.changeFile(file);
-                return;
-            }
+            TestHelper.changeFile(file);
         }
     }
 
@@ -173,17 +168,13 @@ public class MirrorFolderTest extends FiveControllerTestCase {
         }
 
         public void run() {
-            File[] files = dir.listFiles();
+            File[] files = dir.listFiles((FileFilter) FileFilterUtils
+                .fileFileFilter());
             if (files.length == 0) {
                 return;
             }
-            while (true) {
-                File file = files[(int) (Math.random() * files.length)];
-                if (file.isFile()) {
-                    file.delete();
-                    return;
-                }
-            }
+            File file = files[(int) (Math.random() * files.length)];
+            file.delete();
         }
     }
 }
