@@ -626,6 +626,7 @@ public class Folder extends PFComponent {
             if (!targetFile.getParentFile().exists() && 
                 !targetFile.getParentFile().mkdirs()) {
                 log().error("Couldn't create directory structure for " + targetFile);
+                return false;
             }
             synchronized (deleteLock) {
                 if (targetFile.exists()) {
@@ -2027,10 +2028,15 @@ public class Folder extends PFComponent {
                 getDirectory().addAll(from, changes.removed);
             }
         }
+        
+        // Avoid hammering of sync remote deletion
+        boolean singleFileMsg = changes.added != null
+            && changes.added.length == 1 && changes.removed == null;
+        
         if (getSyncProfile().isAutodownload()) {
             // Check if we need to trigger the filerequestor
             boolean triggerFileRequestor = true;
-            if (changes.added != null && changes.added.length == 1) {
+            if (singleFileMsg) {
                 // This was caused by a completed download
                 // TODO Maybe check this also on bigger lists!
                 FileInfo localfileInfo = getFile(changes.added[0]);
@@ -2060,7 +2066,7 @@ public class Folder extends PFComponent {
         }
 
         // Handle remote deleted files
-        if (getSyncProfile().isSyncDeletion()) {
+        if (!singleFileMsg && getSyncProfile().isSyncDeletion()) {
             // FIXME: Is wrong, since it syncs with completely connected members
             // only
             // FIXME: Is called too often, should be called after finish of
