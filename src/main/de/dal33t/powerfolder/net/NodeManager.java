@@ -916,7 +916,6 @@ public class NodeManager extends PFComponent {
      * Accpets a node, method does not block like
      * <code>acceptNode(Socket)</code>
      * 
-     * @see #acceptConnection(Socket)
      * @param socket
      */
     public void acceptConnectionAsynchron(Socket socket) {
@@ -1602,11 +1601,6 @@ public class NodeManager extends PFComponent {
 
     /**
      * Sets up all tasks, that needs to be periodically executed.
-     * <p>
-     * One task is NOT setup here: The <code>ReconectorPoolResizer</code>.
-     * That is done in <code>#startConnection()</code>.
-     * 
-     * @see #startConnecting()
      */
     private void setupPeridicalTasks() {
         Reject.ifNull(timer, "Timer is null to setup periodical tasks");
