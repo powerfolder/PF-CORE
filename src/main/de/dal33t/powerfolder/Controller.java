@@ -509,27 +509,23 @@ public class Controller extends PFComponent {
 
     private void initOnlineStorageClient() {
         Member server = null;
-        String serverConfig = ConfigurationEntry.SERVER.getValue(this);
-
-        if (!StringUtils.isBlank(serverConfig)) {
-            try {
-                StringTokenizer nizer = new StringTokenizer(serverConfig, ",");
-                String name = nizer.nextToken();
-                String address = nizer.nextToken();
-
-                String id = "";
-                if (nizer.hasMoreElements()) {
-                    id = nizer.nextToken();
-                }
-                MemberInfo serverInfo = new MemberInfo(name, id);
-                serverInfo.setConnectAddress(Util
-                    .parseConnectionString(address));
-                log().warn(
-                    "Loaded server from config: " + serverInfo + ", ID: " + id);
-                server = serverInfo.getNode(this, true);
-            } catch (NoSuchElementException e) {
-                log().error("Illegal 'server' in config: " + serverConfig);
+        String host = ConfigurationEntry.SERVER_HOST.getValue(this);
+        if (!StringUtils.isBlank(host)) {
+            String name = ConfigurationEntry.SERVER_NAME.getValue(this);
+            String id = ConfigurationEntry.SERVER_ID.getValue(this);
+            if (name == null) {
+                // Avoid NPEs
+                name = "Connecting...";
             }
+            if (id == null) {
+                // Avoid NPEs
+                id = "";
+            }
+            MemberInfo serverInfo = new MemberInfo(name, id);
+            serverInfo.setConnectAddress(Util.parseConnectionString(host));
+            log().warn(
+                "Loaded server from config: " + serverInfo + ", ID: " + id);
+            server = serverInfo.getNode(this, true);
         }
 
         if (server == null) {
