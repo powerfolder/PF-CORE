@@ -281,6 +281,21 @@ public class ServerClient extends PFComponent {
     private class MyNodeManagerListener implements NodeManagerListener {
         public void nodeConnected(NodeManagerEvent e) {
             if (isServer(e.getNode())) {
+
+                if (StringUtils.isEmpty(server.getId())) {
+
+                    // Got connect to server! Take his ID and name.
+                    Member oldServer = server;
+                    server = e.getNode();
+                    // Remove old temporary server entry without ID.
+                    getController().getNodeManager().removeNode(oldServer);
+                    // Re-initalize the service stubs on new server
+                    // node.
+                    initializeServiceStubs();
+
+                    log().info("Got connect to server: " + server);
+                }
+
                 if (username != null) {
                     login(username, password);
                 }
@@ -392,6 +407,7 @@ public class ServerClient extends PFComponent {
                             // Re-initalize the service stubs on new server
                             // node.
                             initializeServiceStubs();
+                            log().info("Got connect to server: " + server);
                         }
                     } catch (ConnectionException e) {
                         log().warn("Unable to connect to " + ServerClient.this,
