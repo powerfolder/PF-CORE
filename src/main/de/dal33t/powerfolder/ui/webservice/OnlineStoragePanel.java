@@ -92,9 +92,9 @@ public class OnlineStoragePanel extends PFUIPanel {
         JButton mirrorButton = new JButton(model.getMirrorFolderAction());
         bar.addGridded(mirrorButton);
         mirrorButton.setEnabled(!getController().isLanOnly());
-        bar.addRelatedGap();
-        bar.addGridded(new JButton(new SyncFolderRightsAction(getController()
-            .getOSClient())));
+//        bar.addRelatedGap();
+//        bar.addGridded(new JButton(new SyncFolderRightsAction(getController()
+//            .getOSClient())));
         bar.addRelatedGap();
         bar.addGridded(new JButton(new AboutWebServiceAction(getController())));
 
