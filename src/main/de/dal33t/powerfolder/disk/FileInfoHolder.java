@@ -79,7 +79,7 @@ public class FileInfoHolder {
         this.fileInfo = fileInfo;
     }
 
-    public void put(Member member, FileInfo newFileInfo) {
+    public synchronized void put(Member member, FileInfo newFileInfo) {
         memberHasFileInfoMap.put(member, newFileInfo);
         if (fileInfoIsMyOwn) { // do not overwite myself
             calcAvailability();

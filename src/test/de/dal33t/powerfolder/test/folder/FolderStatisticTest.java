@@ -101,6 +101,14 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         assertAllInSync(1, 12);
     }
 
+    public void testMultipleFilesMultiple() throws Exception {
+        for (int i = 0; i < 20; i++) {
+            testMultipleFiles();
+            tearDown();
+            setUp();
+        }
+    }
+
     public void testInitialSync() throws IOException {
         File testFile = TestHelper.createRandomFile(getFolderAtBart()
             .getLocalBase(), 1000);
@@ -144,6 +152,11 @@ public class FolderStatisticTest extends FiveControllerTestCase {
     }
 
     public void testMultipleFiles() {
+        assertFalse(getContollerHomer().isSilentMode());
+        assertFalse(getContollerBart().isSilentMode());
+        assertFalse(getContollerMarge().isSilentMode());
+        assertFalse(getContollerLisa().isSilentMode());
+        assertFalse(getContollerMaggie().isSilentMode());
         int nFiles = 10;
         int totalSize = 0;
         List<File> files = new ArrayList<File>();
@@ -155,6 +168,7 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         }
         setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         scanFolder(getFolderAtBart());
+
         waitForCompletedDownloads(nFiles, 0, nFiles, nFiles, nFiles);
         waitForFileListOnTestFolder();
         forceStatsCals();
@@ -347,7 +361,8 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         }
 
         scanFolder(getFolderAtBart());
-        getFolderAtHomer().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
+        getFolderAtHomer()
+            .setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         connectSimpsons();
         // Give the members time broadcast changes
@@ -370,8 +385,10 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         }
         File testFile = TestHelper.createRandomFile(getFolderAtBart()
             .getLocalBase());
-        getFolderAtMarge().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
-        getFolderAtMaggie().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
+        getFolderAtMarge()
+            .setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
+        getFolderAtMaggie().setSyncProfile(
+            SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         scanFolder(getFolderAtBart());
         TestHelper.waitMilliSeconds(5000);
         waitForFileListOnTestFolder();
@@ -556,9 +573,9 @@ public class FolderStatisticTest extends FiveControllerTestCase {
             Collection<FileInfo> filesOnMaggie;
 
             public String message() {
-                return "Not identical! Node "
+                return "Not identical! Filelist of "
                     + folder.getController().getMySelf().getNick()
-                    + " has has not received full fileslists. Homer: "
+                    + " was not received by all members. Homer: "
                     + filesOnHomer.size() + ", Bart: " + filesOnBart.size()
                     + ", Marge: " + filesOnMarge.size() + ", Lisa: "
                     + filesOnLisa.size() + ", Maggie: " + filesOnMaggie.size();
@@ -618,43 +635,6 @@ public class FolderStatisticTest extends FiveControllerTestCase {
             }
         }
         return true;
-    }
-
-    private void waitForCompletedDownloads(final int h, final int b,
-        final int mar, final int l, final int mag)
-    {
-        TestHelper.waitForCondition(20, new ConditionWithMessage() {
-            public boolean reached() {
-                return getContollerHomer().getTransferManager()
-                    .getCompletedDownloadsCollection().size() == h
-                    && getContollerBart().getTransferManager()
-                        .getCompletedDownloadsCollection().size() == b
-                    && getContollerMarge().getTransferManager()
-                        .getCompletedDownloadsCollection().size() == mar
-                    && getContollerLisa().getTransferManager()
-                        .getCompletedDownloadsCollection().size() == l
-                    && getContollerMaggie().getTransferManager()
-                        .getCompletedDownloadsCollection().size() == mag;
-            }
-
-            public String message() {
-                return "Completed downloads. Homer: "
-                    + getContollerHomer().getTransferManager()
-                        .getCompletedDownloadsCollection().size()
-                    + ", Bart: "
-                    + getContollerBart().getTransferManager()
-                        .getCompletedDownloadsCollection().size()
-                    + ", Marge: "
-                    + getContollerMarge().getTransferManager()
-                        .getCompletedDownloadsCollection().size()
-                    + ", Lisa: "
-                    + getContollerLisa().getTransferManager()
-                        .getCompletedDownloadsCollection().size()
-                    + ", Maggie: "
-                    + getContollerMaggie().getTransferManager()
-                        .getCompletedDownloadsCollection().size();
-            }
-        });
     }
 
     private void assertAllInSync(int totalFiles, long totalSize) {

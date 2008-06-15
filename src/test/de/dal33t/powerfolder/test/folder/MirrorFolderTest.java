@@ -14,7 +14,7 @@ public class MirrorFolderTest extends FiveControllerTestCase {
         assertTrue(tryToConnectSimpsons());
         joinTestFolder(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
     }
-    
+
     public void testRandomSyncOperationsMultiple() throws Exception {
         for (int i = 0; i < 10; i++) {
             testRandomSyncOperations();
@@ -82,40 +82,12 @@ public class MirrorFolderTest extends FiveControllerTestCase {
 
         assertIdenticalTestFolder();
 
-//        // Step 3) Change operations
-//        performRandomOperations(0, 50, 0, getFolderAtBart().getLocalBase());
-//        scanFolder(getFolderAtBart());
+        // Step 3) Change operations
+        performRandomOperations(0, 50, 0, getFolderAtBart().getLocalBase());
+        scanFolder(getFolderAtBart());
 
-        //TestHelper.waitMilliSeconds(60000);
-//        TestHelper.waitForCondition(60, new ConditionWithMessage() {
-//            public String message() {
-//                return "Downloads not completed: Homer "
-//                    + getContollerHomer().getTransferManager()
-//                        .getCompletedDownloadsCollection().size()
-//                    + ", Marge "
-//                    + getContollerMarge().getTransferManager()
-//                        .getCompletedDownloadsCollection().size()
-//                    + ", Lisa "
-//                    + getContollerLisa().getTransferManager()
-//                        .getCompletedDownloadsCollection().size()
-//                    + ", Maggie "
-//                    + getContollerMaggie().getTransferManager()
-//                        .getCompletedDownloadsCollection().size();
-//            }
-//
-//            public boolean reached() {
-//                return getContollerHomer().getTransferManager()
-//                    .getCompletedDownloadsCollection().size() == 150
-//                    && getContollerMarge().getTransferManager()
-//                        .getCompletedDownloadsCollection().size() == 150
-//                    && getContollerLisa().getTransferManager()
-//                        .getCompletedDownloadsCollection().size() == 150
-//                    && getContollerMarge().getTransferManager()
-//                        .getCompletedDownloadsCollection().size() == 100;
-//            }
-//        });
-
-     //   assertIdenticalTestFolder();
+        waitForCompletedDownloads(50, 0, 50, 50, 50);
+        assertIdenticalTestFolder();
     }
 
     private void assertIdenticalTestFolder() {

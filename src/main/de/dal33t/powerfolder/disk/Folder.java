@@ -619,26 +619,28 @@ public class Folder extends PFComponent {
      *         false if any problem happend.
      */
     public boolean scanDownloadFile(FileInfo fInfo, File tempFile) {
-        synchronized (scanLock) {
-            // rename file
-            File targetFile = fInfo.getDiskFile(getController()
-                .getFolderRepository());
-            if (!targetFile.getParentFile().exists() && 
-                !targetFile.getParentFile().mkdirs()) {
-                log().error("Couldn't create directory structure for " + targetFile);
-                return false;
-            }
-            synchronized (deleteLock) {
-                if (targetFile.exists()) {
-                    // if file was a "newer file" the file already esists here
-                    if (logVerbose) {
-                        log().verbose(
-                            "file already exists: " + targetFile
-                                + " moving to recycle bin");
-                    }
-                    deleteFile(fInfo, targetFile);
+        // rename file
+        File targetFile = fInfo.getDiskFile(getController()
+            .getFolderRepository());
+        if (!targetFile.getParentFile().exists()
+            && !targetFile.getParentFile().mkdirs())
+        {
+            log()
+                .error("Couldn't create directory structure for " + targetFile);
+            return false;
+        }
+        synchronized (deleteLock) {
+            if (targetFile.exists()) {
+                // if file was a "newer file" the file already esists here
+                if (logVerbose) {
+                    log().verbose(
+                        "file already exists: " + targetFile
+                            + " moving to recycle bin");
                 }
+                deleteFile(fInfo, targetFile);
             }
+        }
+        synchronized (scanLock) {
             if (!tempFile.renameTo(targetFile)) {
                 log().warn(
                     "Was not able to rename tempfile, copiing "
@@ -2028,11 +2030,11 @@ public class Folder extends PFComponent {
                 getDirectory().addAll(from, changes.removed);
             }
         }
-        
+
         // Avoid hammering of sync remote deletion
         boolean singleFileMsg = changes.added != null
             && changes.added.length == 1 && changes.removed == null;
-        
+
         if (getSyncProfile().isAutodownload()) {
             // Check if we need to trigger the filerequestor
             boolean triggerFileRequestor = true;

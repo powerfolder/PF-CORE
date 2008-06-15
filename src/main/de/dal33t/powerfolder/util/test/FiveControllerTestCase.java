@@ -210,4 +210,41 @@ public abstract class FiveControllerTestCase extends MultipleControllerTestCase
         // + testFolder + " id: " + testFolder.id);
         // }
     }
+    
+    protected void waitForCompletedDownloads(final int h, final int b,
+        final int mar, final int l, final int mag)
+    {
+        TestHelper.waitForCondition(20, new ConditionWithMessage() {
+            public boolean reached() {
+                return getContollerHomer().getTransferManager()
+                    .getCompletedDownloadsCollection().size() == h
+                    && getContollerBart().getTransferManager()
+                        .getCompletedDownloadsCollection().size() == b
+                    && getContollerMarge().getTransferManager()
+                        .getCompletedDownloadsCollection().size() == mar
+                    && getContollerLisa().getTransferManager()
+                        .getCompletedDownloadsCollection().size() == l
+                    && getContollerMaggie().getTransferManager()
+                        .getCompletedDownloadsCollection().size() == mag;
+            }
+
+            public String message() {
+                return "Completed downloads. Homer: "
+                    + getContollerHomer().getTransferManager()
+                        .getCompletedDownloadsCollection().size()
+                    + ", Bart: "
+                    + getContollerBart().getTransferManager()
+                        .getCompletedDownloadsCollection().size()
+                    + ", Marge: "
+                    + getContollerMarge().getTransferManager()
+                        .getCompletedDownloadsCollection().size()
+                    + ", Lisa: "
+                    + getContollerLisa().getTransferManager()
+                        .getCompletedDownloadsCollection().size()
+                    + ", Maggie: "
+                    + getContollerMaggie().getTransferManager()
+                        .getCompletedDownloadsCollection().size();
+            }
+        });
+    }
 }
