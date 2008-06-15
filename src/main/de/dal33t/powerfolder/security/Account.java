@@ -182,7 +182,7 @@ public class Account extends Model implements Serializable {
 
     /**
      * @param controller
-     * @return the total # of folders by this user
+     * @return the mirrored # of folders by this user
      */
     public int countNumberOfFolders(Controller controller) {
         int nFolders = 0;
