@@ -336,13 +336,35 @@ public class FileFilterModel extends FilterModel {
 
                     } else if (diskItem instanceof Directory) {
                         Directory directory = (Directory) diskItem;
-                        // text filter
+
+                        // Text filter
                         if (textFilter != null) {
                             // Check for match
                             if (!matches(directory, keywords)) {
                                 continue;
                             }
                         }
+
+                        if (mode == MODE_NEW_ONLY) {
+                            // See if the directory has new files.
+                            boolean newInSub = false;
+                            x:
+                            for (DownloadManager downloadManager :
+                                    getController().getTransferManager()
+                                            .getCompletedDownloadsCollection()) {
+                                for (FileInfo fileInfo :
+                                        directory.getFilesRecursive()) {
+                                    if (downloadManager.getFileInfo().equals(fileInfo)) {
+                                        newInSub = true;
+                                        break x;
+                                    }
+                                }
+                            }
+                            if (!newInSub) {
+                                continue;
+                            }
+                        }
+
                         resultList.add(directory);
                     } else {
                         throw new IllegalStateException(

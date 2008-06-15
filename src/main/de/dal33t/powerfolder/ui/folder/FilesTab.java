@@ -127,7 +127,7 @@ public class FilesTab extends PFUIComponent implements FolderTab,
      */
     private static final int MAX_ITEMS = 200;
     /** are we now updating? */
-    private boolean isUpdating = false;
+    private boolean isUpdating;
     /** one minute */
     private static final long DELAY = DateUtils.MILLIS_PER_MINUTE;
     /** time in milli sec of last update finish */
@@ -262,17 +262,29 @@ public class FilesTab extends PFUIComponent implements FolderTab,
     }
 
     private JPanel createFileStatusPanel() {
-        FormLayout layout = new FormLayout("pref:grow, 3dlu, pref:grow, 3dlu, pref:grow, 3dlu, pref:grow",
-            "pref, pref");
+        FormLayout layout = new FormLayout("fill:pref:grow, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu" ,
+                "pref, pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
-        builder.addSeparator(null, cc.xyw(1, 1, 7));
+        builder.addSeparator(null, cc.xyw(1, 1, 15));
 
-        builder.add(localFilesLabel, cc.xy(1, 2));
-        builder.add(incomingFilesLabel, cc.xy(3, 2));
-        builder.add(deletedFilesLabel, cc.xy(5, 2));
-        builder.add(recycledFilesLabel, cc.xy(7, 2));
+        JSeparator sep1 = new JSeparator(SwingConstants.VERTICAL);
+        sep1.setPreferredSize(new Dimension(2, 12));
+
+        JSeparator sep2 = new JSeparator(SwingConstants.VERTICAL);
+        sep2.setPreferredSize(new Dimension(2, 12));
+
+        JSeparator sep3 = new JSeparator(SwingConstants.VERTICAL);
+        sep3.setPreferredSize(new Dimension(2, 12));
+
+        builder.add(localFilesLabel, cc.xy(2, 2));
+        builder.add(sep1, cc.xy(4, 2));
+        builder.add(incomingFilesLabel, cc.xy(6, 2));
+        builder.add(sep2, cc.xy(8, 2));
+        builder.add(deletedFilesLabel, cc.xy(10, 2));
+        builder.add(sep3, cc.xy(12, 2));
+        builder.add(recycledFilesLabel, cc.xy(14, 2));
 
         return builder.getPanel();
     }
@@ -451,13 +463,13 @@ public class FilesTab extends PFUIComponent implements FolderTab,
     private void updateFileNumbers(int localFiles, int incomingFiles,
                                    int deletedFiles, int recycledFiles) {
         localFilesLabel.setText(Translation
-                .getTranslation("files_tab.local_files", localFiles));
+                .getTranslation("files_tab.local", localFiles));
         incomingFilesLabel.setText(Translation
-                .getTranslation("files_tab.incoming_files", incomingFiles));
+                .getTranslation("files_tab.incoming", incomingFiles));
         deletedFilesLabel.setText(Translation
-                .getTranslation("files_tab.deleted_files", deletedFiles));
+                .getTranslation("files_tab.deleted", deletedFiles));
         recycledFilesLabel.setText(Translation
-                .getTranslation("files_tab.recycled_files", recycledFiles));
+                .getTranslation("files_tab.recycled", recycledFiles));
     }
 
     /** updates the SelectionModel if some selection has changed in the table */
