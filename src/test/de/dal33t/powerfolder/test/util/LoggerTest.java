@@ -1,13 +1,8 @@
 package de.dal33t.powerfolder.test.util;
 
-import java.io.NotActiveException;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
-
 import junit.framework.TestCase;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.util.Logger;
-import de.dal33t.powerfolder.util.logging.PFFormatter;
 
 public class LoggerTest extends TestCase {
     
@@ -45,29 +40,6 @@ public class LoggerTest extends TestCase {
         assertEquals(4, logCount);
     }
 
-    public void testConsoleLogging() throws Exception {
-        Logger.setEnabledConsoleLogging(true);
-        Logger.removeExcludeConsoleLogLevel(Logger.ERROR);
-        Logger.removeExcludeConsoleLogLevel(Logger.INFO);
-        Logger.removeExcludeConsoleLogLevel(Logger.WARN);
-        Logger logger = Logger.getLogger(new TestLogger());
-        logger.info("Test Console (info)");
-        logger.warn("Test Console (warn)");
-        logger.error("Test Console (error)");
-        logger.debug("Test Console (debug)");
-    }
-    
-    public void testFormatter() throws Exception {
-        PFFormatter lFormatter = new PFFormatter();
-        
-        LogRecord lrec = new LogRecord(Level.INFO, "LogRecord");
-        lrec.setLoggerName("MyLogger");
-        
-        //System.out.println(lFormatter.formatMessage( lrec ) );
-        
-    }
-    
-    
     public class TestLogger extends PFComponent {
         public TestLogger() {
             // log().debug("Test");
