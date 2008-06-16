@@ -1,5 +1,5 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+* Copyright 2004 - 2008 Christian Sprajc, Dennis Waldherr. All rights reserved.
 *
 * This file is part of PowerFolder.
 *
@@ -32,7 +32,7 @@ import de.dal33t.powerfolder.util.Reject;
  * Creates arrays of PartInfos given the algorithms to use and a data set. 
  * 
  * @author Dennis "Dante" Waldherr
- * @version $Revision$ 
+ * @version $Revision: 4280 $ 
  */
 public final class FilePartsRecordBuilder {
 	private final Checksum chksum;

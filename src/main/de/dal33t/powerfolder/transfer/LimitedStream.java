@@ -1,5 +1,5 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+* Copyright 2004 - 2008 Christian Sprajc, Dennis Waldherr. All rights reserved.
 *
 * This file is part of PowerFolder.
 *
@@ -22,7 +22,7 @@ package de.dal33t.powerfolder.transfer;
 /**
  * Streams which implement this interface are able to throttle their throughput.
  * @author Dante
- * $Id: LimitedStream.java,v 1.1 2006/03/05 23:53:35 bytekeeper Exp $
+ * $Id$
  * @author Dennis "Dante" Waldherr
  * @version $Revision: 1.1 $
  *

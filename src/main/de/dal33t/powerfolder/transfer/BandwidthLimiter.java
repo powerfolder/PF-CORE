@@ -1,5 +1,5 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+* Copyright 2004 - 2008 Christian Sprajc, Dennis Waldherr. All rights reserved.
 *
 * This file is part of PowerFolder.
 *
@@ -24,7 +24,7 @@ package de.dal33t.powerfolder.transfer;
  * BandwidthLimiter starts out with 0 available and doesn't increase that. So it
  * needs some kind of "provider" which sets the amount of available bandwidth.
  * The BandwidthProvider class is an example of such. Instances start with no
- * limit. $Id: BandwidthLimiter.java,v 1.3 2006/03/06 01:19:28 bytekeeper Exp $
+ * limit. $Id$
  * 
  * @author Dennis "Dante" Waldherr
  * @version $Revision: 1.3 $

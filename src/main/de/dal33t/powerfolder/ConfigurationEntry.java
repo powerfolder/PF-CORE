@@ -1,5 +1,5 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+* Copyright 2004 - 2008 Christian Sprajc, Dennis Waldherr. All rights reserved.
 *
 * This file is part of PowerFolder.
 *
@@ -35,13 +35,8 @@ import de.dal33t.powerfolder.util.os.Win32.WinUtils;
  * for accessing and setting the configuration.
  * 
  * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
+ * @author Dennis "Bytekeeper" Waldherr
  * @version $Revision: 1.5 $
- */
-/**
- * @author Dennis "Bytekeeper" Waldherr
- */
-/**
- * @author Dennis "Bytekeeper" Waldherr
  */
 public enum ConfigurationEntry {
     /**
@@ -315,14 +310,13 @@ public enum ConfigurationEntry {
      */
     SERVER_NAME("server.name"),
     /**
-     * The optional server hostname to connect to.
-     * Example: server.powerfolder.com
+     * The optional server hostname to connect to. Example:
+     * server.powerfolder.com
      */
     SERVER_HOST("server.host"),
-    
+
     /**
-     * The optional server id to connect to.
-     * Example: [INFRASTRUCTURE03]
+     * The optional server id to connect to. Example: [INFRASTRUCTURE03]
      */
     SERVER_ID("server.id");
 

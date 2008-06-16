@@ -1,5 +1,5 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+* Copyright 2004 - 2008 Christian Sprajc, Dennis Waldherr. All rights reserved.
 *
 * This file is part of PowerFolder.
 *
@@ -30,7 +30,7 @@ import de.dal33t.powerfolder.util.WrappingTimer;
 /**
  * A BandwidthProvider can be used to periodically assign BandwidthLimiters a
  * given amount of bandwidth. It uses a one Thread solution to perform this.
- * $Id: BandwidthProvider.java,v 1.5 2006/04/23 18:21:18 bytekeeper Exp $
+ * $Id$
  * 
  * @author Dennis "Dante" Waldherr
  * @version $Revision: 1.5 $
