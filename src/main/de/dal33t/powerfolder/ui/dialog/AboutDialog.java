@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.ui.dialog;
 
 import java.awt.Color;
@@ -185,9 +185,8 @@ public class AboutDialog extends PFUIComponent {
             SimpleComponentFactory.BIG_FONT_SIZE);
 
         powerFolder = createTextBox(Translation
-            .getTranslation("general.powerfolder"), Translation
-            .getTranslation("about.dialog.power_folder.text",
-                Controller.PROGRAM_VERSION)
+            .getTranslation("general.powerfolder"), Translation.getTranslation(
+            "about.dialog.power_folder.text", Controller.PROGRAM_VERSION)
             + '\n'
             + Translation.getTranslation("about.dialog.power_folder.builddate",
                 buildDate)
@@ -199,25 +198,23 @@ public class AboutDialog extends PFUIComponent {
                 Runtime.getRuntime().maxMemory() / 1024 / 1024)
             + '\n'
             + Translation.getTranslation("about.dialog.power_folder.used",
-                Runtime.getRuntime().totalMemory() / 1024 / 1024)
-        );
+                Runtime.getRuntime().totalMemory() / 1024 / 1024));
 
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
         system = createTextBox(Translation
-                .getTranslation("about.dialog.yoursystem.title"), Translation
-                .getTranslation("about.dialog.yoursystem.java_version", System
-                        .getProperty("java.version"))
-                + '\n'
-                + Translation.getTranslation("about.dialog.yoursystem.os", System
+            .getTranslation("about.dialog.yoursystem.title"), Translation
+            .getTranslation("about.dialog.yoursystem.java_version", System
+                .getProperty("java.version"))
+            + '\n'
+            + Translation.getTranslation("about.dialog.yoursystem.os", System
                 .getProperty("os.name"))
-                + '\n'
-                + Translation.getTranslation("about.dialog.yoursystem.screen",
-                dim.width, dim.height)
-        );
+            + '\n'
+            + Translation.getTranslation("about.dialog.yoursystem.screen",
+                dim.width, dim.height));
 
         team = createTextBox(
             Translation.getTranslation("about.dialog.team"),
-            "Bernhard Rutkowsky\nCecilia Saltori\nChristian Sprajc\nDennis Waldherr\nFlorian Lahr\nHarry Glasgow\nJay Sun\n");
+            "Bernhard Rutkowsky\nCecilia Saltori\nChristian Sprajc\nDennis Waldherr\nFlorian Lahr\nHarry Glasgow\n");
 
         contributers = createTextBox(
             Translation.getTranslation("about.dialog.contributers"),
@@ -226,16 +223,10 @@ public class AboutDialog extends PFUIComponent {
             .getTranslation("about.dialog.testers"),
             "Michael Petrovic-Brings\nPeter H&uuml;ren\n \n ");
 
-        translators = createTextBox(
-            Translation.getTranslation("about.dialog.translators"),
-            "Anas Hnidi\n" +
-            "Cecilia Saltori\n" +
-            "Jan Van Oosterom\n" +
-            "Javier Isassi\n" +
-            "Keblo\n" +
-            "Nick Khazov\n" +
-            "Olle Wikstrom\n" +
-            "Zhang Jia\n ");
+        translators = createTextBox(Translation
+            .getTranslation("about.dialog.translators"), "Anas Hnidi\n"
+            + "Cecilia Saltori\n" + "Jan Van Oosterom\n" + "Javier Isassi\n"
+            + "Keblo\n" + "Nick Khazov\n" + "Olle Wikstrom\n" + "Zhang Jia\n ");
     }
 
     /**
@@ -286,9 +277,7 @@ public class AboutDialog extends PFUIComponent {
     }
 
     private JPanel createToolbar() {
-        FormLayout layout = new FormLayout(
-            "pref:grow, 3dlu, pref",
-            "pref");
+        FormLayout layout = new FormLayout("pref:grow, 3dlu, pref", "pref");
         PanelBuilder builder = new PanelBuilder(layout);
         // builder.setBorder(Borders.DLU2_BORDER);
         CellConstraints cc = new CellConstraints();
@@ -311,13 +300,13 @@ public class AboutDialog extends PFUIComponent {
 
     private JPanel createGeneralPanel() {
         FormLayout layout = new FormLayout("pref",
-            "pref, 8dlu, pref, 3dlu, pref, 3dlu, pref");
+            "pref, 15dlu, pref, 3dlu, pref, 3dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
         builder.add(TextLinesPanelBuilder.createTextPanel(Translation
-            .getTranslation("about.dialog.professional_folder_sharing_tool"),
-            HEADER_FONT_SIZE - 4), cc.xy(1, 1));
+            .getTranslation("about.dialog.sync_your_world"), HEADER_FONT_SIZE),
+            cc.xy(1, 1));
         builder.add(homeLink, cc.xy(1, 3));
         builder.add(docLink, cc.xy(1, 5));
         builder.add(supportLink, cc.xy(1, 7));
@@ -409,7 +398,7 @@ public class AboutDialog extends PFUIComponent {
      */
     private JButton createBugReportButton() {
         JButton bugReportButton = new JButton(Translation
-                .getTranslation("about.dialog.send_bug_report"));
+            .getTranslation("about.dialog.send_bug_report"));
         bugReportButton.setMnemonic(Translation.getTranslation(
             "about.dialog.send_bug_report.key").trim().charAt(0));
         bugReportButton.addActionListener(new BugReportAction());
@@ -438,7 +427,7 @@ public class AboutDialog extends PFUIComponent {
             } else {
                 builder.appendRow("pref");
                 builder.add(new JLabel("<HTML><BODY>" + lineText
-                        + "</BODY></HTML>"), cc.xy(1, row));
+                    + "</BODY></HTML>"), cc.xy(1, row));
             }
             row += 1;
         }
