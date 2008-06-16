@@ -1,5 +1,22 @@
-/* $Id$
- */
+/*
+* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+*
+* This file is part of PowerFolder.
+*
+* PowerFolder is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation.
+*
+* PowerFolder is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+*
+* $Id$
+*/
 package de.dal33t.powerfolder.util;
 
 import java.io.File;
@@ -46,10 +63,11 @@ public class AddLicenseHeader {
                 System.out.println("Skip: " + f.getCanonicalPath() + ": " + i);
                 return;
             }
+            System.out.println("Add: " + f.getCanonicalPath() + ": " + i);
             content = LIC_INFO + content.substring(i, content.length());
             System.out.println(content);
             FileUtils.writeStringToFile(f, content, "UTF-8");
-            throw new RuntimeException();
+         //   throw new RuntimeException();
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -73,6 +91,6 @@ public class AddLicenseHeader {
         + "* You should have received a copy of the GNU General Public License\r\n"
         + "* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.\r\n"
         + "*\r\n"
-        + "* $Id: Controller.java 4274 2008-06-16 02:36:26Z tot $\r\n"
+        + "* $Id$\r\n"
         + "*/\r\n";
 }
