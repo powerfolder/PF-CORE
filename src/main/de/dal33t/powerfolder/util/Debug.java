@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.util;
 
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_ID;
@@ -320,8 +320,8 @@ public class Debug {
                 b.append("\nDownloads ("
                     + downloads.size()
                     + " total, "
-                    + Format.getNumberFormat().format(tm.getDownloadCounter()
-                        .calculateCurrentKBS())
+                    + Format.getNumberFormat().format(
+                        tm.getDownloadCounter().calculateCurrentKBS())
                     + " Kbytes/s, "
                     + Format.formatBytes(tm.getDownloadCounter()
                         .getBytesTransferred()) + " bytes total):");
@@ -348,11 +348,11 @@ public class Debug {
                     + " active, "
                     + quedULs.length
                     + " queued, "
-                    + Format.getNumberFormat().format(tm.getUploadCounter()
-                        .calculateCurrentKBS())
+                    + Format.getNumberFormat().format(
+                        tm.getUploadCounter().calculateCurrentKBS())
                     + " Kbytes/s, "
-                    + Format.getNumberFormat().format(tm
-                        .getAllowedUploadCPSForWAN() / 1024)
+                    + Format.getNumberFormat().format(
+                        tm.getAllowedUploadCPSForWAN() / 1024)
                     + " Kbyte/s allowed, "
                     + Format.formatBytes(tm.getUploadCounter()
                         .getBytesTransferred()) + " bytes total):");
@@ -538,7 +538,7 @@ public class Debug {
         b.append(", ID: XXX-erased-XXX");
         b.append(", files: " + f.getKnownFilesCount() + ", size: "
             + Format.formatBytes(f.getInfo().bytesTotal) + ", members: "
-            + f.getMembers().length + ", sync: "
+            + f.getMembersCount() + ", sync: "
             + f.getSyncProfile().getProfileName());
     }
 

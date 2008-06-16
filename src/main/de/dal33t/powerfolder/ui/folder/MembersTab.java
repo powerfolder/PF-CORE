@@ -1,28 +1,28 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.ui.folder;
 
 import java.awt.Component;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -165,12 +165,12 @@ public class MembersTab extends PFUIComponent implements FolderTab,
         Folder oldFolder = this.folder;
         this.folder = folder;
         syncStatusPanel.setFolder(folder);
-        Member[] members = folder.getMembers();
-        Arrays.sort(members, MemberComparator.IN_GUI);
+        List<Member> members = MemberComparator.IN_GUI.sortedCopy(folder
+            .getMembersAsCollection());
         memberListModel.setMembers(members);
-        if (members.length > -1) {
+        if (members.size() > -1) {
             memberList.setSelectedIndex(0);
-            syncStatusPanel.setMember(members[0]);
+            syncStatusPanel.setMember(members.get(0));
         }
         if (oldFolder != null) {
             oldFolder.removeMembershipListener(this);
@@ -281,16 +281,12 @@ public class MembersTab extends PFUIComponent implements FolderTab,
         List<Member> members = Collections
             .synchronizedList(new LinkedList<Member>());
 
-        public void setMembers(Member[] membersArr) {
+        public void setMembers(List<Member> membersArr) {
             synchronized (members) {
-                this.members.clear();
-                // java 1.5:
-                // Collections.addAll(this.members, membersArr);
-                for (int i = 0; i < membersArr.length; i++) {
-                    members.add(membersArr[i]);
-                }
+                members.clear();
+                members.addAll(membersArr);
             }
-            fireContentsChanged(MembersTab.this, 0, membersArr.length - 1);
+            fireContentsChanged(MembersTab.this, 0, membersArr.size() - 1);
         }
 
         public Object getElementAt(int index) {

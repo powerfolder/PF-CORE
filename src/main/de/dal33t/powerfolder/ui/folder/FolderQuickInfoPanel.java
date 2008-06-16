@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.ui.folder;
 
 import javax.swing.ImageIcon;
@@ -74,7 +74,7 @@ public class FolderQuickInfoPanel extends QuickInfoPanel {
      */
     protected void initComponents() {
         syncETAEstimator = new TimeEstimator(Constants.ESTIMATION_WINDOW_MILLIS);
-        
+
         headerText = SimpleComponentFactory.createBiggerTextLabel("");
         infoText1 = SimpleComponentFactory.createBigTextLabel("");
         infoText2 = SimpleComponentFactory.createBigTextLabel("");
@@ -106,9 +106,8 @@ public class FolderQuickInfoPanel extends QuickInfoPanel {
             }
             headerText.setText(Translation.getTranslation(
                 "quickinfo.folder.status_of_folder", name));
-
-            boolean isMembersConnected = currentFolder.getConnectedMembers().length > 0;
-
+            boolean isMembersConnected = currentFolder
+                .getConnectedMembersCount() > 0;
             StringBuilder text1 = new StringBuilder();
             boolean showDownloads = true;
             if (currentFolder.isDeviceDisconnected()) {
@@ -121,15 +120,19 @@ public class FolderQuickInfoPanel extends QuickInfoPanel {
                 text1.append(Translation
                     .getTranslation("quickinfo.folder.is_synchronizing"));
                 FolderStatistic folderStatistic = currentFolder.getStatistic();
-                double sync = currentFolder.getStatistic().getHarmonizedSyncPercentage();
+                double sync = currentFolder.getStatistic()
+                    .getHarmonizedSyncPercentage();
 
                 if (folderStatistic.getDownloadCounter() != null && sync < 100
-                        && currentFolder.getSyncProfile().isAutodownload()) {
-                    syncETAEstimator.addValue(folderStatistic.getLocalSyncPercentage());
-                    text1.append(", " + Translation
-                            .getTranslation("quickinfo.folder.up_to_date_in",
-                                    new EstimatedTime(syncETAEstimator
-                                            .estimatedMillis(100.0), true).toString()));
+                    && currentFolder.getSyncProfile().isAutodownload())
+                {
+                    syncETAEstimator.addValue(folderStatistic
+                        .getLocalSyncPercentage());
+                    text1.append(", "
+                        + Translation.getTranslation(
+                            "quickinfo.folder.up_to_date_in",
+                            new EstimatedTime(syncETAEstimator
+                                .estimatedMillis(100.0), true).toString()));
                     showDownloads = false;
                 }
             } else if (currentFolder.isPreviewOnly()) {
@@ -238,7 +241,9 @@ public class FolderQuickInfoPanel extends QuickInfoPanel {
         for (DownloadManager dl : getController().getTransferManager()
             .getCompletedDownloadsCollection())
         {
-            if (dl.getFileInfo().getFolderInfo().equals(currentFolder.getInfo())) {
+            if (dl.getFileInfo().getFolderInfo()
+                .equals(currentFolder.getInfo()))
+            {
                 completedDls++;
             }
         }

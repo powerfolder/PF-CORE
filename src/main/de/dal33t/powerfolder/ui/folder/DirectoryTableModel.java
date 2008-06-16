@@ -1,26 +1,27 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.ui.folder;
 
 import java.awt.EventQueue;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -31,16 +32,16 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 
+import de.dal33t.powerfolder.DiskItem;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.DiskItem;
-import de.dal33t.powerfolder.ui.model.SortedTableModel;
 import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.event.FileFilterChangeListener;
 import de.dal33t.powerfolder.event.FileFilterChangedEvent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.ui.model.SortedTableModel;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.compare.DiskItemComparator;
 import de.dal33t.powerfolder.util.compare.ReverseComparator;
@@ -50,12 +51,13 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * Maps a Directory to a tablemodel, optional uses a recursive list (all the
  * files in the sub directories), uses a FileFilter model to filter the file
  * list. If not recursive it also maps the Directories as rows in the table.
- *
+ * 
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.1 $
  */
-public class DirectoryTableModel extends PFComponent implements TableModel, 
-        SortedTableModel {
+public class DirectoryTableModel extends PFComponent implements TableModel,
+    SortedTableModel
+{
 
     private Set<TableModelListener> tableListener = new HashSet<TableModelListener>();
     private Directory directory;
@@ -73,7 +75,8 @@ public class DirectoryTableModel extends PFComponent implements TableModel,
         Translation.getTranslation("filelist.availability")};
 
     private boolean recursive;
-    private final List<DiskItem> displayList = Collections.synchronizedList(new ArrayList<DiskItem>());
+    private final List<DiskItem> displayList = Collections
+        .synchronizedList(new ArrayList<DiskItem>());
     private FileFilterModel fileFilterModel;
     private DirectoryTable table;
     /**
@@ -147,7 +150,7 @@ public class DirectoryTableModel extends PFComponent implements TableModel,
 
     /**
      * Display files in subdirectories?
-     *
+     * 
      * @return true if this is a recursive view on the Directory
      */
     public boolean isRecursive() {
@@ -156,7 +159,7 @@ public class DirectoryTableModel extends PFComponent implements TableModel,
 
     /**
      * Set if this model should map files in subdirectries to the table model
-     *
+     * 
      * @param recursive
      *            enables of disables the recursive view
      * @param createList
@@ -173,7 +176,7 @@ public class DirectoryTableModel extends PFComponent implements TableModel,
 
     /**
      * Set the Directory that should be visible in the Table
-     *
+     * 
      * @param directory
      *            the Directory to use
      * @param clear
@@ -247,7 +250,7 @@ public class DirectoryTableModel extends PFComponent implements TableModel,
                 // status line
                 Folder folder = getFolder();
                 FolderInfo folderInfo = folder.getInfo();
-                Member[] members = folder.getMembers();
+                Collection<Member> members = folder.getMembersAsCollection();
                 for (Member member : members) {
                     if (member.isConnected()
                         && !member.hasFileListFor(folderInfo))
@@ -259,7 +262,7 @@ public class DirectoryTableModel extends PFComponent implements TableModel,
                     }
                 }
                 // no fileslist received
-                if (members.length > 1) { // myself is always in this list
+                if (members.size() > 1) { // myself is always in this list
                     // there are other members
                     return Translation
                         .getTranslation("filelist.status.no_files_available_yet_fetching_filelist");
@@ -305,8 +308,7 @@ public class DirectoryTableModel extends PFComponent implements TableModel,
                 TableModelEvent e = new TableModelEvent(
                     DirectoryTableModel.this);
                 for (Object aTableListener : tableListener) {
-                    TableModelListener listener =
-                            (TableModelListener) aTableListener;
+                    TableModelListener listener = (TableModelListener) aTableListener;
                     listener.tableChanged(e);
                 }
             }
@@ -340,7 +342,7 @@ public class DirectoryTableModel extends PFComponent implements TableModel,
 
     /**
      * Sorts the model by a column
-     *
+     * 
      * @param columnIndex
      * @return if the model was sorted freshly
      */
@@ -368,7 +370,7 @@ public class DirectoryTableModel extends PFComponent implements TableModel,
     /**
      * Re-sorts the file list with the new comparator only if comparator differs
      * from old one
-     *
+     * 
      * @param newComparator
      * @return if the table was freshly sorted
      */
@@ -393,7 +395,7 @@ public class DirectoryTableModel extends PFComponent implements TableModel,
 
     /**
      * Sorts the filelist
-     *
+     * 
      * @param dispList
      *            the list to sort
      * @return if the model was freshly sorted
@@ -418,8 +420,8 @@ public class DirectoryTableModel extends PFComponent implements TableModel,
      */
     public void reverseList() {
         sortAscending = !sortAscending;
-        List<DiskItem> tmpDisplayList = Collections.synchronizedList(new ArrayList<DiskItem>(
-            displayList.size()));
+        List<DiskItem> tmpDisplayList = Collections
+            .synchronizedList(new ArrayList<DiskItem>(displayList.size()));
         synchronized (displayList) {
             int size = displayList.size();
             for (int i = 0; i < size; i++) {

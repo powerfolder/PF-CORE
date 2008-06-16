@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.ui.myfolders;
 
 import java.awt.Component;
@@ -140,8 +140,9 @@ public class MyFoldersPanel extends PFUIPanel {
         // popup appears on the table header
         table.getTableHeader().addMouseListener(new PopupMenuOpener(popup));
 
-        hidePreviewsCB = BasicComponentFactory.createCheckBox(getUIController().getHidePreviewsValueModel(),
-                Translation.getTranslation("my_folders_panel.hide_previews"));
+        hidePreviewsCB = BasicComponentFactory.createCheckBox(getUIController()
+            .getHidePreviewsValueModel(), Translation
+            .getTranslation("my_folders_panel.hide_previews"));
 
         // Create toolbar
         toolbar = createToolBar();
@@ -234,10 +235,9 @@ public class MyFoldersPanel extends PFUIPanel {
                     break;
                 }
                 case 3 : {// Members
-                    Member[] members = folder.getMembers();
                     String separetor = "";
-                    for (int i = 0; i < members.length; i++) {
-                        newValue += separetor + members[i].getNick();
+                    for (Member member : folder.getMembersAsCollection()) {
+                        newValue += separetor + member.getNick();
                         separetor = ", ";
                     }
                     Component component = super.getTableCellRendererComponent(
@@ -245,13 +245,14 @@ public class MyFoldersPanel extends PFUIPanel {
                     int prefWidth = component.getPreferredSize().width;
                     if (currentColumnWidth < prefWidth) {
                         newValue = Translation.getTranslation(
-                            "myfolderstable.number_of_members", members.length
+                            "myfolderstable.number_of_members", folder
+                                .getMembersCount()
                                 + "");
                     }
                     String toolTipValue = "<HTML><BODY>";
                     separetor = "";
-                    for (int i = 0; i < members.length; i++) {
-                        toolTipValue += separetor + members[i].getNick();
+                    for (Member member : folder.getMembersAsCollection()) {
+                        toolTipValue += separetor + member.getNick();
                         separetor = "<BR>";
                     }
                     toolTipValue += "</BODY></HTML>";
@@ -284,7 +285,7 @@ public class MyFoldersPanel extends PFUIPanel {
                 }
                 case 9 : {// new files
                     int count = getController().getTransferManager()
-                            .countCompletedDownloads(folder);
+                        .countCompletedDownloads(folder);
                     newValue = String.valueOf(count);
                     break;
                 }

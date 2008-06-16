@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.light;
 
 import java.beans.PropertyChangeEvent;
@@ -499,13 +499,11 @@ public class FileInfo implements Serializable, DiskItem {
                 "Unable to determine newest version. Folder not joined "
                     + getFolderInfo());
         }
-        Collection<Member> members = new ArrayList<Member>(Arrays.asList(folder
-            .getConnectedMembers()));
-        // UARG, ugly access
-        members.add(repo.getController().getMySelf());
         FileInfo newestVersion = this;
-
-        for (Member member : members) {
+        for (Member member : folder.getMembersAsCollection()) {
+            if (!member.isCompleteyConnected() && !member.isMySelf()) {
+                continue;
+            }
             // Get remote file
             FileInfo remoteFile = member.getFile(this);
             if (remoteFile == null) {
@@ -535,12 +533,10 @@ public class FileInfo implements Serializable, DiskItem {
                 "Unable to determine newest version. Folder not joined "
                     + getFolderInfo());
         }
-        Member[] members = folder.getConnectedMembers();
         FileInfo newestVersion = this;
-        for (Member member : members) {
-            if (!member.isConnected()) {
-                // Disconnected in the meantime
-                // Ignore offline user
+        for (Member member : folder.getMembersAsCollection()) {
+            if (!member.isCompleteyConnected() && !member.isMySelf()) {
+                // Disconnected Ignore offline user
                 continue;
             }
             // Get remote file
@@ -548,11 +544,9 @@ public class FileInfo implements Serializable, DiskItem {
             if (remoteFile == null) {
                 continue;
             }
-
             if (remoteFile.isDeleted()) {
                 continue;
             }
-
             // Check if remote file is newer
             if (remoteFile.isNewerThan(newestVersion)) {
                 // log().verbose("Newer version found at " + member);

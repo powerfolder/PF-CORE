@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.disk;
 
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX;
@@ -40,10 +40,8 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.SortedMap;
 import java.util.TimerTask;
 import java.util.TreeMap;
@@ -144,7 +142,7 @@ public class Folder extends PFComponent {
     private final Object deleteLock = new Object();
 
     /** All members of this folder */
-    private Set<Member> members;
+    private Map<Member, Member> members;
 
     /** cached Directory object */
     private final Directory rootDirectory;
@@ -280,7 +278,7 @@ public class Folder extends PFComponent {
 
         statistic = new FolderStatistic(this);
         knownFiles = new ConcurrentHashMap<FileInfo, FileInfo>();
-        members = Collections.synchronizedSet(new HashSet<Member>());
+        members = new ConcurrentHashMap<Member, Member>();
         // diskFileCache = new WeakHashMap<FileInfo, File>();
 
         // put myself in membership
@@ -1393,7 +1391,8 @@ public class Folder extends PFComponent {
                 // Store files
                 oOut.writeObject(files);
                 // Store members
-                oOut.writeObject(Convert.asMemberInfos(getMembers()));
+                oOut.writeObject(Convert.asMemberInfos(getMembersAsCollection()
+                    .toArray(new Member[0])));
                 // Old blacklist. Maintained for backward serialization
                 // compatability. Do not remove.
                 oOut.writeObject(new ArrayList<FileInfo>());
@@ -1694,15 +1693,11 @@ public class Folder extends PFComponent {
      */
     private void join0(Member member) {
         Reject.ifNull(member, "Member is null, unable to join");
-
         // member will be joined, here on local
-        boolean wasMember;
-        synchronized (members) {
-            wasMember = members.remove(member);
-            members.add(member);
+        boolean wasMember = members.put(member, member) != null;
+        if (logVerbose) {
+            log().verbose("Member joined " + member);
         }
-        log().verbose("Member joined " + member);
-
         // send him our list of files if completely connected. otherwise this
         // gets sent by Member.completeHandshake();
         if (!wasMember && member.isCompleteyConnected()) {
@@ -1716,13 +1711,10 @@ public class Folder extends PFComponent {
      * @param member
      */
     public void remove(Member member) {
-        if (!members.contains(member)) {
+        if (members.remove(member) == null) {
+            // Skip if not member
             return;
         }
-        synchronized (members) {
-            members.remove(member);
-        }
-
         log().debug("Member left " + member);
 
         // remove files of this member in our datastructure
@@ -1781,19 +1773,17 @@ public class Folder extends PFComponent {
      *            folder. otherwise it checks the modifier.
      */
     public void syncRemoteDeletedFiles(boolean force) {
-        Member[] conMembers = getConnectedMembers();
         if (logVerbose) {
             log().verbose(
                 "Deleting files, which are deleted by friends. con-members: "
-                    + Arrays.asList(conMembers));
+                    + Arrays.asList(getConnectedMembers()));
         }
 
         List<FileInfo> removedFiles = new ArrayList<FileInfo>();
 
-        for (Member member : conMembers) {
+        for (Member member : getMembersAsCollection()) {
             if (!member.isCompleteyConnected()) {
-                // disconected in the meantime
-                // go to next member
+                // disconected go to next member
                 continue;
             }
 
@@ -1903,8 +1893,8 @@ public class Folder extends PFComponent {
      * @param message
      */
     public void broadcastMessages(Message... message) {
-        for (Member member : getConnectedMembers()) {
-            // still connected?
+        for (Member member : getMembersAsCollection()) {
+            // Connected?
             if (member.isCompleteyConnected()) {
                 // sending all nodes my knows nodes
                 member.sendMessagesAsynchron(message);
@@ -1919,10 +1909,8 @@ public class Folder extends PFComponent {
         if (logVerbose) {
             log().verbose("Broadcasting remote scan commando");
         }
-        if (getConnectedMembers().length > 0) {
-            Message scanCommand = new ScanCommand(getInfo());
-            broadcastMessages(scanCommand);
-        }
+        Message scanCommand = new ScanCommand(getInfo());
+        broadcastMessages(scanCommand);
     }
 
     private void broadcastFolderChanges(ScanResult scanResult) {
@@ -1930,7 +1918,7 @@ public class Folder extends PFComponent {
         int changedMsgs = 0;
         int deletedMsgs = 0;
         int restoredMsgs = 0;
-        if (getConnectedMembers().length == 0) {
+        if (getConnectedMembersCount() == 0) {
             return;
         }
         if (scanResult.getNewFiles().size() > 0) {
@@ -2394,10 +2382,9 @@ public class Folder extends PFComponent {
         SortedMap<FileInfo, FileInfo> incomingFiles = new TreeMap<FileInfo, FileInfo>(
             new DiskItemComparator(DiskItemComparator.BY_NAME));
         // add expeced files
-        Member[] conMembers = getConnectedMembers();
-        for (Member member : conMembers) {
+        for (Member member : getMembersAsCollection()) {
             if (!member.isCompleteyConnected()) {
-                // disconnected in the meantime
+                // disconnected
                 continue;
             }
             if (!member.hasCompleteFileListFor(getInfo())) {
@@ -2469,26 +2456,44 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * @return all members
+     * This list also includes myself!
+     * 
+     * @return all members in a collection. The collection is a unmodifiable
+     *         referece to the internal member storage. May change after has
+     *         been returned!
      */
-    public Member[] getMembers() {
-        synchronized (members) {
-            Member[] membersArr = new Member[members.size()];
-            members.toArray(membersArr);
-            return membersArr;
+    public Collection<Member> getMembersAsCollection() {
+        return Collections.unmodifiableCollection(members.keySet());
+    }
+
+    /**
+     * @return the number of members
+     */
+    public int getMembersCount() {
+        return members.size();
+    }
+
+    /**
+     * @return the number of connected members EXCLUDING myself.
+     */
+    public int getConnectedMembersCount() {
+        int nConnected = 0;
+        for (Member member : members.values()) {
+            if (member.isCompleteyConnected()) {
+                nConnected++;
+            }
         }
+        return nConnected;
     }
 
     public Member[] getConnectedMembers() {
         List<Member> connected = new ArrayList<Member>(members.size());
-        synchronized (members) {
-            for (Member member : members) {
-                if (member.isCompleteyConnected()) {
-                    if (member.isMySelf()) {
-                        continue;
-                    }
-                    connected.add(member);
+        for (Member member : getMembersAsCollection()) {
+            if (member.isCompleteyConnected()) {
+                if (member.isMySelf()) {
+                    continue;
                 }
+                connected.add(member);
             }
         }
         return connected.toArray(new Member[0]);
@@ -2505,14 +2510,7 @@ public class Folder extends PFComponent {
         if (member == null) {
             return false;
         }
-        return members.contains(member);
-    }
-
-    /**
-     * @return the number of members
-     */
-    public int getMembersCount() {
-        return members.size();
+        return members.keySet().contains(member);
     }
 
     /**

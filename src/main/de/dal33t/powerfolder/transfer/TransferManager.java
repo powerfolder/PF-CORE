@@ -1643,7 +1643,7 @@ public class TransferManager extends PFComponent {
         // .getNodeWithFileListFrom(fInfo.getFolderInfo());
         List<Member> sources = new ArrayList<Member>();
         // List<Member> sources = new ArrayList<Member>(nodes.size());
-        for (Member node : folder.getMembers()) {
+        for (Member node : folder.getMembersAsCollection()) {
             if (node.isCompleteyConnected() && !node.isMySelf()
                 && node.hasFile(fInfo))
             {
