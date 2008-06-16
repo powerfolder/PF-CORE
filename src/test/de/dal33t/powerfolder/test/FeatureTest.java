@@ -15,7 +15,7 @@
 * You should have received a copy of the GNU General Public License
 * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
 *
-* $Id$
+* $Id: AddLicenseHeader.java 4282 2008-06-16 03:25:09Z tot $
 */
 package de.dal33t.powerfolder.test;
 
