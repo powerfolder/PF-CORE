@@ -18,6 +18,7 @@ import de.dal33t.powerfolder.util.os.OSUtil;
  */
 public class MemoryMonitor implements Runnable {
 
+    private static final String POWERFOLDER_INI_FILE = "PowerFolder.l4j.ini";
     private Controller controller;
     private static final Logger log = Logger.getLogger(MemoryMonitor.class);
 
@@ -48,11 +49,11 @@ public class MemoryMonitor implements Runnable {
                     .getUIComponent();
                 NeverAskAgainResponse response;
                 if (OSUtil.isWindowsSystem()) {
-                    response = DialogFactory.genericDialog(
-                        parent, Translation.getTranslation("lowmemory.title"),
-                        Translation.getTranslation("lowmemory.text"), new String[]{
-                            Translation.getTranslation("lowmemory.increase"),
-                            Translation.getTranslation("lowmemory.do_nothing")}, 0,
+                    response = DialogFactory.genericDialog(parent, Translation
+                        .getTranslation("lowmemory.title"), Translation
+                        .getTranslation("lowmemory.text"), new String[]{
+                        Translation.getTranslation("lowmemory.increase"),
+                        Translation.getTranslation("lowmemory.do_nothing")}, 0,
                         GenericDialogType.WARN, Translation
                             .getTranslation("lowmemory.dont_autodetect"));
                     if (response.getButtonIndex() == 0) { // Increase memory
@@ -60,11 +61,11 @@ public class MemoryMonitor implements Runnable {
                     }
                 } else {
                     // No ini - Can only warn user.
-                    response = DialogFactory.genericDialog(
-                        parent, Translation.getTranslation("lowmemory.title"),
-                        Translation.getTranslation("lowmemory.warn"), new String[]{
-                            Translation.getTranslation("general.ok")}, 0,
-                        GenericDialogType.WARN, Translation
+                    response = DialogFactory.genericDialog(parent, Translation
+                        .getTranslation("lowmemory.title"), Translation
+                        .getTranslation("lowmemory.warn"),
+                        new String[]{Translation.getTranslation("general.ok")},
+                        0, GenericDialogType.WARN, Translation
                             .getTranslation("lowmemory.dont_autodetect"));
                 }
 
@@ -105,7 +106,7 @@ public class MemoryMonitor implements Runnable {
             boolean alreadyMax = Runtime.getRuntime().totalMemory() / 1024 / 1024 > 500;
             // Write a new one if found.
             if (!alreadyMax) {
-                pw = new PrintWriter(new FileWriter("PowerFolder.ini"));
+                pw = new PrintWriter(new FileWriter(POWERFOLDER_INI_FILE));
                 log.debug("Writing new ini...");
                 pw.println("-Xms16m");
                 pw.println("-Xmx512m");
