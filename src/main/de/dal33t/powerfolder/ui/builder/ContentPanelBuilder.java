@@ -1,7 +1,4 @@
 /* $Id$
- * 
- * Copyright (c) 2007 Riege Software. All rights reserved.
- * Use is subject to license terms.
  */
 package de.dal33t.powerfolder.ui.builder;
 
