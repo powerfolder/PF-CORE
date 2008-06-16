@@ -19,7 +19,6 @@
 */
 package de.dal33t.powerfolder;
 
-import java.io.File;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -830,7 +829,7 @@ public class Member extends PFComponent {
                         log()
                             .warn(
                                 "Did not receive a handshake not acknownledged (or problem) by remote side after "
-                                    + (int) (took / 1000) + "s");
+                                    + (int) (took / 1000) + 's');
                     }
                 }
                 shutdown();
@@ -1090,6 +1089,8 @@ public class Member extends PFComponent {
                 "Unable to handle message, message is null");
         }
 
+        Date start = new Date();
+
         // related folder is filled if message is a folder related message
         FolderInfo targetedFolderInfo = null;
         Folder targetFolder = null;
@@ -1255,8 +1256,8 @@ public class Member extends PFComponent {
                 expectedListMessages = new ConcurrentHashMap<FolderInfo, Integer>();
             }
             // Reset counter of expected filelists
-            expectedListMessages.put(remoteFileList.folder, Integer
-                .valueOf(remoteFileList.nFollowingDeltas));
+            expectedListMessages.put(remoteFileList.folder,
+                    remoteFileList.nFollowingDeltas);
 
             // Add filelist to filelist cache
             Map<FileInfo, FileInfo> cachedFileList = new ConcurrentHashMap<FileInfo, FileInfo>(
@@ -1332,7 +1333,7 @@ public class Member extends PFComponent {
                         if (logVerbose) {
                             log().verbose(
                                 "downloading removed file, breaking it! "
-                                    + file + " " + this);
+                                    + file + ' ' + this);
                         }
                         tm.abortDownload(file, this);
                     }
@@ -1500,6 +1501,15 @@ public class Member extends PFComponent {
         getController().getNodeManager().messageReceived(this, message);
         // now give the message to all message listeners
         fireMessageToListeners(message);
+
+        // Log messages that take over a second to process.
+        Date end = new Date();
+        long elapsed = end.getTime() - start.getTime();
+        if (elapsed > 1000) {
+            log().error("Message processing took " + elapsed + "ms: "+
+            message.getClass().getName() + " \'" + message.toString() + '\'');
+        }
+
     }
 
     /**
@@ -1734,7 +1744,7 @@ public class Member extends PFComponent {
         }
         // nUpcomingMsgs might have negativ values! means we received deltas
         // after the inital filelist.
-        return nUpcomingMsgs.intValue() <= 0;
+        return nUpcomingMsgs <= 0;
     }
 
     /**

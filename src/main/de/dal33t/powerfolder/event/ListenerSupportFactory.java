@@ -466,10 +466,10 @@ public class ListenerSupportFactory {
                                 boolean dispatchThread) {
 
         // Calculate how long it took.
-        long time = (endDate.getTime() - startDate.getTime()) / 1000;
+        long seconds = (endDate.getTime() - startDate.getTime()) / 1000;
 
         // Report invokations that take time.
-        if (time > 0) {
+        if (seconds > 0) {
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < args.length; i++) {
                 sb.append(args[i].toString());
@@ -480,13 +480,13 @@ public class ListenerSupportFactory {
             String message = "Method " + method.getName()
                     + " [" + sb.toString() + "]"
                     + " invoked on listener "
-                    + listener + " in " + time
-                    + "ms on " + endDate.toString()
+                    + listener + " in " + seconds
+                    + " seconds on " + endDate.toString()
                     + " dispatch thread " + dispatchThread;
 
             // Include random part so duplicate times do not eject entries.
             // Negate, so longest gets displayed first.
-            Double key = -(time + Math.random());
+            Double key = -(seconds + Math.random());
             PERFORMANCE_MAP.put(key, message);
         }
     }
