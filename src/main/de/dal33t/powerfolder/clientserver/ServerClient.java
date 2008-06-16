@@ -66,8 +66,8 @@ public class ServerClient extends PFComponent {
     // Basics *****************************************************************
 
     public void start() {
-        getController().scheduleAndRepeat(new OnlineStorageConnectTask(), 0,
-            1000L * 20);
+        getController().scheduleAndRepeat(new OnlineStorageConnectTask(),
+            3L * 1000L, 1000L * 20);
     }
 
     /**
