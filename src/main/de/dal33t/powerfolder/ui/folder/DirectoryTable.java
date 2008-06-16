@@ -35,7 +35,7 @@ public class DirectoryTable extends JTable {
 
         // Associate a header renderer with all columns.
         SortedTableHeaderRenderer.associateHeaderRenderer(directoryTableModel,
-            getColumnModel(), 1);
+            getColumnModel(), 4);
     }
 
     /**
