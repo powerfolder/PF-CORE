@@ -1,20 +1,22 @@
 <launch4jConfig>
   <dontWrapJar>true</dontWrapJar>
-  <headerType>0</headerType>
+  <headerType>gui</headerType>
   <jar>PowerFolder.jar</jar>
   <outfile>C:\Users\sprajc\Desktop\PowerFolder.exe</outfile>
   <errTitle></errTitle>
-  <jarArgs></jarArgs>
+  <cmdLine></cmdLine>
   <chdir></chdir>
+  <priority>normal</priority>
+  <downloadUrl>http://java.com/download</downloadUrl>
+  <supportUrl></supportUrl>
   <customProcName>true</customProcName>
   <stayAlive>false</stayAlive>
+  <manifest></manifest>
   <icon>C:\work\PowerFolder\src\etc\icons\PowerFolder.ico</icon>
   <jre>
     <path></path>
-    <minVersion>1.5.0</minVersion>
+    <minVersion>1.6.0_06</minVersion>
     <maxVersion></maxVersion>
-    <initialHeapSize>0</initialHeapSize>
-    <maxHeapSize>0</maxHeapSize>
-    <args></args>
+    <jdkPreference>preferJre</jdkPreference>
   </jre>
 </launch4jConfig>
