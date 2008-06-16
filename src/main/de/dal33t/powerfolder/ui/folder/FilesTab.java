@@ -281,7 +281,8 @@ public class FilesTab extends PFUIComponent implements FolderTab,
     }
 
     private JPanel createFileStatusPanel() {
-        FormLayout layout = new FormLayout("fill:pref:grow, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu" ,
+        FormLayout layout = new FormLayout("fill:pref:grow, pref, 3dlu, pref, " +
+                "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu" ,
                 "pref, pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();

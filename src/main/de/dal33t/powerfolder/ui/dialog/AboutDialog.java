@@ -25,9 +25,7 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FocusTraversalPolicy;
 import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
+import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -83,7 +81,7 @@ public class AboutDialog extends PFUIComponent {
      */
     private Component[] focusList;
     /** points to the current component with focus * */
-    private int focusNumber = 0;
+    private int focusNumber;
 
     private JPanel panel;
     private JLabel logoLabel;
@@ -101,13 +99,13 @@ public class AboutDialog extends PFUIComponent {
 
     private static final int HEADER_FONT_SIZE = 16;
     private JDialog dialog;
-    private JButton bugReportButton;
     private JButton checkForUpdatesButton;
     private JButton okButton;
     private ActionListener closeAction;
     /** when enter is pressed the button/action with focus is called * */
     private ActionListener generalAction;
     private ActionListener updateAction;
+    private PacmanPanel pacmanPanel;
 
     public AboutDialog(Controller controller) {
         super(controller);
@@ -146,12 +144,13 @@ public class AboutDialog extends PFUIComponent {
             initComponents();
             // Main layout
             FormLayout layout = new FormLayout("pref, 2dlu, fill:pref",
-                "fill:pref");
+                "fill:pref, pref");
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders.DLU2_BORDER);
             CellConstraints cc = new CellConstraints();
             builder.add(logoLabel, cc.xy(1, 1));
             builder.add(createRightPanel(), cc.xy(3, 1));
+            builder.add(createToolbar(), cc.xyw(1, 2, 3));
 
             panel = builder.getPanel();
             panel.setBackground(Color.WHITE);
@@ -165,6 +164,8 @@ public class AboutDialog extends PFUIComponent {
         closeAction = new CloseAction();
         generalAction = new GeneralAction();
         updateAction = new UpdateAction();
+
+        pacmanPanel = new PacmanPanel();
 
         logoLabel = buildAboutAnimation();
 
@@ -252,6 +253,13 @@ public class AboutDialog extends PFUIComponent {
         JLabel logo = new JLabel(Icons.ABOUT_ANIMATION);
         logo.setSize(new Dimension(Icons.ABOUT_ANIMATION.getIconWidth(),
             Icons.ABOUT_ANIMATION.getIconHeight()));
+        logo.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() >= 3) {
+                    pacmanPanel.activate();
+                }
+            }
+        });
         return logo;
     }
 
@@ -271,7 +279,6 @@ public class AboutDialog extends PFUIComponent {
         builder.add(testers, cc.xy(4, 2));
         builder.add(contributers, cc.xy(4, 3));
 
-        builder.add(createToolbar(), cc.xywh(1, 5, 4, 1));
         JPanel rightPanel = builder.getPanel();
         rightPanel.setBackground(Color.WHITE);
         return rightPanel;
@@ -279,6 +286,13 @@ public class AboutDialog extends PFUIComponent {
     }
 
     private JPanel createToolbar() {
+        FormLayout layout = new FormLayout(
+            "pref:grow, 3dlu, pref",
+            "pref");
+        PanelBuilder builder = new PanelBuilder(layout);
+        // builder.setBorder(Borders.DLU2_BORDER);
+        CellConstraints cc = new CellConstraints();
+
         JButton bugReport = createBugReportButton();
         JButton update = createCheckForUpdatesButton();
         JButton ok = createOKButton();
@@ -286,7 +300,13 @@ public class AboutDialog extends PFUIComponent {
         JPanel buttons = ButtonBarFactory.buildRightAlignedBar(bugReport,
             update, ok);
         buttons.setOpaque(false);
-        return buttons;
+
+        builder.add(pacmanPanel, cc.xy(1, 1));
+        builder.add(buttons, cc.xy(3, 1));
+        JPanel jPanel = builder.getPanel();
+        jPanel.setOpaque(true);
+        jPanel.setBackground(Color.WHITE);
+        return jPanel;
     }
 
     private JPanel createGeneralPanel() {
@@ -388,8 +408,8 @@ public class AboutDialog extends PFUIComponent {
      * @return a button that opens the bug report url
      */
     private JButton createBugReportButton() {
-        bugReportButton = new JButton(Translation
-            .getTranslation("about.dialog.send_bug_report"));
+        JButton bugReportButton = new JButton(Translation
+                .getTranslation("about.dialog.send_bug_report"));
         bugReportButton.setMnemonic(Translation.getTranslation(
             "about.dialog.send_bug_report.key").trim().charAt(0));
         bugReportButton.addActionListener(new BugReportAction());

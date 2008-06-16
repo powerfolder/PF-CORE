@@ -60,7 +60,7 @@ import de.dal33t.powerfolder.util.Reject;
 
 /**
  * Contains all icons for the powerfolder application
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.74 $
  */
@@ -71,7 +71,7 @@ public class Icons {
 
     /**
      * text to add to the key for finding a disabled icon in the cache of icons.
-     * 
+     *
      * @see knownIcons
      */
     private static final String DISABLED_EXTENSION_ADDITION = "_disabled";
@@ -259,6 +259,24 @@ public class Icons {
     public static final Icon FOLDER_PICTO = getIcon("icons/pictos/Folder.png");
     public static final Icon RECYCLE_BIN_PICTO = getIcon("icons/pictos/RecycleBin.png");
     public static final Icon WEBSERVICE_QUICK_INFO_PICTO = getIcon("icons/pictos/WebServiceQuickInfo.png");
+    public static final Image PACMAN_00 = getImage("icons/pac/pac00.gif");
+    public static final Image PACMAN_01 = getImage("icons/pac/pac01.gif");
+    public static final Image PACMAN_02 = getImage("icons/pac/pac02.gif");
+    public static final Image PACMAN_03 = getImage("icons/pac/pac03.gif");
+    public static final Image PACMAN_04 = getImage("icons/pac/pac04.gif");
+    public static final Image PACMAN_05 = getImage("icons/pac/pac05.gif");
+    public static final Image PACMAN_06 = getImage("icons/pac/pac06.gif");
+    public static final Image PACMAN_07 = getImage("icons/pac/pac07.gif");
+    public static final Image PACMAN_08 = getImage("icons/pac/pac08.gif");
+    public static final Image PACMAN_09 = getImage("icons/pac/pac09.gif");
+    public static final Image PACMAN_10 = getImage("icons/pac/pac10.gif");
+    public static final Image PACMAN_11 = getImage("icons/pac/pac11.gif");
+    public static final Image PACMAN_12 = getImage("icons/pac/pac12.gif");
+    public static final Image PACMAN_13 = getImage("icons/pac/pac13.gif");
+    public static final Image PACMAN_14 = getImage("icons/pac/pac14.gif");
+    public static final Image PACMAN_15 = getImage("icons/pac/pac15.gif");
+    public static final Image PACMAN_16 = getImage("icons/pac/pac16.gif");
+    public static final Image PACMAN_DOT = getImage("icons/pac/pacDot.gif");
 
     public static final Icon PRO_LOGO = getIcon("icons/ProLogo.png");
     public static final Icon SMALL_LOGO = getIconById("small_logo.icon");
