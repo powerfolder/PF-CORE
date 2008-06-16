@@ -29,6 +29,7 @@ import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.ui.BaseDialog;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
@@ -126,7 +127,11 @@ public class PreferencesDialog extends BaseDialog {
     public void initComponents() {
         mydnsndsModel = new ValueHolder(ConfigurationEntry.DYNDNS_HOSTNAME
             .getValue(getController()));
-        tabbedPane = new JTabbedPane(JTabbedPane.LEFT);
+        if (OSUtil.isMacOS()) {
+            tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+        } else {
+            tabbedPane = new JTabbedPane(JTabbedPane.LEFT);
+        }
 
         GeneralSettingsTab generalSettingsTab = new GeneralSettingsTab(
             getController());
