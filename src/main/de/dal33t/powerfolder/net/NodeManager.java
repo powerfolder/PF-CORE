@@ -514,7 +514,8 @@ public class NodeManager extends PFComponent {
      */
     public boolean isOnLANorConfiguredOnLAN(InetAddress adr) {
         Reject.ifNull(adr, "Address is null");
-        return NetworkUtil.isOnLanOrLoopback(adr) || isNodeOnConfiguredLan(adr);
+        return NetworkUtil.isOnLanOrLoopback(adr) || isNodeOnConfiguredLan(adr)
+            || getController().getBroadcastManager().receivedBroadcast(adr);
     }
 
     /**

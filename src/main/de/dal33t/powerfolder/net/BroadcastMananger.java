@@ -13,6 +13,7 @@ import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.TimerTask;
 
@@ -22,6 +23,7 @@ import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
 
 /**
@@ -44,6 +46,7 @@ public class BroadcastMananger extends PFComponent implements Runnable {
     private ArrayList<InetAddress> localAddresses;
     private ArrayList<InetAddress> oldLocalAddresses;
     private ArrayList<NetworkInterface> localNICList;
+    private Collection<InetAddress> receivedBroadcastsFrom;
 
     /**
      * Builds a new broadcast listener
@@ -58,8 +61,9 @@ public class BroadcastMananger extends PFComponent implements Runnable {
 
             localNICList = new ArrayList<NetworkInterface>();
             localAddresses = new ArrayList<InetAddress>();
+            receivedBroadcastsFrom = new ArrayList<InetAddress>();
 
-            waitTime = controller.getWaitTime() * 3;
+            waitTime = Controller.getWaitTime() * 3;
             group = InetAddress.getByName("224.0.0.1");
 
             if (controller.hasConnectionListener()) {
@@ -189,6 +193,16 @@ public class BroadcastMananger extends PFComponent implements Runnable {
     }
 
     /**
+     * @param addr
+     *            the remove address
+     * @return true if a broadcast has been received on this address
+     */
+    public boolean receivedBroadcast(InetAddress addr) {
+        Reject.ifNull(addr, "Address is null");
+        return receivedBroadcastsFrom.contains(addr);
+    }
+
+    /**
      * Sends a broadcast throu the broadcast sockets
      * 
      * @param broadcast
@@ -285,6 +299,7 @@ public class BroadcastMananger extends PFComponent implements Runnable {
             port);
         Member node = getController().getNodeManager().getNode(id);
         if (node == null || (!node.isMySelf() && !node.isConnected())) {
+            receivedBroadcastsFrom.add(packet.getAddress());
             log().info(
                 "Found user on local network: " + address
                     + ((node != null) ? ", " + node : ""));
