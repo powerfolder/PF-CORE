@@ -1,6 +1,7 @@
 package de.dal33t.powerfolder.security;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -60,16 +61,30 @@ public class Account extends Model implements Serializable {
 
     // Basic permission stuff *************************************************
 
-    public void grant(Permission permission) {
-        Reject.ifNull(permission, "Permission is null");
-        LOG.debug("Granted permission to " + this + ": " + permission);
-        permissions.add(permission);
+    public void grant(Permission... newPermissions) {
+        Reject.ifNull(newPermissions, "Permission is null");
+        LOG.debug("Granted permission to " + this + ": "
+            + Arrays.asList(newPermissions));
+        for (Permission p : newPermissions) {
+            if (hasPermission(p)) {
+                // Skip
+                continue;
+            }
+            permissions.add(p);
+        }
     }
 
-    public void revoke(Permission permission) {
-        Reject.ifNull(permission, "Permission is null");
-        LOG.debug("Revoked permission from " + this + ": " + permission);
-        permissions.remove(permission);
+    public void revoke(Permission... revokePermissions) {
+        Reject.ifNull(revokePermissions, "Permission is null");
+        LOG.debug("Revoked permission from " + this + ": "
+            + Arrays.asList(revokePermissions));
+        for (Permission p : revokePermissions) {
+            permissions.remove(p);
+        }
+    }
+
+    public void revokeAllPermissions() {
+        permissions.clear();
     }
 
     public boolean hasPermission(Permission permission) {
