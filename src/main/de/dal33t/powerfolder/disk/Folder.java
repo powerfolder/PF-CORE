@@ -383,9 +383,11 @@ public class Folder extends PFComponent {
             // Runnable runner = new Runnable() {
             // public void run() {
             if (rootDirectory != null) {
-                log().warn(
-                    "Adding " + scanResult.getNewFiles().size()
-                        + " to directory");
+                if (logVerbose) {
+                    log().verbose(
+                        "Adding " + scanResult.getNewFiles().size()
+                            + " to directory");
+                }
                 for (FileInfo newFileInfo : scanResult.getNewFiles()) {
                     getDirectory()
                         .add(getController().getMySelf(), newFileInfo);
@@ -2463,7 +2465,7 @@ public class Folder extends PFComponent {
      *         been returned!
      */
     public Collection<Member> getMembersAsCollection() {
-        return Collections.unmodifiableCollection(members.keySet());
+        return Collections.unmodifiableCollection(members.values());
     }
 
     /**

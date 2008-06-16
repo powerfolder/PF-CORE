@@ -501,18 +501,17 @@ public class FileInfo implements Serializable, DiskItem {
         }
         FileInfo newestVersion = this;
         for (Member member : folder.getMembersAsCollection()) {
-            if (!member.isCompleteyConnected() && !member.isMySelf()) {
-                continue;
-            }
-            // Get remote file
-            FileInfo remoteFile = member.getFile(this);
-            if (remoteFile == null) {
-                continue;
-            }
-            // Check if remote file in newer
-            if (remoteFile.isNewerThan(newestVersion)) {
-                // log().verbose("Newer version found at " + member);
-                newestVersion = remoteFile;
+            if (member.isCompleteyConnected() || member.isMySelf()) {
+                // Get remote file
+                FileInfo remoteFile = member.getFile(this);
+                if (remoteFile == null) {
+                    continue;
+                }
+                // Check if remote file in newer
+                if (remoteFile.isNewerThan(newestVersion)) {
+                    // log().verbose("Newer version found at " + member);
+                    newestVersion = remoteFile;
+                }
             }
         }
         return newestVersion;
@@ -535,22 +534,20 @@ public class FileInfo implements Serializable, DiskItem {
         }
         FileInfo newestVersion = this;
         for (Member member : folder.getMembersAsCollection()) {
-            if (!member.isCompleteyConnected() && !member.isMySelf()) {
-                // Disconnected Ignore offline user
-                continue;
-            }
-            // Get remote file
-            FileInfo remoteFile = member.getFile(this);
-            if (remoteFile == null) {
-                continue;
-            }
-            if (remoteFile.isDeleted()) {
-                continue;
-            }
-            // Check if remote file is newer
-            if (remoteFile.isNewerThan(newestVersion)) {
-                // log().verbose("Newer version found at " + member);
-                newestVersion = remoteFile;
+            if (member.isCompleteyConnected() || member.isMySelf()) {
+                // Get remote file
+                FileInfo remoteFile = member.getFile(this);
+                if (remoteFile == null) {
+                    continue;
+                }
+                if (remoteFile.isDeleted()) {
+                    continue;
+                }
+                // Check if remote file is newer
+                if (remoteFile.isNewerThan(newestVersion)) {
+                    // log().verbose("Newer version found at " + member);
+                    newestVersion = remoteFile;
+                }
             }
         }
         return newestVersion;

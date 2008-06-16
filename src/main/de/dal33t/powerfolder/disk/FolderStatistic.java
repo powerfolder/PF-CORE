@@ -283,7 +283,7 @@ public class FolderStatistic extends PFComponent {
         Collection<Member> membersCalulated = new ArrayList<Member>(members
             .size());
         // considered.clear();
-        for (Member member : membersCalulated) {
+        for (Member member : members) {
             if (member.isCompleteyConnected() || member.isMySelf()) {
                 calculateMemberStats(member, membersCalulated);
                 membersCalulated.add(member);
