@@ -36,8 +36,6 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 
-import org.apache.commons.lang.StringUtils;
-
 import com.jgoodies.binding.adapter.BasicComponentFactory;
 import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -46,12 +44,8 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.Sizes;
 
 import de.dal33t.powerfolder.Controller;
-import static de.dal33t.powerfolder.disk.FolderSettings.*;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.TransferCounter;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
  * Factory for several complexer fields.
@@ -83,12 +77,15 @@ public class ComplexComponentFactory {
      *            ignore it then
      * @param preEventListener
      *            an optional additional listern for the browse button
+     * @param open
+     *            true ? show open dialog : show save dialog
      * @return the created field.
+     * @return
      */
     public static JComponent createFileSelectionField(final String title,
         final ValueModel fileSelectionModel, final int fileSelectionMode,
         final FileFilter fileFilter, final ActionListener preEventListener,
-        final ActionListener postEventListener, final Controller controller)
+        final ActionListener postEventListener, final boolean open)
     {
         if (fileSelectionModel == null) {
             throw new NullPointerException("Filebase value model is null");
@@ -145,7 +142,13 @@ public class ComplexComponentFactory {
                 if (fileFilter != null) {
                     fileChooser.setFileFilter(fileFilter);
                 }
-                int result = fileChooser.showOpenDialog(button);
+                int result;
+                if (open) {
+                    result = fileChooser.showOpenDialog(button);
+                } else {
+                    result = fileChooser.showSaveDialog(button);
+                }
+
                 File selectedFile = fileChooser.getSelectedFile();
 
                 if (result == JFileChooser.APPROVE_OPTION
@@ -178,7 +181,7 @@ public class ComplexComponentFactory {
     }
 
     public static JLabel createTransferCounterLabel(
-        final Controller controller, final String format,
+        Controller controller, final String format,
         final TransferCounter tc)
     {
         final JLabel label = new JLabel();

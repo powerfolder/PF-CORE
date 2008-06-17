@@ -300,7 +300,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
             invitationFileModel,
             JFileChooser.FILES_ONLY, // Save invitation
             InvitationUtil.createInvitationsFilefilter(), action, null,
-            getController());
+            false);
         // Ensure minimum dimension
         Dimension dims = invitationFileField.getPreferredSize();
         dims.width = Sizes.dialogUnitXAsPixel(147, invitationFileField);
