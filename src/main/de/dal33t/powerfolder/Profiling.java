@@ -148,20 +148,18 @@ public class Profiling extends PFComponent {
         }
     }
 
-    public void dumpStats() {
+    public String dumpStats() {
 
-        if (!ConfigurationEntry.VERBOSE.getValueBoolean(getController())) {
-            return;
-        }
+        StringBuilder sb = new StringBuilder();
 
-        log().info("=== Profiling Statistics ===");
-        log().info("Total invocations: " + totalCount);
-        log().info("Total elapsed time: " + totalTime + "ms");
+        sb.append("=== Profiling Statistics ===\n");
+        sb.append("Total invocations: " + totalCount + '\n');
+        sb.append("Total elapsed time: " + totalTime + "ms\n");
         if (totalCount > 0) {
-            log().info("Average elapsed time: " + totalTime / totalCount + "ms");
+            sb.append("Average elapsed time: " + totalTime / totalCount + "ms\n");
         }
-        log().info("Minimum elapsed time: " + minimumTime + "ms");
-        log().info("Maximum elapsed time: " + maximumTime + "ms");
+        sb.append("Minimum elapsed time: " + minimumTime + "ms\n");
+        sb.append("Maximum elapsed time: " + maximumTime + "ms\n");
         synchronized (stats) {
             Collections.sort(stats);
             long currentCount = 0;
@@ -173,7 +171,7 @@ public class Profiling extends PFComponent {
                 String key = stat.getMethodName();
                 if (currentKey == null || !currentKey.equals(key)) {
                     if (currentKey != null) {
-                        logStats(currentKey, currentCount, currentTotal, currentMinimum, currentMaximum);
+                        logStats(sb, currentKey, currentCount, currentTotal, currentMinimum, currentMaximum);
                     }
                     currentKey = key;
                     currentCount = 0;
@@ -194,23 +192,23 @@ public class Profiling extends PFComponent {
 
             // Catch the last set...
             if (currentKey != null) {
-                logStats(currentKey, currentCount, currentTotal, currentMinimum, currentMaximum);
+                logStats(sb, currentKey, currentCount, currentTotal, currentMinimum, currentMaximum);
             }
         }
-        log().info("============================");
+        sb.append("============================");
+        return sb.toString();
     }
 
-    private void logStats(String currentKey, long currentCount, long currentTotal, long currentMinimum, long currentMaximum) {
-        log().info("");
-        log().info(currentKey);
-        log().info("----------------------------");
-        log().info("Total invocations: " + currentCount);
-        log().info("Total elapsed time: " + currentTotal + "ms");
+    private static void logStats(StringBuilder sb, String currentKey, long currentCount, long currentTotal, long currentMinimum, long currentMaximum) {
+        sb.append('\n' + currentKey + '\n');
+        sb.append("----------------------------\n");
+        sb.append("Total invocations: " + currentCount + '\n');
+        sb.append("Total elapsed time: " + currentTotal + "ms\n");
         if (currentCount > 0) {
-            log().info("Average elapsed time: " + currentTotal / currentCount + "ms");
+            sb.append("Average elapsed time: " + currentTotal / currentCount + "ms\n");
         }
-        log().info("Minimum elapsed time: " + currentMinimum + "ms");
-        log().info("Maximum elapsed time: " + currentMaximum + "ms");
+        sb.append("Minimum elapsed time: " + currentMinimum + "ms\n");
+        sb.append("Maximum elapsed time: " + currentMaximum + "ms\n");
     }
 
     /**

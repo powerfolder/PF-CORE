@@ -1227,7 +1227,9 @@ public class Controller extends PFComponent {
         // saveConfig();
         // }
 
-        profiling.dumpStats();
+        if (ConfigurationEntry.VERBOSE.getValueBoolean(this)) {
+            log().info(profiling.dumpStats());
+        }
 
         // stop
         boolean wasStarted = started;
