@@ -51,13 +51,8 @@ public class PacmanPanel extends JPanel {
      */
     public void paint(Graphics g) {
         if (active) {
-            g.setColor(Color.BLACK);
-            g.fillRect(0, 0, getWidth(), getHeight());
             g.setColor(Color.WHITE);
-            g.drawLine(0, 0, 0, 0);
-            g.drawLine(getWidth() - 1, 0, getWidth() - 1, 0);
-            g.drawLine(0, getHeight() - 1, 0, getHeight() - 1);
-            g.drawLine(getWidth() - 1, getHeight() - 1, getWidth() - 1, getHeight() - 1);
+            g.fillRect(0, 0, getWidth(), getHeight());
             g.drawImage(image, offset, 1, 33, 17, this);
 
             int x = offset + 27;
