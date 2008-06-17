@@ -29,6 +29,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.ui.directory.DirectoryChooser;
+import sun.swing.WindowsPlacesBar;
 
 import javax.swing.*;
 import java.awt.*;
@@ -62,7 +63,7 @@ public class DialogFactory {
 
     /**
      * shows a OK / CANCEL dialog with a long text in a JTextArea.
-     * 
+     *
      * @param parent the parent frame. May safely be null if necessary, but prefer object to be modal on.
      * @param title the dialog title
      * @param message the dialog message
@@ -101,7 +102,7 @@ public class DialogFactory {
     /**
      * Opens a DirectoryChooser with the current file and returns the new
      * selection. This will return the original value if nothing is selected.
-     * 
+     *
      * @param controller the controller, used to get the parent frame
      * @param initialDirectory
      * @return the chosen directory
@@ -139,7 +140,26 @@ public class DialogFactory {
             // removes border on the top toolbar
             for (int i = 0; i < fc.getComponentCount(); i++) {
                 Component component = fc.getComponent(i);
-                if (component instanceof JToolBar) {
+                if (component instanceof WindowsPlacesBar) {
+                    WindowsPlacesBar places = (WindowsPlacesBar) component;
+                    // TODO detect if win XP style and
+                    // set lighter background of this toolbar
+
+                    // if win2K maybe some fillers are needed but don't
+                    // know if we can insert them
+                    ToggleButtonDecorator decorator = new ToggleButtonDecorator();
+                    // loop all buttons in this bar
+                    for (int j = 0; j < places.getComponentCount(); j++) {
+                        Component placesButton = places.getComponent(j);
+                        // make sure they are what we think
+                        if (placesButton instanceof JToggleButton) {
+                            JToggleButton jToggleButton = (JToggleButton) placesButton;
+                            jToggleButton.addActionListener(decorator);
+                            jToggleButton.addMouseListener(decorator);
+                            decorator.updateButton(jToggleButton);
+                        }
+                    }
+                } else if (component instanceof JToolBar) {
                     JToolBar toolbar = (JToolBar) component;
                     for (int j = 0; j < toolbar.getComponentCount(); j++) {
                         Component toolBarComponent = toolbar.getComponent(j);
