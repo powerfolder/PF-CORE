@@ -55,7 +55,6 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
 import de.dal33t.powerfolder.light.FileInfo;
@@ -166,7 +165,7 @@ public class TransferManager extends PFComponent {
         totalDownloadTrafficCounter = new TransferCounter();
 
         // Create listener support
-        this.listenerSupport = (TransferManagerListener) ListenerSupportFactory
+        this.listenerSupport = (TransferManagerListener) getController().getListenerSupportFactory()
             .createListenerSupport(TransferManagerListener.class);
 
         // maximum concurrent uploads
@@ -311,7 +310,7 @@ public class TransferManager extends PFComponent {
      * @param suspended
      */
     public void setSuspendFireEvents(boolean suspended) {
-        ListenerSupportFactory.setSuspended(listenerSupport, suspended);
+        getController().getListenerSupportFactory().setSuspended(listenerSupport, suspended);
         log().debug("setSuspendFireEvents: " + suspended);
     }
 
@@ -2483,11 +2482,11 @@ public class TransferManager extends PFComponent {
     // Event/Listening code ***************************************************
 
     public void addListener(TransferManagerListener listener) {
-        ListenerSupportFactory.addListener(listenerSupport, listener);
+        getController().getListenerSupportFactory().addListener(listenerSupport, listener);
     }
 
     public void removeListener(TransferManagerListener listener) {
-        ListenerSupportFactory.removeListener(listenerSupport, listener);
+        getController().getListenerSupportFactory().removeListener(listenerSupport, listener);
     }
 
     private void fireUploadStarted(TransferManagerEvent event) {

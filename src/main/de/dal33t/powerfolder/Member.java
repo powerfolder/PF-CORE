@@ -1089,427 +1089,423 @@ public class Member extends PFComponent {
                 "Unable to handle message, message is null");
         }
 
-        Date start = new Date();
+        // Profile this execution.
+        long seq = getController().getProfiling().startProfiling(50, "Member.handleMessage()", message);
 
-        // related folder is filled if message is a folder related message
-        FolderInfo targetedFolderInfo = null;
-        Folder targetFolder = null;
-        if (message instanceof FolderRelatedMessage) {
-            targetedFolderInfo = ((FolderRelatedMessage) message).folder;
-            if (targetedFolderInfo != null) {
-                targetFolder = getController().getFolderRepository().getFolder(
-                    targetedFolderInfo);
-            } else {
-                log()
-                    .error("Got folder message without FolderInfo: " + message);
-            }
-        }
-
-        // do all the message processing
-        // Processing of message also should take only
-        // a short time, because member is not able
-        // to received any other message meanwhile !
-
-        // Identity is not handled HERE !
-        if (message instanceof Ping) {
-            // TRAC #812: Answer the ping here. PONG is handled in
-            // ConnectionHandler!
-            Pong pong = new Pong((Ping) message);
-            sendMessagesAsynchron(pong);
-        } else if (message instanceof HandshakeCompleted) {
-            lastHandshakeCompleted = (HandshakeCompleted) message;
-            // Notify waiting ppl
-            synchronized (handshakeCompletedWaiter) {
-                handshakeCompletedWaiter.notifyAll();
-            }
-
-        } else if (message instanceof FolderList) {
-            FolderList fList = (FolderList) message;
-            joinToLocalFolders(fList);
-            lastFolderList = fList;
-
-            // Notify waiting ppl
-            synchronized (folderListWaiter) {
-                folderListWaiter.notifyAll();
-            }
-        } else if (message instanceof RequestFileList) {
-            if (targetFolder != null) {
-                // a file list of a folder
-                if (logVerbose) {
-                    log().verbose(
-                        targetFolder + ": Sending new filelist to " + this);
-                }
-                sendMessagesAsynchron(FileList
-                    .createFileListMessages(targetFolder));
-            } else {
-                // Send folder not found if not found or folder is secret
-                sendMessageAsynchron(new Problem("Folder not found: "
-                    + targetedFolderInfo, false), null);
-            }
-
-        } else if (message instanceof ScanCommand) {
-            if (targetFolder != null
-                && targetFolder.getSyncProfile().isAutoDetectLocalChanges())
-            {
-                log()
-                    .verbose("Remote sync command received on " + targetFolder);
-                getController().setSilentMode(false);
-                // Now trigger the scan
-                targetFolder.recommendScanOnNextMaintenance();
-                getController().getFolderRepository().triggerMaintenance();
-            }
-        } else if (message instanceof RequestDownload) {
-            // a download is requested
-            RequestDownload dlReq = (RequestDownload) message;
-            Upload ul = getController().getTransferManager().queueUpload(this,
-                dlReq);
-            if (ul == null) {
-                // Send abort
-                log().warn("Sending abort of " + dlReq.file);
-                sendMessagesAsynchron(new AbortUpload(dlReq.file));
-            }
-
-        } else if (message instanceof DownloadQueued) {
-            // set queued flag here, if we received status from other side
-            DownloadQueued dlQueued = (DownloadQueued) message;
-            getController().getTransferManager().setQueued(dlQueued, this);
-
-        } else if (message instanceof AbortDownload) {
-            AbortDownload abort = (AbortDownload) message;
-            // Abort the upload
-            getController().getTransferManager().abortUpload(abort.file, this);
-
-        } else if (message instanceof AbortUpload) {
-            AbortUpload abort = (AbortUpload) message;
-            // Abort the upload
-            getController().getTransferManager()
-                .abortDownload(abort.file, this);
-
-        } else if (message instanceof FileChunk) {
-            // File chunk received
-            FileChunk chunk = (FileChunk) message;
-            getController().getTransferManager().chunkReceived(chunk, this);
-
-        } else if (message instanceof RequestNodeList) {
-            // Nodemanager will handle that
-            RequestNodeList request = (RequestNodeList) message;
-            getController().getNodeManager().receivedRequestNodeList(request,
-                this);
-
-        } else if (message instanceof KnownNodes) {
-            KnownNodes newNodes = (KnownNodes) message;
-            // TODO Move this code into NodeManager.receivedKnownNodes(....)
-            // TODO This code should be done in NodeManager
-            // This might also just be a search result and thus not include us
-            for (int i = 0; i < newNodes.nodes.length; i++) {
-                MemberInfo remoteNodeInfo = newNodes.nodes[i];
-                if (remoteNodeInfo == null) {
-                    continue;
-                }
-
-                if (getInfo().equals(remoteNodeInfo)) {
-                    // Take his info
-                    updateInfo(remoteNodeInfo);
-                }
-            }
-
-            // Queue arrived node list at nodemanager
-            getController().getNodeManager().queueNewNodes(newNodes.nodes);
-        } else if (message instanceof RequestNodeInformation) {
-            // send him our node information
-            sendMessageAsynchron(new NodeInformation(getController()), null);
-
-        } else if (message instanceof TransferStatus) {
-            // Hold transfer status
-            lastTransferStatus = (TransferStatus) message;
-
-        } else if (message instanceof NodeInformation) {
-            if (logVerbose) {
-                log().verbose("Node information received");
-            }
-            if (Logger.isLogToFileEnabled()) {
-                Debug.writeNodeInformation((NodeInformation) message);
-            }
-            // Cache the last node information
-            // lastNodeInformation = (NodeInformation) message;
-
-        } else if (message instanceof SettingsChange) {
-            SettingsChange settingsChange = (SettingsChange) message;
-            if (settingsChange.newInfo != null) {
-                log().debug(
-                    this.getInfo().nick + " changed nick to "
-                        + settingsChange.newInfo.nick);
-                setNick(settingsChange.newInfo.nick);
-            }
-
-        } else if (message instanceof FileList) {
-            FileList remoteFileList = (FileList) message;
-            Convert.cleanFileList(getController(), remoteFileList.files);
-            if (logDebug) {
-                log().debug(
-                    "Received new filelist. Expecting "
-                        + remoteFileList.nFollowingDeltas + " more deltas. "
-                        + message);
-            }
-            if (expectedListMessages == null) {
-                // Lazy init
-                expectedListMessages = new ConcurrentHashMap<FolderInfo, Integer>();
-            }
-            // Reset counter of expected filelists
-            expectedListMessages.put(remoteFileList.folder,
-                    remoteFileList.nFollowingDeltas);
-
-            // Add filelist to filelist cache
-            Map<FileInfo, FileInfo> cachedFileList = new ConcurrentHashMap<FileInfo, FileInfo>(
-                remoteFileList.files.length, 0.75f, 1);
-
-            for (int i = 0; i < remoteFileList.files.length; i++) {
-                cachedFileList.put(remoteFileList.files[i],
-                    remoteFileList.files[i]);
-            }
-            if (lastFiles == null) {
-                // Initalize lazily
-                lastFiles = new ConcurrentHashMap<FolderInfo, Map<FileInfo, FileInfo>>(
-                    16, 0.75f, 1);
-            }
-            lastFiles.put(remoteFileList.folder, cachedFileList);
-
-            // Trigger requesting
-            // FIXME: Really inform folder on first list message on complete file
-            // list?.
-            if (targetFolder != null) {
-                // Inform folder
-                targetFolder.fileListChanged(this, remoteFileList);
-                // Write filelist
-                // if (Logger.isLogToFileEnabled()) {
-                // // Write filelist to disk
-                // File debugFile = new File(Logger.getDebugDir(),
-                // targetFolder.getName() + "/" + getNick() + ".list.txt");
-                // Debug.writeFileListCSV(cachedFileList.keySet(),
-                // "FileList of folder " + targetFolder.getName()
-                // + ", member " + this + ":", debugFile);
-                // }
-
-            }
-        } else if (message instanceof FolderFilesChanged) {
-            FolderFilesChanged changes = (FolderFilesChanged) message;
-            Convert.cleanFileList(getController(), changes.added);
-            Convert.cleanFileList(getController(), changes.removed);
-
-            Integer nExpected = expectedListMessages.get(changes.folder);
-            // Correct filelist
-            Map<FileInfo, FileInfo> cachedFileList = getLastFileList0(changes.folder);
-            if (cachedFileList == null || nExpected == null) {
-                log().warn(
-                    "Received folder changes on " + changes.folder.name
-                        + ", but not received the full filelist");
-                return;
-            }
-            nExpected = Integer.valueOf(nExpected.intValue() - 1);
-            expectedListMessages.put(changes.folder, nExpected);
-            TransferManager tm = getController().getTransferManager();
-            synchronized (cachedFileList) {
-                if (changes.added != null) {
-                    for (int i = 0; i < changes.added.length; i++) {
-                        FileInfo file = changes.added[i];
-                        cachedFileList.remove(file);
-                        cachedFileList.put(file, file);
-
-                        // file "changed" so if downloading break the download
-                        if (logVerbose) {
-                            log().verbose(
-                                "downloading changed file, breaking it! "
-                                    + file + " " + this);
-                        }
-                        tm.abortDownload(file, this);
-                    }
-                }
-                if (changes.removed != null) {
-                    for (int i = 0; i < changes.removed.length; i++) {
-                        FileInfo file = changes.removed[i];
-                        cachedFileList.remove(file);
-                        cachedFileList.put(file, file);
-                        // file removed so if downloading break the download
-                        if (logVerbose) {
-                            log().verbose(
-                                "downloading removed file, breaking it! "
-                                    + file + ' ' + this);
-                        }
-                        tm.abortDownload(file, this);
-                    }
-                }
-            }
-
-            if (targetFolder != null) {
-                // Inform folder
-                targetFolder.fileListChanged(this, changes);
-
-//                if (nExpected.intValue() <= 0) {
-//                    // Write filelist
-//                    if (Logger.isLogToFileEnabled()) {
-//                        // Write filelist to disk
-//                        File debugFile = new File(Logger.getDebugDir(),
-//                            targetFolder.getName() + "/" + getNick()
-//                                + ".list.txt");
-//                        Debug.writeFileListCSV(cachedFileList.keySet(),
-//                            "FileList of folder " + targetFolder.getName()
-//                                + ", member " + this + ":", debugFile);
-//                    }
-//                }
-            }
-
-            if (logDebug) {
-                int msgs = expectedListMessages.get(targetedFolderInfo);
-                if (msgs >= 0) {
-                    log().debug(
-                        "Received folder change. Expecting " + msgs
-                            + " more deltas. " + message);
+        try {
+            // related folder is filled if message is a folder related message
+            FolderInfo targetedFolderInfo = null;
+            Folder targetFolder = null;
+            if (message instanceof FolderRelatedMessage) {
+                targetedFolderInfo = ((FolderRelatedMessage) message).folder;
+                if (targetedFolderInfo != null) {
+                    targetFolder = getController().getFolderRepository().getFolder(
+                        targetedFolderInfo);
                 } else {
+                    log()
+                        .error("Got folder message without FolderInfo: " + message);
+                }
+            }
+
+            // do all the message processing
+            // Processing of message also should take only
+            // a short time, because member is not able
+            // to received any other message meanwhile !
+
+            // Identity is not handled HERE !
+            if (message instanceof Ping) {
+                // TRAC #812: Answer the ping here. PONG is handled in
+                // ConnectionHandler!
+                Pong pong = new Pong((Ping) message);
+                sendMessagesAsynchron(pong);
+            } else if (message instanceof HandshakeCompleted) {
+                lastHandshakeCompleted = (HandshakeCompleted) message;
+                // Notify waiting ppl
+                synchronized (handshakeCompletedWaiter) {
+                    handshakeCompletedWaiter.notifyAll();
+                }
+
+            } else if (message instanceof FolderList) {
+                FolderList fList = (FolderList) message;
+                joinToLocalFolders(fList);
+                lastFolderList = fList;
+
+                // Notify waiting ppl
+                synchronized (folderListWaiter) {
+                    folderListWaiter.notifyAll();
+                }
+            } else if (message instanceof RequestFileList) {
+                if (targetFolder != null) {
+                    // a file list of a folder
+                    if (logVerbose) {
+                        log().verbose(
+                            targetFolder + ": Sending new filelist to " + this);
+                    }
+                    sendMessagesAsynchron(FileList
+                        .createFileListMessages(targetFolder));
+                } else {
+                    // Send folder not found if not found or folder is secret
+                    sendMessageAsynchron(new Problem("Folder not found: "
+                        + targetedFolderInfo, false), null);
+                }
+
+            } else if (message instanceof ScanCommand) {
+                if (targetFolder != null
+                    && targetFolder.getSyncProfile().isAutoDetectLocalChanges())
+                {
+                    log()
+                        .verbose("Remote sync command received on " + targetFolder);
+                    getController().setSilentMode(false);
+                    // Now trigger the scan
+                    targetFolder.recommendScanOnNextMaintenance();
+                    getController().getFolderRepository().triggerMaintenance();
+                }
+            } else if (message instanceof RequestDownload) {
+                // a download is requested
+                RequestDownload dlReq = (RequestDownload) message;
+                Upload ul = getController().getTransferManager().queueUpload(this,
+                    dlReq);
+                if (ul == null) {
+                    // Send abort
+                    log().warn("Sending abort of " + dlReq.file);
+                    sendMessagesAsynchron(new AbortUpload(dlReq.file));
+                }
+
+            } else if (message instanceof DownloadQueued) {
+                // set queued flag here, if we received status from other side
+                DownloadQueued dlQueued = (DownloadQueued) message;
+                getController().getTransferManager().setQueued(dlQueued, this);
+
+            } else if (message instanceof AbortDownload) {
+                AbortDownload abort = (AbortDownload) message;
+                // Abort the upload
+                getController().getTransferManager().abortUpload(abort.file, this);
+
+            } else if (message instanceof AbortUpload) {
+                AbortUpload abort = (AbortUpload) message;
+                // Abort the upload
+                getController().getTransferManager()
+                    .abortDownload(abort.file, this);
+
+            } else if (message instanceof FileChunk) {
+                // File chunk received
+                FileChunk chunk = (FileChunk) message;
+                getController().getTransferManager().chunkReceived(chunk, this);
+
+            } else if (message instanceof RequestNodeList) {
+                // Nodemanager will handle that
+                RequestNodeList request = (RequestNodeList) message;
+                getController().getNodeManager().receivedRequestNodeList(request,
+                    this);
+
+            } else if (message instanceof KnownNodes) {
+                KnownNodes newNodes = (KnownNodes) message;
+                // TODO Move this code into NodeManager.receivedKnownNodes(....)
+                // TODO This code should be done in NodeManager
+                // This might also just be a search result and thus not include us
+                for (int i = 0; i < newNodes.nodes.length; i++) {
+                    MemberInfo remoteNodeInfo = newNodes.nodes[i];
+                    if (remoteNodeInfo == null) {
+                        continue;
+                    }
+
+                    if (getInfo().equals(remoteNodeInfo)) {
+                        // Take his info
+                        updateInfo(remoteNodeInfo);
+                    }
+                }
+
+                // Queue arrived node list at nodemanager
+                getController().getNodeManager().queueNewNodes(newNodes.nodes);
+            } else if (message instanceof RequestNodeInformation) {
+                // send him our node information
+                sendMessageAsynchron(new NodeInformation(getController()), null);
+
+            } else if (message instanceof TransferStatus) {
+                // Hold transfer status
+                lastTransferStatus = (TransferStatus) message;
+
+            } else if (message instanceof NodeInformation) {
+                if (logVerbose) {
+                    log().verbose("Node information received");
+                }
+                if (Logger.isLogToFileEnabled()) {
+                    Debug.writeNodeInformation((NodeInformation) message);
+                }
+                // Cache the last node information
+                // lastNodeInformation = (NodeInformation) message;
+
+            } else if (message instanceof SettingsChange) {
+                SettingsChange settingsChange = (SettingsChange) message;
+                if (settingsChange.newInfo != null) {
                     log().debug(
-                        "Received folder change. Received " + (-msgs)
-                            + " additional deltas. " + message);
+                        this.getInfo().nick + " changed nick to "
+                            + settingsChange.newInfo.nick);
+                    setNick(settingsChange.newInfo.nick);
                 }
-            }
-        } else if (message instanceof Invitation) {
-            // Invitation to folder
-            Invitation invitation = (Invitation) message;
-            // To ensure invitor is correct
-            invitation.setInvitor(this.getInfo());
 
-            getController().getFolderRepository().invitationReceived(
-                invitation, true);
+            } else if (message instanceof FileList) {
+                FileList remoteFileList = (FileList) message;
+                Convert.cleanFileList(getController(), remoteFileList.files);
+                if (logDebug) {
+                    log().debug(
+                        "Received new filelist. Expecting "
+                            + remoteFileList.nFollowingDeltas + " more deltas. "
+                            + message);
+                }
+                if (expectedListMessages == null) {
+                    // Lazy init
+                    expectedListMessages = new ConcurrentHashMap<FolderInfo, Integer>();
+                }
+                // Reset counter of expected filelists
+                expectedListMessages.put(remoteFileList.folder,
+                        remoteFileList.nFollowingDeltas);
 
-        } else if (message instanceof Problem) {
-            lastProblem = (Problem) message;
+                // Add filelist to filelist cache
+                Map<FileInfo, FileInfo> cachedFileList = new ConcurrentHashMap<FileInfo, FileInfo>(
+                    remoteFileList.files.length, 0.75f, 1);
 
-            if (lastProblem.problemCode == Problem.DO_NOT_LONGER_CONNECT) {
-                // Finds us boring
-                // set unable to connect
-                log().debug(
-                    "Problem received: Node reject our connection, "
-                        + "we should not longer try to connect");
-                // Not connected to public network
-                isConnectedToNetwork = true;
-            } else if (lastProblem.problemCode == Problem.DUPLICATE_CONNECTION)
-            {
-                log()
-                    .warn(
-                        "Problem received: Node thinks we have a dupe connection to him");
-            } else {
-                log().warn("Problem received: " + lastProblem);
-            }
+                for (int i = 0; i < remoteFileList.files.length; i++) {
+                    cachedFileList.put(remoteFileList.files[i],
+                        remoteFileList.files[i]);
+                }
+                if (lastFiles == null) {
+                    // Initalize lazily
+                    lastFiles = new ConcurrentHashMap<FolderInfo, Map<FileInfo, FileInfo>>(
+                        16, 0.75f, 1);
+                }
+                lastFiles.put(remoteFileList.folder, cachedFileList);
 
-            if (lastProblem.fatal) {
-                // Shutdown
-                shutdown();
-            }
-        } else if (message instanceof SearchNodeRequest) {
-            // Send nodelist that matches the search.
-            final SearchNodeRequest request = (SearchNodeRequest) message;
-            Runnable searcher = new Runnable() {
-                public void run() {
-                    List<MemberInfo> reply = new LinkedList<MemberInfo>();
-                    for (Member m : getController().getNodeManager()
-                        .getNodesAsCollection())
-                    {
-                        if (m.getInfo().isInvalid(getController())) {
-                            continue;
-                        }
-                        if (m.matches(request.searchString)) {
-                            reply.add(m.getInfo());
+                // Trigger requesting
+                // FIXME: Really inform folder on first list message on complete file
+                // list?.
+                if (targetFolder != null) {
+                    // Inform folder
+                    targetFolder.fileListChanged(this, remoteFileList);
+                    // Write filelist
+                    // if (Logger.isLogToFileEnabled()) {
+                    // // Write filelist to disk
+                    // File debugFile = new File(Logger.getDebugDir(),
+                    // targetFolder.getName() + "/" + getNick() + ".list.txt");
+                    // Debug.writeFileListCSV(cachedFileList.keySet(),
+                    // "FileList of folder " + targetFolder.getName()
+                    // + ", member " + this + ":", debugFile);
+                    // }
+
+                }
+            } else if (message instanceof FolderFilesChanged) {
+                FolderFilesChanged changes = (FolderFilesChanged) message;
+                Convert.cleanFileList(getController(), changes.added);
+                Convert.cleanFileList(getController(), changes.removed);
+
+                Integer nExpected = expectedListMessages.get(changes.folder);
+                // Correct filelist
+                Map<FileInfo, FileInfo> cachedFileList = getLastFileList0(changes.folder);
+                if (cachedFileList == null || nExpected == null) {
+                    log().warn(
+                        "Received folder changes on " + changes.folder.name
+                            + ", but not received the full filelist");
+                    return;
+                }
+                nExpected = Integer.valueOf(nExpected.intValue() - 1);
+                expectedListMessages.put(changes.folder, nExpected);
+                TransferManager tm = getController().getTransferManager();
+                synchronized (cachedFileList) {
+                    if (changes.added != null) {
+                        for (int i = 0; i < changes.added.length; i++) {
+                            FileInfo file = changes.added[i];
+                            cachedFileList.remove(file);
+                            cachedFileList.put(file, file);
+
+                            // file "changed" so if downloading break the download
+                            if (logVerbose) {
+                                log().verbose(
+                                    "downloading changed file, breaking it! "
+                                        + file + " " + this);
+                            }
+                            tm.abortDownload(file, this);
                         }
                     }
-
-                    if (!reply.isEmpty()) {
-                        sendMessageAsynchron(new KnownNodes(reply
-                            .toArray(new MemberInfo[0])), null);
+                    if (changes.removed != null) {
+                        for (int i = 0; i < changes.removed.length; i++) {
+                            FileInfo file = changes.removed[i];
+                            cachedFileList.remove(file);
+                            cachedFileList.put(file, file);
+                            // file removed so if downloading break the download
+                            if (logVerbose) {
+                                log().verbose(
+                                    "downloading removed file, breaking it! "
+                                        + file + ' ' + this);
+                            }
+                            tm.abortDownload(file, this);
+                        }
                     }
                 }
-            };
-            getController().getThreadPool().execute(searcher);
-        } else if (message instanceof Notification) {
-            Notification not = (Notification) message;
-            if (not.getEvent() == null) {
-                log().warn("Unknown event from peer");
-            } else {
-                switch (not.getEvent()) {
-                    case ADDED_TO_FRIENDS :
-                        getController().getNodeManager().askForFriendship(this,
-                            not.getPersonalMessage());
-                        break;
-                    default :
-                        log().warn("Unhandled event: " + not.getEvent());
+
+                if (targetFolder != null) {
+                    // Inform folder
+                    targetFolder.fileListChanged(this, changes);
+
+    //                if (nExpected.intValue() <= 0) {
+    //                    // Write filelist
+    //                    if (Logger.isLogToFileEnabled()) {
+    //                        // Write filelist to disk
+    //                        File debugFile = new File(Logger.getDebugDir(),
+    //                            targetFolder.getName() + "/" + getNick()
+    //                                + ".list.txt");
+    //                        Debug.writeFileListCSV(cachedFileList.keySet(),
+    //                            "FileList of folder " + targetFolder.getName()
+    //                                + ", member " + this + ":", debugFile);
+    //                    }
+    //                }
                 }
-            }
-        } else if (message instanceof RequestPart) {
-            RequestPart pr = (RequestPart) message;
-            Upload up = getController().getTransferManager().getUpload(this,
-                pr.getFile());
-            if (up != null) { // If the upload isn't broken
-                up.enqueuePartRequest(pr);
-            }
-        } else if (message instanceof StartUpload) {
-            StartUpload su = (StartUpload) message;
-            Download dl = getController().getTransferManager().getDownload(
-                this, su.getFile());
-            if (dl != null && su.getFile().isCompletelyIdentical(dl.getFile()))
-            {
-                dl.uploadStarted();
+
+                if (logDebug) {
+                    int msgs = expectedListMessages.get(targetedFolderInfo);
+                    if (msgs >= 0) {
+                        log().debug(
+                            "Received folder change. Expecting " + msgs
+                                + " more deltas. " + message);
+                    } else {
+                        log().debug(
+                            "Received folder change. Received " + (-msgs)
+                                + " additional deltas. " + message);
+                    }
+                }
+            } else if (message instanceof Invitation) {
+                // Invitation to folder
+                Invitation invitation = (Invitation) message;
+                // To ensure invitor is correct
+                invitation.setInvitor(this.getInfo());
+
+                getController().getFolderRepository().invitationReceived(
+                    invitation, true);
+
+            } else if (message instanceof Problem) {
+                lastProblem = (Problem) message;
+
+                if (lastProblem.problemCode == Problem.DO_NOT_LONGER_CONNECT) {
+                    // Finds us boring
+                    // set unable to connect
+                    log().debug(
+                        "Problem received: Node reject our connection, "
+                            + "we should not longer try to connect");
+                    // Not connected to public network
+                    isConnectedToNetwork = true;
+                } else if (lastProblem.problemCode == Problem.DUPLICATE_CONNECTION)
+                {
+                    log()
+                        .warn(
+                            "Problem received: Node thinks we have a dupe connection to him");
+                } else {
+                    log().warn("Problem received: " + lastProblem);
+                }
+
+                if (lastProblem.fatal) {
+                    // Shutdown
+                    shutdown();
+                }
+            } else if (message instanceof SearchNodeRequest) {
+                // Send nodelist that matches the search.
+                final SearchNodeRequest request = (SearchNodeRequest) message;
+                Runnable searcher = new Runnable() {
+                    public void run() {
+                        List<MemberInfo> reply = new LinkedList<MemberInfo>();
+                        for (Member m : getController().getNodeManager()
+                            .getNodesAsCollection())
+                        {
+                            if (m.getInfo().isInvalid(getController())) {
+                                continue;
+                            }
+                            if (m.matches(request.searchString)) {
+                                reply.add(m.getInfo());
+                            }
+                        }
+
+                        if (!reply.isEmpty()) {
+                            sendMessageAsynchron(new KnownNodes(reply
+                                .toArray(new MemberInfo[0])), null);
+                        }
+                    }
+                };
+                getController().getThreadPool().execute(searcher);
+            } else if (message instanceof Notification) {
+                Notification not = (Notification) message;
+                if (not.getEvent() == null) {
+                    log().warn("Unknown event from peer");
+                } else {
+                    switch (not.getEvent()) {
+                        case ADDED_TO_FRIENDS :
+                            getController().getNodeManager().askForFriendship(this,
+                                not.getPersonalMessage());
+                            break;
+                        default :
+                            log().warn("Unhandled event: " + not.getEvent());
+                    }
+                }
+            } else if (message instanceof RequestPart) {
+                RequestPart pr = (RequestPart) message;
+                Upload up = getController().getTransferManager().getUpload(this,
+                    pr.getFile());
+                if (up != null) { // If the upload isn't broken
+                    up.enqueuePartRequest(pr);
+                }
+            } else if (message instanceof StartUpload) {
+                StartUpload su = (StartUpload) message;
+                Download dl = getController().getTransferManager().getDownload(
+                    this, su.getFile());
+                if (dl != null && su.getFile().isCompletelyIdentical(dl.getFile()))
+                {
+                    dl.uploadStarted();
+                } else {
+                    log().warn("Download not found: " + su.getFile());
+                }
+            } else if (message instanceof StopUpload) {
+                StopUpload su = (StopUpload) message;
+                Upload up = getController().getTransferManager().getUpload(this,
+                    su.getFile());
+                if (up != null) { // If the upload isn't broken
+                    up.stopUploadRequest(su);
+                }
+            } else if (message instanceof RequestFilePartsRecord) {
+                RequestFilePartsRecord req = (RequestFilePartsRecord) message;
+                Upload up = getController().getTransferManager().getUpload(this,
+                    req.getFile());
+                if (up != null) { // If the upload isn't broken
+                    up.receivedFilePartsRecordRequest(req);
+                }
+            } else if (message instanceof ReplyFilePartsRecord) {
+                ReplyFilePartsRecord rep = (ReplyFilePartsRecord) message;
+                Download dl = getController().getTransferManager().getDownload(
+                    this, rep.getFile());
+                if (dl != null && dl.getFile().isCompletelyIdentical(rep.getFile()))
+                {
+                    dl.receivedFilePartsRecord(rep.getRecord());
+                } else if (dl != null) {
+                    log().info("Received record for old download");
+                } else {
+                    log().warn("Download not found: " + dl);
+                }
+            } else if (message instanceof RelayedMessage) {
+                RelayedMessage relMsg = (RelayedMessage) message;
+                getController().getIOProvider().getRelayedConnectionManager()
+                    .handleRelayedMessage(this, relMsg);
+            } else if (message instanceof UDTMessage) {
+                getController().getIOProvider().getUDTSocketConnectionManager()
+                    .handleUDTMessage(this, (UDTMessage) message);
             } else {
-                log().warn("Download not found: " + su.getFile());
+                log().verbose(
+                    "Message not known to message handling code, "
+                        + "maybe handled in listener: " + message);
             }
-        } else if (message instanceof StopUpload) {
-            StopUpload su = (StopUpload) message;
-            Upload up = getController().getTransferManager().getUpload(this,
-                su.getFile());
-            if (up != null) { // If the upload isn't broken
-                up.stopUploadRequest(su);
-            }
-        } else if (message instanceof RequestFilePartsRecord) {
-            RequestFilePartsRecord req = (RequestFilePartsRecord) message;
-            Upload up = getController().getTransferManager().getUpload(this,
-                req.getFile());
-            if (up != null) { // If the upload isn't broken
-                up.receivedFilePartsRecordRequest(req);
-            }
-        } else if (message instanceof ReplyFilePartsRecord) {
-            ReplyFilePartsRecord rep = (ReplyFilePartsRecord) message;
-            Download dl = getController().getTransferManager().getDownload(
-                this, rep.getFile());
-            if (dl != null && dl.getFile().isCompletelyIdentical(rep.getFile()))
-            {
-                dl.receivedFilePartsRecord(rep.getRecord());
-            } else if (dl != null) {
-                log().info("Received record for old download");
-            } else {
-                log().warn("Download not found: " + dl);
-            }
-        } else if (message instanceof RelayedMessage) {
-            RelayedMessage relMsg = (RelayedMessage) message;
-            getController().getIOProvider().getRelayedConnectionManager()
-                .handleRelayedMessage(this, relMsg);
-        } else if (message instanceof UDTMessage) {
-            getController().getIOProvider().getUDTSocketConnectionManager()
-                .handleUDTMessage(this, (UDTMessage) message);
-        } else {
-            log().verbose(
-                "Message not known to message handling code, "
-                    + "maybe handled in listener: " + message);
+
+            // Give message to nodemanager
+            getController().getNodeManager().messageReceived(this, message);
+            // now give the message to all message listeners
+            fireMessageToListeners(message);
+        } finally {
+            getController().getProfiling().endProfiling(seq);
         }
-
-        // Give message to nodemanager
-        getController().getNodeManager().messageReceived(this, message);
-        // now give the message to all message listeners
-        fireMessageToListeners(message);
-
-        // Log messages that take over a second to process.
-        Date end = new Date();
-        long elapsed = end.getTime() - start.getTime();
-        if (elapsed > 1000) {
-            log().error("Message processing took " + elapsed + "ms: "+
-            message.getClass().getName() + " \'" + message.toString() + '\'');
-        }
-
     }
 
     /**

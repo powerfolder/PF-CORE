@@ -60,7 +60,6 @@ import de.dal33t.powerfolder.event.FolderEvent;
 import de.dal33t.powerfolder.event.FolderListener;
 import de.dal33t.powerfolder.event.FolderMembershipEvent;
 import de.dal33t.powerfolder.event.FolderMembershipListener;
-import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
@@ -258,10 +257,10 @@ public class Folder extends PFComponent {
         syncProfile = folderSettings.getSyncProfile();
 
         // Create listener support
-        this.folderListenerSupport = (FolderListener) ListenerSupportFactory
+        this.folderListenerSupport = (FolderListener) getController().getListenerSupportFactory()
             .createListenerSupport(FolderListener.class);
 
-        this.folderMembershipListenerSupport = (FolderMembershipListener) ListenerSupportFactory
+        this.folderMembershipListenerSupport = (FolderMembershipListener) getController().getListenerSupportFactory()
             .createListenerSupport(FolderMembershipListener.class);
 
         useRecycleBin = folderSettings.isUseRecycleBin();
@@ -2672,21 +2671,21 @@ public class Folder extends PFComponent {
 
     // *************** Event support
     public void addMembershipListener(FolderMembershipListener listener) {
-        ListenerSupportFactory.addListener(folderMembershipListenerSupport,
+        getController().getListenerSupportFactory().addListener(folderMembershipListenerSupport,
             listener);
     }
 
     public void removeMembershipListener(FolderMembershipListener listener) {
-        ListenerSupportFactory.removeListener(folderMembershipListenerSupport,
+        getController().getListenerSupportFactory().removeListener(folderMembershipListenerSupport,
             listener);
     }
 
     public void addFolderListener(FolderListener listener) {
-        ListenerSupportFactory.addListener(folderListenerSupport, listener);
+        getController().getListenerSupportFactory().addListener(folderListenerSupport, listener);
     }
 
     public void removeFolderListener(FolderListener listener) {
-        ListenerSupportFactory.removeListener(folderListenerSupport, listener);
+        getController().getListenerSupportFactory().removeListener(folderListenerSupport, listener);
     }
 
     private void fireMemberJoined(Member member) {

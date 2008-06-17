@@ -27,7 +27,6 @@ import java.util.List;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.event.RecycleBinConfirmEvent;
 import de.dal33t.powerfolder.event.RecycleBinConfirmationHandler;
 import de.dal33t.powerfolder.event.RecycleBinEvent;
@@ -49,7 +48,7 @@ public class RecycleBin extends PFComponent {
     /** all recycled files */
     private List<FileInfo> allRecycledFiles = new ArrayList<FileInfo>();
     /** all listeners to this recycle bin */
-    private RecycleBinListener listeners = (RecycleBinListener) ListenerSupportFactory
+    private RecycleBinListener listeners = (RecycleBinListener) getController().getListenerSupportFactory()
         .createListenerSupport(RecycleBinListener.class);
 
     private RecycleBinConfirmationHandler recycleBinConfirmationHandler;
@@ -517,11 +516,11 @@ public class RecycleBin extends PFComponent {
 
     /** register to receive recycle bin events */
     public void addRecycleBinListener(RecycleBinListener listener) {
-        ListenerSupportFactory.addListener(listeners, listener);
+        getController().getListenerSupportFactory().addListener(listeners, listener);
     }
 
     /** remove listener */
     public void removeRecycleBinListener(RecycleBinListener listener) {
-        ListenerSupportFactory.removeListener(listeners, listener);
+        getController().getListenerSupportFactory().removeListener(listeners, listener);
     }
 }

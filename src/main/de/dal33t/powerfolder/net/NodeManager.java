@@ -54,7 +54,6 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.event.AskForFriendshipEvent;
 import de.dal33t.powerfolder.event.AskForFriendshipHandler;
-import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -175,7 +174,7 @@ public class NodeManager extends PFComponent {
         // Value message/event listner support
         valveMessageListenerSupport = new MessageListenerSupport(this);
 
-        this.listenerSupport = (NodeManagerListener) ListenerSupportFactory
+        this.listenerSupport = (NodeManagerListener) getController().getListenerSupportFactory()
             .createListenerSupport(NodeManagerListener.class);
 
         nodeFilters = new ArrayList<NodeFilter>();
@@ -380,7 +379,7 @@ public class NodeManager extends PFComponent {
      * @param suspended
      */
     public void setSuspendFireEvents(boolean suspended) {
-        ListenerSupportFactory.setSuspended(listenerSupport, suspended);
+        getController().getListenerSupportFactory().setSuspended(listenerSupport, suspended);
         log().debug("setSuspendFireEvents: " + suspended);
     }
 
@@ -1747,11 +1746,11 @@ public class NodeManager extends PFComponent {
     // Listener support *******************************************************
 
     public void addNodeManagerListener(NodeManagerListener listener) {
-        ListenerSupportFactory.addListener(listenerSupport, listener);
+        getController().getListenerSupportFactory().addListener(listenerSupport, listener);
     }
 
     public void removeNodeManagerListener(NodeManagerListener listener) {
-        ListenerSupportFactory.removeListener(listenerSupport, listener);
+        getController().getListenerSupportFactory().removeListener(listenerSupport, listener);
     }
 
     public void addNodeFilter(NodeFilter filter) {

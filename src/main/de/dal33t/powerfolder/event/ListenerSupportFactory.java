@@ -31,6 +31,8 @@ import javax.swing.SwingUtilities;
 
 import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.ui.UIUtil;
+import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.Controller;
 
 /**
  * Factory used to created event/listener support upon eventlistner interfaces.
@@ -47,62 +49,16 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.8 $
  */
-public class ListenerSupportFactory {
+public class ListenerSupportFactory extends PFComponent {
+
     private static final Logger LOG = Logger
         .getLogger(ListenerSupportFactory.class);
 
     // AWT system check
     private static final boolean awtAvailable = UIUtil.isAWTAvailable();
 
-    private static final Map<Double, String> PERFORMANCE_MAP =
-            Collections.synchronizedMap(new TreeMap<Double, String>());
-
-    // Start a thread to dump stats to the log.
-    static {
-        Thread t = new Thread() {
-            public void run() {
-                boolean interrupted = false;
-                while (!interrupted) {
-                    try {
-                        Thread.sleep(60000);
-                        int i = 0;
-                        if (Logger.isDebugLevelEnabled()) {
-                            if (PERFORMANCE_MAP.isEmpty()) {
-                                LOG.debug("No performance statistics");
-                            } else {
-                                LOG.debug("Performance statistics") ;
-                                LOG.debug("======================");
-                                for (Double time : PERFORMANCE_MAP.keySet()) {
-                                    String s = PERFORMANCE_MAP.get(time);
-                                    LOG.debug(s);
-                                    if (i++ > 100) {
-                                        // Only display the top 100 offenders.
-                                        // Keys are negative, so longest running
-                                        // task is displayed first.
-                                        break;
-                                    }
-                                }
-                                LOG.debug("======================");
-                                PERFORMANCE_MAP.clear();
-                            }
-                        }
-                    } catch (InterruptedException e) {
-                        interrupted = true;
-                    } catch (Exception e) {
-                        LOG.error("Problem with performance statistics", e);
-                    }
-                }
-            }
-        };
-        t.setDaemon(true);
-        t.start();
-    }
-
-    /**
-     * No instance allowed
-     */
-    private ListenerSupportFactory() {
-        super();
+    public ListenerSupportFactory(Controller controller) {
+        super(controller);
     }
 
     /**
@@ -116,7 +72,7 @@ public class ListenerSupportFactory {
      * @param listenerInterface
      * @return
      */
-    public static Object createListenerSupport(Class listenerInterface) {
+    public Object createListenerSupport(Class listenerInterface) {
         if (listenerInterface == null) {
             throw new NullPointerException("Listener interface is empty");
         }
@@ -144,7 +100,7 @@ public class ListenerSupportFactory {
      * @param listenerSupport
      * @param suspended
      */
-    public static void setSuspended(Object listenerSupport, boolean suspended) {
+    public void setSuspended(Object listenerSupport, boolean suspended) {
         if (listenerSupport == null) {
             throw new NullPointerException("Listener support is null");
         }
@@ -175,7 +131,7 @@ public class ListenerSupportFactory {
      * @param listener
      *      The event listener to add.
      */
-    public static void addListener(CoreListener listenerSupport,
+    public void addListener(CoreListener listenerSupport,
         CoreListener listener)
     {
         if (listenerSupport == null) {
@@ -206,7 +162,7 @@ public class ListenerSupportFactory {
      * @param listenerSupport
      * @param listener
      */
-    public static void removeListener(Object listenerSupport,
+    public void removeListener(Object listenerSupport,
         CoreListener listener)
     {
         if (listenerSupport == null) {
@@ -236,7 +192,7 @@ public class ListenerSupportFactory {
      * @param listenerSupport
      * @param listener
      */
-    public static void removeAllListeners(Object listenerSupport) {
+    public void removeAllListeners(Object listenerSupport) {
         if (listenerSupport == null) {
             throw new NullPointerException("Listener support is null");
         }
@@ -264,7 +220,7 @@ public class ListenerSupportFactory {
      *
      * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      */
-    private static class ListenerSupportInvocationHandler implements
+    private class ListenerSupportInvocationHandler implements
         InvocationHandler
     {
         private Class listenerInterface;
@@ -341,7 +297,7 @@ public class ListenerSupportFactory {
             if (!listenerInterface.isInstance(listener)) {
                 throw new IllegalArgumentException("Listener '" + listener
                     + "' is not an instance of support listener interface '"
-                    + listenerInterface.getName() + "'");
+                    + listenerInterface.getName() + '\'');
             }
             return true;
         }
@@ -368,34 +324,34 @@ public class ListenerSupportFactory {
                     public void run() {
                         for (CoreListener listener : listenersInDispatchThread)
                         {
+                            long seq = getController().getProfiling()
+                                    .startProfiling(50, listener.getClass()
+                                            .toString() + ':' +
+                                            method.getName(), args);
                             try {
-                                Date startDate = new Date();
                                 method.invoke(listener, args);
-                                if (Logger.isDebugLevelEnabled()) {
-                                    Date endDate = new Date();
-                                    logTime(startDate, endDate, method, args,
-                                            listener, true);
-                                }
                             } catch (IllegalArgumentException e) {
                                 LOG.error(
                                     "Received an exception from listener '"
                                         + listener + "', class '"
-                                        + listener.getClass().getName() + "'",
+                                        + listener.getClass().getName() + '\'',
                                     e);
                             } catch (IllegalAccessException e) {
                                 LOG.error(
                                     "Received an exception from listener '"
                                         + listener + "', class '"
-                                        + listener.getClass().getName() + "'",
+                                        + listener.getClass().getName() + '\'',
                                     e);
                             } catch (InvocationTargetException e) {
                                 LOG.error(
                                     "Received an exception from listener '"
                                         + listener + "', class '"
-                                        + listener.getClass().getName() + "'",
+                                        + listener.getClass().getName() + '\'',
                                     e.getCause());
                                 // Also log original exception
                                 LOG.verbose(e);
+                            } finally {
+                                getController().getProfiling().endProfiling(seq);
                             }
                         }
                     }
@@ -411,30 +367,30 @@ public class ListenerSupportFactory {
                 }
 
                 for (CoreListener listener : listenersNotInDispatchThread) {
+                    long seq = getController().getProfiling().startProfiling(50,
+                            listener.getClass().toString()
+                                    + ':' + method.getName(),
+                            args);
                     try {
-                        Date startDate = new Date();
                         method.invoke(listener, args);
-                        if (Logger.isDebugLevelEnabled()) {
-                            Date endDate = new Date();
-                            logTime(startDate, endDate, method, args, listener,
-                                    false);
-                        }
                     } catch (IllegalArgumentException e) {
                         LOG.error("Received an exception from listener '"
                             + listener + "', class '"
-                            + listener.getClass().getName() + "'", e);
+                            + listener.getClass().getName() + '\'', e);
                     } catch (IllegalAccessException e) {
                         LOG.error("Received an exception from listener '"
                             + listener + "', class '"
-                            + listener.getClass().getName() + "'", e);
+                            + listener.getClass().getName() + '\'', e);
                     } catch (InvocationTargetException e) {
                         LOG
                             .error("Received an exception from listener '"
                                 + listener + "', class '"
-                                + listener.getClass().getName() + "'", e
+                                + listener.getClass().getName() + '\'', e
                                 .getCause());
                         // Also log original exception
                         LOG.verbose(e);
+                    } finally {
+                        getController().getProfiling().endProfiling(seq);
                     }
                 }
             }
@@ -451,43 +407,4 @@ public class ListenerSupportFactory {
         }
     }
 
-    /**
-     * Log suspicious long-running methods.
-     *
-     * @param startDate
-     * @param endDate
-     * @param method
-     * @param args
-     * @param listener
-     * @param dispatchThread
-     */
-    private static void logTime(Date startDate, Date endDate, Method method,
-                                Object[] args, CoreListener listener,
-                                boolean dispatchThread) {
-
-        // Calculate how long it took.
-        long seconds = (endDate.getTime() - startDate.getTime()) / 1000;
-
-        // Report invokations that take time.
-        if (seconds > 0) {
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < args.length; i++) {
-                sb.append(args[i].toString());
-                if (i < args.length - 1) {
-                    sb.append(", ");
-                }
-            }
-            String message = "Method " + method.getName()
-                    + " [" + sb.toString() + "]"
-                    + " invoked on listener "
-                    + listener + " in " + seconds
-                    + " seconds on " + endDate.toString()
-                    + " dispatch thread " + dispatchThread;
-
-            // Include random part so duplicate times do not eject entries.
-            // Negate, so longest gets displayed first.
-            Double key = -(seconds + Math.random());
-            PERFORMANCE_MAP.put(key, message);
-        }
-    }
 }

@@ -54,7 +54,6 @@ import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.event.InvitationReceivedEvent;
 import de.dal33t.powerfolder.event.InvitationReceivedHandler;
-import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.transfer.FileRequestor;
@@ -115,7 +114,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         this.folderScanner = new FolderScanner(getController());
 
         // Create listener support
-        this.listenerSupport = (FolderRepositoryListener) ListenerSupportFactory
+        this.listenerSupport = (FolderRepositoryListener) getController().getListenerSupportFactory()
             .createListenerSupport(FolderRepositoryListener.class);
     }
 
@@ -140,7 +139,7 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     public void setSuspendFireEvents(boolean suspended) {
-        ListenerSupportFactory.setSuspended(listenerSupport, suspended);
+        getController().getListenerSupportFactory().setSuspended(listenerSupport, suspended);
         log().debug("setSuspendFireEvents: " + suspended);
     }
 
@@ -870,12 +869,12 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     public void addFolderRepositoryListener(FolderRepositoryListener listener) {
-        ListenerSupportFactory.addListener(listenerSupport, listener);
+        getController().getListenerSupportFactory().addListener(listenerSupport, listener);
     }
 
     public void removeFolderRepositoryListener(FolderRepositoryListener listener)
     {
-        ListenerSupportFactory.removeListener(listenerSupport, listener);
+        getController().getListenerSupportFactory().removeListener(listenerSupport, listener);
     }
 
     public void setInvitationReceivedHandler(

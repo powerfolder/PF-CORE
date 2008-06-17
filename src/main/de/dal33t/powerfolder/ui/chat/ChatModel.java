@@ -37,7 +37,6 @@ import de.dal33t.powerfolder.event.FolderMembershipEvent;
 import de.dal33t.powerfolder.event.FolderMembershipListener;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
-import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -65,8 +64,7 @@ public class ChatModel implements MessageListener {
     /** key = Member, value = ChatBox */
     private HashMap<Member, ChatBox> memberChatBoxMap = new HashMap<Member, ChatBox>();
     /** All listners to this Model */
-    private ChatModelListener chatModelListeners = (ChatModelListener) ListenerSupportFactory
-        .createListenerSupport(ChatModelListener.class);
+    private ChatModelListener chatModelListeners;
 
     private Controller controller;
     private FolderRepository repository;
@@ -84,6 +82,9 @@ public class ChatModel implements MessageListener {
         folderMembershipListener = new MembershipFoldersListener();
         addListenerToExsistingFolders();
         repository.addFolderRepositoryListener(new RepositoryListener());
+        chatModelListeners = (ChatModelListener) controller.getListenerSupportFactory()
+            .createListenerSupport(ChatModelListener.class);
+
     }
 
     /**
@@ -215,7 +216,7 @@ public class ChatModel implements MessageListener {
 
     /** add a listener that will recieve events if chatlines are recieved */
     public void addChatModelListener(ChatModelListener cmListener) {
-        ListenerSupportFactory.addListener(chatModelListeners, cmListener);
+        controller.getListenerSupportFactory().addListener(chatModelListeners, cmListener);
     }
 
     /**

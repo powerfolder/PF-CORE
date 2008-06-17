@@ -86,6 +86,7 @@ import de.dal33t.powerfolder.util.task.PersistentTaskManager;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
 import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker;
+import de.dal33t.powerfolder.event.ListenerSupportFactory;
 
 /**
  * Central class gives access to all core components in PowerFolder. Make sure
@@ -258,6 +259,13 @@ public class Controller extends PFComponent {
      */
     private boolean limitedConnectivity;
 
+    /**
+     * Profiling class to log log-running tasks.
+     */
+    private Profiling profiling;
+
+    private ListenerSupportFactory listenerSupportFactory;
+
     private Controller() {
         super();
         // Do some TTL fixing for dyndns resolving
@@ -319,6 +327,11 @@ public class Controller extends PFComponent {
             throw new IllegalStateException(
                 "Configuration already started, shutdown controller first");
         }
+
+        // Sets up the profiling instance.
+        setupProfiling();
+
+        setupListenerSupportFactory();
 
         // Default updatesettings
         updateSettings = new UpdateChecker.UpdateSetting();
@@ -520,6 +533,17 @@ public class Controller extends PFComponent {
 
         // Setup our background working tasks
         setupPeriodicalTasks();
+    }
+
+    private void setupListenerSupportFactory() {
+        listenerSupportFactory = new ListenerSupportFactory(this);
+    }
+
+    /**
+     * Initialize the Profiling instance.
+     */
+    private void setupProfiling() {
+        profiling = new Profiling(this);
     }
 
     private void initOnlineStorageClient() {
@@ -1203,6 +1227,8 @@ public class Controller extends PFComponent {
         // saveConfig();
         // }
 
+        profiling.dumpStats();
+
         // stop
         boolean wasStarted = started;
         started = false;
@@ -1736,6 +1762,19 @@ public class Controller extends PFComponent {
      */
     public boolean isVerbose() {
         return verbose;
+    }
+
+    /**
+     * Returns the Profiling instance. Use this to log long-running tasks for analysis.
+     *
+     * @return the Profiling instance.
+     */
+    public Profiling getProfiling() {
+        return profiling;
+    }
+
+    public ListenerSupportFactory getListenerSupportFactory() {
+        return listenerSupportFactory;
     }
 
     /**

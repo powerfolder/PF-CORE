@@ -18,22 +18,40 @@
 * $Id:$
 */package de.dal33t.powerfolder;
 
-import de.dal33t.powerfolder.util.Loggable;
-
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.*;
 
 /**
- * Class to monitor and log long-running method calls.
+ * Class to monitor and log long-running method calls (only in Verbose mode).
  * Used for analysis and improvements to PowerFolder.
+ * Ideally this should be used in a try / finally block,
+ * so that the endProfiling is always called.
+ * <BR/>
+ * <PRE>
+ *     log seq = getController().getProfiling().startProfiling(...);
+ *     try {
+ *         // Do stuff
+ *     } finally {
+ *         getController().getProfiling().endProfiling(seq);
+ *     } 
+ * </PRE>
  */
-public class Profiling extends Loggable {
+public class Profiling extends PFComponent {
 
-    private final AtomicBoolean enabled = new AtomicBoolean();
     private final AtomicLong sequentialId = new AtomicLong();
-    private final Map<Long, ProfilingEntry> entries = 
+    private final Map<Long, ProfilingEntry> entries =
             Collections.synchronizedMap(new HashMap<Long, ProfilingEntry>());
+    private final List<ProfilingStat> stats =
+            Collections.synchronizedList(new ArrayList<ProfilingStat>());
+
+    private long totalTime;
+    private long minimumTime;
+    private long maximumTime;
+    private long totalCount;
+
+    public Profiling(Controller controller) {
+        super(controller);
+    }
 
     /**
      * Start profiling a method invocation.
@@ -49,8 +67,7 @@ public class Profiling extends Loggable {
      */
     public long startProfiling(int profileMillis, String methodName,
                                Object... args) {
-
-        if (!enabled.get()) {
+        if (!ConfigurationEntry.VERBOSE.getValueBoolean(getController())) {
             return -1;
         }
 
@@ -62,8 +79,8 @@ public class Profiling extends Loggable {
 
     /**
      * End profiling a method invocation.
-     * The 'Seq' arg must be the value returned by the coresponding
-     * startProfiling call. If the invocation took longer than the
+     * The 'Seq' arg MUST be the value returned by the coresponding
+     * startProfiling call. If the invocation takes longer than the
      * original profileMillis milli seconds, the profile is logged.
      *
      * @param seq
@@ -71,13 +88,13 @@ public class Profiling extends Loggable {
      */
     public void endProfiling(Long seq) {
 
-        if (!enabled.get()) {
+        if (!ConfigurationEntry.VERBOSE.getValueBoolean(getController())) {
             return;
         }
 
-        Set<Long> keys = entries.keySet();
         ProfilingEntry profilingEntry = null;
         synchronized (entries) {
+            Set<Long> keys = entries.keySet();
             for (Long key : keys) {
                 if (key.equals(seq)) {
                     profilingEntry = entries.remove(key);
@@ -87,6 +104,23 @@ public class Profiling extends Loggable {
         }
 
         if (profilingEntry != null) {
+            // Delegate to a thread, so things do not get held up.
+            ProfilingThread t = new ProfilingThread(profilingEntry);
+            t.start();
+        }
+    }
+
+    /**
+     * Thread to log the event and add to stats.
+     */
+    private class ProfilingThread extends Thread {
+        private ProfilingEntry profilingEntry;
+
+        private ProfilingThread(ProfilingEntry profilingEntry) {
+            this.profilingEntry = profilingEntry;
+        }
+
+        public void run() {
             long elapsed = profilingEntry.elapsedMilliseconds();
             if (elapsed >= profilingEntry.getProfileMillis()) {
                 StringBuilder sb =
@@ -101,25 +135,82 @@ public class Profiling extends Loggable {
                 sb.append("] took " + elapsed + " milliseconds");
                 log().error(sb.toString());
             }
+
+            totalTime += elapsed;
+            totalCount ++;
+            if (elapsed < minimumTime) {
+                minimumTime = elapsed;
+            }
+            if (elapsed > maximumTime) {
+                maximumTime = elapsed;
+            }
+            stats.add(new ProfilingStat(profilingEntry.getMethodName(), elapsed));
         }
     }
 
-    /**
-     * Enable profiling.
-     *
-     * @param b
-     */
-    public void setEnabled(boolean b) {
-        enabled.set(b);
+    public void dumpStats() {
+
+        if (!ConfigurationEntry.VERBOSE.getValueBoolean(getController())) {
+            return;
+        }
+
+        log().info("=== Profiling Statistics ===");
+        log().info("Total invocations: " + totalCount);
+        log().info("Total elapsed time: " + totalTime + "ms");
+        if (totalCount > 0) {
+            log().info("Average elapsed time: " + totalTime / totalCount + "ms");
+        }
+        log().info("Minimum elapsed time: " + minimumTime + "ms");
+        log().info("Maximum elapsed time: " + maximumTime + "ms");
+        synchronized (stats) {
+            Collections.sort(stats);
+            long currentCount = 0;
+            long currentTotal = 0;
+            long currentMinimum = 0;
+            long currentMaximum = 0;
+            String currentKey = null;
+            for (ProfilingStat stat : stats) {
+                String key = stat.getMethodName();
+                if (currentKey == null || !currentKey.equals(key)) {
+                    if (currentKey != null) {
+                        logStats(currentKey, currentCount, currentTotal, currentMinimum, currentMaximum);
+                    }
+                    currentKey = key;
+                    currentCount = 0;
+                    currentTotal = 0;
+                    currentMinimum = 0;
+                    currentMaximum = 0;
+                }
+                currentCount++;
+                long elapsed = stat.getElapsedTime();
+                currentTotal += elapsed;
+                if (elapsed < currentMinimum) {
+                    currentMinimum = elapsed;
+                }
+                if (elapsed > currentMaximum) {
+                    currentMaximum = elapsed;
+                }
+            }
+
+            // Catch the last set...
+            if (currentKey != null) {
+                logStats(currentKey, currentCount, currentTotal, currentMinimum, currentMaximum);
+            }
+        }
+        log().info("============================");
     }
 
-    /**
-     * Whether profiling is enabled.
-     *
-     * @return
-     */
-    public boolean isEnabled() {
-        return enabled.get();
+    private void logStats(String currentKey, long currentCount, long currentTotal, long currentMinimum, long currentMaximum) {
+        log().info("");
+        log().info(currentKey);
+        log().info("----------------------------");
+        log().info("Total invocations: " + currentCount);
+        log().info("Total elapsed time: " + currentTotal + "ms");
+        if (currentCount > 0) {
+            log().info("Average elapsed time: " + currentTotal / currentCount + "ms");
+        }
+        log().info("Minimum elapsed time: " + currentMinimum + "ms");
+        log().info("Maximum elapsed time: " + currentMaximum + "ms");
     }
 
     /**
@@ -155,6 +246,28 @@ public class Profiling extends Loggable {
 
         public long elapsedMilliseconds() {
             return new Date().getTime() - startTime;
+        }
+    }
+
+    private class ProfilingStat implements Comparable<ProfilingStat> {
+        private final String methodName;
+        private final long elapsedTime;
+
+        private ProfilingStat(String methodName, long elapsedTime) {
+            this.methodName = methodName;
+            this.elapsedTime = elapsedTime;
+        }
+
+        public String getMethodName() {
+            return methodName;
+        }
+
+        public long getElapsedTime() {
+            return elapsedTime;
+        }
+
+        public int compareTo(ProfilingStat o) {
+            return methodName.compareTo(o.methodName);
         }
     }
 }
