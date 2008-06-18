@@ -132,15 +132,21 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         assertEquals(1, sources.size());
         // assertEquals(1, getFolderAtBart().getConnectedMembers()[0]
         // .getFile(testfInfoBart).getVersion());
+        System.out.println(getFolderAtBart().getKnowFilesAsArray()[0]);
+        
         DownloadManager source = getContollerBart().getTransferManager()
             .downloadNewestVersion(
-                getFolderAtBart().getKnownFiles().iterator().next());
-        assertNotNull("Download source is null", source);
+                testfInfoBart);
+        assertNull("Download source is not null", source);
 
+        // Barts version is 2 (del) and Lisa has 1, so it shouldn't revert back
+        
+        getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
+        
         TestHelper.waitMilliSeconds(200);
         TestHelper.waitForCondition(20, new Condition() {
             public boolean reached() {
-                return 1 == getFolderAtBart().getKnownFiles().iterator().next()
+                return 2 == getFolderAtLisa().getKnownFiles().iterator().next()
                     .getVersion();
             }
         });
@@ -150,8 +156,11 @@ public class DeletionSyncTest extends TwoControllerTestCase {
             .iterator().next(), getContollerBart());
         // TODO: Discuss: The downloaded version should be 3 (?).
         // Version 3 of the file = restored.
-        assertEquals(1, getFolderAtBart().getKnownFiles().iterator().next()
+        // As agreed on IRC, downloadNewestVersion shouldn't download an older version even if a newer
+        // one was deleted.
+        assertEquals(2, getFolderAtBart().getKnownFiles().iterator().next()
             .getVersion());
+        assertTrue(getFolderAtLisa().getKnownFiles().iterator().next().isDeleted());
     }
 
     /**
