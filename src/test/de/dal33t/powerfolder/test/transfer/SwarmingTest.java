@@ -264,14 +264,18 @@ public class SwarmingTest extends MultipleControllerTestCase {
 
         TestHelper.waitForCondition(10, new ConditionWithMessage() {
             public boolean reached() {
-                return getFolderOf("5").getKnownFiles().iterator().next()
+                return getFolderOf("5").getKnownFilesCount() == 1 && 
+                    getFolderOf("5").getKnownFiles().iterator().next()
                     .getVersion() == 1;
             }
 
             public String message() {
-                return "Homer version:"
-                    + getFolderOf("5").getKnownFiles().iterator().next()
-                        .getVersion();
+                int ver = -1;
+                if (getFolderOf("5").getKnownFilesCount() > 0) {
+                    ver =getFolderOf("5").getKnownFiles().iterator().next()
+                        .getVersion(); 
+                }
+                return "Homer version:" + ver;
             }
         });
 
@@ -466,7 +470,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
                 scanFolder(getFolderOf("" + i));
             }
 
-            TestHelper.waitForCondition(numC * 10, new ConditionWithMessage() {
+            TestHelper.waitForCondition(numC * 2, new ConditionWithMessage() {
                 public boolean reached() {
                     for (int i = 0; i < numC; i++) {
                         if (getFolderOf("" + i).getKnownFilesCount() != 1) {
@@ -506,7 +510,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
         }
         final int version = newestVersion;
 
-        TestHelper.waitForCondition(numC * 20, new ConditionWithMessage() {
+        TestHelper.waitForCondition(numC * 3, new ConditionWithMessage() {
             public boolean reached() {
                 for (int i = 0; i < numC; i++) {
                     if (getFolderOf("" + i).getKnowFilesAsArray()[0]
@@ -519,21 +523,32 @@ public class SwarmingTest extends MultipleControllerTestCase {
             }
 
             public String message() {
-                StringBuilder b = new StringBuilder();
+                int nver = 0;
                 for (int i = 0; i < numC; i++) {
-                    if (i > 0) {
-                        b.append("\n");
+                    nver = Math.max(nver, getFolderOf("" + i).getKnowFilesAsArray()[0].getVersion());
+                }
+                StringBuilder b = new StringBuilder();
+                b.append("Newest version is " + nver);
+                for (int i = 0; i < numC; i++) {
+                    if (getFolderOf("" + i).getKnowFilesAsArray()[0]
+                          .getVersion() == nver) {
+                        continue;
                     }
+                    b.append("\n---\n");
                     b.append(i).append(": ").append(
                         getFolderOf("" + i).getKnowFilesAsArray()[0]
                             .getVersion());
+                    b.append(", uploads: ");
                     b.append(Arrays.toString(getContoller("" + i)
                         .getTransferManager().getActiveUploads()));
+                    b.append(", downloads: ");
+                    b.append(
+                        getContoller("" + i).getTransferManager().getActiveDownloads());
                 }
                 return b.toString();
             }
         });
-        TestHelper.waitForCondition(numC * 4, new ConditionWithMessage() {
+        TestHelper.waitForCondition(numC * 3, new ConditionWithMessage() {
             public boolean reached() {
                 for (int i = 0; i < numC; i++) {
                     TransferManager tm = getContoller("" + i)
