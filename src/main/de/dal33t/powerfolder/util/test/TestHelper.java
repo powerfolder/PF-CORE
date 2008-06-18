@@ -27,9 +27,16 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadInfo;
+import java.lang.management.ThreadMXBean;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Properties;
 import java.util.UUID;
+
+import junit.framework.Assert;
 
 import org.apache.commons.io.FileUtils;
 
@@ -54,6 +61,31 @@ public class TestHelper extends Loggable {
     private TestHelper() {
     }
 
+    public static String deadlockCheck() {
+        try {
+            ThreadMXBean mx = ManagementFactory.getThreadMXBean();
+            long[] ids = mx.findDeadlockedThreads();
+            if (ids == null) {
+                return "NO DEADLOCKS!";
+            }
+            Assert.assertTrue(ids.length > 0);
+            ThreadInfo[] info = mx.getThreadInfo(ids, true, true);
+            StringWriter lout = new StringWriter();
+            PrintWriter out = new PrintWriter(lout);
+            for (ThreadInfo i: info) {
+                out.println("Thread " + i);
+                out.println("Complete Trace:");
+                Exception tmp = new Exception();
+                tmp.setStackTrace(i.getStackTrace());
+                tmp.printStackTrace(out);
+            }
+            out.close();
+            return lout.toString();
+        } catch (UnsupportedOperationException e) {
+            return e.toString();
+        }
+    }
+    
     public static File getTestDir() {
         if (testFile == null) {
             File localBuildProperties = new File("build-local.properties");
