@@ -584,7 +584,7 @@ public class FolderStatisticTest extends FiveControllerTestCase {
      * @param folder
      */
     private void waitForFilelistReceived(final Folder folder) {
-        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+        TestHelper.waitForCondition(20, new ConditionWithMessage() {
             Collection<FileInfo> filesOnHomer;
             Collection<FileInfo> filesOnBart;
             Collection<FileInfo> filesOnMarge;
