@@ -28,7 +28,6 @@ import de.dal33t.powerfolder.DiskItem;
 import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.disk.Directory;
-import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.RecycleBin;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.MP3FileInfo;
@@ -292,7 +291,6 @@ public class FileFilterModel extends FilterModel {
                 }
             }
 
-            FolderRepository repo = getController().getFolderRepository();
             RecycleBin recycleBin = getController().getRecycleBin();
 
             int localFiles = 0;
@@ -316,7 +314,17 @@ public class FileFilterModel extends FilterModel {
                         if (showFile) {
                             boolean isNew = recentlyDownloaded(fInfo);
                             boolean isDeleted = fInfo.isDeleted();
-                            boolean isIncoming = fInfo.isNewerAvailable(repo);
+                            FileInfo newestVersion = null;
+                            if (fInfo.getFolder(getController()
+                                    .getFolderRepository()) != null) {
+                                newestVersion = fInfo.getNewestNotDeletedVersion(
+                                        getController().getFolderRepository());
+                            }
+
+                            boolean isIncoming = fInfo.isDownloading(getController())
+                                    || fInfo.isExpected(getController().getFolderRepository())
+                                    || newestVersion != null &&
+                                    newestVersion.isNewerThan(fInfo);
                             switch (mode)
                             {
                                 case MODE_LOCAL_ONLY:
