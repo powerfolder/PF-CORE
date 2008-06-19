@@ -1596,6 +1596,7 @@ public class NodeManager extends PFComponent {
                 shutdown();
             } catch (RuntimeException t) {
                 log().error(t);
+                shutdown();
                 throw t;
             } finally {
                 // Remove from acceptors list
