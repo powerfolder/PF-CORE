@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.util.test;
 
 import java.io.File;
@@ -73,6 +73,15 @@ public abstract class MultipleControllerTestCase extends TestCase {
     protected void setUp() throws Exception {
         super.setUp();
 
+        for (Controller controller : controllers.values()) {
+            if (controller.isStarted()) {
+                // Ensure shutdown of controller. Maybe tearDown was not called
+                // becaused of previous failing test.
+                stopControllers();
+                break;
+            }
+        }
+
         // Default exception logger
         Thread
             .setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler()
@@ -97,24 +106,7 @@ public abstract class MultipleControllerTestCase extends TestCase {
     protected void tearDown() throws Exception {
         System.out.println("-------------- tearDown -----------------");
         super.tearDown();
-        for (String id : controllers.keySet()) {
-            final Controller controller = controllers.get(id);
-            if (controller.isStarted()) {
-                Thread sdt = new Thread(new Runnable() {
-
-                    public void run() {
-                        controller.shutdown();
-                    }
-                });
-                sdt.start();
-                sdt.join(5000);
-            }
-            assertFalse("Shutdown of controller(" + id + ") failed", controller
-                .isShuttingDown());
-            assertFalse("Shutdown of controller(" + id + ")  failed",
-                controller.isStarted());
-        }
-        controllers.clear();
+        stopControllers();
         // add a pause to make sure files can be cleaned before next test.
         TestHelper.waitMilliSeconds(500);
         mctFolder = null;
@@ -289,10 +281,10 @@ public abstract class MultipleControllerTestCase extends TestCase {
     protected static Folder joinFolder(FolderInfo foInfo, File baseDir,
         Controller controller, SyncProfile profile)
     {
-        FolderSettings folderSettings = new FolderSettings(baseDir,
-                profile, false, true, false, false);
+        FolderSettings folderSettings = new FolderSettings(baseDir, profile,
+            false, true, false, false);
         return controller.getFolderRepository().createFolder(foInfo,
-                folderSettings);
+            folderSettings);
     }
 
     protected void nSetupControllers(int n) throws IOException {
@@ -435,6 +427,28 @@ public abstract class MultipleControllerTestCase extends TestCase {
             }
         });
     }
+
+    private void stopControllers() throws InterruptedException {
+        for (String id : controllers.keySet()) {
+            final Controller controller = controllers.get(id);
+            if (controller.isStarted()) {
+                Thread sdt = new Thread(new Runnable() {
+
+                    public void run() {
+                        controller.shutdown();
+                    }
+                });
+                sdt.start();
+                sdt.join(5000);
+            }
+            assertFalse("Shutdown of controller(" + id + ") failed", controller
+                .isShuttingDown());
+            assertFalse("Shutdown of controller(" + id + ")  failed",
+                controller.isStarted());
+        }
+        controllers.clear();
+    }
+
     private static boolean initalScanOver = false;
 
     private static void triggerAndWaitForInitialMaitenenace(Controller cont) {

@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.util.test;
 
 import java.io.File;
@@ -74,6 +74,14 @@ public class TwoControllerTestCase extends TestCase {
     protected void setUp() throws Exception {
         super.setUp();
 
+        if ((getContollerBart() != null && getContollerBart().isStarted())
+            || (getContollerLisa() != null && getContollerLisa().isStarted()))
+        {
+            // Ensure shutdown of controller. Maybe tearDown was not called
+            // becaused of previous failing test.
+            stopControllers();
+        }
+
         // Default exception logger
         Thread
             .setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler()
@@ -113,38 +121,7 @@ public class TwoControllerTestCase extends TestCase {
     protected void tearDown() throws Exception {
         System.out.println("-------------- tearDown -----------------");
         super.tearDown();
-        if (controllerBart.isStarted()) {
-            controllerBart.shutdown();
-        }
-        if (controllerLisa.isStarted()) {
-            controllerLisa.shutdown();
-        }
-
-        // Give them time to shut down
-        Thread.sleep(200);
-        int i = 0;
-        while (controllerBart.isShuttingDown()) {
-            i++;
-            if (i > 1000) {
-                System.out.println("Shutdown of Bart failed");
-                break;
-            }
-            Thread.sleep(100);
-        }
-        i = 0;
-        while (controllerLisa.isShuttingDown()) {
-            i++;
-            if (i > 1000) {
-                System.out.println("Shutdown of Lisa failed");
-                break;
-            }
-            Thread.sleep(100);
-        }
-        assertFalse(controllerBart.isStarted());
-        assertFalse(controllerLisa.isStarted());
-
-        // add a pause to make sure files can be cleaned before next test.
-        TestHelper.waitMilliSeconds(500);
+        stopControllers();
     }
 
     // For subtest ************************************************************
@@ -334,6 +311,41 @@ public class TwoControllerTestCase extends TestCase {
         System.out.println("Both Controller DISconnected");
     }
 
+    private void stopControllers() throws InterruptedException {
+        if (controllerBart.isStarted()) {
+            controllerBart.shutdown();
+        }
+        if (controllerLisa.isStarted()) {
+            controllerLisa.shutdown();
+        }
+
+        // Give them time to shut down
+        Thread.sleep(200);
+        int i = 0;
+        while (controllerBart.isShuttingDown()) {
+            i++;
+            if (i > 1000) {
+                System.out.println("Shutdown of Bart failed");
+                break;
+            }
+            Thread.sleep(100);
+        }
+        i = 0;
+        while (controllerLisa.isShuttingDown()) {
+            i++;
+            if (i > 1000) {
+                System.out.println("Shutdown of Lisa failed");
+                break;
+            }
+            Thread.sleep(100);
+        }
+        assertFalse(controllerBart.isStarted());
+        assertFalse(controllerLisa.isStarted());
+
+        // add a pause to make sure files can be cleaned before next test.
+        TestHelper.waitMilliSeconds(500);
+    }
+
     /**
      * Connects and waits for connection of both controllers
      * 
@@ -398,8 +410,7 @@ public class TwoControllerTestCase extends TestCase {
     protected void joinFolder(FolderInfo foInfo, File bartFolderDir,
         File lisaFolderDir)
     {
-        joinFolder(foInfo, bartFolderDir, lisaFolderDir,
-            SyncProfile.HOST_FILES);
+        joinFolder(foInfo, bartFolderDir, lisaFolderDir, SyncProfile.HOST_FILES);
     }
 
     /**
@@ -422,15 +433,15 @@ public class TwoControllerTestCase extends TestCase {
     {
         final Folder folder1;
         final Folder folder2;
-            FolderSettings folderSettings1 = new FolderSettings(baseDir1,
-                profile, false, true, false, false);
-            folder1 = getContollerBart().getFolderRepository().createFolder(
-                foInfo, folderSettings1);
+        FolderSettings folderSettings1 = new FolderSettings(baseDir1, profile,
+            false, true, false, false);
+        folder1 = getContollerBart().getFolderRepository().createFolder(foInfo,
+            folderSettings1);
 
-            FolderSettings folderSettings2 = new FolderSettings(baseDir2,
-                profile, false, true, false, false);
-            folder2 = getContollerLisa().getFolderRepository().createFolder(
-                foInfo, folderSettings2);
+        FolderSettings folderSettings2 = new FolderSettings(baseDir2, profile,
+            false, true, false, false);
+        folder2 = getContollerLisa().getFolderRepository().createFolder(foInfo,
+            folderSettings2);
         if (folder1.isDeviceDisconnected() || folder2.isDeviceDisconnected()) {
             fail("Unable to join both controller to " + foInfo);
         }
