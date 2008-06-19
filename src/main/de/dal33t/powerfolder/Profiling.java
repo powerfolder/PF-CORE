@@ -18,6 +18,8 @@
 * $Id:$
 */package de.dal33t.powerfolder;
 
+import de.dal33t.powerfolder.util.Logger;
+
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.*;
 
@@ -36,21 +38,43 @@ import java.util.*;
  *     } 
  * </PRE>
  */
-public class Profiling extends PFComponent {
+public class Profiling {
 
-    private final AtomicLong sequentialId = new AtomicLong();
-    private final Map<Long, ProfilingEntry> entries =
+    private static volatile boolean enabled;
+    private static final AtomicLong sequentialId = new AtomicLong();
+    private static final Map<Long, ProfilingEntry> entries =
             Collections.synchronizedMap(new HashMap<Long, ProfilingEntry>());
-    private final List<ProfilingStat> stats =
+    private static final List<ProfilingStat> stats =
             Collections.synchronizedList(new ArrayList<ProfilingStat>());
 
-    private long totalTime;
-    private long minimumTime;
-    private long maximumTime;
-    private long totalCount;
+    private static long totalTime;
+    private static long minimumTime;
+    private static long maximumTime;
+    private static long totalCount;
+    private static final Logger log = Logger.getLogger(Profiling.class);
 
-    public Profiling(Controller controller) {
-        super(controller);
+    /**
+     * No instances allowed.
+     */
+    private Profiling() {
+    }
+
+    /**
+     * Enables the profiler.
+     *
+     * @param enabled
+     */
+    public static void setEnabled(boolean enabled) {
+        Profiling.enabled = enabled;
+    }
+
+    /**
+     * Returns whether the profiler is active.
+     *
+     * @return
+     */
+    public static boolean isEnabled() {
+        return enabled;
     }
 
     /**
@@ -65,15 +89,15 @@ public class Profiling extends PFComponent {
      * @return
      *          unique sequential id.
      */
-    public long startProfiling(int profileMillis, String methodName,
+    public static long startProfiling(String methodName,
                                Object... args) {
-        if (!ConfigurationEntry.VERBOSE.getValueBoolean(getController())) {
+        if (!enabled) {
             return -1;
         }
 
         Long seq = sequentialId.getAndIncrement();
 
-        entries.put(seq, new ProfilingEntry(profileMillis, methodName, args));
+        entries.put(seq, new ProfilingEntry(methodName, args));
         return seq;
     }
 
@@ -86,9 +110,9 @@ public class Profiling extends PFComponent {
      * @param seq
      *          the sequential event number from startProfiling call.
      */
-    public void endProfiling(Long seq) {
+    public static void endProfiling(Long seq, int profileMillis) {
 
-        if (!ConfigurationEntry.VERBOSE.getValueBoolean(getController())) {
+        if (!enabled) {
             return;
         }
 
@@ -105,7 +129,7 @@ public class Profiling extends PFComponent {
 
         if (profilingEntry != null) {
             // Delegate to a thread, so things do not get held up.
-            ProfilingThread t = new ProfilingThread(profilingEntry);
+            ProfilingThread t = new ProfilingThread(profilingEntry, profileMillis);
             t.start();
         }
     }
@@ -113,16 +137,20 @@ public class Profiling extends PFComponent {
     /**
      * Thread to log the event and add to stats.
      */
-    private class ProfilingThread extends Thread {
-        private ProfilingEntry profilingEntry;
+    private static class ProfilingThread extends Thread {
 
-        private ProfilingThread(ProfilingEntry profilingEntry) {
+        private ProfilingEntry profilingEntry;
+        private long profileMillis;
+
+        private ProfilingThread(ProfilingEntry profilingEntry,
+                                long profileMillis) {
             this.profilingEntry = profilingEntry;
+            this.profileMillis = profileMillis;
         }
 
         public void run() {
             long elapsed = profilingEntry.elapsedMilliseconds();
-            if (elapsed >= profilingEntry.getProfileMillis()) {
+            if (elapsed >= profileMillis) {
                 StringBuilder sb =
                         new StringBuilder(profilingEntry.getMethodName() + " [");
                 int argsLength = profilingEntry.getArgs().length;
@@ -133,7 +161,7 @@ public class Profiling extends PFComponent {
                     }
                 }
                 sb.append("] took " + elapsed + " milliseconds");
-                log().error(sb.toString());
+                log.error(sb.toString());
             }
 
             totalTime += elapsed;
@@ -148,7 +176,7 @@ public class Profiling extends PFComponent {
         }
     }
 
-    public String dumpStats() {
+    public static String dumpStats() {
 
         StringBuilder sb = new StringBuilder();
 
@@ -216,22 +244,15 @@ public class Profiling extends PFComponent {
      */
     private static class ProfilingEntry {
 
-        private int profileMillis;
         private String methodName;
         private Object[] args;
         private long startTime;
 
-        private ProfilingEntry(int profileMillis,
-                               String methodName,
+        private ProfilingEntry(String methodName,
                                Object... args) {
-            this.profileMillis = profileMillis;
             this.methodName = methodName;
             this.args = args;
             startTime = new Date().getTime();
-        }
-
-        public int getProfileMillis() {
-            return profileMillis;
         }
 
         public String getMethodName() {
@@ -247,7 +268,7 @@ public class Profiling extends PFComponent {
         }
     }
 
-    private class ProfilingStat implements Comparable<ProfilingStat> {
+    private static class ProfilingStat implements Comparable<ProfilingStat> {
         private final String methodName;
         private final long elapsedTime;
 

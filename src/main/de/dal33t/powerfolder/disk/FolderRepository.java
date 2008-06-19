@@ -49,11 +49,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
-import de.dal33t.powerfolder.event.FileNameProblemHandler;
-import de.dal33t.powerfolder.event.FolderRepositoryEvent;
-import de.dal33t.powerfolder.event.FolderRepositoryListener;
-import de.dal33t.powerfolder.event.InvitationReceivedEvent;
-import de.dal33t.powerfolder.event.InvitationReceivedHandler;
+import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.transfer.FileRequestor;
@@ -114,7 +110,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         this.folderScanner = new FolderScanner(getController());
 
         // Create listener support
-        this.listenerSupport = (FolderRepositoryListener) getController().getListenerSupportFactory()
+        this.listenerSupport = (FolderRepositoryListener) ListenerSupportFactory
             .createListenerSupport(FolderRepositoryListener.class);
     }
 
@@ -139,7 +135,7 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     public void setSuspendFireEvents(boolean suspended) {
-        getController().getListenerSupportFactory().setSuspended(listenerSupport, suspended);
+        ListenerSupportFactory.setSuspended(listenerSupport, suspended);
         log().debug("setSuspendFireEvents: " + suspended);
     }
 
@@ -869,12 +865,12 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     public void addFolderRepositoryListener(FolderRepositoryListener listener) {
-        getController().getListenerSupportFactory().addListener(listenerSupport, listener);
+        ListenerSupportFactory.addListener(listenerSupport, listener);
     }
 
     public void removeFolderRepositoryListener(FolderRepositoryListener listener)
     {
-        getController().getListenerSupportFactory().removeListener(listenerSupport, listener);
+        ListenerSupportFactory.removeListener(listenerSupport, listener);
     }
 
     public void setInvitationReceivedHandler(

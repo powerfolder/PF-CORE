@@ -1090,7 +1090,7 @@ public class Member extends PFComponent {
         }
 
         // Profile this execution.
-        long seq = getController().getProfiling().startProfiling(50, "Member.handleMessage()", message);
+        long seq = Profiling.startProfiling("Member.handleMessage()", message);
 
         try {
             // related folder is filled if message is a folder related message
@@ -1504,7 +1504,7 @@ public class Member extends PFComponent {
             // now give the message to all message listeners
             fireMessageToListeners(message);
         } finally {
-            getController().getProfiling().endProfiling(seq);
+            Profiling.endProfiling(seq, 50);
         }
     }
 

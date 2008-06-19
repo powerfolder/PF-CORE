@@ -86,7 +86,6 @@ import de.dal33t.powerfolder.util.task.PersistentTaskManager;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
 import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker;
-import de.dal33t.powerfolder.event.ListenerSupportFactory;
 
 /**
  * Central class gives access to all core components in PowerFolder. Make sure
@@ -259,13 +258,6 @@ public class Controller extends PFComponent {
      */
     private boolean limitedConnectivity;
 
-    /**
-     * Profiling class to log log-running tasks.
-     */
-    private Profiling profiling;
-
-    private ListenerSupportFactory listenerSupportFactory;
-
     private Controller() {
         super();
         // Do some TTL fixing for dyndns resolving
@@ -327,11 +319,6 @@ public class Controller extends PFComponent {
             throw new IllegalStateException(
                 "Configuration already started, shutdown controller first");
         }
-
-        // Sets up the profiling instance.
-        setupProfiling();
-
-        setupListenerSupportFactory();
 
         // Default updatesettings
         updateSettings = new UpdateChecker.UpdateSetting();
@@ -535,17 +522,6 @@ public class Controller extends PFComponent {
         setupPeriodicalTasks();
     }
 
-    private void setupListenerSupportFactory() {
-        listenerSupportFactory = new ListenerSupportFactory(this);
-    }
-
-    /**
-     * Initialize the Profiling instance.
-     */
-    private void setupProfiling() {
-        profiling = new Profiling(this);
-    }
-
     private void initOnlineStorageClient() {
         Member server = null;
         String host = ConfigurationEntry.SERVER_HOST.getValue(this);
@@ -611,6 +587,7 @@ public class Controller extends PFComponent {
                     .info(
                         "Running in VERBOSE mode, not logging to file (enable in Logger.java)'");
             }
+            Profiling.setEnabled(true);
         } else {
             Logger.setEnabledTextPanelLogging(false);
             Logger.setEnabledConsoleLogging(false);
@@ -1227,8 +1204,8 @@ public class Controller extends PFComponent {
         // saveConfig();
         // }
 
-        if (ConfigurationEntry.VERBOSE.getValueBoolean(this)) {
-            log().info(profiling.dumpStats());
+        if (Profiling.isEnabled()) {
+            log().info(Profiling.dumpStats());
         }
 
         // stop
@@ -1764,19 +1741,6 @@ public class Controller extends PFComponent {
      */
     public boolean isVerbose() {
         return verbose;
-    }
-
-    /**
-     * Returns the Profiling instance. Use this to log long-running tasks for analysis.
-     *
-     * @return the Profiling instance.
-     */
-    public Profiling getProfiling() {
-        return profiling;
-    }
-
-    public ListenerSupportFactory getListenerSupportFactory() {
-        return listenerSupportFactory;
     }
 
     /**

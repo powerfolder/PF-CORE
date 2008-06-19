@@ -27,10 +27,7 @@ import java.util.List;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.event.RecycleBinConfirmEvent;
-import de.dal33t.powerfolder.event.RecycleBinConfirmationHandler;
-import de.dal33t.powerfolder.event.RecycleBinEvent;
-import de.dal33t.powerfolder.event.RecycleBinListener;
+import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.os.RecycleDelete;
@@ -44,11 +41,11 @@ import de.dal33t.powerfolder.util.os.RecycleDelete;
  */
 public class RecycleBin extends PFComponent {
     /** The recycle bin folder name */
-    private final static String RECYCLE_BIN_FOLDER = ".recycle";
+    private static final String RECYCLE_BIN_FOLDER = ".recycle";
     /** all recycled files */
     private List<FileInfo> allRecycledFiles = new ArrayList<FileInfo>();
     /** all listeners to this recycle bin */
-    private RecycleBinListener listeners = (RecycleBinListener) getController().getListenerSupportFactory()
+    private RecycleBinListener listeners = (RecycleBinListener) ListenerSupportFactory
         .createListenerSupport(RecycleBinListener.class);
 
     private RecycleBinConfirmationHandler recycleBinConfirmationHandler;
@@ -516,11 +513,11 @@ public class RecycleBin extends PFComponent {
 
     /** register to receive recycle bin events */
     public void addRecycleBinListener(RecycleBinListener listener) {
-        getController().getListenerSupportFactory().addListener(listeners, listener);
+        ListenerSupportFactory.addListener(listeners, listener);
     }
 
     /** remove listener */
     public void removeRecycleBinListener(RecycleBinListener listener) {
-        getController().getListenerSupportFactory().removeListener(listeners, listener);
+        ListenerSupportFactory.removeListener(listeners, listener);
     }
 }

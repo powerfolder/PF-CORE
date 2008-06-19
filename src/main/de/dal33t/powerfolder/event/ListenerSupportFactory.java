@@ -31,8 +31,7 @@ import javax.swing.SwingUtilities;
 
 import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.ui.UIUtil;
-import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Profiling;
 
 /**
  * Factory used to created event/listener support upon eventlistner interfaces.
@@ -49,17 +48,13 @@ import de.dal33t.powerfolder.Controller;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.8 $
  */
-public class ListenerSupportFactory extends PFComponent {
+public class ListenerSupportFactory {
 
     private static final Logger LOG = Logger
         .getLogger(ListenerSupportFactory.class);
 
     // AWT system check
     private static final boolean awtAvailable = UIUtil.isAWTAvailable();
-
-    public ListenerSupportFactory(Controller controller) {
-        super(controller);
-    }
 
     /**
      * Creates a listener support for the listener event interface. Returned
@@ -72,7 +67,7 @@ public class ListenerSupportFactory extends PFComponent {
      * @param listenerInterface
      * @return
      */
-    public Object createListenerSupport(Class listenerInterface) {
+    public static Object createListenerSupport(Class listenerInterface) {
         if (listenerInterface == null) {
             throw new NullPointerException("Listener interface is empty");
         }
@@ -86,7 +81,7 @@ public class ListenerSupportFactory extends PFComponent {
         Object listenerSupportImpl = Proxy.newProxyInstance(cl,
             new Class[]{listenerInterface}, handler);
         LOG.verbose("Created event listener support for interface '"
-            + listenerInterface.getName() + "'");
+            + listenerInterface.getName() + '\'');
         return listenerSupportImpl;
     }
 
@@ -100,7 +95,7 @@ public class ListenerSupportFactory extends PFComponent {
      * @param listenerSupport
      * @param suspended
      */
-    public void setSuspended(Object listenerSupport, boolean suspended) {
+    public static void setSuspended(Object listenerSupport, boolean suspended) {
         if (listenerSupport == null) {
             throw new NullPointerException("Listener support is null");
         }
@@ -131,7 +126,7 @@ public class ListenerSupportFactory extends PFComponent {
      * @param listener
      *      The event listener to add.
      */
-    public void addListener(CoreListener listenerSupport,
+    public static void addListener(CoreListener listenerSupport,
         CoreListener listener)
     {
         if (listenerSupport == null) {
@@ -162,7 +157,7 @@ public class ListenerSupportFactory extends PFComponent {
      * @param listenerSupport
      * @param listener
      */
-    public void removeListener(Object listenerSupport,
+    public static void removeListener(Object listenerSupport,
         CoreListener listener)
     {
         if (listenerSupport == null) {
@@ -192,7 +187,7 @@ public class ListenerSupportFactory extends PFComponent {
      * @param listenerSupport
      * @param listener
      */
-    public void removeAllListeners(Object listenerSupport) {
+    public static void removeAllListeners(Object listenerSupport) {
         if (listenerSupport == null) {
             throw new NullPointerException("Listener support is null");
         }
@@ -220,7 +215,7 @@ public class ListenerSupportFactory extends PFComponent {
      *
      * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      */
-    private class ListenerSupportInvocationHandler implements
+    private static class ListenerSupportInvocationHandler implements
         InvocationHandler
     {
         private Class listenerInterface;
@@ -324,8 +319,8 @@ public class ListenerSupportFactory extends PFComponent {
                     public void run() {
                         for (CoreListener listener : listenersInDispatchThread)
                         {
-                            long seq = getController().getProfiling()
-                                    .startProfiling(50, listener.getClass()
+                            long seq = Profiling
+                                    .startProfiling(listener.getClass()
                                             .toString() + ':' +
                                             method.getName(), args);
                             try {
@@ -351,7 +346,7 @@ public class ListenerSupportFactory extends PFComponent {
                                 // Also log original exception
                                 LOG.verbose(e);
                             } finally {
-                                getController().getProfiling().endProfiling(seq);
+                                Profiling.endProfiling(seq, 50);
                             }
                         }
                     }
@@ -367,7 +362,7 @@ public class ListenerSupportFactory extends PFComponent {
                 }
 
                 for (CoreListener listener : listenersNotInDispatchThread) {
-                    long seq = getController().getProfiling().startProfiling(50,
+                    long seq = Profiling.startProfiling(
                             listener.getClass().toString()
                                     + ':' + method.getName(),
                             args);
@@ -390,7 +385,7 @@ public class ListenerSupportFactory extends PFComponent {
                         // Also log original exception
                         LOG.verbose(e);
                     } finally {
-                        getController().getProfiling().endProfiling(seq);
+                        Profiling.endProfiling(seq, 50);
                     }
                 }
             }
