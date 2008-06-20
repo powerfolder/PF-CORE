@@ -321,7 +321,7 @@ public class ListenerSupportFactory {
                         for (CoreListener listener : listenersInDispatchThread)
                         {
                             ProfilingEntry profilingEntry = Profiling
-                                    .startProfiling(listener.getClass()
+                                    .start(listener.getClass()
                                             .toString() + ':' +
                                             method.getName());
                             try {
@@ -347,7 +347,7 @@ public class ListenerSupportFactory {
                                 // Also log original exception
                                 LOG.verbose(e);
                             } finally {
-                                Profiling.endProfiling(profilingEntry, 50);
+                                Profiling.end(profilingEntry, 50);
                             }
                         }
                     }
@@ -363,7 +363,7 @@ public class ListenerSupportFactory {
                 }
 
                 for (CoreListener listener : listenersNotInDispatchThread) {
-                    ProfilingEntry profilingEntry = Profiling.startProfiling(
+                    ProfilingEntry profilingEntry = Profiling.start(
                             listener.getClass().toString()
                                     + ':' + method.getName());
                     try {
@@ -385,7 +385,7 @@ public class ListenerSupportFactory {
                         // Also log original exception
                         LOG.verbose(e);
                     } finally {
-                        Profiling.endProfiling(profilingEntry, 50);
+                        Profiling.end(profilingEntry, 50);
                     }
                 }
             }

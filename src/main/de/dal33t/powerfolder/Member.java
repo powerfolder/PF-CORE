@@ -1090,7 +1090,7 @@ public class Member extends PFComponent {
         }
 
         // Profile this execution.
-        ProfilingEntry profilingEntry = Profiling.startProfiling("Member.handleMessage() " + message.toString());
+        ProfilingEntry profilingEntry = Profiling.start("Member.handleMessage() " + message.toString());
 
         try {
             // related folder is filled if message is a folder related message
@@ -1504,7 +1504,7 @@ public class Member extends PFComponent {
             // now give the message to all message listeners
             fireMessageToListeners(message);
         } finally {
-            Profiling.endProfiling(profilingEntry, 50);
+            Profiling.end(profilingEntry, 50);
         }
     }
 
@@ -1598,11 +1598,12 @@ public class Member extends PFComponent {
                     "Unable to synchronize memberships, did not received folderlist from remote");
             return;
         }
-        // Rejoin to local folders
-        joinToLocalFolders(folderList);
         FolderList myFolderList = new FolderList(joinedFolders, peer
             .getRemoteMagicId());
         sendMessageAsynchron(myFolderList, null);
+        
+        // Rejoin to local folders
+        joinToLocalFolders(folderList);
     }
 
     /**
