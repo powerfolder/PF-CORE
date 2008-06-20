@@ -44,8 +44,6 @@ public class Profiling {
     private static final AtomicLong sequentialId = new AtomicLong();
     private static final Map<Long, ProfilingEntry> entries =
             Collections.synchronizedMap(new HashMap<Long, ProfilingEntry>());
-    private static final List<ProfilingStat> stats =
-            Collections.synchronizedList(new ArrayList<ProfilingStat>());
 
     private static long totalTime;
     private static long minimumTime;
@@ -172,7 +170,6 @@ public class Profiling {
             if (elapsed > maximumTime) {
                 maximumTime = elapsed;
             }
-            stats.add(new ProfilingStat(profilingEntry.getMethodName(), elapsed));
         }
     }
 
@@ -188,55 +185,8 @@ public class Profiling {
         }
         sb.append("Minimum elapsed time: " + minimumTime + "ms\n");
         sb.append("Maximum elapsed time: " + maximumTime + "ms\n");
-        synchronized (stats) {
-            Collections.sort(stats);
-            long currentCount = 0;
-            long currentTotal = 0;
-            long currentMinimum = 0;
-            long currentMaximum = 0;
-            String currentKey = null;
-            for (ProfilingStat stat : stats) {
-                String key = stat.getMethodName();
-                if (currentKey == null || !currentKey.equals(key)) {
-                    if (currentKey != null) {
-                        logStats(sb, currentKey, currentCount, currentTotal, currentMinimum, currentMaximum);
-                    }
-                    currentKey = key;
-                    currentCount = 0;
-                    currentTotal = 0;
-                    currentMinimum = 0;
-                    currentMaximum = 0;
-                }
-                currentCount++;
-                long elapsed = stat.getElapsedTime();
-                currentTotal += elapsed;
-                if (elapsed < currentMinimum) {
-                    currentMinimum = elapsed;
-                }
-                if (elapsed > currentMaximum) {
-                    currentMaximum = elapsed;
-                }
-            }
-
-            // Catch the last set...
-            if (currentKey != null) {
-                logStats(sb, currentKey, currentCount, currentTotal, currentMinimum, currentMaximum);
-            }
-        }
         sb.append("============================");
         return sb.toString();
-    }
-
-    private static void logStats(StringBuilder sb, String currentKey, long currentCount, long currentTotal, long currentMinimum, long currentMaximum) {
-        sb.append('\n' + currentKey + '\n');
-        sb.append("----------------------------\n");
-        sb.append("Total invocations: " + currentCount + '\n');
-        sb.append("Total elapsed time: " + currentTotal + "ms\n");
-        if (currentCount > 0) {
-            sb.append("Average elapsed time: " + currentTotal / currentCount + "ms\n");
-        }
-        sb.append("Minimum elapsed time: " + currentMinimum + "ms\n");
-        sb.append("Maximum elapsed time: " + currentMaximum + "ms\n");
     }
 
     /**
@@ -265,28 +215,6 @@ public class Profiling {
 
         public long elapsedMilliseconds() {
             return new Date().getTime() - startTime;
-        }
-    }
-
-    private static class ProfilingStat implements Comparable<ProfilingStat> {
-        private final String methodName;
-        private final long elapsedTime;
-
-        private ProfilingStat(String methodName, long elapsedTime) {
-            this.methodName = methodName;
-            this.elapsedTime = elapsedTime;
-        }
-
-        public String getMethodName() {
-            return methodName;
-        }
-
-        public long getElapsedTime() {
-            return elapsedTime;
-        }
-
-        public int compareTo(ProfilingStat o) {
-            return methodName.compareTo(o.methodName);
         }
     }
 }
