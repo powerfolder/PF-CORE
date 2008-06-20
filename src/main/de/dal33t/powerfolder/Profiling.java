@@ -20,30 +20,13 @@
 
 import de.dal33t.powerfolder.util.Logger;
 
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.*;
-
 /**
  * Class to monitor and log long-running method calls (only in Verbose mode).
  * Used for analysis and improvements to PowerFolder.
- * Ideally this should be used in a try / finally block,
- * so that the endProfiling is always called.
- * <BR/>
- * <PRE>
- *     log seq = getController().getProfiling().startProfiling(...);
- *     try {
- *         // Do stuff
- *     } finally {
- *         getController().getProfiling().endProfiling(seq);
- *     } 
- * </PRE>
  */
 public class Profiling {
 
     private static volatile boolean enabled;
-    private static final AtomicLong sequentialId = new AtomicLong();
-    private static final Map<Long, ProfilingEntry> entries =
-            Collections.synchronizedMap(new HashMap<Long, ProfilingEntry>());
 
     private static long totalTime;
     private static long minimumTime;
@@ -81,45 +64,31 @@ public class Profiling {
      * @param operationName
      *          the name of the method being invoked.
      * @return
-     *          unique sequential id.
+     *          instance of ProfilingeEntry.
      */
-    public static long startProfiling(String operationName) {
+    public static ProfilingEntry startProfiling(String operationName) {
         if (!enabled) {
-            return -1;
+            return null;
         }
 
-        Long seq = sequentialId.getAndIncrement();
-
-        entries.put(seq, new ProfilingEntry(operationName));
-        return seq;
+        return new ProfilingEntry(operationName);
     }
 
     /**
      * End profiling a method invocation.
-     * The 'Seq' arg MUST be the value returned by the coresponding
+     * The 'ProfileEntry' arg should be the value returned by the coresponding
      * startProfiling call. If the invocation takes longer than the
      * original profileMillis milli seconds, the profile is logged.
      *
-     * @param seq
-     *          the sequential event number from startProfiling call.
+     * @param profilingEntry
+     *          the profile entry instance.
      * @param profileMillis
      *          number of milliseconds after which to log the event.
      */
-    public static void endProfiling(Long seq, int profileMillis) {
+    public static void endProfiling(ProfilingEntry profilingEntry, int profileMillis) {
 
         if (!enabled) {
             return;
-        }
-
-        ProfilingEntry profilingEntry = null;
-        synchronized (entries) {
-            Set<Long> keys = entries.keySet();
-            for (Long key : keys) {
-                if (key.equals(seq)) {
-                    profilingEntry = entries.remove(key);
-                    break;
-                }
-            }
         }
 
         if (profilingEntry != null) {
@@ -177,25 +146,4 @@ public class Profiling {
         return sb.toString();
     }
 
-    /**
-     * Inner class describing the event being profiled.
-     */
-    private static class ProfilingEntry {
-
-        private String operationName;
-        private long startTime;
-
-        private ProfilingEntry(String operationName) {
-            this.operationName = operationName;
-            startTime = new Date().getTime();
-        }
-
-        public String getOperationName() {
-            return operationName;
-        }
-
-        public long elapsedMilliseconds() {
-            return new Date().getTime() - startTime;
-        }
-    }
 }

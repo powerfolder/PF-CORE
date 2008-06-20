@@ -32,6 +32,7 @@ import javax.swing.SwingUtilities;
 import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 import de.dal33t.powerfolder.Profiling;
+import de.dal33t.powerfolder.ProfilingEntry;
 
 /**
  * Factory used to created event/listener support upon eventlistner interfaces.
@@ -319,7 +320,7 @@ public class ListenerSupportFactory {
                     public void run() {
                         for (CoreListener listener : listenersInDispatchThread)
                         {
-                            long seq = Profiling
+                            ProfilingEntry profilingEntry = Profiling
                                     .startProfiling(listener.getClass()
                                             .toString() + ':' +
                                             method.getName());
@@ -346,7 +347,7 @@ public class ListenerSupportFactory {
                                 // Also log original exception
                                 LOG.verbose(e);
                             } finally {
-                                Profiling.endProfiling(seq, 50);
+                                Profiling.endProfiling(profilingEntry, 50);
                             }
                         }
                     }
@@ -362,7 +363,7 @@ public class ListenerSupportFactory {
                 }
 
                 for (CoreListener listener : listenersNotInDispatchThread) {
-                    long seq = Profiling.startProfiling(
+                    ProfilingEntry profilingEntry = Profiling.startProfiling(
                             listener.getClass().toString()
                                     + ':' + method.getName());
                     try {
@@ -384,7 +385,7 @@ public class ListenerSupportFactory {
                         // Also log original exception
                         LOG.verbose(e);
                     } finally {
-                        Profiling.endProfiling(seq, 50);
+                        Profiling.endProfiling(profilingEntry, 50);
                     }
                 }
             }
