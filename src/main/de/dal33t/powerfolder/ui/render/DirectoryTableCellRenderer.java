@@ -175,26 +175,33 @@ public class DirectoryTableCellRenderer extends DefaultTableCellRenderer {
                 break;
             }
             case 5 : { // availability
-                Folder folder = controller.getFolderRepository().getFolder(
-                    fileInfo.getFolderInfo());
-                FileInfoHolder holder = folder.getDirectory()
-                    .getFileInfoHolder(fileInfo);
-                if (holder == null) {
-                    newValue = "0";
+
+                // See if it is in the recicle bin.
+                if (controller.getRecycleBin().isInRecycleBin(fileInfo)) {
+                    newValue = Translation.getTranslation(
+                            "fileinfo.in_recycle_bin");
                 } else {
-                    newValue = holder.getAvailability() + "";
-                    List<Member> members = holder.getSources();
-                    String toolTipValue = "<HTML><BODY>";
-                    String separetor = "";
-                    for (int i = 0; i < members.size(); i++) {
-                        toolTipValue += separetor + members.get(i).getNick();
-                        separetor = "<BR>";
+                    Folder folder = controller.getFolderRepository().getFolder(
+                        fileInfo.getFolderInfo());
+                    FileInfoHolder holder = folder.getDirectory()
+                        .getFileInfoHolder(fileInfo);
+                    if (holder == null) {
+                        newValue = "0";
+                    } else {
+                        newValue = String.valueOf(holder.getAvailability());
+                        List<Member> members = holder.getSources();
+                        String toolTipValue = "<HTML><BODY>";
+                        String separetor = "";
+                        for (int i = 0; i < members.size(); i++) {
+                            toolTipValue += separetor + members.get(i).getNick();
+                            separetor = "<BR>";
+                        }
+                        // insert filename to force redraw of tooltip on new file
+                        // with same members
+                        toolTipValue += "<!-- " + fileInfo.getFilenameOnly()
+                            + "--></BODY></HTML>";
+                        setToolTipText(toolTipValue);
                     }
-                    // insert filename to force redraw of tooltip on new file
-                    // with same members
-                    toolTipValue += "<!-- " + fileInfo.getFilenameOnly()
-                        + "--></BODY></HTML>";
-                    setToolTipText(toolTipValue);
                 }
             }
         }
