@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.disk;
 
 import java.awt.datatransfer.DataFlavor;
@@ -29,6 +29,7 @@ import de.dal33t.powerfolder.DiskItem;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.util.FileCopier;
 import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Reject;
@@ -119,7 +120,8 @@ public class Directory implements Comparable<Directory>, DiskItem {
         if (subDirectoriesMap.containsKey(nameArg)) {
             return subDirectoriesMap.get(nameArg);
         }
-        Directory sub = new Directory(this, nameArg, path + '/' + nameArg, rootFolder);
+        Directory sub = new Directory(this, nameArg, path + '/' + nameArg,
+            rootFolder);
 
         final File newFileName = new File(getFile(), nameArg);
         if (!newFileName.exists()) {
@@ -481,7 +483,12 @@ public class Directory implements Comparable<Directory>, DiskItem {
         Iterator<FileInfoHolder> fileInfoHolders = fileInfoHolderMap.values()
             .iterator();
         while (fileInfoHolders.hasNext()) {
-            if (!fileInfoHolders.next().getFileInfo().isExpected(
+            FileInfo fInfo = fileInfoHolders.next().getFileInfo();
+            if (fInfo.isDeleted()) {
+                // Don't consider deleted
+                continue;
+            }
+            if (!fInfo.isExpected(
                 folderRepository))
             {
                 return false;
@@ -524,6 +531,59 @@ public class Directory implements Comparable<Directory>, DiskItem {
             }
         }
         return true; // this dir is deleted
+    }
+
+    /**
+     * @return true if at least one filesInfos in any subdirectories is found
+     *         that is deleted.
+     */
+    public boolean containsDeleted() {
+        if (fileInfoHolderMap.isEmpty() && subDirectoriesMap.isEmpty()) {
+            return false;
+        }
+        Iterator<FileInfoHolder> fileInfoHolders = fileInfoHolderMap.values()
+            .iterator();
+        while (fileInfoHolders.hasNext()) {
+            if (fileInfoHolders.next().getFileInfo().isDeleted()) {
+                return true;
+            }
+        }
+        synchronized (subDirectoriesMap) {
+            Iterator<Directory> it = subDirectoriesMap.values().iterator();
+            while (it.hasNext()) {
+                Directory dir = it.next();
+                if (dir.containsDeleted()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @return true if this directory (or any subdirectory) contains a completed
+     *         download.
+     */
+    public boolean containsCompletedDownloads() {
+        if (fileInfoHolderMap.isEmpty() && subDirectoriesMap.isEmpty()) {
+            return false;
+        }
+        for (FileInfoHolder fInfoHolder : fileInfoHolderMap.values()) {
+            // TODO UARG ugly access to controller.
+            if (rootFolder.getController().getTransferManager()
+                .isCompletedDownload(fInfoHolder.getFileInfo()))
+            {
+                return true;
+            }
+        }
+        synchronized (subDirectoriesMap) {
+            for (Directory dir : subDirectoriesMap.values()) {
+                if (dir.containsCompletedDownloads()) {
+                    return true;
+                }
+            }
+        }
+        return false; // nothing found.
     }
 
     /** returns a list of all valid FileInfo s, so not the remotely deleted */
@@ -688,10 +748,9 @@ public class Directory implements Comparable<Directory>, DiskItem {
         return str;
     }
 
-    //////////////////////////////
+    // ////////////////////////////
     // DiskItem implementation. //
-    //////////////////////////////
-
+    // ////////////////////////////
 
     public String getExtension() {
         return "";
