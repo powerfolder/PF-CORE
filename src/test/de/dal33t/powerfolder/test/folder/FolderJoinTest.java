@@ -1,30 +1,33 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id: AddLicenseHeader.java 4282 2008-06-16 03:25:09Z tot $
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id: AddLicenseHeader.java 4282 2008-06-16 03:25:09Z tot $
+ */
 package de.dal33t.powerfolder.test.folder;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
 
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderException;
-import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.disk.FolderSettings;
+import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.test.Condition;
@@ -57,15 +60,13 @@ public class FolderJoinTest extends TwoControllerTestCase {
             testFolder).getMembersCount());
     }
 
-    /**
-     * TODO increase the number of joined folders
-     */
     public void testJoinMultipleFolders() {
         getContollerBart().setSilentMode(true);
         getContollerLisa().setSilentMode(true);
         int nFolders = 500;
         Folder folder1 = null;
         Folder folder2 = null;
+        Collection<Folder> folders = new ArrayList<Folder>();
         for (int i = 0; i < nFolders; i++) {
             FolderInfo testFolder;
             if (nFolders < 10) {
@@ -80,18 +81,22 @@ public class FolderJoinTest extends TwoControllerTestCase {
             System.err.println("Joining folder: " + testFolder);
             // joinFolder(testFolder, folderDirBart, folderDirLisa);
 
-                FolderSettings folderSettings1 = new FolderSettings(
-                    folderDirBart, SyncProfile.HOST_FILES, false, true);
-                folder1 = getContollerBart().getFolderRepository()
-                    .createFolder(testFolder, folderSettings1);
+            FolderSettings folderSettings1 = new FolderSettings(folderDirBart,
+                SyncProfile.HOST_FILES, false, true);
+            folder1 = getContollerBart().getFolderRepository().createFolder(
+                testFolder, folderSettings1);
 
-                FolderSettings folderSettings2 = new FolderSettings(
-                    folderDirLisa, SyncProfile.HOST_FILES, false, true);
-                folder2 = getContollerLisa().getFolderRepository()
-                    .createFolder(testFolder, folderSettings2);
-            if (folder1.isDeviceDisconnected() || folder2.isDeviceDisconnected()) {
+            FolderSettings folderSettings2 = new FolderSettings(folderDirLisa,
+                SyncProfile.HOST_FILES, false, true);
+            folder2 = getContollerLisa().getFolderRepository().createFolder(
+                testFolder, folderSettings2);
+            if (folder1.isDeviceDisconnected()
+                || folder2.isDeviceDisconnected())
+            {
                 fail("Unable to join both controller to " + testFolder + ".");
             }
+            folders.add(folder1);
+            folders.add(folder2);
         }
 
         final Folder f1 = folder1;
@@ -102,6 +107,11 @@ public class FolderJoinTest extends TwoControllerTestCase {
                 return f1.getMembersCount() == 2 && f2.getMembersCount() == 2;
             }
         });
+
+        for (Folder f : folders) {
+            assertEquals("Not all members joined on " + f + ". Got: "
+                + f.getMembersAsCollection(), 2, f.getMembersCount());
+        }
 
         Folder[] bartsFolders = getContollerBart().getFolderRepository()
             .getFolders();
