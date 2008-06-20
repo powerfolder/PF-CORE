@@ -215,7 +215,7 @@ public class DirectoryTableModel extends PFComponent implements TableModel,
             allFiles.addAll(0, directory.listSubDirectories());
         }
         fileFilterModel.setFiles(allFiles);
-        fileFilterModel.filter();
+        fileFilterModel.scheduleFiltering();
     }
 
     public Class getColumnClass(int columnIndex) {

@@ -59,16 +59,16 @@ public class FolderInfoFilterModel extends FilterModel {
 
     public void setShowEmpty(boolean showEmpty) {
         this.showEmpty = showEmpty;
-        filter();
+        scheduleFiltering();
     }
 
     public List filter(List aFolderList) {
         this.folderList = aFolderList;
-        filter();
+        scheduleFiltering();
         return filteredFolderList;
     }
 
-    public void filter() {
+    public void scheduleFiltering() {
         if (folderList != null) {
             if (filteringNeeded()) {
                 filteredFolderList = filter0();

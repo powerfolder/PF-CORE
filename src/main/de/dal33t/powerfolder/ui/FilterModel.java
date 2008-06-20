@@ -51,7 +51,7 @@ public abstract class FilterModel extends PFComponent {
 
     public abstract void reset();
 
-    public abstract void filter();
+    public abstract void scheduleFiltering();
 
     public ValueModel getSearchField() {
         return searchField;
@@ -67,7 +67,7 @@ public abstract class FilterModel extends PFComponent {
                 }
                 task = new TimerTask() {
                     public void run() {
-                        filter();
+                        scheduleFiltering();
                         task = null;
                     }
                 };

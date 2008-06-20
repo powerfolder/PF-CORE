@@ -82,13 +82,7 @@ public class FileFilerModelTest extends ControllerTestCase {
                 recycledFiles.set(event.getRecycledFiles());
             }
         });
-        ffm.filter();
-
-        // Sleep to allow filtering to happen.
-        try {
-            Thread.sleep(5000);
-        } catch (InterruptedException e) {
-        }
+        ffm.filter0();
 
         assertEquals(100, count.get());
         assertEquals(100, localFiles.get());
@@ -103,13 +97,7 @@ public class FileFilerModelTest extends ControllerTestCase {
         ffm.setSearchField(vm);
         vm.setValue("5");
 
-        ffm.filter();
-
-        // Sleep to allow filtering to happen.
-        try {
-            Thread.sleep(5000);
-        } catch (InterruptedException e) {
-        }
+        ffm.filter0();
 
         // About half the files will remain.
         assertTrue(count.get() < 100);
@@ -125,13 +113,7 @@ public class FileFilerModelTest extends ControllerTestCase {
         ffm.setSearchField(vm);
         vm.setValue("");
 
-        ffm.filter();
-
-        // Sleep to allow filtering to happen.
-        try {
-            Thread.sleep(5000);
-        } catch (InterruptedException e) {
-        }
+        ffm.filter0();
 
         assertEquals(100, count.get());
         assertEquals(100, localFiles.get());
@@ -146,13 +128,7 @@ public class FileFilerModelTest extends ControllerTestCase {
         testFile.delete();
         scanFolder(getFolder());
 
-        ffm.filter();
-
-        // Sleep to allow filtering to happen.
-        try {
-            Thread.sleep(5000);
-        } catch (InterruptedException e) {
-        }
+        ffm.filter0();
 
         assertEquals(99, count.get());
         assertEquals(99, localFiles.get());
@@ -165,13 +141,7 @@ public class FileFilerModelTest extends ControllerTestCase {
         ////////////////////////
 
         ffm.setMode(FileFilterModel.MODE_DELETED_PREVIOUS);
-        ffm.filter();
-
-        // Sleep to allow filtering to happen.
-        try {
-            Thread.sleep(5000);
-        } catch (InterruptedException e) {
-        }
+        ffm.filter0();
 
         assertEquals(1, count.get());
         assertEquals(99, localFiles.get());

@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.ui.folder;
 
 import java.awt.*;
@@ -101,7 +101,8 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * @version $Revision: 1.8 $ *
  */
 public class FilesTab extends PFUIComponent implements FolderTab,
-    HasDetailsPanel, FileFilterChangeListener {
+    HasDetailsPanel, FileFilterChangeListener
+{
 
     /** enable/disable drag and drop */
     public static final boolean ENABLE_DRAG_N_DROP = false;
@@ -177,6 +178,7 @@ public class FilesTab extends PFUIComponent implements FolderTab,
         if (panel == null) {
             initComponents();
             ContentPanelBuilder builder = new ContentPanelBuilder();
+            builder.setFilterbar(filterBar);
             builder.setToolbar(toolbar);
             builder.setContent(createContentPanel());
             panel = builder.getPanel();
@@ -186,10 +188,10 @@ public class FilesTab extends PFUIComponent implements FolderTab,
 
     private JComponent createContentPanel() {
         FormLayout layout = new FormLayout("fill:pref:grow",
-            "pref, fill:0:grow, pref, pref");
+            "0, fill:0:grow, pref, pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
-        builder.add(filterBar, cc.xy(1, 1));
+        // builder.add(filterBar, cc.xywh(1, 1, 1, 1, "right, center"));
         builder.add(directoryTableScrollPane, cc.xy(1, 2));
         builder.add(fileDetailsPanelComp, cc.xy(1, 3));
         builder.add(fileStatusPanel, cc.xy(1, 4));
@@ -202,7 +204,8 @@ public class FilesTab extends PFUIComponent implements FolderTab,
     private void initComponents() {
         downloadFileAction = new DownloadFileAction(getController(),
             selectionModel);
-        blackWhitelistAction = new BlackWhitelistAction(getController(), selectionModel);
+        blackWhitelistAction = new BlackWhitelistAction(getController(),
+            selectionModel);
         unBlackWhitelistAction = new UnBlackWhitelistAction(getController(),
             selectionModel);
         startFileAction = new StartFileAction(getController(), selectionModel);
@@ -281,9 +284,10 @@ public class FilesTab extends PFUIComponent implements FolderTab,
     }
 
     private JPanel createFileStatusPanel() {
-        FormLayout layout = new FormLayout("fill:pref:grow, pref, 3dlu, pref, " +
-                "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu" ,
-                "pref, pref");
+        FormLayout layout = new FormLayout(
+            "fill:pref:grow, pref, 3dlu, pref, "
+                + "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu",
+            "pref, pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
@@ -310,14 +314,15 @@ public class FilesTab extends PFUIComponent implements FolderTab,
     }
 
     private JPanel createFilterBar() {
-        ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
-        bar.addRelatedGap();
-        bar.addFixed(recursiveSelection);
-        bar.addRelatedGap();
-        bar.addFixed(fileFilterPanel.getUIComponent());
-        bar.addRelatedGap();
-        bar.setBorder(Borders.createEmptyBorder("1dlu, 1dlu, 1dlu, 1dlu"));
-        return bar.getPanel();
+        FormLayout layout = new FormLayout("pref, 3dlu, pref:grow", "pref");
+        PanelBuilder builder = new PanelBuilder(layout);
+        builder.setBorder(Borders.createEmptyBorder("1dlu, 1dlu, 1dlu, 0dlu"));
+        CellConstraints cc = new CellConstraints();
+
+        builder.add(recursiveSelection, cc.xy(1, 1));
+        builder.add(fileFilterPanel.getUIComponent(), cc.xy(3, 1));
+
+        return builder.getPanel();
     }
 
     private JPanel createToolBar() {
@@ -473,23 +478,25 @@ public class FilesTab extends PFUIComponent implements FolderTab,
 
     /**
      * Respond to changes in numbers of files.
+     * 
      * @param event
      */
     public void filterChanged(FileFilterChangedEvent event) {
         updateFileNumbers(event.getLocalFiles(), event.getIncomingFiles(),
-                event.getDeletedFiles(), event.getRecycledFiles());
+            event.getDeletedFiles(), event.getRecycledFiles());
     }
 
     private void updateFileNumbers(int localFiles, int incomingFiles,
-                                   int deletedFiles, int recycledFiles) {
-        localFilesLabel.setText(Translation
-                .getTranslation("files_tab.local", localFiles));
-        incomingFilesLabel.setText(Translation
-                .getTranslation("files_tab.incoming", incomingFiles));
-        deletedFilesLabel.setText(Translation
-                .getTranslation("files_tab.deleted", deletedFiles));
-        recycledFilesLabel.setText(Translation
-                .getTranslation("files_tab.recycled", recycledFiles));
+        int deletedFiles, int recycledFiles)
+    {
+        localFilesLabel.setText(Translation.getTranslation("files_tab.local",
+            localFiles));
+        incomingFilesLabel.setText(Translation.getTranslation(
+            "files_tab.incoming", incomingFiles));
+        deletedFilesLabel.setText(Translation.getTranslation(
+            "files_tab.deleted", deletedFiles));
+        recycledFilesLabel.setText(Translation.getTranslation(
+            "files_tab.recycled", recycledFiles));
     }
 
     /** updates the SelectionModel if some selection has changed in the table */
@@ -1112,7 +1119,7 @@ public class FilesTab extends PFUIComponent implements FolderTab,
         }
 
         public boolean fireInEventDispathThread() {
-            return false;
+            return true;
         }
     }
 
@@ -1159,7 +1166,9 @@ public class FilesTab extends PFUIComponent implements FolderTab,
 
     private class BlackWhitelistAction extends SelectionBaseAction {
 
-        BlackWhitelistAction(Controller controller, SelectionModel selectionModel) {
+        BlackWhitelistAction(Controller controller,
+            SelectionModel selectionModel)
+        {
             super("black_list", controller, selectionModel);
             setEnabled(false);
         }
@@ -1211,7 +1220,8 @@ public class FilesTab extends PFUIComponent implements FolderTab,
 
     private class UnBlackWhitelistAction extends SelectionBaseAction {
 
-        UnBlackWhitelistAction(Controller controller, SelectionModel selectionModel)
+        UnBlackWhitelistAction(Controller controller,
+            SelectionModel selectionModel)
         {
             super("un_black_list", controller, selectionModel);
             setEnabled(false);
@@ -1290,18 +1300,21 @@ public class FilesTab extends PFUIComponent implements FolderTab,
                 if (selection instanceof FileInfo) {
                     // Only enable if not already ignored.
                     FileInfo fileInfo = (FileInfo) selection;
-                    enableIgnore &= folder.getDiskItemFilter().isRetained(fileInfo)
-                            ^ folder.isWhitelist();
-                    enableUnignore &= folder.getDiskItemFilter().isRetained(fileInfo)
-                            ^ !folder.isWhitelist();
+                    enableIgnore &= folder.getDiskItemFilter().isRetained(
+                        fileInfo)
+                        ^ folder.isWhitelist();
+                    enableUnignore &= folder.getDiskItemFilter().isRetained(
+                        fileInfo)
+                        ^ !folder.isWhitelist();
                 } else if (selection instanceof Directory) {
 
                     // Only enable if subs not ignored.
                     Directory dir = (Directory) selection;
                     enableIgnore &= folder.getDiskItemFilter().isRetained(dir)
-                            ^ folder.isWhitelist();
-                    enableUnignore &= folder.getDiskItemFilter().isRetained(dir)
-                            ^ !folder.isWhitelist();
+                        ^ folder.isWhitelist();
+                    enableUnignore &= folder.getDiskItemFilter()
+                        .isRetained(dir)
+                        ^ !folder.isWhitelist();
                 }
             }
         }
@@ -1387,7 +1400,7 @@ public class FilesTab extends PFUIComponent implements FolderTab,
         }
 
         public boolean fireInEventDispathThread() {
-            return false;
+            return true;
         }
     }
 

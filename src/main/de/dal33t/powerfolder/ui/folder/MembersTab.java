@@ -52,6 +52,7 @@ import de.dal33t.powerfolder.event.FolderMembershipListener;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.action.ChangeFriendStatusAction;
 import de.dal33t.powerfolder.ui.action.OpenChatAction;
+import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.compare.MemberComparator;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
@@ -162,6 +163,7 @@ public class MembersTab extends PFUIComponent implements FolderTab,
     }
 
     public void setFolder(Folder folder) {
+        Reject.ifNull(folder, "Folder is null");
         Folder oldFolder = this.folder;
         this.folder = folder;
         syncStatusPanel.setFolder(folder);

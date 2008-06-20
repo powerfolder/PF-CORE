@@ -86,12 +86,12 @@ public class FileFilterPanel {
                 .getTranslation("file_filter_panel.deleted_and_previous_files"));
         filterSelectionComboBox.addActionListener(new MyActionListener());
 
-        FormLayout layout = new FormLayout("105dlu:grow, 3dlu, pref", "pref");
+        FormLayout layout = new FormLayout("pref, 3dlu:grow, 105dlu", "pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
-
-        builder.add(filterTextField.getUIComponent(), cc.xy(1, 1));
-        builder.add(filterSelectionComboBox, cc.xy(3, 1));
+        
+        builder.add(filterSelectionComboBox, cc.xy(1, 1));
+        builder.add(filterTextField.getUIComponent(), cc.xy(3, 1));
         panel = builder.getPanel();
     }
 
@@ -99,7 +99,7 @@ public class FileFilterPanel {
         public void actionPerformed(ActionEvent e) {
             if (e.getSource().equals(filterSelectionComboBox)) {
                 fileFilterModel.setMode(filterSelectionComboBox.getSelectedIndex());
-                fileFilterModel.filter();
+                fileFilterModel.scheduleFiltering();
             }
         }
     }

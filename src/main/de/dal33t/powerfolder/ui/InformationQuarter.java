@@ -61,6 +61,7 @@ import de.dal33t.powerfolder.ui.webservice.OnlineStoragePanel;
 import de.dal33t.powerfolder.ui.model.DirectoryModel;
 import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
 import de.dal33t.powerfolder.util.ui.SelectionChangeListener;
@@ -463,6 +464,7 @@ public class InformationQuarter extends PFUIComponent {
     }
 
     public void displayFolder(Folder folder) {
+        Reject.ifNull(folder, "Folder is null");
         if (folder.isPreviewOnly()) {
             showCard(PREVIEW_FOLDER_PANEL);
             setDisplayTarget(folder);
