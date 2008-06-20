@@ -43,16 +43,28 @@ public class RestoreFileAction extends SelectionBaseAction {
      * @param event
      */
     public void selectionChanged(SelectionChangeEvent event) {
+
+        setEnabled(false);
+
         Object[] selections = getSelectionModel().getSelections();
-        if (selections != null && selections.length > 0) {
-            for (Object object : getSelectionModel().getSelections()) {
-                if (object instanceof FileInfo) {
-                    setEnabled(true);
+        if (selections == null || selections.length == 0) {
+            return;
+        }
+
+        // Do not enable if any selected items are not in the recycle bin.
+        RecycleBin recycleBin = getController().getRecycleBin();
+        for (Object object : selections) {
+            if (object instanceof FileInfo) {
+                FileInfo fileInfo = (FileInfo) object;
+                if (!recycleBin.isInRecycleBin(fileInfo)) {
                     return;
                 }
+            } else {
+                return;
             }
         }
-        setEnabled(false);
+
+        setEnabled(true);
     }
 
     public void actionPerformed(ActionEvent e) {
