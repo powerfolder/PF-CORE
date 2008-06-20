@@ -1090,7 +1090,7 @@ public class Member extends PFComponent {
         }
 
         // Profile this execution.
-        long seq = Profiling.startProfiling("Member.handleMessage()", message);
+        long seq = Profiling.startProfiling("Member.handleMessage() " + message.toString());
 
         try {
             // related folder is filled if message is a folder related message

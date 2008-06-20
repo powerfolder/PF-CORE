@@ -78,24 +78,19 @@ public class Profiling {
     /**
      * Start profiling a method invocation.
      *
-     * @param profileMillis
-     *          number of milliseconds after which to log the event.
-     * @param methodName
+     * @param operationName
      *          the name of the method being invoked.
-     * @param args
-     *          method arguments.
      * @return
      *          unique sequential id.
      */
-    public static long startProfiling(String methodName,
-                               Object... args) {
+    public static long startProfiling(String operationName) {
         if (!enabled) {
             return -1;
         }
 
         Long seq = sequentialId.getAndIncrement();
 
-        entries.put(seq, new ProfilingEntry(methodName, args));
+        entries.put(seq, new ProfilingEntry(operationName));
         return seq;
     }
 
@@ -107,6 +102,8 @@ public class Profiling {
      *
      * @param seq
      *          the sequential event number from startProfiling call.
+     * @param profileMillis
+     *          number of milliseconds after which to log the event.
      */
     public static void endProfiling(Long seq, int profileMillis) {
 
@@ -149,17 +146,8 @@ public class Profiling {
         public void run() {
             long elapsed = profilingEntry.elapsedMilliseconds();
             if (elapsed >= profileMillis) {
-                StringBuilder sb =
-                        new StringBuilder(profilingEntry.getMethodName() + " [");
-                int argsLength = profilingEntry.getArgs().length;
-                for (int i = 0; i < argsLength; i++) {
-                    sb.append(profilingEntry.getArgs()[i]);
-                    if (i < argsLength - 1) {
-                        sb.append(", ");
-                    }
-                }
-                sb.append("] took " + elapsed + " milliseconds");
-                log.error(sb.toString());
+                log.error(profilingEntry.getOperationName() +
+                " took " + elapsed + " milliseconds");
             }
 
             totalTime += elapsed;
@@ -194,23 +182,16 @@ public class Profiling {
      */
     private static class ProfilingEntry {
 
-        private String methodName;
-        private Object[] args;
+        private String operationName;
         private long startTime;
 
-        private ProfilingEntry(String methodName,
-                               Object... args) {
-            this.methodName = methodName;
-            this.args = args;
+        private ProfilingEntry(String operationName) {
+            this.operationName = operationName;
             startTime = new Date().getTime();
         }
 
-        public String getMethodName() {
-            return methodName;
-        }
-
-        public Object[] getArgs() {
-            return args;
+        public String getOperationName() {
+            return operationName;
         }
 
         public long elapsedMilliseconds() {

@@ -322,7 +322,7 @@ public class ListenerSupportFactory {
                             long seq = Profiling
                                     .startProfiling(listener.getClass()
                                             .toString() + ':' +
-                                            method.getName(), args);
+                                            method.getName());
                             try {
                                 method.invoke(listener, args);
                             } catch (IllegalArgumentException e) {
@@ -364,8 +364,7 @@ public class ListenerSupportFactory {
                 for (CoreListener listener : listenersNotInDispatchThread) {
                     long seq = Profiling.startProfiling(
                             listener.getClass().toString()
-                                    + ':' + method.getName(),
-                            args);
+                                    + ':' + method.getName());
                     try {
                         method.invoke(listener, args);
                     } catch (IllegalArgumentException e) {
