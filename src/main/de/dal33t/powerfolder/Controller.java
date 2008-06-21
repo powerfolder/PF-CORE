@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder;
 
 import java.awt.Component;
@@ -97,7 +97,7 @@ public class Controller extends PFComponent {
     /**
      * program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "3.1.0 dev1";
+    public static final String PROGRAM_VERSION = "3.1.0 dev2";
 
     /** general wait time for all threads (5000 is a balanced value) */
     private static final long WAIT_TIME = 5000;
@@ -278,8 +278,6 @@ public class Controller extends PFComponent {
 
     /**
      * Starts this controller loading the config from the default config file
-     * 
-     * @see #DEFAULT_CONFIG_FILE
      */
     public void startDefaultConfig() {
         startConfig(DEFAULT_CONFIG_FILE);
@@ -636,7 +634,9 @@ public class Controller extends PFComponent {
             return false;
         } finally {
             try {
-                bis.close();
+                if (bis != null) {
+                    bis.close();
+                }
             } catch (Exception e) {
                 // ignore
             }
@@ -719,7 +719,7 @@ public class Controller extends PFComponent {
             }
         };
         // Check for update 20 seconds after start.
-        scheduleAndRepeat(updateCheckTask, getController().getWaitTime() * 3,
+        scheduleAndRepeat(updateCheckTask, Controller.getWaitTime() * 3,
             updateCheckTime * 1000);
 
         // Test the connectivity after a while.
@@ -727,7 +727,6 @@ public class Controller extends PFComponent {
 
         // Schedule a task to reconfigure the Logger file every day.
         Calendar cal = new GregorianCalendar();
-        Date now = cal.getTime();
 
         // Midnight tomorrow morning.
         cal.set(Calendar.MILLISECOND, 0);
@@ -987,7 +986,9 @@ public class Controller extends PFComponent {
         return started;
     }
 
-    /** true is shutdown still in progress */
+    /**
+     * @return true is shutdown still in progress
+     */
     public boolean isShuttingDown() {
         return shuttingDown;
     }
@@ -1173,7 +1174,7 @@ public class Controller extends PFComponent {
     }
 
     /**
-     * Answers if the controller was shut down, with the request to restart
+     * @return true if the controller was shut down, with the request to restart
      */
     public boolean isRestartRequested() {
         return restartRequested;
@@ -1528,6 +1529,8 @@ public class Controller extends PFComponent {
 
     /**
      * ONLY USE THIS METHOD FOR TESTING PURPOSES!
+     * 
+     * @param factory
      */
     public void setTransferManagerFactory(Callable<TransferManager> factory) {
         Reject.ifNull(factory, "TransferManager factory is null");
@@ -1588,6 +1591,7 @@ public class Controller extends PFComponent {
      * is expeced as ' <connect host>' or ' <connect host>: <port>'
      * 
      * @param connectStr
+     * @return the member that connected under the given addresse
      * @throws ConnectionException
      * @returns the connected node
      */
