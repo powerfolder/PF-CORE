@@ -35,7 +35,7 @@ public class Profiling {
     public static boolean ENABLED;
 
     private static long totalTime;
-    private static long minimumTime;
+    private static long minimumTime = Long.MAX_VALUE;
     private static long maximumTime;
     private static long totalCount;
 
@@ -162,6 +162,14 @@ public class Profiling {
         }
         sb.append("============================");
         return sb.toString();
+    }
+
+    public static void reset() {
+        stats.clear();
+        maximumTime = 0;
+        minimumTime = Long.MAX_VALUE;
+        totalCount = 0;
+        totalTime = 0;
     }
 
 }
