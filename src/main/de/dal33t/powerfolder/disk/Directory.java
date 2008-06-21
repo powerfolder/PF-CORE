@@ -22,14 +22,22 @@ package de.dal33t.powerfolder.disk;
 import java.awt.datatransfer.DataFlavor;
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.DiskItem;
+import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.transfer.DownloadManager;
+import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.FileCopier;
 import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Reject;
@@ -140,7 +148,11 @@ public class Directory implements Comparable<Directory>, DiskItem {
         return parent;
     }
 
-    /** notify this Directory that a file is added */
+    /**
+     * notify this Directory that a file is added
+     * 
+     * @param file
+     */
     public void add(File file) {
         FileInfo fileInfo = new FileInfo(rootFolder, file);
         rootFolder.scanNewFile(fileInfo);
@@ -149,6 +161,9 @@ public class Directory implements Comparable<Directory>, DiskItem {
     /**
      * move a file from this source to this Directory, overwrites target if
      * exisits!
+     * 
+     * @param file
+     * @return the file has been moved
      */
     public boolean moveFileFrom(File file) {
         Reject.ifNull(file, "file cannot be null");
@@ -260,7 +275,11 @@ public class Directory implements Comparable<Directory>, DiskItem {
         return removed;
     }
 
-    /**  */
+    /**
+     * @param fileInfo
+     *            the fileinfo
+     * @return the holder of the fileinfo
+     */
     public FileInfoHolder getFileInfoHolder(FileInfo fileInfo) {
         if (fileInfoHolderMap.containsKey(fileInfo)) {
             return fileInfoHolderMap.get(fileInfo);
@@ -344,16 +363,19 @@ public class Directory implements Comparable<Directory>, DiskItem {
     /**
      * get the files in this dir (not the files in the subs)
      * 
+     * @return the list of files
      * @see #getFilesRecursive()
      */
     public List<FileInfo> getFiles() {
-        List<FileInfo> files = Collections
-            .synchronizedList(new ArrayList<FileInfo>());
-        Iterator<FileInfo> fileInfos = fileInfoHolderMap.keySet().iterator();
-        while (fileInfos.hasNext()) {
-            FileInfo fileInfo = fileInfos.next();
-            if (fileInfo.diskFileExists(rootFolder.getController())) {
-                files.add(fileInfo);
+        List<FileInfo> files = new ArrayList<FileInfo>();
+        synchronized (fileInfoHolderMap) {
+            Iterator<FileInfo> fileInfos = fileInfoHolderMap.keySet()
+                .iterator();
+            while (fileInfos.hasNext()) {
+                FileInfo fileInfo = fileInfos.next();
+                if (fileInfo.diskFileExists(rootFolder.getController())) {
+                    files.add(fileInfo);
+                }
             }
         }
         return files;
@@ -362,22 +384,27 @@ public class Directory implements Comparable<Directory>, DiskItem {
     /**
      * returns only valid files. (valid if at least one member has a not deleted
      * version or member with deleted version is myself)
+     * 
+     * @return the list of fileinfos
      */
     public List<FileInfo> getFilesRecursive() {
-        List<FileInfo> files = Collections
-            .synchronizedList(new ArrayList<FileInfo>());
-        Iterator<FileInfoHolder> fileInfoHolders = fileInfoHolderMap.values()
-            .iterator();
-        while (fileInfoHolders.hasNext()) {
-            FileInfoHolder holder = fileInfoHolders.next();
-            if (holder.isValid()) {
-                files.add(holder.getFileInfo());
+        List<FileInfo> files = new ArrayList<FileInfo>();
+        synchronized (fileInfoHolderMap) {
+            Iterator<FileInfoHolder> fileInfoHolders = fileInfoHolderMap
+                .values().iterator();
+            while (fileInfoHolders.hasNext()) {
+                FileInfoHolder holder = fileInfoHolders.next();
+                if (holder.isValid()) {
+                    files.add(holder.getFileInfo());
+                }
             }
         }
-        Iterator<Directory> subs = subDirectoriesMap.values().iterator();
-        while (subs.hasNext()) {
-            Directory subDir = subs.next();
-            files.addAll(subDir.getFilesRecursive());
+        synchronized (subDirectoriesMap) {
+            Iterator<Directory> subs = subDirectoriesMap.values().iterator();
+            while (subs.hasNext()) {
+                Directory subDir = subs.next();
+                files.addAll(subDir.getFilesRecursive());
+            }
         }
         return files;
     }
@@ -478,20 +505,23 @@ public class Directory implements Comparable<Directory>, DiskItem {
 
     /**
      * Answers if all files in this dir and in subdirs are expected.
+     * 
+     * @param folderRepository
+     * @return if the directory is expected
      */
     public boolean isExpected(FolderRepository folderRepository) {
-        Iterator<FileInfoHolder> fileInfoHolders = fileInfoHolderMap.values()
-            .iterator();
-        while (fileInfoHolders.hasNext()) {
-            FileInfo fInfo = fileInfoHolders.next().getFileInfo();
-            if (fInfo.isDeleted()) {
-                // Don't consider deleted
-                continue;
-            }
-            if (!fInfo.isExpected(
-                folderRepository))
-            {
-                return false;
+        synchronized (fileInfoHolderMap) {
+            Iterator<FileInfoHolder> fileInfoHolders = fileInfoHolderMap
+                .values().iterator();
+            while (fileInfoHolders.hasNext()) {
+                FileInfo fInfo = fileInfoHolders.next().getFileInfo();
+                if (fInfo.isDeleted()) {
+                    // Don't consider deleted
+                    continue;
+                }
+                if (!fInfo.isExpected(folderRepository)) {
+                    return false;
+                }
             }
         }
         synchronized (subDirectoriesMap) {
@@ -514,11 +544,13 @@ public class Directory implements Comparable<Directory>, DiskItem {
         if (fileInfoHolderMap.isEmpty() && subDirectoriesMap.isEmpty()) {
             return false;
         }
-        Iterator<FileInfoHolder> fileInfoHolders = fileInfoHolderMap.values()
-            .iterator();
-        while (fileInfoHolders.hasNext()) {
-            if (!fileInfoHolders.next().getFileInfo().isDeleted()) {
-                return false; // one file not deleted
+        synchronized (fileInfoHolderMap) {
+            Iterator<FileInfoHolder> fileInfoHolders = fileInfoHolderMap
+                .values().iterator();
+            while (fileInfoHolders.hasNext()) {
+                if (!fileInfoHolders.next().getFileInfo().isDeleted()) {
+                    return false; // one file not deleted
+                }
             }
         }
         synchronized (subDirectoriesMap) {
@@ -541,11 +573,13 @@ public class Directory implements Comparable<Directory>, DiskItem {
         if (fileInfoHolderMap.isEmpty() && subDirectoriesMap.isEmpty()) {
             return false;
         }
-        Iterator<FileInfoHolder> fileInfoHolders = fileInfoHolderMap.values()
-            .iterator();
-        while (fileInfoHolders.hasNext()) {
-            if (fileInfoHolders.next().getFileInfo().isDeleted()) {
-                return true;
+        synchronized (fileInfoHolderMap) {
+            Iterator<FileInfoHolder> fileInfoHolders = fileInfoHolderMap
+                .values().iterator();
+            while (fileInfoHolders.hasNext()) {
+                if (fileInfoHolders.next().getFileInfo().isDeleted()) {
+                    return true;
+                }
             }
         }
         synchronized (subDirectoriesMap) {
@@ -568,12 +602,14 @@ public class Directory implements Comparable<Directory>, DiskItem {
         if (fileInfoHolderMap.isEmpty() && subDirectoriesMap.isEmpty()) {
             return false;
         }
-        for (FileInfoHolder fInfoHolder : fileInfoHolderMap.values()) {
-            // TODO UARG ugly access to controller.
-            if (rootFolder.getController().getTransferManager()
-                .isCompletedDownload(fInfoHolder.getFileInfo()))
-            {
-                return true;
+        synchronized (fileInfoHolderMap) {
+            for (FileInfoHolder fInfoHolder : fileInfoHolderMap.values()) {
+                // TODO UARG ugly access to controller.
+                if (rootFolder.getController().getTransferManager()
+                    .isCompletedDownload(fInfoHolder.getFileInfo()))
+                {
+                    return true;
+                }
             }
         }
         synchronized (subDirectoriesMap) {
@@ -586,16 +622,23 @@ public class Directory implements Comparable<Directory>, DiskItem {
         return false; // nothing found.
     }
 
-    /** returns a list of all valid FileInfo s, so not the remotely deleted */
+    /**
+     * returns a list of all valid FileInfo s, so not the remotely deleted
+     * <p>
+     * TODO Valid state of FileInfo is highly questionable.
+     * 
+     * @return the list of files
+     */
     public List<FileInfo> getValidFiles() {
-        List<FileInfo> files = Collections
-            .synchronizedList(new ArrayList<FileInfo>());
-        Iterator<FileInfoHolder> fileInfoHolders = fileInfoHolderMap.values()
-            .iterator();
-        while (fileInfoHolders.hasNext()) {
-            FileInfoHolder holder = fileInfoHolders.next();
-            if (holder.isValid()) {
-                files.add(holder.getFileInfo());
+        List<FileInfo> files = new ArrayList<FileInfo>();
+        synchronized (fileInfoHolderMap) {
+            Iterator<FileInfoHolder> fileInfoHolders = fileInfoHolderMap
+                .values().iterator();
+            while (fileInfoHolders.hasNext()) {
+                FileInfoHolder holder = fileInfoHolders.next();
+                if (holder.isValid()) {
+                    files.add(holder.getFileInfo());
+                }
             }
         }
         return files;
