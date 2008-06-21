@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.disk;
 
 import java.util.ArrayList;
@@ -50,6 +50,10 @@ public class FileInfoHolder {
      * creates a FileInfoHolder and reads the fileData from the FileInfo and
      * addes the first relationship between Member and FileInfo (member has
      * file)
+     * 
+     * @param folder
+     * @param member
+     * @param fileInfo
      */
     public FileInfoHolder(Folder folder, Member member, FileInfo fileInfo) {
         this.fileInfo = fileInfo;
@@ -62,7 +66,12 @@ public class FileInfoHolder {
         availability = 1;
     }
 
-    /** returns the FileInfo-mation about the file at this member */
+    /**
+     * returns the FileInfo-mation about the file at this member
+     * 
+     * @param member
+     * @return the fileinfo
+     */
     public FileInfo getFileInfo(Member member) {
         FileInfo fInfo = memberHasFileInfoMap.get(member);
         if (fInfo == null) {
@@ -74,6 +83,7 @@ public class FileInfoHolder {
     /**
      * removes file for this member if there
      * 
+     * @param member
      * @return true if empty as result of removal
      */
     public synchronized boolean removeFileOfMember(Member member) {
@@ -84,13 +94,16 @@ public class FileInfoHolder {
     /**
      * returns true it this members has this file and the file is not remotely
      * deleted.
+     * 
+     * @param member
+     * @return true if this member has the file
      */
     public boolean hasFile(Member member) {
-        FileInfo fileInfo = memberHasFileInfoMap.get(member);
-        if (fileInfo == null) {
+        FileInfo fInfo = memberHasFileInfoMap.get(member);
+        if (fInfo == null) {
             return false;
         }
-        return !fileInfo.isDeleted();
+        return !fInfo.isDeleted();
     }
 
     /** used to replace in converted to meta FileInfo (Mp3/Image) */
@@ -157,8 +170,8 @@ public class FileInfoHolder {
         int tmpAvailability = 0;
         int newestVersion = getNewestAvailableVersion();
         while (fileInfos.hasNext()) {
-            FileInfo fileInfo = fileInfos.next();
-            if (newestVersion == fileInfo.getVersion() && !fileInfo.isDeleted())
+            FileInfo fInfo = fileInfos.next();
+            if (newestVersion == fInfo.getVersion() && !fInfo.isDeleted())
             {
                 tmpAvailability++;
             }
@@ -170,7 +183,7 @@ public class FileInfoHolder {
         Iterator<FileInfo> fileInfos = memberHasFileInfoMap.values().iterator();
         int tmpHighestVersion = -1;
         while (fileInfos.hasNext()) {
-            FileInfo fileInfo = fileInfos.next();
+            FileInfo fInfo = fileInfos.next();
             // TODO SCHAATSER Check: Is this correct? maybe the newest version
             // IS the deleted one? Scenario:
             // initalfile(ver:0)->modified(ver:1)->deleted by
@@ -181,22 +194,28 @@ public class FileInfoHolder {
             // calcAvailability() of the file. And since deleted files are not
             // available the result of this method is what we want. So
             // the name should be "getNewestAvailableVersion" ?
-            if (fileInfo.isDeleted()) {
+            if (fInfo.isDeleted()) {
                 continue;
             }
-            tmpHighestVersion = Math.max(tmpHighestVersion, fileInfo
+            tmpHighestVersion = Math.max(tmpHighestVersion, fInfo
                 .getVersion());
         }
         return tmpHighestVersion;
     }
 
-    /** returns the number of complete files of the latest version in the network */
+    /**
+     * returns the number of complete files of the latest version in the network
+     * 
+     * @return the # of members this file is available
+     */
     public int getAvailability() {
         return availability;
     }
 
     /**
      * returns a list of Members that have the file
+     * 
+     * @return the sources
      */
     public synchronized List<Member> getSources() {
         int newestVersion = getNewestAvailableVersion();
@@ -204,8 +223,8 @@ public class FileInfoHolder {
         List<Member> sources = new ArrayList<Member>();
         while (members.hasNext()) {
             Member member = members.next();
-            FileInfo fileInfo = memberHasFileInfoMap.get(member);
-            if (fileInfo.getVersion() == newestVersion && !fileInfo.isDeleted())
+            FileInfo fInfo = memberHasFileInfoMap.get(member);
+            if (fInfo.getVersion() == newestVersion && !fInfo.isDeleted())
             {
                 sources.add(member);
             }
@@ -220,14 +239,16 @@ public class FileInfoHolder {
     /**
      * valid if at least one connected member has a not deleted version or
      * member with deleted version is myself
+     * 
+     * @return true if the file is valid
      */
     public synchronized boolean isValid() {
-        Iterator members = memberHasFileInfoMap.keySet().iterator();
+        Iterator<Member> members = memberHasFileInfoMap.keySet().iterator();
         while (members.hasNext()) {
-            Member member = (Member) members.next();
+            Member member = members.next();
             if (member.isConnected() || member.isMySelf()) {
-                FileInfo fileInfo = memberHasFileInfoMap.get(member);
-                if (fileInfo.isDeleted()) {
+                FileInfo fInfo = memberHasFileInfoMap.get(member);
+                if (fInfo.isDeleted()) {
                     if (member.isMySelf()) {
                         return true;
                     }
