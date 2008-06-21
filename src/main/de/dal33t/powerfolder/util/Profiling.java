@@ -39,8 +39,7 @@ public class Profiling {
     private static long maximumTime;
     private static long totalCount;
 
-    private static final List<ProfilingStat> stats =
-            new CopyOnWriteArrayList<ProfilingStat>();
+    private static final List<ProfilingStat> stats = new CopyOnWriteArrayList<ProfilingStat>();
 
     /**
      * No instances allowed.
@@ -69,6 +68,8 @@ public class Profiling {
      * 
      * @param operationName
      *            the name of the method being invoked.
+     * @param details
+     *            method details
      * @return instance of ProfilingeEntry.
      */
     public static ProfilingEntry start(String operationName, String details) {
@@ -155,9 +156,9 @@ public class Profiling {
         sb.append("Minimum elapsed time: " + minimumTime + "ms\n");
         sb.append("Maximum elapsed time: " + maximumTime + "ms\n");
         for (ProfilingStat stat : stats) {
-            sb.append(stat.getOperationName() + " invocations " + stat.getCount()
-                    + " elapsed " + stat.getElapsed() + "ms average " +
-                    stat.getElapsed() / stat.getCount() + "ms\n");
+            sb.append(stat.getOperationName() + " invocations "
+                + stat.getCount() + " elapsed " + stat.getElapsed()
+                + "ms average " + stat.getElapsed() / stat.getCount() + "ms\n");
         }
         sb.append("============================");
         return sb.toString();
