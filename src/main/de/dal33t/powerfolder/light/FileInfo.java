@@ -30,9 +30,6 @@ import java.io.Serializable;
 import java.lang.ref.SoftReference;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Date;
 import java.util.zip.Adler32;
 
@@ -775,29 +772,13 @@ public class FileInfo implements Serializable, DiskItem {
      *             if the state is corrupt
      */
     public void validate() {
-        validateFilename(fileName);
-        validateSize(size);
-        validateLastModifiedDate(lastModifiedDate);
-        validateFolderInfo(folderInfo);
-    }
-
-    private void validateSize(Long size) {
+        Reject.ifTrue(StringUtils.isEmpty(fileName), "Filename is empty");
         Reject.ifNull(size, "Size is null");
         Reject.ifFalse(size >= 0, "Negative file size");
-    }
-
-    private void validateLastModifiedDate(Date date) {
-        Reject.ifNull(date, "Modification date is null");
-        Reject.ifFalse(date.getTime() >= 0, "Modification date is invalid: "
-            + date);
-    }
-
-    private void validateFolderInfo(FolderInfo folderInfo) {
+        Reject.ifNull(lastModifiedDate, "Modification date is null");
+        Reject.ifFalse(lastModifiedDate.getTime() >= 0,
+            "Modification date is invalid: " + lastModifiedDate);
         Reject.ifNull(folderInfo, "FolderInfo is null");
-    }
-
-    private void validateFilename(String fileName) {
-        Reject.ifTrue(StringUtils.isEmpty(fileName), "Filename is empty");
     }
 
     // Serialization optimization *********************************************
