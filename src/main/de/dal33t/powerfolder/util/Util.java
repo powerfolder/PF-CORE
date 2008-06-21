@@ -682,4 +682,16 @@ public class Util {
         return connectAddress;
     }
 
+    /**
+     * Returns the last section of a string after a token.
+     * lastPart("asdf.sdfg.werg.asgsdfg",".") returns "asgsdfg".
+     */
+    public static String lastPart(String text, String token) {
+        int pos;
+        if (text == null || (pos = text.lastIndexOf(token)) < 0) {
+            return text;
+        }
+        return text.substring(pos + 1, text.length());
+    }
+
 }

@@ -17,7 +17,7 @@
  *
  * $Id:$
  */
-package de.dal33t.powerfolder;
+package de.dal33t.powerfolder.util;
 
 
 /**
@@ -26,15 +26,21 @@ package de.dal33t.powerfolder;
 public class ProfilingEntry {
 
     private String operationName;
+    private String details;
     private long startTime;
 
-    public ProfilingEntry(String operationName) {
+    public ProfilingEntry(String operationName, String details) {
         this.operationName = operationName;
+        this.details = details;
         startTime = System.currentTimeMillis();
     }
 
     public String getOperationName() {
         return operationName;
+    }
+
+    public String getDetails() {
+        return details;
     }
 
     public long elapsedMilliseconds() {

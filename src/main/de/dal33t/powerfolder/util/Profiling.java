@@ -16,9 +16,11 @@
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
  * $Id:$
- */package de.dal33t.powerfolder;
+ */
+package de.dal33t.powerfolder.util;
 
-import de.dal33t.powerfolder.util.Logger;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Class to monitor and log long-running method calls (only in Verbose mode).
@@ -36,6 +38,9 @@ public class Profiling {
     private static long minimumTime;
     private static long maximumTime;
     private static long totalCount;
+
+    private static final List<ProfilingStat> stats =
+            new CopyOnWriteArrayList<ProfilingStat>();
 
     /**
      * No instances allowed.
@@ -66,11 +71,11 @@ public class Profiling {
      *            the name of the method being invoked.
      * @return instance of ProfilingeEntry.
      */
-    public static ProfilingEntry start(String operationName) {
+    public static ProfilingEntry start(String operationName, String details) {
         if (!ENABLED) {
             return null;
         }
-        return new ProfilingEntry(operationName);
+        return new ProfilingEntry(operationName, details);
     }
 
     /**
@@ -112,6 +117,7 @@ public class Profiling {
         // Don't execute this asychronously. Might produce
         // uncontrollable # of thread.
         long elapsed = profilingEntry.elapsedMilliseconds();
+        String operationName = profilingEntry.getOperationName();
         if (profileMillis > 0 && elapsed >= profileMillis) {
             LOG.error(profilingEntry.getOperationName() + " took " + elapsed
                 + " milliseconds");
@@ -124,6 +130,15 @@ public class Profiling {
         if (elapsed > maximumTime) {
             maximumTime = elapsed;
         }
+
+        for (ProfilingStat profilingStat : stats) {
+            if (profilingStat.getOperationName().equals(operationName)) {
+                profilingStat.addElapsed(elapsed);
+                return;
+            }
+        }
+        ProfilingStat stat = new ProfilingStat(operationName, elapsed);
+        stats.add(stat);
     }
 
     public static String dumpStats() {
@@ -139,6 +154,11 @@ public class Profiling {
         }
         sb.append("Minimum elapsed time: " + minimumTime + "ms\n");
         sb.append("Maximum elapsed time: " + maximumTime + "ms\n");
+        for (ProfilingStat stat : stats) {
+            sb.append(stat.getOperationName() + " invocations " + stat.getCount()
+                    + " elapsed " + stat.getElapsed() + "ms average " +
+                    stat.getElapsed() / stat.getCount() + "ms\n");
+        }
         sb.append("============================");
         return sb.toString();
     }

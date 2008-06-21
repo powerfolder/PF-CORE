@@ -84,13 +84,7 @@ import de.dal33t.powerfolder.net.PlainSocketConnectionHandler;
 import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.transfer.Upload;
-import de.dal33t.powerfolder.util.Convert;
-import de.dal33t.powerfolder.util.Debug;
-import de.dal33t.powerfolder.util.Logger;
-import de.dal33t.powerfolder.util.MessageListenerSupport;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.util.Waiter;
+import de.dal33t.powerfolder.util.*;
 
 /**
  * A full quailfied member, can have a connection to interact with remote
@@ -1090,7 +1084,8 @@ public class Member extends PFComponent {
         }
 
         // Profile this execution.
-        ProfilingEntry profilingEntry = Profiling.start("Member.handleMessage() " + message.toString());
+        ProfilingEntry profilingEntry = Profiling.start("Member.handleMessage",
+                message.toString());
 
         try {
             // related folder is filled if message is a folder related message

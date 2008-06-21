@@ -30,9 +30,10 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.SwingUtilities;
 
 import de.dal33t.powerfolder.util.Logger;
+import de.dal33t.powerfolder.util.Profiling;
 import de.dal33t.powerfolder.util.ui.UIUtil;
-import de.dal33t.powerfolder.Profiling;
-import de.dal33t.powerfolder.ProfilingEntry;
+import de.dal33t.powerfolder.util.ProfilingEntry;
+import de.dal33t.powerfolder.util.Util;
 
 /**
  * Factory used to created event/listener support upon eventlistner interfaces.
@@ -321,9 +322,9 @@ public class ListenerSupportFactory {
                         for (CoreListener listener : listenersInDispatchThread)
                         {
                             ProfilingEntry profilingEntry = Profiling
-                                    .start(listener.getClass()
-                                            .toString() + ':' +
-                                            method.getName());
+                                    .start(Util.lastPart(listener.getClass()
+                                            .toString(), ".") + ':' +
+                                            method.getName(), "");
                             try {
                                 method.invoke(listener, args);
                             } catch (IllegalArgumentException e) {
@@ -364,8 +365,8 @@ public class ListenerSupportFactory {
 
                 for (CoreListener listener : listenersNotInDispatchThread) {
                     ProfilingEntry profilingEntry = Profiling.start(
-                            listener.getClass().toString()
-                                    + ':' + method.getName());
+                            Util.lastPart(listener.getClass().toString(), ".")
+                                    + ':' + method.getName(), "");
                     try {
                         method.invoke(listener, args);
                     } catch (IllegalArgumentException e) {
