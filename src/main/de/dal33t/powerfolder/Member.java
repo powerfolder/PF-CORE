@@ -1585,7 +1585,6 @@ public class Member extends PFComponent {
      * 
      * @param joinedFolders
      *            the currently joined folders of ourself
-     * @throws ConnectionException
      */
     public void synchronizeFolderMemberships(FolderInfo[] joinedFolders) {
         Reject.ifNull(joinedFolders, "Joined folders is null");
@@ -1596,18 +1595,19 @@ public class Member extends PFComponent {
             return;
         }
         FolderList folderList = getLastFolderList();
-        if (folderList == null) {
-            log()
-                .error(
-                    "Unable to synchronize memberships, did not received folderlist from remote");
-            return;
+        if (folderList != null) {
+            // Rejoin to local folders
+            joinToLocalFolders(folderList);
+        } else {
+            // Hopefully we receive this later.
+            log().error(
+                "Unable to synchronize memberships, "
+                    + "did not received folderlist from remote");
         }
+
         FolderList myFolderList = new FolderList(joinedFolders, peer
             .getRemoteMagicId());
         sendMessageAsynchron(myFolderList, null);
-
-        // Rejoin to local folders
-        joinToLocalFolders(folderList);
     }
 
     /**
@@ -1692,11 +1692,6 @@ public class Member extends PFComponent {
         } finally {
             folderJoinLock.unlock();
         }
-
-        //
-        // if (joinedFolder.size() > 0 || newUnjoinedFolders > 0) {
-        // fireEvent(new MemberStateChanged());
-        // }
     }
 
     /*
