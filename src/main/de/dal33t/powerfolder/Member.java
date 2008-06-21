@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder;
 
 import java.net.InetAddress;
@@ -1084,8 +1084,11 @@ public class Member extends PFComponent {
         }
 
         // Profile this execution.
-        ProfilingEntry profilingEntry = Profiling.start("Member.handleMessage",
-                message.toString());
+        ProfilingEntry profilingEntry = null;
+        if (Profiling.ENABLED) {
+            profilingEntry = Profiling.start("Member.handleMessage", message
+                .getClass().getSimpleName());
+        }
 
         try {
             // related folder is filled if message is a folder related message
@@ -1094,11 +1097,11 @@ public class Member extends PFComponent {
             if (message instanceof FolderRelatedMessage) {
                 targetedFolderInfo = ((FolderRelatedMessage) message).folder;
                 if (targetedFolderInfo != null) {
-                    targetFolder = getController().getFolderRepository().getFolder(
-                        targetedFolderInfo);
+                    targetFolder = getController().getFolderRepository()
+                        .getFolder(targetedFolderInfo);
                 } else {
-                    log()
-                        .error("Got folder message without FolderInfo: " + message);
+                    log().error(
+                        "Got folder message without FolderInfo: " + message);
                 }
             }
 
@@ -1148,8 +1151,8 @@ public class Member extends PFComponent {
                 if (targetFolder != null
                     && targetFolder.getSyncProfile().isAutoDetectLocalChanges())
                 {
-                    log()
-                        .verbose("Remote sync command received on " + targetFolder);
+                    log().verbose(
+                        "Remote sync command received on " + targetFolder);
                     getController().setSilentMode(false);
                     // Now trigger the scan
                     targetFolder.recommendScanOnNextMaintenance();
@@ -1158,8 +1161,8 @@ public class Member extends PFComponent {
             } else if (message instanceof RequestDownload) {
                 // a download is requested
                 RequestDownload dlReq = (RequestDownload) message;
-                Upload ul = getController().getTransferManager().queueUpload(this,
-                    dlReq);
+                Upload ul = getController().getTransferManager().queueUpload(
+                    this, dlReq);
                 if (ul == null) {
                     // Send abort
                     log().warn("Sending abort of " + dlReq.file);
@@ -1174,13 +1177,14 @@ public class Member extends PFComponent {
             } else if (message instanceof AbortDownload) {
                 AbortDownload abort = (AbortDownload) message;
                 // Abort the upload
-                getController().getTransferManager().abortUpload(abort.file, this);
+                getController().getTransferManager().abortUpload(abort.file,
+                    this);
 
             } else if (message instanceof AbortUpload) {
                 AbortUpload abort = (AbortUpload) message;
                 // Abort the upload
-                getController().getTransferManager()
-                    .abortDownload(abort.file, this);
+                getController().getTransferManager().abortDownload(abort.file,
+                    this);
 
             } else if (message instanceof FileChunk) {
                 // File chunk received
@@ -1190,14 +1194,15 @@ public class Member extends PFComponent {
             } else if (message instanceof RequestNodeList) {
                 // Nodemanager will handle that
                 RequestNodeList request = (RequestNodeList) message;
-                getController().getNodeManager().receivedRequestNodeList(request,
-                    this);
+                getController().getNodeManager().receivedRequestNodeList(
+                    request, this);
 
             } else if (message instanceof KnownNodes) {
                 KnownNodes newNodes = (KnownNodes) message;
                 // TODO Move this code into NodeManager.receivedKnownNodes(....)
                 // TODO This code should be done in NodeManager
-                // This might also just be a search result and thus not include us
+                // This might also just be a search result and thus not include
+                // us
                 for (int i = 0; i < newNodes.nodes.length; i++) {
                     MemberInfo remoteNodeInfo = newNodes.nodes[i];
                     if (remoteNodeInfo == null) {
@@ -1245,8 +1250,8 @@ public class Member extends PFComponent {
                 if (logDebug) {
                     log().debug(
                         "Received new filelist. Expecting "
-                            + remoteFileList.nFollowingDeltas + " more deltas. "
-                            + message);
+                            + remoteFileList.nFollowingDeltas
+                            + " more deltas. " + message);
                 }
                 if (expectedListMessages == null) {
                     // Lazy init
@@ -1254,7 +1259,7 @@ public class Member extends PFComponent {
                 }
                 // Reset counter of expected filelists
                 expectedListMessages.put(remoteFileList.folder,
-                        remoteFileList.nFollowingDeltas);
+                    remoteFileList.nFollowingDeltas);
 
                 // Add filelist to filelist cache
                 Map<FileInfo, FileInfo> cachedFileList = new ConcurrentHashMap<FileInfo, FileInfo>(
@@ -1272,7 +1277,8 @@ public class Member extends PFComponent {
                 lastFiles.put(remoteFileList.folder, cachedFileList);
 
                 // Trigger requesting
-                // FIXME: Really inform folder on first list message on complete file
+                // FIXME: Really inform folder on first list message on complete
+                // file
                 // list?.
                 if (targetFolder != null) {
                     // Inform folder
@@ -1312,7 +1318,8 @@ public class Member extends PFComponent {
                             cachedFileList.remove(file);
                             cachedFileList.put(file, file);
 
-                            // file "changed" so if downloading break the download
+                            // file "changed" so if downloading break the
+                            // download
                             if (logVerbose) {
                                 log().verbose(
                                     "downloading changed file, breaking it! "
@@ -1341,18 +1348,18 @@ public class Member extends PFComponent {
                     // Inform folder
                     targetFolder.fileListChanged(this, changes);
 
-    //                if (nExpected.intValue() <= 0) {
-    //                    // Write filelist
-    //                    if (Logger.isLogToFileEnabled()) {
-    //                        // Write filelist to disk
-    //                        File debugFile = new File(Logger.getDebugDir(),
-    //                            targetFolder.getName() + "/" + getNick()
-    //                                + ".list.txt");
-    //                        Debug.writeFileListCSV(cachedFileList.keySet(),
-    //                            "FileList of folder " + targetFolder.getName()
-    //                                + ", member " + this + ":", debugFile);
-    //                    }
-    //                }
+                    // if (nExpected.intValue() <= 0) {
+                    // // Write filelist
+                    // if (Logger.isLogToFileEnabled()) {
+                    // // Write filelist to disk
+                    // File debugFile = new File(Logger.getDebugDir(),
+                    // targetFolder.getName() + "/" + getNick()
+                    // + ".list.txt");
+                    // Debug.writeFileListCSV(cachedFileList.keySet(),
+                    // "FileList of folder " + targetFolder.getName()
+                    // + ", member " + this + ":", debugFile);
+                    // }
+                    // }
                 }
 
                 if (logDebug) {
@@ -1431,8 +1438,8 @@ public class Member extends PFComponent {
                 } else {
                     switch (not.getEvent()) {
                         case ADDED_TO_FRIENDS :
-                            getController().getNodeManager().askForFriendship(this,
-                                not.getPersonalMessage());
+                            getController().getNodeManager().askForFriendship(
+                                this, not.getPersonalMessage());
                             break;
                         default :
                             log().warn("Unhandled event: " + not.getEvent());
@@ -1440,8 +1447,8 @@ public class Member extends PFComponent {
                 }
             } else if (message instanceof RequestPart) {
                 RequestPart pr = (RequestPart) message;
-                Upload up = getController().getTransferManager().getUpload(this,
-                    pr.getFile());
+                Upload up = getController().getTransferManager().getUpload(
+                    this, pr.getFile());
                 if (up != null) { // If the upload isn't broken
                     up.enqueuePartRequest(pr);
                 }
@@ -1449,7 +1456,8 @@ public class Member extends PFComponent {
                 StartUpload su = (StartUpload) message;
                 Download dl = getController().getTransferManager().getDownload(
                     this, su.getFile());
-                if (dl != null && su.getFile().isCompletelyIdentical(dl.getFile()))
+                if (dl != null
+                    && su.getFile().isCompletelyIdentical(dl.getFile()))
                 {
                     dl.uploadStarted();
                 } else {
@@ -1457,15 +1465,15 @@ public class Member extends PFComponent {
                 }
             } else if (message instanceof StopUpload) {
                 StopUpload su = (StopUpload) message;
-                Upload up = getController().getTransferManager().getUpload(this,
-                    su.getFile());
+                Upload up = getController().getTransferManager().getUpload(
+                    this, su.getFile());
                 if (up != null) { // If the upload isn't broken
                     up.stopUploadRequest(su);
                 }
             } else if (message instanceof RequestFilePartsRecord) {
                 RequestFilePartsRecord req = (RequestFilePartsRecord) message;
-                Upload up = getController().getTransferManager().getUpload(this,
-                    req.getFile());
+                Upload up = getController().getTransferManager().getUpload(
+                    this, req.getFile());
                 if (up != null) { // If the upload isn't broken
                     up.receivedFilePartsRecordRequest(req);
                 }
@@ -1473,7 +1481,8 @@ public class Member extends PFComponent {
                 ReplyFilePartsRecord rep = (ReplyFilePartsRecord) message;
                 Download dl = getController().getTransferManager().getDownload(
                     this, rep.getFile());
-                if (dl != null && dl.getFile().isCompletelyIdentical(rep.getFile()))
+                if (dl != null
+                    && dl.getFile().isCompletelyIdentical(rep.getFile()))
                 {
                     dl.receivedFilePartsRecord(rep.getRecord());
                 } else if (dl != null) {
@@ -1596,7 +1605,7 @@ public class Member extends PFComponent {
         FolderList myFolderList = new FolderList(joinedFolders, peer
             .getRemoteMagicId());
         sendMessageAsynchron(myFolderList, null);
-        
+
         // Rejoin to local folders
         joinToLocalFolders(folderList);
     }

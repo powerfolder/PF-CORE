@@ -43,6 +43,7 @@ public class ProfilingTest extends TestCase {
         try {
 
             // To be Test code
+            System.out.println(Profiling.class.getSimpleName());
 
         } finally {
             Profiling.end(profilingEntry1);

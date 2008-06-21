@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.event;
 
 import java.awt.EventQueue;
@@ -46,7 +46,7 @@ import de.dal33t.powerfolder.util.Util;
  * Listenersupport implementaion will fire events to all registered listeners.
  * Just call the event method for the eventlistner interface on the
  * implementation returned by <code>createListenerSupport</code>
- *
+ * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.8 $
  */
@@ -65,7 +65,7 @@ public class ListenerSupportFactory {
      * All calls to methods on that object will fire that event to its
      * registered listeners.
      * <p>
-     *
+     * 
      * @param listenerInterface
      * @return
      */
@@ -93,7 +93,7 @@ public class ListenerSupportFactory {
      * to be created via <code>createListenerSupport</code> before. Also the
      * listener needs to implement the listener event interface. Otherwise an
      * exception is thrown
-     *
+     * 
      * @param listenerSupport
      * @param suspended
      */
@@ -122,11 +122,11 @@ public class ListenerSupportFactory {
      * created via <code>createListenerSupport</code> factory method. Also the
      * listener needs to implement the listener event interface otherwise an
      * exception is thrown (see ListenerSupportInvocationHandler.checkListener).
-     *
+     * 
      * @param listenerSupport
-     *      The listenerSupport where the listener should be added to.
+     *            The listenerSupport where the listener should be added to.
      * @param listener
-     *      The event listener to add.
+     *            The event listener to add.
      */
     public static void addListener(CoreListener listenerSupport,
         CoreListener listener)
@@ -152,10 +152,10 @@ public class ListenerSupportFactory {
 
     /**
      * Removes a listener from a listener support. The listener support has to
-     * be created via <code>createListenerSupport</code> factory method. Also the
-     * listener needs to implement the listener event interface otherwise an
+     * be created via <code>createListenerSupport</code> factory method. Also
+     * the listener needs to implement the listener event interface otherwise an
      * exception is thrown (see ListenerSupportInvocationHandler.checkListener).
-     *
+     * 
      * @param listenerSupport
      * @param listener
      */
@@ -185,7 +185,7 @@ public class ListenerSupportFactory {
      * Removes all listeners from a listener support. The listener support has
      * to be created via <code>createListenerSupport</code> before. Otherwise
      * an exception is thrown
-     *
+     * 
      * @param listenerSupport
      * @param listener
      */
@@ -214,7 +214,7 @@ public class ListenerSupportFactory {
     /**
      * The invocation handler, which delegates fire event method calls to the
      * listener. Maybe suspended, in this state it will not fire events.
-     *
+     * 
      * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      */
     private static class ListenerSupportInvocationHandler implements
@@ -228,7 +228,7 @@ public class ListenerSupportFactory {
         /**
          * Creates an invocation handler which basically handles the event
          * support.
-         *
+         * 
          * @param listenerInterface
          *            the listener event interface
          */
@@ -240,7 +240,7 @@ public class ListenerSupportFactory {
 
         /**
          * Adds a listener to this support impl
-         *
+         * 
          * @param listener
          */
         public void addListener(CoreListener listener) {
@@ -256,7 +256,7 @@ public class ListenerSupportFactory {
 
         /**
          * Removes a listener from this support impl
-         *
+         * 
          * @param listener
          */
         public void removeListener(CoreListener listener) {
@@ -281,8 +281,9 @@ public class ListenerSupportFactory {
         /**
          * Checks if the listener is an instance of our supported listener
          * interface.
-         *
-         * @param listener The listener to check
+         * 
+         * @param listener
+         *            The listener to check
          * @return true if succeeded, otherwise exception is thrown
          * @throws IllegalArgumentException
          *             if both do not match
@@ -301,7 +302,7 @@ public class ListenerSupportFactory {
 
         /**
          * Delegates calls to registered listeners
-         *
+         * 
          * @see java.lang.reflect.InvocationHandler#invoke(java.lang.Object,
          *      java.lang.reflect.Method, java.lang.Object[])
          */
@@ -321,10 +322,12 @@ public class ListenerSupportFactory {
                     public void run() {
                         for (CoreListener listener : listenersInDispatchThread)
                         {
-                            ProfilingEntry profilingEntry = Profiling
-                                    .start(Util.lastPart(listener.getClass()
-                                            .toString(), ".") + ':' +
-                                            method.getName(), "");
+                            ProfilingEntry profilingEntry = null;
+                            if (Profiling.ENABLED) {
+                                profilingEntry = Profiling.start(listener
+                                    .getClass().getSimpleName()
+                                    + ':' + method.getName(), "");
+                            }
                             try {
                                 method.invoke(listener, args);
                             } catch (IllegalArgumentException e) {
@@ -364,9 +367,12 @@ public class ListenerSupportFactory {
                 }
 
                 for (CoreListener listener : listenersNotInDispatchThread) {
-                    ProfilingEntry profilingEntry = Profiling.start(
-                            Util.lastPart(listener.getClass().toString(), ".")
-                                    + ':' + method.getName(), "");
+                    ProfilingEntry profilingEntry = null;
+                    if (Profiling.ENABLED) {
+                        profilingEntry = Profiling.start(listener.getClass()
+                            .getSimpleName()
+                            + ':' + method.getName(), "");
+                    }
                     try {
                         method.invoke(listener, args);
                     } catch (IllegalArgumentException e) {
@@ -378,11 +384,10 @@ public class ListenerSupportFactory {
                             + listener + "', class '"
                             + listener.getClass().getName() + '\'', e);
                     } catch (InvocationTargetException e) {
-                        LOG
-                            .error("Received an exception from listener '"
-                                + listener + "', class '"
-                                + listener.getClass().getName() + '\'', e
-                                .getCause());
+                        LOG.error("Received an exception from listener '"
+                            + listener + "', class '"
+                            + listener.getClass().getName() + '\'', e
+                            .getCause());
                         // Also log original exception
                         LOG.verbose(e);
                     } finally {
