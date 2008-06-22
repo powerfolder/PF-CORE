@@ -351,7 +351,7 @@ public class ListenerSupportFactory {
                                 // Also log original exception
                                 LOG.verbose(e);
                             } finally {
-                                Profiling.end(profilingEntry, 50);
+                                Profiling.end(profilingEntry, 100);
                             }
                         }
                     }
