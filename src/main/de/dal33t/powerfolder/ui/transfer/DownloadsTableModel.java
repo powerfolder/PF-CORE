@@ -307,10 +307,9 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
             synchronized (downloads) {
                 for (int i = 0; i < downloads.size(); i++) {
                     Download d = downloads.get(i);
-                    if (d.getFile()
-                        .isCompletelyIdentical(downloadArg.getFile())
-                        && (downloadArg.getPartner() == null 
-                            || downloadArg.getPartner().equals(d.getPartner())))
+                    // @todo Temporary fix for #1070. Removed partner check.
+                    // downloads should really be like Map<FileInfo, List<Download>> 
+                    if (d.getFile().isCompletelyIdentical(downloadArg.getFile()))
                     {
                         return i;
                     }
