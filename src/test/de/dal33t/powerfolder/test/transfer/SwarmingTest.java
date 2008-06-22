@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id: AddLicenseHeader.java 4282 2008-06-16 03:25:09Z tot $
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id: AddLicenseHeader.java 4282 2008-06-16 03:25:09Z tot $
+ */
 package de.dal33t.powerfolder.test.transfer;
 
 import java.io.File;
@@ -95,8 +95,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
         final FileInfo fInfo = getFolderOf("0").getKnowFilesAsArray()[0];
 
         for (int i = 0; i < 4; i++) {
-            getFolderOf("" + i).setSyncProfile(
-                SyncProfile.AUTOMATIC_DOWNLOAD);
+            getFolderOf("" + i).setSyncProfile(SyncProfile.AUTOMATIC_DOWNLOAD);
         }
 
         TestHelper.waitForCondition(20, new Condition() {
@@ -239,7 +238,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
 
         setNSyncProfile(SyncProfile.AUTOMATIC_DOWNLOAD);
 
-        TestHelper.waitForCondition(100, new Condition() {
+        TestHelper.waitForCondition(100, new ConditionWithMessage() {
             public boolean reached() {
                 for (int i = 1; i < 5; i++) {
                     if (getFolderOf("" + i).getKnownFilesCount() != 1) {
@@ -247,6 +246,15 @@ public class SwarmingTest extends MultipleControllerTestCase {
                     }
                 }
                 return true;
+            }
+
+            public String message() {
+                StringBuilder b = new StringBuilder();
+                for (int i = 1; i < 5; i++) {
+                    b.append(i).append(":").append(
+                        getFolderOf("" + i).getKnownFilesCount()).append(". ");
+                }
+                return b.toString();
             }
 
         });
@@ -264,16 +272,16 @@ public class SwarmingTest extends MultipleControllerTestCase {
 
         TestHelper.waitForCondition(10, new ConditionWithMessage() {
             public boolean reached() {
-                return getFolderOf("5").getKnownFilesCount() == 1 && 
-                    getFolderOf("5").getKnownFiles().iterator().next()
-                    .getVersion() == 1;
+                return getFolderOf("5").getKnownFilesCount() == 1
+                    && getFolderOf("5").getKnownFiles().iterator().next()
+                        .getVersion() == 1;
             }
 
             public String message() {
                 int ver = -1;
                 if (getFolderOf("5").getKnownFilesCount() > 0) {
-                    ver =getFolderOf("5").getKnownFiles().iterator().next()
-                        .getVersion(); 
+                    ver = getFolderOf("5").getKnownFiles().iterator().next()
+                        .getVersion();
                 }
                 return "Homer version:" + ver;
             }
@@ -305,7 +313,9 @@ public class SwarmingTest extends MultipleControllerTestCase {
         }
     }
 
-    public void testMultifileSwarmingWithHeavyModifications() throws IOException {
+    public void testMultifileSwarmingWithHeavyModifications()
+        throws IOException
+    {
         Random prng = new Random();
         final int numC = 2;
         nSetupControllers(numC);
@@ -320,14 +330,14 @@ public class SwarmingTest extends MultipleControllerTestCase {
         connectAll();
 
         joinNTestFolder(SyncProfile.AUTOMATIC_DOWNLOAD);
-        
+
         for (int i = 0; i < 10; i++) {
             TestHelper.createRandomFile(getFolderOf("0").getLocalBase());
         }
         scanFolder(getFolderOf("0"));
-        
+
         assertEquals(10, getFolderOf("0").getKnownFilesCount());
-        
+
         for (int tries = 0; tries < 4; tries++) {
 
             for (int i = 0; i < 50; i++) {
@@ -338,8 +348,8 @@ public class SwarmingTest extends MultipleControllerTestCase {
                     FileInfo chosen = fi[prng.nextInt(fi.length)];
                     if (chosen.diskFileExists(getContoller(cont))) {
                         RandomAccessFile raf = new RandomAccessFile(chosen
-                            .getDiskFile(getContoller(cont).getFolderRepository()),
-                            "rw");
+                            .getDiskFile(getContoller(cont)
+                                .getFolderRepository()), "rw");
                         if (prng.nextDouble() > 0.3) {
                             raf.seek(prng.nextInt(1000000 - 1000));
                             for (int j = 0; j < 1000; j++) {
@@ -359,34 +369,36 @@ public class SwarmingTest extends MultipleControllerTestCase {
                 scanFolder(getFolderOf("" + i));
             }
 
-            TestHelper.waitForCondition(numC * 10 + 30, new ConditionWithMessage() {
-                public boolean reached() {
-                    for (int i = 0; i < numC; i++) {
-                        if (getFolderOf("" + i).getKnownFilesCount() != 10) {
-                            return false;
+            TestHelper.waitForCondition(numC * 10 + 30,
+                new ConditionWithMessage() {
+                    public boolean reached() {
+                        for (int i = 0; i < numC; i++) {
+                            if (getFolderOf("" + i).getKnownFilesCount() != 10)
+                            {
+                                return false;
+                            }
                         }
+                        return true;
                     }
-                    return true;
-                }
 
-                public String message() {
-                    StringBuilder b = new StringBuilder();
-                    for (int i = 0; i < numC; i++) {
-                        if (i > 0) {
-                            b.append("\n");
+                    public String message() {
+                        StringBuilder b = new StringBuilder();
+                        for (int i = 0; i < numC; i++) {
+                            if (i > 0) {
+                                b.append("\n");
+                            }
+                            b.append(i).append(": ").append(
+                                getFolderOf("" + i).getKnownFilesCount());
+                            b.append(", ").append(
+                                getContoller("" + i).getTransferManager()
+                                    .getActiveDownloads());
+                            b.append(", ").append(
+                                Arrays.toString(getContoller("" + i)
+                                    .getTransferManager().getActiveUploads()));
                         }
-                        b.append(i).append(": ").append(
-                            getFolderOf("" + i).getKnownFilesCount());
-                        b.append(", ").append(
-                            getContoller("" + i).getTransferManager()
-                                .getActiveDownloads());
-                        b.append(", ").append(
-                            Arrays.toString(getContoller("" + i)
-                                .getTransferManager().getActiveUploads()));
+                        return b.toString();
                     }
-                    return b.toString();
-                }
-            });
+                });
         }
         TestHelper.waitForCondition(numC * 4 + 30, new ConditionWithMessage() {
             public boolean reached() {
@@ -418,7 +430,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
             }
         });
     }
-    
+
     public void testConcurrentModificationsLargeSwarmDeltaSync()
         throws IOException
     {
@@ -470,34 +482,35 @@ public class SwarmingTest extends MultipleControllerTestCase {
                 scanFolder(getFolderOf("" + i));
             }
 
-            TestHelper.waitForCondition(numC * 2 + 30, new ConditionWithMessage() {
-                public boolean reached() {
-                    for (int i = 0; i < numC; i++) {
-                        if (getFolderOf("" + i).getKnownFilesCount() != 1) {
-                            return false;
+            TestHelper.waitForCondition(numC * 2 + 30,
+                new ConditionWithMessage() {
+                    public boolean reached() {
+                        for (int i = 0; i < numC; i++) {
+                            if (getFolderOf("" + i).getKnownFilesCount() != 1) {
+                                return false;
+                            }
                         }
+                        return true;
                     }
-                    return true;
-                }
 
-                public String message() {
-                    StringBuilder b = new StringBuilder();
-                    for (int i = 0; i < numC; i++) {
-                        if (i > 0) {
-                            b.append("\n");
+                    public String message() {
+                        StringBuilder b = new StringBuilder();
+                        for (int i = 0; i < numC; i++) {
+                            if (i > 0) {
+                                b.append("\n");
+                            }
+                            b.append(i).append(": ").append(
+                                getFolderOf("" + i).getKnownFilesCount());
+                            b.append(", ").append(
+                                getContoller("" + i).getTransferManager()
+                                    .getActiveDownloads());
+                            b.append(", ").append(
+                                Arrays.toString(getContoller("" + i)
+                                    .getTransferManager().getActiveUploads()));
                         }
-                        b.append(i).append(": ").append(
-                            getFolderOf("" + i).getKnownFilesCount());
-                        b.append(", ").append(
-                            getContoller("" + i).getTransferManager()
-                                .getActiveDownloads());
-                        b.append(", ").append(
-                            Arrays.toString(getContoller("" + i)
-                                .getTransferManager().getActiveUploads()));
+                        return b.toString();
                     }
-                    return b.toString();
-                }
-            });
+                });
         }
 
         int newestVersion = 0;
@@ -525,13 +538,15 @@ public class SwarmingTest extends MultipleControllerTestCase {
             public String message() {
                 int nver = 0;
                 for (int i = 0; i < numC; i++) {
-                    nver = Math.max(nver, getFolderOf("" + i).getKnowFilesAsArray()[0].getVersion());
+                    nver = Math.max(nver, getFolderOf("" + i)
+                        .getKnowFilesAsArray()[0].getVersion());
                 }
                 StringBuilder b = new StringBuilder();
                 b.append("Newest version is " + nver);
                 for (int i = 0; i < numC; i++) {
                     if (getFolderOf("" + i).getKnowFilesAsArray()[0]
-                          .getVersion() == nver) {
+                        .getVersion() == nver)
+                    {
                         continue;
                     }
                     b.append("\n---\n");
@@ -542,8 +557,8 @@ public class SwarmingTest extends MultipleControllerTestCase {
                     b.append(Arrays.toString(getContoller("" + i)
                         .getTransferManager().getActiveUploads()));
                     b.append(", downloads: ");
-                    b.append(
-                        getContoller("" + i).getTransferManager().getActiveDownloads());
+                    b.append(getContoller("" + i).getTransferManager()
+                        .getActiveDownloads());
                 }
                 return b.toString() + " " + TestHelper.deadlockCheck();
             }
