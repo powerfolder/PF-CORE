@@ -130,7 +130,8 @@ public abstract class MultipleControllerTestCase extends TestCase {
         Controller controller = Controller.createController();
         controller.startConfig(config);
         waitForStart(controller);
-        assertNotNull(controller.getConnectionListener());
+        assertNotNull("Connectiin listener for controller '" + id
+            + "' could not be opened", controller.getConnectionListener());
         // triggerAndWaitForInitialMaitenenace(controller);
         controller.getPreferences().putBoolean("createdesktopshortcuts", false);
         controllers.put(id, controller);
@@ -428,60 +429,31 @@ public abstract class MultipleControllerTestCase extends TestCase {
         });
     }
 
-    private void stopControllers() throws InterruptedException {
+    private void stopControllers() {
         for (String id : controllers.keySet()) {
             final Controller controller = controllers.get(id);
-            if (controller.isStarted()) {
-                Thread sdt = new Thread(new Runnable() {
-
-                    public void run() {
-                        controller.shutdown();
-                    }
-                });
-                sdt.start();
-                sdt.join(5000);
+            controller.shutdown();
+            // Give them time to shut down
+            TestHelper.waitMilliSeconds(200);
+            int i = 0;
+            while (controller.isShuttingDown()) {
+                i++;
+                if (i > 1000) {
+                    System.out.println("Shutdown of Bart failed");
+                    break;
+                }
+                TestHelper.waitMilliSeconds(100);
             }
+            assertFalse(controller.isStarted());
+            // add a pause to make sure files can be cleaned before next
+            // test.
+            TestHelper.waitMilliSeconds(500);
+            controller.shutdown();
             assertFalse("Shutdown of controller(" + id + ") failed", controller
                 .isShuttingDown());
             assertFalse("Shutdown of controller(" + id + ")  failed",
                 controller.isStarted());
         }
         controllers.clear();
-    }
-
-    private static boolean initalScanOver = false;
-
-    private static void triggerAndWaitForInitialMaitenenace(Controller cont) {
-        initalScanOver = false;
-        MyFolderRepoListener listener = new MyFolderRepoListener();
-        cont.getFolderRepository().addFolderRepositoryListener(listener);
-        cont.getFolderRepository().triggerMaintenance();
-        TestHelper.waitForCondition(20, new Condition() {
-            public boolean reached() {
-                return initalScanOver;
-            }
-        });
-        cont.getFolderRepository().removeFolderRepositoryListener(listener);
-    }
-
-    private static final class MyFolderRepoListener implements
-        FolderRepositoryListener
-    {
-        public void folderCreated(FolderRepositoryEvent e) {
-        }
-
-        public void folderRemoved(FolderRepositoryEvent e) {
-        }
-
-        public void maintenanceFinished(FolderRepositoryEvent e) {
-            initalScanOver = true;
-        }
-
-        public void maintenanceStarted(FolderRepositoryEvent e) {
-        }
-
-        public boolean fireInEventDispathThread() {
-            return false;
-        }
     }
 }
