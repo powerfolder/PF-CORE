@@ -20,7 +20,9 @@
 package de.dal33t.powerfolder.test.transfer;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.RandomAccessFile;
 import java.util.Arrays;
 import java.util.Random;
@@ -32,7 +34,10 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.transfer.DownloadManager;
+import de.dal33t.powerfolder.transfer.MultiSourceDownloadManager;
 import de.dal33t.powerfolder.transfer.TransferManager;
+import de.dal33t.powerfolder.transfer.Upload;
+import de.dal33t.powerfolder.transfer.Transfer.TransferState;
 import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.MultipleControllerTestCase;
@@ -79,6 +84,16 @@ public class SwarmingTest extends MultipleControllerTestCase {
             }
 
         });
+    }
+
+    public void testFiveSwarmMulti() throws Exception {
+        for (int i = 0; i < 5; i++) {
+            if (i != 0) {
+                tearDown();
+                setUp();
+            }
+            testFiveSwarmDownload();
+        }
     }
 
     public void testFiveSwarmDownload() throws IOException {
@@ -238,7 +253,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
 
         setNSyncProfile(SyncProfile.AUTOMATIC_DOWNLOAD);
 
-        TestHelper.waitForCondition(100, new ConditionWithMessage() {
+        TestHelper.waitForCondition(100, new Condition() {
             public boolean reached() {
                 for (int i = 1; i < 5; i++) {
                     if (getFolderOf("" + i).getKnownFilesCount() != 1) {
@@ -246,15 +261,6 @@ public class SwarmingTest extends MultipleControllerTestCase {
                     }
                 }
                 return true;
-            }
-
-            public String message() {
-                StringBuilder b = new StringBuilder();
-                for (int i = 1; i < 5; i++) {
-                    b.append(i).append(":").append(
-                        getFolderOf("" + i).getKnownFilesCount()).append(". ");
-                }
-                return b.toString();
             }
 
         });
@@ -317,14 +323,14 @@ public class SwarmingTest extends MultipleControllerTestCase {
         throws IOException
     {
         Random prng = new Random();
-        final int numC = 2;
+        final int numC = 5;
         nSetupControllers(numC);
         setConfigurationEntry(ConfigurationEntry.USE_SWARMING_ON_LAN, "true");
         setConfigurationEntry(ConfigurationEntry.USE_DELTA_ON_LAN, "true");
 
         for (Controller c : getControllers()) {
-            c.getTransferManager().setAllowedDownloadCPSForLAN(500000);
-            c.getTransferManager().setAllowedUploadCPSForLAN(500000);
+            c.getTransferManager().setAllowedDownloadCPSForLAN(1000000);
+            c.getTransferManager().setAllowedUploadCPSForLAN(1000000);
         }
 
         connectAll();
@@ -368,46 +374,87 @@ public class SwarmingTest extends MultipleControllerTestCase {
             for (int i = 0; i < numC; i++) {
                 scanFolder(getFolderOf("" + i));
             }
+        };
 
-            TestHelper.waitForCondition(numC * 10 + 30,
-                new ConditionWithMessage() {
-                    public boolean reached() {
-                        for (int i = 0; i < numC; i++) {
-                            if (getFolderOf("" + i).getKnownFilesCount() != 10)
-                            {
-                                return false;
-                            }
-                        }
-                        return true;
-                    }
-
-                    public String message() {
-                        StringBuilder b = new StringBuilder();
-                        for (int i = 0; i < numC; i++) {
-                            if (i > 0) {
-                                b.append("\n");
-                            }
-                            b.append(i).append(": ").append(
-                                getFolderOf("" + i).getKnownFilesCount());
-                            b.append(", ").append(
-                                getContoller("" + i).getTransferManager()
-                                    .getActiveDownloads());
-                            b.append(", ").append(
-                                Arrays.toString(getContoller("" + i)
-                                    .getTransferManager().getActiveUploads()));
-                        }
-                        return b.toString();
-                    }
-                });
-        }
-        TestHelper.waitForCondition(numC * 4 + 30, new ConditionWithMessage() {
+        TestHelper.waitForCondition(numC * 20 + 10, new ConditionWithMessage() {
             public boolean reached() {
+                boolean test = true;
+                int ups = 0, downs = 0;
                 for (int i = 0; i < numC; i++) {
                     TransferManager tm = getContoller("" + i)
                         .getTransferManager();
                     if (tm.getActiveDownloadCount() != 0
-                        || tm.getActiveUploads().length != 0)
+                        || tm.countLiveUploads() != 0)
                     {
+                        test = false;
+                    }
+                    int dloads = 0;
+                    for (DownloadManager m : tm.getActiveDownloads()) {
+                        dloads += m.getSources().size();
+                    }
+                    downs += dloads;
+                    ups += tm.countLiveUploads();
+                }
+                // System.out.println("D:" + downs + " U:" + ups);
+                return test;
+            }
+
+            public String message() {
+                /*
+                 * PrintWriter out = null; try { out = new
+                 * PrintWriter("debug.txt"); } catch (FileNotFoundException e) {
+                 * e.printStackTrace(); }
+                 */
+                StringBuilder b = new StringBuilder();
+                int ups = 0, downs = 0;
+                for (int i = 0; i < numC; i++) {
+                    TransferManager tm = getContoller("" + i)
+                        .getTransferManager();
+                    // out.println("Controller " + i + ":");
+                    // out.println("Downloads:");
+                    // for (DownloadManager m: tm.getActiveDownloads()) {
+                    // out.println("<-- " + m);
+                    // }
+                    // out.println("Uploads:");
+                    // for (Upload u: tm.getActiveUploads()) {
+                    // out.println("--> " + u);
+                    // }
+                    // out.println("Queued Uploads:");
+                    // for (Upload u: tm.getQueuedUploads()) {
+                    // out.println("q-> " + u);
+                    // }
+                    if (i > 0) {
+                        b.append(", ");
+                    }
+                    int dloads = 0;
+                    for (DownloadManager m : tm.getActiveDownloads()) {
+                        dloads += m.getSources().size();
+                        if (!m.isStarted()) {
+                            b.append(" " + m + " hasn't been started!\n");
+                        }
+                        if (m.isDone()) {
+                            b.append(" " + m + " is already done!\n");
+                        }
+                    }
+                    downs += dloads;
+                    ups += tm.countLiveUploads();
+                    b.append(i).append(": ").append(
+                        "Download Managers: " + tm.getActiveDownloadCount()
+                            + ", Total downloads: " + dloads + ", uploads:"
+                            + tm.getActiveUploads().length
+                            + ", Queued uploads:"
+                            + tm.getQueuedUploads().length).append('\n');
+                }
+                // out.close();
+                return b.toString() + "\nUploads total: " + ups
+                    + "\nDownloads total: " + downs + "\n"
+                    + TestHelper.deadlockCheck();
+            }
+        });
+        TestHelper.waitForCondition(numC, new ConditionWithMessage() {
+            public boolean reached() {
+                for (int i = 0; i < numC; i++) {
+                    if (getFolderOf("" + i).getKnownFilesCount() != 10) {
                         return false;
                     }
                 }
@@ -417,14 +464,21 @@ public class SwarmingTest extends MultipleControllerTestCase {
             public String message() {
                 StringBuilder b = new StringBuilder();
                 for (int i = 0; i < numC; i++) {
-                    if (i > 0) {
-                        b.append(", ");
+                    if (getFolderOf("" + i).getKnownFilesCount() == 10) {
+                        continue;
                     }
-                    TransferManager tm = getContoller("" + i)
-                        .getTransferManager();
+                    if (b.length() > 0) {
+                        b.append("\n\n");
+                    }
                     b.append(i).append(": ").append(
-                        tm.getActiveDownloadCount() + "|"
-                            + tm.getActiveUploads().length);
+                        getFolderOf("" + i).getKnownFilesCount());
+                    b.append(", ").append(
+                        getContoller("" + i).getTransferManager()
+                            .getActiveDownloads());
+                    b.append(", ").append(
+                        Arrays.toString(getContoller("" + i)
+                            .getTransferManager().getActiveUploads())).append(
+                        '\n');
                 }
                 return b.toString() + " " + TestHelper.deadlockCheck();
             }
@@ -482,7 +536,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
                 scanFolder(getFolderOf("" + i));
             }
 
-            TestHelper.waitForCondition(numC * 2 + 30,
+            TestHelper.waitForCondition(numC * 4 + 30,
                 new ConditionWithMessage() {
                     public boolean reached() {
                         for (int i = 0; i < numC; i++) {
@@ -523,7 +577,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
         }
         final int version = newestVersion;
 
-        TestHelper.waitForCondition(numC * 10 + 30, new ConditionWithMessage() {
+        TestHelper.waitForCondition(numC * 15 + 30, new ConditionWithMessage() {
             public boolean reached() {
                 for (int i = 0; i < numC; i++) {
                     if (getFolderOf("" + i).getKnowFilesAsArray()[0]

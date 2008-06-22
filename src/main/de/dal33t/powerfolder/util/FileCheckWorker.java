@@ -40,13 +40,12 @@ public class FileCheckWorker implements Callable<Boolean>{
     }
     
     public Boolean call() throws Exception {
-        FileInputStream in = null;
+        FileInputStream in = new FileInputStream(fileToCheck);
         try {
             byte[] data = new byte[8192];
             long len = fileToCheck.length();
             long rem = len;
             int read;
-            in = new FileInputStream(fileToCheck);
             while ((read = in.read(data)) > 0) {
                 if (Thread.interrupted()) {
                     throw new InterruptedException();

@@ -19,6 +19,8 @@
 */
 package de.dal33t.powerfolder.test.net;
 
+import java.net.InetSocketAddress;
+
 import de.dal33t.powerfolder.NetworkingMode;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.net.ConnectionException;
@@ -55,6 +57,10 @@ public class UDTConnectionTest extends FiveControllerTestCase {
 
         connect(getContollerBart(), getContollerLisa());
         connect(getContollerBart(), getContollerMarge());
+        getContollerLisa().getMySelf().getInfo().setConnectAddress(
+            new InetSocketAddress("192.168.0.9", 10000));
+        getContollerBart().getMySelf().getInfo().setConnectAddress(
+            new InetSocketAddress("192.168.0.9", 10001));
 
         ConnectionHandler conHan = getContollerMarge().getIOProvider()
             .getUDTSocketConnectionManager().initUDTConnectionHandler(

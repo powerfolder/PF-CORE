@@ -241,7 +241,9 @@ public class Download extends Transfer {
      * Requests to abort this dl
      */
     public void abort() {
-        shutdown();
+        if (getPartner() != null && getPartner().isCompleteyConnected()) {
+            getPartner().sendMessageAsynchron(new AbortDownload(getFile()), null);
+        }
         getController().getTransferManager().downloadAborted(this);
     }
 
@@ -259,16 +261,6 @@ public class Download extends Transfer {
             getPartner().sendMessagesAsynchron(new StopUpload(getFile()));
         }
         super.setCompleted();
-    }
-
-    @Override
-    void shutdown() {
-        // This shouldn't be necessary...
-        if (getPartner() != null && getPartner().isCompleteyConnected()) {
-            getPartner().sendMessageAsynchron(new AbortDownload(getFile()),
-                null);
-        }
-        super.shutdown();
     }
 
     /**

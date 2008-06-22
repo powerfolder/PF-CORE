@@ -653,22 +653,16 @@ public class TransferManager extends PFComponent {
             // TODO React on failed scan?
             // TODO PREVENT further uploads of this file unless it's "there"
             // Search for active uploads of the file and break them
-            boolean abortedDL;
+            boolean abortedUL;
             do {
-                abortedDL = false;
-                for (Upload u : activeUploads) {
-                    if (u.getFile().equals(fInfo)) {
-                        abortDownload(fInfo, u.getPartner());
-                        abortedDL = true;
-                    }
-                }
-                if (abortedDL) {
+                abortedUL = abortUploadsOf(fInfo);
+                if (abortedUL) {
                     try {
                         Thread.sleep(50);
                     } catch (InterruptedException e) {
                     }
                 }
-            } while (abortedDL);
+            } while (abortedUL);
 
             assert getActiveUploads(fInfo).size() == 0;
 
@@ -709,6 +703,25 @@ public class TransferManager extends PFComponent {
             }
             clearCompletedDownload(download);
         }
+    }
+
+    private boolean abortUploadsOf(FileInfo fInfo) {
+        boolean abortedUL = false;
+        for (Upload u : activeUploads) {
+            if (u.getFile().equals(fInfo)) {
+                abortUpload(fInfo, u.getPartner());
+                abortedUL = true;
+            }
+        }
+        List<Upload> remove = new LinkedList<Upload>();
+        for (Upload u: queuedUploads) {
+            if (u.getFile().equals(fInfo)) {
+                abortedUL = true;
+                remove.add(u);
+            }
+        }
+        queuedUploads.removeAll(remove);
+        return abortedUL;
     }
 
     /**
@@ -1548,9 +1561,8 @@ public class TransferManager extends PFComponent {
 
             if (man == null || fInfo.isNewerThan(man.getFileInfo())) {
                 if (man != null) {
-                    assert !man.isDone();
                     log().debug(
-                        "Got active download of older file version, aborting.");
+                    "Got active download of older file version, aborting.");
                     man.abortAndCleanup();
                 }
                 try {
@@ -1562,7 +1574,8 @@ public class TransferManager extends PFComponent {
                     return;
                 }
                 if (dlManagers.put(fInfo, man) != null) {
-                    throw new AssertionError("Found old manager!");
+//                    Can happen, but will be followed by a remove (which must be caught)
+//                    throw new AssertionError("Found old manager!");
                 }
             }
         } catch (AssertionError e) {
@@ -1574,12 +1587,7 @@ public class TransferManager extends PFComponent {
         boolean uploadAborted = false;
         uploadsLock.lock();
         try {
-            for (Upload u : activeUploads) {
-                if (u.getFile().equals(fInfo)) {
-                    uploadAborted = true;
-                    abortUpload(fInfo, u.getPartner());
-                }
-            }
+            uploadAborted = abortUploadsOf(fInfo);
         } finally {
             uploadsLock.unlock();
         }
@@ -1619,7 +1627,9 @@ public class TransferManager extends PFComponent {
             downloadsLock.unlock();
         }
         if (dlWasRequested) {
-            log().debug("File really was requested!");
+            if (logVerbose) {
+                log().debug("File really was requested!");
+            }
             // Fire event
             fireDownloadRequested(new TransferManagerEvent(this, download));
         }
@@ -1710,7 +1720,7 @@ public class TransferManager extends PFComponent {
         }
     }
 
-    private Map<FileInfo, Throwable> debug = new HashMap<FileInfo, Throwable>();
+//    private Map<FileInfo, Throwable> debug = new HashMap<FileInfo, Throwable>();
 
     /**
      * @param manager
@@ -1719,6 +1729,10 @@ public class TransferManager extends PFComponent {
         // log().debug("Removing: " + manager);
         // Debug.dumpCurrentStackTrace();
         assert manager.isDone() : "Manager to remove is NOT done!";
+        // Check if there's a different manager (for a newer version) already
+        if (dlManagers.get(manager.getFileInfo()) != manager) {
+            return;
+        }
         if (!dlManagers.remove(manager.getFileInfo(), manager)) {
             // FIXME This can happen if inbetween COMPLETED an abort message is
             // received!
@@ -1727,7 +1741,7 @@ public class TransferManager extends PFComponent {
             // + Debug.detailedObjectState(manager);
             return;
         } else {
-            debug.put(manager.getFileInfo(), new RuntimeException());
+//            debug.put(manager.getFileInfo(), new RuntimeException());
         }
     }
 
@@ -1761,9 +1775,8 @@ public class TransferManager extends PFComponent {
         Reject.ifNull(from, "From is null");
         Download download = getDownload(from, fileInfo);
         if (download != null) {
-            if (download.getPartner().equals(from)) {
-                download.abort();
-            }
+            assert download.getPartner().equals(from);
+            download.abort();
         } else {
             for (Download pendingDL : pendingDownloads) {
                 if (pendingDL.getFile().equals(fileInfo)
@@ -2268,6 +2281,7 @@ public class TransferManager extends PFComponent {
 
                 // Checking downloads
                 checkDownloads();
+
 
                 // log upload / donwloads
                 if (count % 2 == 0) {

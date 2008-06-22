@@ -26,6 +26,9 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.InetSocketAddress;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import junit.framework.TestCase;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
@@ -199,6 +202,45 @@ public class UDTTest extends TestCase {
         });
     }
 
+    /**
+     * Adjust for the 2 manual tests below
+     */
+    private InetSocketAddress addrA =
+        new InetSocketAddress("192.168.0.1", 1111),
+        addrB =
+            new InetSocketAddress("192.168.0.1", 1234);
+    
+    public void testOverheadA() throws InterruptedException {
+        ExecutorService service = 
+            Executors.newCachedThreadPool();
+        System.out.println("Starting 50 parallel connection requests to B");
+        for (int i = 0; i < 2; i++) {
+            service.execute(new Runnable() {
+                public void run() {
+                    UDTSocket socket = new UDTSocket();
+                    socket.setSoRendezvous(true);
+                    try {
+                        socket.setSoSenderBufferLimit(100);
+                        socket.setSoReceiverBufferLimit(100);
+                        socket.setSoUDPReceiverBufferSize(100);
+                        socket.setSoUDPSenderBufferSize(100);
+                        bindSocket(socket);
+                        System.out.println("Connecting...");
+                        socket.connect(addrB);
+                    } catch (IOException e) {
+                    } finally {
+                        try {
+                            socket.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            });
+        }
+        service.awaitTermination(1, TimeUnit.MINUTES);
+    }
+    
     public void testLargeTransfer() {
         if (!NetworkUtil.isUDTSupported()) {
             return;
@@ -254,7 +296,7 @@ public class UDTTest extends TestCase {
     }
 
     private int bindSocket(UDTSocket a) {
-        for (int i = 10000; i < 10000 + 50; i++) {
+        for (int i = 10000; i < 10000 + 2000; i++) {
             try {
                 a.bind(new InetSocketAddress(i));
             } catch (IOException e) {

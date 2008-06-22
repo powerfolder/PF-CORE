@@ -482,6 +482,14 @@ public abstract class AbstractDownloadManager extends PFComponent implements
 
     protected abstract void requestFilePartsRecord(Download download);
 
+    /**
+     * Be careful with the implementation of this method,
+     * it's called with internal locks in place.
+     * Reason: This method will access filepartsstate, which is
+     * also accessed in here. 
+     * TODO: Find a "cleaner" way so this method doesn't need to be locked.
+     * @throws BrokenDownloadException
+     */
     protected abstract void sendPartRequests() throws BrokenDownloadException;
 
     protected void setAutomatic(boolean auto) {
@@ -630,6 +638,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             .next().getPartner());
         assert lock.isHeldByCurrentThread();
 
+        setStarted();
         setState(InternalState.ACTIVE_DOWNLOAD);
         validateDownload();
 
@@ -791,8 +800,10 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                     });
                     break;
                 case COMPLETED :
-                    assert download.isCompleted();
                     addSourceImpl(download);
+                    if (!download.isCompleted()) {
+                        getController().getTransferManager().setCompleted(download);
+                    }
                     break;
                 default :
                     illegalState("addSource");
@@ -868,7 +879,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         if (fileID == null) {
             try {
                 fileID = new String(Util.encodeHex(
-                    Util.md5(getFileInfo().getName().getBytes("ISO-8859-1"))));
+                    Util.md5(getFileInfo().getName().getBytes("UTF8"))));
             } catch (UnsupportedEncodingException e) {
                 throw new Error(e);
             }
@@ -897,8 +908,11 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                 .warn(
                     "Couldn't delete old temporary file, some other process could be using it! Trying to set it's length to 0.");
             RandomAccessFile f = new RandomAccessFile(getTempFile(), "rw");
-            f.setLength(0);
-            f.close();
+            try {
+                f.setLength(0);
+            } finally {
+                f.close();
+            }
         }
     }
 
@@ -989,15 +1003,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                     // Do nothing, action will be taken after the worker is done
                     break;
                 case ACTIVE_DOWNLOAD :
-                    post(new Runnable() {
-                        public void run() {
-                            try {
-                                sendPartRequests();
-                            } catch (BrokenDownloadException e) {
-                                setBroken(TransferProblem.BROKEN_DOWNLOAD, e.toString());
-                            }
-                        }
-                    });
+                    sendPartRequests();
                     break;
                 case WAITING_FOR_FILEPARTSRECORD :
                     // Maybe request from different source
@@ -1081,15 +1087,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                     if (filePartsState.isCompleted()) {
                         checkFileValidity();
                     } else {
-                        post(new Runnable() {
-                            public void run() {
-                                try {
-                                    sendPartRequests();
-                                } catch (BrokenDownloadException e) {
-                                    setBroken(TransferProblem.BROKEN_DOWNLOAD, e.toString());
-                                }
-                            }
-                        });
+                        sendPartRequests();
                     }
                     break;
                 default :
@@ -1179,15 +1177,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                 case ACTIVE_DOWNLOAD :
                     removeSourceImpl(download);
                     if (hasSources()) {
-                        post(new Runnable() {
-                            public void run() {
-                                    try {
-                                        sendPartRequests();
-                                    } catch (BrokenDownloadException e) {
-                                        setBroken(TransferProblem.BROKEN_DOWNLOAD, e.toString());
-                                    }
-                                }
-                        });
+                        sendPartRequests();
                     }
                     break;
                 case MATCHING_AND_COPYING :
@@ -1214,9 +1204,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         // log().warn("saveMetaData()");
         File mf = getMetaFile();
         if (mf == null && !isCompleted()) {
-            if (!getTempFile().delete()) {
-                log().error("saveMetaData(): Couldn't delete temp file!");
-            }
+            killTempFile();
             return;
         }
 

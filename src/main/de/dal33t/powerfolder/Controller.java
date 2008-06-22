@@ -847,7 +847,7 @@ public class Controller extends PFComponent {
         }
 
         if (ConfigurationEntry.NET_FIREWALL_OPENPORT.getValueBoolean(this)) {
-            if (FirewallUtil.isFirewallAccessible()) {
+            if (FirewallUtil.isFirewallAccessible() && connectionListener != null) {
                 Thread opener = new Thread(new Runnable() {
                     public void run() {
                         try {
