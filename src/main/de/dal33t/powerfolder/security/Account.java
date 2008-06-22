@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.security;
 
 import java.io.Serializable;
@@ -53,13 +53,10 @@ public class Account extends Model implements Serializable {
     private boolean proUser;
 
     /**
-     * The possible license keys of this account.
-     * <p>
-     * Transient because of security reasons (should never leave the server VM).
-     * to obtain a valid license key use
-     * <code>UserService.getValidLicenseKey</code>.
+     * The possible license key files of this account.
+     * <code>AccountService.getValidLicenseKey</code>.
      */
-    private transient Collection<String> licenseKeys;
+    private Collection<String> licenseKeyFiles;
 
     /**
      * The default-synced folder of the user. May be null.
@@ -75,7 +72,7 @@ public class Account extends Model implements Serializable {
         this.permissions = new CopyOnWriteArrayList<Permission>();
         this.osSubscription = new OnlineStorageSubscription();
         this.osSubscription.setType(OnlineStorageSubscriptionType.NONE);
-        this.licenseKeys = new CopyOnWriteArrayList<String>();
+        this.licenseKeyFiles = new CopyOnWriteArrayList<String>();
     }
 
     // Basic permission stuff *************************************************
@@ -184,8 +181,8 @@ public class Account extends Model implements Serializable {
         this.defaultSynchronizedFolder = defaultSynchronizedFolder;
     }
 
-    public Collection<String> getLicenseKeys() {
-        return licenseKeys;
+    public Collection<String> getLicenseKeyFiles() {
+        return licenseKeyFiles;
     }
 
     public String toString() {

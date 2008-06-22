@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.ui.navigation;
 
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -334,8 +334,10 @@ public class ControlQuarter extends PFUIComponent {
         if (directory != null) {
             Folder folder = directory.getRootFolder();
             FolderModel folderModel = getController().getUIController()
-                    .getFolderRepositoryModel().locateFolderModel(folder);
-            for (DirectoryModel directoryModel : folderModel.getSubdirectories()) {
+                .getFolderRepositoryModel().locateFolderModel(folder);
+            for (DirectoryModel directoryModel : folderModel
+                .getSubdirectories())
+            {
                 TreeNode[] subpath = directoryModel.getPathTo(directory);
                 if (subpath != null) {
                     TreeNode[] path = new TreeNode[3 + subpath.length];
@@ -366,7 +368,7 @@ public class ControlQuarter extends PFUIComponent {
 
     public void setSelected(Folder folder) {
         FolderModel folderModel = getController().getUIController()
-                .getFolderRepositoryModel().locateFolderModel(folder);
+            .getFolderRepositoryModel().locateFolderModel(folder);
         MutableTreeNode node = folderModel.getTreeNode();
         TreeNode[] path = new TreeNode[3];
         path[0] = navTreeModel.getRootNode();
@@ -503,7 +505,8 @@ public class ControlQuarter extends PFUIComponent {
     private void doubleClicked() {
         if (getSelectedItem() == RootNode.WEBSERVICE_NODE_LABEL) {
             try {
-                BrowserLauncher.openURL(Constants.ONLINE_STORAGE_URL);
+                BrowserLauncher.openURL(getController().getOSClient()
+                    .getWebURL());
             } catch (IOException e) {
                 log().error("Unable to open online storage in browser", e);
             }
@@ -513,7 +516,8 @@ public class ControlQuarter extends PFUIComponent {
             return;
         }
         if (folder.isPreviewOnly()) {
-            PreviewToJoinPanel panel = new PreviewToJoinPanel(getController(), folder);
+            PreviewToJoinPanel panel = new PreviewToJoinPanel(getController(),
+                folder);
             panel.open();
         } else {
             File localBase = folder.getLocalBase();
