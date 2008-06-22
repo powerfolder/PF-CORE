@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.transfer;
 
 import java.util.ArrayList;
@@ -61,7 +61,7 @@ public class Download extends Transfer {
     private Queue<RequestPart> pendingRequests = new LinkedList<RequestPart>();
 
     private transient DownloadManager manager;
-    
+
     /** for serialisation */
     public Download() {
     }
@@ -100,22 +100,23 @@ public class Download extends Transfer {
         return automatic;
     }
 
-
     /**
-     * Returns the managing MultiSourceDownload for this download. 
+     * Returns the managing MultiSourceDownload for this download.
+     * 
      * @return
      */
     public DownloadManager getDownloadManager() {
         return manager;
     }
-    
+
     public void setDownloadManager(DownloadManager manager) {
         this.manager = manager;
     }
 
     /**
      * Called when the partner supports part-transfers and is ready to upload
-     * @param usedFileInfo 
+     * 
+     * @param usedFileInfo
      */
     public void uploadStarted() {
         lastTouch.setTime(System.currentTimeMillis());
@@ -123,8 +124,7 @@ public class Download extends Transfer {
             log().warn("Received multiple upload start messages!");
             return;
         }
-        log().info(
-            "Uploader supports partial transfers.");
+        log().info("Uploader supports partial transfers.");
         setStarted();
         manager.readyForRequests(this);
     }
@@ -133,16 +133,15 @@ public class Download extends Transfer {
      * Requests a FPR from the remote side.
      */
     public void requestFilePartsRecord() {
-        assert Util.useDeltaSync(getController(), getPartner()) :
-            "Requesting FilePartsRecord from a client that doesn't support that!";
+        assert Util.useDeltaSync(getController(), getPartner()) : "Requesting FilePartsRecord from a client that doesn't support that!";
 
         getPartner().sendMessagesAsynchron(
             new RequestFilePartsRecord(getFile()));
     }
-    
+
     public void receivedFilePartsRecord(FilePartsRecord record) {
         Reject.ifNull(record, "Record is null");
-        
+
         lastTouch.setTime(System.currentTimeMillis());
         log().info("Received parts record");
         manager.receivedFilePartsRecord(this, record);
@@ -150,9 +149,10 @@ public class Download extends Transfer {
 
     /**
      * Requests a single part from the remote peer.
+     * 
      * @param range
      * @return
-     * @throws BrokenDownloadException 
+     * @throws BrokenDownloadException
      */
     public boolean requestPart(Range range) throws BrokenDownloadException {
         Validate.notNull(range);
@@ -161,13 +161,15 @@ public class Download extends Transfer {
             if (pendingRequests.size() >= MAX_REQUESTS_QUEUED) {
                 return false;
             }
-           
+
             try {
-                rp = new RequestPart(getFile(), range, Math.max(0, transferState.getProgress()));
+                rp = new RequestPart(getFile(), range, Math.max(0,
+                    transferState.getProgress()));
             } catch (IllegalArgumentException e) {
                 // I need to do this because FileInfos are NOT immutable...
                 log().warn("Concurrent file change while requesting:" + e);
-                throw new BrokenDownloadException("Concurrent file change while requesting: " + e);
+                throw new BrokenDownloadException(
+                    "Concurrent file change while requesting: " + e);
             }
             pendingRequests.add(rp);
         }
@@ -180,7 +182,7 @@ public class Download extends Transfer {
             return new ArrayList<RequestPart>(pendingRequests);
         }
     }
-    
+
     /**
      * Adds a chunk to the download
      * 
@@ -190,13 +192,13 @@ public class Download extends Transfer {
     public synchronized boolean addChunk(FileChunk chunk) {
         Reject.ifNull(chunk, "Chunk is null");
         assert chunk.file.isCompletelyIdentical(getFile());
-        
+
         if (isBroken()) {
             return false;
         }
-        
-//        log().debug("Received " + chunk);
-        
+
+        // log().debug("Received " + chunk);
+
         if (!isStarted()) {
             // donwload begins to start
             setStarted();
@@ -205,8 +207,7 @@ public class Download extends Transfer {
 
         // Remove pending requests for the received chunk since
         // the manager below might want to request new parts.
-        Range range = Range.getRangeByLength(chunk.offset,
-            chunk.data.length);
+        Range range = Range.getRangeByLength(chunk.offset, chunk.data.length);
         synchronized (pendingRequests) {
             // Maybe the sender merged requests from us, so check all
             // requests
@@ -219,7 +220,7 @@ public class Download extends Transfer {
                 }
             }
         }
-        
+
         getCounter().chunkTransferred(chunk);
 
         manager.receivedChunk(this, chunk);
@@ -228,11 +229,12 @@ public class Download extends Transfer {
 
     /**
      * Requests this download from the partner.
+     * 
      * @param startOffset
      */
     public void request(long startOffset) {
         getPartner().sendMessagesAsynchron(
-            new RequestDownload(getFile(), startOffset)); 
+            new RequestDownload(getFile(), startOffset));
     }
 
     /**
@@ -261,13 +263,14 @@ public class Download extends Transfer {
 
     @Override
     void shutdown() {
-        // This shouldn't be necessary... 
+        // This shouldn't be necessary...
         if (getPartner() != null && getPartner().isCompleteyConnected()) {
-            getPartner().sendMessageAsynchron(new AbortDownload(getFile()), null);
+            getPartner().sendMessageAsynchron(new AbortDownload(getFile()),
+                null);
         }
         super.shutdown();
     }
-    
+
     /**
      * @return if this is a pending download
      */
@@ -289,8 +292,8 @@ public class Download extends Transfer {
         }
         // timeout is, when dl is not enqued at remote side,
         // and has timeout
-        boolean timedOut = System.currentTimeMillis() - 
-                Constants.DOWNLOAD_REQUEST_TIMEOUT_LIMIT > lastTouch.getTime()
+        boolean timedOut = System.currentTimeMillis()
+            - Constants.DOWNLOAD_REQUEST_TIMEOUT_LIMIT > lastTouch.getTime()
             && !queued;
         if (timedOut) {
             log().warn("Abort cause: Timeout.");
@@ -306,7 +309,8 @@ public class Download extends Transfer {
         if (automatic) {
             Folder folder = getFile().getFolder(
                 getController().getFolderRepository());
-            boolean onBlacklist = folder.getDiskItemFilter().isExcluded(getFile());
+            boolean onBlacklist = folder.getDiskItemFilter().isExcluded(
+                getFile());
             if (onBlacklist) {
                 log().warn("Abort cause: On blacklist.");
                 return true;
@@ -316,9 +320,11 @@ public class Download extends Transfer {
             boolean newerFileAvailable = getFile().isNewerAvailable(
                 getController().getFolderRepository());
             if (newerFileAvailable) {
-                log().warn("Abort cause: Newer version available. " + getFile());
+                log().warn(
+                    "Abort cause: Newer version available. "
+                        + getFile().toDetailString());
                 return true;
-//                throw new RuntimeException("ABORT: " + this);
+                // throw new RuntimeException("ABORT: " + this);
             }
         }
 
@@ -371,7 +377,8 @@ public class Download extends Transfer {
 
     @Override
     public FileInfo getFile() {
-        // This is necessary, because FileInfo also contains version information (which might be old at this point)
+        // This is necessary, because FileInfo also contains version information
+        // (which might be old at this point)
         if (manager != null) {
             return manager.getFileInfo();
         }
