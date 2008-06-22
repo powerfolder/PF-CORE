@@ -729,11 +729,9 @@ public class FileTransferTest extends TwoControllerTestCase {
         final File incompleteFile = 
             new File(getFolderAtLisa().getSystemSubDir(), "transfers").listFiles(
             new FilenameFilter() {
-
                 public boolean accept(File dir, String name) {
                     return name.contains("(incomplete) ");
                 }
-                
             })[0];
         FileInfo bartFInfo = getFolderAtBart().getKnownFiles().iterator()
             .next();
