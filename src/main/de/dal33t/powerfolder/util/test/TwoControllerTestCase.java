@@ -78,7 +78,7 @@ public class TwoControllerTestCase extends TestCase {
             || (getContollerLisa() != null && getContollerLisa().isStarted()))
         {
             // Ensure shutdown of controller. Maybe tearDown was not called
-            // becaused of previous failing test.
+            // because of previous failing test.
             stopControllers();
         }
 
