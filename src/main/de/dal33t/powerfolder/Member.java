@@ -1311,36 +1311,34 @@ public class Member extends PFComponent {
                 nExpected = Integer.valueOf(nExpected.intValue() - 1);
                 expectedListMessages.put(changes.folder, nExpected);
                 TransferManager tm = getController().getTransferManager();
-                synchronized (cachedFileList) {
-                    if (changes.added != null) {
-                        for (int i = 0; i < changes.added.length; i++) {
-                            FileInfo file = changes.added[i];
-                            cachedFileList.remove(file);
-                            cachedFileList.put(file, file);
+                if (changes.added != null) {
+                    for (int i = 0; i < changes.added.length; i++) {
+                        FileInfo file = changes.added[i];
+                        cachedFileList.remove(file);
+                        cachedFileList.put(file, file);
 
-                            // file "changed" so if downloading break the
-                            // download
-                            if (logVerbose) {
-                                log().verbose(
-                                    "downloading changed file, breaking it! "
-                                        + file + " " + this);
-                            }
-                            tm.abortDownload(file, this);
+                        // file "changed" so if downloading break the
+                        // download
+                        if (logVerbose) {
+                            log().verbose(
+                                "downloading changed file, breaking it! "
+                                    + file + " " + this);
                         }
+                        tm.abortDownload(file, this);
                     }
-                    if (changes.removed != null) {
-                        for (int i = 0; i < changes.removed.length; i++) {
-                            FileInfo file = changes.removed[i];
-                            cachedFileList.remove(file);
-                            cachedFileList.put(file, file);
-                            // file removed so if downloading break the download
-                            if (logVerbose) {
-                                log().verbose(
-                                    "downloading removed file, breaking it! "
-                                        + file + ' ' + this);
-                            }
-                            tm.abortDownload(file, this);
+                }
+                if (changes.removed != null) {
+                    for (int i = 0; i < changes.removed.length; i++) {
+                        FileInfo file = changes.removed[i];
+                        cachedFileList.remove(file);
+                        cachedFileList.put(file, file);
+                        // file removed so if downloading break the download
+                        if (logVerbose) {
+                            log().verbose(
+                                "downloading removed file, breaking it! "
+                                    + file + ' ' + this);
                         }
+                        tm.abortDownload(file, this);
                     }
                 }
 
@@ -1508,7 +1506,7 @@ public class Member extends PFComponent {
             // now give the message to all message listeners
             fireMessageToListeners(message);
         } finally {
-            Profiling.end(profilingEntry, 50);
+            Profiling.end(profilingEntry, 100);
         }
     }
 
