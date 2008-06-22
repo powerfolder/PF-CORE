@@ -120,7 +120,8 @@ public class Profiling {
         long elapsed = profilingEntry.elapsedMilliseconds();
         String operationName = profilingEntry.getOperationName();
         if (profileMillis > 0 && elapsed >= profileMillis) {
-            LOG.error(profilingEntry.getOperationName() + " took " + elapsed
+            LOG.error(profilingEntry.getOperationName()
+                    + " [" + profilingEntry.getDetails() + "] took " + elapsed
                 + " milliseconds");
         }
         totalTime += elapsed;
