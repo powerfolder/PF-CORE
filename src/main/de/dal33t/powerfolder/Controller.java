@@ -577,6 +577,7 @@ public class Controller extends PFComponent {
                         "Running in VERBOSE mode, not logging to file (enable in Logger.java)'");
             }
             Profiling.setEnabled(true);
+            Profiling.reset();
         } else {
             Logger.setEnabledTextPanelLogging(false);
             Logger.setEnabledConsoleLogging(false);
