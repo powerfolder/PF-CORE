@@ -51,6 +51,11 @@ public class Constants {
     public static final String POWERFOLDER_PRO_URL = "http://www.powerfolder.com/buynow.html";
     
     /**
+     * URL where the contact form resides
+     */
+    public static final String POWERFOLDER_CONTACT_URL = "http://www.powerfolder.com/contact.html";
+    
+    /**
      * URL of the page to report bugs.
      */
     public static final String BUG_REPORT_URL = "http://forums.powerfolder.com/forumdisplay.php?f=18";
