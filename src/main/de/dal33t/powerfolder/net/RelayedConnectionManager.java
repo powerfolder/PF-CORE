@@ -504,6 +504,9 @@ public class RelayedConnectionManager extends PFComponent {
             {
                 return;
             }
+            if (!getController().getNodeManager().isStarted()) {
+                return;
+            }
             tringToConnect = true;
             Runnable connector = new Runnable() {
                 public void run() {
