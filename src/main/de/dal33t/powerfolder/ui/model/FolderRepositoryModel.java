@@ -196,12 +196,14 @@ public class FolderRepositoryModel extends PFUIComponent {
         Folder[] folders = getController().getFolderRepository().getFolders();
         for (Folder folder : folders) {
             FolderModel folderModel = locateFolderModel(folder);
-            if (hideFolder(folder) && myFoldersTreeNode
-                    .contains(folderModel.getTreeNode())) {
-                removeFolder(folder, this);
-            } else if (!hideFolder(folder) && !myFoldersTreeNode
-                    .contains(folderModel.getTreeNode())) {
-                addFolder(folder, this, false);
+            if (folderModel != null) {
+                if (hideFolder(folder) && myFoldersTreeNode
+                        .contains(folderModel.getTreeNode())) {
+                    removeFolder(folder, this);
+                } else if (!hideFolder(folder) && !myFoldersTreeNode
+                        .contains(folderModel.getTreeNode())) {
+                    addFolder(folder, this, false);
+                }
             }
         }
     }
