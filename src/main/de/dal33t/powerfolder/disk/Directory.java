@@ -480,20 +480,22 @@ public class Directory implements Comparable<Directory>, DiskItem {
      *            the file to add to this Directory
      */
     private void addFile(Member member, FileInfo fileInfo) {
-        if (fileInfoHolderMap.containsKey(fileInfo)) { // already there
-            FileInfoHolder fileInfoHolder = fileInfoHolderMap.get(fileInfo);
-            if (member.isMySelf()) {
-                // replace, this maybe a converted meta FileInfo that is
-                // re-added.
-                fileInfoHolderMap.put(fileInfo, fileInfoHolder);
-                fileInfoHolder.setFileInfo(fileInfo);
-            }
+        synchronized (fileInfoHolderMap) {
+            if (fileInfoHolderMap.containsKey(fileInfo)) { // already there
+                FileInfoHolder fileInfoHolder = fileInfoHolderMap.get(fileInfo);
+                if (member.isMySelf()) {
+                    // replace, this maybe a converted meta FileInfo that is
+                    // re-added.
+                    fileInfoHolderMap.put(fileInfo, fileInfoHolder);
+                    fileInfoHolder.setFileInfo(fileInfo);
+                }
 
-            fileInfoHolder.put(member, fileInfo);
-        } else { // new
-            FileInfoHolder fileInfoHolder = new FileInfoHolder(rootFolder,
-                member, fileInfo);
-            fileInfoHolderMap.put(fileInfo, fileInfoHolder);
+                fileInfoHolder.put(member, fileInfo);
+            } else { // new
+                FileInfoHolder fileInfoHolder = new FileInfoHolder(rootFolder,
+                    member, fileInfo);
+                fileInfoHolderMap.put(fileInfo, fileInfoHolder);
+            }
         }
     }
 
@@ -770,13 +772,15 @@ public class Directory implements Comparable<Directory>, DiskItem {
             sub.toAscii(str, newdepth);
         }
         tabs = getTabs(newdepth);
-        it = fileInfoHolderMap.values().iterator();
-        while (it.hasNext()) {
-            str.append(tabs);
-            str.append("<FILE>");
-            FileInfo file = ((FileInfoHolder) it.next()).getFileInfo();
-            str.append(file.getFilenameOnly());
-            str.append("\n");
+        synchronized (fileInfoHolderMap) {
+            it = fileInfoHolderMap.values().iterator();
+            while (it.hasNext()) {
+                str.append(tabs);
+                str.append("<FILE>");
+                FileInfo file = ((FileInfoHolder) it.next()).getFileInfo();
+                str.append(file.getFilenameOnly());
+                str.append("\n");
+            }
         }
         return str;
     }
