@@ -258,7 +258,12 @@ public class Wizard extends JPanel implements ActionListener {
         finishButton.setEnabled(current.canFinish());
     }
 
-    private void back() {
+    /**
+     * Moves the wizard to the previous panel.
+     * <p>
+     * Basically does the same link pressing "< Back"
+     */
+    public void back() {
         WizardPanel wp = (WizardPanel) previous.pop();
         setPanel(wp);
         updateButtons();
