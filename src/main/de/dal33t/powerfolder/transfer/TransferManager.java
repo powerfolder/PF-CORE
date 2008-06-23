@@ -1564,6 +1564,11 @@ public class TransferManager extends PFComponent {
                     log().debug(
                     "Got active download of older file version, aborting.");
                     man.abortAndCleanup();
+                    if (dlManagers.containsKey(fInfo)) {
+                        // Still there ?
+                        // Retry later
+                        return;
+                    }
                 }
                 try {
                     man = new MultiSourceDownloadManager(getController(),
@@ -1574,8 +1579,7 @@ public class TransferManager extends PFComponent {
                     return;
                 }
                 if (dlManagers.put(fInfo, man) != null) {
-//                    Can happen, but will be followed by a remove (which must be caught)
-//                    throw new AssertionError("Found old manager!");
+                    throw new AssertionError("Found old manager!");
                 }
             }
         } catch (AssertionError e) {
@@ -1730,9 +1734,6 @@ public class TransferManager extends PFComponent {
         // Debug.dumpCurrentStackTrace();
         assert manager.isDone() : "Manager to remove is NOT done!";
         // Check if there's a different manager (for a newer version) already
-        if (dlManagers.get(manager.getFileInfo()) != manager) {
-            return;
-        }
         if (!dlManagers.remove(manager.getFileInfo(), manager)) {
             // FIXME This can happen if inbetween COMPLETED an abort message is
             // received!
