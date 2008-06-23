@@ -17,7 +17,7 @@
  *
  * $Id: AddLicenseHeader.java 4282 2008-06-16 03:25:09Z tot $
  */
-package de.dal33t.powerfolder.test;
+package de.dal33t.powerfolder.test.util;
 
 import de.dal33t.powerfolder.util.Profiling;
 import de.dal33t.powerfolder.util.ProfilingEntry;
