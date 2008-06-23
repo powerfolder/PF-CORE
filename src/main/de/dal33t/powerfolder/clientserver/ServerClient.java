@@ -191,7 +191,7 @@ public class ServerClient extends PFComponent {
             return accountDetails.getAccount();
         }
         AccountDetails newAccountDetails = userService.getAccountDetails();
-        log().warn(
+        log().info(
             "Login to server (" + theUsername + ") result: " + accountDetails);
         if (newAccountDetails != null) {
             accountDetails = newAccountDetails;
@@ -329,7 +329,7 @@ public class ServerClient extends PFComponent {
                     // node.
                     initializeServiceStubs();
 
-                    log().info("Got connect to server: " + server);
+                    log().debug("Got connect to server: " + server);
                 }
 
                 if (username != null) {
@@ -391,6 +391,9 @@ public class ServerClient extends PFComponent {
                 log().warn(
                     "NOT connecting to server: " + server
                         + ". Reason: Not on LAN");
+                return;
+            }
+            if (!getController().getNodeManager().isStarted()) {
                 return;
             }
             // if (!ConfigurationEntry.AUTO_CONNECT
