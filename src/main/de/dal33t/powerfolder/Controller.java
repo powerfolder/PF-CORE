@@ -97,7 +97,7 @@ public class Controller extends PFComponent {
     /**
      * program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "3.1.0 dev3";
+    public static final String PROGRAM_VERSION = "3.1.0 dev5";
 
     /** general wait time for all threads (5000 is a balanced value) */
     private static final long WAIT_TIME = 5000;
@@ -527,8 +527,8 @@ public class Controller extends PFComponent {
             }
             MemberInfo serverInfo = new MemberInfo(name, id);
             serverInfo.setConnectAddress(Util.parseConnectionString(host));
-            log().warn(
-                "Loaded server from config: " + serverInfo + ", ID: " + id);
+            log().info(
+                "Using server from config: " + serverInfo + ", ID: " + id);
             server = serverInfo.getNode(this, true);
         }
 
@@ -576,7 +576,7 @@ public class Controller extends PFComponent {
                     .info(
                         "Running in VERBOSE mode, not logging to file (enable in Logger.java)'");
             }
-            Profiling.setEnabled(true);
+            Profiling.setEnabled(false);
             Profiling.reset();
         } else {
             Logger.setEnabledTextPanelLogging(false);
@@ -847,7 +847,9 @@ public class Controller extends PFComponent {
         }
 
         if (ConfigurationEntry.NET_FIREWALL_OPENPORT.getValueBoolean(this)) {
-            if (FirewallUtil.isFirewallAccessible() && connectionListener != null) {
+            if (FirewallUtil.isFirewallAccessible()
+                && connectionListener != null)
+            {
                 Thread opener = new Thread(new Runnable() {
                     public void run() {
                         try {
