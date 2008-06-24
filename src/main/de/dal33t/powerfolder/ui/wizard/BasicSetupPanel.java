@@ -88,7 +88,7 @@ public class BasicSetupPanel extends PFWizardPanel {
         CellConstraints cc = new CellConstraints();
 
         builder.addLabel(Translation
-            .getTranslation("wizard.basicsetup.enternick"), cc.xy(1, 1));
+            .getTranslation("wizard.basicsetup.computer_name"), cc.xy(1, 1));
         builder.add(nameField, cc.xy(1, 3));
         builder.addLabel(Translation
             .getTranslation("wizard.basicsetup.networking"), cc.xy(1, 5));
