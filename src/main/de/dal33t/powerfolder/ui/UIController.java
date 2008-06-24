@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.ui;
 
 import java.awt.*;
@@ -325,21 +325,15 @@ public class UIController extends PFComponent {
 
         // Open quickstart guides on first start
         gotoQuickstartGuidesIfFirstStart();
-        
+
         // Open wizard on first start
-        if (getController().getPreferences().getBoolean("openwizard2", true)) {
+        if (!Util.isRunningProVersion()
+            && getController().getPreferences().getBoolean("openwizard2", true))
+        {
             hideSplash();
             PFWizard.openBasicSetupWizard(getController());
             // Now never again, only on button
             getController().getPreferences().putBoolean("openwizard2", false);
-            getController().getPreferences()
-                .putBoolean("openwizard_os2", false);
-        }
-        if (getController().getPreferences().getBoolean("openwizard_os2", true)
-            && !getController().isLanOnly())
-        {
-            hideSplash();
-            PFWizard.openLoginWebServiceWizard(getController(), true);
             getController().getPreferences()
                 .putBoolean("openwizard_os2", false);
         }
@@ -573,8 +567,8 @@ public class UIController extends PFComponent {
 
             if (totalCPSdownKB > 1024) {
                 downText = Translation.getTranslation(
-                    "systray.tooltip.down.mb", Format.getNumberFormat()
-                        .format(totalCPSdownKB / 1024));
+                    "systray.tooltip.down.mb", Format.getNumberFormat().format(
+                        totalCPSdownKB / 1024));
             } else {
                 downText = Translation.getTranslation("systray.tooltip.down",
                     Format.getNumberFormat().format(totalCPSdownKB));
