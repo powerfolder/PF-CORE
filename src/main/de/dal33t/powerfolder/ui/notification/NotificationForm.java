@@ -64,35 +64,46 @@ public class NotificationForm extends JPanel {
                                       Action cancelAction) {
         JPanel jPanel = new JPanel();
         jPanel.setBackground(Color.WHITE);
-        FormLayout formLayout = new FormLayout(
-                "fill:7px:none, fill:83px:none, fill:12px:none, fill:83px:none, fill:7px:none",
-                "center:40px:none, center:70px:none, center:12px:none, center:default:none, center:default:none");
         CellConstraints cc = new CellConstraints();
-        jPanel.setLayout(formLayout);
 
         JButton button = new JButton();
         button.setAction(acceptAction);
         button.setText(acceptOptionLabel);
+        FormLayout formLayout;
+        int internalWidth;
+        int[] cols;
         if (cancelOptionLabel == null) {
-            jPanel.add(button, cc.xyw(2, 4, 3));
+            formLayout = new FormLayout(
+                    "fill:7px:none, fill:85px:none, fill:80px:none, fill:85px:none, fill:7px:none",
+                    "center:40px:none, center:70px:none, center:12px:none, center:default:none, center:default:none");
+            internalWidth = 3;
+            jPanel.setLayout(formLayout);
+            jPanel.add(button, cc.xy(3, 4));
+            cols = new int[]{2, 3, 4};
         } else {
-            jPanel.add(button, cc.xy(2, 4));
+            formLayout = new FormLayout(
+                    "fill:7px:none, fill:30px:none, fill:80px:none, fill:30px:none, fill:80px:none, fill:30px:none, fill:7px:none",
+                    "center:40px:none, center:70px:none, center:12px:none, center:default:none, center:default:none");
+            internalWidth = 5;
+            jPanel.setLayout(formLayout);
+            jPanel.add(button, cc.xy(3, 4));
 
             button = new JButton();
             button.setAction(cancelAction);
             button.setText(cancelOptionLabel);
-            jPanel.add(button, cc.xy(4, 4));
+            jPanel.add(button, cc.xy(5, 4));
+            cols = new int[]{2, 3, 4, 5, 6};
         }
 
-        jPanel.add(createHeaderPanel(titleText), cc.xywh(2, 1, 3, 1));
+        jPanel.add(createHeaderPanel(titleText), cc.xywh(2, 1, internalWidth, 1));
 
         JTextArea textArea = new JTextArea(msgText);
         textArea.setLineWrap(true);
         textArea.setWrapStyleWord(true);
-        jPanel.add(textArea, new CellConstraints(2, 2, 3, 1,
+        jPanel.add(textArea, new CellConstraints(2, 2, internalWidth, 1,
                 CellConstraints.DEFAULT, CellConstraints.TOP));
 
-        addFillComponents(jPanel, new int[]{2, 3, 4, 5}, new int[]{2, 3, 4, 5});
+        addFillComponents(jPanel, cols, new int[]{1, 2, 3, 4, 5});
         return jPanel;
     }
 
