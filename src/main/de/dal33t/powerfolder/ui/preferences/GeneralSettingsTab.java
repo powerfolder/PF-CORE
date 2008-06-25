@@ -69,7 +69,8 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
     private JCheckBox startWithWindowsBox;
 
-    private JCheckBox showNotificationBox;
+    private JCheckBox showChatNotificationBox;
+    private JCheckBox showSystemNotificationBox;
 
     private JComboBox languageChooser;
     private JComboBox colorThemeChooser;
@@ -241,13 +242,21 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                         .getTranslation("preferences.dialog.startwithwindows"));
             }
 
-            // Show notifications when minimized
-            ValueModel snModel = new ValueHolder(
-                ConfigurationEntry.SHOW_NOTIFICATIONS
+            // Show chat notifications when minimized
+            ValueModel scnModel = new ValueHolder(
+                ConfigurationEntry.SHOW_CHAT_NOTIFICATIONS
                     .getValueBoolean(getController()));
-            showNotificationBox = BasicComponentFactory.createCheckBox(
-                new BufferedValueModel(snModel, writeTrigger), Translation
-                    .getTranslation("preferences.dialog.show_notifications"));
+            showChatNotificationBox = BasicComponentFactory.createCheckBox(
+                new BufferedValueModel(scnModel, writeTrigger), Translation
+                    .getTranslation("preferences.dialog.show_chat_notifications"));
+
+            // Show system notifications when minimized
+            ValueModel ssnModel = new ValueHolder(
+                ConfigurationEntry.SHOW_SYSTEM_NOTIFICATIONS
+                    .getValueBoolean(getController()));
+            showSystemNotificationBox = BasicComponentFactory.createCheckBox(
+                new BufferedValueModel(ssnModel, writeTrigger), Translation
+                    .getTranslation("preferences.dialog.show_system_notifications"));
 
             // DesktopIni does not work on Vista
             if (OSUtil.isWindowsSystem() && !OSUtil.isWindowsVistaSystem()) {
@@ -269,7 +278,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         if (panel == null) {
             FormLayout layout = new FormLayout(
                 "right:100dlu, 3dlu, 30dlu, 3dlu, 15dlu, 10dlu, 30dlu, 30dlu, pref",
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, top:pref, 3dlu, top:pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, top:pref, 3dlu, top:pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
 
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
@@ -339,7 +348,10 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 }
 
                 row += 2;
-                builder.add(showNotificationBox, cc.xywh(3, row, 7, 1));
+                builder.add(showChatNotificationBox, cc.xywh(3, row, 7, 1));
+
+                row += 2;
+                builder.add(showSystemNotificationBox, cc.xywh(3, row, 7, 1));
 
                 if (!OSUtil.isWindowsVistaSystem()) {
                     builder.appendRow("3dlu");
@@ -446,10 +458,16 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         ConfigurationEntry.USE_RECYCLE_BIN.setValue(getController(), Boolean
             .toString(useRecycleBinBox.isSelected()));
 
-        if (showNotificationBox != null) {
+        if (showChatNotificationBox != null) {
             // Show Notifications
-            ConfigurationEntry.SHOW_NOTIFICATIONS.setValue(getController(), Boolean
-                .toString(showNotificationBox.isSelected()));
+            ConfigurationEntry.SHOW_CHAT_NOTIFICATIONS.setValue(getController(),
+                    Boolean.toString(showChatNotificationBox.isSelected()));
+        }
+
+        if (showSystemNotificationBox != null) {
+            // Show Notifications
+            ConfigurationEntry.SHOW_SYSTEM_NOTIFICATIONS.setValue(getController(),
+                    Boolean.toString(showSystemNotificationBox.isSelected()));
         }
 
         if (usePowerFolderIconBox != null) {

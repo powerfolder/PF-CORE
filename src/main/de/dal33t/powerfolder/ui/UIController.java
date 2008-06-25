@@ -247,7 +247,7 @@ public class UIController extends PFComponent {
         nodeManagerModel = new NodeManagerModel(getController(), navTreeModel,
             chatModel);
         blinkManager = new BlinkManager(getController(), chatModel);
-        new ChatNotificationManager(getController(), chatModel);
+        new ChatNotificationManager(chatModel);
         getController().getFolderRepository().addFolderRepositoryListener(
             new MyFolderRepositoryListener());
         folderRepoModel = new FolderRepositoryModel(getController(),
@@ -897,12 +897,8 @@ public class UIController extends PFComponent {
         ChatModel.ChatModelListener
     {
 
-        private Controller controller;
-
-        private ChatNotificationManager(Controller controller,
-            ChatModel chatModel)
+        private ChatNotificationManager(ChatModel chatModel)
         {
-            this.controller = controller;
             chatModel.addChatModelListener(this);
         }
 
@@ -912,8 +908,6 @@ public class UIController extends PFComponent {
                 // Ignore status updates
                 return;
             }
-
-            System.out.println(event.getMessage());
 
             if (event.getSource() instanceof Member) {
                 Member m = (Member) event.getSource();
@@ -996,7 +990,9 @@ public class UIController extends PFComponent {
                 }
             }
 
-            if (changed) {
+            if (changed && ConfigurationEntry.SHOW_SYSTEM_NOTIFICATIONS
+                .getValueBoolean(getController()))
+            {
                 String text2 = Translation.getTranslation(
                     "quickinfo.myfolders.powerfolders", Format
                         .formatBytes(nTotalBytes), folders.length);
@@ -1017,10 +1013,8 @@ public class UIController extends PFComponent {
      *            Message to show if notification is displayed.
      */
     public void notifyMessage(String title, String message) {
-        if (mainFrame.isIconifiedOrHidden()
-            && started
-            && ConfigurationEntry.SHOW_NOTIFICATIONS
-                .getValueBoolean(getController()))
+
+        if (mainFrame.isIconifiedOrHidden() && started)
         {
             NotificationHandler notificationHandler = new NotificationHandler(
                 getController(), title, message);
@@ -1042,10 +1036,7 @@ public class UIController extends PFComponent {
      *            minimized.
      */
     public void notifyMessage(String title, String message, TimerTask task) {
-        if (mainFrame.isIconifiedOrHidden()
-            && started
-            && ConfigurationEntry.SHOW_NOTIFICATIONS
-                .getValueBoolean(getController()))
+        if (mainFrame.isIconifiedOrHidden() && started)
         {
             NotificationHandler notificationHandler = new NotificationHandler(
                 getController(), title, message, task);

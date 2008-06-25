@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.ui;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.event.InvitationReceivedEvent;
 import de.dal33t.powerfolder.event.InvitationReceivedHandler;
@@ -87,6 +88,13 @@ public class InvitationReceivedHandlerDefaultImpl extends PFComponent implements
                     }
                     return;
                 }
+
+                if (!ConfigurationEntry.SHOW_SYSTEM_NOTIFICATIONS
+                        .getValueBoolean(getController()))
+                {
+                    return;
+                }
+
                 final ReceivedInvitationPanel panel = new ReceivedInvitationPanel(
                         getController(), invitation);
                 TimerTask task = new TimerTask() {

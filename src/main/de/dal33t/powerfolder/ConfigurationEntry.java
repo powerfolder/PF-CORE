@@ -226,9 +226,14 @@ public enum ConfigurationEntry {
     USE_PF_ICON("use.pf.icon", Boolean.TRUE.toString()),
 
     /**
-     * Whether to show notifications when minimized.
+     * Whether to show chat notifications when minimized.
      */
-    SHOW_NOTIFICATIONS("show.notifications", Boolean.TRUE.toString()),
+    SHOW_CHAT_NOTIFICATIONS("show.chat.notifications", Boolean.TRUE.toString()),
+
+    /**
+     * Whether to show system notifications when minimized.
+     */
+    SHOW_SYSTEM_NOTIFICATIONS("show.system.notifications", Boolean.TRUE.toString()),
 
     /**
      * Whether to log verbose.

@@ -310,7 +310,14 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             newState = DISCONNECTED;
         }
 
+        if (!ConfigurationEntry.SHOW_SYSTEM_NOTIFICATIONS
+                .getValueBoolean(getController()))
+        {
+            return;
+        }
+
         synchronized (state) {
+
             int oldState = state.getAndSet(newState);
             if (oldState != newState) {
                 // State changed, notify ui.
