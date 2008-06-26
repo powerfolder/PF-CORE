@@ -193,6 +193,42 @@ public class InvitationUtil {
      *            the invitation
      * @param to
      *            the destination email address, if null the user is asked for.
+     */
+    public static void invitationByServer(Controller controller,
+        Invitation invitation, String to)
+    {
+        Reject.ifNull(controller, "Controller is null");
+        Reject.ifNull(invitation, "Invitation is null");
+
+        JFrame parent = controller.getUIController().getMainFrame()
+            .getUIComponent();
+
+        if (to == null) {
+            to = (String) JOptionPane.showInputDialog(parent, Translation
+                .getTranslation("sendinvitation.ask_emailaddres.message"),
+                Translation
+                    .getTranslation("sendinvitation.ask_emailaddres.title"),
+                JOptionPane.QUESTION_MESSAGE, null, null, Translation
+                    .getTranslation("send_invitation.example_email_address"));
+        }
+
+        // null if canceled
+        if (to == null) {
+            return;
+        }
+
+        controller.getOSClient().getFolderService().inviteUser(invitation, to);
+    }
+
+    /**
+     * Handles the invitation to mail option
+     * 
+     * @param controller
+     *            the controller
+     * @param invitation
+     *            the invitation
+     * @param to
+     *            the destination email address, if null the user is asked for.
      * @return true if the email was sent
      */
     public static boolean invitationToMail(Controller controller,

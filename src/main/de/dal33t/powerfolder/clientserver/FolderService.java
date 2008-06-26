@@ -22,6 +22,7 @@ package de.dal33t.powerfolder.clientserver;
 import de.dal33t.powerfolder.disk.FolderException;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.message.Invitation;
 
 /**
  * Access/Control over folders of a server.
@@ -57,11 +58,11 @@ public interface FolderService {
      * 
      * @param user
      *            the name of the user to be invited
-     * @param foInfo
+     * @param invitation
      *            the folder to be invited to
      * @throws FolderException
      */
-    void inviteUser(FolderInfo foInfo, String user) throws FolderException;
+    void inviteUser(Invitation invitation, String user);
 
     /**
      * Changes the sync profile on the remote server for this folder.
