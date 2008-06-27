@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id: AddLicenseHeader.java 4282 2008-06-16 03:25:09Z tot $
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id: AddLicenseHeader.java 4282 2008-06-16 03:25:09Z tot $
+ */
 package de.dal33t.powerfolder.test.transfer;
 
 import java.io.File;
@@ -258,7 +258,7 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         // No active downloads?
         assertEquals(0, getContollerLisa().getTransferManager()
-            .getActiveDownloadCount());
+            .countActiveDownloads());
 
         clearCompletedDownloadsAtLisa();
         // give time for event firering
@@ -329,7 +329,7 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         // No active downloads?
         assertEquals(0, getContollerLisa().getTransferManager()
-            .getActiveDownloadCount());
+            .countActiveDownloads());
 
         clearCompletedDownloadsAtLisa();
         assertEquals(1, tm2Listener.downloadsCompletedRemoved);
@@ -385,7 +385,7 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         // No active downloads?!
         assertEquals(0, getContollerLisa().getTransferManager()
-            .getActiveDownloadCount());
+            .countActiveDownloads());
 
         clearCompletedDownloadsAtLisa();
         assertEquals(nFiles, tm2Listener.downloadsCompletedRemoved);
@@ -466,7 +466,7 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         // No active downloads?!
         assertEquals(0, getContollerLisa().getTransferManager()
-            .getActiveDownloadCount());
+            .countActiveDownloads());
 
         clearCompletedDownloadsAtLisa();
         assertEquals(nFiles, lisasListener.downloadsCompletedRemoved);
@@ -498,16 +498,16 @@ public class FileTransferTest extends TwoControllerTestCase {
             }
 
             public String message() {
-                return "tm2.dreq: " + tm2Listener.downloadRequested 
+                return "tm2.dreq: " + tm2Listener.downloadRequested
                     + " tm2.dcomp: " + tm2Listener.downloadCompleted
-                    + " tm1.upcomp: " + tm1Listener.uploadCompleted
-                    + " vs " + nFiles;
+                    + " tm1.upcomp: " + tm1Listener.uploadCompleted + " vs "
+                    + nFiles;
             }
         });
 
         // No active downloads?!
         assertEquals(0, getContollerLisa().getTransferManager()
-            .getActiveDownloadCount());
+            .countActiveDownloads());
 
         clearCompletedDownloadsAtLisa();
         assertEquals(nFiles, tm2Listener.downloadsCompletedRemoved);
@@ -550,7 +550,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         });
         // No active downloads?!
         assertEquals(0, getContollerLisa().getTransferManager()
-            .getActiveDownloadCount());
+            .countActiveDownloads());
 
         clearCompletedDownloadsAtLisa();
         assertEquals(nFiles, tm2Listener.downloadsCompletedRemoved);
@@ -616,15 +616,17 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         // No active downloads?!
         assertEquals(0, getContollerLisa().getTransferManager()
-            .getActiveDownloadCount());
+            .countActiveDownloads());
 
         clearCompletedDownloadsAtLisa();
         assertEquals(nFiles, lisasListener.downloadsCompletedRemoved);
     }
 
     public void testMany0SizeFilesCopyDeltaSync() {
-        ConfigurationEntry.USE_DELTA_ON_LAN.setValue(getContollerBart(), "true");
-        ConfigurationEntry.USE_DELTA_ON_LAN.setValue(getContollerLisa(), "true");
+        ConfigurationEntry.USE_DELTA_ON_LAN
+            .setValue(getContollerBart(), "true");
+        ConfigurationEntry.USE_DELTA_ON_LAN
+            .setValue(getContollerLisa(), "true");
 
         // Register listeners
         final MyTransferManagerListener bartsListener = new MyTransferManagerListener();
@@ -677,13 +679,12 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         // No active downloads?!
         assertEquals(0, getContollerLisa().getTransferManager()
-            .getActiveDownloadCount());
+            .countActiveDownloads());
 
         clearCompletedDownloadsAtLisa();
         assertEquals(nFiles, lisasListener.downloadsCompletedRemoved);
     }
-    
-    
+
     public void testMultipleResumeTransfer() throws Exception {
         for (int i = 0; i < 10; i++) {
             testResumeTransfer();
@@ -726,13 +727,12 @@ public class FileTransferTest extends TwoControllerTestCase {
         FileInfo fInfo = getFolderAtLisa().getIncomingFiles(true).iterator()
             .next();
         File file = fInfo.getDiskFile(getContollerLisa().getFolderRepository());
-        final File incompleteFile = 
-            new File(getFolderAtLisa().getSystemSubDir(), "transfers").listFiles(
-            new FilenameFilter() {
-                public boolean accept(File dir, String name) {
-                    return name.contains("(incomplete) ");
-                }
-            })[0];
+        final File incompleteFile = new File(getFolderAtLisa()
+            .getSystemSubDir(), "transfers").listFiles(new FilenameFilter() {
+            public boolean accept(File dir, String name) {
+                return name.contains("(incomplete) ");
+            }
+        })[0];
         FileInfo bartFInfo = getFolderAtBart().getKnownFiles().iterator()
             .next();
         File bartFile = bartFInfo.getDiskFile(getContollerBart()
@@ -860,7 +860,7 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         // No active downloads?
         assertEquals(0, getContollerLisa().getTransferManager()
-            .getActiveDownloadCount());
+            .countActiveDownloads());
 
         clearCompletedDownloadsAtLisa();
         assertEquals(1, lisasListener.downloadsCompletedRemoved);
@@ -1102,13 +1102,13 @@ public class FileTransferTest extends TwoControllerTestCase {
         connectBartAndLisa();
 
         // Problem detection should happen
-        //if (OSUtil.isWindowsSystem()) {
-            assertEquals(0, lisasHandler.events.size());
-            assertEquals(0, bartsHandler.events.size());
-       // } else {
-       //     assertEquals(1, lisasHandler.events.size());
-       //     assertEquals(1, bartsHandler.events.size());
-        //}
+        // if (OSUtil.isWindowsSystem()) {
+        assertEquals(0, lisasHandler.events.size());
+        assertEquals(0, bartsHandler.events.size());
+        // } else {
+        // assertEquals(1, lisasHandler.events.size());
+        // assertEquals(1, bartsHandler.events.size());
+        // }
     }
 
     /**
@@ -1130,12 +1130,12 @@ public class FileTransferTest extends TwoControllerTestCase {
             public String message() {
                 return "Lisa active downloads: "
                     + getContollerLisa().getTransferManager()
-                        .getActiveDownloadCount();
+                        .countActiveDownloads();
             }
 
             public boolean reached() {
                 return getContollerLisa().getTransferManager()
-                    .getActiveDownloadCount() > 0;
+                    .countActiveDownloads() > 0;
             }
         });
 
@@ -1158,17 +1158,84 @@ public class FileTransferTest extends TwoControllerTestCase {
             public String message() {
                 return "Lisa active downloads: "
                     + getContollerLisa().getTransferManager()
-                        .getActiveDownloadCount();
+                        .countActiveDownloads();
             }
 
             public boolean reached() {
                 return getContollerLisa().getTransferManager()
-                    .getActiveDownloadCount() > 0;
+                    .countActiveDownloads() > 0;
             }
         });
         // No pending download no more
         assertEquals(0, getContollerLisa().getTransferManager()
             .getPendingDownloads().size());
+    }
+
+    /**
+     * Test to switch sync profiles during active transfers.
+     * <p>
+     * TRAC #1086
+     */
+    public void testSwitchSyncProfile() {
+        getContollerBart().setSilentMode(true);
+        getContollerLisa().setSilentMode(true);
+        ConfigurationEntry.UPLOADLIMIT_LAN.setValue(getContollerBart(), "1000");
+        ConfigurationEntry.UPLOADLIMIT_LAN.setValue(getContollerLisa(), "1000");
+
+        // Prepare
+        getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
+        TestHelper.createRandomFile(getFolderAtBart().getLocalBase(),
+            8 * 1024 * 1024);
+        scanFolder(getFolderAtBart());
+
+        TestHelper.waitForCondition(10, new Condition() {
+            public boolean reached() {
+                return getContollerLisa().getTransferManager()
+                    .countActiveDownloads() == 1;
+            }
+        });
+        TestHelper.waitForCondition(10, new Condition() {
+            public boolean reached() {
+                return getContollerBart().getTransferManager()
+                    .countAllUploads() == 1;
+            }
+        });
+
+        // Switch!
+        getFolderAtLisa().setSyncProfile(SyncProfile.MANUAL_SYNCHRONIZATION);
+
+        // Download should break
+        TestHelper.waitForCondition(10, new Condition() {
+            public boolean reached() {
+                return getContollerLisa().getTransferManager()
+                    .countActiveDownloads() == 0;
+            }
+        });
+        // Since this download was auto-requested it shouldn't be added to the
+        // list of pending downloads.
+        assertEquals(0, getContollerLisa().getTransferManager()
+            .getPendingDownloads().size());
+        TestHelper.waitForCondition(10, new Condition() {
+            public boolean reached() {
+                return getContollerBart().getTransferManager()
+                    .countAllUploads() == 0;
+            }
+        });
+
+        // Switch back, dls should continue
+        getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_DOWNLOAD);
+        TestHelper.waitForCondition(40, new Condition() {
+            public boolean reached() {
+                return getContollerLisa().getTransferManager()
+                    .countCompletedDownloads() == 1;
+            }
+        });
+        TestHelper.waitForCondition(10, new Condition() {
+            public boolean reached() {
+                return getContollerBart().getTransferManager()
+                    .countAllUploads() == 0;
+            }
+        });
     }
 
     private final class MyFilenameProblemHandler implements
