@@ -170,8 +170,8 @@ public class NavTreeCellRenderer extends DefaultTreeCellRenderer {
         } else if (userObject == RootNode.DOWNLOADS_NODE_LABEL) {
             TransferManager tm = controller.getTransferManager();
             text = Translation.getTranslation("general.downloads") + " ("
-                + tm.getTotalDownloadCount() + ')';
-            if (tm.getActiveDownloadCount() > 0) {
+                + tm.countTotalDownloads() + ')';
+            if (tm.countActiveDownloads() > 0) {
                 icon = Icons.DOWNLOAD_ACTIVE;
             } else {
                 icon = Icons.DOWNLOAD;

@@ -86,7 +86,7 @@ public class DownloadsQuickInfoPanel extends QuickInfoPanel {
         infoText1.setText(text1);
 
         int nActiveDls = getController().getTransferManager()
-            .getActiveDownloadCount();
+            .countActiveDownloads();
         String text2 = Translation.getTranslation("quickinfo.download.active",
             nActiveDls);
 

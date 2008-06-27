@@ -698,7 +698,7 @@ public class TransferManager extends PFComponent {
         if (ConfigurationEntry.DOWNLOADS_AUTO_CLEANUP
             .getValueBoolean(getController()))
         {
-            if (log().isVerbose()) {
+            if (logVerbose) {
                 log().verbose("Auto-cleaned " + download);
             }
             clearCompletedDownload(download);
@@ -714,7 +714,7 @@ public class TransferManager extends PFComponent {
             }
         }
         List<Upload> remove = new LinkedList<Upload>();
-        for (Upload u: queuedUploads) {
+        for (Upload u : queuedUploads) {
             if (u.getFile().equals(fInfo)) {
                 abortedUL = true;
                 remove.add(u);
@@ -799,7 +799,7 @@ public class TransferManager extends PFComponent {
             if (ConfigurationEntry.UPLOADS_AUTO_CLEANUP
                 .getValueBoolean(getController()))
             {
-                if (log().isVerbose()) {
+                if (logVerbose) {
                     log().verbose("Auto-cleaned " + transfer);
                 }
                 clearCompletedUpload((Upload) transfer);
@@ -1443,6 +1443,7 @@ public class TransferManager extends PFComponent {
         }
 
         downloadsLock.lock();
+        FileInfo localFile = null;
         try {
             if (automatic) {
                 // return null if in blacklist on automatic download
@@ -1451,7 +1452,7 @@ public class TransferManager extends PFComponent {
                 }
 
                 // Check if we have the file already downloaded in the meantime.
-                FileInfo localFile = folder.getFile(fInfo);
+                localFile = folder.getFile(fInfo);
                 if (localFile != null && !fInfo.isNewerThan(localFile)) {
                     log().verbose(
                         "NOT requesting download, already have: "
@@ -1525,6 +1526,15 @@ public class TransferManager extends PFComponent {
                         log().verbose(
                             "Best source for " + fInfo + " is " + bestSource);
                     }
+                    if (localFile != null
+                        && localFile.getModifiedDate().after(
+                            newestVersionFile.getModifiedDate()))
+                    {
+                        log().error(
+                            "Requesting older file! requested: "
+                                + newestVersionFile.toDetailString()
+                                + ", local: " + localFile.toDetailString());
+                    }
                     requestDownload(download, bestSource);
                 }
             }
@@ -1562,7 +1572,7 @@ public class TransferManager extends PFComponent {
             if (man == null || fInfo.isNewerThan(man.getFileInfo())) {
                 if (man != null) {
                     log().debug(
-                    "Got active download of older file version, aborting.");
+                        "Got active download of older file version, aborting.");
                     man.abortAndCleanup();
                     if (dlManagers.containsKey(fInfo)) {
                         // Still there ?
@@ -1724,7 +1734,8 @@ public class TransferManager extends PFComponent {
         }
     }
 
-//    private Map<FileInfo, Throwable> debug = new HashMap<FileInfo, Throwable>();
+    // private Map<FileInfo, Throwable> debug = new HashMap<FileInfo,
+    // Throwable>();
 
     /**
      * @param manager
@@ -1742,7 +1753,7 @@ public class TransferManager extends PFComponent {
             // + Debug.detailedObjectState(manager);
             return;
         } else {
-//            debug.put(manager.getFileInfo(), new RuntimeException());
+            // debug.put(manager.getFileInfo(), new RuntimeException());
         }
     }
 
@@ -2073,15 +2084,16 @@ public class TransferManager extends PFComponent {
     /**
      * @return the number of all downloads
      */
-    public int getActiveDownloadCount() {
+    public int countActiveDownloads() {
         return dlManagers.values().size();
     }
 
     /**
-     * @return the number of total downloads (queued, active and pending)
+     * @return the number of total downloads (queued, active, pending and
+     *         completed)
      */
-    public int getTotalDownloadCount() {
-        return getActiveDownloadCount() + pendingDownloads.size()
+    public int countTotalDownloads() {
+        return countActiveDownloads() + pendingDownloads.size()
             + completedDownloads.size();
     }
 
@@ -2208,7 +2220,7 @@ public class TransferManager extends PFComponent {
             // Collect all download infos
             List<Download> storedDownloads = new ArrayList<Download>(
                 pendingDownloads);
-            int nPending = getActiveDownloadCount();
+            int nPending = countActiveDownloads();
             int nCompleted = completedDownloads.size();
             for (DownloadManager man : dlManagers.values()) {
                 storedDownloads.add(new Download(this, man.getFileInfo(), man
@@ -2283,12 +2295,11 @@ public class TransferManager extends PFComponent {
                 // Checking downloads
                 checkDownloads();
 
-
                 // log upload / donwloads
                 if (count % 2 == 0) {
                     log().debug(
                         "Transfers: "
-                            + getActiveDownloadCount()
+                            + countActiveDownloads()
                             + " download(s), "
                             + activeUploads.size()
                             + " active upload(s), "
@@ -2326,8 +2337,8 @@ public class TransferManager extends PFComponent {
      */
     private void checkDownloads() {
         if (logVerbose) {
-            log().verbose(
-                "Checking " + getActiveDownloadCount() + " download(s)");
+            log()
+                .verbose("Checking " + countActiveDownloads() + " download(s)");
         }
 
         for (DownloadManager man : dlManagers.values()) {

@@ -90,7 +90,7 @@ public class RootTable extends JTable {
                 } else if (userObject == RootNode.DOWNLOADS_NODE_LABEL) {
                     TransferManager tm = controller.getTransferManager();
                     newValue = Translation.getTranslation("general.downloads");
-                    if (tm.getActiveDownloadCount() > 0) {
+                    if (tm.countActiveDownloads() > 0) {
                         setIcon(Icons.DOWNLOAD_ACTIVE);
                     } else {
                         setIcon(Icons.DOWNLOAD);
@@ -133,7 +133,7 @@ public class RootTable extends JTable {
                 setIcon(null);
                 if (userObject == RootNode.DOWNLOADS_NODE_LABEL) {
                     TransferManager tm = controller.getTransferManager();
-                    newValue = String.valueOf(tm.getTotalDownloadCount());
+                    newValue = String.valueOf(tm.countTotalDownloads());
                 } else if (userObject == RootNode.UPLOADS_NODE_LABEL) {
                     TransferManager tm = controller.getTransferManager();
                     newValue = String.valueOf(tm.countAllUploads());

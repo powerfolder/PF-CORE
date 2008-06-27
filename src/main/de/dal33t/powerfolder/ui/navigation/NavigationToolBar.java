@@ -197,7 +197,7 @@ public class NavigationToolBar extends PFUIComponent implements
         } else if (userObject == RootNode.DOWNLOADS_NODE_LABEL) {
             TransferManager tm = getController().getTransferManager();
             return Translation.getTranslation("general.downloads") + " ("
-                + tm.getTotalDownloadCount() + ')';
+                + tm.countTotalDownloads() + ')';
         } else if (userObject == RootNode.UPLOADS_NODE_LABEL) {
             TransferManager tm = getController().getTransferManager();
             return Translation.getTranslation("general.uploads") + " ("
