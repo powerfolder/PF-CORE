@@ -2709,7 +2709,7 @@ public class Folder extends PFComponent {
     }
 
     private void fireFileChanged(FileInfo fileInfo) {
-        if (log().isVerbose()) {
+        if (logVerbose) {
             log().verbose("fireFileChanged: " + this);
         }
         lastFileChangeDate = new Date();
@@ -2718,7 +2718,7 @@ public class Folder extends PFComponent {
     }
 
     private void fireFilesDeleted(Collection<FileInfo> fileInfos) {
-        if (log().isVerbose()) {
+        if (logVerbose) {
             log().verbose("fireFilesDeleted: " + this);
         }
         lastFileChangeDate = new Date();
@@ -2727,7 +2727,7 @@ public class Folder extends PFComponent {
     }
 
     private void fireRemoteContentsChanged(FileList list) {
-        if (log().isVerbose()) {
+        if (logVerbose) {
             log().verbose("fireRemoteContentsChanged: " + this);
         }
         lastFileChangeDate = new Date();
@@ -2736,7 +2736,7 @@ public class Folder extends PFComponent {
     }
 
     private void fireRemoteContentsChanged(FolderFilesChanged list) {
-        if (log().isVerbose()) {
+        if (logVerbose) {
             log().verbose("fireRemoteContentsChanged: " + this);
         }
         lastFileChangeDate = new Date();
@@ -2750,8 +2750,8 @@ public class Folder extends PFComponent {
     }
 
     private void fireScanResultCommited(ScanResult scanResult) {
-        if (log().isVerbose()) {
-            log().debug("fireScanResultCommited: " + this);
+        if (logVerbose) {
+            log().verbose("fireScanResultCommited: " + this);
         }
         FolderEvent folderEvent = new FolderEvent(this, scanResult);
         folderListenerSupport.scanResultCommited(folderEvent);
