@@ -23,9 +23,15 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+import com.jgoodies.binding.value.ValueModel;
+import com.jgoodies.binding.value.ValueHolder;
+import com.jgoodies.binding.value.BufferedValueModel;
+import com.jgoodies.binding.value.Trigger;
+import com.jgoodies.binding.adapter.BasicComponentFactory;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.util.Translation;
 
 import javax.swing.*;
@@ -33,6 +39,12 @@ import javax.swing.*;
 public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
 
     private JCheckBox updateCheck;
+
+    /** Show chat notifications */
+    private JCheckBox showChatNotificationBox;
+
+    /** Show system notifications */
+    private JCheckBox showSystemNotificationBox;
 
     /** Ask to add to friends if user becomes member of a folder */
     private JCheckBox askForFriendship;
@@ -57,7 +69,10 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
 
     private JPanel panel;
 
-    private boolean needsRestart = false;
+    private boolean needsRestart;
+
+    // The triggers the writing into core
+    private Trigger writeTrigger;
 
     public DialogsSettingsTab(Controller controller) {
         super(controller);
@@ -81,6 +96,26 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
     }
 
     private void initComponents() {
+
+        writeTrigger = new Trigger();
+
+        // Show chat notifications when minimized
+        ValueModel scnModel = new ValueHolder(
+            ConfigurationEntry.SHOW_CHAT_NOTIFICATIONS
+                .getValueBoolean(getController()));
+        showChatNotificationBox = BasicComponentFactory.createCheckBox(
+            new BufferedValueModel(scnModel, writeTrigger), Translation
+                .getTranslation("preferences.dialog.show_chat_notifications"));
+
+        // Show system notifications when minimized
+        ValueModel ssnModel = new ValueHolder(
+            ConfigurationEntry.SHOW_SYSTEM_NOTIFICATIONS
+                .getValueBoolean(getController()));
+        showSystemNotificationBox = BasicComponentFactory.createCheckBox(
+            new BufferedValueModel(ssnModel, writeTrigger), Translation
+                .getTranslation("preferences.dialog.show_system_notifications"));
+
+
         boolean checkForUpdate = PreferencesEntry.CHECK_UPDATE
             .getValueBoolean(getController());
         boolean askFriendship = PreferencesEntry.ASK_FOR_FRIENDSHIP_ON_PRIVATE_FOLDER_JOIN
@@ -139,13 +174,20 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
     public JPanel getUIPanel() {
         if (panel == null) {
             FormLayout layout = new FormLayout("pref",
-                "pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu");
+                "pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu");
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
                 .createEmptyBorder("4dlu, 7dlu, 0dlu, 0dlu"));
             CellConstraints cc = new CellConstraints();
 
             int row = 1;
+
+            builder.add(showChatNotificationBox, cc.xy(1, row));
+
+            row += 2;
+            builder.add(showSystemNotificationBox, cc.xy(1, row));
+
+            row += 2;
             builder.add(updateCheck, cc.xy(1, row));
 
             row += 2;
@@ -178,6 +220,10 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
      * Saves the dialogs settings.
      */
     public void save() {
+
+        // Write properties into core
+        writeTrigger.triggerCommit();
+        
         boolean checkForUpdate = updateCheck.isSelected();
         boolean testConnectivity = warnOnLimitedConnectivity.isSelected();
         boolean warnOnClose = warnOnCloseIfNotInSync.isSelected();
@@ -187,6 +233,18 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
         boolean detectLowMemory = warnOnLowMemory.isSelected();
         boolean duplicateFolders = warnOnDuplicateFolders.isSelected();
 
+        if (showChatNotificationBox != null) {
+            // Show Notifications
+            ConfigurationEntry.SHOW_CHAT_NOTIFICATIONS.setValue(getController(),
+                    Boolean.toString(showChatNotificationBox.isSelected()));
+        }
+
+        if (showSystemNotificationBox != null) {
+            // Show Notifications
+            ConfigurationEntry.SHOW_SYSTEM_NOTIFICATIONS.setValue(getController(),
+                    Boolean.toString(showSystemNotificationBox.isSelected()));
+        }
+        
         PreferencesEntry.CHECK_UPDATE.setValue(getController(), checkForUpdate);
         PreferencesEntry.ASK_FOR_FRIENDSHIP_ON_PRIVATE_FOLDER_JOIN.setValue(
             getController(), askFriendship);
