@@ -151,7 +151,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
                 return getContollerBart().getTransferManager()
                     .getActiveUploads().length == 1
                     && getContollerLisa().getTransferManager()
-                        .getActiveDownloadCount() == 1;
+                        .countActiveDownloads() == 1;
             }
         });
         TestHelper.waitForEmptyEDT();
