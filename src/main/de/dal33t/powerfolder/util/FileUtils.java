@@ -1,51 +1,64 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.util;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.EOFException;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.RandomAccessFile;
 import java.net.URL;
 import java.util.Date;
+import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
+import java.util.zip.ZipOutputStream;
 
-import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.util.os.OSUtil;
 
 public class FileUtils {
-    
+
     private static final Logger LOG = Logger.getLogger(FileUtils.class);
     private static final int BYTE_CHUNK_SIZE = 8192;
 
     public static final String DOWNLOAD_META_FILE = "(downloadmeta) ";
     public static final String DESKTOP_INI_FILENAME = "desktop.ini";
 
-    //no instances
+    // no instances
     private FileUtils() {
-        
+
     }
-    
+
     /**
-     * Returns true if the given file is a meta data file for downloading purposes.
      * @param file
-     * @return
+     * @return true if the given file is a meta data file for downloading
+     *         purposes.
      */
     public static boolean isDownloadMetaFile(File file) {
         Reject.ifNull(file, "File is null");
@@ -54,10 +67,8 @@ public class FileUtils {
     }
 
     /**
-     * Answers if this is a temporary download file
-     * 
      * @param file
-     * @return
+     * @return true if this is a temporary download file
      */
     public static boolean isTempDownloadFile(File file) {
         if (file == null) {
@@ -66,13 +77,11 @@ public class FileUtils {
         String fileName = file.getName();
         return fileName.startsWith("(incomplete) ");
     }
-    
+
     /**
-     * Answers if this file is a completed download file, means there exists a
-     * targetfile with full name
-     * 
      * @param file
-     * @return
+     * @return true if this file is a completed download file, means there
+     *         exists a targetfile with full name
      */
     public static boolean isCompletedTempDownloadFile(File file) {
         if (!isTempDownloadFile(file)) {
@@ -83,12 +92,10 @@ public class FileUtils {
         File targetFile = new File(file.getParentFile(), targetFilename);
         return targetFile.exists() && (targetFile.length() == file.length());
     }
-    
+
     /**
-     * Answers if this file is the windows desktop.ini
-     * 
      * @param file
-     * @return
+     * @return true if this file is the windows desktop.ini
      */
     public static boolean isDesktopIni(File file) {
         if (file == null) {
@@ -96,13 +103,10 @@ public class FileUtils {
         }
         return file.getName().equalsIgnoreCase("DESKTOP.INI");
     }
-    
 
     /**
-     * Checks if the file is a valid zipfile
-     * 
      * @param file
-     * @return
+     * @return true if the file is a valid zipfile
      */
     public static boolean isValidZipFile(File file) {
         if (file == null) {
@@ -117,7 +121,7 @@ public class FileUtils {
         }
         return true;
     }
-    
+
     /**
      * Copies a file
      * 
@@ -144,7 +148,7 @@ public class FileUtils {
     /**
      * Copies a file to disk from a stream. Overwrites the target file if exists
      * 
-     * @see #copyFromStreamToFile(InputStream, File, StreamCallback)
+     * @see #copyFromStreamToFile(InputStream, File, StreamCallback, int)
      * @param in
      *            the input stream
      * @param to
@@ -226,23 +230,31 @@ public class FileUtils {
             out.close();
         }
     }
-    
+
     /**
      * Copies a given amount of data from one RandomAccessFile to another.
-     * @param in the file to read the data from
-     * @param out the file to write the data to
-     * @param n the amount of bytes to transfer
-     * @throws IOException if an Exception occurred while reading or writing the data
+     * 
+     * @param in
+     *            the file to read the data from
+     * @param out
+     *            the file to write the data to
+     * @param n
+     *            the amount of bytes to transfer
+     * @throws IOException
+     *             if an Exception occurred while reading or writing the data
      */
-    public static void ncopy(RandomAccessFile in, RandomAccessFile out, int n) throws IOException {
+    public static void ncopy(RandomAccessFile in, RandomAccessFile out, int n)
+        throws IOException
+    {
+        int w = n;
         byte buf[] = new byte[BYTE_CHUNK_SIZE];
-        while (n > 0) {
+        while (w > 0) {
             int read = in.read(buf);
             if (read < 0) {
                 throw new EOFException();
             }
             out.write(buf, 0, read);
-            n -= read;
+            w -= read;
         }
     }
 
@@ -270,9 +282,9 @@ public class FileUtils {
 
     /**
      * Makes a file hidden on windows system
-     *
+     * 
      * @param file
-     * @return
+     * @return true if succeeded
      */
     public static boolean makeHiddenOnWindows(File file) {
         if (!OSUtil.isWindowsSystem()) {
@@ -294,9 +306,9 @@ public class FileUtils {
 
     /**
      * Makes a directory 'system' on windows system
-     *
+     * 
      * @param file
-     * @return
+     * @return true if succeeded
      */
     public static boolean makeSystemOnWindows(File file) {
         if (!OSUtil.isWindowsSystem()) {
@@ -320,7 +332,9 @@ public class FileUtils {
      * Sets file attributes on windows system
      * 
      * @param file
-     * @return
+     * @param hidden
+     * @param system
+     * @return true if succeeded
      */
     public static boolean setAttributesOnWindows(File file, boolean hidden,
         boolean system)
@@ -347,18 +361,23 @@ public class FileUtils {
 
     /**
      * Creates a random folder in the user's .PowerFolder dir.
+     * 
      * @return random file
      * @throws IOException
      */
     public static File createTemporaryDirectory() throws IOException {
         // Create a random temporary directory based on the current time.
-        String randomString = new String(Util.encodeHex(Util.md5(String.valueOf(new Date().getTime()).getBytes())));
-        File tempDir = new File(System.getProperty("user.home") + "/.PowerFolder/" + randomString);
+        String randomString = new String(Util.encodeHex(Util.md5(String
+            .valueOf(new Date().getTime()).getBytes())));
+        File tempDir = new File(System.getProperty("user.home")
+            + "/.PowerFolder/" + randomString);
         if (tempDir.exists()) {
-            throw new IOException("Temporary directory " + tempDir + " already exists.");
+            throw new IOException("Temporary directory " + tempDir
+                + " already exists.");
         }
         if (!tempDir.mkdir()) {
-            throw new IOException("Could not create temporary directory " + tempDir);
+            throw new IOException("Could not create temporary directory "
+                + tempDir);
         }
 
         return tempDir;
@@ -366,8 +385,9 @@ public class FileUtils {
 
     /**
      * A recursive delete of a directory.
-     *
-     * @param file directory to delete
+     * 
+     * @param file
+     *            directory to delete
      * @throws IOException
      */
 
@@ -381,23 +401,27 @@ public class FileUtils {
             }
 
             if (!file.delete()) {
-                throw new IOException("Could not delete file " + file.getAbsolutePath());
+                throw new IOException("Could not delete file "
+                    + file.getAbsolutePath());
             }
         }
     }
 
     /**
      * A recursive copy of one directory to another.
-     *
+     * 
      * @param originalFile
      * @param targetFile
      * @throws IOException
      */
-    public static void recursiveMove(File originalFile, File targetFile) throws IOException {
+    public static void recursiveMove(File originalFile, File targetFile)
+        throws IOException
+    {
         if (originalFile != null && targetFile != null) {
             if (originalFile.isDirectory() && targetFile.isDirectory()) {
                 if (!targetFile.exists()) {
-                    throw new UnsupportedOperationException("Target directory must exist");
+                    throw new UnsupportedOperationException(
+                        "Target directory must exist");
                 }
 
                 File[] files = originalFile.listFiles();
@@ -420,20 +444,26 @@ public class FileUtils {
                     recursiveMove(nextOriginalFile, nextTargetFile);
                 }
 
-            } else if (!originalFile.isDirectory() && !targetFile.isDirectory()) {
+            } else if (!originalFile.isDirectory() && !targetFile.isDirectory())
+            {
                 originalFile.renameTo(targetFile);
             } else {
-                throw new UnsupportedOperationException("Can only copy directory to directory or file to file: " +
-                        originalFile.getAbsolutePath() + " --> " +
-                        targetFile.getAbsolutePath());
+                throw new UnsupportedOperationException(
+                    "Can only copy directory to directory or file to file: "
+                        + originalFile.getAbsolutePath() + " --> "
+                        + targetFile.getAbsolutePath());
             }
         }
     }
 
     /**
      * Set / remove desktop ini in managed folders.
+     * 
+     * @param controller
+     * @param directory
      */
-    public static void maintainDesktopIni(Controller controller, File directory) {
+    public static void maintainDesktopIni(Controller controller, File directory)
+    {
 
         // Only works on Windows, and not Vista
         if (!OSUtil.isWindowsSystem() || OSUtil.isWindowsVistaSystem()
@@ -443,8 +473,9 @@ public class FileUtils {
         }
 
         // Safty checks.
-        if (directory == null || !directory.exists() ||
-                !directory.isDirectory()) {
+        if (directory == null || !directory.exists()
+            || !directory.isDirectory())
+        {
             return;
         }
 
@@ -463,9 +494,8 @@ public class FileUtils {
                 String herePath = hereFile.getAbsolutePath();
                 File powerFolderFile = new File(herePath, "PowerFolder.exe");
                 if (!powerFolderFile.exists()) {
-                    LOG.error(
-                        "Could not find PowerFolder.exe at "
-                            + powerFolderFile.getAbsolutePath());
+                    LOG.error("Could not find PowerFolder.exe at "
+                        + powerFolderFile.getAbsolutePath());
                     return;
                 }
 
@@ -504,6 +534,7 @@ public class FileUtils {
 
     /**
      * Method to remove the desktop ini if it exists
+     * 
      * @param directory
      */
     public static void deleteDesktopIni(File directory) {
@@ -519,7 +550,8 @@ public class FileUtils {
      * Scans a directory and gets full size of all files.
      * 
      * @param directory
-     * @return
+     * @param depth
+     * @return the size in byte of the directory
      */
     public static long calculateDirectorySize(File directory, int depth) {
 
@@ -538,5 +570,65 @@ public class FileUtils {
             }
         }
         return sum;
+    }
+
+    /**
+     * Zips the file
+     * 
+     * @param file
+     *            the file to zip
+     * @param zipfile
+     *            the zip file
+     * @throws IOException
+     * @throws IllegalArgumentException
+     */
+    public static void zipFile(File file, File zipfile) throws IOException {
+        // Check that the directory is a directory, and get its contents
+        if (!file.isFile()) {
+            throw new IllegalArgumentException("Not a file:  " + file);
+        }
+        byte[] buffer = new byte[4096]; // Create a buffer for copying
+        int bytesRead;
+        ZipOutputStream out = new ZipOutputStream(new FileOutputStream(zipfile));
+        FileInputStream in = new FileInputStream(file); // Stream to read
+        // file
+        ZipEntry entry = new ZipEntry(file.getName()); // Make a ZipEntry
+        out.putNextEntry(entry); // Store entry
+        while ((bytesRead = in.read(buffer)) != -1)
+            out.write(buffer, 0, bytesRead);
+        in.close();
+        out.close();
+    }
+
+    /**
+     * Zip the contents of the directory, and save it in the zipfile
+     * 
+     * @param dir
+     * @param zipfile
+     * @throws IOException
+     * @throws IllegalArgumentException
+     */
+    public static void zipDirectory(File dir, File zipfile) throws IOException {
+        // Check that the directory is a directory, and get its contents
+        if (!dir.isDirectory()) {
+            throw new IllegalArgumentException("Not a directory:  " + dir);
+        }
+        String[] entries = dir.list();
+        byte[] buffer = new byte[4096]; // Create a buffer for copying
+        int bytesRead;
+        ZipOutputStream out = new ZipOutputStream(new FileOutputStream(zipfile));
+        for (int i = 0; i < entries.length; i++) {
+            File f = new File(dir, entries[i]);
+            if (f.isDirectory())
+                continue;// Ignore directory
+            FileInputStream in = new FileInputStream(f); // Stream to read
+            // file
+            ZipEntry entry = new ZipEntry(f.getPath()); // Make a ZipEntry
+            out.putNextEntry(entry); // Store entry
+            while ((bytesRead = in.read(buffer)) != -1)
+                out.write(buffer, 0, bytesRead);
+            in.close();
+        }
+        out.close();
     }
 }
