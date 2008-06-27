@@ -558,9 +558,9 @@ public class UIController extends PFComponent {
                 tooltip += Translation.getTranslation("systray.tooltip.insync");
             }
             double totalCPSdownKB = getController().getTransferManager()
-                .getTotalDownloadTrafficCounter().calculateAverageCPS() / 1024;
+                .getDownloadCounter().calculateAverageCPS() / 1024;
             double totalCPSupKB = getController().getTransferManager()
-                .getTotalUploadTrafficCounter().calculateAverageCPS() / 1024;
+                .getUploadCounter().calculateAverageCPS() / 1024;
 
             String downText = null;
             String upText = null;
