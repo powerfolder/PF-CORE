@@ -25,6 +25,8 @@ import java.awt.datatransfer.ClipboardOwner;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -39,6 +41,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.lang.Validate;
 
@@ -681,17 +685,4 @@ public class Util {
         InetSocketAddress connectAddress = new InetSocketAddress(ip, remotePort);
         return connectAddress;
     }
-
-    /**
-     * Returns the last section of a string after a token.
-     * lastPart("asdf.sdfg.werg.asgsdfg",".") returns "asgsdfg".
-     */
-    public static String lastPart(String text, String token) {
-        int pos;
-        if (text == null || (pos = text.lastIndexOf(token)) < 0) {
-            return text;
-        }
-        return text.substring(pos + 1, text.length());
-    }
-
 }
