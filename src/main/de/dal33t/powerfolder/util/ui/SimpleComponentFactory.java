@@ -1,28 +1,29 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.util.ui;
 
 import java.awt.Font;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 
+import javax.swing.Icon;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -55,18 +56,16 @@ public class SimpleComponentFactory {
     }
 
     /**
-     * Creates a textfield
-     * 
      * @param editable
      *            if the field should be editable
-     * @return
+     * @return a textfield
      */
     public static JTextField createTextField(boolean editable) {
         JTextField field = new JTextField();
         field.setEditable(editable);
         return field;
     }
-    
+
     /**
      * @return a new password field
      */
@@ -75,30 +74,33 @@ public class SimpleComponentFactory {
     }
 
     /**
-     * Creates a simple label
-     * 
-     * @return
+     * @return a simple label
      */
     public static JLabel createLabel() {
         return new JLabel();
     }
 
     /**
-     * Creates a simple label with text
-     * 
      * @param text
      *            the text of the label
-     * @return
+     * @return a simple label with text
      */
     public static JLabel createLabel(String text) {
         return new JLabel(text);
     }
 
     /**
-     * Creates a label which has big font than normal. Has smoothed font
-     * 
+     * @param icon
+     *            the icon of the label
+     * @return a simple label with icons
+     */
+    public static JLabel createLabel(Icon icon) {
+        return new JLabel(icon);
+    }
+
+    /**
      * @param text
-     * @return
+     * @return a label which has big font than normal. Has smoothed font
      */
     public static JLabel createBigTextLabel(String text) {
         AntialiasedLabel label = new AntialiasedLabel(text);
@@ -107,10 +109,8 @@ public class SimpleComponentFactory {
     }
 
     /**
-     * Creates a label which has bigger font than normal. Has smoothed font
-     * 
      * @param text
-     * @return
+     * @return a label which has bigger font than normal. Has smoothed font
      */
     public static JLabel createBiggerTextLabel(String text) {
         AntialiasedLabel label = new AntialiasedLabel(text);
@@ -150,9 +150,7 @@ public class SimpleComponentFactory {
     }
 
     /**
-     * Creates a popup menu
-     * 
-     * @return
+     * @return a popup menu
      */
     public static JPopupMenu createPopupMenu() {
         JPopupMenu popupmenu = new JPopupMenu();
@@ -161,9 +159,7 @@ public class SimpleComponentFactory {
     }
 
     /**
-     * Creates a new toolbar
-     * 
-     * @return
+     * @return a new toolbar
      */
     public static JToolBar createToolBar() {
         JToolBar toolbar = new JToolBar();
@@ -171,12 +167,10 @@ public class SimpleComponentFactory {
     }
 
     /**
-     * Creates a empty combobox. set the model to the selected value. Does not
-     * acts on model changes
-     * 
      * @param model
      *            the model
-     * @return
+     * @return a empty combobox. set the model to the selected value. Does not
+     *         acts on model changes
      */
     public static JComboBox createComboBox(final ValueModel model) {
         if (model == null) {
