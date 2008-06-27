@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id: AddLicenseHeader.java 4282 2008-06-16 03:25:09Z tot $
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id: AddLicenseHeader.java 4282 2008-06-16 03:25:09Z tot $
+ */
 package de.dal33t.powerfolder.test.folder;
 
 import java.io.File;
@@ -256,8 +256,8 @@ public class ScanFolderTest extends ControllerTestCase {
         assertFileMatch(srcFile, getFolder().getKnownFiles().iterator().next());
 
         // Move file one subdirectory up
-        File destFile = new File(srcFile.getParentFile().getParentFile(), srcFile
-            .getName());
+        File destFile = new File(srcFile.getParentFile().getParentFile(),
+            srcFile.getName());
         assertTrue(srcFile.renameTo(destFile));
         scanFolder();
 
@@ -406,6 +406,38 @@ public class ScanFolderTest extends ControllerTestCase {
             assertFileMatch(file, fInfo);
             assertEquals(fInfo.getName(), 0, fInfo.getVersion());
         }
+    }
+
+    /**
+     * Tests the scan of very many files.
+     * <p>
+     * TOT Notes: This test takes @ 11000 files aprox. 40-107 (86) seconds.
+     */
+    public void testScanManyFileChanges() {
+        final int nFiles = 10;
+        List<File> files = new ArrayList<File>();
+        for (int i = 0; i < nFiles; i++) {
+            if (i % 1000 == 0) {
+                System.out.println("Still alive " + i + "/" + nFiles);
+            }
+            files.add(TestHelper
+                .createRandomFile(getFolder().getLocalBase(), 5));
+        }
+
+        // Change all files
+        for (int i = 0; i < 200; i++) {
+            scanFolder();
+            assertEquals(nFiles, getFolder().getKnownFilesCount());
+            for (File file : files) {
+                FileInfo fInfo = retrieveFileInfo(file);
+                assertFileMatch(file, fInfo);
+                assertEquals(fInfo.getName(), i, fInfo.getVersion());
+            }
+            for (File file : files) {
+                TestHelper.changeFile(file);
+            }
+        }
+
     }
 
     /**
