@@ -1014,7 +1014,8 @@ public class UIController extends PFComponent {
      */
     public void notifyMessage(String title, String message) {
 
-        if (mainFrame.isIconifiedOrHidden() && started)
+        if (mainFrame.isIconifiedOrHidden() &&
+                !getController().isShuttingDown())
         {
             NotificationHandler notificationHandler = new NotificationHandler(
                 getController(), title, message);
@@ -1036,7 +1037,8 @@ public class UIController extends PFComponent {
      *            minimized.
      */
     public void notifyMessage(String title, String message, TimerTask task) {
-        if (mainFrame.isIconifiedOrHidden() && started)
+        if (mainFrame.isIconifiedOrHidden() &&
+                !getController().isShuttingDown())
         {
             NotificationHandler notificationHandler = new NotificationHandler(
                 getController(), title, message, task);
