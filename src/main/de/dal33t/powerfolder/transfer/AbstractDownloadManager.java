@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc, Dennis Waldherr. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc, Dennis Waldherr. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.transfer;
 
 import java.io.File;
@@ -84,15 +84,13 @@ public abstract class AbstractDownloadManager extends PFComponent implements
     protected FilePartsState filePartsState;
 
     protected FilePartsRecord remotePartRecord;
-    
+
     /**
-     * Hold this while changing states.
-     * If you want to call "dangerous" methods while holding this lock, 
-     * use post(...) to call them.
-     * All methods that may themselves post "events" are dangerous. 
-     * For example methods that will send requests or aborts don't need to
-     * locked (since you don't know when it gets sent anyways), so use
-     * post on them.
+     * Hold this while changing states. If you want to call "dangerous" methods
+     * while holding this lock, use post(...) to call them. All methods that may
+     * themselves post "events" are dangerous. For example methods that will
+     * send requests or aborts don't need to locked (since you don't know when
+     * it gets sent anyways), so use post on them.
      */
     private ReentrantLock lock = new ReentrantLock();
 
@@ -215,8 +213,8 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         }
         if (tempFile == null) {
             try {
-                tempFile = new File(getMetaDataBaseDir(),
-                    "(incomplete) " + getFileID());
+                tempFile = new File(getMetaDataBaseDir(), "(incomplete) "
+                    + getFileID());
             } catch (IOException e) {
                 log().error(e);
                 return null;
@@ -226,17 +224,20 @@ public abstract class AbstractDownloadManager extends PFComponent implements
     }
 
     /**
-     * Returns the base directory for transfer specific meta data.
-     * If the directory doesn't exist, it's created.
+     * Returns the base directory for transfer specific meta data. If the
+     * directory doesn't exist, it's created.
+     * 
      * @return the base directory
-     * @throws IOException if the directory couldn't be created
+     * @throws IOException
+     *             if the directory couldn't be created
      */
     private File getMetaDataBaseDir() throws IOException {
         File baseDir = new File(getFileInfo().getFolder(
             getController().getFolderRepository()).getSystemSubDir(),
             "transfers");
         if (!baseDir.exists() && !baseDir.mkdirs()) {
-            throw new IOException("Couldn't create base directory for transfer meta data!");
+            throw new IOException(
+                "Couldn't create base directory for transfer meta data!");
         }
         return baseDir;
     }
@@ -386,14 +387,14 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         // This has to happen here since "completed" is valid
         assert !isDone() : "File broken/aborted before init!";
         assert getTempFile().getParentFile().exists() : "Missing PowerFolder system directory";
-        
+
         // Create temp-file directory structure if necessary
-//        if (!getTempFile().getParentFile().exists()) {
-//            if (!getTempFile().getParentFile().mkdirs()) {
-//                throw new FileNotFoundException(
-//                    "Couldn't create parent directory!");
-//            }
-//        }
+        // if (!getTempFile().getParentFile().exists()) {
+        // if (!getTempFile().getParentFile().mkdirs()) {
+        // throw new FileNotFoundException(
+        // "Couldn't create parent directory!");
+        // }
+        // }
 
         lock.lock();
         try {
@@ -483,11 +484,11 @@ public abstract class AbstractDownloadManager extends PFComponent implements
     protected abstract void requestFilePartsRecord(Download download);
 
     /**
-     * Be careful with the implementation of this method,
-     * it's called with internal locks in place.
-     * Reason: This method will access filepartsstate, which is
-     * also accessed in here. 
-     * TODO: Find a "cleaner" way so this method doesn't need to be locked.
+     * Be careful with the implementation of this method, it's called with
+     * internal locks in place. Reason: This method will access filepartsstate,
+     * which is also accessed in here. TODO: Find a "cleaner" way so this method
+     * doesn't need to be locked.
+     * 
      * @throws BrokenDownloadException
      */
     protected abstract void sendPartRequests() throws BrokenDownloadException;
@@ -507,6 +508,13 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             log().debug("Download broken: " + fileInfo);
             setState(InternalState.BROKEN);
             shutdown();
+
+            if (getTempFile().exists() && getTempFile().length() == 0) {
+                log().info("Deleting tempfile with size 0.");
+                if (getTempFile().delete()) {
+                    log().warn("Failed to delete temp file!");
+                }
+            }
         } finally {
             lock.unlock();
         }
@@ -698,9 +706,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         if (!getTempFile().setLastModified(
             getFileInfo().getModifiedDate().getTime()))
         {
-            log().error(
-                "Failed to update modification date! Detail:"
-                    + this);
+            log().error("Failed to update modification date! Detail:" + this);
         }
     }
 
@@ -719,8 +725,9 @@ public abstract class AbstractDownloadManager extends PFComponent implements
 
             validateDownload();
             switch (state) {
-                case BROKEN:
-                    // The connection could've broken while some other code tries to add sources
+                case BROKEN :
+                    // The connection could've broken while some other code
+                    // tries to add sources
                     break;
                 case MATCHING_AND_COPYING :
                 case CHECKING_FILE_VALIDITY :
@@ -728,7 +735,8 @@ public abstract class AbstractDownloadManager extends PFComponent implements
 
                     post(new Runnable() {
                         public void run() {
-                            // Maybe rework the code so this request will be sent if we
+                            // Maybe rework the code so this request will be
+                            // sent if we
                             // really need data
                             download.request(0);
                         }
@@ -802,7 +810,8 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                 case COMPLETED :
                     addSourceImpl(download);
                     if (!download.isCompleted()) {
-                        getController().getTransferManager().setCompleted(download);
+                        getController().getTransferManager().setCompleted(
+                            download);
                     }
                     break;
                 default :
@@ -824,7 +833,8 @@ public abstract class AbstractDownloadManager extends PFComponent implements
      */
     private void checkFileValidity() {
         assert state == InternalState.ACTIVE_DOWNLOAD
-            || state == InternalState.WAITING_FOR_UPLOAD_READY && filePartsState.getFileLength() == 0
+            || state == InternalState.WAITING_FOR_UPLOAD_READY
+            && filePartsState.getFileLength() == 0
             || state == InternalState.MATCHING_AND_COPYING : "Invalid state: "
             + state;
 
@@ -865,8 +875,8 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                 return null;
             }
         }
-//        metaFile = new File(diskFile.getParentFile(),
-//            FileUtils.DOWNLOAD_META_FILE + diskFile.getName());
+        // metaFile = new File(diskFile.getParentFile(),
+        // FileUtils.DOWNLOAD_META_FILE + diskFile.getName());
         return metaFile;
     }
 
@@ -878,8 +888,8 @@ public abstract class AbstractDownloadManager extends PFComponent implements
     private String getFileID() throws Error {
         if (fileID == null) {
             try {
-                fileID = new String(Util.encodeHex(
-                    Util.md5(getFileInfo().getName().getBytes("UTF8"))));
+                fileID = new String(Util.encodeHex(Util.md5(getFileInfo()
+                    .getName().getBytes("UTF8"))));
             } catch (UnsupportedEncodingException e) {
                 throw new Error(e);
             }
@@ -1030,10 +1040,13 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                                 .getSize()));
                         }
                         if (filePartsState.isCompleted()) {
-                            log().debug("Not requesting anything, seems to be a zero file: " + fileInfo);
+                            log().debug(
+                                "Not requesting anything, seems to be a zero file: "
+                                    + fileInfo);
                             checkFileValidity();
                         } else {
-                            log().debug("Not requesting record for this download.");
+                            log().debug(
+                                "Not requesting record for this download.");
                             startActiveDownload();
                         }
                     }
@@ -1121,7 +1134,8 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                                         checkFileValidity();
                                     } else {
                                         if (getSources().isEmpty()) {
-                                            throw new BrokenDownloadException("Out of sources");
+                                            throw new BrokenDownloadException(
+                                                "Out of sources");
                                         }
                                         if (!isDone()) {
                                             startActiveDownload();
@@ -1185,7 +1199,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                 case BROKEN :
                 case ABORTED :
                 case COMPLETED : // If a remote side sends an abort this can
-                                    // happen
+                    // happen
                     removeSourceImpl(download);
                     break;
                 default :
@@ -1270,7 +1284,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         assert newState != InternalState.PASSIVE_DOWNLOAD
             || !getSources().isEmpty();
 
-        //        log().warn("STATE " + newState + " for " + fileInfo);
+        // log().warn("STATE " + newState + " for " + fileInfo);
         state = newState;
     }
 

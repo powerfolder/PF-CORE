@@ -23,9 +23,9 @@ import java.awt.EventQueue;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
@@ -100,9 +100,10 @@ public class TestHelper extends Loggable {
     public static void assertIncompleteFilesGone(List<Folder> folderList) {
         for (Folder f : folderList) {
             File transfers = new File(f.getSystemSubDir(), "transfers");
-            File[] list = transfers.listFiles(new FilenameFilter() {
-                public boolean accept(File dir, String name) {
-                    return name.contains("(incomplete)");
+            File[] list = transfers.listFiles(new FileFilter() {
+                public boolean accept(File pathname) {
+                    return pathname.getName().contains("(incomplete)")
+                        && pathname.length() == 0L;
                 }
             });
             if (list != null && list.length != 0) { // Always fail in here
