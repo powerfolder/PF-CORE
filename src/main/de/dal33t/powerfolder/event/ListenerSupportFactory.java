@@ -24,16 +24,15 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.util.*;
+import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.swing.SwingUtilities;
 
 import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Profiling;
-import de.dal33t.powerfolder.util.ui.UIUtil;
 import de.dal33t.powerfolder.util.ProfilingEntry;
-import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * Factory used to created event/listener support upon eventlistner interfaces.
@@ -59,17 +58,17 @@ public class ListenerSupportFactory {
     private static final boolean awtAvailable = UIUtil.isAWTAvailable();
 
     /**
-     * Creates a listener support for the listener event interface. Returned
-     * object can directly be casted into the listener event interface.
+     * Creates a listener support for the listener event interface.
      * <p>
      * All calls to methods on that object will fire that event to its
      * registered listeners.
      * <p>
      * 
+     * @param <T>
      * @param listenerInterface
-     * @return
+     * @return the event support
      */
-    public static Object createListenerSupport(Class listenerInterface) {
+    public static <T> T createListenerSupport(Class<T> listenerInterface) {
         if (listenerInterface == null) {
             throw new NullPointerException("Listener interface is empty");
         }
@@ -78,9 +77,9 @@ public class ListenerSupportFactory {
                 "Listener interface class is not an java Interface!");
         }
         ClassLoader cl = listenerInterface.getClassLoader();
-        InvocationHandler handler = new ListenerSupportInvocationHandler(
+        InvocationHandler handler = new ListenerSupportInvocationHandler<T>(
             listenerInterface);
-        Object listenerSupportImpl = Proxy.newProxyInstance(cl,
+        T listenerSupportImpl = (T) Proxy.newProxyInstance(cl,
             new Class[]{listenerInterface}, handler);
         LOG.verbose("Created event listener support for interface '"
             + listenerInterface.getName() + '\'');
@@ -187,7 +186,6 @@ public class ListenerSupportFactory {
      * an exception is thrown
      * 
      * @param listenerSupport
-     * @param listener
      */
     public static void removeAllListeners(Object listenerSupport) {
         if (listenerSupport == null) {
@@ -217,10 +215,10 @@ public class ListenerSupportFactory {
      * 
      * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      */
-    private static class ListenerSupportInvocationHandler implements
+    private static class ListenerSupportInvocationHandler<T> implements
         InvocationHandler
     {
-        private Class listenerInterface;
+        private Class<T> listenerInterface;
         private List<CoreListener> listenersNotInDispatchThread;
         private List<CoreListener> listenersInDispatchThread;
         private boolean suspended;
@@ -232,7 +230,7 @@ public class ListenerSupportFactory {
          * @param listenerInterface
          *            the listener event interface
          */
-        private ListenerSupportInvocationHandler(Class listenerInterface) {
+        private ListenerSupportInvocationHandler(Class<T> listenerInterface) {
             this.listenerInterface = listenerInterface;
             this.listenersInDispatchThread = new CopyOnWriteArrayList<CoreListener>();
             this.listenersNotInDispatchThread = new CopyOnWriteArrayList<CoreListener>();
