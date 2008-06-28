@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.clientserver;
 
 import de.dal33t.powerfolder.Controller;
@@ -58,9 +58,7 @@ public class RequestExecutor extends PFComponent {
 
     public Response execute(Request request) throws ConnectionException {
         if (!node.isCompleteyConnected()) {
-            throw new ConnectionException(
-                "Unable to execute request, node is disconnected (" + node
-                    + ").");
+            throw new ConnectionException("Not connected to " + node.getNick());
         }
 
         // Prepare
@@ -77,34 +75,41 @@ public class RequestExecutor extends PFComponent {
         node.addMessageListener(messageListener);
         node.sendMessagesAsynchron(request);
 
-        // 60 secs timeout
-        waitForResponse(60);
+        try {
+            // 60 secs timeout
+            waitForResponse(60);
 
-        if (response == null) {
-            throw new ConnectionException(
-                "Did not receive a response after timeout or node disconnected ("
-                    + node + ").");
+            if (response == null) {
+                if (!node.isCompleteyConnected()) {
+                    throw new ConnectionException(node.getNick()
+                        + " disconnected");
+                }
+                throw new ConnectionException("Timeout to " + node.getNick());
+            }
+
+            if (logVerbose) {
+                log().verbose(
+                    "Response from " + node.getNick() + " (" + requestId
+                        + "): " + response);
+            }
+        } finally {
+            notifyAndcleanup();
         }
 
-        if (logVerbose) {
-            log().verbose(
-                "Response from " + node.getNick() + " (" + requestId + "): "
-                    + response);
-        }
-
-        notifyAndcleanup();
         return response;
     }
 
     // Internal helper ********************************************************
 
-    private void waitForResponse(long seconds) throws ConnectionException {
+    private void waitForResponse(long seconds) {
         synchronized (waitForResponseLock) {
             try {
                 waitForResponseLock.wait(seconds * 1000);
             } catch (InterruptedException e) {
-                throw new ConnectionException(
-                    "Interrupted while waiting for response (" + node + ").", e);
+                log()
+                    .warn(
+                        "Interrupted while waiting for response (" + node
+                            + ").", e);
             }
         }
     }

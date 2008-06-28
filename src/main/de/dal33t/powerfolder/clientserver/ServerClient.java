@@ -37,6 +37,7 @@ import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -71,16 +72,21 @@ public class ServerClient extends PFComponent {
     private AccountService userService;
     private FolderService folderService;
 
+    private ServerClientListener listenerSupport;
+
     // Construction ***********************************************************
 
     public ServerClient(Controller controller, Member serverNode) {
         super(controller);
         Reject.ifNull(serverNode, "Server node is null");
+        this.listenerSupport = ListenerSupportFactory
+            .createListenerSupport(ServerClientListener.class);
         this.server = serverNode;
+        setAnonAccount();
         initializeServiceStubs();
         getController().getNodeManager().addNodeManagerListener(
             new MyNodeManagerListener());
-        this.accountDetails = new AccountDetails(new AnonymousAccount(), 0, 0);
+
     }
 
     // Basics *****************************************************************
@@ -173,7 +179,7 @@ public class ServerClient extends PFComponent {
         username = theUsername;
         password = thePassword;
         if (!isConnected()) {
-            accountDetails = new AccountDetails(new AnonymousAccount(), 0, 0);
+            setAnonAccount();
             return accountDetails.getAccount();
         }
         String salt = IdGenerator.makeId() + IdGenerator.makeId();
@@ -187,7 +193,7 @@ public class ServerClient extends PFComponent {
         boolean loginOk = userService.login(theUsername, passwordMD5, salt);
         if (!loginOk) {
             log().warn("Login to server (" + theUsername + ") failed!");
-            accountDetails = new AccountDetails(new AnonymousAccount(), 0, 0);
+            setAnonAccount();
             return accountDetails.getAccount();
         }
         AccountDetails newAccountDetails = userService.getAccountDetails();
@@ -195,8 +201,9 @@ public class ServerClient extends PFComponent {
             "Login to server (" + theUsername + ") result: " + accountDetails);
         if (newAccountDetails != null) {
             accountDetails = newAccountDetails;
+            fireLogin(accountDetails);
         } else {
-            accountDetails = new AccountDetails(new AnonymousAccount(), 0, 0);
+            setAnonAccount();
         }
         return accountDetails.getAccount();
     }
@@ -290,6 +297,16 @@ public class ServerClient extends PFComponent {
         }
     }
 
+    // Event handling ********************************************************
+
+    public void addListener(ServerClientListener listener) {
+        ListenerSupportFactory.addListener(listenerSupport, listener);
+    }
+
+    public void removeListener(ServerClientListener listener) {
+        ListenerSupportFactory.removeListener(listenerSupport, listener);
+    }
+
     // Internal ***************************************************************
 
     private void initializeServiceStubs() {
@@ -297,6 +314,15 @@ public class ServerClient extends PFComponent {
             AccountService.class, server);
         folderService = ServiceProvider.createRemoteStub(getController(),
             FolderService.class, server);
+    }
+
+    private void setAnonAccount() {
+        accountDetails = new AccountDetails(new AnonymousAccount(), 0, 0);
+        fireLogin(accountDetails);
+    }
+
+    private void fireLogin(AccountDetails details) {
+        listenerSupport.login(new ServerClientEvent(this, details));
     }
 
     // General ****************************************************************
@@ -317,9 +343,7 @@ public class ServerClient extends PFComponent {
     private class MyNodeManagerListener implements NodeManagerListener {
         public void nodeConnected(NodeManagerEvent e) {
             if (isServer(e.getNode())) {
-
                 if (StringUtils.isEmpty(server.getId())) {
-
                     // Got connect to server! Take his ID and name.
                     Member oldServer = server;
                     server = e.getNode();
@@ -335,6 +359,8 @@ public class ServerClient extends PFComponent {
                 if (username != null) {
                     login(username, password);
                 }
+                listenerSupport.serverConnected(new ServerClientEvent(
+                    ServerClient.this));
             }
         }
 
@@ -343,6 +369,8 @@ public class ServerClient extends PFComponent {
                 // Invalidate account.
                 // TODO: Why no cache until reconnect?
                 // myAccount = null;
+                listenerSupport.serverDisconnected(new ServerClientEvent(
+                    ServerClient.this));
             }
         }
 

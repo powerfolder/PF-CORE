@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.ui.webservice;
 
 import java.awt.event.ActionEvent;
@@ -26,18 +26,20 @@ import java.util.List;
 import javax.swing.Action;
 import javax.swing.ListModel;
 
+import com.jgoodies.binding.PresentationModel;
 import com.jgoodies.binding.list.ArrayListModel;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.clientserver.ServerClient;
+import de.dal33t.powerfolder.clientserver.ServerClientEvent;
+import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.event.FolderMembershipEvent;
 import de.dal33t.powerfolder.event.FolderMembershipListener;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
-import de.dal33t.powerfolder.event.NodeManagerEvent;
-import de.dal33t.powerfolder.event.NodeManagerListener;
+import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.Reject;
@@ -52,24 +54,30 @@ import de.dal33t.powerfolder.util.ui.SwingWorker;
  */
 public class ServerClientModel extends PFUIComponent {
     private ServerClient client;
-    private ArrayListModel mirroredFolders;
+    private ArrayListModel<Folder> mirroredFolders;
+    private PresentationModel<Account> accountModel;
     private FolderMembershipListener membershipListener;
 
     public ServerClientModel(Controller controller, ServerClient client) {
         super(controller);
         Reject.ifNull(client, "Client is null");
-        mirroredFolders = new ArrayListModel();
+        mirroredFolders = new ArrayListModel<Folder>();
         this.client = client;
+        this.accountModel = new PresentationModel<Account>(client.getAccount());
         initalizeEventhandling();
         updateMirroredFolders();
     }
-    
+
     public ServerClient getClient() {
         return client;
     }
 
     public ListModel getMirroredFoldersModel() {
         return mirroredFolders;
+    }
+
+    public PresentationModel<Account> getAccountModel() {
+        return accountModel;
     }
 
     /**
@@ -125,8 +133,7 @@ public class ServerClientModel extends PFUIComponent {
     // Internal methods *******************************************************
 
     private void initalizeEventhandling() {
-        getController().getNodeManager().addNodeManagerListener(
-            new MyNodeManagerListener());
+        client.addListener(new MyServerClientListener());
         membershipListener = new MyFolderMembershipListener();
 
         // Setup folder membership stuff
@@ -210,41 +217,26 @@ public class ServerClientModel extends PFUIComponent {
 
     }
 
-    private class MyNodeManagerListener implements NodeManagerListener {
-
-        public void friendAdded(NodeManagerEvent e) {
-        }
-
-        public void friendRemoved(NodeManagerEvent e) {
-        }
-
-        public void nodeAdded(NodeManagerEvent e) {
-        }
-
-        public void nodeConnected(NodeManagerEvent e) {
-            if (client.isServer(e.getNode())) {
-                updateMirroredFolders();
-            }
-        }
-
-        public void nodeDisconnected(NodeManagerEvent e) {
-            if (client.isServer(e.getNode())) {
-                updateMirroredFolders();
-            }
-        }
-
-        public void nodeRemoved(NodeManagerEvent e) {
-        }
-
-        public void settingsChanged(NodeManagerEvent e) {
-        }
-
-        public void startStop(NodeManagerEvent e) {
-        }
+    private class MyServerClientListener implements ServerClientListener {
 
         public boolean fireInEventDispathThread() {
             return true;
         }
 
+        public void accountUpdated(ServerClientEvent event) {
+            accountModel.setBean(event.getAccountDetails().getAccount());
+        }
+
+        public void login(ServerClientEvent event) {
+            accountModel.setBean(event.getAccountDetails().getAccount());
+        }
+
+        public void serverConnected(ServerClientEvent event) {
+            updateMirroredFolders();
+        }
+
+        public void serverDisconnected(ServerClientEvent event) {
+            updateMirroredFolders();
+        }
     }
 }
