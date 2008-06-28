@@ -46,6 +46,14 @@ public class Account extends Model implements Serializable {
     private static final Logger LOG = Logger.getLogger(Account.class);
     private static final long serialVersionUID = 100L;
 
+    // Properties
+    public static final String PROPERTYNAME_USERNAME = "username";
+    public static final String PROPERTYNAME_PASSWORD = "password";
+    public static final String PROPERTYNAME_REGISTER_DATE = "registerDate";
+    public static final String PROPERTYNAME_NEWSLETTER = "newsLetter";
+    public static final String PROPERTYNAME_PRO_USER = "proUser";
+    public static final String PROPERTYNAME_DEFAULT_SYNCHRONIZED_FOLDER = "defaultSynchronizedFolder";
+
     private String username;
     private String password;
     private Date registerDate;
@@ -127,20 +135,24 @@ public class Account extends Model implements Serializable {
         return username != null;
     }
 
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
     public String getUsername() {
         return username;
     }
 
     public void setUsername(String username) {
+        Object oldValue = getUsername();
         this.username = username;
+        firePropertyChange(PROPERTYNAME_USERNAME, oldValue, this.username);
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        Object oldValue = getPassword();
+        this.password = password;
+        firePropertyChange(PROPERTYNAME_PASSWORD, oldValue, this.password);
     }
 
     public Date getRegisterDate() {
@@ -148,7 +160,10 @@ public class Account extends Model implements Serializable {
     }
 
     public void setRegisterDate(Date registerDate) {
+        Object oldValue = getRegisterDate();
         this.registerDate = registerDate;
+        firePropertyChange(PROPERTYNAME_REGISTER_DATE, oldValue,
+            this.registerDate);
     }
 
     public boolean isNewsLetter() {
@@ -156,7 +171,9 @@ public class Account extends Model implements Serializable {
     }
 
     public void setNewsLetter(boolean newsLetter) {
+        Object oldValue = isNewsLetter();
         this.newsLetter = newsLetter;
+        firePropertyChange(PROPERTYNAME_NEWSLETTER, oldValue, this.newsLetter);
     }
 
     public OnlineStorageSubscription getOSSubscription() {
@@ -168,7 +185,9 @@ public class Account extends Model implements Serializable {
     }
 
     public void setProUser(boolean proUser) {
+        Object oldValue = isProUser();
         this.proUser = proUser;
+        firePropertyChange(PROPERTYNAME_PRO_USER, oldValue, this.proUser);
     }
 
     public FolderInfo getDefaultSynchronizedFolder() {
@@ -178,7 +197,10 @@ public class Account extends Model implements Serializable {
     public void setDefaultSynchronizedFolder(
         FolderInfo defaultSynchronizedFolder)
     {
+        Object oldValue = getDefaultSynchronizedFolder();
         this.defaultSynchronizedFolder = defaultSynchronizedFolder;
+        firePropertyChange(PROPERTYNAME_DEFAULT_SYNCHRONIZED_FOLDER, oldValue,
+            this.defaultSynchronizedFolder);
     }
 
     public Collection<String> getLicenseKeyFiles() {
