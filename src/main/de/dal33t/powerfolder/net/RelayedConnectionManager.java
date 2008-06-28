@@ -239,13 +239,13 @@ public class RelayedConnectionManager extends PFComponent {
 
         if (!printStats) {
             printStats = true;
-            log().warn(
+            log().info(
                 "Acting as relay. Received from " + receivedFrom.getNick()
                     + ", msg: " + message);
             getController().scheduleAndRepeat(new TimerTask() {
                 @Override
                 public void run() {
-                    log().warn(
+                    log().debug(
                         "Relay stats (RelayedCon): " + nRelayedMsgs
                             + " msgs relayed. " + counter);
                 }
