@@ -19,7 +19,10 @@
  */
 package de.dal33t.powerfolder.ui.folder;
 
-import java.awt.*;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
@@ -47,7 +50,22 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.TimerTask;
 
-import javax.swing.*;
+import javax.swing.Action;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
+import javax.swing.JTable;
+import javax.swing.JToggleButton;
+import javax.swing.JViewport;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.JTableHeader;
@@ -68,7 +86,16 @@ import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.event.*;
+import de.dal33t.powerfolder.event.FileFilterChangeListener;
+import de.dal33t.powerfolder.event.FileFilterChangedEvent;
+import de.dal33t.powerfolder.event.FolderAdapter;
+import de.dal33t.powerfolder.event.FolderEvent;
+import de.dal33t.powerfolder.event.FolderMembershipEvent;
+import de.dal33t.powerfolder.event.FolderMembershipListener;
+import de.dal33t.powerfolder.event.NodeManagerEvent;
+import de.dal33t.powerfolder.event.NodeManagerListener;
+import de.dal33t.powerfolder.event.TransferAdapter;
+import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.ui.PreviewPanel;
 import de.dal33t.powerfolder.ui.action.AbortTransferAction;
@@ -314,7 +341,7 @@ public class FilesTab extends PFUIComponent implements FolderTab,
     }
 
     private JPanel createFilterBar() {
-        FormLayout layout = new FormLayout("pref, 3dlu, pref:grow", "pref");
+        FormLayout layout = new FormLayout("pref, 3dlu, fill:pref:grow", "pref");
         PanelBuilder builder = new PanelBuilder(layout);
         builder.setBorder(Borders.createEmptyBorder("1dlu, 1dlu, 1dlu, 0dlu"));
         CellConstraints cc = new CellConstraints();
@@ -456,11 +483,11 @@ public class FilesTab extends PFUIComponent implements FolderTab,
             fileMenu.add(openLocalFolder);
         }
         fileMenu.add(downloadFileAction);
-        fileMenu.add(blackWhitelistAction);
-        fileMenu.add(unBlackWhitelistAction);
         fileMenu.add(abortTransferAction);
         fileMenu.add(removeFileAction);
         fileMenu.add(restoreFileAction);
+        fileMenu.add(blackWhitelistAction);
+        fileMenu.add(unBlackWhitelistAction);
         fileMenu.addSeparator();
 
         fileMenu.add(new ChangeFriendStatusAction(getController(),
@@ -468,9 +495,7 @@ public class FilesTab extends PFUIComponent implements FolderTab,
     }
 
     /**
-     * Returns the selection model. Changes upon selection.
-     * 
-     * @return
+     * @return the selection model. Changes upon selection.
      */
     public SelectionModel getSelectionModel() {
         return selectionModel;
@@ -848,13 +873,24 @@ public class FilesTab extends PFUIComponent implements FolderTab,
         }
     }
 
-    /** drop a transferable on this filelist, must be of the javafilelist flavor */
+    /**
+     * drop a transferable on this filelist, must be of the javafilelist flavor
+     * 
+     * @param trans
+     * @return true if succeeded
+     */
     public boolean drop(Transferable trans) {
         Directory target = directoryTable.getDirectory();
         return drop(target, trans);
     }
 
-    /** drop a transferable on this directory, must be of the javafilelist flavor */
+    /**
+     * drop a transferable on this directory, must be of the javafilelist flavor
+     * 
+     * @param directory
+     * @param trans
+     * @return true if succeeded
+     */
     public boolean drop(Directory directory, Transferable trans) {
         try {
             List<File> fileList = (List<File>) trans

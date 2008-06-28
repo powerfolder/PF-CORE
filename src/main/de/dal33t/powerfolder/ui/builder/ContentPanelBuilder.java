@@ -22,6 +22,7 @@ package de.dal33t.powerfolder.ui.builder;
 import javax.swing.JComponent;
 
 import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.debug.FormDebugPanel;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
@@ -73,7 +74,7 @@ public class ContentPanelBuilder {
 
             if (filterbar != null) {
                 builder.appendRow("pref");
-                builder.add(filterbar, cc.xywh(1, row, 1, 1, "right, center"));
+                builder.add(filterbar, cc.xy(1, row));
                 row++;
                 builder.appendRow("pref");
                 builder.addSeparator(null, cc.xy(1, row));
