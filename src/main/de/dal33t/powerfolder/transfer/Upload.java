@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.transfer;
 
 import java.beans.PropertyChangeEvent;
@@ -100,15 +100,18 @@ public class Upload extends Transfer {
 
     public void enqueuePartRequest(RequestPart pr) {
         Reject.ifNull(pr, "Message is null");
-        
+
         // If the download was aborted
         if (aborted || !isStarted()) {
             return;
         }
 
         if (!Util.usePartRequests(getController(), this.getPartner())) {
-            log().warn("Downloader sent a PartRequest (Protocol violation). Aborting.");
-            getTransferManager().setBroken(this, TransferProblem.TRANSFER_EXCEPTION);
+            log()
+                .warn(
+                    "Downloader sent a PartRequest (Protocol violation). Aborting.");
+            getTransferManager().setBroken(this,
+                TransferProblem.TRANSFER_EXCEPTION);
             return;
         }
         // Requests for different files on the same transfer connection are not
@@ -127,7 +130,7 @@ public class Upload extends Transfer {
 
     public void receivedFilePartsRecordRequest(RequestFilePartsRecord r) {
         Reject.ifNull(r, "Record is null");
-        
+
         log().info("Received request for a parts record.");
         // If the download was aborted
         if (aborted || !isStarted()) {
@@ -146,7 +149,7 @@ public class Upload extends Transfer {
 
     public void stopUploadRequest(StopUpload su) {
         Reject.ifNull(su, "Message is null");
-        
+
         synchronized (pendingRequests) {
             pendingRequests.clear();
             pendingRequests.add(su);
@@ -156,7 +159,7 @@ public class Upload extends Transfer {
 
     public void cancelPartRequest(RequestPart pr) {
         Reject.ifNull(pr, "Message is null");
-        
+
         synchronized (pendingRequests) {
             pendingRequests.remove(pr);
             pendingRequests.notifyAll();
@@ -181,16 +184,14 @@ public class Upload extends Transfer {
             public void run() {
                 try {
                     try {
-                        raf = new RandomAccessFile(getFile()
-                            .getDiskFile(
-                                getController().getFolderRepository()),
-                            "r");
+                        raf = new RandomAccessFile(getFile().getDiskFile(
+                            getController().getFolderRepository()), "r");
                     } catch (FileNotFoundException e) {
                         throw new TransferException(e);
                     }
-                    
-                    
-                    // If our partner supports requests, let him request. This is required for swarming to work.
+
+                    // If our partner supports requests, let him request. This
+                    // is required for swarming to work.
                     if (Util.usePartRequests(getController(), getPartner())) {
 
                         if (logVerbose) {
@@ -205,19 +206,22 @@ public class Upload extends Transfer {
                         }
                         if (waitForRequests()) {
                             log().info("Checking for parts request.");
-    
-                            // Check if the first request is for a FilePartsRecord
+
+                            // Check if the first request is for a
+                            // FilePartsRecord
                             if (checkForFilePartsRecordRequest()) {
                                 transferState
                                     .setState(TransferState.REMOTEMATCHING);
-                                log().verbose("Waiting for initial part requests!");
+                                log().verbose(
+                                    "Waiting for initial part requests!");
                                 waitForRequests();
                             }
                             log().info("Upload started " + this);
                             long startTime = System.currentTimeMillis();
-    
+
                             // FIXME: It shouldn't be possible to loop endlessly
-                            // This fixme has to solved somewhere else partly since
+                            // This fixme has to solved somewhere else partly
+                            // since
                             // it's like:
                             // "How long do we allow to upload to some party" -
                             // which can't be decided here.
@@ -340,7 +344,7 @@ public class Upload extends Transfer {
                 return false;
             }
             pr = (RequestPart) pendingRequests.remove();
-            
+
             if (isBroken()) {
                 return false;
             }
@@ -380,7 +384,10 @@ public class Upload extends Transfer {
             log().error(e);
             throw new TransferException(e);
         } catch (ConnectionException e) {
-            log().warn("Connectiopn problem while uploading", e);
+            log().warn("Connectiopn problem while uploading. " + e.toString());
+            if (logVerbose) {
+                log().verbose(e);
+            }
             throw new TransferException(e);
         }
         return true;
@@ -468,7 +475,7 @@ public class Upload extends Transfer {
                     + getPartner().getLastConnectTime());
             return true;
         }
-        
+
         return !stillQueuedAtPartner();
     }
 
@@ -498,8 +505,8 @@ public class Upload extends Transfer {
     }
 
     public String toString() {
-        String msg = getFile().toDetailString() + " to '" + getPartner().getNick()
-            + "'";
+        String msg = getFile().toDetailString() + " to '"
+            + getPartner().getNick() + "'";
         if (getPartner().isOnLAN()) {
             msg += " (local-net)";
         }
@@ -667,7 +674,7 @@ public class Upload extends Transfer {
     {
         assert theFile != null;
         assert f != null;
-        
+
         boolean lastModificationDataMismatch = !Util
             .equalsFileDateCrossPlattform(f.lastModified(), theFile
                 .getModifiedDate().getTime());
