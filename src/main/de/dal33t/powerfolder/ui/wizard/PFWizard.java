@@ -162,9 +162,10 @@ public class PFWizard extends PFUIComponent {
         if (folderSetupAfterwards) {
             nextFinishPanel = new FolderOnlineStoragePanel(controller);
         } else {
+            // TODO i18n
             nextFinishPanel = new TextPanelPanel(controller,
                 "Online Storage Login Successful",
-                "The WebService is now correctly setup.\n"
+                "The Online Storage is now correctly setup.\n"
                     + "You may now start to backup Folders to it.");
         }
         wizard.open(new LoginOnlineStoragePanel(controller, nextFinishPanel, true));
