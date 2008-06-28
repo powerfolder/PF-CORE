@@ -81,6 +81,7 @@ public class Icons {
     public static final Icon FILTER_TEXTFIELD_CLEARBUTTON_NORMAL = getIcon("icons/filter_textfield_clearbutton_normal.png");
     public static final Icon FILTER_TEXTFIELD_CLEARBUTTON_HOVER = getIcon("icons/filter_textfield_clearbutton_hover.png");
     public static final Icon FILTER_TEXTFIELD_CLEARBUTTON_PUSH = getIcon("icons/filter_textfield_clearbutton_push.png");
+    public static final Icon FILTER_TEXTFIELD_GLASS = getIcon("icons/filter_textfield_glass.png");
 
     public static final Icon WARNING = getIcon("icons/Warning.png");
     public static final Icon DEBUG = getIcon("icons/LadyBug.gif");

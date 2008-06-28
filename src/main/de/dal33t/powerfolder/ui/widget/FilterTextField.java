@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.ui.widget;
 
 import java.awt.Color;
@@ -27,6 +27,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.EtchedBorder;
@@ -53,15 +54,22 @@ public class FilterTextField {
     private JPanel panel;
     private JTextField jTextField;
     private JButton cancelTextJButton;
+    private JLabel glassIcon;
     private ValueModel valueModel;
 
-    /** create a FilterTextField */
+    /**
+     * create a FilterTextField
+     * 
+     * @param columns
+     */
     public FilterTextField(int columns) {
         this.columns = columns;
         valueModel = new ValueHolder();
     }
 
-    /** The value model holding the text */
+    /**
+     * @return The value model holding the text
+     */
     public ValueModel getValueModel() {
         return valueModel;
     }
@@ -75,6 +83,7 @@ public class FilterTextField {
 
             builder.add(jTextField, cc.xy(1, 1));
             builder.add(cancelTextJButton, cc.xy(2, 1));
+            builder.add(glassIcon, cc.xy(2, 1));
             builder.setBorder(new EtchedBorder());
             panel = builder.getPanel();
             panel.setBackground(Color.WHITE);
@@ -96,9 +105,10 @@ public class FilterTextField {
             public void propertyChange(PropertyChangeEvent evt) {
                 String text = (String) valueModel.getValue();
                 // visible if there is text else invisible
-                boolean visible = text.length() > 0;
-                cancelTextJButton.setVisible(visible);
-                if (!visible) {// textfiled should get focus if button is
+                boolean hasText = text.length() > 0;
+                cancelTextJButton.setVisible(hasText);
+                glassIcon.setVisible(!hasText);
+                if (!hasText) {// textfiled should get focus if button is
                     // hidden
                     jTextField.requestFocus();
                 }
@@ -110,14 +120,14 @@ public class FilterTextField {
             Icons.FILTER_TEXTFIELD_CLEARBUTTON_HOVER,
             Icons.FILTER_TEXTFIELD_CLEARBUTTON_PUSH);
         cancelTextJButton.setVisible(false);
-        //make sure the background is never drawn
+        // make sure the background is never drawn
         cancelTextJButton.setContentAreaFilled(false);
         cancelTextJButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 jTextField.setText("");
             }
         });
-        
-        
+        glassIcon = SimpleComponentFactory
+            .createLabel(Icons.FILTER_TEXTFIELD_GLASS);
     }
 }

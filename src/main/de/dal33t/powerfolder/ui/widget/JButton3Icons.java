@@ -34,6 +34,5 @@ public class JButton3Icons extends JButton {
         setBackground(Color.WHITE);
         setPressedIcon(pushIcon);
         setRolloverIcon(hoverIcon);
-        
     }
 }
