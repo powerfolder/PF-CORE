@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.util.test;
 
 import java.awt.EventQueue;
@@ -25,6 +25,7 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
@@ -33,13 +34,18 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
 
 import junit.framework.Assert;
+import junit.framework.TestCase;
 
 import org.apache.commons.io.FileUtils;
 
+import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.util.Loggable;
 import de.dal33t.powerfolder.util.Reject;
@@ -72,7 +78,7 @@ public class TestHelper extends Loggable {
             ThreadInfo[] info = mx.getThreadInfo(ids, true, true);
             StringWriter lout = new StringWriter();
             PrintWriter out = new PrintWriter(lout);
-            for (ThreadInfo i: info) {
+            for (ThreadInfo i : info) {
                 out.println("Thread " + i);
                 out.println("Complete Trace:");
                 Exception tmp = new Exception();
@@ -85,7 +91,77 @@ public class TestHelper extends Loggable {
             return e.toString();
         }
     }
-    
+
+    /**
+     * Makes sure that no (incomplete) files are left over.
+     * 
+     * @param folderList
+     */
+    public static void assertIncompleteFilesGone(List<Folder> folderList) {
+        for (Folder f : folderList) {
+            File transfers = new File(f.getSystemSubDir(), "transfers");
+            File[] list = transfers.listFiles(new FilenameFilter() {
+                public boolean accept(File dir, String name) {
+                    return name.contains("(incomplete)");
+                }
+            });
+            if (list != null && list.length != 0) { // Always fail in here
+                for (File file : list) {
+                    boolean deleted = file.delete();
+                    TestCase.assertTrue(
+                        "Incomplete file still open somewhere, couldn't delete: "
+                            + file, deleted);
+                }
+                TestCase
+                    .fail("(incomplete) files found, but all could be deleted!");
+            }
+        }
+    }
+
+    public static void assertIncompleteFilesGone(Folder... folders) {
+        assertIncompleteFilesGone(Arrays.asList(folders));
+    }
+
+    public static void assertIncompleteFilesGone(
+        final MultipleControllerTestCase testCase)
+    {
+        waitForCondition(10, new Condition() {
+            public boolean reached() {
+                for (Controller c : testCase.getControllers()) {
+                    if (c.getTransferManager().countActiveDownloads() != 0) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        });
+        List<Folder> list = new LinkedList<Folder>();
+        for (Controller c : testCase.getControllers()) {
+            list.add(testCase.getFolderOf(c));
+        }
+        assertIncompleteFilesGone(list);
+    }
+
+    public static void assertIncompleteFilesGone(
+        final TwoControllerTestCase testCase)
+    {
+        waitForCondition(10, new Condition() {
+            public boolean reached() {
+                for (Controller c : new Controller[]{
+                    testCase.getContollerLisa(), testCase.getContollerBart()})
+                {
+                    if (c.getTransferManager().countActiveDownloads() != 0) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        });
+
+        assertIncompleteFilesGone(testCase.getFolderAtBart(), testCase
+            .getFolderAtLisa());
+    }
+
     public static File getTestDir() {
         if (testFile == null) {
             File localBuildProperties = new File("build-local.properties");
@@ -469,4 +545,5 @@ public class TestHelper extends Loggable {
             throw new RuntimeException(e);
         }
     }
+
 }

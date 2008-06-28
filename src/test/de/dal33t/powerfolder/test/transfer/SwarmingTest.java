@@ -20,9 +20,7 @@
 package de.dal33t.powerfolder.test.transfer;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.io.RandomAccessFile;
 import java.util.Arrays;
 import java.util.Random;
@@ -34,16 +32,14 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.transfer.DownloadManager;
-import de.dal33t.powerfolder.transfer.MultiSourceDownloadManager;
 import de.dal33t.powerfolder.transfer.TransferManager;
-import de.dal33t.powerfolder.transfer.Upload;
-import de.dal33t.powerfolder.transfer.Transfer.TransferState;
 import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.MultipleControllerTestCase;
 import de.dal33t.powerfolder.util.test.TestHelper;
 
 public class SwarmingTest extends MultipleControllerTestCase {
+
     public void xtestAlotOfControllers() throws Exception {
         joinNTestFolder(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
 
@@ -84,6 +80,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
             }
 
         });
+        TestHelper.assertIncompleteFilesGone(this);
     }
 
     public void testFiveSwarmMulti() throws Exception {
@@ -236,6 +233,8 @@ public class SwarmingTest extends MultipleControllerTestCase {
         for (Download dl : man.getSources()) {
             assertTrue(dl.getCounter().getBytesTransferred() > 0);
         }
+
+        TestHelper.assertIncompleteFilesGone(this);
     }
 
     public void testFileAlterations() throws IOException {
@@ -309,6 +308,8 @@ public class SwarmingTest extends MultipleControllerTestCase {
                     .getVersion() == 2;
             }
         });
+
+        TestHelper.assertIncompleteFilesGone(this);
     }
 
     public void testMultiFileAlterations() throws Exception {
@@ -323,7 +324,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
         throws IOException
     {
         Random prng = new Random();
-        final int numC = 5;
+        final int numC = 10;
         nSetupControllers(numC);
         setConfigurationEntry(ConfigurationEntry.USE_SWARMING_ON_LAN, "true");
         setConfigurationEntry(ConfigurationEntry.USE_DELTA_ON_LAN, "true");
@@ -483,6 +484,8 @@ public class SwarmingTest extends MultipleControllerTestCase {
                 return b.toString() + " " + TestHelper.deadlockCheck();
             }
         });
+
+        TestHelper.assertIncompleteFilesGone(this);
     }
 
     public void testConcurrentModificationsLargeSwarmDeltaSync()
@@ -653,5 +656,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
                 .getKnowFilesAsArray()[0].getDiskFile(getContoller("" + i)
                 .getFolderRepository()));
         }
+
+        TestHelper.assertIncompleteFilesGone(this);
     }
 }

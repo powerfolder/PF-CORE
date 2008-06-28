@@ -86,6 +86,8 @@ public class FileTransferTest extends TwoControllerTestCase {
             "cert8.db");
         assertEquals(origFile.length(), testFileLisa.length());
         assertEquals(testFileBart.length(), testFileLisa.length());
+
+        TestHelper.assertIncompleteFilesGone(this);
     }
 
     public void testFileCopyURLclassifier2() throws IOException {
@@ -113,6 +115,8 @@ public class FileTransferTest extends TwoControllerTestCase {
             "urlclassifier2.sqlite");
         assertEquals(origFile.length(), testFileLisa.length());
         assertEquals(testFileBart.length(), testFileLisa.length());
+
+        TestHelper.assertIncompleteFilesGone(this);
     }
 
     public void testSmallFileCopy() throws IOException {
@@ -142,6 +146,8 @@ public class FileTransferTest extends TwoControllerTestCase {
             "TestFile.txt");
         assertEquals(testContent.length, testFileLisa.length());
         assertEquals(testFileBart.length(), testFileLisa.length());
+
+        TestHelper.assertIncompleteFilesGone(this);
     }
 
     public void testFileUpdate() throws IOException {
@@ -190,6 +196,8 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         // Check content
         assertEquals(new String(content1), new String(conten2));
+
+        TestHelper.assertIncompleteFilesGone(this);
     }
 
     public void testEmptyFileCopy() throws IOException {
@@ -264,6 +272,8 @@ public class FileTransferTest extends TwoControllerTestCase {
         // give time for event firering
         // Thread.sleep(500);
         // assertEquals(2, tm2Listener.downloadsCompletedRemoved);
+
+        TestHelper.assertIncompleteFilesGone(this);
     }
 
     /**
@@ -333,6 +343,8 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         clearCompletedDownloadsAtLisa();
         assertEquals(1, tm2Listener.downloadsCompletedRemoved);
+
+        TestHelper.assertIncompleteFilesGone(this);
     }
 
     public void testMultipleFilesCopy() {
@@ -389,6 +401,8 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         clearCompletedDownloadsAtLisa();
         assertEquals(nFiles, tm2Listener.downloadsCompletedRemoved);
+
+        TestHelper.assertIncompleteFilesGone(this);
     }
 
     public void testMultipleMultipleFilesCopy() throws Exception {
@@ -470,6 +484,8 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         clearCompletedDownloadsAtLisa();
         assertEquals(nFiles, lisasListener.downloadsCompletedRemoved);
+
+        TestHelper.assertIncompleteFilesGone(this);
     }
 
     public void testManyPow2FilesCopy() {
@@ -511,6 +527,8 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         clearCompletedDownloadsAtLisa();
         assertEquals(nFiles, tm2Listener.downloadsCompletedRemoved);
+
+        TestHelper.assertIncompleteFilesGone(this);
     }
 
     public void testMultipleManPow2() throws Exception {
@@ -554,6 +572,8 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         clearCompletedDownloadsAtLisa();
         assertEquals(nFiles, tm2Listener.downloadsCompletedRemoved);
+
+        TestHelper.assertIncompleteFilesGone(this);
     }
 
     public void testMany0SizeFilesCopyMulti() throws Exception {
@@ -620,6 +640,8 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         clearCompletedDownloadsAtLisa();
         assertEquals(nFiles, lisasListener.downloadsCompletedRemoved);
+
+        TestHelper.assertIncompleteFilesGone(this);
     }
 
     public void testMany0SizeFilesCopyDeltaSync() {
@@ -683,6 +705,8 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         clearCompletedDownloadsAtLisa();
         assertEquals(nFiles, lisasListener.downloadsCompletedRemoved);
+
+        TestHelper.assertIncompleteFilesGone(this);
     }
 
     public void testMultipleResumeTransfer() throws Exception {
@@ -720,7 +744,14 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         TestHelper.waitForCondition(10, new Condition() {
             public boolean reached() {
-                return getFolderAtLisa().getIncomingFiles(true).size() >= 1;
+                return getContollerLisa().getTransferManager()
+                    .countActiveDownloads() > 0
+                    && new File(getFolderAtLisa().getSystemSubDir(),
+                        "transfers").listFiles(new FilenameFilter() {
+                        public boolean accept(File dir, String name) {
+                            return name.contains("(incomplete) ");
+                        }
+                    }) != null;
             }
         });
 
@@ -864,6 +895,8 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         clearCompletedDownloadsAtLisa();
         assertEquals(1, lisasListener.downloadsCompletedRemoved);
+
+        TestHelper.assertIncompleteFilesGone(this);
     }
 
     public void testBrokenTransferFileChanged() {
@@ -902,6 +935,8 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(1, lisaListener.downloadAborted);
         assertEquals(0, lisaListener.downloadBroken);
         assertEquals(0, lisaListener.downloadsCompletedRemoved);
+
+        TestHelper.assertIncompleteFilesGone(this);
     }
 
     public void testDeltaFileNotChanged() throws InterruptedException {
@@ -981,6 +1016,8 @@ public class FileTransferTest extends TwoControllerTestCase {
                 .getBytesTransferred() + " == " + oldByteCount,
             getFolderAtLisa().getStatistic().getDownloadCounter()
                 .getBytesTransferred() == oldByteCount);
+
+        TestHelper.assertIncompleteFilesGone(this);
     }
 
     public void testDeltaFileChanged() throws IOException, InterruptedException
@@ -1068,6 +1105,8 @@ public class FileTransferTest extends TwoControllerTestCase {
             + fbart.length() / 2, getFolderAtLisa().getStatistic()
             .getDownloadCounter().getBytesTransferred()
             - oldByteCount < fbart.length() / 2);
+
+        TestHelper.assertIncompleteFilesGone(this);
     }
 
     /**
@@ -1116,7 +1155,7 @@ public class FileTransferTest extends TwoControllerTestCase {
      * <p>
      * TRAC #629
      */
-    public void testPendingDownloadsResotre() {
+    public void testPendingDownloadsRestore() {
         // Prepare
         getFolderAtLisa().setSyncProfile(SyncProfile.HOST_FILES);
         TestHelper.createRandomFile(getFolderAtBart().getLocalBase(),
@@ -1169,6 +1208,8 @@ public class FileTransferTest extends TwoControllerTestCase {
         // No pending download no more
         assertEquals(0, getContollerLisa().getTransferManager()
             .getPendingDownloads().size());
+
+        TestHelper.assertIncompleteFilesGone(this);
     }
 
     /**
@@ -1236,6 +1277,8 @@ public class FileTransferTest extends TwoControllerTestCase {
                     .countAllUploads() == 0;
             }
         });
+
+        TestHelper.assertIncompleteFilesGone(this);
     }
 
     private final class MyFilenameProblemHandler implements
