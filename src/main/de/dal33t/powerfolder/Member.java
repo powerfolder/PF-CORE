@@ -1085,6 +1085,7 @@ public class Member extends PFComponent {
 
         // Profile this execution.
         ProfilingEntry profilingEntry = null;
+        int expectedTime = -1;
         if (Profiling.ENABLED) {
             profilingEntry = Profiling.start("Member.handleMessage", message
                 .getClass().getSimpleName());
@@ -1116,13 +1117,14 @@ public class Member extends PFComponent {
                 // ConnectionHandler!
                 Pong pong = new Pong((Ping) message);
                 sendMessagesAsynchron(pong);
+                expectedTime = 50;
             } else if (message instanceof HandshakeCompleted) {
                 lastHandshakeCompleted = (HandshakeCompleted) message;
                 // Notify waiting ppl
                 synchronized (handshakeCompletedWaiter) {
                     handshakeCompletedWaiter.notifyAll();
                 }
-
+                expectedTime = 100;
             } else if (message instanceof FolderList) {
                 FolderList fList = (FolderList) message;
                 joinToLocalFolders(fList);
@@ -1132,6 +1134,7 @@ public class Member extends PFComponent {
                 synchronized (folderListWaiter) {
                     folderListWaiter.notifyAll();
                 }
+                expectedTime = 300;
             } else if (message instanceof RequestFileList) {
                 if (targetFolder != null) {
                     // a file list of a folder
@@ -1146,6 +1149,7 @@ public class Member extends PFComponent {
                     sendMessageAsynchron(new Problem("Folder not found: "
                         + targetedFolderInfo, false), null);
                 }
+                expectedTime = 100;
 
             } else if (message instanceof ScanCommand) {
                 if (targetFolder != null
@@ -1158,6 +1162,8 @@ public class Member extends PFComponent {
                     targetFolder.recommendScanOnNextMaintenance();
                     getController().getFolderRepository().triggerMaintenance();
                 }
+                expectedTime = 50;
+                
             } else if (message instanceof RequestDownload) {
                 // a download is requested
                 RequestDownload dlReq = (RequestDownload) message;
@@ -1168,34 +1174,40 @@ public class Member extends PFComponent {
                     log().warn("Sending abort of " + dlReq.file);
                     sendMessagesAsynchron(new AbortUpload(dlReq.file));
                 }
-
+                expectedTime = 100;
+                
             } else if (message instanceof DownloadQueued) {
                 // set queued flag here, if we received status from other side
                 DownloadQueued dlQueued = (DownloadQueued) message;
                 getController().getTransferManager().setQueued(dlQueued, this);
-
+                expectedTime = 100;
+                
             } else if (message instanceof AbortDownload) {
                 AbortDownload abort = (AbortDownload) message;
                 // Abort the upload
                 getController().getTransferManager().abortUpload(abort.file,
                     this);
+                expectedTime = 100;
 
             } else if (message instanceof AbortUpload) {
                 AbortUpload abort = (AbortUpload) message;
                 // Abort the upload
                 getController().getTransferManager().abortDownload(abort.file,
                     this);
+                expectedTime = 100;
 
             } else if (message instanceof FileChunk) {
                 // File chunk received
                 FileChunk chunk = (FileChunk) message;
                 getController().getTransferManager().chunkReceived(chunk, this);
+                expectedTime = -1;
 
             } else if (message instanceof RequestNodeList) {
                 // Nodemanager will handle that
                 RequestNodeList request = (RequestNodeList) message;
                 getController().getNodeManager().receivedRequestNodeList(
                     request, this);
+                expectedTime = 100;
 
             } else if (message instanceof KnownNodes) {
                 KnownNodes newNodes = (KnownNodes) message;
@@ -1217,13 +1229,17 @@ public class Member extends PFComponent {
 
                 // Queue arrived node list at nodemanager
                 getController().getNodeManager().queueNewNodes(newNodes.nodes);
+                expectedTime = 200;
+                
             } else if (message instanceof RequestNodeInformation) {
                 // send him our node information
                 sendMessageAsynchron(new NodeInformation(getController()), null);
+                expectedTime = 50;
 
             } else if (message instanceof TransferStatus) {
                 // Hold transfer status
                 lastTransferStatus = (TransferStatus) message;
+                expectedTime = 50;
 
             } else if (message instanceof NodeInformation) {
                 if (logVerbose) {
@@ -1234,6 +1250,7 @@ public class Member extends PFComponent {
                 }
                 // Cache the last node information
                 // lastNodeInformation = (NodeInformation) message;
+                expectedTime = -1;
 
             } else if (message instanceof SettingsChange) {
                 SettingsChange settingsChange = (SettingsChange) message;
@@ -1243,6 +1260,7 @@ public class Member extends PFComponent {
                             + settingsChange.newInfo.nick);
                     setNick(settingsChange.newInfo.nick);
                 }
+                expectedTime = 50;
 
             } else if (message instanceof FileList) {
                 FileList remoteFileList = (FileList) message;
@@ -1294,6 +1312,8 @@ public class Member extends PFComponent {
                     // }
 
                 }
+                expectedTime = 250;
+                
             } else if (message instanceof FolderFilesChanged) {
                 FolderFilesChanged changes = (FolderFilesChanged) message;
                 Convert.cleanFileList(getController(), changes.added);
@@ -1372,6 +1392,8 @@ public class Member extends PFComponent {
                                 + " additional deltas. " + message);
                     }
                 }
+                expectedTime = 250;
+                
             } else if (message instanceof Invitation) {
                 // Invitation to folder
                 Invitation invitation = (Invitation) message;
@@ -1380,6 +1402,7 @@ public class Member extends PFComponent {
 
                 getController().getFolderRepository().invitationReceived(
                     invitation, true);
+                expectedTime = 100;
 
             } else if (message instanceof Problem) {
                 lastProblem = (Problem) message;
@@ -1405,6 +1428,8 @@ public class Member extends PFComponent {
                     // Shutdown
                     shutdown();
                 }
+                expectedTime = 100;
+                
             } else if (message instanceof SearchNodeRequest) {
                 // Send nodelist that matches the search.
                 final SearchNodeRequest request = (SearchNodeRequest) message;
@@ -1429,6 +1454,8 @@ public class Member extends PFComponent {
                     }
                 };
                 getController().getThreadPool().execute(searcher);
+                expectedTime = 50;
+                
             } else if (message instanceof Notification) {
                 Notification not = (Notification) message;
                 if (not.getEvent() == null) {
@@ -1443,6 +1470,8 @@ public class Member extends PFComponent {
                             log().warn("Unhandled event: " + not.getEvent());
                     }
                 }
+                expectedTime = 50;
+                
             } else if (message instanceof RequestPart) {
                 RequestPart pr = (RequestPart) message;
                 Upload up = getController().getTransferManager().getUpload(
@@ -1450,6 +1479,8 @@ public class Member extends PFComponent {
                 if (up != null) { // If the upload isn't broken
                     up.enqueuePartRequest(pr);
                 }
+                expectedTime = 100;
+                
             } else if (message instanceof StartUpload) {
                 StartUpload su = (StartUpload) message;
                 Download dl = getController().getTransferManager().getDownload(
@@ -1461,6 +1492,8 @@ public class Member extends PFComponent {
                 } else {
                     log().warn("Download not found: " + su.getFile());
                 }
+                expectedTime = 100;
+                
             } else if (message instanceof StopUpload) {
                 StopUpload su = (StopUpload) message;
                 Upload up = getController().getTransferManager().getUpload(
@@ -1468,6 +1501,8 @@ public class Member extends PFComponent {
                 if (up != null) { // If the upload isn't broken
                     up.stopUploadRequest(su);
                 }
+                expectedTime = 100;
+                
             } else if (message instanceof RequestFilePartsRecord) {
                 RequestFilePartsRecord req = (RequestFilePartsRecord) message;
                 Upload up = getController().getTransferManager().getUpload(
@@ -1475,6 +1510,8 @@ public class Member extends PFComponent {
                 if (up != null) { // If the upload isn't broken
                     up.receivedFilePartsRecordRequest(req);
                 }
+                expectedTime = 100;
+                
             } else if (message instanceof ReplyFilePartsRecord) {
                 ReplyFilePartsRecord rep = (ReplyFilePartsRecord) message;
                 Download dl = getController().getTransferManager().getDownload(
@@ -1488,13 +1525,19 @@ public class Member extends PFComponent {
                 } else {
                     log().warn("Download not found: " + dl);
                 }
+                expectedTime = 100;
+                
             } else if (message instanceof RelayedMessage) {
                 RelayedMessage relMsg = (RelayedMessage) message;
                 getController().getIOProvider().getRelayedConnectionManager()
                     .handleRelayedMessage(this, relMsg);
+                expectedTime = -1;
+                
             } else if (message instanceof UDTMessage) {
                 getController().getIOProvider().getUDTSocketConnectionManager()
                     .handleUDTMessage(this, (UDTMessage) message);
+                expectedTime = 50;
+                
             } else {
                 log().verbose(
                     "Message not known to message handling code, "
@@ -1506,7 +1549,7 @@ public class Member extends PFComponent {
             // now give the message to all message listeners
             fireMessageToListeners(message);
         } finally {
-            Profiling.end(profilingEntry, 100);
+            Profiling.end(profilingEntry, expectedTime);
         }
     }
 
