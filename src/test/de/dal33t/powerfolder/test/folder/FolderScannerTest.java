@@ -79,7 +79,7 @@ public class FolderScannerTest extends ControllerTestCase {
             Folder.DB_BACKUP_FILENAME);
         oldFolderDBBakFile.createNewFile();
 
-        ScanResult result = folderScanner.scanFolder(getFolder());
+        ScanResult result = folderScanner.scanFolderWaitIfBusy(getFolder());
         assertEquals(ScanResult.ResultState.SCANNED, result.getResultState());
 
         List<FileInfo> newFiles = result.getNewFiles();
