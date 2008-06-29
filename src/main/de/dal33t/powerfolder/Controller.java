@@ -97,7 +97,7 @@ public class Controller extends PFComponent {
     /**
      * program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "3.1.0 dev5";
+    public static final String PROGRAM_VERSION = "3.1.0 dev8";
 
     /** general wait time for all threads (5000 is a balanced value) */
     private static final long WAIT_TIME = 5000;
@@ -1802,7 +1802,7 @@ public class Controller extends PFComponent {
 
         // Load configuration in misc file if config file if in
         if (OSUtil.isWebStart() || !aConfigFile.exists()) {
-            log().warn(
+            log().debug(
                 "Config location base: "
                     + getMiscFilesLocation().getAbsolutePath());
             return getMiscFilesLocation();
