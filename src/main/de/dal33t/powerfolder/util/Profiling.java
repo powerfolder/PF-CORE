@@ -66,6 +66,34 @@ public class Profiling {
     /**
      * Start profiling a method invocation.
      * 
+     * @return instance of ProfilingeEntry.
+     */
+    public static ProfilingEntry start() {
+        if (!ENABLED) {
+            return null;
+        }
+        StackTraceElement[] st = new RuntimeException().getStackTrace();
+        String opName = st[1].getClassName() + ':' + st[1].getMethodName();
+        return new ProfilingEntry(opName, null);
+    }
+
+    /**
+     * Start profiling a method invocation.
+     * 
+     * @param operationName
+     *            the name of the method being invoked.
+     * @return instance of ProfilingeEntry.
+     */
+    public static ProfilingEntry start(String operationName) {
+        if (!ENABLED) {
+            return null;
+        }
+        return new ProfilingEntry(operationName, null);
+    }
+
+    /**
+     * Start profiling a method invocation.
+     * 
      * @param operationName
      *            the name of the method being invoked.
      * @param details
@@ -120,9 +148,12 @@ public class Profiling {
         long elapsed = profilingEntry.elapsedMilliseconds();
         String operationName = profilingEntry.getOperationName();
         if (profileMillis > 0 && elapsed >= profileMillis) {
-            LOG.error(profilingEntry.getOperationName()
-                    + " [" + profilingEntry.getDetails() + "] took " + elapsed
-                + " milliseconds");
+            String t = profilingEntry.getOperationName();
+            if (profilingEntry.getDetails() != null) {
+                t += " [" + profilingEntry.getDetails() + "]";
+            }
+            t += " took " + elapsed + " milliseconds";
+            LOG.error(t);
         }
         totalTime += elapsed;
         totalCount++;
@@ -144,6 +175,10 @@ public class Profiling {
     }
 
     public static String dumpStats() {
+        if (!ENABLED) {
+            LOG.error("Unable to dump stats. Profiling is disabled");
+            return "Unable to dump stats. Profiling is disabled";
+        }
 
         StringBuilder sb = new StringBuilder();
 
@@ -151,13 +186,13 @@ public class Profiling {
         sb.append("Total invocations: " + totalCount + '\n');
         sb.append("Total elapsed time: " + totalTime + "ms\n");
         if (totalCount > 0) {
-            sb.append("Average elapsed time: " + totalTime / totalCount
-                + "ms\n");
+            sb.append("Avg time: " + totalTime / totalCount + "ms\n");
         }
-        sb.append("Minimum elapsed time: " + minimumTime + "ms\n");
-        sb.append("Maximum elapsed time: " + maximumTime + "ms\n");
+        sb.append("Min elapsed time: " + minimumTime + "ms\n");
+        sb.append("Max elapsed time: " + maximumTime + "ms\n");
+        sb.append("\n");
         for (ProfilingStat stat : stats) {
-            sb.append(stat.getOperationName() + " invocations "
+            sb.append("'" + stat.getOperationName() + "' invocations "
                 + stat.getCount() + " elapsed " + stat.getElapsed()
                 + "ms average " + stat.getElapsed() / stat.getCount() + "ms\n");
         }
