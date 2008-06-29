@@ -78,12 +78,13 @@ public class ProfilingTest extends TestCase {
         ProfilingEntry profilingEntry1 = Profiling.start("Test profile 1", "");
         assertNull(profilingEntry1);
     }
-    
+
     public void testAutoOperationName() {
         Profiling.setEnabled(true);
         ProfilingEntry profilingEntry1 = Profiling.start();
         assertNotNull(profilingEntry1);
         Profiling.end(profilingEntry1);
-        System.err.println(Profiling.dumpStats());
+        assertTrue(Profiling.dumpStats().contains("ProfilingTest"));
+        assertTrue(Profiling.dumpStats().contains("testAutoOperationName"));
     }
 }
