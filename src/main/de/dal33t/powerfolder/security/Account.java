@@ -19,6 +19,7 @@
  */
 package de.dal33t.powerfolder.security;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
@@ -33,6 +34,7 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.os.OnlineStorageSubscriptionType;
+import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Reject;
 
@@ -47,6 +49,7 @@ public class Account extends Model implements Serializable {
     private static final long serialVersionUID = 100L;
 
     // Properties
+    public static final String PROPERTYNAME_OID = "oid";
     public static final String PROPERTYNAME_USERNAME = "username";
     public static final String PROPERTYNAME_PASSWORD = "password";
     public static final String PROPERTYNAME_REGISTER_DATE = "registerDate";
@@ -54,6 +57,7 @@ public class Account extends Model implements Serializable {
     public static final String PROPERTYNAME_PRO_USER = "proUser";
     public static final String PROPERTYNAME_DEFAULT_SYNCHRONIZED_FOLDER = "defaultSynchronizedFolder";
 
+    private String oid;
     private String username;
     private String password;
     private Date registerDate;
@@ -77,6 +81,8 @@ public class Account extends Model implements Serializable {
     private OnlineStorageSubscription osSubscription;
 
     public Account() {
+        // Generate unique id
+        this.oid = IdGenerator.makeId();
         this.permissions = new CopyOnWriteArrayList<Permission>();
         this.osSubscription = new OnlineStorageSubscription();
         this.osSubscription.setType(OnlineStorageSubscriptionType.NONE);
@@ -133,6 +139,10 @@ public class Account extends Model implements Serializable {
      */
     public boolean isValid() {
         return username != null;
+    }
+
+    public String getOID() {
+        return oid;
     }
 
     public String getUsername() {
@@ -270,7 +280,7 @@ public class Account extends Model implements Serializable {
         getOSSubscription().setDisabledUsageDate(null);
         getOSSubscription().setWarnedExpirationDate(null);
         getOSSubscription().setDisabledExpirationDate(null);
-        controller.getSecurityManager().saveIdentity(this);
+        controller.getSecurityManager().saveAccount(this);
 
         for (Permission p : getPermissions()) {
             if (!(p instanceof FolderAdminPermission)) {
@@ -322,4 +332,13 @@ public class Account extends Model implements Serializable {
         return hasPermission(new FolderAdminPermission(foInfo));
     }
 
+    private void readObject(java.io.ObjectInputStream stream)
+        throws IOException, ClassNotFoundException
+    {
+        stream.defaultReadObject();
+        if (oid == null) {
+            // Migration.
+            oid = IdGenerator.makeId();
+        }
+    }
 }

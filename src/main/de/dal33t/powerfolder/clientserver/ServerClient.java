@@ -230,7 +230,7 @@ public class ServerClient extends PFComponent {
 
     // Services ***************************************************************
 
-    public AccountService getUserService() {
+    public AccountService getAccountService() {
         return userService;
     }
 
