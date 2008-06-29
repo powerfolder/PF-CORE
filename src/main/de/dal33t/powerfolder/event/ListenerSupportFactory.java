@@ -367,8 +367,7 @@ public class ListenerSupportFactory {
                 for (CoreListener listener : listenersNotInDispatchThread) {
                     ProfilingEntry profilingEntry = null;
                     if (Profiling.ENABLED) {
-                        profilingEntry = Profiling.start(listener.getClass()
-                            .getSimpleName()
+                        profilingEntry = Profiling.start(listener.getClass().getName()
                             + ':' + method.getName(), "");
                     }
                     try {
