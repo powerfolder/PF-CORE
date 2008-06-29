@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.ui;
 
 import java.awt.Component;
@@ -158,8 +158,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
         limitedConnectivityLabel = new JLabel();
         limitedConnectivityLabel.addMouseListener(new MouseAdapter() {
             @Override
-            public void mouseClicked(MouseEvent e)
-            {
+            public void mouseClicked(MouseEvent e) {
                 if (getController().isLimitedConnectivity()) {
                     getController().getIOProvider().startIO(
                         new LimitedConnectivityChecker.CheckTask(
@@ -219,7 +218,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
 
     /**
      * Creates a label which shows the online state of a controller
-     *
+     * 
      * @param controller
      *            the controller.
      * @return the label.
@@ -271,9 +270,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
         return label;
     }
 
-    private void updateOnlineStateLabel(JLabel label,
-        Controller controller)
-    {
+    private void updateOnlineStateLabel(JLabel label, Controller controller) {
         // Get connectes node count
         int nOnlineUser = controller.getNodeManager().countConnectedNodes();
 
@@ -311,7 +308,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
         }
 
         if (!ConfigurationEntry.SHOW_SYSTEM_NOTIFICATIONS
-                .getValueBoolean(getController()))
+            .getValueBoolean(getController()))
         {
             return;
         }
@@ -322,19 +319,19 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             if (oldState != newState) {
                 // State changed, notify ui.
                 String notificationText;
+                String title = Translation
+                    .getTranslation("statusbar.status_change.title");
                 if (newState == DISABLED) {
                     notificationText = Translation
-                            .getTranslation("statusbar.status_change.disabled");
+                        .getTranslation("statusbar.status_change.disabled");
+                    getUIController().notifyMessage(title, notificationText);
                 } else if (newState == CONNECTED) {
                     notificationText = Translation
-                            .getTranslation("statusbar.status_change.connected");
+                        .getTranslation("statusbar.status_change.connected");
+                    getUIController().notifyMessage(title, notificationText);
                 } else {
-                    notificationText = Translation
-                            .getTranslation("statusbar.status_change.disconnected");
+                    // Disconnected
                 }
-                getUIController().notifyMessage(Translation
-                        .getTranslation("statusbar.status_change.title"),
-                        notificationText);
             }
         }
     }
