@@ -326,7 +326,7 @@ public class UIController extends PFComponent {
         // Open quickstart guides on first start
         gotoQuickstartGuidesIfFirstStart();
 
-        // Open wizard on first start
+        // Open wizard on first start. PRO version has activation wizard first
         if (!Util.isRunningProVersion()
             && getController().getPreferences().getBoolean("openwizard2", true))
         {
@@ -991,7 +991,7 @@ public class UIController extends PFComponent {
                 }
             }
 
-            // Disabled popup of sync start. 
+            // Disabled popup of sync start.
             if (changed
                 && ConfigurationEntry.SHOW_SYSTEM_NOTIFICATIONS
                     .getValueBoolean(getController()) && !synchronizing.get())
