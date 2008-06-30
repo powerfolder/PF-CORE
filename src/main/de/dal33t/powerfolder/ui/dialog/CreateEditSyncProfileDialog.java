@@ -165,7 +165,7 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
     }
 
     private Component createSyncComboPanel() {
-        FormLayout layout = new FormLayout("pref, 4dlu pref", "pref");
+        FormLayout layout = new FormLayout("pref, 4dlu, pref", "pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
         builder.add(syncProfilesCombo, cc.xy(1, 1));
@@ -174,7 +174,7 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
     }
 
     public Component createDailyComboPanel() {
-        FormLayout layout = new FormLayout("pref, 4dlu pref", "pref");
+        FormLayout layout = new FormLayout("pref, 4dlu, pref", "pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
         builder.add(hourSpinner, cc.xy(1, 1));
