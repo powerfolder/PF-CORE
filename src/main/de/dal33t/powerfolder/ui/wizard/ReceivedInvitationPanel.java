@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.ui.wizard;
 
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -81,12 +81,12 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
 
     private boolean createPreviewFolder() {
 
-        FolderSettings folderSettings = new FolderSettings(
-        invitation.getSuggestedLocalBase(), syncProfileSelectorPanel
-            .getSyncProfile(), false, true, true, false);
+        FolderSettings folderSettings = new FolderSettings(invitation
+            .getSuggestedLocalBase(),
+            syncProfileSelectorPanel.getSyncProfile(), false, true, true, false);
 
-        getController().getFolderRepository().createFolder(
-            invitation.folder, folderSettings);
+        getController().getFolderRepository().createFolder(invitation.folder,
+            folderSettings);
         return true;
     }
 
@@ -123,16 +123,15 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
             return (WizardPanel) getWizardContext().getAttribute(
                 PFWizard.SUCCESS_PANEL);
         } else {
-            return new ChooseDiskLocationPanel(getController(),
-                invitation.getSuggestedLocalBase().getAbsolutePath(),
+            return new ChooseDiskLocationPanel(getController(), invitation
+                .getSuggestedLocalBase().getAbsolutePath(),
                 new FolderCreatePanel(getController()));
         }
     }
 
     protected JPanel buildContent() {
 
-        FormLayout layout = new FormLayout(
-            "right:pref, 5dlu, pref",
+        FormLayout layout = new FormLayout("$wlabel, $lcg, $wfield, 0:g",
             "pref, 10dlu, pref, 5dlu, pref, 5dlu, pref, "
                 + "5dlu, pref, 5dlu, pref, 5dlu, pref, 5dlu, pref, 5dlu");
 
@@ -164,7 +163,7 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
         builder.add(syncProfileHintLabel, cc.xy(1, row));
         JPanel p = (JPanel) syncProfileSelectorPanel.getUIComponent();
         p.setOpaque(false);
-        builder.add(p, cc.xy(3, row));
+        builder.add(p, cc.xyw(3, row, 2));
         row += 2;
 
         // Preview
@@ -247,14 +246,14 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
 
             invitorHintLabel.setEnabled(true);
             Member node = invitation.getInvitor().getNode(getController());
-            invitorLabel.setText(node != null
-                ? node.getNick()
-                : invitation.getInvitor().nick);
+            invitorLabel.setText(node != null ? node.getNick() : invitation
+                .getInvitor().nick);
 
             invitationMessageHintLabel.setEnabled(true);
-            invitationMessageLabel.setText(invitation.getInvitationText() == null
-                ? ""
-                : invitation.getInvitationText());
+            invitationMessageLabel
+                .setText(invitation.getInvitationText() == null
+                    ? ""
+                    : invitation.getInvitationText());
 
             estimatedSizeHintLabel.setEnabled(true);
             estimatedSize.setText(Format

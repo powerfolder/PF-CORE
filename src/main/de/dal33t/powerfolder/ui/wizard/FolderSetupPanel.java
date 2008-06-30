@@ -92,7 +92,7 @@ public class FolderSetupPanel extends PFWizardPanel {
     }
 
     protected JPanel buildContent() {
-        FormLayout layout = new FormLayout("right:pref, 5dlu, pref",
+        FormLayout layout = new FormLayout("$wlabel, $lcg, $wfield, 0:g",
             "pref, 5dlu, pref, 5dlu, pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
@@ -109,7 +109,7 @@ public class FolderSetupPanel extends PFWizardPanel {
                 CellConstraints.DEFAULT, CellConstraints.TOP));
         JPanel p = (JPanel) syncProfileSelectorPanel.getUIComponent();
         p.setOpaque(false);
-        builder.add(p, cc.xy(3, 3));
+        builder.add(p, cc.xyw(3, 3, 2));
         return builder.getPanel();
     }
 

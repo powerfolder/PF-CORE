@@ -1,28 +1,29 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.ui.wizard;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.ui.Icons;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
 import de.dal33t.powerfolder.util.Reject;
@@ -50,7 +51,7 @@ public class PFWizard extends PFUIComponent {
 
     // The size of a medium sized font, e.g. the big subpoints on a wizard
     static final int MED_FONT_SIZE = 15;
-    
+
     // The attribute in the wizard context of the success panel. Displayed at
     // end
     public static final String SUCCESS_PANEL = "successpanel";
@@ -92,7 +93,7 @@ public class PFWizard extends PFUIComponent {
 
     /**
      * Opens the send-invitation wizard.
-     *
+     * 
      * @param controller
      *            the controller.
      * @param foInfo
@@ -104,30 +105,27 @@ public class PFWizard extends PFUIComponent {
         PFWizard wizard = new PFWizard(controller);
         wizard.getWizardContext().setAttribute(PICTO_ICON,
             Icons.PROJECT_WORK_PICTO);
-        wizard.getWizardContext().setAttribute(
-            FOLDERINFO_ATTRIBUTE, foInfo);
+        wizard.getWizardContext().setAttribute(FOLDERINFO_ATTRIBUTE, foInfo);
 
         TextPanelPanel successPanel = new TextPanelPanel(controller,
             Translation.getTranslation("wizard.sendinvitations.sendsuccess"),
             Translation
                 .getTranslation("wizard.sendinvitations.sendsuccessinfo"));
-        wizard.getWizardContext().setAttribute(SUCCESS_PANEL,
-            successPanel);
+        wizard.getWizardContext().setAttribute(SUCCESS_PANEL, successPanel);
 
         wizard.open(new SendInvitationsPanel(controller, false));
     }
 
     /**
      * Opens the send-invitation wizard.
-     *
+     * 
      * @param controller
      *            the controller.
      * @param foInfo
      *            the folder to send the invitation for.
      */
     public static void openSelectInvitationWizard(Controller controller,
-                                                  Member member,
-                                                  List<FolderInfo> possibleFolders)
+        Member member, List<FolderInfo> possibleFolders)
     {
         PFWizard wizard = new PFWizard(controller);
         wizard.getWizardContext().setAttribute(PICTO_ICON,
@@ -137,11 +135,25 @@ public class PFWizard extends PFUIComponent {
             Translation.getTranslation("wizard.sendinvitations.sendsuccess"),
             Translation
                 .getTranslation("wizard.sendinvitations.sendsuccessinfo"));
-        wizard.getWizardContext().setAttribute(SUCCESS_PANEL,
-            successPanel);
+        wizard.getWizardContext().setAttribute(SUCCESS_PANEL, successPanel);
 
         wizard.open(new SelectInvitationPanel(controller, member,
-                possibleFolders));
+            possibleFolders));
+    }
+
+    /**
+     * Handles/Accepts and invitation that has been received.
+     * 
+     * @param controller
+     * @param invitation
+     */
+    public static void openInvitationReceivedWizard(Controller controller,
+        Invitation invitation)
+    {
+        ReceivedInvitationPanel panel = new ReceivedInvitationPanel(controller,
+            invitation);
+        PFWizard wizard = new PFWizard(controller);
+        wizard.open(panel);
     }
 
     /**
@@ -168,7 +180,8 @@ public class PFWizard extends PFUIComponent {
                 "The Online Storage is now correctly setup.\n"
                     + "You may now start to backup Folders to it.");
         }
-        wizard.open(new LoginOnlineStoragePanel(controller, nextFinishPanel, true));
+        wizard.open(new LoginOnlineStoragePanel(controller, nextFinishPanel,
+            true));
     }
 
     /**
@@ -193,7 +206,8 @@ public class PFWizard extends PFUIComponent {
      * Opens the wizard on a panel.
      * 
      * @param wizardPanel
-     * @param shift amount to shift the wizard when called by another wizard
+     * @param shift
+     *            amount to shift the wizard when called by another wizard
      */
     public void open(PFWizardPanel wizardPanel) {
         Reject.ifNull(wizardPanel, "Wizardpanel is null");

@@ -211,33 +211,33 @@ public class SendInvitationsPanel extends PFWizardPanel {
 
         int row = 1;
         builder.addLabel(Translation
-            .getTranslation("wizard.send_invitations.join"), cc.xyw(1, row, 2));
+            .getTranslation("wizard.send_invitations.join"), cc.xyw(1, row, 3));
 
         row += 2;
         builder.addLabel(Translation
             .getTranslation("wizard.send_invitations.never_untrusted"), cc.xyw(
-            1, row, 2));
+            1, row, 3));
 
         row += 2;
         builder.addLabel(Translation
             .getTranslation("wizard.send_invitations.invitation_text"), cc.xyw(
-            1, row, 2));
+            1, row, 3));
 
         row += 2;
         builder.add(invitationTextField, cc.xy(1, row));
 
         row += 2;
-        builder.add(sendByMailButton, cc.xyw(1, row, 2));
+        builder.add(sendByMailButton, cc.xyw(1, row, 3));
         row += 2;
         builder.add(emailField, cc.xy(1, row));
 
         row += 2;
-        builder.add(saveToFileButton, cc.xyw(1, row, 2));
+        builder.add(saveToFileButton, cc.xyw(1, row, 3));
         row += 2;
         builder.add(invitationFileField, cc.xy(1, row));
 
         row += 2;
-        builder.add(sendViaPowerFolderButton, cc.xyw(1, row, 2));
+        builder.add(sendViaPowerFolderButton, cc.xyw(1, row, 3));
         row += 2;
 
         FormLayout layout2 = new FormLayout("pref:grow, 4dlu, 15dlu", "pref");

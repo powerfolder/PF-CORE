@@ -1,23 +1,48 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.ui.wizard;
+
+import static de.dal33t.powerfolder.disk.SyncProfile.AUTOMATIC_SYNCHRONIZATION;
+import static de.dal33t.powerfolder.ui.wizard.PFWizard.SUCCESS_PANEL;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.BACKUP_ONLINE_STOARGE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.CREATE_DESKTOP_SHORTCUT;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDER_LOCAL_BASE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SEND_INVIATION_AFTER_ATTRIBUTE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SYNC_PROFILE_ATTRIBUTE;
+
+import java.awt.Color;
+import java.awt.Component;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.File;
+import java.util.List;
+
+import javax.swing.Icon;
+import javax.swing.JCheckBox;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
+
+import jwf.WizardPanel;
+
+import org.apache.commons.lang.StringUtils;
 
 import com.jgoodies.binding.adapter.BasicComponentFactory;
 import com.jgoodies.binding.value.ValueHolder;
@@ -26,36 +51,20 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
-import static de.dal33t.powerfolder.disk.SyncProfile.AUTOMATIC_SYNCHRONIZATION;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
-import static de.dal33t.powerfolder.ui.wizard.PFWizard.SUCCESS_PANEL;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.*;
-import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.Help;
 import de.dal33t.powerfolder.util.Translation;
-import jwf.WizardPanel;
-import org.apache.commons.lang.StringUtils;
-
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
 
 public class LoginOnlineStoragePanel extends PFWizardPanel {
 
     private JTextField usernameField;
     private JPasswordField passwordField;
-    private JButton registerButton;
     private WizardPanel nextPanel;
 
     private boolean entryRequired;
@@ -86,7 +95,8 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
         if (!entryRequired && StringUtils.isEmpty(usernameField.getText())) {
             return true;
         }
-        // TODO Move this into worker. Make nicer. Difficult because function returns loginOk.
+        // TODO Move this into worker. Make nicer. Difficult because function
+        // returns loginOk.
         boolean loginOk = false;
         try {
             loginOk = getController().getOSClient().login(
@@ -118,11 +128,12 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
 
             // If there is already a default folder for this account, use that
             // for the name.
-            FolderInfo accountFolder = getController().getOSClient().getAccount()
-                    .getDefaultSynchronizedFolder();
+            FolderInfo accountFolder = getController().getOSClient()
+                .getAccount().getDefaultSynchronizedFolder();
             if (accountFolder != null) {
                 defaultSynchronizedFolder = new File(getController()
-                    .getFolderRepository().getFoldersBasedir(), accountFolder.name);
+                    .getFolderRepository().getFoldersBasedir(),
+                    accountFolder.name);
             }
 
             // Redirect via folder create of the deafult sync folder.
@@ -135,17 +146,16 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
                 AUTOMATIC_SYNCHRONIZATION);
             getWizardContext().setAttribute(FOLDER_LOCAL_BASE,
                 defaultSynchronizedFolder);
-            getWizardContext().setAttribute(BACKUP_ONLINE_STOARGE,
-                true);
+            getWizardContext().setAttribute(BACKUP_ONLINE_STOARGE, true);
 
             return fcp;
-        } else {
-            return nextPanel;
         }
+        return nextPanel;
     }
 
     protected JPanel buildContent() {
-        FormLayout layout = new FormLayout("right:pref, 5dlu, pref, 0:grow",
+        FormLayout layout = new FormLayout(
+            "$wlabel, $lcg, $wfield, 0:g",
             "pref, 10dlu, pref, 5dlu, pref, 5dlu, pref, 15dlu, pref, 5dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
@@ -161,7 +171,9 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
             .getTranslation("wizard.webservice.password"), cc.xy(1, 5));
         builder.add(passwordField, cc.xy(3, 5));
 
-        builder.add(registerButton, cc.xy(3, 7));
+        builder.add(new LinkLabel(Translation
+            .getTranslation("pro.wizard.activation.register_now"),
+            Constants.ONLINE_STORAGE_REGISTER_URL), cc.xy(3, 7));
 
         LinkLabel link = new LinkLabel(Translation
             .getTranslation("wizard.webservice.learnmore"),
@@ -185,8 +197,7 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
         builder.add(setupDefaultCB, cc.xy(1, 1));
-        builder.add(Help.createWikiLinkLabel("Default_Folder"), cc.xy(
-            3, 1));
+        builder.add(Help.createWikiLinkLabel("Default_Folder"), cc.xy(3, 1));
         builder.setOpaque(true);
         builder.setBackground(Color.white);
 
@@ -206,18 +217,6 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
         usernameField = BasicComponentFactory.createTextField(usernameModel);
         passwordField = new JPasswordField(
             ConfigurationEntry.WEBSERVICE_PASSWORD.getValue(getController()));
-        registerButton = new JButton(Translation
-            .getTranslation("wizard.webservice.register"));
-        registerButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                try {
-                    BrowserLauncher
-                        .openURL(Constants.ONLINE_STORAGE_REGISTER_URL);
-                } catch (IOException e1) {
-                    log().error(e1);
-                }
-            }
-        });
         updateButtons();
         usernameModel.addValueChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {

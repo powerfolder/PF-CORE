@@ -1,23 +1,38 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.ui.wizard;
+
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.List;
+
+import javax.swing.Icon;
+import javax.swing.JComboBox;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+
+import jwf.WizardPanel;
+
+import org.apache.commons.lang.StringUtils;
 
 import com.jgoodies.binding.adapter.BasicComponentFactory;
 import com.jgoodies.binding.value.ValueHolder;
@@ -25,21 +40,17 @@ import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.NetworkingMode;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.*;
-import jwf.WizardPanel;
-import org.apache.commons.lang.StringUtils;
-
-import javax.swing.*;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.List;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.ui.GenericDialogType;
+import de.dal33t.powerfolder.util.ui.LineSpeedSelectionPanel;
+import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * Panel for basic setup like nick, networking mode, etc.
@@ -81,21 +92,20 @@ public class BasicSetupPanel extends PFWizardPanel {
 
     protected JPanel buildContent() {
 
-        FormLayout layout = new FormLayout(
-            "pref",
-            "pref, 3dlu, pref, 10dlu, pref, 3dlu, pref, 10dlu, pref, 3dlu, pref, 10dlu, pref");
+        FormLayout layout = new FormLayout("$wlabel, $lcg, $wfield",
+            "pref, 10dlu, pref, 10dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
         builder.addLabel(Translation
             .getTranslation("wizard.basicsetup.computer_name"), cc.xy(1, 1));
-        builder.add(nameField, cc.xy(1, 3));
+        builder.add(nameField, cc.xy(3, 1));
         builder.addLabel(Translation
-            .getTranslation("wizard.basicsetup.networking"), cc.xy(1, 5));
-        builder.add(networkingModeChooser, cc.xy(1, 7));
+            .getTranslation("wizard.basicsetup.networking"), cc.xy(1, 3));
+        builder.add(networkingModeChooser, cc.xy(3, 3));
         builder.addLabel(Translation
-            .getTranslation("preferences.dialog.linesettings"), cc.xy(1, 9));
-        builder.add(wanLineSpeed, cc.xy(1, 11));
+            .getTranslation("preferences.dialog.linesettings"), cc.xy(1, 5));
+        builder.add(wanLineSpeed, cc.xy(3, 5));
 
         return builder.getPanel();
     }
@@ -122,10 +132,10 @@ public class BasicSetupPanel extends PFWizardPanel {
         tm.setAllowedUploadCPSForWAN(wanLineSpeed.getUploadSpeedKBPS());
         tm.setAllowedDownloadCPSForWAN(wanLineSpeed.getDownloadSpeedKBPS());
 
-        getWizardContext().setAttribute(WizardContextAttributes
-                .BASIC_SETUP_ATTIRBUTE, true);
-        return new LoginOnlineStoragePanel(
-            getController(), new WhatToDoPanel(getController()), false);
+        getWizardContext().setAttribute(
+            WizardContextAttributes.BASIC_SETUP_ATTIRBUTE, true);
+        return new LoginOnlineStoragePanel(getController(), new WhatToDoPanel(
+            getController()), false);
     }
 
     /**

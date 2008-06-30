@@ -132,7 +132,7 @@ public class LoadInvitationPanel extends PFWizardPanel {
 
     protected JPanel buildContent() {
         FormLayout layout = new FormLayout(
-            "right:pref, 5dlu, pref",
+            "$wlabel, $lcg, $wfield, 0:g",
             "pref, 5dlu, pref, 15dlu, pref, 5dlu, pref, 5dlu, pref, "
                 + "5dlu, pref, 5dlu, pref, 5dlu, pref");
 
@@ -144,7 +144,7 @@ public class LoadInvitationPanel extends PFWizardPanel {
             .getTranslation("wizard.loadinvitation.selectfile"), cc.xy(3, 1));
 
         // Invite selector
-        builder.add(locationField, cc.xy(3, 3));
+        builder.add(locationField, cc.xyw(3, 3, 2));
 
         // Folder
         builder.add(folderHintLabel, cc.xy(1, 5));
@@ -167,7 +167,7 @@ public class LoadInvitationPanel extends PFWizardPanel {
                 CellConstraints.TOP));
         JPanel p = (JPanel) syncProfileSelectorPanel.getUIComponent();
         p.setOpaque(false);
-        builder.add(p, cc.xy(3, 13));
+        builder.add(p, cc.xyw(3, 13, 2));
 
         // Preview
         builder.add(previewOnlyCB, cc.xy(3, 15));
