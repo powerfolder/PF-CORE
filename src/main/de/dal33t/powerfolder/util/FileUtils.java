@@ -19,6 +19,7 @@
  */
 package de.dal33t.powerfolder.util;
 
+import java.awt.Desktop;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.EOFException;
@@ -266,12 +267,17 @@ public class FileUtils {
      */
     public static final void openFile(File file) throws IOException {
         Reject.ifNull(file, "File is null");
-
-        // TODO Use Desktop.openFile
+        
+        if (Desktop.isDesktopSupported()) {
+            Desktop.getDesktop().open(file);
+            return;
+        }
+        
+        // Fallback
         if (OSUtil.isMacOS()) {
-            Runtime.getRuntime().exec("open " + file.getAbsolutePath());
+            Runtime.getRuntime().exec("open \"" + file.getAbsolutePath() + "\"");
         } else if (OSUtil.isWindowsSystem()) {
-            URL url = new URL("file://" + file.getAbsolutePath());
+            URL url = file.toURI().toURL();
             // Use rundll approach
             Runtime.getRuntime().exec(
                 "rundll32 url.dll,FileProtocolHandler " + url.toString());
