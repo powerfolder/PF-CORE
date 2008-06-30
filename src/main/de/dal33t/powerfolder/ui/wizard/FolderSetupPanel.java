@@ -49,7 +49,6 @@ public class FolderSetupPanel extends PFWizardPanel {
 
     private JTextField folderNameTextField;
     private SyncProfileSelectorPanel syncProfileSelectorPanel;
-    private JCheckBox sendInviteAfterCB;
 
     /**
      * Constuctor
@@ -81,10 +80,6 @@ public class FolderSetupPanel extends PFWizardPanel {
         getWizardContext().setAttribute(SYNC_PROFILE_ATTRIBUTE,
             syncProfileSelectorPanel.getSyncProfile());
 
-        // Do not prompt for send invitation afterwards
-        getWizardContext().setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE,
-            sendInviteAfterCB.isSelected());
-
         // Setup choose disk location panel
         getWizardContext().setAttribute(PROMPT_TEXT_ATTRIBUTE,
             Translation.getTranslation("wizard.invite.selectlocaldirectory"));
@@ -100,7 +95,7 @@ public class FolderSetupPanel extends PFWizardPanel {
 
     protected JPanel buildContent() {
         FormLayout layout = new FormLayout("right:pref, 5dlu, pref",
-            "pref, 5dlu, pref, 5dlu, pref, 5dlu, pref");
+            "pref, 5dlu, pref, 5dlu, pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
@@ -117,9 +112,6 @@ public class FolderSetupPanel extends PFWizardPanel {
         JPanel p = (JPanel) syncProfileSelectorPanel.getUIComponent();
         p.setOpaque(false);
         builder.add(p, cc.xy(3, 3));
-
-        // Send Invite
-        builder.add(sendInviteAfterCB, cc.xy(3, 5));
         return builder.getPanel();
     }
 
@@ -145,12 +137,6 @@ public class FolderSetupPanel extends PFWizardPanel {
             syncProfileSelectorPanel = new SyncProfileSelectorPanel(
                 getController(), SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         }
-
-        // Send Invite
-        sendInviteAfterCB = SimpleComponentFactory.createCheckBox(Translation
-            .getTranslation("wizard.setup_folder.sendinvitation"));
-        sendInviteAfterCB.setOpaque(false);
-        sendInviteAfterCB.setSelected(true);
     }
 
     protected Icon getPicto() {
