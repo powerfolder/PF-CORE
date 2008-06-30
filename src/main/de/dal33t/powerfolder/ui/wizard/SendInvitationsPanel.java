@@ -65,7 +65,6 @@ import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.dialog.NodesSelectDialog;
 import de.dal33t.powerfolder.util.InvitationUtil;
-import de.dal33t.powerfolder.util.MailUtil;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.ComplexComponentFactory;
@@ -227,12 +226,10 @@ public class SendInvitationsPanel extends PFWizardPanel {
         row += 2;
         builder.add(invitationTextField, cc.xy(1, row));
 
-        if (MailUtil.isSendEmailAvailable()) {
-            row += 2;
-            builder.add(sendByMailButton, cc.xyw(1, row, 2));
-            row += 2;
-            builder.add(emailField, cc.xy(1, row));
-        }
+        row += 2;
+        builder.add(sendByMailButton, cc.xyw(1, row, 2));
+        row += 2;
+        builder.add(emailField, cc.xy(1, row));
 
         row += 2;
         builder.add(saveToFileButton, cc.xyw(1, row, 2));
