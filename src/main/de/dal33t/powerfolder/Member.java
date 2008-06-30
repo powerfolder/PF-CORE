@@ -83,8 +83,17 @@ import de.dal33t.powerfolder.net.InvalidIdentityException;
 import de.dal33t.powerfolder.net.PlainSocketConnectionHandler;
 import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.transfer.TransferManager;
+import de.dal33t.powerfolder.transfer.TransferProblem;
 import de.dal33t.powerfolder.transfer.Upload;
-import de.dal33t.powerfolder.util.*;
+import de.dal33t.powerfolder.util.Convert;
+import de.dal33t.powerfolder.util.Debug;
+import de.dal33t.powerfolder.util.Logger;
+import de.dal33t.powerfolder.util.MessageListenerSupport;
+import de.dal33t.powerfolder.util.Profiling;
+import de.dal33t.powerfolder.util.ProfilingEntry;
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.Waiter;
 
 /**
  * A full quailfied member, can have a connection to interact with remote
@@ -1490,7 +1499,20 @@ public class Member extends PFComponent {
                 {
                     dl.uploadStarted();
                 } else {
-                    log().warn("Download not found: " + su.getFile());
+                    if (dl == null) {
+                        log().warn(
+                            "Download not found: " + su.getFile()
+                                + ", sending abort.");
+                    } else {
+                        log().warn(
+                            "Download invalid, FileInfo differs: "
+                                + su.getFile());
+
+                        // Kill of the download (also sends abort so uploader
+                        // won't wait forever)
+                        dl.setBroken(TransferProblem.OLD_UPLOAD,
+                            "Different file!");
+                    }
                 }
                 expectedTime = 100;
                 
@@ -1736,7 +1758,7 @@ public class Member extends PFComponent {
     }
 
     /*
-     * Request to remote peer *************************************************
+     * Request to remote peer
      */
 
     /**
@@ -1934,7 +1956,7 @@ public class Member extends PFComponent {
     }
 
     /*
-     * Simple getters *********************************************************
+     * Simple getters
      */
 
     /**
@@ -2137,7 +2159,7 @@ public class Member extends PFComponent {
     }
 
     /*
-     * General ****************************************************************
+     * General
      */
 
     public String toString() {

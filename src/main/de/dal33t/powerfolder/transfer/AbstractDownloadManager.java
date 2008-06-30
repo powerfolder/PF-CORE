@@ -321,7 +321,8 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         return "[" + getClass().getSimpleName() + "; state= " + state
             + " file=" + getFileInfo() + "; tempFileRAF: " + tempRAF
             + "; tempFile: " + getTempFile() + "; broken: " + isBroken()
-            + "; completed: " + isCompleted() + "; aborted: " + isAborted();
+            + "; completed: " + isCompleted() + "; aborted: " + isAborted()
+            + "; partsState: " + filePartsState;
     }
 
     protected abstract void addSourceImpl(Download source);
@@ -520,7 +521,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         }
 
         for (Download d : getSources()) {
-            getController().getTransferManager().setBroken(d, problem, message);
+            d.setBroken(problem, message);
         }
 
         getController().getTransferManager().setBroken(
@@ -777,7 +778,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                         break;
                     }
 
-                    long offset = 0;
+                    long _offset = 0;
                     if (filePartsState != null) {
                         if (filePartsState.isCompleted()) {
                             return true;
@@ -785,7 +786,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                         Range range = filePartsState
                             .findFirstPart(PartState.NEEDED);
                         if (range != null) {
-                            offset = range.getStart();
+                            _offset = range.getStart();
                         } else {
                             assert filePartsState.isCompleted()
                                 || filePartsState
@@ -801,9 +802,10 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                                 .getSize()));
                         }
                     }
+                    final long offset = _offset;
                     post(new Runnable() {
                         public void run() {
-                            download.request(0);
+                            download.request(offset);
                         }
                     });
                     break;

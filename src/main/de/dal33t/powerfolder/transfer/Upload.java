@@ -62,6 +62,8 @@ public class Upload extends Transfer {
 
     protected transient RandomAccessFile raf;
 
+    private String debugState;
+
     /**
      * Constructs a new uploads, package protected, can only be called by
      * transfermanager
@@ -183,6 +185,7 @@ public class Upload extends Transfer {
         Runnable uploadPerfomer = new Runnable() {
             public void run() {
                 try {
+                    debugState = "Opening file";
                     try {
                         raf = new RandomAccessFile(getFile().getDiskFile(
                             getController().getFolderRepository()), "r");
@@ -193,29 +196,34 @@ public class Upload extends Transfer {
                     // If our partner supports requests, let him request. This
                     // is required for swarming to work.
                     if (Util.usePartRequests(getController(), getPartner())) {
-
                         if (logVerbose) {
                             log().verbose(
                                 "Both clients support partial transfers!");
                         }
+                        debugState = "Sending StartUpload";
                         try {
                             getPartner()
                                 .sendMessage(new StartUpload(getFile()));
                         } catch (ConnectionException e) {
                             throw new TransferException(e);
                         }
+                        debugState = "Waiting for requests";
                         if (waitForRequests()) {
                             log().info("Checking for parts request.");
+
+                            debugState = "Checking for FPR request.";
 
                             // Check if the first request is for a
                             // FilePartsRecord
                             if (checkForFilePartsRecordRequest()) {
+                                debugState = "Waiting for remote matching";
                                 transferState
                                     .setState(TransferState.REMOTEMATCHING);
                                 log().verbose(
                                     "Waiting for initial part requests!");
                                 waitForRequests();
                             }
+                            debugState = "Starting to send parts";
                             log().info("Upload started " + this);
                             long startTime = System.currentTimeMillis();
 
@@ -241,6 +249,7 @@ public class Upload extends Transfer {
                     getTransferManager().setBroken(Upload.this,
                         TransferProblem.TRANSFER_EXCEPTION, e.getMessage());
                 } finally {
+                    debugState = "DONE";
                     try {
                         raf.close();
                     } catch (IOException e) {
@@ -480,7 +489,7 @@ public class Upload extends Transfer {
     }
 
     /*
-     * General ****************************************************************
+     * General
      */
 
     public int hashCode() {
@@ -505,8 +514,9 @@ public class Upload extends Transfer {
     }
 
     public String toString() {
-        String msg = getFile().toDetailString() + " to '"
-            + getPartner().getNick() + "'";
+        String msg = "State: " + debugState + ", TransferState: "
+            + transferState.getState() + " " + getFile().toDetailString()
+            + " to '" + getPartner().getNick() + "'";
         if (getPartner().isOnLAN()) {
             msg += " (local-net)";
         }

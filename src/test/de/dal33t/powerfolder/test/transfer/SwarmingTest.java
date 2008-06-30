@@ -440,9 +440,9 @@ public class SwarmingTest extends MultipleControllerTestCase {
                     downs += dloads;
                     ups += tm.countLiveUploads();
                     b.append(i).append(": ").append(
-                        "Download Managers: " + tm.countActiveDownloads()
+                        "Download Managers: " + tm.getActiveDownloads()
                             + ", Total downloads: " + dloads + ", uploads:"
-                            + tm.getActiveUploads().length
+                            + Arrays.toString(tm.getActiveUploads())
                             + ", Queued uploads:"
                             + tm.getQueuedUploads().length).append('\n');
                 }

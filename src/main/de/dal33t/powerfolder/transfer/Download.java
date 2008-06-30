@@ -242,7 +242,8 @@ public class Download extends Transfer {
      */
     public void abort() {
         if (getPartner() != null && getPartner().isCompleteyConnected()) {
-            getPartner().sendMessageAsynchron(new AbortDownload(getFile()), null);
+            getPartner().sendMessageAsynchron(new AbortDownload(getFile()),
+                null);
         }
         getController().getTransferManager().downloadAborted(this);
     }
@@ -272,6 +273,16 @@ public class Download extends Transfer {
             return false;
         }
         return getPartner() == null || isBroken();
+    }
+
+    /**
+     * Sets the download to a broken state.
+     * 
+     * @param problem
+     * @param message
+     */
+    public void setBroken(TransferProblem problem, String message) {
+        getController().getTransferManager().setBroken(this, problem, message);
     }
 
     /**

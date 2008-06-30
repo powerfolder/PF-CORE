@@ -55,9 +55,9 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
+import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
-import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.message.AbortDownload;
 import de.dal33t.powerfolder.message.AbortUpload;
@@ -1475,6 +1475,8 @@ public class TransferManager extends PFComponent {
             // Member bestSource = null;
             FileInfo newestVersionFile = fInfo.getNewestVersion(getController()
                 .getFolderRepository());
+
+            assert !fInfo.isNewerThan(newestVersionFile) : "getNewestVersion returned older version.";
             // ap<>
             Map<Member, Integer> downloadCountList = countNodesActiveAndQueuedDownloads();
 
@@ -1485,10 +1487,8 @@ public class TransferManager extends PFComponent {
                     continue;
                 }
 
-                // Skip sources with old versions
-                if (newestVersionFile != null
-                    && newestVersionFile.isNewerThan(remoteFile))
-                {
+                // Skip "wrong" sources
+                if (!newestVersionFile.isCompletelyIdentical(remoteFile)) {
                     continue;
                 }
 
@@ -1530,10 +1530,12 @@ public class TransferManager extends PFComponent {
                         && localFile.getModifiedDate().after(
                             newestVersionFile.getModifiedDate()))
                     {
-                        log().error(
-                            "Requesting older file! requested: "
+                        log().warn(
+                            "Requesting older file requested: "
                                 + newestVersionFile.toDetailString()
-                                + ", local: " + localFile.toDetailString());
+                                + ", local: " + localFile.toDetailString()
+                                + ", isNewer: "
+                                + localFile.isNewerThan(newestVersionFile));
                     }
                     requestDownload(download, bestSource);
                 }
@@ -2138,8 +2140,8 @@ public class TransferManager extends PFComponent {
      * private boolean hasActiveDownloadsFrom(Member from) { synchronized
      * (downloads) { for (Iterator it = downloads.values().iterator();
      * it.hasNext();) { Download download = (Download) it.next(); if
-     * (download.isStarted() && download.getFrom().equals(from)) { return true; } } }
-     * return false; }
+     * (download.isStarted() && download.getFrom().equals(from)) { return true;
+     * } } } return false; }
      */
 
     /**
