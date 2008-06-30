@@ -29,9 +29,12 @@ import com.jgoodies.binding.value.ValueModel;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
 import de.dal33t.powerfolder.transfer.TransferManager;
+import de.dal33t.powerfolder.transfer.Download;
+import de.dal33t.powerfolder.transfer.Upload;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.navigation.NavTreeModel;
 import de.dal33t.powerfolder.ui.navigation.RootNode;
@@ -107,6 +110,95 @@ public class TransferManagerModel extends PFUIComponent {
 
     public TreeNode getDownloadsTreeNode() {
         return DOWNLOADS_NODE;
+    }
+
+    /**
+     * Count the visible completed downloads for a folder.
+     *
+     * @param folder
+     * @return
+     */
+    public int countCompletedDownloads(Folder folder) {
+        int downloadCount = downloadsTableModel.getRowCount();
+        int completedDownloadCount = 0;
+        FolderRepository folderRepository = getController().getFolderRepository();
+        for (int i = 0; i < downloadCount; i++) {
+            Download dl = downloadsTableModel.getDownloadAtRow(i);
+            if (dl.isCompleted() &&
+                    dl.getFile().getFolder(folderRepository).equals(folder) ) {
+                completedDownloadCount++;
+            }
+        }
+        return completedDownloadCount;
+    }
+
+    /**
+     * Count visible completed downloads.
+     *
+     * @return
+     */
+    public int countCompletedDownloads() {
+        int downloadCount = downloadsTableModel.getRowCount();
+        int completedDownloadCount = 0;
+        for (int i = 0; i < downloadCount; i++) {
+            Download dl = downloadsTableModel.getDownloadAtRow(i);
+            if (dl.isCompleted()) {
+                completedDownloadCount++;
+            }
+        }
+        return completedDownloadCount;
+    }
+
+    /**
+     * Count visible active downloads.
+     *
+     * @return
+     */
+    public int countActiveDownloads() {
+        int downloadCount = downloadsTableModel.getRowCount();
+        int activeDownloadCount = 0;
+        for (int i = 0; i < downloadCount; i++) {
+            Download dl = downloadsTableModel.getDownloadAtRow(i);
+            if (dl.isPending() || dl.isQueued()) {
+                activeDownloadCount++;
+            }
+        }
+        return activeDownloadCount;
+    }
+
+    /**
+     * Count visible live uploads.
+     *
+     * @return
+     */
+    public int countLiveUploads() {
+        int uploadCount = uploadsTableModel.getRowCount();
+        int liveUploadCount = 0;
+        for (int i = 0; i < uploadCount; i++) {
+            Upload ul = uploadsTableModel.getUploadAtRow(i);
+            if (ul.isCompleted()) {
+                liveUploadCount++;
+            }
+        }
+        return liveUploadCount;
+    }
+
+    /**
+     * Count total visible downloads.
+     *
+     * @return
+     */
+    public int countTotalDownloads() {
+        return downloadsTableModel.getRowCount();
+    }
+
+    /**
+     * Count all visible uploads.
+     * 
+     * @return
+     */
+    public int countAllUploads() {
+        return uploadsTableModel.getRowCount();
     }
 
     // Inner classes **********************************************************

@@ -88,17 +88,17 @@ public class RootTable extends JTable {
                     setIcon(Icons.FOLDERS);
                     newValue = Translation.getTranslation("title.my.folders");
                 } else if (userObject == RootNode.DOWNLOADS_NODE_LABEL) {
-                    TransferManager tm = controller.getTransferManager();
                     newValue = Translation.getTranslation("general.downloads");
-                    if (tm.countActiveDownloads() > 0) {
+                    if (controller.getUIController().getTransferManagerModel()
+                            .countActiveDownloads() > 0) {
                         setIcon(Icons.DOWNLOAD_ACTIVE);
                     } else {
                         setIcon(Icons.DOWNLOAD);
                     }
                 } else if (userObject == RootNode.UPLOADS_NODE_LABEL) {
-                    TransferManager tm = controller.getTransferManager();
                     newValue = Translation.getTranslation("general.uploads");
-                    if (tm.countLiveUploads() > 0) {
+                    if (controller.getUIController().getTransferManagerModel()
+                            .countLiveUploads() > 0) {
                         setIcon(Icons.UPLOAD_ACTIVE);
                     } else {
                         setIcon(Icons.UPLOAD);
@@ -132,13 +132,15 @@ public class RootTable extends JTable {
             } else {// size
                 setIcon(null);
                 if (userObject == RootNode.DOWNLOADS_NODE_LABEL) {
-                    TransferManager tm = controller.getTransferManager();
-                    newValue = String.valueOf(tm.countTotalDownloads());
+                    newValue = String.valueOf(controller.getUIController()
+                            .getTransferManagerModel().countTotalDownloads());
                 } else if (userObject == RootNode.UPLOADS_NODE_LABEL) {
                     TransferManager tm = controller.getTransferManager();
-                    newValue = String.valueOf(tm.countAllUploads());
+                    newValue = String.valueOf(controller.getUIController()
+                            .getTransferManagerModel().countAllUploads());
                 } else if (userObject == RootNode.RECYCLEBIN_NODE_LABEL) {
-                    newValue = String.valueOf(controller.getRecycleBin().countAllRecycledFiles());
+                    newValue = String.valueOf(controller.getRecycleBin()
+                            .countAllRecycledFiles());
                 } else {
                     newValue = String.valueOf(node.getChildCount());
                 }

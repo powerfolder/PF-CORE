@@ -38,7 +38,6 @@ import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.event.NavigationEvent;
 import de.dal33t.powerfolder.event.NavigationListener;
-import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.TopLevelItem;
 import de.dal33t.powerfolder.util.Translation;
@@ -195,13 +194,13 @@ public class NavigationToolBar extends PFUIComponent implements
             return Translation.getTranslation("title.my.folders") + " ("
                 + node.getChildCount() + ')';
         } else if (userObject == RootNode.DOWNLOADS_NODE_LABEL) {
-            TransferManager tm = getController().getTransferManager();
             return Translation.getTranslation("general.downloads") + " ("
-                + tm.countTotalDownloads() + ')';
+                + getController().getUIController().getTransferManagerModel()
+                    .countTotalDownloads() + ')';
         } else if (userObject == RootNode.UPLOADS_NODE_LABEL) {
-            TransferManager tm = getController().getTransferManager();
             return Translation.getTranslation("general.uploads") + " ("
-                + tm.countAllUploads() + ')';
+                + getController().getUIController().getTransferManagerModel()
+                    .countAllUploads() + ')';
         } else if (userObject == RootNode.RECYCLEBIN_NODE_LABEL) {
             return Translation.getTranslation("general.recyclebin") + " ("
                 + getController().getRecycleBin().countAllRecycledFiles() + ')';

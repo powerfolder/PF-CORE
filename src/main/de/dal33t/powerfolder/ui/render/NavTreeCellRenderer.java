@@ -31,7 +31,6 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.TopLevelItem;
 import de.dal33t.powerfolder.ui.UIController;
@@ -168,19 +167,21 @@ public class NavTreeCellRenderer extends DefaultTreeCellRenderer {
             text = Translation.getTranslation("title.my.folders") + " ("
                 + node.getChildCount() + ')';
         } else if (userObject == RootNode.DOWNLOADS_NODE_LABEL) {
-            TransferManager tm = controller.getTransferManager();
             text = Translation.getTranslation("general.downloads") + " ("
-                + tm.countTotalDownloads() + ')';
-            if (tm.countActiveDownloads() > 0) {
+                + controller.getUIController().getTransferManagerModel()
+                    .countTotalDownloads() + ')';
+            if (controller.getUIController().getTransferManagerModel()
+                    .countActiveDownloads() > 0) {
                 icon = Icons.DOWNLOAD_ACTIVE;
             } else {
                 icon = Icons.DOWNLOAD;
             }
         } else if (userObject == RootNode.UPLOADS_NODE_LABEL) {
-            TransferManager tm = controller.getTransferManager();
             text = Translation.getTranslation("general.uploads") + " ("
-                + tm.countAllUploads() + ')';
-            if (tm.countLiveUploads() > 0) {
+                + controller.getUIController().getTransferManagerModel()
+                    .countAllUploads() + ')';
+            if (controller.getUIController().getTransferManagerModel()
+                    .countLiveUploads() > 0) {
                 icon = Icons.UPLOAD_ACTIVE;
             } else {
                 icon = Icons.UPLOAD;

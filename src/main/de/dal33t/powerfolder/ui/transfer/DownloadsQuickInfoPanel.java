@@ -78,15 +78,15 @@ public class DownloadsQuickInfoPanel extends QuickInfoPanel {
      * Updates the info fields
      */
     private void updateText() {
-        int nCompletedDls = getController().getTransferManager()
-            .countCompletedDownloads();
+        int nCompletedDls = getController().getUIController()
+                .getTransferManagerModel().countCompletedDownloads();
 
         String text1 = Translation.getTranslation(
             "quickinfo.download.completed", nCompletedDls);
         infoText1.setText(text1);
 
-        int nActiveDls = getController().getTransferManager()
-            .countActiveDownloads();
+        int nActiveDls = getController().getUIController()
+                .getTransferManagerModel().countActiveDownloads();
         String text2 = Translation.getTranslation("quickinfo.download.active",
             nActiveDls);
 

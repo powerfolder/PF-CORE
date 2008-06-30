@@ -117,8 +117,8 @@ public class RootQuickInfoPanel extends QuickInfoPanel {
 
     private String getComletedDownloadText(boolean refresh) {
         if (refresh) {
-            int nCompletedDls = getController().getTransferManager()
-                .countCompletedDownloads();
+            int nCompletedDls = getController().getUIController()
+                    .getTransferManagerModel().countCompletedDownloads();
             comletedDownloadText = Translation.getTranslation(
                 "quickinfo.root.downloads", String.valueOf(nCompletedDls));
         }
