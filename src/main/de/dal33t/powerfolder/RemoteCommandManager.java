@@ -50,6 +50,7 @@ import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.ui.wizard.ChooseDiskLocationPanel;
 import de.dal33t.powerfolder.ui.wizard.FolderSetupPanel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
+import de.dal33t.powerfolder.ui.Icons;
 
 /**
  * The remote command processor is responsible for binding on a socket and
@@ -371,6 +372,8 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
             ChooseDiskLocationPanel panel = new ChooseDiskLocationPanel(
                 getController(), folder, setupPanel);
             PFWizard wizard = new PFWizard(getController());
+            wizard.getWizardContext().setAttribute(PFWizard.PICTO_ICON,
+                Icons.FILESHARING_PICTO);
             wizard.open(panel);
         } else {
             log()
