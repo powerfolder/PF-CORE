@@ -897,8 +897,7 @@ public class UIController extends PFComponent {
         ChatModel.ChatModelListener
     {
 
-        private ChatNotificationManager(ChatModel chatModel)
-        {
+        private ChatNotificationManager(ChatModel chatModel) {
             chatModel.addChatModelListener(this);
         }
 
@@ -980,7 +979,9 @@ public class UIController extends PFComponent {
                         changed = true;
                         synchronizing.set(false);
                     }
-                } else {
+                }
+
+                else {
                     text1 = Translation.getTranslation(
                         "quickinfo.myfolders.syncing", synchronizingFolders);
                     if (!synchronizing.get()) {
@@ -990,8 +991,10 @@ public class UIController extends PFComponent {
                 }
             }
 
-            if (changed && ConfigurationEntry.SHOW_SYSTEM_NOTIFICATIONS
-                .getValueBoolean(getController()))
+            // Disabled popup of sync start. 
+            if (changed
+                && ConfigurationEntry.SHOW_SYSTEM_NOTIFICATIONS
+                    .getValueBoolean(getController()) && !synchronizing.get())
             {
                 String text2 = Translation.getTranslation(
                     "quickinfo.myfolders.powerfolders", Format
@@ -1014,8 +1017,8 @@ public class UIController extends PFComponent {
      */
     public void notifyMessage(String title, String message) {
 
-        if (mainFrame.isIconifiedOrHidden() && started &&
-                !getController().isShuttingDown())
+        if (mainFrame.isIconifiedOrHidden() && started
+            && !getController().isShuttingDown())
         {
             NotificationHandler notificationHandler = new NotificationHandler(
                 getController(), title, message);
@@ -1037,8 +1040,8 @@ public class UIController extends PFComponent {
      *            minimized.
      */
     public void notifyMessage(String title, String message, TimerTask task) {
-        if (mainFrame.isIconifiedOrHidden() && started &&
-                !getController().isShuttingDown())
+        if (mainFrame.isIconifiedOrHidden() && started
+            && !getController().isShuttingDown())
         {
             NotificationHandler notificationHandler = new NotificationHandler(
                 getController(), title, message, task);
