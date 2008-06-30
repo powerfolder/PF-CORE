@@ -163,7 +163,8 @@ public class LoadInvitationPanel extends PFWizardPanel {
         builder.add(estimatedSize, cc.xy(3, 11));
 
         // Sync
-        builder.add(syncProfileHintLabel, cc.xy(1, 13));
+        builder.add(syncProfileHintLabel, cc.xy(1, 13, CellConstraints.DEFAULT,
+                CellConstraints.TOP));
         JPanel p = (JPanel) syncProfileSelectorPanel.getUIComponent();
         p.setOpaque(false);
         builder.add(p, cc.xy(3, 13));
@@ -226,7 +227,7 @@ public class LoadInvitationPanel extends PFWizardPanel {
 
         // Sync profile
         syncProfileHintLabel = new JLabel(Translation
-            .getTranslation("general.synchonisation"));
+            .getTranslation("wizard.setup_folder.transfer_mode"));
         syncProfileHintLabel.setEnabled(false);
         syncProfileSelectorPanel = new SyncProfileSelectorPanel(getController());
         syncProfileSelectorPanel.setEnabled(false);
