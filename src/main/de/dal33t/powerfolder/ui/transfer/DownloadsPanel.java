@@ -279,7 +279,7 @@ public class DownloadsPanel extends PFUIPanel implements HasDetailsPanel {
             // File localBase = folder.getLocalBase();
             File localBase = selectedFileBase;
             try {
-                FileUtils.executeFile(localBase);
+                FileUtils.openFile(localBase);
             } catch (IOException ioe) {
                 ioe.printStackTrace();
             }
@@ -364,7 +364,7 @@ public class DownloadsPanel extends PFUIPanel implements HasDetailsPanel {
                     DownloadsPanel.this.getController().getFolderRepository());
                 if (file != null && file.exists()) {
                     try {
-                        FileUtils.executeFile(file);
+                        FileUtils.openFile(file);
                     } catch (IOException ex) {
                         log().error(ex);
                     }

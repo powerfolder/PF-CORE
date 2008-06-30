@@ -31,9 +31,9 @@ import de.dal33t.powerfolder.util.ui.GenericDialogType;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a> *
  * @version $Revision: 1.3 $
  */
-public class ManuallyInvokedUpdateChecker extends UpdateChecker {
+public class ManuallyInvokedUpdater extends Updater {
 
-    public ManuallyInvokedUpdateChecker(Controller controller,
+    public ManuallyInvokedUpdater(Controller controller,
         UpdateSetting settings)
     {
         super(controller, settings);

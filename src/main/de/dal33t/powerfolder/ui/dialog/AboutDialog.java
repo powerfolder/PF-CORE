@@ -60,7 +60,7 @@ import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
 import de.dal33t.powerfolder.util.BrowserLauncher;
-import de.dal33t.powerfolder.util.ManuallyInvokedUpdateChecker;
+import de.dal33t.powerfolder.util.ManuallyInvokedUpdater;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.ui.TextLinesPanelBuilder;
@@ -359,7 +359,7 @@ public class AboutDialog extends PFUIComponent {
     private class UpdateAction implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             if (getController().getUpdateSettings() != null) {
-                new ManuallyInvokedUpdateChecker(getController(),
+                new ManuallyInvokedUpdater(getController(),
                     getController().getUpdateSettings()).start();
             }
             PreferencesEntry.CHECK_UPDATE.setValue(getController(), true);

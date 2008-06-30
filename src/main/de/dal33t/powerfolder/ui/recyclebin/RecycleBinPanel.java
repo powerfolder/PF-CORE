@@ -328,7 +328,7 @@ public class RecycleBinPanel extends PFUIPanel implements HasDetailsPanel {
                     File diskFile = recycleBin.getDiskFile(fileInfo);
                     File parentDirectory = diskFile.getParentFile();
                     try {
-                        FileUtils.executeFile(parentDirectory);
+                        FileUtils.openFile(parentDirectory);
                     } catch (IOException ioe) {
                         ioe.printStackTrace();
                     }

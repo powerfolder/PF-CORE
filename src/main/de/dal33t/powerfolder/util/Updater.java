@@ -1,24 +1,25 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.util;
 
+import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -49,13 +50,13 @@ import de.dal33t.powerfolder.util.ui.GenericDialogType;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.27 $
  */
-public class UpdateChecker extends Thread {
-    private static Logger log = Logger.getLogger(UpdateChecker.class);
+public class Updater extends Thread {
+    private static Logger LOG = Logger.getLogger(Updater.class);
     protected Controller controller;
     protected UpdateSetting settings;
     private static boolean updateDialogOpen = false;
 
-    public UpdateChecker(Controller controller, UpdateSetting settings) {
+    public Updater(Controller controller, UpdateSetting settings) {
         super("Update checker");
         Reject.ifNull(controller, "Controller is null");
         Reject.ifNull(settings, "Settings are null");
@@ -73,7 +74,7 @@ public class UpdateChecker extends Thread {
      * Checks for new application release at the remote location
      */
     private void checkForNewRelease() {
-        log.info("Checking for newer version");
+        LOG.info("Checking for newer version");
 
         final String newerVersion = newerReleaseVersionAvailable();
 
@@ -88,6 +89,8 @@ public class UpdateChecker extends Thread {
                 newerVersion);
 
             final List<String> options = new ArrayList<String>(4);
+            String downloadAndUpdateSilent = Translation
+                .getTranslation("dialog.updatecheck.downloadAndUpdateSilent");
             String downloadAndUpdate = Translation
                 .getTranslation("dialog.updatecheck.downloadAndUpdate");
             String gotoHomepage = Translation
@@ -97,6 +100,7 @@ public class UpdateChecker extends Thread {
 
             if (OSUtil.isWindowsSystem()) {
                 options.add(downloadAndUpdate);
+                options.add(downloadAndUpdateSilent);
             }
             options.add(gotoHomepage);
             options.add(nothingNeverAsk);
@@ -113,12 +117,15 @@ public class UpdateChecker extends Thread {
                     }
                 });
             } catch (InterruptedException ex) {
-                log.verbose(ex);
+                LOG.verbose(ex);
                 return;
             }
             updateDialogOpen = false;
 
-            if (option == downloadAndUpdate) {
+            if (option == downloadAndUpdate
+                || option == downloadAndUpdateSilent)
+            {
+                boolean updateSilently = option == downloadAndUpdateSilent;
                 URL releaseURL = getReleaseExeURL();
                 if (releaseURL == null) {
                     return;
@@ -130,13 +137,9 @@ public class UpdateChecker extends Thread {
                     settings.httpUser, settings.httpPassword);
                 // And start
                 if (completed) {
-                    log.warn("Download completed. "
+                    LOG.warn("Download completed. "
                         + targetFile.getAbsolutePath());
-                    try {
-                        FileUtils.executeFile(targetFile);
-                    } catch (IOException e) {
-                        log.error(e);
-                    }
+                    openReleaseExe(targetFile, updateSilently);
                 } else {
                     try {
                         UIUtil.invokeAndWaitInEDT(new Runnable() {
@@ -154,7 +157,7 @@ public class UpdateChecker extends Thread {
                             }
                         });
                     } catch (InterruptedException ex) {
-                        log.verbose(ex);
+                        LOG.verbose(ex);
                         return;
                     }
                 }
@@ -163,7 +166,7 @@ public class UpdateChecker extends Thread {
                         // Open explorer
                         BrowserLauncher.openURL(Constants.POWERFOLDER_URL);
                     } catch (IOException e) {
-                        log.verbose(e);
+                        LOG.verbose(e);
                     }
                 }
             } else if (option == gotoHomepage) {
@@ -171,7 +174,7 @@ public class UpdateChecker extends Thread {
                     // Open explorer
                     BrowserLauncher.openURL(Constants.POWERFOLDER_URL);
                 } catch (IOException e) {
-                    log.verbose(e);
+                    LOG.verbose(e);
                 }
             } else if (option == nothingNeverAsk) {
                 // Never ask again
@@ -207,7 +210,7 @@ public class UpdateChecker extends Thread {
                 con.connect();
             }
         } catch (IOException e) {
-            log.error("Unable to download from " + url, e);
+            LOG.error("Unable to download from " + url, e);
             return false;
         }
 
@@ -218,7 +221,7 @@ public class UpdateChecker extends Thread {
             dlDialog.openInEDT();
         }
 
-        log.warn("Downloading latest version from " + con.getURL());
+        LOG.warn("Downloading latest version from " + con.getURL());
         File tempFile = new File(destFile.getParentFile(), "(downloading) "
             + destFile.getName());
         try {
@@ -228,7 +231,7 @@ public class UpdateChecker extends Thread {
                 dlDialog != null ? dlDialog.getStreamCallback() : null, con
                     .getContentLength());
         } catch (IOException e) {
-            log.warn("Unable to download from " + url, e);
+            LOG.warn("Unable to download from " + url, e);
             return false;
         } finally {
             if (dlDialog != null) {
@@ -264,7 +267,7 @@ public class UpdateChecker extends Thread {
         try {
             url = new URL(settings.versionCheckURL);
         } catch (MalformedURLException e) {
-            log.verbose(e);
+            LOG.verbose(e);
             return null;
         }
         try {
@@ -275,19 +278,19 @@ public class UpdateChecker extends Thread {
             }
 
             if (latestVersion != null) {
-                log.info("Latest available version: " + latestVersion);
+                LOG.info("Latest available version: " + latestVersion);
 
                 if (Util.compareVersions(latestVersion,
                     Controller.PROGRAM_VERSION))
                 {
-                    log.info("Latest version is newer than this one");
+                    LOG.info("Latest version is newer than this one");
                     return latestVersion;
                 }
-                log.info("This version is up-to-date");
+                LOG.info("This version is up-to-date");
             }
 
         } catch (IOException e) {
-            log.verbose(e);
+            LOG.verbose(e);
         }
         return null;
     }
@@ -309,19 +312,19 @@ public class UpdateChecker extends Thread {
             in.close();
 
             releaseExeURL = new URL(b.toString());
-            log.info("Latest available version download: "
+            LOG.info("Latest available version download: "
                 + releaseExeURL.toExternalForm());
         } catch (MalformedURLException e) {
-            log.verbose(e);
+            LOG.verbose(e);
         } catch (IOException e) {
-            log.verbose(e);
+            LOG.verbose(e);
         }
         if (releaseExeURL == null) {
             // Fallback to standart settings
             try {
                 releaseExeURL = new URL(settings.releaseExeURL);
             } catch (MalformedURLException e) {
-                log.error("Invalid release exec download location", e);
+                LOG.error("Invalid release exec download location", e);
             }
         }
         return releaseExeURL;
@@ -353,6 +356,29 @@ public class UpdateChecker extends Thread {
      */
     protected JFrame getParentFrame() {
         return controller.getUIController().getMainFrame().getUIComponent();
+    }
+
+    private void openReleaseExe(File file, boolean updateSilently) {
+        // try {
+        // FileUtils.openFile(targetFile);
+        // } catch (IOException e) {
+        // log.error(e);
+        // }
+        try {
+            String c = "cmd.exe";
+            c += " /c ";
+            c += "\"";
+            c += file.getAbsolutePath();
+            if (updateSilently) {
+                c += " /S";
+            }
+            LOG.warn("Executing: " + c);
+            c += "\"";
+            Runtime.getRuntime().exec(c);
+        } catch (IOException e) {
+            LOG.error("Unable to start update exe at " + file.getAbsolutePath()
+                + ". " + e, e);
+        }
     }
 
     /**

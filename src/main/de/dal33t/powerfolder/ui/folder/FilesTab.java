@@ -1023,7 +1023,7 @@ public class FilesTab extends PFUIComponent implements FolderTab,
                     path = new File(pathStr.substring(0, index));
                 }
                 try {
-                    FileUtils.executeFile(path);
+                    FileUtils.openFile(path);
                 } catch (IOException ioe) {
                     ioe.printStackTrace();
                 }

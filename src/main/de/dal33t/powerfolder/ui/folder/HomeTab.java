@@ -480,7 +480,7 @@ public class HomeTab extends PFUIComponent implements FolderTab {
         public void actionPerformed(ActionEvent e) {
             File localBase = folder.getLocalBase();
             try {
-                FileUtils.executeFile(localBase);
+                FileUtils.openFile(localBase);
             } catch (IOException ioe) {
                 ioe.printStackTrace();
             }

@@ -85,7 +85,7 @@ public class StartFileAction extends SelectionBaseAction {
                                 .getFolderRepository());
                         log().debug("Starting " + file.getAbsolutePath());
                         try {
-                            FileUtils.executeFile(file);
+                            FileUtils.openFile(file);
                         } catch (IOException ex) {
                             unableToStart(fInfo, ex);
                         }

@@ -522,7 +522,7 @@ public class ControlQuarter extends PFUIComponent {
         } else {
             File localBase = folder.getLocalBase();
             try {
-                FileUtils.executeFile(localBase);
+                FileUtils.openFile(localBase);
             } catch (IOException ioe) {
                 log().error(ioe);
             }
@@ -681,7 +681,7 @@ public class ControlQuarter extends PFUIComponent {
                 Folder folder = (Folder) selection;
                 File localBase = folder.getLocalBase();
                 try {
-                    FileUtils.executeFile(localBase);
+                    FileUtils.openFile(localBase);
                 } catch (IOException ioe) {
                     ioe.printStackTrace();
                 }
@@ -702,7 +702,7 @@ public class ControlQuarter extends PFUIComponent {
                     path = new File(pathStr.substring(0, index));
                 }
                 try {
-                    FileUtils.executeFile(path);
+                    FileUtils.openFile(path);
                 } catch (IOException ioe) {
                     ioe.printStackTrace();
                 }
