@@ -97,7 +97,7 @@ public class Controller extends PFComponent {
     /**
      * program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "3.1.0 dev8";
+    public static final String PROGRAM_VERSION = "3.1.0 dev9";
 
     /** general wait time for all threads (5000 is a balanced value) */
     private static final long WAIT_TIME = 5000;
@@ -149,7 +149,7 @@ public class Controller extends PFComponent {
     /**
      * Contains the configuration for the update check
      */
-    private UpdateChecker.UpdateSetting updateSettings;
+    private Updater.UpdateSetting updateSettings;
 
     /**
      * cache the networking mode in a field so we dont heve to do all this
@@ -310,7 +310,7 @@ public class Controller extends PFComponent {
         }
 
         // Default updatesettings
-        updateSettings = new UpdateChecker.UpdateSetting();
+        updateSettings = new Updater.UpdateSetting();
         additionalConnectionListeners = Collections
             .synchronizedList(new ArrayList<ConnectionListener>());
         started = false;
@@ -715,7 +715,7 @@ public class Controller extends PFComponent {
             public void run() {
                 // Check for an update
                 if (updateSettings != null) {
-                    new UpdateChecker(getController(), updateSettings).start();
+                    new Updater(getController(), updateSettings).start();
                 }
             }
         };
@@ -1405,11 +1405,11 @@ public class Controller extends PFComponent {
     /**
      * @return the currently configured update settings
      */
-    public UpdateChecker.UpdateSetting getUpdateSettings() {
+    public Updater.UpdateSetting getUpdateSettings() {
         return updateSettings;
     }
 
-    public void setUpdateSettings(UpdateChecker.UpdateSetting someSettings) {
+    public void setUpdateSettings(Updater.UpdateSetting someSettings) {
         updateSettings = someSettings;
     }
 
