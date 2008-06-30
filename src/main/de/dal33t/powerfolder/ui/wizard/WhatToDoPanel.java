@@ -128,10 +128,9 @@ public class WhatToDoPanel extends PFWizardPanel {
             getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL,
                 successPanel);
 
-            FolderSetupPanel setupPanel = new FolderSetupPanel(
-                getController(), "");
+            FolderCreatePanel createPanel = new FolderCreatePanel(getController());
 
-            return new ChooseDiskLocationPanel(getController(), null, setupPanel);
+            return new ChooseDiskLocationPanel(getController(), null, createPanel);
 
         } else if (option == backupOption) {
 
@@ -163,10 +162,9 @@ public class WhatToDoPanel extends PFWizardPanel {
             getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL,
                 successPanel);
 
-            FolderSetupPanel setupPanel = new FolderSetupPanel(
-                getController(), "");
+            FolderCreatePanel createPanel = new FolderCreatePanel(getController());
 
-            return new ChooseDiskLocationPanel(getController(), null, setupPanel);
+            return new ChooseDiskLocationPanel(getController(), null, createPanel);
 
         } else if (option == hostOption) {
 
@@ -196,10 +194,9 @@ public class WhatToDoPanel extends PFWizardPanel {
             getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL,
                 successPanel);
 
-            FolderSetupPanel setupPanel = new FolderSetupPanel(
-                getController(), "");
+            FolderCreatePanel createPanel = new FolderCreatePanel(getController());
 
-            return new ChooseDiskLocationPanel(getController(), null, setupPanel);
+            return new ChooseDiskLocationPanel(getController(), null, createPanel);
 
         } else if (option == customOption) {
 
@@ -223,8 +220,7 @@ public class WhatToDoPanel extends PFWizardPanel {
             getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL,
                 successPanel);
 
-            FolderSetupPanel setupPanel = new FolderSetupPanel(
-                getController(), null);
+            FolderSetupPanel setupPanel = new FolderSetupPanel(getController());
             return new ChooseDiskLocationPanel(
                 getController(), null, setupPanel);
 

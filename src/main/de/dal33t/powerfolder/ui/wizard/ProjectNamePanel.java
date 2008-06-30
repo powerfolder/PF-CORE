@@ -28,6 +28,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.light.FolderInfo;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.INITIAL_FOLDER_NAME;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.UIUtil;
@@ -77,9 +78,9 @@ public class ProjectNamePanel extends PFWizardPanel {
         String folderId = '[' + IdGenerator.makeId() + ']';
         FolderInfo folder = new FolderInfo(name, folderId);
         getWizardContext().setAttribute(FOLDERINFO_ATTRIBUTE, folder);
+        getWizardContext().setAttribute(INITIAL_FOLDER_NAME, folder.name);
 
-        FolderSetupPanel setupPanel = new FolderSetupPanel(getController(),
-            folder.name);
+        FolderSetupPanel setupPanel = new FolderSetupPanel(getController());
 
         // Choose location...
         return new ChooseDiskLocationPanel(getController(), null, setupPanel);

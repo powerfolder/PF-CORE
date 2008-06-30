@@ -45,8 +45,6 @@ import java.awt.event.KeyListener;
  */
 public class FolderSetupPanel extends PFWizardPanel {
 
-    private final String initialFolderName;
-
     private JTextField folderNameTextField;
     private SyncProfileSelectorPanel syncProfileSelectorPanel;
 
@@ -57,9 +55,9 @@ public class FolderSetupPanel extends PFWizardPanel {
      * @param folderName
      *            the recommended folder name.
      */
-    public FolderSetupPanel(Controller controller, String folderName) {
+    public FolderSetupPanel(Controller controller) {
         super(controller);
-        initialFolderName = folderName;
+
     }
 
     /**
@@ -125,7 +123,11 @@ public class FolderSetupPanel extends PFWizardPanel {
 
         // Folder name label
         folderNameTextField = SimpleComponentFactory.createTextField(true);
-        folderNameTextField.setText(initialFolderName);
+        String initialFolderName = (String) getWizardContext().getAttribute(
+            INITIAL_FOLDER_NAME);
+        if (initialFolderName != null) {
+            folderNameTextField.setText(initialFolderName);
+        }
         folderNameTextField.addKeyListener(new MyKeyListener());
 
         // Sync profile

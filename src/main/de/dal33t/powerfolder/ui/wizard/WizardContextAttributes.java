@@ -27,6 +27,9 @@ public interface WizardContextAttributes {
     /** The attribute in wizard context, which will be displayed */
     String PROMPT_TEXT_ATTRIBUTE = "disklocation.prompt_text";
 
+    /** The attribute in wizard context, which will be displayed */
+    String INITIAL_FOLDER_NAME = "disklocation.initial_folder_name";
+
     /** The folder info object for the targeted folder */
     String FOLDERINFO_ATTRIBUTE = "disklocation.folder_info";
 

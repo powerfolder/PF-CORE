@@ -36,6 +36,7 @@ import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.PROMPT_TEXT_ATTRIBUTE;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SYNC_PROFILE_ATTRIBUTE;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SEND_INVIATION_AFTER_ATTRIBUTE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.INITIAL_FOLDER_NAME;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.FileUtils;
@@ -178,6 +179,11 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
             createDesktopShortcutBox.isSelected());
         getWizardContext().setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE,
             sendInviteAfterCB.isSelected());
+
+        String nick = getController().getMySelf().getNick();
+        String lastPart = localBase.getName();
+        getWizardContext().setAttribute(INITIAL_FOLDER_NAME,
+                nick + '-' + lastPart);
 
         // Change to manual sync if requested.
         if (manualSyncCheckBox.isSelected()) {

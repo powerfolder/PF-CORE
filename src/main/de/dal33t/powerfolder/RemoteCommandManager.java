@@ -50,6 +50,7 @@ import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.ui.wizard.ChooseDiskLocationPanel;
 import de.dal33t.powerfolder.ui.wizard.FolderSetupPanel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
+import de.dal33t.powerfolder.ui.wizard.WizardContextAttributes;
 import de.dal33t.powerfolder.ui.Icons;
 
 /**
@@ -367,13 +368,14 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
      */
     private void makeFolder(String name, String folder) {
         if (getController().isUIEnabled()) {
-            FolderSetupPanel setupPanel = new FolderSetupPanel(getController(),
-                name);
+            FolderSetupPanel setupPanel = new FolderSetupPanel(getController());
             ChooseDiskLocationPanel panel = new ChooseDiskLocationPanel(
                 getController(), folder, setupPanel);
             PFWizard wizard = new PFWizard(getController());
             wizard.getWizardContext().setAttribute(PFWizard.PICTO_ICON,
                 Icons.FILESHARING_PICTO);
+            wizard.getWizardContext().setAttribute(WizardContextAttributes
+                    .INITIAL_FOLDER_NAME, name);
             wizard.open(panel);
         } else {
             log()

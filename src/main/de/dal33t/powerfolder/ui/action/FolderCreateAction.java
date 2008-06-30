@@ -39,8 +39,7 @@ public class FolderCreateAction extends BaseAction {
     }
 
     public void actionPerformed(ActionEvent e) {
-        FolderSetupPanel setupPanel = new FolderSetupPanel(getController(),
-            null);
+        FolderSetupPanel setupPanel = new FolderSetupPanel(getController());
         ChooseDiskLocationPanel panel = new ChooseDiskLocationPanel(
             getController(), null, setupPanel);
         PFWizard wizard = new PFWizard(getController());
