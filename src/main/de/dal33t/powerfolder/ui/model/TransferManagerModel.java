@@ -181,7 +181,6 @@ public class TransferManagerModel extends PFUIComponent {
                 liveUploadCount++;
             }
         }
-        System.out.println("hghg " + liveUploadCount);
         return liveUploadCount;
     }
 
