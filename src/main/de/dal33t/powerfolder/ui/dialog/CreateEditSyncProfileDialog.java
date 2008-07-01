@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.ui.dialog;
 
 import java.awt.Component;
 import java.awt.event.*;
+import java.util.List;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -70,7 +71,6 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
     private JComboBox dayCombo;
     private JComboBox timeTypeCombo;
     private final boolean create;
-    private JButton configureButton;
     private JButton saveButton;
     private final SyncProfileConfiguration originalConfiguration;
     private final String originalProfileName;
@@ -165,11 +165,10 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
     }
 
     private Component createSyncComboPanel() {
-        FormLayout layout = new FormLayout("pref, 4dlu, pref", "pref");
+        FormLayout layout = new FormLayout("pref", "pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
         builder.add(syncProfilesCombo, cc.xy(1, 1));
-        builder.add(configureButton, cc.xy(3, 1));
         return builder.getPanel();
     }
 
@@ -207,10 +206,6 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
 
         syncProfileName.addKeyListener(this);
 
-        configureButton = new JButton(Translation
-                .getTranslation("dialog.create_edit_profile.configure.name"));
-        configureButton.setMnemonic(Translation
-                .getTranslation("dialog.create_edit_profile.configure.key").charAt(0));
         syncProfilesCombo = new JComboBox();
         syncProfilesCombo.addItem("");
         for (SyncProfile syncProfile : SyncProfile.getSyncProfilesCopy()) {
@@ -218,16 +213,9 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
         }
         syncProfilesCombo.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
-                configureButton.setEnabled(syncProfilesCombo.getSelectedIndex()
-                        > 0);
-            }
-        });
-        configureButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
                 preselectDefaults();
             }
         });
-        configureButton.setEnabled(false);
 
         autoDownloadFromFriendsBox = new JCheckBox(Translation
             .getTranslation("dialog.create_edit_profile.auto_download_from_friends"));
@@ -333,35 +321,38 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
      */
     private void preselectDefaults() {
         int index = syncProfilesCombo.getSelectedIndex() - 1; // Remove blank initial entry
-        SyncProfile syncProfile = SyncProfile.getSyncProfilesCopy().get(index);
-        SyncProfileConfiguration configuration = syncProfile
-                .getConfiguration();
-        autoDownloadFromFriendsBox.setSelected(configuration
-            .isAutoDownloadFromFriends());
-        autoDownloadFromOthersBox.setSelected(configuration
-            .isAutoDownloadFromOthers());
-        syncDeletionWithFriendsBox.setSelected(configuration
-            .isSyncDeletionWithFriends());
-        syncDeletionWithOthersBox.setSelected(configuration
-            .isSyncDeletionWithOthers());
-        scanTimeModel.setValue(configuration.getTimeBetweenRegularScans());
-        regularRadioButton.setSelected(!configuration.isDailySync());
-        dailyRadioButton.setSelected(configuration.isDailySync());
-        hourModel.setValue(configuration.getDailyHour());
-        dayCombo.setSelectedIndex(configuration.getDailyDay());
-        if (configuration.getRegularTimeType().equals(SyncProfileConfiguration
-                .REGULAR_TIME_TYPE_HOURS)) {
-            timeTypeCombo.setSelectedIndex(0);
-        } else if (configuration.getRegularTimeType().equals(
-                SyncProfileConfiguration.REGULAR_TIME_TYPE_SECONDS)) {
-            timeTypeCombo.setSelectedIndex(2);
-        } else {
-            timeTypeCombo.setSelectedIndex(1);
+        List<SyncProfile> syncProfileList = SyncProfile.getSyncProfilesCopy();
+        if (index >= 0 && index < syncProfileList.size()) {
+            SyncProfile syncProfile = SyncProfile.getSyncProfilesCopy().get(index);
+            SyncProfileConfiguration configuration = syncProfile
+                    .getConfiguration();
+            autoDownloadFromFriendsBox.setSelected(configuration
+                .isAutoDownloadFromFriends());
+            autoDownloadFromOthersBox.setSelected(configuration
+                .isAutoDownloadFromOthers());
+            syncDeletionWithFriendsBox.setSelected(configuration
+                .isSyncDeletionWithFriends());
+            syncDeletionWithOthersBox.setSelected(configuration
+                .isSyncDeletionWithOthers());
+            scanTimeModel.setValue(configuration.getTimeBetweenRegularScans());
+            regularRadioButton.setSelected(!configuration.isDailySync());
+            dailyRadioButton.setSelected(configuration.isDailySync());
+            hourModel.setValue(configuration.getDailyHour());
+            dayCombo.setSelectedIndex(configuration.getDailyDay());
+            if (configuration.getRegularTimeType().equals(SyncProfileConfiguration
+                    .REGULAR_TIME_TYPE_HOURS)) {
+                timeTypeCombo.setSelectedIndex(0);
+            } else if (configuration.getRegularTimeType().equals(
+                    SyncProfileConfiguration.REGULAR_TIME_TYPE_SECONDS)) {
+                timeTypeCombo.setSelectedIndex(2);
+            } else {
+                timeTypeCombo.setSelectedIndex(1);
+            }
+
+            enableTimeDate();
+
+            syncProfilesCombo.setSelectedIndex(0);
         }
-
-        enableTimeDate();
-
-        syncProfilesCombo.setSelectedIndex(0);
     }
 
     /**
