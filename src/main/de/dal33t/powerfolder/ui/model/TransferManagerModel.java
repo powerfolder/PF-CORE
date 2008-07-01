@@ -176,10 +176,12 @@ public class TransferManagerModel extends PFUIComponent {
         int liveUploadCount = 0;
         for (int i = 0; i < uploadCount; i++) {
             Upload ul = uploadsTableModel.getUploadAtRow(i);
-            if (ul.isCompleted()) {
+            if (ul.isStarted() && !ul.isCompleted() && !ul.isBroken() &&
+                    !ul.isAborted()) {
                 liveUploadCount++;
             }
         }
+        System.out.println("hghg " + liveUploadCount);
         return liveUploadCount;
     }
 
