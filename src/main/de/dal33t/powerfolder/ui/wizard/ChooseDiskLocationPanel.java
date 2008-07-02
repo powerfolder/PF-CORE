@@ -238,8 +238,6 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         }
 
         // Custom directory.
-        customRB = new JRadioButton(Translation
-            .getTranslation("user.dir.custom"));
         customRB.setOpaque(false);
         bg.add(customRB);
         builder.add(customRB, cc.xy(col, row));
@@ -248,7 +246,6 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
                 doRadio(transientDirectory);
             }
         });
-        customRB.setSelected(true);
         row += 3;
 
         String infoText = (String) getWizardContext().getAttribute(
@@ -270,8 +267,10 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
             builder.add(backupByOnlineStorageBox, cc.xyw(1, row, 6));
         }
 
-        row += 2;
-        builder.add(createDesktopShortcutBox, cc.xyw(1, row, 5));
+        if (OSUtil.isWindowsSystem()) {
+            row += 2;
+            builder.add(createDesktopShortcutBox, cc.xyw(1, row, 5));
+        }
 
         Object object = getWizardContext().getAttribute(SYNC_PROFILE_ATTRIBUTE);
         if (object != null && object.equals(AUTOMATIC_SYNCHRONIZATION)) {
@@ -326,7 +325,12 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
             locationModel.setValue(initialLocation);
         }
 
-        // Behavior
+        // Create customRB now,
+        // so the listener does not see the initial selection later.
+        customRB = new JRadioButton(Translation
+            .getTranslation("user.dir.custom"));
+        customRB.setSelected(true);
+
         locationModel.addValueChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 updateLocationComponents();
@@ -402,6 +406,11 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         }
         locationTF.setText(value);
         locationButton.setEnabled(customRB.isSelected());
+
+        // Audo popup dir chooser.
+        if (customRB.isSelected()) {
+            displayChooseDirectory();
+        }
     }
 
     /**
@@ -546,20 +555,24 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         }
     }
 
+    private void displayChooseDirectory() {
+        String initial = (String) locationModel.getValue();
+        String file = DialogFactory.chooseDirectory(getController(),
+                initial);
+        locationModel.setValue(file);
+
+        // Update this so that if the user clicks other user dirs
+        // and then 'Custom', the selected dir will show.
+        transientDirectory = file;
+    }
+
     /**
      * Action listener for the location button. Opens a choose dir dialog and
      * sets the location model with the result.
      */
     private class MyActionListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
-            String initial = (String) locationModel.getValue();
-            String file = DialogFactory.chooseDirectory(getController(),
-                initial);
-            locationModel.setValue(file);
-
-            // Update this so that if the user clicks other user dirs
-            // and then 'Custom', the selected dir will show.
-            transientDirectory = file;
+            displayChooseDirectory();
         }
     }
 
