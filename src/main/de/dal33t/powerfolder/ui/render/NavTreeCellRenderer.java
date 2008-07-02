@@ -177,11 +177,15 @@ public class NavTreeCellRenderer extends DefaultTreeCellRenderer {
                 icon = Icons.DOWNLOAD;
             }
         } else if (userObject == RootNode.UPLOADS_NODE_LABEL) {
+            Object countAllUploads = controller.getUIController()
+                    .getTransferManagerModel().getAllUploadsCountVM().getValue();
+            Object countActiveUploads = controller.getUIController()
+                    .getTransferManagerModel().getActiveUploadsCountVM().getValue();
+
             text = Translation.getTranslation("general.uploads") + " ("
-                + controller.getUIController().getTransferManagerModel()
-                    .countAllUploads() + ')';
-            if (controller.getUIController().getTransferManagerModel()
-                    .countLiveUploads() > 0) {
+                + (countAllUploads == null ? "0" : countAllUploads) + ')';
+            if ((countActiveUploads == null ? 0 : (Integer) countActiveUploads)
+                    > 0) {
                 icon = Icons.UPLOAD_ACTIVE;
             } else {
                 icon = Icons.UPLOAD;

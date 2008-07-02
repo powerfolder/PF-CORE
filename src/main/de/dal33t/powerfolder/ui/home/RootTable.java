@@ -26,16 +26,16 @@ import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
-import javax.swing.table.TableModel;
 import javax.swing.tree.TreeNode;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.model.RootTableModel;
 import de.dal33t.powerfolder.ui.render.UnsortedTableHeaderRenderer;
 import de.dal33t.powerfolder.ui.navigation.RootNode;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.UIUtil;
+import com.jgoodies.binding.value.ValueModel;
 
 /**
  * Maps the root items to a table.
@@ -45,9 +45,11 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  */
 public class RootTable extends JTable {
 
-    private Controller controller;
+    private final Controller controller;
+    private final ValueModel allUploadsCountVM;
+    private final ValueModel activeUploadsCountVM;
 
-    public RootTable(TableModel tableModel, Controller controller) {
+    public RootTable(RootTableModel tableModel, Controller controller) {
         super(tableModel);
         this.controller = controller;
         setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -58,6 +60,11 @@ public class RootTable extends JTable {
 
         // Associate a header renderer with all columns.
         UnsortedTableHeaderRenderer.associateHeaderRenderer(getColumnModel());
+
+        allUploadsCountVM = controller.getUIController()
+                .getTransferManagerModel().getAllUploadsCountVM();
+        activeUploadsCountVM = controller.getUIController()
+                .getTransferManagerModel().getActiveUploadsCountVM();
     }
 
     private void setupColumns() {
@@ -97,8 +104,8 @@ public class RootTable extends JTable {
                     }
                 } else if (userObject == RootNode.UPLOADS_NODE_LABEL) {
                     newValue = Translation.getTranslation("general.uploads");
-                    if (controller.getUIController().getTransferManagerModel()
-                            .countLiveUploads() > 0) {
+                    if (activeUploadsCountVM.getValue() != null &&
+                            (Integer) activeUploadsCountVM.getValue() > 0) {
                         setIcon(Icons.UPLOAD_ACTIVE);
                     } else {
                         setIcon(Icons.UPLOAD);
@@ -135,9 +142,8 @@ public class RootTable extends JTable {
                     newValue = String.valueOf(controller.getUIController()
                             .getTransferManagerModel().countTotalDownloads());
                 } else if (userObject == RootNode.UPLOADS_NODE_LABEL) {
-                    TransferManager tm = controller.getTransferManager();
-                    newValue = String.valueOf(controller.getUIController()
-                            .getTransferManagerModel().countAllUploads());
+                    newValue = activeUploadsCountVM.getValue() == null ?
+                            "0" : String.valueOf(allUploadsCountVM.getValue());
                 } else if (userObject == RootNode.RECYCLEBIN_NODE_LABEL) {
                     newValue = String.valueOf(controller.getRecycleBin()
                             .countAllRecycledFiles());

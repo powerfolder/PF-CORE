@@ -41,6 +41,7 @@ import de.dal33t.powerfolder.event.TransferManagerListener;
 import de.dal33t.powerfolder.ui.navigation.NavTreeModel;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
+import com.jgoodies.binding.value.ValueModel;
 
 /**
  * Maps the child nodes of the rootnode to a table model.
@@ -74,6 +75,30 @@ public class RootTableModel extends PFUIComponent implements TableModel {
         controller.addPropertyChangeListener(
             Controller.PROPERTY_NETWORKING_MODE, new MyControllerListener());
     }
+
+    /**
+     * Begin listening for changes to uploads from the transfer manager model.
+     */
+    public void initialize() {
+        ValueModel allUploadsCountVM = getController().getUIController()
+                .getTransferManagerModel().getAllUploadsCountVM();
+        allUploadsCountVM.addValueChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                // Ensure the parent table updates on changes.
+                update();
+            }
+        });
+
+        ValueModel activeUploadsCountVM = getController().getUIController()
+                .getTransferManagerModel().getActiveUploadsCountVM();
+        activeUploadsCountVM.addValueChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                // Ensure the parent table updates on changes.
+                update();
+            }
+        });
+    }
+
 
     public Class getColumnClass(int columnIndex) {
         return Object.class;

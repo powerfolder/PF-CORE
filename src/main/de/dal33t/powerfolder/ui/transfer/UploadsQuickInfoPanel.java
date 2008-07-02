@@ -29,6 +29,10 @@ import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.QuickInfoPanel;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
+import com.jgoodies.binding.value.ValueModel;
+
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
 
 /**
  * Show concentrated information about the uploads
@@ -42,8 +46,30 @@ public class UploadsQuickInfoPanel extends QuickInfoPanel {
     private JLabel infoText1;
     private JLabel infoText2;
 
+    private final ValueModel completedUploadsCountVM;
+    private final ValueModel activeUploadsCountVM;
+
     public UploadsQuickInfoPanel(Controller controller) {
         super(controller);
+
+        // Begin listening for changes to uploads from the transfer manager model.
+        completedUploadsCountVM = getController().getUIController()
+                .getTransferManagerModel().getCompletedUploadsCountVM();
+        completedUploadsCountVM.addValueChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                // Ensure the parent table updates on changes.
+                updateText();
+            }
+        });
+
+        activeUploadsCountVM = getController().getUIController()
+                .getTransferManagerModel().getActiveUploadsCountVM();
+        activeUploadsCountVM.addValueChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                // Ensure the parent table updates on changes.
+                updateText();
+            }
+        });
     }
 
     /**
@@ -78,15 +104,15 @@ public class UploadsQuickInfoPanel extends QuickInfoPanel {
      * Updates the info fields
      */
     private void updateText() {
-        int nCompletedUls = getController().getUIController()
-                .getTransferManagerModel().countAllUploads();
+        Object value = completedUploadsCountVM.getValue();
+        int nCompletedUls = value == null ? 0 : (Integer) value;
 
         String text1 = Translation.getTranslation("quickinfo.upload.completed",
                 nCompletedUls);
         infoText1.setText(text1);
 
-        int nActiveUls = getController().getUIController()
-                .getTransferManagerModel().countLiveUploads();
+        value = activeUploadsCountVM.getValue();
+        int nActiveUls = value == null ? 0 : (Integer) value;
         String text2 = Translation.getTranslation("quickinfo.upload.active",
             nActiveUls);
 

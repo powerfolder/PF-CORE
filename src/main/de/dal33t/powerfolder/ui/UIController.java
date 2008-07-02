@@ -257,6 +257,7 @@ public class UIController extends PFComponent {
         transferManagerModel = new TransferManagerModel(getController()
             .getTransferManager(), navTreeModel);
         transferManagerModel.initialize();
+        applicationModel.getRootTabelModel().initialize();
         serverClientModel = new ServerClientModel(getController(),
             getController().getOSClient());
 

@@ -55,6 +55,15 @@ public class TransferManagerModel extends PFUIComponent {
     private final DefaultMutableTreeNode UPLOADS_NODE = new DefaultMutableTreeNode(
         RootNode.UPLOADS_NODE_LABEL);
 
+    /** Value model with integer number of all displayed uploads. */
+    private final ValueModel allUploadsCountVM = new ValueHolder();
+
+    /** Value model with integer number of active displayed uploads. */
+    private final ValueModel activeUploadsCountVM = new ValueHolder();
+
+    /** Value model with integer number of completed displayed uploads. */
+    private final ValueModel completedUploadsCountVM = new ValueHolder();
+
     public TransferManagerModel(TransferManager transferManager,
         NavTreeModel theNavTreeModel)
     {
@@ -167,24 +176,6 @@ public class TransferManagerModel extends PFUIComponent {
     }
 
     /**
-     * Count visible live uploads.
-     *
-     * @return
-     */
-    public int countLiveUploads() {
-        int uploadCount = uploadsTableModel.getRowCount();
-        int liveUploadCount = 0;
-        for (int i = 0; i < uploadCount; i++) {
-            Upload ul = uploadsTableModel.getUploadAtRow(i);
-            if (ul.isStarted() && !ul.isCompleted() && !ul.isBroken() &&
-                    !ul.isAborted()) {
-                liveUploadCount++;
-            }
-        }
-        return liveUploadCount;
-    }
-
-    /**
      * Count total visible downloads.
      *
      * @return
@@ -194,12 +185,30 @@ public class TransferManagerModel extends PFUIComponent {
     }
 
     /**
-     * Count all visible uploads.
-     * 
+     * Returns a value model with integer number of active displayed uploads.
+     *
      * @return
      */
-    public int countAllUploads() {
-        return uploadsTableModel.getRowCount();
+    public ValueModel getActiveUploadsCountVM() {
+        return activeUploadsCountVM;
+    }
+
+    /**
+     * Returns a value model with integer number of all displayed uploads.
+     *
+     * @return
+     */
+    public ValueModel getAllUploadsCountVM() {
+        return allUploadsCountVM;
+    }
+
+    /**
+     * Returns a value model with integer number of completed displayed uploads.
+     *
+     * @return
+     */
+    public ValueModel getCompletedUploadsCountVM() {
+        return completedUploadsCountVM;
     }
 
     // Inner classes **********************************************************
@@ -293,6 +302,26 @@ public class TransferManagerModel extends PFUIComponent {
             TreeModelEvent te = new TreeModelEvent(this, new Object[]{
                 navTree.getRoot(), UPLOADS_NODE});
             navTree.fireTreeNodesChangedEvent(te);
+
+            // Recalculate total and active uploads.
+            int uploadCount = uploadsTableModel.getRowCount();
+            int activeUploadCount = 0;
+            int allUploadCount = 0;
+            int completedUploadCount = 0;
+            for (int i = 0; i < uploadCount; i++) {
+                Upload ul = uploadsTableModel.getUploadAtRow(i);
+                if (ul.isStarted() && !ul.isCompleted() && !ul.isBroken() &&
+                        !ul.isAborted()) {
+                    activeUploadCount++;
+                } else if (ul.isCompleted()) {
+                    completedUploadCount++;
+                }
+                allUploadCount++;
+            }
+
+            allUploadsCountVM.setValue(allUploadCount);
+            activeUploadsCountVM.setValue(activeUploadCount);
+            completedUploadsCountVM.setValue(completedUploadCount);
         }
 
         private void updateFolderTreeNode(TransferManagerEvent event) {

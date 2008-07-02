@@ -198,9 +198,10 @@ public class NavigationToolBar extends PFUIComponent implements
                 + getController().getUIController().getTransferManagerModel()
                     .countTotalDownloads() + ')';
         } else if (userObject == RootNode.UPLOADS_NODE_LABEL) {
+            Object value = getController().getUIController()
+                    .getTransferManagerModel().getAllUploadsCountVM().getValue();
             return Translation.getTranslation("general.uploads") + " ("
-                + getController().getUIController().getTransferManagerModel()
-                    .countAllUploads() + ')';
+                + (value == null ? "0" : value.toString()) + ')';
         } else if (userObject == RootNode.RECYCLEBIN_NODE_LABEL) {
             return Translation.getTranslation("general.recyclebin") + " ("
                 + getController().getRecycleBin().countAllRecycledFiles() + ')';
