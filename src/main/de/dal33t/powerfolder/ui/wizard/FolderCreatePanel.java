@@ -119,8 +119,17 @@ public class FolderCreatePanel extends PFWizardPanel {
             WizardContextAttributes.FOLDERINFO_ATTRIBUTE);
         if (foInfo == null) {
             // Create new folder info
-            String name = getController().getMySelf().getNick() + '-'
-                + localBase.getName();
+            String name;
+            Object value = getWizardContext().getAttribute(BASIC_SETUP_ATTIRBUTE);
+            if (value != null && (Boolean) value) {
+                // Default sync folder has user name...
+                name = System.getProperty("user.name") + '-'
+                    + localBase.getName();
+            } else {
+                // ... other auto folders have computer name.
+                name = getController().getMySelf().getNick() + '-'
+                    + localBase.getName();
+            }
 
             String folderId = '[' + IdGenerator.makeId() + ']';
             foInfo = new FolderInfo(name, folderId);
