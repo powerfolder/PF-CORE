@@ -62,7 +62,8 @@ For creation of the installer:
 		<property name="src.dir" location="src" />
 		<property name="main.src.dir" location="src/main" />
 		<property name="jwf.src.dir" location="src/jwf" />
-		<property name="etc.dir" location="src/etc" />
+        <property name="etc.dir" location="src/etc" />
+        <property name="applet.dir" location="src/applet" />
 
 		<property name="src.test.dir" location="src/test" />
 
@@ -275,8 +276,41 @@ For creation of the installer:
 
 			<doctitle>
 				<![CDATA[<h1>PowerFolder API Documentation</h1>]]></doctitle>
-		<!-- J2SE API. -->
-		<link href="http://java.sun.com/j2se/1.5.0/docs/api" />
-	</javadoc>
-</target>
+		    <!-- J2SE API. -->
+		    <link href="http://java.sun.com/j2se/1.5.0/docs/api" />
+	    </javadoc>
+    </target>
+
+    <!-- Build the download applet. -->
+    <target name="jar-applet" depends="init">
+
+        <mkdir dir="${dist.dir}" />
+        <mkdir dir="${build.dir}" />
+
+        <javac destdir="${build.dir}" source="1.5" target="1.5" encoding="UTF-8" nowarn="${NoCompileWarnings}" debug="${Debug}" deprecation="${Deprecation}" optimize="${Optimize}">
+
+            <!-- javac 1.5 specific warnings -->
+            <compilerarg value="-Xlint:${Unchecked}" />
+            <compilerarg value="-Xlint:${Fallthrough}" />
+
+            <src path="${applet.dir}" />
+        </javac>
+
+        <!-- copy files from etc to include in jar -->
+        <copy todir="${build.dir}">
+            <fileset dir="${applet.dir}" />
+        </copy>
+
+
+        <jar jarfile="${dist.dir}/DownloadApplet.jar" basedir="${build.dir}" excludes="test*/**/*" update="true">
+            <manifest>
+                <attribute name="Built-By" value="${BuildBy}" />
+                <attribute name="Version" value="${MajorVersion}.${MinorVersion}.${RevisionVersion}" />
+                <attribute name="BuildDateTime" value="${BuildDateTime}" />
+                <attribute name="Sealed" value="true" />
+                <attribute name="Main-Class" value="de.dal33t.powerfolder.PowerFolder" />
+            </manifest>
+        </jar>
+    </target>
+
 </project>
