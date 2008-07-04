@@ -83,6 +83,7 @@ public class BrowserLauncher {
             if (Desktop.isDesktopSupported()) {
                 log.debug("Using Java6 Desktop.browse()");
                 Desktop.getDesktop().browse(new URI(url));
+                return true;
             }
         } catch (LinkageError err) {
             log.verbose(err);
