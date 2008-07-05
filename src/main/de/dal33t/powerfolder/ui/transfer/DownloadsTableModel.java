@@ -20,12 +20,7 @@
 package de.dal33t.powerfolder.ui.transfer;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.TimerTask;
+import java.util.*;
 
 import javax.swing.SwingUtilities;
 import javax.swing.event.TableModelEvent;
@@ -253,16 +248,27 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
         public void downloadCompleted(TransferManagerEvent event) {
 
             // Update table.
-            int index = downloads.indexOf(event.getDownload());
+            Download dl = event.getDownload();
+            int index = downloads.indexOf(dl);
             if (index >= 0) {
-                rowsUpdated(index, index);
-            } else {
-                log().error(
-                    "Download not found in model: " + event.getDownload());
-                rowsUpdatedAll();
-            }
 
-            // Auto-cleanup is now done in TransferManager
+                // Remove existing downloads from all partners, then add a
+                // single complete download. This is a temporary fix; should
+                // really coalesce downloads into one line for each completely
+                // identical fileinfo.
+                for (Iterator<Download> iter = downloads.iterator();
+                     iter.hasNext();) {
+                    Download download = iter.next();
+                    if (dl.getFile().isCompletelyIdentical(download.getFile()))
+                    {
+                        iter.remove();
+                    }
+                }
+                addOrUpdateDownload(dl);
+            } else {
+                log().error("Download not found in model: " + dl);
+            }
+            rowsUpdatedAll();
         }
 
         public void completedDownloadRemoved(TransferManagerEvent event) {
@@ -298,18 +304,17 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
         /**
          * Searches downloads for a download with identical FileInfo.
          * 
-         * @param downloadArg
+         * @param dl
          *            download to search for identical copy
          * @return index of the download with identical FileInfo, -1 if not
          *         found
          */
-        private int findCompletelyIdenticalDownloadIndex(Download downloadArg) {
+        private int findCompletelyIdenticalDownloadIndex(Download dl) {
             synchronized (downloads) {
                 for (int i = 0; i < downloads.size(); i++) {
-                    Download d = downloads.get(i);
-                    // @todo Temporary fix for #1070. Removed partner check.
-                    // downloads should really be like Map<FileInfo, List<Download>> 
-                    if (d.getFile().isCompletelyIdentical(downloadArg.getFile()))
+                    Download download = downloads.get(i);
+                    if (download.getFile().isCompletelyIdentical(dl.getFile())
+                            && download.getPartner().equals(dl.getPartner()))
                     {
                         return i;
                     }
