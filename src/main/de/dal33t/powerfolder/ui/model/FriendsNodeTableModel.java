@@ -296,18 +296,20 @@ SortedTableModel {
     private boolean wantedNode(Member node) {
 
         boolean friend = node.isFriend();
-        boolean connected = node.isConnectedToNetwork();
         boolean onLan = node.isOnLAN();
+        boolean connectedToNetwork = node.isConnectedToNetwork();
+        boolean connected = node.isConnected();
 
         if (hideOffline) {
             if (includeLan) {
                 // want online (friends or lan users)
-                if (connected && (friend || onLan)) {
+                if (connectedToNetwork && friend ||
+                        connected && onLan) {
                     return true;
                 }
             } else {
                 // want online friends
-                if (connected && friend) {
+                if (connectedToNetwork && friend) {
                     return true;
                 }
             }
@@ -324,6 +326,7 @@ SortedTableModel {
                 }
             }
         }
+
         return false;
     }
 
