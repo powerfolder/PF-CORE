@@ -265,6 +265,8 @@ public class Controller extends PFComponent {
         Security.setProperty("networkaddress.cache.ttl", "0");
         Security.setProperty("networkaddress.cache.negative.ttl", "0");
         System.setProperty("sun.net.inetaddr.ttl", "0");
+        System.setProperty("com.apple.mrj.application.apple.menu.about.name",
+            "PowerFolder");
     }
 
     /**
