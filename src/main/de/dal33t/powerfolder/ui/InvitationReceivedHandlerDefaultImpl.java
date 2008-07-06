@@ -27,7 +27,6 @@ import de.dal33t.powerfolder.event.InvitationReceivedEvent;
 import de.dal33t.powerfolder.event.InvitationReceivedHandler;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
-import de.dal33t.powerfolder.ui.wizard.ReceivedInvitationPanel;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
@@ -115,7 +114,7 @@ public class InvitationReceivedHandlerDefaultImpl extends PFComponent implements
                         Translation.getTranslation(
                             "invite_received_handler.notify.message",
                             invitation.getInvitor().getNode(getController())
-                                .getNick()), task);
+                                .getNick()), task, true);
             }
         };
 

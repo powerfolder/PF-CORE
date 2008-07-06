@@ -42,6 +42,9 @@ import javax.swing.LookAndFeel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreePath;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -77,6 +80,7 @@ import de.dal33t.powerfolder.ui.webservice.ServerClientModel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.ui.notification.NotificationHandler;
 import de.dal33t.powerfolder.util.*;
+import de.dal33t.powerfolder.util.ui.TreeNodeList;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
@@ -94,7 +98,6 @@ public class UIController extends PFComponent {
 
     private SplashScreen splash;
     private Image defaultIcon;
-    private Image currentIcon;
     private TrayIcon sysTrayMenu;
     private MainFrame mainFrame;
     private BlinkManager blinkManager;
@@ -317,8 +320,7 @@ public class UIController extends PFComponent {
             if (!pendingJobs.isEmpty()) {
                 log().verbose(
                     "Executing " + pendingJobs.size() + " pending ui jobs");
-                for (Iterator it = pendingJobs.iterator(); it.hasNext();) {
-                    Runnable runner = (Runnable) it.next();
+                for (Runnable runner : pendingJobs) {
                     SwingUtilities.invokeLater(runner);
                 }
             }
@@ -563,8 +565,7 @@ public class UIController extends PFComponent {
             double totalCPSupKB = getController().getTransferManager()
                 .getUploadCounter().calculateAverageCPS() / 1024;
 
-            String downText = null;
-            String upText = null;
+            String downText;
 
             if (totalCPSdownKB > 1024) {
                 downText = Translation.getTranslation(
@@ -575,6 +576,7 @@ public class UIController extends PFComponent {
                     Format.getNumberFormat().format(totalCPSdownKB));
             }
 
+            String upText;
             if (totalCPSupKB > 1024) {
                 upText = Translation.getTranslation("systray.tooltip.up.mb",
                     Format.getNumberFormat().format(totalCPSupKB / 1024));
@@ -583,7 +585,7 @@ public class UIController extends PFComponent {
                     Format.getNumberFormat().format(totalCPSupKB));
             }
 
-            tooltip += " " + upText + " " + downText;
+            tooltip += ' ' + upText + ' ' + downText;
             sysTrayMenu.setToolTip(tooltip);
         }
     }
@@ -710,12 +712,16 @@ public class UIController extends PFComponent {
         if (!OSUtil.isSystraySupported()) {
             return;
         }
-        if (!StringUtils.isBlank(iconName)) {
+        if (StringUtils.isBlank(iconName)) {
+            if (sysTrayMenu != null) {
+                sysTrayMenu.setImage(defaultIcon);
+            }
+        } else {
             // Install Icon if nessesary from jar
-            String iconFileName = iconName;
+            Image currentIcon;
             try {
-                currentIcon = ImageIO.read(Util.getResource(iconFileName,
-                    "icons"));
+                currentIcon = ImageIO.read(Util.getResource(iconName,
+                        "icons"));
             } catch (IOException e) {
                 log().error(e);
                 return;
@@ -723,11 +729,6 @@ public class UIController extends PFComponent {
             if (sysTrayMenu != null) {
                 sysTrayMenu.setImage(currentIcon);
             }
-        } else {
-            if (sysTrayMenu != null) {
-                sysTrayMenu.setImage(defaultIcon);
-            }
-            currentIcon = null;
         }
     }
 
@@ -903,18 +904,115 @@ public class UIController extends PFComponent {
         }
 
         public void chatChanged(ChatModel.ChatModelEvent event) {
-
             if (event.isStatus()) {
                 // Ignore status updates
                 return;
             }
-
             if (event.getSource() instanceof Member) {
-                Member m = (Member) event.getSource();
+                final Member m = (Member) event.getSource();
+
+                TimerTask task = new TimerTask() {
+                    public void run() {
+
+                        // Find path to the chatting member.
+                        TreeNodeList treeNodeList = getNodeManagerModel()
+                                .getFriendsTreeNode();
+                        int childCount = treeNodeList.getChildCount();
+                        if (m != null) {
+                            for (int i = 0; i < childCount; i++) {
+                                TreeNode child = treeNodeList.getChildAt(i);
+                                if (child != null &&
+                                        child instanceof DefaultMutableTreeNode)
+                                {
+                                     DefaultMutableTreeNode dmtn =
+                                             (DefaultMutableTreeNode) child;
+                                    Object userObject = dmtn.getUserObject();
+                                    if (userObject != null &&
+                                            userObject instanceof Member) {
+                                        Member member = (Member) userObject;
+                                        if (m.equals(member)) {
+                                            // Found member, use as path.
+                                            TreePath to = treeNodeList.getPathTo();
+                                            Object[] path = new Object[3];
+                                            path[0] = to.getPath()[0];
+                                            path[1] = to.getPath()[1];
+                                            path[2] = dmtn;
+                                            TreePath tp = new TreePath(path);
+                                            getControlQuarter()
+                                                    .getNavigationModel()
+                                                    .setPath(tp);
+                                            return;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        // If member not found for some reason, navigate to
+                        // friend node.
+                        getControlQuarter().getNavigationModel().setPath(
+                                treeNodeList.getPathTo());
+
+                    }
+                };
                 notifyMessage(Translation
                     .getTranslation("chat.notification.title"), Translation
-                    .getTranslation("chat.notification.member_message", m
-                        .getNick()));
+                    .getTranslation("chat.notification.member_message",
+                        m.getNick()), task, false);
+            } else if (event.getSource() instanceof Folder) {
+                final Folder f = (Folder) event.getSource();
+                TimerTask task = new TimerTask() {
+                    public void run() {
+
+                        // Find path to the chatting folder.
+                        TreeNodeList treeNodeList = getFolderRepositoryModel()
+                                .getMyFoldersTreeNode();
+                        int childCount = treeNodeList.getChildCount();
+                        if (f != null) {
+                            for (int i = 0; i < childCount; i++) {
+                                TreeNode child = treeNodeList.getChildAt(i);
+                                if (child != null &&
+                                        child instanceof TreeNodeList)
+                                {
+                                     TreeNodeList tnl =
+                                             (TreeNodeList) child;
+                                    Object userObject = tnl.getUserObject();
+                                    if (userObject != null &&
+                                            userObject instanceof Folder) {
+                                        Folder folder = (Folder) userObject;
+                                        if (f.equals(folder)) {
+                                            // Found folder, use as path.
+                                            TreePath to = treeNodeList.getPathTo();
+                                            Object[] path = new Object[3];
+                                            path[0] = to.getPath()[0];
+                                            path[1] = to.getPath()[1];
+                                            path[2] = tnl;
+                                            TreePath tp = new TreePath(path);
+                                            getControlQuarter()
+                                                    .getNavigationModel()
+                                                    .setPath(tp);
+
+                                            // Also select chat tab.
+                                            getInformationQuarter().displayChat(
+                                                    folder);
+                                            return;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        // If folder not found for some reason, navigate to
+                        // folders node.
+                        getControlQuarter().getNavigationModel().setPath(
+                                treeNodeList.getPathTo());
+
+                    }
+                };
+
+                notifyMessage(Translation
+                    .getTranslation("chat.notification.title"), Translation
+                    .getTranslation("chat.notification.message"), task, false);
             } else {
                 notifyMessage(Translation
                     .getTranslation("chat.notification.title"), Translation
@@ -1039,8 +1137,11 @@ public class UIController extends PFComponent {
      * @param task
      *            Task to do if user selects 'accept' option or if UI is not
      *            minimized.
+     * @param runIfShown
+     *            Whether to run the task if PF is already shown.
      */
-    public void notifyMessage(String title, String message, TimerTask task) {
+    public void notifyMessage(String title, String message, TimerTask task,
+                              boolean runIfShown) {
         if (mainFrame.isIconifiedOrHidden() && started
             && !getController().isShuttingDown())
         {
@@ -1048,7 +1149,9 @@ public class UIController extends PFComponent {
                 getController(), title, message, task);
             notificationHandler.show();
         } else {
-            task.run();
+            if (runIfShown) {
+                task.run();
+            }
         }
     }
 

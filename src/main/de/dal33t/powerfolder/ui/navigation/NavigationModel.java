@@ -144,6 +144,16 @@ public class NavigationModel {
         return null;
     }
 
+    /**
+     * Directly set the navigation path.
+     * 
+     * @param newTreePath
+     */
+    public void setPath(TreePath newTreePath) {
+        last = newTreePath;
+        fireNavigationChanged(newTreePath);
+    }
+
     public void addNavigationListener(NavigationListener listener) {
         listeners.add(listener);
     }
