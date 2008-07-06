@@ -24,9 +24,7 @@ import java.awt.EventQueue;
 import java.awt.Frame;
 import java.util.concurrent.Semaphore;
 
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JProgressBar;
+import javax.swing.*;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
@@ -49,14 +47,35 @@ public abstract class ActivityVisualizationWorker extends SwingWorker {
     private JDialog dialog;
     private JLabel infoText;
     private JProgressBar bar;
+    private boolean manualProgress;
 
     private Thread dialogThread;
     private long startTime;
     private boolean stopped;
     private Semaphore lock;
 
+    /**
+     * Activity visualuisation worker constructor for automatic progress.
+     *
+     * @param uiController
+     *                the UI Controller
+     */
     public ActivityVisualizationWorker(UIController uiController) {
         this(uiController.getMainFrame().getUIComponent());
+    }
+
+    /**
+     * Activity visualuisation worker constructor.
+     *
+     * @param uiController
+     *                the UI Controller
+     * @param manualProgress
+     *                true is the progress status is updated manually.
+     */
+    public ActivityVisualizationWorker(UIController uiController,
+                                       boolean manualProgress) {
+        this(uiController.getMainFrame().getUIComponent());
+        this.manualProgress = manualProgress;
     }
 
     public ActivityVisualizationWorker(Frame theParent) {
@@ -65,7 +84,6 @@ public abstract class ActivityVisualizationWorker extends SwingWorker {
     }
 
     private ActivityVisualizationWorker() {
-        super();
         lock = new Semaphore(1);
         stopped = false;
         dialogThread = new Thread(new DialogRunnable());
@@ -77,6 +95,16 @@ public abstract class ActivityVisualizationWorker extends SwingWorker {
      * @return the title of the activity dialog, when it appears
      */
     protected abstract String getTitle();
+
+    public void setInfoText(JLabel infoText) {
+        this.infoText = infoText;
+    }
+
+    public void setProgress(int progress) {
+        if (bar != null) {
+            bar.setValue(progress);
+        }
+    }
 
     /**
      * @return the text displayed in the acitivy dialog over the progress bar
@@ -94,7 +122,7 @@ public abstract class ActivityVisualizationWorker extends SwingWorker {
         dialog.setTitle(getTitle());
 
         bar = new JProgressBar();
-        bar.setIndeterminate(true);
+        bar.setIndeterminate(!manualProgress);
         infoText = new JLabel(getWorkingText());
 
         // Layout
@@ -111,7 +139,7 @@ public abstract class ActivityVisualizationWorker extends SwingWorker {
         builder.add(bar, cc.xywh(2, 3, 2, 1));
 
         dialog.getContentPane().add(builder.getPanel());
-        dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+        dialog.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         dialog.pack();
 
         Component parent = dialog.getParent();

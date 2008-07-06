@@ -27,6 +27,7 @@ import java.util.List;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.FileUtils;
@@ -170,7 +171,7 @@ public class RecycleBin extends PFComponent {
      * @param folder
      *            the folder to get the recyclebin dir for
      */
-    private File getRecycleBinDirectory(Folder folder) {
+    private static File getRecycleBinDirectory(Folder folder) {
         File folderBaseDir = folder.getSystemSubDir();
         return new File(folderBaseDir, RECYCLE_BIN_FOLDER);
     }
@@ -181,7 +182,7 @@ public class RecycleBin extends PFComponent {
      * @param folder
      *            the folder to get the recyclebin dir for
      */
-    private File getOldRecycleBinDirectory(Folder folder) {
+    private static File getOldRecycleBinDirectory(Folder folder) {
         File folderBaseDir = folder.getLocalBase();
         return new File(folderBaseDir, RECYCLE_BIN_FOLDER);
     }
@@ -242,7 +243,7 @@ public class RecycleBin extends PFComponent {
      * @return true if this file if the powerfolder recyclebin folder for this
      *         Folder
      */
-    boolean isRecycleBin(Folder folder, File file) {
+    public static boolean isRecycleBin(Folder folder, File file) {
         return file.equals(getRecycleBinDirectory(folder));
     }
 
@@ -252,10 +253,18 @@ public class RecycleBin extends PFComponent {
      * is in the PowerFolder Recycle bin are deleted. If we support the OS
      * recycle bin like on windows the files are moved there.
      */
-    public void emptyRecycleBin() {
+    public void emptyRecycleBin(ActivityVisualizationWorker visualisation) {
         FolderRepository repo = getController().getFolderRepository();
         Folder[] folders = repo.getFolders();
+        int numberOfFolder = folders.length;
+        int folderIndex = 0;
         for (Folder folder : folders) {
+
+            // First of four stages for this folder.
+            // Find files to delete.
+            visualisation.setProgress((int) (100.0 * folderIndex /
+                    numberOfFolder));
+
             File recycleBinDir = getRecycleBinDirectory(folder);
             List<FileInfo> toRemove = new ArrayList<FileInfo>();
             Collection<FileInfo> fileInfos = folder.getKnownFiles();
@@ -276,10 +285,19 @@ public class RecycleBin extends PFComponent {
                     toRemove.add(fileInfo);
                 }
             }
-            if (toRemove.size() > 0) {
+
+            // Second of four stages for this folder.
+            // Remove files.
+            visualisation.setProgress((int) (100.0 * 
+                    ((double) folderIndex + 0.25) / numberOfFolder));
+            if (!toRemove.isEmpty()) {
                 removeFiles(toRemove);
             }
 
+            // Third of four stages for this folder.
+            // Delete from recycle bin.
+            visualisation.setProgress((int) (100.0 *
+                    ((double) folderIndex + 0.5) / numberOfFolder));
             if (recycleBinDir.exists()) {
                 if (!recycleBinDir.isDirectory()) {
                     log().error("recycle bin is not a directory!");
@@ -298,7 +316,14 @@ public class RecycleBin extends PFComponent {
                     }
                 }
             }
+
+            // Fourth of four stages for this folder.
+            // Remove empty directories.
+            visualisation.setProgress((int) (100.0 *
+                    ((double) folderIndex + 0.75) / numberOfFolder));
             removeEmptyDirs(recycleBinDir);
+
+            folderIndex++;
         }
 
     }
@@ -343,8 +368,8 @@ public class RecycleBin extends PFComponent {
             }
             if (target.exists()) {
                 if (!target.delete()) {
-                    log()
-                        .error("Failed to delete: " + target.getAbsolutePath());
+                    log().error(
+                        "Failed to delete: " + target.getAbsolutePath());
                 }
             }
         }
@@ -357,7 +382,7 @@ public class RecycleBin extends PFComponent {
             } catch (IOException ioe) {
                 log().error(
                     "moveToRecycleBin: cannot copy to recycle bin: " + target
-                        + "\n" + ioe.getMessage());
+                        + '\n' + ioe.getMessage());
                 return false;
             }
             if (!file.delete()) {
@@ -447,7 +472,7 @@ public class RecycleBin extends PFComponent {
             } catch (IOException ioe) {
                 log().error(
                     "restoreFromRecycleBin: cannot copy from recycle bin to: "
-                        + target + "\n" + ioe.getMessage());
+                        + target + '\n' + ioe.getMessage());
                 return false;
             }
             if (!source.delete()) {

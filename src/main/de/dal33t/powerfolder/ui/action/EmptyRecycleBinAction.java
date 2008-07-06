@@ -21,14 +21,12 @@ package de.dal33t.powerfolder.ui.action;
 
 import java.awt.event.ActionEvent;
 
-import javax.swing.JOptionPane;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.RecycleBin;
 import de.dal33t.powerfolder.event.RecycleBinEvent;
 import de.dal33t.powerfolder.event.RecycleBinListener;
-import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
+import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
@@ -59,32 +57,7 @@ public class EmptyRecycleBinAction extends BaseAction
 
         if (choice == 0) { // Empty bin
             setEnabled(false);
-            ActivityVisualizationWorker worker = new ActivityVisualizationWorker(
-                getUIController())
-            {
-
-                @Override
-                public Object construct()
-                {
-                    getController().getRecycleBin().emptyRecycleBin();
-                    setEnabled(true);
-                    return null;
-                }
-
-                @Override
-                protected String getTitle()
-                {
-                    return Translation
-                        .getTranslation("empty_recycle_bin.working.title");
-                }
-
-                @Override
-                protected String getWorkingText()
-                {
-                    return Translation
-                        .getTranslation("empty_recycle_bin.working.description");
-                }
-            };
+            MyActivityVisualizationWorker worker = new MyActivityVisualizationWorker(getUIController());
             worker.start();
         }
     }
@@ -106,5 +79,35 @@ public class EmptyRecycleBinAction extends BaseAction
             return true;
         }
     }
+
+    public class MyActivityVisualizationWorker extends ActivityVisualizationWorker {
+
+        public MyActivityVisualizationWorker(UIController uiController) {
+            super(uiController, true);
+        }
+
+        @Override
+        public Object construct()
+        {
+            getController().getRecycleBin().emptyRecycleBin(this);
+            setEnabled(true);
+            return null;
+        }
+
+        @Override
+        protected String getTitle()
+        {
+            return Translation
+                .getTranslation("empty_recycle_bin.working.title");
+        }
+
+        @Override
+        protected String getWorkingText()
+        {
+            return Translation
+                .getTranslation("empty_recycle_bin.working.description");
+        }
+    }
+
 
 }
