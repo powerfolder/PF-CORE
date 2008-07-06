@@ -375,14 +375,14 @@ public abstract class AbstractDownloadManager extends PFComponent implements
     protected void init() throws IOException {
         assert fileInfo != null;
 
-        if (getTempFile() == null) {
-            throw new IOException("Couldn't create a temporary file for "
-                + fileInfo);
-        }
-
         // If it's an old download, don't create a temporary file
         if (isCompleted()) {
             return;
+        }
+
+        if (getTempFile() == null) {
+            throw new IOException("Couldn't create a temporary file for "
+                + fileInfo);
         }
 
         // This has to happen here since "completed" is valid
