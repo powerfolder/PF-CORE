@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.disk;
 
 import java.io.File;
@@ -27,10 +27,14 @@ import java.util.List;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
-import de.dal33t.powerfolder.event.*;
+import de.dal33t.powerfolder.event.ListenerSupportFactory;
+import de.dal33t.powerfolder.event.RecycleBinConfirmEvent;
+import de.dal33t.powerfolder.event.RecycleBinConfirmationHandler;
+import de.dal33t.powerfolder.event.RecycleBinEvent;
+import de.dal33t.powerfolder.event.RecycleBinListener;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.ProgressListener;
 import de.dal33t.powerfolder.util.os.RecycleDelete;
 
 /**
@@ -252,8 +256,11 @@ public class RecycleBin extends PFComponent {
      * marked deleted in the powerfolder data base of a folder and if the file
      * is in the PowerFolder Recycle bin are deleted. If we support the OS
      * recycle bin like on windows the files are moved there.
+     * 
+     * @param progressListener
+     *            the optional progress listener.
      */
-    public void emptyRecycleBin(ActivityVisualizationWorker visualisation) {
+    public void emptyRecycleBin(ProgressListener progressListener) {
         FolderRepository repo = getController().getFolderRepository();
         Folder[] folders = repo.getFolders();
         int numberOfFolder = folders.length;
@@ -262,8 +269,10 @@ public class RecycleBin extends PFComponent {
 
             // First of four stages for this folder.
             // Find files to delete.
-            visualisation.setProgress((int) (100.0 * folderIndex /
-                    numberOfFolder));
+            if (progressListener != null) {
+                progressListener
+                    .progressReached((int) (100.0 * folderIndex / numberOfFolder));
+            }
 
             File recycleBinDir = getRecycleBinDirectory(folder);
             List<FileInfo> toRemove = new ArrayList<FileInfo>();
@@ -288,16 +297,21 @@ public class RecycleBin extends PFComponent {
 
             // Second of four stages for this folder.
             // Remove files.
-            visualisation.setProgress((int) (100.0 * 
-                    ((double) folderIndex + 0.25) / numberOfFolder));
+            if (progressListener != null) {
+                progressListener
+                    .progressReached((int) (100.0 * ((double) folderIndex + 0.25) / numberOfFolder));
+            }
+
             if (!toRemove.isEmpty()) {
                 removeFiles(toRemove);
             }
 
             // Third of four stages for this folder.
             // Delete from recycle bin.
-            visualisation.setProgress((int) (100.0 *
-                    ((double) folderIndex + 0.5) / numberOfFolder));
+            if (progressListener != null) {
+                progressListener
+                    .progressReached((int) (100.0 * ((double) folderIndex + 0.5) / numberOfFolder));
+            }
             if (recycleBinDir.exists()) {
                 if (!recycleBinDir.isDirectory()) {
                     log().error("recycle bin is not a directory!");
@@ -319,8 +333,10 @@ public class RecycleBin extends PFComponent {
 
             // Fourth of four stages for this folder.
             // Remove empty directories.
-            visualisation.setProgress((int) (100.0 *
-                    ((double) folderIndex + 0.75) / numberOfFolder));
+            if (progressListener != null) {
+                progressListener
+                    .progressReached((int) (100.0 * ((double) folderIndex + 0.75) / numberOfFolder));
+            }
             removeEmptyDirs(recycleBinDir);
 
             folderIndex++;
@@ -368,8 +384,8 @@ public class RecycleBin extends PFComponent {
             }
             if (target.exists()) {
                 if (!target.delete()) {
-                    log().error(
-                        "Failed to delete: " + target.getAbsolutePath());
+                    log()
+                        .error("Failed to delete: " + target.getAbsolutePath());
                 }
             }
         }
