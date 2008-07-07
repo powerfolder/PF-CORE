@@ -19,9 +19,29 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SET_DEFAULT_SYNCHRONIZED_FOLDER;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+
+import javax.swing.Icon;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JProgressBar;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+
+import jwf.Wizard;
+import jwf.WizardPanel;
+
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.clientserver.ServerClient;
@@ -31,17 +51,11 @@ import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.dialog.SyncFolderPanel;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SET_DEFAULT_SYNCHRONIZED_FOLDER;
+import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SwingWorker;
-import jwf.Wizard;
-import jwf.WizardPanel;
-
-import javax.swing.*;
-import java.io.File;
-import java.util.List;
 
 /**
  * A panel that actually starts the creation process of a folder on display.
@@ -199,17 +213,13 @@ public class FolderCreatePanel extends PFWizardPanel {
             ServerClient client = getController().getOSClient();
             if (backupByOS && client.isLastLoginOK()) {
                 try {
-
                     // Try to back this up by online storage.
-                    List<Folder> folders = client.getJoinedFolders();
-                    for (Folder folder1 : folders) {
-                        if (folder1.getInfo().name.equals(foInfo.name)) {
-
-                            // Already have this os folder.
-                            log().warn("Already have os folder " + foInfo.name);
-                            return null;
-                        }
+                    if (client.hasJoined(folder)) {
+                        // Already have this os folder.
+                        log().warn("Already have os folder " + foInfo.name);
+                        return null;
                     }
+
                     client.getFolderService().createFolder(foInfo,
                         SyncProfile.BACKUP_TARGET);
 
@@ -217,19 +227,50 @@ public class FolderCreatePanel extends PFWizardPanel {
                     Object attribute = getWizardContext().getAttribute(
                         SET_DEFAULT_SYNCHRONIZED_FOLDER);
                     if (attribute != null && (Boolean) attribute) {
+                        // TODO: Ugly. Use abstraction: Runnable? Callback with
+                        // folder? Which is placed on WizardContext.
                         client.getFolderService().setDefaultSynchronizedFolder(
                             foInfo);
+                        createDefaultFolderHelpFile();
+                        folder.recommendScanOnNextMaintenance();
+                        try {
+                            FileUtils.openFile(folder.getLocalBase());
+                        } catch (IOException e) {
+                            log().verbose(e);
+                        }
                     }
                 } catch (FolderException e) {
                     problems = true;
-                    errorArea
-                        .setText(Translation
-                            .getTranslation("foldercreate.dialog.backuperror.text"));
+                    errorArea.setText(Translation
+                        .getTranslation("foldercreate.dialog.backuperror.text")
+                        + "\n" + e.getMessage());
                     errorPane.setVisible(true);
                     log().error("Unable to backup folder to online storage", e);
                 }
             }
             return null;
+        }
+
+        private void createDefaultFolderHelpFile() {
+            File helpFile = new File(folder.getLocalBase(),
+                "Place files to sync here.txt");
+            if (helpFile.exists()) {
+                return;
+            }
+            try {
+                Writer w = new OutputStreamWriter(
+                    new FileOutputStream(helpFile));
+                w.write("This is the default synchronized folder.\r\n");
+                w
+                    .write("Simply place files into this directory to sync them\r\n");
+                w.write("across all your computers running PowerFolder.\r\n");
+                w.write("\r\n");
+                w
+                    .write("More information: http://wiki.powerfolder.com/wiki/Default_Folder");
+                w.close();
+            } catch (IOException e) {
+                // Doesn't matter.
+            }
         }
 
         @Override
@@ -241,8 +282,6 @@ public class FolderCreatePanel extends PFWizardPanel {
 
                 statusLabel.setText(Translation
                     .getTranslation("wizard.create_folder.failed"));
-                String details = "";
-                errorArea.setText(details);
                 errorPane.setVisible(true);
             } else {
                 if (SyncProfile.MANUAL_SYNCHRONIZATION.equals(folder

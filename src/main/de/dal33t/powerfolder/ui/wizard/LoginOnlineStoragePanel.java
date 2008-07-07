@@ -133,22 +133,23 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
             Account account = getController().getOSClient().getAccount();
 
             // If there is already a default folder for this account, use that
-            // for the name.
             FolderInfo accountFolder = account.getDefaultSynchronizedFolder();
-            if (accountFolder != null) {
-                defaultSynchronizedFolder = new File(getController()
-                    .getFolderRepository().getFoldersBasedir(),
-                    accountFolder.name);
+            log().info(
+                "Default synced folder on " + account.getUsername() + " is "
+                    + accountFolder);
+
+            FolderInfo foInfo;
+            if (accountFolder == null) {
+                // Default sync folder has user name...
+                String name = account.getUsername() + '-'
+                    + defaultSynchronizedFolder.getName();
+                foInfo = new FolderInfo(name, '[' + IdGenerator.makeId() + ']');
+            } else {
+                // Take from account.
+                foInfo = accountFolder;
             }
 
-            // Default sync folder has user name...
-            String name = account.getUsername() + '-'
-                + defaultSynchronizedFolder.getName();
-            FolderInfo foInfo = new FolderInfo(name,
-                '[' + IdGenerator.makeId() + ']');
-
-            FolderCreatePanel fcp = new FolderCreatePanel(getController());
-            // Redirect via folder create of the deafult sync folder.
+            // Redirect via folder create of the default sync folder.
             getWizardContext().setAttribute(
                 WizardContextAttributes.SET_DEFAULT_SYNCHRONIZED_FOLDER, true);
             getWizardContext().setAttribute(FOLDERINFO_ATTRIBUTE, foInfo);
@@ -160,7 +161,11 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
                 AUTOMATIC_SYNCHRONIZATION);
             getWizardContext().setAttribute(FOLDER_LOCAL_BASE,
                 defaultSynchronizedFolder);
-            getWizardContext().setAttribute(BACKUP_ONLINE_STOARGE, true);
+            // Create only if not already existing.
+            getWizardContext().setAttribute(BACKUP_ONLINE_STOARGE,
+                accountFolder == null);
+            
+            FolderCreatePanel fcp = new FolderCreatePanel(getController());
 
             return fcp;
         }
