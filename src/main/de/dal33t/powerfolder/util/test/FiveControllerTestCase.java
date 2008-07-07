@@ -204,17 +204,23 @@ public abstract class FiveControllerTestCase extends MultipleControllerTestCase
     protected void joinTestFolder(SyncProfile profile, boolean checkMemberships)
     {
         Reject.ifTrue(testFolder != null, "Reject already setup a testfolder!");
+        // FIXME Waiting between join only because of race condition making join fail.
         testFolder = new FolderInfo("testFolder", UUID.randomUUID().toString());
         joinFolder(testFolder, TESTFOLDER_BASEDIR_BART, getContollerBart(),
             profile);
+        TestHelper.waitMilliSeconds(100);
         joinFolder(testFolder, TESTFOLDER_BASEDIR_HOMER, getContollerHomer(),
             profile);
+        TestHelper.waitMilliSeconds(100);
         joinFolder(testFolder, TESTFOLDER_BASEDIR_MARGE, getContollerMarge(),
             profile);
+        TestHelper.waitMilliSeconds(100);
         joinFolder(testFolder, TESTFOLDER_BASEDIR_LISA, getContollerLisa(),
             profile);
+        TestHelper.waitMilliSeconds(100);
         joinFolder(testFolder, TESTFOLDER_BASEDIR_MAGGIE, getContollerMaggie(),
             profile);
+        TestHelper.waitMilliSeconds(100);
         if (checkMemberships) {
             try {
                 // Give them time to join
