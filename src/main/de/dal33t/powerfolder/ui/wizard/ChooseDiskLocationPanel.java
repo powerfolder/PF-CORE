@@ -49,8 +49,6 @@ import jwf.WizardPanel;
 import org.apache.commons.lang.StringUtils;
 
 import javax.swing.*;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.ChangeEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
