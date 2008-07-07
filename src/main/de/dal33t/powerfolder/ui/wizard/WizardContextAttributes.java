@@ -51,7 +51,7 @@ public interface WizardContextAttributes {
     /** Determines if folder should be created as preview */
     String PREVIEW_FOLDER_ATTIRBUTE = "disklocation.preview_folder";
 
-    /** Determines if in basic setup */
-    String BASIC_SETUP_ATTIRBUTE = "basic_setup";
+    /** Determines if to set the configured folder as default synced folder */
+    String SET_DEFAULT_SYNCHRONIZED_FOLDER = "set_default_synced_folder";
 
 }

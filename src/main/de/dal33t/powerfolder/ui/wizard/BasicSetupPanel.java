@@ -132,8 +132,6 @@ public class BasicSetupPanel extends PFWizardPanel {
         tm.setAllowedUploadCPSForWAN(wanLineSpeed.getUploadSpeedKBPS());
         tm.setAllowedDownloadCPSForWAN(wanLineSpeed.getDownloadSpeedKBPS());
 
-        getWizardContext().setAttribute(
-            WizardContextAttributes.BASIC_SETUP_ATTIRBUTE, true);
         return new LoginOnlineStoragePanel(getController(), new WhatToDoPanel(
             getController()), false);
     }

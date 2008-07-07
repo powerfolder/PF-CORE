@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.ui.wizard;
 
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -31,7 +31,7 @@ import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.dialog.SyncFolderPanel;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.BASIC_SETUP_ATTIRBUTE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SET_DEFAULT_SYNCHRONIZED_FOLDER;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
@@ -119,18 +119,8 @@ public class FolderCreatePanel extends PFWizardPanel {
             WizardContextAttributes.FOLDERINFO_ATTRIBUTE);
         if (foInfo == null) {
             // Create new folder info
-            String name;
-            Object value = getWizardContext().getAttribute(BASIC_SETUP_ATTIRBUTE);
-            if (value != null && (Boolean) value) {
-                // Default sync folder has user name...
-                name = System.getProperty("user.name") + '-'
-                    + localBase.getName();
-            } else {
-                // ... other auto folders have computer name.
-                name = getController().getMySelf().getNick() + '-'
-                    + localBase.getName();
-            }
-
+            String name = getController().getMySelf().getNick() + '-'
+                + localBase.getName();
             String folderId = '[' + IdGenerator.makeId() + ']';
             foInfo = new FolderInfo(name, folderId);
             getWizardContext().setAttribute(
@@ -199,23 +189,21 @@ public class FolderCreatePanel extends PFWizardPanel {
 
         @Override
         public Object construct() {
-            folder = getController().getFolderRepository().createFolder(
-                foInfo, folderSettings);
+            folder = getController().getFolderRepository().createFolder(foInfo,
+                folderSettings);
             if (createShortcut) {
                 folder.setDesktopShortcut(true);
             }
 
             folder.addDefaultExcludes();
             ServerClient client = getController().getOSClient();
-            if (backupByOS && client.isLastLoginOK())
-            {
+            if (backupByOS && client.isLastLoginOK()) {
                 try {
 
                     // Try to back this up by online storage.
                     List<Folder> folders = client.getJoinedFolders();
                     for (Folder folder1 : folders) {
-                        if (folder1.getInfo().name.equals(foInfo.name))
-                        {
+                        if (folder1.getInfo().name.equals(foInfo.name)) {
 
                             // Already have this os folder.
                             log().warn("Already have os folder " + foInfo.name);
@@ -223,14 +211,14 @@ public class FolderCreatePanel extends PFWizardPanel {
                         }
                     }
                     client.getFolderService().createFolder(foInfo,
-                            SyncProfile.BACKUP_TARGET);
+                        SyncProfile.BACKUP_TARGET);
 
-                    // If in basic setup mode, set this as the account
-                    // default sync folder.
-                    Object attribute = getWizardContext()
-                            .getAttribute(BASIC_SETUP_ATTIRBUTE);
+                    // Set as default synced folder?
+                    Object attribute = getWizardContext().getAttribute(
+                        SET_DEFAULT_SYNCHRONIZED_FOLDER);
                     if (attribute != null && (Boolean) attribute) {
-                        client.getAccount().setDefaultSynchronizedFolder(foInfo);
+                        client.getFolderService().setDefaultSynchronizedFolder(
+                            foInfo);
                     }
                 } catch (FolderException e) {
                     problems = true;
@@ -238,8 +226,7 @@ public class FolderCreatePanel extends PFWizardPanel {
                         .setText(Translation
                             .getTranslation("foldercreate.dialog.backuperror.text"));
                     errorPane.setVisible(true);
-                    log().error(
-                        "Unable to backup folder to online storage", e);
+                    log().error("Unable to backup folder to online storage", e);
                 }
             }
             return null;
@@ -253,18 +240,20 @@ public class FolderCreatePanel extends PFWizardPanel {
                 updateButtons();
 
                 statusLabel.setText(Translation
-                        .getTranslation("wizard.create_folder.failed"));
+                    .getTranslation("wizard.create_folder.failed"));
                 String details = "";
                 errorArea.setText(details);
                 errorPane.setVisible(true);
             } else {
-                if (SyncProfile.MANUAL_SYNCHRONIZATION.equals(folder.getSyncProfile())) {
+                if (SyncProfile.MANUAL_SYNCHRONIZATION.equals(folder
+                    .getSyncProfile()))
+                {
                     // Show sync folder panel after created a project folder
                     new SyncFolderPanel(getController(), folder).open();
                 }
 
                 Wizard wiz = (Wizard) getWizardContext().getAttribute(
-                        Wizard.WIZARD_ATTRIBUTE);
+                    Wizard.WIZARD_ATTRIBUTE);
                 wiz.next();
             }
         }

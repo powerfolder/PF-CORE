@@ -23,6 +23,7 @@ import static de.dal33t.powerfolder.disk.SyncProfile.AUTOMATIC_SYNCHRONIZATION;
 import static de.dal33t.powerfolder.ui.wizard.PFWizard.SUCCESS_PANEL;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.BACKUP_ONLINE_STOARGE;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.CREATE_DESKTOP_SHORTCUT;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDER_LOCAL_BASE;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SEND_INVIATION_AFTER_ATTRIBUTE;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SYNC_PROFILE_ATTRIBUTE;
@@ -56,9 +57,11 @@ import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
 import de.dal33t.powerfolder.util.Help;
+import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Translation;
 
 public class LoginOnlineStoragePanel extends PFWizardPanel {
@@ -76,8 +79,10 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
 
     /**
      * @param controller
-     * @param folderSetupAfterwards
-     *            true if folder setup should shown after correct setup
+     * @param nextPanel
+     *            the next panel to display
+     * @param entryRequired
+     *            if username and password has to be validated.
      */
     public LoginOnlineStoragePanel(Controller controller,
         WizardPanel nextPanel, boolean entryRequired)
@@ -125,19 +130,28 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
 
         // Create default
         if ((Boolean) setupDefaultModel.getValue()) {
+            Account account = getController().getOSClient().getAccount();
 
             // If there is already a default folder for this account, use that
             // for the name.
-            FolderInfo accountFolder = getController().getOSClient()
-                .getAccount().getDefaultSynchronizedFolder();
+            FolderInfo accountFolder = account.getDefaultSynchronizedFolder();
             if (accountFolder != null) {
                 defaultSynchronizedFolder = new File(getController()
                     .getFolderRepository().getFoldersBasedir(),
                     accountFolder.name);
             }
 
-            // Redirect via folder create of the deafult sync folder.
+            // Default sync folder has user name...
+            String name = account.getUsername() + '-'
+                + defaultSynchronizedFolder.getName();
+            FolderInfo foInfo = new FolderInfo(name,
+                '[' + IdGenerator.makeId() + ']');
+
             FolderCreatePanel fcp = new FolderCreatePanel(getController());
+            // Redirect via folder create of the deafult sync folder.
+            getWizardContext().setAttribute(
+                WizardContextAttributes.SET_DEFAULT_SYNCHRONIZED_FOLDER, true);
+            getWizardContext().setAttribute(FOLDERINFO_ATTRIBUTE, foInfo);
             getWizardContext().setAttribute(CREATE_DESKTOP_SHORTCUT, false);
             getWizardContext().setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE,
                 false);
@@ -154,8 +168,7 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
     }
 
     protected JPanel buildContent() {
-        FormLayout layout = new FormLayout(
-            "$wlabel, $lcg, $wfield, 0:g",
+        FormLayout layout = new FormLayout("$wlabel, $lcg, $wfield, 0:g",
             "pref, 10dlu, pref, 5dlu, pref, 5dlu, pref, 15dlu, pref, 5dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
@@ -186,13 +199,13 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
             // Hmmm. User has already created this???
             setupDefaultCB.setSelected(false);
         } else {
-            builder.add(createSetupDefultPanel(), cc.xyw(1, 11, 4));
+            builder.add(createSetupDefaultPanel(), cc.xyw(1, 11, 4));
         }
 
         return builder.getPanel();
     }
 
-    private Component createSetupDefultPanel() {
+    private Component createSetupDefaultPanel() {
         FormLayout layout = new FormLayout("pref, 3dlu, pref", "pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
