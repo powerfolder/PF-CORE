@@ -67,7 +67,7 @@ public class MemoryMonitor implements Runnable {
                 JFrame parent = controller.getUIController().getMainFrame()
                     .getUIComponent();
                 NeverAskAgainResponse response;
-                if (OSUtil.isWindowsSystem()) {
+                if (OSUtil.isWindowsSystem() && !OSUtil.isWebStart()) {
                     response = DialogFactory.genericDialog(parent, Translation
                         .getTranslation("lowmemory.title"), Translation
                         .getTranslation("lowmemory.text"), new String[]{
