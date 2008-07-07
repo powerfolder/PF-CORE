@@ -162,7 +162,7 @@ public class ServerClientModel extends PFUIComponent {
         }
 
         public void actionPerformed(ActionEvent e) {
-            if (client.isDefaultAccountSet()) {
+            if (client.isDefaultAccountSet() && client.isConnected()) {
                 PFWizard.openMirrorFolderWizard(getController());
             } else {
                 PFWizard.openLoginWebServiceWizard(getController(), true);
