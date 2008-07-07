@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.ui.wizard;
 
 import com.jgoodies.binding.value.ValueHolder;
@@ -81,8 +81,8 @@ public class WhatToDoPanel extends PFWizardPanel {
     protected JPanel buildContent() {
 
         FormLayout layout = new FormLayout("pref",
-                "pref, 10dlu, pref, 10dlu, pref, 10dlu, pref, " +
-                        "30dlu, pref, 10dlu, pref");
+            "pref, 10dlu, pref, 10dlu, pref, 10dlu, pref, "
+                + "30dlu, pref, 10dlu, pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
@@ -115,6 +115,10 @@ public class WhatToDoPanel extends PFWizardPanel {
             // Prompt for send invitation afterwards
             getWizardContext().setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE,
                 true);
+            
+            // Select backup by OS
+            getWizardContext().setAttribute(BACKUP_ONLINE_STOARGE,
+                true);
 
             // Setup choose disk location panel
             getWizardContext().setAttribute(PROMPT_TEXT_ATTRIBUTE,
@@ -128,9 +132,11 @@ public class WhatToDoPanel extends PFWizardPanel {
             getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL,
                 successPanel);
 
-            FolderCreatePanel createPanel = new FolderCreatePanel(getController());
+            FolderCreatePanel createPanel = new FolderCreatePanel(
+                getController());
 
-            return new ChooseDiskLocationPanel(getController(), null, createPanel);
+            return new ChooseDiskLocationPanel(getController(), null,
+                createPanel);
 
         } else if (option == backupOption) {
 
@@ -151,6 +157,10 @@ public class WhatToDoPanel extends PFWizardPanel {
             // Prompt for send invitation afterwards
             getWizardContext().setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE,
                 true);
+            
+            // Select backup by OS
+            getWizardContext().setAttribute(BACKUP_ONLINE_STOARGE,
+                true);
 
             // Setup sucess panel of this wizard path
             TextPanelPanel successPanel = new TextPanelPanel(
@@ -162,9 +172,11 @@ public class WhatToDoPanel extends PFWizardPanel {
             getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL,
                 successPanel);
 
-            FolderCreatePanel createPanel = new FolderCreatePanel(getController());
+            FolderCreatePanel createPanel = new FolderCreatePanel(
+                getController());
 
-            return new ChooseDiskLocationPanel(getController(), null, createPanel);
+            return new ChooseDiskLocationPanel(getController(), null,
+                createPanel);
 
         } else if (option == hostOption) {
 
@@ -185,6 +197,10 @@ public class WhatToDoPanel extends PFWizardPanel {
             // Prompt for send invitation afterwards
             getWizardContext().setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE,
                 true);
+            
+            // Select backup by OS
+            getWizardContext().setAttribute(BACKUP_ONLINE_STOARGE,
+                true);
 
             // Setup sucess panel of this wizard path
             TextPanelPanel successPanel = new TextPanelPanel(getController(),
@@ -194,9 +210,11 @@ public class WhatToDoPanel extends PFWizardPanel {
             getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL,
                 successPanel);
 
-            FolderCreatePanel createPanel = new FolderCreatePanel(getController());
+            FolderCreatePanel createPanel = new FolderCreatePanel(
+                getController());
 
-            return new ChooseDiskLocationPanel(getController(), null, createPanel);
+            return new ChooseDiskLocationPanel(getController(), null,
+                createPanel);
 
         } else if (option == customOption) {
 
@@ -210,6 +228,14 @@ public class WhatToDoPanel extends PFWizardPanel {
             getWizardContext().setAttribute(PROMPT_TEXT_ATTRIBUTE,
                 Translation.getTranslation("wizard.choose_location.select"));
 
+            // Prompt for send invitation afterwards
+            getWizardContext().setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE,
+                true);
+            
+            // Select backup by OS
+            getWizardContext().setAttribute(BACKUP_ONLINE_STOARGE,
+                true);
+
             // Setup sucess panel of this wizard path
             TextPanelPanel successPanel = new TextPanelPanel(
                 getController(),
@@ -221,8 +247,8 @@ public class WhatToDoPanel extends PFWizardPanel {
                 successPanel);
 
             FolderSetupPanel setupPanel = new FolderSetupPanel(getController());
-            return new ChooseDiskLocationPanel(
-                getController(), null, setupPanel);
+            return new ChooseDiskLocationPanel(getController(), null,
+                setupPanel);
 
         } else if (option == inviteOption) {
 
@@ -264,32 +290,33 @@ public class WhatToDoPanel extends PFWizardPanel {
         });
 
         synchronizedLink = new ActionLabel(new WhatToDoAction(Translation
-                .getTranslation("wizard.whattodo.synchronized_folder"), synchronizedOption,
-                decision));
-        SimpleComponentFactory.setFontSize(synchronizedLink, PFWizard.MED_FONT_SIZE);
+            .getTranslation("wizard.whattodo.synchronized_folder"),
+            synchronizedOption, decision));
+        SimpleComponentFactory.setFontSize(synchronizedLink,
+            PFWizard.MED_FONT_SIZE);
 
         backupLink = new ActionLabel(new WhatToDoAction(Translation
-                .getTranslation("wizard.whattodo.backup_folder"), backupOption,
-                decision));
+            .getTranslation("wizard.whattodo.backup_folder"), backupOption,
+            decision));
         SimpleComponentFactory.setFontSize(backupLink, PFWizard.MED_FONT_SIZE);
 
         hostLink = new ActionLabel(new WhatToDoAction(Translation
-                .getTranslation("wizard.whattodo.hostwork"), hostOption, decision));
+            .getTranslation("wizard.whattodo.hostwork"), hostOption, decision));
         SimpleComponentFactory.setFontSize(hostLink, PFWizard.MED_FONT_SIZE);
 
         customLink = new ActionLabel(new WhatToDoAction(Translation
-                .getTranslation("wizard.whattodo.custom_sync"), customOption,
-                decision));
+            .getTranslation("wizard.whattodo.custom_sync"), customOption,
+            decision));
         SimpleComponentFactory.setFontSize(customLink, PFWizard.MED_FONT_SIZE);
 
         inviteLink = new ActionLabel(new WhatToDoAction(Translation
-                .getTranslation("wizard.whattodo.load_invite"), inviteOption,
-                decision));
+            .getTranslation("wizard.whattodo.load_invite"), inviteOption,
+            decision));
         SimpleComponentFactory.setFontSize(inviteLink, PFWizard.MED_FONT_SIZE);
 
         documentationLink = Help.createHelpLinkLabel(Translation
-                .getTranslation("wizard.whattodo.openonlinedocumentation"),
-                "documentation.html");
+            .getTranslation("wizard.whattodo.openonlinedocumentation"),
+            "documentation.html");
         SimpleComponentFactory.setFontSize(documentationLink,
             PFWizard.MED_FONT_SIZE);
     }
