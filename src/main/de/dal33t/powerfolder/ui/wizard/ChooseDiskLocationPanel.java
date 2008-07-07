@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.ui.wizard;
 
 import com.jgoodies.binding.value.ValueHolder;
@@ -103,17 +103,17 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
             appsDirOutlook = WinUtils.getInstance().getSystemFolderPath(
                 WinUtils.CSIDL_LOCAL_SETTINGS_APP_DATA, false)
                 + File.separator + "Microsoft" + File.separator + "Outlook";
-            userDirMyDocuments = WinUtils.getInstance()
-                            .getSystemFolderPath(WinUtils.CSIDL_PERSONAL, false);
-            userDirMyMusic = WinUtils.getInstance()
-                            .getSystemFolderPath(WinUtils.CSIDL_MYMUSIC, false);
-            userDirMyPictures = WinUtils.getInstance()
-                            .getSystemFolderPath(WinUtils.CSIDL_MYPICTURES, false);
-            userDirMyVideos = WinUtils.getInstance()
-                            .getSystemFolderPath(WinUtils.CSIDL_MYVIDEO, false);
+            userDirMyDocuments = WinUtils.getInstance().getSystemFolderPath(
+                WinUtils.CSIDL_PERSONAL, false);
+            userDirMyMusic = WinUtils.getInstance().getSystemFolderPath(
+                WinUtils.CSIDL_MYMUSIC, false);
+            userDirMyPictures = WinUtils.getInstance().getSystemFolderPath(
+                WinUtils.CSIDL_MYPICTURES, false);
+            userDirMyVideos = WinUtils.getInstance().getSystemFolderPath(
+                WinUtils.CSIDL_MYVIDEO, false);
         }
     }
-    
+
     /**
      * Used to hold initial dir and any chooser selection changes.
      */
@@ -156,6 +156,10 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
 
     // From WizardPanel *******************************************************
 
+    public WizardPanel next() {
+        return next;
+    }
+
     public boolean hasNext() {
         if (locationModel.getValue() != null
             && !StringUtils.isBlank(locationModel.getValue().toString()))
@@ -164,7 +168,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
 
             // Do not allow user to select folder base dir.
             return !location.equals(getController().getFolderRepository()
-                    .getFoldersBasedir()); 
+                .getFoldersBasedir());
         }
         return false;
     }
@@ -185,12 +189,12 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         String nick = getController().getMySelf().getNick();
         String lastPart = localBase.getName();
         getWizardContext().setAttribute(INITIAL_FOLDER_NAME,
-                nick + '-' + lastPart);
+            nick + '-' + lastPart);
 
         // Change to manual sync if requested.
         if (manualSyncCheckBox.isSelected()) {
             getWizardContext().setAttribute(SYNC_PROFILE_ATTRIBUTE,
-                    SyncProfile.MANUAL_SYNCHRONIZATION);
+                SyncProfile.MANUAL_SYNCHRONIZATION);
         }
         return true;
     }
@@ -207,8 +211,8 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         String verticalLayout = verticalUserDirectoryLayout
             + "5dlu, pref, 5dlu, pref, 5dlu, pref, 15dlu, pref, 5dlu, pref, 5dlu, pref, 5dlu, pref";
 
-        FormLayout layout = new FormLayout("pref, 15dlu, pref, 15dlu, pref, 0:grow",
-            verticalLayout);
+        FormLayout layout = new FormLayout(
+            "pref, 15dlu, pref, 15dlu, pref, 0:grow", verticalLayout);
 
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
@@ -288,10 +292,6 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         return builder.getPanel();
     }
 
-    public WizardPanel next() {
-        return next;
-    }
-
     /**
      * Radio button selection.
      * 
@@ -355,9 +355,12 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         startFolderSizeCalculator();
 
         // Online Storage integration
+        boolean backupByOS = !getController().isLanOnly()
+            && Boolean.TRUE.equals(getWizardContext().getAttribute(
+                WizardContextAttributes.BACKUP_ONLINE_STOARGE));
         backupByOnlineStorageBox = new JCheckBox(Translation
             .getTranslation("foldercreate.dialog.backupbyonlinestorage"));
-        backupByOnlineStorageBox.setSelected(false);
+        backupByOnlineStorageBox.setSelected(backupByOS);
         backupByOnlineStorageBox.getModel().addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
                 if (backupByOnlineStorageBox.isSelected()) {
@@ -381,10 +384,12 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         manualSyncCheckBox.setOpaque(false);
 
         // Send Invite
+        boolean sendInvite = Boolean.TRUE.equals(getWizardContext()
+            .getAttribute(SEND_INVIATION_AFTER_ATTRIBUTE));
         sendInviteAfterCB = SimpleComponentFactory.createCheckBox(Translation
             .getTranslation("wizard.setup_folder.sendinvitation"));
         sendInviteAfterCB.setOpaque(false);
-        sendInviteAfterCB.setSelected(true);
+        sendInviteAfterCB.setSelected(sendInvite);
 
     }
 
@@ -472,12 +477,12 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         if (userDirMyPictures != null && !OSUtil.isWindowsVistaSystem()) {
             addTargetDirectory(new File(userDirMyPictures), Translation
                 .getTranslation("user.dir.my_pictures"), false);
-            }
+        }
         if (userDirMyVideos != null && !OSUtil.isWindowsVistaSystem()) {
             addTargetDirectory(new File(userDirMyVideos), Translation
                 .getTranslation("user.dir.my_videos"), false);
         }
-        
+
         addTargetDirectory(userHome, USER_DIR_PICTURES, Translation
             .getTranslation("user.dir.pictures"), false);
         addTargetDirectory(userHome, USER_DIR_RECENT_DOCUMENTS, Translation
@@ -511,7 +516,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
 
     /**
      * Adds a generic user directory if if exists for this os.
-     *
+     * 
      * @param root
      * @param subdir
      * @param translation
@@ -528,13 +533,13 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
 
     /**
      * Adds a generic user directory if if exists for this os.
-     *
+     * 
      * @param translation
      * @param allowHidden
      *            allow display of hidden dirs
      */
-    private void addTargetDirectory(File directory,
-        String translation, boolean allowHidden)
+    private void addTargetDirectory(File directory, String translation,
+        boolean allowHidden)
     {
 
         // See if any folders already exists for this directory.
@@ -558,8 +563,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
 
     private void displayChooseDirectory() {
         String initial = (String) locationModel.getValue();
-        String file = DialogFactory.chooseDirectory(getController(),
-                initial);
+        String file = DialogFactory.chooseDirectory(getController(), initial);
         locationModel.setValue(file);
 
         // Update this so that if the user clicks other user dirs
@@ -587,7 +591,8 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         }
 
         protected void beforeConstruct() {
-            folderSizeLabel.setText(Translation
+            folderSizeLabel
+                .setText(Translation
                     .getTranslation("wizard.choosedisklocation.calculating_directory_size"));
         }
 
@@ -605,9 +610,9 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         public void finished() {
             try {
                 if (initial.equals(locationModel.getValue())) {
-                    folderSizeLabel.setText(Translation
-                            .getTranslation("wizard.choosedisklocation.directory_size",
-                            Format.formatBytes(directorySize)));
+                    folderSizeLabel.setText(Translation.getTranslation(
+                        "wizard.choosedisklocation.directory_size", Format
+                            .formatBytes(directorySize)));
                 }
             } catch (Exception e) {
                 // Not fatal.
@@ -620,7 +625,8 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
             locationButton.setEnabled(customRB.isSelected());
             if (customRB.isSelected()) {
                 if (initialLocation != null
-                        && new File(initialLocation).exists()) {
+                    && new File(initialLocation).exists())
+                {
                     doRadio(initialLocation);
                 }
                 displayChooseDirectory();
