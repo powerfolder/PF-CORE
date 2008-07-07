@@ -73,7 +73,7 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
         if (downloads.put(download.getPartner().getInfo(), download) != null) {
             log().error(
                 "Overridden previous download for member: "
-                    + download.getPartner());
+                    + download.getPartner() + ". " + download);
         }
 
         // Non-automatic overrides automatic
