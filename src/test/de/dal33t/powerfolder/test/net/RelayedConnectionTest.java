@@ -63,7 +63,7 @@ public class RelayedConnectionTest extends FiveControllerTestCase {
         assertNotNull(conHan.getMember());
         assertTrue(conHan.getMember().isCompleteyConnected());
 
-        joinTestFolder(SyncProfile.HOST_FILES);
+        joinTestFolder(SyncProfile.HOST_FILES, false);
         TestHelper.createRandomFile(getFolderAtMarge().getLocalBase(),
             10 * 1024 * 1024);
         scanFolder(getFolderAtMarge());
