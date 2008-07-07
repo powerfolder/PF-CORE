@@ -101,9 +101,7 @@ public class Download extends Transfer {
     }
 
     /**
-     * Returns the managing MultiSourceDownload for this download.
-     * 
-     * @return
+     * @return the managing MultiSourceDownload for this download.
      */
     public DownloadManager getDownloadManager() {
         return manager;
