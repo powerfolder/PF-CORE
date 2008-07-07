@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.util.test;
 
 import java.io.File;
@@ -32,8 +32,6 @@ import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
-import de.dal33t.powerfolder.event.FolderRepositoryEvent;
-import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.Format;
@@ -58,8 +56,6 @@ public class ControllerTestCase extends TestCase {
 
     // The optional test folders
     private Folder folder;
-
-    private boolean initalScanOver = false;
 
     protected void setUp() throws Exception {
         super.setUp();
@@ -171,10 +167,10 @@ public class ControllerTestCase extends TestCase {
     protected Folder joinFolder(FolderInfo foInfo, File baseDir,
         SyncProfile profile, boolean useRecycleBin)
     {
-        FolderSettings folderSettings = new FolderSettings(baseDir,
-            profile, false, useRecycleBin, false, false);
-        return getController().getFolderRepository().createFolder(
-                foInfo, folderSettings);
+        FolderSettings folderSettings = new FolderSettings(baseDir, profile,
+            false, useRecycleBin, false, false);
+        return getController().getFolderRepository().createFolder(foInfo,
+            folderSettings);
     }
 
     /**
@@ -235,39 +231,5 @@ public class ControllerTestCase extends TestCase {
             + nameMatch + "\nSize: " + sizeMatch + "\nlastModifiedMatch: "
             + lastModifiedMatch + "\ndeleteStatus: " + deleteStatusMatch
             + "\nFileObjectEquals: " + fileObjectEquals, matches);
-    }
-
-    private void triggerAndWaitForInitialMaitenenace(Controller cont) {
-        initalScanOver = false;
-        MyFolderRepoListener listener = new MyFolderRepoListener();
-        cont.getFolderRepository().addFolderRepositoryListener(listener);
-        cont.getFolderRepository().triggerMaintenance();
-        TestHelper.waitForCondition(20, new Condition() {
-            public boolean reached() {
-                return initalScanOver;
-            }
-        });
-        cont.getFolderRepository().removeFolderRepositoryListener(listener);
-    }
-
-    private final class MyFolderRepoListener implements
-        FolderRepositoryListener
-    {
-        public void folderCreated(FolderRepositoryEvent e) {
-        }
-
-        public void folderRemoved(FolderRepositoryEvent e) {
-        }
-
-        public void maintenanceFinished(FolderRepositoryEvent e) {
-            initalScanOver = true;
-        }
-
-        public void maintenanceStarted(FolderRepositoryEvent e) {
-        }
-
-        public boolean fireInEventDispathThread() {
-            return false;
-        }
     }
 }
