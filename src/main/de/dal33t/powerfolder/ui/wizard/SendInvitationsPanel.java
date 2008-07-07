@@ -145,6 +145,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
             // TODO Could fail, but that's a "latent" event.
             return true;
         } else {
+            // TODO Think about total removal of this crappy thing.
             return InvitationUtil.invitationToMail(getController(), invitation,
                 (String) emailModel.getValue());
         }
