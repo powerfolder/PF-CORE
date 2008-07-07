@@ -353,9 +353,11 @@ public class RelayedConnectionManager extends PFComponent {
         // }
 
         if (peer == null) {
-            log().warn(
-                "Got unknown peer, while processing relayed message from "
-                    + message.getSource().nick);
+            if (logVerbose) {
+                log().verbose(
+                    "Got unknown peer, while processing relayed message from "
+                        + message.getSource().nick);
+            }
             RelayedMessage eofMsg = new RelayedMessage(Type.EOF,
                 getController().getMySelf().getInfo(), message.getSource(),
                 message.getConnectionId(), null);
@@ -398,7 +400,7 @@ public class RelayedConnectionManager extends PFComponent {
         }
 
         if (message.getType().equals(Type.DATA_ZIPPED)) {
-            log().error(
+            log().warn(
                 "Unable to resolved pending con handler for "
                     + message.getSource().nick + ", conId: "
                     + message.getConnectionId() + ". Got these: "
