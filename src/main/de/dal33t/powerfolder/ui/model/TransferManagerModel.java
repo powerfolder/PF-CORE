@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.ui.model;
 
 import javax.swing.event.TreeModelEvent;
@@ -123,18 +123,22 @@ public class TransferManagerModel extends PFUIComponent {
 
     /**
      * Count the visible completed downloads for a folder.
-     *
+     * 
      * @param folder
      * @return
      */
     public int countCompletedDownloads(Folder folder) {
         int downloadCount = downloadsTableModel.getRowCount();
         int completedDownloadCount = 0;
-        FolderRepository folderRepository = getController().getFolderRepository();
+        FolderRepository folderRepository = getController()
+            .getFolderRepository();
         for (int i = 0; i < downloadCount; i++) {
             Download dl = downloadsTableModel.getDownloadAtRow(i);
-            if (dl.isCompleted() &&
-                    dl.getFile().getFolder(folderRepository).equals(folder) ) {
+            Folder f = dl.getFile().getFolder(folderRepository);
+            if (f == null) {
+                continue;
+            }
+            if (dl.isCompleted() && f.equals(folder)) {
                 completedDownloadCount++;
             }
         }
@@ -143,7 +147,7 @@ public class TransferManagerModel extends PFUIComponent {
 
     /**
      * Count visible completed downloads.
-     *
+     * 
      * @return
      */
     public int countCompletedDownloads() {
@@ -160,7 +164,7 @@ public class TransferManagerModel extends PFUIComponent {
 
     /**
      * Count visible active downloads.
-     *
+     * 
      * @return
      */
     public int countActiveDownloads() {
@@ -177,7 +181,7 @@ public class TransferManagerModel extends PFUIComponent {
 
     /**
      * Count total visible downloads.
-     *
+     * 
      * @return
      */
     public int countTotalDownloads() {
@@ -186,7 +190,7 @@ public class TransferManagerModel extends PFUIComponent {
 
     /**
      * Returns a value model with integer number of active displayed uploads.
-     *
+     * 
      * @return
      */
     public ValueModel getActiveUploadsCountVM() {
@@ -195,7 +199,7 @@ public class TransferManagerModel extends PFUIComponent {
 
     /**
      * Returns a value model with integer number of all displayed uploads.
-     *
+     * 
      * @return
      */
     public ValueModel getAllUploadsCountVM() {
@@ -204,7 +208,7 @@ public class TransferManagerModel extends PFUIComponent {
 
     /**
      * Returns a value model with integer number of completed displayed uploads.
-     *
+     * 
      * @return
      */
     public ValueModel getCompletedUploadsCountVM() {
@@ -310,8 +314,9 @@ public class TransferManagerModel extends PFUIComponent {
             int completedUploadCount = 0;
             for (int i = 0; i < uploadCount; i++) {
                 Upload ul = uploadsTableModel.getUploadAtRow(i);
-                if (ul.isStarted() && !ul.isCompleted() && !ul.isBroken() &&
-                        !ul.isAborted()) {
+                if (ul.isStarted() && !ul.isCompleted() && !ul.isBroken()
+                    && !ul.isAborted())
+                {
                     activeUploadCount++;
                 } else if (ul.isCompleted()) {
                     completedUploadCount++;
