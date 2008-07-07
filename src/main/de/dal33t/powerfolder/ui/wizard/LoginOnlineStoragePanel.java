@@ -37,6 +37,7 @@ import java.util.List;
 
 import javax.swing.Icon;
 import javax.swing.JCheckBox;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
@@ -56,6 +57,8 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.clientserver.ServerClientEvent;
+import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.ui.Icons;
@@ -63,11 +66,13 @@ import de.dal33t.powerfolder.ui.widget.LinkLabel;
 import de.dal33t.powerfolder.util.Help;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 
 public class LoginOnlineStoragePanel extends PFWizardPanel {
 
     private JTextField usernameField;
     private JPasswordField passwordField;
+    private JLabel connectingLabel;
     private WizardPanel nextPanel;
 
     private boolean entryRequired;
@@ -164,7 +169,7 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
             // Create only if not already existing.
             getWizardContext().setAttribute(BACKUP_ONLINE_STOARGE,
                 accountFolder == null);
-            
+
             FolderCreatePanel fcp = new FolderCreatePanel(getController());
 
             return fcp;
@@ -184,6 +189,7 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
         builder.addLabel(Translation
             .getTranslation("wizard.webservice.username"), cc.xy(1, 3));
         builder.add(usernameField, cc.xy(3, 3));
+        builder.add(connectingLabel, cc.xy(3, 3));
 
         builder.addLabel(Translation
             .getTranslation("wizard.webservice.password"), cc.xy(1, 5));
@@ -241,6 +247,9 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
                 updateButtons();
             }
         });
+        connectingLabel = SimpleComponentFactory.createLabel(Translation.getTranslation("wizard.login_online_storage.connecting"));
+        updateOnlineStatus();
+        getController().getOSClient().addListener(new MyServerClientListner());
 
         setupDefaultModel = new ValueHolder(true);
         setupDefaultCB = BasicComponentFactory.createCheckBox(
@@ -260,5 +269,33 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
 
     protected String getTitle() {
         return Translation.getTranslation("wizard.webservice.login");
+    }
+
+    private void updateOnlineStatus() {
+        boolean enabled = getController().getOSClient().isConnected();
+        usernameField.setVisible(enabled);
+        passwordField.setVisible(enabled);
+        connectingLabel.setVisible(!enabled);
+    }
+
+    private class MyServerClientListner implements ServerClientListener {
+
+        public void accountUpdated(ServerClientEvent event) {
+        }
+
+        public void login(ServerClientEvent event) {
+        }
+
+        public void serverConnected(ServerClientEvent event) {
+            updateOnlineStatus();
+        }
+
+        public void serverDisconnected(ServerClientEvent event) {
+            updateOnlineStatus();
+        }
+
+        public boolean fireInEventDispathThread() {
+            return true;
+        }
     }
 }

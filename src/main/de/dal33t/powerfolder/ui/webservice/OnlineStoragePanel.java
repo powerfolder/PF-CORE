@@ -21,8 +21,6 @@ package de.dal33t.powerfolder.ui.webservice;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -39,6 +37,8 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.clientserver.ServerClientEvent;
+import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.ui.QuickInfoPanel;
 import de.dal33t.powerfolder.ui.action.BaseAction;
@@ -112,11 +112,7 @@ public class OnlineStoragePanel extends PFUIPanel {
             }
         });
         updateChangeAccountLabel();
-        usernameModel.addValueChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                updateChangeAccountLabel();
-            }
-        });
+        getController().getOSClient().addListener(new MyServerClientListner());
 
         foldersListModel = new SelectionInList(model.getMirroredFoldersModel());
         foldersListPanel = new FolderListPanel(foldersListModel)
@@ -165,5 +161,28 @@ public class OnlineStoragePanel extends PFUIPanel {
         barPanel.setBorder(Borders.DLU4_BORDER);
 
         return barPanel;
+    }
+
+    private class MyServerClientListner implements ServerClientListener {
+
+        public void accountUpdated(ServerClientEvent event) {
+            updateChangeAccountLabel();
+        }
+
+        public void login(ServerClientEvent event) {
+            updateChangeAccountLabel();
+        }
+
+        public void serverConnected(ServerClientEvent event) {
+            updateChangeAccountLabel();
+        }
+
+        public void serverDisconnected(ServerClientEvent event) {
+            updateChangeAccountLabel();
+        }
+
+        public boolean fireInEventDispathThread() {
+            return true;
+        }
     }
 }
