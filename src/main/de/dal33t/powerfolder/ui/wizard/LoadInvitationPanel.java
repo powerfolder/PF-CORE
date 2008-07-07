@@ -94,7 +94,7 @@ public class LoadInvitationPanel extends PFWizardPanel {
 
         // Do not prompt for send invitation afterwards
         getWizardContext().setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE,
-            Boolean.FALSE);
+            false);
 
         // Whether to load as preview
         getWizardContext().setAttribute(PREVIEW_FOLDER_ATTIRBUTE,

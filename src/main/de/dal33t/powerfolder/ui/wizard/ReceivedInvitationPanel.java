@@ -101,8 +101,7 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
             .setAttribute(FOLDERINFO_ATTRIBUTE, invitation.folder);
 
         // Do not prompt for send invitation afterwards
-        getWizardContext().setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE,
-            Boolean.FALSE);
+        getWizardContext().setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE, false);
 
         // Whether to open as preview
         getWizardContext().setAttribute(PREVIEW_FOLDER_ATTIRBUTE,
