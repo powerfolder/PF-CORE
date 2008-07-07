@@ -620,7 +620,8 @@ public class FileInfo implements Serializable, DiskItem {
             && this.getModifiedDate().equals(otherFile.getModifiedDate())
             && this.getModifiedBy().equals(otherFile.getModifiedBy());
 
-        if (this.getVersion() == otherFile.getVersion()
+        if (this.getVersion() != 0
+            && this.getVersion() == otherFile.getVersion()
             && this.getModifiedDate().equals(otherFile.getModifiedDate())
             && !this.getModifiedBy().equals(otherFile.getModifiedBy()))
         {
