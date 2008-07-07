@@ -477,8 +477,10 @@ public class ServerClient extends PFComponent {
                             log().info("Got connect to server: " + server);
                         }
                     } catch (ConnectionException e) {
-                        log().warn("Unable to connect to " + ServerClient.this,
-                            e);
+                        log().warn(
+                            "Unable to connect to " + ServerClient.this + ": "
+                                + e.toString());
+                        log().verbose(e);
                     } finally {
                         alreadyConnectingLock.unlock();
                     }
