@@ -26,16 +26,17 @@ import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
+import javax.swing.table.TableModel;
 import javax.swing.tree.TreeNode;
+
+import com.jgoodies.binding.value.ValueModel;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.ui.model.RootTableModel;
-import de.dal33t.powerfolder.ui.render.UnsortedTableHeaderRenderer;
 import de.dal33t.powerfolder.ui.navigation.RootNode;
+import de.dal33t.powerfolder.ui.render.UnsortedTableHeaderRenderer;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.UIUtil;
-import com.jgoodies.binding.value.ValueModel;
 
 /**
  * Maps the root items to a table.
@@ -49,7 +50,7 @@ public class RootTable extends JTable {
     private final ValueModel allUploadsCountVM;
     private final ValueModel activeUploadsCountVM;
 
-    public RootTable(RootTableModel tableModel, Controller controller) {
+    public RootTable(TableModel tableModel, Controller controller) {
         super(tableModel);
         this.controller = controller;
         setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
