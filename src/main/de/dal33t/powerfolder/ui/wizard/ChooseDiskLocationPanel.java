@@ -134,6 +134,8 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
 
     private JLabel folderSizeLabel;
 
+    private MyItemListener myItemListener;
+
     /**
      * Creates a new disk location wizard panel. Name of new folder is
      * automatically generated, folder will be secret
@@ -218,6 +220,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         for (String name : userDirectories.keySet()) {
             final File file = userDirectories.get(name);
             JRadioButton button = new JRadioButton(name);
+            button.addItemListener(myItemListener);
             button.setOpaque(false);
             bg.add(button);
             builder.add(button, cc.xy(col, row));
@@ -325,19 +328,14 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
             locationModel.setValue(initialLocation);
         }
 
+        myItemListener = new MyItemListener();
+
         // Create customRB now,
         // so the listener does not see the initial selection later.
         customRB = new JRadioButton(Translation
             .getTranslation("user.dir.custom"));
         customRB.setSelected(true);
-        customRB.addItemListener(new ItemListener() {
-            public void itemStateChanged(ItemEvent e) {
-                // Audo popup dir chooser.
-                if (customRB.isSelected()) {
-                    displayChooseDirectory();
-                }
-            }
-        });
+        customRB.addItemListener(myItemListener);
 
         locationModel.addValueChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
@@ -613,6 +611,19 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
                 }
             } catch (Exception e) {
                 // Not fatal.
+            }
+        }
+    }
+
+    private class MyItemListener implements ItemListener {
+        public void itemStateChanged(ItemEvent e) {
+            locationButton.setEnabled(customRB.isSelected());
+            if (customRB.isSelected()) {
+                if (initialLocation != null
+                        && new File(initialLocation).exists()) {
+                    doRadio(initialLocation);
+                }
+                displayChooseDirectory();
             }
         }
     }
