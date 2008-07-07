@@ -72,70 +72,6 @@ public class Debug {
     }
 
     /**
-     * Writes a list of files to disk for debuging info. Sorted
-     * 
-     * @deprecated use {@link #writeFileListCSV(Collection, String, File)}
-     *             instead.
-     * @param fileInfos
-     * @param header
-     * @param logFile
-     * @return
-     */
-    public static boolean writeFileList(Collection<FileInfo> fileInfos,
-        String header, File logFile)
-    {
-        if (logFile == null) {
-            throw new NullPointerException("Logfile is null");
-        }
-        if (fileInfos == null) {
-            throw new NullPointerException("Files are null");
-        }
-        if (!logFile.exists()) {
-            try {
-                logFile.getParentFile().mkdirs();
-                logFile.createNewFile();
-            } catch (IOException e) {
-                LOG.error("Unable to write filelist to "
-                    + logFile.getAbsolutePath());
-                LOG.verbose(e);
-                return false;
-            }
-        }
-        if (!logFile.canWrite()) {
-            LOG.error("Unable to write filelist to "
-                + logFile.getAbsolutePath());
-            return false;
-        }
-
-        // Copy & Sort
-        FileInfo[] list = new FileInfo[fileInfos.size()];
-        fileInfos.toArray(list);
-        Arrays.sort(list, new DiskItemComparator(DiskItemComparator.BY_NAME));
-
-        try {
-            LOG.verbose("Writing log list debug file: "
-                + logFile.getAbsolutePath());
-            OutputStream fOut = new BufferedOutputStream(new FileOutputStream(
-                logFile));
-            fOut.write(header.getBytes());
-            fOut.write("\r\n".getBytes());
-
-            for (int i = 0; i < list.length; i++) {
-                fOut.write((list[i].toDetailString() + "\r\n").getBytes());
-            }
-
-            fOut.flush();
-            fOut.close();
-            return true;
-        } catch (Exception e) {
-            LOG.error("Unable to write filelist to "
-                + logFile.getAbsolutePath());
-            LOG.verbose(e);
-        }
-        return false;
-    }
-
-    /**
      * Writes a list of files to disk as CSV file.
      * 
      * @param fileInfos
@@ -681,7 +617,9 @@ public class Debug {
             // Ignore
         } finally {
             try {
-                fOut.close();
+                if (fOut != null) {
+                    fOut.close();
+                }
             } catch (Exception e) {
                 // ignore
             }
