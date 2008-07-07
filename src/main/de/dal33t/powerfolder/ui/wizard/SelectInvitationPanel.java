@@ -81,7 +81,7 @@ public class SelectInvitationPanel extends PFWizardPanel {
 
     protected JPanel buildContent() {
         FormLayout layout = new FormLayout(
-                "pref, max(pref;140)",
+                "pref, max(pref;140dlu)",
                 "pref, 5dlu, pref, 10dlu, pref, 5dlu, pref, 10dlu, pref, 5dlu, " +
                         "pref");
 
