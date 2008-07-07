@@ -312,11 +312,12 @@ public class Folder extends PFComponent {
             // Write filelist
             if (Logger.isLogToFileEnabled()) {
                 // Write filelist to disk
-                File debugFile = new File(Logger.getDebugDir(), getName() + "/"
-                    + getController().getMySelf().getNick() + ".list.txt");
-                Debug.writeFileListCSV(knownFiles.keySet(),
-                    "FileList of folder " + getName() + ", member " + this
-                        + ":", debugFile);
+                // File debugFile = new File(Logger.getDebugDir(), getName() +
+                // "/"
+                // + getController().getMySelf().getNick() + ".list.txt");
+                // Debug.writeFileListCSV(knownFiles.keySet(),
+                // "FileList of folder " + getName() + ", member " + this
+                // + ":", debugFile);
             }
         }
 
@@ -2238,10 +2239,10 @@ public class Folder extends PFComponent {
         // Write filelist
         if (Logger.isLogToFileEnabled()) {
             // Write filelist to disk
-            File debugFile = new File(Logger.getDebugDir(), getName() + '/'
-                + getController().getMySelf().getNick() + ".list.txt");
-            Debug.writeFileListCSV(knownFiles.keySet(), "FileList of folder "
-                + getName() + ", member " + this + ':', debugFile);
+            // File debugFile = new File(Logger.getDebugDir(), getName() + '/'
+            // + getController().getMySelf().getNick() + ".list.txt");
+            // Debug.writeFileListCSV(knownFiles.keySet(), "FileList of folder "
+            // + getName() + ", member " + this + ':', debugFile);
         }
 
         dirty = false;
