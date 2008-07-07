@@ -57,6 +57,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -133,8 +134,9 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
 
     public WizardPanel next() {
 
+        boolean setupDefault = (Boolean) setupDefaultModel.getValue();
         // Create default
-        if ((Boolean) setupDefaultModel.getValue()) {
+        if (setupDefault) {
             Account account = getController().getOSClient().getAccount();
 
             // If there is already a default folder for this account, use that
@@ -174,6 +176,10 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
 
             return fcp;
         }
+        // Remind for next logins
+        PreferencesEntry.SETUP_DEFAULT_FOLDER.setValue(getController(),
+            setupDefault);
+
         return nextPanel;
     }
 
@@ -247,11 +253,14 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
                 updateButtons();
             }
         });
-        connectingLabel = SimpleComponentFactory.createLabel(Translation.getTranslation("wizard.login_online_storage.connecting"));
+        connectingLabel = SimpleComponentFactory.createLabel(Translation
+            .getTranslation("wizard.login_online_storage.connecting"));
         updateOnlineStatus();
         getController().getOSClient().addListener(new MyServerClientListner());
 
-        setupDefaultModel = new ValueHolder(true);
+        setupDefaultModel = new ValueHolder(
+            PreferencesEntry.SETUP_DEFAULT_FOLDER
+                .getValueBoolean(getController()), true);
         setupDefaultCB = BasicComponentFactory.createCheckBox(
             setupDefaultModel, Translation
                 .getTranslation("wizard.login_online_storage.setup_default"));

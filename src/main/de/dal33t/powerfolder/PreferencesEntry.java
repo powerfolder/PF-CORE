@@ -79,7 +79,9 @@ public enum PreferencesEntry {
      */
     DETECT_LOW_MEMORY("detect_low_memory", true),
 
-    DUPLICATE_FOLDER_USE("duplicaet_folder_use", true);
+    DUPLICATE_FOLDER_USE("duplicaet_folder_use", true),
+    
+    SETUP_DEFAULT_FOLDER("setup_default_folder", true);
 
     /** String, Boolean, Integer */
     private Class type;
