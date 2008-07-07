@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.util;
 
 import java.awt.Color;
@@ -43,6 +43,8 @@ import javax.swing.text.StyledDocument;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.ClassUtils;
+
+import de.dal33t.powerfolder.Controller;
 
 /**
  * Logger class
@@ -211,7 +213,15 @@ public class Logger {
     }
 
     public static File getDebugDir() {
-        return new File(DEBUG_DIR);
+        File canidate = new File(DEBUG_DIR);
+        if (!canidate.canWrite()) {
+            // Fallback! TRAC #1087
+            canidate = new File(Controller.getMiscFilesLocation(), DEBUG);
+        }
+        if (!canidate.exists()) {
+            canidate.mkdirs();
+        }
+        return canidate;
     }
 
     public Set getLogClasses() {
@@ -264,9 +274,7 @@ public class Logger {
      * @param logFilename
      */
     public static final void setLogFile(String logFilename) {
-
         File debugDir = getDebugDir();
-        debugDir.mkdir();
         // make sure to create a valid filename
         logFile = new File(debugDir, Util
             .removeInvalidFilenameChars(logFilename));
@@ -417,11 +425,11 @@ public class Logger {
     public void debug(Object str) {
         log(DEBUG, "" + str, null);
     }
-    
+
     public void debug(Throwable t) {
         log(DEBUG, t.toString(), t);
     }
-    
+
     public void debug(Object str, Throwable t) {
         log(DEBUG, "" + str, t);
     }
