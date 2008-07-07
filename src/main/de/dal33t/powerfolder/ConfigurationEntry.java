@@ -137,11 +137,10 @@ public enum ConfigurationEntry {
      * Setting to enable/disable swarming.
      */
     USE_SWARMING_ON_INTERNET("swarming.internet.enabled", "true"),
+    
     /**
      * The basedir for all powerfolder.
      */
-    // FOLDER_BASEDIR("foldersbase", System.getProperty("user.home")
-    // + System.getProperty("file.separator") + "PowerFolders"),
     FOLDER_BASEDIR("foldersbase") {
         @Override
         protected void setDefaults() {
