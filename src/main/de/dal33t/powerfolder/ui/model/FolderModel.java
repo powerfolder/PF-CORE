@@ -89,7 +89,13 @@ public class FolderModel extends PFUIComponent {
      */
     private void rebuild() {
         synchronized (treeNode) {
-            treeNode.removeAllChildren();
+            // Cleanup
+            int childs = treeNode.getChildCount();
+            for (int i = 0; i < childs; i++) {
+                DirectoryModel model = (DirectoryModel) treeNode.getChildAt(0);
+                treeNode.remove(0);
+                model.dispose();
+            }
             List<Directory> folderSubdirectories = folder.getDirectory()
                 .listSubDirectories();
             for (Directory subdirectory : folderSubdirectories) {

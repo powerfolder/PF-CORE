@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.ui.model;
 
 import de.dal33t.powerfolder.util.Reject;
@@ -26,10 +26,9 @@ import javax.swing.tree.TreeNode;
 import java.util.*;
 
 /**
- * UI-Model for a directory. Prepare directory data in a
- * "swing-compatible" way. E.g. as <code>TreeNode</code> or
- * <code>TableModel</code>.
- *
+ * UI-Model for a directory. Prepare directory data in a "swing-compatible" way.
+ * E.g. as <code>TreeNode</code> or <code>TableModel</code>.
+ * 
  * @author <a href="mailto:hglasgow@powerfolder.com">Harry Glasgow</a>
  * @version $Revision: 3.1 $
  */
@@ -42,12 +41,12 @@ public class DirectoryModel implements TreeNode {
     private Directory directory;
 
     /** sub directory models */
-    private final List<DirectoryModel> subdirectories = Collections
-            .synchronizedList(new ArrayList<DirectoryModel>());
+    private List<DirectoryModel> subdirectories = Collections
+        .synchronizedList(new ArrayList<DirectoryModel>());
 
     /**
      * Constructor, taking parent and directory.
-     *
+     * 
      * @param parent
      * @param directory
      */
@@ -58,10 +57,17 @@ public class DirectoryModel implements TreeNode {
         this.directory = directory;
     }
 
+    public void dispose() {
+        for (DirectoryModel subModel : subdirectories) {
+            subModel.dispose();
+        }
+        this.parent = null;
+        this.directory = null;
+        this.subdirectories = null;
+    }
+
     /**
-     * Get the associated directory
-     *
-     * @return
+     * @return the associated directory
      */
     public Directory getDirectory() {
         return directory;
@@ -69,7 +75,7 @@ public class DirectoryModel implements TreeNode {
 
     /**
      * Add a sub directory.
-     *
+     * 
      * @param child
      */
     public void addChild(DirectoryModel child) {
@@ -131,7 +137,7 @@ public class DirectoryModel implements TreeNode {
 
     /**
      * Returns a tree node list for this folder up to the directory.
-     *
+     * 
      * @param candidateDirectory
      * @return
      */
