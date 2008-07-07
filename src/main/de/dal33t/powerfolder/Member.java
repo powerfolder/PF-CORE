@@ -1172,7 +1172,7 @@ public class Member extends PFComponent {
                     getController().getFolderRepository().triggerMaintenance();
                 }
                 expectedTime = 50;
-                
+
             } else if (message instanceof RequestDownload) {
                 // a download is requested
                 RequestDownload dlReq = (RequestDownload) message;
@@ -1184,13 +1184,13 @@ public class Member extends PFComponent {
                     sendMessagesAsynchron(new AbortUpload(dlReq.file));
                 }
                 expectedTime = 100;
-                
+
             } else if (message instanceof DownloadQueued) {
                 // set queued flag here, if we received status from other side
                 DownloadQueued dlQueued = (DownloadQueued) message;
                 getController().getTransferManager().setQueued(dlQueued, this);
                 expectedTime = 100;
-                
+
             } else if (message instanceof AbortDownload) {
                 AbortDownload abort = (AbortDownload) message;
                 // Abort the upload
@@ -1239,7 +1239,7 @@ public class Member extends PFComponent {
                 // Queue arrived node list at nodemanager
                 getController().getNodeManager().queueNewNodes(newNodes.nodes);
                 expectedTime = 200;
-                
+
             } else if (message instanceof RequestNodeInformation) {
                 // send him our node information
                 sendMessageAsynchron(new NodeInformation(getController()), null);
@@ -1322,7 +1322,7 @@ public class Member extends PFComponent {
 
                 }
                 expectedTime = 250;
-                
+
             } else if (message instanceof FolderFilesChanged) {
                 FolderFilesChanged changes = (FolderFilesChanged) message;
                 Convert.cleanFileList(getController(), changes.added);
@@ -1402,7 +1402,7 @@ public class Member extends PFComponent {
                     }
                 }
                 expectedTime = 250;
-                
+
             } else if (message instanceof Invitation) {
                 // Invitation to folder
                 Invitation invitation = (Invitation) message;
@@ -1438,7 +1438,7 @@ public class Member extends PFComponent {
                     shutdown();
                 }
                 expectedTime = 100;
-                
+
             } else if (message instanceof SearchNodeRequest) {
                 // Send nodelist that matches the search.
                 final SearchNodeRequest request = (SearchNodeRequest) message;
@@ -1464,7 +1464,7 @@ public class Member extends PFComponent {
                 };
                 getController().getThreadPool().execute(searcher);
                 expectedTime = 50;
-                
+
             } else if (message instanceof Notification) {
                 Notification not = (Notification) message;
                 if (not.getEvent() == null) {
@@ -1480,7 +1480,7 @@ public class Member extends PFComponent {
                     }
                 }
                 expectedTime = 50;
-                
+
             } else if (message instanceof RequestPart) {
                 RequestPart pr = (RequestPart) message;
                 Upload up = getController().getTransferManager().getUpload(
@@ -1489,7 +1489,7 @@ public class Member extends PFComponent {
                     up.enqueuePartRequest(pr);
                 }
                 expectedTime = 100;
-                
+
             } else if (message instanceof StartUpload) {
                 StartUpload su = (StartUpload) message;
                 Download dl = getController().getTransferManager().getDownload(
@@ -1515,7 +1515,7 @@ public class Member extends PFComponent {
                     }
                 }
                 expectedTime = 100;
-                
+
             } else if (message instanceof StopUpload) {
                 StopUpload su = (StopUpload) message;
                 Upload up = getController().getTransferManager().getUpload(
@@ -1524,7 +1524,7 @@ public class Member extends PFComponent {
                     up.stopUploadRequest(su);
                 }
                 expectedTime = 100;
-                
+
             } else if (message instanceof RequestFilePartsRecord) {
                 RequestFilePartsRecord req = (RequestFilePartsRecord) message;
                 Upload up = getController().getTransferManager().getUpload(
@@ -1533,7 +1533,7 @@ public class Member extends PFComponent {
                     up.receivedFilePartsRecordRequest(req);
                 }
                 expectedTime = 100;
-                
+
             } else if (message instanceof ReplyFilePartsRecord) {
                 ReplyFilePartsRecord rep = (ReplyFilePartsRecord) message;
                 Download dl = getController().getTransferManager().getDownload(
@@ -1548,18 +1548,18 @@ public class Member extends PFComponent {
                     log().warn("Download not found: " + dl);
                 }
                 expectedTime = 100;
-                
+
             } else if (message instanceof RelayedMessage) {
                 RelayedMessage relMsg = (RelayedMessage) message;
                 getController().getIOProvider().getRelayedConnectionManager()
                     .handleRelayedMessage(this, relMsg);
                 expectedTime = -1;
-                
+
             } else if (message instanceof UDTMessage) {
                 getController().getIOProvider().getUDTSocketConnectionManager()
                     .handleUDTMessage(this, (UDTMessage) message);
                 expectedTime = 50;
-                
+
             } else {
                 log().verbose(
                     "Message not known to message handling code, "
@@ -1657,20 +1657,25 @@ public class Member extends PFComponent {
         if (!isCompleteyConnected()) {
             return;
         }
-        FolderList folderList = getLastFolderList();
-        if (folderList != null) {
-            // Rejoin to local folders
-            joinToLocalFolders(folderList);
-        } else {
-            // Hopefully we receive this later.
-            log().error(
-                "Unable to synchronize memberships, "
-                    + "did not received folderlist from remote");
-        }
+        folderJoinLock.lock();
+        try {
+            FolderList folderList = getLastFolderList();
+            if (folderList != null) {
+                // Rejoin to local folders
+                joinToLocalFolders(folderList);
+            } else {
+                // Hopefully we receive this later.
+                log().error(
+                    "Unable to synchronize memberships, "
+                        + "did not received folderlist from remote");
+            }
 
-        FolderList myFolderList = new FolderList(joinedFolders, peer
-            .getRemoteMagicId());
-        sendMessageAsynchron(myFolderList, null);
+            FolderList myFolderList = new FolderList(joinedFolders, peer
+                .getRemoteMagicId());
+            sendMessageAsynchron(myFolderList, null);
+        } finally {
+            folderJoinLock.unlock();
+        }
     }
 
     /**
