@@ -49,6 +49,8 @@ import jwf.WizardPanel;
 import org.apache.commons.lang.StringUtils;
 
 import javax.swing.*;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ChangeEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -330,6 +332,14 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         customRB = new JRadioButton(Translation
             .getTranslation("user.dir.custom"));
         customRB.setSelected(true);
+        customRB.addItemListener(new ItemListener() {
+            public void itemStateChanged(ItemEvent e) {
+                // Audo popup dir chooser.
+                if (customRB.isSelected()) {
+                    displayChooseDirectory();
+                }
+            }
+        });
 
         locationModel.addValueChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
@@ -406,11 +416,6 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         }
         locationTF.setText(value);
         locationButton.setEnabled(customRB.isSelected());
-
-        // Audo popup dir chooser.
-        if (customRB.isSelected()) {
-            displayChooseDirectory();
-        }
     }
 
     /**
