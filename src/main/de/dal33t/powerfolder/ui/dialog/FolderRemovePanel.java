@@ -94,6 +94,7 @@ public class FolderRemovePanel extends BaseDialog {
         deleteSystemSubFolderBox = SimpleComponentFactory
             .createCheckBox(Translation
                 .getTranslation("folder_remove.dialog.delete"));
+        deleteSystemSubFolderBox.setSelected(true);
 
         convertToPreviewBox = SimpleComponentFactory.createCheckBox(Translation
             .getTranslation("folder_remove.dialog.preview"));
