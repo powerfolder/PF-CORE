@@ -127,7 +127,6 @@ public class FolderModel extends PFUIComponent {
     private void scheduleRebuild() {
         if (task != null) {
             // Already scheduled.
-            log().warn("SAVED REBUILT!");
             return;
         }
         task = new MyTimerTask();
