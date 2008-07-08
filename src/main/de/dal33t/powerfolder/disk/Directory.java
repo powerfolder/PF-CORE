@@ -32,6 +32,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import de.dal33t.powerfolder.DiskItem;
 import de.dal33t.powerfolder.Member;
@@ -59,8 +60,8 @@ public class Directory implements Comparable<Directory>, DiskItem {
     private Map<FileInfo, FileInfoHolder> fileInfoHolderMap = new HashMap<FileInfo, FileInfoHolder>(
         2);
     /** key = dir name, value = Directory* */
-    private Map<String, Directory> subDirectoriesMap = Collections
-        .synchronizedMap(new HashMap<String, Directory>(2));
+    private Map<String, Directory> subDirectoriesMap = new ConcurrentHashMap<String, Directory>(
+        2);
     /**
      * the path to this directory (including its name, excluding the localbase
      * (see Folder)
@@ -263,14 +264,11 @@ public class Directory implements Comparable<Directory>, DiskItem {
             }
             removed = toRemove.size() > 0;
         }
-
-        synchronized (subDirectoriesMap) {
-            Set<String> dirnames = subDirectoriesMap.keySet();
-            for (Iterator<String> it = dirnames.iterator(); it.hasNext();) {
-                Directory dir = subDirectoriesMap.get(it.next());
-                boolean dirRemoved = dir.removeFilesOfMember(member);
-                removed = removed || dirRemoved;
-            }
+        Set<String> dirnames = subDirectoriesMap.keySet();
+        for (Iterator<String> it = dirnames.iterator(); it.hasNext();) {
+            Directory dir = subDirectoriesMap.get(it.next());
+            boolean dirRemoved = dir.removeFilesOfMember(member);
+            removed = removed || dirRemoved;
         }
         return removed;
     }
@@ -399,18 +397,16 @@ public class Directory implements Comparable<Directory>, DiskItem {
                 }
             }
         }
-        synchronized (subDirectoriesMap) {
-            Iterator<Directory> subs = subDirectoriesMap.values().iterator();
-            while (subs.hasNext()) {
-                Directory subDir = subs.next();
-                files.addAll(subDir.getFilesRecursive());
-            }
+        Iterator<Directory> subs = subDirectoriesMap.values().iterator();
+        while (subs.hasNext()) {
+            Directory subDir = subs.next();
+            files.addAll(subDir.getFilesRecursive());
         }
         return files;
     }
 
     /**
-     * @return the list of subdirectories in this directory
+     * @return the list of subdirectories in this directory, that are NOT deleted.
      */
     public List<Directory> listSubDirectories() {
         List<Directory> list = new ArrayList<Directory>(subDirectoriesMap
@@ -424,6 +420,14 @@ public class Directory implements Comparable<Directory>, DiskItem {
         }
         Collections.sort(list);
         return list;
+    }
+
+    /**
+     * @return a references to the internal directory collection. Collection
+     *         might change after return.
+     */
+    public Collection<Directory> getSubDirectoriesAsCollection() {
+        return Collections.unmodifiableCollection(subDirectoriesMap.values());
     }
 
     /**
@@ -526,13 +530,11 @@ public class Directory implements Comparable<Directory>, DiskItem {
                 }
             }
         }
-        synchronized (subDirectoriesMap) {
-            Iterator<Directory> it = subDirectoriesMap.values().iterator();
-            while (it.hasNext()) {
-                Directory dir = it.next();
-                if (!dir.isExpected(folderRepository)) {
-                    return false;
-                }
+        Iterator<Directory> it = subDirectoriesMap.values().iterator();
+        while (it.hasNext()) {
+            Directory dir = it.next();
+            if (!dir.isExpected(folderRepository)) {
+                return false;
             }
         }
         return true;
@@ -555,13 +557,11 @@ public class Directory implements Comparable<Directory>, DiskItem {
                 }
             }
         }
-        synchronized (subDirectoriesMap) {
-            Iterator<Directory> it = subDirectoriesMap.values().iterator();
-            while (it.hasNext()) {
-                Directory dir = it.next();
-                if (!dir.isDeleted()) {
-                    return false;
-                }
+        Iterator<Directory> it = subDirectoriesMap.values().iterator();
+        while (it.hasNext()) {
+            Directory dir = it.next();
+            if (!dir.isDeleted()) {
+                return false;
             }
         }
         return true; // this dir is deleted

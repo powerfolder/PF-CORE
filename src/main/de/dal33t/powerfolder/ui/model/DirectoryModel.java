@@ -19,15 +19,21 @@
  */
 package de.dal33t.powerfolder.ui.model;
 
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.disk.Directory;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.List;
 
 import javax.swing.tree.TreeNode;
-import java.util.*;
+
+import de.dal33t.powerfolder.disk.Directory;
+import de.dal33t.powerfolder.util.Reject;
 
 /**
  * UI-Model for a directory. Prepare directory data in a "swing-compatible" way.
  * E.g. as <code>TreeNode</code> or <code>TableModel</code>.
+ * <p>
+ * ATTENTION: MODEL is NOT THREAD SAFE! It should be modified by the EDT ONLY
  * 
  * @author <a href="mailto:hglasgow@powerfolder.com">Harry Glasgow</a>
  * @version $Revision: 3.1 $
@@ -41,8 +47,7 @@ public class DirectoryModel implements TreeNode {
     private Directory directory;
 
     /** sub directory models */
-    private List<DirectoryModel> subdirectories = Collections
-        .synchronizedList(new ArrayList<DirectoryModel>());
+    private List<DirectoryModel> subdirectories = new ArrayList<DirectoryModel>();
 
     /**
      * Constructor, taking parent and directory.
@@ -57,13 +62,8 @@ public class DirectoryModel implements TreeNode {
         this.directory = directory;
     }
 
-    public void dispose() {
-        for (DirectoryModel subModel : subdirectories) {
-            subModel.dispose();
-        }
-        this.parent = null;
-        this.directory = null;
-        this.subdirectories = null;
+    public void sortSubDirectories() {
+        Collections.sort(subdirectories, new Comparator());
     }
 
     /**
@@ -136,10 +136,8 @@ public class DirectoryModel implements TreeNode {
     }
 
     /**
-     * Returns a tree node list for this folder up to the directory.
-     * 
      * @param candidateDirectory
-     * @return
+     * @return a tree node list for this folder up to the directory.
      */
     public TreeNode[] getPathTo(Directory candidateDirectory) {
         if (candidateDirectory.equals(directory)) {
@@ -156,5 +154,18 @@ public class DirectoryModel implements TreeNode {
             }
         }
         return null;
+    }
+
+    public static final class Comparator implements
+        java.util.Comparator<DirectoryModel>
+    {
+        public int compare(DirectoryModel o1, DirectoryModel o2) {
+            if (o1 == o2) {
+                return 0;
+            }
+            return o1.getDirectory().getPath().compareToIgnoreCase(
+                o2.getDirectory().getPath());
+        }
+
     }
 }

@@ -212,7 +212,12 @@ public class DirectoryTableModel extends PFComponent implements TableModel,
             allFiles.addAll(directory.getValidFiles());
         }
         if (!recursive) { // add the subdirectories
-            allFiles.addAll(0, directory.listSubDirectories());
+            for (Directory dir : directory.getSubDirectoriesAsCollection()) {
+                if (dir.isDeleted()) {
+                    continue;
+                }
+                allFiles.add(0, dir);
+            }
         }
         fileFilterModel.setFiles(allFiles);
         fileFilterModel.scheduleFiltering();

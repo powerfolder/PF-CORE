@@ -19,28 +19,40 @@
  */
 package de.dal33t.powerfolder.ui.model;
 
-import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.event.FolderListener;
-import de.dal33t.powerfolder.event.FolderEvent;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.ui.TreeNodeList;
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.Directory;
+import java.awt.EventQueue;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.TimerTask;
 
 import javax.swing.tree.MutableTreeNode;
-import java.util.List;
-import java.util.Collections;
-import java.util.ArrayList;
+
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.disk.Directory;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.ScanResult;
+import de.dal33t.powerfolder.disk.ScanResult.ResultState;
+import de.dal33t.powerfolder.event.FolderEvent;
+import de.dal33t.powerfolder.event.FolderListener;
+import de.dal33t.powerfolder.event.FolderMembershipEvent;
+import de.dal33t.powerfolder.event.FolderMembershipListener;
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.ui.TreeNodeList;
 
 /**
  * UI-Model for a folder. Prepare folder data in a "swing-compatible" way. E.g.
  * as <code>TreeNode</code> or <code>TableModel</code>.
+ * <p>
+ * TODO: rebuilt is called way too often.
  * 
  * @author <a href="mailto:hglasgow@powerfolder.com">Harry Glasgow</a>
  * @version $Revision: 3.1 $
  */
 public class FolderModel extends PFUIComponent {
+    private final static long DELAY = 500;
+
+    private FolderRepositoryModel repoModel;
 
     /** The folder associated with this model. */
     private Folder folder;
@@ -48,31 +60,29 @@ public class FolderModel extends PFUIComponent {
     /** The ui node */
     private TreeNodeList treeNode;
 
-    /** sub directory models */
-    private final List<DirectoryModel> subdirectories = Collections
-        .synchronizedList(new ArrayList<DirectoryModel>());
+    private MyFolderListener listener;
+
+    private MyTimerTask task;
 
     /**
      * Constructor. Takes controller and the associated folder.
      * 
      * @param controller
+     * @param repoModel
      * @param folder
      */
-    public FolderModel(Controller controller, Folder folder) {
+    public FolderModel(Controller controller, FolderRepositoryModel repoModel,
+        Folder folder)
+    {
         super(controller);
+        Reject.ifNull(repoModel, "FolderRepo model can not be null");
         Reject.ifNull(folder, "Folder can not be null");
+        this.repoModel = repoModel;
         this.folder = folder;
-        folder.addFolderListener(new MyFolderListener());
-    }
-
-    /**
-     * @return the treenode representation of this object.
-     */
-    public MutableTreeNode getTreeNode() {
-        if (treeNode == null) {
-            initialize();
-        }
-        return treeNode;
+        initialize();
+        listener = new MyFolderListener();
+        folder.addFolderListener(listener);
+        folder.addMembershipListener(listener);
     }
 
     /**
@@ -82,78 +92,144 @@ public class FolderModel extends PFUIComponent {
         treeNode = new TreeNodeList(folder, getController().getUIController()
             .getFolderRepositoryModel().getMyFoldersTreeNode());
         rebuild();
+        repoModel.updateFolderTreeNode(this);
+    }
+
+    // Public API *************************************************************
+
+    public Folder getFolder() {
+        return folder;
+    }
+
+    /**
+     * @return the treenode representation of this object.
+     */
+    public MutableTreeNode getTreeNode() {
+        return treeNode;
+    }
+
+    void dispose() {
+        folder.removeFolderListener(listener);
+        folder.removeMembershipListener(listener);
+    }
+
+    public List<DirectoryModel> getSubdirectories() {
+        List<DirectoryModel> list = new ArrayList<DirectoryModel>();
+        int childs = treeNode.getChildCount();
+        for (int i = 0; i < childs; i++) {
+            list.add((DirectoryModel) treeNode.getChildAt(i));
+        }
+        return list;
+    }
+
+    // Private stuff **********************************************************
+
+    private void scheduleRebuild() {
+        if (task != null) {
+            // Already scheduled.
+            log().warn("SAVED REBUILT!");
+            return;
+        }
+        task = new MyTimerTask();
+        getController().schedule(task, DELAY);
     }
 
     /**
      * Build up the directory tree from the folder.
+     * <p>
+     * ATTENTION: Method not thread-safe. Has to be executed in EDT.
      */
     private void rebuild() {
-        synchronized (treeNode) {
-            // Cleanup
-            int childs = treeNode.getChildCount();
-            for (int i = 0; i < childs; i++) {
-                DirectoryModel model = (DirectoryModel) treeNode.getChildAt(0);
-                treeNode.remove(0);
-                model.dispose();
+        // Cleanup
+        treeNode.removeAllChildren();
+        Collection<Directory> folderSubdirectories = folder.getDirectory()
+            .getSubDirectoriesAsCollection();
+        for (Directory subdirectory : folderSubdirectories) {
+            if (subdirectory.isDeleted()) {
+                continue;
             }
-            List<Directory> folderSubdirectories = folder.getDirectory()
-                .listSubDirectories();
-            for (Directory subdirectory : folderSubdirectories) {
-                DirectoryModel directoryModel = new DirectoryModel(treeNode,
-                    subdirectory);
-                treeNode.addChild(directoryModel);
-                buildSubDirectoryModels(subdirectory, directoryModel);
-                subdirectories.add(directoryModel);
-            }
+            DirectoryModel directoryModel = new DirectoryModel(treeNode,
+                subdirectory);
+            buildSubDirectoryModels(directoryModel);
+            treeNode.addChild(directoryModel);
         }
+        treeNode.sortBy(new DirectoryModel.Comparator());
     }
 
-    public List<DirectoryModel> getSubdirectories() {
-        return subdirectories;
-    }
-
-    private static void buildSubDirectoryModels(Directory directory,
-        DirectoryModel model)
-    {
-        List<Directory> subDirectories = directory.listSubDirectories();
+    private static void buildSubDirectoryModels(DirectoryModel model) {
+        Collection<Directory> subDirectories = model.getDirectory()
+            .getSubDirectoriesAsCollection();
         for (Directory subDirectory : subDirectories) {
+            if (subDirectory.isDeleted()) {
+                // Skip
+                continue;
+            }
             DirectoryModel subdirectoryModel = new DirectoryModel(model,
                 subDirectory);
             model.addChild(subdirectoryModel);
-            buildSubDirectoryModels(subDirectory, subdirectoryModel);
+            buildSubDirectoryModels(subdirectoryModel);
         }
+        model.sortSubDirectories();
     }
 
-    private class MyFolderListener implements FolderListener {
+    private class MyFolderListener implements FolderListener,
+        FolderMembershipListener
+    {
+
+        public boolean fireInEventDispathThread() {
+            return false;
+        }
 
         public void statisticsCalculated(FolderEvent folderEvent) {
-            rebuild();
+            scheduleRebuild();
         }
 
         public void syncProfileChanged(FolderEvent folderEvent) {
-            rebuild();
+            scheduleRebuild();
         }
 
         public void remoteContentsChanged(FolderEvent folderEvent) {
-            rebuild();
+            scheduleRebuild();
         }
 
         public void scanResultCommited(FolderEvent folderEvent) {
-            rebuild();
+            ScanResult sr = folderEvent.getScanResult();
+            if (!sr.getResultState().equals(ResultState.SCANNED)) {
+                return;
+            }
+            if (sr.isChangeDetected()) {
+                scheduleRebuild();
+            }
         }
 
         public void fileChanged(FolderEvent folderEvent) {
-            rebuild();
+            scheduleRebuild();
         }
 
         public void filesDeleted(FolderEvent folderEvent) {
-            rebuild();
+            scheduleRebuild();
         }
 
-        public boolean fireInEventDispathThread() {
-            // Move into EDT, otherwise another thread might change the model
-            // during update of Tree.
-            return true;
+        public void memberJoined(FolderMembershipEvent folderEvent) {
+            scheduleRebuild();
+        }
+
+        public void memberLeft(FolderMembershipEvent folderEvent) {
+            scheduleRebuild();
+        }
+    }
+
+    private class MyTimerTask extends TimerTask {
+        public void run() {
+            // Move into EDT, otherwise another thread might change the
+            // model during update of Tree.
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    rebuild();
+                    repoModel.updateFolderTreeNode(FolderModel.this);
+                    task = null;
+                }
+            });
         }
     }
 }
