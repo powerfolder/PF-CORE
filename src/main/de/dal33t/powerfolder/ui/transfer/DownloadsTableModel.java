@@ -60,7 +60,6 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
     private static final int UPDATE_TIME = 2000;
     private final Collection<TableModelListener> listeners;
     private final List<Download> downloads;
-    private final TransferManagerModel model;
     private int fileInfoComparatorType = -1;
     private boolean sortAscending = true;
     private int sortColumn;
@@ -70,7 +69,6 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
     public DownloadsTableModel(TransferManagerModel model) {
         super(model.getController());
         Reject.ifNull(model, "Model is null");
-        this.model = model;
         listeners = Collections
             .synchronizedCollection(new LinkedList<TableModelListener>());
         downloads = Collections.synchronizedList(new LinkedList<Download>());
@@ -90,12 +88,32 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
      */
     private void init(TransferManager tm) {
         for (DownloadManager man: tm.getCompletedDownloadsCollection()) {
-            downloads.addAll(man.getSources());
+            addAll(man.getSources());
         }
         for (DownloadManager man: tm.getActiveDownloads()) {
-            downloads.addAll(man.getSources());
+            addAll(man.getSources());
         }
-        downloads.addAll(tm.getPendingDownloads());
+        addAll(tm.getPendingDownloads());
+    }
+
+    /**
+     * Add all if there is not an identical download.
+     * 
+     * @param dls
+     */
+    private void addAll(Collection<Download> dls) {
+        for (Download dl : dls) {
+            boolean insert = true;
+            for (Download download : downloads) {
+                if (dl.getFile().isCompletelyIdentical(download.getFile())) {
+                    insert = false;
+                    break;
+                }
+            }
+            if (insert) {
+                downloads.add(dl);
+            }
+        }
     }
 
     // Public exposing ********************************************************
