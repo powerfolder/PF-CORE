@@ -39,7 +39,7 @@ public class MemoryMonitor implements Runnable {
 
     private static final String POWERFOLDER_INI_FILE = "PowerFolder.l4j.ini";
     private Controller controller;
-    private static final Logger log = Logger.getLogger(MemoryMonitor.class);
+    private static final Logger LOG = Logger.getLogger(MemoryMonitor.class);
 
     public MemoryMonitor(Controller controller) {
         this.controller = controller;
@@ -58,7 +58,7 @@ public class MemoryMonitor implements Runnable {
             }
 
             long totalMemory = runtime.totalMemory();
-            log.debug("Max Memory: " + Format.formatBytesShort(maxMemory)
+            LOG.debug("Max Memory: " + Format.formatBytesShort(maxMemory)
                 + ", Total Memory: " + Format.formatBytesShort(totalMemory));
 
             // See if there is any more memory to allocate. Defer if dialog
@@ -109,9 +109,9 @@ public class MemoryMonitor implements Runnable {
         boolean wroteNewIni = false;
         PrintWriter pw = null;
         try {
-            log.debug("Looking for ini...");
+            LOG.debug("Looking for ini...");
             // br = new BufferedReader(new FileReader("PowerFolder.ini"));
-            log.debug("Found ini...");
+            LOG.debug("Found ini...");
             // String line;
             // boolean found = false;
             // while ((line = br.readLine()) != null) {
@@ -126,17 +126,17 @@ public class MemoryMonitor implements Runnable {
             // Write a new one if found.
             if (!alreadyMax) {
                 pw = new PrintWriter(new FileWriter(POWERFOLDER_INI_FILE));
-                log.debug("Writing new ini...");
+                LOG.debug("Writing new ini...");
                 pw.println("-Xms16m");
                 pw.println("-Xmx512m");
                 pw.println("-XX:MinHeapFreeRatio=10");
                 pw.println("-XX:MaxHeapFreeRatio=20");
                 pw.flush();
                 wroteNewIni = true;
-                log.debug("Wrote new ini...");
+                LOG.debug("Wrote new ini...");
             }
         } catch (IOException e) {
-            log.debug("Problem reconfiguring ini: " + e.getMessage());
+            LOG.debug("Problem reconfiguring ini: " + e.getMessage());
         } finally {
             // if (br != null) {
             // try {
