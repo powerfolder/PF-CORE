@@ -287,9 +287,7 @@ For creation of the installer:
         <mkdir dir="${dist.dir}" />
         <mkdir dir="${build.dir}" />
 
-        <javac destdir="${build.dir}" source="1.5" target="1.5" encoding="UTF-8" nowarn="${NoCompileWarnings}" debug="${Debug}" deprecation="${Deprecation}" optimize="${Optimize}">
-
-            <!-- javac 1.5 specific warnings -->
+        <javac destdir="${dist.dir}" source="1.2" target="1.1" encoding="UTF-8" nowarn="${NoCompileWarnings}" debug="${Debug}" deprecation="${Deprecation}" optimize="${Optimize}">
             <compilerarg value="-Xlint:${Unchecked}" />
             <compilerarg value="-Xlint:${Fallthrough}" />
 
@@ -297,12 +295,14 @@ For creation of the installer:
         </javac>
 
         <!-- copy files from etc to include in jar -->
-        <copy todir="${build.dir}">
-            <fileset dir="${applet.dir}" />
+        <copy todir="${dist.dir}">
+            <fileset dir="${applet.dir}">
+            	<include name="**/*.html" />
+            </fileset>
         </copy>
 
 
-        <jar jarfile="${dist.dir}/DownloadApplet.jar" basedir="${build.dir}" excludes="test*/**/*" update="true">
+       <!-- <jar jarfile="${dist.dir}/DownloadApplet.jar" basedir="${build.dir}" excludes="test*/**/*" update="true">
             <manifest>
                 <attribute name="Built-By" value="${BuildBy}" />
                 <attribute name="Version" value="${MajorVersion}.${MinorVersion}.${RevisionVersion}" />
@@ -310,7 +310,7 @@ For creation of the installer:
                 <attribute name="Sealed" value="true" />
                 <attribute name="Main-Class" value="de.dal33t.powerfolder.PowerFolder" />
             </manifest>
-        </jar>
+        </jar>-->
     </target>
 
 </project>
