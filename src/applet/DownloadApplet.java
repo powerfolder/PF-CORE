@@ -13,40 +13,45 @@ public class DownloadApplet extends JApplet {
 
     public void start() {
 
-
         String os = System.getProperty("os.name");
         String javaVersion = System.getProperty("java.version");
-        String javascript;
-        if (os != null && os.startsWith("Windows")) {
+        // Default
+        String javascript = "WebStart";
+        try {
+            if (os != null && os.startsWith("Windows")) {
+                // Windows (Java)
+                javascript = "Win32withJava";
 
-            // Windows (without Java)
-            javascript = "Win32withoutJava";
+                // Parse x.y.z_vv version for minimum java version.
+                StringTokenizer st = new StringTokenizer(javaVersion, ".");
+                if (st.countTokens() == 3) {
+                    int major = Integer.valueOf(st.nextToken()).intValue();
+                    int minor = Integer.valueOf(st.nextToken()).intValue();
+                    int buildA = 0;
+                    int buildB = 0;
 
-            // Parse x.y.z_vv version for minimum java version.
-            StringTokenizer st = new StringTokenizer(javaVersion, ".");
-            if (st.countTokens() == 3) {
-                int major = Integer.valueOf(st.nextToken());
-                int minor = Integer.valueOf(st.nextToken());
-                String build = st.nextToken();
-                StringTokenizer st2 = new StringTokenizer(build, "_");
-                if (st2.countTokens() == 2) {
-                    int buildA = Integer.valueOf(st2.nextToken());
-                    int buildB = Integer.valueOf(st2.nextToken());
-                    if (goodVersion(MIN_MAJOR, MIN_MINOR, MIN_BUILD_A, MIN_BUILD_B,
-                            major, minor, buildA, buildB)) {
-
+                    // Try to get build information
+                    String build = st.nextToken();
+                    StringTokenizer st2 = new StringTokenizer(build, "_");
+                    if (st2.countTokens() == 2) {
+                        buildA = Integer.valueOf(st2.nextToken()).intValue();
+                        buildB = Integer.valueOf(st2.nextToken()).intValue();
+                    }
+                    if (goodVersion(MIN_MAJOR, MIN_MINOR, MIN_BUILD_A,
+                        MIN_BUILD_B, major, minor, buildA, buildB))
+                    {
                         // Windows (with Java)
-                        javascript = "Win32withJava";
+                        javascript = "Win32withoutJava";
                     }
                 }
             }
-        } else {
-            javascript = "Webstart";
+        } catch (Exception e) {
+            // Ignore
         }
 
         try {
-            getAppletContext().showDocument
-                    (new URL("javascript:selectDownload(\"" + javascript + "\")"));
+            getAppletContext().showDocument(
+                new URL("javascript:selectDownload(\"" + javascript + "\")"));
         } catch (MalformedURLException me) {
             // Hmmmmm.
         }
@@ -54,7 +59,7 @@ public class DownloadApplet extends JApplet {
 
     /**
      * See if the local java version is good enough.
-     *
+     * 
      * @param minMajor
      * @param minMinor
      * @param minBuildA
@@ -65,8 +70,10 @@ public class DownloadApplet extends JApplet {
      * @param buildB
      * @return
      */
-    private static boolean goodVersion(int minMajor, int minMinor, int minBuildA, int minBuildB,
-                                int major, int minor, int buildA, int buildB) {
+    private static boolean goodVersion(int minMajor, int minMinor,
+        int minBuildA, int minBuildB, int major, int minor, int buildA,
+        int buildB)
+    {
         if (major > minMajor) {
             return true;
         } else if (major == minMajor) {

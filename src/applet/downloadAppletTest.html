@@ -1,13 +1,25 @@
 <HTML>
     <HEAD></HEAD>
     <BODY>
+    
     <SCRIPT>
         function selectDownload(s) {
-           alert(s);
+         //  alert("Recommended distribution '" + s + "'");
+           document.getElementById('Distribution_Win32withJava').style.visibility = 'hidden'; 
+           document.getElementById('Distribution_' + s).style.visibility = 'visible'; 
         }
     </SCRIPT>
-        <applet code=DownloadApplet width="400" height="100">
-            Applets not supported...
-        </applet>
+	<applet code="DownloadApplet.class" width="1" height="1" codebase="http://download.powerfolder.com/pro/applet">
+	</applet>
+	<div id="Distribution_Win32withJava">
+		<a href="http://download.powerfolder.com/pro/PowerFolder_Latest_Win32_with_JRE_Installer.exe">Download (WinJRE)</a>
+	</div>
+	<div id="Distribution_Win32withoutJava" style="visibility: hidden">
+		<a href="http://download.powerfolder.com/pro/PowerFolder_Latest_Win32_Installer.exe">Download (WinNoJRE)</a>
+	</div>
+	<div id="Distribution_WebStart" style="visibility: hidden">
+		<a href="http://download.powerfolder.com/pro/webstart/PowerFolder.jnlp">Download (WebStart)</a>
+	</div>
+	
     </BODY>
 </HTML>
