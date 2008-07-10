@@ -167,11 +167,15 @@ public class NavTreeCellRenderer extends DefaultTreeCellRenderer {
             text = Translation.getTranslation("title.my.folders") + " ("
                 + node.getChildCount() + ')';
         } else if (userObject == RootNode.DOWNLOADS_NODE_LABEL) {
+            Object countAllDownloads = controller.getUIController()
+                    .getTransferManagerModel().getAllDownloadsCountVM().getValue();
+            Object countActiveDownloads = controller.getUIController()
+                    .getTransferManagerModel().getActiveDownloadsCountVM().getValue();
+
             text = Translation.getTranslation("general.downloads") + " ("
-                + controller.getUIController().getTransferManagerModel()
-                    .countTotalDownloads() + ')';
-            if (controller.getUIController().getTransferManagerModel()
-                    .countActiveDownloads() > 0) {
+                    + (countAllDownloads == null ? "0" : countAllDownloads) + ')';
+            if ((countActiveDownloads == null ? 0 : (Integer) countActiveDownloads)
+                    > 0) {
                 icon = Icons.DOWNLOAD_ACTIVE;
             } else {
                 icon = Icons.DOWNLOAD;

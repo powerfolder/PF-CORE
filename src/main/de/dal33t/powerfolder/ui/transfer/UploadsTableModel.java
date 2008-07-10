@@ -65,6 +65,7 @@ public class UploadsTableModel extends PFComponent implements TableModel,
     private int fileInfoComparatorType = -1;
     private boolean sortAscending = true;
     private int sortColumn;
+    private final TransferManagerModel model;
 
     /**
      * Constructs a new table model for uploads.
@@ -78,15 +79,13 @@ public class UploadsTableModel extends PFComponent implements TableModel,
         boolean enabledPeriodicalUpdates)
     {
         super(model.getController());
+        this.model = model;
         listeners = Collections
             .synchronizedCollection(new LinkedList<TableModelListener>());
         uploads = Collections.synchronizedList(new LinkedList<Upload>());
         // Add listener
         model.getTransferManager().addListener(
             new UploadTransferManagerListener());
-
-        // Init
-        init(model.getTransferManager());
 
         if (enabledPeriodicalUpdates) {
             MyTimerTask task = new MyTimerTask();
@@ -99,7 +98,8 @@ public class UploadsTableModel extends PFComponent implements TableModel,
      * 
      * @param tm
      */
-    private void init(TransferManager tm) {
+    public void initialize() {
+        TransferManager tm = model.getTransferManager();
         Upload[] uls = tm.getActiveUploads();
         uploads.addAll(Arrays.asList(uls));
 

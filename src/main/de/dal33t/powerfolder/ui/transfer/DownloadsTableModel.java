@@ -63,19 +63,19 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
     private int fileInfoComparatorType = -1;
     private boolean sortAscending = true;
     private int sortColumn;
+    private final TransferManagerModel model;
 
     // private int activeDownloads;
 
     public DownloadsTableModel(TransferManagerModel model) {
         super(model.getController());
+        this.model = model;
         Reject.ifNull(model, "Model is null");
         listeners = Collections
             .synchronizedCollection(new LinkedList<TableModelListener>());
         downloads = Collections.synchronizedList(new LinkedList<Download>());
         // Add listener
         model.getTransferManager().addListener(new MyTransferManagerListener());
-        // initalize
-        init(model.getTransferManager());
 
         MyTimerTask task = new MyTimerTask();
         getController().scheduleAndRepeat(task, UPDATE_TIME);
@@ -86,7 +86,8 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
      * 
      * @param tm
      */
-    private void init(TransferManager tm) {
+    public void initialize() {
+        TransferManager tm = model.getTransferManager();
         for (DownloadManager man: tm.getCompletedDownloadsCollection()) {
             addAll(man.getSources());
         }

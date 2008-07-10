@@ -55,21 +55,30 @@ public class TransferManagerModel extends PFUIComponent {
     private final DefaultMutableTreeNode UPLOADS_NODE = new DefaultMutableTreeNode(
         RootNode.UPLOADS_NODE_LABEL);
 
+    /** Value model with integer number of all displayed downloads. */
+    private final ValueModel allDownloadsCountVM = new ValueHolder();
+
     /** Value model with integer number of all displayed uploads. */
     private final ValueModel allUploadsCountVM = new ValueHolder();
 
     /** Value model with integer number of active displayed uploads. */
     private final ValueModel activeUploadsCountVM = new ValueHolder();
 
+    /** Value model with integer number of active displayed downloads. */
+    private final ValueModel activeDownloadsCountVM = new ValueHolder();
+
     /** Value model with integer number of completed displayed uploads. */
     private final ValueModel completedUploadsCountVM = new ValueHolder();
+
+    /** Value model with integer number of completed displayed uploads. */
+    private final ValueModel completedDownloadsCountVM = new ValueHolder();
 
     public TransferManagerModel(TransferManager transferManager,
         NavTreeModel theNavTreeModel)
     {
         super(transferManager.getController());
         Reject.ifNull(theNavTreeModel, "Nav tree model is null");
-        this.navTree = theNavTreeModel;
+        navTree = theNavTreeModel;
         this.transferManager = transferManager;
         downloadsAutoCleanupModel = new ValueHolder();
         downloadsAutoCleanupModel
@@ -89,6 +98,10 @@ public class TransferManagerModel extends PFUIComponent {
     public void initialize() {
         // Listen on transfer manager
         transferManager.addListener(new MyTransferManagerListener());
+        uploadsTableModel.initialize();
+        downloadsTableModel.initialize();
+        updateDownloadsTreeNode();
+        updateUploadsTreeNode();
     }
 
     // Exposing ***************************************************************
@@ -190,7 +203,7 @@ public class TransferManagerModel extends PFUIComponent {
 
     /**
      * Returns a value model with integer number of active displayed uploads.
-     * 
+     *
      * @return
      */
     public ValueModel getActiveUploadsCountVM() {
@@ -198,8 +211,26 @@ public class TransferManagerModel extends PFUIComponent {
     }
 
     /**
+     * Returns a value model with integer number of active displayed downloads.
+     *
+     * @return
+     */
+    public ValueModel getActiveDownloadsCountVM() {
+        return activeDownloadsCountVM;
+    }
+
+    /**
+     * Returns a value model with integer number of all displayed downloads.
+     *
+     * @return
+     */
+    public ValueModel getAllDownloadsCountVM() {
+        return allDownloadsCountVM;
+    }
+
+    /**
      * Returns a value model with integer number of all displayed uploads.
-     * 
+     *
      * @return
      */
     public ValueModel getAllUploadsCountVM() {
@@ -208,11 +239,73 @@ public class TransferManagerModel extends PFUIComponent {
 
     /**
      * Returns a value model with integer number of completed displayed uploads.
-     * 
+     *
      * @return
      */
     public ValueModel getCompletedUploadsCountVM() {
         return completedUploadsCountVM;
+    }
+
+    /**
+     * Returns a value model with integer number of completed displayed downloads.
+     *
+     * @return
+     */
+    public ValueModel getCompletedDownloadsCountVM() {
+        return completedDownloadsCountVM;
+    }
+
+    private void updateDownloadsTreeNode() {
+        TreeModelEvent te = new TreeModelEvent(this, new Object[]{
+            navTree.getRoot(), DOWNLOADS_NODE});
+        navTree.fireTreeNodesChangedEvent(te);
+
+        // Recalculate totals for downloads.
+        int downloadCount = downloadsTableModel.getRowCount();
+        int allDownloadsCount = 0;
+        int activeDownloadCount = 0;
+        int completedDownloadsCount = 0;
+        for (int i = 0; i < downloadCount; i++) {
+            Download dl = downloadsTableModel.getDownloadAtRow(i);
+            if (dl.isStarted() && !dl.isCompleted() && !dl.isBroken())
+            {
+                activeDownloadCount++;
+            } else if (dl.isCompleted()) {
+                completedDownloadsCount++;
+            }
+            allDownloadsCount++;
+        }
+
+        allDownloadsCountVM.setValue(allDownloadsCount);
+        activeDownloadsCountVM.setValue(activeDownloadCount);
+        completedDownloadsCountVM.setValue(completedDownloadsCount);
+    }
+
+    private void updateUploadsTreeNode() {
+        TreeModelEvent te = new TreeModelEvent(this, new Object[]{
+            navTree.getRoot(), UPLOADS_NODE});
+        navTree.fireTreeNodesChangedEvent(te);
+
+        // Recalculate total and active uploads.
+        int uploadCount = uploadsTableModel.getRowCount();
+        int activeUploadCount = 0;
+        int allUploadCount = 0;
+        int completedUploadCount = 0;
+        for (int i = 0; i < uploadCount; i++) {
+            Upload ul = uploadsTableModel.getUploadAtRow(i);
+            if (ul.isStarted() && !ul.isCompleted() && !ul.isBroken()
+                && !ul.isAborted())
+            {
+                activeUploadCount++;
+            } else if (ul.isCompleted()) {
+                completedUploadCount++;
+            }
+            allUploadCount++;
+        }
+
+        allUploadsCountVM.setValue(allUploadCount);
+        activeUploadsCountVM.setValue(activeUploadCount);
+        completedUploadsCountVM.setValue(completedUploadCount);
     }
 
     // Inner classes **********************************************************
@@ -223,7 +316,8 @@ public class TransferManagerModel extends PFUIComponent {
      * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      */
     private class MyTransferManagerListener implements TransferManagerListener {
-        public void downloadRequested(TransferManagerEvent event) {
+
+         public void downloadRequested(TransferManagerEvent event) {
             updateDownloadsTreeNode();
             updateFolderTreeNode(event);
         }
@@ -294,39 +388,6 @@ public class TransferManagerModel extends PFUIComponent {
         public void completedUploadRemoved(TransferManagerEvent event) {
             updateUploadsTreeNode();
             updateFolderTreeNode(event);
-        }
-
-        private void updateDownloadsTreeNode() {
-            TreeModelEvent te = new TreeModelEvent(this, new Object[]{
-                navTree.getRoot(), DOWNLOADS_NODE});
-            navTree.fireTreeNodesChangedEvent(te);
-        }
-
-        private void updateUploadsTreeNode() {
-            TreeModelEvent te = new TreeModelEvent(this, new Object[]{
-                navTree.getRoot(), UPLOADS_NODE});
-            navTree.fireTreeNodesChangedEvent(te);
-
-            // Recalculate total and active uploads.
-            int uploadCount = uploadsTableModel.getRowCount();
-            int activeUploadCount = 0;
-            int allUploadCount = 0;
-            int completedUploadCount = 0;
-            for (int i = 0; i < uploadCount; i++) {
-                Upload ul = uploadsTableModel.getUploadAtRow(i);
-                if (ul.isStarted() && !ul.isCompleted() && !ul.isBroken()
-                    && !ul.isAborted())
-                {
-                    activeUploadCount++;
-                } else if (ul.isCompleted()) {
-                    completedUploadCount++;
-                }
-                allUploadCount++;
-            }
-
-            allUploadsCountVM.setValue(allUploadCount);
-            activeUploadsCountVM.setValue(activeUploadCount);
-            completedUploadsCountVM.setValue(completedUploadCount);
         }
 
         private void updateFolderTreeNode(TransferManagerEvent event) {

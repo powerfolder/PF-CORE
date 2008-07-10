@@ -49,6 +49,8 @@ public class RootTable extends JTable {
     private final Controller controller;
     private final ValueModel allUploadsCountVM;
     private final ValueModel activeUploadsCountVM;
+    private final ValueModel allDownloadsCountVM;
+    private final ValueModel activeDownloadsCountVM;
 
     public RootTable(TableModel tableModel, Controller controller) {
         super(tableModel);
@@ -66,6 +68,10 @@ public class RootTable extends JTable {
                 .getTransferManagerModel().getAllUploadsCountVM();
         activeUploadsCountVM = controller.getUIController()
                 .getTransferManagerModel().getActiveUploadsCountVM();
+        allDownloadsCountVM = controller.getUIController()
+                .getTransferManagerModel().getAllDownloadsCountVM();
+        activeDownloadsCountVM = controller.getUIController()
+                .getTransferManagerModel().getActiveDownloadsCountVM();
     }
 
     private void setupColumns() {
@@ -97,8 +103,8 @@ public class RootTable extends JTable {
                     newValue = Translation.getTranslation("title.my.folders");
                 } else if (userObject == RootNode.DOWNLOADS_NODE_LABEL) {
                     newValue = Translation.getTranslation("general.downloads");
-                    if (controller.getUIController().getTransferManagerModel()
-                            .countActiveDownloads() > 0) {
+                    if (activeDownloadsCountVM.getValue() != null &&
+                            (Integer) activeDownloadsCountVM.getValue() > 0) {
                         setIcon(Icons.DOWNLOAD_ACTIVE);
                     } else {
                         setIcon(Icons.DOWNLOAD);
@@ -140,8 +146,8 @@ public class RootTable extends JTable {
             } else {// size
                 setIcon(null);
                 if (userObject == RootNode.DOWNLOADS_NODE_LABEL) {
-                    newValue = String.valueOf(controller.getUIController()
-                            .getTransferManagerModel().countTotalDownloads());
+                    newValue = activeDownloadsCountVM.getValue() == null ?
+                            "0" : String.valueOf(allDownloadsCountVM.getValue());
                 } else if (userObject == RootNode.UPLOADS_NODE_LABEL) {
                     newValue = activeUploadsCountVM.getValue() == null ?
                             "0" : String.valueOf(allUploadsCountVM.getValue());

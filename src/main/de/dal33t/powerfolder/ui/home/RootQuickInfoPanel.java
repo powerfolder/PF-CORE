@@ -28,6 +28,10 @@ import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.QuickInfoPanel;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
+import com.jgoodies.binding.value.ValueModel;
+
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
 
 /**
  * The panel the contains the most important and concentrated information about
@@ -47,8 +51,21 @@ public class RootQuickInfoPanel extends QuickInfoPanel {
     private String comletedDownloadText;
     private String friendText;
 
+    private final ValueModel completedDownloadsCountVM;
+
     protected RootQuickInfoPanel(Controller controller) {
         super(controller);
+
+        // Begin listening for changes to uploads from the transfer manager model.
+        completedDownloadsCountVM = getController().getUIController()
+                .getTransferManagerModel().getCompletedDownloadsCountVM();
+        completedDownloadsCountVM.addValueChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                // Ensure the parent table updates on changes.
+                updateNodesText();
+            }
+        });
+
     }
 
     /**
@@ -83,7 +100,7 @@ public class RootQuickInfoPanel extends QuickInfoPanel {
      */
     private void updateAllText() {
         infoText1.setText(getSyncText(true));
-        infoText2.setText(getComletedDownloadText(true) + ", "
+        infoText2.setText(getCompletedDownloadText(true) + ", "
             + getFriendText(true));
     }
 
@@ -92,7 +109,7 @@ public class RootQuickInfoPanel extends QuickInfoPanel {
      */
     private void updateNodesText() {
         infoText1.setText(getSyncText(false));
-        infoText2.setText(getComletedDownloadText(false) + ", "
+        infoText2.setText(getCompletedDownloadText(false) + ", "
             + getFriendText(true));
     }
 
@@ -101,7 +118,7 @@ public class RootQuickInfoPanel extends QuickInfoPanel {
      */
     private void updateSyncText() {
         infoText1.setText(getSyncText(true));
-        infoText2.setText(getComletedDownloadText(true) + ", "
+        infoText2.setText(getCompletedDownloadText(true) + ", "
             + getFriendText(false));
     }
 
@@ -115,10 +132,10 @@ public class RootQuickInfoPanel extends QuickInfoPanel {
         return syncText;
     }
 
-    private String getComletedDownloadText(boolean refresh) {
+    private String getCompletedDownloadText(boolean refresh) {
         if (refresh) {
-            int nCompletedDls = getController().getUIController()
-                    .getTransferManagerModel().countCompletedDownloads();
+            Object value = completedDownloadsCountVM.getValue();
+            int nCompletedDls = value == null ? 0 : (Integer) value;
             comletedDownloadText = Translation.getTranslation(
                 "quickinfo.root.downloads", String.valueOf(nCompletedDls));
         }

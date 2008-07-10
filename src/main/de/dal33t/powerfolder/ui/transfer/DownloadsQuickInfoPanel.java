@@ -29,6 +29,10 @@ import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.QuickInfoPanel;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
+import com.jgoodies.binding.value.ValueModel;
+
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
 
 /**
  * Show concentrated information about the downloads
@@ -37,6 +41,10 @@ import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
  * @version $Revision: 1.3 $
  */
 public class DownloadsQuickInfoPanel extends QuickInfoPanel {
+
+    private final ValueModel completedDownloadsCountVM;
+    private final ValueModel activeDownloadsCountVM;
+
     private JComponent picto;
     private JComponent headerText;
     private JLabel infoText1;
@@ -44,6 +52,26 @@ public class DownloadsQuickInfoPanel extends QuickInfoPanel {
 
     protected DownloadsQuickInfoPanel(Controller controller) {
         super(controller);
+
+        // Begin listening for changes to uploads from the transfer manager model.
+        completedDownloadsCountVM = getController().getUIController()
+                .getTransferManagerModel().getCompletedDownloadsCountVM();
+        completedDownloadsCountVM.addValueChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                // Ensure the parent table updates on changes.
+                updateText();
+            }
+        });
+
+        activeDownloadsCountVM = getController().getUIController()
+                .getTransferManagerModel().getActiveDownloadsCountVM();
+        activeDownloadsCountVM.addValueChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                // Ensure the parent table updates on changes.
+                updateText();
+            }
+        });
+
     }
 
     /**
@@ -78,15 +106,15 @@ public class DownloadsQuickInfoPanel extends QuickInfoPanel {
      * Updates the info fields
      */
     private void updateText() {
-        int nCompletedDls = getController().getUIController()
-                .getTransferManagerModel().countCompletedDownloads();
+        Object value = completedDownloadsCountVM.getValue();
+        int nCompletedDls = value == null ? 0 : (Integer) value;
 
         String text1 = Translation.getTranslation(
             "quickinfo.download.completed", nCompletedDls);
         infoText1.setText(text1);
 
-        int nActiveDls = getController().getUIController()
-                .getTransferManagerModel().countActiveDownloads();
+        value = activeDownloadsCountVM.getValue();
+        int nActiveDls = value == null ? 0 : (Integer) value;
         String text2 = Translation.getTranslation("quickinfo.download.active",
             nActiveDls);
 
