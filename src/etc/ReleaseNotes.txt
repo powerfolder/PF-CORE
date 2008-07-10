@@ -1,8 +1,85 @@
-PowerFolder Version 3.0.2 - http://www.powerfolder.com
+PowerFolder Version 3.1.0 - http://www.powerfolder.com
 
-Minimum Java version is 5.0.
-Tested on Windows Vista, Windows XP, Windows 2000, Linux (Fedora 4) and MacOS X
+New Features:
+ * PowerFolder Pro is now available as 30 days test version
+ * Automatic setup of a default synchronized folder across all computers
+ * Swarming (Multi source) Download. Download single files from multiple sources
+ * Upload file history. See what files were uploaded.
+ * Added distribution with bundled Java Runtime (6.0)
+ * Status message now popup from system tray for important events
+ * System tray support for Mac OS X
+ * Rename of sync profiles to "Transfer modes"
+ * Custom Transfer modes can now be named and re-used in different folders.
+ * Default base directory for all PowerFolders is now
+   "Own documents/PowerFolders" on Windows systems
+ * Unavailability of local base directories of a PowerFolder is now gracefully
+   handled (e.g. USB Sticks, network or encrypted drives)
+ * Improved transfer performance of small files in LAN  
+ * Find friends dialog is now wizard based
+ * Completely overhauled filter options in Filestab. Now new files are
+   displayed bold.
+ * Program auto-updates can now be performed silently
+ * Computer name is taken as PowerFolder computer name instead of username
+ * Recycle bin now has a details panel
+ * Added more default excluded files: Temporary files from Word and
+   .DS_Store on Mac
+ * Filtering of friendlist is now done through a dropdown box
+ * Added links from several functions to wiki
+ * Added "Answer" button to Chat system tray popup
+ * Added low memory detection on non-windows systems
+ * Added memory section to About dialog
+ * Public key of Online Storage now included in default distribution
+ * Several other enhancements and improvements 
+ 
+Bugfixes:
+ * Fixed connection problems to Online Storage
+ * Fixed problem with sending invitation by email
+ * Fixed CPU load problem in debug mode
+ * Reduced overhead traffic: UDT/NAT Piercing protocol is off by default now
+ * Move of complete PowerFolders not longer cause to upload the files again
+ * Corrected minor sync percentage problem
+ * Fixed rare bug on Vista 64 that prevented PowerFolder from starting
+ * Fixed problem with debug log writing on Windows Vista
+ * Switched to new system tray implementation, that should not longer crash.
+ * Directory with space in name should now be correctly opened in
+   system browser when clicking on Files/Open Folder
 
+Please give us feedback and request improvements at our forum:
+http://forums.powerfolder.com
+
+Minimum Java version is 6.0.
+
+Thanks to those who requested features in our forum and we hope to implement
+even more if you keep requesting them for the next version.
+
+- The PowerFolder Team
+
+Official Roadmap:
+http://www.powerfolder.com/roadmap.html
+
+Please remember: You agree to keep us free of any (legal) issues involved with
+downloading and using this PowerFolder!
+
+Contact information:
+
+Web  	: http://www.powerfolder.com
+Contact	: http://www.powerfolder.com/contact.html
+Support	: http://www.powerfolder.com/support.html
+Email	: contact@powerfolder.com
+IRC	: QuakeNet, Nick: TotMacherr, Flo and Nakata on channel #powerfolder
+ICQ	: 1898935
+
+External libraries used:
+- JGoodies looks, forms & binding (http://www.jgoodies.com). Under BSD License. (jar/jgoodies-LICENSE.txt)
+- systray (http://systray.sourceforge.net). Under LGPL License. (jar/systray-ReadMe.txt)
+- jakarta-commons (http://jakarta.apache.org/commons).
+  Under Apache License, Version 2.0
+
+
+History:
+
+Version 3.0.2
+-------------
 Bugfixes / Changes
  * Sync percentage now displays correctly
  * Fixed bug in LAN-detection
@@ -12,38 +89,6 @@ Bugfixes / Changes
 The full change log:
 http://dev.powerfolder.com/projects/powerfolder/query?status=closed&milestone=PowerFolder+3.0.2
 
-
-Please give us feedback and request improvements at our forum:
-http://forums.powerfolder.com
-
-Thanks to those who requested features in our forum and we hope to implement
-even more if you keep requesting them for the next version.
-
-- The PowerFolder Team
-
-
-Offical Roadmap:
-http://www.powerfolder.com/roadmap.html
-
-Please remember: You agree to keep us free of any (legal) issues involved with downloading
-and using this PowerFolder!
-
-Contact information:
-
-Web  	: http://www.powerfolder.com
-Contact	: http://www.powerfolder.com/contact.html
-Email	: contact@powerfolder.com
-IRC	: QuakeNet, Nick: TotMacherr, Flo and Nakata on channel #powerfolder
-ICQ	: 1898935
-
-External libaries used:
-- JGoodies looks, forms & binding (http://www.jgoodies.com). Under BSD License. (jar/jgoodies-LICENSE.txt)
-- systray (http://systray.sourceforge.net). Under LGPL License. (jar/systray-ReadMe.txt)
-- jakarta-commons (http://jakarta.apache.org/commons).
-  Under Apache License, Version 2.0
-
-
-History:
 
 Version 3.0.1
 -------------
