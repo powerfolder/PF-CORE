@@ -20,15 +20,16 @@
 package de.dal33t.powerfolder.ui.friends;
 
 import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+import com.jgoodies.binding.value.ValueModel;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.net.NodeSearcher;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.model.SearchNodeTableModel;
+import de.dal33t.powerfolder.ui.widget.FilterTextField;
 import de.dal33t.powerfolder.util.PFUIPanel;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.*;
@@ -40,8 +41,8 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
 
 /**
  * Search for members, use to "make friends".
@@ -52,7 +53,8 @@ import java.awt.event.KeyListener;
 public class FindUsersPanel extends PFUIPanel {
 
     /** input field for search text */
-    private JTextField searchInput;
+    private FilterTextField searchInput;
+    private ValueModel searchInputVM;
     /** the ui of the list of users that matches the search. */
     private JTable searchResult;
 
@@ -61,10 +63,6 @@ public class FindUsersPanel extends PFUIPanel {
     private SearchNodeTableModel searchNodeTableModel;
     /** this panel */
     private JComponent panel;
-    /** The button to search with */
-    private JButton searchButton;
-    /** search */
-    private Action searchAction;
     /** add friend */
     private Action addFriendAction;
     /** The Thread performing the search */
@@ -93,16 +91,17 @@ public class FindUsersPanel extends PFUIPanel {
     }
 
     private void initComponents() {
-        searchInput = new JTextField(15);
-        searchInput.setEditable(true);
+        searchInput = new FilterTextField(12);
+        searchInputVM = searchInput.getValueModel();
+        searchInputVM.addValueChangeListener(new MySearchInputVMListener());
+
         searchNodeTableModel = new SearchNodeTableModel(getController());
-        searchResult = new FindUsersTable(searchNodeTableModel);
-        searchResult.getSelectionModel().addListSelectionListener(
-            new SearchResultSelectionListener());
 
         addFriendAction.setEnabled(false);
 
-        searchInput.addKeyListener(new SearchInputKeyListener());
+        searchResult = new FindUsersTable(searchNodeTableModel);
+        searchResult.getSelectionModel().addListSelectionListener(
+            new SearchResultSelectionListener());
         searchResult.addMouseListener(new PopupMenuOpener(createPopupMenu()));
         searchResult.addMouseListener(new DoubleClickAction(addFriendAction));
 
@@ -113,12 +112,13 @@ public class FindUsersPanel extends PFUIPanel {
 
     private JComponent createContentPanel() {
         FormLayout layout = new FormLayout("500",
-            "pref, min(pref;300)");
+            "pref, 3dlu, pref, min(pref;300)");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
         builder.add(createSearchPanel(), cc.xy(1, 1));
-        builder.add(searchResultScroller, cc.xy(1, 2));
+        builder.addSeparator(null, cc.xy(1, 3));
+        builder.add(searchResultScroller, cc.xy(1, 4));
 
         updateActions();
         
@@ -135,10 +135,6 @@ public class FindUsersPanel extends PFUIPanel {
     }
 
     private JPanel createSearchPanel() {
-        searchAction = new SearchAction();
-        searchAction.setEnabled(false);
-
-        searchButton = new JButton(searchAction);
         hideOffline = new JCheckBox(new HideOfflineAction());
         hideOffline.setSelected(PreferencesEntry.FRIENDSEARCH_HIDEOFFLINE
             .getValueBoolean(getController()));
@@ -150,30 +146,35 @@ public class FindUsersPanel extends PFUIPanel {
             }
         });
 
-        FormLayout layout = new FormLayout("pref, 4dlu, pref, 4dlu, pref, 4dlu, pref",
+        FormLayout layout = new FormLayout("pref, fill:pref:grow, 105dlu",
             "pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
-        builder.add(new JLabel(Translation
-            .getTranslation("find_users_panel.user_name")), cc.xy(1, 1));
-        builder.add(searchInput, cc.xy(3, 1));
-        builder.add(searchButton, cc.xy(5, 1));
-        builder.add(hideOffline, cc.xy(7, 1));
-        builder.setBorder(Borders.DLU4_BORDER);
-
+        builder.add(hideOffline, cc.xy(1, 1));
+        builder.add(searchInput.getUIComponent(), cc.xy(3, 1));
         return builder.getPanel();
 
     }
 
     /** perform a search, interrupts a search if still running */
     private void search() {
+
+        Object o = searchInputVM.getValue();
+        if (o == null) {
+            return;
+        }
+        String searchText = ((String) o).trim().toLowerCase();
+        if (searchText.length() < 3) {
+            return;
+        }
+
         // Block until the search has been killed if there's one running
         if (searcher != null && searcher.isSearching()) {
             searcher.cancelSearch();
         }
 
-        searcher = new NodeSearcher(getController(), searchInput.getText()
-            .trim(), searchNodeTableModel.getListModel(), true,
+        searcher = new NodeSearcher(getController(),
+                searchText, searchNodeTableModel.getListModel(), true,
             hideOffline.isSelected());
         searcher.start();
     }
@@ -260,7 +261,7 @@ public class FindUsersPanel extends PFUIPanel {
         // Update actions
         updateActions();
         // refresh search (removes the new friend)
-        searchButton.doClick();
+        search();
     }
 
     // UI Helper code *********************************************************
@@ -290,7 +291,7 @@ public class FindUsersPanel extends PFUIPanel {
         }
 
         public void actionPerformed(ActionEvent e) {
-            searchButton.doClick();
+            search();
         }
     }
 
@@ -305,38 +306,16 @@ public class FindUsersPanel extends PFUIPanel {
         }
     }
 
-    /** The action to preform if the search button is clicked */
-    private class SearchAction extends BaseAction {
-        private SearchAction() {
-            super("find_users_panel.search_action", FindUsersPanel.this.getController());
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            search();
-        }
-    }
-
     /**
      * listens to keys in the search input updates the searchAction state if
      * enough chars are available and preforms a search on enter key
      * 
      * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
      */
-    private class SearchInputKeyListener implements KeyListener {
-        public void keyPressed(KeyEvent e) {
-        }
+    private class MySearchInputVMListener implements PropertyChangeListener {
 
-        public void keyReleased(KeyEvent e) {
-            // minimal 3 chars for enabled search button
-            searchAction.setEnabled(searchInput.getText().trim().length() >= 3);
-        }
-
-        public void keyTyped(KeyEvent e) {
-            char keyTyped = e.getKeyChar();
-            if (keyTyped == '\n') { // enter key = search
-                // gives visual button press
-                searchButton.doClick();
-            }
+        public void propertyChange(PropertyChangeEvent evt) {
+            search();
         }
     }
 
