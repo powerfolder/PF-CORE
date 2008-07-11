@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder;
 
 import java.net.InetSocketAddress;
@@ -34,12 +34,12 @@ public class Constants {
      * URL of the PowerFolder homepage
      */
     public static final String POWERFOLDER_URL = "http://www.powerfolder.com";
-    
+
     /**
      * Quickstart guides to PowerFolder
      */
     public static final String POWERFOLDER_QUICKSTART_URL = "http://www.powerfolder.com/quickstart.html";
-    
+
     /**
      * URL of the PowerFolder Wiki
      */
@@ -49,12 +49,12 @@ public class Constants {
      * URL of the PowerFolder Pro page
      */
     public static final String POWERFOLDER_PRO_URL = "http://www.powerfolder.com/buynow.html";
-    
+
     /**
      * URL where the contact form resides
      */
     public static final String POWERFOLDER_CONTACT_URL = "http://www.powerfolder.com/contact.html";
-    
+
     /**
      * URL of the page to report bugs.
      */
@@ -118,15 +118,9 @@ public class Constants {
     public static final int FILE_LIST_MAX_FILES_PER_MESSAGE = 500;
 
     /**
-     * The number of supernodes to connect at all.
+     * The number of supernodes to connect if NOT running as supernode.
      */
-    public static final int N_SUPERNODES_TO_CONNECT = 4;
-
-    /**
-     * The number of supernodes to contact when a new network folder list is
-     * requested
-     */
-    public static final int N_SUPERNODES_TO_CONTACT_FOR_NETWORK_FOLDER_LIST = 4;
+    public static final int N_SUPERNODES_TO_CONNECT = 3;
 
     /**
      * The number of supernodes to contact when perfoming a nodes search
@@ -193,7 +187,7 @@ public class Constants {
     public static final int MIN_NUMBER_RECONNECTORS = 2;
 
     /** The max number of reconnectors to spawn */
-    public static final int MAX_NUMBER_RECONNECTORS = 14;
+    public static final int MAX_NUMBER_RECONNECTORS = 10;
 
     /**
      * the number of seconds (aprox) of delay till the connection is tested and
