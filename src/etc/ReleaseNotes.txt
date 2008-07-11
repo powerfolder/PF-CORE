@@ -1,7 +1,7 @@
 PowerFolder Version 3.1.0 - http://www.powerfolder.com
 
 New Features:
- * PowerFolder Pro is now available as 30 days test version
+ * PowerFolder Pro is now available as 30 day test version
  * Automatic setup of a default synchronized folder across all computers
  * Swarming (Multi source) Download. Download single files from multiple sources
  * Upload file history. See what files were uploaded.
