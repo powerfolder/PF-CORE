@@ -30,7 +30,7 @@ New Features:
  * Added memory section to About dialog
  * Public key of Online Storage now included in default distribution
  * Several other enhancements and improvements 
- 
+
 Bugfixes:
  * Fixed connection problems to Online Storage
  * Fixed problem with sending invitation by email
