@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.ui.model;
 
 import java.util.*;
@@ -35,14 +35,16 @@ import de.dal33t.powerfolder.util.compare.ReverseComparator;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
- * A table model which contains nodes that are friends, may or may not hideOffline friends.
+ * A table model which contains nodes that are friends, may or may not
+ * hideOffline friends.
  * 
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.2 $
  */
 public class FriendsNodeTableModel extends PFUIComponent implements TableModel,
-SortedTableModel {
+    SortedTableModel
+{
     private List<TableModelListener> listeners = new LinkedList<TableModelListener>();
     private List<Member> friends = new ArrayList<Member>();
     private boolean hideOffline = false;
@@ -92,7 +94,8 @@ SortedTableModel {
             addNode(friend);
         }
 
-        Collection<Member> connectedNodes = getController().getNodeManager().getConnectedNodes();
+        Collection<Member> connectedNodes = getController().getNodeManager()
+            .getConnectedNodes();
         for (Member connectedNode : connectedNodes) {
             addNode(connectedNode);
         }
@@ -107,7 +110,7 @@ SortedTableModel {
             fireModelStructureChanged();
         }
     }
-                
+
     public void setHideOffline(boolean hide) {
         if (hide != hideOffline) {
             hideOffline = hide;
@@ -177,10 +180,10 @@ SortedTableModel {
         }
         return false;
     }
-   
+
     // TableModel interface ***************************************************
 
-    public int getRowCount() {        
+    public int getRowCount() {
         return Math.max(friends.size(), 1);
     }
 
@@ -287,9 +290,9 @@ SortedTableModel {
     }
 
     /**
-     * Returns true if the node is wanted,
-     * that is, if it should be in the table.
-     *
+     * Returns true if the node is wanted, that is, if it should be in the
+     * table.
+     * 
      * @param node
      * @return
      */
@@ -303,8 +306,7 @@ SortedTableModel {
         if (hideOffline) {
             if (includeLan) {
                 // want online (friends or lan users)
-                if (connectedToNetwork && friend ||
-                        connected && onLan) {
+                if (connectedToNetwork && friend || connected && onLan) {
                     return true;
                 }
             } else {
@@ -316,7 +318,7 @@ SortedTableModel {
         } else {
             if (includeLan) {
                 // want friends or lan users
-                if (friend || onLan) {
+                if (friend || (connected && onLan)) {
                     return true;
                 }
             } else {
@@ -362,7 +364,7 @@ SortedTableModel {
         public void settingsChanged(NodeManagerEvent e) {
             fireModelChanged();
         }
-        
+
         public void startStop(NodeManagerEvent e) {
         }
 
