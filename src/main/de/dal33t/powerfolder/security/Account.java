@@ -214,6 +214,10 @@ public class Account extends Model implements Serializable {
     }
 
     public Collection<String> getLicenseKeyFiles() {
+        if (licenseKeyFiles == null) {
+            // Migrate
+            licenseKeyFiles = new CopyOnWriteArrayList<String>();
+        }
         return licenseKeyFiles;
     }
 
