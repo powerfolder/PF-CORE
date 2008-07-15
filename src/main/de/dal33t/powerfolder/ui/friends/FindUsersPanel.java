@@ -46,7 +46,7 @@ import java.beans.PropertyChangeEvent;
 
 /**
  * Search for members, use to "make friends".
- * 
+ *
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.7 $
  */
@@ -80,7 +80,7 @@ public class FindUsersPanel extends PFUIPanel {
     }
 
     /**
-     * returns this ui component, creates it if not available 
+     * returns this ui component, creates it if not available
      */
     public Component getUIComponent() {
         if (panel == null) {
@@ -91,7 +91,10 @@ public class FindUsersPanel extends PFUIPanel {
     }
 
     private void initComponents() {
-        searchInput = new FilterTextField(12);
+        searchInput = new FilterTextField(12, Translation
+                .getTranslation("find_users_panel.search_for_user.hint"),
+                Translation
+                .getTranslation("find_users_panel.search_for_user.tooltip"));
         searchInputVM = searchInput.getValueModel();
         searchInputVM.addValueChangeListener(new MySearchInputVMListener());
 
@@ -121,7 +124,7 @@ public class FindUsersPanel extends PFUIPanel {
         builder.add(searchResultScroller, cc.xy(1, 4));
 
         updateActions();
-        
+
         return builder.getPanel();
     }
 
@@ -309,7 +312,7 @@ public class FindUsersPanel extends PFUIPanel {
     /**
      * listens to keys in the search input updates the searchAction state if
      * enough chars are available and preforms a search on enter key
-     * 
+     *
      * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
      */
     private class MySearchInputVMListener implements PropertyChangeListener {
@@ -322,7 +325,7 @@ public class FindUsersPanel extends PFUIPanel {
     /**
      * Helper class which tracks the selections int the search Results and
      * updates the actions to the correct state
-     * 
+     *
      * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
      */
     private class SearchResultSelectionListener implements

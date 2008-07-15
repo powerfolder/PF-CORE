@@ -259,6 +259,8 @@ public class FilesTab extends PFUIComponent implements FolderTab,
 
         recursiveSelection = new JCheckBox(Translation
             .getTranslation("filelist.recursive"));
+        recursiveSelection.setToolTipText(Translation
+            .getTranslation("files_tab.recursive_selection.tooltip"));
         recursiveSelection.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 boolean recursive = recursiveSelection.isSelected();

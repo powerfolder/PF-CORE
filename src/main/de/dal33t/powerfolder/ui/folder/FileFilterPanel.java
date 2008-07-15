@@ -38,7 +38,7 @@ import de.dal33t.powerfolder.util.Translation;
  * showDeleted and shoeExpexted). The checkboxes are optional displayed. The
  * checkboxes labels also hold a count of the number of files that matches the
  * criteria in the FileFilterModel.
- * 
+ *
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.1 $
  */
@@ -71,10 +71,16 @@ public class FileFilterPanel {
      * Initalize all nessesary components
      */
     private void initComponents() {
-        FilterTextField filterTextField = new FilterTextField(12);
+        FilterTextField filterTextField = new FilterTextField(12, Translation
+                .getTranslation("file_filter_panel.filter_by_filename.hint"),
+        Translation
+                .getTranslation("file_filter_panel.filter_by_filename.tooltip"));
+
         fileFilterModel.setSearchField(filterTextField.getValueModel());
 
         filterSelectionComboBox = new JComboBox();
+        filterSelectionComboBox.setToolTipText(Translation
+                .getTranslation("file_filter_panel.combo.tooltip"));
         filterSelectionComboBox.addItem(Translation
             .getTranslation("file_filter_panel.local_and_incoming"));
         filterSelectionComboBox.addItem(Translation

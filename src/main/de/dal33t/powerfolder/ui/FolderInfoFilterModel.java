@@ -32,7 +32,7 @@ import de.dal33t.powerfolder.light.FolderInfo;
 
 /**
  * Based on the settings in this model it filters a Folder info List
- * 
+ *
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.5 $
  */
@@ -95,10 +95,11 @@ public class FolderInfoFilterModel extends FilterModel {
     }
 
     private List filter0() {
-        if (folderList == null)
+        if (folderList == null) {
             throw new IllegalStateException("file list = null");
+        }
 
-        if (folderList.size() == 0) {
+        if (folderList.isEmpty()) {
             return folderList;
         }
 
@@ -148,7 +149,7 @@ public class FolderInfoFilterModel extends FilterModel {
     /**
      * Answers if the folder matches the searching keywords. Keywords have to be
      * in lowercase. A folder must match all keywords. (AND)
-     * 
+     *
      * @param file
      *            the file
      * @param keywords

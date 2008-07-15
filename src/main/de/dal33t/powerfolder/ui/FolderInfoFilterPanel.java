@@ -38,16 +38,16 @@ import de.dal33t.powerfolder.util.Translation;
  * showDeleted and showExpected). The checkboxes are optional displayed. The
  * checkboxes labels also hold a count of the number of files that matches the
  * criteria in the FileFilterModel.
- * 
+ *
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.4 $
  */
 public class FolderInfoFilterPanel extends PFUIComponent {
     private JPanel panel;
-    
-    private JCheckBox showEmptyBox;    
+
+    private JCheckBox showEmptyBox;
     private FolderInfoFilterModel folderInfoFilterModel;
-    private FilterTextField filterTextField;
+
     /**
      * @param showCheckBoxes
      *            set to false to hide them
@@ -74,12 +74,12 @@ public class FolderInfoFilterPanel extends PFUIComponent {
         showEmptyBox = new JCheckBox(new AbstractAction(Translation
             .getTranslation("publicfolders.filter.show_empty_folders"))
         {
-            public void actionPerformed(ActionEvent event) {
+            public void actionPerformed(ActionEvent e) {
                 folderInfoFilterModel.setShowEmpty(showEmptyBox.isSelected());
             }
         });
-       
-        filterTextField = new FilterTextField(12); // 12 columns
+
+        FilterTextField filterTextField = new FilterTextField(12, "", "");
         folderInfoFilterModel.setSearchField(filterTextField.getValueModel());
 
         // Now build panel and align items
