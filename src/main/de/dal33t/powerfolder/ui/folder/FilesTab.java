@@ -83,6 +83,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
@@ -123,7 +124,7 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
 /**
  * Shows a Directory, holds a FileFilterPanel to filter the filelist and enable
  * the user to selected for a recursive view.
- * 
+ *
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.8 $ *
  */
@@ -164,6 +165,7 @@ public class FilesTab extends PFUIComponent implements FolderTab,
     private RemoveFileAction removeFileAction;
     private RestoreFileAction restoreFileAction;
     private AbortTransferAction abortTransferAction;
+    private UnmarkAction unmarkAction;
     private OpenLocalFolder openLocalFolder;
 
     private MyFolderListener myFolderListener;
@@ -234,6 +236,8 @@ public class FilesTab extends PFUIComponent implements FolderTab,
         blackWhitelistAction = new BlackWhitelistAction(getController(),
             selectionModel);
         unBlackWhitelistAction = new UnBlackWhitelistAction(getController(),
+            selectionModel);
+        unmarkAction = new UnmarkAction(getController(),
             selectionModel);
         startFileAction = new StartFileAction(getController(), selectionModel);
         removeFileAction = new RemoveFileAction(getController(), selectionModel);
@@ -488,6 +492,7 @@ public class FilesTab extends PFUIComponent implements FolderTab,
         fileMenu.add(restoreFileAction);
         fileMenu.add(blackWhitelistAction);
         fileMenu.add(unBlackWhitelistAction);
+        fileMenu.add(unmarkAction);
         fileMenu.addSeparator();
 
         fileMenu.add(new ChangeFriendStatusAction(getController(),
@@ -503,7 +508,7 @@ public class FilesTab extends PFUIComponent implements FolderTab,
 
     /**
      * Respond to changes in numbers of files.
-     * 
+     *
      * @param event
      */
     public void filterChanged(FileFilterChangedEvent event) {
@@ -549,7 +554,7 @@ public class FilesTab extends PFUIComponent implements FolderTab,
     /**
      * updates the selection based on scrollwheel turns, scrolls the newly
      * selected item to center if outside the current view.
-     * 
+     *
      * @param clicksTurned
      *            the number of clicks on the scrollwheel, maybe negative!
      */
@@ -647,7 +652,7 @@ public class FilesTab extends PFUIComponent implements FolderTab,
 
     /**
      * Listener on table header, takes care about the sorting of table
-     * 
+     *
      * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      */
     private class TableHeaderMouseListener extends MouseAdapter {
@@ -875,7 +880,7 @@ public class FilesTab extends PFUIComponent implements FolderTab,
 
     /**
      * drop a transferable on this filelist, must be of the javafilelist flavor
-     * 
+     *
      * @param trans
      * @return true if succeeded
      */
@@ -886,7 +891,7 @@ public class FilesTab extends PFUIComponent implements FolderTab,
 
     /**
      * drop a transferable on this directory, must be of the javafilelist flavor
-     * 
+     *
      * @param directory
      * @param trans
      * @return true if succeeded
@@ -1305,6 +1310,82 @@ public class FilesTab extends PFUIComponent implements FolderTab,
 
         public void setWhitelist(boolean whitelist) {
             configureFromActionId(whitelist ? "un_white_list" : "un_black_list");
+        }
+    }
+
+    private class UnmarkAction extends SelectionBaseAction {
+
+        UnmarkAction(Controller controller,
+            SelectionModel selectionModel)
+        {
+            super("un_mark", controller, selectionModel);
+            setEnabled(false);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            Object[] selections = getSelectionModel().getSelections();
+            if (selections != null) {
+                TransferManager transferManager = getController().getTransferManager();
+                for (Object selection : selections) {
+                    if (selection instanceof FileInfo) {
+                        FileInfo fileInfo = (FileInfo) selection;
+                        if (getController().getTransferManager()
+                                .isCompletedDownload(fileInfo)) {
+                            transferManager
+                                    .clearCompletedDownload(fileInfo);
+                        }
+                    } else if (selection instanceof Directory) {
+                        Directory dir = (Directory) selection;
+                        for (FileInfo fileInfo : dir.getFilesRecursive()) {
+                            if (getController().getTransferManager()
+                                    .isCompletedDownload(fileInfo)) {
+                                transferManager
+                                        .clearCompletedDownload(fileInfo);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        public void selectionChanged(SelectionChangeEvent event) {
+
+            Object[] selections = selectionModel.getSelections();
+
+            if (selections == null || selections.length == 0) {
+                setEnabled(false);
+                return;
+            }
+            boolean enable = true;
+            for (Object selection : selections) {
+                if (selection instanceof FileInfo) {
+                    // Only enable if recently downloaded.
+                    FileInfo fileInfo = (FileInfo) selection;
+                    if (!getController().getTransferManager()
+                            .isCompletedDownload(fileInfo)) {
+                        enable = false;
+                        break;
+                    }
+                } else if (selection instanceof Directory) {
+                    Directory dir = (Directory) selection;
+                    if (!hasCompletedDownloads(dir)) {
+                        enable = false;
+                        break;
+                    }
+                }
+            }
+            setEnabled(enable);
+        }
+
+        private boolean hasCompletedDownloads(Directory dir) {
+            TransferManager transferManager = getController()
+                    .getTransferManager();
+            for (FileInfo fileInfo : dir.getFilesRecursive()) {
+                if (transferManager.isCompletedDownload(fileInfo)) {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 
