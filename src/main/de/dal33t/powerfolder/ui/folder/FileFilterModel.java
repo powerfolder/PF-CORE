@@ -25,7 +25,6 @@ import org.apache.commons.lang.StringUtils;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.DiskItem;
-import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.disk.Directory;
@@ -37,7 +36,7 @@ import de.dal33t.powerfolder.ui.FilterModel;
 /**
  * Based on the settings in this model it filters a filelist.
  * <p>
- * 
+ *
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.1 $
  */
@@ -55,7 +54,7 @@ public class FileFilterModel extends FilterModel {
 
     /**
      * Constructor.
-     * 
+     *
      * @param controller
      */
     public FileFilterModel(Controller controller) {
@@ -87,7 +86,7 @@ public class FileFilterModel extends FilterModel {
 
     /**
      * Performs the actual filtering.
-     * 
+     *
      * @private ATTENTION: USE only from tests!!
      */
     public void filter0() {
@@ -195,8 +194,20 @@ public class FileFilterModel extends FilterModel {
                         }
                     }
 
-                    if (mode == MODE_NEW_ONLY) {
-                        // See if the directory has new files.
+                    if (mode == MODE_LOCAL_ONLY) {
+                        if (!directory.containsLocalFiles()) {
+                            continue;
+                        }
+                    } else if (mode == MODE_LOCAL_AND_INCOMING) {
+                        if (!directory.containsLocalFiles() &&
+                                !directory.containsIncomingFiles()) {
+                            continue;
+                        }
+                    } else if (mode == MODE_INCOMING_ONLY) {
+                        if (!directory.containsIncomingFiles()) {
+                            continue;
+                        }
+                    } else if (mode == MODE_NEW_ONLY) {
                         if (!directory.containsCompletedDownloads()) {
                             continue;
                         }
@@ -222,7 +233,7 @@ public class FileFilterModel extends FilterModel {
         }
         if (finalTextFilter == null || finalTextFilter.equals(textFilter)) {
             FileFilterChangedEvent event = new FileFilterChangedEvent(
-                FileFilterModel.this, resultList, localFiles, incomingFiles,
+                this, resultList, localFiles, incomingFiles,
                 deletedFiles, recycledFiles);
             for (FileFilterChangeListener listener : listeners) {
                 listener.filterChanged(event);
@@ -319,7 +330,7 @@ public class FileFilterModel extends FilterModel {
     /**
      * Answers if the file matches the searching keywords. Keywords have to be
      * in lowercase. A file must match all keywords. (AND)
-     * 
+     *
      * @param file
      *            the file
      * @param keywords
@@ -387,7 +398,7 @@ public class FileFilterModel extends FilterModel {
 
     /**
      * Add a FileFilterChangeListener.
-     * 
+     *
      * @param fileFilterChangeListener
      */
     public void addFileFilterChangeListener(
@@ -398,7 +409,7 @@ public class FileFilterModel extends FilterModel {
 
     /**
      * Sets the files to filter.
-     * 
+     *
      * @param fileListArg
      */
     public void setFiles(List<DiskItem> fileListArg) {
@@ -410,7 +421,7 @@ public class FileFilterModel extends FilterModel {
 
     /**
      * Sets the filter mode.
-     * 
+     *
      * @param mode
      */
     public void setMode(int mode) {
