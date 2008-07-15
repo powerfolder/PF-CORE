@@ -64,7 +64,7 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * Repository of all known power folders. Local and unjoined.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.75 $
  */
@@ -302,7 +302,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     /**
      * Removes unused folder infos from the config.
-     * 
+     *
      * @param config
      * @param errorFolderNames
      */
@@ -413,7 +413,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      * @return the folders
      */
     public Folder[] getFolders() {
-        return folders.values().toArray(new Folder[0]);
+        return folders.values().toArray(new Folder[folders.values().size()]);
     }
 
     /**
@@ -428,7 +428,7 @@ public class FolderRepository extends PFComponent implements Runnable {
     /**
      * TODO Experimetal: Hands out a indirect reference to the value of internal
      * hashmap.
-     * 
+     *
      * @return the folders as unmodifiable collection
      */
     public Collection<Folder> getFoldersAsCollection() {
@@ -446,7 +446,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      * @return a fresh list of all joined folders
      */
     public FolderInfo[] getJoinedFolderInfos() {
-        return folders.keySet().toArray(new FolderInfo[0]);
+        return folders.keySet().toArray(new FolderInfo[folders.keySet().size()]);
     }
 
     /**
@@ -454,7 +454,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      * <p>
      * Also stores a invitation file for the folder in the local directory if
      * wanted.
-     * 
+     *
      * @param folderInfo
      *            the folder info object
      * @param folderSettings
@@ -471,7 +471,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      * Used when creating a preview folder. FolderSettings should be as required
      * for the preview folder. Note that settings are not stored and the caller
      * is responsible for setting the preview config.
-     * 
+     *
      * @param folderInfo
      * @param folderSettings
      * @return
@@ -487,7 +487,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      * <p>
      * Also stores a invitation file for the folder in the local directory if
      * wanted.
-     * 
+     *
      * @param folderInfo
      *            the folder info object
      * @param folderSettings
@@ -561,7 +561,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     /**
      * Saves settings and info details to the config.
-     * 
+     *
      * @param folderInfo
      * @param folderSettings
      * @param saveConfig
@@ -599,7 +599,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     /**
      * Removes a folder from active folders, will be added as non-local folder
-     * 
+     *
      * @param folder
      * @param deleteSystemSubDir
      */
@@ -656,6 +656,28 @@ public class FolderRepository extends PFComponent implements Runnable {
             if (!systemSubDir.delete()) {
                 log().error("Failed to delete: " + systemSubDir);
             }
+
+            // Try to delete the invitation.
+            File invite = new File(folder.getLocalBase(), folder.getName()
+                    + ".invitation");
+            if (invite.exists()) {
+                try {
+                    invite.delete();
+                } catch (Exception e) {
+                    log().error("Failed to delete invitation: "
+                            + invite.getAbsolutePath(), e);
+                }
+            }
+
+            // Remove the folder if totally empty.
+            if (folder.getLocalBase().listFiles().length == 0) {
+                try {
+                    folder.getLocalBase().delete();
+                } catch (Exception e) {
+                    log().error("Failed to delete local base: "
+                            + folder.getLocalBase().getAbsolutePath(), e);
+                }
+            }
         }
 
         // Fire event
@@ -664,7 +686,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     /**
      * Removes a member from all Folders.
-     * 
+     *
      * @param member
      */
     public void removeFromAllFolders(Member member) {
@@ -815,7 +837,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      * Processes a invitation to a folder TODO: Autojoin invitation, make this
      * configurable in pref screen.
      * <P>
-     * 
+     *
      * @param invitation
      * @param processSilently
      *            if the invitation should be processed silently if already on
