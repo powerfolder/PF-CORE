@@ -29,7 +29,6 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.TimerTask;
@@ -551,14 +550,16 @@ public class UIController extends PFComponent {
 
     private class UpdateSystrayTask extends TimerTask {
         public void run() {
-            String tooltip = Translation.getTranslation("general.powerfolder");
-            tooltip += " ";
+            StringBuilder tooltip = new StringBuilder();
+
+            tooltip.append(Translation.getTranslation("general.powerfolder"));
+            tooltip.append(' ');
             if (getController().getFolderRepository().isAnyFolderTransferring())
             {
-                tooltip += Translation
-                    .getTranslation("systray.tooltip.syncing");
+                tooltip.append(Translation
+                    .getTranslation("systray.tooltip.syncing"));
             } else {
-                tooltip += Translation.getTranslation("systray.tooltip.insync");
+                tooltip.append(Translation.getTranslation("systray.tooltip.insync"));
             }
             double totalCPSdownKB = getController().getTransferManager()
                 .getDownloadCounter().calculateAverageCPS() / 1024;
@@ -585,8 +586,8 @@ public class UIController extends PFComponent {
                     Format.getNumberFormat().format(totalCPSupKB));
             }
 
-            tooltip += ' ' + upText + ' ' + downText;
-            sysTrayMenu.setToolTip(tooltip);
+            tooltip.append(' ' + upText + ' ' + downText);
+            sysTrayMenu.setToolTip(tooltip.toString());
         }
     }
 
@@ -1062,7 +1063,9 @@ public class UIController extends PFComponent {
 
             int synchronizingFolders = 0;
             for (Folder folder : folders) {
-                if (folder.isTransferring()) {
+                if (folder.isTransferring() ||
+                        Double.compare(folder.getStatistic().getTotalSyncPercentage(),
+                                100.0d) != 0) {
                     synchronizingFolders++;
                 }
                 nTotalBytes += folder.getStatistic().getTotalSize();
@@ -1093,7 +1096,7 @@ public class UIController extends PFComponent {
             // Disabled popup of sync start.
             if (changed
                 && ConfigurationEntry.SHOW_SYSTEM_NOTIFICATIONS
-                    .getValueBoolean(getController()) && !synchronizing.get())
+                    .getValueBoolean(getController()))
             {
                 String text2 = Translation.getTranslation(
                     "quickinfo.myfolders.powerfolders", Format
