@@ -22,6 +22,8 @@ package de.dal33t.powerfolder.ui.action;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderPreviewHelper;
+import de.dal33t.powerfolder.disk.FolderRepository;
+import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.ui.dialog.FolderRemovePanel;
 import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
 import de.dal33t.powerfolder.util.ui.SelectionChangeListener;
@@ -38,6 +40,7 @@ import java.awt.event.ActionEvent;
 public class FolderRemoveAction extends BaseAction {
     // new selection model
     private SelectionModel actionSelectionModel;
+    private FolderRepository folderRepository;
 
     public FolderRemoveAction(Controller controller,
         SelectionModel selectionModel)
@@ -80,17 +83,23 @@ public class FolderRemoveAction extends BaseAction {
      *            if the folder and files should be removed from the Online
      *            Storage
      */
-    public void confirmedFolderLeave(boolean deleteSystemSubFolder,
-        boolean convertToPreview, boolean removeFromOS)
-    {
+    public void confirmedFolderLeave(boolean removeLocal,
+                                     boolean deleteSystemSubFolder,
+                                     boolean convertToPreview,
+                                     boolean removeFromOS) {
+
         Folder folder = (Folder) actionSelectionModel.getSelection();
-        if (convertToPreview) {
-            FolderPreviewHelper.convertFolderToPreview(getController(), folder,
-                deleteSystemSubFolder);
-        } else {
-            getController().getFolderRepository().removeFolder(folder,
-                deleteSystemSubFolder);
+
+        if (removeLocal) {
+            if (convertToPreview) {
+                FolderPreviewHelper.convertFolderToPreview(getController(), folder,
+                    deleteSystemSubFolder);
+            } else {
+                getController().getFolderRepository().removeFolder(folder,
+                    deleteSystemSubFolder);
+            }
         }
+
         if (removeFromOS) {
             if (getController().getOSClient().hasJoined(folder)) {
                 getController().getOSClient().getFolderService().removeFolder(
@@ -99,6 +108,10 @@ public class FolderRemoveAction extends BaseAction {
                 getController().getOSClient().getFolderService().revokeAdmin(
                     folder.getInfo());
             }
+
+            folderRepository = getController().getFolderRepository();
+            FolderSettings folderSettings = folderRepository.loadFolderSettings(folder.getName());
+            folderRepository.saveFolderConfig(folder.getInfo(), folderSettings, true);
         }
     }
 }

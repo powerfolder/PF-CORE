@@ -49,9 +49,12 @@ public class FolderRemovePanel extends BaseDialog {
 
     private JButton leaveButton;
     private JButton cancelButton;
+
     private JLabel messageLabel;
-    private JCheckBox deleteSystemSubFolderBox;
+
+    private JCheckBox removeFromLocalBox;
     private JCheckBox convertToPreviewBox;
+    private JCheckBox deleteSystemSubFolderBox;
     private JCheckBox removeFromServerBox;
 
     /**
@@ -91,17 +94,22 @@ public class FolderRemovePanel extends BaseDialog {
         }
         messageLabel = new JLabel(folerLeaveText);
 
-        deleteSystemSubFolderBox = SimpleComponentFactory
-            .createCheckBox(Translation
-                .getTranslation("folder_remove.dialog.delete"));
-        deleteSystemSubFolderBox.setSelected(true);
+        removeFromLocalBox = SimpleComponentFactory
+            .createCheckBox(Translation.getTranslation(
+                    "folder_remove.dialog.remove_from_local"));
+        removeFromLocalBox.setSelected(true);
+        removeFromLocalBox.addActionListener(new ConvertActionListener());
 
         convertToPreviewBox = SimpleComponentFactory.createCheckBox(Translation
             .getTranslation("folder_remove.dialog.preview"));
         convertToPreviewBox.addActionListener(new ConvertActionListener());
 
+        deleteSystemSubFolderBox = SimpleComponentFactory.createCheckBox(
+                Translation.getTranslation("folder_remove.dialog.delete"));
+
         removeFromServerBox = SimpleComponentFactory.createCheckBox(Translation
             .getTranslation("folder_remove.dialog.remove_from_os"));
+        removeFromServerBox.addActionListener(new ConvertActionListener());
         removeFromServerBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 getUIController().getServerClientModel()
@@ -113,9 +121,10 @@ public class FolderRemovePanel extends BaseDialog {
         createLeaveButton(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 leaveButton.setEnabled(false);
-                action.confirmedFolderLeave(deleteSystemSubFolderBox
-                    .isSelected(), convertToPreviewBox.isSelected(),
-                    removeFromServerBox.isSelected());
+                action.confirmedFolderLeave(removeFromLocalBox.isSelected(),
+                        deleteSystemSubFolderBox.isSelected(),
+                        convertToPreviewBox.isSelected(),
+                        removeFromServerBox.isSelected());
                 close();
             }
         });
@@ -150,23 +159,36 @@ public class FolderRemovePanel extends BaseDialog {
         initComponents();
 
         FormLayout layout = new FormLayout("pref:grow, 5dlu, pref:grow",
-            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
+            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
 
         CellConstraints cc = new CellConstraints();
 
         builder.add(messageLabel, cc.xyw(1, 1, 3));
 
-        builder.add(deleteSystemSubFolderBox, cc.xyw(1, 3, 3));
-
-        builder.add(convertToPreviewBox, cc.xyw(1, 5, 3));
-
-        boolean showRemoveFromServer = !getController().isLanOnly()
+        boolean showRemoves = !getController().isLanOnly()
             && getController().getOSClient().getAccount().hasAdminPermission(
                 folder.getInfo());
-        if (showRemoveFromServer) {
-            builder.add(removeFromServerBox, cc.xyw(1, 7, 3));
+
+        int row = 3;
+
+        if (showRemoves) {
+            builder.add(removeFromLocalBox, cc.xyw(1, row, 3));
+            row += 2;
         }
+
+        builder.add(convertToPreviewBox, cc.xyw(1, row, 3));
+        row += 2;
+
+        builder.add(deleteSystemSubFolderBox, cc.xyw(1, row, 3));
+        row += 2;
+
+        if (showRemoves) {
+            builder.add(removeFromServerBox, cc.xyw(1, row, 3));
+            row += 2;
+        }
+
+        configureComponents();
 
         return builder.getPanel();
     }
@@ -175,10 +197,28 @@ public class FolderRemovePanel extends BaseDialog {
         return ButtonBarFactory.buildCenteredBar(leaveButton, cancelButton);
     }
 
+    private void configureComponents() {
+        convertToPreviewBox.setEnabled(removeFromLocalBox.isSelected());
+            if (!removeFromLocalBox.isSelected()) {
+                convertToPreviewBox.setSelected(false);
+            }
+
+            deleteSystemSubFolderBox.setEnabled(!convertToPreviewBox.isSelected()
+                    && removeFromLocalBox.isSelected());
+            leaveButton.setEnabled(!convertToPreviewBox.isSelected()
+                    && removeFromLocalBox.isSelected());
+            if (convertToPreviewBox.isSelected()
+                    || !removeFromLocalBox.isSelected()) {
+                deleteSystemSubFolderBox.setSelected(false);
+            }
+
+            leaveButton.setEnabled(removeFromLocalBox.isSelected()
+                    || removeFromServerBox.isSelected());
+    }
+
     private class ConvertActionListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
-            deleteSystemSubFolderBox.setEnabled(!convertToPreviewBox
-                .isSelected());
+            configureComponents();
         }
     }
 }
