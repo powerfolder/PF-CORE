@@ -85,6 +85,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
     private JComponent invitationFileField;
     private JComponent sendByMailButton;
     private JComponent emailField;
+    private JComponent ccBox;
     private JComponent saveToFileButton;
     private JRadioButton sendViaPowerFolderButton;
     private JTextField invitationTextField;
@@ -93,6 +94,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
     private ValueModel invitationFileModel;
     private ValueModel decision;
     private ValueModel viaPowerFolderModel;
+    private ValueModel ccValue;
     private JTextField viaPowerFolderText;
     private JButton viaPowerFolderConfigButton;
 
@@ -141,7 +143,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
         }
         if (getController().getOSClient().isConnected()) {
             InvitationUtil.invitationByServer(getController(), invitation,
-                (String) emailModel.getValue());
+                (String) emailModel.getValue(), (Boolean) ccValue.getValue());
             // TODO Could fail, but that's a "latent" event.
             return true;
         } else {
@@ -205,7 +207,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
             "pref, 5dlu, pref",
             "pref, 5dlu, pref, 10dlu, pref, 5dlu, pref, 10dlu, pref, 5dlu, "
                 + "pref, 10dlu, pref, 5dlu, pref, 10dlu, pref, 5dlu, pref, 5dlu, "
-                + "pref, 5dlu, pref");
+                + "pref, 5dlu, pref, 5dlu, pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
@@ -231,6 +233,8 @@ public class SendInvitationsPanel extends PFWizardPanel {
         builder.add(sendByMailButton, cc.xyw(1, row, 3));
         row += 2;
         builder.add(emailField, cc.xy(1, row));
+        row += 2;
+        builder.add(ccBox, cc.xy(1, row));
 
         row += 2;
         builder.add(saveToFileButton, cc.xyw(1, row, 3));
@@ -268,6 +272,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
         invitationFileModel = new ValueHolder();
         emailModel = new ValueHolder(Translation
             .getTranslation("send_invitation.example_email_address"));
+        ccValue = new ValueHolder(false);
         decision = new ValueHolder(SEND_BY_MAIL, true);
 
         sendByMailButton = BasicComponentFactory.createRadioButton(decision,
@@ -287,6 +292,9 @@ public class SendInvitationsPanel extends PFWizardPanel {
             public void focusLost(FocusEvent e) {
             }
         });
+
+        ccBox = BasicComponentFactory.createCheckBox(ccValue, Translation
+            .getTranslation("wizard.send_invitations.send_by_mail.cc_me"));
 
         saveToFileButton = BasicComponentFactory.createRadioButton(decision,
             SAVE_TO_FILE, Translation
@@ -349,6 +357,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
         decision.addValueChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 emailField.setEnabled(decision.getValue() == SEND_BY_MAIL);
+                ccBox.setEnabled(decision.getValue() == SEND_BY_MAIL);
                 invitationFileField
                     .setEnabled(decision.getValue() == SAVE_TO_FILE);
                 viaPowerFolderConfigButton

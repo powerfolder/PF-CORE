@@ -61,8 +61,15 @@ public interface FolderService {
      * @param invitation
      *            the folder to be invited to
      * @throws FolderException
+     * @deprecated Use {@link SendInvitationEmail} instead
      */
+    @Deprecated
     void inviteUser(Invitation invitation, String user);
+
+    /**
+     * @param request
+     */
+    void sendInvitationEmail(SendInvitationEmail request);
 
     /**
      * Changes the sync profile on the remote server for this folder.

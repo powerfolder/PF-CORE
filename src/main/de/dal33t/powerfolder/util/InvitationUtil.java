@@ -37,6 +37,7 @@ import javax.swing.filechooser.FileFilter;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.clientserver.SendInvitationEmail;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.util.task.SendMessageTask;
@@ -195,7 +196,7 @@ public class InvitationUtil {
      *            the destination email address, if null the user is asked for.
      */
     public static void invitationByServer(Controller controller,
-        Invitation invitation, String to)
+        Invitation invitation, String to, boolean ccMe)
     {
         Reject.ifNull(controller, "Controller is null");
         Reject.ifNull(invitation, "Invitation is null");
@@ -217,7 +218,8 @@ public class InvitationUtil {
             return;
         }
 
-        controller.getOSClient().getFolderService().inviteUser(invitation, to);
+        controller.getOSClient().getFolderService().sendInvitationEmail(
+            new SendInvitationEmail(invitation, to, ccMe));
     }
 
     /**
