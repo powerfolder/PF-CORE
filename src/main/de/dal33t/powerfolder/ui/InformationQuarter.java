@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.ui;
 
 import java.awt.CardLayout;
@@ -396,7 +396,6 @@ public class InformationQuarter extends PFUIComponent {
         boolean alreadyAdded = Arrays.asList(cardPanel.getComponents())
             .contains(item.getContentPanel());
         if (!alreadyAdded) {
-            System.err.println("Adding panel: " + item);
             cardPanel.add(item.getPanelID(), item.getContentPanel());
         }
         cardLayout.show(cardPanel, item.getPanelID());
@@ -562,7 +561,7 @@ public class InformationQuarter extends PFUIComponent {
     public void displayMyFolders() {
         setDisplayTarget(myFoldersPanel);
         showCard(MY_FOLDERS_PANEL);
-        setTitle(myFoldersPanel.getTitle());
+        setTitle(MyFoldersPanel.getTitle());
     }
 
     private void showCard(String panelName) {
