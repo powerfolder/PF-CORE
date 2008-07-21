@@ -226,13 +226,14 @@ public class Format {
 	}
 
 	/**
-	 * See #692
-	 * 
-	 * @return the fULL_DATE_FOMRAT
-	 */
-	public static DateFormat getFullDateFormat() {
-		return fullDateFormat;
-	}
+     * See #692
+     * 
+     * @return the fULL_DATE_FOMRAT
+     */
+    public static DateFormat getFullDateFormat() {
+        return new SimpleDateFormat(Translation
+            .getTranslation("date_format.full_date"));
+    }
 
 	/**
 	 * See #692
