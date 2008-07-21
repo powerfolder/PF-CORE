@@ -632,12 +632,8 @@ public class FilesTab extends PFUIComponent implements FolderTab,
         }
 
         public void mousePressed(MouseEvent evt) {
-            if (evt.getComponent() instanceof JTable) {
-                // int row = directoryTable.rowAtPoint(evt.getPoint());
-                // if (!directoryTable.getSelectionModel().isSelectedIndex(row))
-                // {
-                // directoryTable.setRowSelectionInterval(row, row);
-                // }
+            if (evt.isPopupTrigger()) {
+                showContextMenu(evt);
             }
         }
 

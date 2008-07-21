@@ -218,7 +218,15 @@ public class MembersTab extends PFUIComponent implements FolderTab,
      * member listener, cares for selection and popup menus
      */
     private class MemberListener extends MouseAdapter {
+
         public void mouseReleased(MouseEvent e) {
+            updateActions();
+            if (e.isPopupTrigger()) {
+                showContextMenu(e);
+            }
+        }
+
+        public void mousePressed(MouseEvent e) {
             updateActions();
             if (e.isPopupTrigger()) {
                 showContextMenu(e);
