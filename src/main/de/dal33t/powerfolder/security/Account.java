@@ -56,6 +56,7 @@ public class Account extends Model implements Serializable {
     public static final String PROPERTYNAME_NEWSLETTER = "newsLetter";
     public static final String PROPERTYNAME_PRO_USER = "proUser";
     public static final String PROPERTYNAME_DEFAULT_SYNCHRONIZED_FOLDER = "defaultSynchronizedFolder";
+    public static final String PROPERTYNAME_OS_SUBSCRIPTION = "OSSubscription";
 
     private String oid;
     private String username;
@@ -188,6 +189,13 @@ public class Account extends Model implements Serializable {
 
     public OnlineStorageSubscription getOSSubscription() {
         return osSubscription;
+    }
+
+    public void setOSSubscription(OnlineStorageSubscription osSubscription) {
+        Object oldValue = getOSSubscription();
+        this.osSubscription = osSubscription;
+        firePropertyChange(PROPERTYNAME_OS_SUBSCRIPTION, oldValue,
+            this.osSubscription);
     }
 
     public boolean isProUser() {
