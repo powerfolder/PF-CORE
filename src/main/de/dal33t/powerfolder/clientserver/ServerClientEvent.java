@@ -34,6 +34,10 @@ public class ServerClientEvent extends EventObject {
         super(source);
         accountDetails = details;
     }
+    
+    public ServerClient getClient() {
+        return (ServerClient) getSource();
+    }
 
     public AccountDetails getAccountDetails() {
         return accountDetails;

@@ -41,6 +41,7 @@ import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.clientserver.AccountDetails;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.net.ConnectionHandler;
@@ -54,14 +55,13 @@ import de.dal33t.powerfolder.util.Util;
 /**
  * Client to a server.
  * <p>
- * TODO Finalize Request <-> Response code.
- * <p>
  * Maybe FIXME: Check if MemberInfos with ID = "" cause problems. (Temporary for
  * 
  * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
 public class ServerClient extends PFComponent {
+    private static final String MEMBER_ID_TEMP_PREFIX = "TEMP_IDENTITY_";
     // The last used username and password.
     // Tries to re-login with these if re-connection happens
     private String username;
@@ -76,8 +76,30 @@ public class ServerClient extends PFComponent {
 
     // Construction ***********************************************************
 
+    /**
+     * Constructs a server client with a given member info.
+     * 
+     * @param controller
+     * @param serverNode
+     */
     public ServerClient(Controller controller, Member serverNode) {
         super(controller);
+        init(serverNode);
+
+    }
+
+    /**
+     * Constructs a server client to a given host.
+     * 
+     * @param controller
+     * @param host
+     */
+    public ServerClient(Controller controller, String host) {
+        super(controller);
+        init(createTempServerNode(host));
+    }
+
+    private void init(Member serverNode) {
         Reject.ifNull(serverNode, "Server node is null");
         this.listenerSupport = ListenerSupportFactory
             .createListenerSupport(ServerClientListener.class);
@@ -86,7 +108,22 @@ public class ServerClient extends PFComponent {
         initializeServiceStubs();
         getController().getNodeManager().addNodeManagerListener(
             new MyNodeManagerListener());
+    }
 
+    private Member createTempServerNode(String host) {
+        MemberInfo serverInfo = new MemberInfo("Connecting...",
+            MEMBER_ID_TEMP_PREFIX + "|" + IdGenerator.makeId());
+        serverInfo.setConnectAddress(Util.parseConnectionString(host));
+        log().info(
+            "Using server from config: " + serverInfo + ", ID: "
+                + serverInfo.id);
+        // Avoid adding temporary nodes to nodemanager
+        return new Member(getController(), serverInfo);
+        // return serverInfo.getNode(getController(), true);
+    }
+
+    private boolean isTempServerNode() {
+        return server.getId().startsWith(MEMBER_ID_TEMP_PREFIX);
     }
 
     // Basics *****************************************************************
@@ -213,8 +250,7 @@ public class ServerClient extends PFComponent {
      *         false if not or no login tried yet.
      */
     public boolean isLastLoginOK() {
-        return accountDetails != null
-            && (!(accountDetails.getAccount() instanceof AnonymousAccount));
+        return getAccount() != null && getAccount().isValid();
     }
 
     /**
@@ -343,7 +379,8 @@ public class ServerClient extends PFComponent {
     private class MyNodeManagerListener implements NodeManagerListener {
         public void nodeConnected(NodeManagerEvent e) {
             if (isServer(e.getNode())) {
-                if (StringUtils.isEmpty(server.getId())) {
+                // Our server member instance is a temporary one. Lets get real.
+                if (isTempServerNode()) {
                     // Got connect to server! Take his ID and name.
                     Member oldServer = server;
                     server = e.getNode();
@@ -444,8 +481,8 @@ public class ServerClient extends PFComponent {
                             // Already triing
                             return;
                         }
-                        if (!StringUtils.isEmpty(server.getId())) {
-                            log().warn(
+                        if (!isTempServerNode()) {
+                            log().debug(
                                 "Triing to reconnect to Server (" + server
                                     + ")");
                             // With ID directly connect
