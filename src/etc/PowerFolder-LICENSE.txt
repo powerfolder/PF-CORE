@@ -1,0 +1,145 @@
+PowerFolder Pro Software License
+
+Copyright (C) 2007 Christian Sprajc.
+Luetticher Str. 16
+40547 Duesseldorf, Germany
+All rights reserved.
+January 21th, 2007
+
+THIS LICENSE APPLIES TO THE COMPUTER PROGRAM KNOWN AS "PowerFolder Pro", HEREAFTER REFERRED TO AS "THE PROGRAM"."THE PROGRAM", BELOW, REFERS TO SUCH PROGRAM, AND A "WORK BASED ON THE PROGRAM" MEANS EITHER THE PROGRAM OR ANY DERIVATIVE WORK OF THE PROGRAM, AS DEFINED IN THE GERMAN RIGHT, SUCH AS A TRANSLATION OR A MODIFICATION. THE PROGRAM IS A COPYRIGHTED WORK WHOSE COPYRIGHT IS HELD BY Christian Sprajc, Duesseldorf, Germany.
+
+YOU ARE GRANTED THE WORLDWIDE, NON-EXCLUSIVE, PERPETUAL (FOR THE DURATION OF THE APPLICABLE COPYRIGHT) RIGHTS SET FORTH IN THIS LICENSE PROVIDED YOU AGREE TO AND COMPLY WITH ANY AND ALL CONDITIONS IN THIS LICENSE. THE PROGRAM IS PROVIDED UNDER THE TERMS OF THIS LICENSE. BY USING, DOWNLOADING OR INSTALLING THE PROGRAM OR ANY PORTION OF THE PROGRAM, YOU INDICATE YOUR ACCEPTANCE OF THIS LICENSE TO DO SO, AND ALL ITS TERMS AND CONDITIONS FOR COPYING, DISTRIBUTING OR MODIFYING THE PROGRAM OR WORKS BASED ON IT. NOTHING OTHER THAN THIS LICENSE GRANTS YOU PERMISSION TO MODIFY OR DISTRIBUTE THE PROGRAM OR ITS DERIVATIVE WORKS. THESE ACTIONS ARE PROHIBITED BY LAW. IF YOU DO NOT ACCEPT THESE TERMS AND CONDITIONS, DO NOT USE, MODIFY, OR DISTRIBUTE THE PROGRAM. YOU MAY NOT IMPOSE ANY FURTHER RESTRICTIONS ON THE RECIPIENT’S EXERCISE OF THE RIGHTS GRANTED HEREIN.
+Definitions.
+
+"Contributor" means Christian Sprajc and any other entity that creates or contributes to the creation of Modifications or offers suggestions, ideas, bug fixes or fragments of source code to a Contributor.
+
+"License" means this document.
+
+"Modifications" means any addition to, editing of or deletion from the substance or structure of either the Original Code or any previous Modifications.
+
+"Original Code" means the "PowerFolder Pro" Source Code as released under this License by Christian Sprajc.
+
+"Source Code" means forms, views, scripts, agents, images, pages and all other database design elements, and including all script, text, program code and functions contained within those design elements that together makes up THE PROGRAM.
+
+"You" means an individual or a legal entity exercising rights under, and complying with all of the terms of, this License. For legal entities, "You" includes but is not limited to any entity which controls, is controlled by, or is under common control with You. For purposes of this definition, "control" means (a) the power, direct or indirect, to cause the direction or management of such entity, whether by contract or otherwise, or (b) ownership of fifty percent (50%) or more of the outstanding shares or beneficial ownership of such entity.
+
+"Contribution" means:
+
+a) in the case of Christian Sprajc, the Original Program and
+
+b) in the case of each Contributor,
+
+i) modifications and changes to THE PROGRAM, and
+
+ii) additions to THE PROGRAM; where such changes and/or additions to THE PROGRAM originate from that particular Contributor. A Contribution 'originates' from a Contributor if it was added to THE PROGRAM by such Contributor itself or anyone acting on such Contributor’s behalf.
+
+Contributions do not include additions to THE PROGRAM which:
+
+i) are separate software applications which link to THE PROGRAM and are distributed under their own license agreement, and
+
+ii) are not derivative works of THE PROGRAM.
+
+"The Original Program" means the original version of THE PROGRAM as released by Christian Sprajc on the Internet site http://www.powerfolder.com, including source code and documentation, if any.
+
+"Software registration & licensing fee" means the amount of money required to be paid by you to Christian Sprajc for legal usage of THE PROGRAM under the terms of this agreement.
+
+"Recipient" means anyone who receives THE PROGRAM under this Agreement, including all Contributors.
+
+"Welcome page" means the first HTML page as it is displayed to a user of THE ORIGINAL PROGRAM when that user first enters THE ORIGINAL PROGRAM in a normal manner via an Internet web browser.
+
+"Top menu" means the program options displayed to end users on the top of the screen when using THE ORIGINAL PROGRAM in a normal manner via an Internet web browser. The top menu contains various hyperlinks and options which link to HTML pages on the http://www.powerfolder.com Internet site.
+
+"Hosting Services" means distribution of THE PROGRAM to end users in a live, working, operational context in which THE PROGRAM is installed onto the servers of the provider of the hosting services, and the user interface of THE PROGRAM is accessed by end users generally via the Internet or via some other data communications medium, obviating the need for end users to download and install THE PROGRAM onto their own server(s).
+1. Modification of THE PROGRAM
+
+1.1. You may not modify THE PROGRAM to your requirements, subject to the restrictions in this license agreement.
+
+1.2. You may not copy or reproduce any portion of THE PROGRAM into any other software application by any means whatsoever.
+
+1.3. You may not make any modification to THE PROGRAM that in any way infringes the rights, patents, trademarks or copyrights of any party or entity.
+
+1.4. If you have modified THE PROGRAM, you are not required to publicly publish the modified version, however if you have modified THE PROGRAM and distributed THE PROGRAM outside of your company / organization / entity, then you must pay a software registration & licensing fee for each copy of THE PROGRAM distributed.
+
+1.5. You may not develop application programs, reusable components and other software items that link with the original or modified versions of THE PROGRAM.
+2. Distribution of THE PROGRAM
+
+2.1. You may not copy and distribute literal (i.e., verbatim) copies of THE PROGRAM.
+
+2.2. You may not copy and distribute modified copies of THE PROGRAM, throughout the world, in any medium, on the condition that the recipients of the modified copies of the program comply with the terms of this license agreement.
+
+2.3. You may not package or include THE PROGRAM and distribute with any other software product without specific written permission from Christan Sprajc.
+
+3. Hosting services.
+
+3.1. For the purposes of this license, "hosting services" are considered to be a form of distribution of THE PROGRAM.
+
+3.2. If you access THE PROGRAM via a hosting service, then you are bound by the terms and conditions of this license in precisely the same manner as if you had downloaded and installed THE PROGRAM onto your own servers/systems.
+
+3.3. You may not provide "hosting services" for THE PROGRAM.
+
+3.4. Christian Sprajc will in no way be held responsible for THE PROGRAM’s capabilities or suitability to task as a hosted software application.
+
+4. Ownership of intellectual property.
+
+4.1. Christian Sprajc is the sole owner of all intellectual property rights pertaining to THE PROGRAM, whether modified or in its original form.
+
+4.2. Recipient receives no rights or licenses to the intellectual property of any Contributor under this Agreement, whether expressly, by implication, estoppel or otherwise. All rights in THE PROGRAM not expressly granted under this Agreement are reserved.
+
+4.3. Reservation of Rights. No rights are granted to THE PROGRAM except as expressly set forth herein. You may not copy, modify, sublicense, or distribute THE PROGRAM except as expressly provided under this License. Any attempt otherwise to copy, modify, sublicense or distribute THE PROGRAM is void, and will automatically terminate your rights under this License.
+
+4.4. Permission to use THE PROGRAM is granted on the understanding that such usage in no way confers any rights of ownership to any portion of THE PROGRAM.
+
+4.5. You may not represent yourself as being in any way affiliated with, connected with or endorsed by Christian Sprajc or THE PROGRAM without specific written permission from Christian Sprajc.
+
+4.6. You may not create derivative works.
+
+4.7. If an individual party or entity submits a contribution in any form to Christian Sprajc for inclusion into THE PROGRAM, including but not limited to software modifications, suggestions, enhancements, bug fixes or any other changes, then the contributor grants Christian Sprajc non-exclusive, transferable, worldwide, royalty-free copyright license to use the contribution for any purpose whatsoever, including rights to reproduce, redistribute, resell, prepare derivative works of, publicly display, publicly perform, distribute and sublicense the contribution.
+
+4.8. Ownership of full intellectual property rights to the entirety of THE PROGRAM remains with Christian Sprajc, under any circumstances whatsoever. Modification of THE PROGRAM , or contribution of modifications, suggestions, enhancements, bug fixes or other changes to any portion of THE PROGRAM, does not confer any ownership rights or any intellectual property rights to any party except Christian Sprajc.
+
+4.9. GRANT OF RIGHTS. Subject to the terms of this Agreement, each Contributor hereby grants Christian Sprajc a non-exclusive, worldwide, royalty-free copyright license to reproduce, prepare derivative works of, publicly display, publicly perform, distribute and sublicense the Contribution of such Contributor, if any, and such derivative works, in source code form.
+
+5. Exchange of monies, License fees & Payment
+
+5.1. Any organization or individual that uses THE PROGRAM must pay a software registration & licensing fee, as specified in schedule of software registration & licensing fees which can be found on the internet homepage: www.powerfolder.com.
+
+5.2. Christian Sprajc reserves the right to vary the software registration & licensing fees in its sole discretion without notice or justification at any time.
+
+5.3. Any organization or individual that uses THE PROGRAM is bound by the terms of this agreement, regardless of whether or not payment is required for such usage.
+
+5.4. The following parties/entities are REQUIRED to pay software registration & licensing fees for usage of THE PROGRAM;
+
+5.4.1. Any individual person, commercial / military / government / education organization, company or other entity not specifically exempted from payment by the terms of this license are REQUIRED to pay software registration & licensing fees for usage of THE PROGRAM.
+
+5.5. THE PROGRAM is licensed on a "per computer" basis, which means that one software registration & licensing fee must be purchased for each copy of THE PROGRAM in use. If multiple copies of THE PROGRAM are used to serve a single computer, a separate software registration & licensing fee must be paid for each copy.
+
+5.6. Payment of software registration & licensing fees to Christian Sprajc under the terms of this agreement is required, whether THE PROGRAM is modified or in original form.
+
+5.7. Payment of software registration & licensing fees to Christian Sprajc is required in Euro.
+
+5.8. You are permitted to accept payment on a time and materials or a fixed cost basis for the provision of the following services related to THE PROGRAM; custom software modification services, software installation and configuration services, software project implementation services, software support services, user training services, documentation writing services, software hosting services.
+
+5.9. Upon payment of the required software registration & licensing fee for usage of THE PROGRAM, you will be sent a registration certificate and a receipt by electronic mail, if you provide appropriate contact details.
+
+5.10. You may not use THE PROGRAM if you have not paid the required software registration & licensing fee as specified in this agreement. Usage of the program if you have not paid the required software registration & licensing fee is in violation of international copyright law.
+
+NO WARRANTY.
+EXCEPT AS EXPRESSLY SET FORTH IN THIS AGREEMENT, THE PROGRAM IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED INCLUDING, WITHOUT LIMITATION, ANY WARRANTIES OR CONDITIONS OF TITLE, NON-INFRINGEMENT, MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE. EACH RECIPIENT IS SOLELY RESPONSIBLE FOR DETERMINING THE APPROPRIATENESS OF USING AND DISTRIBUTING THE PROGRAM AND ASSUMES ALL RISKS ASSOCIATED WITH ITS EXERCISE OF RIGHTS UNDER THIS AGREEMENT, INCLUDING BUT NOT LIMITED TO THE RISKS AND COSTS OF PROGRAM ERRORS, COMPLIANCE WITH APPLICABLE LAWS, DAMAGE TO OR LOSS OF DATA, PROGRAMS OR EQUIPMENT, SUITABILITY FOR HOSTING AND UNAVAILABILITY OR INTERRUPTION OF OPERATIONS.
+
+DISCLAIMER OF LIABILITY.
+EXCEPT AS EXPRESSLY SET FORTH IN THIS AGREEMENT, NEITHER RECIPIENT, CHRISTIAN SPRAJC NOR ANY CONTRIBUTORS SHALL HAVE ANY LIABILITY FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING WITHOUT LIMITATION LOST PROFITS), HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OR DISTRIBUTION OF THE PROGRAM OR THE EXERCISE OF ANY RIGHTS GRANTED HEREUNDER, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+
+SEVERABILITY.
+EACH OF THE COVENANTS, AGREEMENTS, UNDERTAKINGS AND PROVISIONS CONTAINED HEREIN ARE REGARDED AS SEPARATE, DISTINCT AND SEVERAL EACH OF THE COVENANTS, AGREEMENTS AND UNDERTAKINGS CONTAINED HEREIN SHALL BE CONSTRUED TO TAKE EFFECT SO THAT IF ANY PART OF ANY OF THE COVENANTS, AGREEMENTS OR UNDERTAKINGS RENDERS OR WOULD RENDER SUCH COVENANT, AGREEMENT OR UNDERTAKING INVALID OR UNENFORCEABLE FOR ANY REASON THEN THAT PART SHALL BE SEVERED FROM THAT COVENANT, AGREEMENT OR UNDERTAKING AND THE REMAINDER OF THAT COVENANT, AGREEMENT OR UNDERTAKING OR ANY PART OR PROVISIONS OF THE CONTRACT SHALL HAVE FULL FORCE AND EFFECT.
+
+NON COMPLIANCE.
+ALL RECIPIENT’S RIGHTS UNDER THIS AGREEMENT SHALL TERMINATE IF IT FAILS TO COMPLY WITH ANY OF THE MATERIAL TERMS OR CONDITIONS OF THIS AGREEMENT AND DOES NOT CURE SUCH FAILURE IN A REASONABLE PERIOD OF TIME AFTER BECOMING AWARE OF SUCH NONCOMPLIANCE. IF ALL RECIPIENT’S RIGHTS UNDER THIS AGREEMENT TERMINATE, RECIPIENT AGREES TO CEASE USE AND DISTRIBUTION OF THE PROGRAM AS SOON AS REASONABLY PRACTICABLE. HOWEVER, RECIPIENT’S OBLIGATIONS UNDER THIS AGREEMENT RELATING TO THE PROGRAM SHALL CONTINUE AND SURVIVE.
+
+NEW VERSIONS OF AGREEMENT.
+CHRISTIAN SPRAJC MAY PUBLISH NEW VERSIONS (INCLUDING REVISIONS) OF THIS AGREEMENT FROM TIME TO TIME. EACH NEW VERSION OF THE AGREEMENT WILL BE GIVEN A DISTINGUISHING VERSION NUMBER. THE PROGRAM (INCLUDING CONTRIBUTIONS) MUST ALWAYS BE DISTRIBUTED SUBJECT TO THE VERSION OF THE AGREEMENT AS ENCLOSED IN THE ORIGINAL PROGRAM DISTRIBUTION, OR THE MOST RECENT VERSION OF THE AGREEMENT AS PUBLISHED AT THE INTERNET ADDRESS HTTP://WWW.POWERFOLDER.COM.
+
+MODIFICATION OF THIS AGREEMENT.
+NO ONE OTHER THAN CHRISTIAN SPRAJC HAS THE RIGHT TO MODIFY THIS AGREEMENT.
+
+GOVERNING LAW.
+THIS AGREEMENT IS GOVERNED BY THE LAWS OF GERMANY AND THE INTELLECTUAL PROPERTY LAWS OF GERMANY. ANY DISPUTES ARISING SHALL BE HEARD IN DUESSELDORF, GERMANY. EACH PARTY WAIVES ITS RIGHTS TO A JURY TRIAL IN ANY RESULTING LITIGATION.
