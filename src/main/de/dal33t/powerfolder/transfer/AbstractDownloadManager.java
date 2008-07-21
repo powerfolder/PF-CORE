@@ -510,7 +510,9 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             setState(InternalState.BROKEN);
             shutdown();
 
-            if (getTempFile().exists() && getTempFile().length() == 0) {
+            if (getTempFile() != null && getTempFile().exists()
+                && getTempFile().length() == 0)
+            {
                 log().info("Deleting tempfile with size 0.");
                 if (getTempFile().delete()) {
                     log().warn("Failed to delete temp file!");
@@ -704,8 +706,9 @@ public abstract class AbstractDownloadManager extends PFComponent implements
 
         // log().debug("Updating tempfile modification date to: " +
         // getFileInfo().getModifiedDate());
-        if (!getTempFile().setLastModified(
-            getFileInfo().getModifiedDate().getTime()))
+        if (getTempFile() == null
+            || !getTempFile().setLastModified(
+                getFileInfo().getModifiedDate().getTime()))
         {
             log().error("Failed to update modification date! Detail:" + this);
         }
