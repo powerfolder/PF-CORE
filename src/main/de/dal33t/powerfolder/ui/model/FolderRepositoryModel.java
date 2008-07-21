@@ -204,7 +204,7 @@ public class FolderRepositoryModel extends PFUIComponent {
         if (logVerbose) {
             log().verbose("Updating files of folder " + folderModel.getFolder());
         }
-        TreeNodeList list = getMyFoldersTreeNode();
+        TreeNodeList list = myFoldersTreeNode;
         Object[] path = new Object[]{navTreeModel.getRoot(), list,
             folderModel.getTreeNode()};
         TreeModelEvent te = new TreeModelEvent(this, path);
@@ -224,7 +224,8 @@ public class FolderRepositoryModel extends PFUIComponent {
         public void folderRemoved(FolderRepositoryEvent e) {
             Folder folder = e.getFolder();
             FolderModel folderModel = locateFolderModel(folder);
-            if (!myFoldersTreeNode.contains(folderModel.getTreeNode())) {
+            if (folderModel == null
+                    || !myFoldersTreeNode.contains(folderModel.getTreeNode())) {
                 return;
             }
 
@@ -234,8 +235,8 @@ public class FolderRepositoryModel extends PFUIComponent {
         public void folderCreated(FolderRepositoryEvent e) {
             Folder folder = e.getFolder();
             FolderModel folderModel = locateFolderModel(folder);
-            if (folderModel != null
-                && myFoldersTreeNode.contains(folderModel.getTreeNode()))
+            if (folderModel == null
+                    || !myFoldersTreeNode.contains(folderModel.getTreeNode()))
             {
                 return;
             }
@@ -263,7 +264,9 @@ public class FolderRepositoryModel extends PFUIComponent {
                 return;
             }
             FolderModel folderModel = locateFolderModel(folder);
-            if (!myFoldersTreeNode.contains(folderModel.getTreeNode())) {
+            if (folderModel == null
+                || myFoldersTreeNode.contains(folderModel.getTreeNode()))
+            {
                 return;
             }
             if (folder.isTransferring() || folder.isScanning()) {
@@ -290,12 +293,14 @@ public class FolderRepositoryModel extends PFUIComponent {
     private void removeFolder(Folder folder, Object eventSource) {
         TreeNodeList tnl = myFoldersTreeNode;
         FolderModel folderModel = locateFolderModel(folder);
-        myFoldersTreeNode.remove(folderModel.getTreeNode());
-        folderModel.dispose();
+        if (folderModel != null) {
+            myFoldersTreeNode.remove(folderModel.getTreeNode());
+            folderModel.dispose();
 
-        // Fire tree model event
-        TreeModelEvent te = new TreeModelEvent(eventSource, tnl.getPathTo());
-        navTreeModel.fireTreeStructureChanged(te);
+            // Fire tree model event
+            TreeModelEvent te = new TreeModelEvent(eventSource, tnl.getPathTo());
+            navTreeModel.fireTreeStructureChanged(te);
+        }
 
         // Select my folders
         getUIController().getControlQuarter().setSelected(tnl);
