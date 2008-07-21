@@ -196,6 +196,7 @@ public class TestHelper extends Loggable {
                 testFile = new File("build/test/");
             }
         }
+        testFile.mkdirs();
         return testFile;
     }
 
