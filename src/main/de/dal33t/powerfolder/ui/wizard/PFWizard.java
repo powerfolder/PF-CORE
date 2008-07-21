@@ -19,25 +19,29 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.message.Invitation;
-import de.dal33t.powerfolder.ui.Icons;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.Translation;
+
+import java.awt.Component;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.swing.JDialog;
+
 import jwf.Wizard;
 import jwf.WizardContext;
 import jwf.WizardListener;
 import jwf.WizardPanel;
-
-import javax.swing.*;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.List;
-import java.awt.*;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.clientserver.ServerClient;
+import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.message.Invitation;
+import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.util.Logger;
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.Translation;
 
 /**
  * The main wizard class
@@ -157,15 +161,17 @@ public class PFWizard extends PFUIComponent {
     }
 
     /**
-     * Opens the wizard to setup a new webservice mirror.
+     * Opens the wizard to login to the given server.
      * 
      * @param controller
+     * @param client
+     *            the client to login to.
      * @param folderSetupAfterwards
      *            true if the folder backup setup dialog should be shown after
      *            successfully login.
      */
     public static void openLoginWebServiceWizard(Controller controller,
-        boolean folderSetupAfterwards)
+        ServerClient client, boolean folderSetupAfterwards)
     {
         PFWizard wizard = new PFWizard(controller);
         wizard.getWizardContext().setAttribute(PICTO_ICON,
@@ -180,8 +186,8 @@ public class PFWizard extends PFUIComponent {
                 "The Online Storage is now correctly setup.\n"
                     + "You may now start to backup Folders to it.");
         }
-        wizard.open(new LoginOnlineStoragePanel(controller, nextFinishPanel,
-            true));
+        wizard.open(new LoginOnlineStoragePanel(controller, client,
+            nextFinishPanel, true));
     }
 
     /**

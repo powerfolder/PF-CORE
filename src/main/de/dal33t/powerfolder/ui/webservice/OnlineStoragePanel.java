@@ -108,7 +108,8 @@ public class OnlineStoragePanel extends PFUIPanel {
             "online_storage_change_account", getController())
         {
             public void actionPerformed(ActionEvent e) {
-                PFWizard.openLoginWebServiceWizard(getController(), false);
+                PFWizard.openLoginWebServiceWizard(getController(), model
+                    .getClient(), false);
             }
         });
         updateChangeAccountLabel();

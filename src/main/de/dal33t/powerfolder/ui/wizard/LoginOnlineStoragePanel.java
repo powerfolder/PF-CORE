@@ -58,6 +58,7 @@ import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -70,6 +71,8 @@ import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 
 public class LoginOnlineStoragePanel extends PFWizardPanel {
+
+    private ServerClient client;
 
     private JTextField usernameField;
     private JPasswordField passwordField;
@@ -84,6 +87,8 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
     private File defaultSynchronizedFolder;
 
     /**
+     * Constructs a login panel for login to the default OS.
+     * 
      * @param controller
      * @param nextPanel
      *            the next panel to display
@@ -93,9 +98,25 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
     public LoginOnlineStoragePanel(Controller controller,
         WizardPanel nextPanel, boolean entryRequired)
     {
+        this(controller, controller.getOSClient(), nextPanel, entryRequired);
+    }
+
+    /**
+     * @param controller
+     * @param client
+     *            the online storage client to use.
+     * @param nextPanel
+     *            the next panel to display
+     * @param entryRequired
+     *            if username and password has to be validated.
+     */
+    public LoginOnlineStoragePanel(Controller controller, ServerClient client,
+        WizardPanel nextPanel, boolean entryRequired)
+    {
         super(controller);
         this.nextPanel = nextPanel;
         this.entryRequired = entryRequired;
+        this.client = client;
     }
 
     public boolean hasNext() {
@@ -110,14 +131,13 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
         // returns loginOk.
         boolean loginOk = false;
         try {
-            loginOk = getController().getOSClient().login(
-                usernameField.getText(),
+            loginOk = client.login(usernameField.getText(),
                 new String(passwordField.getPassword())).isValid();
             if (!loginOk) {
                 list.add(Translation
                     .getTranslation("online_storage.account_data"));
             }
-            // FIXME Use separate account stores for diffrent servers?
+            // FIXME Use separate account stores for different servers?
             ConfigurationEntry.WEBSERVICE_USERNAME.setValue(getController(),
                 usernameField.getText());
             ConfigurationEntry.WEBSERVICE_PASSWORD.setValue(getController(),
@@ -137,7 +157,7 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
         boolean setupDefault = (Boolean) setupDefaultModel.getValue();
         // Create default
         if (setupDefault) {
-            Account account = getController().getOSClient().getAccount();
+            Account account = client.getAccount();
 
             // If there is already a default folder for this account, use that
             FolderInfo accountFolder = account.getDefaultSynchronizedFolder();
@@ -256,7 +276,7 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
         connectingLabel = SimpleComponentFactory.createLabel(Translation
             .getTranslation("wizard.login_online_storage.connecting"));
         updateOnlineStatus();
-        getController().getOSClient().addListener(new MyServerClientListner());
+        client.addListener(new MyServerClientListner());
 
         setupDefaultModel = new ValueHolder(
             PreferencesEntry.SETUP_DEFAULT_FOLDER
@@ -281,7 +301,7 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
     }
 
     private void updateOnlineStatus() {
-        boolean enabled = getController().getOSClient().isConnected();
+        boolean enabled = client.isConnected();
         usernameField.setVisible(enabled);
         passwordField.setVisible(enabled);
         connectingLabel.setVisible(!enabled);

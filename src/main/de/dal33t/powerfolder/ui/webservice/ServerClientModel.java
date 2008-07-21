@@ -60,6 +60,7 @@ public class ServerClientModel extends PFUIComponent {
 
     public ServerClientModel(Controller controller, ServerClient client) {
         super(controller);
+
         Reject.ifNull(client, "Client is null");
         mirroredFolders = new ArrayListModel<Folder>();
         this.client = client;
@@ -103,7 +104,7 @@ public class ServerClientModel extends PFUIComponent {
         }
 
         if (!client.isDefaultAccountSet()) {
-            PFWizard.openLoginWebServiceWizard(getController(),
+            PFWizard.openLoginWebServiceWizard(getController(), client,
                 folderSetupAfterwards);
             return;
         }
@@ -118,7 +119,7 @@ public class ServerClientModel extends PFUIComponent {
             @Override
             public void finished() {
                 if (!(Boolean) get()) {
-                    PFWizard.openLoginWebServiceWizard(getController(),
+                    PFWizard.openLoginWebServiceWizard(getController(), client,
                         folderSetupAfterwards);
                 }
             }
@@ -162,10 +163,13 @@ public class ServerClientModel extends PFUIComponent {
         }
 
         public void actionPerformed(ActionEvent e) {
-            if (client.isDefaultAccountSet() && client.isConnected()) {
+            if (client.isDefaultAccountSet() && client.isConnected()
+                && client.isLastLoginOK())
+            {
                 PFWizard.openMirrorFolderWizard(getController());
             } else {
-                PFWizard.openLoginWebServiceWizard(getController(), true);
+                PFWizard.openLoginWebServiceWizard(getController(), client,
+                    true);
             }
         }
     }
@@ -233,6 +237,10 @@ public class ServerClientModel extends PFUIComponent {
 
         public void serverConnected(ServerClientEvent event) {
             updateMirroredFolders();
+            if (!event.getClient().isLastLoginOK()) {
+                PFWizard.openLoginWebServiceWizard(getController(), client,
+                    false);
+            }
         }
 
         public void serverDisconnected(ServerClientEvent event) {
