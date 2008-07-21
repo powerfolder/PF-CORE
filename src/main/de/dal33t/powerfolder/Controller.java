@@ -107,7 +107,7 @@ public class Controller extends PFComponent {
     /**
      * program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "3.1.0";
+    public static final String PROGRAM_VERSION = "4.0.0 dev";
 
     /** general wait time for all threads (5000 is a balanced value) */
     private static final long WAIT_TIME = 5000;
@@ -526,33 +526,17 @@ public class Controller extends PFComponent {
     private void initOnlineStorageClient() {
         Member server = null;
         String host = ConfigurationEntry.SERVER_HOST.getValue(this);
-        if (!StringUtils.isBlank(host)) {
-            String name = ConfigurationEntry.SERVER_NAME.getValue(this);
-            String id = ConfigurationEntry.SERVER_ID.getValue(this);
-            if (name == null) {
-                // Avoid NPEs
-                name = "Connecting...";
-            }
-            if (id == null) {
-                // Avoid NPEs
-                id = "";
-            }
-            MemberInfo serverInfo = new MemberInfo(name, id);
-            serverInfo.setConnectAddress(Util.parseConnectionString(host));
-            log().info(
-                "Using server from config: " + serverInfo + ", ID: " + id);
-            server = serverInfo.getNode(this, true);
-        }
-
-        if (server == null) {
-            // Fallback to default OS
+        if (StringUtils.isBlank(host)) {
             MemberInfo osInfo = new MemberInfo("Online Storage",
                 Constants.ONLINE_STORAGE_NODE_ID);
             osInfo.setConnectAddress(Constants.ONLINE_STORAGE_ADDRESS);
             server = osInfo.getNode(this, true);
+            osClient = new ServerClient(this, server);
+        } else {
+            // Server host overridden
+            osClient = new ServerClient(this, host);
         }
 
-        osClient = new ServerClient(this, server);
     }
 
     private void setupProPlugins() {

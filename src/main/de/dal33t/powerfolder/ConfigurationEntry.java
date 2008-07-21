@@ -137,7 +137,7 @@ public enum ConfigurationEntry {
      * Setting to enable/disable swarming.
      */
     USE_SWARMING_ON_INTERNET("swarming.internet.enabled", "true"),
-    
+
     /**
      * The basedir for all powerfolder.
      */
@@ -313,19 +313,10 @@ public enum ConfigurationEntry {
     MAX_FILEINFO_DELETED_AGE_SECONDS("filedb.deleted.maxage", "" + 10),
 
     /**
-     * The optional server name to connect to.
-     */
-    SERVER_NAME("server.name"),
-    /**
      * The optional server hostname to connect to. Example:
      * server.powerfolder.com
      */
-    SERVER_HOST("server.host"),
-
-    /**
-     * The optional server id to connect to. Example: [INFRASTRUCTURE03]
-     */
-    SERVER_ID("server.id");
+    SERVER_HOST("server.host");
 
     // Methods/Constructors ***************************************************
 
