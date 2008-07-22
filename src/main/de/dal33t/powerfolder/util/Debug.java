@@ -64,8 +64,7 @@ import de.dal33t.powerfolder.util.compare.MemberComparator;
  */
 public class Debug {
     private static final Logger LOG = Logger.getLogger(Debug.class);
-    private static final DateFormat MODIFIED_DATE_FORMAT = new SynchronizedDateFormat(
-        new SimpleDateFormat("dd-MM-yyyy HH:mm"));
+    private static final MyThreadLocal DATE_FORMAT = new MyThreadLocal();
 
     private Debug() {
         // No instance allowed
@@ -139,10 +138,8 @@ public class Debug {
         Reject.ifNull(f, "FileInfo is null");
         StringBuffer b = new StringBuffer();
 
-        synchronized (MODIFIED_DATE_FORMAT) {
-            b.append(f.getModifiedDate() != null ? MODIFIED_DATE_FORMAT
+        b.append(f.getModifiedDate() != null ? DATE_FORMAT.get()
                 .format(f.getModifiedDate()) : "-");
-        }
         b.append(" ;");
 
         if (f.isDeleted()) {
@@ -700,6 +697,16 @@ public class Debug {
     private static final void dumpStackTrace(Thread t) {
         for (StackTraceElement te : t.getStackTrace()) {
             LOG.debug("  " + te);
+        }
+    }
+
+    /**
+     * ThreadLocal date formatter.
+     */
+    private static class MyThreadLocal extends ThreadLocal<DateFormat> {
+
+        protected DateFormat initialValue() {
+            return new SimpleDateFormat("dd-MM-yyyy HH:mm");
         }
     }
 }
