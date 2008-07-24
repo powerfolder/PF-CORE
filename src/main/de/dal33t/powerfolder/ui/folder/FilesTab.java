@@ -1041,7 +1041,7 @@ public class FilesTab extends PFUIComponent implements FolderTab,
             if (e.getKeyCode() == KeyEvent.VK_DELETE) {
                 // invoke delete action
                 removeFileAction.actionPerformed(null);
-            } else if (e.getKeyCode() == 127) { // Mac delete key
+            } else if (e.getKeyCode() == 8) { // Mac delete key (backspace)
                 if (OSUtil.isMacOS()) {
                     // invoke delete action
                     removeFileAction.actionPerformed(null);
