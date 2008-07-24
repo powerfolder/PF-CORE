@@ -1036,10 +1036,16 @@ public class FilesTab extends PFUIComponent implements FolderTab,
 
     /** helper class to delete files on delete key */
     private class DeleteKeyListener implements KeyListener {
+
         public void keyPressed(KeyEvent e) {
             if (e.getKeyCode() == KeyEvent.VK_DELETE) {
                 // invoke delete action
                 removeFileAction.actionPerformed(null);
+            } else if (e.getKeyCode() == 127) { // Mac delete key
+                if (OSUtil.isMacOS()) {
+                    // invoke delete action
+                    removeFileAction.actionPerformed(null);
+                }
             }
         }
 
