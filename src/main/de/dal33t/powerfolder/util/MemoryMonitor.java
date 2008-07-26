@@ -22,6 +22,7 @@ package de.dal33t.powerfolder.util;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.awt.EventQueue;
 
 import javax.swing.JFrame;
 
@@ -59,21 +60,35 @@ public class MemoryMonitor implements Runnable {
 
             long totalMemory = runtime.totalMemory();
             LOG.debug("Max Memory: " + Format.formatBytesShort(maxMemory)
-                + ", Total Memory: " + Format.formatBytesShort(totalMemory));
+                    + ", Total Memory: " + Format.formatBytesShort(totalMemory));
 
             // See if there is any more memory to allocate. Defer if dialog
             // currently shown.
             if (maxMemory == totalMemory && !DialogFactory.isDialogInUse()) {
+                showDialog();
+
+                // Do not show dialog repeatedly.
+                break;
+            }
+        }
+    }
+
+    /**
+     * Show dialog in event thread.
+     */
+    private void showDialog() {
+        EventQueue.invokeLater(new Runnable() {
+            public void run() {
                 JFrame parent = controller.getUIController().getMainFrame()
-                    .getUIComponent();
+                        .getUIComponent();
                 NeverAskAgainResponse response;
                 if (OSUtil.isWindowsSystem() && !OSUtil.isWebStart()) {
                     response = DialogFactory.genericDialog(parent, Translation
-                        .getTranslation("lowmemory.title"), Translation
-                        .getTranslation("lowmemory.text"), new String[]{
-                        Translation.getTranslation("lowmemory.increase"),
-                        Translation.getTranslation("lowmemory.do_nothing")}, 0,
-                        GenericDialogType.WARN, Translation
+                            .getTranslation("lowmemory.title"), Translation
+                            .getTranslation("lowmemory.text"), new String[]{
+                            Translation.getTranslation("lowmemory.increase"),
+                            Translation.getTranslation("lowmemory.do_nothing")}, 0,
+                            GenericDialogType.WARN, Translation
                             .getTranslation("lowmemory.dont_autodetect"));
                     if (response.getButtonIndex() == 0) { // Increase memory
                         increaseAvailableMemory();
@@ -81,23 +96,20 @@ public class MemoryMonitor implements Runnable {
                 } else {
                     // No ini - Can only warn user.
                     response = DialogFactory.genericDialog(parent, Translation
-                        .getTranslation("lowmemory.title"), Translation
-                        .getTranslation("lowmemory.warn"),
-                        new String[]{Translation.getTranslation("general.ok")},
-                        0, GenericDialogType.WARN, Translation
+                            .getTranslation("lowmemory.title"), Translation
+                            .getTranslation("lowmemory.warn"),
+                            new String[]{Translation.getTranslation("general.ok")},
+                            0, GenericDialogType.WARN, Translation
                             .getTranslation("lowmemory.dont_autodetect"));
                 }
 
                 if (response.isNeverAskAgain()) {
                     // Foolish user!
                     PreferencesEntry.DETECT_LOW_MEMORY.setValue(controller,
-                        false);
+                            false);
                 }
-
-                // Do not show dialog repeatedly.
-                break;
             }
-        }
+        });
     }
 
     /**
