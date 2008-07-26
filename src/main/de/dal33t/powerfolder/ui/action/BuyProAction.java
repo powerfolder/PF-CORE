@@ -25,6 +25,7 @@ import java.io.IOException;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.BrowserLauncher;
+import de.dal33t.powerfolder.util.Loggable;
 
 public class BuyProAction extends BaseAction {
 
@@ -36,7 +37,7 @@ public class BuyProAction extends BaseAction {
         try {
             BrowserLauncher.openURL(Constants.POWERFOLDER_PRO_URL);
         } catch (IOException ex) {
-            log().error(ex);
+            Loggable.logSevereStatic(BuyProAction.class, ex);
         }
     }
 

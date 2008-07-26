@@ -40,8 +40,8 @@ import javax.swing.tree.TreePath;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.Sizes;
 
-import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.Loggable;
 
 /**
  * Offers helper/utility method for UI related stuff.
@@ -53,8 +53,6 @@ import de.dal33t.powerfolder.util.Reject;
  * @version $Revision: 1.5 $
  */
 public class UIUtil {
-
-    private static final Logger LOG = Logger.getLogger(UIUtil.class);
 
     /** Flag if awt is available */
     private static boolean AWTAvailable;
@@ -214,7 +212,8 @@ public class UIUtil {
                 if (UIUtil.UIMANAGER_LOOK_N_FEEL_PROPERTY.equals(evt
                     .getPropertyName()))
                 {
-                    LOG.warn("UIManager changed l&f, executing task: " + task);
+                    Loggable.logWarningStatic(UIUtil.class,
+                            "UIManager changed l&f, executing task: " + task);
                     task.run();
                 }
             }

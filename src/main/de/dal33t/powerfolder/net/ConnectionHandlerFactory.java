@@ -71,7 +71,7 @@ public class ConnectionHandlerFactory extends PFComponent {
         try {
             return tryToConnectSocket(remoteNode.getConnectAddress());
         } catch (ConnectionException e) {
-            log().verbose(e);
+            logFiner(e);
         }
 
         try {
@@ -79,7 +79,7 @@ public class ConnectionHandlerFactory extends PFComponent {
                 return tryToConnectUDTSocket(remoteNode);
             }
         } catch (ConnectionException e) {
-            log().verbose(e);
+            logFiner(e);
         }
 
         try {
@@ -87,7 +87,7 @@ public class ConnectionHandlerFactory extends PFComponent {
                 return tryToConnectRelayed(remoteNode);
             }
         } catch (ConnectionException e) {
-            log().verbose(e);
+            logFiner(e);
         }
         throw new ConnectionException("No further connection alternatives.");
     }
@@ -156,8 +156,8 @@ public class ConnectionHandlerFactory extends PFComponent {
     protected ConnectionHandler tryToConnectRelayed(MemberInfo remoteNode)
         throws ConnectionException
     {
-        if (logVerbose) {
-            log().verbose("Trying relayed connection to " + remoteNode.nick);
+        if (isLogFiner()) {
+            logFiner("Trying relayed connection to " + remoteNode.nick);
         }
         ConnectionHandler conHan = null;
         try {
@@ -185,8 +185,8 @@ public class ConnectionHandlerFactory extends PFComponent {
     protected ConnectionHandler tryToConnectUDTSocket(MemberInfo remoteNode)
         throws ConnectionException
     {
-        if (logVerbose) {
-            log().verbose("Trying UDT socket connection to " + remoteNode.nick);
+        if (isLogFiner()) {
+            logFiner("Trying UDT socket connection to " + remoteNode.nick);
         }
         ConnectionHandler conHan = null;
         try {
@@ -271,20 +271,20 @@ public class ConnectionHandlerFactory extends PFComponent {
             // In PowerFolder UDT sockets will always rendezvous
             socket.setSoRendezvous(true);
             MemberInfo myInfo = dest.getNode(getController(), true).getInfo();
-            log().debug(
+            logFine(
                 "UDT connect to " + dest + " at " + myInfo.getConnectAddress());
             socket.connect(new InetSocketAddress(myInfo.getConnectAddress()
                 .getAddress(), port));
-            log().debug(
+            logFine(
                 "UDT socket is connected to " + dest + " at "
                     + myInfo.getConnectAddress() + "!!");
             conHan.init();
         } catch (ConnectionException e) {
-            log().error(e);
+            logSevere(e);
             conHan.shutdown();
             throw e;
         } catch (IOException e) {
-            log().error(e);
+            logSevere(e);
             conHan.shutdown();
             throw new ConnectionException(e);
         }

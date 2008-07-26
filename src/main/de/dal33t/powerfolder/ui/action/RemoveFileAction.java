@@ -31,6 +31,7 @@ import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Loggable;
 import de.dal33t.powerfolder.util.ui.*;
 
 /**
@@ -112,7 +113,8 @@ public class RemoveFileAction extends SelectionBaseAction {
         } else if (target instanceof Folder) {
             folder = (Folder) target;
         } else {
-            log().warn("Unable to remove files on target: " + target);
+            Loggable.logWarningStatic(RemoveFileAction.class,
+                    "Unable to remove files on target: " + target);
             return;
         }
         Object[] selections = getSelectionModel().getSelections();
@@ -125,7 +127,7 @@ public class RemoveFileAction extends SelectionBaseAction {
                 } else if (selections[i] instanceof Directory) {
                     toRemove.add(selections[i]);
                 } else {
-                    log().debug(
+                    Loggable.logFineStatic(RemoveFileAction.class,
                         "cannot remove: " + selections[i].getClass().getName());
                     return;
                 }
@@ -203,7 +205,7 @@ public class RemoveFileAction extends SelectionBaseAction {
                             } else if (object instanceof Directory) {
                                 Directory directoryToRemove = (Directory) object;
                                 if (!moveToRecycleBin(directoryToRemove)) {
-                                    log().error(
+                                    Loggable.logSevereStatic(RemoveFileAction.class,
                                         "move to recyclebin failed for:"
                                             + directoryToRemove);
                                 }

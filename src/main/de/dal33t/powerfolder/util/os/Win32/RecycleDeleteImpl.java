@@ -19,15 +19,13 @@
 */
 package de.dal33t.powerfolder.util.os.Win32;
 
-import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
 public class RecycleDeleteImpl {
-    private static Logger LOG = Logger.getLogger(RecycleDeleteImpl.class);
     public final static String LIBRARY = "delete";
     
     public static boolean loadLibrary() {
-        return OSUtil.loadLibrary(LOG, LIBRARY);
+        return OSUtil.loadLibrary(RecycleDeleteImpl.class, LIBRARY);
     	
     	/* If the webstart thing is still required it should be moved to OSUtil.loadLibrary
         try {

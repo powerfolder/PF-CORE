@@ -38,8 +38,8 @@ import de.dal33t.powerfolder.ui.model.FolderRepositoryModel;
 import de.dal33t.powerfolder.ui.model.NodeManagerModel;
 import de.dal33t.powerfolder.ui.model.DirectoryModel;
 import de.dal33t.powerfolder.ui.navigation.RootNode;
-import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Loggable;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
@@ -49,8 +49,6 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * @version $Revision: 1.57 $
  */
 public class NavTreeCellRenderer extends DefaultTreeCellRenderer {
-    private static final Logger LOG = Logger
-        .getLogger(NavTreeCellRenderer.class);
     private Controller controller;
     private BlinkManager treeBlinkManager;
 
@@ -219,7 +217,8 @@ public class NavTreeCellRenderer extends DefaultTreeCellRenderer {
                 .valueOf(nmModel.getConnectedTreeNode().getChildCount()));
             icon = Icons.KNOWN_NODES;
         } else {
-            LOG.warn("Unknown content: " + userObject);
+            Loggable.logWarningStatic(NavTreeCellRenderer.class,
+                    "Unknown content: " + userObject);
         }
 
         if (icon != null) {

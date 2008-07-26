@@ -279,7 +279,7 @@ public class DirectoryTableModel extends PFComponent implements TableModel,
 
             }
             if (rowIndex >= displayList.size() || rowIndex < 0) {
-                log().error(
+                logSevere(
                     "Illegal access. want to get row " + rowIndex + ", have "
                         + displayList.size());
                 return null;

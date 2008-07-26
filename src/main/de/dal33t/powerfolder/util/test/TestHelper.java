@@ -219,7 +219,7 @@ public class TestHelper extends Loggable {
                     FileUtils.forceDelete(file);
                 }
             } catch (IOException e) {
-                // log().error(e);
+                // logSevere(e);
             }
         }
         if (0 != testDir.listFiles().length) {

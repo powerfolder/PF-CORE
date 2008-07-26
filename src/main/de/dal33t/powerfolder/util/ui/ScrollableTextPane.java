@@ -19,6 +19,8 @@
 */
 package de.dal33t.powerfolder.util.ui;
 
+import de.dal33t.powerfolder.util.Loggable;
+
 import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -27,7 +29,6 @@ import java.awt.event.AdjustmentListener;
 
 import javax.swing.*;
 
-import de.dal33t.powerfolder.util.Logger;
 
 /**
  * A text pane that automatic scrolls the text, starts after a delay.
@@ -36,8 +37,6 @@ import de.dal33t.powerfolder.util.Logger;
  * @version $Revision: 1.5 $
  */
 public class ScrollableTextPane extends JScrollPane {
-    private static final Logger LOG = Logger
-        .getLogger(ScrollableTextPane.class);
 
     /** Timer to control the scrolling */
     protected Timer timer;
@@ -72,7 +71,7 @@ public class ScrollableTextPane extends JScrollPane {
                     timer.setDelay(30);
                     scroll();
                 } catch (Throwable t) {
-                    LOG.error(t);
+                    Loggable.logSevereStatic(ScrollableTextPane.class, t);
                 }
             }
         };

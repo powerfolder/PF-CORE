@@ -160,7 +160,7 @@ public abstract class BaseDialog extends PFUIComponent {
      * Shows (and builds) the dialog
      */
     public final void open() {
-        log().verbose("Open called: " + this);
+        logFiner("Open called: " + this);
         getUIComponent().setVisible(true);
     }
 
@@ -168,7 +168,7 @@ public abstract class BaseDialog extends PFUIComponent {
      * Disposes the dialog.
      */
     public final void close() {
-        log().verbose("Close called: " + this);
+        logFiner("Close called: " + this);
         if (dialog != null) {
             dialog.dispose();
             dialog = null;
@@ -217,7 +217,7 @@ public abstract class BaseDialog extends PFUIComponent {
      */
     protected final JDialog getUIComponent() {
         if (dialog == null) {
-            log().verbose("Building ui component for " + this);
+            logFiner("Building ui component for " + this);
             dialog = new JDialog(getUIController().getMainFrame()
                 .getUIComponent(), getTitle(), modal);
             dialog.setResizable(allowResize());            

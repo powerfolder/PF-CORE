@@ -50,11 +50,10 @@ import de.dal33t.powerfolder.util.ui.GenericDialogType;
  * @see Invitation
  */
 public class InvitationUtil {
+
     // No instances
     private InvitationUtil() {
-
     }
-    private static final Logger LOG = Logger.getLogger(InvitationUtil.class);
 
     /**
      * Loads an invitation from a file. Return the invitation or null if not
@@ -71,12 +70,12 @@ public class InvitationUtil {
         if (!file.exists() || file.isDirectory() || !file.canRead()) {
             return null;
         }
-        LOG.verbose("Loading invitation " + file);
+        Loggable.logFinerStatic(InvitationUtil.class, "Loading invitation " + file);
         try {
             FileInputStream fIn = new FileInputStream(file);
             return load(fIn);
         } catch (IOException e) {
-            LOG.error("Unable to read invitation file stream", e);
+            Loggable.logSevereStatic(InvitationUtil.class, "Unable to read invitation file stream", e);
         }
         return null;
     }
@@ -93,7 +92,7 @@ public class InvitationUtil {
         if (in == null) {
             throw new NullPointerException("File is null");
         }
-        LOG.verbose("Loading invitation from " + in);
+        Loggable.logFinerStatic(InvitationUtil.class, "Loading invitation from " + in);
         try {
             ObjectInputStream oIn = new ObjectInputStream(in);
             Invitation invitation = (Invitation) oIn.readObject();
@@ -116,11 +115,14 @@ public class InvitationUtil {
 
             return invitation;
         } catch (ClassCastException e) {
-            LOG.error("Unable to read invitation file stream", e);
+            Loggable.logSevereStatic(InvitationUtil.class,
+                    "Unable to read invitation file stream", e);
         } catch (IOException e) {
-            LOG.error("Unable to read invitation file stream", e);
+            Loggable.logSevereStatic(InvitationUtil.class,
+                    "Unable to read invitation file stream", e);
         } catch (ClassNotFoundException e) {
-            LOG.error("Unable to read invitation file stream", e);
+            Loggable.logSevereStatic(InvitationUtil.class,
+                    "Unable to read invitation file stream", e);
         }
         return null;
     }
@@ -139,7 +141,8 @@ public class InvitationUtil {
             return save(invitation, new BufferedOutputStream(
                 new FileOutputStream(file)));
         } catch (FileNotFoundException e) {
-            LOG.error("Unable to write invitation file stream", e);
+            Loggable.logSevereStatic(InvitationUtil.class,
+                    "Unable to write invitation file stream", e);
             return false;
         }
     }
@@ -154,7 +157,7 @@ public class InvitationUtil {
      * @return true if successful
      */
     public static boolean save(Invitation invitation, OutputStream out) {
-        LOG.verbose("Saving invitation to " + out);
+        Loggable.logFinerStatic(InvitationUtil.class, "Saving invitation to " + out);
         ObjectOutputStream oOut;
         try {
             oOut = new ObjectOutputStream(out);
@@ -162,7 +165,8 @@ public class InvitationUtil {
             oOut.close();
             return true;
         } catch (IOException e) {
-            LOG.error("Unable to save invitation file stream", e);
+            Loggable.logSevereStatic(InvitationUtil.class,
+                    "Unable to save invitation file stream", e);
         }
         return false;
     }
@@ -271,7 +275,7 @@ public class InvitationUtil {
             file = new File(filename + ".invitation");
         }
         if (!save(invitation, file)) {
-            LOG.error("sendmail failed");
+            Loggable.logSevereStatic(InvitationUtil.class, "sendmail failed");
             return false;
         }
         file.deleteOnExit();
@@ -282,7 +286,7 @@ public class InvitationUtil {
         String body = Translation.getTranslation("sendinvitation.body", to,
             controller.getMySelf().getNick(), invitationName);
         if (!MailUtil.sendMail(to, subject, body, file)) {
-            LOG.error("sendmail failed");
+            Loggable.logSevereStatic(InvitationUtil.class, "sendmail failed");
             file.delete();
             return false;
         }
@@ -334,7 +338,7 @@ public class InvitationUtil {
             }
         }
 
-        LOG.info("Writing invitation to " + file);
+        Loggable.logInfoStatic(InvitationUtil.class, "Writing invitation to " + file);
         if (!save(invitation, file)) {
             DialogFactory.genericDialog(controller.getUIController()
                 .getMainFrame().getUIComponent(), Translation

@@ -21,9 +21,9 @@ package de.dal33t.powerfolder.util.delta;
 
 import java.io.Serializable;
 
-import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Partitions;
 import de.dal33t.powerfolder.util.Range;
+import de.dal33t.powerfolder.util.Loggable;
 
 /**
  * Manages the parts of a file which contain data or not.
@@ -122,8 +122,8 @@ public class FilePartsState implements Serializable {
 		return r.equals(parts.getPartionedRange());
 	}
 	
-	public synchronized void debugOutput(Logger log) {
-	    log.info("FilePartsState:");
-		parts.logRanges(log);
+	public synchronized void debugOutput(Class clazz) {
+	    Loggable.logInfoStatic(clazz, "FilePartsState:");
+		parts.logRanges(clazz);
 	}
 }

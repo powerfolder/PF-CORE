@@ -29,9 +29,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.swing.SwingUtilities;
 
-import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Profiling;
 import de.dal33t.powerfolder.util.ProfilingEntry;
+import de.dal33t.powerfolder.util.Loggable;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
@@ -50,9 +50,6 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * @version $Revision: 1.8 $
  */
 public class ListenerSupportFactory {
-
-    private static final Logger LOG = Logger
-        .getLogger(ListenerSupportFactory.class);
 
     // AWT system check
     private static final boolean awtAvailable = UIUtil.isAWTAvailable();
@@ -81,7 +78,8 @@ public class ListenerSupportFactory {
             listenerInterface);
         T listenerSupportImpl = (T) Proxy.newProxyInstance(cl,
             new Class[]{listenerInterface}, handler);
-        LOG.verbose("Created event listener support for interface '"
+        Loggable.logFinerStatic(ListenerSupportFactory.class,
+                "Created event listener support for interface '"
             + listenerInterface.getName() + '\'');
         return listenerSupportImpl;
     }
@@ -329,25 +327,25 @@ public class ListenerSupportFactory {
                             try {
                                 method.invoke(listener, args);
                             } catch (IllegalArgumentException e) {
-                                LOG.error(
+                                Loggable.logSevereStatic(ListenerSupportFactory.class,
                                     "Received an exception from listener '"
                                         + listener + "', class '"
                                         + listener.getClass().getName() + '\'',
                                     e);
                             } catch (IllegalAccessException e) {
-                                LOG.error(
+                                Loggable.logSevereStatic(ListenerSupportFactory.class,
                                     "Received an exception from listener '"
                                         + listener + "', class '"
                                         + listener.getClass().getName() + '\'',
                                     e);
                             } catch (InvocationTargetException e) {
-                                LOG.error(
+                                Loggable.logSevereStatic(ListenerSupportFactory.class,
                                     "Received an exception from listener '"
                                         + listener + "', class '"
                                         + listener.getClass().getName() + '\'',
                                     e.getCause());
                                 // Also log original exception
-                                LOG.verbose(e);
+                                Loggable.logFinerStatic(ListenerSupportFactory.class,  e);
                             } finally {
                                 Profiling.end(profilingEntry, 100);
                             }
@@ -373,20 +371,20 @@ public class ListenerSupportFactory {
                     try {
                         method.invoke(listener, args);
                     } catch (IllegalArgumentException e) {
-                        LOG.error("Received an exception from listener '"
+                        Loggable.logSevereStatic(ListenerSupportFactory.class,  "Received an exception from listener '"
                             + listener + "', class '"
                             + listener.getClass().getName() + '\'', e);
                     } catch (IllegalAccessException e) {
-                        LOG.error("Received an exception from listener '"
+                        Loggable.logSevereStatic(ListenerSupportFactory.class,  "Received an exception from listener '"
                             + listener + "', class '"
                             + listener.getClass().getName() + '\'', e);
                     } catch (InvocationTargetException e) {
-                        LOG.error("Received an exception from listener '"
+                        Loggable.logSevereStatic(ListenerSupportFactory.class,  "Received an exception from listener '"
                             + listener + "', class '"
                             + listener.getClass().getName() + '\'', e
                             .getCause());
                         // Also log original exception
-                        LOG.verbose(e);
+                        Loggable.logFinerStatic(ListenerSupportFactory.class,  e);
                     } finally {
                         Profiling.end(profilingEntry, 50);
                     }

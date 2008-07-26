@@ -96,7 +96,7 @@ public class RootNode extends TreeNodeList {
         if (initalized) {
             return;
         }
-        log().verbose("Initalizing Children");
+        logFiner("Initalizing Children");
         initalized = true;
         addChild(controller.getUIController().getFolderRepositoryModel()
             .getMyFoldersTreeNode());

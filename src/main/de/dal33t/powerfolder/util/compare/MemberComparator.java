@@ -157,7 +157,7 @@ public class MemberComparator extends Loggable implements Comparator {
 
                 result += tsresult;
 
-                // log().warn("TS Result between " + member1.getNick() + " and "
+                // logWarning("TS Result between " + member1.getNick() + " and "
                 // + member2.getNick() +": " + tsresult);
             } else if (type == 5) { // nickname
                 return member1.getNick().toLowerCase().compareTo(

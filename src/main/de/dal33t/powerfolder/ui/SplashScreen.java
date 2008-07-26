@@ -37,17 +37,16 @@ import javax.swing.JProgressBar;
 import javax.swing.JWindow;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 import javax.swing.border.AbstractBorder;
 
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.looks.plastic.PlasticLookAndFeel;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.Waiter;
+import de.dal33t.powerfolder.util.Loggable;
 
 /**
  * Splash screen
@@ -56,7 +55,6 @@ import de.dal33t.powerfolder.util.Waiter;
  * @version $Revision: 1.16 $
  */
 public class SplashScreen extends JWindow {
-    private static final Logger LOG = Logger.getLogger(SplashScreen.class);
 
     private static final Color FREE_BAR_COLOR1 = new Color(100, 10, 15);
     private static final Color FREE_BAR_COLOR2 = new Color(235, 235, 235);
@@ -154,7 +152,7 @@ public class SplashScreen extends JWindow {
                     try {
                         SwingUtilities.invokeAndWait(closerRunner);
                     } catch (Exception e) {
-                        LOG.error(e);
+                        Loggable.logSevereStatic(SplashScreen.class, e);
                     }
                 }
             }
@@ -226,9 +224,9 @@ public class SplashScreen extends JWindow {
                 }
             });
         } catch (InterruptedException e) {
-            LOG.error(e);
+            Loggable.logSevereStatic(SplashScreen.class, e);
         } catch (InvocationTargetException e) {
-            LOG.error(e);
+            Loggable.logSevereStatic(SplashScreen.class, e);
         }
     }
 

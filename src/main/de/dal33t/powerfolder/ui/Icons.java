@@ -55,8 +55,8 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.transfer.Transfer;
 import de.dal33t.powerfolder.transfer.Upload;
-import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.Loggable;
 
 /**
  * Contains all icons for the powerfolder application
@@ -75,8 +75,6 @@ public class Icons {
      * @see knownIcons
      */
     private static final String DISABLED_EXTENSION_ADDITION = "_disabled";
-
-    private static final Logger log = Logger.getLogger(Icons.class);
 
     public static final Icon FILTER_TEXTFIELD_CLEARBUTTON_NORMAL = getIcon("icons/filter_textfield_clearbutton_normal.png");
     public static final Icon FILTER_TEXTFIELD_CLEARBUTTON_HOVER = getIcon("icons/filter_textfield_clearbutton_hover.png");
@@ -310,17 +308,17 @@ public class Icons {
      */
     protected static final Icon getIcon(String name) {
         if (name == null) {
-            log.error("Icon name is null");
+            Loggable.logSevereStatic(Icons.class, "Icon name is null");
             return null;
         }
         if (name.length() <= 6) { // required prefix = icons/
-            // log.error("Icon not found '" + name + "'");
+            // Loggable.logSevereStatic(Icons.class, "Icon not found '" + name + "'");
             return null;
         }
         URL iconURL = Thread.currentThread().getContextClassLoader()
             .getResource(name);
         if (iconURL == null) {
-            log.error("Icon not found '" + name + '\'');
+            Loggable.logSevereStatic(Icons.class, "Icon not found '" + name + '\'');
             return null;
         }
 
@@ -349,7 +347,7 @@ public class Icons {
         return Toolkit.getDefaultToolkit().getImage(imageURL);
     }
 
-    private synchronized static Properties getIconProperties() {
+    private static synchronized Properties getIconProperties() {
         if (iconProperties == null) {
             iconProperties = new Properties();
             InputStream in = Thread.currentThread().getContextClassLoader()
@@ -360,7 +358,8 @@ public class Icons {
                 buffered = new BufferedInputStream(in);
                 iconProperties.load(buffered);
             } catch (IOException ioe) {
-                log.error("Cannot read: " + ICON_PROPERTIES_FILENAME, ioe);
+                Loggable.logSevereStatic(Icons.class,
+                        "Cannot read: " + ICON_PROPERTIES_FILENAME, ioe);
             } finally {
                 if (buffered != null) {
                     try {
@@ -629,13 +628,13 @@ public class Icons {
                     Icon icon = FileSystemView.getFileSystemView()
                         .getSystemIcon(tempFile);
                     if (!tempFile.delete()) {
-                        log.warn("Failed to delete temporary file.");
+                        Loggable.logWarningStatic(Icons.class,"Failed to delete temporary file.");
                         tempFile.deleteOnExit();
                     }
                     return icon;
                 } else {
-                    log
-                        .error("Couldn't create temporary file for icon retrieval for extension:'"
+                    Loggable.logSevereStatic(Icons.class,
+                            "Couldn't create temporary file for icon retrieval for extension:'"
                             + extension + '\'');
                 }
             }
@@ -841,7 +840,8 @@ public class Icons {
                 Icon inner = (Icon) delegateField.get(iconUIResource);
                 return getImageFromIcon(inner);
             } catch (Exception e) {
-                log.error("Could not get icon from IconUIResource", e);
+                Loggable.logSevereStatic(Icons.class,
+                        "Could not get icon from IconUIResource", e);
             }
         }
 

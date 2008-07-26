@@ -296,8 +296,8 @@ public class MemberSyncStatusPanel extends PFUIComponent {
 
         public void statisticsCalculated(FolderEvent folderEvent) {
             updatePanel();
-            if (logEnabled) {
-                log().verbose(
+            if (isLogFiner()) {
+                logFiner(
                     "Updated SyncStatusPanel due to change in: " + folderEvent);
             }
         }

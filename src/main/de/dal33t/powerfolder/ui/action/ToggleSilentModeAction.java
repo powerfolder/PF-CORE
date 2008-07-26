@@ -27,6 +27,7 @@ import javax.swing.*;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.util.Loggable;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.Toolbar;
 
@@ -88,7 +89,8 @@ public class ToggleSilentModeAction extends BaseAction {
     public void actionPerformed(ActionEvent e) {
         // Just toggle
         getController().setSilentMode(!getController().isSilentMode());
-        log().verbose("Is silentmode: " + getController().isSilentMode());
+        Loggable.logFinerStatic(ToggleSilentModeAction.class,
+                "Is silentmode: " + getController().isSilentMode());
     }
 
 }

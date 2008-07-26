@@ -19,9 +19,7 @@
 */
 package de.dal33t.powerfolder.util;
 
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.PFComponent;
+import java.util.logging.Level;
 
 /**
  * Abstract superclass which has logger included. Used to easily handle debug
@@ -31,87 +29,358 @@ import de.dal33t.powerfolder.PFComponent;
  * @version $Revision: 1.11 $
  */
 public abstract class Loggable {
-    private transient Logger log;
 
-    protected transient boolean logVerbose;
-    protected transient boolean logEnabled;
-    protected transient boolean logError;
-    protected transient boolean logDebug;
-    protected transient boolean logInfo;
-    protected transient boolean logWarn;
-    
     /**
-     * Plain initalizer
+     * Logs a message at FINER level.
+     *
+     * @param message
      */
-    protected Loggable() {
-        super();
-        log = Logger.getLogger(this);
-        logEnabled = Logger.isEnabled() && !log.isExcluded();
-        logVerbose = Logger.isVerboseLevelEnabled() && !log.isExcluded();        
-        logError = Logger.isErrorLevelEnabled() && !log.isExcluded();
-        logDebug = Logger.isDebugLevelEnabled() && !log.isExcluded();
-        logInfo = Logger.isInfoLevelEnabled() && !log.isExcluded();
-        logWarn = Logger.isWarnLevelEnabled() && !log.isExcluded();
+    protected void logFiner(String message) {
+        LogDispatch.logFiner(getLoggerName(), message, null);
     }
 
     /**
-     * Initalizes with a given logger
-     * 
-     * @param log
+     * Logs a message at FINE level.
+     *
+     * @param message
      */
-    protected Loggable(Logger log) {
-        setLogger(log);
+    protected void logFine(String message) {
+        LogDispatch.logFine(getLoggerName(), message, null);
     }
 
     /**
-     * Returns the logger for this class
-     * 
+     * Logs a message at INFO level.
+     *
+     * @param message
+     */
+    protected void logInfo(String message) {
+        LogDispatch.logInfo(getLoggerName(), message, null);
+    }
+
+    /**
+     * Logs a message at WARNING level.
+     *
+     * @param message
+     */
+    protected void logWarning(String message) {
+        LogDispatch.logWarning(getLoggerName(), message, null);
+    }
+
+    /**
+     * Logs a message at SEVERE level.
+     *
+     * @param message
+     */
+    protected void logSevere(String message) {
+        LogDispatch.logSevere(getLoggerName(), message, null);
+    }
+
+    /**
+     * Logs a message and Throwable at FINER level.
+     *
+     * @param message
+     * @param t
+     */
+    protected void logFiner(String message, Throwable t) {
+        LogDispatch.logFiner(getLoggerName(), message, t);
+    }
+
+    /**
+     * Logs a message and Throwable at FINE level.
+     *
+     * @param message
+     * @param t
+     */
+    protected void logFine(String message, Throwable t) {
+        LogDispatch.logFine(getLoggerName(), message, t);
+    }
+
+    /**
+     * Logs a message and Throwable at INFO level.
+     *
+     * @param message
+     * @param t
+     */
+    protected void logInfo(String message, Throwable t) {
+        LogDispatch.logInfo(getLoggerName(), message, t);
+    }
+
+    /**
+     * Logs a message and Throwable at WARNING level.
+     *
+     * @param message
+     * @param t
+     */
+    protected void logWarning(String message, Throwable t) {
+        LogDispatch.logWarning(getLoggerName(), message, t);
+    }
+
+    /**
+     * Logs a message and Throwable at SEVERE level.
+     *
+     * @param message
+     * @param t
+     */
+    protected void logSevere(String message, Throwable t) {
+        LogDispatch.logSevere(getLoggerName(), message, t);
+    }
+
+    /**
+     * Logs a Throwable at FINER level.
+     *
+     * @param t
+     */
+    protected void logFiner(Throwable t) {
+        LogDispatch.logFiner(getLoggerName(), null, t);
+    }
+
+    /**
+     * Logs a Throwable at FINE level.
+     *
+     * @param t
+     */
+    protected void logFine(Throwable t) {
+        LogDispatch.logFine(getLoggerName(), null, t);
+    }
+
+    /**
+     * Logs a Throwable at INFO level.
+     *
+     * @param t
+     */
+    protected void logInfo(Throwable t) {
+        LogDispatch.logInfo(getLoggerName(), null, t);
+    }
+
+    /**
+     * Logs a Throwable at WARNING level.
+     *
+     * @param t
+     */
+    protected void logWarning(Throwable t) {
+        LogDispatch.logWarning(getLoggerName(), null, t);
+    }
+
+    /**
+     * Logs a Throwable at SEVERE level.
+     *
+     * @param t
+     */
+    protected void logSevere(Throwable t) {
+        LogDispatch.logSevere(getLoggerName(), null, t);
+    }
+
+    /**
+     * Logs a message at FINER level.
+     *
+     * @param message
+     */
+    public static void logFinerStatic(Class clazz, String message) {
+        LogDispatch.logFiner(clazz.getName(), message, null);
+    }
+
+    /**
+     * Logs a message at FINE level.
+     *
+     * @param message
+     */
+    public static void logFineStatic(Class clazz, String message) {
+        LogDispatch.logFine(clazz.getName(), message, null);
+    }
+
+    /**
+     * Logs a message at INFO level.
+     *
+     * @param message
+     */
+    public static void logInfoStatic(Class clazz, String message) {
+        LogDispatch.logInfo(clazz.getName(), message, null);
+    }
+
+    /**
+     * Logs a message at WARNING level.
+     *
+     * @param message
+     */
+    public static void logWarningStatic(Class clazz, String message) {
+        LogDispatch.logWarning(clazz.getName(), message, null);
+    }
+
+    /**
+     * Logs a message at SEVERE level.
+     *
+     * @param message
+     */
+    public static void logSevereStatic(Class clazz, String message) {
+        LogDispatch.logSevere(clazz.getName(), message, null);
+    }
+
+    /**
+     * Logs a message and Throwable at FINER level.
+     *
+     * @param message
+     * @param t
+     */
+    public static void logFinerStatic(Class clazz, String message, Throwable t) {
+        LogDispatch.logFiner(clazz.getName(), message, t);
+    }
+
+    /**
+     * Logs a message and Throwable at FINE level.
+     *
+     * @param message
+     * @param t
+     */
+    public static void logFineStatic(Class clazz, String message, Throwable t) {
+        LogDispatch.logFine(clazz.getName(), message, t);
+    }
+
+    /**
+     * Logs a message and Throwable at INFO level.
+     *
+     * @param message
+     * @param t
+     */
+    public static void logInfoStatic(Class clazz, String message, Throwable t) {
+        LogDispatch.logInfo(clazz.getName(), message, t);
+    }
+
+    /**
+     * Logs a message and Throwable at WARNING level.
+     *
+     * @param message
+     * @param t
+     */
+    public static void logWarningStatic(Class clazz, String message, Throwable t) {
+        LogDispatch.logWarning(clazz.getName(), message, t);
+    }
+
+    /**
+     * Logs a message and Throwable at SEVERE level.
+     *
+     * @param message
+     * @param t
+     */
+    public static void logSevereStatic(Class clazz, String message, Throwable t) {
+        LogDispatch.logSevere(clazz.getName(), message, t);
+    }
+
+    /**
+     * Logs a Throwable at FINER level.
+     *
+     * @param t
+     */
+    public static void logFinerStatic(Class clazz, Throwable t) {
+        LogDispatch.logFiner(clazz.getName(), null, t);
+    }
+
+    /**
+     * Logs a Throwable at FINE level.
+     *
+     * @param t
+     */
+    public static void logFineStatic(Class clazz, Throwable t) {
+        LogDispatch.logFine(clazz.getName(), null, t);
+    }
+
+    /**
+     * Logs a Throwable at INFO level.
+     *
+     * @param t
+     */
+    public static void logInfoStatic(Class clazz, Throwable t) {
+        LogDispatch.logInfo(clazz.getName(), null, t);
+    }
+
+    /**
+     * Logs a Throwable at WARNING level.
+     *
+     * @param t
+     */
+    public static void logWarningStatic(Class clazz, Throwable t) {
+        LogDispatch.logWarning(clazz.getName(), null, t);
+    }
+
+    /**
+     * Logs a Throwable at SEVERE level.
+     *
+     * @param t
+     */
+    public static void logSevereStatic(Class clazz, Throwable t) {
+        LogDispatch.logSevere(clazz.getName(), null, t);
+    }
+
+    /**
+     * Answers whether this class should log FINER messages.
+     *
      * @return
      */
-    protected final Logger log() {
-        if (log.prefix == null) {
-            if (this instanceof PFComponent) {
-                PFComponent pfComponent = (PFComponent) this;
-                Controller controller = pfComponent.getController();
-                if (controller != null) {
-                    Member myself = controller.getMySelf();
-                    if (myself != null) {
-                        log.setPrefix(pfComponent.getController().getMySelf()
-                            .getNick());
-                    }
-                }
-            }
+    protected boolean isLogFiner() {
+        return testLevel(Level.FINER);
+    }
+
+    /**
+     * Answers whether this class should log FINE messages.
+     *
+     * @return
+     */
+    protected boolean isLogFine() {
+        return testLevel(Level.FINE);
+    }
+
+    /**
+     * Answers whether this class should log INFO messages.
+     *
+     * @return
+     */
+    protected boolean isLogInfo() {
+        return testLevel(Level.INFO);
+    }
+
+    /**
+     * Answers whether this class should log WARNING messages.
+     *
+     * @return
+     */
+    protected boolean isLogWarning() {
+        return testLevel(Level.WARNING);
+    }
+
+    /**
+     * Answers whether this class should log SEVERE messages.
+     *
+     * @return
+     */
+    protected boolean isLogSevere() {
+        return testLevel(Level.SEVERE);
+    }
+
+    /**
+     * Should the descendant bother creating log messages at this level?
+     * 
+     * @param level
+     * @return
+     */
+    private boolean testLevel(Level level) {
+        if (!LogDispatch.isEnabled()) {
+            // No log handlers ==> no logging.
+            return false;
         }
-        return log;
+
+        Level loggingLevel = LogDispatch.getLevel(getLoggerName());
+        if (loggingLevel == null) {
+            loggingLevel = Level.OFF;
+        }
+        return loggingLevel.intValue() >= level.intValue();
     }
 
     /**
-     * Returns the logger. To access it from other classed. e.g. EventSupport
-     * classes Only deligates to <code>log</code>
-     * 
-     * @see #log()
-     * @return
-     */
-    public final Logger getLogger() {
-        return log();
-    }
-
-    /**
-     * Sets the logger manually
-     * 
-     * @param log
-     */
-    public final void setLogger(Logger log) {
-        this.log = log;
-    }
-
-    /**
-     * Answers the default log name for this element. overwrite if you want
-     * other name than classname
-     * 
+     * The name of the logger.
+     * Overrideable for special cases.
+     *
      * @return
      */
     public String getLoggerName() {
-        return null;
+        return getClass().getName();
     }
 }

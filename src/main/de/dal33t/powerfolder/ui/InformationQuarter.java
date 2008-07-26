@@ -200,7 +200,7 @@ public class InformationQuarter extends PFUIComponent {
             }
 
             if (item != null) {
-                log().verbose(
+                logFiner(
                     "Displaying top level item: "
                         + item.getTitelModel().getValue());
                 displayTopLevelItem(item);
@@ -628,7 +628,7 @@ public class InformationQuarter extends PFUIComponent {
         try {
             doc.insertString(0, text, null);
         } catch (BadLocationException e) {
-            log().verbose(e);
+            logFiner(e);
         }
         displayText(doc, false);
     }

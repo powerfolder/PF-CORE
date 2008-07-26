@@ -63,7 +63,6 @@ import de.dal33t.powerfolder.util.compare.MemberComparator;
  * @version $Revision: 1.30 $
  */
 public class Debug {
-    private static final Logger LOG = Logger.getLogger(Debug.class);
     private static final MyThreadLocal DATE_FORMAT = new MyThreadLocal();
 
     private Debug() {
@@ -92,20 +91,20 @@ public class Debug {
                 logFile.getParentFile().mkdirs();
                 logFile.createNewFile();
             } catch (IOException e) {
-                LOG.error("Unable to write filelist to "
+                Loggable.logSevereStatic(Debug.class, "Unable to write filelist to "
                     + logFile.getAbsolutePath());
-                LOG.verbose(e);
+                Loggable.logFinerStatic(Debug.class, e);
                 return false;
             }
         }
         if (!logFile.canWrite()) {
-            LOG.error("Unable to write filelist to "
+            Loggable.logSevereStatic(Debug.class, "Unable to write filelist to "
                 + logFile.getAbsolutePath());
             return false;
         }
 
         // Copy & Sort
-        FileInfo[] list = fileInfos.toArray(new FileInfo[0]);
+        FileInfo[] list = fileInfos.toArray(new FileInfo[fileInfos.size()]);
         Arrays.sort(list, new DiskItemComparator(
             DiskItemComparator.BY_MODIFIED_DATE));
 
@@ -120,9 +119,9 @@ public class Debug {
             }
             fOut.close();
         } catch (IOException e) {
-            LOG.warn("Unable to write nodelist to '"
+            Loggable.logWarningStatic(Debug.class, "Unable to write nodelist to '"
                 + logFile.getAbsolutePath() + "'");
-            LOG.verbose(e);
+            Loggable.logFinerStatic(Debug.class, e);
         }
 
         return false;
@@ -307,7 +306,8 @@ public class Debug {
 
                 // all members
                 Member[] knownMembers = c.getNodeManager()
-                    .getNodesAsCollection().toArray(new Member[0]);
+                        .getNodesAsCollection().toArray(new Member[c.getNodeManager()
+                        .getNodesAsCollection().size()]);
                 // Sort
                 Arrays.sort(knownMembers, MemberComparator.IN_GUI);
                 b.append("\nAll online nodes ("
@@ -497,7 +497,7 @@ public class Debug {
         try {
             // Create in debug directory
             // Create dir
-            File dir = new File(Logger.getDebugDir(), "nodeinfos");
+            File dir = new File(LogDispatch.getDebugDir(), "nodeinfos");
             dir.mkdirs();
             OutputStream fOut = new BufferedOutputStream(new FileOutputStream(
                 new File(dir, fileName)));
@@ -505,7 +505,7 @@ public class Debug {
             fOut.close();
             return true;
         } catch (IOException e) {
-            LOG.error(e);
+            Loggable.logSevereStatic(Debug.class, e);
         }
         return false;
     }
@@ -521,16 +521,16 @@ public class Debug {
         Reject.ifNull(node, "Node is null");
         String fileName = "Node." + node.nick + ".report.txt";
         try {
-            File file = new File(Logger.getDebugDir(), "nodeinfos/" + fileName);
+            File file = new File(LogDispatch.getDebugDir(), "nodeinfos/" + fileName);
             InputStream fIn = new BufferedInputStream(new FileInputStream(file));
 
             byte[] buffer = new byte[(int) file.length()];
             fIn.read(buffer);
             return new String(buffer);
         } catch (IOException e) {
-            LOG.warn("Debug report for " + node.nick + " not found ("
+            Loggable.logWarningStatic(Debug.class, "Debug report for " + node.nick + " not found ("
                 + fileName + ")");
-            // LOG.verbose(e);
+            // Loggable.logFinerStatic(Debug.class, e);
         }
         return null;
     }
@@ -548,15 +548,15 @@ public class Debug {
         Reject.ifNull(nodes, "Nodelist is null");
         try {
             OutputStream fOut = new BufferedOutputStream(new FileOutputStream(
-                new File(Logger.getDebugDir(), fileName)));
+                new File(LogDispatch.getDebugDir(), fileName)));
             for (Member node : nodes) {
                 fOut.write(Debug.toDetailInfo(node).getBytes());
                 fOut.write("\n".getBytes());
             }
             fOut.close();
         } catch (IOException e) {
-            LOG.warn("Unable to write nodelist to '" + fileName + "'");
-            LOG.verbose(e);
+            Loggable.logWarningStatic(Debug.class, "Unable to write nodelist to '" + fileName + "'");
+            Loggable.logFinerStatic(Debug.class, e);
         }
     }
 
@@ -574,7 +574,7 @@ public class Debug {
         Reject.ifNull(nodes, "Nodelist is null");
         try {
             OutputStream fOut = new BufferedOutputStream(new FileOutputStream(
-                new File(Logger.getDebugDir(), fileName)));
+                new File(LogDispatch.getDebugDir(), fileName)));
             fOut
                 .write("connect;supernode;nick;id;version;address;last connect time;last online time\n"
                     .getBytes());
@@ -586,8 +586,8 @@ public class Debug {
             }
             fOut.close();
         } catch (IOException e) {
-            LOG.warn("Unable to write nodelist to '" + fileName + "'");
-            LOG.verbose(e);
+            Loggable.logWarningStatic(Debug.class, "Unable to write nodelist to '" + fileName + "'");
+            Loggable.logFinerStatic(Debug.class, e);
         }
     }
 
@@ -610,7 +610,7 @@ public class Debug {
                 + c.getNodeManager().getNodesAsCollection().size() + "\n";
             fOut.write(statLine.getBytes());
         } catch (IOException e) {
-            LOG.warn("Unable to write network statistics file", e);
+            Loggable.logWarningStatic(Debug.class, "Unable to write network statistics file", e);
             // Ignore
         } finally {
             try {
@@ -633,7 +633,7 @@ public class Debug {
 
     public static void dumpCurrentStackTrace() {
         for (StackTraceElement e : Thread.currentThread().getStackTrace()) {
-            LOG.debug(e.toString());
+            Loggable.logFineStatic(Debug.class, e.toString());
         }
     }
 
@@ -675,15 +675,15 @@ public class Debug {
     private static void showGroupInfo(ThreadGroup group) {
         Thread threads[] = new Thread[group.activeCount()];
         group.enumerate(threads, false);
-        LOG.debug("");
-        LOG.debug(group + " ########################");
+        Loggable.logFineStatic(Debug.class, "");
+        Loggable.logFineStatic(Debug.class, group + " ########################");
 
         for (int i = 0; i < threads.length; i++) {
             if (threads[i] != null) {
-                LOG.debug(" " + threads[i]
+                Loggable.logFineStatic(Debug.class, " " + threads[i]
                     + " --------------------------------------");
                 dumpStackTrace(threads[i]);
-                LOG.debug("");
+                Loggable.logFineStatic(Debug.class, "");
             }
         }
         ThreadGroup activeGroup[] = new ThreadGroup[group.activeGroupCount()];
@@ -696,7 +696,7 @@ public class Debug {
 
     private static final void dumpStackTrace(Thread t) {
         for (StackTraceElement te : t.getStackTrace()) {
-            LOG.debug("  " + te);
+            Loggable.logFineStatic(Debug.class, "  " + te);
         }
     }
 

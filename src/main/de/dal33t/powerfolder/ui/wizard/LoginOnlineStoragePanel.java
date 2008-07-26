@@ -68,6 +68,7 @@ import de.dal33t.powerfolder.ui.widget.LinkLabel;
 import de.dal33t.powerfolder.util.Help;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Loggable;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 
 public class LoginOnlineStoragePanel extends PFWizardPanel {
@@ -145,7 +146,8 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
             getController().saveConfig();
 
         } catch (Exception e) {
-            log().error("Problem logging in", e);
+            Loggable.logSevereStatic(LoginOnlineStoragePanel.class,
+                    "Problem logging in", e);
             list.add(Translation.getTranslation("online_storage.general_error",
                 e.getMessage()));
         }
@@ -161,7 +163,7 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
 
             // If there is already a default folder for this account, use that
             FolderInfo accountFolder = account.getDefaultSynchronizedFolder();
-            log().info(
+            Loggable.logInfoStatic(LoginOnlineStoragePanel.class,
                 "Default synced folder on " + account.getUsername() + " is "
                     + accountFolder);
 

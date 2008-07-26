@@ -28,6 +28,7 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.message.RequestNodeInformation;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Loggable;
 import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
 
@@ -60,7 +61,8 @@ public class RequestReportAction extends SelectionBaseAction {
         if (selection instanceof Member) {
             Member member = (Member) selection;
             if (member.isConnected() || member.isMySelf()) {
-                log().debug("Requesting node information from " + member);
+                Loggable.logFinerStatic(RequestReportAction.class,
+                        "Requesting node information from " + member);
                 member.sendMessageAsynchron(new RequestNodeInformation(),
                     Translation.getTranslation("nodeinfo.error"));
                 getUIController().getInformationQuarter().displayText(

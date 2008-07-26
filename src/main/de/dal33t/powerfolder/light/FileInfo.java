@@ -41,9 +41,9 @@ import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.Loggable;
 import de.dal33t.powerfolder.util.delta.FilePartsRecord;
 import de.dal33t.powerfolder.util.delta.FilePartsRecordBuilder;
 
@@ -53,10 +53,8 @@ import de.dal33t.powerfolder.util.delta.FilePartsRecordBuilder;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.33 $
  */
-public class FileInfo implements Serializable, DiskItem {
+public class FileInfo extends Loggable implements Serializable, DiskItem {
     private static final long serialVersionUID = 100L;
-
-    private static final Logger LOG = Logger.getLogger(FileInfo.class);
 
     /** The filename (including the path from the base of the folder) */
     private String fileName;
@@ -176,7 +174,7 @@ public class FileInfo implements Serializable, DiskItem {
         }
 
         // if (!diskFile.exists()) {
-        // log().warn("File does not exsists on disk: " + toDetailString());
+        // logWarning("File does not exsists on disk: " + toDetailString());
         // }
 
         boolean filesDiffered = !inSyncWithDisk(diskFile);
@@ -186,7 +184,7 @@ public class FileInfo implements Serializable, DiskItem {
                 .lastModified()));
             setSize(diskFile.length());
             setDeleted(!diskFile.exists());
-            // log().warn("File updated to: " + this.toDetailString());
+            // logWarning("File updated to: " + this.toDetailString());
         }
 
         return filesDiffered;
@@ -506,7 +504,7 @@ public class FileInfo implements Serializable, DiskItem {
                 }
                 // Check if remote file in newer
                 if (remoteFile.isNewerThan(newestVersion)) {
-                    // log().verbose("Newer version found at " + member);
+                    // logFiner("Newer version found at " + member);
                     newestVersion = remoteFile;
                 }
             }
@@ -542,7 +540,7 @@ public class FileInfo implements Serializable, DiskItem {
                 }
                 // Check if remote file is newer
                 if (remoteFile.isNewerThan(newestVersion)) {
-                    // log().verbose("Newer version found at " + member);
+                    // logFiner("Newer version found at " + member);
                     newestVersion = remoteFile;
                 }
             }
@@ -625,7 +623,7 @@ public class FileInfo implements Serializable, DiskItem {
             && this.getModifiedDate().equals(otherFile.getModifiedDate())
             && !this.getModifiedBy().equals(otherFile.getModifiedBy()))
         {
-            LOG.error("Found identical files, but diffrent modifier:"
+            logSevere("Found identical files, but diffrent modifier:"
                 + toDetailString() + " other: " + otherFile.toDetailString());
         }
         return identical;
@@ -751,7 +749,7 @@ public class FileInfo implements Serializable, DiskItem {
                 }
                 fileRecord = b.getRecord();
                 long took = System.currentTimeMillis() - start;
-                LOG.info("Built file parts for " + this + ". took " + took
+                logInfo("Built file parts for " + this + ". took " + took
                     + "ms" + " while processing " + processed + " bytes.");
             } catch (NoSuchAlgorithmException e) {
                 throw new RuntimeException(e);

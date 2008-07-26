@@ -16,6 +16,8 @@
 
 package org.jdesktop.swinghelper.debug;
 
+import de.dal33t.powerfolder.util.Loggable;
+
 import java.lang.ref.WeakReference;
 
 import javax.swing.JButton;
@@ -24,8 +26,6 @@ import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.RepaintManager;
 import javax.swing.SwingUtilities;
-
-import de.dal33t.powerfolder.util.Logger;
 
 /**
  * <p>
@@ -46,8 +46,6 @@ import de.dal33t.powerfolder.util.Logger;
  * @author Alexander Potochkin https://swinghelper.dev.java.net/
  */
 public class CheckThreadViolationRepaintManager extends RepaintManager {
-    private static final Logger LOG = Logger
-        .getLogger(CheckThreadViolationRepaintManager.class);
     // it is recommended to pass the complete check
     private boolean completeCheck = true;
     private WeakReference<JComponent> lastComponent;
@@ -110,11 +108,11 @@ public class CheckThreadViolationRepaintManager extends RepaintManager {
                 return;
             }
             lastComponent = new WeakReference<JComponent>(c);
-            LOG.error("");
-            LOG.error("EDT violation detected");
-            LOG.error("" + c);
+            Loggable.logSevereStatic(CheckThreadViolationRepaintManager.class, "");
+            Loggable.logSevereStatic(CheckThreadViolationRepaintManager.class, "EDT violation detected");
+            Loggable.logSevereStatic(CheckThreadViolationRepaintManager.class, "" + c);
             for (StackTraceElement st : stackTrace) {
-                LOG.error("\tat " + st);
+                Loggable.logSevereStatic(CheckThreadViolationRepaintManager.class, "\tat " + st);
             }
         }
     }

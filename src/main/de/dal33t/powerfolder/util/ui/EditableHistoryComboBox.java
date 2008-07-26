@@ -37,8 +37,8 @@ import javax.swing.event.DocumentListener;
 import org.apache.commons.lang.StringUtils;
 
 import com.jgoodies.binding.value.ValueModel;
+import de.dal33t.powerfolder.util.Loggable;
 
-import de.dal33t.powerfolder.util.Logger;
 
 /**
  * This item is a editable combo box, which manages a history. It writes to the
@@ -50,10 +50,6 @@ import de.dal33t.powerfolder.util.Logger;
  */
 public class EditableHistoryComboBox extends JComboBox {
     private static final int DEFAULT_HISTORY_LENGTH = 30;
-
-    private final static Logger LOG = Logger
-        .getLogger(EditableHistoryComboBox.class);
-
     private ValueModel textModel;
     private int maxHistoryLength;
     private String boxName;
@@ -120,7 +116,7 @@ public class EditableHistoryComboBox extends JComboBox {
         textModel.addValueChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (!textModelChangedFromInnerBox) {
-                    LOG.verbose("Value changed from below to "
+                    Loggable.logFinerStatic(EditableHistoryComboBox.class, "Value changed from below to "
                         + evt.getNewValue());
                     // Only set selected item if textmodel not changed from
                     // ourself
@@ -135,13 +131,12 @@ public class EditableHistoryComboBox extends JComboBox {
         addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
                 if (selectionChangedFromTextModel) {
-                    LOG
-                        .verbose("Ingonoring Selection, came from textmodel directly item: "
+                    Loggable.logFinerStatic(EditableHistoryComboBox.class, "Ingonoring Selection, came from textmodel directly item: "
                             + e.getItem());
                     return;
                 }
                 if (e.getStateChange() == ItemEvent.SELECTED) {
-                    LOG.verbose("Selected item: " + e.getItem());
+                    Loggable.logFinerStatic(EditableHistoryComboBox.class, "Selected item: " + e.getItem());
                     nDocumentEventToIgnore = 2;
 
                     // update text model value
@@ -179,7 +174,7 @@ public class EditableHistoryComboBox extends JComboBox {
                         editorsDocumentListener);
                 }
 
-                LOG.verbose("Editor has changed");
+                Loggable.logFinerStatic(EditableHistoryComboBox.class, "Editor has changed");
             }
         });
 
@@ -220,7 +215,7 @@ public class EditableHistoryComboBox extends JComboBox {
         FocusListener focusListener = new FocusListener() {
             public void focusGained(FocusEvent e) {
                 // Reset field to origial values
-                LOG.verbose("Resetting input field to orignal content");
+                Loggable.logFinerStatic(EditableHistoryComboBox.class, "Resetting input field to orignal content");
                 field.setText(originalText);
                 field.setForeground(originalColor);
                 //field.removeFocusListener(this);
@@ -314,7 +309,7 @@ public class EditableHistoryComboBox extends JComboBox {
             }
         }
 
-        LOG.verbose("Adding to history: " + item);
+        Loggable.logFinerStatic(EditableHistoryComboBox.class, "Adding to history: " + item);
 
         // Add Item at top position
         insertItemAt(item, 0);

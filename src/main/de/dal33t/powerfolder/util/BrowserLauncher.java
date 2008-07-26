@@ -78,15 +78,15 @@ public class BrowserLauncher {
     }
 
     private static boolean java6impl(String url) throws IOException {
-        Logger log = Logger.getLogger(BrowserLauncher.class);
         try {
             if (Desktop.isDesktopSupported()) {
-                log.debug("Using Java6 Desktop.browse()");
+                Loggable.logFineStatic(BrowserLauncher.class,
+                        "Using Java6 Desktop.browse()") ;
                 Desktop.getDesktop().browse(new URI(url));
                 return true;
             }
         } catch (LinkageError err) {
-            log.verbose(err);
+            Loggable.logFinerStatic(BrowserLauncher.class, err);
         } catch (URISyntaxException e) {
             throw (IOException) new IOException("Error:" + e.toString())
                 .initCause(e);

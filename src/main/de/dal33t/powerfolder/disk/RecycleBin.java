@@ -60,7 +60,7 @@ public class RecycleBin extends PFComponent {
         super(controller);
         moveFolders();
         allRecycledFiles.addAll(readRecyledFiles());
-        log().debug("Created");
+        logFine("Created");
     }
 
     /** Move the old recycle bin to the new location */
@@ -72,10 +72,10 @@ public class RecycleBin extends PFComponent {
             File recycleBinDir = getRecycleBinDirectory(folder);
             if (oldRecycleBinDir.exists() && !recycleBinDir.exists()) {
                 if (oldRecycleBinDir.renameTo(recycleBinDir)) {
-                    log().debug(
+                    logFine(
                         oldRecycleBinDir + " renamed to " + recycleBinDir);
                 } else {
-                    log().debug(
+                    logFine(
                         "failed to rename " + oldRecycleBinDir + " to "
                             + recycleBinDir);
                 }
@@ -115,7 +115,7 @@ public class RecycleBin extends PFComponent {
                 RecycleDelete.delete(fileToDelete.getAbsolutePath());
             } else {
                 if (!fileToDelete.delete()) {
-                    log().error(
+                    logSevere(
                         "cannot remove file from recycle bin: " + fileToDelete);
                 }
             }
@@ -149,7 +149,7 @@ public class RecycleBin extends PFComponent {
             && directory.listFiles().length == 0)
         {
             if (!directory.delete()) {
-                log().error("Failed to delete: " + directory.getAbsolutePath());
+                logSevere("Failed to delete: " + directory.getAbsolutePath());
             }
         }
     }
@@ -284,7 +284,7 @@ public class RecycleBin extends PFComponent {
                         RecycleDelete.delete(fileToRemove.getAbsolutePath());
                     } else {
                         if (!fileToRemove.delete()) {
-                            log().error(
+                            logSevere(
                                 "cannot remove file from recycle bin: "
                                     + fileToRemove);
                         }
@@ -314,7 +314,7 @@ public class RecycleBin extends PFComponent {
             }
             if (recycleBinDir.exists()) {
                 if (!recycleBinDir.isDirectory()) {
-                    log().error("recycle bin is not a directory!");
+                    logSevere("recycle bin is not a directory!");
                     continue;
                 }
                 File[] files = recycleBinDir.listFiles();
@@ -323,7 +323,7 @@ public class RecycleBin extends PFComponent {
                         RecycleDelete.delete(fileToRemove.getAbsolutePath());
                     } else {
                         if (!fileToRemove.delete()) {
-                            log().error(
+                            logSevere(
                                 "cannot remove file from recycle bin: "
                                     + fileToRemove);
                         }
@@ -351,14 +351,14 @@ public class RecycleBin extends PFComponent {
      */
     public boolean moveToRecycleBin(FileInfo fileInfo, File file) {
         if (!file.exists()) {
-            log().error(
+            logSevere(
                 "moveToRecycleBin: source file does not exists: " + file);
         }
 
         File recycleBinDir = getRecycleBinDirectory(fileInfo);
         if (!recycleBinDir.exists()) {
             if (!recycleBinDir.mkdir()) {
-                log().error(
+                logSevere(
                     "moveToRecycleBin: cannot create recycle bin: "
                         + recycleBinDir);
                 return false;
@@ -371,7 +371,7 @@ public class RecycleBin extends PFComponent {
         File parent = new File(target.getParent());
         if (!parent.equals(recycleBinDir)) {
             if (!parent.exists() && !parent.mkdirs()) {
-                log().error(
+                logSevere(
                     "moveToRecycleBin: cannot create recycle bin directorty structure for: "
                         + target);
                 return false;
@@ -384,25 +384,24 @@ public class RecycleBin extends PFComponent {
             }
             if (target.exists()) {
                 if (!target.delete()) {
-                    log()
-                        .error("Failed to delete: " + target.getAbsolutePath());
+                    logSevere("Failed to delete: " + target.getAbsolutePath());
                 }
             }
         }
         if (!file.renameTo(target)) {
-            log().warn(
+            logWarning(
                 "moveToRecycleBin: cannot rename file to recycle bin: "
                     + target);
             try {
                 FileUtils.copyFile(file, target);
             } catch (IOException ioe) {
-                log().error(
+                logSevere(
                     "moveToRecycleBin: cannot copy to recycle bin: " + target
                         + '\n' + ioe.getMessage());
                 return false;
             }
             if (!file.delete()) {
-                log().error(
+                logSevere(
                     "moveToRecycleBin: cannot delete file after copy to recycle bin: "
                         + file);
                 return false;
@@ -410,11 +409,11 @@ public class RecycleBin extends PFComponent {
         }
         // checks to validate code
         if (file.exists()) {
-            log().error("moveToRecycleBin: source not deleted?: " + file);
+            logSevere("moveToRecycleBin: source not deleted?: " + file);
             return false;
         }
         if (!target.exists()) {
-            log().error("moveToRecycleBin: target not created?: " + target);
+            logSevere("moveToRecycleBin: target not created?: " + target);
             return false;
         }
         addFile(fileInfo);
@@ -464,15 +463,14 @@ public class RecycleBin extends PFComponent {
             }
             if (target.exists()) {
                 if (!target.delete()) {
-                    log()
-                        .error("Failed to delete: " + target.getAbsolutePath());
+                    logSevere("Failed to delete: " + target.getAbsolutePath());
                 }
             }
         }
         File parent = new File(target.getParent());
         if (!parent.exists()) {
             if (!parent.mkdirs()) {
-                log().error(
+                logSevere(
                     "restoreFromRecycleBin: cannot create directorty structure for: "
                         + target);
                 return false;
@@ -480,19 +478,19 @@ public class RecycleBin extends PFComponent {
         }
 
         if (!source.renameTo(target)) {
-            log().warn(
+            logWarning(
                 "restoreFromRecycleBin: cannot rename file from recycle bin to: "
                     + target);
             try {
                 FileUtils.copyFile(source, target);
             } catch (IOException ioe) {
-                log().error(
+                logSevere(
                     "restoreFromRecycleBin: cannot copy from recycle bin to: "
                         + target + '\n' + ioe.getMessage());
                 return false;
             }
             if (!source.delete()) {
-                log().error(
+                logSevere(
                     "restoreFromRecycleBin: cannot delete file after copy from recycle bin: "
                         + source);
                 return false;
@@ -500,13 +498,11 @@ public class RecycleBin extends PFComponent {
         }
         // checks to validate code
         if (source.exists()) {
-            log()
-                .error("restoreFromRecycleBin: source not deleted?: " + source);
+            logSevere("restoreFromRecycleBin: source not deleted?: " + source);
             return false;
         }
         if (!target.exists()) {
-            log()
-                .error("restoreFromRecycleBin: target not created?: " + target);
+            logSevere("restoreFromRecycleBin: target not created?: " + target);
             return false;
         }
         // Let folder scan the restored file

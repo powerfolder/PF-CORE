@@ -93,7 +93,7 @@ public class SearchNodeTableModel extends PFUIComponent implements TableModel,
     /** add a member */
     public void add(Member member) {
         Reject.ifNull(member, "Member is null");
-        log().debug("add member id: '" + member.getId() + '\'');
+        logFine("add member id: '" + member.getId() + '\'');
         members.add(member);
         sort();
 

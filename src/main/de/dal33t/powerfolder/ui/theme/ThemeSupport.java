@@ -31,8 +31,7 @@ import com.jgoodies.looks.plastic.theme.DesertBlue;
 import com.jgoodies.looks.plastic.theme.ExperienceBlue;
 import com.jgoodies.looks.plastic.theme.Silver;
 import com.jgoodies.looks.plastic.theme.SkyBlue;
-
-import de.dal33t.powerfolder.util.Logger;
+import de.dal33t.powerfolder.util.Loggable;
 
 /**
  * Class which offers several helper methods for handling with Themes
@@ -41,8 +40,6 @@ import de.dal33t.powerfolder.util.Logger;
  * @version $Revision: 1.6 $
  */
 public class ThemeSupport {
-    // The logger
-    private static final Logger LOG = Logger.getLogger(ThemeSupport.class);
 
     /** All avaiable themes */
     private static final Class[] AVAILABLE_THEME_CLASSES = new Class[]{
@@ -61,7 +58,7 @@ public class ThemeSupport {
      * 
      * @return
      */
-    public synchronized static PlasticTheme[] getAvailableThemes() {
+    public static synchronized PlasticTheme[] getAvailableThemes() {
         if (availableThemes == null) {
             availableThemes = new PlasticTheme[AVAILABLE_THEME_CLASSES.length];
             for (int i = 0; i < AVAILABLE_THEME_CLASSES.length; i++) {
@@ -69,9 +66,11 @@ public class ThemeSupport {
                     availableThemes[i] = (PlasticTheme) AVAILABLE_THEME_CLASSES[i]
                         .newInstance();
                 } catch (InstantiationException e) {
-                    LOG.error("Unable to initalize theme", e);
+                    Loggable.logSevereStatic(ThemeSupport.class,
+                            "Unable to initalize theme", e);
                 } catch (IllegalAccessException e) {
-                    LOG.error("Unable to initalize theme", e);
+                    Loggable.logSevereStatic(ThemeSupport.class,
+                            "Unable to initalize theme", e);
                 }
             }
         }
@@ -106,13 +105,15 @@ public class ThemeSupport {
     public static boolean setPlasticTheme(PlasticTheme theme, Component comp1,
         Component comp2)
     {
-        LOG.info("Setting theme: " + theme.getName());
+        Loggable.logInfoStatic(ThemeSupport.class,
+                "Setting theme: " + theme.getName());
         if (UIManager.getLookAndFeel() instanceof PlasticXPLookAndFeel) {
             PlasticXPLookAndFeel.setPlasticTheme(theme);
             try {
                 UIManager.setLookAndFeel(new PlasticXPLookAndFeel());
             } catch (UnsupportedLookAndFeelException e) {
-                LOG.warn("Unable to set look and feel", e);
+                Loggable.logWarningStatic(ThemeSupport.class,
+                        "Unable to set look and feel", e);
             }
             if (comp1 != null) {
                 SwingUtilities.updateComponentTreeUI(comp1);

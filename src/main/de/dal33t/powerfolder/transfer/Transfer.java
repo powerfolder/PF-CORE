@@ -150,7 +150,7 @@ public abstract class Transfer extends Loggable implements Serializable {
      */
     public void init(TransferManager aTransferManager) {
         if (transferManager != null) {
-            log().error(
+            logSevere(
                 "Unable to set TransferManager. Having already one. " + this);
             return;
         }
@@ -299,18 +299,18 @@ public abstract class Transfer extends Loggable implements Serializable {
             return false;
         }
         if (getPartner() == null) {
-            log().warn("Abort cause: partner is null.");
+            logWarning("Abort cause: partner is null.");
             return true;
         }
         if (!getPartner().isCompleteyConnected()) {
-            log().warn(
+            logWarning(
                 "Abort cause: " + getPartner().getNick() + " not connected.");
             return true;
         }
         boolean partnerOnFolder = stillPartnerOnFolder();
         if (!partnerOnFolder) {
             // broken if partner left folder
-            log().warn(
+            logWarning(
                 "Abort cause: " + getPartner().getNick() + " not on folder.");
             return true;
         }

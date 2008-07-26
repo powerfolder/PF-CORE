@@ -48,7 +48,7 @@ public class ErrorManager extends PFComponent {
         if (info != null) {
             return info.getType();
         }
-        log().verbose("Uknown errorCode received: " + errorCode);
+        logFiner("Uknown errorCode received: " + errorCode);
         return UNKNOWN;
 
     }
@@ -58,7 +58,7 @@ public class ErrorManager extends PFComponent {
         if (info != null) {
             return info.getCode();
         }
-        log().verbose("Uknown errorCode received: " + errorCode);
+        logFiner("Uknown errorCode received: " + errorCode);
         return UNKNOWN;
     }
 
@@ -67,7 +67,7 @@ public class ErrorManager extends PFComponent {
         if (info != null) {
             return info.getText();
         }
-        log().verbose("Uknown errorCode received: " + errorCode);
+        logFiner("Uknown errorCode received: " + errorCode);
         return "";
     }
 

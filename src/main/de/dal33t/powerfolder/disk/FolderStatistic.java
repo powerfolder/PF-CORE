@@ -227,7 +227,7 @@ public class FolderStatistic extends PFComponent {
         if (!getController().getFolderRepository().hasJoinedFolder(
             folder.getInfo()))
         {
-            log().warn("Unable to calc stats. Folder not joined");
+            logWarning("Unable to calc stats. Folder not joined");
             return;
         }
         long millisPast = System.currentTimeMillis() - lastCalc;
@@ -260,7 +260,7 @@ public class FolderStatistic extends PFComponent {
             getController().schedule(task, timeToWait);
         } catch (IllegalStateException ise) {
             // ignore this happends if this shutdown in debug mode
-            log().verbose(ise);
+            logFiner(ise);
         }
     }
 
@@ -270,8 +270,8 @@ public class FolderStatistic extends PFComponent {
      * @private public because for test
      */
     public synchronized void calculate0() {
-        if (logVerbose) {
-            log().verbose("-------------Recalculation statisitcs on " + folder);
+        if (isLogFiner()) {
+            logFiner("-------------Recalculation statisitcs on " + folder);
         }
         long startTime = System.currentTimeMillis();
         // clear statistics before
@@ -294,8 +294,8 @@ public class FolderStatistic extends PFComponent {
         calculating = null;
         lastCalc = System.currentTimeMillis();
 
-        if (logVerbose) {
-            log().verbose(
+        if (isLogFiner()) {
+            logFiner(
                 "---------calc stats  " + folder.getName() + " done @: "
                     + (System.currentTimeMillis() - startTime));
         }
@@ -319,7 +319,7 @@ public class FolderStatistic extends PFComponent {
         Collection<FileInfo> files;
         files = folder.getFilesAsCollection(member);
         if (files == null) {
-            log().verbose(
+            logFiner(
                 "Unable to calc stats on member, no filelist yet: " + member);
             return;
         }
@@ -378,7 +378,7 @@ public class FolderStatistic extends PFComponent {
             // }
             // inSync = false;
             // } else if (fInfo.isExpected(repo)) {
-            // log().warn("file expected: " + newestFileInfo.toDetailString());
+            // logWarning("file expected: " + newestFileInfo.toDetailString());
             // calculating.incomingFilesCount++;
             // inSync = false;
             // }
@@ -437,7 +437,7 @@ public class FolderStatistic extends PFComponent {
             }
             double sync = ((double) sizeInSync) / calculating.totalSize * 100;
             if (sync > 100) {
-                log().warn(
+                logWarning(
                     "Over 100% sync: "
                         + sync
                         + "% sync: "
@@ -450,15 +450,15 @@ public class FolderStatistic extends PFComponent {
                         + Format.formatBytesShort(calculating.totalSize));
             }
             if (calculating.totalSize == 0) {
-                log().verbose("Got total size 0");
+                logFiner("Got total size 0");
                 sync = 100;
             }
             calculating.syncPercentages.put(member, sync);
             totalSync += sync;
             considered++;
 
-            if (logVerbose) {
-                log().verbose(
+            if (isLogFiner()) {
+                logFiner(
                     member.getNick() + ": size: "
                         + calculating.sizes.get(member) + ", size(insync): "
                         + sizeInSync + ": " + sync + "%");

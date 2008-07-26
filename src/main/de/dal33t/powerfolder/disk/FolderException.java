@@ -24,15 +24,13 @@ import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 
 import javax.swing.JFrame;
-import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Loggable;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
-import de.dal33t.powerfolder.util.ui.GenericDialogType;
 
 /**
  * General Exception for folder
@@ -127,9 +125,9 @@ public class FolderException extends Exception implements Serializable {
                 try {
                     SwingUtilities.invokeAndWait(runner);
                 } catch (InterruptedException e) {
-                    Logger.getLogger(FolderException.class).error(e);
+                    Loggable.logSevereStatic(FolderException.class, e);
                 } catch (InvocationTargetException e) {
-                    Logger.getLogger(FolderException.class).error(e);
+                    Loggable.logSevereStatic(FolderException.class, e);
                 }
             }
         }

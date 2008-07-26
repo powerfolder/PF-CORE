@@ -285,7 +285,7 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
                 }
                 addOrUpdateDownload(dl);
             } else {
-                log().error("Download not found in model: " + dl);
+                logSevere("Download not found in model: " + dl);
             }
             rowsUpdatedAll();
         }
@@ -363,7 +363,7 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
             if (index >= 0) {
                 downloads.remove(index);
             } else {
-                log().error(
+                logSevere(
                     "Unable to remove download from tablemodel, not found: "
                         + download);
             }
@@ -409,10 +409,10 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
             try {
                 SwingUtilities.invokeAndWait(wrapper);
             } catch (InterruptedException e) {
-                log().verbose("Interrupteed while updating downloadstable", e);
+                logFiner("Interrupteed while updating downloadstable", e);
 
             } catch (InvocationTargetException e) {
-                log().error("Unable to update downloadstable", e);
+                logSevere("Unable to update downloadstable", e);
 
             }
             // }
@@ -453,7 +453,7 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
 
     public Object getValueAt(int rowIndex, int columnIndex) {
         if (rowIndex >= downloads.size()) {
-            log().error(
+            logSevere(
                 "Illegal rowIndex requested. rowIndex " + rowIndex
                     + ", downloads " + downloads.size());
             return null;
@@ -525,7 +525,7 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
      * Fires an modelevent to all listeners, that model has changed
      */
     private void modelChanged(final TableModelEvent e) {
-        // log().verbose("Download tablemodel changed");
+        // logFiner("Download tablemodel changed");
         Runnable runner = new Runnable() {
             public void run() {
                 synchronized (listeners) {

@@ -43,7 +43,7 @@ import javax.imageio.stream.ImageInputStream;
  * @version $Revision: 1.13 $
  */
 public class ImageSupport {
-    private static final Logger LOG = Logger.getLogger(ImageSupport.class);
+
     // Use a set to filter duplicates
     private static Set supportedReadFileTypes = new HashSet();
     private static Set supportedWriteFileTypes = new HashSet();
@@ -118,7 +118,7 @@ public class ImageSupport {
                 return new Dimension(width, height);
             }
         } catch (Exception e) {
-            LOG.verbose("Unable to read image: " + file.getAbsolutePath(), e);
+            Loggable.logFinerStatic(ImageSupport.class, "Unable to read image: " + file.getAbsolutePath(), e);
         }
         return null;
     }
@@ -145,7 +145,7 @@ public class ImageSupport {
                 return image;
             }
         } catch (Exception e) {
-            LOG.verbose("Unable to read image: " + file.getAbsolutePath(), e);
+            Loggable.logFinerStatic(ImageSupport.class, "Unable to read image: " + file.getAbsolutePath(), e);
         }
         return null;
     }

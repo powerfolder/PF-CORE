@@ -38,8 +38,6 @@ import de.dal33t.powerfolder.util.os.OSUtil;
  */
 public class MailUtil {
 
-    private static final Logger LOG = Logger.getLogger(MailUtil.class);
-
     // No instance possible
     private MailUtil() {
     }
@@ -82,7 +80,7 @@ public class MailUtil {
                 return false;
             }
         } catch (LinkageError err) {
-            LOG.verbose(err);
+            Loggable.logFinerStatic(MailUtil.class, err);
             return false;
         }
         
@@ -110,13 +108,13 @@ public class MailUtil {
                 separator = '&';
             }
 
-            LOG.debug("mailto:" + headers);
+            Loggable.logFineStatic(MailUtil.class, "mailto:" + headers);
             Desktop.getDesktop().mail(new URI("mailto:" + headers));
         } catch (UnsupportedEncodingException e) {
-            LOG.error(e);
+            Loggable.logSevereStatic(MailUtil.class, e);
             return false;
         } catch (IOException e) {
-            LOG.error(e);
+            Loggable.logSevereStatic(MailUtil.class, e);
             return false;
         } catch (URISyntaxException e) {
             // TODO Auto-generated catch block

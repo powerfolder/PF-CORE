@@ -19,9 +19,9 @@
 */
 package de.dal33t.powerfolder.disk;
 
-import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.PatternMatch;
+import de.dal33t.powerfolder.util.Loggable;
 import de.dal33t.powerfolder.DiskItem;
 import de.dal33t.powerfolder.light.FileInfo;
 
@@ -38,11 +38,6 @@ import java.io.*;
  * retainByDefault - DiskItems will be retained unless they match a pattern (a black list).
  */
 public class DiskItemFilter {
-
-    /**
-     * Logger
-     */
-    private static final Logger LOG = Logger.getLogger(DiskItemFilter.class);
 
     /**
      * Patterns file name.
@@ -94,13 +89,15 @@ public class DiskItemFilter {
                     }
                 }
             } catch (IOException ioe) {
-                LOG.error("Problem loading pattern from " + directory, ioe);
+                Loggable.logSevereStatic(DiskItemFilter.class,
+                        "Problem loading pattern from " + directory, ioe);
             } finally {
                 if (reader != null) {
                     try {
                         reader.close();
                     } catch (IOException e) {
-                        LOG.error("Problem loading pattern from " + directory, e);
+                        Loggable.logSevereStatic(DiskItemFilter.class,
+                                "Problem loading pattern from " + directory, e);
                     }
                 }
             }
@@ -130,13 +127,15 @@ public class DiskItemFilter {
             }
             dirty = false;
         } catch (IOException e) {
-            LOG.error("Problem saving pattern to " + directory, e);
+            Loggable.logSevereStatic(DiskItemFilter.class,
+                    "Problem saving pattern to " + directory, e);
         } finally {
             if (writer != null) {
                 try {
                     writer.close();
                 } catch (IOException e) {
-                    LOG.error("Problem saving pattern to " + directory, e);
+                    Loggable.logSevereStatic(DiskItemFilter.class,
+                            "Problem saving pattern to " + directory, e);
                 }
             }
         }
@@ -159,7 +158,8 @@ public class DiskItemFilter {
         try {
             patterns.add(pattern.toLowerCase());
         } catch (PatternSyntaxException e) {
-            LOG.error("Problem adding pattern " + pattern, e);
+            Loggable.logSevereStatic(DiskItemFilter.class,
+                    "Problem adding pattern " + pattern, e);
         }
         dirty = true;
     }

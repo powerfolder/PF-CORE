@@ -366,7 +366,7 @@ public class DownloadsPanel extends PFUIPanel implements HasDetailsPanel {
                     try {
                         FileUtils.openFile(file);
                     } catch (IOException ex) {
-                        log().error(ex);
+                        logSevere(ex);
                     }
                 }
             }

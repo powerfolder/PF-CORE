@@ -238,8 +238,8 @@ public class SyncProfile extends Loggable implements Serializable {
 
         String oldProfileName = this.profileName;
         this.profileName = profileName;
-        if (logVerbose) {
-            getLogger().verbose("Set profile name from " + oldProfileName +
+        if (isLogFiner()) {
+            logFiner("Set profile name from " + oldProfileName +
                     " to " + profileName);
         }
     }
@@ -272,8 +272,8 @@ public class SyncProfile extends Loggable implements Serializable {
 
         SyncProfileConfiguration oldConfiguration = this.configuration;
         this.configuration = configuration;
-        if (logVerbose) {
-            getLogger().verbose("Set configuration from " +
+        if (isLogFiner()) {
+            logFiner("Set configuration from " +
                     oldConfiguration.toString() + " to " +
                     configuration.toString());
         }

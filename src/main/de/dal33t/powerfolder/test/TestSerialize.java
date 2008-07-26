@@ -33,7 +33,7 @@ import de.dal33t.powerfolder.message.FileList;
 import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.util.ByteSerializer;
 import de.dal33t.powerfolder.util.IdGenerator;
-import de.dal33t.powerfolder.util.Logger;
+import de.dal33t.powerfolder.util.Loggable;
 
 /**
  * Tests the serializing perfomance
@@ -42,7 +42,6 @@ import de.dal33t.powerfolder.util.Logger;
  * @version $Revision: 1.2 $
  */
 public class TestSerialize {
-    private static final Logger LOG = Logger.getLogger(TestSerialize.class);
 
     /**
      * @param args
@@ -55,7 +54,8 @@ public class TestSerialize {
             long start = System.currentTimeMillis();
             raw = ByteSerializer.serializeStatic(testMsgs[i], true);
             long took = System.currentTimeMillis() - start;
-            LOG.info("Serialize took " + took + "ms (" + raw.length
+            Loggable.logInfoStatic(TestSerialize.class,
+                    "Serialize took " + took + "ms (" + raw.length
                 + " bytes) of " + testMsgs[i]);
         }
     }

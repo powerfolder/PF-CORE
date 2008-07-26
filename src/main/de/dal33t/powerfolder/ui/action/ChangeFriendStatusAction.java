@@ -29,6 +29,7 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.ui.*;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Loggable;
 
 import javax.swing.*;
 
@@ -73,7 +74,8 @@ public class ChangeFriendStatusAction extends SelectionBaseAction {
     public void actionPerformed(ActionEvent e) {
         Object selection = getSelectionModel().getSelection();
 
-        log().verbose("Performing on item: " + selection);
+        Loggable.logFinerStatic(ChangeFriendStatusAction.class,
+                "Performing on item: " + selection);
         Member member = null;
 
         if (selection instanceof Member) {
@@ -135,7 +137,8 @@ public class ChangeFriendStatusAction extends SelectionBaseAction {
             }
 
         } else {
-            log().warn("Unable to change friend status, member not found");
+            Loggable.logWarningStatic(ChangeFriendStatusAction.class,
+                    "Unable to change friend status, member not found");
         }
     }
 

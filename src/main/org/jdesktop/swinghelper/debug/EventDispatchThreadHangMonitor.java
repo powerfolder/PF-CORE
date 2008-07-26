@@ -16,6 +16,8 @@
 
 package org.jdesktop.swinghelper.debug;
 
+import de.dal33t.powerfolder.util.Loggable;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.lang.management.*;
@@ -23,8 +25,6 @@ import java.util.*;
 import java.util.Timer;
 
 import javax.swing.*;
-
-import de.dal33t.powerfolder.util.Logger;
 
 /**
  * Monitors the AWT event dispatch thread for events that take longer than a
@@ -47,8 +47,6 @@ import de.dal33t.powerfolder.util.Logger;
  *         https://swinghelper.dev.java.net/
  */
 public final class EventDispatchThreadHangMonitor extends EventQueue {
-    private static final Logger LOG = Logger
-        .getLogger(EventDispatchThreadHangMonitor.class);
     private static final EventDispatchThreadHangMonitor INSTANCE = new EventDispatchThreadHangMonitor();
 
     // Time to wait between checks that the event dispatch thread isn't hung.
@@ -145,7 +143,7 @@ public final class EventDispatchThreadHangMonitor extends EventQueue {
             hangNumber = getNewHangNumber();
             String stackTrace = stackTraceToString(currentStack);
             lastReportedStack = currentStack;
-            Log.warn("(hang #" + hangNumber
+            Loggable.logWarningStatic(EventDispatchThreadHangMonitor.class, "(hang #" + hangNumber
                 + ") event dispatch thread stuck processing event for "
                 + timeSoFar() + " ms:" + stackTrace);
             checkForDeadlock();
@@ -177,7 +175,7 @@ public final class EventDispatchThreadHangMonitor extends EventQueue {
 
         public void dispose() {
             if (lastReportedStack != null) {
-                Log.warn("(hang #" + hangNumber
+                Loggable.logWarningStatic(EventDispatchThreadHangMonitor.class, "(hang #" + hangNumber
                     + ") event dispatch thread unstuck after " + timeSoFar()
                     + " ms.");
             }
@@ -296,11 +294,11 @@ public final class EventDispatchThreadHangMonitor extends EventQueue {
         if (threadIds == null) {
             return;
         }
-        Log.warn("deadlock detected involving the following threads:");
+        Loggable.logWarningStatic(EventDispatchThreadHangMonitor.class, "deadlock detected involving the following threads:");
         ThreadInfo[] threadInfos = threadBean.getThreadInfo(threadIds,
             Integer.MAX_VALUE);
         for (ThreadInfo info : threadInfos) {
-            Log.warn("Thread #" + info.getThreadId() + " "
+            Loggable.logWarningStatic(EventDispatchThreadHangMonitor.class, "Thread #" + info.getThreadId() + " "
                 + info.getThreadName() + " (" + info.getThreadState()
                 + ") waiting on " + info.getLockName() + " held by "
                 + info.getLockOwnerName()
@@ -497,12 +495,6 @@ public final class EventDispatchThreadHangMonitor extends EventQueue {
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
-        }
-    }
-
-    private static class Log {
-        public static void warn(String str) {
-            LOG.warn(str);
         }
     }
 }

@@ -229,7 +229,7 @@ public class DynDnsOrg extends PFComponent implements DynDns {
                 // charBuffer.clear();
             }
 
-            log().verbose("DynDns update result" + charBuffer);
+            logFiner("DynDns update result" + charBuffer);
 
             // get the response
 
@@ -252,9 +252,9 @@ public class DynDnsOrg extends PFComponent implements DynDns {
                 }
             }
         } catch (UnknownHostException e) {
-            log().warn(" " + e.toString());
+            logWarning(" " + e.toString());
         } catch (IOException e) {
-            log().warn(" " + e.toString());
+            logWarning(" " + e.toString());
         } finally {
             if (channel != null) {
                 try {

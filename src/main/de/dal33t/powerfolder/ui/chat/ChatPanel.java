@@ -82,7 +82,7 @@ public abstract class ChatPanel extends PFUIPanel {
         try {
             doc.insertString(0, "", null);
         } catch (BadLocationException ble) {
-            log().warn("Couldn't insert initial text into text pane.");
+            logWarning("Couldn't insert initial text into text pane.");
         }
         scrollPaneInput = new JScrollPane(chatInput,
             JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
@@ -147,7 +147,7 @@ public abstract class ChatPanel extends PFUIPanel {
                 }
             }
         } catch (BadLocationException ble) {
-            log().warn("could not set chat text", ble);
+            logWarning("could not set chat text", ble);
         }
 
         Runnable runner = new Runnable() {
@@ -160,7 +160,7 @@ public abstract class ChatPanel extends PFUIPanel {
                     try {
                         doc.insertString(0, "\n", null);
                     } catch (BadLocationException ble) {
-                        log().warn("could not set chat text", ble);
+                        logWarning("could not set chat text", ble);
                     }
                 }
 

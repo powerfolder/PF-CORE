@@ -136,9 +136,9 @@ public class FilenameProblemDialog extends PFUIComponent {
                 }
             });
         } catch (InterruptedException e) {
-            log().verbose(e);
+            logFiner(e);
         } catch (InvocationTargetException e) {
-            log().error(e);
+            logSevere(e);
         }
     }
 
@@ -308,7 +308,7 @@ public class FilenameProblemDialog extends PFUIComponent {
         }
 
         if (fileInfoSolved == null) {
-            log().warn(
+            logWarning(
                 "something went wrong with solving the filename problems for:"
                     + problemFileInfo);
         } else if (problemEvent.getScanResult() != null) {

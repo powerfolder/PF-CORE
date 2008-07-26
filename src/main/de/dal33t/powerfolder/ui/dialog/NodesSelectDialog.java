@@ -169,7 +169,7 @@ public class NodesSelectDialog extends PFUIComponent {
      * @return not used
      */
     public boolean open() {
-        log().warn("Opening download dialog");
+        logWarning("Opening download dialog");
         getUIComponent().setVisible(true);
         return true;
     }

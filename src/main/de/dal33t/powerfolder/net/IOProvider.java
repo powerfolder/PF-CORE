@@ -96,7 +96,7 @@ public class IOProvider extends PFComponent {
     public void shutdown() {
         started = false;
         if (ioThreadPool != null) {
-            log().debug("Shutting down connection I/O threadpool");
+            logFine("Shutting down connection I/O threadpool");
             ioThreadPool.shutdownNow();
         }
     }
@@ -112,7 +112,7 @@ public class IOProvider extends PFComponent {
         ConnectionHandlerFactory conHanFactory)
     {
         Reject.ifNull(conHanFactory, "The factory must not be null");
-        log().verbose("Setting new connection factory: " + conHanFactory);
+        logFiner("Setting new connection factory: " + conHanFactory);
         this.conHanFactory = conHanFactory;
     }
 
@@ -145,8 +145,8 @@ public class IOProvider extends PFComponent {
     public void startIO(Runnable ioSender, Runnable ioReceiver) {
         Reject.ifNull(ioSender, "IO Sender is null");
         Reject.ifNull(ioReceiver, "IO Receiver is null");
-        if (logVerbose) {
-            log().verbose("Starting IO for " + ioSender + " " + ioReceiver);
+        if (isLogFiner()) {
+            logFiner("Starting IO for " + ioSender + " " + ioReceiver);
         }
         startIO(ioSender);
         startIO(ioReceiver);
@@ -160,8 +160,8 @@ public class IOProvider extends PFComponent {
      */
     public void startIO(final Runnable ioWorker) {
         Reject.ifNull(ioWorker, "IO Worker is null");
-        if (logVerbose) {
-            log().verbose("Starting IO for " + ioWorker);
+        if (isLogFiner()) {
+            logFiner("Starting IO for " + ioWorker);
         }
         // Ensure clean security context. Unsure destructed session.
         Runnable sessionDestroyer = new SessionDestroyerRunnable(ioWorker);
@@ -210,12 +210,12 @@ public class IOProvider extends PFComponent {
             try {
                 SecurityManager secMan = getController().getSecurityManager();
                 if (secMan != null) {
-                    // FIXME:  log().warn("FIXME: Destroying sessing");
+                    // FIXME:  logWarning("FIXME: Destroying sessing");
                     secMan.destroySession();
                 }
                 ioWorker.run();
             } catch (RuntimeException e) {
-                log().error("RuntimeError in IO worker", e);
+                logSevere("RuntimeError in IO worker", e);
                 throw e;
             }
         }
@@ -228,8 +228,8 @@ public class IOProvider extends PFComponent {
                 return;
             }
             while (started) {
-                if (logDebug) {
-                    log().debug(
+                if (isLogFine()) {
+                    logFine(
                         "Checking " + keepAliveList.size()
                             + " con handlers for keepalive");
                 }
@@ -249,7 +249,7 @@ public class IOProvider extends PFComponent {
                                 continue;
                             }
                             if (!list.contains(peer)) {
-                                log().error(
+                                logSevere(
                                     "ConHan not in keepalive list of " + node);
                                 list.add(peer);
                             }
@@ -268,7 +268,7 @@ public class IOProvider extends PFComponent {
                 try {
                     Thread.sleep(TIME_WITHOUT_KEEPALIVE_UNTIL_PING);
                 } catch (InterruptedException e) {
-                    log().verbose(e);
+                    logFiner(e);
                     return;
                 }
             }
@@ -283,14 +283,14 @@ public class IOProvider extends PFComponent {
                 long timeWithoutKeepalive = System.currentTimeMillis()
                     - lastKeepaliveMessage.getTime();
                 newPing = timeWithoutKeepalive >= TIME_WITHOUT_KEEPALIVE_UNTIL_PING;
-                if (logVerbose) {
-                    log().verbose(
+                if (isLogFiner()) {
+                    logFiner(
                         "Keep-alive check. Received last keep alive message "
                             + timeWithoutKeepalive + "ms ago, ping required? "
                             + newPing + ". Node: " + conHan.getMember());
                 }
                 if (timeWithoutKeepalive > CONNECTION_KEEP_ALIVE_TIMOUT_MS) {
-                    log().warn(
+                    logWarning(
                         "Shutting down. Dead connection detected ("
                             + (timeWithoutKeepalive / 1000) + "s timeout) to "
                             + conHan.getMember());

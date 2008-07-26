@@ -208,8 +208,8 @@ public class MembersTab extends PFUIComponent implements FolderTab,
             Member member = (Member) memberListModel.getElementAt(memberList
                 .getSelectedIndex());
             selectionModel.setSelection(member);
-            if (logVerbose) {
-                log().verbose("Selection: " + selectionModel.getSelection());
+            if (isLogFiner()) {
+                logFiner("Selection: " + selectionModel.getSelection());
             }
         }
     }

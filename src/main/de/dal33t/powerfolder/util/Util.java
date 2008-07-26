@@ -25,8 +25,6 @@ import java.awt.datatransfer.ClipboardOwner;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -41,8 +39,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.StringTokenizer;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.lang.Validate;
 
@@ -60,8 +56,6 @@ import de.dal33t.powerfolder.util.os.Win32.WinUtils;
  * @version $Revision: 1.64 $
  */
 public class Util {
-
-    private static final Logger LOG = Logger.getLogger(Util.class);
 
     /**
      * Used building output as Hex
@@ -225,7 +219,7 @@ public class Util {
                 .getResource(altLocation + '/' + res);
         }
         if (result == null) {
-            LOG.error("Unable to load resource " + res + ". alt location "
+            Loggable.logSevereStatic(Util.class, "Unable to load resource " + res + ". alt location "
                 + altLocation);
         }
         return result;
@@ -257,12 +251,12 @@ public class Util {
         InputStream in = Thread.currentThread().getContextClassLoader()
             .getResourceAsStream(resource);
         if (in == null) {
-            LOG.verbose("Unable to find resource: " + resource);
+            Loggable.logFinerStatic(Util.class, "Unable to find resource: " + resource);
             // try harder
             in = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream(altLocation + "/" + resource);
             if (in == null) {
-                LOG.warn("Unable to find resource: " + altLocation + "/"
+                Loggable.logWarningStatic(Util.class, "Unable to find resource: " + altLocation + "/"
                     + resource);
                 return null;
             }
@@ -274,10 +268,10 @@ public class Util {
         try {
             FileUtils.copyFromStreamToFile(in, target);
         } catch (IOException ioe) {
-            LOG.warn("Unable to create target for resource: " + target);
+            Loggable.logWarningStatic(Util.class, "Unable to create target for resource: " + target);
             return null;
         }
-        LOG.verbose("created target for resource: " + target);
+        Loggable.logFinerStatic(Util.class, "created target for resource: " + target);
         return target;
     }
 
@@ -295,7 +289,7 @@ public class Util {
         if (util == null) {
             return false;
         }
-        LOG.verbose("Creating desktop shortcut to "
+        Loggable.logFinerStatic(Util.class, "Creating desktop shortcut to "
             + shortcutTarget.getAbsolutePath());
         ShellLink link = new ShellLink(null, "PowerFolder", shortcutTarget
             .getAbsolutePath(), null);
@@ -306,8 +300,8 @@ public class Util {
             util.createLink(link, scut.getAbsolutePath());
             return true;
         } catch (IOException e) {
-            LOG.warn("Couldn't create shortcut " + scut.getAbsolutePath());
-            LOG.verbose(e);
+            Loggable.logWarningStatic(Util.class, "Couldn't create shortcut " + scut.getAbsolutePath());
+            Loggable.logFinerStatic(Util.class, e);
         }
         return false;
     }
@@ -323,7 +317,7 @@ public class Util {
         if (util == null) {
             return false;
         }
-        LOG.verbose("Removing desktop shortcut: " + shortcutName);
+        Loggable.logFinerStatic(Util.class, "Removing desktop shortcut: " + shortcutName);
         File scut = new File(util.getSystemFolderPath(WinUtils.CSIDL_DESKTOP,
             false), shortcutName + ".lnk");
         return scut.delete();
@@ -342,7 +336,7 @@ public class Util {
         try {
             Object content = url.getContent();
             if (!(content instanceof InputStream)) {
-                LOG.error("Unable to get content from " + url
+                Loggable.logSevereStatic(Util.class, "Unable to get content from " + url
                     + ". content is of type " + content.getClass().getName());
                 return null;
             }
@@ -354,7 +348,7 @@ public class Util {
             }
             return buf.toString();
         } catch (IOException e) {
-            LOG.error(
+            Loggable.logSevereStatic(Util.class,
                 "Unable to get content from " + url + ". " + e.toString(), e);
         }
         return null;
@@ -676,7 +670,7 @@ public class Util {
                 remotePort = Integer.parseInt(connectStr.substring(dotdot + 1,
                     connectStr.length()));
             } catch (NumberFormatException e) {
-                LOG.warn("Illegal port in " + connectStr
+                Loggable.logWarningStatic(Util.class, "Illegal port in " + connectStr
                     + ", triing default port");
             }
         }

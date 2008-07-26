@@ -216,7 +216,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                 tempFile = new File(getMetaDataBaseDir(), "(incomplete) "
                     + getFileID());
             } catch (IOException e) {
-                log().error(e);
+                logSevere(e);
                 return null;
             }
         }
@@ -279,7 +279,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         } catch (BrokenDownloadException e) {
             setBroken(TransferProblem.BROKEN_DOWNLOAD, e.toString());
         } catch (AssertionError e) {
-            log().error(e);
+            logSevere(e);
             throw e;
         }
     }
@@ -331,7 +331,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         assert !lock.isHeldByCurrentThread();
 
         setTransferState(TransferState.VERIFYING);
-        // log().debug("Verifying file hash for " + this);
+        // logFine("Verifying file hash for " + this);
         try {
             Callable<Boolean> fileChecker = null;
             if (remotePartRecord != null) {
@@ -349,7 +349,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             if (fileChecker == null || fileChecker.call()) {
                 return true;
             }
-            log().warn("Checking FAILED");
+            logWarning("Checking FAILED");
             counter = new TransferCounter(0, fileInfo.getSize());
             filePartsState.setPartState(Range.getRangeByLength(0,
                 filePartsState.getFileLength()), PartState.NEEDED);
@@ -357,12 +357,12 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             return false;
         } catch (NoSuchAlgorithmException e) {
             // If this error occurs, no downloads will ever succeed.
-            log().error(e);
+            logSevere(e);
             throw new RuntimeException(e);
         } catch (InterruptedException e) {
-            log().verbose(e);
+            logFiner(e);
         } catch (Exception e) {
-            log().error(e);
+            logSevere(e);
             setBroken(TransferProblem.GENERAL_EXCEPTION, e.getMessage());
         }
         return false;
@@ -434,8 +434,8 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             List<MatchInfo> mInfoRes = null;
             mInfoRes = mInfoWorker.call();
 
-            // log().debug("Records: " + record.getInfos().length);
-            log().debug(
+            // logFine("Records: " + record.getInfos().length);
+            logFine(
                 "Matches: " + mInfoRes.size() + " which are "
                     + (remotePartRecord.getPartLength() * mInfoRes.size())
                     + " bytes (bit less maybe).");
@@ -506,16 +506,16 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             if (isBroken()) {
                 return;
             }
-            log().debug("Download broken: " + fileInfo);
+            logFine("Download broken: " + fileInfo);
             setState(InternalState.BROKEN);
             shutdown();
 
             if (getTempFile() != null && getTempFile().exists()
                 && getTempFile().length() == 0)
             {
-                log().info("Deleting tempfile with size 0.");
+                logInfo("Deleting tempfile with size 0.");
                 if (getTempFile().delete()) {
-                    log().warn("Failed to delete temp file!");
+                    logWarning("Failed to delete temp file!");
                 }
             }
         } finally {
@@ -541,7 +541,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                 return;
             }
 
-            log().debug("Completed download of " + fileInfo + ".");
+            logFine("Completed download of " + fileInfo + ".");
 
             setState(InternalState.COMPLETED);
             shutdown();
@@ -611,12 +611,12 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         assert tempRAF != null;
 
         shutdown = true;
-        // log().debug("Shutting down " + fileInfo);
+        // logFine("Shutting down " + fileInfo);
         try {
             if (worker != null) {
                 worker.interrupt();
             }
-            // log().error("Closing temp file!");
+            // logSevere("Closing temp file!");
             tempRAF.close();
             tempRAF = null;
 
@@ -626,7 +626,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                 deleteMetaData();
             }
         } catch (IOException e) {
-            log().error(e);
+            logSevere(e);
         }
         // FIXME: Uncomment to save resources
         // setFilePartsState(null);
@@ -653,7 +653,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         setState(InternalState.ACTIVE_DOWNLOAD);
         validateDownload();
 
-        log().debug("Requesting parts");
+        logFine("Requesting parts");
         post(new Runnable() {
             public void run() {
                 try {
@@ -677,7 +677,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             tempRAF.seek(chunk.offset);
             tempRAF.write(chunk.data);
         } catch (IOException e) {
-            log().error(e);
+            logSevere(e);
             setBroken(TransferProblem.IO_EXCEPTION,
                 "Couldn't write to tempfile!");
             return;
@@ -704,13 +704,13 @@ public abstract class AbstractDownloadManager extends PFComponent implements
     protected void updateTempFile() {
         assert getTempFile() != null && getTempFile().exists();
 
-        // log().debug("Updating tempfile modification date to: " +
+        // logFine("Updating tempfile modification date to: " +
         // getFileInfo().getModifiedDate());
         if (getTempFile() == null
             || !getTempFile().setLastModified(
                 getFileInfo().getModifiedDate().getTime()))
         {
-            log().error("Failed to update modification date! Detail:" + this);
+            logSevere("Failed to update modification date! Detail:" + this);
         }
     }
 
@@ -857,11 +857,11 @@ public abstract class AbstractDownloadManager extends PFComponent implements
     }
 
     private void deleteMetaData() {
-        // log().warn("deleteMetaData()");
+        // logWarning("deleteMetaData()");
         if (getMetaFile() != null && getMetaFile().exists()
             && !getMetaFile().delete())
         {
-            log().error("Couldn't delete meta data file!");
+            logSevere("Couldn't delete meta data file!");
         }
     }
 
@@ -876,7 +876,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                 metaFile = new File(getMetaDataBaseDir(),
                     FileUtils.DOWNLOAD_META_FILE + getFileID());
             } catch (IOException e) {
-                log().error(e);
+                logSevere(e);
                 return null;
             }
         }
@@ -919,8 +919,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         if (getTempFile() != null && getTempFile().exists()
             && !getTempFile().delete())
         {
-            log()
-                .warn(
+            logWarning(
                     "Couldn't delete old temporary file, some other process could be using it! Trying to set it's length to 0.");
             RandomAccessFile f = new RandomAccessFile(getTempFile(), "rw");
             try {
@@ -932,7 +931,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
     }
 
     private void loadMetaData() throws IOException {
-        // log().warn("loadMetaData()");
+        // logWarning("loadMetaData()");
 
         if (getTempFile() == null
             || !getTempFile().exists()
@@ -984,8 +983,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         }
 
         if (filePartsState != null) {
-            log()
-                .info(
+            logInfo(
                     "Resuming download - already got "
                         + filePartsState.countPartStates(filePartsState
                             .getRange(), PartState.AVAILABLE) + " of "
@@ -1001,7 +999,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         msg += " " + cause.getPartner().isSupportingPartTransfers();
         msg += " " + Util.useDeltaSync(getController(), cause.getPartner())
             + " " + Util.useSwarming(getController(), cause.getPartner());
-        log().warn(msg);
+        logWarning(msg);
 
         throw new BrokenDownloadException(msg);
     }
@@ -1045,12 +1043,12 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                                 .getSize()));
                         }
                         if (filePartsState.isCompleted()) {
-                            log().debug(
+                            logFine(
                                 "Not requesting anything, seems to be a zero file: "
                                     + fileInfo);
                             checkFileValidity();
                         } else {
-                            log().debug(
+                            logFine(
                                 "Not requesting record for this download.");
                             startActiveDownload();
                         }
@@ -1085,7 +1083,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             switch (state) {
                 case ABORTED :
                 case BROKEN :
-                    log().debug(
+                    logFine(
                         "Aborted download of " + fileInfo
                             + " received chunk from " + download);
                     post(new Runnable() {
@@ -1126,7 +1124,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             validateDownload();
             switch (state) {
                 case WAITING_FOR_FILEPARTSRECORD :
-                    log().debug("Matching and copying...");
+                    logFine("Matching and copying...");
                     setState(InternalState.MATCHING_AND_COPYING);
                     remotePartRecord = record;
                     worker = new Thread(new Runnable() {
@@ -1220,7 +1218,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         assert state != InternalState.COMPLETED;
         assert lock.isHeldByCurrentThread();
 
-        // log().warn("saveMetaData()");
+        // logWarning("saveMetaData()");
         File mf = getMetaFile();
         if (mf == null && !isCompleted()) {
             killTempFile();
@@ -1255,7 +1253,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             if (isDone()) {
                 return;
             }
-            log().debug("Download aborted: " + fileInfo);
+            logFine("Download aborted: " + fileInfo);
 
             setState(InternalState.ABORTED);
             shutdown();
@@ -1264,9 +1262,9 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                 try {
                     killTempFile();
                 } catch (FileNotFoundException e) {
-                    log().error(e);
+                    logSevere(e);
                 } catch (IOException e) {
-                    log().error(e);
+                    logSevere(e);
                 }
                 deleteMetaData();
             }
@@ -1289,7 +1287,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         assert newState != InternalState.PASSIVE_DOWNLOAD
             || !getSources().isEmpty();
 
-        // log().warn("STATE " + newState + " for " + fileInfo);
+        // logWarning("STATE " + newState + " for " + fileInfo);
         state = newState;
     }
 

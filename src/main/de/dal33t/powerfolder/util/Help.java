@@ -36,7 +36,6 @@ import de.dal33t.powerfolder.ui.Icons;
  * @version $Revision: 1.2 $
  */
 public class Help {
-    private static final Logger LOG = Logger.getLogger(Help.class);
 
     /**
      * Static class, no instance allowed
@@ -54,12 +53,14 @@ public class Help {
     public static void openHelp(String homepageNodeId) {
         // TODO: Might show a message box to the user, that the help topic will
         // be opend in browser
-        LOG.debug("Opening help. Homepage nodeId '" + homepageNodeId + "'");
+        Loggable.logFineStatic(Help.class,
+                "Opening help. Homepage nodeId '" + homepageNodeId + "'");
         try {
             BrowserLauncher.openURL(Constants.POWERFOLDER_URL + "/"
                 + homepageNodeId);
         } catch (IOException e) {
-            LOG.error("Unable to open help. Homepage nodeId '" + homepageNodeId
+            Loggable.logSevereStatic(Help.class,
+                    "Unable to open help. Homepage nodeId '" + homepageNodeId
                 + "'", e);
             // TODO: Show a message box to the user
         }

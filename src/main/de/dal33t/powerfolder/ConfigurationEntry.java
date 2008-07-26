@@ -25,8 +25,8 @@ import java.beans.PropertyChangeListener;
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
 
-import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.Loggable;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 
@@ -320,9 +320,6 @@ public enum ConfigurationEntry {
 
     // Methods/Constructors ***************************************************
 
-    private static final Logger LOG = Logger
-        .getLogger(ConfigurationEntry.class);
-
     private String configKey;
     protected String defaultValue;
 
@@ -370,7 +367,8 @@ public enum ConfigurationEntry {
         try {
             return new Integer(value);
         } catch (NumberFormatException e) {
-            LOG.warn("Unable to parse configuration entry '" + configKey
+            Loggable.logWarningStatic(ConfigurationEntry.class,
+                    "Unable to parse configuration entry '" + configKey
                 + "' into a int. Value: " + value, e);
             return new Integer(defaultValue);
         }
@@ -392,7 +390,8 @@ public enum ConfigurationEntry {
         try {
             return value.equalsIgnoreCase("true");
         } catch (NumberFormatException e) {
-            LOG.warn("Unable to parse configuration entry '" + configKey
+            Loggable.logWarningStatic(ConfigurationEntry.class,
+                "Unable to parse configuration entry '" + configKey
                 + "' into a boolean. Value: " + value, e);
             return defaultValue.equalsIgnoreCase("true");
         }

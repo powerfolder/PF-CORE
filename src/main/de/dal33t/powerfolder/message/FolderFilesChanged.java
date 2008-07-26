@@ -27,8 +27,8 @@ import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.disk.DiskItemFilter;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.Loggable;
 
 /**
  * A message which contains only the deltas of the folders list
@@ -38,7 +38,6 @@ import de.dal33t.powerfolder.util.Reject;
  * @version $Revision: 1.2 $
  */
 public class FolderFilesChanged extends FolderRelatedMessage {
-    private static final Logger LOG = Logger.getLogger(FileList.class);
     private static final long serialVersionUID = 100L;
 
     /** A list of files added to the folder */
@@ -147,13 +146,12 @@ public class FolderFilesChanged extends FolderRelatedMessage {
             messages.add(msg);
         }
 
-        if (LOG.isVerbose()) {
-            LOG.verbose("Splitted folder files delta into " + messages.size()
-                + " messages, folder: " + foInfo + "\nSplitted msgs: "
-                + messages);
-        }
+        Loggable.logFinerStatic(FolderFilesChanged.class,
+                "Splitted folder files delta into " + messages.size()
+            + " messages, folder: " + foInfo + "\nSplitted msgs: "
+            + messages);
 
-        return messages.toArray(new FolderFilesChanged[0]);
+        return messages.toArray(new FolderFilesChanged[messages.size()]);
     }
 
     public String toString() {

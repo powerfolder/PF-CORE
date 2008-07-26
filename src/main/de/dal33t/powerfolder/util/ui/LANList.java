@@ -147,7 +147,7 @@ public class LANList extends PFComponent {
             try {
                 ar = AddressRange.parseRange(ip);
             } catch (ParseException e) {
-                log().warn("Invalid lanlist entry in configuration file!");
+                logWarning("Invalid lanlist entry in configuration file!");
                 continue;
             }
             ((DefaultListModel) networklist.getModel()).addElement(ar

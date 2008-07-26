@@ -181,7 +181,7 @@ public class ConnectDialog extends PFUIComponent {
                         break;
                     }
                 }
-                log().verbose("Connectionbar runner stopped");
+                logFiner("Connectionbar runner stopped");
             }
         };
         new Thread(barUpdater, "Connectionbar runner").start();

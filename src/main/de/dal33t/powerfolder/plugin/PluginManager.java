@@ -64,7 +64,7 @@ public class PluginManager extends PFComponent {
         if (plugins != null) {
             for (Plugin plugin : plugins) {
                 plugin.stop();
-                log().debug(plugin.getName() + " stopped");
+                logFine(plugin.getName() + " stopped");
             }
         }
         plugins.clear();
@@ -81,7 +81,7 @@ public class PluginManager extends PFComponent {
         if (StringUtils.isBlank(pluginsStr)) {
             return;
         }
-        log().info("Initalizing plugins: " + pluginsStr);
+        logInfo("Initalizing plugins: " + pluginsStr);
         StringTokenizer nizer = new StringTokenizer(pluginsStr, ",");
         while (nizer.hasMoreElements()) {
             String pluginClassName = nizer.nextToken().trim();
@@ -100,7 +100,7 @@ public class PluginManager extends PFComponent {
      */
     private void startEnabledPlugins() {
         for (Plugin plugin : plugins) {
-            log().info("Starting plugin: " + plugin.getName());
+            logInfo("Starting plugin: " + plugin.getName());
             plugin.start();
         }
     }
@@ -115,7 +115,7 @@ public class PluginManager extends PFComponent {
         if (StringUtils.isBlank(pluginsStr)) {
             return;
         }
-        log().debug("Read disabled plugins: " + pluginsStr);
+        logFine("Read disabled plugins: " + pluginsStr);
         StringTokenizer nizer = new StringTokenizer(pluginsStr, ",");
         while (nizer.hasMoreElements()) {
             String pluginClassName = nizer.nextToken();
@@ -124,7 +124,7 @@ public class PluginManager extends PFComponent {
             }
             Plugin plugin = initalizePlugin(pluginClassName);
             if (plugin != null) {
-                log().debug("Found disabled plugin: " + plugin.getName());
+                logFine("Found disabled plugin: " + plugin.getName());
                 disabledPlugins.add(plugin);
             }
         }
@@ -141,8 +141,8 @@ public class PluginManager extends PFComponent {
             throw new IllegalArgumentException("Plugin string blank");
         }
 
-        if (logDebug) {
-            log().debug("Initializing plugin: " + pluginClassName);
+        if (isLogFine()) {
+            logFine("Initializing plugin: " + pluginClassName);
         }
         try {
             Class pluginClass = Class.forName(pluginClassName);
@@ -159,8 +159,7 @@ public class PluginManager extends PFComponent {
                     plugin = (Plugin) pluginClass.newInstance();
                 } catch (ClassCastException e2) {
                     // failed, not a Plugin to...!
-                    log()
-                        .error(
+                    logSevere(
                             "failed to load: "
                                 + pluginClassName
                                 + "does not extends AbstractPFPlugin or implements Plugin",
@@ -170,16 +169,16 @@ public class PluginManager extends PFComponent {
             }
             return plugin;
         } catch (ClassNotFoundException e) {
-            log().error(
+            logSevere(
                 "Unable to find plugin class '" + pluginClassName + "'", e);
         } catch (InstantiationException e) {
-            log().error(
+            logSevere(
                 "Unable to find plugin class '" + pluginClassName + "'", e);
         } catch (InvocationTargetException e) {
-            log().error(
+            logSevere(
                 "Unable to find plugin class '" + pluginClassName + "'", e);
         } catch (IllegalAccessException e) {
-            log().error(
+            logSevere(
                 "Unable to find plugin class '" + pluginClassName + "'", e);
         }
         return null;
@@ -209,7 +208,7 @@ public class PluginManager extends PFComponent {
      *            new status of the plugin
      */
     public void setEnabled(Plugin plugin, boolean enabled) {
-        log().debug("enable: " + enabled + " " + plugin);
+        logFine("enable: " + enabled + " " + plugin);
         if (enabled) {
             disabledPlugins.remove(plugin);
             plugins.add(plugin);

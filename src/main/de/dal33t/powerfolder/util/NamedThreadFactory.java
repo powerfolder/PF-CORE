@@ -27,8 +27,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  * The default thread factory. Creates threads with a name prefix.
  */
 public class NamedThreadFactory implements ThreadFactory {
-    private static final Logger LOG = Logger
-        .getLogger(NamedThreadFactory.class);
 
     private final UncaughtExceptionHandler exceptionHandler = new ExceptionHandler();
     final AtomicInteger threadNumber = new AtomicInteger(1);
@@ -51,7 +49,8 @@ public class NamedThreadFactory implements ThreadFactory {
     private final class ExceptionHandler implements UncaughtExceptionHandler {
         public void uncaughtException(Thread t1, Throwable e) {
             e.printStackTrace();
-            LOG.error("Exception in " + t1 + ": " + e.toString(), e);
+            Loggable.logSevereStatic(NamedThreadFactory.class,
+                    "Exception in " + t1 + ": " + e.toString(), e);
         }
     }
 }

@@ -51,7 +51,6 @@ import de.dal33t.powerfolder.util.ui.GenericDialogType;
  * @version $Revision: 1.27 $
  */
 public class Updater extends Thread {
-    private static Logger LOG = Logger.getLogger(Updater.class);
     protected Controller controller;
     protected UpdateSetting settings;
     private static boolean updateDialogOpen = false;
@@ -74,7 +73,8 @@ public class Updater extends Thread {
      * Checks for new application release at the remote location
      */
     private void checkForNewRelease() {
-        LOG.info("Checking for newer version");
+        Loggable.logInfoStatic(Updater.class,
+                "Checking for newer version");
 
         final String newerVersion = newerReleaseVersionAvailable();
 
@@ -117,7 +117,7 @@ public class Updater extends Thread {
                     }
                 });
             } catch (InterruptedException ex) {
-                LOG.verbose(ex);
+                Loggable.logFinerStatic(Updater.class,ex);
                 return;
             }
             updateDialogOpen = false;
@@ -137,7 +137,8 @@ public class Updater extends Thread {
                     settings.httpUser, settings.httpPassword);
                 // And start
                 if (completed) {
-                    LOG.warn("Download completed. "
+                    Loggable.logWarningStatic(Updater.class,
+                            "Download completed. "
                         + targetFile.getAbsolutePath());
                     openReleaseExe(targetFile, updateSilently);
                 } else {
@@ -157,7 +158,7 @@ public class Updater extends Thread {
                             }
                         });
                     } catch (InterruptedException ex) {
-                        LOG.verbose(ex);
+                        Loggable.logFinerStatic(Updater.class, ex);
                         return;
                     }
                 }
@@ -166,7 +167,7 @@ public class Updater extends Thread {
                         // Open explorer
                         BrowserLauncher.openURL(Constants.POWERFOLDER_URL);
                     } catch (IOException e) {
-                        LOG.verbose(e);
+                        Loggable.logFinerStatic(Updater.class, e);
                     }
                 }
             } else if (option == gotoHomepage) {
@@ -174,7 +175,7 @@ public class Updater extends Thread {
                     // Open explorer
                     BrowserLauncher.openURL(Constants.POWERFOLDER_URL);
                 } catch (IOException e) {
-                    LOG.verbose(e);
+                    Loggable.logFinerStatic(Updater.class, e);
                 }
             } else if (option == nothingNeverAsk) {
                 // Never ask again
@@ -210,7 +211,8 @@ public class Updater extends Thread {
                 con.connect();
             }
         } catch (IOException e) {
-            LOG.error("Unable to download from " + url, e);
+            Loggable.logSevereStatic(Updater.class,
+                    "Unable to download from " + url, e);
             return false;
         }
 
@@ -221,7 +223,8 @@ public class Updater extends Thread {
             dlDialog.openInEDT();
         }
 
-        LOG.warn("Downloading latest version from " + con.getURL());
+        Loggable.logWarningStatic(Updater.class,
+                "Downloading latest version from " + con.getURL());
         File tempFile = new File(destFile.getParentFile(), "(downloading) "
             + destFile.getName());
         try {
@@ -231,7 +234,8 @@ public class Updater extends Thread {
                 dlDialog != null ? dlDialog.getStreamCallback() : null, con
                     .getContentLength());
         } catch (IOException e) {
-            LOG.warn("Unable to download from " + url, e);
+            Loggable.logWarningStatic(Updater.class,
+                    "Unable to download from " + url, e);
             return false;
         } finally {
             if (dlDialog != null) {
@@ -267,7 +271,7 @@ public class Updater extends Thread {
         try {
             url = new URL(settings.versionCheckURL);
         } catch (MalformedURLException e) {
-            LOG.verbose(e);
+            Loggable.logFinerStatic(Updater.class, e);
             return null;
         }
         try {
@@ -278,19 +282,19 @@ public class Updater extends Thread {
             }
 
             if (latestVersion != null) {
-                LOG.info("Latest available version: " + latestVersion);
+                Loggable.logInfoStatic(Updater.class, "Latest available version: " + latestVersion);
 
                 if (Util.compareVersions(latestVersion,
                     Controller.PROGRAM_VERSION))
                 {
-                    LOG.info("Latest version is newer than this one");
+                    Loggable.logInfoStatic(Updater.class, "Latest version is newer than this one");
                     return latestVersion;
                 }
-                LOG.info("This version is up-to-date");
+                Loggable.logInfoStatic(Updater.class, "This version is up-to-date");
             }
 
         } catch (IOException e) {
-            LOG.verbose(e);
+            Loggable.logFinerStatic(Updater.class, e);
         }
         return null;
     }
@@ -312,19 +316,21 @@ public class Updater extends Thread {
             in.close();
 
             releaseExeURL = new URL(b.toString());
-            LOG.info("Latest available version download: "
+            Loggable.logInfoStatic(Updater.class,
+                    "Latest available version download: "
                 + releaseExeURL.toExternalForm());
         } catch (MalformedURLException e) {
-            LOG.verbose(e);
+            Loggable.logFinerStatic(Updater.class, e);
         } catch (IOException e) {
-            LOG.verbose(e);
+            Loggable.logFinerStatic(Updater.class, e);
         }
         if (releaseExeURL == null) {
             // Fallback to standart settings
             try {
                 releaseExeURL = new URL(settings.releaseExeURL);
             } catch (MalformedURLException e) {
-                LOG.error("Invalid release exec download location", e);
+                Loggable.logSevereStatic(Updater.class,
+                        "Invalid release exec download location", e);
             }
         }
         return releaseExeURL;
@@ -372,11 +378,12 @@ public class Updater extends Thread {
             if (updateSilently) {
                 c += " /S";
             }
-            LOG.warn("Executing: " + c);
+            Loggable.logWarningStatic(Updater.class, "Executing: " + c);
             c += "\"";
             Runtime.getRuntime().exec(c);
         } catch (IOException e) {
-            LOG.error("Unable to start update exe at " + file.getAbsolutePath()
+            Loggable.logSevereStatic(Updater.class,
+                    "Unable to start update exe at " + file.getAbsolutePath()
                 + ". " + e, e);
         }
     }

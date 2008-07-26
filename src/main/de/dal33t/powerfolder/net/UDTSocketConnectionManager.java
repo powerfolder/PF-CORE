@@ -119,27 +119,27 @@ public class UDTSocketConnectionManager extends PFComponent {
                 UDTMessage reply = waitForReply(repMonitor, destination);
                 switch (reply.getType()) {
                     case ACK :
-                        log().debug("UDT SYN: Trying to connect...");
+                        logFine("UDT SYN: Trying to connect...");
                         ConnectionHandler handler = getController()
                             .getIOProvider().getConnectionHandlerFactory()
                             .createAndInitUDTSocketConnectionHandler(
                                 getController(), slot.socket,
                                 reply.getSource(), reply.getPort());
-                        log().debug("UDT SYN: Successfully connected!");
+                        logFine("UDT SYN: Successfully connected!");
                         return handler;
                     case NACK :
                         throw new ConnectionException(
                             "Connection not possible: " + reply);
                     default :
-                        log().debug("UDT SYN: Received invalid reply:" + reply);
+                        logFine("UDT SYN: Received invalid reply:" + reply);
                         throw new ConnectionException("Invalid reply: " + reply);
                 }
             } catch (TimeoutException e) {
-                log().verbose(e);
+                logFiner(e);
                 throw new ConnectionException("Timeout while connecting to "
                     + destination, e);
             } catch (InterruptedException e) {
-                log().verbose(e);
+                logFiner(e);
                 throw new ConnectionException(
                     "Interrupted while connecting to " + destination, e);
             }
@@ -152,7 +152,7 @@ public class UDTSocketConnectionManager extends PFComponent {
                 try {
                     slot.socket.close();
                 } catch (IOException e1) {
-                    log().error(e1);
+                    logSevere(e1);
                 }
             }
             throw e;
@@ -194,7 +194,7 @@ public class UDTSocketConnectionManager extends PFComponent {
             NetworkUtil.setupSocket(slot.socket, destination
                 .getConnectAddress());
         } catch (IOException e1) {
-            log().error(e1);
+            logSevere(e1);
         }
         while (true) {
             synchronized (this) {
@@ -207,11 +207,11 @@ public class UDTSocketConnectionManager extends PFComponent {
                 }
             }
             if (res == null) {
-                log().error("No further usable ports for UDT connections!");
+                logSevere("No further usable ports for UDT connections!");
                 try {
                     slot.socket.close();
                 } catch (IOException e) {
-                    log().error(e);
+                    logSevere(e);
                 }
                 return null;
             }
@@ -228,7 +228,7 @@ public class UDTSocketConnectionManager extends PFComponent {
                 slot.socket.bind(bindAddr);
                 break;
             } catch (IOException e) {
-                log().verbose(e);
+                logFiner(e);
             }
         }
         synchronized (this) {
@@ -251,7 +251,7 @@ public class UDTSocketConnectionManager extends PFComponent {
     // Internal methods *******************************************************
 
     private void relayMessage(final Member sender, final UDTMessage msg) {
-        log().verbose("Relaying UDT message: " + msg);
+        logFiner("Relaying UDT message: " + msg);
         // Relay message
         Member dMember = msg.getDestination().getNode(getController());
         if (dMember == null || !dMember.isCompleteyConnected()) {
@@ -266,12 +266,12 @@ public class UDTSocketConnectionManager extends PFComponent {
     private void handleMessageForMyself(final Member sender,
         final UDTMessage msg)
     {
-        if (logVerbose) {
-            log().verbose("Received UDT message for me: " + msg);
-            log().verbose("Replies: " + replies.size());
+        if (isLogFiner()) {
+            logFiner("Received UDT message for me: " + msg);
+            logFiner("Replies: " + replies.size());
         }
         if (!UDTSocket.isSupported()) {
-            log().warn("UDT sockets not supported on this platform.");
+            logWarning("UDT sockets not supported on this platform.");
             return;
         }
         switch (msg.getType()) {
@@ -288,7 +288,7 @@ public class UDTSocketConnectionManager extends PFComponent {
                     Member relay = getController().getIOProvider()
                         .getRelayedConnectionManager().getRelay();
                     if (relay == null) {
-                        log().error("Relay is null!");
+                        logSevere("Relay is null!");
                         return;
                     }
                     // Try to send NACK, if it doesn't work - we don't care,
@@ -300,15 +300,14 @@ public class UDTSocketConnectionManager extends PFComponent {
             case NACK :
                 ReplyMonitor repMon = replies.get(msg.getSource());
                 if (repMon == null) {
-                    log().error(
+                    logSevere(
                         "Received a reply for " + msg.getSource()
                             + ", although no connection was requested!");
                     break;
                 }
                 synchronized (repMon) {
                     if (repMon.msg != null) {
-                        log()
-                            .error(
+                        logSevere(
                                 "Relay message error: Received more than one SYN reply!");
                         // If that happens, let's hope the "newer" message
                         // is the "better".
@@ -335,8 +334,8 @@ public class UDTSocketConnectionManager extends PFComponent {
                 }
                 throw new TimeoutException();
             } finally {
-                if (logVerbose) {
-                    log().verbose(
+                if (isLogFiner()) {
+                    logFiner(
                         "waitForReply remaining entries: " + replies.size());
                 }
                 // Always remove the entry
@@ -360,18 +359,18 @@ public class UDTSocketConnectionManager extends PFComponent {
             Member relay = getController().getIOProvider()
                 .getRelayedConnectionManager().getRelay();
             if (relay == null) {
-                log().error("Relay is null!");
+                logSevere("Relay is null!");
                 return;
             }
             PortSlot slot = selectPortFor(sender.getInfo());
             if (slot == null) {
-                log().error("UDT port selection failed.");
+                logSevere("UDT port selection failed.");
                 try {
                     sender.sendMessage(new UDTMessage(Type.NACK,
                         getController().getMySelf().getInfo(), msg.getSource(),
                         -1));
                 } catch (ConnectionException e) {
-                    log().error(e);
+                    logSevere(e);
                 }
                 return;
             }
@@ -380,14 +379,14 @@ public class UDTSocketConnectionManager extends PFComponent {
                     .getMySelf().getInfo(), msg.getSource(), slot.port));
                 ConnectionHandler handler = null;
                 try {
-                    log().debug("UDT ACK: Trying to connect...");
+                    logFine("UDT ACK: Trying to connect...");
                     handler = getController().getIOProvider()
                         .getConnectionHandlerFactory()
                         .createAndInitUDTSocketConnectionHandler(
                             getController(), slot.socket, msg.getSource(),
                             msg.getPort());
                     getController().getNodeManager().acceptConnection(handler);
-                    log().debug("UDT ACK: Successfully connected!");
+                    logFine("UDT ACK: Successfully connected!");
                 } catch (ConnectionException e) {
                     if (handler != null)
                         handler.shutdown();
@@ -403,10 +402,10 @@ public class UDTSocketConnectionManager extends PFComponent {
                     try {
                         slot.socket.close();
                     } catch (IOException e1) {
-                        log().error(e1);
+                        logSevere(e1);
                     }
                 }
-                log().error(e);
+                logSevere(e);
             }
         }
     }

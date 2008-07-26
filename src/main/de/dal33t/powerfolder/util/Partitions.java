@@ -170,13 +170,13 @@ public class Partitions<T> implements Serializable {
 		return a == b || (a != null && a.equals(b));
 	}
 
-	public void logRanges(Logger log) {
+	public void logRanges(Class clazz) {
 		if (isLeaf()) {
-			log.info(getPartionedRange() + " with value " + content);
+			Loggable.logInfoStatic(clazz, getPartionedRange() + " with value " + content);
 			return;
 		}
-		a.logRanges(log);
-		b.logRanges(log);
+		a.logRanges(clazz);
+		b.logRanges(clazz);
 	}
 
 	/**

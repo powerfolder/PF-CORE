@@ -77,33 +77,33 @@ public class PersistentTaskManager extends PFComponent {
         pendingTasks = new Vector<PersistentTask>();
         File taskfile = getTaskFile();
         if (taskfile.exists()) {
-            log().info("Loading taskfile");
+            logInfo("Loading taskfile");
             ObjectInputStream oin = null;
             try {
                  oin = new ObjectInputStream(
                     new FileInputStream(taskfile));
                 tasks = (List<PersistentTask>) oin.readObject();
                 oin.close();
-                log().info("Loaded " + tasks.size() + " tasks.");
+                logInfo("Loaded " + tasks.size() + " tasks.");
             } catch (FileNotFoundException e) {
-                log().error(e);
+                logSevere(e);
             } catch (IOException e) {
-                log().error(e);
+                logSevere(e);
             } catch (ClassNotFoundException e) {
-                log().error(e);
+                logSevere(e);
             } catch (ClassCastException e) {
-                log().error(e);
+                logSevere(e);
             } finally {
             	if (oin != null) {
             		try {
 						oin.close();
 					} catch (IOException e) {
-						log().error(e);
+						logSevere(e);
 					}
             	}
             }
         } else {
-            log().info("No taskfile found - probably first start of PF.");
+            logInfo("No taskfile found - probably first start of PF.");
         }
         // If no taskfile was found or errors occurred while loading it
         if (tasks == null) {
@@ -113,7 +113,7 @@ public class PersistentTaskManager extends PFComponent {
         	try {
         		t.init(this);
         	} catch (RuntimeException e) {
-        		log().error(e);
+        		logSevere(e);
         		tasks.remove(t);
         	}
         }
@@ -127,7 +127,7 @@ public class PersistentTaskManager extends PFComponent {
     public synchronized void shutdown() {
         shuttingDown = true;
         if (tasks == null || pendingTasks == null) {
-        	log().error("Shutdown before initialization!");
+        	logSevere("Shutdown before initialization!");
         	return;
         }
     	waitForPendingTasks();
@@ -135,27 +135,27 @@ public class PersistentTaskManager extends PFComponent {
         	try {
         		t.shutdown();
         	} catch (RuntimeException e) {
-        		log().error(e);
+        		logSevere(e);
         	}
         }
         File taskFile = getTaskFile();
         ObjectOutputStream oout = null;
         try {
-            log().info(
+            logInfo(
                 "There are " + tasks.size() + " tasks not completed yet.");
              oout = new ObjectOutputStream(
                 new FileOutputStream(taskFile));
             oout.writeUnshared(tasks);
         } catch (FileNotFoundException e) {
-            log().error(e);
+            logSevere(e);
         } catch (IOException e) {
-            log().error(e);
+            logSevere(e);
         } finally {
         	if (oout != null) {
                 try {
 					oout.close();
 				} catch (IOException e) {
-					log().error(e);
+					logSevere(e);
 				}
         	}
             tasks = null;
@@ -171,13 +171,13 @@ public class PersistentTaskManager extends PFComponent {
      */
     public synchronized void scheduleTask(final PersistentTask task) {
         if (tasks == null) {
-            log().error(
+            logSevere(
                 "Unable to shedule task, taskmanager not initialized! Task: "
                     + task, new RuntimeException("here"));
             return;
         }
         if (!tasks.contains(task) && !shuttingDown) {
-        	log().info("Adding " + task);
+        	logInfo("Adding " + task);
             tasks.add(task);
             Runnable adder = new Runnable() {
                 public void run()
@@ -214,7 +214,7 @@ public class PersistentTaskManager extends PFComponent {
 	        task.shutdown();
 	        tasks.remove(task);
         } else {
-        	log().info(task + " shouldn't call remove() in shutdown(), it will automatically be removed!");
+        	logInfo(task + " shouldn't call remove() in shutdown(), it will automatically be removed!");
         }
         shuttingDown = oldSD;
     }
@@ -258,7 +258,7 @@ public class PersistentTaskManager extends PFComponent {
             try {
                 wait();
             } catch (InterruptedException e) {
-                log().error(e);
+                logSevere(e);
             }
         }
         if (!pendingTasks.isEmpty()) {
@@ -267,7 +267,7 @@ public class PersistentTaskManager extends PFComponent {
         	for (PersistentTask t: pendingTasks)
         		b.append(' ').append(t);
         	b.append(" and will be removed!");
-        	log().error(b.toString());
+        	logSevere(b.toString());
         	// Note: This will also remove tasks which "might" still finish initialization
         	tasks.removeAll(pendingTasks);
         	pendingTasks.clear();

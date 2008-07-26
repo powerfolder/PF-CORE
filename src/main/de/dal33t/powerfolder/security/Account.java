@@ -35,8 +35,9 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.os.OnlineStorageSubscriptionType;
 import de.dal33t.powerfolder.util.IdGenerator;
-import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.LogDispatch;
+import de.dal33t.powerfolder.util.Loggable;
 
 /**
  * A access to the system indentified by username & password.
@@ -45,7 +46,6 @@ import de.dal33t.powerfolder.util.Reject;
  * @version $Revision: 1.5 $
  */
 public class Account extends Model implements Serializable {
-    private static final Logger LOG = Logger.getLogger(Account.class);
     private static final long serialVersionUID = 100L;
 
     // Properties
@@ -94,7 +94,7 @@ public class Account extends Model implements Serializable {
 
     public void grant(Permission... newPermissions) {
         Reject.ifNull(newPermissions, "Permission is null");
-        LOG.debug("Granted permission to " + this + ": "
+        Loggable.logFineStatic(Account.class, "Granted permission to " + this + ": "
             + Arrays.asList(newPermissions));
         for (Permission p : newPermissions) {
             if (hasPermission(p)) {
@@ -107,7 +107,7 @@ public class Account extends Model implements Serializable {
 
     public void revoke(Permission... revokePermissions) {
         Reject.ifNull(revokePermissions, "Permission is null");
-        LOG.debug("Revoked permission from " + this + ": "
+        Loggable.logFineStatic (Account.class, "Revoked permission from " + this + ": "
             + Arrays.asList(revokePermissions));
         for (Permission p : revokePermissions) {
             permissions.remove(p);
@@ -266,7 +266,8 @@ public class Account extends Model implements Serializable {
                 FolderAdminPermission fp = (FolderAdminPermission) p;
                 Folder f = fp.getFolder().getFolder(controller);
                 if (f == null) {
-                    LOG.warn("Got unjoined folder: " + fp.getFolder());
+                    Loggable.logWarningStatic(Account.class,
+                            "Got unjoined folder: " + fp.getFolder());
                     continue;
                 }
                 nFolders++;

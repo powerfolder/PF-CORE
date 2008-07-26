@@ -117,7 +117,7 @@ public class FreeLimitationDialog extends BaseDialog {
                 try {
                     BrowserLauncher.openURL(Constants.POWERFOLDER_PRO_URL);
                 } catch (IOException e1) {
-                    log().error(e1);
+                    logSevere(e1);
                 }
             }
         });

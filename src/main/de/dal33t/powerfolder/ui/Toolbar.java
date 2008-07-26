@@ -197,7 +197,7 @@ public class Toolbar extends PFUIComponent {
                     && JButton.ICON_CHANGED_PROPERTY.equals(evt
                         .getPropertyName()))
                 {
-                    // log().warn("Button change: " + evt);
+                    // logWarning("Button change: " + evt);
                     // String newText = (String) evt.getNewValue();
                     // if (!StringUtils.isEmpty(newText)) {
                     // changeFromHere = true;

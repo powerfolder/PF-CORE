@@ -228,7 +228,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                                         evt.getNewValue().equals(true));
                                 }
                             } catch (IOException e) {
-                                log().error(e);
+                                logSevere(e);
                             }
                         }
                     });

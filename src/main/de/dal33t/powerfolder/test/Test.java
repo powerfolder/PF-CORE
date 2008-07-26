@@ -29,7 +29,7 @@ import de.dal33t.powerfolder.message.FileChunk;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.FileUtils;
-import de.dal33t.powerfolder.util.Logger;
+import de.dal33t.powerfolder.util.Loggable;
 
 /**
  * A Testclass for testing bug conditions on serveral machines
@@ -37,51 +37,50 @@ import de.dal33t.powerfolder.util.Logger;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.7 $
  */
-public class Test {
-    private static final Logger LOG = Logger.getLogger(Test.class);
+public class Test extends Loggable {
 
     public static void main(String[] args) throws IOException {
         Test test = new Test();
-        LOG
-            .info("------------- Starting tests ----------------------------------");
+        Loggable.logInfoStatic(Test.class,
+                "------------- Starting tests ----------------------------------");
         
         test.testWebStartMime();
-        LOG
-            .info("---------------------------------------------------------------");
+        Loggable.logInfoStatic(Test.class,
+                "---------------------------------------------------------------");
 
         test.testCorruptZipFile();
-        LOG
-            .info("---------------------------------------------------------------");
+        Loggable.logInfoStatic(Test.class,
+                "---------------------------------------------------------------");
 
         test.testInt2Bytes();
-        LOG
-            .info("---------------------------------------------------------------");
+        Loggable.logInfoStatic(Test.class,
+                "---------------------------------------------------------------");
 
         test.testFileChunkSize();
-        LOG
-            .info("---------------------------------------------------------------");
+        Loggable.logInfoStatic(Test.class,
+                "---------------------------------------------------------------");
 
         if (args != null && args.length > 0) {
             test.testSocketResolving(args[0]);
-            LOG
-                .info("---------------------------------------------------------------");
+            Loggable.logInfoStatic(Test.class,
+                    "---------------------------------------------------------------");
         }
 
         test.testTimeCalculations();
-        LOG
-            .info("---------------------------------------------------------------");
+        Loggable.logInfoStatic(Test.class,
+                "---------------------------------------------------------------");
 
         test.testFileWrite();
-        LOG
-            .info("---------------------------------------------------------------");
+        Loggable.logInfoStatic(Test.class,
+                "---------------------------------------------------------------");
     }
 
     private void testWebStartMime() {
         try {
             URL url = new URL(
                 "http://webstart.powerfolder.com/release/PowerFolder.jnlp");
-            LOG.info("Testing mime type for webstart URL '" + url + "'");
-            LOG.info("Mime type is "
+            logInfo("Testing mime type for webstart URL '" + url + "'");
+            logInfo("Mime type is "
                 + url.openConnection().getContentType());
         } catch (MalformedURLException e) {
             // TODO Auto-generated catch block
@@ -94,20 +93,20 @@ public class Test {
 
     private void testCorruptZipFile() {
         File file = new File("test.jar");
-        LOG.info(file + " is a valid zip ? " + FileUtils.isValidZipFile(file));
+        logInfo(file + " is a valid zip ? " + FileUtils.isValidZipFile(file));
     }
 
     private void testInt2Bytes() {
         int i = 12345678;
-        LOG.info("Testing int 2 byte conversion with " + i);
+        logInfo("Testing int 2 byte conversion with " + i);
         byte b1 = (byte) (i & 0xFF);
         byte b2 = (byte) (0xFF & (i >> 8));
         byte b3 = (byte) (0xFF & (i >> 16));
         byte b4 = (byte) (0xFF & (i >> 24));
-        LOG.info("Byte 1: " + b1);
-        LOG.info("Byte 2: " + b2);
-        LOG.info("Byte 3: " + b3);
-        LOG.info("Byte 4: " + b4);
+        logInfo("Byte 1: " + b1);
+        logInfo("Byte 2: " + b2);
+        logInfo("Byte 3: " + b3);
+        logInfo("Byte 4: " + b4);
 
         int w = 0;
         if (b4 < 0)
@@ -132,14 +131,14 @@ public class Test {
 
         w = Convert.convert2Int(new byte[]{b4, b3, b2, b1});
 
-        LOG.info("Converted back to: " + w);
+        logInfo("Converted back to: " + w);
     }
 
     private void testFileChunkSize() throws IOException {
         FileChunk chunk = new FileChunk();
         chunk.data = new byte[TransferManager.MAX_CHUNK_SIZE];
         File file = new File("test.chunk");
-        LOG.info("Writing test chunk (" + chunk.data.length + " bytes) to "
+        logInfo("Writing test chunk (" + chunk.data.length + " bytes) to "
             + file);
         ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(
             file));
@@ -148,21 +147,21 @@ public class Test {
     }
 
     private void testSocketResolving(String dyndns) {
-        LOG.info("Testing local socket resolving for '" + dyndns + "'");
+        logInfo("Testing local socket resolving for '" + dyndns + "'");
         InetSocketAddress addr = new InetSocketAddress(dyndns, 1337);
-        LOG.info("Socket successfully created: " + addr);
-        LOG.info("Is fully resolved ?: " + !addr.isUnresolved());
+        logInfo("Socket successfully created: " + addr);
+        logInfo("Is fully resolved ?: " + !addr.isUnresolved());
     }
 
     private void testTimeCalculations() {
-        LOG.info("Testing date calculation/UTC");
-        LOG.info("Current time in UTC: "
+        logInfo("Testing date calculation/UTC");
+        logInfo("Current time in UTC: "
             + new Date(Convert.convertToUTC(new Date())));
     }
 
     private boolean testFileWrite() throws IOException {
         File testFile = new File("test.xxx");
-        LOG.info("Testing modified Date differ on file " + testFile);
+        logInfo("Testing modified Date differ on file " + testFile);
         String test = "xx";
         int matches = 0;
         int incorrect = 0;
@@ -180,12 +179,12 @@ public class Test {
             if (fileModified == currentMS) {
                 matches++;
             } else {
-                LOG.warn("Last-modfied differs from last-modified on file:");
-                LOG.warn("Set:  " + new Date(currentMS) + " in ms: "
+                logWarning("Last-modfied differs from last-modified on file:");
+                logWarning("Set:  " + new Date(currentMS) + " in ms: "
                     + currentMS);
-                LOG.warn("File: " + new Date(fileModified) + " in ms: "
+                logWarning("File: " + new Date(fileModified) + " in ms: "
                     + fileModified);
-                LOG.warn("Expt: " + new Date(expectedMS) + " in ms: "
+                logWarning("Expt: " + new Date(expectedMS) + " in ms: "
                     + expectedMS);
                 incorrect++;
             }
@@ -196,7 +195,7 @@ public class Test {
             }
         }
 
-        LOG.info("testFileWrite finished. matches: " + matches
+        logInfo("testFileWrite finished. matches: " + matches
             + ", incorrect dates: " + incorrect);
         return incorrect != 0;
     }

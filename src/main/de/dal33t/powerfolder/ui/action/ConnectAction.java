@@ -28,6 +28,7 @@ import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.dialog.ConnectDialog;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Loggable;
 
 /**
  * Asks for ip and tries to connect
@@ -67,7 +68,7 @@ public class ConnectAction extends BaseAction {
                     getController().connect(conStr);
                 } catch (ConnectionException ex) {
                     connectDialog.close();
-                    log().verbose(ex);
+                    Loggable.logFinerStatic(ConnectAction.class, ex);
                     if (!connectDialog.isCanceled()) {
                         // Show if user didn't canceled
                         ex.show(getController());
@@ -76,7 +77,8 @@ public class ConnectAction extends BaseAction {
 
                 // Close dialog
                 connectDialog.close();
-                log().verbose("Connector thread finished");
+                Loggable.logFinerStatic(ConnectAction.class,
+                        "Connector thread finished");
             }
         };
 

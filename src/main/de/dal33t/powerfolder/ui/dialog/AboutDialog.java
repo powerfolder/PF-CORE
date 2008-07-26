@@ -371,7 +371,7 @@ public class AboutDialog extends PFUIComponent {
             try {
                 BrowserLauncher.openURL(Constants.BUG_REPORT_URL);
             } catch (IOException e1) {
-                log().error(e1);
+                logSevere(e1);
             }
         }
 
@@ -450,7 +450,7 @@ public class AboutDialog extends PFUIComponent {
             Manifest mf = file.getManifest();
             Attributes attr = mf.getMainAttributes();
 
-            log().debug(attr.getValue("BuildDateTime"));
+            logFine(attr.getValue("BuildDateTime"));
 
             String buildDateTimeString = attr.getValue("BuildDateTime");
             SimpleDateFormat parser = new SimpleDateFormat();
@@ -469,7 +469,7 @@ public class AboutDialog extends PFUIComponent {
 
             file.close();
         } catch (Exception e) {
-            log().error("Build date/time works only from jar.");
+            logSevere("Build date/time works only from jar.");
             buildTime = "n/a";
             buildDate = "n/a";
         }

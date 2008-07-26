@@ -273,7 +273,7 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
      * Starts a worker which gathers the current dyndns stuff. e.g. own ip.
      */
     protected void updateDynDnsInfo() {
-        log().debug(
+        logFine(
             "Gathering dyndns infos. Cache: "
                 + Security.getProperty("networkaddress.cache.ttl"));
         SwingWorker worker = new SwingWorker() {

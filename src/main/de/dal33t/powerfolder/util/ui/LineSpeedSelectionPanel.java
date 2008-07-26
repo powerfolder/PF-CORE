@@ -33,8 +33,8 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
-import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Loggable;
 
 /**
  * Panel with a combobox for selecting the line speed and a textfield for
@@ -45,7 +45,6 @@ import de.dal33t.powerfolder.util.Translation;
  * @version $revision$
  */
 public class LineSpeedSelectionPanel extends JPanel {
-    private static final Logger LOG = Logger.getLogger(LineSpeedSelectionPanel.class);
 
     private JComboBox speedSelectionBox;
     private JComponent customSpeedPanel;
@@ -280,7 +279,8 @@ public class LineSpeedSelectionPanel extends JPanel {
             return (Long) customUploadSpeedField.getFormatter().stringToValue(
                 customUploadSpeedField.getText()) * 1024;
         } catch (ParseException e) {
-            LOG.warn("Unable to parse uploadlimit '"
+            Loggable.logWarningStatic(LineSpeedSelectionPanel.class,
+                    "Unable to parse uploadlimit '"
                 + customUploadSpeedField.getText() + '\'');
         }
         return -1;
@@ -296,7 +296,8 @@ public class LineSpeedSelectionPanel extends JPanel {
             return (Long) customDownloadSpeedField.getFormatter()
                 .stringToValue(customDownloadSpeedField.getText()) * 1024;
         } catch (ParseException e) {
-            LOG.warn("Unable to parse downloadlimit '"
+            Loggable.logWarningStatic(LineSpeedSelectionPanel.class,
+                    "Unable to parse downloadlimit '"
                 + customDownloadSpeedField.getText() + '\'');
         }
         return -1;

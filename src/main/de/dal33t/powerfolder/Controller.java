@@ -73,7 +73,6 @@ import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.ForcedLanguageFileResourceBundle;
-import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Profiling;
 import de.dal33t.powerfolder.util.PropertiesUtil;
 import de.dal33t.powerfolder.util.Reject;
@@ -81,6 +80,8 @@ import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Updater;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.WrappingTimer;
+import de.dal33t.powerfolder.util.LogDispatch;
+import de.dal33t.powerfolder.util.Loggable;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.FirewallUtil;
 import de.dal33t.powerfolder.util.task.PersistentTaskManager;
@@ -337,16 +338,16 @@ public class Controller extends PFComponent {
                     langfilename);
                 Translation.setResourceBundle(resourceBundle);
             } catch (FileNotFoundException fnfe) {
-                log().error(
+                logSevere(
                     "forced language file (" + langfilename + ") not found: "
                         + fnfe.getMessage());
-                log().error("using setup language");
+                logSevere("using setup language");
                 Translation.resetResourceBundle();
                 Translation.getResourceBundle();
             } catch (IOException ioe) {
-                log().error(
+                logSevere(
                     "forced language file io error: " + ioe.getMessage());
-                log().error("using setup language");
+                logSevere("using setup language");
                 Translation.resetResourceBundle();
                 Translation.getResourceBundle();
             }
@@ -378,15 +379,15 @@ public class Controller extends PFComponent {
 
         // initialize logger
         initLogger();
-        log().info(
+        logInfo(
             "PowerFolder v" + PROGRAM_VERSION + " (build: " + getBuildTime()
                 + ")");
-        log().debug("OS: " + System.getProperty("os.name"));
-        log().debug(
+        logFine("OS: " + System.getProperty("os.name"));
+        logFine(
             "Java: " + System.getProperty("java.version") + " ("
                 + System.getProperty("java.runtime.version") + ", "
                 + System.getProperty("java.vendor") + ")");
-        log().debug("Current time: " + new Date());
+        logFine("Current time: " + new Date());
 
         // The task brothers
         timer = new WrappingTimer("Controller schedule timer", true);
@@ -406,7 +407,7 @@ public class Controller extends PFComponent {
         try {
             transferManager = transferManagerFactory.call();
         } catch (Exception e) {
-            log().error(e);
+            logSevere(e);
         }
 
         setLoadingCompletion(10, 20);
@@ -470,7 +471,7 @@ public class Controller extends PFComponent {
             osClient.loginWithDefault();
             osClient.start();
         } else {
-            log().warn(
+            logWarning(
                 "NOT starting Online Storage (reconnection), "
                     + "feature disable");
         }
@@ -480,7 +481,7 @@ public class Controller extends PFComponent {
         started = true;
         startTime = new Date();
 
-        log().info("Controller started");
+        logInfo("Controller started");
 
         // dyndns updater
         /*
@@ -499,9 +500,9 @@ public class Controller extends PFComponent {
 
         // open UI
         if (isConsoleMode()) {
-            log().debug("Running in console");
+            logFine("Running in console");
         } else {
-            log().debug("Opening UI");
+            logFine("Opening UI");
             openUI();
         }
 
@@ -514,7 +515,7 @@ public class Controller extends PFComponent {
             // Now start the connecting process
             reconnectManager.start();
         } else {
-            log().warn(
+            logWarning(
                 "Not starting reconnection process. "
                     + "Config auto.connect set to false");
         }
@@ -544,7 +545,7 @@ public class Controller extends PFComponent {
         boolean autoSetupPlugins = StringUtils.isEmpty(pluginConfig)
             || !pluginConfig.contains(Constants.PRO_LOADER_PLUGIN_CLASS);
         if (Util.isRunningProVersion() && autoSetupPlugins) {
-            log().warn("Setting up pro plugins");
+            logWarning("Setting up pro plugins");
             ConfigurationEntry.PLUGINS.setValue(getController(),
                 Constants.PRO_LOADER_PLUGIN_CLASS);
         }
@@ -555,32 +556,29 @@ public class Controller extends PFComponent {
         verbose = ConfigurationEntry.VERBOSE.getValueBoolean(getController());
         if (verbose) {
             // Enable logging
-            Logger.setEnabledTextPanelLogging(isUIEnabled());
-            Logger.setEnabledConsoleLogging(true);
-            Logger.setEnabledToFileLogging(true);
+            LogDispatch.setEnabledTextPanelLogging(isUIEnabled());
+            LogDispatch.setLogFileEnabled(true);
             // MORE LOG
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
             String logFilename = getConfigName() + '-' + sdf.format(new Date())
                 + "-log.txt";
-            Logger.setLogFile(logFilename);
-            if (Logger.isLogToFileEnabled()) {
-                log().info(
+            LogDispatch.setLogFile(logFilename);
+            if (LogDispatch.isLogToFileEnabled()) {
+                logInfo(
                     "Running in VERBOSE mode, logging to file '" + logFilename
                         + '\'');
             } else {
-                log()
-                    .info(
+                logInfo(
                         "Running in VERBOSE mode, not logging to file (enable in Logger.java)'");
             }
             Profiling.setEnabled(false);
             Profiling.reset();
         } else {
-            Logger.setEnabledTextPanelLogging(false);
-            Logger.setEnabledConsoleLogging(false);
-            Logger.setEnabledToFileLogging(false);
+            LogDispatch.setEnabledTextPanelLogging(false);
+            LogDispatch.setLogFileEnabled(false);
         }
 
-        Logger.setLogBuffer(50000);
+        LogDispatch.setLogBuffer(50000);
 
         // enable debug reports
         debugReports = ConfigurationEntry.DEBUG_REPORTS
@@ -604,7 +602,7 @@ public class Controller extends PFComponent {
             filename += ".config";
         }
 
-        log().debug("Starting from configfile '" + filename + "'");
+        logFine("Starting from configfile '" + filename + "'");
         configFilename = null;
         config = new Properties();
         BufferedInputStream bis = null;
@@ -615,18 +613,18 @@ public class Controller extends PFComponent {
                 System.out.println("Config file does not exist!");
             }
             if (OSUtil.isWebStart()) {
-                log().debug(
+                logFine(
                     "WebStart, config file location: "
                         + configFile.getAbsolutePath());
             }
             bis = new BufferedInputStream(new FileInputStream(configFile));
             config.load(bis);
         } catch (FileNotFoundException e) {
-            log().warn(
+            logWarning(
                 "Unable to start config, file '" + filename
                     + "' not found, using defaults");
         } catch (IOException e) {
-            log().error("Unable to start config from file '" + filename + "'");
+            logSevere("Unable to start config from file '" + filename + "'");
             config = null;
             return false;
         } finally {
@@ -737,12 +735,12 @@ public class Controller extends PFComponent {
         cal.add(Calendar.SECOND, 1);
 
         Date tomorrowMorning = cal.getTime();
-        log().info(
+        logInfo(
             "Initial log reconfigure at " + tomorrowMorning + " milliseconds");
         timer.scheduleAtFixedRate(new TimerTask() {
             public void run() {
                 initLogger();
-                log().info("Reconfigured log file");
+                logInfo("Reconfigured log file");
             }
         }, tomorrowMorning, 1000L * 24 * 3600);
     }
@@ -760,14 +758,13 @@ public class Controller extends PFComponent {
                 broadcastManager = new BroadcastMananger(this);
                 broadcastManager.start();
             } catch (ConnectionException e) {
-                log()
-                    .error(
+                logSevere(
                         "Unable to open broadcast manager, you wont automatically join pf-network on local net: "
                             + e.getMessage());
-                log().error(e);
+                logSevere(e);
             }
         } else {
-            log().warn("Auto-local subnet connection disabled");
+            logWarning("Auto-local subnet connection disabled");
         }
     }
 
@@ -784,7 +781,7 @@ public class Controller extends PFComponent {
             rconManager = new RemoteCommandManager(this);
             rconManager.start();
         } else {
-            log().warn("RCon manager disabled");
+            logWarning("RCon manager disabled");
         }
     }
 
@@ -819,14 +816,14 @@ public class Controller extends PFComponent {
                                     connectionListener.getAddress());
                         }
                         if (!listenerOpened && !isUIOpen()) {
-                            log().error("Couldn't bind to port " + port);
+                            logSevere("Couldn't bind to port " + port);
                             // exit(1);
                             // fatalStartError(Translation
                             // .getTranslation("dialog.binderror"));
                             // return false; // Shouldn't reach this!
                         }
                     } catch (NumberFormatException e) {
-                        log().debug(
+                        logFine(
                             "Unable to read listener port ('" + portStr
                                 + "') from config");
                     }
@@ -838,7 +835,7 @@ public class Controller extends PFComponent {
                     portBindFailureProblem(ports);
                 }
             } else {
-                log().warn("Not opening connection listener. (port=0)");
+                logWarning("Not opening connection listener. (port=0)");
             }
         }
 
@@ -849,11 +846,11 @@ public class Controller extends PFComponent {
                 Thread opener = new Thread(new Runnable() {
                     public void run() {
                         try {
-                            log().debug("Opening port on Firewall.");
+                            logFine("Opening port on Firewall.");
                             FirewallUtil.openport(connectionListener.getPort());
                             portWasOpened = true;
                         } catch (IOException e) {
-                            log().error(e);
+                            logSevere(e);
                         }
                     }
                 }, "Portopener");
@@ -861,7 +858,7 @@ public class Controller extends PFComponent {
                 try {
                     opener.join(12000);
                 } catch (InterruptedException e) {
-                    log().error("Opening of ports failed: " + e);
+                    logSevere("Opening of ports failed: " + e);
                 }
             }
         }
@@ -876,7 +873,7 @@ public class Controller extends PFComponent {
      */
     private void portBindFailureProblem(String ports) {
         if (!isUIEnabled()) {
-            log().error(
+            logSevere(
                 "Unable to open incoming port from the portlist: " + ports);
             exit(1);
             return;
@@ -908,7 +905,7 @@ public class Controller extends PFComponent {
             nodeManager.getMySelf().getInfo().setConnectAddress(
                 connectionListener.getAddress());
         } else {
-            log().error("failed to open random port!!!");
+            logSevere("failed to open random port!!!");
             fatalStartError(Translation.getTranslation("dialog.binderror"));
         }
     }
@@ -922,7 +919,7 @@ public class Controller extends PFComponent {
             try {
                 connectionListener.start();
             } catch (ConnectionException e) {
-                log().error("Problems starting listener " + connectionListener,
+                logSevere("Problems starting listener " + connectionListener,
                     e);
             }
             for (Iterator<ConnectionListener> it = additionalConnectionListeners
@@ -932,7 +929,7 @@ public class Controller extends PFComponent {
                     ConnectionListener addListener = it.next();
                     addListener.start();
                 } catch (ConnectionException e) {
-                    log().error(
+                    logSevere(
                         "Problems starting listener " + connectionListener, e);
                 }
             }
@@ -946,7 +943,7 @@ public class Controller extends PFComponent {
         if (!isStarted()) {
             return;
         }
-        log().debug("Saving config (" + getConfigName() + ".config)");
+        logFine("Saving config (" + getConfigName() + ".config)");
         File file = new File(getConfigLocationBase(), getConfigName()
             + ".config");
         File backupFile = new File(getConfigLocationBase(), getConfigName()
@@ -960,12 +957,12 @@ public class Controller extends PFComponent {
             PropertiesUtil.saveConfig(file, config,
                 "PowerFolder config file (v" + PROGRAM_VERSION + ")");
         } catch (IOException e) {
-            log().error("Unable to save config", e);
+            logSevere("Unable to save config", e);
         } catch (Exception e) {
             // major problem , setting code is wrong
             System.out.println("major problem , setting code is wrong");
             e.printStackTrace();
-            log().error("major problem , setting code is wrong", e);
+            logSevere("major problem , setting code is wrong", e);
             // restore old settings file because it was probably flushed with
             // this error
             try {
@@ -1080,7 +1077,7 @@ public class Controller extends PFComponent {
     }
 
     public void setNetworkingMode(NetworkingMode newMode) {
-        log().debug("setNetworkingMode: " + newMode);
+        logFine("setNetworkingMode: " + newMode);
         NetworkingMode oldValue = getNetworkingMode();
         if (!newMode.equals(oldValue)) {
             ConfigurationEntry.NETWORKING_MODE.setValue(this, newMode.name());
@@ -1121,7 +1118,7 @@ public class Controller extends PFComponent {
             try {
                 currentConnectingSocket.close();
             } catch (IOException e) {
-                log().verbose(e);
+                logFiner(e);
             }
         }
     }
@@ -1139,7 +1136,7 @@ public class Controller extends PFComponent {
                 shutdown();
                 System.exit(status);
             } else {
-                log().warn("not allow shutdown");
+                logWarning("not allow shutdown");
             }
         } else {
             shutdown();
@@ -1189,14 +1186,14 @@ public class Controller extends PFComponent {
      */
     public synchronized void shutdown() {
         shuttingDown = true;
-        log().info("Shutting down...");
+        logInfo("Shutting down...");
         // if (started && !OSUtil.isSystemService()) {
         // // Save config need a started in that method so do that first
         // saveConfig();
         // }
 
         if (Profiling.isEnabled()) {
-            log().info(Profiling.dumpStats());
+            logInfo(Profiling.dumpStats());
         }
 
         // stop
@@ -1214,11 +1211,11 @@ public class Controller extends PFComponent {
                 Thread closer = new Thread(new Runnable() {
                     public void run() {
                         try {
-                            log().debug("Closing port on Firewall.");
+                            logFine("Closing port on Firewall.");
                             FirewallUtil
                                 .closeport(connectionListener.getPort());
                         } catch (IOException e) {
-                            log().error(e.toString());
+                            logSevere(e.toString());
                         }
                     }
                 }, "Firewallcloser");
@@ -1226,23 +1223,23 @@ public class Controller extends PFComponent {
                 try {
                     closer.join(12000);
                 } catch (InterruptedException e) {
-                    log().error("Closing of listener port failed: " + e);
+                    logSevere("Closing of listener port failed: " + e);
                 }
             }
         }
 
         if (taskManager != null) {
-            log().debug("Shutting down task manager");
+            logFine("Shutting down task manager");
             taskManager.shutdown();
         }
 
         if (timer != null) {
-            log().debug("Cancel global timer");
+            logFine("Cancel global timer");
             timer.cancel();
             timer.purge();
         }
         if (threadPool != null) {
-            log().debug("Shutting down global threadpool");
+            logFine("Shutting down global threadpool");
             threadPool.shutdown();
         }
 
@@ -1250,16 +1247,16 @@ public class Controller extends PFComponent {
         closeCurrentConnectionTry();
 
         if (isUIOpen()) {
-            log().debug("Shutting down UI");
+            logFine("Shutting down UI");
             uiController.shutdown();
         }
 
         if (rconManager != null) {
-            log().debug("Shutting down RConManager");
+            logFine("Shutting down RConManager");
             rconManager.shutdown();
         }
 
-        log().debug("Shutting down connection listener(s)");
+        logFine("Shutting down connection listener(s)");
         if (connectionListener != null) {
             connectionListener.shutdown();
         }
@@ -1271,38 +1268,38 @@ public class Controller extends PFComponent {
         }
         additionalConnectionListeners.clear();
         if (broadcastManager != null) {
-            log().debug("Shutting down broadcast manager");
+            logFine("Shutting down broadcast manager");
             broadcastManager.shutdown();
         }
 
         if (transferManager != null) {
-            log().debug("Shutting down transfer manager");
+            logFine("Shutting down transfer manager");
             transferManager.shutdown();
         }
 
         if (nodeManager != null) {
-            log().debug("Shutting down node manager");
+            logFine("Shutting down node manager");
             nodeManager.shutdown();
         }
 
         if (ioProvider != null) {
-            log().debug("Shutting down io provider");
+            logFine("Shutting down io provider");
             ioProvider.shutdown();
         }
 
         // shut down folder repository
         if (folderRepository != null) {
-            log().debug("Shutting down folder repository");
+            logFine("Shutting down folder repository");
             folderRepository.shutdown();
         }
 
         if (reconnectManager != null) {
-            log().debug("Shutting down reconnect manager");
+            logFine("Shutting down reconnect manager");
             reconnectManager.shutdown();
         }
 
         if (pluginManager != null) {
-            log().debug("Shutting down plugin manager");
+            logFine("Shutting down plugin manager");
             pluginManager.shutdown();
         }
 
@@ -1315,7 +1312,7 @@ public class Controller extends PFComponent {
         // remove current config
         // config = null;
         shuttingDown = false;
-        log().info("Shutting down done");
+        logInfo("Shutting down done");
     }
 
     public ExecutorService getThreadPool() {
@@ -1342,9 +1339,9 @@ public class Controller extends PFComponent {
             fOut.write(report.getBytes());
             fOut.close();
         } catch (FileNotFoundException e) {
-            log().error(e);
+            logSevere(e);
         } catch (IOException e) {
-            log().error(e);
+            logSevere(e);
         }
     }
 
@@ -1550,7 +1547,7 @@ public class Controller extends PFComponent {
      *            the security manager to set.
      */
     public void setSecurityManager(SecurityManager securityManager) {
-        log().verbose("Security manager set: " + securityManager);
+        logFiner("Security manager set: " + securityManager);
         this.securityManager = securityManager;
     }
 
@@ -1566,7 +1563,7 @@ public class Controller extends PFComponent {
     public Member connect(InetSocketAddress address) throws ConnectionException
     {
         if (!isStarted()) {
-            log().info(
+            logInfo(
                 "NOT Connecting to " + address + ". Controller not started");
             throw new ConnectionException("NOT Connecting to " + address
                 + ". Controller not started");
@@ -1574,9 +1571,9 @@ public class Controller extends PFComponent {
 
         if (address.getPort() <= 0) {
             // connect to defaul port
-            log().warn("Unable to connect, port illegal " + address.getPort());
+            logWarning("Unable to connect, port illegal " + address.getPort());
         }
-        log().info("Connecting to " + address + "...");
+        logInfo("Connecting to " + address + "...");
 
         ConnectionHandler conHan = ioProvider.getConnectionHandlerFactory()
             .tryToConnect(address);
@@ -1662,7 +1659,7 @@ public class Controller extends PFComponent {
                 // Wait....
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
-                log().verbose(e);
+                logFiner(e);
                 break;
             }
         }
@@ -1678,7 +1675,7 @@ public class Controller extends PFComponent {
     private boolean openListener(int port) {
         String bind = ConfigurationEntry.NET_BIND_ADDRESS
             .getValue(getController());
-        log().debug(
+        logFine(
             "Opening incoming connection listener on port " + port
                 + " on interface " + (bind != null ? bind : "(all)"));
         while (true) {
@@ -1693,11 +1690,10 @@ public class Controller extends PFComponent {
                 }
                 return true;
             } catch (ConnectionException e) {
-                log().warn("Unable to bind to port " + port);
-                log().verbose(e);
+                logWarning("Unable to bind to port " + port);
+                logFiner(e);
                 if (bind != null) {
-                    log()
-                        .error(
+                    logSevere(
                             "This could've been caused by a binding error on the interface... Retrying without binding");
                     bind = null;
                 } else { // Already tried binding once or not at all so get
@@ -1798,7 +1794,7 @@ public class Controller extends PFComponent {
 
         // Load configuration in misc file if config file if in
         if (OSUtil.isWebStart() || !aConfigFile.exists()) {
-            log().debug(
+            logFine(
                 "Config location base: "
                     + getMiscFilesLocation().getAbsolutePath());
             return getMiscFilesLocation();
@@ -1818,7 +1814,7 @@ public class Controller extends PFComponent {
         File base = new File(System.getProperty("user.home") + "/.PowerFolder");
         if (!base.exists()) {
             if (!base.mkdirs()) {
-                Logger.getLogger(Controller.class).error(
+                Loggable.logSevereStatic(Controller.class,
                     "Failed to create " + base.getAbsolutePath());
             }
             if (OSUtil.isWindowsSystem()) {
@@ -1865,7 +1861,7 @@ public class Controller extends PFComponent {
             }
         } else {
             // If no gui show error but start anyways
-            log().warn("PowerFolder already running");
+            logWarning("PowerFolder already running");
         }
     }
 
@@ -1882,7 +1878,7 @@ public class Controller extends PFComponent {
                 JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE, null,
                 options, options[0]);
         } else {
-            log().error(message);
+            logSevere(message);
         }
         exit(1);
     }

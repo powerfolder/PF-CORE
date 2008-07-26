@@ -19,8 +19,8 @@
 */
 package de.dal33t.powerfolder;
 
-import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Loggable;
 
 /**
  * Enumeration of preferred preselected navigation panel.
@@ -57,7 +57,7 @@ public enum StartPanel {
             }
             return valueOf(startPanelName);
         } catch (Exception e) {
-            Logger.getLogger(StartPanel.class).error(e);
+            Loggable.logSevereStatic(StartPanel.class, e);
             return OVERVIEW;
         }
     }

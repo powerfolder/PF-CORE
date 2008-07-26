@@ -68,7 +68,7 @@ public class FolderDBDebug {
             totalSize += fileInfo.getSize();
         }
         // Write filelist to disk
-        File debugFile = new File(Logger.getDebugDir().getAbsolutePath()
+        File debugFile = new File(LogDispatch.getDebugDir().getAbsolutePath()
             + "/Folder '" + fName + "'.list.txt");
         Debug.writeFileListCSV(Arrays.asList(files), "FileList of folder "
             + fName, debugFile);

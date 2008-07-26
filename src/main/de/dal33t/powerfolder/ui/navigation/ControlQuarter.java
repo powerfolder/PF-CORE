@@ -187,15 +187,15 @@ public class ControlQuarter extends PFUIComponent {
                 public void treeCollapsed(TreeExpansionEvent treeExpansionEvent)
                 {
                     TreePath closedPath = treeExpansionEvent.getPath();
-                    // log().debug("closed path : " + closedPath);
-                    // log().debug("lastExpandedPath path: " +
+                    // logFine("closed path : " + closedPath);
+                    // logFine("lastExpandedPath path: " +
                     // lastExpandedPath);
 
                     // note that this method name maybe confusing
                     // it is true if lastExpandedPath is a descendant of
                     // closedPath
                     if (closedPath.isDescendant(lastExpandedPath)) {
-                        // log().debug("isDescendant!");
+                        // logFine("isDescendant!");
                         lastExpandedPath = null;
                     }
                 }
@@ -330,7 +330,7 @@ public class ControlQuarter extends PFUIComponent {
      *            The newly selected directory
      */
     public void setSelected(Directory directory) {
-        log().verbose("setSelected:" + directory);
+        logFiner("setSelected:" + directory);
         if (directory != null) {
             Folder folder = directory.getRootFolder();
             FolderModel folderModel = getController().getUIController()
@@ -508,7 +508,7 @@ public class ControlQuarter extends PFUIComponent {
                 BrowserLauncher.openURL(getController().getOSClient()
                     .getWebURL());
             } catch (IOException e) {
-                log().error("Unable to open online storage in browser", e);
+                logSevere("Unable to open online storage in browser", e);
             }
         }
         Folder folder = getSelectedFolder();
@@ -524,7 +524,7 @@ public class ControlQuarter extends PFUIComponent {
             try {
                 FileUtils.openFile(localBase);
             } catch (IOException ioe) {
-                log().error(ioe);
+                logSevere(ioe);
             }
         }
     }
@@ -536,8 +536,8 @@ public class ControlQuarter extends PFUIComponent {
     {
         public void valueChanged(TreeSelectionEvent e) {
             TreePath selectionPath = e.getPath();
-            if (logVerbose) {
-                log().verbose(selectionPath.toString());
+            if (isLogFiner()) {
+                logFiner(selectionPath.toString());
             }
             // First set parent of selection
             if (selectionPath.getPathCount() > 1) {
@@ -551,8 +551,8 @@ public class ControlQuarter extends PFUIComponent {
             Object newSelection = UIUtil.getUserObject(selectionPath
                 .getLastPathComponent());
             selectionModel.setSelection(newSelection);
-            if (logVerbose) {
-                log().verbose(
+            if (isLogFiner()) {
+                logFiner(
                     "Selection: " + selectionModel.getSelection()
                         + ", parent: " + selectionParent);
             }
@@ -639,8 +639,7 @@ public class ControlQuarter extends PFUIComponent {
                     friendsListMenu.show(evt.getComponent(), evt.getX(), evt
                         .getY());
                 } else {
-                    log()
-                        .warn(
+                    logWarning(
                             "Not displaing friendlist/master user selection context menu");
                 }
             } else if (selection instanceof Directory) {
@@ -840,9 +839,9 @@ public class ControlQuarter extends PFUIComponent {
                                     return;
                                 }
                             } catch (UnsupportedFlavorException e) {
-                                log().error(e);
+                                logSevere(e);
                             } catch (IOException ioe) {
-                                log().error(ioe);
+                                logSevere(ioe);
                             }
                         }
                         dtde.acceptDrop(DnDConstants.ACTION_COPY);

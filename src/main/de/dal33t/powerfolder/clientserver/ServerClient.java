@@ -114,7 +114,7 @@ public class ServerClient extends PFComponent {
         MemberInfo serverInfo = new MemberInfo("Connecting...",
             MEMBER_ID_TEMP_PREFIX + "|" + IdGenerator.makeId());
         serverInfo.setConnectAddress(Util.parseConnectionString(host));
-        log().info(
+        logInfo(
             "Using server from config: " + serverInfo + ", ID: "
                 + serverInfo.id);
         // Avoid adding temporary nodes to nodemanager
@@ -229,12 +229,12 @@ public class ServerClient extends PFComponent {
         }
         boolean loginOk = userService.login(theUsername, passwordMD5, salt);
         if (!loginOk) {
-            log().warn("Login to server (" + theUsername + ") failed!");
+            logWarning("Login to server (" + theUsername + ") failed!");
             setAnonAccount();
             return accountDetails.getAccount();
         }
         AccountDetails newAccountDetails = userService.getAccountDetails();
-        log().info(
+        logInfo(
             "Login to server (" + theUsername + ") result: " + accountDetails);
         if (newAccountDetails != null) {
             accountDetails = newAccountDetails;
@@ -310,24 +310,24 @@ public class ServerClient extends PFComponent {
         // .getJoinedFolderInfos();
         //
         // if (logWarn) {
-        // log().warn(
+        // logWarning(
         // "Granting admin permission on: " + Arrays.asList(myFolders));
         // }
         // getFolderService().grantAdmin(myFolders);
 
-        log().warn("Rights: " + getAccount().getPermissions().size());
+        logWarning("Rights: " + getAccount().getPermissions().size());
         // TODO Also get READ/WRITE permission folder
         Collection<FolderInfo> foInfos = FolderAdminPermission
             .filter(getAccount());
-        log().warn("Rights on: " + foInfos);
+        logWarning("Rights on: " + foInfos);
         for (FolderInfo foInfo : foInfos) {
-            log().warn("Checking: " + foInfo);
+            logWarning("Checking: " + foInfo);
             if (getController().getFolderRepository().hasJoinedFolder(foInfo)) {
                 continue;
             }
             FolderSettings settings = new FolderSettings(new File("."),
                 SyncProfile.AUTOMATIC_SYNCHRONIZATION, true, true, true, false);
-            log().warn("Adding as preview: " + foInfo);
+            logWarning("Adding as preview: " + foInfo);
             getController().getFolderRepository().createPreviewFolder(foInfo,
                 settings);
         }
@@ -390,7 +390,7 @@ public class ServerClient extends PFComponent {
                     // node.
                     initializeServiceStubs();
 
-                    log().debug("Got connect to server: " + server);
+                    logFine("Got connect to server: " + server);
                 }
 
                 if (username != null) {
@@ -453,7 +453,7 @@ public class ServerClient extends PFComponent {
                 return;
             }
             if (getController().isLanOnly() && !server.isOnLAN()) {
-                log().warn(
+                logWarning(
                     "NOT connecting to server: " + server
                         + ". Reason: Not on LAN");
                 return;
@@ -482,19 +482,19 @@ public class ServerClient extends PFComponent {
                             return;
                         }
                         if (!isTempServerNode()) {
-                            log().debug(
+                            logFine(
                                 "Triing to reconnect to Server (" + server
                                     + ")");
                             // With ID directly connect
                             if (!server.isReconnecting()) {
                                 server.reconnect();
                             } else {
-                                log().debug(
+                                logFine(
                                     "Not reconnecting. Already triing to connect to "
                                         + server);
                             }
                         } else {
-                            log().warn(
+                            logWarning(
                                 "Triing to connect to Server by address ("
                                     + server + ")");
                             // Get "full" Member with ID. after direct connect
@@ -511,13 +511,13 @@ public class ServerClient extends PFComponent {
                             // Re-initalize the service stubs on new server
                             // node.
                             initializeServiceStubs();
-                            log().info("Got connect to server: " + server);
+                            logInfo("Got connect to server: " + server);
                         }
                     } catch (ConnectionException e) {
-                        log().warn(
+                        logWarning(
                             "Unable to connect to " + ServerClient.this + ": "
                                 + e.toString());
-                        log().verbose(e);
+                        logFiner(e);
                     } finally {
                         alreadyConnectingLock.unlock();
                     }

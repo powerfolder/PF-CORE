@@ -26,6 +26,7 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.ui.dialog.ConnectDialog;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Loggable;
 import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
 
@@ -77,7 +78,7 @@ public class ReconnectAction extends SelectionBaseAction {
                     }
                 } catch (ConnectionException ex) {
                     connectDialog.close();
-                    log().verbose(ex);
+                    Loggable.logFinerStatic(ReconnectAction.class, ex);
                     if (!connectDialog.isCanceled() && !member.isConnected()) {
                         // Show if user didn't canceled
                         ex.show(getController());
@@ -86,7 +87,8 @@ public class ReconnectAction extends SelectionBaseAction {
 
                 // Close dialog
                 connectDialog.close();
-                log().verbose("Re-connector thread finished");
+                Loggable.logFinerStatic(ReconnectAction.class,
+                        "Re-connector thread finished");
             }
         };
 

@@ -174,7 +174,7 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
                 .parseInt(ConfigurationEntry.UPLOADLIMIT_SILENTMODE_THROTTLE
                     .getValue(getController()))));
         } catch (NumberFormatException e) {
-            log().debug("silentmodethrottle" + e);
+            logFine("silentmodethrottle" + e);
         }
         silentModeThrottle.setValue(smt);
 

@@ -31,6 +31,7 @@ import de.dal33t.powerfolder.ui.Icons;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.*;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Loggable;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.ui.SyncProfileSelectorPanel;
 import jwf.WizardPanel;
@@ -238,7 +239,8 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
     }
 
     private void loadInvitation() {
-        log().info("Loaded invitation " + invitation);
+        Loggable.logInfoStatic(ReceivedInvitationPanel.class,
+                "Loaded invitation " + invitation);
         if (invitation != null) {
             folderHintLabel.setEnabled(true);
             folderNameLabel.setText(invitation.folder.name);

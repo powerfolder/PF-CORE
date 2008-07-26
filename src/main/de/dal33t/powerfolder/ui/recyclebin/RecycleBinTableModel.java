@@ -218,7 +218,7 @@ public class RecycleBinTableModel extends PFComponent implements TableModel,
             if (displayList.contains(e.getFile())) {
                 displayList.remove(e.getFile());
             } else {
-                log().error("file not there: " + e.getFile());
+                logSevere("file not there: " + e.getFile());
             }
 
             displayList.add(e.getFile());

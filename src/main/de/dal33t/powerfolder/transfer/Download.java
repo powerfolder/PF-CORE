@@ -119,10 +119,10 @@ public class Download extends Transfer {
     public void uploadStarted() {
         lastTouch.setTime(System.currentTimeMillis());
         if (isStarted()) {
-            log().warn("Received multiple upload start messages!");
+            logWarning("Received multiple upload start messages!");
             return;
         }
-        log().info("Uploader supports partial transfers.");
+        logInfo("Uploader supports partial transfers.");
         setStarted();
         manager.readyForRequests(this);
     }
@@ -141,7 +141,7 @@ public class Download extends Transfer {
         Reject.ifNull(record, "Record is null");
 
         lastTouch.setTime(System.currentTimeMillis());
-        log().info("Received parts record");
+        logInfo("Received parts record");
         manager.receivedFilePartsRecord(this, record);
     }
 
@@ -165,7 +165,7 @@ public class Download extends Transfer {
                     transferState.getProgress()));
             } catch (IllegalArgumentException e) {
                 // I need to do this because FileInfos are NOT immutable...
-                log().warn("Concurrent file change while requesting:" + e);
+                logWarning("Concurrent file change while requesting:" + e);
                 throw new BrokenDownloadException(
                     "Concurrent file change while requesting: " + e);
             }
@@ -195,7 +195,7 @@ public class Download extends Transfer {
             return false;
         }
 
-        // log().debug("Received " + chunk);
+        // logFine("Received " + chunk);
 
         if (!isStarted()) {
             // donwload begins to start
@@ -250,7 +250,7 @@ public class Download extends Transfer {
      * This download is queued at the remote side
      */
     public void setQueued() {
-        log().verbose("DL queued by remote side: " + this);
+        logFiner("DL queued by remote side: " + this);
         queued = true;
     }
 
@@ -297,13 +297,13 @@ public class Download extends Transfer {
             - Constants.DOWNLOAD_REQUEST_TIMEOUT_LIMIT > lastTouch.getTime()
             && !queued;
         if (timedOut) {
-            log().warn("Abort cause: Timeout.");
+            logWarning("Abort cause: Timeout.");
             return true;
         }
         // Check queueing at remote side
         boolean isQueuedAtPartner = stillQueuedAtPartner();
         if (!isQueuedAtPartner) {
-            log().warn("Abort cause: not queued.");
+            logWarning("Abort cause: not queued.");
             return true;
         }
         // check blacklist
@@ -313,7 +313,7 @@ public class Download extends Transfer {
             boolean onBlacklist = folder.getDiskItemFilter().isExcluded(
                 getFile());
             if (onBlacklist) {
-                log().warn("Abort cause: On blacklist.");
+                logWarning("Abort cause: On blacklist.");
                 return true;
             }
 
@@ -321,7 +321,7 @@ public class Download extends Transfer {
             boolean newerFileAvailable = getFile().isNewerAvailable(
                 getController().getFolderRepository());
             if (newerFileAvailable) {
-                log().warn(
+                logWarning(
                     "Abort cause: Newer version available. "
                         + getFile().toDetailString());
                 return true;

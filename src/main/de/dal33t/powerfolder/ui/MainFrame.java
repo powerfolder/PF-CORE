@@ -191,8 +191,7 @@ public class MainFrame extends PFUIComponent {
      * Initalizes all ui components
      */
     private void initComponents() {
-        log()
-            .debug(
+        logFine(
                 "Screen resolution: "
                     + Toolkit.getDefaultToolkit().getScreenSize());
 

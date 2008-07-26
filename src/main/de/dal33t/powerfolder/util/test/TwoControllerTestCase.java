@@ -38,7 +38,6 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.util.Format;
-import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Reject;
 
 /**
@@ -93,7 +92,6 @@ public class TwoControllerTestCase extends TestCase {
                 }
             });
 
-        Logger.setPrefixEnabled(true);
         Feature.setupForTests();
 
         // Cleanup

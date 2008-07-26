@@ -21,7 +21,6 @@ package de.dal33t.powerfolder.test.util;
 
 import junit.framework.TestCase;
 import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.util.Logger;
 
 public class LoggerTest extends TestCase {
     
@@ -61,7 +60,7 @@ public class LoggerTest extends TestCase {
 
     public class TestLogger extends PFComponent {
         public TestLogger() {
-            // log().debug("Test");
+            // logFine("Test");
             if (logEnabled) {                
                 logCount++;
             }
@@ -84,7 +83,7 @@ public class LoggerTest extends TestCase {
             if (logError) {
                 logCount++;
             }
-            if (logVerbose) {
+            if (isLogFiner()) {
                 logCount++;
             }
             if (logInfo) {
@@ -93,7 +92,7 @@ public class LoggerTest extends TestCase {
             if (logWarn) {
                 logCount++;
             }
-            if (logDebug) {
+            if (isLogFine()) {
                 logCount++;
             }
             

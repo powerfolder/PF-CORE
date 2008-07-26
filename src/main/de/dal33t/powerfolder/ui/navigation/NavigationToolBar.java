@@ -227,7 +227,7 @@ public class NavigationToolBar extends PFUIComponent implements
         } else if (userObject == RootNode.DEBUG_NODE_LABEL) {
             return "Debug";
         } else {
-            log().warn("Unknown content: " + userObject);
+            logWarning("Unknown content: " + userObject);
             return "";
         }
     }

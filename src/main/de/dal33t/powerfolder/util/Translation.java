@@ -35,7 +35,6 @@ import org.apache.commons.lang.StringUtils;
  * @version $Revision: 1.13 $
  */
 public class Translation {
-    private static final Logger LOG = Logger.getLogger(Translation.class);
 
     // Useful locales, which are not already included in Locale
     public static final Locale DUTCH = new Locale("nl");
@@ -62,7 +61,7 @@ public class Translation {
     /**
      * @return the supported locales by PowerFolder
      */
-    public synchronized static Locale[] getSupportedLocales() {
+    public static synchronized Locale[] getSupportedLocales() {
         if (supportedLocales == null) {
             supportedLocales = new Locale[14];
             supportedLocales[0] = Locale.ENGLISH;
@@ -135,7 +134,7 @@ public class Translation {
     /**
      * @return the currently active resource bundle
      */
-    public synchronized static ResourceBundle getResourceBundle() {
+    public static synchronized ResourceBundle getResourceBundle() {
         if (resourceBundle == null) {
             // Intalize bundle
             try {
@@ -161,11 +160,13 @@ public class Translation {
                 resourceBundle = ResourceBundle.getBundle("Translation",
                     confLang);
 
-                LOG.info("Default Locale '" + Locale.getDefault()
+                Loggable.logWarningStatic(Translation.class,
+                        "Default Locale '" + Locale.getDefault()
                     + "', using '" + resourceBundle.getLocale()
-                    + "', in config '" + confLang + '\'');
+                    + "', in config '" + confLang + '\'') ;
             } catch (MissingResourceException e) {
-                LOG.error("Unable to load translation file", e);
+                Loggable.logSevereStatic(Translation.class,
+                        "Unable to load translation file", e);
             }
         }
         return resourceBundle;
@@ -185,11 +186,12 @@ public class Translation {
         }
         try {
             String translation = rb.getString(id);
-            // log().warn("Translation for '" + id + "': " + translation);
+            // logWarning("Translation for '" + id + "': " + translation);
             return translation;
         } catch (MissingResourceException e) {
-            LOG.warn("Unable to find translation for ID '" + id + '\'');
-            LOG.error(e);
+            Loggable.logWarningStatic(Translation.class,
+                    "Unable to find translation for ID '" + id + '\'');
+            Loggable.logSevereStatic(Translation.class,e);
             return "- " + id + " -";
         }
     }
@@ -235,7 +237,7 @@ public class Translation {
             translation = translation.substring(0, i) + param2
                 + translation.substring(i + 3, translation.length());
         }
-        // log().warn("Translation for '" + id + "': " + translation);
+        // logWarning("Translation for '" + id + "': " + translation);
         return translation;
     }
 
@@ -263,7 +265,7 @@ public class Translation {
             translation = translation.substring(0, i) + param3
                 + translation.substring(i + 3, translation.length());
         }
-        // log().warn("Translation for '" + id + "': " + translation);
+        // logWarning("Translation for '" + id + "': " + translation);
         return translation;
     }
 }

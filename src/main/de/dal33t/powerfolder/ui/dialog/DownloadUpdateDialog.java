@@ -142,7 +142,7 @@ public class DownloadUpdateDialog extends PFUIComponent {
      * Opens the dialog
      */
     public void openInEDT() {
-        log().debug("Opening download dialog");
+        logFine("Opening download dialog");
         UIUtil.invokeLaterInEDT(new Runnable() {
             public void run() {
                 getUIComponent().setVisible(true);

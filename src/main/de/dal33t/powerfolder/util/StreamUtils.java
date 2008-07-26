@@ -26,7 +26,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.ByteOrder;
 
 /**
  * Class containing utility methods for working with streams.
@@ -35,7 +34,6 @@ import java.nio.ByteOrder;
  * @version $Revision: 1.5 $
  */
 public class StreamUtils {
-    private static final Logger LOG = Logger.getLogger(StreamUtils.class);
 
     private static final int BUFFER_SIZE = 1024;
 
@@ -145,7 +143,7 @@ public class StreamUtils {
             try {
                 nRead = in.read(buffer, offset + nTotalRead, size - nTotalRead);
             } catch (IndexOutOfBoundsException e) {
-                LOG.error("buffer.lenght: " + buffer.length + ", offset");
+                Loggable.logSevereStatic(StreamUtils.class, "buffer.lenght: " + buffer.length + ", offset");
                 throw e;
             }
             if (nRead < 0) {

@@ -131,7 +131,7 @@ public class FileCopier extends PFComponent {
             try {
                 EventQueue.invokeAndWait(runner);
             } catch (Exception e) {
-                log().error(e);
+                logSevere(e);
             }
         }
         
@@ -158,7 +158,7 @@ public class FileCopier extends PFComponent {
                 // call the directory to notify we have a new file
                 currentFromTo.directory.add(currentFromTo.to);
             } catch (IOException ioe) {
-                log().error(ioe);
+                logSevere(ioe);
             }
 
         }
@@ -270,15 +270,15 @@ public class FileCopier extends PFComponent {
         if (from.equals(to)) {
             throw new IllegalArgumentException("cannot copy onto itself");
         }
-        log().verbose("coping file start: "+ from + " to: " + to);
+        logFiner("coping file start: "+ from + " to: " + to);
         File backup = new File(to.getAbsoluteFile()+ TEMP_FILENAME_SUFFIX);
         if (to.exists()) {
             //try create backup (will be restored on abort)
             if (to.renameTo(backup)) {
                 backup.deleteOnExit();
-                log().verbose("backup created: " +backup);
+                logFiner("backup created: " +backup);
             } else {
-                log().verbose("backup failed: " +backup);
+                logFiner("backup failed: " +backup);
                 //backup failed
                 //delete old one
                 if (!to.delete()) {
@@ -310,11 +310,11 @@ public class FileCopier extends PFComponent {
                     to.delete();
                     //restore backup if its there
                     if (backup.exists()) {
-                        log().debug("backup restore? :" +backup);
+                        logFine("backup restore? :" +backup);
                         if (backup.renameTo(to)) {
-                            log().verbose("backup restore succes :" +backup);
+                            logFiner("backup restore succes :" +backup);
                         } else {
-                            log().verbose("backup restore failed :" +backup);
+                            logFiner("backup restore failed :" +backup);
                         }
                     }
                     break;
@@ -336,10 +336,10 @@ public class FileCopier extends PFComponent {
             //remove the backup
             if (backup.exists()) {
                 backup.delete();
-                log().verbose("backup removed:" +backup);
+                logFiner("backup removed:" +backup);
             }                
         }
-        log().verbose("coping file end: "+ from + " to: " + to);
+        logFiner("coping file end: "+ from + " to: " + to);
     }
 
     /**

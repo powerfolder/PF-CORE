@@ -25,6 +25,7 @@ import java.io.IOException;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.util.BrowserLauncher;
+import de.dal33t.powerfolder.util.Loggable;
 
 public class OpenWebServiceInBrowserAction extends BaseAction {
 
@@ -36,7 +37,7 @@ public class OpenWebServiceInBrowserAction extends BaseAction {
         try {
             BrowserLauncher.openURL(getController().getOSClient().getWebURL());
         } catch (IOException e1) {
-            log().error(e1);
+            Loggable.logSevereStatic(OpenWebServiceInBrowserAction.class, e1);
         }
     }
 

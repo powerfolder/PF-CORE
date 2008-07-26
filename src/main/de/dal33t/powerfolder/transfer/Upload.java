@@ -94,7 +94,7 @@ public class Upload extends Transfer {
                 pendingRequests.notifyAll();
             }
         } catch (TransferException e) {
-            log().error(e);
+            logSevere(e);
             getTransferManager().setBroken(this,
                 TransferProblem.TRANSFER_EXCEPTION, e.getMessage());
         }
@@ -109,8 +109,7 @@ public class Upload extends Transfer {
         }
 
         if (!Util.usePartRequests(getController(), this.getPartner())) {
-            log()
-                .warn(
+            logWarning(
                     "Downloader sent a PartRequest (Protocol violation). Aborting.");
             getTransferManager().setBroken(this,
                 TransferProblem.TRANSFER_EXCEPTION);
@@ -122,7 +121,7 @@ public class Upload extends Transfer {
             || pr.getRange().getLength() > TransferManager.MAX_CHUNK_SIZE
             || pr.getRange().getLength() <= 0)
         {
-            log().error("Received invalid part request!");
+            logSevere("Received invalid part request!");
             getTransferManager().setBroken(this, TransferProblem.INVALID_PART);
             return;
         }
@@ -133,13 +132,13 @@ public class Upload extends Transfer {
     public void receivedFilePartsRecordRequest(RequestFilePartsRecord r) {
         Reject.ifNull(r, "Record is null");
 
-        log().info("Received request for a parts record.");
+        logInfo("Received request for a parts record.");
         // If the download was aborted
         if (aborted || !isStarted()) {
             return;
         }
         if (getFile().getSize() < Constants.MIN_SIZE_FOR_PARTTRANSFERS) {
-            log().warn("Remote side requested invalid PartsRecordRequest!");
+            logWarning("Remote side requested invalid PartsRecordRequest!");
 
             getTransferManager().setBroken(this,
                 TransferProblem.GENERAL_EXCEPTION,
@@ -175,7 +174,7 @@ public class Upload extends Transfer {
      */
     synchronized void start() {
         if (isStarted()) {
-            log().warn("Upload already started. " + this);
+            logWarning("Upload already started. " + this);
             return;
         }
 
@@ -196,8 +195,8 @@ public class Upload extends Transfer {
                     // If our partner supports requests, let him request. This
                     // is required for swarming to work.
                     if (Util.usePartRequests(getController(), getPartner())) {
-                        if (logVerbose) {
-                            log().verbose(
+                        if (isLogFiner()) {
+                            logFiner(
                                 "Both clients support partial transfers!");
                         }
                         debugState = "Sending StartUpload";
@@ -209,7 +208,7 @@ public class Upload extends Transfer {
                         }
                         debugState = "Waiting for requests";
                         if (waitForRequests()) {
-                            log().info("Checking for parts request.");
+                            logInfo("Checking for parts request.");
 
                             debugState = "Checking for FPR request.";
 
@@ -219,12 +218,12 @@ public class Upload extends Transfer {
                                 debugState = "Waiting for remote matching";
                                 transferState
                                     .setState(TransferState.REMOTEMATCHING);
-                                log().verbose(
+                                logFiner(
                                     "Waiting for initial part requests!");
                                 waitForRequests();
                             }
                             debugState = "Starting to send parts";
-                            log().info("Upload started " + this);
+                            logInfo("Upload started " + this);
                             long startTime = System.currentTimeMillis();
 
                             // FIXME: It shouldn't be possible to loop endlessly
@@ -245,7 +244,7 @@ public class Upload extends Transfer {
                     }
                     getTransferManager().setCompleted(Upload.this);
                 } catch (TransferException e) {
-                    // log().warn("Upload broken: " + Upload.this, e);
+                    // logWarning("Upload broken: " + Upload.this, e);
                     getTransferManager().setBroken(Upload.this,
                         TransferProblem.TRANSFER_EXCEPTION, e.getMessage());
                 } finally {
@@ -253,7 +252,7 @@ public class Upload extends Transfer {
                     try {
                         raf.close();
                     } catch (IOException e) {
-                        log().error(e);
+                        logSevere(e);
                     }
                 }
             }
@@ -273,7 +272,7 @@ public class Upload extends Transfer {
         RequestFilePartsRecord r = null;
         synchronized (pendingRequests) {
             if (pendingRequests.isEmpty()) {
-                log().warn("Cancelled message too fast");
+                logWarning("Cancelled message too fast");
                 return false;
             }
             if (pendingRequests.peek() instanceof RequestFilePartsRecord) {
@@ -299,11 +298,11 @@ public class Upload extends Transfer {
                 new ReplyFilePartsRecord(fi, fpr));
             transferState.setState(TransferState.UPLOADING);
         } catch (FileNotFoundException e) {
-            log().error(e);
+            logSevere(e);
             getTransferManager().setBroken(Upload.this,
                 TransferProblem.FILE_NOT_FOUND_EXCEPTION, e.getMessage());
         } catch (IOException e) {
-            log().error(e);
+            logSevere(e);
             getTransferManager().setBroken(Upload.this,
                 TransferProblem.IO_EXCEPTION, e.getMessage());
         }
@@ -337,7 +336,7 @@ public class Upload extends Transfer {
                 try {
                     pendingRequests.wait(Constants.UPLOAD_PART_REQUEST_TIMEOUT);
                 } catch (InterruptedException e) {
-                    log().error(e);
+                    logSevere(e);
                     throw new TransferException(e);
                 }
             }
@@ -370,7 +369,7 @@ public class Upload extends Transfer {
             while (pos < data.length) {
                 int read = raf.read(data, pos, data.length - pos);
                 if (read < 0) {
-                    log().warn("Requested part exceeds filesize!");
+                    logWarning("Requested part exceeds filesize!");
                     throw new TransferException(
                         "Requested part exceeds filesize!");
                 }
@@ -387,15 +386,15 @@ public class Upload extends Transfer {
             checkLastModificationDate(pr.getFile(), f);
 
         } catch (FileNotFoundException e) {
-            log().error(e);
+            logSevere(e);
             throw new TransferException(e);
         } catch (IOException e) {
-            log().error(e);
+            logSevere(e);
             throw new TransferException(e);
         } catch (ConnectionException e) {
-            log().warn("Connectiopn problem while uploading. " + e.toString());
-            if (logVerbose) {
-                log().verbose(e);
+            logWarning("Connectiopn problem while uploading. " + e.toString());
+            if (isLogFiner()) {
+                logFiner(e);
             }
             throw new TransferException(e);
         }
@@ -415,7 +414,7 @@ public class Upload extends Transfer {
                     pendingRequests.wait();
                 }
             } catch (InterruptedException e) {
-                log().error(e);
+                logSevere(e);
             }
         }
         return !pendingRequests.isEmpty();
@@ -425,7 +424,7 @@ public class Upload extends Transfer {
      * Aborts this dl if currently transferrings
      */
     synchronized void abort() {
-        log().verbose("Upload aborted: " + this);
+        logFiner("Upload aborted: " + this);
         aborted = true;
 
         stopUploads();
@@ -461,7 +460,7 @@ public class Upload extends Transfer {
         }
 
         if (!stillQueuedAtPartner()) {
-            log().warn(
+            logWarning(
                 "Upload broken because not enqued @ partner: queedAtPartner: "
                     + stillQueuedAtPartner()
                     + ", folder: "
@@ -476,7 +475,7 @@ public class Upload extends Transfer {
         File diskFile = getFile().getDiskFile(
             getController().getFolderRepository());
         if (diskFile == null || !diskFile.exists()) {
-            log().warn(
+            logWarning(
                 "Upload broken because diskfile is not available, folder: "
                     + getFile()
                         .getFolder(getController().getFolderRepository())
@@ -565,7 +564,7 @@ public class Upload extends Transfer {
         checkLastModificationDate(theFile, f);
         lastFileCheck = new Date();
 
-        log().info(
+        logInfo(
             "Upload started " + this + " starting at " + getStartOffset());
         long startTime = System.currentTimeMillis();
 
@@ -589,7 +588,7 @@ public class Upload extends Transfer {
                 chunkSize = Math.min(chunkSize, TransferManager.MAX_CHUNK_SIZE);
 
                 if (chunkSize <= 0) {
-                    log().error("Illegal chunk size: " + chunkSize);
+                    logSevere("Illegal chunk size: " + chunkSize);
                 }
 
                 // InputStream fin = new BufferedInputStream(
@@ -642,8 +641,8 @@ public class Upload extends Transfer {
                     if (lastFileCheck.before(new Date(System
                         .currentTimeMillis() - 15 * 1000)))
                     {
-                        if (logVerbose) {
-                            log().verbose(
+                        if (isLogFiner()) {
+                            logFiner(
                                 "Checking uploading file: "
                                     + theFile.toDetailString());
                         }
@@ -651,8 +650,8 @@ public class Upload extends Transfer {
                         lastFileCheck = new Date();
                     }
 
-                    if (logVerbose) {
-                        // log().verbose(
+                    if (isLogFiner()) {
+                        // logFiner(
                         // "Chunk, "
                         // + Format.NUMBER_FORMATS.format(chunkSize)
                         // + " bytes, uploaded in "

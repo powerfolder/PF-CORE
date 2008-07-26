@@ -86,7 +86,7 @@ public class BandwidthProvider extends Loggable {
             synchronized (limits) {
                 limits.put(limiter, bps);
             }
-            log().verbose("Bandwidth limiter initalized, max CPS: " + bps);
+            logFiner("Bandwidth limiter initalized, max CPS: " + bps);
         }
     }
 

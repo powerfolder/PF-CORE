@@ -40,7 +40,6 @@ public class MemoryMonitor implements Runnable {
 
     private static final String POWERFOLDER_INI_FILE = "PowerFolder.l4j.ini";
     private Controller controller;
-    private static final Logger LOG = Logger.getLogger(MemoryMonitor.class);
 
     public MemoryMonitor(Controller controller) {
         this.controller = controller;
@@ -59,7 +58,7 @@ public class MemoryMonitor implements Runnable {
             }
 
             long totalMemory = runtime.totalMemory();
-            LOG.debug("Max Memory: " + Format.formatBytesShort(maxMemory)
+            Loggable.logFineStatic(MemoryMonitor.class, "Max Memory: " + Format.formatBytesShort(maxMemory)
                     + ", Total Memory: " + Format.formatBytesShort(totalMemory));
 
             // See if there is any more memory to allocate. Defer if dialog
@@ -121,16 +120,16 @@ public class MemoryMonitor implements Runnable {
         boolean wroteNewIni = false;
         PrintWriter pw = null;
         try {
-            LOG.debug("Looking for ini...");
+            Loggable.logFineStatic(MemoryMonitor.class, "Looking for ini...");
             // br = new BufferedReader(new FileReader("PowerFolder.ini"));
-            LOG.debug("Found ini...");
+            Loggable.logFineStatic(MemoryMonitor.class, "Found ini...");
             // String line;
             // boolean found = false;
             // while ((line = br.readLine()) != null) {
             // if (line.startsWith("-Xmx")) {
             // // Found default ini.
             // found = true;
-            // log.debug("Found maximum memory line...");
+            // Loggable.logFineStatic(MemoryMonitor.class, "Found maximum memory line...");
             // }
             // }
 
@@ -138,17 +137,17 @@ public class MemoryMonitor implements Runnable {
             // Write a new one if found.
             if (!alreadyMax) {
                 pw = new PrintWriter(new FileWriter(POWERFOLDER_INI_FILE));
-                LOG.debug("Writing new ini...");
+                Loggable.logFineStatic(MemoryMonitor.class, "Writing new ini...");
                 pw.println("-Xms16m");
                 pw.println("-Xmx512m");
                 pw.println("-XX:MinHeapFreeRatio=10");
                 pw.println("-XX:MaxHeapFreeRatio=20");
                 pw.flush();
                 wroteNewIni = true;
-                LOG.debug("Wrote new ini...");
+                Loggable.logFineStatic(MemoryMonitor.class, "Wrote new ini...");
             }
         } catch (IOException e) {
-            LOG.debug("Problem reconfiguring ini: " + e.getMessage());
+            Loggable.logFineStatic(MemoryMonitor.class, "Problem reconfiguring ini: " + e.getMessage());
         } finally {
             // if (br != null) {
             // try {

@@ -27,6 +27,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Loggable;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
@@ -83,7 +84,8 @@ public class StartFileAction extends SelectionBaseAction {
                     if (fInfo.diskFileExists(getController())) {
                         File file = fInfo.getDiskFile(getController()
                                 .getFolderRepository());
-                        log().debug("Starting " + file.getAbsolutePath());
+                        Loggable.logFineStatic(StartFileAction.class,
+                                "Starting " + file.getAbsolutePath());
                         try {
                             FileUtils.openFile(file);
                         } catch (IOException ex) {

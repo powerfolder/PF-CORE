@@ -28,7 +28,6 @@ import org.apache.commons.lang.StringUtils;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.UIController;
-import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Translation;
 
 /**
@@ -38,7 +37,6 @@ import de.dal33t.powerfolder.util.Translation;
  * @version $Revision: 1.6 $
  */
 public abstract class BaseAction extends AbstractAction {
-    private Logger log;
     private Controller controller;
 
     /**
@@ -76,7 +74,7 @@ public abstract class BaseAction extends AbstractAction {
      *            the action id
      */
     protected void configureFromActionId(String actionId) {
-        // log().verbose("Configuring from id: " + actionId);
+        // logFiner("Configuring from id: " + actionId);
         putValue(Action.NAME, Translation.getTranslation(actionId + ".name"));
         setMnemonicKey(Translation.getTranslation(actionId + ".key"));
         putValue(Action.SHORT_DESCRIPTION, Translation.getTranslation(actionId
@@ -122,16 +120,6 @@ public abstract class BaseAction extends AbstractAction {
      */
     protected UIController getUIController() {
         return controller.getUIController();
-    }
-
-    /**
-     * @return a logger for this action
-     */
-    protected Logger log() {
-        if (log == null) {
-            log = Logger.getLogger(this);
-        }
-        return log;
     }
 
     // General ****************************************************************

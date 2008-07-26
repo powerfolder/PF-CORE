@@ -19,7 +19,7 @@
 */
 package de.dal33t.powerfolder;
 
-import de.dal33t.powerfolder.util.Logger;
+import de.dal33t.powerfolder.util.Loggable;
 
 /**
  * Available features to enable/disable. Primary for testing.
@@ -55,7 +55,6 @@ public enum Feature {
      */
     DETECT_UPDATE_BY_VERSION;
 
-    private static final Logger LOG = Logger.getLogger(Feature.class);
     private boolean defValue;
     private Boolean enabled;
 
@@ -68,13 +67,13 @@ public enum Feature {
     }
 
     public void disable() {
-        LOG.warn(name() + " disabled");
+        Loggable.logWarningStatic(Feature.class, name() + " disabled");
         System.setProperty("powerfolder.feature." + name(), "disabled");
         enabled = false;
     }
 
     public void enable() {
-        LOG.warn(name() + " enabled");
+        Loggable.logWarningStatic(Feature.class, name() + " enabled");
         System.setProperty("powerfolder.feature." + name(), "enabled");
         enabled = true;
     }

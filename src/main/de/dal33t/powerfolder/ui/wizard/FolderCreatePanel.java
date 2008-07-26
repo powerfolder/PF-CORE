@@ -55,6 +55,7 @@ import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Loggable;
 import de.dal33t.powerfolder.util.ui.SwingWorker;
 
 /**
@@ -220,7 +221,8 @@ public class FolderCreatePanel extends PFWizardPanel {
                     // Try to back this up by online storage.
                     if (client.hasJoined(folder)) {
                         // Already have this os folder.
-                        log().warn("Already have os folder " + foInfo.name);
+                        Loggable.logWarningStatic(FolderCreatePanel.class,
+                                "Already have os folder " + foInfo.name);
                         return null;
                     }
 
@@ -240,7 +242,8 @@ public class FolderCreatePanel extends PFWizardPanel {
                         try {
                             FileUtils.openFile(folder.getLocalBase());
                         } catch (IOException e) {
-                            log().verbose(e);
+                            Loggable.logFinerStatic(FolderCreatePanel.class,
+                                    e);
                         }
                     }
                 } catch (FolderException e) {
@@ -249,7 +252,8 @@ public class FolderCreatePanel extends PFWizardPanel {
                         .getTranslation("foldercreate.dialog.backuperror.text")
                         + "\n" + e.getMessage());
                     errorPane.setVisible(true);
-                    log().error("Unable to backup folder to online storage", e);
+                    Loggable.logSevereStatic(FolderCreatePanel.class,
+                            "Unable to backup folder to online storage", e);
                 }
             }
             return null;

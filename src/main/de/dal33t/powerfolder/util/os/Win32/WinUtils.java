@@ -22,8 +22,8 @@ package de.dal33t.powerfolder.util.os.Win32;
 import java.io.File;
 import java.io.IOException;
 
-import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Loggable;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
@@ -34,7 +34,6 @@ import de.dal33t.powerfolder.util.os.OSUtil;
  * @version $Revision$
  */
 public class WinUtils {
-    private static Logger LOG = Logger.getLogger(WinUtils.class);
 
     public final static String SHORTCUTNAME = "PowerFolder.lnk";
 
@@ -83,7 +82,7 @@ public class WinUtils {
 
 	public static synchronized WinUtils getInstance() {
 		if (instance == null && !error) {
-			if (OSUtil.loadLibrary(LOG, "desktoputils")) {
+			if (OSUtil.loadLibrary(WinUtils.class, "desktoputils")) {
 				instance = new WinUtils();
 				instance.init();
 			} else {
@@ -108,21 +107,21 @@ public class WinUtils {
 			new File(System.getProperty("java.class.path")).getParentFile(),
 			"PowerFolder.exe");
 		if (!pfile.exists()) {
-			LOG.error("Couldn't find PowerFolder executable! "
+			Loggable.logSevereStatic(WinUtils.class, "Couldn't find PowerFolder executable! "
 					+ "Note: Setting up a shortcut only works "
 					+ "when PowerFolder was started by PowerFolder.exe");
 			return;
 		}
-		LOG.verbose("Found " + pfile.getAbsolutePath());
+		Loggable.logFinerStatic(WinUtils.class, "Found " + pfile.getAbsolutePath());
 		File pflnk = new File(getSystemFolderPath(CSIDL_STARTUP, false), SHORTCUTNAME);
 		if (!setup) {
-			LOG.verbose("Deleting startup link.");
+			Loggable.logFinerStatic(WinUtils.class, "Deleting startup link.");
 			pflnk.delete();
 		} else {
 		    ShellLink sl = new ShellLink("--minimized", Translation
                 .getTranslation("winutils.shortcut.description"), pfile
                 .getAbsolutePath(), pfile.getParent());
-            LOG.verbose("Creating startup link: " + pflnk.getAbsolutePath());
+            Loggable.logFinerStatic(WinUtils.class, "Creating startup link: " + pflnk.getAbsolutePath());
 			createLink(sl, pflnk.getAbsolutePath());
 		}
 	}

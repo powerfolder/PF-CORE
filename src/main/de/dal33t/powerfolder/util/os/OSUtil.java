@@ -23,8 +23,8 @@ import java.awt.SystemTray;
 import java.io.File;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.Loggable;
 
 public class OSUtil {
     private static boolean sysTraySupport = true;
@@ -127,9 +127,9 @@ public class OSUtil {
         sysTraySupport = false;
     }
 
-    private static boolean loadLibrary(Logger log, String file, boolean absPath, boolean logErrorsVerbose) {
+    private static boolean loadLibrary(Class clazz, String file, boolean absPath, boolean logErrorsVerbose) {
         try {
-            log.verbose("Loading library: " + file);
+            Loggable.logFinerStatic(clazz, "Loading library: " + file);
             if (absPath) {
                 System.load(file);
             } else {
@@ -138,9 +138,9 @@ public class OSUtil {
             return true;
         } catch (UnsatisfiedLinkError e) {
             if (logErrorsVerbose) {
-                log.verbose(e);
+                Loggable.logFinerStatic(clazz, e);
             } else {
-                log.error(e);
+                Loggable.logSevereStatic(clazz, e);
             }
             return false;
         }
@@ -152,11 +152,11 @@ public class OSUtil {
      * @param log 
      * @param lib
      */
-    public static boolean loadLibrary(Logger log, String lib) {
+    public static boolean loadLibrary(Class clazz, String lib) {
         String dir = "";
-        if (OSUtil.isWindowsSystem()) {
+        if (isWindowsSystem()) {
             dir = "win32libs";
-        } else if (OSUtil.isMacOS() || OSUtil.isLinux()) {
+        } else if (isMacOS() || isLinux()) {
             dir = "lin32libs";
         }
 
@@ -165,16 +165,16 @@ public class OSUtil {
             Controller.getTempFilesLocation(), true);
 
         if (fLib == null) { 
-            log.error("Completely failed to load " + lib + ": Failed to copy resource!");
+            Loggable.logSevereStatic(clazz, "Completely failed to load " + lib + ": Failed to copy resource!");
             return false;
         }
-        if (loadLibrary(log, lib, false, true)) {
+        if (loadLibrary(clazz, lib, false, true)) {
             return true;
         }  
-        if (loadLibrary(log, fLib.getAbsolutePath(), true, false)) {
+        if (loadLibrary(clazz, fLib.getAbsolutePath(), true, false)) {
             return true;
         }  
-        log.error("Completely failed to load " + lib + " - see error above!");
+        Loggable.logSevereStatic(clazz, "Completely failed to load " + lib + " - see error above!");
         return false;
     }
 }

@@ -78,7 +78,7 @@ public class ErrorDialog extends PFUIComponent {
     public final void open(String errorTxt, int kindOfError) {
         this.errorTxt = errorTxt;
         this.kindOfError = kindOfError;
-        log().verbose("Open called: " + this);
+        logFiner("Open called: " + this);
         if (isOpen()) {
             close();
         }
@@ -89,7 +89,7 @@ public class ErrorDialog extends PFUIComponent {
      * Disposes the dialog.
      */
     public final void close() {
-        log().verbose("Close called: " + this);
+        logFiner("Close called: " + this);
         if (uiComponent != null) {
             uiComponent.dispose();
             uiComponent = null;
@@ -100,7 +100,7 @@ public class ErrorDialog extends PFUIComponent {
      * Disposes the dialog.
      */
     public final boolean isOpen() {
-        log().verbose("Close called: " + this);
+        logFiner("Close called: " + this);
         if (uiComponent != null) {
             return true;
         }
@@ -270,7 +270,7 @@ public class ErrorDialog extends PFUIComponent {
         initComponents();
 
         if (uiComponent == null) {
-            log().verbose("Building ui component for " + this);
+            logFiner("Building ui component for " + this);
             uiComponent = new JDialog(getUIController().getMainFrame()
                 .getUIComponent(), getTitle(), modal);
             uiComponent.setResizable(false);

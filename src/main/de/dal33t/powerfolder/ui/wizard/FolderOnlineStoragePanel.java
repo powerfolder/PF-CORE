@@ -33,6 +33,7 @@ import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.FolderComboBox;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Loggable;
 import jwf.WizardPanel;
 
 import javax.swing.*;
@@ -100,7 +101,7 @@ public class FolderOnlineStoragePanel extends PFWizardPanel {
                     + "Please keep in mind that the inital backup\n"
                     + "may take some time on big folders.");
         } catch (FolderException e) {
-            log().error(e);
+            Loggable.logSevereStatic(FolderOnlineStoragePanel.class, e);
             return new TextPanelPanel(getController(),
                 "Online Storage Setup Error",
                 "PowerFolder was unable\nto setup folder " + folder.getName()

@@ -137,7 +137,7 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
                 }
             }
         } catch (SocketException e1) {
-            log().error(e1);
+            logSevere(e1);
         }
 
         ifDescr = new JTextArea(3, 20);
@@ -377,7 +377,7 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
 
             ConfigurationEntry.NET_BIND_PORT.setValue(getController(), port);
         } catch (NumberFormatException e) {
-            log().warn("Unparsable port number");
+            logWarning("Unparsable port number");
         }
         String cfgBind = ConfigurationEntry.NET_BIND_ADDRESS
             .getValue(getController());

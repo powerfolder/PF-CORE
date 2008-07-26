@@ -47,7 +47,6 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.util.Format;
-import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.PropertiesUtil;
 import de.dal33t.powerfolder.util.Reject;
 
@@ -92,8 +91,6 @@ public abstract class MultipleControllerTestCase extends TestCase {
                     e.printStackTrace();
                 }
             });
-
-        Logger.setPrefixEnabled(true);
         Feature.setupForTests();
 
         // Cleanup
@@ -333,7 +330,7 @@ public abstract class MultipleControllerTestCase extends TestCase {
 
     @SuppressWarnings("unchecked")
     protected void connectAll() {
-        Controller entries[] = controllers.values().toArray(new Controller[0]);
+        Controller entries[] = controllers.values().toArray(new Controller[controllers.values().size()]);
         for (int i = 0; i < entries.length; i++) {
             for (int j = 0; j < i; j++) {
                 tryToConnect(entries[i], entries[j]);
@@ -344,7 +341,7 @@ public abstract class MultipleControllerTestCase extends TestCase {
 
     protected void disconnectAll() {
         final Controller entries[] = controllers.values().toArray(
-            new Controller[0]);
+                new Controller[controllers.values().size()]);
         for (int i = 0; i < entries.length; i++) {
             for (int j = 0; j < i; j++) {
                 entries[j].getNodeManager().getNode(

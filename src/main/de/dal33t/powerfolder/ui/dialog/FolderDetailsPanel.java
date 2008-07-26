@@ -193,7 +193,7 @@ public class FolderDetailsPanel extends PFUIComponent {
 
         public void statisticsCalculated(FolderEvent folderEvent) {
             // Update folder
-            log().verbose("Statistic has been recalc on " + folderEvent);
+            logFiner("Statistic has been recalc on " + folderEvent);
             setFolder(foInfo);
         }
 

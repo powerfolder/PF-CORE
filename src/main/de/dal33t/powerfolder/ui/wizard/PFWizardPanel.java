@@ -28,7 +28,6 @@ import com.jgoodies.forms.layout.LayoutMap;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.widget.AntialiasedLabel;
 import de.dal33t.powerfolder.util.Help;
-import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 import jwf.WizardPanel;
@@ -47,7 +46,6 @@ import java.util.List;
  */
 public abstract class PFWizardPanel extends WizardPanel {
     private Controller controller;
-    private Logger log;
     private boolean initalized;
 
     /**
@@ -186,16 +184,6 @@ public abstract class PFWizardPanel extends WizardPanel {
      */
     protected Controller getController() {
         return controller;
-    }
-
-    /**
-     * @return a logger for this panel
-     */
-    protected Logger log() {
-        if (log == null) {
-            log = Logger.getLogger(this);
-        }
-        return log;
     }
 
     // Internal ***************************************************************

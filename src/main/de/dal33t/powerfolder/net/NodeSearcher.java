@@ -121,7 +121,7 @@ public class NodeSearcher extends PFComponent {
             }
         } catch (InterruptedException ie) {
             // This might mean that 2 Threads called cancelSearch()
-            log().error(ie);
+            logSevere(ie);
         }
     }
 
@@ -247,7 +247,7 @@ public class NodeSearcher extends PFComponent {
                     try {
                         searchThread.wait();
                     } catch (InterruptedException e) {
-                        log().warn("Search was interrupted", e);
+                        logWarning("Search was interrupted", e);
                         break;
                     }
                 }

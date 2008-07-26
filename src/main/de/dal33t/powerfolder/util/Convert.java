@@ -36,16 +36,15 @@ import de.dal33t.powerfolder.net.NodeManager;
 
 /** converts various stuff */
 public class Convert {
-    private static final Logger LOG = Logger.getLogger(Convert.class);
 
     // no instances
     private Convert() {
 
     }
     // The local offset to UTC time in MS
-    private static final long TIMEZONE_OFFSET_TO_UTC_MS = ((Calendar
-        .getInstance().get(Calendar.ZONE_OFFSET) + Calendar.getInstance().get(
-        Calendar.DST_OFFSET)));
+    private static final long TIMEZONE_OFFSET_TO_UTC_MS =
+            Calendar.getInstance().get(Calendar.ZONE_OFFSET)
+                    + Calendar.getInstance().get(Calendar.DST_OFFSET);
 
     /**
      * Converts an int to a 4 bytes arrays
@@ -180,14 +179,15 @@ public class Convert {
         for (FileInfo file : list) {
             FolderInfo fileFoInfo = file.getFolderInfo();
             if (fileFoInfo == null) {
-                LOG.warn("Got fileinfo with folderinfo: null. "
+                Loggable.logWarningStatic(Convert.class,
+                        "Got fileinfo with folderinfo: null. "
                     + file.toDetailString());
                 continue;
             }
             Folder folder = repo.getFolder(fileFoInfo);
             if (folder == null) {
-                LOG
-                    .warn("Unable to cleanup file info instance. Folder not joined: "
+                Loggable.logWarningStatic(Convert.class,
+                        "Unable to cleanup file info instance. Folder not joined: "
                         + fileFoInfo);
                 // FIXME: For list of folders that are not joined!
                 // Currently not used because no preview/public mode exists
@@ -205,7 +205,7 @@ public class Convert {
             file.setFolderInfo(folder.getInfo());
         }
         // long took = System.currentTimeMillis() - start;
-        // LOG.warn("Completed clean folder infos on list with " + list.length
+        // Loggable.logWarningStatic(Convert.class,  "Completed clean folder infos on list with " + list.length
         // + " files. took " + took + "ms. Removed " + instances.size()
         // + " unnessesary folder info instances");
     }
@@ -222,12 +222,13 @@ public class Convert {
         }
         // Collection<MemberInfo> instances = new ArrayList<MemberInfo>();
         // long start = System.currentTimeMillis();
-        // LOG.warn("Started clean member infos on list with " + list.length
+        // Loggable.logWarningStatic(Convert.class,  "Started clean member infos on list with " + list.length
         // + " files.");
         for (FileInfo file : list) {
             MemberInfo fMInfo = file.getModifiedBy();
             if (fMInfo == null) {
-                LOG.warn("Got fileinfo with modificator: null. "
+                Loggable.logWarningStatic(Convert.class,
+                        "Got fileinfo with modificator: null. "
                     + file.toDetailString());
                 continue;
             }
@@ -251,7 +252,7 @@ public class Convert {
             file.setModifiedInfo(dbMInfo, file.getModifiedDate());
         }
         // long took = System.currentTimeMillis() - start;
-        // LOG.warn("Completed clean member infos on list with " + list.length
+        // Loggable.logWarningStatic(Convert.class,  "Completed clean member infos on list with " + list.length
         // + " files. took " + took + "ms. Removed " + instances.size()
         // + " unnessesary member info instances");
     }
@@ -277,7 +278,8 @@ public class Convert {
         // 1) Cleanup of member Info
         MemberInfo fMInfo = file.getModifiedBy();
         if (fMInfo == null) {
-            LOG.error("Got fileinfo with modificator: null. "
+            Loggable.logSevereStatic(Convert.class,
+                    "Got fileinfo with modificator: null. "
                 + file.toDetailString());
             return;
         }
@@ -296,16 +298,16 @@ public class Convert {
         // 2) Cleanup of FolderInfo
         FolderInfo fileFoInfo = file.getFolderInfo();
         if (fileFoInfo == null) {
-            LOG.error("Got fileinfo with folderinfo: null. "
+            Loggable.logSevereStatic(Convert.class,
+                    "Got fileinfo with folderinfo: null. "
                 + file.toDetailString());
             return;
         }
         Folder folder = repo.getFolder(fileFoInfo);
         if (folder == null) {
-            if (LOG.isVerbose()) {
-                LOG.verbose("Unable to cleanup file info instance. "
-                    + "Folder not joined: " + fileFoInfo);
-            }
+            Loggable.logFinerStatic(Convert.class,
+                    "Unable to cleanup file info instance. "
+                + "Folder not joined: " + fileFoInfo);
             // FIXME: For list of folders that are not joined!
             // Currently not used because no preview/public mode exists
             return;

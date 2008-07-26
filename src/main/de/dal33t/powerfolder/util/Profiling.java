@@ -27,7 +27,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * Used for analysis and improvements to PowerFolder.
  */
 public class Profiling {
-    private static final Logger LOG = Logger.getLogger(Profiling.class);
 
     /**
      * Allow public access for faster check
@@ -138,7 +137,7 @@ public class Profiling {
         }
         if (profilingEntry == null) {
             // This i
-            LOG.error(new RuntimeException(
+            Loggable.logSevereStatic(Profiling.class, new RuntimeException(
                 "Cannot end profiling, entry is null"));
             return;
         }
@@ -153,7 +152,7 @@ public class Profiling {
                 t += " [" + profilingEntry.getDetails() + "]";
             }
             t += " took " + elapsed + " milliseconds";
-            LOG.error(t);
+            Loggable.logSevereStatic(Profiling.class, t);
         }
         totalTime += elapsed;
         totalCount++;
@@ -176,7 +175,7 @@ public class Profiling {
 
     public static String dumpStats() {
         if (!ENABLED) {
-            LOG.error("Unable to dump stats. Profiling is disabled");
+            Loggable.logSevereStatic(Profiling.class, "Unable to dump stats. Profiling is disabled");
             return "Unable to dump stats. Profiling is disabled";
         }
 

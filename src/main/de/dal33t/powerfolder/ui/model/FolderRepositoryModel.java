@@ -134,7 +134,7 @@ public class FolderRepositoryModel extends PFUIComponent {
      */
     private void expandFolderRepository() {
         if (myFoldersTreeNode.getChildCount() > 0 && !expandedMyFolders) {
-            log().verbose("Expanding foined folders on navtree");
+            logFiner("Expanding foined folders on navtree");
             // Expand joined folders
             getController().getUIController().getControlQuarter().getUITree()
                 .expandPath(myFoldersTreeNode.getPathTo());
@@ -165,7 +165,7 @@ public class FolderRepositoryModel extends PFUIComponent {
             folder.recommendScanOnNextMaintenance();
         }
 
-        log().debug("Disable silent mode");
+        logFine("Disable silent mode");
         getController().setSilentMode(false);
 
         // Now trigger the scan
@@ -201,8 +201,8 @@ public class FolderRepositoryModel extends PFUIComponent {
     /** update Folder treenode for a folder */
     void updateFolderTreeNode(FolderModel folderModel) {
         // Update tree on that folder
-        if (logVerbose) {
-            log().verbose("Updating files of folder " + folderModel.getFolder());
+        if (isLogFiner()) {
+            logFiner("Updating files of folder " + folderModel.getFolder());
         }
         TreeNodeList list = myFoldersTreeNode;
         Object[] path = new Object[]{navTreeModel.getRoot(), list,

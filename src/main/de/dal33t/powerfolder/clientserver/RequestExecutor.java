@@ -65,8 +65,8 @@ public class RequestExecutor extends PFComponent {
         response = null;
         requestId = request.getRequestId();
 
-        if (logVerbose) {
-            log().verbose(
+        if (isLogFiner()) {
+            logFiner(
                 "Sending request to " + node.getNick() + " (" + requestId
                     + "): " + request);
         }
@@ -87,8 +87,8 @@ public class RequestExecutor extends PFComponent {
                 throw new ConnectionException("Timeout to " + node.getNick());
             }
 
-            if (logVerbose) {
-                log().verbose(
+            if (isLogFiner()) {
+                logFiner(
                     "Response from " + node.getNick() + " (" + requestId
                         + "): " + response);
             }
@@ -106,8 +106,7 @@ public class RequestExecutor extends PFComponent {
             try {
                 waitForResponseLock.wait(seconds * 1000);
             } catch (InterruptedException e) {
-                log()
-                    .warn(
+                logWarning(
                         "Interrupted while waiting for response (" + node
                             + ").", e);
             }
@@ -115,8 +114,8 @@ public class RequestExecutor extends PFComponent {
     }
 
     private void notifyAndcleanup() {
-        if (logVerbose) {
-            log().verbose("Cleanup of request: " + requestId);
+        if (isLogFiner()) {
+            logFiner("Cleanup of request: " + requestId);
         }
         synchronized (waitForResponseLock) {
             waitForResponseLock.notifyAll();

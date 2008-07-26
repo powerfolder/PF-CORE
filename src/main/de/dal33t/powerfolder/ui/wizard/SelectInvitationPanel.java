@@ -29,6 +29,7 @@ import de.dal33t.powerfolder.message.Invitation;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
 import de.dal33t.powerfolder.util.InvitationUtil;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Loggable;
 import jwf.WizardPanel;
 
 import javax.swing.*;
@@ -68,7 +69,8 @@ public class SelectInvitationPanel extends PFWizardPanel {
                 .getLocalBase());
         invitation.setInvitationText(messageField.getText());
         InvitationUtil.invitationToNode(getController(), invitation, member);
-        log().debug("Invited " + member.getNick() + " to folder "
+        Loggable.logFinerStatic(SelectInvitationPanel.class,
+                "Invited " + member.getNick() + " to folder "
                 + folderInfo.name);
         return true;
     }

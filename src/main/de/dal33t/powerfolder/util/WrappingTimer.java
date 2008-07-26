@@ -30,7 +30,6 @@ import java.util.TimerTask;
  * @version $Revision: 1.5 $
  */
 public class WrappingTimer extends Timer {
-    private static final Logger LOG = Logger.getLogger(WrappingTimer.class);
 
     // Construction ***********************************************************
 
@@ -118,7 +117,7 @@ public class WrappingTimer extends Timer {
             try {
                 deligate.run();
             } catch (Throwable e) {
-                LOG.error("Exception in timertask: " + deligate, e);
+                Loggable.logSevereStatic(WrappingTimer.class, "Exception in timertask: " + deligate, e);
             }
         }
     }

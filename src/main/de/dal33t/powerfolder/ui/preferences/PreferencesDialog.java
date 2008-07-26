@@ -113,7 +113,7 @@ public class PreferencesDialog extends BaseDialog {
             preferenceTabs.remove(tab);
             tabbedPane.remove(tab.getUIPanel());
         }
-        log().verbose("preferenceTabs: " + preferenceTabs);
+        logFiner("preferenceTabs: " + preferenceTabs);
         rePack();
     }
 
@@ -122,7 +122,7 @@ public class PreferencesDialog extends BaseDialog {
     }
 
     void showDynDNSTab(boolean enable) {
-        log().verbose("showing dyndns tab: " + enable);
+        logFiner("showing dyndns tab: " + enable);
         if (dynDnsSettingsTab == null) {
             // Initalize dyndns tab lazy
             dynDnsSettingsTab = new DynDnsSettingsTab(getController(),

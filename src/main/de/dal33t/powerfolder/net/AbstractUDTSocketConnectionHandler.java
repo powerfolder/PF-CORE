@@ -223,8 +223,8 @@ public abstract class AbstractUDTSocketConnectionHandler extends PFComponent
             in = new LimitedInputStream(getController().getTransferManager()
                 .getInputLimiter(this), new BufferedInputStream(socket
                 .getInputStream(), 1024));
-            if (logVerbose) {
-                log().verbose("Got streams");
+            if (isLogFiner()) {
+                logFiner("Got streams");
             }
 
             // Generate magic id, 16 byte * 8 * 8 bit = 1024 bit key
@@ -235,8 +235,8 @@ public abstract class AbstractUDTSocketConnectionHandler extends PFComponent
 
             // Create identity
             myIdentity = createOwnIdentity();
-            if (logVerbose) {
-                log().verbose(
+            if (isLogFiner()) {
+                logFiner(
                     "Sending my identity, nick: '"
                         + myIdentity.getMemberInfo().nick + "', ID: "
                         + myIdentity.getMemberInfo().id);
@@ -268,11 +268,11 @@ public abstract class AbstractUDTSocketConnectionHandler extends PFComponent
         // Check if IP is on LAN
         // onLAN = getController().getBroadcastManager().receivedBroadcastFrom(
         // socket.getInetAddress());
-        // log().warn("Received broadcast from ? " + onLAN);
+        // logWarning("Received broadcast from ? " + onLAN);
 
         long took = System.currentTimeMillis() - startTime;
-        if (logVerbose) {
-            log().verbose(
+        if (isLogFiner()) {
+            logFiner(
                 "Connect took " + took + "ms, time differ: "
                     + ((getTimeDeltaMS() / 1000) / 60) + " min, remote ident: "
                     + getIdentity());
@@ -310,8 +310,8 @@ public abstract class AbstractUDTSocketConnectionHandler extends PFComponent
         if (!started) {
             return;
         }
-        if (logVerbose) {
-            log().verbose("Shutting down");
+        if (isLogFiner()) {
+            logFiner("Shutting down");
         }
         // if (isConnected() && started) {
         // // Send "EOF" if possible, the last thing you see
@@ -337,7 +337,7 @@ public abstract class AbstractUDTSocketConnectionHandler extends PFComponent
                 out.close();
             }
         } catch (IOException ioe) {
-            log().error("Could not close out stream", ioe);
+            logSevere("Could not close out stream", ioe);
         }
 
         // close in stream
@@ -346,7 +346,7 @@ public abstract class AbstractUDTSocketConnectionHandler extends PFComponent
                 in.close();
             }
         } catch (IOException ioe) {
-            log().error("Could not close in stream", ioe);
+            logSevere("Could not close in stream", ioe);
         }
 
         // close socket
@@ -358,7 +358,7 @@ public abstract class AbstractUDTSocketConnectionHandler extends PFComponent
                 }
                 socket.close();
             } catch (IOException e) {
-                log().verbose(e);
+                logFiner(e);
             }
         }
 
@@ -462,10 +462,10 @@ public abstract class AbstractUDTSocketConnectionHandler extends PFComponent
 
         try {
             synchronized (sendLock) {
-                if (logVerbose) {
-                    log().verbose("-- (sending) -> " + message);
+                if (isLogFiner()) {
+                    logFiner("-- (sending) -> " + message);
                 }
-                // log().warn("-- (sending) -> " + message);
+                // logWarning("-- (sending) -> " + message);
                 if (!isConnected() || !started) {
                     throw new ConnectionException(
                         "Connection to remote peer closed").with(this);
@@ -488,7 +488,7 @@ public abstract class AbstractUDTSocketConnectionHandler extends PFComponent
                 int offset = 0;
 
                 // if (message instanceof Ping) {
-                // log().warn("Ping packet size: " + data.length);
+                // logWarning("Ping packet size: " + data.length);
                 // }
 
                 int remaining = data.length;
@@ -512,7 +512,7 @@ public abstract class AbstractUDTSocketConnectionHandler extends PFComponent
                 // long took = System.currentTimeMillis() - started;
 
                 // if (took > 500) {
-                // log().warn(
+                // logWarning(
                 // "Message (" + data.length + " bytes) took " + took
                 // + "ms.");
                 // }
@@ -594,7 +594,7 @@ public abstract class AbstractUDTSocketConnectionHandler extends PFComponent
                     identityWaiter.wait(60000);
                 } catch (InterruptedException e) {
                     // Ignore
-                    log().verbose(e);
+                    logFiner(e);
                 }
             }
         }
@@ -606,8 +606,8 @@ public abstract class AbstractUDTSocketConnectionHandler extends PFComponent
         member = node;
 
         // now handshake
-        if (logVerbose) {
-            log().verbose("Sending accept of identity to " + this);
+        if (isLogFiner()) {
+            logFiner("Sending accept of identity to " + this);
         }
         sendMessagesAsynchron(IdentityReply.accept());
 
@@ -618,15 +618,14 @@ public abstract class AbstractUDTSocketConnectionHandler extends PFComponent
                 try {
                     identityAcceptWaiter.wait(20000);
                 } catch (InterruptedException e) {
-                    log().verbose(e);
+                    logFiner(e);
                 }
             }
         }
 
         long took = (System.currentTimeMillis() - start) / 1000;
         if (identityReply != null && !identityReply.accepted) {
-            log()
-                .warn(
+            logWarning(
                     "Remote peer rejected our connection: "
                         + identityReply.message);
             member = null;
@@ -634,7 +633,7 @@ public abstract class AbstractUDTSocketConnectionHandler extends PFComponent
         }
 
         if (!isConnected()) {
-            log().warn(
+            logWarning(
                 "Remote member disconnected while waiting for identity reply. "
                     + identity);
             member = null;
@@ -642,7 +641,7 @@ public abstract class AbstractUDTSocketConnectionHandler extends PFComponent
         }
 
         if (identityReply == null) {
-            log().warn(
+            logWarning(
                 "Did not receive a identity reply after " + took
                     + "s. Connected? " + isConnected() + ". remote id: "
                     + identity);
@@ -651,12 +650,12 @@ public abstract class AbstractUDTSocketConnectionHandler extends PFComponent
         }
 
         if (identityReply.accepted) {
-            if (logVerbose) {
-                log().verbose("Identity accepted by remote peer. " + this);
+            if (isLogFiner()) {
+                logFiner("Identity accepted by remote peer. " + this);
             }
         } else {
             member = null;
-            log().warn("Identity rejected by remote peer. " + this);
+            logWarning("Identity rejected by remote peer. " + this);
         }
 
         return identityReply.accepted;
@@ -666,7 +665,7 @@ public abstract class AbstractUDTSocketConnectionHandler extends PFComponent
         long waited = 0;
         while (!messagesToSendQueue.isEmpty() && isConnected()) {
             try {
-                // log().warn("Waiting for empty send buffer to " +
+                // logWarning("Waiting for empty send buffer to " +
                 // getMember());
                 waited += 50;
                 // Wait a bit the let the send queue get empty
@@ -677,13 +676,13 @@ public abstract class AbstractUDTSocketConnectionHandler extends PFComponent
                     break;
                 }
             } catch (InterruptedException e) {
-                log().verbose(e);
+                logFiner(e);
                 break;
             }
         }
         if (waited > 0) {
-            if (logVerbose) {
-                log().verbose(
+            if (isLogFiner()) {
+                logFiner(
                     "Waited " + waited
                         + "ms for empty sendbuffer, clear now, proceeding to "
                         + getMember());
@@ -697,7 +696,7 @@ public abstract class AbstractUDTSocketConnectionHandler extends PFComponent
      */
     private void analyseConnection() {
         if (Feature.CORRECT_LAN_DETECTION.isDisabled()) {
-            log().warn("ON LAN because of correct connection analyse disabled");
+            logWarning("ON LAN because of correct connection analyse disabled");
             setOnLAN(true);
             return;
         }
@@ -718,12 +717,12 @@ public abstract class AbstractUDTSocketConnectionHandler extends PFComponent
                     .getAllLocalNetworkAddressesCached().containsKey(
                         socket.getRemoteAddress().getAddress());
             } catch (SocketException e) {
-                log().error("Omitting bandwidth", e);
+                logSevere("Omitting bandwidth", e);
             }
         }
 
-        if (logVerbose) {
-            log().verbose("analyse connection: lan: " + onLAN);
+        if (isLogFiner()) {
+            logFiner("analyse connection: lan: " + onLAN);
         }
     }
 
@@ -761,8 +760,8 @@ public abstract class AbstractUDTSocketConnectionHandler extends PFComponent
         if (e != null) {
             msg += ". Cause: " + e.toString();
         }
-        log().debug(msg);
-        log().verbose(e);
+        logFine(msg);
+        logFiner(e);
     }
 
     // General ****************************************************************
@@ -787,22 +786,22 @@ public abstract class AbstractUDTSocketConnectionHandler extends PFComponent
      */
     class Sender implements Runnable {
         public void run() {
-            if (logVerbose) {
-                log().verbose(
+            if (isLogFiner()) {
+                logFiner(
                     "Asynchron message send triggered, sending "
                         + messagesToSendQueue.size() + " message(s)");
             }
 
             if (!isConnected()) {
                 // Client disconnected, stop
-                log().debug(
+                logFine(
                     "Peer disconnected while sender got active. Msgs in queue: "
                         + messagesToSendQueue.size() + ": "
                         + messagesToSendQueue);
                 return;
             }
 
-            // log().warn(
+            // logWarning(
             // "Sender started with " + messagesToSendQueue.size()
             // + " messages in queue");
 
@@ -821,7 +820,7 @@ public abstract class AbstractUDTSocketConnectionHandler extends PFComponent
 
                 i++;
                 if (!started) {
-                    log().warn("Peer shutdown while sending: " + msg);
+                    logWarning("Peer shutdown while sending: " + msg);
                     senderSpawnLock.lock();
                     sender = null;
                     senderSpawnLock.unlock();
@@ -829,15 +828,15 @@ public abstract class AbstractUDTSocketConnectionHandler extends PFComponent
                     break;
                 }
                 try {
-                    // log().warn(
+                    // logWarning(
                     // "Sending async (" + messagesToSendQueue.size()
                     // + "): " + asyncMsg.getMessage());
                     sendMessage(msg);
-                    // log().warn("Send complete: " +
+                    // logWarning("Send complete: " +
                     // asyncMsg.getMessage());
                 } catch (ConnectionException e) {
-                    log().warn("Unable to send message asynchronly. " + e);
-                    log().verbose(e);
+                    logWarning("Unable to send message asynchronly. " + e);
+                    logFiner(e);
                     senderSpawnLock.lock();
                     sender = null;
                     senderSpawnLock.unlock();
@@ -845,7 +844,7 @@ public abstract class AbstractUDTSocketConnectionHandler extends PFComponent
                     // Stop thread execution
                     break;
                 } catch (Throwable t) {
-                    log().error("Unable to send message asynchronly. " + t, t);
+                    logSevere("Unable to send message asynchronly. " + t, t);
                     senderSpawnLock.lock();
                     sender = null;
                     senderSpawnLock.unlock();
@@ -854,7 +853,7 @@ public abstract class AbstractUDTSocketConnectionHandler extends PFComponent
                     break;
                 }
             }
-            // log().warn("Sender finished after sending " + i + " messages");
+            // logWarning("Sender finished after sending " + i + " messages");
         }
     }
 
@@ -885,7 +884,7 @@ public abstract class AbstractUDTSocketConnectionHandler extends PFComponent
                         throw new IOException("Client has old protocol version");
                     }
                     if (totalSize == -1) {
-                        // log().verbose(
+                        // logFiner(
                         // "Connection closed (-1) to "
                         // + ConnectionHandler.this);
                         break;
@@ -909,34 +908,34 @@ public abstract class AbstractUDTSocketConnectionHandler extends PFComponent
                     // && getMember().getPeer() !=
                     // AbstractSocketConnectionHandler.this)
                     // {
-                    // log().error(
+                    // logSevere(
                     // "DEAD connection handler found for member: "
                     // + getMember());
                     // shutdown();
                     // return;
                     // }
-                    if (logVerbose) {
-                        log().verbose(
+                    if (isLogFiner()) {
+                        logFiner(
                             "<- (received, " + Format.formatBytes(totalSize)
                                 + ") - " + obj);
                     }
 
                     if (!getController().isStarted()) {
-                        log().verbose(
+                        logFiner(
                             "Peer still active, shutting down " + getMember());
                         break;
                     }
 
                     if (obj instanceof Identity) {
-                        if (logVerbose) {
-                            log().verbose("Received remote identity: " + obj);
+                        if (isLogFiner()) {
+                            logFiner("Received remote identity: " + obj);
                         }
                         // the remote identity
                         identity = (Identity) obj;
 
                         // Get magic id
-                        if (logVerbose) {
-                            log().verbose(
+                        if (isLogFiner()) {
+                            logFiner(
                                 "Received magicId: " + identity.getMagicId());
                         }
 
@@ -946,8 +945,8 @@ public abstract class AbstractUDTSocketConnectionHandler extends PFComponent
                         }
 
                     } else if (obj instanceof IdentityReply) {
-                        if (logVerbose) {
-                            log().verbose("Received identity reply: " + obj);
+                        if (isLogFiner()) {
+                            logFiner("Received identity reply: " + obj);
                         }
                         // remote side accpeted our identity
                         identityReply = (IdentityReply) obj;
@@ -966,7 +965,7 @@ public abstract class AbstractUDTSocketConnectionHandler extends PFComponent
                         if (member != null) {
                             member.handleMessage(problem);
                         } else {
-                            log().warn(
+                            logWarning(
                                 "("
                                     + (identity != null ? identity
                                         .getMemberInfo().nick : "-")
@@ -985,18 +984,18 @@ public abstract class AbstractUDTSocketConnectionHandler extends PFComponent
                         if (member != null) {
                             member.handleMessage((Message) obj);
                         } else {
-                            log().error(
+                            logSevere(
                                 "Connection closed, message received, before peer identified itself: "
                                     + obj);
                             // connection closed
                             break;
                         }
                     } else {
-                        log().error(
+                        logSevere(
                             "Received unknown message from peer: " + obj);
                     }
                 } catch (SocketTimeoutException e) {
-                    log().warn("Socket timeout on read, not disconnecting");
+                    logWarning("Socket timeout on read, not disconnecting");
                 } catch (SocketException e) {
                     logConnectionClose(e);
                     // connection closed
@@ -1006,40 +1005,40 @@ public abstract class AbstractUDTSocketConnectionHandler extends PFComponent
                     // connection closed
                     break;
                 } catch (InvalidClassException e) {
-                    log().verbose(e);
+                    logFiner(e);
                     String from = getMember() != null
                         ? getMember().getNick()
                         : this.toString();
-                    log().warn(
+                    logWarning(
                         "Received unknown packet/class: " + e.getMessage()
                             + " from " + from);
                     // do not break connection
                 } catch (InvalidObjectException e) {
-                    log().verbose(e);
+                    logFiner(e);
                     String from = getMember() != null
                         ? getMember().getNick()
                         : this.toString();
-                    log().warn(
+                    logWarning(
                         "Received invalid object: " + e.getMessage() + " from "
                             + from);
                     // do not break connection
                 } catch (IOException e) {
-                    log().verbose(e);
+                    logFiner(e);
                     logConnectionClose(e);
                     break;
                 } catch (ConnectionException e) {
-                    log().verbose(e);
+                    logFiner(e);
                     logConnectionClose(e);
                     break;
                 } catch (ClassNotFoundException e) {
-                    log().verbose(e);
-                    log().warn(
+                    logFiner(e);
+                    logWarning(
                         "Received unknown packet/class: " + e.getMessage()
                             + " from "
                             + AbstractUDTSocketConnectionHandler.this);
                     // do not break connection
                 } catch (RuntimeException e) {
-                    log().error(e);
+                    logSevere(e);
                     shutdownWithMember();
                     throw e;
                 }

@@ -45,8 +45,8 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.util.InvitationUtil;
-import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.Loggable;
 import de.dal33t.powerfolder.ui.wizard.ChooseDiskLocationPanel;
 import de.dal33t.powerfolder.ui.wizard.FolderSetupPanel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
@@ -76,9 +76,6 @@ import de.dal33t.powerfolder.ui.Icons;
  * @version $Revision: 1.10 $
  */
 public class RemoteCommandManager extends PFComponent implements Runnable {
-    // The logger
-    private static final Logger LOG = Logger
-        .getLogger(RemoteCommandManager.class);
     // The default port to listen for remote commands
     private static final int DEFAULT_REMOTECOMMAND_PORT = 1338;
     // The default prefix for all rcon commands
@@ -128,7 +125,8 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
                 try {
                     testSocket.close();
                 } catch (IOException e) {
-                    LOG.error("Unable to close already running test socket. "
+                    Loggable.logSevereStatic(RemoteCommandManager.class,
+                            "Unable to close already running test socket. "
                         + testSocket, e);
                 }
             }
@@ -145,7 +143,8 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
      */
     public static boolean sendCommand(String command) {
         try {
-            LOG.debug("Sending remote command '" + command + "'");
+            Loggable.logFineStatic(RemoteCommandManager.class,
+                    "Sending remote command '" + command + "'") ;
             Socket socket = new Socket("127.0.0.1", 1338);
             PrintWriter writer = new PrintWriter(new OutputStreamWriter(socket
                 .getOutputStream(), ENCODING));
@@ -157,7 +156,8 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
 
             return true;
         } catch (IOException e) {
-            LOG.error("Unable to send remote command", e);
+            Loggable.logSevereStatic(RemoteCommandManager.class,
+                    "Unable to send remote command", e);
         }
         return false;
     }
@@ -175,15 +175,15 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
             myThread = new Thread(this, "Remote command Manager");
             myThread.start();
         } catch (UnknownHostException e) {
-            log().warn(
+            logWarning(
                 "Unable to open remote command manager on port "
                     + DEFAULT_REMOTECOMMAND_PORT + ": " + e);
-            log().verbose(e);
+            logFiner(e);
         } catch (IOException e) {
-            log().warn(
+            logWarning(
                 "Unable to open remote command manager on port "
                     + DEFAULT_REMOTECOMMAND_PORT + ": " + e);
-            log().verbose(e);
+            logFiner(e);
         }
     }
 
@@ -198,13 +198,13 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
             try {
                 serverSocket.close();
             } catch (IOException e) {
-                log().verbose("Unable to close rcon socket", e);
+                logFiner("Unable to close rcon socket", e);
             }
         }
     }
 
     public void run() {
-        log().info(
+        logInfo(
             "Listening for remote commands on port "
                 + serverSocket.getLocalPort());
         while (!Thread.currentThread().isInterrupted()) {
@@ -212,11 +212,11 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
             try {
                 socket = serverSocket.accept();
             } catch (IOException e) {
-                log().verbose("Rcon socket closed, stopping", e);
+                logFiner("Rcon socket closed, stopping", e);
                 break;
             }
 
-            log().verbose("Remote command from " + socket);
+            logFiner("Remote command from " + socket);
             try {
                 String address = socket.getInetAddress().getHostAddress();
                 if (address.equals("localhost") || address.equals("127.0.0.1"))
@@ -231,7 +231,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
                 }
                 socket.close();
             } catch (IOException e) {
-                log().warn("Problems parsing remote command from " + socket);
+                logWarning("Problems parsing remote command from " + socket);
             }
         }
     }
@@ -243,10 +243,10 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
      */
     private void processCommand(String command) {
         if (StringUtils.isBlank(command)) {
-            log().error("Received a empty remote command");
+            logSevere("Received a empty remote command");
             return;
         }
-        log().debug("Received remote command: '" + command + "'");
+        logFine("Received remote command: '" + command + "'");
         if (QUIT.equalsIgnoreCase(command)) {
             getController().exit(0);
         } else if (command.startsWith(OPEN)) {
@@ -285,7 +285,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
                 makeFolder(nick + '-' + lastPart, s);
             }
         } else {
-            log().warn("Remote command not recognizable '" + command + '\'');
+            logWarning("Remote command not recognizable '" + command + '\'');
         }
     }
 
@@ -296,7 +296,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
      */
     private void openLink(String link) {
         String plainLink = link.substring(POWERFOLDER_LINK_PREFIX.length());
-        log().warn("Got plain link: " + plainLink);
+        logWarning("Got plain link: " + plainLink);
 
         // Chop off ending /
         if (plainLink.endsWith("/")) {
@@ -328,7 +328,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
                     fInfo);
             }
         } catch (NoSuchElementException e) {
-            log().error("Illegal link '" + link + '\'');
+            logSevere("Illegal link '" + link + '\'');
         }
     }
 
@@ -339,7 +339,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
      */
     private void openFile(File file) {
         if (!file.exists()) {
-            log().warn("File not found " + file.getAbsolutePath());
+            logWarning("File not found " + file.getAbsolutePath());
             return;
         }
 
@@ -378,8 +378,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
                     .INITIAL_FOLDER_NAME, name);
             wizard.open(panel);
         } else {
-            log()
-                .warn(
+            logWarning(
                     "Remote creation of folders in non-gui mode is not supported yet.");
         }
     }
@@ -399,17 +398,17 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
             // Load nodes
             List nodes = (List) oIn.readObject();
 
-            log().warn("Loaded " + nodes.size() + " nodes");
+            logWarning("Loaded " + nodes.size() + " nodes");
             MemberInfo[] nodesArrary = new MemberInfo[nodes.size()];
             nodes.toArray(nodesArrary);
 
             return nodesArrary;
         } catch (IOException e) {
-            log().error("Unable to load nodes from file '" + file + "'.", e);
+            logSevere("Unable to load nodes from file '" + file + "'.", e);
         } catch (ClassCastException e) {
-            log().error("Illegal format of nodes file '" + file + "'.", e);
+            logSevere("Illegal format of nodes file '" + file + "'.", e);
         } catch (ClassNotFoundException e) {
-            log().error("Illegal format of nodes file '" + file + "'.", e);
+            logSevere("Illegal format of nodes file '" + file + "'.", e);
         }
 
         return null;

@@ -44,8 +44,8 @@ public class FileNameProblemHandlerDefaultImpl extends PFUIComponent implements
     public void fileNameProblemsDetected(
         FileNameProblemEvent fileNameProblemEvent)
     {
-        if (logDebug) {
-            log().debug(
+        if (isLogFine()) {
+            logFine(
                 fileNameProblemEvent.getFolder() + " "
                     + fileNameProblemEvent.getProblems().size()
                     + " problematic files");

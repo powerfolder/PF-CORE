@@ -24,7 +24,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 
-import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
@@ -93,12 +92,12 @@ public class UDTSocket {
         }
 
     }
-    private static Logger LOG = Logger.getLogger(UDTSocket.class);
 
     private static boolean supported = false;
 
     static {
-        if (OSUtil.loadLibrary(LOG, "udt") && OSUtil.loadLibrary(LOG, "udt4j"))
+        if (OSUtil.loadLibrary(UDTSocket.class, "udt")
+                && OSUtil.loadLibrary(UDTSocket.class, "udt4j"))
         {
             initIDs();
             supported = true;
