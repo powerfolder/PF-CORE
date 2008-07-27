@@ -73,6 +73,8 @@ import de.dal33t.powerfolder.util.InvitationUtil;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.LogDispatch;
+import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.compare.DiskItemComparator;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
@@ -307,16 +309,9 @@ public class Folder extends PFComponent {
                 "Has own database (" + getName() + ")? " + hasOwnDatabase);
         }
         if (hasOwnDatabase) {
-            // Write filelist
-            //if (Logger.isLogToFileEnabled()) {
-                // Write filelist to disk
-                // File debugFile = new File(Logger.getDebugDir(), getName() +
-                // "/"
-                // + getController().getMySelf().getNick() + ".list.txt");
-                // Debug.writeFileListCSV(knownFiles.keySet(),
-                // "FileList of folder " + getName() + ", member " + this
-                // + ":", debugFile);
-            //}
+            if (LogDispatch.isLogToFileEnabled()) {
+                writeFilelist();
+            }
         }
 
         // Register persister
@@ -337,6 +332,19 @@ public class Folder extends PFComponent {
 
         rootDirectory = Directory.buildDirsRecursive(getController()
             .getNodeManager().getMySelf(), knownFiles.values(), this);
+    }
+
+    /**
+     * Writes the file list
+     */
+    private void writeFilelist() {
+        File debugFile = new File(LogDispatch.getDebugDir(),
+                Util.removeInvalidFilenameChars(getName()) +
+                File.separator +
+                Util.removeInvalidFilenameChars(getController().getMySelf().getNick()
+                        + ".list.txt"));
+        Debug.writeFileListCSV(knownFiles.keySet(), "FileList of folder "
+                + getName() + ", member " + this + ':', debugFile);
     }
 
     /**
@@ -382,7 +390,7 @@ public class Folder extends PFComponent {
                             + " to directory");
                 }
                 for (FileInfo newFileInfo : scanResult.getNewFiles()) {
-                    getDirectory()
+                    rootDirectory
                         .add(getController().getMySelf(), newFileInfo);
 
                 }
@@ -569,7 +577,7 @@ public class Folder extends PFComponent {
                 logSevere(
                     " not able to create folder(" + getName()
                         + "), (sub) dir (" + localBase + ") creation failed");
-                throw new FolderException(getInfo(), Translation
+                throw new FolderException(currentInfo, Translation
                     .getTranslation("foldercreate.error.unable_to_create",
                         localBase.getAbsolutePath()));
             }
@@ -577,7 +585,7 @@ public class Folder extends PFComponent {
             logSevere(
                 " not able to create folder(" + getName() + "), (sub) dir ("
                     + localBase + ") is no dir");
-            throw new FolderException(getInfo(), Translation.getTranslation(
+            throw new FolderException(currentInfo, Translation.getTranslation(
                 "foldercreate.error.unable_to_open", localBase
                     .getAbsolutePath()));
         }
@@ -585,7 +593,7 @@ public class Folder extends PFComponent {
         // Complex checks
         FolderRepository repo = getController().getFolderRepository();
         if (new File(repo.getFoldersBasedir()).equals(baseDir)) {
-            throw new FolderException(getInfo(), Translation.getTranslation(
+            throw new FolderException(currentInfo, Translation.getTranslation(
                 "foldercreate.error.it_is_base_dir", baseDir.getAbsolutePath()));
         }
     }
@@ -973,7 +981,7 @@ public class Folder extends PFComponent {
                 // update directory
                 // don't do this in the server version
                 if (rootDirectory != null) {
-                    getDirectory().add(getController().getMySelf(), fInfo);
+                    rootDirectory.add(getController().getMySelf(), fInfo);
                 }
                 // get folder icon info and set it
                 if (FileUtils.isDesktopIni(file)) {
@@ -1132,7 +1140,7 @@ public class Folder extends PFComponent {
         if (isLogFiner()) {
             logFine(
                 "Remove file local: " + fInfo + ", Folder equal ? "
-                    + Util.equals(fInfo.getFolderInfo(), getInfo()));
+                    + Util.equals(fInfo.getFolderInfo(), currentInfo));
         }
         boolean folderChanged = false;
         if (!isKnown(fInfo)) {
@@ -1189,7 +1197,7 @@ public class Folder extends PFComponent {
 
             // Broadcast to members
             diskItemFilter.filterFileInfos(removedFiles);
-            FolderFilesChanged changes = new FolderFilesChanged(getInfo());
+            FolderFilesChanged changes = new FolderFilesChanged(currentInfo);
             changes.removed = removedFiles.toArray(new FileInfo[removedFiles.size()]);
             if (changes.removed.length > 0) {
                 broadcastMessages(changes);
@@ -1633,8 +1641,8 @@ public class Folder extends PFComponent {
      * ATTENTION: Does not force a scan if "hot" auto-detection is not enabled.
      */
     public void recommendScanOnNextMaintenance() {
-        if (!getSyncProfile().isAutoDetectLocalChanges()
-            || getSyncProfile().getConfiguration().isDailySync())
+        if (!syncProfile.isAutoDetectLocalChanges()
+            || syncProfile.getConfiguration().isDailySync())
         {
             return;
         }
@@ -1713,7 +1721,7 @@ public class Folder extends PFComponent {
         // remove files of this member in our datastructure
         // don't do this in the server version
         if (rootDirectory != null) {
-            getDirectory().removeFilesOfMember(member);
+            rootDirectory.removeFilesOfMember(member);
         }
 
         // Fire event
@@ -1874,7 +1882,7 @@ public class Folder extends PFComponent {
 
             // Broadcast to members
             diskItemFilter.filterFileInfos(removedFiles);
-            FolderFilesChanged changes = new FolderFilesChanged(getInfo());
+            FolderFilesChanged changes = new FolderFilesChanged(currentInfo);
             changes.removed = removedFiles.toArray(new FileInfo[removedFiles.size()]);
             broadcastMessages(changes);
         }
@@ -1902,7 +1910,7 @@ public class Folder extends PFComponent {
         if (isLogFiner()) {
             logFine("Broadcasting remote scan commando");
         }
-        Message scanCommand = new ScanCommand(getInfo());
+        Message scanCommand = new ScanCommand(currentInfo);
         broadcastMessages(scanCommand);
     }
 
@@ -1974,10 +1982,10 @@ public class Folder extends PFComponent {
 
         // don't do this in the server version
         if (rootDirectory != null) {
-            getDirectory().addAll(from, newList.files);
+            rootDirectory.addAll(from, newList.files);
         }
 
-        if (getSyncProfile().isAutodownload()) {
+        if (syncProfile.isAutodownload()) {
             // Trigger file requestor
             if (isLogFiner()) {
                 logFine(
@@ -1989,7 +1997,7 @@ public class Folder extends PFComponent {
         }
 
         // Handle remote deleted files
-        if (getSyncProfile().isSyncDeletion()) {
+        if (syncProfile.isSyncDeletion()) {
             // FIXME: Is wrong, since it syncs with completely connected members
             // only
             // FIXME: Is called too often, should be called after finish of
@@ -2022,10 +2030,10 @@ public class Folder extends PFComponent {
         // don't do this in the server version
         if (rootDirectory != null) {
             if (changes.added != null) {
-                getDirectory().addAll(from, changes.added);
+                rootDirectory.addAll(from, changes.added);
             }
             if (changes.removed != null) {
-                getDirectory().addAll(from, changes.removed);
+                rootDirectory.addAll(from, changes.removed);
             }
         }
 
@@ -2033,7 +2041,7 @@ public class Folder extends PFComponent {
         boolean singleFileMsg = changes.added != null
             && changes.added.length == 1 && changes.removed == null;
 
-        if (getSyncProfile().isAutodownload()) {
+        if (syncProfile.isAutodownload()) {
             // Check if we need to trigger the filerequestor
             boolean triggerFileRequestor = true;
             if (singleFileMsg) {
@@ -2066,7 +2074,7 @@ public class Folder extends PFComponent {
         }
 
         // Handle remote deleted files
-        if (!singleFileMsg && getSyncProfile().isSyncDeletion()) {
+        if (!singleFileMsg && syncProfile.isSyncDeletion()) {
             // FIXME: Is wrong, since it syncs with completely connected members
             // only
             // FIXME: Is called too often, should be called after finish of
@@ -2209,7 +2217,7 @@ public class Folder extends PFComponent {
     private void findSameFilesOnRemote() {
         for (Member member : getConnectedMembers()) {
             Collection<FileInfo> lastFileList = member
-                .getLastFileListAsCollection(this.getInfo());
+                .getLastFileListAsCollection(this.currentInfo);
             if (lastFileList != null) {
                 findSameFiles(member, lastFileList);
             }
@@ -2233,13 +2241,9 @@ public class Folder extends PFComponent {
         storeFolderDB();
 
         // Write filelist
-        //if (Logger.isLogToFileEnabled()) {
-            // Write filelist to disk
-            // File debugFile = new File(Logger.getDebugDir(), getName() + '/'
-            // + getController().getMySelf().getNick() + ".list.txt");
-            // Debug.writeFileListCSV(knownFiles.keySet(), "FileList of folder "
-            // + getName() + ", member " + this + ':', debugFile);
-        //}
+        if (LogDispatch.isLogToFileEnabled()) {
+            writeFilelist();
+        }
 
         dirty = false;
     }
@@ -2380,7 +2384,7 @@ public class Folder extends PFComponent {
                 // disconnected
                 continue;
             }
-            if (!member.hasCompleteFileListFor(getInfo())) {
+            if (!member.hasCompleteFileListFor(currentInfo)) {
                 logWarning(
                     "Skipping " + member + " no complete filelist from him");
                 continue;
@@ -2441,7 +2445,7 @@ public class Folder extends PFComponent {
             return getKnownFiles();
         }
         Collection<FileInfo> list = member
-            .getLastFileListAsCollection(getInfo());
+            .getLastFileListAsCollection(currentInfo);
         if (list == null) {
             return null;
         }
@@ -2742,7 +2746,7 @@ public class Folder extends PFComponent {
     }
 
     private void fireSyncProfileChanged() {
-        FolderEvent folderEvent = new FolderEvent(this, getSyncProfile());
+        FolderEvent folderEvent = new FolderEvent(this, syncProfile);
         folderListenerSupport.syncProfileChanged(folderEvent);
     }
 

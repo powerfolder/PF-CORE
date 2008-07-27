@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.io.File;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -1305,15 +1306,9 @@ public class Member extends PFComponent {
                     // Inform folder
                     targetFolder.fileListChanged(this, remoteFileList);
                     // Write filelist
-                    // if (Logger.isLogToFileEnabled()) {
-                    // // Write filelist to disk
-                    // File debugFile = new File(Logger.getDebugDir(),
-                    // targetFolder.getName() + "/" + getNick() + ".list.txt");
-                    // Debug.writeFileListCSV(cachedFileList.keySet(),
-                    // "FileList of folder " + targetFolder.getName()
-                    // + ", member " + this + ":", debugFile);
-                    // }
-
+                    if (LogDispatch.isLogToFileEnabled()) {
+                        writeFilelist(targetFolder, cachedFileList);
+                    }
                 }
                 expectedTime = 250;
 
@@ -1369,18 +1364,15 @@ public class Member extends PFComponent {
                     // Inform folder
                     targetFolder.fileListChanged(this, changes);
 
-                    // if (nExpected.intValue() <= 0) {
-                    // // Write filelist
-                    // if (Logger.isLogToFileEnabled()) {
-                    // // Write filelist to disk
-                    // File debugFile = new File(Logger.getDebugDir(),
-                    // targetFolder.getName() + "/" + getNick()
-                    // + ".list.txt");
-                    // Debug.writeFileListCSV(cachedFileList.keySet(),
-                    // "FileList of folder " + targetFolder.getName()
-                    // + ", member " + this + ":", debugFile);
-                    // }
-                    // }
+                    if (nExpected <= 0) {
+                        // Write filelist
+                        if (LogDispatch.isLogToFileEnabled()) {
+                            // Write filelist
+                            if (LogDispatch.isLogToFileEnabled()) {
+                                writeFilelist(targetFolder, cachedFileList);
+                            }
+                        }
+                    }
                 }
 
                 if (isLogFine()) {
@@ -1567,6 +1559,24 @@ public class Member extends PFComponent {
         } finally {
             Profiling.end(profilingEntry, expectedTime);
         }
+    }
+
+    /**
+     * Write filelist to disk
+     *
+     * @param targetFolder
+     * @param cachedFileList
+     */
+    private void writeFilelist(Folder targetFolder,
+                               Map<FileInfo, FileInfo> cachedFileList) {
+
+        File debugFile = new File(LogDispatch.getDebugDir(),
+                Util.removeInvalidFilenameChars(targetFolder.getName())
+                        + File.separator +
+                        Util.removeInvalidFilenameChars(getNick()
+                                + ".list.txt"));
+        Debug.writeFileListCSV(cachedFileList.keySet(), "FileList of folder " 
+                + targetFolder.getName() + ", member " + this + ':', debugFile);
     }
 
     /**
