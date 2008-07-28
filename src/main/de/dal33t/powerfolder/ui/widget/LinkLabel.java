@@ -28,6 +28,8 @@ import de.dal33t.powerfolder.util.BrowserLauncher;
 
 import javax.swing.*;
 
+import com.jgoodies.forms.factories.Borders;
+
 /**
  * A Label which opens a given link by click it
  * 
@@ -67,6 +69,8 @@ public class LinkLabel extends AntialiasedLabel {
             }
         });
         setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        // FIXME This is a hack because of "Fusch!"
+        setBorder(Borders.createEmptyBorder("0, 1px, 0, 0"));
     }
 
     public void setTextAndURL(String text, String url) {
