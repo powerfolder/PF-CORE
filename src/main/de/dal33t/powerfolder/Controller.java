@@ -559,7 +559,7 @@ public class Controller extends PFComponent {
             // Enable logging
             LogDispatch.setEnabledTextPanelLogging(isUIEnabled());
             LogDispatch.setLogFileEnabled(true);
-            if (LogDispatch.isLoggingConfigured()) {
+            if (!LogDispatch.isLoggingConfigured()) {
                 LogDispatch.setLevel(Level.INFO);
             }
             // MORE LOG

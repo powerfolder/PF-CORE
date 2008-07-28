@@ -37,12 +37,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.FileHandler;
-import java.util.logging.Formatter;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
-import java.util.logging.Logger;
+import java.util.logging.*;
 
 /**
  * Class to log messages. Ideally, classes should extend Loggable
@@ -83,6 +78,10 @@ public class LogDispatch {
         // Controller will set real level as required.
         Logger rootLogger = getRootLogger();
         for (Handler handler : rootLogger.getHandlers()) {
+            if (handler instanceof ConsoleHandler) {
+                // We do console logging ourselves.
+                rootLogger.removeHandler(handler);
+            }
             handler.setLevel(Level.OFF);
             handler.setFormatter(new LogFormatter());
         }
@@ -308,10 +307,34 @@ public class LogDispatch {
             }
         }
 
-        // Log to the debug panel
-        if (level.intValue() >= loggingLevel.intValue() &&
-                logToTextPanelEnabled) {
-            logToTextPanel(level, className, message, t);
+        if (level.intValue() >= loggingLevel.intValue()) {
+
+            // Console logging.
+            logToConsole(level, className, message, t);
+
+            // Log to the debug panel
+            if (logToTextPanelEnabled) {
+                logToTextPanel(level, className, message, t);
+            }
+        }
+    }
+
+    /**
+     * Console logging. Warnings and Severe to System.err, the rest to
+     * System.out.
+     *
+     * @param level
+     * @param className
+     * @param message
+     * @param t
+     */
+    private static void logToConsole(Level level, String className,
+                                     String message, Throwable t) {
+        String formattedMessage = formatMessage(level, className, message, t);
+        if (level.equals(Level.WARNING) || level.equals(Level.SEVERE)) {
+            System.err.print(formattedMessage);
+        } else {
+            System.out.print(formattedMessage);
         }
     }
 
@@ -327,6 +350,28 @@ public class LogDispatch {
                                        String message, Throwable t) {
 
         final MutableAttributeSet set = logColors.get(level.getName());
+        final String formattedMessage = formatMessage(level, className, message, t);
+
+        EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                try {
+                    synchronized (logBuffer) {
+                        logBuffer.insertString(logBuffer.getLength(), formattedMessage,
+                                set);
+                        if (logBuffer.getLength() > nLogLines) {
+                            logBuffer.remove(0, formattedMessage.length());
+                        }
+                    }
+                } catch (RuntimeException e) {
+                    // e.printStackTrace();
+                } catch (BadLocationException e) {
+                    // e.printStackTrace();
+                }
+            }
+        });
+    }
+
+    private static String formatMessage(Level level, String className, String message, Throwable t) {
         StringBuilder sb = new StringBuilder(1000);
         sb.append('[');
         SimpleDateFormat sdf = new SimpleDateFormat("hh:mm:ss");
@@ -360,25 +405,7 @@ public class LogDispatch {
             sb.append(trace).append('\n');
         }
 
-        final String formattedMessage = sb.toString();
-
-        EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                try {
-                    synchronized (logBuffer) {
-                        logBuffer.insertString(logBuffer.getLength(), formattedMessage,
-                                set);
-                        if (logBuffer.getLength() > nLogLines) {
-                            logBuffer.remove(0, formattedMessage.length());
-                        }
-                    }
-                } catch (RuntimeException e) {
-                    // e.printStackTrace();
-                } catch (BadLocationException e) {
-                    // e.printStackTrace();
-                }
-            }
-        });
+        return sb.toString();
     }
 
     /**
