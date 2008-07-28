@@ -99,6 +99,7 @@ For creation of the installer:
 		<property name="build.reports.dir" location="${output.dir}/test-reports" />
 		<property name="dist.dir" location="${output.dir}/dist" />
 		<property name="javadoc.dir" location="${output.dir}/api-docs" />
+	    <property name="debug.dir" location="${output.dir}/debug" />
 
 		<property name="javadoc.packages" value="de.dal33t" />
 		<property name="javadoc.overview" location="${src.main.dir}/overview.html" />
@@ -210,6 +211,7 @@ For creation of the installer:
 		<delete dir="${build.dir}" />
 		<delete dir="${dist.dir}" />
 		<delete dir="${build.reports.dir}" />
+		<delete dir="${debug.dir}" />
 	</target>
 
 	<!-- Setup for test ******************************************************-->
