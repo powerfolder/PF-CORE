@@ -2135,9 +2135,9 @@ public class Folder extends PFComponent {
                 boolean dateSame = Util.equalsFileDateCrossPlattform(
                     localFileInfo.getModifiedDate(), remoteFileInfo
                         .getModifiedDate());
-                boolean localFileNewer = Util.isNewerFileDateCrossPlattform(
-                    localFileInfo.getModifiedDate(), remoteFileInfo
-                        .getModifiedDate());
+                // boolean localFileNewer = Util.isNewerFileDateCrossPlattform(
+                // localFileInfo.getModifiedDate(), remoteFileInfo
+                // .getModifiedDate());
                 if (fileSizeSame && dateSame) {
                     if (isLogWarning()) {
                         logWarning(
@@ -2152,21 +2152,22 @@ public class Folder extends PFComponent {
                     // exchange at beginning of communication
                     fileChanged(localFileInfo);
                 }
-                if (localFileNewer) {
-                    if (isLogWarning()) {
-                        logWarning(
-                            "Found file remotely, but local is newer: local "
-                                + localFileInfo.toDetailString() + " remote: "
-                                + remoteFileInfo.toDetailString()
-                                + ". Increasing local version to "
-                                + (remoteFileInfo.getVersion() + 1));
-                    }
-                    localFileInfo.setVersion(remoteFileInfo.getVersion() + 1);
-                    // FIXME That might produce a LOT of traffic! Single update
-                    // message per file! This also might intefere with FileList
-                    // exchange at beginning of communication
-                    fileChanged(localFileInfo);
-                }
+                // Disabled because of TRAC #999. Causes strange behavior.
+                // if (localFileNewer) {
+                // if (isLogWarning()) {
+                // logWarning(
+                // "Found file remotely, but local is newer: local "
+                // + localFileInfo.toDetailString() + " remote: "
+                // + remoteFileInfo.toDetailString()
+                // + ". Increasing local version to "
+                // + (remoteFileInfo.getVersion() + 1));
+                // }
+                // localFileInfo.setVersion(remoteFileInfo.getVersion() + 1);
+                // // FIXME That might produce a LOT of traffic! Single update
+                // // message per file! This also might intefere with FileList
+                //                    // exchange at beginning of communication
+                //                    fileChanged(localFileInfo);
+                //                }
             }
         }
 
