@@ -316,6 +316,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
         for (int i = 0; i < 10; i++) {
             testFileAlterations();
             tearDown();
+            TestHelper.waitMilliSeconds(1000);
             setUp();
         }
     }
