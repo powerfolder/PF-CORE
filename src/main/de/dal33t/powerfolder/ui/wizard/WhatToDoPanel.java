@@ -314,7 +314,7 @@ public class WhatToDoPanel extends PFWizardPanel {
             decision));
         SimpleComponentFactory.setFontSize(inviteLink, PFWizard.MED_FONT_SIZE);
 
-        documentationLink = Help.createHelpLinkLabel(Translation
+        documentationLink = Help.createHomepageLinkLabel(Translation
             .getTranslation("wizard.whattodo.openonlinedocumentation"),
             "documentation.html");
         SimpleComponentFactory.setFontSize(documentationLink,

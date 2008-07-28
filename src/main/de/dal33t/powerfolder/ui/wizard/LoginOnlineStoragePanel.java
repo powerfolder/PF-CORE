@@ -230,8 +230,6 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
         LinkLabel link = new LinkLabel(Translation
             .getTranslation("wizard.webservice.learnmore"),
             "http://www.powerfolder.com/node/webservice");
-        // FIXME This is a hack because of "Fusch!"
-        link.setBorder(Borders.createEmptyBorder("0, 1px, 0, 0"));
         builder.add(link, cc.xyw(1, 9, 4));
 
         if (defaultSynchronizedFolder.exists()) {
