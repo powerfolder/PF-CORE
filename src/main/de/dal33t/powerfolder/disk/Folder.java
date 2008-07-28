@@ -2450,6 +2450,13 @@ public class Folder extends PFComponent {
         if (list == null) {
             return null;
         }
+        System.out.println("hghg eeeeeee");
+        File debugFile = new File(LogDispatch.getDebugDir(),
+                Util.removeInvalidFilenameChars(getName())
+                + File.separator + Util.removeInvalidFilenameChars(
+                member.getNick() + ".list.txt"));
+        Debug.writeFileListCSV(knownFiles.keySet(), "FileList of folder "
+        + getName() + ", member " + this + ':', debugFile);
         return list;
     }
 
