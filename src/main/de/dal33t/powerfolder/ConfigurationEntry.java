@@ -22,6 +22,8 @@ package de.dal33t.powerfolder;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
 
@@ -316,7 +318,17 @@ public enum ConfigurationEntry {
      * The optional server hostname to connect to. Example:
      * server.powerfolder.com
      */
-    SERVER_HOST("server.host");
+    SERVER_HOST("server.host") {
+        @Override
+        public String getValue(Controller controller) {
+            String host = super.getValue(controller);
+            if (StringUtils.isBlank(host)) {
+                // Try to get from system property
+                host = System.getProperty("powerfolder.server.host", null);
+            }
+            return host;
+        }
+    };
 
     // Methods/Constructors ***************************************************
 
