@@ -76,39 +76,47 @@ public class Debug {
      * @param memberName
      * @param fileInfos
      * @param header
-     * @return
+     * @return true if succeeded
      */
-    public static boolean writeFileListCSV(String folderName, String memberName,
-            Collection<FileInfo> fileInfos, String header)
+    public static boolean writeFileListCSV(String folderName,
+        String memberName, Collection<FileInfo> fileInfos, String header)
     {
-        if (folderName == null) {
-            throw new NullPointerException("folderName is null");
-        }
-        if (memberName == null) {
-            throw new NullPointerException("memberName is null");
-        }
-        if (fileInfos == null) {
-            throw new NullPointerException("Files are null");
-        }
-        File logFile = new File(LogDispatch.getDebugDir(),
-                Util.removeInvalidFilenameChars(folderName)
-                        + File.separator +
-                        Util.removeInvalidFilenameChars(memberName)
-                        + ".list.txt");
+        Reject.ifBlank(folderName, "folderName is null");
+        Reject.ifBlank(memberName, "memberName is null");
+        Reject.ifNull(fileInfos, "Files are null");
+        File logFile = new File(LogDispatch.getDebugDir(), Util
+            .removeInvalidFilenameChars(folderName)
+            + File.separator
+            + Util.removeInvalidFilenameChars(memberName)
+            + ".list.txt");
+        return writeFileListCSV(logFile, fileInfos, header);
+    }
+
+    /**
+     * Writes a list of files to disk as CSV file.
+     * 
+     * @param logFile
+     * @param fileInfos
+     * @param header
+     * @return true if succeeded
+     */
+    public static boolean writeFileListCSV(File logFile,
+        Collection<FileInfo> fileInfos, String header)
+    {
         if (!logFile.exists()) {
             try {
                 logFile.getParentFile().mkdirs();
                 logFile.createNewFile();
             } catch (IOException e) {
-                Loggable.logSevereStatic(Debug.class, "Unable to write filelist to "
-                    + logFile.getAbsolutePath());
+                Loggable.logSevereStatic(Debug.class,
+                    "Unable to write filelist to " + logFile.getAbsolutePath());
                 Loggable.logFinerStatic(Debug.class, e);
                 return false;
             }
         }
         if (!logFile.canWrite()) {
-            Loggable.logSevereStatic(Debug.class, "Unable to write filelist to "
-                + logFile.getAbsolutePath());
+            Loggable.logSevereStatic(Debug.class,
+                "Unable to write filelist to " + logFile.getAbsolutePath());
             return false;
         }
 
@@ -128,8 +136,9 @@ public class Debug {
             }
             fOut.close();
         } catch (IOException e) {
-            Loggable.logWarningStatic(Debug.class, "Unable to write nodelist to '"
-                + logFile.getAbsolutePath() + "'");
+            Loggable.logWarningStatic(Debug.class,
+                "Unable to write nodelist to '" + logFile.getAbsolutePath()
+                    + "'");
             Loggable.logFinerStatic(Debug.class, e);
         }
 
@@ -146,8 +155,8 @@ public class Debug {
         Reject.ifNull(f, "FileInfo is null");
         StringBuffer b = new StringBuffer();
 
-        b.append(f.getModifiedDate() != null ? DATE_FORMAT.get()
-                .format(f.getModifiedDate()) : "-");
+        b.append(f.getModifiedDate() != null ? DATE_FORMAT.get().format(
+            f.getModifiedDate()) : "-");
         b.append(" ;");
 
         if (f.isDeleted()) {
@@ -315,8 +324,9 @@ public class Debug {
 
                 // all members
                 Member[] knownMembers = c.getNodeManager()
-                        .getNodesAsCollection().toArray(new Member[c.getNodeManager()
-                        .getNodesAsCollection().size()]);
+                    .getNodesAsCollection().toArray(
+                        new Member[c.getNodeManager().getNodesAsCollection()
+                            .size()]);
                 // Sort
                 Arrays.sort(knownMembers, MemberComparator.IN_GUI);
                 b.append("\nAll online nodes ("
@@ -530,15 +540,16 @@ public class Debug {
         Reject.ifNull(node, "Node is null");
         String fileName = "Node." + node.nick + ".report.txt";
         try {
-            File file = new File(LogDispatch.getDebugDir(), "nodeinfos/" + fileName);
+            File file = new File(LogDispatch.getDebugDir(), "nodeinfos/"
+                + fileName);
             InputStream fIn = new BufferedInputStream(new FileInputStream(file));
 
             byte[] buffer = new byte[(int) file.length()];
             fIn.read(buffer);
             return new String(buffer);
         } catch (IOException e) {
-            Loggable.logWarningStatic(Debug.class, "Debug report for " + node.nick + " not found ("
-                + fileName + ")");
+            Loggable.logWarningStatic(Debug.class, "Debug report for "
+                + node.nick + " not found (" + fileName + ")");
             // Loggable.logFinerStatic(Debug.class, e);
         }
         return null;
@@ -564,7 +575,8 @@ public class Debug {
             }
             fOut.close();
         } catch (IOException e) {
-            Loggable.logWarningStatic(Debug.class, "Unable to write nodelist to '" + fileName + "'");
+            Loggable.logWarningStatic(Debug.class,
+                "Unable to write nodelist to '" + fileName + "'");
             Loggable.logFinerStatic(Debug.class, e);
         }
     }
@@ -595,7 +607,8 @@ public class Debug {
             }
             fOut.close();
         } catch (IOException e) {
-            Loggable.logWarningStatic(Debug.class, "Unable to write nodelist to '" + fileName + "'");
+            Loggable.logWarningStatic(Debug.class,
+                "Unable to write nodelist to '" + fileName + "'");
             Loggable.logFinerStatic(Debug.class, e);
         }
     }
@@ -619,7 +632,8 @@ public class Debug {
                 + c.getNodeManager().getNodesAsCollection().size() + "\n";
             fOut.write(statLine.getBytes());
         } catch (IOException e) {
-            Loggable.logWarningStatic(Debug.class, "Unable to write network statistics file", e);
+            Loggable.logWarningStatic(Debug.class,
+                "Unable to write network statistics file", e);
             // Ignore
         } finally {
             try {
@@ -685,7 +699,8 @@ public class Debug {
         Thread threads[] = new Thread[group.activeCount()];
         group.enumerate(threads, false);
         Loggable.logFineStatic(Debug.class, "");
-        Loggable.logFineStatic(Debug.class, group + " ########################");
+        Loggable
+            .logFineStatic(Debug.class, group + " ########################");
 
         for (int i = 0; i < threads.length; i++) {
             if (threads[i] != null) {
