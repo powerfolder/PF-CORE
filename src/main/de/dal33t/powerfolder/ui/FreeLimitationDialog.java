@@ -103,7 +103,6 @@ public class FreeLimitationDialog extends BaseDialog {
         LinkLabel linkLabel = new LinkLabel(Translation
             .getTranslation("freelimitdialog.whatispro"),
             Constants.POWERFOLDER_PRO_URL);
-        linkLabel.setBorder(Borders.createEmptyBorder("0, 1px, 0, 0"));
         builder.add(linkLabel, cc.xy(1, row));
 
         return builder.getPanel();
