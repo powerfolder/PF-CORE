@@ -766,7 +766,7 @@ public class Folder extends PFComponent {
     private boolean autoScanRequired() {
         if (!syncProfile.isAutoDetectLocalChanges()) {
             if (isLogFiner()) {
-                logFine("Skipping scan");
+                logFiner("Skipping scan");
             }
             return false;
         }
@@ -1658,10 +1658,10 @@ public class Folder extends PFComponent {
      * with remotesides.
      */
     public void maintain() {
-        logFine("Maintaining '" + getName() + '\'');
+        logFiner("Maintaining '" + getName() + '\'');
 
         // local files
-        logFine("Forced: " + scanForced);
+        logFiner("Forced: " + scanForced);
         boolean forcedNow = scanForced;
         scanForced = false;
         if (forcedNow || autoScanRequired()) {
