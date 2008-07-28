@@ -237,10 +237,6 @@ public class ServerClientModel extends PFUIComponent {
 
         public void serverConnected(ServerClientEvent event) {
             updateMirroredFolders();
-            if (!event.getClient().isLastLoginOK()) {
-                PFWizard.openLoginWebServiceWizard(getController(), client,
-                    false);
-            }
         }
 
         public void serverDisconnected(ServerClientEvent event) {
