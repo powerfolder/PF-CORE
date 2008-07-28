@@ -150,7 +150,6 @@ public class ReconnectManager extends PFComponent {
                     // Resort reconnection queue
                     Collections.sort(reconnectionQueue,
                         MemberComparator.BY_RECONNECTION_PRIORITY);
-
                     return true;
                 }
             }
@@ -191,7 +190,7 @@ public class ReconnectManager extends PFComponent {
                     "ReconnectionQueue.csv");
             }
 
-            if (reconnectionQueue.size() > 200) {
+            if (reconnectionQueue.size() > 100) {
                 logWarning("Reconnection queue contains more than 200 nodes");
             }
 

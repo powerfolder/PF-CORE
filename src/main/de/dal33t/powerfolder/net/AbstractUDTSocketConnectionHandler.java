@@ -700,6 +700,11 @@ public abstract class AbstractUDTSocketConnectionHandler extends PFComponent
             setOnLAN(true);
             return;
         }
+        if (Feature.CORRECT_INTERNET_DETECTION.isDisabled()) {
+            logWarning("ON Internet because of correct connection analyse disabled");
+            setOnLAN(false);
+            return;
+        }
         if (identity != null && identity.isTunneled()) {
             setOnLAN(false);
             return;
