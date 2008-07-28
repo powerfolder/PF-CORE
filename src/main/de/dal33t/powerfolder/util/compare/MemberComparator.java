@@ -26,8 +26,6 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
-import javax.smartcardio.ATR;
-
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.TransferStatus;
@@ -135,10 +133,10 @@ public class MemberComparator extends Loggable implements Comparator {
                     result += 8;
                 }
                 if (member1.isSupernode()) {
-                    result -= 6;
+                    result -= 4;
                 }
                 if (member2.isSupernode()) {
-                    result += 6;
+                    result += 4;
                 }
                 if (member1.isConnectedToNetwork()) {
                     result -= 2;
