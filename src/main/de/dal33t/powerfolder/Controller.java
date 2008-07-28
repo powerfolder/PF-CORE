@@ -109,7 +109,7 @@ public class Controller extends PFComponent {
     /**
      * program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "4.0.0 dev";
+    public static final String PROGRAM_VERSION = "4.0.0 dev3";
 
     /** general wait time for all threads (5000 is a balanced value) */
     private static final long WAIT_TIME = 5000;
@@ -538,7 +538,6 @@ public class Controller extends PFComponent {
             // Server host overridden
             osClient = new ServerClient(this, host);
         }
-
     }
 
     private void setupProPlugins() {
@@ -1032,15 +1031,6 @@ public class Controller extends PFComponent {
         }
         getTransferManager().updateSpeedLimits();
         firePropertyChange(PROPERTY_SILENT_MODE, oldValue, isSilentMode());
-    }
-
-    /**
-     * Answers if node is running in private networking mode
-     * 
-     * @return true if in private mode else false
-     */
-    public boolean isPrivateNetworking() {
-        return getNetworkingMode().equals(NetworkingMode.PRIVATEMODE);
     }
 
     /**
