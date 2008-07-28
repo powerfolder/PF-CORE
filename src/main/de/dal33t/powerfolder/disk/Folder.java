@@ -2240,6 +2240,18 @@ public class Folder extends PFComponent {
         // Write filelist
         if (LogDispatch.isLogToFileEnabled()) {
             writeFilelist();
+
+            // And members' filelists.
+            for (Member member : members.keySet()) {
+                if (!member.isMySelf()) {
+                    Collection<FileInfo> memberFiles = getFilesAsCollection(member);
+                    if (memberFiles != null) {
+                        Debug.writeFileListCSV(getName(), member.getNick(),
+                                memberFiles, "FileList of folder " + getName()
+                                + ", member " + member.getNick() + ':');
+                    }
+                }
+            }
         }
 
         dirty = false;
