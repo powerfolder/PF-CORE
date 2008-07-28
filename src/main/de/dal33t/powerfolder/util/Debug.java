@@ -72,20 +72,29 @@ public class Debug {
     /**
      * Writes a list of files to disk as CSV file.
      * 
+     * @param folderName
+     * @param memberName
      * @param fileInfos
      * @param header
-     * @param logFile
-     * @return true if the write succeeded
+     * @return
      */
-    public static boolean writeFileListCSV(Collection<FileInfo> fileInfos,
-        String header, File logFile)
+    public static boolean writeFileListCSV(String folderName, String memberName,
+            Collection<FileInfo> fileInfos, String header)
     {
-        if (logFile == null) {
-            throw new NullPointerException("Logfile is null");
+        if (folderName == null) {
+            throw new NullPointerException("folderName is null");
+        }
+        if (memberName == null) {
+            throw new NullPointerException("memberName is null");
         }
         if (fileInfos == null) {
             throw new NullPointerException("Files are null");
         }
+        File logFile = new File(LogDispatch.getDebugDir(),
+                Util.removeInvalidFilenameChars(folderName)
+                        + File.separator +
+                        Util.removeInvalidFilenameChars(memberName)
+                        + ".list.txt");
         if (!logFile.exists()) {
             try {
                 logFile.getParentFile().mkdirs();

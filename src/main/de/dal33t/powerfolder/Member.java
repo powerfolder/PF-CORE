@@ -33,7 +33,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.io.File;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -1569,14 +1568,9 @@ public class Member extends PFComponent {
      */
     private void writeFilelist(Folder targetFolder,
                                Map<FileInfo, FileInfo> cachedFileList) {
-
-        File debugFile = new File(LogDispatch.getDebugDir(),
-                Util.removeInvalidFilenameChars(targetFolder.getName())
-                        + File.separator +
-                        Util.removeInvalidFilenameChars(getNick()
-                                + ".list.txt"));
-        Debug.writeFileListCSV(cachedFileList.keySet(), "FileList of folder " 
-                + targetFolder.getName() + ", member " + this + ':', debugFile);
+        Debug.writeFileListCSV(targetFolder.getName(), getNick(),
+                cachedFileList.keySet(), "FileList of folder "
+                + targetFolder.getName() + ", member " + this + ':');
     }
 
     /**

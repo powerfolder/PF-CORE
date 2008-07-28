@@ -55,10 +55,10 @@ public class FolderDBDebug {
             System.out.println("OK: DB contain NO dupes.");
         }
 
-        FolderInfo folderInfo = (files.length > 0)
-            ? files[0].getFolderInfo()
-            : null;
-        String fName = folderInfo != null ? folderInfo.name : "-unknown-";
+        FolderInfo folderInfo = files.length > 0
+                ? files[0].getFolderInfo() : null;
+        String fName = folderInfo != null
+                ? folderInfo.name : "-unknown-";
 
         long totalSize = 0;
         for (FileInfo fileInfo : files) {
@@ -68,14 +68,11 @@ public class FolderDBDebug {
             totalSize += fileInfo.getSize();
         }
         // Write filelist to disk
-        File debugFile = new File(LogDispatch.getDebugDir().getAbsolutePath()
-            + "/Folder '" + fName + "'.list.txt");
-        Debug.writeFileListCSV(Arrays.asList(files), "FileList of folder "
-            + fName, debugFile);
+        Debug.writeFileListCSV("PowerFolder", fName, Arrays.asList(files),
+                "FileList of folder " + fName);
 
         System.out.println("Read " + files.length + " files ("
-            + Format.formatBytesShort(totalSize) + ") from " + args[0] + " to "
-            + debugFile.getAbsolutePath());
+            + Format.formatBytesShort(totalSize) + ") from " + args[0]);
     }
 
     private static boolean checkForDupes(FileInfo[] list) {

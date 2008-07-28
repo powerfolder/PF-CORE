@@ -338,13 +338,9 @@ public class Folder extends PFComponent {
      * Writes the file list
      */
     private void writeFilelist() {
-        File debugFile = new File(LogDispatch.getDebugDir(),
-                Util.removeInvalidFilenameChars(getName()) +
-                File.separator +
-                Util.removeInvalidFilenameChars(getController().getMySelf().getNick()
-                        + ".list.txt"));
-        Debug.writeFileListCSV(knownFiles.keySet(), "FileList of folder "
-                + getName() + ", member " + this + ':', debugFile);
+        Debug.writeFileListCSV(getName(), getController().getMySelf().getNick(),
+                knownFiles.keySet(), "FileList of folder " + getName()
+                + ", member " + this + ':');
     }
 
     /**
@@ -2450,12 +2446,8 @@ public class Folder extends PFComponent {
         if (list == null) {
             return null;
         }
-        File debugFile = new File(LogDispatch.getDebugDir(),
-                Util.removeInvalidFilenameChars(getName())
-                + File.separator + Util.removeInvalidFilenameChars(
-                member.getNick() + ".list.txt"));
-        Debug.writeFileListCSV(knownFiles.keySet(), "FileList of folder "
-        + getName() + ", member " + this + ':', debugFile);
+        Debug.writeFileListCSV(getName(), member.getNick(), knownFiles.keySet(),
+                "FileList of folder " + getName() + ", member " + this + ':');
         return list;
     }
 
