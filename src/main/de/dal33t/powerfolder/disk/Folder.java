@@ -2446,8 +2446,6 @@ public class Folder extends PFComponent {
         if (list == null) {
             return null;
         }
-        Debug.writeFileListCSV(getName(), member.getNick(), knownFiles.keySet(),
-                "FileList of folder " + getName() + ", member " + this + ':');
         return list;
     }
 
