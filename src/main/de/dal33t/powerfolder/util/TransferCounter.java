@@ -31,7 +31,7 @@ import de.dal33t.powerfolder.message.FileChunk;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.12 $
  */
-public class TransferCounter extends Loggable implements Serializable {
+public class TransferCounter implements Serializable {
     private static final long serialVersionUID = 100L;
     private static final long CURRENT_CPS_CALCULATION_PERIOD = 40000;
 

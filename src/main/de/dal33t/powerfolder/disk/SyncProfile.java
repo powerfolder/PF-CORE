@@ -70,7 +70,7 @@ import de.dal33t.powerfolder.message.Invitation;
  * @version $Revision: 1.5 $
  * @see Invitation
  */
-public class SyncProfile extends Loggable implements Serializable {
+public class SyncProfile implements Serializable {
 
     private static final long serialVersionUID = 100L;
 
@@ -238,8 +238,9 @@ public class SyncProfile extends Loggable implements Serializable {
 
         String oldProfileName = this.profileName;
         this.profileName = profileName;
-        if (isLogFiner()) {
-            logFiner("Set profile name from " + oldProfileName +
+        if (Loggable.isLogFinerStatic(SyncProfile.class)) {
+            Loggable.logFinerStatic(SyncProfile.class,
+                    "Set profile name from " + oldProfileName +
                     " to " + profileName);
         }
     }
@@ -272,8 +273,9 @@ public class SyncProfile extends Loggable implements Serializable {
 
         SyncProfileConfiguration oldConfiguration = this.configuration;
         this.configuration = configuration;
-        if (isLogFiner()) {
-            logFiner("Set configuration from " +
+        if (Loggable.isLogFinerStatic(SyncProfile.class)) {
+            Loggable.logFinerStatic(SyncProfile.class,
+                    "Set configuration from " +
                     oldConfiguration.toString() + " to " +
                     configuration.toString());
         }

@@ -40,6 +40,7 @@ import de.dal33t.powerfolder.message.StopUpload;
 import de.dal33t.powerfolder.util.Range;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.Loggable;
 import de.dal33t.powerfolder.util.delta.FilePartsRecord;
 
 /**
@@ -119,10 +120,12 @@ public class Download extends Transfer {
     public void uploadStarted() {
         lastTouch.setTime(System.currentTimeMillis());
         if (isStarted()) {
-            logWarning("Received multiple upload start messages!");
+            Loggable.logWarningStatic(Download.class,
+                    "Received multiple upload start messages!");
             return;
         }
-        logInfo("Uploader supports partial transfers.");
+        Loggable.logInfoStatic(Download.class,
+                "Uploader supports partial transfers.");
         setStarted();
         manager.readyForRequests(this);
     }
@@ -141,7 +144,8 @@ public class Download extends Transfer {
         Reject.ifNull(record, "Record is null");
 
         lastTouch.setTime(System.currentTimeMillis());
-        logInfo("Received parts record");
+        Loggable.logInfoStatic(Download.class,
+                "Received parts record");
         manager.receivedFilePartsRecord(this, record);
     }
 
@@ -165,7 +169,8 @@ public class Download extends Transfer {
                     transferState.getProgress()));
             } catch (IllegalArgumentException e) {
                 // I need to do this because FileInfos are NOT immutable...
-                logWarning("Concurrent file change while requesting:" + e);
+                Loggable.logWarningStatic(Download.class,
+                        "Concurrent file change while requesting:" + e);
                 throw new BrokenDownloadException(
                     "Concurrent file change while requesting: " + e);
             }
@@ -250,7 +255,8 @@ public class Download extends Transfer {
      * This download is queued at the remote side
      */
     public void setQueued() {
-        logFiner("DL queued by remote side: " + this);
+        Loggable.logFinerStatic(Download.class,
+                "DL queued by remote side: " + this);
         queued = true;
     }
 
@@ -297,13 +303,13 @@ public class Download extends Transfer {
             - Constants.DOWNLOAD_REQUEST_TIMEOUT_LIMIT > lastTouch.getTime()
             && !queued;
         if (timedOut) {
-            logWarning("Abort cause: Timeout.");
+            Loggable.logWarningStatic(Download.class, "Abort cause: Timeout.");
             return true;
         }
         // Check queueing at remote side
         boolean isQueuedAtPartner = stillQueuedAtPartner();
         if (!isQueuedAtPartner) {
-            logWarning("Abort cause: not queued.");
+            Loggable.logWarningStatic(Download.class, "Abort cause: not queued.");
             return true;
         }
         // check blacklist
@@ -313,7 +319,7 @@ public class Download extends Transfer {
             boolean onBlacklist = folder.getDiskItemFilter().isExcluded(
                 getFile());
             if (onBlacklist) {
-                logWarning("Abort cause: On blacklist.");
+                Loggable.logWarningStatic(Download.class, "Abort cause: On blacklist.");
                 return true;
             }
 
@@ -321,7 +327,7 @@ public class Download extends Transfer {
             boolean newerFileAvailable = getFile().isNewerAvailable(
                 getController().getFolderRepository());
             if (newerFileAvailable) {
-                logWarning(
+                Loggable.logWarningStatic(Download.class,
                     "Abort cause: Newer version available. "
                         + getFile().toDetailString());
                 return true;

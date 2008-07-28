@@ -40,7 +40,7 @@ import de.dal33t.powerfolder.util.TransferCounter;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.14 $
  */
-public abstract class Transfer extends Loggable implements Serializable {
+public abstract class Transfer implements Serializable {
     private static final long serialVersionUID = 100L;
 
     private transient TransferManager transferManager;
@@ -150,7 +150,7 @@ public abstract class Transfer extends Loggable implements Serializable {
      */
     public void init(TransferManager aTransferManager) {
         if (transferManager != null) {
-            logSevere(
+            Loggable.logSevereStatic(Transfer.class,
                 "Unable to set TransferManager. Having already one. " + this);
             return;
         }
@@ -299,18 +299,19 @@ public abstract class Transfer extends Loggable implements Serializable {
             return false;
         }
         if (getPartner() == null) {
-            logWarning("Abort cause: partner is null.");
+            Loggable.logWarningStatic(Transfer.class,
+                    "Abort cause: partner is null.");
             return true;
         }
         if (!getPartner().isCompleteyConnected()) {
-            logWarning(
+            Loggable.logWarningStatic(Transfer.class,
                 "Abort cause: " + getPartner().getNick() + " not connected.");
             return true;
         }
         boolean partnerOnFolder = stillPartnerOnFolder();
         if (!partnerOnFolder) {
             // broken if partner left folder
-            logWarning(
+            Loggable.logWarningStatic(Transfer.class,
                 "Abort cause: " + getPartner().getNick() + " not on folder.");
             return true;
         }
@@ -395,12 +396,12 @@ public abstract class Transfer extends Loggable implements Serializable {
     public double getStateProgress() {
         return transferState == null ? 0 : transferState.getProgress();
     }
-
-    // General ****************************************************************
-
-    @Override
-    public String getLoggerName() {
-        return getClass().getSimpleName() + " '" + getFile().getFilenameOnly()
-            + "'";
-    }
+//
+//    // General ****************************************************************
+//
+//    @Override
+//    public String getLoggerName() {
+//        return getClass().getSimpleName() + " '" + getFile().getFilenameOnly()
+//            + "'";
+//    }
 }

@@ -53,7 +53,7 @@ import de.dal33t.powerfolder.util.delta.FilePartsRecordBuilder;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.33 $
  */
-public class FileInfo extends Loggable implements Serializable, DiskItem {
+public class FileInfo implements Serializable, DiskItem {
     private static final long serialVersionUID = 100L;
 
     /** The filename (including the path from the base of the folder) */
@@ -623,7 +623,8 @@ public class FileInfo extends Loggable implements Serializable, DiskItem {
             && this.getModifiedDate().equals(otherFile.getModifiedDate())
             && !this.getModifiedBy().equals(otherFile.getModifiedBy()))
         {
-            logSevere("Found identical files, but diffrent modifier:"
+            Loggable.logSevereStatic(FileInfo.class,
+                    "Found identical files, but diffrent modifier:"
                 + toDetailString() + " other: " + otherFile.toDetailString());
         }
         return identical;
@@ -749,7 +750,8 @@ public class FileInfo extends Loggable implements Serializable, DiskItem {
                 }
                 fileRecord = b.getRecord();
                 long took = System.currentTimeMillis() - start;
-                logInfo("Built file parts for " + this + ". took " + took
+                Loggable.logInfoStatic(FileInfo.class,
+                        "Built file parts for " + this + ". took " + took
                     + "ms" + " while processing " + processed + " bytes.");
             } catch (NoSuchAlgorithmException e) {
                 throw new RuntimeException(e);

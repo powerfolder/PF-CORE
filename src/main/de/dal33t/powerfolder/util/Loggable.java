@@ -23,7 +23,10 @@ import java.util.logging.Level;
 
 /**
  * Abstract superclass which has logger included. Used to easily handle debug
- * output
+ * output.
+ *
+ * NOTE: Do not extend Serializable classes from Loggable as it breaks class
+ * hierarchy. Use logStatic instead.
  * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.11 $
@@ -356,18 +359,73 @@ public abstract class Loggable {
     }
 
     /**
+     * Answers whether this class should log FINER messages.
+     *
+     * @return
+     */
+    public static  boolean isLogFinerStatic(Class clazz) {
+        return testLevelStatic(clazz.getName(), Level.FINER);
+    }
+
+    /**
+     * Answers whether this class should log FINE messages.
+     *
+     * @return
+     */
+    public static boolean isLogFineStatic(Class clazz) {
+        return testLevelStatic(clazz.getName(), Level.FINE);
+    }
+
+    /**
+     * Answers whether this class should log INFO messages.
+     *
+     * @return
+     */
+    public static boolean isLogInfoStatic(Class clazz) {
+        return testLevelStatic(clazz.getName(), Level.INFO);
+    }
+
+    /**
+     * Answers whether this class should log WARNING messages.
+     *
+     * @return
+     */
+    public static boolean isLogWarningStatic(Class clazz) {
+        return testLevelStatic(clazz.getName(), Level.WARNING);
+    }
+
+    /**
+     * Answers whether this class should log SEVERE messages.
+     *
+     * @return
+     */
+    public static boolean isLogSevereStatic(Class clazz) {
+        return testLevelStatic(clazz.getName(), Level.SEVERE);
+    }
+
+    /**
      * Should the descendant bother creating log messages at this level?
-     * 
+     *
      * @param level
      * @return
      */
     private boolean testLevel(Level level) {
+        return testLevelStatic(getLoggerName(), level);
+    }
+
+    /**
+     * Should the descendant bother creating log messages at this level?
+     *
+     * @param level
+     * @return
+     */
+    private static boolean testLevelStatic(String className, Level level) {
         if (!LogDispatch.isEnabled()) {
             // No log handlers ==> no logging.
             return false;
         }
 
-        Level loggingLevel = LogDispatch.getLevel(getLoggerName());
+        Level loggingLevel = LogDispatch.getLevel(className);
         if (loggingLevel == null) {
             loggingLevel = Level.OFF;
         }
