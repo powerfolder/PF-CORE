@@ -66,7 +66,6 @@ public class LogDispatch {
     /**
      * Map of loggers for logging.
      */
-    private static final Map<String, Logger> loggers = new HashMap<String, Logger>();
     private static final String DEBUG_DIR = "debug";
 
     private static boolean logToTextPanelEnabled;
@@ -297,7 +296,7 @@ public class LogDispatch {
         Reject.ifTrue(message == null && t == null,
                 "Message and throwable both null");
 
-        Logger logger = retrieveLogger(className);
+        Logger logger = Logger.getLogger(className);
 
         if (message == null) {
             logger.log(level, "", t);
@@ -389,26 +388,7 @@ public class LogDispatch {
      * @return
      */
     public static Level getLevel(String className) {
-        return retrieveLogger(className).getLevel();
-    }
-
-    /**
-     * Retrieve a logger from the map.
-     * Creates one is it does not already exist.
-     *
-     * @param className
-     * @return
-     */
-    private static Logger retrieveLogger(String className) {
-
-        Logger logger = loggers.get(className);
-
-        if (logger == null) {
-            logger = Logger.getLogger(className);
-            loggers.put(className, logger);
-        }
-
-        return logger;
+        return Logger.getLogger(className).getLevel();
     }
 
     /**
@@ -553,6 +533,10 @@ public class LogDispatch {
      */
     public static StyledDocument getLogBuffer() {
         return logBuffer;
+    }
+
+    public static Level getLoggingLevel() {
+        return loggingLevel;
     }
 
     /**

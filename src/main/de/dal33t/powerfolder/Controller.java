@@ -43,6 +43,7 @@ import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.logging.Level;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -558,6 +559,9 @@ public class Controller extends PFComponent {
             // Enable logging
             LogDispatch.setEnabledTextPanelLogging(isUIEnabled());
             LogDispatch.setLogFileEnabled(true);
+            if (LogDispatch.isLoggingConfigured()) {
+                LogDispatch.setLevel(Level.INFO);
+            }
             // MORE LOG
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
             String logFilename = getConfigName() + '-' + sdf.format(new Date())

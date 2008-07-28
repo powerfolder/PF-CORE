@@ -152,12 +152,13 @@ public class DebugPanel extends PFUIComponent implements UIPanel {
         textPanel = new TextPanel();
         textPanel.setText(LogDispatch.getLogBuffer(), true);
         logLevelCombo = new JComboBox();
+        logLevelCombo.addItem(Level.OFF);
         logLevelCombo.addItem(Level.SEVERE);
         logLevelCombo.addItem(Level.WARNING);
         logLevelCombo.addItem(Level.INFO);
         logLevelCombo.addItem(Level.FINE);
         logLevelCombo.addItem(Level.FINER);
-        logLevelCombo.setSelectedItem(Level.INFO);
+        logLevelCombo.setSelectedItem(LogDispatch.getLoggingLevel());
 
         logToFileCheckBox = new JCheckBox("Write log files");
         scrollLockCheckBox = new JCheckBox("Scroll lock");
