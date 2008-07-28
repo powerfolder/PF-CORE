@@ -204,27 +204,27 @@ public class SendInvitationsPanel extends PFWizardPanel {
 
     protected JPanel buildContent() {
         FormLayout layout = new FormLayout(
-            "pref, 5dlu, pref",
-            "pref, 5dlu, pref, 10dlu, pref, 5dlu, pref, 10dlu, pref, 5dlu, "
-                + "pref, 10dlu, pref, 5dlu, pref, 10dlu, pref, 5dlu, pref, 5dlu, "
-                + "pref, 5dlu, pref, 5dlu, pref");
+            "pref, 5dlu, pref, 0:g",
+            "pref, $nlg, pref, 10dlu, pref, $rg, pref, 10dlu, pref, $rg, "
+                + "pref, $lg, pref, 10dlu, pref, $rg, pref, 10dlu, pref, $rg, "
+                + "pref, $rg, pref, $rg, pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
         int row = 1;
         builder.addLabel(Translation
-            .getTranslation("wizard.send_invitations.join"), cc.xyw(1, row, 3));
+            .getTranslation("wizard.send_invitations.join"), cc.xyw(1, row, 4));
 
         row += 2;
         builder.addLabel(Translation
             .getTranslation("wizard.send_invitations.never_untrusted"), cc.xyw(
-            1, row, 3));
+            1, row, 4));
 
         row += 2;
         builder.addLabel(Translation
             .getTranslation("wizard.send_invitations.invitation_text"), cc.xyw(
-            1, row, 3));
+            1, row, 4));
 
         row += 2;
         builder.add(invitationTextField, cc.xy(1, row));
@@ -295,6 +295,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
 
         ccBox = BasicComponentFactory.createCheckBox(ccValue, Translation
             .getTranslation("wizard.send_invitations.send_by_mail.cc_me"));
+        ccBox.setOpaque(false);
 
         saveToFileButton = BasicComponentFactory.createRadioButton(decision,
             SAVE_TO_FILE, Translation
