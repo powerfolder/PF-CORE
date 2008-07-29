@@ -2573,6 +2573,10 @@ public class Folder extends PFComponent {
         return lastFileChangeDate;
     }
 
+    public void setLastFileChangeDate(Date lastFileChangeDate) {
+        this.lastFileChangeDate = lastFileChangeDate;
+    }
+
     /**
      * @return the info object of this folder
      */
@@ -2728,7 +2732,6 @@ public class Folder extends PFComponent {
         if (isLogFiner()) {
             logFine("fireFileChanged: " + this);
         }
-        lastFileChangeDate = new Date();
         FolderEvent folderEvent = new FolderEvent(this, fileInfo);
         folderListenerSupport.fileChanged(folderEvent);
     }
@@ -2737,7 +2740,6 @@ public class Folder extends PFComponent {
         if (isLogFiner()) {
             logFine("fireFilesDeleted: " + this);
         }
-        lastFileChangeDate = new Date();
         FolderEvent folderEvent = new FolderEvent(this, fileInfos);
         folderListenerSupport.filesDeleted(folderEvent);
     }
@@ -2746,7 +2748,6 @@ public class Folder extends PFComponent {
         if (isLogFiner()) {
             logFine("fireRemoteContentsChanged: " + this);
         }
-        lastFileChangeDate = new Date();
         FolderEvent folderEvent = new FolderEvent(this, list);
         folderListenerSupport.remoteContentsChanged(folderEvent);
     }
@@ -2755,7 +2756,6 @@ public class Folder extends PFComponent {
         if (isLogFiner()) {
             logFine("fireRemoteContentsChanged: " + this);
         }
-        lastFileChangeDate = new Date();
         FolderEvent folderEvent = new FolderEvent(this, list);
         folderListenerSupport.remoteContentsChanged(folderEvent);
     }

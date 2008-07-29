@@ -19,11 +19,7 @@
  */
 package de.dal33t.powerfolder.disk;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.TimerTask;
+import java.util.*;
 
 import org.apache.commons.lang.time.DateUtils;
 
@@ -293,6 +289,19 @@ public class FolderStatistic extends PFComponent {
         current = calculating;
         calculating = null;
         lastCalc = System.currentTimeMillis();
+
+        // Recalculate the last modified date of the folder.
+        Date date = null;
+        for (FileInfo fileInfo : folder.getKnownFiles()) {
+            if (fileInfo.getModifiedDate() != null) {
+                if (date == null || date.compareTo(fileInfo.getModifiedDate()) < 0) {
+                    date = fileInfo.getModifiedDate();
+                }
+            }
+        }
+        if (date != null) {
+            folder.setLastFileChangeDate(date);
+        }
 
         if (isLogFiner()) {
             logFiner(
