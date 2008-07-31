@@ -27,8 +27,8 @@ import org.apache.commons.lang.StringUtils;
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
 
-import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Loggable;
+import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 
@@ -285,7 +285,7 @@ public enum ConfigurationEntry {
      * <P>
      * Currently disabled see #994
      */
-    UDT_CONNECTIONS_ENABLED("connections.udt", Boolean.FALSE.toString()),
+    UDT_CONNECTIONS_ENABLED("connections.udt", Boolean.TRUE.toString()),
 
     /**
      * Enable/Disable node manager (for debugging only)
@@ -380,8 +380,8 @@ public enum ConfigurationEntry {
             return new Integer(value);
         } catch (NumberFormatException e) {
             Loggable.logWarningStatic(ConfigurationEntry.class,
-                    "Unable to parse configuration entry '" + configKey
-                + "' into a int. Value: " + value, e);
+                "Unable to parse configuration entry '" + configKey
+                    + "' into a int. Value: " + value, e);
             return new Integer(defaultValue);
         }
     }
@@ -404,7 +404,7 @@ public enum ConfigurationEntry {
         } catch (NumberFormatException e) {
             Loggable.logWarningStatic(ConfigurationEntry.class,
                 "Unable to parse configuration entry '" + configKey
-                + "' into a boolean. Value: " + value, e);
+                    + "' into a boolean. Value: " + value, e);
             return defaultValue.equalsIgnoreCase("true");
         }
     }
