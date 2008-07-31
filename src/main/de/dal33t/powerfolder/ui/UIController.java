@@ -27,6 +27,7 @@ import java.awt.event.ComponentEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -104,6 +105,7 @@ public class UIController extends PFComponent {
     private boolean started;
     // List of pending jobs, execute when ui is opend
     private List<Runnable> pendingJobs;
+    private Menu sysTrayFoldersMenu;
 
     // UI Models
     private ApplicationModel applicationModel;
@@ -458,6 +460,13 @@ public class UIController extends PFComponent {
 
         menu.addSeparator();
 
+        sysTrayFoldersMenu = new Menu(Translation.getTranslation("general.powerfolder"));
+        sysTrayFoldersMenu.setEnabled(false);
+        if (OSUtil.isMacOS() || OSUtil.isWindowsSystem()) {
+            menu.add(sysTrayFoldersMenu);
+            menu.addSeparator();
+        }
+
         item = menu.add(new MenuItem(Translation
             .getTranslation("systray.syncall")));
         item.setActionCommand("syncall");
@@ -512,6 +521,11 @@ public class UIController extends PFComponent {
 
             }
         });
+
+        // Load initial folders in menu.
+        for (Folder folder : getController().getFolderRepository().getFolders()) {
+            addFolderToSysTray(folder);
+        }
     }
 
     /**
@@ -529,6 +543,55 @@ public class UIController extends PFComponent {
         getController().getNodeManager().setAskForFriendshipHandler(
             new AskForFriendshipHandlerDefaultImpl(getController()));
 
+    }
+
+    /**
+     * Add a folder to the SysTray menu structure.
+     *
+     * @param folder
+     */
+    private void addFolderToSysTray(Folder folder) {
+        for (int i = 0; i < sysTrayFoldersMenu.getItemCount(); i++) {
+            MenuItem menuItem = sysTrayFoldersMenu.getItem(i);
+            if (menuItem.getLabel().equals(folder.getName())) {
+                logWarning("Already have folder " + folder.getName());
+                return;
+            }
+        }
+
+        MenuItem menuItem = new MenuItem(folder.getName());
+        sysTrayFoldersMenu.add(menuItem);
+        sysTrayFoldersMenu.setEnabled(true);
+        final File localBase = folder.getLocalBase();
+        final String folderName = folder.getName();
+        menuItem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if (localBase.exists()) {
+                    try {
+                        FileUtils.openFile(localBase);
+                    } catch (IOException e1) {
+                        logSevere("Problem opening folder " + folderName, e1);
+                    }
+                }
+            }
+        });
+    }
+
+    /**
+     * Remove a folder from the SysTray menu structure.
+     *
+     * @param folder
+     */
+    private void removeFolderFromSysTray(Folder folder) {
+        for (int i = 0; i < sysTrayFoldersMenu.getItemCount(); i++) {
+            MenuItem menuItem = sysTrayFoldersMenu.getItem(i);
+            if (menuItem.getLabel().equals(folder.getName())) {
+                sysTrayFoldersMenu.remove(i);
+            }
+        }
+        if (sysTrayFoldersMenu.getItemCount() == 0) {
+            sysTrayFoldersMenu.setEnabled(false);
+        }
     }
 
     public void hideSplash() {
@@ -1030,10 +1093,12 @@ public class UIController extends PFComponent {
         private final AtomicBoolean synchronizing = new AtomicBoolean();
 
         public void folderRemoved(FolderRepositoryEvent e) {
+            removeFolderFromSysTray(e.getFolder());
             checkStatus();
         }
 
         public void folderCreated(FolderRepositoryEvent e) {
+            addFolderToSysTray(e.getFolder());
             checkStatus();
         }
 
