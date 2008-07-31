@@ -781,7 +781,7 @@ public class UIController extends PFComponent {
         return openWizardAction;
     }
 
-    Action getConnectAction() {
+    public Action getConnectAction() {
         if (connectAction == null) {
             connectAction = new ConnectAction(getController());
         }

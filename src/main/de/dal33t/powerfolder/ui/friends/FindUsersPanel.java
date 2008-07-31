@@ -57,6 +57,7 @@ public class FindUsersPanel extends PFUIPanel {
     private ValueModel searchInputVM;
     /** the ui of the list of users that matches the search. */
     private JTable searchResult;
+    private JButton connectButton;
 
     private JScrollPane searchResultScroller;
     /** the table model holding the search results */
@@ -149,12 +150,16 @@ public class FindUsersPanel extends PFUIPanel {
             }
         });
 
-        FormLayout layout = new FormLayout("pref, fill:pref:grow, 105dlu",
+        connectButton = new JButton(getController().getUIController()
+                .getConnectAction());
+
+        FormLayout layout = new FormLayout("pref, 4dlu, pref, fill:pref:grow, 105dlu",
             "pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
         builder.add(hideOffline, cc.xy(1, 1));
-        builder.add(searchInput.getUIComponent(), cc.xy(3, 1));
+        builder.add(connectButton, cc.xy(3, 1));
+        builder.add(searchInput.getUIComponent(), cc.xy(5, 1));
         return builder.getPanel();
 
     }
