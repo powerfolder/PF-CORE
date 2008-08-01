@@ -235,9 +235,10 @@ public class FolderRepositoryModel extends PFUIComponent {
         public void folderCreated(FolderRepositoryEvent e) {
             Folder folder = e.getFolder();
             FolderModel folderModel = locateFolderModel(folder);
-            if (folderModel == null
-                    || !myFoldersTreeNode.contains(folderModel.getTreeNode()))
+            if (folderModel != null
+                && myFoldersTreeNode.contains(folderModel.getTreeNode()))
             {
+                // Already have this one
                 return;
             }
 
