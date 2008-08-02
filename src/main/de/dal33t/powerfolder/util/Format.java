@@ -108,7 +108,7 @@ public class Format {
 
         }
         // otherwise use default format
-        return getFileDateHoursFormat().format(date);
+        return getFileDateFormat().format(date);
     }
 
     /**
