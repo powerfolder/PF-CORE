@@ -57,6 +57,11 @@ public class FolderStatistic extends PFComponent {
     private CalculationResult calculating;
     private CalculationResult current;
 
+    /**
+     * The Date of the last change to a folder file.
+     */
+    private Date lastFileChangeDate;
+
     // Contains this Folder's download progress
     // It differs from other counters in that it does only count
     // the "accepted" traffic. (= If the downloaded chunk was saved to a file)
@@ -300,6 +305,7 @@ public class FolderStatistic extends PFComponent {
             }
         }
         if (date != null) {
+            lastFileChangeDate = date;
             folder.setLastFileChangeDate(date);
         }
 
@@ -311,6 +317,15 @@ public class FolderStatistic extends PFComponent {
 
         // Fire event
         folder.fireStatisticsCalculated();
+    }
+
+    /**
+     * Gets the date that one of the files in the folder changed.
+     *
+     * @return
+     */
+    public Date getLastFileChangeDate() {
+        return lastFileChangeDate;
     }
 
     // Set<FileInfo> considered = new HashSet<FileInfo>();
