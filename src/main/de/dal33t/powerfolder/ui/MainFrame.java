@@ -1,46 +1,28 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.ui;
 
-import com.jgoodies.forms.builder.DefaultFormBuilder;
-import com.jgoodies.forms.factories.Borders;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.uif_lite.component.UIFSplitPane;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.PreferencesEntry;
-import de.dal33t.powerfolder.StartPanel;
-import de.dal33t.powerfolder.event.FolderRepositoryListener;
-import de.dal33t.powerfolder.event.FolderRepositoryEvent;
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.ui.action.HasDetailsPanel;
-import de.dal33t.powerfolder.ui.folder.FolderPanel;
-import de.dal33t.powerfolder.ui.navigation.ControlQuarter;
-import de.dal33t.powerfolder.ui.navigation.RootNode;
-import de.dal33t.powerfolder.ui.transfer.DownloadsPanel;
-import de.dal33t.powerfolder.util.os.OSUtil;
-
-import javax.swing.*;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Frame;
+import java.awt.HeadlessException;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
@@ -49,8 +31,39 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.prefs.Preferences;
 
+import javax.swing.AbstractAction;
+import javax.swing.JFrame;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JSplitPane;
+import javax.swing.KeyStroke;
+import javax.swing.WindowConstants;
+
+import com.jgoodies.forms.builder.DefaultFormBuilder;
+import com.jgoodies.forms.factories.Borders;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
+import com.jgoodies.uif_lite.component.UIFSplitPane;
+
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.StartPanel;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.event.FolderRepositoryEvent;
+import de.dal33t.powerfolder.event.FolderRepositoryListener;
+import de.dal33t.powerfolder.ui.action.HasDetailsPanel;
+import de.dal33t.powerfolder.ui.folder.FolderPanel;
+import de.dal33t.powerfolder.ui.navigation.ControlQuarter;
+import de.dal33t.powerfolder.ui.navigation.RootNode;
+import de.dal33t.powerfolder.ui.transfer.DownloadsPanel;
+import de.dal33t.powerfolder.util.os.OSUtil;
+
 /**
  * Powerfoldes gui mainframe
+ * <p>
+ * TODO #278 Throw away, I think it's better to start with MainWindow from
+ * scratch.
  * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.44 $
@@ -75,8 +88,6 @@ public class MainFrame extends PFUIComponent {
      */
     private StatusBar statusBar;
 
-    private FolderRepository repository;
-
     /**
      * @param controller
      *            the controller.
@@ -90,7 +101,6 @@ public class MainFrame extends PFUIComponent {
         controlQuarter = new ControlQuarter(getController());
         informationQuarter = new InformationQuarter(controlQuarter,
             getController());
-        repository = getController().getFolderRepository();
     }
 
     /**
@@ -111,7 +121,8 @@ public class MainFrame extends PFUIComponent {
         // This menu bar is not displayed (0dlu).
         // It is only used to trigger Actions by accelerator keys.
         JMenuBar mb = new JMenuBar();
-        JMenuItem mi = new JMenuItem(getUIController().getSyncAllFoldersAction());
+        JMenuItem mi = new JMenuItem(getUIController()
+            .getSyncAllFoldersAction());
         mb.add(mi);
         mi = new JMenuItem(new MySyncFolderAction());
         mb.add(mi);
@@ -155,7 +166,8 @@ public class MainFrame extends PFUIComponent {
         }
 
         // everything is decided in window listener
-        uiComponent.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+        uiComponent
+            .setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
         // add window listener, checks if exit is needed on pressing X
         uiComponent.addWindowListener(new WindowAdapter() {
@@ -181,19 +193,18 @@ public class MainFrame extends PFUIComponent {
 
         // Listen to changes in the number of folders in the repository.
         getController().getFolderRepository().addFolderRepositoryListener(
-                new RepositoryListener());
+            new RepositoryListener());
         // Ensure we are up to date.
         configureSyncNowAction();
-        
+
     }
 
     /**
      * Initalizes all ui components
      */
     private void initComponents() {
-        logFine(
-                "Screen resolution: "
-                    + Toolkit.getDefaultToolkit().getScreenSize());
+        logFine("Screen resolution: "
+            + Toolkit.getDefaultToolkit().getScreenSize());
 
         uiComponent = new JFrame();
         uiComponent.setIconImage(Icons.POWERFOLDER_IMAGE);
@@ -234,10 +245,12 @@ public class MainFrame extends PFUIComponent {
         String initial = "PowerFolder v" + Controller.PROGRAM_VERSION;
         if (getController().isVerbose()) {
             // Append in front of programm name in verbose mode
-            title.append(getController().getMySelf().getNick() + " | " + initial);
+            title.append(getController().getMySelf().getNick() + " | "
+                + initial);
         } else {
             // Otherwise append nick at end
-            title.append(initial + " | " + getController().getMySelf().getNick());
+            title.append(initial + " | "
+                + getController().getMySelf().getNick());
         }
 
         if (getController().isVerbose()
@@ -269,8 +282,8 @@ public class MainFrame extends PFUIComponent {
         // Store main window preferences
         Preferences prefs = getController().getPreferences();
 
-        if ((uiComponent.getExtendedState() & Frame.MAXIMIZED_BOTH) ==
-                Frame.MAXIMIZED_BOTH) {
+        if ((uiComponent.getExtendedState() & Frame.MAXIMIZED_BOTH) == Frame.MAXIMIZED_BOTH)
+        {
             prefs.putBoolean("mainframe.maximized", true);
         } else {
             prefs.putInt("mainframe.x", uiComponent.getX());
@@ -279,7 +292,8 @@ public class MainFrame extends PFUIComponent {
             prefs.putInt("mainframe.height", uiComponent.getHeight());
             prefs.putBoolean("mainframe.maximized", false);
         }
-        prefs.putInt("mainframe.dividerlocation", mainPane.getDividerLocation());
+        prefs
+            .putInt("mainframe.dividerlocation", mainPane.getDividerLocation());
     }
 
     /*
@@ -329,17 +343,18 @@ public class MainFrame extends PFUIComponent {
      */
     private class MySyncFolderAction extends AbstractAction {
         MySyncFolderAction() {
-            putValue(ACCELERATOR_KEY,
-                KeyStroke.getKeyStroke(KeyEvent.VK_1, ActionEvent.ALT_MASK));
+            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_1,
+                ActionEvent.ALT_MASK));
         }
 
         /**
          * Scan selected folder (if any).
-         *
+         * 
          * @param e
          */
         public void actionPerformed(ActionEvent e) {
-            getController().getUIController().getFolderRepositoryModel().scanSelectedFolder();
+            getController().getUIController().getFolderRepositoryModel()
+                .scanSelectedFolder();
         }
     }
 
@@ -348,18 +363,19 @@ public class MainFrame extends PFUIComponent {
      */
     private class MyCleanupAction extends AbstractAction {
         MyCleanupAction() {
-            putValue(ACCELERATOR_KEY,
-                KeyStroke.getKeyStroke(KeyEvent.VK_3, ActionEvent.ALT_MASK));
+            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_3,
+                ActionEvent.ALT_MASK));
         }
 
         /**
          * Scan selected folder (if any).
-         *
+         * 
          * @param e
          */
         public void actionPerformed(ActionEvent e) {
 
-            DownloadsPanel panel = getController().getUIController().getInformationQuarter().getDownloadsPanel();
+            DownloadsPanel panel = getController().getUIController()
+                .getInformationQuarter().getDownloadsPanel();
 
             if (panel != null) {
                 // Ensure this has been fully created before it is called.
@@ -370,18 +386,19 @@ public class MainFrame extends PFUIComponent {
             }
         }
     }
+
     /**
-     * Simple action class to call details in the selected information panel (if appropriate).
+     * Simple action class to call details in the selected information panel (if
+     * appropriate).
      */
     private class MyDetailsAction extends AbstractAction {
 
         MyDetailsAction() {
-            putValue(ACCELERATOR_KEY,
-                KeyStroke.getKeyStroke(KeyEvent.VK_4, ActionEvent.ALT_MASK));
+            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_4,
+                ActionEvent.ALT_MASK));
         }
 
         /**
-         *
          * @param e
          */
         public void actionPerformed(ActionEvent e) {
@@ -389,18 +406,20 @@ public class MainFrame extends PFUIComponent {
             if (o instanceof Folder) {
                 Folder f = (Folder) o;
                 if (f.isPreviewOnly()) {
-                    FolderPanel panel = getInformationQuarter().getPreviewFolderPanel();
+                    FolderPanel panel = getInformationQuarter()
+                        .getPreviewFolderPanel();
                     panel.toggleDetails();
                 } else {
-                    FolderPanel panel = getInformationQuarter().getMyFolderPanel();
+                    FolderPanel panel = getInformationQuarter()
+                        .getMyFolderPanel();
                     panel.toggleDetails();
                 }
             } else if (o instanceof String) {
                 String s = (String) o;
                 HasDetailsPanel p = null;
-                if (s.equals(RootNode.DOWNLOADS_NODE_LABEL))  {
+                if (s.equals(RootNode.DOWNLOADS_NODE_LABEL)) {
                     p = getInformationQuarter().getDownloadsPanel();
-                } else if (s.equals(RootNode.UPLOADS_NODE_LABEL))  {
+                } else if (s.equals(RootNode.UPLOADS_NODE_LABEL)) {
                     p = getInformationQuarter().getUploadsPanel();
                 }
                 if (p != null) {
@@ -412,7 +431,7 @@ public class MainFrame extends PFUIComponent {
 
     private void configureSyncNowAction() {
         getUIController().getSyncAllFoldersAction().setEnabled(
-                repository.getFolders().length != 0);
+            getController().getFolderRepository().getFolders().length != 0);
     }
 
     private class RepositoryListener implements FolderRepositoryListener {

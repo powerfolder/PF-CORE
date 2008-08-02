@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.ui.folder;
 
 import javax.swing.JComponent;
@@ -36,6 +36,10 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
+ * TODO #278 Rename to FolderDetailsPanel, Create FolderDirectoryTreePanel,
+ * FolderPanel (gluing them together).
+ * 
+ * <p>
  * Displays the folder contents. Holds the 5 tabs: Home, Files, members, chat
  * and Settings
  * 
@@ -77,7 +81,7 @@ public class FolderPanel extends PFUIPanel {
      * @param folder
      *            the folder this panel should display
      */
-    public void setFolder(Folder folder) {        
+    public void setFolder(Folder folder) {
         filesTab.setDirectory(folder.getDirectory());
         setFolder0(folder);
     }
@@ -103,9 +107,9 @@ public class FolderPanel extends PFUIPanel {
                 settingsTab.setFolder(folder);
                 if (!settingsTabSet.get()) {
                     tabbedPanel.add(' ' + settingsTab.getTitle() + ' ',
-                            settingsComponent);
-                    tabbedPanel.setMnemonicAt(settingsTabId,
-                            Translation.getTranslation("folderpanel.settings.key").charAt(0));
+                        settingsComponent);
+                    tabbedPanel.setMnemonicAt(settingsTabId, Translation
+                        .getTranslation("folderpanel.settings.key").charAt(0));
                     tabbedPanel.setIconAt(settingsTabId, Icons.SETTINGS);
                     settingsTabSet.set(true);
                 }
@@ -160,8 +164,8 @@ public class FolderPanel extends PFUIPanel {
     }
 
     /**
-     *
-     * @param tab tab to show
+     * @param tab
+     *            tab to show
      */
     public void setTab(int tab) {
         if (tab == chatTabId || tab == homeTabId || tab == filesTabId
@@ -187,20 +191,20 @@ public class FolderPanel extends PFUIPanel {
             return settingsTab;
         } else {
             throw new IllegalStateException("invalid tab:"
-                    + tabbedPanel.getSelectedIndex());
+                + tabbedPanel.getSelectedIndex());
         }
     }
 
     /**
-    * returns the title the InformationQarter should display It uses the
-    * selected Tab and the folder name in the title.
-    *
-    * @return the title
-    */
+     * returns the title the InformationQarter should display It uses the
+     * selected Tab and the folder name in the title.
+     * 
+     * @return the title
+     */
     public String getTitle() {
         if (folder != null) {
             return Translation.getTranslation("title.my.folders") + " > "
-                    + folder.getName() + " > " + getCurrentTab().getTitle();
+                + folder.getName() + " > " + getCurrentTab().getTitle();
         }
         return "";
     }
@@ -213,33 +217,29 @@ public class FolderPanel extends PFUIPanel {
             getUIController().getChatModel());
         homeTab = new HomeTab(getController(), previewMode);
         settingsTab = new SettingsTab(getController(), previewMode, this);
-        
-        tabbedPanel.add(' '
-                + homeTab.getTitle() + ' ',
-            homeTab.getUIComponent());
 
-        tabbedPanel.setMnemonicAt(homeTabId,
-                Translation.getTranslation("folderpanel.home.key").charAt(0));
+        tabbedPanel.add(' ' + homeTab.getTitle() + ' ', homeTab
+            .getUIComponent());
 
-        tabbedPanel.add(
-                ' ' + filesTab.getTitle() + ' ', filesTab
-                .getUIComponent());
-        tabbedPanel.setMnemonicAt(filesTabId,
-                Translation.getTranslation("folderpanel.files.key").charAt(0));
+        tabbedPanel.setMnemonicAt(homeTabId, Translation.getTranslation(
+            "folderpanel.home.key").charAt(0));
+
+        tabbedPanel.add(' ' + filesTab.getTitle() + ' ', filesTab
+            .getUIComponent());
+        tabbedPanel.setMnemonicAt(filesTabId, Translation.getTranslation(
+            "folderpanel.files.key").charAt(0));
         tabbedPanel.setIconAt(filesTabId, Icons.DIRECTORY);
 
-        tabbedPanel.add(' '
-                + membersTab.getTitle() + ' ',
-            membersTab.getUIComponent());
-        tabbedPanel.setMnemonicAt(membersTabId,
-                Translation.getTranslation("folderpanel.members.key").charAt(0));
+        tabbedPanel.add(' ' + membersTab.getTitle() + ' ', membersTab
+            .getUIComponent());
+        tabbedPanel.setMnemonicAt(membersTabId, Translation.getTranslation(
+            "folderpanel.members.key").charAt(0));
         tabbedPanel.setIconAt(membersTabId, Icons.NODE_FRIEND_CONNECTED);
 
-        tabbedPanel.add(
-                ' ' + folderChatPanel.getTitle() + ' ',
-            folderChatPanel.getUIComponent());
-        tabbedPanel.setMnemonicAt(chatTabId,
-                Translation.getTranslation("folderpanel.chat.key").charAt(0));
+        tabbedPanel.add(' ' + folderChatPanel.getTitle() + ' ', folderChatPanel
+            .getUIComponent());
+        tabbedPanel.setMnemonicAt(chatTabId, Translation.getTranslation(
+            "folderpanel.chat.key").charAt(0));
         tabbedPanel.setIconAt(chatTabId, Icons.CHAT);
 
         UIUtil.removeBorder(tabbedPanel);
@@ -258,7 +258,7 @@ public class FolderPanel extends PFUIPanel {
     /**
      * Called by the FilesTab to add new ignore patterns to the Settings tab.
      * Patterns are separated by new line characters.
-     *
+     * 
      * @param pattern
      */
     public void addPatterns(String patterns) {
@@ -269,7 +269,7 @@ public class FolderPanel extends PFUIPanel {
     /**
      * Called by the FilesTab to remove an ignore pattern from the Settings tab.
      * Patterns are separated by new line characters.
-     *
+     * 
      * @param pattern
      */
     public void removePatterns(String patterns) {

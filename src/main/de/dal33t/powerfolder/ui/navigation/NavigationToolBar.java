@@ -154,8 +154,8 @@ public class NavigationToolBar extends PFUIComponent implements
 
         TopLevelItem item = null;
         if (navObject instanceof TreeNode) {
-            item = getUIController().getApplicationModel().getItemByTreeNode(
-                (TreeNode) navObject);
+            item = getApplicationModel()
+                .getItemByTreeNode((TreeNode) navObject);
         }
 
         if (item != null) {

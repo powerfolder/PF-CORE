@@ -68,6 +68,8 @@ import de.dal33t.powerfolder.util.ui.SelectionChangeListener;
 import de.dal33t.powerfolder.util.ui.UIPanel;
 
 /**
+ * TODO #278 Rename to InformationWindow, Hold Window.
+ * 
  * The information quarter right upper side of screen
  * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
@@ -195,14 +197,13 @@ public class InformationQuarter extends PFUIComponent {
 
             TopLevelItem item = null;
             if (selection instanceof TreeNode) {
-                item = getUIController().getApplicationModel()
-                    .getItemByTreeNode((TreeNode) selection);
+                item = getApplicationModel().getItemByTreeNode(
+                    (TreeNode) selection);
             }
 
             if (item != null) {
-                logFiner(
-                    "Displaying top level item: "
-                        + item.getTitelModel().getValue());
+                logFiner("Displaying top level item: "
+                    + item.getTitelModel().getValue());
                 displayTopLevelItem(item);
             }
 

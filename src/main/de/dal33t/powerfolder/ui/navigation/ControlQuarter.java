@@ -66,6 +66,7 @@ import java.util.*;
 import java.util.prefs.Preferences;
 
 /**
+ * TODO #278 TOTAL ELIMINATION?!
  * Controler Quarter.
  * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
@@ -77,9 +78,15 @@ public class ControlQuarter extends PFUIComponent {
     private JPanel uiPanel;
 
     /* Navtree */
+    // TODO #278 Kill?!
     private JTree uiTree;
     private NavTreeModel navTreeModel;
-
+    /**
+     * The path in the tree that was last expanded, use to restore the tree
+     * state if a tree structure change was fired.
+     */
+    private TreePath lastExpandedPath;
+    
     /* The popup menu */
     private JPopupMenu myFoldersMenu;
     private JPopupMenu myFolderMenu;
@@ -87,17 +94,14 @@ public class ControlQuarter extends PFUIComponent {
     private JPopupMenu friendsListMenu;
     private JPopupMenu directoryMenu;
     /* Models */
-    /** The parent of the currently selected value in our selection model */
-    private Object selectionParent;
+    // TODO #278 Move into ApplicationModel, kill?
     /** The currently selected item */
     private SelectionModel selectionModel;
+    
+    /** The parent of the currently selected value in our selection model */
+    private Object selectionParent;
 
     private NavigationModel navigationModel;
-    /**
-     * The path in the tree that was last expanded, use to restore the tree
-     * state if a tree structure change was fired.
-     */
-    private TreePath lastExpandedPath;
 
     /**
      * Constructs a new navigation tree for a controller
@@ -106,8 +110,7 @@ public class ControlQuarter extends PFUIComponent {
      */
     public ControlQuarter(Controller controller) {
         super(controller);
-        navTreeModel = getUIController().getApplicationModel()
-            .getNavTreeModel();
+        navTreeModel = getApplicationModel().getNavTreeModel();
         selectionModel = new SelectionModel();
         selectionParent = null;
     }

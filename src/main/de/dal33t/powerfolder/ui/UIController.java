@@ -19,15 +19,22 @@
  */
 package de.dal33t.powerfolder.ui;
 
-import java.awt.*;
+import java.awt.AWTException;
+import java.awt.EventQueue;
+import java.awt.Image;
+import java.awt.Menu;
+import java.awt.MenuItem;
+import java.awt.PopupMenu;
+import java.awt.SystemTray;
+import java.awt.TrayIcon;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.IOException;
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -42,8 +49,8 @@ import javax.swing.LookAndFeel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-import javax.swing.tree.TreeNode;
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
 import org.apache.commons.lang.StringUtils;
@@ -59,12 +66,28 @@ import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
-import de.dal33t.powerfolder.event.FolderRepositoryListener;
-import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.ui.action.*;
+import de.dal33t.powerfolder.event.FolderRepositoryEvent;
+import de.dal33t.powerfolder.event.FolderRepositoryListener;
+import de.dal33t.powerfolder.ui.action.ConnectAction;
+import de.dal33t.powerfolder.ui.action.CreateShortcutAction;
+import de.dal33t.powerfolder.ui.action.FindFriendAction;
+import de.dal33t.powerfolder.ui.action.FolderCreateAction;
+import de.dal33t.powerfolder.ui.action.FolderRemoveAction;
+import de.dal33t.powerfolder.ui.action.OpenAboutBoxAction;
+import de.dal33t.powerfolder.ui.action.OpenPreferencesAction;
+import de.dal33t.powerfolder.ui.action.OpenWizardAction;
+import de.dal33t.powerfolder.ui.action.PreviewFolderRemoveAction;
+import de.dal33t.powerfolder.ui.action.PreviewJoinAction;
+import de.dal33t.powerfolder.ui.action.ReconnectAction;
+import de.dal33t.powerfolder.ui.action.RequestReportAction;
+import de.dal33t.powerfolder.ui.action.SendInvitationAction;
+import de.dal33t.powerfolder.ui.action.ShowHidePreviewFoldersAction;
+import de.dal33t.powerfolder.ui.action.SyncAllFoldersAction;
+import de.dal33t.powerfolder.ui.action.ToggleSilentModeAction;
 import de.dal33t.powerfolder.ui.chat.ChatModel;
 import de.dal33t.powerfolder.ui.folder.FileNameProblemHandlerDefaultImpl;
 import de.dal33t.powerfolder.ui.friends.AskForFriendshipHandlerDefaultImpl;
@@ -74,14 +97,18 @@ import de.dal33t.powerfolder.ui.model.NodeManagerModel;
 import de.dal33t.powerfolder.ui.model.TransferManagerModel;
 import de.dal33t.powerfolder.ui.navigation.ControlQuarter;
 import de.dal33t.powerfolder.ui.navigation.NavTreeModel;
+import de.dal33t.powerfolder.ui.notification.NotificationHandler;
 import de.dal33t.powerfolder.ui.recyclebin.RecycleBinConfirmationHandlerDefaultImpl;
 import de.dal33t.powerfolder.ui.render.BlinkManager;
 import de.dal33t.powerfolder.ui.webservice.ServerClientModel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
-import de.dal33t.powerfolder.ui.notification.NotificationHandler;
-import de.dal33t.powerfolder.util.*;
-import de.dal33t.powerfolder.util.ui.TreeNodeList;
+import de.dal33t.powerfolder.util.BrowserLauncher;
+import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.OSUtil;
+import de.dal33t.powerfolder.util.ui.TreeNodeList;
 
 /**
  * The ui controller.
@@ -96,23 +123,27 @@ public class UIController extends PFComponent {
 
     private static final PlasticTheme DEFAULT_THEME = new ExperienceBlue();
 
+    private boolean started;
     private SplashScreen splash;
     private Image defaultIcon;
     private TrayIcon sysTrayMenu;
     private MainFrame mainFrame;
     private BlinkManager blinkManager;
-    private ChatModel chatModel;
-    private boolean started;
+
     // List of pending jobs, execute when ui is opend
     private List<Runnable> pendingJobs;
     private Menu sysTrayFoldersMenu;
 
-    // UI Models
+    // The root of all models
     private ApplicationModel applicationModel;
+    
+    // TODO #278: UI Models: Move into ApplicationModel
+    private ChatModel chatModel;
     private NodeManagerModel nodeManagerModel;
     private FolderRepositoryModel folderRepoModel;
     private TransferManagerModel transferManagerModel;
     private ServerClientModel serverClientModel;
+    // TODO #278: Move into FolderRepoModel 
     private final ValueModel hidePreviewsVM;
 
     /**
@@ -143,7 +174,7 @@ public class UIController extends PFComponent {
             try {
                 // Now setup the theme
                 if (getUIThemeConfig() != null) {
-                    Class themeClass = Class.forName(getUIThemeConfig());
+                    Class<?> themeClass = Class.forName(getUIThemeConfig());
                     PlasticTheme theme = (PlasticTheme) themeClass
                         .newInstance();
                     PlasticXPLookAndFeel.setPlasticTheme(theme);
@@ -238,6 +269,7 @@ public class UIController extends PFComponent {
 
         // The central application model
         applicationModel = new ApplicationModel(getController());
+        applicationModel.initialize();
 
         // create the Frame
         mainFrame = new MainFrame(getController());
@@ -725,9 +757,14 @@ public class UIController extends PFComponent {
         return mainFrame == null ? null : mainFrame.getInformationQuarter();
     }
 
+   
+    /**
+     * For a more convenience way you can also use PFUIComponent.getApplicationModel()
+     * @return the application model
+     * @see PFUIComponent#getApplicationModel()
+     */
     public ApplicationModel getApplicationModel() {
         return applicationModel;
-
     }
 
     /**

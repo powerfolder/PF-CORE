@@ -226,8 +226,7 @@ public class BlinkManager extends PFUIComponent {
         if (controlQuarter == null) {
             return;
         }
-        NavTreeModel treeModel = getUIController().getApplicationModel()
-            .getNavTreeModel();
+        NavTreeModel treeModel = getApplicationModel().getNavTreeModel();
         if (treeModel == null) {
             return;
         }

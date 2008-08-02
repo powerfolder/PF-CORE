@@ -70,8 +70,8 @@ public class RootPanel extends PFUIPanel {
 
     private void initComponents() {
         quickInfo = new RootQuickInfoPanel(getController());
-        final RootTableModel rootTableModel = getUIController()
-            .getApplicationModel().getRootTabelModel();
+        final RootTableModel rootTableModel = getApplicationModel()
+            .getRootTabelModel();
         rootTable = new RootTable(rootTableModel, getController());
         tableScroller = new JScrollPane(rootTable);
         UIUtil.whiteStripTable(rootTable);
