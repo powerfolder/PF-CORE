@@ -51,7 +51,7 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
 public class UploadsTableModel extends PFComponent implements TableModel,
         SortedTableModel {
 
-    public static final int UPDATE_TIME = 2000;
+    public static final int UPDATE_TIME = 1000;
 
     private static final int COLTYPE = 0;
     private static final int COLFILE = 1;
@@ -383,6 +383,11 @@ public class UploadsTableModel extends PFComponent implements TableModel,
         public void run() {
             Runnable wrapper = new Runnable() {
                 public void run() {
+                    if (fileInfoComparatorType == TransferComparator.BY_PROGRESS) {
+                        // Always sort on a PROGRESS change, so that the table
+                        // reorders correctly.
+                        sort();
+                    }
                     rowsUpdatedAll();
                 }
             };

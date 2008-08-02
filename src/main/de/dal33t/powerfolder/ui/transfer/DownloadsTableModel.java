@@ -57,7 +57,7 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
     private static final int COLFOLDER = 4;
     private static final int COLFROM = 5;
 
-    private static final int UPDATE_TIME = 2000;
+    private static final int UPDATE_TIME = 1000;
     private final Collection<TableModelListener> listeners;
     private final List<Download> downloads;
     private int fileInfoComparatorType = -1;
@@ -403,6 +403,11 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
         public void run() {
             Runnable wrapper = new Runnable() {
                 public void run() {
+                    if (fileInfoComparatorType == TransferComparator.BY_PROGRESS) {
+                        // Always sort on a PROGRESS change, so that the table
+                        // reorders correctly.
+                        sort();
+                    }
                     rowsUpdatedAll();
                 }
             };
