@@ -249,8 +249,10 @@ public class LimitedConnectivityChecker extends Loggable {
             return testString
                 .contains(LIMITED_CONNECTIVITY_TEST_SUCCESSFULLY_STRING);
         } catch (SocketTimeoutException e) {
-            Loggable.logWarningStatic(LimitedConnectivityChecker.class, "Limited connectivity check failed for " + host + ":"
-                + port, e);
+            Loggable.logWarningStatic(LimitedConnectivityChecker.class,
+                "Limited connectivity check failed for " + host + ":" + port
+                    + ": " + e);
+            Loggable.logFinerStatic(LimitedConnectivityChecker.class, e);
             return false;
         } catch (IOException e) {
             Loggable.logWarningStatic(LimitedConnectivityChecker.class, "Limited connectivity check failed for " + host + ":"
