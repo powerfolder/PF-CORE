@@ -124,7 +124,8 @@ public class Download extends Transfer {
                     "Received multiple upload start messages!");
             return;
         }
-        Loggable.logInfoStatic(Download.class,
+        
+        Loggable.logFinerStatic(Download.class,
                 "Uploader supports partial transfers.");
         setStarted();
         manager.readyForRequests(this);

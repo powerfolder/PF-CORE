@@ -68,7 +68,7 @@ public class FileRequestor extends PFComponent {
      * Triggers the worker to request new files on the given folder.
      *
      * @param foInfo
-     *            the folder to request files on
+     *            the folder to st files on
      */
     public void triggerFileRequesting(FolderInfo foInfo) {
         Reject.ifNull(foInfo, "Folder is null");
@@ -238,7 +238,7 @@ public class FileRequestor extends PFComponent {
                 }
 
                 int nFolders = folderQueue.size();
-                logInfo(
+                logFine(
                     "Start requesting files for " + nFolders + " folder(s)");
                 long start = System.currentTimeMillis();
                 for (Iterator<Folder> it = folderQueue.iterator(); it.hasNext();)
