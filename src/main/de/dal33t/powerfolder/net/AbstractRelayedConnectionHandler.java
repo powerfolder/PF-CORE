@@ -303,9 +303,6 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
      * Shuts down the connection handler. The member is shut down optionally
      */
     public void shutdown() {
-        getController().getIOProvider().getRelayedConnectionManager()
-            .removePedingRelayedConnectionHandler(this);
-
         if (!started) {
             return;
         }
@@ -338,6 +335,8 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
         messagesToSendQueue.clear();
 
         getController().getIOProvider().removeKeepAliveCheck(this);
+        getController().getIOProvider().getRelayedConnectionManager()
+            .removePedingRelayedConnectionHandler(this);
 
         // Trigger all waiting treads
         synchronized (identityWaiter) {
