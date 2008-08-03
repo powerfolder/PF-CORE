@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id: LogDispatch.java 4282 2008-06-16 03:25:09Z harry $
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id: LogDispatch.java 4282 2008-06-16 03:25:09Z harry $
+ */
 package de.dal33t.powerfolder.util;
 
 import de.dal33t.powerfolder.Controller;
@@ -27,6 +27,9 @@ import javax.swing.text.MutableAttributeSet;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
+
+import org.apache.commons.lang.StringUtils;
+
 import java.awt.Color;
 import java.awt.EventQueue;
 import java.io.File;
@@ -40,14 +43,11 @@ import java.util.Map;
 import java.util.logging.*;
 
 /**
- * Class to log messages. Ideally, classes should extend Loggable
- * and log messages using that, which calles this class.
- * LogDispatch can be used directly where a class cannot extend Loggable
- * and in static situations.
- * <p/>
- * Loggable maintains a Map of Loggers for each class.
- * <p/>
- * Supported levels are:
+ * Class to log messages. Ideally, classes should extend Loggable and log
+ * messages using that, which calles this class. LogDispatch can be used
+ * directly where a class cannot extend Loggable and in static situations. <p/>
+ * Loggable maintains a Map of Loggers for each class. <p/> Supported levels
+ * are:
  * <ul>
  * <li>SEVERE</li>
  * <li>WARNING</li>
@@ -67,11 +67,12 @@ public class LogDispatch {
     private static boolean logToFileEnabled;
     private static String logFileName;
     private static boolean loggingConfigured;
+    private static boolean nickPrefix;
     private static final StyledDocument logBuffer = new DefaultStyledDocument();
-    private static final Map<String, SimpleAttributeSet> logColors
-            = new HashMap<String, SimpleAttributeSet>();
+    private static final Map<String, SimpleAttributeSet> logColors = new HashMap<String, SimpleAttributeSet>();
     private static int nLogLines = 1000;
     private static Level loggingLevel;
+    private static ThreadLocal<Controller> CURRENT_CONTROLLER = new ThreadLocal<Controller>();
 
     static {
         // Initially turn logging off logs.
@@ -111,8 +112,18 @@ public class LogDispatch {
     }
 
     /**
+     * @param controller
+     *            the current controller for prefixes in log message.
+     */
+    public static void setCurrentController(Controller controller) {
+        if (nickPrefix) {
+            CURRENT_CONTROLLER.set(controller);
+        }
+    }
+
+    /**
      * Log a message at FINE level.
-     *
+     * 
      * @param clazz
      * @param message
      */
@@ -122,7 +133,7 @@ public class LogDispatch {
 
     /**
      * Log a message at FINER level.
-     *
+     * 
      * @param className
      * @param message
      */
@@ -132,7 +143,7 @@ public class LogDispatch {
 
     /**
      * Log a message at INFO level.
-     *
+     * 
      * @param className
      * @param message
      */
@@ -142,7 +153,7 @@ public class LogDispatch {
 
     /**
      * Log a message at WARNING level.
-     *
+     * 
      * @param className
      * @param message
      */
@@ -152,7 +163,7 @@ public class LogDispatch {
 
     /**
      * Log a message at SEVERE level.
-     *
+     * 
      * @param className
      * @param message
      */
@@ -162,7 +173,7 @@ public class LogDispatch {
 
     /**
      * Log a message and Throwable at FINER level.
-     *
+     * 
      * @param className
      * @param message
      * @param t
@@ -173,7 +184,7 @@ public class LogDispatch {
 
     /**
      * Log a message and Throwable at FINE level.
-     *
+     * 
      * @param className
      * @param message
      * @param t
@@ -184,7 +195,7 @@ public class LogDispatch {
 
     /**
      * Log a message and Throwable at INFO level.
-     *
+     * 
      * @param className
      * @param message
      * @param t
@@ -195,29 +206,31 @@ public class LogDispatch {
 
     /**
      * Log a message and Throwable at WARNING level.
-     *
+     * 
      * @param className
      * @param message
      * @param t
      */
-    public static void logWarning(String className, String message, Throwable t) {
+    public static void logWarning(String className, String message, Throwable t)
+    {
         log(Level.WARNING, className, message, t);
     }
 
     /**
      * Log a message and Throwable at SEVERE level.
-     *
+     * 
      * @param className
      * @param message
      * @param t
      */
-    public static void logSevere(String className, String message, Throwable t) {
+    public static void logSevere(String className, String message, Throwable t)
+    {
         log(Level.SEVERE, className, message, t);
     }
 
     /**
      * Logs a Throwable at FINER level.
-     *
+     * 
      * @param className
      * @param t
      */
@@ -227,7 +240,7 @@ public class LogDispatch {
 
     /**
      * Logs a Throwable at FINE level.
-     *
+     * 
      * @param className
      * @param t
      */
@@ -237,7 +250,7 @@ public class LogDispatch {
 
     /**
      * Logs a Throwable at INFO level.
-     *
+     * 
      * @param className
      * @param t
      */
@@ -247,7 +260,7 @@ public class LogDispatch {
 
     /**
      * Logs a Throwable at WARNING level.
-     *
+     * 
      * @param className
      * @param t
      */
@@ -257,7 +270,7 @@ public class LogDispatch {
 
     /**
      * Logs a Throwable at SEVERE level.
-     *
+     * 
      * @param className
      * @param t
      */
@@ -267,20 +280,20 @@ public class LogDispatch {
 
     /**
      * Resets the logbuffer with a max number of buffers lines
-     *
+     * 
      * @param lines
      */
     public static void setLogBuffer(int lines) {
         if (lines < 2) {
             throw new IllegalArgumentException(
-                    "Number of logbuffer lines must be at least 2");
+                "Number of logbuffer lines must be at least 2");
         }
         nLogLines = lines;
     }
 
     /**
      * Convenience method for getting the root logger.
-     *
+     * 
      * @return
      */
     private static Logger getRootLogger() {
@@ -288,12 +301,13 @@ public class LogDispatch {
     }
 
     private static void log(Level level, String className, String message,
-                            Throwable t) {
+        Throwable t)
+    {
 
         Reject.ifNull(level, "Level null");
         Reject.ifNull(className, "Class name null");
         Reject.ifTrue(message == null && t == null,
-                "Message and throwable both null");
+            "Message and throwable both null");
 
         Logger logger = Logger.getLogger(className);
 
@@ -322,14 +336,15 @@ public class LogDispatch {
     /**
      * Console logging. Warnings and Severe to System.err, the rest to
      * System.out.
-     *
+     * 
      * @param level
      * @param className
      * @param message
      * @param t
      */
     private static void logToConsole(Level level, String className,
-                                     String message, Throwable t) {
+        String message, Throwable t)
+    {
         String formattedMessage = formatMessage(level, className, message, t);
         if (level.equals(Level.WARNING) || level.equals(Level.SEVERE)) {
             System.err.print(formattedMessage);
@@ -340,24 +355,26 @@ public class LogDispatch {
 
     /**
      * Log details to the text panel for debug panel.
-     *
+     * 
      * @param level
      * @param className
      * @param message
      * @param t
      */
     private static void logToTextPanel(Level level, String className,
-                                       String message, Throwable t) {
+        String message, Throwable t)
+    {
 
         final MutableAttributeSet set = logColors.get(level.getName());
-        final String formattedMessage = formatMessage(level, className, message, t);
+        final String formattedMessage = formatMessage(level, className,
+            message, t);
 
         EventQueue.invokeLater(new Runnable() {
             public void run() {
                 try {
                     synchronized (logBuffer) {
-                        logBuffer.insertString(logBuffer.getLength(), formattedMessage,
-                                set);
+                        logBuffer.insertString(logBuffer.getLength(),
+                            formattedMessage, set);
                         if (logBuffer.getLength() > nLogLines) {
                             logBuffer.remove(0, formattedMessage.length());
                         }
@@ -371,8 +388,18 @@ public class LogDispatch {
         });
     }
 
-    private static String formatMessage(Level level, String className, String message, Throwable t) {
+    private static String formatMessage(Level level, String className,
+        String message, Throwable t)
+    {
         StringBuilder sb = new StringBuilder(1000);
+        Controller c = CURRENT_CONTROLLER.get();
+        if (nickPrefix) {
+            String nick = (c != null && c.getMySelf() != null) ? c.getMySelf()
+                .getNick() : "unkwn";
+            sb.append(StringUtils.rightPad(nick, 6));
+            sb.append(" ");
+        }
+
         sb.append('[');
         SimpleDateFormat sdf = new SimpleDateFormat("hh:mm:ss");
         sb.append(sdf.format(new Date()));
@@ -410,7 +437,7 @@ public class LogDispatch {
 
     /**
      * Gets the logging level for a class.
-     *
+     * 
      * @param className
      * @return
      */
@@ -420,17 +447,17 @@ public class LogDispatch {
 
     /**
      * Is logging to file enabled?
-     *
+     * 
      * @return
      */
     public static boolean isLogToFileEnabled() {
-        return logToFileEnabled && logFileName != null &&
-                !logFileName.equals("");
+        return logToFileEnabled && logFileName != null
+            && !logFileName.equals("");
     }
 
     /**
      * Enables logging to file.
-     *
+     * 
      * @param selected
      */
     public static void setLogFileEnabled(boolean selected) {
@@ -440,7 +467,7 @@ public class LogDispatch {
 
     /**
      * Sets the logfile for all logging output (verbose included)
-     *
+     * 
      * @param logFilename
      */
     public static void setLogFile(String logFileNameArg) {
@@ -461,7 +488,8 @@ public class LogDispatch {
                     fileHandler.flush();
                     fileHandler.close();
                     rootLogger.removeHandler(handler);
-                    logInfo(LogDispatch.class.getName(), "Removed FileHandler from logging handlers.");
+                    logInfo(LogDispatch.class.getName(),
+                        "Removed FileHandler from logging handlers.");
                 } catch (Exception e) {
                     logSevere(LogDispatch.class.getName(), e);
                 }
@@ -470,17 +498,17 @@ public class LogDispatch {
 
         if (isLogToFileEnabled()) {
             try {
-                FileHandler fileHandeler = new FileHandler(
-                        getDebugDir().getAbsolutePath() + '/'
-                                + Util.removeInvalidFilenameChars(logFileName)
-                                + ".%g", 100000, 10, true);
+                FileHandler fileHandeler = new FileHandler(getDebugDir()
+                    .getAbsolutePath()
+                    + '/'
+                    + Util.removeInvalidFilenameChars(logFileName)
+                    + ".%g", 100000, 10, true);
 
                 fileHandeler.setFormatter(new LogFormatter());
                 fileHandeler.setLevel(rootLogger.getLevel());
                 rootLogger.addHandler(fileHandeler);
                 logInfo(LogDispatch.class.getName(), "Added FileHandler ("
-                        + logFileName
-                        + ") to logging handlers.");
+                    + logFileName + ") to logging handlers.");
             } catch (SecurityException e) {
                 logSevere(LogDispatch.class.getName(), e);
             } catch (IOException e) {
@@ -491,7 +519,7 @@ public class LogDispatch {
 
     /**
      * Sets the logging level. Sets root, handler and internal logging level.
-     *
+     * 
      * @param level
      */
     public static void setLevel(Level level) {
@@ -509,14 +537,13 @@ public class LogDispatch {
 
     /**
      * Gets the directory for debug output.
-     *
+     * 
      * @return
      */
     public static File getDebugDir() {
         File canidate = new File(DEBUG_DIR);
         if (!canidate.canWrite()) {
-            canidate = new File(Controller.getMiscFilesLocation(),
-                    DEBUG_DIR);
+            canidate = new File(Controller.getMiscFilesLocation(), DEBUG_DIR);
         }
         if (!canidate.exists()) {
             canidate.mkdirs();
@@ -526,7 +553,7 @@ public class LogDispatch {
 
     /**
      * Any handlers enabled?
-     *
+     * 
      * @return
      */
     public static boolean isEnabled() {
@@ -535,7 +562,7 @@ public class LogDispatch {
 
     /**
      * Has logging been configued, or is it still the default?
-     *
+     * 
      * @return
      */
     public static boolean isLoggingConfigured() {
@@ -543,10 +570,9 @@ public class LogDispatch {
     }
 
     /**
-     * Enables/Disables the TextPanel loggin.
-     * <p/>
-     * Clears the logging document if log disabled
-     *
+     * Enables/Disables the TextPanel loggin. <p/> Clears the logging document
+     * if log disabled
+     * 
      * @param enabled
      */
     public static void setEnabledTextPanelLogging(boolean enabled) {
@@ -554,9 +580,25 @@ public class LogDispatch {
     }
 
     /**
-     * Gets the log buffer, for the debug panel.
-     *
-     * @return
+     * @return true if printing of nick of the current controller in front of
+     *         the log messages is enabled.
+     */
+    public static boolean isNickPrefix() {
+        return nickPrefix;
+    }
+
+    /**
+     * Enables/Disables printing the nick of the current controller in front of
+     * the log messages.
+     * 
+     * @param nickPrefix
+     */
+    public static void setNickPrefix(boolean nickPrefix) {
+        LogDispatch.nickPrefix = nickPrefix;
+    }
+
+    /**
+     * @return  the log buffer, for the debug panel.
      */
     public static StyledDocument getLogBuffer() {
         return logBuffer;
@@ -572,6 +614,13 @@ public class LogDispatch {
     private static class LogFormatter extends Formatter {
         public String format(LogRecord record) {
             StringBuilder buf = new StringBuilder(1000);
+            Controller c = CURRENT_CONTROLLER.get();
+            if (nickPrefix) {
+                String nick = (c != null && c.getMySelf() != null) ? c
+                    .getMySelf().getNick() : "unkwn";
+                buf.append(StringUtils.rightPad(nick, 6));
+                buf.append(" ");
+            }
             buf.append('[');
             SimpleDateFormat sdf = new SimpleDateFormat("hh:mm:ss");
             buf.append(sdf.format(new Date(record.getMillis())));
