@@ -70,9 +70,17 @@ public class WinUtils {
     // Meine Bilder / My Pictures
     public final static int CSIDL_MYPICTURES = 0x0027;
 
+    // e.g. C:\Windows
+    public final static int CSIDL_WINDOWS = 0x0024;
+
     // Program files
-    public final static int CSIDL_APP_DATA = 26;
-    public final static int CSIDL_LOCAL_SETTINGS_APP_DATA = 28;
+    public final static int CSIDL_APP_DATA = 0x001A;
+    public final static int CSIDL_LOCAL_SETTINGS_APP_DATA = 0x001C;
+
+    /*
+     * Other CSLIDs:
+     * http://vbnet.mvps.org/index.html?code/browse/csidlversions.htm
+     */
 
     private static WinUtils instance;
     private static boolean error = false;
