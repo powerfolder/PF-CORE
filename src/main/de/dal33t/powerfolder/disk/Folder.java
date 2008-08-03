@@ -779,7 +779,7 @@ public class Folder extends PFComponent {
         if (syncProfile.getConfiguration().isDailySync()) {
             if (!shouldDoDailySync()) {
                 if (isLogFiner()) {
-                    logFine("Skipping daily scan");
+                    logFiner("Skipping daily scan");
                 }
                 return false;
             }
@@ -789,7 +789,7 @@ public class Folder extends PFComponent {
                 .getTime()) / 1000;
             if (secondsSinceLastSync < syncProfile.getSecondsBetweenScans()) {
                 if (isLogFiner()) {
-                    logFine("Skipping regular scan");
+                    logFiner("Skipping regular scan");
                 }
                 return false;
             }
@@ -805,7 +805,7 @@ public class Folder extends PFComponent {
         lastScannedCalendar.setTime(lastScan);
         int lastScannedDay = lastScannedCalendar.get(Calendar.DAY_OF_YEAR);
         if (isLogFiner()) {
-            logFine("Last scanned " + lastScannedCalendar.getTime());
+            logFiner("Last scanned " + lastScannedCalendar.getTime());
         }
 
         Calendar todayCalendar = new GregorianCalendar();
@@ -818,7 +818,7 @@ public class Folder extends PFComponent {
         {
             // Scanned today, so skip.
             if (isLogFiner()) {
-                logFine("Skipping daily scan (already scanned today)");
+                logFiner("Skipping daily scan (already scanned today)");
             }
             return false;
         }
@@ -828,7 +828,7 @@ public class Folder extends PFComponent {
         if (requiredSyncHour != currentHour) {
             // Not correct time, so skip.
             if (isLogFiner()) {
-                logFine("Skipping daily scan (not correct time)");
+                logFiner("Skipping daily scan (not correct time)");
             }
             return false;
         }
@@ -845,7 +845,7 @@ public class Folder extends PFComponent {
                     || currentDay == Calendar.SUNDAY)
                 {
                     if (isLogFiner()) {
-                        logFine("Skipping daily scan (not weekday)");
+                        logFiner("Skipping daily scan (not weekday)");
                     }
                     return false;
                 }
@@ -855,14 +855,14 @@ public class Folder extends PFComponent {
                     && currentDay != Calendar.SUNDAY)
                 {
                     if (isLogFiner()) {
-                        logFine("Skipping daily scan (not weekend)");
+                        logFiner("Skipping daily scan (not weekend)");
                     }
                     return false;
                 }
             } else {
                 if (currentDay != requiredSyncDay) {
                     if (isLogFiner()) {
-                        logFine("Skipping daily scan (not correct day)");
+                        logFiner("Skipping daily scan (not correct day)");
                     }
                     return false;
                 }
