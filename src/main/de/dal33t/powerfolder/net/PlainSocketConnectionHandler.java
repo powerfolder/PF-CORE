@@ -99,8 +99,8 @@ public class PlainSocketConnectionHandler extends
         if (getSocket() != null) {
             InetSocketAddress addr = (InetSocketAddress) getSocket()
                 .getRemoteSocketAddress();
-            remoteInfo = addr.getAddress().getHostAddress() + "^"
-                + addr.getPort();
+            remoteInfo = addr.getAddress().getHostAddress().replace('.', '_')
+                + "^" + addr.getPort();
         } else {
             remoteInfo = "<unknown>";
         }
