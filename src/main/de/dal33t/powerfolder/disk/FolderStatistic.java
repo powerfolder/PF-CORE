@@ -328,6 +328,15 @@ public class FolderStatistic extends PFComponent {
         return lastFileChangeDate;
     }
 
+    /**
+     * Sets the date that one of the files in the folder changed.
+     *
+     * @param lastFileChangeDate
+     */
+    public void setLastFileChangeDate(Date lastFileChangeDate) {
+        this.lastFileChangeDate = lastFileChangeDate;
+    }
+
     // Set<FileInfo> considered = new HashSet<FileInfo>();
 
     private boolean inSync(FileInfo fInfo, FileInfo newestFileInfo) {

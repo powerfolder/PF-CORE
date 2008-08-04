@@ -207,11 +207,6 @@ public class Folder extends PFComponent {
     private boolean previewOnly;
 
     /**
-     * The Date of the lastchange to a folder file.
-     */
-    private Date lastFileChangeDate;
-
-    /**
      * True if the base dir is inaccessible.
      */
     private boolean deviceDisconnected;
@@ -1284,7 +1279,8 @@ public class Folder extends PFComponent {
                 try {
                     Object object = in.readObject();
                     if (object instanceof Date) {
-                        lastFileChangeDate = (Date) object;
+                        Date lastFileChangeDate = (Date) object;
+                        statistic.setLastFileChangeDate(lastFileChangeDate);
                         if (isLogFine()) {
                             logFine(
                                 "lastFileChangeDate" + lastFileChangeDate);
@@ -1410,6 +1406,7 @@ public class Folder extends PFComponent {
                     }
                     oOut.writeObject(lastScan);
                 }
+                Date lastFileChangeDate = statistic.getLastFileChangeDate();
                 if (lastFileChangeDate == null) {
                     if (isLogFine()) {
                         logFine("write default time: " + new Date());
@@ -2570,11 +2567,11 @@ public class Folder extends PFComponent {
      * @return
      */
     public Date getLastFileChangeDate() {
-        return lastFileChangeDate;
+        return statistic.getLastFileChangeDate();
     }
 
     public void setLastFileChangeDate(Date lastFileChangeDate) {
-        this.lastFileChangeDate = lastFileChangeDate;
+        statistic.setLastFileChangeDate(lastFileChangeDate);
     }
 
     /**
