@@ -106,11 +106,7 @@ public class NodeManagerModel extends PFUIComponent {
         // Init friends treenodes
         friendsTreeNode = new TreeNodeList(rootNode);
         friendsTreeNode.sortBy(MemberComparator.IN_GUI);
-
-        Member[] friends = getController().getNodeManager().getFriends();
-        for (Member friend : friends) {
-            friendsTreeNode.addChild(friend);
-        }
+        rebuildFriendslist();
 
         notInFriendsTreeNodes = new TreeNodeList(rootNode);
         notInFriendsTreeNodes.sortBy(MemberComparator.IN_GUI);
