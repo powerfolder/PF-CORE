@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc, Dennis Waldherr. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc, Dennis Waldherr. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.util.task;
 
 import java.io.File;
@@ -32,13 +32,17 @@ import java.util.Vector;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.light.MemberInfo;
+import de.dal33t.powerfolder.message.Notification;
+import de.dal33t.powerfolder.util.Reject;
 
 /**
- * Loads, stores and initializes persistent Tasks.
- * While RuntimeExceptions on de-/initialization are caught and not propagated further, tasks which block in
- * those cases are not killed and can therefore prevent this manager from working properly. (In an older revision
- * they actually are killed after a certain amount of time. I removed it because those tasks represent real "faulty" 
- * implementations which need to be fixed.) 
+ * Loads, stores and initializes persistent Tasks. While RuntimeExceptions on
+ * de-/initialization are caught and not propagated further, tasks which block
+ * in those cases are not killed and can therefore prevent this manager from
+ * working properly. (In an older revision they actually are killed after a
+ * certain amount of time. I removed it because those tasks represent real
+ * "faulty" implementations which need to be fixed.)
  * 
  * @author Dennis "Bytekeeper" Waldherr </a>
  * @version $Revision$
@@ -71,8 +75,7 @@ public class PersistentTaskManager extends PFComponent {
      * Starts this manager.
      */
     @SuppressWarnings("unchecked")
-    public synchronized void start()
-    {
+    public synchronized void start() {
         shuttingDown = false;
         pendingTasks = new Vector<PersistentTask>();
         File taskfile = getTaskFile();
@@ -80,8 +83,7 @@ public class PersistentTaskManager extends PFComponent {
             logInfo("Loading taskfile");
             ObjectInputStream oin = null;
             try {
-                 oin = new ObjectInputStream(
-                    new FileInputStream(taskfile));
+                oin = new ObjectInputStream(new FileInputStream(taskfile));
                 tasks = (List<PersistentTask>) oin.readObject();
                 oin.close();
                 logInfo("Loaded " + tasks.size() + " tasks.");
@@ -94,13 +96,13 @@ public class PersistentTaskManager extends PFComponent {
             } catch (ClassCastException e) {
                 logSevere(e);
             } finally {
-            	if (oin != null) {
-            		try {
-						oin.close();
-					} catch (IOException e) {
-						logSevere(e);
-					}
-            	}
+                if (oin != null) {
+                    try {
+                        oin.close();
+                    } catch (IOException e) {
+                        logSevere(e);
+                    }
+                }
             }
         } else {
             logInfo("No taskfile found - probably first start of PF.");
@@ -110,12 +112,12 @@ public class PersistentTaskManager extends PFComponent {
             tasks = new LinkedList<PersistentTask>();
         }
         for (PersistentTask t : tasks.toArray(new PersistentTask[0])) {
-        	try {
-        		t.init(this);
-        	} catch (RuntimeException e) {
-        		logSevere(e);
-        		tasks.remove(t);
-        	}
+            try {
+                t.init(this);
+            } catch (RuntimeException e) {
+                logSevere(e);
+                tasks.remove(t);
+            }
         }
     }
 
@@ -127,37 +129,35 @@ public class PersistentTaskManager extends PFComponent {
     public synchronized void shutdown() {
         shuttingDown = true;
         if (tasks == null || pendingTasks == null) {
-        	logSevere("Shutdown before initialization!");
-        	return;
+            logSevere("Shutdown before initialization!");
+            return;
         }
-    	waitForPendingTasks();
+        waitForPendingTasks();
         for (PersistentTask t : tasks) {
-        	try {
-        		t.shutdown();
-        	} catch (RuntimeException e) {
-        		logSevere(e);
-        	}
+            try {
+                t.shutdown();
+            } catch (RuntimeException e) {
+                logSevere(e);
+            }
         }
         File taskFile = getTaskFile();
         ObjectOutputStream oout = null;
         try {
-            logInfo(
-                "There are " + tasks.size() + " tasks not completed yet.");
-             oout = new ObjectOutputStream(
-                new FileOutputStream(taskFile));
+            logInfo("There are " + tasks.size() + " tasks not completed yet.");
+            oout = new ObjectOutputStream(new FileOutputStream(taskFile));
             oout.writeUnshared(tasks);
         } catch (FileNotFoundException e) {
             logSevere(e);
         } catch (IOException e) {
             logSevere(e);
         } finally {
-        	if (oout != null) {
+            if (oout != null) {
                 try {
-					oout.close();
-				} catch (IOException e) {
-					logSevere(e);
-				}
-        	}
+                    oout.close();
+                } catch (IOException e) {
+                    logSevere(e);
+                }
+            }
             tasks = null;
         }
     }
@@ -177,21 +177,19 @@ public class PersistentTaskManager extends PFComponent {
             return;
         }
         if (!tasks.contains(task) && !shuttingDown) {
-        	logInfo("Adding " + task);
+            logInfo("Adding " + task);
             tasks.add(task);
             Runnable adder = new Runnable() {
-                public void run()
-                {
+                public void run() {
                     task.init(PersistentTaskManager.this);
                     pendingTasks.remove(task);
                     synchronized (PersistentTaskManager.this) {
                         PersistentTaskManager.this.notify();
                     }
                 }
-        	}; 
+            };
             pendingTasks.add(task);
-            getController().getThreadPool()
-            	.execute(adder);
+            getController().getThreadPool().execute(adder);
         }
     }
 
@@ -203,18 +201,20 @@ public class PersistentTaskManager extends PFComponent {
      *            the task to remove
      */
     public synchronized void removeTask(PersistentTask task) {
-    	boolean oldSD = shuttingDown;
+        boolean oldSD = shuttingDown;
         shuttingDown = true;
         if (pendingTasks.contains(task)) {
-        	pendingTasks.remove(task);
+            pendingTasks.remove(task);
         } else {
-        	waitForPendingTasks();
+            waitForPendingTasks();
         }
-        if (oldSD == false) { // Prevent cyclic calls from task.shutdown() -> task.remove() on faulty tasks.
-	        task.shutdown();
-	        tasks.remove(task);
+        if (oldSD == false) { // Prevent cyclic calls from task.shutdown() ->
+            // task.remove() on faulty tasks.
+            task.shutdown();
+            tasks.remove(task);
         } else {
-        	logInfo(task + " shouldn't call remove() in shutdown(), it will automatically be removed!");
+            logInfo(task
+                + " shouldn't call remove() in shutdown(), it will automatically be removed!");
         }
         shuttingDown = oldSD;
     }
@@ -225,7 +225,7 @@ public class PersistentTaskManager extends PFComponent {
      * properly initialized.
      */
     public synchronized void purgeAllTasks() {
-    	boolean oldSD = shuttingDown;
+        boolean oldSD = shuttingDown;
         shuttingDown = true;
         waitForPendingTasks();
         while (!tasks.isEmpty()) {
@@ -252,6 +252,28 @@ public class PersistentTaskManager extends PFComponent {
         return tasks.size();
     }
 
+    /**
+     * Required to solve TRAC #1124. Nicer API method would be:
+     * hasPendingMessagesTo(MemberInfo);
+     * 
+     * @return if there are pending messages to be sent.
+     */
+    public synchronized boolean hasSendMessageTask() {
+        for (PersistentTask task : tasks) {
+            if (task instanceof SendMessageTask) {
+                logWarning("Found pending message(s)");
+                return true;
+            }
+            // SendMessageTask sendTask = (SendMessageTask) task;
+            // if (!sendTask.getTargetID().equals(node.id)) {
+            // logWarning("Found pending message(s) to " + node);
+            // return true;
+            // }
+        }
+        // No pending found
+        return false;
+    }
+
     /** Assumes the caller to have locked the manager. */
     private void waitForPendingTasks() {
         while (!pendingTasks.isEmpty()) {
@@ -262,15 +284,16 @@ public class PersistentTaskManager extends PFComponent {
             }
         }
         if (!pendingTasks.isEmpty()) {
-        	StringBuilder b = new StringBuilder();
-        	b.append("The following tasks are blocking:");
-        	for (PersistentTask t: pendingTasks)
-        		b.append(' ').append(t);
-        	b.append(" and will be removed!");
-        	logSevere(b.toString());
-        	// Note: This will also remove tasks which "might" still finish initialization
-        	tasks.removeAll(pendingTasks);
-        	pendingTasks.clear();
+            StringBuilder b = new StringBuilder();
+            b.append("The following tasks are blocking:");
+            for (PersistentTask t : pendingTasks)
+                b.append(' ').append(t);
+            b.append(" and will be removed!");
+            logSevere(b.toString());
+            // Note: This will also remove tasks which "might" still finish
+            // initialization
+            tasks.removeAll(pendingTasks);
+            pendingTasks.clear();
         }
     }
 }
