@@ -223,10 +223,13 @@ public class NodeManagerModel extends PFUIComponent {
     private void rebuildFriendslist() {
         friendsTableModel.setHideOffline(isHideOfflineFriends());
         friendsTableModel.setIncludeLan(isIncludeLanUsers());
-        // setting changed
-        Member[] friends = getController().getNodeManager().getFriends();
+        
+
         // remove all:
         friendsTreeNode.removeAllChildren();
+
+        // setting changed
+        Member[] friends = getController().getNodeManager().getFriends();
         boolean hideOffline = isHideOfflineFriends();
         for (Member friend : friends) {
             // add friends to treenode
@@ -240,6 +243,17 @@ public class NodeManagerModel extends PFUIComponent {
                 friendsTreeNode.addChild(friend);
             }
         }
+
+        if (isIncludeLanUsers()) {
+            for (Member node : getController().getNodeManager()
+                .getConnectedNodes())
+            {
+                if (node.isOnLAN() && !friendsTreeNode.contains(node)) {
+                    friendsTreeNode.addChild(node);
+                }
+            }
+        }
+        
         fireTreeNodeStructureChangeEvent(friendsTreeNode);
     }
 
