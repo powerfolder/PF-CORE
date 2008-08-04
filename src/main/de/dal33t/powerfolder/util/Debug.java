@@ -23,9 +23,12 @@ import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_ID;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -37,6 +40,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -67,6 +71,47 @@ public class Debug {
 
     private Debug() {
         // No instance allowed
+    }
+
+    /**
+     * Dumps the system properties into the debug directory.
+     */
+    public static void writeSystemProperties() {
+        if (!LogDispatch.isLogToFileEnabled()) {
+            return;
+        }
+        File file = new File(LogDispatch.getDebugDir(), "system_properties.txt");
+        BufferedWriter bw = null;
+        try {
+            bw = new BufferedWriter(new FileWriter(file, false));
+            Properties sysprops = System.getProperties();
+            StringBuffer props = new StringBuffer();
+            for (Enumeration<?> e = sysprops.propertyNames(); e
+                .hasMoreElements();)
+            {
+                String key = (String) e.nextElement();
+                String value = sysprops.getProperty(key);
+                props.append("" + key + "=" + value + "\n");
+                // /DEBUG System.out.println( key + "=" + value );
+            }
+            bw.write("Current time: " + new Date() + "\n");
+            bw.append(new String(props));
+            bw.flush();
+        } catch (FileNotFoundException e) {
+            LogDispatch.logSevere(Debug.class.getName(),
+                "Unable to create SystemInfo file");
+        } catch (IOException e) {
+            LogDispatch.logSevere(Debug.class.getName(), "Unable to Write to '"
+                + file + "'");
+        } finally {
+            try {
+                if (bw != null) {
+                    bw.close();
+                }
+            } catch (Exception e) {
+                // ignore
+            }
+        }
     }
 
     /**

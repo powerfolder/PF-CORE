@@ -389,6 +389,7 @@ public class Controller extends PFComponent {
                 + System.getProperty("java.runtime.version") + ", "
                 + System.getProperty("java.vendor") + ")");
         logFine("Current time: " + new Date());
+        Debug.writeSystemProperties();
 
         // The task brothers
         timer = new WrappingTimer("Controller schedule timer", true);

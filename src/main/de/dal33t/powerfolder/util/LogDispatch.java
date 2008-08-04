@@ -498,11 +498,17 @@ public class LogDispatch {
 
         if (isLogToFileEnabled()) {
             try {
+                String f = Util.removeInvalidFilenameChars(logFileName);
+                int i = f.lastIndexOf('.');
+                if (i > 0) {
+                    // Insert number before extenstion.
+                    f = f.substring(0, i) + ".%g" + f.substring(i, f.length());
+                } else {
+                    f = f + ".%g";
+                }
                 FileHandler fileHandeler = new FileHandler(getDebugDir()
                     .getAbsolutePath()
-                    + '/'
-                    + Util.removeInvalidFilenameChars(logFileName)
-                    + ".%g", 100000, 10, true);
+                    + '/' + f, 100000, 10, true);
 
                 fileHandeler.setFormatter(new LogFormatter());
                 fileHandeler.setLevel(rootLogger.getLevel());
@@ -536,17 +542,21 @@ public class LogDispatch {
     }
 
     /**
-     * Gets the directory for debug output.
-     * 
-     * @return
+     * @return the directory for debug output.
      */
     public static File getDebugDir() {
         File canidate = new File(DEBUG_DIR);
-        if (!canidate.canWrite()) {
-            canidate = new File(Controller.getMiscFilesLocation(), DEBUG_DIR);
+        if (canidate.exists() && canidate.isDirectory()) {
+            return canidate;
         }
-        if (!canidate.exists()) {
+        canidate.mkdirs();
+        if (!canidate.exists() || !canidate.isDirectory()) {
+            // Fallback! TRAC #1087
+            canidate = new File(Controller.getMiscFilesLocation(), DEBUG_DIR);
             canidate.mkdirs();
+        }
+        if (!canidate.exists() || !canidate.isDirectory()) {
+            // Completely fail
         }
         return canidate;
     }
