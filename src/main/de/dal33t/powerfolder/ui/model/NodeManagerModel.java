@@ -409,6 +409,10 @@ public class NodeManagerModel extends PFUIComponent {
                     notInFriendsTreeNodes.addChild(node);
                 }
                 fireTreeNodeStructureChangeEvent(notInFriendsTreeNodes);
+                if (isIncludeLanUsers() && !friendsTreeNode.contains(node)) {
+                    friendsTreeNode.addChild(node);
+                    fireTreeNodeStructureChangeEvent(friendsTreeNode);
+                }
             }
         }
 
