@@ -311,7 +311,7 @@ public class Folder extends PFComponent {
         // // maintain desktop shortcut if wanted
         // setDesktopShortcut();
         if (isLogFiner()) {
-            logFine(
+            logFiner(
                 "Has own database (" + getName() + ")? " + hasOwnDatabase);
         }
         if (hasOwnDatabase) {
@@ -387,7 +387,7 @@ public class Folder extends PFComponent {
             // public void run() {
             if (rootDirectory != null) {
                 if (isLogFiner()) {
-                    logFine(
+                    logFiner(
                         "Adding " + scanResult.getNewFiles().size()
                             + " to directory");
                 }
@@ -470,7 +470,7 @@ public class Folder extends PFComponent {
         // convertToMeta(fileInfosToConvert);
         // }
         if (isLogFiner()) {
-            logFine("commitScanResult DONE");
+            logFiner("commitScanResult DONE");
         }
     }
 
@@ -652,7 +652,7 @@ public class Folder extends PFComponent {
             if (targetFile.exists()) {
                 // if file was a "newer file" the file already esists here
                 if (isLogFiner()) {
-                    logFine(
+                    logFiner(
                         "file already exists: " + targetFile
                             + " moving to recycle bin");
                 }
@@ -895,7 +895,7 @@ public class Folder extends PFComponent {
             }
 
             if (isLogFiner()) {
-                logFine(
+                logFiner(
                     "Scanning file: " + fInfo + ", folderId: " + fInfo);
             }
             File file = getDiskFile(fInfo);
@@ -959,7 +959,7 @@ public class Folder extends PFComponent {
             fInfo.setFolderInfo(this.currentInfo);
             if (!isKnown(fInfo)) {
                 if (isLogFiner()) {
-                    logFine(
+                    logFiner(
                         fInfo + ", modified by: " + fInfo.getModifiedBy());
                 }
                 // Update last - modified data
@@ -994,7 +994,7 @@ public class Folder extends PFComponent {
                 // fireEvent(new FolderChanged());
 
                 if (isLogFiner()) {
-                    logFine(
+                    logFiner(
                         this.toString() + ": Local file scanned: "
                             + fInfo.toDetailString());
                 }
@@ -1008,7 +1008,7 @@ public class Folder extends PFComponent {
                 getController(), file);
 
             if (isLogFiner()) {
-                logFine("File already known: " + fInfo);
+                logFiner("File already known: " + fInfo);
             }
 
             return fileChanged;
@@ -1140,7 +1140,7 @@ public class Folder extends PFComponent {
      */
     private boolean removeFileLocal(FileInfo fInfo) {
         if (isLogFiner()) {
-            logFine(
+            logFiner(
                 "Remove file local: " + fInfo + ", Folder equal ? "
                     + Util.equals(fInfo.getFolderInfo(), currentInfo));
         }
@@ -1649,7 +1649,7 @@ public class Folder extends PFComponent {
             return;
         }
         if (isLogFiner()) {
-            logFine("recommendScanOnNextMaintenance");
+            logFiner("recommendScanOnNextMaintenance");
         }
         scanForced = true;
         lastScan = null;
@@ -1699,7 +1699,7 @@ public class Folder extends PFComponent {
         // member will be joined, here on local
         boolean wasMember = members.put(member, member) != null;
         if (isLogFiner()) {
-            logFine("Member joined " + member);
+            logFiner("Member joined " + member);
         }
         // send him our list of files if completely connected. otherwise this
         // gets sent by Member.completeHandshake();
@@ -1777,7 +1777,7 @@ public class Folder extends PFComponent {
      */
     public void syncRemoteDeletedFiles(boolean force) {
         if (isLogFiner()) {
-            logFine(
+            logFiner(
                 "Deleting files, which are deleted by friends. con-members: "
                     + Arrays.asList(getConnectedMembers()));
         }
@@ -1797,7 +1797,7 @@ public class Folder extends PFComponent {
             }
 
             if (isLogFiner()) {
-                logFine(
+                logFiner(
                     "RemoteFileDeletion sync. Member '" + member.getNick()
                         + "' has " + fileList.size() + " possible files");
             }
@@ -1910,7 +1910,7 @@ public class Folder extends PFComponent {
      */
     public void broadcastScanCommand() {
         if (isLogFiner()) {
-            logFine("Broadcasting remote scan commando");
+            logFiner("Broadcasting remote scan commando");
         }
         Message scanCommand = new ScanCommand(currentInfo);
         broadcastMessages(scanCommand);
@@ -1990,7 +1990,7 @@ public class Folder extends PFComponent {
         if (syncProfile.isAutodownload()) {
             // Trigger file requestor
             if (isLogFiner()) {
-                logFine(
+                logFiner(
                     "Triggering file requestor because of new remote file list from "
                         + from);
             }
@@ -2062,14 +2062,14 @@ public class Folder extends PFComponent {
 
             if (triggerFileRequestor) {
                 if (isLogFiner()) {
-                    logFine(
+                    logFiner(
                         "Triggering file requestor because of remote file list change "
                             + changes + " from " + from);
                 }
                 getController().getFolderRepository().getFileRequestor()
                     .triggerFileRequesting(changes.folder);
             } else if (isLogFiner()) {
-                logFine(
+                logFiner(
                     "Not triggering filerequestor, no new files in remote filelist"
                         + changes + " from " + from);
             }
@@ -2110,7 +2110,7 @@ public class Folder extends PFComponent {
     {
         Reject.ifNull(remoteFileInfos, "Remote file info list is null");
         if (isLogFiner()) {
-            logFine(
+            logFiner(
                 "Triing to find same files in remote list with "
                     + remoteFileInfos.size() + " files from " + remotePeer);
         }
@@ -2730,7 +2730,7 @@ public class Folder extends PFComponent {
 
     private void fireFileChanged(FileInfo fileInfo) {
         if (isLogFiner()) {
-            logFine("fireFileChanged: " + this);
+            logFiner("fireFileChanged: " + this);
         }
         FolderEvent folderEvent = new FolderEvent(this, fileInfo);
         folderListenerSupport.fileChanged(folderEvent);
@@ -2738,7 +2738,7 @@ public class Folder extends PFComponent {
 
     private void fireFilesDeleted(Collection<FileInfo> fileInfos) {
         if (isLogFiner()) {
-            logFine("fireFilesDeleted: " + this);
+            logFiner("fireFilesDeleted: " + this);
         }
         FolderEvent folderEvent = new FolderEvent(this, fileInfos);
         folderListenerSupport.filesDeleted(folderEvent);
@@ -2746,7 +2746,7 @@ public class Folder extends PFComponent {
 
     private void fireRemoteContentsChanged(FileList list) {
         if (isLogFiner()) {
-            logFine("fireRemoteContentsChanged: " + this);
+            logFiner("fireRemoteContentsChanged: " + this);
         }
         FolderEvent folderEvent = new FolderEvent(this, list);
         folderListenerSupport.remoteContentsChanged(folderEvent);
@@ -2754,7 +2754,7 @@ public class Folder extends PFComponent {
 
     private void fireRemoteContentsChanged(FolderFilesChanged list) {
         if (isLogFiner()) {
-            logFine("fireRemoteContentsChanged: " + this);
+            logFiner("fireRemoteContentsChanged: " + this);
         }
         FolderEvent folderEvent = new FolderEvent(this, list);
         folderListenerSupport.remoteContentsChanged(folderEvent);
@@ -2767,7 +2767,7 @@ public class Folder extends PFComponent {
 
     private void fireScanResultCommited(ScanResult scanResult) {
         if (isLogFiner()) {
-            logFine("fireScanResultCommited: " + this);
+            logFiner("fireScanResultCommited: " + this);
         }
         FolderEvent folderEvent = new FolderEvent(this, scanResult);
         folderListenerSupport.scanResultCommited(folderEvent);

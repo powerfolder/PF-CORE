@@ -697,7 +697,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             folder.remove(member);
         }
         if (isLogFiner()) {
-            logWarning("Node removed from all folders: " + member);
+            logFiner("Node removed from all folders: " + member);
         }
     }
 

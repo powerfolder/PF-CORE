@@ -1640,7 +1640,7 @@ public class TransferManager extends PFComponent {
         }
         if (dlWasRequested) {
             if (isLogFiner()) {
-                logFine("File really was requested!");
+                logFiner("File really was requested!");
             }
             // Fire event
             fireDownloadRequested(new TransferManagerEvent(this, download));
