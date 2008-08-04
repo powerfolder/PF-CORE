@@ -52,4 +52,8 @@ public class Notification extends Message {
     public String getPersonalMessage() {
         return personalMessage;
     }
+
+    public String toString() {
+        return "Notification (" + event + "): '" + personalMessage + "'";
+    }
 }
