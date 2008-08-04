@@ -1275,24 +1275,6 @@ public class Folder extends PFComponent {
                     logSevere("read ignore error: " + this + e.getMessage(),
                         e);
                 }
-
-                try {
-                    Object object = in.readObject();
-                    if (object instanceof Date) {
-                        Date lastFileChangeDate = (Date) object;
-                        statistic.setLastFileChangeDate(lastFileChangeDate);
-                        if (isLogFine()) {
-                            logFine(
-                                "lastFileChangeDate" + lastFileChangeDate);
-                        }
-                    }
-                } catch (java.io.EOFException e) {
-                    // ignore nothing available for ignore
-                    logFine("ignore nothing for " + this);
-                } catch (Exception e) {
-                    logSevere("read ignore error: " + this + e.getMessage(),
-                        e);
-                }
                 in.close();
                 fIn.close();
 
@@ -1406,18 +1388,7 @@ public class Folder extends PFComponent {
                     }
                     oOut.writeObject(lastScan);
                 }
-                Date lastFileChangeDate = statistic.getLastFileChangeDate();
-                if (lastFileChangeDate == null) {
-                    if (isLogFine()) {
-                        logFine("write default time: " + new Date());
-                    }
-                    oOut.writeObject(new Date());
-                } else {
-                    if (isLogFine()) {
-                        logFine("write time: " + lastFileChangeDate);
-                    }
-                    oOut.writeObject(lastFileChangeDate);
-                }
+
                 oOut.close();
                 fOut.close();
 
