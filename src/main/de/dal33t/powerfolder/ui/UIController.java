@@ -592,7 +592,19 @@ public class UIController extends PFComponent {
         }
 
         MenuItem menuItem = new MenuItem(folder.getName());
-        sysTrayFoldersMenu.add(menuItem);
+        // Insert in the correct position.
+        boolean done = false;
+        for (int i = 0; i < sysTrayFoldersMenu.getItemCount(); i++) {
+            if (sysTrayFoldersMenu.getItem(i).getLabel().toLowerCase().compareTo(
+                    folder.getName().toLowerCase()) > 0) {
+                sysTrayFoldersMenu.insert(menuItem, i);
+                done = true;
+                break;
+            }
+        }
+        if (!done) {
+            sysTrayFoldersMenu.add(menuItem);
+        }
         sysTrayFoldersMenu.setEnabled(true);
         final File localBase = folder.getLocalBase();
         final String folderName = folder.getName();
