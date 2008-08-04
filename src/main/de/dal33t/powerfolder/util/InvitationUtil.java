@@ -372,6 +372,7 @@ public class InvitationUtil {
             new SendMessageTask(invitation, node.getId()));
 
         if (!node.isCompleteyConnected()) {
+            node.markForImmediateConnect();
             return false;
         }
         // node.sendMessageAsynchron(invitation, null);
