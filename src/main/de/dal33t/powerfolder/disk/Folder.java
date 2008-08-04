@@ -2570,10 +2570,6 @@ public class Folder extends PFComponent {
         return statistic.getLastFileChangeDate();
     }
 
-    public void setLastFileChangeDate(Date lastFileChangeDate) {
-        statistic.setLastFileChangeDate(lastFileChangeDate);
-    }
-
     /**
      * @return the info object of this folder
      */

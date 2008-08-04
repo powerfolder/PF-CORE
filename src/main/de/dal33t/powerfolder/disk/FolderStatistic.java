@@ -306,7 +306,6 @@ public class FolderStatistic extends PFComponent {
         }
         if (date != null) {
             lastFileChangeDate = date;
-            folder.setLastFileChangeDate(date);
         }
 
         if (isLogFiner()) {
