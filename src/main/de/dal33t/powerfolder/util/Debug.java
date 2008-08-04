@@ -66,6 +66,9 @@ import de.dal33t.powerfolder.util.compare.MemberComparator;
 public class Debug {
     private static final MyThreadLocal DATE_FORMAT = new MyThreadLocal();
 
+    // private static Map<File, Collection<Object>> fileWatch = new
+    // HashMap<File, Collection<Object>>();
+
     private Debug() {
         // No instance allowed
     }
@@ -667,6 +670,52 @@ public class Debug {
             }
         }
     }
+
+    // public static void openedFile(File f, Object src) {
+    // synchronized (fileWatch) {
+    // Collection<Object> o = fileWatch.get(f);
+    // if (o == null) {
+    // o = new HashSet<Object>();
+    // fileWatch.put(f, o);
+    // }
+    // o.add(src);
+    // }
+    // }
+    //
+    // public static void closedFile(File f, Object src) {
+    // synchronized (fileWatch) {
+    // Collection<Object> o = fileWatch.get(f);
+    // if (o == null) {
+    // throw new IllegalStateException("File isn't open!");
+    // }
+    // if (!o.remove(src)) {
+    // throw new IllegalStateException("File isn't open by " + src);
+    // }
+    // }
+    // }
+    //
+    // public static void dumpOpeners(File f) {
+    // synchronized (fileWatch) {
+    // Collection<Object> o = fileWatch.get(f);
+    // if (o != null) {
+    // for (Object s : o) {
+    // Loggable.logWarningStatic(Debug.class, f + " opened by "
+    // + s);
+    // }
+    // } else {
+    // Loggable.logWarningStatic(Debug.class, f + " is not open!");
+    // }
+    // }
+    // System.exit(1);
+    // }
+    //
+    // public static void dumpOpenFiles() {
+    // synchronized (fileWatch) {
+    // for (File f : fileWatch.keySet()) {
+    // dumpOpeners(f);
+    // }
+    // }
+    // }
 
     public static void dumpThreadStacks() {
         ThreadGroup top = Thread.currentThread().getThreadGroup();

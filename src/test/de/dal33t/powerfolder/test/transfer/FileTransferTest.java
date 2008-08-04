@@ -242,9 +242,13 @@ public class FileTransferTest extends TwoControllerTestCase {
         // assertEquals(1, tm1Listener.uploadRequested);
         // assertEquals(1, tm1Listener.uploadStarted);
         // assertEquals(1, tm1Listener.uploadCompleted);
-        assertEquals(2, tm1Listener.uploadRequested);
-        assertEquals(2, tm1Listener.uploadStarted);
-        assertEquals(2, tm1Listener.uploadCompleted);
+        // assertEquals(2, tm1Listener.uploadRequested);
+        // assertEquals(2, tm1Listener.uploadStarted);
+        // assertEquals(2, tm1Listener.uploadCompleted);
+        // Changed: Wase of bandwidth to request empty files...
+        assertEquals(0, tm1Listener.uploadRequested);
+        assertEquals(0, tm1Listener.uploadStarted);
+        assertEquals(0, tm1Listener.uploadCompleted);
         assertEquals(0, tm1Listener.uploadAborted);
         assertEquals(0, tm1Listener.uploadBroken);
 

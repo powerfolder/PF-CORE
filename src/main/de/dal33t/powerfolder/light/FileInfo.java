@@ -41,9 +41,9 @@ import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
+import de.dal33t.powerfolder.util.Loggable;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.util.Loggable;
 import de.dal33t.powerfolder.util.delta.FilePartsRecord;
 import de.dal33t.powerfolder.util.delta.FilePartsRecordBuilder;
 
@@ -53,7 +53,7 @@ import de.dal33t.powerfolder.util.delta.FilePartsRecordBuilder;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.33 $
  */
-public class FileInfo implements Serializable, DiskItem {
+public class FileInfo implements Serializable, DiskItem, Cloneable {
     private static final long serialVersionUID = 100L;
 
     /** The filename (including the path from the base of the folder) */
@@ -587,7 +587,7 @@ public class FileInfo implements Serializable, DiskItem {
     }
 
     /*
-     * General ****************************************************************
+     * General
      */
 
     /**
@@ -624,8 +624,9 @@ public class FileInfo implements Serializable, DiskItem {
             && !this.getModifiedBy().equals(otherFile.getModifiedBy()))
         {
             Loggable.logSevereStatic(FileInfo.class,
-                    "Found identical files, but diffrent modifier:"
-                + toDetailString() + " other: " + otherFile.toDetailString());
+                "Found identical files, but diffrent modifier:"
+                    + toDetailString() + " other: "
+                    + otherFile.toDetailString());
         }
         return identical;
     }
@@ -652,6 +653,17 @@ public class FileInfo implements Serializable, DiskItem {
     public String toString() {
         return "[" + folderInfo.name + "]:/" + (deleted ? "(del) " : "")
             + fileName;
+    }
+
+    @Override
+    public Object clone() {
+        try {
+            FileInfo info = (FileInfo) super.clone();
+            return info;
+        } catch (CloneNotSupportedException e) {
+            // Rethrow as unchecked exception
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -750,9 +762,9 @@ public class FileInfo implements Serializable, DiskItem {
                 }
                 fileRecord = b.getRecord();
                 long took = System.currentTimeMillis() - start;
-                Loggable.logInfoStatic(FileInfo.class,
-                        "Built file parts for " + this + ". took " + took
-                    + "ms" + " while processing " + processed + " bytes.");
+                Loggable.logInfoStatic(FileInfo.class, "Built file parts for "
+                    + this + ". took " + took + "ms" + " while processing "
+                    + processed + " bytes.");
             } catch (NoSuchAlgorithmException e) {
                 throw new RuntimeException(e);
             } finally {

@@ -1,27 +1,28 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc, Dennis Waldherr. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc, Dennis Waldherr. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.transfer;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -49,14 +50,15 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
 
     private boolean usingPartRequests;
 
-    public static final DownloadManagerFactory factory = new DownloadManagerFactory() {
+    public static final DownloadManagerFactory factory = new DownloadManagerFactory()
+    {
         public DownloadManager createDownloadManager(Controller controller,
             FileInfo file, boolean automatic) throws IOException
         {
             return new MultiSourceDownloadManager(controller, file, automatic);
         }
     };
-    
+
     public MultiSourceDownloadManager(Controller controller, FileInfo file,
         boolean automatic) throws IOException
     {
@@ -66,14 +68,13 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
     @Override
     protected void addSourceImpl(Download download) {
         assert download != null;
-        assert allowsSourceFor(download.getPartner());
-        
+        assert canAddSource(download.getPartner());
+
         // logFine("Adding source: " + download);
 
         if (downloads.put(download.getPartner().getInfo(), download) != null) {
-            logSevere(
-                "Overridden previous download for member: "
-                    + download.getPartner() + ". " + download);
+            logSevere("Overridden previous download for member: "
+                + download.getPartner() + ". " + download);
         }
 
         // Non-automatic overrides automatic
@@ -88,11 +89,11 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
         }
     }
 
-    public boolean allowsSourceFor(Member member) {
+    public boolean canAddSource(Member member) {
         Reject.ifNull(member, "Member is null");
-        return downloads.isEmpty() || (
-            isUsingPartRequests()
-            && Util.useSwarming(getController(), member));
+        return downloads.isEmpty()
+            || (isUsingPartRequests() && Util.useSwarming(getController(),
+                member));
     }
 
     public Download getSourceFor(Member member) {
@@ -100,9 +101,13 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
         return downloads.get(member.getInfo());
     }
 
+    public boolean hasSource(Download d) {
+        Reject.ifNull(d, "Download is null!");
+        return downloads.get(d.getPartner().getInfo()) == d;
+    }
+
     /*
      * Returns the sources of this manager.
-     * 
      * @see de.dal33t.powerfolder.transfer.MultiSourceDownload#getSources()
      */
     public Collection<Download> getSources() {
@@ -116,9 +121,29 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
     @Override
     protected void removeSourceImpl(Download download) {
         assert download != null;
-        
+        assert hasSource(download);
+
         if (downloads.remove(download.getPartner().getInfo()) == null) {
-            throw new AssertionError("Removed non-managed download:" + download + " " + download.getPartner().getInfo());
+
+            if (downloads.values().contains(download)) {
+                for (Map.Entry<MemberInfo, Download> e : downloads.entrySet()) {
+                    if (e.getValue() == download) {
+                        logSevere(e.getKey() + " vs "
+                            + download.getPartner().getInfo());
+                        System.exit(1);
+                    }
+                    if (e.getValue().equals(download)) {
+                        logSevere("W T F 2!");
+                        logSevere(e.getKey() + " vs "
+                            + download.getPartner().getInfo());
+                        System.exit(1);
+                    }
+                }
+                logSevere("W T F");
+                System.exit(2);
+            }
+            throw new AssertionError("Removed non-managed download:" + download
+                + " " + download.getPartner().getInfo());
         }
         if (isUsingPartRequests()) {
             // All pending requests from that download are void.
@@ -133,13 +158,17 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
 
     @Override
     public String toString() {
-        String string = super.toString() + "; sources=" + downloads.values() + "; pending requested bytes: ";
+        String string = super.toString() + "; sources=" + downloads.values()
+            + "; pending requested bytes: ";
         if (filePartsState != null) {
-            string += filePartsState.countPartStates(filePartsState.getRange(), PartState.PENDING)
+            string += filePartsState.countPartStates(filePartsState.getRange(),
+                PartState.PENDING)
                 + "; available: "
-                + filePartsState.countPartStates(filePartsState.getRange(), PartState.AVAILABLE)
+                + filePartsState.countPartStates(filePartsState.getRange(),
+                    PartState.AVAILABLE)
                 + "; needed: "
-                + filePartsState.countPartStates(filePartsState.getRange(), PartState.NEEDED);
+                + filePartsState.countPartStates(filePartsState.getRange(),
+                    PartState.NEEDED);
         }
         return string;
     }
@@ -152,10 +181,11 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
      */
     protected Download findPartRecordSource(Download download) {
         assert download != null;
-        
+
         for (Download d : downloads.values()) {
             if (d.isStarted() && !d.isBroken()
-                && Util.useDeltaSync(getController(), d.getPartner())) {
+                && Util.useDeltaSync(getController(), d.getPartner()))
+            {
                 download = d;
                 break;
             }
@@ -164,9 +194,10 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
     }
 
     protected void requestFilePartsRecord(Download download) {
-        assert download == null || Util.useDeltaSync(getController(), download.getPartner());
+        assert download == null
+            || Util.useDeltaSync(getController(), download.getPartner());
         assert isUsingPartRequests();
-        
+
         if (pendingPartRecordFrom != null) {
             // logFine("Pending FPR from: " + pendingPartRecordFrom);
 
@@ -174,8 +205,8 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
             if (!pendingPartRecordFrom.isBroken()) {
                 return;
             }
-            logSevere(
-                "Source should have been removed: " + pendingPartRecordFrom);
+            logSevere("Source should have been removed: "
+                + pendingPartRecordFrom);
             pendingPartRecordFrom = null;
         }
         if (download == null) {
@@ -186,7 +217,7 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
 
         if (download != null) {
             assert Util.useDeltaSync(getController(), download.getPartner());
-            
+
             logFine("Requesting Filepartsrecord from " + download);
             setTransferState(TransferState.FILERECORD_REQUEST);
             pendingPartRecordFrom = download;
@@ -219,19 +250,24 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
                 break;
             }
         }
-        assert filePartsState.isCompleted() 
-            || filePartsState.countPartStates(filePartsState.getRange(), PartState.PENDING) > 0
-            || isNoSourcesAreReady()
-            : "AVAIL: " + filePartsState.countPartStates(filePartsState.getRange(), PartState.AVAILABLE)
-            + ", NEED : " + filePartsState.countPartStates(filePartsState.getRange(), PartState.NEEDED)
-            + ", PEND : " + filePartsState.countPartStates(filePartsState.getRange(), PartState.PENDING);
+        assert filePartsState.isCompleted()
+            || filePartsState.countPartStates(filePartsState.getRange(),
+                PartState.PENDING) > 0 || isNoSourcesAreReady() : "AVAIL: "
+            + filePartsState.countPartStates(filePartsState.getRange(),
+                PartState.AVAILABLE)
+            + ", NEED : "
+            + filePartsState.countPartStates(filePartsState.getRange(),
+                PartState.NEEDED)
+            + ", PEND : "
+            + filePartsState.countPartStates(filePartsState.getRange(),
+                PartState.PENDING);
     }
-    
+
     /**
      * Checks if all sources are not available for requests.
      */
     private boolean isNoSourcesAreReady() {
-        for (Download d: downloads.values()) {
+        for (Download d : downloads.values()) {
             if (d.isStarted() && !d.isBroken()) {
                 return false;
             }
@@ -239,9 +275,11 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
         return true;
     }
 
-    private boolean findAndRequestDownloadFor(Range range) throws BrokenDownloadException {
+    private boolean findAndRequestDownloadFor(Range range)
+        throws BrokenDownloadException
+    {
         assert range != null;
-        
+
         for (Download d : downloads.values()) {
             if (!d.isStarted() || d.isBroken()) {
                 continue;

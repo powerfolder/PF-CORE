@@ -29,6 +29,7 @@ import java.util.Queue;
 import org.apache.commons.lang.Validate;
 
 import de.dal33t.powerfolder.Constants;
+import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.message.AbortDownload;
@@ -37,10 +38,10 @@ import de.dal33t.powerfolder.message.RequestDownload;
 import de.dal33t.powerfolder.message.RequestFilePartsRecord;
 import de.dal33t.powerfolder.message.RequestPart;
 import de.dal33t.powerfolder.message.StopUpload;
+import de.dal33t.powerfolder.util.Loggable;
 import de.dal33t.powerfolder.util.Range;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.util.Loggable;
 import de.dal33t.powerfolder.util.delta.FilePartsRecord;
 
 /**
@@ -61,7 +62,7 @@ public class Download extends Transfer {
 
     private Queue<RequestPart> pendingRequests = new LinkedList<RequestPart>();
 
-    private transient DownloadManager manager;
+    private transient DownloadManager handler;
 
     /** for serialisation */
     public Download() {
@@ -75,7 +76,7 @@ public class Download extends Transfer {
      * <code>request(Member)</code>
      */
     Download(TransferManager tm, FileInfo file, boolean automatic) {
-        super(tm, file, null);
+        super(tm, (FileInfo) file.clone(), null);
         // from can be null
         this.lastTouch = new Date();
         this.automatic = automatic;
@@ -101,34 +102,38 @@ public class Download extends Transfer {
         return automatic;
     }
 
-    /**
-     * @return the managing MultiSourceDownload for this download.
-     */
-    public DownloadManager getDownloadManager() {
-        return manager;
+    public void setDownloadManager(DownloadManager handler) {
+        Reject.ifNull(handler, "Handler is null!");
+        if (this.handler != null) {
+            throw new IllegalStateException("DownloadManager already set!");
+        }
+        this.handler = handler;
     }
 
-    public void setDownloadManager(DownloadManager manager) {
-        this.manager = manager;
+    public DownloadManager getDownloadManager() {
+        return handler;
     }
 
     /**
      * Called when the partner supports part-transfers and is ready to upload
      * 
+     * @param fileInfo
+     *            the fileInfo the remote side uses.
      * @param usedFileInfo
      */
-    public void uploadStarted() {
+    public void uploadStarted(FileInfo fileInfo) {
+        checkFileInfo(fileInfo);
         lastTouch.setTime(System.currentTimeMillis());
         if (isStarted()) {
             Loggable.logWarningStatic(Download.class,
-                    "Received multiple upload start messages!");
+                "Received multiple upload start messages!");
             return;
         }
-        
+
         Loggable.logFinerStatic(Download.class,
-                "Uploader supports partial transfers.");
+            "Uploader supports partial transfers.");
         setStarted();
-        manager.readyForRequests(this);
+        handler.readyForRequests(Download.this);
     }
 
     /**
@@ -136,18 +141,29 @@ public class Download extends Transfer {
      */
     public void requestFilePartsRecord() {
         assert Util.useDeltaSync(getController(), getPartner()) : "Requesting FilePartsRecord from a client that doesn't support that!";
+        requestCheckState();
 
         getPartner().sendMessagesAsynchron(
             new RequestFilePartsRecord(getFile()));
     }
 
-    public void receivedFilePartsRecord(FilePartsRecord record) {
+    /**
+     * Invoked when a record for this download was received.
+     * 
+     * @param fileInfo
+     *            the fileInfo the remote side uses.
+     * @param record
+     *            the record received.
+     */
+    public void receivedFilePartsRecord(FileInfo fileInfo,
+        final FilePartsRecord record)
+    {
         Reject.ifNull(record, "Record is null");
+        checkFileInfo(fileInfo);
 
         lastTouch.setTime(System.currentTimeMillis());
-        Loggable.logInfoStatic(Download.class,
-                "Received parts record");
-        manager.receivedFilePartsRecord(this, record);
+        Loggable.logInfoStatic(Download.class, "Received parts record");
+        handler.filePartsRecordReceived(Download.this, record);
     }
 
     /**
@@ -159,6 +175,8 @@ public class Download extends Transfer {
      */
     public boolean requestPart(Range range) throws BrokenDownloadException {
         Validate.notNull(range);
+        requestCheckState();
+
         RequestPart rp;
         synchronized (pendingRequests) {
             if (pendingRequests.size() >= MAX_REQUESTS_QUEUED) {
@@ -171,7 +189,7 @@ public class Download extends Transfer {
             } catch (IllegalArgumentException e) {
                 // I need to do this because FileInfos are NOT immutable...
                 Loggable.logWarningStatic(Download.class,
-                        "Concurrent file change while requesting:" + e);
+                    "Concurrent file change while requesting:" + e);
                 throw new BrokenDownloadException(
                     "Concurrent file change while requesting: " + e);
             }
@@ -193,11 +211,14 @@ public class Download extends Transfer {
      * @param chunk
      * @return true if the chunk was successfully appended to the download file.
      */
-    public synchronized boolean addChunk(FileChunk chunk) {
+    public boolean addChunk(final FileChunk chunk) {
         Reject.ifNull(chunk, "Chunk is null");
-        assert chunk.file.isCompletelyIdentical(getFile());
+        checkFileInfo(chunk.file);
+
+        getTransferManager().chunkAdded(this, chunk);
 
         if (isBroken()) {
+            setBroken(TransferProblem.BROKEN_DOWNLOAD, "isBroken()");
             return false;
         }
 
@@ -227,7 +248,7 @@ public class Download extends Transfer {
 
         getCounter().chunkTransferred(chunk);
 
-        manager.receivedChunk(this, chunk);
+        handler.chunkReceived(Download.this, chunk);
         return true;
     }
 
@@ -237,6 +258,10 @@ public class Download extends Transfer {
      * @param startOffset
      */
     public void request(long startOffset) {
+        Reject.ifTrue(startOffset < 0 || startOffset >= getFile().getSize(),
+            "Invalid startOffset: " + startOffset);
+        requestCheckState();
+
         getPartner().sendMessagesAsynchron(
             new RequestDownload(getFile(), startOffset));
     }
@@ -245,6 +270,7 @@ public class Download extends Transfer {
      * Requests to abort this dl
      */
     public void abort() {
+        shutdown();
         if (getPartner() != null && getPartner().isCompleteyConnected()) {
             getPartner().sendMessageAsynchron(new AbortDownload(getFile()),
                 null);
@@ -256,9 +282,11 @@ public class Download extends Transfer {
      * This download is queued at the remote side
      */
     public void setQueued() {
-        Loggable.logFinerStatic(Download.class,
-                "DL queued by remote side: " + this);
+        Loggable.logFinerStatic(Download.class, "DL queued by remote side: "
+            + this);
         queued = true;
+
+        getTransferManager().downloadQueued(this, getPartner());
     }
 
     @Override
@@ -287,7 +315,12 @@ public class Download extends Transfer {
      * @param message
      */
     public void setBroken(TransferProblem problem, String message) {
-        getController().getTransferManager().setBroken(this, problem, message);
+        Member p = getPartner();
+        if (p != null && p.isCompleteyConnected()) {
+            p.sendMessageAsynchron(new AbortDownload(getFile()), null);
+        }
+        shutdown();
+        getTransferManager().downloadbroken(this, problem, message);
     }
 
     /**
@@ -310,7 +343,8 @@ public class Download extends Transfer {
         // Check queueing at remote side
         boolean isQueuedAtPartner = stillQueuedAtPartner();
         if (!isQueuedAtPartner) {
-            Loggable.logWarningStatic(Download.class, "Abort cause: not queued.");
+            Loggable.logWarningStatic(Download.class,
+                "Abort cause: not queued.");
             return true;
         }
         // check blacklist
@@ -320,20 +354,21 @@ public class Download extends Transfer {
             boolean onBlacklist = folder.getDiskItemFilter().isExcluded(
                 getFile());
             if (onBlacklist) {
-                Loggable.logWarningStatic(Download.class, "Abort cause: On blacklist.");
+                Loggable.logWarningStatic(Download.class,
+                    "Abort cause: On blacklist.");
                 return true;
             }
 
-            // Check if newer file is available.
-            boolean newerFileAvailable = getFile().isNewerAvailable(
-                getController().getFolderRepository());
-            if (newerFileAvailable) {
-                Loggable.logWarningStatic(Download.class,
-                    "Abort cause: Newer version available. "
-                        + getFile().toDetailString());
-                return true;
-                // throw new RuntimeException("ABORT: " + this);
-            }
+            /*
+             * Wrong place to check, since we could actually want to load an old
+             * version! // Check if newer file is available. boolean
+             * newerFileAvailable = getFile().isNewerAvailable(
+             * getController().getFolderRepository()); if (newerFileAvailable) {
+             * Loggable.logWarningStatic(Download.class,
+             * "Abort cause: Newer version available. " +
+             * getFile().toDetailString()); return true; // throw new
+             * RuntimeException("ABORT: " + this); }
+             */
         }
 
         return false;
@@ -383,14 +418,15 @@ public class Download extends Transfer {
         return msg;
     }
 
-    @Override
-    public FileInfo getFile() {
-        // This is necessary, because FileInfo also contains version information
-        // (which might be old at this point)
-        if (manager != null) {
-            return manager.getFileInfo();
+    // Checks ****************************************************************
+    private void requestCheckState() {
+        if (handler == null) {
+            throw new IllegalStateException("DownloadManager not set!");
         }
-        return super.getFile();
     }
 
+    private void checkFileInfo(FileInfo fileInfo) {
+        Reject.ifTrue(!fileInfo.isCompletelyIdentical(getFile()),
+            "FileInfo mismatch!");
+    }
 }

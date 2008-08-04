@@ -351,6 +351,8 @@ public class SwarmingTest extends MultipleControllerTestCase {
             for (int i = 0; i < 50; i++) {
                 TestHelper.waitMilliSeconds(200);
                 String cont = "" + prng.nextInt(numC);
+                // TODO: After PF gets real conflict resolution remove this:
+                cont = "0";
                 FileInfo[] fi = getFolderOf(cont).getKnowFilesAsArray();
                 if (fi.length > 0) {
                     FileInfo chosen = fi[prng.nextInt(fi.length)];
@@ -378,7 +380,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
             }
         };
 
-        TestHelper.waitForCondition(numC * 20 + 10, new ConditionWithMessage() {
+        TestHelper.waitForCondition(numC * 5 + 10, new ConditionWithMessage() {
             public boolean reached() {
                 boolean test = true;
                 int ups = 0, downs = 0;
@@ -517,6 +519,10 @@ public class SwarmingTest extends MultipleControllerTestCase {
             for (int i = 0; i < 50; i++) {
                 TestHelper.waitMilliSeconds(200);
                 String cont = "" + prng.nextInt(numC);
+
+                // TODO: After PF gets real conflict resolution remove this:
+                cont = "0";
+
                 FileInfo[] fi = getFolderOf(cont).getKnowFilesAsArray();
                 if (fi.length > 0 && fi[0].diskFileExists(getContoller(cont))) {
                     RandomAccessFile raf = new RandomAccessFile(fi[0]
