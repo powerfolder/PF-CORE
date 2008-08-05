@@ -187,9 +187,8 @@ public class PowerFolder extends Loggable {
         }
 
         // Begin monitoring memory usage.
-        // Not for webstart or if user has diabled.
-        if (!OSUtil.isWebStart() &&
-                PreferencesEntry.DETECT_LOW_MEMORY.getValueBoolean(controller))
+        // Not for webstart.
+        if (!OSUtil.isWebStart())
         {
             ExecutorService service = controller.getThreadPool();
             synchronized (service) {

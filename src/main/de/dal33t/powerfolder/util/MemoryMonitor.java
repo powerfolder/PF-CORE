@@ -27,10 +27,8 @@ import java.awt.EventQueue;
 import javax.swing.JFrame;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
-import de.dal33t.powerfolder.util.ui.NeverAskAgainResponse;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
@@ -80,32 +78,23 @@ public class MemoryMonitor implements Runnable {
             public void run() {
                 JFrame parent = controller.getUIController().getMainFrame()
                         .getUIComponent();
-                NeverAskAgainResponse response;
                 if (OSUtil.isWindowsSystem() && !OSUtil.isWebStart()) {
-                    response = DialogFactory.genericDialog(parent, Translation
+                    int response = DialogFactory.genericDialog(parent, Translation
                             .getTranslation("lowmemory.title"), Translation
                             .getTranslation("lowmemory.text"), new String[]{
                             Translation.getTranslation("lowmemory.increase"),
                             Translation.getTranslation("lowmemory.do_nothing")}, 0,
-                            GenericDialogType.WARN, Translation
-                            .getTranslation("lowmemory.dont_autodetect"));
-                    if (response.getButtonIndex() == 0) { // Increase memory
+                            GenericDialogType.WARN);
+                    if (response == 0) { // Increase memory
                         increaseAvailableMemory();
                     }
                 } else {
                     // No ini - Can only warn user.
-                    response = DialogFactory.genericDialog(parent, Translation
+                    DialogFactory.genericDialog(parent, Translation
                             .getTranslation("lowmemory.title"), Translation
                             .getTranslation("lowmemory.warn"),
                             new String[]{Translation.getTranslation("general.ok")},
-                            0, GenericDialogType.WARN, Translation
-                            .getTranslation("lowmemory.dont_autodetect"));
-                }
-
-                if (response.isNeverAskAgain()) {
-                    // Foolish user!
-                    PreferencesEntry.DETECT_LOW_MEMORY.setValue(controller,
-                            false);
+                            0, GenericDialogType.WARN);
                 }
             }
         });

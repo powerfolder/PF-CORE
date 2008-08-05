@@ -74,11 +74,6 @@ public enum PreferencesEntry {
      */
     TEST_CONNECTIVITY("test_for_connectivity", true),
 
-    /**
-     * The pref that holds a boolean value if PowerFolder should detect low memory (MemoryMonitor).
-     */
-    DETECT_LOW_MEMORY("detect_low_memory", true),
-
     DUPLICATE_FOLDER_USE("duplicaet_folder_use", true),
     
     SETUP_DEFAULT_FOLDER("setup_default_folder", true);
