@@ -19,8 +19,6 @@
 */
 package de.dal33t.powerfolder.util;
 
-import javax.swing.JOptionPane;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
@@ -47,7 +45,7 @@ public class ManuallyInvokedUpdater extends Updater {
         if (controller.isUIEnabled()) {
             DialogFactory.genericDialog(
                     getParentFrame(),
-                    Translation.getTranslation("dialog.updatecheck.noUpdateAvailable"),
+                    Translation.getTranslation("general.powerfolder"),
                     Translation.getTranslation("dialog.updatecheck.noUpdateAvailable"),
                     GenericDialogType.INFO);
         }
