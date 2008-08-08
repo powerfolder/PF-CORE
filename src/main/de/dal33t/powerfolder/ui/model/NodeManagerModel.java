@@ -422,13 +422,10 @@ public class NodeManagerModel extends PFUIComponent {
                 connectedTreeNode.removeChild(e.getNode());
                 fireTreeNodeStructureChangeEvent(connectedTreeNode);
             }
-            PreferencesEntry hideOffline = PreferencesEntry.NODEMANAGERMODEL_HIDEOFFLINEFRIENDS;
-            if (hideOffline.getValueBoolean(getController()) && node.isFriend())
-            {
-                // friendsTableModel.remove(node);
-                friendsTreeNode.removeChild(node);
+            if (friendsTreeNode.removeChild(node)) {
                 fireTreeNodeStructureChangeEvent(friendsTreeNode);
-            } else if (notInFriendsTreeNodes.removeChild(node)) {
+            }
+            if (notInFriendsTreeNodes.removeChild(node)) {
                 fireTreeNodeStructureChangeEvent(notInFriendsTreeNodes);
             }
         }
