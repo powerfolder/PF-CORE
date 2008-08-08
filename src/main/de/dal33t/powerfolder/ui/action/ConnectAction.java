@@ -23,12 +23,13 @@ import java.awt.event.ActionEvent;
 
 import javax.swing.JOptionPane;
 
+import org.apache.commons.lang.StringUtils;
+
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.net.ConnectionException;
-import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.dialog.ConnectDialog;
-import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Loggable;
+import de.dal33t.powerfolder.util.Translation;
 
 /**
  * Asks for ip and tries to connect
@@ -49,7 +50,7 @@ public class ConnectAction extends BaseAction {
             Translation.getTranslation("connect.dialog.title"),
             JOptionPane.QUESTION_MESSAGE, null, null, getController()
                 .getPreferences().get("input.lastconnect", ""));
-        if (input == null) {
+        if (StringUtils.isBlank((String) input)) {
             return;
         }
 
@@ -57,7 +58,7 @@ public class ConnectAction extends BaseAction {
         final ConnectDialog connectDialog = new ConnectDialog(getController());
         final String conStr = input.toString();
         getController().getPreferences().put("input.lastconnect", conStr);
-
+        
         Runnable connector = new Runnable() {
             public void run() {
                 // Open connect dialog if ui is open
