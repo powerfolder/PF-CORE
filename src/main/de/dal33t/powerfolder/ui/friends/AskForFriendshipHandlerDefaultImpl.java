@@ -63,6 +63,12 @@ public class AskForFriendshipHandlerDefaultImpl extends PFUIComponent implements
             .getPersonalMessage();
         final Set<FolderInfo> joinedFolders = askForFriendshipHandlerEvent
             .getJoinedFolders();
+        
+        if (getController().getOSClient().isServer(member)) {
+            // TRAC #1190
+            member.setFriend(true, null);
+            return;
+        }
 
         if (joinedFolders == null) {
             simpleAskForFriendship(askForFriendshipHandlerEvent);
