@@ -266,23 +266,29 @@ public class FileUtils {
      */
     public static final void openFile(File file) throws IOException {
         Reject.ifNull(file, "File is null");
-        
-        if (Desktop.isDesktopSupported()) {
-            Desktop.getDesktop().open(file);
-            return;
+
+        try {
+            if (Desktop.isDesktopSupported()) {
+                Desktop.getDesktop().open(file);
+                return;
+            }
+        } catch (NoClassDefFoundError e) {
+            Loggable.logFineStatic(FileUtils.class,
+                "OpenFile() fallback for old JVM.");
         }
-        
+
         // Fallback
         if (OSUtil.isMacOS()) {
-            Runtime.getRuntime().exec("open \"" + file.getAbsolutePath() + "\"");
+            Runtime.getRuntime()
+                .exec("open \"" + file.getAbsolutePath() + "\"");
         } else if (OSUtil.isWindowsSystem()) {
             URL url = file.toURI().toURL();
             // Use rundll approach
             Runtime.getRuntime().exec(
                 "rundll32 url.dll,FileProtocolHandler " + url.toString());
         } else {
-            Loggable.logSevereStatic(FileUtils.class, "Unable to start file '" + file
-                + "', system not supported");
+            Loggable.logSevereStatic(FileUtils.class, "Unable to start file '"
+                + file + "', system not supported");
         }
     }
 
@@ -500,8 +506,9 @@ public class FileUtils {
                 String herePath = hereFile.getAbsolutePath();
                 File powerFolderFile = new File(herePath, "PowerFolder.exe");
                 if (!powerFolderFile.exists()) {
-                    Loggable.logSevereStatic(FileUtils.class, "Could not find PowerFolder.exe at "
-                        + powerFolderFile.getAbsolutePath());
+                    Loggable.logSevereStatic(FileUtils.class,
+                        "Could not find PowerFolder.exe at "
+                            + powerFolderFile.getAbsolutePath());
                     return;
                 }
 
@@ -522,7 +529,8 @@ public class FileUtils {
                 // Now need to set folder as system for desktop.ini to work.
                 makeSystemOnWindows(directory);
             } catch (IOException e) {
-                Loggable.logSevereStatic(FileUtils.class, "Problem writing Desktop.ini file(s)", e);
+                Loggable.logSevereStatic(FileUtils.class,
+                    "Problem writing Desktop.ini file(s)", e);
             } finally {
                 if (pw != null) {
                     try {
