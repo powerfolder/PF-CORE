@@ -180,10 +180,16 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         boolean filesDiffered = !inSyncWithDisk(diskFile);
         if (filesDiffered) {
             this.version++;
-            setModifiedInfo(controller.getMySelf().getInfo(), new Date(diskFile
-                .lastModified()));
-            setSize(diskFile.length());
             setDeleted(!diskFile.exists());
+
+            if (!isDeleted()) {
+                setModifiedInfo(controller.getMySelf().getInfo(), new Date(
+                    diskFile.lastModified()));
+                setSize(diskFile.length());
+            } else {
+                setModifiedInfo(controller.getMySelf().getInfo(), new Date());
+                setSize(0);
+            }
             // logWarning("File updated to: " + this.toDetailString());
         }
 

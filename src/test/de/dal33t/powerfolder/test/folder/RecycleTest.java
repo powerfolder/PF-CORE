@@ -21,11 +21,13 @@ package de.dal33t.powerfolder.test.folder;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.util.Date;
 
 import de.dal33t.powerfolder.disk.RecycleBin;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.test.ControllerTestCase;
+import de.dal33t.powerfolder.util.test.TestHelper;
 
 public class RecycleTest extends ControllerTestCase {
 
@@ -51,22 +53,32 @@ public class RecycleTest extends ControllerTestCase {
     }
 
     public void testRecycleBin() {
-        System.out.println("testRecycleBin");
         FileInfo[] files = getFolder().getKnowFilesAsArray();
-        FileInfo testfile = files[0];
-        File file = getFolder().getDiskFile(testfile);
+        FileInfo fileInfo = files[0];
+        Date lastModified = fileInfo.getModifiedDate();
+        File file = getFolder().getDiskFile(fileInfo);
         RecycleBin bin = getController().getRecycleBin();
 
+        TestHelper.waitMilliSeconds(1000);
         getFolder().removeFilesLocal(files);
         assertFalse(file.exists());
-        assertTrue(bin.restoreFromRecycleBin(testfile));
+        assertEquals(fileInfo.getModifiedBy(), getController().getMySelf()
+            .getInfo());
+        assertTrue(fileInfo.toDetailString(), fileInfo.getModifiedDate().after(
+            lastModified));
+
+        assertTrue(bin.restoreFromRecycleBin(fileInfo));
         assertTrue(file.exists());
         assertFileMatch(file, getFolder().getKnownFiles().iterator().next());
-        assertEquals(testfile.getModifiedDate(), getFolder().getKnownFiles()
+        assertTrue(
+            fileInfo.toDetailString() + ": was modified " + lastModified,
+            fileInfo.getModifiedDate().equals(lastModified));
+        assertEquals(fileInfo.toDetailString(), 2, fileInfo.getVersion());
+        assertEquals(fileInfo.getModifiedDate(), getFolder().getKnownFiles()
             .iterator().next().getModifiedDate());
         getFolder().removeFilesLocal(files);
         assertFalse(file.exists());
-        bin.delete(testfile);
+        bin.delete(fileInfo);
         assertFalse(file.exists());
     }
 
