@@ -31,6 +31,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.TopLevelItem;
 import de.dal33t.powerfolder.ui.UIController;
@@ -152,9 +153,11 @@ public class NavTreeCellRenderer extends DefaultTreeCellRenderer {
             Folder folder = (Folder) userObject;
 
             icon = Icons.getIconFor(folder);
-            // icon = treeBlinkManager.getIconFor(folder, icon);
-
-            text = folder.getName();
+            if (containsRecentlyCompleted(folder)) {
+                text = "<html><b>" + folder.getName() + "</b><html>";
+            } else {
+                text = folder.getName();    
+            }
         } else if (userObject instanceof FolderInfo) {
             FolderInfo foInfo = (FolderInfo) userObject;
             icon = Icons.FOLDER;
@@ -235,5 +238,24 @@ public class NavTreeCellRenderer extends DefaultTreeCellRenderer {
         }
 
         return this;
+    }
+    
+
+    /**
+     * Use Directory.containsCompletedDownloads()
+     * 
+     * @param folder
+     * @return
+     */
+    private static boolean containsRecentlyCompleted(Folder folder) {
+        int completedDls = 0;
+        for (DownloadManager dl : folder.getController().getTransferManager()
+            .getCompletedDownloadsCollection())
+        {
+            if (dl.getFileInfo().getFolderInfo().equals(folder.getInfo())) {
+                completedDls++;
+            }
+        }
+        return completedDls > 0;
     }
 }

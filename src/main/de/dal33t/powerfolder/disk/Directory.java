@@ -672,6 +672,9 @@ public class Directory extends Loggable implements Comparable<Directory>, DiskIt
     }
 
     /**
+     * TODO: Optimize: Run through all recently completed downloads instead of
+     * all files. Afterwards remove NavTreeCellRenderer.containsRecentlyCompleted()
+     * 
      * @return true if this directory (or any subdirectory) contains a completed
      *         download.
      */

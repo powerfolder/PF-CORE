@@ -686,7 +686,6 @@ public class Icons {
             return FOLDER_INVALID;
         }
 
-        boolean isRecentlyCompleted = isRecentlyCompleted(folder);
         boolean isSyncing = folder.isTransferring() || folder.isScanning();
 
         Icon fIcon = Icons.FOLDER;
@@ -728,8 +727,6 @@ public class Icons {
             // } else {
             // fIcon = Icons.FOLDER_SYNC;
             // }
-        } else if (isRecentlyCompleted) {
-            fIcon = Icons.FOLDER_ROTATION_1;
         } else {
             fIcon = Icons.FOLDER;
         }
@@ -934,17 +931,5 @@ public class Icons {
         // Get the image's color model
         ColorModel cm = pg.getColorModel();
         return cm.hasAlpha();
-    }
-
-    private static boolean isRecentlyCompleted(Folder folder) {
-        int completedDls = 0;
-        for (DownloadManager dl : folder.getController().getTransferManager()
-            .getCompletedDownloadsCollection())
-        {
-            if (dl.getFileInfo().getFolderInfo().equals(folder.getInfo())) {
-                completedDls++;
-            }
-        }
-        return completedDls > 0;
     }
 }
