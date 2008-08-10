@@ -44,7 +44,12 @@ public class Constants {
      * URL of the PowerFolder Wiki
      */
     public static final String POWERFOLDER_WIKI_URL = "http://wiki.powerfolder.com/wiki";
-
+    
+    /**
+     * URL of the PowerFolder Support
+     */
+    public static final String POWERFOLDER_SUPPORT_URL = "http://www.powerfolder.com/support.html";
+    
     /**
      * URL of the PowerFolder Pro page
      */
