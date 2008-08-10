@@ -158,11 +158,11 @@ public class MainFrame extends PFUIComponent {
         if (screen.width <= 1024) {
             width = prefs.getInt("mainframe.width", 950);
             height = prefs.getInt("mainframe.height", 630);
-            divider = 250;
+            divider = 240;
         } else {
             width = prefs.getInt("mainframe.width", 1100);
             height = prefs.getInt("mainframe.height", 730);
-            divider = 300;
+            divider = 280;
         }
         uiComponent.setSize(width, height);
         // uiComponent.setSize(950, 630);
