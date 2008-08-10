@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.ui;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.HeadlessException;
 import java.awt.Toolkit;
@@ -150,8 +151,16 @@ public class MainFrame extends PFUIComponent {
         // Pack elements
         uiComponent.pack();
 
-        int width = prefs.getInt("mainframe.width", 950);
-        int height = prefs.getInt("mainframe.height", 630);
+        Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+        int width;
+        int height;
+        if (screen.width <= 1024) {
+            width = prefs.getInt("mainframe.width", 950);
+            height = prefs.getInt("mainframe.height", 630);
+        } else {
+            width = prefs.getInt("mainframe.width", 1100);
+            height = prefs.getInt("mainframe.height", 730);
+        }
         uiComponent.setSize(width, height);
         // uiComponent.setSize(950, 630);
 
