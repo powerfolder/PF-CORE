@@ -455,7 +455,9 @@ public class ConnectionListener extends PFComponent implements Runnable {
                         + " closed");
                 break;
             } catch (IOException e) {
-                logSevere(e);
+                logSevere("Exception while accepting socket: " + e, e);
+            } catch (RuntimeException e) {
+                logSevere("Exception while accepting socket: " + e, e);
             }
 
             // catch (InterruptedException e) {
