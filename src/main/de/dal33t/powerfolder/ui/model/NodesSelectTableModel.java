@@ -158,84 +158,33 @@ public class NodesSelectTableModel implements TableModel {
     private class MyNodeManagerListener implements NodeManagerListener {
 
         public void nodeRemoved(NodeManagerEvent e) {
-            Member member = e.getNode();
-            if (hideOffline) {
-                if (member.isConnectedToNetwork()) {
-                    if (!nodes.contains(member)) {
-                        nodes.add(member);
-                    }
-                }
-            } else {
-                if (!nodes.contains(member)) {
-                    nodes.add(member);
-                }
+            if (nodes.remove(e.getNode())) {
+                fireModelStructureChanged();
             }
-            fireModelStructureChanged();
         }
 
         public void nodeAdded(NodeManagerEvent e) {
-            Member member = e.getNode();
-            if (member.isFriend() || member.isOnLAN()) {
-                if (hideOffline) {
-                    if (e.getNode().isConnectedToNetwork()) {
-                        if (!nodes.contains(member)) {
-                            nodes.add(member);
-                        }
-                    }
-                } else {
-                    if (!nodes.contains(member)) {
-                        nodes.add(member);
-                    }
-                }
-                fireModelStructureChanged();
-            }
+            addNodeIfRequired(e.getNode());
         }
 
         public void nodeConnected(NodeManagerEvent e) {
-            if (e.getNode().isFriend() || e.getNode().isOnLAN()) {
-                Member member = e.getNode();
-                if (hideOffline) {
-                    if (e.getNode().isConnectedToNetwork()) {
-                        if (!nodes.contains(member)) {
-                            nodes.add(member);
-                        }
-                    }
-                } else {
-                    if (!nodes.contains(member)) {
-                        nodes.add(member);
-                    }
-                }
-                fireModelStructureChanged();
-            }
+            addNodeIfRequired(e.getNode());
         }
 
         public void nodeDisconnected(NodeManagerEvent e) {
-            if (hideOffline) {
-                Member member = e.getNode();
-                nodes.remove(member);
+            if (nodes.remove(e.getNode())) {
                 fireModelStructureChanged();
             }
         }
 
         public void friendAdded(NodeManagerEvent e) {
-            Member member = e.getNode();
-            if (hideOffline) {
-                if (e.getNode().isConnectedToNetwork()) {
-                    if (!nodes.contains(member)) {
-                        nodes.add(member);
-                    }
-                }
-            } else {
-                if (!nodes.contains(member)) {
-                    nodes.add(member);
-                }
-            }
-            fireModelStructureChanged();
+            addNodeIfRequired(e.getNode());
         }
 
         public void friendRemoved(NodeManagerEvent e) {
-            nodes.remove(e.getNode());
-            fireModelStructureChanged();
+            if (nodes.remove(e.getNode())) {
+                fireModelStructureChanged();
+            }
         }
 
         public void settingsChanged(NodeManagerEvent e) {
@@ -247,6 +196,25 @@ public class NodesSelectTableModel implements TableModel {
         public boolean fireInEventDispathThread() {
             return true;
         }
-    }
 
+        private void addNodeIfRequired(Member node) {
+            if (node.isFriend()
+                || (node.isOnLAN() && node.isCompleteyConnected()))
+            {
+                if (hideOffline) {
+                    if (node.isConnectedToNetwork()) {
+                        if (!nodes.contains(node)) {
+                            nodes.add(node);
+                        }
+                    }
+                } else {
+                    if (!nodes.contains(node)) {
+                        nodes.add(node);
+                    }
+                }
+                // Always fire!
+                fireModelStructureChanged();
+            }
+        }
+    }
 }
