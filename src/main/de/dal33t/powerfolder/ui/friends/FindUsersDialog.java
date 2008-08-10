@@ -25,6 +25,7 @@ import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.Controller;
 
 import javax.swing.*;
+
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
@@ -35,7 +36,7 @@ public class FindUsersDialog extends BaseDialog {
 
     private FindUsersPanel panel;
     private JButton addToFriendsButton;
-    private JButton okButton;
+    private JButton closeButton;
 
     public FindUsersDialog(Controller controller, boolean modal) {
         super(controller, modal);
@@ -45,8 +46,7 @@ public class FindUsersDialog extends BaseDialog {
     private void initComponents() {
         panel = new FindUsersPanel(getController());
         addToFriendsButton = createAddToFriendsButton();
-        okButton = createOKButton();
-
+        closeButton = createCloseButton();
     }
 
     private JButton createAddToFriendsButton() {        
@@ -66,14 +66,14 @@ public class FindUsersDialog extends BaseDialog {
     }
 
     protected Component getButtonBar() {
-        return ButtonBarFactory.buildCenteredBar(addToFriendsButton, okButton);
+        return ButtonBarFactory.buildCenteredBar(addToFriendsButton, closeButton);
     }
 
     /**
      * Creates the okay button for the whole pref dialog
      */
-    private JButton createOKButton() {
-        return createOKButton(new ActionListener() {
+    private JButton createCloseButton() {
+        return createCloseButton(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 close();
             }

@@ -28,6 +28,7 @@ import com.jgoodies.binding.value.ValueModel;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.ui.friends.FindUsersDialog;
 import de.dal33t.powerfolder.ui.model.NodesSelectTableModel;
 import de.dal33t.powerfolder.util.Translation;
 
@@ -76,21 +77,35 @@ public class NodesSelectDialog extends PFUIComponent {
 
         // General dialog initalization
         uiComponent = new JDialog(getUIController().getMainFrame().getUIComponent(),
-                Translation.getTranslation("dialog.user_select.title"), true);
+                Translation
+            .getTranslation("dialog.user_select.title"), true);
 
         uiComponent.setResizable(false);
         uiComponent.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        
         JButton okButton = new JButton(Translation.getTranslation("general.ok"));
-        okButton.setMnemonic(Translation.getTranslation("general.ok.key").charAt(0));
-        JButton cancelButton = new JButton(Translation.getTranslation("general.cancel"));
-        cancelButton.setMnemonic(Translation.getTranslation("general.cancel.key").charAt(0));
-        JComponent buttonBar = ButtonBarFactory.buildCenteredBar(okButton, cancelButton);
-
+        okButton.setMnemonic(Translation.getTranslation("general.ok.key")
+            .charAt(0));
+        JButton cancelButton = new JButton(Translation
+            .getTranslation("general.cancel"));
+        cancelButton.setMnemonic(Translation.getTranslation(
+            "general.cancel.key").charAt(0));
         cancelButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 close();
             }
         });
+        JButton findFriendsButton = new JButton(Translation
+            .getTranslation("general.search"));
+        findFriendsButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                FindUsersDialog dialog = new FindUsersDialog(getController(),
+                    true);
+                dialog.open();
+            }
+        });
+        JComponent buttonBar = ButtonBarFactory.buildCenteredBar(okButton,
+            findFriendsButton, cancelButton);
 
         // OK is the default
         uiComponent.getRootPane().setDefaultButton(okButton);

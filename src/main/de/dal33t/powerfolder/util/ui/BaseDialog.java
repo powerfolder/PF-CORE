@@ -153,6 +153,22 @@ public abstract class BaseDialog extends PFUIComponent {
         cancelButton.addActionListener(listener);
         return cancelButton;
     }
+    
+    /**
+     * Creates an internationlaized close button
+     * 
+     * @param listener
+     *            the listener to be put on the button
+     * @return
+     */
+    protected JButton createCloseButton(ActionListener listener) {
+        JButton closeButton = new JButton(Translation
+            .getTranslation("general.close"));
+        closeButton.setMnemonic(Translation.getTranslation("general.close.key").trim()
+            .charAt(0));       
+        closeButton.addActionListener(listener);
+        return closeButton;
+    }
 
     // Own methods ************************************************************
 
