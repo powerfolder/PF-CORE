@@ -268,6 +268,7 @@ public class PFWizard extends PFUIComponent {
             .getTranslation("wizard.control.help.description"));
 
         wizard.setI18NMap(i18nMap);
+        dialog.getRootPane().setDefaultButton(wizard.getNextButton());
 
         wizard.addWizardListener(new WizardListener() {
             public void wizardFinished(Wizard wizard) {

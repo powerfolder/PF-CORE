@@ -292,7 +292,11 @@ public class Wizard extends JPanel implements ActionListener {
             }
         }
     }
-
+    
+    public JButton getNextButton() {
+        return nextButton;
+    }
+    
     private void finish() {
 
         ArrayList list = new ArrayList();
