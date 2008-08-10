@@ -19,17 +19,28 @@
 */
 package de.dal33t.powerfolder.ui.preferences;
 
-import java.awt.*;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.Locale;
 
-import javax.swing.*;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.SwingConstants;
+import javax.swing.UIManager;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -44,7 +55,6 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.forms.layout.RowSpec;
 import com.jgoodies.forms.layout.Sizes;
 import com.jgoodies.looks.plastic.PlasticTheme;
 import com.jgoodies.looks.plastic.PlasticXPLookAndFeel;
@@ -54,8 +64,8 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.StartPanel;
-import de.dal33t.powerfolder.ui.theme.ThemeSupport;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.theme.ThemeSupport;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.OSUtil;
@@ -311,13 +321,13 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
             // Add info for non-windows systems
             if (OSUtil.isWindowsSystem()) { // Windows System
-                builder.appendRow(new RowSpec("3dlu"));
-                builder.appendRow(new RowSpec("pref"));
-                builder.appendRow(new RowSpec("3dlu"));
-                builder.appendRow(new RowSpec("pref"));
+                builder.appendRow("3dlu");
+                builder.appendRow("pref");
+                builder.appendRow("3dlu");
+                builder.appendRow("pref");
                 if (!OSUtil.isWindowsSystem()) {
-                    builder.appendRow(new RowSpec("3dlu"));
-                    builder.appendRow(new RowSpec("pref"));
+                    builder.appendRow("3dlu");
+                    builder.appendRow("pref");
                 }
 
                 row += 2;
@@ -335,8 +345,8 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                     builder.add(usePowerFolderIconBox, cc.xywh(3, row, 7, 1));
                 }
             } else {
-                builder.appendRow(new RowSpec("7dlu"));
-                builder.appendRow(new RowSpec("pref"));
+                builder.appendRow("7dlu");
+                builder.appendRow("pref");
 
                 row += 2;
                 builder.add(new JLabel(Translation
