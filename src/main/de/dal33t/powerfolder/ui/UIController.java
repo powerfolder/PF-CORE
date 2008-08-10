@@ -365,10 +365,6 @@ public class UIController extends PFComponent {
         {
             hideSplash();
             PFWizard.openBasicSetupWizard(getController());
-            // Now never again, only on button
-            getController().getPreferences().putBoolean("openwizard2", false);
-            getController().getPreferences()
-                .putBoolean("openwizard_os2", false);
         }
 
         // Goes to the homepage if required.
