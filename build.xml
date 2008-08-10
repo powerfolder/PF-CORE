@@ -151,6 +151,21 @@ For creation of the installer:
 			<fileset file="${main.src.dir}/PowerFolder-LICENSE.txt" />
 		</copy>
 	</target>
+	
+	<target name="jar-unsigned" depends="compile, dist-misc">
+		<!-- Put everything in ${build.dir} into the PowerFolder.jar file -->
+
+		<jar jarfile="${dist.dir}/PowerFolder.jar" basedir="${build.dir}" excludes="test*/**/*" update="true">
+			<manifest>
+				<attribute name="Built-By" value="${BuildBy}" />
+				<attribute name="Version" value="${MajorVersion}.${MinorVersion}.${RevisionVersion}" />
+				<attribute name="BuildDateTime" value="${BuildDateTime}" />
+				<attribute name="Sealed" value="false" />
+				<attribute name="Main-Class" value="de.dal33t.powerfolder.PowerFolder" />
+			</manifest>
+			<zipgroupfileset refid="libs" />
+		</jar>
+	</target>
 
 	<target name="jar" depends="compile, dist-misc" description="Create a signed jar file of the free-version">
 		<!-- Put everything in ${build.dir} into the PowerFolder.jar file -->
