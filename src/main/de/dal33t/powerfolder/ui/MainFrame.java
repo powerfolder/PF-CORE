@@ -154,21 +154,22 @@ public class MainFrame extends PFUIComponent {
         Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
         int width;
         int height;
+        int divider;
         if (screen.width <= 1024) {
             width = prefs.getInt("mainframe.width", 950);
             height = prefs.getInt("mainframe.height", 630);
+            divider = 250;
         } else {
             width = prefs.getInt("mainframe.width", 1100);
             height = prefs.getInt("mainframe.height", 730);
+            divider = 300;
         }
         uiComponent.setSize(width, height);
         // uiComponent.setSize(950, 630);
 
         // Now set divider location
-        int defaultDividerLocation = (int) ((mainPane.getWidth() - mainPane
-            .getDividerSize()) / 3.4);
         mainPane.setDividerLocation(getController().getPreferences().getInt(
-            "mainframe.dividerlocation", defaultDividerLocation));
+            "mainframe.dividerlocation", divider));
 
         if (prefs.getBoolean("mainframe.maximized", false)) {
             uiComponent.setExtendedState(Frame.MAXIMIZED_BOTH);
