@@ -191,9 +191,6 @@ public class ConnectNodesTest extends FiveControllerTestCase {
      * @throws InvalidIdentityException 
      */
     public void testFriendAutoConnect() throws InvalidIdentityException {
-        // getContollerLisa().setNetworkingMode(NetworkingMode.TRUSTEDONLYMODE);
-        // getContollerMarge().setNetworkingMode(NetworkingMode.TRUSTEDONLYMODE);
-
         getContollerLisa().setNetworkingMode(NetworkingMode.PRIVATEMODE);
         getContollerMarge().setNetworkingMode(NetworkingMode.PRIVATEMODE);
         final MyAskForFriendshipHandler handlerAtMarge = new MyAskForFriendshipHandler();
@@ -261,16 +258,16 @@ public class ConnectNodesTest extends FiveControllerTestCase {
         });
     }
 
-    public void testFolderConnectTrusted() throws InvalidIdentityException {
-        getContollerLisa().setNetworkingMode(NetworkingMode.TRUSTEDONLYMODE);
-        getContollerMarge().setNetworkingMode(NetworkingMode.TRUSTEDONLYMODE);
-
-        // All connections should be detected as on internet.
-        Feature.CORRECT_LAN_DETECTION.enable();
-        Feature.CORRECT_INTERNET_DETECTION.disable();
-
-        folderConnect();
-    }
+//    public void testFolderConnectTrusted() throws InvalidIdentityException {
+//        getContollerLisa().setNetworkingMode(NetworkingMode.TRUSTEDONLYMODE);
+//        getContollerMarge().setNetworkingMode(NetworkingMode.TRUSTEDONLYMODE);
+//
+//        // All connections should be detected as on internet.
+//        Feature.CORRECT_LAN_DETECTION.enable();
+//        Feature.CORRECT_INTERNET_DETECTION.disable();
+//
+//        folderConnect();
+//    }
 
     public void testFolderConnectInternet() throws InvalidIdentityException {
         getContollerLisa().setNetworkingMode(NetworkingMode.PRIVATEMODE);
@@ -284,9 +281,6 @@ public class ConnectNodesTest extends FiveControllerTestCase {
     }
 
     private void folderConnect() throws InvalidIdentityException {
-        getContollerLisa().setNetworkingMode(NetworkingMode.TRUSTEDONLYMODE);
-        getContollerMarge().setNetworkingMode(NetworkingMode.TRUSTEDONLYMODE);
-
         // All connections should be detected as on internet.
         Feature.CORRECT_LAN_DETECTION.enable();
         Feature.CORRECT_INTERNET_DETECTION.disable();
