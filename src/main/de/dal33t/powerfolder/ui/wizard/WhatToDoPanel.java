@@ -181,7 +181,7 @@ public class WhatToDoPanel extends PFWizardPanel {
         } else if (option == hostOption) {
 
             getWizardContext().setAttribute(PFWizard.PICTO_ICON,
-                Icons.SYNC_PCS_PICTO);
+                Icons.PROJECT_WORK_PICTO);
 
             // Reset folderinfo for disk location
             getWizardContext().setAttribute(FOLDERINFO_ATTRIBUTE, null);
