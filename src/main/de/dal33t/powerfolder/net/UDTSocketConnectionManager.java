@@ -271,7 +271,7 @@ public class UDTSocketConnectionManager extends PFComponent {
             logFiner("Replies: " + replies.size());
         }
         if (!UDTSocket.isSupported()) {
-            logWarning("UDT sockets not supported on this platform.");
+            logFine("UDT sockets not supported on this platform.");
             return;
         }
         switch (msg.getType()) {
