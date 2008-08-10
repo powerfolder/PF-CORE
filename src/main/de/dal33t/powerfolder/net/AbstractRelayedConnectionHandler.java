@@ -781,6 +781,9 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
 
                 if (member != null) {
                     member.handleMessage((Message) obj);
+                } else if (!isConnected()) {
+                    // Simply break. Already disconnected
+                    shutdownWithMember();
                 } else {
                     logSevere(
                         "Connection closed, message received, before peer identified itself: "

@@ -988,6 +988,9 @@ public abstract class AbstractUDTSocketConnectionHandler extends PFComponent
 
                         if (member != null) {
                             member.handleMessage((Message) obj);
+                        } else if (!isConnected()) {
+                            // Simply break. Already disconnected
+                            break;
                         } else {
                             logSevere(
                                 "Connection closed, message received, before peer identified itself: "
