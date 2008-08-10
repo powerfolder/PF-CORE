@@ -245,7 +245,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
         builder.add(sendViaPowerFolderButton, cc.xyw(1, row, 3));
         row += 2;
 
-        FormLayout layout2 = new FormLayout("pref:grow, 4dlu, 15dlu", "pref");
+        FormLayout layout2 = new FormLayout("100dlu, 4dlu, 15dlu", "pref");
         PanelBuilder builder2 = new PanelBuilder(layout2);
         builder2.add(viaPowerFolderText, cc.xy(1, 1));
         builder2.add(viaPowerFolderConfigButton, cc.xy(3, 1));
