@@ -1192,6 +1192,10 @@ public class NodeManager extends PFComponent {
      * @param message
      */
     public void broadcastMessage(final Message message) {
+        if (!started) {
+            logWarning("Not started. Not broadcasting message: " + message);
+            return;
+        }
         if (isLogFiner()) {
             logFiner("Broadcasting message: " + message);
         }
@@ -1227,6 +1231,10 @@ public class NodeManager extends PFComponent {
      * @return the number of nodes where the message has been broadcasted
      */
     public int broadcastMessageToSupernodes(Message message, int nSupernodes) {
+        if (!started) {
+            logWarning("Not started. Not broadcasting message: " + message);
+            return 0;
+        }
         if (isLogFiner()) {
             logFiner("Broadcasting message to supernodes: " + message);
         }
@@ -1271,6 +1279,10 @@ public class NodeManager extends PFComponent {
      * @return the number of nodes where the message has been broadcasted
      */
     public int broadcastMessageLANNodes(Message message, int nBroadcasted) {
+        if (!started) {
+            logWarning("Not started. Not broadcasting message: " + message);
+            return 0;
+        }
         if (isLogFiner()) {
             logFiner("Broadcasting message to LAN nodes: " + message);
         }
