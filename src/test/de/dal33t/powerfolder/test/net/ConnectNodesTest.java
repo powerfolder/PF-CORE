@@ -1,28 +1,32 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id: AddLicenseHeader.java 4282 2008-06-16 03:25:09Z tot $
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id: AddLicenseHeader.java 4282 2008-06-16 03:25:09Z tot $
+ */
 package de.dal33t.powerfolder.test.net;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
+import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.NetworkingMode;
+import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.event.AskForFriendshipEvent;
+import de.dal33t.powerfolder.event.AskForFriendshipHandler;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.net.InvalidIdentityException;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
@@ -182,45 +186,153 @@ public class ConnectNodesTest extends FiveControllerTestCase {
         });
     }
 
-    public void testFriendAutoConnect() {
-        // Reconnect manager has to be started therefore!
-        getContollerHomer().getReconnectManager().start();
+    /**
+     * Also tests #1124
+     * @throws InvalidIdentityException 
+     */
+    public void testFriendAutoConnect() throws InvalidIdentityException {
+        // getContollerLisa().setNetworkingMode(NetworkingMode.TRUSTEDONLYMODE);
+        // getContollerMarge().setNetworkingMode(NetworkingMode.TRUSTEDONLYMODE);
 
-        final Member margeAtHomer = getContollerMarge().getMySelf().getInfo()
-            .getNode(getContollerHomer(), true);
-        assertFalse(margeAtHomer.isCompleteyConnected());
+        getContollerLisa().setNetworkingMode(NetworkingMode.PRIVATEMODE);
+        getContollerMarge().setNetworkingMode(NetworkingMode.PRIVATEMODE);
+        final MyAskForFriendshipHandler handlerAtMarge = new MyAskForFriendshipHandler();
+        getContollerMarge().getNodeManager().setAskForFriendshipHandler(
+            handlerAtMarge);
+        assertFalse(handlerAtMarge.hasBeenAsked);
+
+        // All connections should be detected as on internet.
+        Feature.CORRECT_LAN_DETECTION.enable();
+        Feature.CORRECT_INTERNET_DETECTION.disable();
+
+        // Reconnect manager has to be started therefore!
+        getContollerLisa().getReconnectManager().start();
+
+        final Member margeAtLisa = getContollerMarge().getMySelf().getInfo()
+            .getNode(getContollerLisa(), true);
+        assertFalse(margeAtLisa.isCompleteyConnected());
 
         // Make friend
-        margeAtHomer.setFriend(true, "");
+        margeAtLisa.setFriend(true, "");
 
         TestHelper.waitForCondition(100, new ConditionWithMessage() {
             public String message() {
-                return "Marge has not beed reconnected. Nodes in recon queue at Homer: "
-                    + getContollerHomer().getReconnectManager()
+                return "Marge has not beed reconnected. Nodes in recon queue at Lisa: "
+                    + getContollerLisa().getReconnectManager()
                         .getReconnectionQueue().size();
             }
 
             public boolean reached() {
-                return margeAtHomer.isCompleteyConnected();
+                return margeAtLisa.isCompleteyConnected();
             }
         });
 
-        // Again shutdown
-        margeAtHomer.shutdown();
+        TestHelper.waitForCondition(5, new ConditionWithMessage() {
+            public String message() {
+                return "Marge has not been ask for friendship with Lisa!";
+            }
+
+            public boolean reached() {
+                return handlerAtMarge.hasBeenAsked;
+            }
+        });
+
+        // Again fail, no mutual friends yet.
+        margeAtLisa.shutdown();
+        assertFalse(margeAtLisa.reconnect());
+        assertFalse(margeAtLisa.isCompleteyConnected());
+
+        final Member lisaAtMarge = getContollerLisa().getMySelf().getInfo()
+            .getNode(getContollerMarge(), true);
+        lisaAtMarge.setFriend(true, "YAAA");
 
         // RECONNECT should happen!
         // Both are friends so connect!
         TestHelper.waitForCondition(100, new ConditionWithMessage() {
             public String message() {
-                return "Marge has not beed reconnected. Nodes in recon queue at Homer: "
-                    + getContollerHomer().getReconnectManager()
+                return "Marge has not beed reconnected. Nodes in recon queue at Lisa: "
+                    + getContollerLisa().getReconnectManager()
                         .getReconnectionQueue().size();
             }
 
             public boolean reached() {
-                return margeAtHomer.isCompleteyConnected();
+                return margeAtLisa.isCompleteyConnected();
             }
         });
+    }
+
+    public void testFolderConnectTrusted() throws InvalidIdentityException {
+        getContollerLisa().setNetworkingMode(NetworkingMode.TRUSTEDONLYMODE);
+        getContollerMarge().setNetworkingMode(NetworkingMode.TRUSTEDONLYMODE);
+
+        // All connections should be detected as on internet.
+        Feature.CORRECT_LAN_DETECTION.enable();
+        Feature.CORRECT_INTERNET_DETECTION.disable();
+
+        folderConnect();
+    }
+
+    public void testFolderConnectInternet() throws InvalidIdentityException {
+        getContollerLisa().setNetworkingMode(NetworkingMode.PRIVATEMODE);
+        getContollerMarge().setNetworkingMode(NetworkingMode.PRIVATEMODE);
+
+        // All connections should be detected as on internet.
+        Feature.CORRECT_LAN_DETECTION.enable();
+        Feature.CORRECT_INTERNET_DETECTION.disable();
+
+        folderConnect();
+    }
+
+    private void folderConnect() throws InvalidIdentityException {
+        getContollerLisa().setNetworkingMode(NetworkingMode.TRUSTEDONLYMODE);
+        getContollerMarge().setNetworkingMode(NetworkingMode.TRUSTEDONLYMODE);
+
+        // All connections should be detected as on internet.
+        Feature.CORRECT_LAN_DETECTION.enable();
+        Feature.CORRECT_INTERNET_DETECTION.disable();
+
+        // Reconnect manager has to be started therefore!
+        getContollerLisa().getReconnectManager().start();
+
+        final Member margeAtLisa = getContollerMarge().getMySelf().getInfo()
+            .getNode(getContollerLisa(), true);
+        assertFalse(margeAtLisa.isCompleteyConnected());
+
+        // Join testfolder.
+        joinTestFolder(SyncProfile.MANUAL_SYNCHRONIZATION, false);
+
+        assertTrue(margeAtLisa.reconnect());
+
+        TestHelper.waitForCondition(100, new ConditionWithMessage() {
+            public String message() {
+                return "Marge has not beed reconnected. Nodes in recon queue at Lisa: "
+                    + getContollerLisa().getReconnectManager()
+                        .getReconnectionQueue().size();
+            }
+
+            public boolean reached() {
+                return margeAtLisa.isCompleteyConnected();
+            }
+        });
+
+        // // Again shutdown
+        // margeAtLisa.shutdown();
+        // // getContollerLisa().getReconnectManager().buildReconnectionQueue();
+        //
+        // // RECONNECT should happen!
+        // // Both are friends so connect!
+        // TestHelper.waitForCondition(100, new ConditionWithMessage() {
+        // public String message() {
+        // return "Marge has not beed reconnected. Nodes in recon queue at Lisa:
+        // "
+        // + getContollerLisa().getReconnectManager()
+        // .getReconnectionQueue().size();
+        // }
+        //
+        // public boolean reached() {
+        // return margeAtLisa.isCompleteyConnected();
+        // }
+        // });
     }
 
     public void testNonConnectWrongIdentity() {
@@ -281,6 +393,16 @@ public class ConnectNodesTest extends FiveControllerTestCase {
             }
         }
 
+    }
+
+    private class MyAskForFriendshipHandler implements AskForFriendshipHandler {
+        boolean hasBeenAsked = false;
+
+        public void askForFriendship(
+            AskForFriendshipEvent askForFriendshipHandlerEvent)
+        {
+            hasBeenAsked = true;
+        }
     }
 
 }
