@@ -266,11 +266,15 @@ public class FolderRepositoryModel extends PFUIComponent {
             }
             FolderModel folderModel = locateFolderModel(folder);
             if (folderModel == null
-                || myFoldersTreeNode.contains(folderModel.getTreeNode()))
+                || !myFoldersTreeNode.contains(folderModel.getTreeNode()))
             {
                 return;
             }
-            if (folder.isTransferring() || folder.isScanning()) {
+            if (folder.isTransferring()
+                || folder.isScanning()
+                || getController().getFolderRepository()
+                    .getCurrentlyMaintainingFolder().equals(folder))
+            {
                 getUIController().getBlinkManager().addBlinking(folder,
                     Icons.FOLDER);
             } else {
