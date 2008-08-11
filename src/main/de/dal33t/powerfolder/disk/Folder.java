@@ -1641,6 +1641,13 @@ public class Folder extends PFComponent {
             maintainFolderDB();
         }
     }
+    
+    /**
+     * @return true if this folder requires the maintenance to be run.
+     */
+    public boolean isMaintenanceRequired() {
+        return scanForced || autoScanRequired() || maintainFolderDBrequired();
+    }
 
     /*
      * Member managing methods ************************************************

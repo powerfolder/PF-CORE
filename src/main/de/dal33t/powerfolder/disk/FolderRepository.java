@@ -789,6 +789,10 @@ public class FolderRepository extends PFComponent implements Runnable {
                 Collections.sort(scanningFolders, new FolderComparator());
 
                 for (Folder folder : scanningFolders) {
+                    if (!folder.isMaintenanceRequired()) {
+                        // Skip.
+                        continue;
+                    }
                     currentlyMaintaitingFolder = folder;
                     // Fire event
                     fireMaintanceStarted(currentlyMaintaitingFolder);
