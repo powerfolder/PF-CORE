@@ -59,7 +59,7 @@ public class FileRequestor extends PFComponent {
         myThread.start();
         logFine("Started");
 
-        long waitTime = getController().getWaitTime() * 12;
+        long waitTime = Controller.getWaitTime() * 12;
         getController()
             .scheduleAndRepeat(new PeriodicalTriggerTask(), waitTime);
     }
