@@ -1,4 +1,95 @@
-PowerFolder Version 3.1.0 - http://www.powerfolder.com
+PowerFolder Version 3.1.1 - http://www.powerfolder.com
+
+Enhancements:
+ * Account registration is now integrated into PowerFolder.
+   Registration on the PowerFolder Website is not longer required.
+ * PowerFolder, which contain new files are now marked bold in tree.
+ * Filestab context menu action "Unmark new file" marks files as not longer new.
+ * System tray: Added explorer shortcuts to PowerFolder directories.
+ * Reduced overhead traffic during Router/NAT traversal.
+   This feature is now again enabled by default.
+ * Console/server instance of PowerFolder now tries to read and activate
+   a license key file from the execution directory (txt and key files).
+ * Improved error messages if system service fails to install on Windows Vista.
+ * Removed the system service installation option from the installer.
+ * The Online Storage now automatically gets added to the list of friends.
+ * It is now possibility to remove a PowerFolder from the Online Storage
+   from within the program. 
+ * Removal of meta-data also deletes invitation file in PowerFolder.
+ * Sending invitations: Finding new friends can now be done during the
+   selection of the recipients.
+ * A checkbox to get own copy of invitation by email (CC) has been added.
+ * It is now possible to manually connect to a computer under "Find friends".
+ * Memory warning cannot longer be stopped to pop up. Too low memory settings
+   causes PowerFolder to run incorrectly. More information can be found here:
+   http://wiki.powerfolder.com/wiki/Memory_configuration
+ * Debug logging now dumps the system settings into the debug directory.
+ * A button to send the debug directory has been added to the debug panel.
+ * Re-added filelist csv writing to debug log directory.
+ * Next button in wizards is now the default button when pressing enter.
+ * Wrong system notification popups not longer show up.
+ * The startup time has been slightly increased.
+ * Added hints to search text fields.
+
+Bugfixes:
+ * Unnecessary/wrong downloads do not longer occur. A bug has been fixed,
+   that caused non changed files rarely to be detected as changed.
+ * The connection problem during adding a friend has been solved. Friendship
+   invite dialog on added computer now correctly pops up.
+ * System service does not longer prevent PowerFolder from starting if it is
+   unable to write to the "service" directory in installation path.
+ * System service now installs correctly on computers, that have Windows and 
+   user directory on different drives.
+ * Deletion date of files in recycle bin is now correct. Often was 1.Jan 1970.
+ * The CPU load on systems managing many PowerFolders was drastically reduced.
+ * Filestab filter is now correctly applied to directories.
+ * Foreign computers should not longer show up while sending an invitation.
+ * LAN computers now show up under friends if filter is set to show them.
+ * PowerFolder now starts after installation if checkbox "Start PowerFolder now"
+   is checked.
+ * Context menus on Mac OS X now correctly show up.
+ * "Start file" and "Open folder" is now working under Mac OS X.
+ * Corrected sorting of uploads and downloads if sorted by "Progress".
+ * Date of last file change in folder/home is not correct.
+ * Many other cosmetic fixes.
+
+
+Please give us feedback and request improvements at our forum:
+http://forums.powerfolder.com
+
+Minimum Java version is 6.0.
+
+Thanks to those who requested features in our forum and we hope to implement
+even more if you keep requesting them for the next version.
+
+- The PowerFolder Team
+
+Official Roadmap:
+http://www.powerfolder.com/roadmap.html
+
+Please remember: You agree to keep us free of any (legal) issues involved with
+downloading and using this PowerFolder!
+
+Contact information:
+
+Web  	: http://www.powerfolder.com
+Contact	: http://www.powerfolder.com/contact.html
+Support	: http://www.powerfolder.com/support.html
+Email	: contact@powerfolder.com
+IRC	: QuakeNet, Nick: TotMacherr, Flo and Nakata on channel #powerfolder
+ICQ	: 1898935
+
+External libraries used:
+- JGoodies looks, forms & binding (http://www.jgoodies.com). Under BSD License. (jar/jgoodies-LICENSE.txt)
+- systray (http://systray.sourceforge.net). Under LGPL License. (jar/systray-ReadMe.txt)
+- jakarta-commons (http://jakarta.apache.org/commons).
+  Under Apache License, Version 2.0
+
+
+History:
+
+Version 3.1.0
+-------------
 
 New Features:
  * PowerFolder Pro is now available as 30 day test version
@@ -44,39 +135,6 @@ Bugfixes:
  * Directory with space in name should now be correctly opened in
    system browser when clicking on Files/Open Folder
 
-Please give us feedback and request improvements at our forum:
-http://forums.powerfolder.com
-
-Minimum Java version is 6.0.
-
-Thanks to those who requested features in our forum and we hope to implement
-even more if you keep requesting them for the next version.
-
-- The PowerFolder Team
-
-Official Roadmap:
-http://www.powerfolder.com/roadmap.html
-
-Please remember: You agree to keep us free of any (legal) issues involved with
-downloading and using this PowerFolder!
-
-Contact information:
-
-Web  	: http://www.powerfolder.com
-Contact	: http://www.powerfolder.com/contact.html
-Support	: http://www.powerfolder.com/support.html
-Email	: contact@powerfolder.com
-IRC	: QuakeNet, Nick: TotMacherr, Flo and Nakata on channel #powerfolder
-ICQ	: 1898935
-
-External libraries used:
-- JGoodies looks, forms & binding (http://www.jgoodies.com). Under BSD License. (jar/jgoodies-LICENSE.txt)
-- systray (http://systray.sourceforge.net). Under LGPL License. (jar/systray-ReadMe.txt)
-- jakarta-commons (http://jakarta.apache.org/commons).
-  Under Apache License, Version 2.0
-
-
-History:
 
 Version 3.0.2
 -------------
