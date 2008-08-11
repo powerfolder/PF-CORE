@@ -494,7 +494,7 @@ public class ServerClient extends PFComponent {
                                         + server);
                             }
                         } else {
-                            logWarning(
+                            logFine(
                                 "Triing to connect to Server by address ("
                                     + server + ")");
                             // Get "full" Member with ID. after direct connect
