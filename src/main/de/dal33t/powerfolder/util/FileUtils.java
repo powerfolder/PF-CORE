@@ -279,8 +279,8 @@ public class FileUtils {
 
         // Fallback
         if (OSUtil.isMacOS()) {
-            Runtime.getRuntime()
-                .exec("open \"" + file.getAbsolutePath() + "\"");
+            URL url = file.toURI().toURL();
+            Runtime.getRuntime().exec("open " + url.toString());
         } else if (OSUtil.isWindowsSystem()) {
             URL url = file.toURI().toURL();
             // Use rundll approach

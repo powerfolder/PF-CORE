@@ -78,14 +78,14 @@ public class StartFileAction extends SelectionBaseAction {
                 // TODO warn for opening more than 10 files?
             }
             for (Object selection : selections) {
-                if (selection instanceof FileInfo && OSUtil.isWindowsSystem()) {
+                if (selection instanceof FileInfo) {
                     FileInfo fInfo = (FileInfo) selection;
 
                     if (fInfo.diskFileExists(getController())) {
                         File file = fInfo.getDiskFile(getController()
-                                .getFolderRepository());
+                            .getFolderRepository());
                         Loggable.logFineStatic(StartFileAction.class,
-                                "Starting " + file.getAbsolutePath());
+                            "Starting " + file.getAbsolutePath());
                         try {
                             FileUtils.openFile(file);
                         } catch (IOException ex) {
