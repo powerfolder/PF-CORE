@@ -34,7 +34,7 @@ Enhancements:
 Bugfixes:
  * Unnecessary/wrong downloads do not longer occur. A bug has been fixed,
    that caused non changed files rarely to be detected as changed.
- * The connection problem during adding a friend has been solved. Friendship
+ * The connection problem while adding a friend has been solved. Friendship
    invite dialog on added computer now correctly pops up.
  * System service does not longer prevent PowerFolder from starting if it is
    unable to write to the "service" directory in installation path.
