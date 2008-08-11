@@ -91,7 +91,7 @@ public class Translation {
      */
     public static Locale getActiveLocale() {
         Locale locale = getResourceBundle().getLocale();
-        if (StringUtils.isEmpty(locale.getLanguage())) {
+        if (locale == null || StringUtils.isEmpty(locale.getLanguage())) {
             // Workaround for english
             return Locale.ENGLISH;
         }
@@ -174,7 +174,7 @@ public class Translation {
 
     /**
      * Returns translation for this id
-     *
+     * 
      * @param id
      *            the id for the translation entry
      * @return the localized string
@@ -189,9 +189,14 @@ public class Translation {
             // logWarning("Translation for '" + id + "': " + translation);
             return translation;
         } catch (MissingResourceException e) {
-            Loggable.logWarningStatic(Translation.class,
+            if (id != null && !id.startsWith("date_format.")) {
+                // Only log non-date format errors.
+                // Date format error may occur during logging, prevent
+                // stackoverflow error.
+                Loggable.logWarningStatic(Translation.class,
                     "Unable to find translation for ID '" + id + '\'');
-            Loggable.logSevereStatic(Translation.class,e);
+                Loggable.logSevereStatic(Translation.class, e);
+            }
             return "- " + id + " -";
         }
     }

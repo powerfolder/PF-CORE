@@ -338,24 +338,24 @@ public class Controller extends PFComponent {
                 ResourceBundle resourceBundle = new ForcedLanguageFileResourceBundle(
                     langfilename);
                 Translation.setResourceBundle(resourceBundle);
+                System.out.println("Loading language bundle from file "
+                    + langfilename);
             } catch (FileNotFoundException fnfe) {
                 logSevere(
                     "forced language file (" + langfilename + ") not found: "
                         + fnfe.getMessage());
                 logSevere("using setup language");
                 Translation.resetResourceBundle();
-                Translation.getResourceBundle();
             } catch (IOException ioe) {
                 logSevere(
                     "forced language file io error: " + ioe.getMessage());
                 logSevere("using setup language");
                 Translation.resetResourceBundle();
-                Translation.getResourceBundle();
             }
         } else {
             Translation.resetResourceBundle();
-            Translation.getResourceBundle();
         }
+        Translation.getResourceBundle();
 
         // loadConfigFile
         if (!loadConfigFile(filename)) {
