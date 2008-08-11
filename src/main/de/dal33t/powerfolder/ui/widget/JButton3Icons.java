@@ -20,19 +20,23 @@
 package de.dal33t.powerfolder.ui.widget;
 
 import java.awt.Color;
+import java.awt.Insets;
 
 import javax.swing.Icon;
 import javax.swing.JButton;
 
+import com.jgoodies.forms.factories.Borders;
+
     
 public class JButton3Icons extends JButton {
-    
+
     public JButton3Icons(Icon normalIcon, Icon hoverIcon, Icon pushIcon) {
         super(normalIcon);
         setOpaque(false);
-        setBorder(null);
+        setBorder(Borders.EMPTY_BORDER);
         setBackground(Color.WHITE);
         setPressedIcon(pushIcon);
         setRolloverIcon(hoverIcon);
+        setMargin(new Insets(0, 0, 0, 0));
     }
 }
