@@ -449,7 +449,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
      * that is okay.
      */
     private void findUserDirectories() {
-        String userHome = System.getProperty("user.home");
+        File userHome = new File(System.getProperty("user.home"));
         addTargetDirectory(userHome, USER_DIR_CONTACTS, Translation
             .getTranslation("user.dir.contacts"), false);
         addTargetDirectory(userHome, USER_DIR_DESKTOP, Translation
@@ -490,7 +490,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         addTargetDirectory(userHome, USER_DIR_VIDEOS, Translation
             .getTranslation("user.dir.videos"), false);
         if (OSUtil.isWindowsSystem()) {
-            String appData = System.getenv("APPDATA");
+            File appData = new File(System.getenv("APPDATA"));
             addTargetDirectory(appData, APPS_DIR_FIREFOX, Translation
                 .getTranslation("apps.dir.firefox"), false);
             addTargetDirectory(appData, APPS_DIR_SUNBIRD, Translation
@@ -502,7 +502,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
                     .getTranslation("apps.dir.outlook"), false);
             }
         } else if (OSUtil.isLinux()) {
-            String appData = "/etc";
+            File appData = new File("/etc");
             addTargetDirectory(appData, APPS_DIR_FIREFOX2, Translation
                 .getTranslation("apps.dir.firefox"), false);
             addTargetDirectory(appData, APPS_DIR_SUNBIRD2, Translation
@@ -523,7 +523,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
      * @param allowHidden
      *            allow display of hidden dirs
      */
-    private void addTargetDirectory(String root, String subdir,
+    private void addTargetDirectory(File root, String subdir,
         String translation, boolean allowHidden)
     {
 

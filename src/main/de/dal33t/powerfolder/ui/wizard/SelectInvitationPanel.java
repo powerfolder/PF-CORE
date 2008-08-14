@@ -65,8 +65,8 @@ public class SelectInvitationPanel extends PFWizardPanel {
         FolderInfo folderInfo = possibleFolders.get(index);
         Invitation invitation = folderInfo.getFolder(getController())
                 .createInvitation();
-        invitation.setSuggestedLocalBase(folderInfo.getFolder(getController())
-                .getLocalBase());
+        invitation.setSuggestedLocalBase(getController(),
+                folderInfo.getFolder(getController()).getLocalBase());
         invitation.setInvitationText(messageField.getText());
         InvitationUtil.invitationToNode(getController(), invitation, member);
         Loggable.logFinerStatic(SelectInvitationPanel.class,

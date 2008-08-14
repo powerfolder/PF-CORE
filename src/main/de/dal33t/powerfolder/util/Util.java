@@ -679,4 +679,33 @@ public class Util {
         InetSocketAddress connectAddress = new InetSocketAddress(ip, remotePort);
         return connectAddress;
     }
+
+
+    /**
+     * Replace every occurences of a string within a string
+     *
+     * @param target
+     * @param from
+     * @param to
+     * @return
+     */
+
+    public static String replace(String target, String from, String to) {
+        int start = target.indexOf(from);
+        if (start == -1) {
+            return target;
+        }
+        int lf = from.length();
+        char[] targetChars = target.toCharArray();
+        StringBuilder buffer = new StringBuilder();
+        int copyFrom = 0;
+        while (start != -1) {
+            buffer.append(targetChars, copyFrom, start - copyFrom);
+            buffer.append(to);
+            copyFrom = start + lf;
+            start = target.indexOf(from, copyFrom);
+        }
+        buffer.append(targetChars, copyFrom, targetChars.length - copyFrom);
+        return buffer.toString();
+    }
 }

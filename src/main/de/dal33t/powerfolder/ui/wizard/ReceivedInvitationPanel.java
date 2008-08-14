@@ -83,7 +83,7 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
     private boolean createPreviewFolder() {
 
         FolderSettings folderSettings = new FolderSettings(invitation
-            .getSuggestedLocalBase(),
+            .getSuggestedLocalBase(getController()),
             syncProfileSelectorPanel.getSyncProfile(), false, true, true, false);
 
         getController().getFolderRepository().createFolder(invitation.folder,
@@ -124,7 +124,7 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
                 PFWizard.SUCCESS_PANEL);
         } else {
             return new ChooseDiskLocationPanel(getController(), invitation
-                .getSuggestedLocalBase().getAbsolutePath(),
+                .getSuggestedLocalBase(getController()).getAbsolutePath(),
                 new FolderCreatePanel(getController()));
         }
     }

@@ -22,6 +22,11 @@ package de.dal33t.powerfolder.message;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.os.OSUtil;
 
 import java.io.File;
 
@@ -35,16 +40,22 @@ public class Invitation extends FolderRelatedMessage {
 
     private static final long serialVersionUID = 101L;
 
+    /** suggestedLocalBase is absolute. */
+    private static final int ABSOLUTE = 0;
+
+    /** suggestedLocalBase is relative to apps directory. */
+    private static final int RELATIVE_APP_DATA = 1;
+
+    /** suggestedLocalBase is relative to PowerFolder base directory. */
+    private static final int RELATIVE_PF_BASE = 2;
+
     private MemberInfo invitor;
 
-    /**
-     * This field is only used to allow backward compatablility with old
-     * invitations.
-     */
-    private SyncProfile neverUsed;
     private String invitationText;
     private File suggestedLocalBase;
     private String suggestedSyncProfileConfig;
+    private String suggestedLocalBasePath;
+    private int relative;
 
     public Invitation(FolderInfo folder, MemberInfo invitor) {
         this.folder = folder;
@@ -59,12 +70,80 @@ public class Invitation extends FolderRelatedMessage {
         suggestedSyncProfileConfig = suggestedSyncProfile.getFieldList();
     }
 
-    public void setSuggestedLocalBase(File suggestedLocalBase) {
-        this.suggestedLocalBase = suggestedLocalBase;
+    /**
+     * Sets the suggested local base. Parses to get relative paths from apps dir
+     * and PowerFolder local base.
+     *
+     * For subdirs of the PowerFolder base directory and of the apps dir,
+     * the relative part of the location is extracted so that the receiver can
+     * locate local to his computer's environment.
+     *
+     * @param controller
+     * @param suggestedLocalBase
+     */
+    public void setSuggestedLocalBase(Controller controller, File suggestedLocalBase) {
+        Reject.ifNull(suggestedLocalBase, "File is null");
+        String folderBase = controller.getFolderRepository().getFoldersBasedir();
+        String appsDir = getAppsDir();
+        if (suggestedLocalBase.getAbsolutePath().startsWith(appsDir)) {
+            String filePath = suggestedLocalBase.getAbsolutePath();
+            suggestedLocalBasePath = filePath.substring(appsDir.length());
+
+            // Remove any leading file separators.
+            while (suggestedLocalBasePath.startsWith(File.separator)) {
+                suggestedLocalBasePath = suggestedLocalBasePath.substring(1);
+            }
+            relative = RELATIVE_APP_DATA;
+        } else if (suggestedLocalBase.getAbsolutePath().startsWith(folderBase)) {
+            String filePath = suggestedLocalBase.getAbsolutePath();
+            String baseDirPath = ConfigurationEntry.FOLDER_BASEDIR.getValue(controller);
+            suggestedLocalBasePath = filePath.substring(baseDirPath.length());
+
+            // Remove any leading file separators.
+            while (suggestedLocalBasePath.startsWith(File.separator)) {
+                suggestedLocalBasePath = suggestedLocalBasePath.substring(1);
+            }
+            relative = RELATIVE_PF_BASE;
+        } else {
+            suggestedLocalBasePath = suggestedLocalBase.getAbsolutePath();
+            relative = ABSOLUTE;
+        }
     }
 
-    public File getSuggestedLocalBase() {
-        return suggestedLocalBase;
+    /**
+     * Get the suggested local base. Uses 'relative' to adjust for the
+     * local environment.
+     *
+     * @param controller
+     * @return
+     */
+    public File getSuggestedLocalBase(Controller controller) {
+
+        if (suggestedLocalBasePath == null) {
+            return new File(controller.getFolderRepository().getFoldersBasedir());
+        }
+
+        if (OSUtil.isLinux() || OSUtil.isMacOS()) {
+            suggestedLocalBasePath = Util.replace(suggestedLocalBasePath, "\\",
+                    File.separator);
+        } else {
+            suggestedLocalBasePath = Util.replace(suggestedLocalBasePath, "/",
+                    File.separator);
+        }
+
+        if (relative == RELATIVE_APP_DATA) {
+            return new File(getAppsDir(), suggestedLocalBasePath);
+        } else if (relative == RELATIVE_PF_BASE) {
+            File powerFolderBaseDir = new File(controller.getFolderRepository()
+                    .getFoldersBasedir());
+            return new File(powerFolderBaseDir, suggestedLocalBasePath);
+        } else {
+            return new File(suggestedLocalBasePath);
+        }
+    }
+
+    public int getRelative() {
+        return relative;
     }
 
     public MemberInfo getInvitor() {
@@ -91,4 +170,15 @@ public class Invitation extends FolderRelatedMessage {
     public String toString() {
         return "Invitation to " + folder + " from " + invitor;
     }
+
+    private static String getAppsDir() {
+        if (OSUtil.isWindowsSystem()) {
+            return System.getenv("APPDATA");
+        }
+
+        // Loading a Windows invitation on a Mac/Unix box:
+        // no APPDIR, so set to somewhere safe.
+        return System.getProperty("user.home");
+    }
+
 }

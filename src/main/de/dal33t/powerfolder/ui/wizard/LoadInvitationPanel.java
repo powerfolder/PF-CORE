@@ -106,7 +106,7 @@ public class LoadInvitationPanel extends PFWizardPanel {
             return (WizardPanel) getWizardContext().getAttribute(
                 PFWizard.SUCCESS_PANEL);
         } else {
-            File base = invitation.getSuggestedLocalBase();
+            File base = invitation.getSuggestedLocalBase(getController());
             if (base == null) {
                 base = new File(getController().getFolderRepository().getFoldersBasedir());
             }
@@ -123,7 +123,7 @@ public class LoadInvitationPanel extends PFWizardPanel {
     private boolean createPreviewFolder() {
 
         FolderSettings folderSettings = new FolderSettings(
-        invitation.getSuggestedLocalBase(), syncProfileSelectorPanel
+        invitation.getSuggestedLocalBase(getController()), syncProfileSelectorPanel
             .getSyncProfile(), false, true, true, false);
 
         getController().getFolderRepository().createFolder(
