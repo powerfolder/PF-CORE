@@ -37,10 +37,7 @@ import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.PROMPT_TEX
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SYNC_PROFILE_ATTRIBUTE;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SEND_INVIATION_AFTER_ATTRIBUTE;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.INITIAL_FOLDER_NAME;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.FileUtils;
-import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import de.dal33t.powerfolder.util.ui.*;
@@ -585,6 +582,8 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
 
         private String initial;
         private long directorySize;
+        private boolean nonExistent;
+        private boolean noWrite;
 
         private MySwingWorker() {
             initial = (String) locationModel.getValue();
@@ -594,15 +593,22 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
             folderSizeLabel
                 .setText(Translation
                     .getTranslation("wizard.choosedisklocation.calculating_directory_size"));
+            folderSizeLabel.setForeground(SystemColor.textText);
         }
 
         @Override
         public Object construct() {
             try {
                 File f = new File(initial);
-                directorySize = FileUtils.calculateDirectorySize(f, 0);
+                if (!f.exists()) {
+                    nonExistent = true;
+                } else if (!f.canWrite()) {
+                    noWrite = true;
+                } else {
+                    directorySize = FileUtils.calculateDirectorySize(f, 0);
+                }
             } catch (Exception e) {
-                // Not fatal.
+                Loggable.logWarningStatic(ChooseDiskLocationPanel.class, e);
             }
             return null;
         }
@@ -610,12 +616,23 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         public void finished() {
             try {
                 if (initial.equals(locationModel.getValue())) {
-                    folderSizeLabel.setText(Translation.getTranslation(
-                        "wizard.choosedisklocation.directory_size", Format
-                            .formatBytes(directorySize)));
+                    if (nonExistent) {
+                        folderSizeLabel.setText(Translation.getTranslation(
+                            "wizard.choosedisklocation.directory_non_existent"));
+                        folderSizeLabel.setForeground(Color.red);
+                    } else if (noWrite) {
+                        folderSizeLabel.setText(Translation.getTranslation(
+                            "wizard.choosedisklocation.directory_no_write"));
+                        folderSizeLabel.setForeground(Color.red);
+                    } else {
+                        folderSizeLabel.setText(Translation.getTranslation(
+                            "wizard.choosedisklocation.directory_size", Format
+                                .formatBytes(directorySize)));
+                        folderSizeLabel.setForeground(SystemColor.textText);
+                    }
                 }
             } catch (Exception e) {
-                // Not fatal.
+                Loggable.logWarningStatic(ChooseDiskLocationPanel.class, e);
             }
         }
     }
