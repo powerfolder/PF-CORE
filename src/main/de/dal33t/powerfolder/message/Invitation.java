@@ -85,7 +85,8 @@ public class Invitation extends FolderRelatedMessage {
         Reject.ifNull(suggestedLocalBase, "File is null");
         String folderBase = controller.getFolderRepository().getFoldersBasedir();
         String appsDir = getAppsDir();
-        if (suggestedLocalBase.getAbsolutePath().startsWith(appsDir)) {
+        if (OSUtil.isWindowsSystem() &&
+                suggestedLocalBase.getAbsolutePath().startsWith(appsDir)) {
             String filePath = suggestedLocalBase.getAbsolutePath();
             suggestedLocalBasePath = filePath.substring(appsDir.length());
 
