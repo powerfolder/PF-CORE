@@ -24,11 +24,12 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
 
 import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -38,6 +39,8 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+import com.jgoodies.binding.value.ValueModel;
+import com.jgoodies.binding.value.ValueHolder;
 
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
@@ -64,6 +67,7 @@ import de.dal33t.powerfolder.util.ui.GenericDialogType;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
 import de.dal33t.powerfolder.util.ui.SyncProfileUtil;
 import de.dal33t.powerfolder.util.ui.TimeEstimator;
+import de.dal33t.powerfolder.util.ui.directory.DirectoryChooser;
 
 /**
  * Shows information about the (Joined) Folder and gives the user some actions
@@ -288,44 +292,11 @@ public class HomeTab extends PFUIComponent implements FolderTab {
         File originalDirectory = folder.getLocalBase();
 
         // Select the new folder.
-        JFileChooser fileChooser = DialogFactory.createFileChooser();
-        fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        fileChooser.setSelectedFile(originalDirectory);
-        fileChooser.setDialogTitle(Translation
-            .getTranslation("folderpanel.hometab.choose_local_folder.title"));
-        int result = fileChooser.showOpenDialog(localFolderButton);
-        if (result == JFileChooser.APPROVE_OPTION) {
-            File newDirectory = fileChooser.getSelectedFile();
-            if (newDirectory != null && !newDirectory.equals(originalDirectory))
-            {
-
-                // Check for any problems with the new folder.
-                if (checkNewLocalFolder(newDirectory)) {
-
-                    // Confirm move.
-                    if (shouldMoveLocal(newDirectory)) {
-                        try {
-                            // Move contentes selected
-                            boolean move = moveContent == 0;
-                            ActivityVisualizationWorker worker = new MyActivityVisualizationWorker(
-                                move, originalDirectory, newDirectory);
-                            worker.start();
-                        } catch (Exception e) {
-                            // Probably failed to create temp directory.
-                            DialogFactory
-                                .genericDialog(
-                                    getController().getUIController()
-                                        .getMainFrame().getUIComponent(),
-                                    Translation
-                                        .getTranslation("folderpanel.hometab.move_error.title"),
-                                    Translation
-                                        .getTranslation("folderpanel.hometab.move_error.temp"),
-                                    getController().isVerbose(), e);
-                        }
-                    }
-                }
-            }
-        }
+        ValueModel vm = new ValueHolder(originalDirectory.getAbsolutePath());
+        DirectoryChooser dc = new DirectoryChooser(getController(), vm);
+        vm.addValueChangeListener(new MyPropertyChangeListener(vm,
+                originalDirectory, moveContent));
+        dc.open();
     }
 
     /**
@@ -609,6 +580,56 @@ public class HomeTab extends PFUIComponent implements FolderTab {
         public void finished() {
             if (get() != null) {
                 displayError((Exception) get());
+            }
+        }
+    }
+
+    /**
+     * PropertyChangeListener to detect changes to selected local base. 
+     */
+    private class MyPropertyChangeListener implements PropertyChangeListener {
+
+        private ValueModel vm;
+        private File originalDirectory;
+        private int moveContent;
+
+        private MyPropertyChangeListener(ValueModel vm, File originalDirectory,
+                                       int moveContent) {
+            this.vm = vm;
+            this.originalDirectory = originalDirectory;
+            this.moveContent = moveContent;
+        }
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            String path = (String) vm.getValue();
+            File newDirectory = new File(path);
+            if (!newDirectory.equals(originalDirectory)) {
+
+                // Check for any problems with the new folder.
+                if (checkNewLocalFolder(newDirectory)) {
+
+                    // Confirm move.
+                    if (shouldMoveLocal(newDirectory)) {
+                        try {
+                            // Move contentes selected
+                            boolean move = moveContent == 0;
+                            ActivityVisualizationWorker worker = new
+                                    MyActivityVisualizationWorker(
+                                    move, originalDirectory, newDirectory);
+                            worker.start();
+                        } catch (Exception e) {
+                            // Probably failed to create temp directory.
+                            DialogFactory.genericDialog(
+                                    getController().getUIController()
+                                            .getMainFrame().getUIComponent(),
+                                    Translation.getTranslation(
+                                            "folderpanel.hometab.move_error.title"),
+                                    Translation.getTranslation(
+                                            "folderpanel.hometab.move_error.temp"),
+                                    getController().isVerbose(), e);
+                        }
+                    }
+                }
             }
         }
     }
