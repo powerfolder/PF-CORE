@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.util;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.ui.UIController;
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultStyledDocument;
@@ -40,6 +41,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.*;
 
 /**
@@ -69,10 +71,15 @@ public class LogDispatch {
     private static boolean loggingConfigured;
     private static boolean nickPrefix;
     private static final StyledDocument logBuffer = new DefaultStyledDocument();
-    private static final Map<String, SimpleAttributeSet> logColors = new HashMap<String, SimpleAttributeSet>();
+    private static final Map<String, SimpleAttributeSet> logColors =
+            new HashMap<String, SimpleAttributeSet>();
     private static int nLogLines = 1000;
     private static Level loggingLevel;
-    private static ThreadLocal<Controller> CURRENT_CONTROLLER = new ThreadLocal<Controller>();
+    private static ThreadLocal<Controller> CURRENT_CONTROLLER =
+            new ThreadLocal<Controller>();
+    private static final AtomicBoolean shownOutOfMemoryErrorWarning =
+            new AtomicBoolean();
+    private static UIController uiController;
 
     static {
         // Initially turn logging off logs.
@@ -109,6 +116,15 @@ public class LogDispatch {
         SimpleAttributeSet finer = new SimpleAttributeSet();
         StyleConstants.setForeground(finer, Color.GRAY);
         logColors.put(Level.FINER.getName(), finer);
+    }
+
+    /**
+     * Set the uiController for showing OutOfMemoryErrors.
+     *
+     * @param uiController
+     */
+    public static void setUIController(UIController uiController) {
+        LogDispatch.uiController = uiController;
     }
 
     /**
@@ -331,6 +347,13 @@ public class LogDispatch {
                 logToTextPanel(level, className, message, t);
             }
         }
+
+        // Handle OutOfMemoryError (once only)
+        if (t != null && t instanceof OutOfMemoryError &&
+                !shownOutOfMemoryErrorWarning.get() && uiController != null) {
+            shownOutOfMemoryErrorWarning.set(true);
+            uiController.showOutOfMemoryError((OutOfMemoryError) t);
+        }
     }
 
     /**
@@ -397,7 +420,7 @@ public class LogDispatch {
             String nick = (c != null && c.getMySelf() != null) ? c.getMySelf()
                 .getNick() : "unkwn";
             sb.append(StringUtils.rightPad(nick, 6));
-            sb.append(" ");
+            sb.append(' ');
         }
 
         sb.append('[');
@@ -504,7 +527,7 @@ public class LogDispatch {
                     // Insert number before extenstion.
                     f = f.substring(0, i) + ".%g" + f.substring(i, f.length());
                 } else {
-                    f = f + ".%g";
+                    f += ".%g";
                 }
                 FileHandler fileHandeler = new FileHandler(getDebugDir()
                     .getAbsolutePath()
@@ -629,7 +652,7 @@ public class LogDispatch {
                 String nick = (c != null && c.getMySelf() != null) ? c
                     .getMySelf().getNick() : "unkwn";
                 buf.append(StringUtils.rightPad(nick, 6));
-                buf.append(" ");
+                buf.append(' ');
             }
             buf.append('[');
             SimpleDateFormat sdf = new SimpleDateFormat("hh:mm:ss");

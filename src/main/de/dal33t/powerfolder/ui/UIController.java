@@ -109,6 +109,8 @@ import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.ui.TreeNodeList;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.ui.GenericDialogType;
 
 /**
  * The ui controller.
@@ -646,6 +648,19 @@ public class UIController extends PFComponent {
 
     public boolean isHidePreviews() {
         return (Boolean) hidePreviewsVM.getValue();
+    }
+
+    /**
+     * Shows an OutOfMemoryError to the user.
+     * 
+     * @param oome
+     */
+    public void showOutOfMemoryError(OutOfMemoryError oome) {
+        DialogFactory.genericDialog(getMainFrame().getUIComponent(),
+                Translation.getTranslation("low_memory.error.title"),
+                Translation.getTranslation("low_memory.error.text"),
+                new String[]{Translation.getTranslation("general.ok")},
+                0, GenericDialogType.ERROR);
     }
 
     private class UpdateSystrayTask extends TimerTask {

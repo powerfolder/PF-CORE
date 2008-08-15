@@ -374,6 +374,7 @@ public class Controller extends PFComponent {
 
         if (isUIEnabled()) {
             uiController = new UIController(this);
+            LogDispatch.setUIController(uiController);
         }
 
         setLoadingCompletion(0, 10);
@@ -382,12 +383,12 @@ public class Controller extends PFComponent {
         initLogger();
         logInfo(
             "PowerFolder v" + PROGRAM_VERSION + " (build: " + getBuildTime()
-                + ")");
+                + ')');
         logFine("OS: " + System.getProperty("os.name"));
         logFine(
             "Java: " + System.getProperty("java.version") + " ("
                 + System.getProperty("java.runtime.version") + ", "
-                + System.getProperty("java.vendor") + ")");
+                + System.getProperty("java.vendor") + ')');
         logFine("Current time: " + new Date());
         Debug.writeSystemProperties();
 
@@ -609,7 +610,7 @@ public class Controller extends PFComponent {
             filename += ".config";
         }
 
-        logFine("Starting from configfile '" + filename + "'");
+        logFine("Starting from configfile '" + filename + '\'');
         configFilename = null;
         config = new Properties();
         BufferedInputStream bis = null;
@@ -631,7 +632,7 @@ public class Controller extends PFComponent {
                 "Unable to start config, file '" + filename
                     + "' not found, using defaults");
         } catch (IOException e) {
-            logSevere("Unable to start config from file '" + filename + "'");
+            logSevere("Unable to start config from file '" + filename + '\'');
             config = null;
             return false;
         } finally {
@@ -962,7 +963,7 @@ public class Controller extends PFComponent {
             }
             // Store config in misc base
             PropertiesUtil.saveConfig(file, config,
-                "PowerFolder config file (v" + PROGRAM_VERSION + ")");
+                "PowerFolder config file (v" + PROGRAM_VERSION + ')');
         } catch (IOException e) {
             logSevere("Unable to save config", e);
         } catch (Exception e) {

@@ -452,10 +452,10 @@ public abstract class Loggable {
     }
     
     private void retrieveAndSetCurrentController() {
-        LogDispatch.setCurrentController(getController());
+        LogDispatch.setCurrentController(getTheController());
     }
 
-    private Controller getController() {
+    private Controller getTheController() {
         if (this instanceof PFComponent) {
             return ((PFComponent) this).getController();
         }
