@@ -21,14 +21,18 @@ package de.dal33t.powerfolder.ui.wizard;
 
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
+import java.util.Locale;
 
 import javax.swing.Icon;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JList;
 
 import jwf.WizardPanel;
 
@@ -65,6 +69,7 @@ public class BasicSetupPanel extends PFWizardPanel {
     private LineSpeedSelectionPanel wanLineSpeed;
     private JTextField nameField;
     private JComboBox networkingModeChooser;
+    private JComboBox languageChooser;
 
     public BasicSetupPanel(Controller controller) {
         super(controller);
@@ -92,8 +97,8 @@ public class BasicSetupPanel extends PFWizardPanel {
 
     protected JPanel buildContent() {
 
-        FormLayout layout = new FormLayout("$wlabel, $lcg, $wfield",
-            "pref, 10dlu, pref, 10dlu, pref");
+        FormLayout layout = new FormLayout("100dlu, $lcg, $wfield",
+            "pref, 10dlu, pref, 10dlu, pref, 10dlu, top:pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
@@ -106,11 +111,15 @@ public class BasicSetupPanel extends PFWizardPanel {
         builder.addLabel(Translation
             .getTranslation("preferences.dialog.linesettings"), cc.xy(1, 5));
         builder.add(wanLineSpeed, cc.xy(3, 5));
+        builder.addLabel(Translation
+            .getTranslation("wizard.basic_setup.language_restart"), cc.xy(1, 7));
+        builder.add(languageChooser, cc.xy(3, 7));
 
         return builder.getPanel();
     }
 
     public WizardPanel next() {
+
         // Set nick
         String nick = (String) nameModel.getValue();
         if (!StringUtils.isBlank(nick)) {
@@ -132,6 +141,20 @@ public class BasicSetupPanel extends PFWizardPanel {
         tm.setAllowedUploadCPSForWAN(wanLineSpeed.getUploadSpeedKBPS());
         tm.setAllowedDownloadCPSForWAN(wanLineSpeed.getDownloadSpeedKBPS());
 
+        // Set locale
+        if (languageChooser.getSelectedItem() instanceof Locale) {
+            Locale locale = (Locale) languageChooser.getSelectedItem();
+            // Save settings
+            Translation.saveLocalSetting(locale);
+        } else {
+            // Remove setting
+            Translation.saveLocalSetting(null);
+        }
+
+        // Basic setup completed. No longer show
+        getController().getPreferences().putBoolean("openwizard2", false);
+        getController().getPreferences().putBoolean("openwizard_os2", false);
+
         return new LoginOnlineStoragePanel(getController(), new WhatToDoPanel(
             getController()), false);
     }
@@ -147,6 +170,9 @@ public class BasicSetupPanel extends PFWizardPanel {
                 updateButtons();
             }
         });
+
+        // Language selector
+        languageChooser = createLanguageChooser();
 
         nameField = BasicComponentFactory.createTextField(nameModel, false);
         // Ensure minimum dimension
@@ -204,6 +230,44 @@ public class BasicSetupPanel extends PFWizardPanel {
         public String toString() {
             return Translation.getTranslation("wizard.basicsetup.lanonly");
         }
+    }
+
+    /**
+     * Creates a language chooser, which contains the supported locales
+     *
+     * @return a language chooser, which contains the supported locales
+     */
+    private JComboBox createLanguageChooser() {
+        // Create combobox
+        JComboBox chooser = new JComboBox();
+        Locale[] locales = Translation.getSupportedLocales();
+        for (Locale locale1 : locales) {
+            chooser.addItem(locale1);
+        }
+        // Set current locale as selected
+        chooser.setSelectedItem(Translation.getResourceBundle().getLocale());
+
+        // Add renderer
+        chooser.setRenderer(new DefaultListCellRenderer() {
+            public Component getListCellRendererComponent(JList list,
+                Object value, int index, boolean isSelected,
+                boolean cellHasFocus)
+            {
+                super.getListCellRendererComponent(list, value, index,
+                    isSelected, cellHasFocus);
+                if (value instanceof Locale) {
+                    Locale locale = (Locale) value;
+                    setText(locale.getDisplayName(locale));
+                } else {
+                    setText("- unknown -");
+                }
+                return this;
+            }
+        });
+
+        // Initialize chooser with the active locale.
+        chooser.setSelectedItem(Translation.getActiveLocale());
+        return chooser;
     }
 
 }
