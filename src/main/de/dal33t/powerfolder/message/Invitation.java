@@ -49,10 +49,12 @@ public class Invitation extends FolderRelatedMessage {
     /** suggestedLocalBase is relative to PowerFolder base directory. */
     private static final int RELATIVE_PF_BASE = 2;
 
+    /** suggestedLocalBase is relative to user home directory. */
+    private static final int RELATIVE_USER_HOME = 3;
+
     private MemberInfo invitor;
 
     private String invitationText;
-    private File suggestedLocalBase;
     private String suggestedSyncProfileConfig;
     private String suggestedLocalBasePath;
     private int relative;
@@ -85,6 +87,7 @@ public class Invitation extends FolderRelatedMessage {
         Reject.ifNull(suggestedLocalBase, "File is null");
         String folderBase = controller.getFolderRepository().getFoldersBasedir();
         String appsDir = getAppsDir();
+        String userHomeDir = getUserHomeDir();
         if (OSUtil.isWindowsSystem() &&
                 suggestedLocalBase.getAbsolutePath().startsWith(appsDir)) {
             String filePath = suggestedLocalBase.getAbsolutePath();
@@ -105,6 +108,15 @@ public class Invitation extends FolderRelatedMessage {
                 suggestedLocalBasePath = suggestedLocalBasePath.substring(1);
             }
             relative = RELATIVE_PF_BASE;
+        } else if (suggestedLocalBase.getAbsolutePath().startsWith(userHomeDir)) {
+            String filePath = suggestedLocalBase.getAbsolutePath();
+            suggestedLocalBasePath = filePath.substring(userHomeDir.length());
+
+            // Remove any leading file separators.
+            while (suggestedLocalBasePath.startsWith(File.separator)) {
+                suggestedLocalBasePath = suggestedLocalBasePath.substring(1);
+            }
+            relative = RELATIVE_USER_HOME;
         } else {
             suggestedLocalBasePath = suggestedLocalBase.getAbsolutePath();
             relative = ABSOLUTE;
@@ -138,6 +150,8 @@ public class Invitation extends FolderRelatedMessage {
             File powerFolderBaseDir = new File(controller.getFolderRepository()
                     .getFoldersBasedir());
             return new File(powerFolderBaseDir, suggestedLocalBasePath);
+        } else if (relative == RELATIVE_USER_HOME) {
+            return new File(getUserHomeDir(), suggestedLocalBasePath);
         } else {
             return new File(suggestedLocalBasePath);
         }
@@ -179,6 +193,10 @@ public class Invitation extends FolderRelatedMessage {
 
         // Loading a Windows invitation on a Mac/Unix box:
         // no APPDIR, so set to somewhere safe.
+        return getUserHomeDir();
+    }
+
+    private static String getUserHomeDir() {
         return System.getProperty("user.home");
     }
 
