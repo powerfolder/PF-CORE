@@ -45,7 +45,6 @@ public class DiskItemComparator extends Loggable implements Comparator<DiskItem>
     public static final int BY_FOLDER = 6;
 
     private static final int BEFORE = -1;
-    private static final int EQUAL = 0;
     private static final int AFTER = 1;
     
     private Directory directory;
@@ -83,55 +82,73 @@ public class DiskItemComparator extends Loggable implements Comparator<DiskItem>
         return comparators[sortByArg];
     }
 
+    /**
+     * Compare by various types.
+     * If types are the same, sub-compare on file name, for nice table display.
+     * @param o1
+     * @param o2
+     * @return
+     */
     public int compare(DiskItem o1, DiskItem o2) {
-        
+
             switch (sortBy) {
                 case BY_FILETYPE :
                     String ext1 = o1.getExtension();
                     String ext2 = o2.getExtension();
                     if (ext1 == null || ext2 == null) {
-                        return EQUAL;
+                        return sortByFileName(o1, o2);
                     }
-                    return ext1.compareTo(ext2);
+                    int x = ext1.compareTo(ext2);
+                    if (x == 0) {
+                        return sortByFileName(o1, o2);
+                    }
+                    return x;
                 case BY_NAME :
-                    return o1.getLowerCaseName().compareTo(
-                        o2.getLowerCaseName());
+                    return sortByFileName(o1, o2);
                 case BY_SIZE :
-                    
+
                     if (o1.getSize() < o2.getSize()) {
                         return BEFORE;
                     }
                     if (o1.getSize() > o2.getSize()) {
                         return AFTER;
                     }
-                    return EQUAL;
+                    return sortByFileName(o1, o2);
                 case BY_MEMBER :
                     if (o1.getModifiedBy() == null && o2.getModifiedBy() == null) {
-                        return EQUAL;
+                        return sortByFileName(o1, o2);
                     } else if (o1.getModifiedBy() == null) {
                         return BEFORE;
                     } else if (o2.getModifiedBy() == null) {
                         return AFTER;
                     }
-                    return o1.getModifiedBy().nick.toLowerCase().compareTo(
+                    x = o1.getModifiedBy().nick.toLowerCase().compareTo(
                         o2.getModifiedBy().nick.toLowerCase());
-                case BY_MODIFIED_DATE :                    
+                    if (x == 0) {
+                        return sortByFileName(o1, o2);
+                    }
+                    return x;
+                case BY_MODIFIED_DATE :
                     if (o1.getModifiedDate() == null && o2.getModifiedDate() == null) {
-                        return EQUAL;
+                        return sortByFileName(o1, o2);
                     } else if (o1.getModifiedDate() == null) {
                         return BEFORE;
                     } else if (o2.getModifiedDate() == null) {
                         return AFTER;
                     }
-                   return o2.getModifiedDate().compareTo(
+                   x = o2.getModifiedDate().compareTo(
                         o1.getModifiedDate());
+                    if (x == 0) {
+                        return sortByFileName(o1, o2);
+                    }
+                    return x;
                 case BY_AVAILABILITY :
                     if (directory == null) {
                         throw new IllegalStateException(
                             "need a directoy to compare by BY_AVAILABILITY");
                     }
                     if (o1 instanceof Directory && o2 instanceof Directory) {
-                        return EQUAL;
+                        return sortByFileName(o1, o2);
                     } else if (o1 instanceof Directory) {
                         return BEFORE;
                     } else if (o2 instanceof Directory) {
@@ -143,26 +160,35 @@ public class DiskItemComparator extends Loggable implements Comparator<DiskItem>
                         int av1 = holder1.getAvailability();
                         int av2 = holder2.getAvailability();
                         if (av1 == av2) {
-                            return EQUAL;
+                            return sortByFileName(o1, o2);
                         }
                         if (av1 < av2) {
                             return BEFORE;
                         }
                         return AFTER;
                     }
-                    return EQUAL;
+                    return sortByFileName(o1, o2);
                 case BY_FOLDER :
                     if (o1.getFolderInfo() == null && o2.getFolderInfo() == null) {
-                        return EQUAL;
+                        return sortByFileName(o1, o2);
                     } else if (o1.getFolderInfo() == null) {
                         return BEFORE;
                     } else if (o2.getFolderInfo() == null) {
                         return AFTER;
                     }
-                   return o1.getFolderInfo().name.compareToIgnoreCase(
+                   x = o1.getFolderInfo().name.compareToIgnoreCase(
                         o2.getFolderInfo().name);
+                    if (x == 0) {
+                        return sortByFileName(o1, o2);
+                    }
+                    return x;
             }
         return 0;
+    }
+
+    private static int sortByFileName(DiskItem o1, DiskItem o2) {
+        return o1.getLowerCaseName().compareTo(
+                        o2.getLowerCaseName());
     }
 
     // General ****************************************************************
