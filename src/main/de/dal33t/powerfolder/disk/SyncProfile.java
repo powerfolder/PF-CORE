@@ -534,4 +534,38 @@ public class SyncProfile implements Serializable {
             }
         }
     }
+
+
+    /**
+     * Check equality on configuration only. This is the important field.
+     *
+     * @param obj
+     * @return
+     */
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
+
+        SyncProfile that = (SyncProfile) obj;
+
+        if (!configuration.equals(that.configuration)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Like equal.
+     *
+     * @return
+     */
+    public int hashCode() {
+        return configuration.hashCode();
+    }
+    
 }
