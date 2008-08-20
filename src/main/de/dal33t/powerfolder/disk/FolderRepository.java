@@ -262,6 +262,11 @@ public class FolderRepository extends PFComponent implements Runnable {
         String folderDir = config.getProperty(FOLDER_SETTINGS_PREFIX
             + folderName + FOLDER_SETTINGS_DIR);
 
+        if (folderDir == null) {
+            logSevere("No folder directory for " + folderName);
+            return null;
+        }
+
         String syncProfConfig = config.getProperty(FOLDER_SETTINGS_PREFIX
             + folderName + FOLDER_SETTINGS_SYNC_PROFILE);
 
@@ -293,9 +298,6 @@ public class FolderRepository extends PFComponent implements Runnable {
             .getProperty(FOLDER_SETTINGS_PREFIX + folderName
                 + FOLDER_SETTINGS_WHITELIST));
 
-        if (folderDir == null) {
-            System.err.println(folderName);
-        }
         return new FolderSettings(new File(folderDir), syncProfile, false,
             useRecycleBin, preview, whitelist);
     }
