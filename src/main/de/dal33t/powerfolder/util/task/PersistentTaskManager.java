@@ -259,6 +259,9 @@ public class PersistentTaskManager extends PFComponent {
      * @return if there are pending messages to be sent.
      */
     public synchronized boolean hasSendMessageTask() {
+        if (tasks == null) {
+            return false;
+        }
         for (PersistentTask task : tasks) {
             if (task instanceof SendMessageTask) {
                 logFine("Found pending message(s). total active tasks: "
