@@ -597,9 +597,12 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
     private void addTargetDirectory(File root, String subdir,
         String translation, boolean allowHidden)
     {
-
-        File directory = new File(root + File.separator + subdir);
+        File directory = joinFile(root, subdir);
         addTargetDirectory(directory, translation, allowHidden);
+    }
+
+    private static File joinFile(File root, String subdir) {
+        return new File(root + File.separator + subdir);
     }
 
     /**
@@ -658,12 +661,33 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         private long directorySize;
         private boolean nonExistent;
         private boolean noWrite;
+        private boolean checkNoWrite = true;
 
         private MySwingWorker() {
             initial = (String) locationModel.getValue();
         }
 
         protected void beforeConstruct() {
+
+            // Stupid Vista shows these dirs as no-write but it lies!
+            try {
+                if (OSUtil.isWindowsVistaSystem()) {
+                    File f = new File(initial);
+                    File userHome = new File(System.getProperty("user.home"));
+                    if (f.equals(joinFile(userHome, USER_DIR_CONTACTS)) ||
+                            f.equals(joinFile(userHome, USER_DIR_DESKTOP)) ||
+                            f.equals(joinFile(userHome, USER_DIR_FAVORITES)) ||
+                            f.equals(joinFile(userHome, USER_DIR_LINKS)) ||
+                            f.equals(joinFile(userHome, USER_DIR_MUSIC)) ||
+                            f.equals(joinFile(userHome, USER_DIR_PICTURES)) ||
+                            f.equals(joinFile(userHome, USER_DIR_VIDEOS))) {
+                        checkNoWrite = false;
+                    }
+                }
+            } catch (Exception e) {
+                // ignore
+            }
+
             folderSizeLabel
                 .setText(Translation
                     .getTranslation("wizard.choosedisklocation.calculating_directory_size"));
@@ -676,7 +700,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
                 File f = new File(initial);
                 if (!f.exists()) {
                     nonExistent = true;
-                } else if (!f.canWrite()) {
+                } else if (checkNoWrite && !f.canWrite()) {
                     noWrite = true;
                 } else {
                     directorySize = FileUtils.calculateDirectorySize(f, 0);
