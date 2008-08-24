@@ -33,11 +33,11 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.os.OnlineStorageSubscriptionType;
 import de.dal33t.powerfolder.util.IdGenerator;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.LogDispatch;
 import de.dal33t.powerfolder.util.Loggable;
+import de.dal33t.powerfolder.util.Reject;
 
 /**
  * A access to the system indentified by username & password.
@@ -53,6 +53,8 @@ public class Account extends Model implements Serializable {
     public static final String PROPERTYNAME_USERNAME = "username";
     public static final String PROPERTYNAME_PASSWORD = "password";
     public static final String PROPERTYNAME_REGISTER_DATE = "registerDate";
+    public static final String PROPERTYNAME_LAST_LOGIN_DATE = "lastLoginDate";
+    public static final String PROPERTYNAME_LAST_LOGIN_FROM = "lastLoginFrom";
     public static final String PROPERTYNAME_NEWSLETTER = "newsLetter";
     public static final String PROPERTYNAME_PRO_USER = "proUser";
     public static final String PROPERTYNAME_DEFAULT_SYNCHRONIZED_FOLDER = "defaultSynchronizedFolder";
@@ -62,6 +64,8 @@ public class Account extends Model implements Serializable {
     private String username;
     private String password;
     private Date registerDate;
+    private Date lastLoginDate;
+    private MemberInfo lastLoginFrom;
     private boolean newsLetter;
     private boolean proUser;
 
@@ -219,6 +223,28 @@ public class Account extends Model implements Serializable {
         this.defaultSynchronizedFolder = defaultSynchronizedFolder;
         firePropertyChange(PROPERTYNAME_DEFAULT_SYNCHRONIZED_FOLDER, oldValue,
             this.defaultSynchronizedFolder);
+    }
+    
+
+    public MemberInfo getLastLoginFrom() {
+        return lastLoginFrom;
+    }
+
+    public void setLastLoginFrom(MemberInfo lastLoginFrom) {
+        Object oldValue = getLastLoginFrom();
+        this.lastLoginFrom = lastLoginFrom;
+        firePropertyChange(PROPERTYNAME_LAST_LOGIN_FROM, oldValue, this.lastLoginFrom);
+    }
+
+    public Date getLastLoginDate() {
+        return lastLoginDate;
+    }
+
+    /**
+     * Sets the last login date to NOW.
+     */
+    public void touchLogin() {
+        lastLoginDate = new Date();
     }
 
     public Collection<String> getLicenseKeyFiles() {

@@ -29,6 +29,12 @@ public interface AccountDAO {
      * @return the account with the given username or null if not found.
      */
     Account findByUsername(String username);
+    
+    /**
+     * @param permission the permission to search for.
+     * @return all accounts that have this permission.
+     */
+    Collection<Account> findWithPermission(Permission permission);
 
     /**
      * @return all accounts.

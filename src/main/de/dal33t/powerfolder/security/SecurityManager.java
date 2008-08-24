@@ -49,6 +49,7 @@ public interface SecurityManager {
      * 
      * @param account
      *            the Account to save
+     * @Deprecated use {@link #getDAO()} instead.
      */
     void saveAccount(Account account);
 
