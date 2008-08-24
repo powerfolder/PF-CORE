@@ -420,7 +420,7 @@ public class FileUtils {
     }
 
     /**
-     * A recursive copy of one directory to another.
+     * A recursive move of one directory to another.
      * 
      * @param originalFile
      * @param targetFile
