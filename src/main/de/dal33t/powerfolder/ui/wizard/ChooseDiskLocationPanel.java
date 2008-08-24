@@ -404,6 +404,80 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
     }
 
     /**
+     * Try to create the original folder if it does not exists.
+     */
+    protected void afterDisplay() {
+
+        Object value = locationModel.getValue();
+        if (value != null) {
+            if (value instanceof String) {
+                try {
+                    File f = new File((String) value);
+
+                    // Try to create the directory if it does not exist.
+                    if (!f.exists()) {
+                        if (f.mkdirs()) {
+                            startFolderSizeCalculator();
+                        }
+                    }
+
+                    // If dir does not exist or is not writable,
+                    // give user a choice to locate in an alternate location.
+                    boolean ok = true;
+                    String messageKey = null;
+
+                    if (!f.exists()) {
+                        ok = false;
+                        messageKey = "choose_disk_location_panel.dir_no_exist.text";
+                    } else if(!f.canWrite()) {
+                        ok = false;
+                        messageKey = "choose_disk_location_panel.dir_no_write.text";
+                    }
+                    if (!ok) {
+                        String baseDir = getController().getFolderRepository()
+                                .getFoldersBasedir();
+                        String name = f.getName();
+                        if (name.length() == 0) { // Like f == 'E:/'
+                            name="new";
+                        }
+                        File alternate = new File(baseDir, name);
+
+                        // Check alternate is unique.
+                        int x = 1;
+                        while (alternate.exists()) {
+                            alternate = new File(baseDir, name + '-' + x++);
+                        }
+
+                        // Ask user.
+                        int i = DialogFactory.genericDialog(getController()
+                                .getUIController().getMainFrame().getUIComponent(),
+                                Translation.getTranslation(
+                                        "choose_disk_location_panel.dir.title"),
+                                Translation.getTranslation(messageKey,
+                                        f.getAbsolutePath(),
+                                        alternate.getAbsolutePath()),
+                                new String[]{Translation.getTranslation(
+                                        "general.accept"),
+                                        Translation.getTranslation(
+                                                "general.cancel")},
+                                0, GenericDialogType.QUESTION);
+                        if (i == 0) { // Accept
+                            locationModel.setValue(alternate.getAbsolutePath());
+                            if (!alternate.exists()) {
+                                if (alternate.mkdirs()) {
+                                    startFolderSizeCalculator();
+                                }
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    Loggable.logWarningStatic(ChooseDiskLocationPanel.class, e);
+                }
+            }
+        }
+    }
+
+    /**
      * Called when the location model changes value. Sets the location text
      * field value and enables the location button.
      */
