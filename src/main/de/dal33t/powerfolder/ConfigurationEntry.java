@@ -312,7 +312,8 @@ public enum ConfigurationEntry {
      * The age of a deleted file until it gets removed by the folder db
      * maintenance. In Seconds! TODO Implement.
      */
-    MAX_FILEINFO_DELETED_AGE_SECONDS("filedb.deleted.maxage", "" + 10),
+    MAX_FILEINFO_DELETED_AGE_SECONDS("filedb.deleted.maxage", "" + 60L * 60 * 24
+        * 120),
 
     /**
      * The optional server hostname to connect to. Example:
