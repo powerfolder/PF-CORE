@@ -1566,14 +1566,15 @@ public class Folder extends PFComponent {
      * @param aSyncProfile
      */
     public void setSyncProfile(SyncProfile aSyncProfile) {
-        if (aSyncProfile == null) {
-            throw new NullPointerException("Unable to set null sync profile");
-        }
+       Reject.ifNull(aSyncProfile, "Unable to set null sync profile");
         if (previewOnly) {
             throw new IllegalStateException(
                 "Can not set Sync Profile in Preview mode.");
         }
-        SyncProfile oldProfile = syncProfile;
+        if (aSyncProfile.equals(syncProfile)) {
+            // Not changed
+            return;
+        }
 
         logFine("Setting " + aSyncProfile.getProfileName());
         syncProfile = aSyncProfile;
