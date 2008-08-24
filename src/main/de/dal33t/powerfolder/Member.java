@@ -320,10 +320,16 @@ public class Member extends PFComponent {
 
         Identity id = getIdentity();
         if (id != null) {
+            logWarning("Got ID: " + id + ". pending msgs? "
+                + id.isPendingMessages());
             if (Util.compareVersions("2.0.0", id.getProgramVersion())) {
                 logWarning("Rejecting connection to old program client: " + id
                     + " v" + id.getProgramVersion());
                 return false;
+            }
+            // FIX for #1124. Might produce problems!
+            if (id.isPendingMessages()) {
+                return true;
             }
         }
 
@@ -1296,15 +1302,10 @@ public class Member extends PFComponent {
 
                 // Trigger requesting
                 // FIXME: Really inform folder on first list message on complete
-                // file
-                // list?.
+                // file list?.
                 if (targetFolder != null) {
                     // Inform folder
                     targetFolder.fileListChanged(this, remoteFileList);
-                    // Write filelist
-                    if (LogDispatch.isLogToFileEnabled()) {
-                        writeFilelist(targetFolder, cachedFileList);
-                    }
                 }
                 expectedTime = 250;
 
@@ -1357,16 +1358,6 @@ public class Member extends PFComponent {
                 if (targetFolder != null) {
                     // Inform folder
                     targetFolder.fileListChanged(this, changes);
-
-                    if (nExpected <= 0) {
-                        // Write filelist
-                        if (LogDispatch.isLogToFileEnabled()) {
-                            // Write filelist
-                            if (LogDispatch.isLogToFileEnabled()) {
-                                writeFilelist(targetFolder, cachedFileList);
-                            }
-                        }
-                    }
                 }
 
                 if (isLogFine()) {
@@ -1532,20 +1523,6 @@ public class Member extends PFComponent {
         } finally {
             Profiling.end(profilingEntry, expectedTime);
         }
-    }
-
-    /**
-     * Write filelist to disk
-     * 
-     * @param targetFolder
-     * @param cachedFileList
-     */
-    private void writeFilelist(Folder targetFolder,
-        Map<FileInfo, FileInfo> cachedFileList)
-    {
-        Debug.writeFileListCSV(targetFolder.getName(), getNick(),
-            cachedFileList.keySet(), "FileList of folder "
-                + targetFolder.getName() + ", member " + this + ':');
     }
 
     /**
