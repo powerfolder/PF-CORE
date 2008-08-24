@@ -616,16 +616,22 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         // remove folder from config
         Properties config = getController().getConfig();
-        String folderConfigPrefix = FOLDER_SETTINGS_PREFIX
-            + folder.getInfo().name;
-        synchronized (config) {
-            for (Iterator it = config.keySet().iterator(); it.hasNext();) {
-                String key = (String) it.next();
-                if (key.startsWith(folderConfigPrefix)) {
-                    it.remove();
-                }
-            }
-        }
+        
+        FolderInfo folderInfo = folder.getInfo();
+        config.remove(FOLDER_SETTINGS_PREFIX + folderInfo.name
+            + FOLDER_SETTINGS_ID);
+        config.remove(FOLDER_SETTINGS_PREFIX + folderInfo.name
+            + FOLDER_SETTINGS_DIR);
+        // Save sync profiles as internal configuration for custom profiles.
+        config.remove(FOLDER_SETTINGS_PREFIX + folderInfo.name
+            + FOLDER_SETTINGS_SYNC_PROFILE);
+        // Inverse logic for backward compatability.
+        config.remove(FOLDER_SETTINGS_PREFIX + folderInfo.name
+            + FOLDER_SETTINGS_DONT_RECYCLE);
+        config.remove(FOLDER_SETTINGS_PREFIX + folderInfo.name
+            + FOLDER_SETTINGS_PREVIEW);
+        config.remove(FOLDER_SETTINGS_PREFIX + folderInfo.name
+            + FOLDER_SETTINGS_WHITELIST);
 
         // Save config
         getController().saveConfig();
