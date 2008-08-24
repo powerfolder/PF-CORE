@@ -685,7 +685,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
                     }
                 }
             } catch (Exception e) {
-                // ignore
+                Loggable.logWarningStatic(ChooseDiskLocationPanel.class, e);
             }
 
             folderSizeLabel
