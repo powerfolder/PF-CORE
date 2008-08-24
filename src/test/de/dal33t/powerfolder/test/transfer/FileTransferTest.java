@@ -1209,9 +1209,20 @@ public class FileTransferTest extends TwoControllerTestCase {
                     .countActiveDownloads() > 0;
             }
         });
+        
         // No pending download no more
-        assertEquals(0, getContollerLisa().getTransferManager()
-            .getPendingDownloads().size());
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+            public String message() {
+                return "Lisa pending downloads: "
+                    + getContollerLisa().getTransferManager()
+                        .getPendingDownloads();
+            }
+
+            public boolean reached() {
+                return getContollerLisa().getTransferManager()
+                    .getPendingDownloads().isEmpty();
+            }
+        });
 
         TestHelper.assertIncompleteFilesGone(this);
     }
