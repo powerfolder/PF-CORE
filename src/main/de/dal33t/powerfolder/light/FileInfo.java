@@ -791,13 +791,16 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
      *             if the state is corrupt
      */
     public void validate() {
-        Reject.ifTrue(StringUtils.isEmpty(fileName), "Filename is empty");
-        Reject.ifNull(size, "Size is null");
-        Reject.ifFalse(size >= 0, "Negative file size");
-        Reject.ifNull(lastModifiedDate, "Modification date is null");
+        Reject.ifTrue(StringUtils.isEmpty(fileName), "Filename is empty. "
+            + toDetailString());
+        Reject.ifNull(size, "Size is null. " + toDetailString());
+        Reject.ifFalse(size >= 0, "Negative file size. " + toDetailString());
+        Reject.ifNull(lastModifiedDate, "Modification date is null. "
+            + toDetailString());
         Reject.ifFalse(lastModifiedDate.getTime() >= 0,
-            "Modification date is invalid: " + lastModifiedDate);
-        Reject.ifNull(folderInfo, "FolderInfo is null");
+            "Modification date is invalid: " + lastModifiedDate + ". "
+                + toDetailString());
+        Reject.ifNull(folderInfo, "FolderInfo is null. " + toDetailString());
     }
 
     // Serialization optimization *********************************************
