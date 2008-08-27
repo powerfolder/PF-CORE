@@ -45,14 +45,6 @@ public enum Feature {
     CORRECT_INTERNET_DETECTION,
 
     /**
-     * Customer requirement.
-     * <p>
-     * #798
-     * <p>
-     */
-    HIGH_FREQUENT_FOLDER_DB_MAINTENANCE(false),
-
-    /**
      * If file updates get detected newer using the version counter. Otherwise
      * the last modification date is uesd.
      * <P>

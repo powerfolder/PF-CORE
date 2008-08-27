@@ -310,7 +310,7 @@ public enum ConfigurationEntry {
 
     /**
      * The age of a deleted file until it gets removed by the folder db
-     * maintenance. In Seconds! TODO Implement.
+     * maintenance. In Seconds!
      */
     MAX_FILEINFO_DELETED_AGE_SECONDS("filedb.deleted.maxage", "" + 60L * 60 * 24
         * 120),
@@ -329,7 +329,12 @@ public enum ConfigurationEntry {
             }
             return host;
         }
-    };
+    },
+
+    /**
+     * The number of seconds between db maintenance scans (5 minutes).
+     */
+    DB_MAINTENANCE_SECONDS("db.maintenance.seconds", String.valueOf(300));
 
     // Methods/Constructors ***************************************************
 

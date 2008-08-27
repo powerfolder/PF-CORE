@@ -45,12 +45,12 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TimerTask;
 import java.util.TreeMap;
+import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
@@ -124,6 +124,11 @@ public class Folder extends PFComponent {
      * FileInfo
      */
     private Map<FileInfo, FileInfo> knownFiles;
+
+    /**
+     * List of expired, deleted file infos that should not be written to db.
+     */
+    private List<FileInfo> expiredFileInfos;
 
     /** files that should(not) be downloaded in auto download */
     private DiskItemFilter diskItemFilter;
@@ -273,6 +278,7 @@ public class Folder extends PFComponent {
 
         statistic = new FolderStatistic(this);
         knownFiles = new ConcurrentHashMap<FileInfo, FileInfo>();
+        expiredFileInfos = new ArrayList<FileInfo>();
         members = new ConcurrentHashMap<Member, Member>();
         // diskFileCache = new WeakHashMap<FileInfo, File>();
 
@@ -1357,7 +1363,20 @@ public class Folder extends PFComponent {
             File dbFile = new File(getSystemSubDir(), DB_FILENAME);
             File dbFileBackup = new File(getSystemSubDir(), DB_BACKUP_FILENAME);
             try {
-                FileInfo[] files = knownFiles.values().toArray(new FileInfo[knownFiles.values().size()]);
+
+                // Remove the expired file infos from a copy of the known files.
+                List<FileInfo> tempFileInfos = new ArrayList<FileInfo>();
+                tempFileInfos.addAll(knownFiles.keySet());
+                synchronized(expiredFileInfos) {
+                    for (FileInfo removedFileInfo : expiredFileInfos) {
+                        if (tempFileInfos.remove(removedFileInfo)) {
+                            logInfo(removedFileInfo.getFilenameOnly()
+                                    + " has expired and was not stored to DB.");
+                        }
+                    }
+                }
+                FileInfo[] files = tempFileInfos.toArray(
+                        new FileInfo[tempFileInfos.size()]);
                 if (dbFile.exists()) {
                     if (!dbFile.delete()) {
                         logSevere("Failed to delete database file: " + dbFile);
@@ -1426,54 +1445,72 @@ public class Folder extends PFComponent {
     }
 
     private boolean maintainFolderDBrequired() {
-        // TODO Implement
-        if (Feature.HIGH_FREQUENT_FOLDER_DB_MAINTENANCE.isEnabled()) {
-            if (lastDBMaintenance == null) {
-                return true;
-            }
-            // About every 5 second now
-            return lastDBMaintenance.getTime() + 5 * 1000L < System
-                .currentTimeMillis();
-        }
-        return false;
 
+        if (lastDBMaintenance == null) {
+            return true;
+        }
+
+        return lastDBMaintenance.getTime() +
+                ConfigurationEntry.DB_MAINTENANCE_SECONDS
+                        .getValueInt(getController()) * 1000L
+                < System.currentTimeMillis();
     }
 
     /**
-     * Cleans up fileinfos of deleted files that are old than the configured max
-     * age.
-     * 
-     * @see ConfigurationEntry#MAX_FILEINFO_DELETED_AGE_SECONDS
+     * Creates a list of fileinfos of deleted files that are old than the
+     * configured max age. These files do not get written to the DB.
+     * So files deleted long ago do not stay in DB for ever.
      */
     private void maintainFolderDB() {
+
+        RecycleBin recycleBin = getController().getRecycleBin();
+
+        // Scan for files that have expired and are now restored.
+        // Unlikely, but could happen for long-running servers.
+        FolderRepository folderRepository = getController().getFolderRepository();
+        synchronized (expiredFileInfos) {
+            for (Iterator<FileInfo> iter = expiredFileInfos.iterator(); iter.hasNext();) {
+                FileInfo expiredFileInfo = iter.next();
+                if (!expiredFileInfo.isDeleted() ||
+                        recycleBin.isInRecycleBin(expiredFileInfo)) {
+                    iter.remove();
+                    logInfo("Expired file " + expiredFileInfo.getFilenameOnly()
+                            + " has been restored.");
+                }
+            }
+        }
+
         long removeBeforeDate = System.currentTimeMillis()
             - 1000L
             * ConfigurationEntry.MAX_FILEINFO_DELETED_AGE_SECONDS
                 .getValueInt(getController());
         int nFilesBefore = knownFiles.size();
-        logWarning(
-            "Maintaing folder db, files before: " + nFilesBefore
-                + " removing all deleted files older than "
+        logFine(
+            "Maintaining folder db, known files: " + nFilesBefore
+                + ". Expiring deleted files older than "
                 + new Date(removeBeforeDate));
-        int deleted = 0;
+        int expired = 0;
         for (FileInfo file : knownFiles.keySet()) {
             if (!file.isDeleted()) {
                 continue;
             }
+            if (recycleBin.isInRecycleBin(file)) {
+                continue;
+            }
+            if (expiredFileInfos.contains(file)) {  // Already have this one.
+                continue;
+            }
             if (file.getModifiedDate().getTime() < removeBeforeDate) {
-                // logWarning("Would remove file: " + file.toDetailString());
-                deleted++;
-                knownFiles.remove(file);
-                transferPriorities.removeFile(file);
+                expired++;
+                expiredFileInfos.add(file);
+                logInfo(file.getFilenameOnly() + " has expired.");
             }
         }
-        logWarning(
-            "Maintaing folder db, files after: " + knownFiles.size()
-                + ". Removed: " + deleted);
-        if (deleted > 0) {
+        logFine(
+            "Maintained folder db. Expired: " + expired);
+        if (expired > 0) {
             dirty = true;
         }
-        // TODO Fire Event!
         lastDBMaintenance = new Date();
     }
 
