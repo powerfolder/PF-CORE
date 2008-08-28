@@ -135,6 +135,9 @@ public class WhatToDoPanel extends PFWizardPanel {
             FolderCreatePanel createPanel = new FolderCreatePanel(
                 getController());
 
+            getWizardContext().setAttribute(SAVE_INVITE_LOCALLY,
+                Boolean.TRUE);
+
             return new ChooseDiskLocationPanel(getController(), null,
                 createPanel);
 
@@ -171,6 +174,9 @@ public class WhatToDoPanel extends PFWizardPanel {
                     + Translation.getTranslation("wizard.backup_panel.pcsjoin"));
             getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL,
                 successPanel);
+
+            getWizardContext().setAttribute(SAVE_INVITE_LOCALLY,
+                Boolean.TRUE);
 
             FolderCreatePanel createPanel = new FolderCreatePanel(
                 getController());
@@ -212,6 +218,9 @@ public class WhatToDoPanel extends PFWizardPanel {
 
             FolderCreatePanel createPanel = new FolderCreatePanel(
                 getController());
+
+            getWizardContext().setAttribute(SAVE_INVITE_LOCALLY,
+                Boolean.TRUE);
 
             return new ChooseDiskLocationPanel(getController(), null,
                 createPanel);

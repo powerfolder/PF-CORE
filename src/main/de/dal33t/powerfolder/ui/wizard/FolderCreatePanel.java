@@ -126,8 +126,11 @@ public class FolderCreatePanel extends PFWizardPanel {
             WizardContextAttributes.FOLDER_LOCAL_BASE);
         SyncProfile syncProfile = (SyncProfile) getWizardContext()
             .getAttribute(WizardContextAttributes.SYNC_PROFILE_ATTRIBUTE);
+        Boolean saveLocalInvite = (Boolean) getWizardContext()
+            .getAttribute(WizardContextAttributes.SAVE_INVITE_LOCALLY);
         Reject.ifNull(localBase, "Local base for folder is null/not set");
         Reject.ifNull(syncProfile, "Sync profile for folder is null/not set");
+        Reject.ifNull(saveLocalInvite, "Save invite locally attribute is null/not set");
 
         // Optional
         foInfo = (FolderInfo) getWizardContext().getAttribute(
@@ -161,7 +164,7 @@ public class FolderCreatePanel extends PFWizardPanel {
         sendInvitations = sendInvsAtt == null || sendInvsAtt;
 
         folderSettings = new FolderSettings(localBase, syncProfile,
-            useRecycleBin, true, previewFolder, false);
+            saveLocalInvite, useRecycleBin, previewFolder, false);
 
         // Reset
         folder = null;

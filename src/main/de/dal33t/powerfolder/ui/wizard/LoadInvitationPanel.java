@@ -110,6 +110,10 @@ public class LoadInvitationPanel extends PFWizardPanel {
             if (base == null) {
                 base = new File(getController().getFolderRepository().getFoldersBasedir());
             }
+
+            getWizardContext().setAttribute(SAVE_INVITE_LOCALLY,
+                Boolean.FALSE);
+
             return new ChooseDiskLocationPanel(getController(),
                 base.getAbsolutePath(),
                 new FolderCreatePanel(getController()));

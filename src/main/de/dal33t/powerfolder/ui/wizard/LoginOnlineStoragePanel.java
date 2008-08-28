@@ -27,6 +27,7 @@ import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDER_LOCAL_BASE;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SEND_INVIATION_AFTER_ATTRIBUTE;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SYNC_PROFILE_ATTRIBUTE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SAVE_INVITE_LOCALLY;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -194,9 +195,10 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
             getWizardContext().setAttribute(BACKUP_ONLINE_STOARGE,
                 accountFolder == null);
 
-            FolderCreatePanel fcp = new FolderCreatePanel(getController());
+            getWizardContext().setAttribute(SAVE_INVITE_LOCALLY,
+                Boolean.FALSE);
 
-            return fcp;
+            return new FolderCreatePanel(getController());
         }
         // Remind for next logins
         PreferencesEntry.SETUP_DEFAULT_FOLDER.setValue(getController(),

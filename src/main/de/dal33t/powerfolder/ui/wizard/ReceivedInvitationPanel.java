@@ -123,6 +123,10 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
             return (WizardPanel) getWizardContext().getAttribute(
                 PFWizard.SUCCESS_PANEL);
         } else {
+
+            getWizardContext().setAttribute(SAVE_INVITE_LOCALLY,
+                Boolean.FALSE);
+
             return new ChooseDiskLocationPanel(getController(), invitation
                 .getSuggestedLocalBase(getController()).getAbsolutePath(),
                 new FolderCreatePanel(getController()));

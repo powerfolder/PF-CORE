@@ -88,6 +88,9 @@ public class FolderSetupPanel extends PFWizardPanel {
                 .getTranslation("wizard.successjoin"));
         getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL, successPanel);
 
+        getWizardContext().setAttribute(SAVE_INVITE_LOCALLY,
+            Boolean.TRUE);
+
         return new FolderCreatePanel(getController());
     }
 
