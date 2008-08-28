@@ -286,17 +286,20 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
 
         // Inverse logic for backward compatability.
-        boolean useRecycleBin = !"true".equalsIgnoreCase(config
-            .getProperty(FOLDER_SETTINGS_PREFIX + folderName
-                + FOLDER_SETTINGS_DONT_RECYCLE));
+        String dontRecycleSetting = config.getProperty(FOLDER_SETTINGS_PREFIX
+                + folderName + FOLDER_SETTINGS_DONT_RECYCLE);
+        boolean useRecycleBin = dontRecycleSetting == null
+                || !"true".equalsIgnoreCase(dontRecycleSetting);
 
-        boolean preview = "true".equalsIgnoreCase(config
-            .getProperty(FOLDER_SETTINGS_PREFIX + folderName
-                + FOLDER_SETTINGS_PREVIEW));
+        String previewSetting = config.getProperty(FOLDER_SETTINGS_PREFIX
+                + folderName + FOLDER_SETTINGS_PREVIEW);
+        boolean preview = previewSetting != null
+                && "true".equalsIgnoreCase(previewSetting);
 
-        boolean whitelist = "true".equalsIgnoreCase(config
-            .getProperty(FOLDER_SETTINGS_PREFIX + folderName
-                + FOLDER_SETTINGS_WHITELIST));
+        String whitelistSetting = config.getProperty(FOLDER_SETTINGS_PREFIX
+                + folderName+ FOLDER_SETTINGS_WHITELIST);
+        boolean whitelist = whitelistSetting != null
+                && "true".equalsIgnoreCase(whitelistSetting);
 
         return new FolderSettings(new File(folderDir), syncProfile, false,
             useRecycleBin, preview, whitelist);
