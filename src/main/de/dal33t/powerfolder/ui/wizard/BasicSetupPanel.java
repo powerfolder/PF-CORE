@@ -47,6 +47,7 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.NetworkingMode;
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Translation;
@@ -155,8 +156,13 @@ public class BasicSetupPanel extends PFWizardPanel {
         getController().getPreferences().putBoolean("openwizard2", false);
         getController().getPreferences().putBoolean("openwizard_os2", false);
 
-        return new LoginOnlineStoragePanel(getController(), new WhatToDoPanel(
-            getController()), false);
+        if (StringUtils.isEmpty(ConfigurationEntry.WEBSERVICE_USERNAME
+                .getValue(getController()))) {
+            return new LoginOnlineStoragePanel(getController(),
+                    new WhatToDoPanel(getController()), false);
+        } else {
+            return new WhatToDoPanel(getController());
+        }
     }
 
     /**
