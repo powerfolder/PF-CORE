@@ -21,6 +21,8 @@ package de.dal33t.powerfolder.util;
 
 import java.util.logging.Level;
 
+import org.apache.commons.lang.StringUtils;
+
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 
@@ -450,16 +452,25 @@ public abstract class Loggable {
         }
         return loggingLevel.intValue() >= level.intValue();
     }
-    
-    private void retrieveAndSetCurrentController() {
-        LogDispatch.setCurrentController(getTheController());
-    }
 
-    private Controller getTheController() {
-        if (this instanceof PFComponent) {
-            return ((PFComponent) this).getController();
+    private void retrieveAndSetCurrentController() {
+        if (!LogDispatch.isNickPrefix()) {
+            return;
         }
-        return null;
+        if (LogDispatch.getCurrentPrefix() != null) {
+            // Already set
+            return;
+        }
+        Controller c = null;
+        if (this instanceof PFComponent) {
+            c = ((PFComponent) this).getController();
+        }
+        String nick = (c != null && c.getMySelf() != null) ? c.getMySelf()
+            .getNick() : "unkwn";
+        StringBuilder sb = new StringBuilder();
+        sb.append(StringUtils.rightPad(nick, 6));
+        sb.append(' ');
+        LogDispatch.setCurrentPrefix(sb.toString());
     }
 
     /**

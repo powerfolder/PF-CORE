@@ -31,6 +31,8 @@ import javax.swing.text.StyledDocument;
 
 import org.apache.commons.lang.StringUtils;
 
+import com.sun.org.apache.bcel.internal.generic.GETSTATIC;
+
 import java.awt.Color;
 import java.awt.EventQueue;
 import java.io.File;
@@ -69,16 +71,16 @@ public class LogDispatch {
     private static boolean logToFileEnabled;
     private static String logFileName;
     private static boolean loggingConfigured;
-    private static boolean nickPrefix;
     private static final StyledDocument logBuffer = new DefaultStyledDocument();
-    private static final Map<String, SimpleAttributeSet> logColors =
-            new HashMap<String, SimpleAttributeSet>();
+    private static final Map<String, SimpleAttributeSet> logColors = new HashMap<String, SimpleAttributeSet>();
     private static int nLogLines = 1000;
     private static Level loggingLevel;
-    private static ThreadLocal<Controller> CURRENT_CONTROLLER =
-            new ThreadLocal<Controller>();
-    private static final AtomicBoolean shownOutOfMemoryErrorWarning =
-            new AtomicBoolean();
+
+    // For adding prefixes to the log messages. For Multi-controller tests.
+    private static boolean logPrefixes;
+    private static ThreadLocal<String> LOG_PREFIX = new ThreadLocal<String>();
+
+    private static final AtomicBoolean shownOutOfMemoryErrorWarning = new AtomicBoolean();
     private static UIController uiController;
 
     static {
@@ -120,7 +122,7 @@ public class LogDispatch {
 
     /**
      * Set the uiController for showing OutOfMemoryErrors.
-     *
+     * 
      * @param uiController
      */
     public static void setUIController(UIController uiController) {
@@ -128,13 +130,15 @@ public class LogDispatch {
     }
 
     /**
-     * @param controller
-     *            the current controller for prefixes in log message.
+     * @param prefix
+     *            the prefix in log message.
      */
-    public static void setCurrentController(Controller controller) {
-        if (nickPrefix) {
-            CURRENT_CONTROLLER.set(controller);
-        }
+    public static void setCurrentPrefix(String prefix) {
+        LOG_PREFIX.set(prefix);
+    }
+
+    public static String getCurrentPrefix() {
+        return LOG_PREFIX.get();
     }
 
     /**
@@ -349,8 +353,9 @@ public class LogDispatch {
         }
 
         // Handle OutOfMemoryError (once only)
-        if (t != null && t instanceof OutOfMemoryError &&
-                !shownOutOfMemoryErrorWarning.get() && uiController != null) {
+        if (t != null && t instanceof OutOfMemoryError
+            && !shownOutOfMemoryErrorWarning.get() && uiController != null)
+        {
             shownOutOfMemoryErrorWarning.set(true);
             uiController.showOutOfMemoryError((OutOfMemoryError) t);
         }
@@ -415,14 +420,11 @@ public class LogDispatch {
         String message, Throwable t)
     {
         StringBuilder sb = new StringBuilder(1000);
-        Controller c = CURRENT_CONTROLLER.get();
-        if (nickPrefix) {
-            String nick = (c != null && c.getMySelf() != null) ? c.getMySelf()
-                .getNick() : "unkwn";
-            sb.append(StringUtils.rightPad(nick, 6));
-            sb.append(' ');
+        if (logPrefixes) {
+            if (getCurrentPrefix() != null) {
+                sb.append(getCurrentPrefix());
+            }
         }
-
         sb.append('[');
         SimpleDateFormat sdf = new SimpleDateFormat("hh:mm:ss");
         sb.append(sdf.format(new Date()));
@@ -617,7 +619,7 @@ public class LogDispatch {
      *         the log messages is enabled.
      */
     public static boolean isNickPrefix() {
-        return nickPrefix;
+        return logPrefixes;
     }
 
     /**
@@ -627,11 +629,11 @@ public class LogDispatch {
      * @param nickPrefix
      */
     public static void setNickPrefix(boolean nickPrefix) {
-        LogDispatch.nickPrefix = nickPrefix;
+        LogDispatch.logPrefixes = nickPrefix;
     }
 
     /**
-     * @return  the log buffer, for the debug panel.
+     * @return the log buffer, for the debug panel.
      */
     public static StyledDocument getLogBuffer() {
         return logBuffer;
@@ -647,12 +649,10 @@ public class LogDispatch {
     private static class LogFormatter extends Formatter {
         public String format(LogRecord record) {
             StringBuilder buf = new StringBuilder(1000);
-            Controller c = CURRENT_CONTROLLER.get();
-            if (nickPrefix) {
-                String nick = (c != null && c.getMySelf() != null) ? c
-                    .getMySelf().getNick() : "unkwn";
-                buf.append(StringUtils.rightPad(nick, 6));
-                buf.append(' ');
+            if (logPrefixes) {
+                if (getCurrentPrefix() != null) {
+                    buf.append(getCurrentPrefix());
+                }
             }
             buf.append('[');
             SimpleDateFormat sdf = new SimpleDateFormat("hh:mm:ss");
