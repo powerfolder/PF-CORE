@@ -309,8 +309,13 @@ public enum ConfigurationEntry {
     HIDE_PREVIEW_FOLDERS("show.preview.folders", Boolean.FALSE.toString()),
 
     /**
+     * The number of seconds between db maintenance scans (5 minutes).
+     */
+    DB_MAINTENANCE_SECONDS("filedb.maintenance.seconds", String.valueOf(300)),
+    
+    /**
      * The age of a deleted file until it gets removed by the folder db
-     * maintenance. In Seconds!
+     * maintenance. In Seconds! default: 120 days
      */
     MAX_FILEINFO_DELETED_AGE_SECONDS("filedb.deleted.maxage", "" + 60L * 60 * 24
         * 120),
@@ -329,12 +334,7 @@ public enum ConfigurationEntry {
             }
             return host;
         }
-    },
-
-    /**
-     * The number of seconds between db maintenance scans (5 minutes).
-     */
-    DB_MAINTENANCE_SECONDS("db.maintenance.seconds", String.valueOf(300));
+    };
 
     // Methods/Constructors ***************************************************
 
