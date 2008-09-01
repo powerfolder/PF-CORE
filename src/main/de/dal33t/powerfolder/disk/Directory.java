@@ -48,11 +48,13 @@ import de.dal33t.powerfolder.util.Loggable;
  * Represents a directory of files. No actual disk access from this file, build
  * from list of FileInfos Holds the SubDirectories (may contain Files and
  * Subdirectories themselfs) and Files (FileInfos)
- *
+ * 
  * @author <a href="mailto:schaatser@powerfolder.com">Jan van Oosterom </a>
  * @version $Revision: 1.43 $
  */
-public class Directory extends Loggable implements Comparable<Directory>, DiskItem {
+public class Directory extends Loggable implements Comparable<Directory>,
+    DiskItem
+{
     /**
      * The files (FileInfoHolder s) in this Directory key = fileInfo value =
      * FileInfoHolder
@@ -150,7 +152,7 @@ public class Directory extends Loggable implements Comparable<Directory>, DiskIt
 
     /**
      * notify this Directory that a file is added
-     *
+     * 
      * @param file
      */
     public void add(File file) {
@@ -161,7 +163,7 @@ public class Directory extends Loggable implements Comparable<Directory>, DiskIt
     /**
      * move a file from this source to this Directory, overwrites target if
      * exisits!
-     *
+     * 
      * @param file
      * @return the file has been moved
      */
@@ -244,7 +246,35 @@ public class Directory extends Loggable implements Comparable<Directory>, DiskIt
             return true;
         }
         return false;
+    }
 
+    /**
+     * Removes a fileinfo from this directory or subdirectories.
+     * 
+     * @param fInfo
+     * @return if the fileinfo has been removed.
+     */
+    public boolean removeFileInfo(FileInfo fInfo) {
+        synchronized (fileInfoHolderMap) {
+            Iterator<FileInfoHolder> fileInfoHolders = fileInfoHolderMap
+                .values().iterator();
+            while (fileInfoHolders.hasNext()) {
+                FileInfoHolder holder = fileInfoHolders.next();
+                if (holder.getFileInfo().equals(fInfo)) {
+                    fileInfoHolders.remove();
+                    return true;
+                }
+            }
+        }
+        Set<String> dirnames = subDirectoriesMap.keySet();
+        for (Iterator<String> it = dirnames.iterator(); it.hasNext();) {
+            Directory dir = subDirectoriesMap.get(it.next());
+            if (dir.removeFileInfo(fInfo)) {
+                return true;
+            }
+        }
+        // Not found!
+        return false;
     }
 
     public boolean removeFilesOfMember(Member member) {
@@ -359,7 +389,7 @@ public class Directory extends Loggable implements Comparable<Directory>, DiskIt
 
     /**
      * get the files in this dir (not the files in the subs)
-     *
+     * 
      * @return the list of files
      * @see #getFilesRecursive()
      */
@@ -381,7 +411,7 @@ public class Directory extends Loggable implements Comparable<Directory>, DiskIt
     /**
      * returns only valid files. (valid if at least one member has a not deleted
      * version or member with deleted version is myself)
-     *
+     * 
      * @return the list of fileinfos
      */
     public List<FileInfo> getFilesRecursive() {
@@ -405,7 +435,8 @@ public class Directory extends Loggable implements Comparable<Directory>, DiskIt
     }
 
     /**
-     * @return the list of subdirectories in this directory, that are NOT deleted.
+     * @return the list of subdirectories in this directory, that are NOT
+     *         deleted.
      */
     public List<Directory> listSubDirectories() {
         List<Directory> list = new ArrayList<Directory>(subDirectoriesMap
@@ -454,7 +485,7 @@ public class Directory extends Loggable implements Comparable<Directory>, DiskIt
 
     /**
      * Added because equals is overridden. (See #692)
-     *
+     * 
      * @see java.lang.Object#hashCode()
      */
     @Override
@@ -478,7 +509,7 @@ public class Directory extends Loggable implements Comparable<Directory>, DiskIt
 
     /**
      * Adds a FileInfo to this Directory
-     *
+     * 
      * @param fileInfo
      *            the file to add to this Directory
      */
@@ -510,7 +541,7 @@ public class Directory extends Loggable implements Comparable<Directory>, DiskIt
 
     /**
      * Answers if all files in this dir and in subdirs are expected.
-     *
+     * 
      * @param folderRepository
      * @return if the directory is expected
      */
@@ -593,7 +624,7 @@ public class Directory extends Loggable implements Comparable<Directory>, DiskIt
 
     /**
      * True if this directory contains any local files.
-     *
+     * 
      * @return
      */
     public boolean containsLocalFiles() {
@@ -605,17 +636,19 @@ public class Directory extends Loggable implements Comparable<Directory>, DiskIt
                 FileInfo fileInfo = fileInfoHolder.getFileInfo();
                 FileInfo newestVersion = null;
                 if (fileInfo.getFolder(rootFolder.getController()
-                        .getFolderRepository()) != null) {
-                    newestVersion = fileInfo.getNewestNotDeletedVersion(
-                            rootFolder.getController().getFolderRepository());
+                    .getFolderRepository()) != null)
+                {
+                    newestVersion = fileInfo
+                        .getNewestNotDeletedVersion(rootFolder.getController()
+                            .getFolderRepository());
                 }
 
-                boolean isIncoming = fileInfo.isDownloading(
-                        rootFolder.getController())
-                        || fileInfo.isExpected(rootFolder.getController()
+                boolean isIncoming = fileInfo.isDownloading(rootFolder
+                    .getController())
+                    || fileInfo.isExpected(rootFolder.getController()
                         .getFolderRepository())
-                        || newestVersion != null
-                        && newestVersion.isNewerThan(fileInfo);
+                    || newestVersion != null
+                    && newestVersion.isNewerThan(fileInfo);
                 if (!isIncoming && !fileInfo.isDeleted()) {
                     return true;
                 }
@@ -633,7 +666,7 @@ public class Directory extends Loggable implements Comparable<Directory>, DiskIt
 
     /**
      * Returns true if the directory contains any incoming files.
-     *
+     * 
      * @return
      */
     public boolean containsIncomingFiles() {
@@ -645,17 +678,19 @@ public class Directory extends Loggable implements Comparable<Directory>, DiskIt
                 FileInfo fileInfo = fileInfoHolder.getFileInfo();
                 FileInfo newestVersion = null;
                 if (fileInfo.getFolder(rootFolder.getController()
-                        .getFolderRepository()) != null) {
-                    newestVersion = fileInfo.getNewestNotDeletedVersion(
-                            rootFolder.getController().getFolderRepository());
+                    .getFolderRepository()) != null)
+                {
+                    newestVersion = fileInfo
+                        .getNewestNotDeletedVersion(rootFolder.getController()
+                            .getFolderRepository());
                 }
 
-                boolean isIncoming = fileInfo.isDownloading(
-                        rootFolder.getController())
-                        || fileInfo.isExpected(rootFolder.getController()
+                boolean isIncoming = fileInfo.isDownloading(rootFolder
+                    .getController())
+                    || fileInfo.isExpected(rootFolder.getController()
                         .getFolderRepository())
-                        || newestVersion != null
-                        && newestVersion.isNewerThan(fileInfo);
+                    || newestVersion != null
+                    && newestVersion.isNewerThan(fileInfo);
                 if (isIncoming) {
                     return true;
                 }
@@ -673,7 +708,8 @@ public class Directory extends Loggable implements Comparable<Directory>, DiskIt
 
     /**
      * TODO: Optimize: Run through all recently completed downloads instead of
-     * all files. Afterwards remove NavTreeCellRenderer.containsRecentlyCompleted()
+     * all files. Afterwards remove
+     * NavTreeCellRenderer.containsRecentlyCompleted()
      * 
      * @return true if this directory (or any subdirectory) contains a completed
      *         download.
@@ -706,7 +742,7 @@ public class Directory extends Loggable implements Comparable<Directory>, DiskIt
      * returns a list of all valid FileInfo s, so not the remotely deleted
      * <p>
      * TODO Valid state of FileInfo is highly questionable.
-     *
+     * 
      * @return the list of files
      */
     public List<FileInfo> getValidFiles() {
@@ -754,7 +790,7 @@ public class Directory extends Loggable implements Comparable<Directory>, DiskIt
     /**
      * helper code to fill build the Directory with FileInfos in the correct sub
      * Directories
-     *
+     * 
      * @param listOfFiles
      *            The files to add to this Diretory
      * @param folder
