@@ -25,9 +25,9 @@ import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.BACKUP_ONL
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.CREATE_DESKTOP_SHORTCUT;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDER_LOCAL_BASE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SAVE_INVITE_LOCALLY;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SEND_INVIATION_AFTER_ATTRIBUTE;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SYNC_PROFILE_ATTRIBUTE;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SAVE_INVITE_LOCALLY;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -51,7 +51,6 @@ import com.jgoodies.binding.adapter.BasicComponentFactory;
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
@@ -68,8 +67,8 @@ import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
 import de.dal33t.powerfolder.util.Help;
 import de.dal33t.powerfolder.util.IdGenerator;
-import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Loggable;
+import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 
 public class LoginOnlineStoragePanel extends PFWizardPanel {
