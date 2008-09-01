@@ -25,7 +25,11 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FocusTraversalPolicy;
 import java.awt.Toolkit;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -87,7 +91,6 @@ public class AboutDialog extends PFUIComponent {
     private JLabel logoLabel;
 
     private JPanel team;
-    private JPanel testers;
     private JPanel contributers;
     private JPanel translators;
     private JPanel system;
@@ -218,15 +221,12 @@ public class AboutDialog extends PFUIComponent {
 
         contributers = createTextBox(
             Translation.getTranslation("about.dialog.contributers"),
-            "Daniel Harabor\nDane Smith\nJan van Oosterom\nThorsten Lenze\nPavel Tenenbaum\nOliver H&auml;usler");
-        testers = createTextBox(Translation
-            .getTranslation("about.dialog.testers"),
-            "Michael Petrovic-Brings\nPeter H&uuml;ren\n \n ");
+            "Anas Hnidi\nDaniel Harabor\nDane Smith\nJan van Oosterom\nMichael Petrovic-Brings\nNick Khazov\nThorsten Lenze\nPavel Tenenbaum\nPeter H&uuml;ren\nOliver H&auml;usler");
 
         translators = createTextBox(Translation
-            .getTranslation("about.dialog.translators"), "Anas Hnidi\n"
-            + "Cecilia Saltori\n" + "Jan Van Oosterom\n" + "Javier Isassi\n"
-            + "Keblo\n" + "Nick Khazov\n" + "Olle Wikstrom\n" + "Zhang Jia\n ");
+            .getTranslation("about.dialog.translators"), "Bayan El Ameen\n"
+            + "Cecilia Saltori\n" + "Javier Isassi\n" + "Keblo\n"
+            + "Olle Wikstrom\n" + "Zhang Jia\n ");
     }
 
     /**
@@ -257,18 +257,17 @@ public class AboutDialog extends PFUIComponent {
     private JPanel createRightPanel() {
         FormLayout layout = new FormLayout(
             "pref:grow, pref:grow, pref:grow, pref:grow",
-            "fill:pref:grow, fill:pref:grow, fill:pref:grow, 4dlu, pref");
+            "fill:pref:grow, fill:pref:grow");
         PanelBuilder builder = new PanelBuilder(layout);
-        // builder.setBorder(Borders.DLU2_BORDER);
+        builder.setBorder(Borders.createEmptyBorder("0, 0, 5dlu, 0"));
         CellConstraints cc = new CellConstraints();
-        builder.add(createGeneralPanel(), cc.xywh(1, 1, 2, 2));
-        builder.add(powerFolder, cc.xy(1, 3));
-        builder.add(system, cc.xy(2, 3));
-        builder.add(team, cc.xywh(3, 1, 1, 3));
+        builder.add(createGeneralPanel(), cc.xywh(1, 1, 2, 1));
+        builder.add(powerFolder, cc.xy(1, 2));
+        builder.add(system, cc.xy(2, 2));
+        builder.add(team, cc.xy(3, 1));
 
-        builder.add(translators, cc.xy(4, 1));
-        builder.add(testers, cc.xy(4, 2));
-        builder.add(contributers, cc.xy(4, 3));
+        builder.add(translators, cc.xy(3, 2));
+        builder.add(contributers, cc.xywh(4, 1, 1, 2));
 
         JPanel rightPanel = builder.getPanel();
         rightPanel.setBackground(Color.WHITE);
@@ -359,8 +358,8 @@ public class AboutDialog extends PFUIComponent {
     private class UpdateAction implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             if (getController().getUpdateSettings() != null) {
-                new ManuallyInvokedUpdater(getController(),
-                    getController().getUpdateSettings()).start();
+                new ManuallyInvokedUpdater(getController(), getController()
+                    .getUpdateSettings()).start();
             }
             PreferencesEntry.CHECK_UPDATE.setValue(getController(), true);
         }
