@@ -636,6 +636,10 @@ public class FolderRepository extends PFComponent implements Runnable {
         config.remove(FOLDER_SETTINGS_PREFIX + folderInfo.name
             + FOLDER_SETTINGS_WHITELIST);
 
+        // Cleaning up old configs
+        config.remove(FOLDER_SETTINGS_PREFIX + folderInfo.name
+            + ".secret");
+        
         // Save config
         getController().saveConfig();
 
