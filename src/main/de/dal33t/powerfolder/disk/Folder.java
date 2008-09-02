@@ -45,7 +45,6 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TimerTask;
 import java.util.TreeMap;
-import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
@@ -124,11 +123,6 @@ public class Folder extends PFComponent {
      * FileInfo
      */
     private Map<FileInfo, FileInfo> knownFiles;
-
-    /**
-     * List of expired, deleted file infos that should not be written to db.
-     */
-    private List<FileInfo> expiredFileInfos;
 
     /** files that should(not) be downloaded in auto download */
     private DiskItemFilter diskItemFilter;
@@ -278,7 +272,6 @@ public class Folder extends PFComponent {
 
         statistic = new FolderStatistic(this);
         knownFiles = new ConcurrentHashMap<FileInfo, FileInfo>();
-        expiredFileInfos = new ArrayList<FileInfo>();
         members = new ConcurrentHashMap<Member, Member>();
         // diskFileCache = new WeakHashMap<FileInfo, File>();
 
@@ -1340,19 +1333,8 @@ public class Folder extends PFComponent {
             File dbFileBackup = new File(getSystemSubDir(), DB_BACKUP_FILENAME);
             try {
 
-                // Remove the expired file infos from a copy of the known files.
-                List<FileInfo> tempFileInfos = new ArrayList<FileInfo>();
-                tempFileInfos.addAll(knownFiles.keySet());
-                synchronized (expiredFileInfos) {
-                    for (FileInfo removedFileInfo : expiredFileInfos) {
-                        if (tempFileInfos.remove(removedFileInfo)) {
-                            logInfo(removedFileInfo.getFilenameOnly()
-                                + " has expired and was not stored to DB.");
-                        }
-                    }
-                }
-                FileInfo[] files = tempFileInfos
-                    .toArray(new FileInfo[tempFileInfos.size()]);
+                FileInfo[] files = knownFiles.keySet()
+                    .toArray(new FileInfo[knownFiles.size()]);
                 if (dbFile.exists()) {
                     if (!dbFile.delete()) {
                         logSevere("Failed to delete database file: " + dbFile);
@@ -1438,25 +1420,6 @@ public class Folder extends PFComponent {
 
         RecycleBin recycleBin = getController().getRecycleBin();
 
-        // Scan for files that have expired and are now restored.
-        // Unlikely, but could happen for long-running servers.
-        FolderRepository folderRepository = getController()
-            .getFolderRepository();
-        synchronized (expiredFileInfos) {
-            for (Iterator<FileInfo> iter = expiredFileInfos.iterator(); iter
-                .hasNext();)
-            {
-                FileInfo expiredFileInfo = iter.next();
-                if (!expiredFileInfo.isDeleted()
-                    || recycleBin.isInRecycleBin(expiredFileInfo))
-                {
-                    iter.remove();
-                    logInfo("Expired file " + expiredFileInfo.getFilenameOnly()
-                        + " has been restored.");
-                }
-            }
-        }
-
         long removeBeforeDate = System.currentTimeMillis()
             - 1000L
             * ConfigurationEntry.MAX_FILEINFO_DELETED_AGE_SECONDS
@@ -1473,17 +1436,12 @@ public class Folder extends PFComponent {
             if (recycleBin.isInRecycleBin(file)) {
                 continue;
             }
-            if (expiredFileInfos.contains(file)) { // Already have this one.
-                continue;
-            }
             if (file.getModifiedDate().getTime() < removeBeforeDate) {
                 expired++;
-                expiredFileInfos.add(file);
-                // #798: Probably this works:
-                // knownFiles.remove(file);
-                // if (rootDirectory != null) {
-                // rootDirectory.removeFileInfo(file);
-                // }
+                knownFiles.remove(file);
+                if (rootDirectory != null) {
+                    rootDirectory.removeFileInfo(file);
+                }
                 logInfo(file.getFilenameOnly() + " has expired.");
             }
         }
