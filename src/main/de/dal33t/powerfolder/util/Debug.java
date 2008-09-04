@@ -725,10 +725,18 @@ public class Debug {
         showGroupInfo(top);
     }
 
-    public static void dumpCurrentStackTrace() {
-        for (StackTraceElement e : Thread.currentThread().getStackTrace()) {
-            Loggable.logFineStatic(Debug.class, e.toString());
+    public static String getStackTrace(StackTraceElement[] stack) {
+        StringBuilder b = new StringBuilder();
+
+        for (StackTraceElement e : stack) {
+            b.append(e.toString()).append('\n');
         }
+        return b.toString();
+    }
+
+    public static void dumpCurrentStackTrace() {
+        Loggable.logFineStatic(Debug.class, getStackTrace(Thread
+            .currentThread().getStackTrace()));
     }
 
     private static String detailedObjectState0(Class<?> c, Object o) {

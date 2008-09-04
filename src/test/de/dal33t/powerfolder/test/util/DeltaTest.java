@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc, Dennis Waldherr. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id: AddLicenseHeader.java 4282 2008-06-16 03:25:09Z tot $
-*/
+ * Copyright 2004 - 2008 Christian Sprajc, Dennis Waldherr. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id: AddLicenseHeader.java 4282 2008-06-16 03:25:09Z tot $
+ */
 package de.dal33t.powerfolder.test.util;
 
 import java.io.ByteArrayInputStream;
@@ -53,45 +53,27 @@ import de.dal33t.powerfolder.util.delta.FilePartsState.PartState;
  */
 public class DeltaTest extends TestCase {
     private final static int ADLER_RS = 10;
-    
-/*  This test was used to check if the old and new implementation do the same   
-    public void testNewBuilder() throws NoSuchAlgorithmException, IOException {
-        final int PSIZE = 4096, VFSIZE = 1024 * 1024 * 10 + 1111, UPDATE_SIZE = 1337;
-        Random prng = new Random();
-        
-        FilePartsRecordBuilder b1 = new FilePartsRecordBuilder(new Adler32(),
-            MessageDigest.getInstance("SHA-256"), MessageDigest
-            .getInstance("MD5"));
-        FilePartsRecordBuilder b2 = new FilePartsRecordBuilder(new Adler32(),
-            MessageDigest.getInstance("SHA-256"), MessageDigest
-            .getInstance("MD5"), PSIZE);
-        FilePartsRecordBuilder b3 = new FilePartsRecordBuilder(new Adler32(),
-            MessageDigest.getInstance("SHA-256"), MessageDigest
-            .getInstance("MD5"), PSIZE);
-        byte data[] = new byte[VFSIZE];
-        for (int i = 0; i < data.length; i++) {
-            data[i] = (byte) prng.nextInt(255);
-        }
-        
-        FilePartsRecord r1 = b1.buildFilePartsRecord(new ByteArrayInputStream(data), PSIZE);
-        b3.update(data);
-        
-        int i = 0;
-        while (i < VFSIZE) {
-            if (i < 1024) {
-                b2.update(data[i++]);
-            } else {
-                int us = Math.min(VFSIZE - i, UPDATE_SIZE);
-                b2.update(data, i, us);
-                i += us;
-            }
-        }
-        FilePartsRecord r2 = b2.getRecord();
-        FilePartsRecord r3 = b3.getRecord();
-        assertEquals(r1, r2);
-        assertEquals(r1, r3);
-    }
-*/
+
+    /*
+     * This test was used to check if the old and new implementation do the same
+     * public void testNewBuilder() throws NoSuchAlgorithmException, IOException
+     * { final int PSIZE = 4096, VFSIZE = 1024 1024 10 + 1111, UPDATE_SIZE =
+     * 1337; Random prng = new Random(); FilePartsRecordBuilder b1 = new
+     * FilePartsRecordBuilder(new Adler32(),
+     * MessageDigest.getInstance("SHA-256"), MessageDigest .getInstance("MD5"));
+     * FilePartsRecordBuilder b2 = new FilePartsRecordBuilder(new Adler32(),
+     * MessageDigest.getInstance("SHA-256"), MessageDigest .getInstance("MD5"),
+     * PSIZE); FilePartsRecordBuilder b3 = new FilePartsRecordBuilder(new
+     * Adler32(), MessageDigest.getInstance("SHA-256"), MessageDigest
+     * .getInstance("MD5"), PSIZE); byte data[] = new byte[VFSIZE]; for (int i =
+     * 0; i < data.length; i++) { data[i] = (byte) prng.nextInt(255); }
+     * FilePartsRecord r1 = b1.buildFilePartsRecord(new
+     * ByteArrayInputStream(data), PSIZE); b3.update(data); int i = 0; while (i
+     * < VFSIZE) { if (i < 1024) { b2.update(data[i++]); } else { int us =
+     * Math.min(VFSIZE - i, UPDATE_SIZE); b2.update(data, i, us); i += us; } }
+     * FilePartsRecord r2 = b2.getRecord(); FilePartsRecord r3 = b3.getRecord();
+     * assertEquals(r1, r2); assertEquals(r1, r3); }
+     */
     public void testAdlerMultiple() throws Exception {
         for (int i = 0; i < 40; i++) {
             testAdler();
@@ -99,6 +81,7 @@ public class DeltaTest extends TestCase {
             setUp();
         }
     }
+
     public void testAdler() throws UnsupportedEncodingException {
         // Reference implementation from SUN, too bad it doesn't support rolling
         Adler32 ref = new Adler32();
@@ -121,7 +104,7 @@ public class DeltaTest extends TestCase {
         // performance testing ?
 
         // Uncomment for performance check
-//        assertTrue(System.currentTimeMillis() - millis < 1000);
+        // assertTrue(System.currentTimeMillis() - millis < 1000);
         ch.reset();
         byte[] data = new byte[2048];
         for (int i = 0; i < data.length; i++) {
@@ -160,14 +143,14 @@ public class DeltaTest extends TestCase {
         MessageDigest d1, d2;
         FilePartsRecordBuilder pim = new FilePartsRecordBuilder(new Adler32(),
             d1 = MessageDigest.getInstance("SHA-256"), MessageDigest
-            .getInstance("MD5"), 128);
+                .getInstance("MD5"), 128);
         Random r = new Random();
         byte[] data = new byte[1024 * 1024 + 7];
         for (int i = 0; i < data.length; i++) {
             data[i] = (byte) r.nextInt(256);
         }
         pim.update(data);
-        FilePartsRecord pi = pim.getRecord(); 
+        FilePartsRecord pi = pim.getRecord();
         Adler32 ref = new Adler32();
         for (int i = 0; i < data.length / 128; i++) {
             ref.reset();
@@ -190,17 +173,15 @@ public class DeltaTest extends TestCase {
         RollingAdler32 ra = new RollingAdler32(128);
         MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
 
-        PartInfoMatcher matcher = new PartInfoMatcher(
-            new ByteArrayInputStream(data), ra, sha256,
-            pi.getInfos()
-            );
-        MatchInfo[] infos = performMatch(matcher); 
+        PartInfoMatcher matcher = new PartInfoMatcher(new ByteArrayInputStream(
+            data), ra, sha256, pi.getInfos());
+        MatchInfo[] infos = performMatch(matcher);
 
         ra.update(data, 0, 127);
         int matches = 0;
         byte[] tmp = new byte[data.length + 127];
         System.arraycopy(data, 0, tmp, 0, data.length);
-        
+
         for (int i = 127; i < tmp.length; i++) {
             ra.update(tmp[i]);
             long sum = ra.getValue();
@@ -217,7 +198,7 @@ public class DeltaTest extends TestCase {
                                 .getIndex() + j)]);
                         }
                         assertEquals(i - 127, infos[matches]
-                                                    .getMatchedPosition());
+                            .getMatchedPosition());
                         matches++;
                     }
                 }
@@ -232,17 +213,16 @@ public class DeltaTest extends TestCase {
             + pi.getInfos().length, matches >= pi.getInfos().length);
         assertTrue("Found " + infos.length + ", but expected " + matches
             + " matches!", infos.length == matches);
-//        assertEquals(pim.getProcessedBytesCount().getValue(), matcher
-//            .getProcessedBytes().getValue());
+        // assertEquals(pim.getProcessedBytesCount().getValue(), matcher
+        // .getProcessedBytes().getValue());
 
-        
         for (int i = 128; i <= 4096; i <<= 1) {
             FilePartsRecordBuilder rolpim = new FilePartsRecordBuilder(
                 new RollingAdler32(16384), d2 = MessageDigest
+                    .getInstance("SHA-256"), MessageDigest.getInstance("MD5"),
+                i);
+            pim = new FilePartsRecordBuilder(new Adler32(), d1 = MessageDigest
                 .getInstance("SHA-256"), MessageDigest.getInstance("MD5"), i);
-            pim = new FilePartsRecordBuilder(new Adler32(),
-                d1 = MessageDigest.getInstance("SHA-256"), MessageDigest
-                .getInstance("MD5"), i);            
             assertEquals(d1.getProvider(), d2.getProvider());
             assertEquals(d1.getProvider(), sha256.getProvider());
 
@@ -251,17 +231,16 @@ public class DeltaTest extends TestCase {
             FilePartsRecord fpr = pim.getRecord();
             FilePartsRecord fpr2 = rolpim.getRecord();
             assertEquals(fpr, fpr2);
-//            assertEquals(fpr.getInfos().length, fpr2.getInfos().length);
-//            assertTrue(Arrays.equals(fpr.getFileDigest(), fpr2.getFileDigest()));
-//            for (int j = 0; j < fpr.getInfos().length; j++) {
-//                assertEquals(fpr.getInfos()[j], fpr2.getInfos()[j]);
-//            }
-            infos = performMatch(new PartInfoMatcher(
-                new ByteArrayInputStream(data),
-                new RollingAdler32(
-                    i), sha256, fpr.getInfos()
-                ));
-            // Allow distance of 1 since we're not using a buffer which is dividable by any power of 2
+            // assertEquals(fpr.getInfos().length, fpr2.getInfos().length);
+            // assertTrue(Arrays.equals(fpr.getFileDigest(),
+            // fpr2.getFileDigest()));
+            // for (int j = 0; j < fpr.getInfos().length; j++) {
+            // assertEquals(fpr.getInfos()[j], fpr2.getInfos()[j]);
+            // }
+            infos = performMatch(new PartInfoMatcher(new ByteArrayInputStream(
+                data), new RollingAdler32(i), sha256, fpr.getInfos()));
+            // Allow distance of 1 since we're not using a buffer which is
+            // dividable by any power of 2
             if (Math.abs(data.length / i - infos.length) > 1) {
                 fail("Matching error at blocksize " + i + ", expected "
                     + data.length / i + " but found " + infos.length);
@@ -278,13 +257,13 @@ public class DeltaTest extends TestCase {
         }
 
         infos = performMatch(new PartInfoMatcher(
-            new ByteArrayInputStream(data), ra, sha256,
-            pi.getInfos()
-            )); 
-        assertEquals((data.length + 127)/ 128, infos.length);
+            new ByteArrayInputStream(data), ra, sha256, pi.getInfos()));
+        assertEquals((data.length + 127) / 128, infos.length);
     }
 
-    private MatchInfo[] performMatch(PartInfoMatcher partInfoMatcher) throws IOException {
+    private MatchInfo[] performMatch(PartInfoMatcher partInfoMatcher)
+        throws IOException
+    {
         List<MatchInfo> mil = new LinkedList<MatchInfo>();
         MatchInfo inf = null;
         try {
@@ -296,26 +275,29 @@ public class DeltaTest extends TestCase {
         }
         return mil.toArray(new MatchInfo[0]);
     }
-    
-    public void testMultipleLens() throws NoSuchAlgorithmException, IOException {
+
+    public void testMultipleLens() throws NoSuchAlgorithmException, IOException
+    {
         Random rng = new Random();
-        for (int i = 100000; i < 1000000;  i += 100000) {
+        byte tmp[] = new byte[1000000];
+        for (int i = 0; i < tmp.length; i++) {
+            tmp[i] = (byte) rng.nextInt(256);
+        }
+        for (int i = 100000; i < 1000000; i += rng.nextInt(5000) + 5000) {
             int j = rng.nextInt(1000) + 1000;
-            byte tmp[] = new byte[i];
-            for (int k = 0; k < i; k++) {
-                tmp[k] = (byte) rng.nextInt(256);
-            }
+
             FilePartsRecordBuilder rolpim = new FilePartsRecordBuilder(
-                new RollingAdler32(j), MessageDigest
-                .getInstance("SHA-256"), MessageDigest.getInstance("MD5"), j);
+                new RollingAdler32(j), MessageDigest.getInstance("SHA-256"),
+                MessageDigest.getInstance("MD5"), j);
             rolpim.update(tmp, 0, i);
             FilePartsRecord rec = rolpim.getRecord();
-            MatchInfo mi[] = performMatch(new PartInfoMatcher(new ByteArrayInputStream(tmp), new RollingAdler32(j), 
-                MessageDigest
-                .getInstance("SHA-256"), rec.getInfos()));
-            assertEquals(rec.getInfos().length, mi.length);
-            
-        }        
+            MatchInfo mi[] = performMatch(new PartInfoMatcher(
+                new ByteArrayInputStream(tmp, 0, i), new RollingAdler32(j),
+                MessageDigest.getInstance("SHA-256"), rec.getInfos()));
+            assertEquals("Expected " + rec.getInfos().length + " but was "
+                + mi.length + ", i=" + i + ", j=" + j, rec.getInfos().length,
+                mi.length);
+        }
     }
 
     private void testDigest(String alg) throws NoSuchAlgorithmException {
@@ -397,7 +379,8 @@ public class DeltaTest extends TestCase {
                 }
                 rb.peek(buf, 0, j);
                 for (int k = 0; k < j; k++) {
-                    assertEquals("At i = " + i + ", j = " + j + ", k = " + k, rb.read(), buf[k] & 0xff);
+                    assertEquals("At i = " + i + ", j = " + j + ", k = " + k,
+                        rb.read(), buf[k] & 0xff);
                 }
             }
         }

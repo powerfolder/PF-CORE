@@ -1,26 +1,24 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.transfer;
 
-import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -300,19 +298,19 @@ public abstract class Transfer implements Serializable {
         }
         if (getPartner() == null) {
             Loggable.logWarningStatic(Transfer.class,
-                    "Abort cause: partner is null.");
+                "Abort cause: partner is null.");
             return true;
         }
         if (!getPartner().isCompleteyConnected()) {
-            Loggable.logWarningStatic(Transfer.class,
-                "Abort cause: " + getPartner().getNick() + " not connected.");
+            Loggable.logWarningStatic(Transfer.class, "Abort cause: "
+                + getPartner().getNick() + " not connected.");
             return true;
         }
         boolean partnerOnFolder = stillPartnerOnFolder();
         if (!partnerOnFolder) {
             // broken if partner left folder
-            Loggable.logWarningStatic(Transfer.class,
-                "Abort cause: " + getPartner().getNick() + " not on folder.");
+            Loggable.logWarningStatic(Transfer.class, "Abort cause: "
+                + getPartner().getNick() + " not on folder.");
             return true;
         }
 
@@ -396,12 +394,13 @@ public abstract class Transfer implements Serializable {
     public double getStateProgress() {
         return transferState == null ? 0 : transferState.getProgress();
     }
-//
-//    // General ****************************************************************
-//
-//    @Override
-//    public String getLoggerName() {
-//        return getClass().getSimpleName() + " '" + getFile().getFilenameOnly()
-//            + "'";
-//    }
+    //
+    // // General
+    // ****************************************************************
+    //
+    // @Override
+    // public String getLoggerName() {
+    // return getClass().getSimpleName() + " '" + getFile().getFilenameOnly()
+    // + "'";
+    // }
 }

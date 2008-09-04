@@ -313,7 +313,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
     }
 
     public void testMultiFileAlterations() throws Exception {
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 20; i++) {
             testFileAlterations();
             tearDown();
             TestHelper.waitMilliSeconds(1000);
@@ -325,7 +325,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
         throws IOException
     {
         Random prng = new Random();
-        final int numC = 10;
+        final int numC = 8;
         nSetupControllers(numC);
         setConfigurationEntry(ConfigurationEntry.USE_SWARMING_ON_LAN, "true");
         setConfigurationEntry(ConfigurationEntry.USE_DELTA_ON_LAN, "true");
@@ -452,7 +452,8 @@ public class SwarmingTest extends MultipleControllerTestCase {
                 // out.close();
                 return b.toString() + "\nUploads total: " + ups
                     + "\nDownloads total: " + downs + "\n"
-                    + TestHelper.deadlockCheck();
+                    + TestHelper.deadlockCheck()
+                    + TestHelper.findUnmatchedTransfers(SwarmingTest.this);
             }
         });
         TestHelper.waitForCondition(numC, new ConditionWithMessage() {
@@ -607,10 +608,28 @@ public class SwarmingTest extends MultipleControllerTestCase {
                 }
                 StringBuilder b = new StringBuilder();
                 b.append("Newest version is " + nver);
+
+                File reference = null;
+
                 for (int i = 0; i < numC; i++) {
                     if (getFolderOf("" + i).getKnowFilesAsArray()[0]
                         .getVersion() == nver)
                     {
+                        File fb = getFolderOf("" + i).getKnowFilesAsArray()[0]
+                            .getDiskFile(getContoller("" + i)
+                                .getFolderRepository());
+                        b.append("Filecheck of " + i + ": ");
+                        if (reference == null) {
+                            reference = fb;
+                            b.append("Using as reference file");
+                        } else {
+                            if (TestHelper.compareFiles(reference, fb)) {
+                                b.append("File is ok");
+                            } else {
+                                b
+                                    .append("File mismatch, although version is same!!!!!!!!!!!!");
+                            }
+                        }
                         continue;
                     }
                     b.append("\n---\n");

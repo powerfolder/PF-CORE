@@ -22,7 +22,6 @@ package de.dal33t.powerfolder.transfer;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -122,26 +121,11 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
     protected void removeSourceImpl(Download download) {
         assert download != null;
         assert hasSource(download);
+        assert download.isBroken() || download.isCompleted()
+            || !download.isStarted();
 
         if (downloads.remove(download.getPartner().getInfo()) == null) {
 
-            if (downloads.values().contains(download)) {
-                for (Map.Entry<MemberInfo, Download> e : downloads.entrySet()) {
-                    if (e.getValue() == download) {
-                        logSevere(e.getKey() + " vs "
-                            + download.getPartner().getInfo());
-                        System.exit(1);
-                    }
-                    if (e.getValue().equals(download)) {
-                        logSevere("W T F 2!");
-                        logSevere(e.getKey() + " vs "
-                            + download.getPartner().getInfo());
-                        System.exit(1);
-                    }
-                }
-                logSevere("W T F");
-                System.exit(2);
-            }
             throw new AssertionError("Removed non-managed download:" + download
                 + " " + download.getPartner().getInfo());
         }
@@ -250,9 +234,22 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
                 break;
             }
         }
+
+        long p = filePartsState.countPartStates(filePartsState.getRange(),
+            PartState.PENDING);
+        if (p > 0) {
+            for (Download d : getSources()) {
+                if (d.isStarted() && !d.isBroken()) {
+                    for (RequestPart rp : d.getPendingRequests()) {
+                        p -= rp.getRange().getLength();
+                    }
+                }
+            }
+            assert p == 0;
+        }
         assert filePartsState.isCompleted()
             || filePartsState.countPartStates(filePartsState.getRange(),
-                PartState.PENDING) > 0 || isNoSourcesAreReady() : "AVAIL: "
+                PartState.PENDING) > 0 || hasNoAvailableSources() : "AVAIL: "
             + filePartsState.countPartStates(filePartsState.getRange(),
                 PartState.AVAILABLE)
             + ", NEED : "
@@ -264,9 +261,9 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
     }
 
     /**
-     * Checks if all sources are not available for requests.
+     * Checks if no sources are available for requests.
      */
-    private boolean isNoSourcesAreReady() {
+    private boolean hasNoAvailableSources() {
         for (Download d : downloads.values()) {
             if (d.isStarted() && !d.isBroken()) {
                 return false;

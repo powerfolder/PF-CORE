@@ -43,9 +43,9 @@ import de.dal33t.powerfolder.message.StartUpload;
 import de.dal33t.powerfolder.message.StopUpload;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.util.Convert;
+import de.dal33t.powerfolder.util.Loggable;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.util.Loggable;
 import de.dal33t.powerfolder.util.delta.FilePartsRecord;
 
 /**
@@ -74,7 +74,8 @@ public class Upload extends Transfer {
      * @param member
      */
     Upload(TransferManager manager, Member member, RequestDownload dl) {
-        super(manager, (dl == null) ? null : dl.file, member);
+        super(manager, (FileInfo) ((dl == null) ? null : dl.file.clone()),
+            member);
         if (dl == null) {
             throw new NullPointerException("Download request is null");
         }
@@ -110,7 +111,8 @@ public class Upload extends Transfer {
         }
 
         if (!Util.usePartRequests(getController(), this.getPartner())) {
-            Loggable.logWarningStatic(Upload.class,
+            Loggable
+                .logWarningStatic(Upload.class,
                     "Downloader sent a PartRequest (Protocol violation). Aborting.");
             getTransferManager().setBroken(this,
                 TransferProblem.TRANSFER_EXCEPTION);
@@ -122,7 +124,8 @@ public class Upload extends Transfer {
             || pr.getRange().getLength() > TransferManager.MAX_CHUNK_SIZE
             || pr.getRange().getLength() <= 0)
         {
-            Loggable.logSevereStatic(Upload.class, "Received invalid part request!");
+            Loggable.logSevereStatic(Upload.class,
+                "Received invalid part request!");
             getTransferManager().setBroken(this, TransferProblem.INVALID_PART);
             return;
         }
@@ -133,13 +136,15 @@ public class Upload extends Transfer {
     public void receivedFilePartsRecordRequest(RequestFilePartsRecord r) {
         Reject.ifNull(r, "Record is null");
 
-        Loggable.logInfoStatic(Upload.class, "Received request for a parts record.");
+        Loggable.logInfoStatic(Upload.class,
+            "Received request for a parts record.");
         // If the download was aborted
         if (aborted || !isStarted()) {
             return;
         }
         if (getFile().getSize() < Constants.MIN_SIZE_FOR_PARTTRANSFERS) {
-            Loggable.logWarningStatic(Upload.class, "Remote side requested invalid PartsRecordRequest!");
+            Loggable.logWarningStatic(Upload.class,
+                "Remote side requested invalid PartsRecordRequest!");
 
             getTransferManager().setBroken(this,
                 TransferProblem.GENERAL_EXCEPTION,
@@ -175,7 +180,8 @@ public class Upload extends Transfer {
      */
     synchronized void start() {
         if (isStarted()) {
-            Loggable.logWarningStatic(Upload.class, "Upload already started. " + this);
+            Loggable.logWarningStatic(Upload.class, "Upload already started. "
+                + this);
             return;
         }
 
@@ -209,7 +215,8 @@ public class Upload extends Transfer {
                         }
                         debugState = "Waiting for requests";
                         if (waitForRequests()) {
-                            Loggable.logInfoStatic(Upload.class, "Checking for parts request.");
+                            Loggable.logInfoStatic(Upload.class,
+                                "Checking for parts request.");
 
                             debugState = "Checking for FPR request.";
 
@@ -224,7 +231,8 @@ public class Upload extends Transfer {
                                 waitForRequests();
                             }
                             debugState = "Starting to send parts";
-                            Loggable.logInfoStatic(Upload.class, "Upload started " + this);
+                            Loggable.logInfoStatic(Upload.class,
+                                "Upload started " + this);
                             long startTime = System.currentTimeMillis();
 
                             // FIXME: It shouldn't be possible to loop endlessly
@@ -245,7 +253,8 @@ public class Upload extends Transfer {
                     }
                     getTransferManager().setCompleted(Upload.this);
                 } catch (TransferException e) {
-                    // Loggable.logWarningStatic(Upload.class, "Upload broken: " + Upload.this, e);
+                    // Loggable.logWarningStatic(Upload.class, "Upload broken: "
+                    // + Upload.this, e);
                     getTransferManager().setBroken(Upload.this,
                         TransferProblem.TRANSFER_EXCEPTION, e.getMessage());
                 } finally {
@@ -273,7 +282,8 @@ public class Upload extends Transfer {
         RequestFilePartsRecord r = null;
         synchronized (pendingRequests) {
             if (pendingRequests.isEmpty()) {
-                Loggable.logWarningStatic(Upload.class, "Cancelled message too fast");
+                Loggable.logWarningStatic(Upload.class,
+                    "Cancelled message too fast");
                 return false;
             }
             if (pendingRequests.peek() instanceof RequestFilePartsRecord) {
@@ -284,6 +294,8 @@ public class Upload extends Transfer {
             return false;
         }
         final FileInfo fi = r.getFile();
+        checkLastModificationDate(fi, fi.getDiskFile(getController()
+            .getFolderRepository()));
         FilePartsRecord fpr;
         try {
             transferState.setState(TransferState.FILEHASHING);
@@ -370,7 +382,8 @@ public class Upload extends Transfer {
             while (pos < data.length) {
                 int read = raf.read(data, pos, data.length - pos);
                 if (read < 0) {
-                    Loggable.logWarningStatic(Upload.class, "Requested part exceeds filesize!");
+                    Loggable.logWarningStatic(Upload.class,
+                        "Requested part exceeds filesize!");
                     throw new TransferException(
                         "Requested part exceeds filesize!");
                 }
@@ -393,7 +406,8 @@ public class Upload extends Transfer {
             Loggable.logSevereStatic(Upload.class, e);
             throw new TransferException(e);
         } catch (ConnectionException e) {
-            Loggable.logWarningStatic(Upload.class, "Connectiopn problem while uploading. " + e.toString());
+            Loggable.logWarningStatic(Upload.class,
+                "Connectiopn problem while uploading. " + e.toString());
             if (Loggable.isLogFinerStatic(Upload.class)) {
                 Loggable.logFinerStatic(Upload.class, e);
             }
@@ -411,14 +425,15 @@ public class Upload extends Transfer {
                 return true;
             }
             try {
-                while (pendingRequests.isEmpty() && !isBroken() && !aborted) {
+                while (pendingRequests.isEmpty() && !isBroken() && !isAborted())
+                {
                     pendingRequests.wait();
                 }
             } catch (InterruptedException e) {
                 Loggable.logSevereStatic(Upload.class, e);
             }
         }
-        return !pendingRequests.isEmpty();
+        return !isBroken() && !aborted && !pendingRequests.isEmpty();
     }
 
     /**
@@ -565,8 +580,8 @@ public class Upload extends Transfer {
         checkLastModificationDate(theFile, f);
         lastFileCheck = new Date();
 
-        Loggable.logInfoStatic(Upload.class,
-            "Upload started " + this + " starting at " + getStartOffset());
+        Loggable.logInfoStatic(Upload.class, "Upload started " + this
+            + " starting at " + getStartOffset());
         long startTime = System.currentTimeMillis();
 
         try {
@@ -589,7 +604,8 @@ public class Upload extends Transfer {
                 chunkSize = Math.min(chunkSize, TransferManager.MAX_CHUNK_SIZE);
 
                 if (chunkSize <= 0) {
-                    Loggable.logSevereStatic(Upload.class, "Illegal chunk size: " + chunkSize);
+                    Loggable.logSevereStatic(Upload.class,
+                        "Illegal chunk size: " + chunkSize);
                 }
 
                 // InputStream fin = new BufferedInputStream(

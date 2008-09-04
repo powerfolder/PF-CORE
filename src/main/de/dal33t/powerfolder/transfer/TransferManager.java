@@ -117,6 +117,9 @@ public class TransferManager extends PFComponent {
     /** Threadpool for Upload Threads */
     private ExecutorService threadPool;
 
+    /** Single threaded execution queue for swarming */
+    private ExecutorService swarmEvents;
+
     /** The currently calculated transferstatus */
     private TransferStatus transferStatus;
 
@@ -244,6 +247,8 @@ public class TransferManager extends PFComponent {
         bandwidthProvider.start();
 
         threadPool = Executors.newCachedThreadPool();
+
+        swarmEvents = Executors.newSingleThreadExecutor();
 
         myThread = new Thread(new TransferChecker(), "Transfer manager");
         myThread.start();
@@ -626,8 +631,6 @@ public class TransferManager extends PFComponent {
     void setCompleted(Transfer transfer) {
         boolean transferFound = false;
 
-        transfer.setCompleted();
-
         if (transfer instanceof Download) {
             // Fire event
             fireDownloadCompleted(new TransferManagerEvent(this,
@@ -657,6 +660,8 @@ public class TransferManager extends PFComponent {
             }
 
         } else if (transfer instanceof Upload) {
+            transfer.setCompleted();
+
             uploadsLock.lock();
             try {
                 transferFound = queuedUploads.remove(transfer);
@@ -1015,7 +1020,7 @@ public class TransferManager extends PFComponent {
         Upload abortedUpload = null;
 
         for (Upload upload : queuedUploads) {
-            if (upload.getFile().equals(fInfo)
+            if (upload.getFile().isCompletelyIdentical(fInfo)
                 && to.equals(upload.getPartner()))
             {
                 // Remove upload from queue
@@ -1031,7 +1036,7 @@ public class TransferManager extends PFComponent {
         }
 
         for (Upload upload : activeUploads) {
-            if (upload.getFile().equals(fInfo)
+            if (upload.getFile().isCompletelyIdentical(fInfo)
                 && to.equals(upload.getPartner()))
             {
                 // Remove upload from queue
@@ -1051,6 +1056,8 @@ public class TransferManager extends PFComponent {
 
             // Trigger check
             triggerTransfersCheck();
+        } else {
+            logFine("Failed to abort upload: " + fInfo + " to " + to);
         }
     }
 
@@ -1407,8 +1414,10 @@ public class TransferManager extends PFComponent {
             if (man == null || !fInfo.isCompletelyIdentical(man.getFileInfo()))
             {
                 if (man != null) {
-                    logFine("Got active download of different file version, aborting.");
-                    man.abortAndCleanup();
+                    if (!man.isDone()) {
+                        logFine("Got active download of different file version, aborting.");
+                        man.abortAndCleanup();
+                    }
                     return;
                 }
                 try {
@@ -1671,12 +1680,16 @@ public class TransferManager extends PFComponent {
      */
     public Upload getUpload(Member to, FileInfo fInfo) {
         for (Upload u : activeUploads) {
-            if (u.getFile().equals(fInfo) && u.getPartner().equals(to)) {
+            if (u.getFile().isCompletelyIdentical(fInfo)
+                && u.getPartner().equals(to))
+            {
                 return u;
             }
         }
         for (Upload u : queuedUploads) {
-            if (u.getFile().equals(fInfo) && u.getPartner().equals(to)) {
+            if (u.getFile().isCompletelyIdentical(fInfo)
+                && u.getPartner().equals(to))
+            {
                 return u;
             }
         }
@@ -1692,10 +1705,8 @@ public class TransferManager extends PFComponent {
         if (d == null) {
             return null;
         }
-        if (d.getPartner().equals(from)) {
-            return d;
-        }
-        return null;
+        assert d.getPartner().equals(from);
+        return d;
     }
 
     /**

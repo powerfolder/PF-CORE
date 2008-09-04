@@ -59,9 +59,7 @@ public class FileCheckWorker implements Callable<Boolean> {
             byte digestResult[] = digest.digest();
             return Arrays.equals(digestResult, expectedHash);
         } finally {
-            if (in != null) {
-                in.close();
-            }
+            in.close();
         }
     }
 

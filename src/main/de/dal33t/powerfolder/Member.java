@@ -1177,7 +1177,7 @@ public class Member extends PFComponent {
                 Download dl = getController().getTransferManager().getDownload(
                     this, dlQueued.file);
                 if (dl != null) {
-                    dl.setQueued();
+                    dl.setQueued(dlQueued.file);
                 } else {
                     logWarning("Remote side queued non-existant download.");
                     sendMessageAsynchron(new AbortDownload(dlQueued.file), null);
@@ -1453,6 +1453,8 @@ public class Member extends PFComponent {
                     this, pr.getFile());
                 if (up != null) { // If the upload isn't broken
                     up.enqueuePartRequest(pr);
+                } else {
+                    sendMessageAsynchron(new AbortUpload(pr.getFile()), null);
                 }
                 expectedTime = 100;
 
@@ -1460,12 +1462,11 @@ public class Member extends PFComponent {
                 StartUpload su = (StartUpload) message;
                 Download dl = getController().getTransferManager().getDownload(
                     this, su.getFile());
-                if (dl != null
-                    && su.getFile().isCompletelyIdentical(dl.getFile()))
-                {
+                if (dl != null) {
                     dl.uploadStarted(su.getFile());
                 } else {
                     logInfo("Download invalid or obsolete:" + su.getFile());
+                    sendMessageAsynchron(new AbortDownload(su.getFile()), null);
                 }
                 expectedTime = 100;
 
@@ -1484,6 +1485,8 @@ public class Member extends PFComponent {
                     this, req.getFile());
                 if (up != null) { // If the upload isn't broken
                     up.receivedFilePartsRecordRequest(req);
+                } else {
+                    sendMessageAsynchron(new AbortUpload(req.getFile()), null);
                 }
                 expectedTime = 100;
 
@@ -1491,12 +1494,11 @@ public class Member extends PFComponent {
                 ReplyFilePartsRecord rep = (ReplyFilePartsRecord) message;
                 Download dl = getController().getTransferManager().getDownload(
                     this, rep.getFile());
-                if (dl != null
-                    && dl.getFile().isCompletelyIdentical(rep.getFile()))
-                {
+                if (dl != null) {
                     dl.receivedFilePartsRecord(rep.getFile(), rep.getRecord());
                 } else {
                     logInfo("Download not found: " + dl);
+                    sendMessageAsynchron(new AbortDownload(rep.getFile()), null);
                 }
                 expectedTime = 100;
 

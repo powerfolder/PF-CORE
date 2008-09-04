@@ -34,7 +34,10 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
@@ -47,6 +50,8 @@ import org.apache.commons.io.FileUtils;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.transfer.DownloadManager;
+import de.dal33t.powerfolder.transfer.Upload;
 import de.dal33t.powerfolder.util.Loggable;
 import de.dal33t.powerfolder.util.Reject;
 
@@ -546,6 +551,48 @@ public class TestHelper extends Loggable {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * Searches for transfers that don't have an associated counter-part.
+     * 
+     * @param swarmingTest
+     * @return
+     */
+    public static String findUnmatchedTransfers(
+        MultipleControllerTestCase swarmingTest)
+    {
+        return findUnmatchedTransfers(swarmingTest.getControllers());
+    }
+
+    public static String findUnmatchedTransfers(
+        Collection<Controller> controllers)
+    {
+        List<Upload> uploads = new ArrayList<Upload>();
+        for (Controller c : controllers) {
+            uploads.addAll(Arrays.asList(c.getTransferManager()
+                .getActiveUploads()));
+        }
+        for (Controller c : controllers) {
+            for (DownloadManager dm : c.getTransferManager()
+                .getActiveDownloads())
+            {
+                for (Iterator<Upload> i = uploads.iterator(); i.hasNext();) {
+                    Upload u = i.next();
+                    if (u.getFile().equals(dm.getFileInfo())
+                        && u.getPartner().getId().equals(c.getMySelf().getId()))
+                    {
+                        i.remove();
+                    }
+                }
+            }
+        }
+        StringBuilder b = new StringBuilder();
+        b.append("Unmatched uploads:");
+        for (Upload u : uploads) {
+            b.append(u).append(',');
+        }
+        return b.toString();
     }
 
 }

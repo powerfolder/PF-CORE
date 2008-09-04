@@ -36,6 +36,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ThreadFactory;
 
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
@@ -45,6 +46,7 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.message.FileChunk;
 import de.dal33t.powerfolder.transfer.Transfer.State;
 import de.dal33t.powerfolder.transfer.Transfer.TransferState;
+import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.FileCheckWorker;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Range;
@@ -70,7 +72,25 @@ public abstract class AbstractDownloadManager extends PFComponent implements
     private enum InternalState {
         WAITING_FOR_SOURCE, WAITING_FOR_UPLOAD_READY, WAITING_FOR_FILEPARTSRECORD,
 
-        COMPLETED, BROKEN, ABORTED,
+        COMPLETED {
+            @Override
+            public boolean isDone() {
+                return true;
+            }
+        },
+        BROKEN {
+            @Override
+            public boolean isDone() {
+                return true;
+            }
+        },
+        ABORTED {
+            @Override
+            public boolean isDone() {
+                return true;
+            }
+
+        },
 
         /**
          * Receive chunks in linear fashion from one source only
@@ -81,6 +101,10 @@ public abstract class AbstractDownloadManager extends PFComponent implements
          * Request chunks
          */
         ACTIVE_DOWNLOAD, MATCHING_AND_COPYING, CHECKING_FILE_VALIDITY;
+
+        public boolean isDone() {
+            return false;
+        }
     }
 
     protected FilePartsState filePartsState;
@@ -110,11 +134,20 @@ public abstract class AbstractDownloadManager extends PFComponent implements
     private File tempFile;
 
     /**
-     * Custom ExecutorService: Single threaded with guaranteed sequentiel
+     * Custom ExecutorService: Single threaded with guaranteed sequential
      * execution
      */
-    private static ExecutorService eventDispatcher = Executors
-        .newSingleThreadExecutor();
+    private ExecutorService eventDispatcher = Executors
+        .newSingleThreadExecutor(new ThreadFactory() {
+
+            public Thread newThread(Runnable r) {
+                Thread t = new Thread(r,
+                    "Event dispatcher queue of AbstractDownloadManager");
+                t.setDaemon(true);
+                return t;
+            }
+
+        });
 
     public AbstractDownloadManager(Controller controller, FileInfo file,
         boolean automatic) throws IOException
@@ -133,6 +166,8 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         // illegalState("abort");
         switch (state) {
             case ABORTED :
+                illegalState("abort()");
+                break;
             case BROKEN :
             case COMPLETED :
                 break;
@@ -146,6 +181,8 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         // illegalState("abortAndCleanup");
         switch (state) {
             case ABORTED :
+                illegalState("abortAndCleanup()");
+                break;
             case BROKEN :
             case COMPLETED :
                 break;
@@ -161,23 +198,33 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             || canAddSource(download.getPartner()),
             "Illegal addSource() call!!");
         try {
-            if (addSource0(download)) {
-                setCompleted();
-            }
+            addSource0(download);
         } catch (BrokenDownloadException e) {
             setBroken(TransferProblem.BROKEN_DOWNLOAD, e.toString());
         }
     }
 
-    private void checkDownload(Download download) {
-        Reject.ifNull(download, "Download is null!");
-        Reject.ifTrue(!download.getFile().isCompletelyIdentical(getFileInfo()),
-            "Download FileInfo differs: " + download.getFile().toDetailString()
-                + " vs mine: " + getFileInfo().toDetailString());
+    public synchronized void chunkReceived(Download download, FileChunk chunk) {
+        Reject.noNullElements(download, chunk);
+        checkDownload(download);
+        assert chunk.file.isCompletelyIdentical(getFileInfo());
+        try {
+            receivedChunk0(download, chunk);
+        } catch (BrokenDownloadException e) {
+            setBroken(TransferProblem.BROKEN_DOWNLOAD, e.toString());
+        }
     }
 
-    public synchronized void setBroken(String reason) {
-        setBroken(TransferProblem.BROKEN_DOWNLOAD, reason);
+    public synchronized void filePartsRecordReceived(Download download,
+        FilePartsRecord record)
+    {
+        Reject.noNullElements(download, record);
+        checkDownload(download);
+        try {
+            receivedFilePartsRecord0(download, record);
+        } catch (BrokenDownloadException e) {
+            setBroken(TransferProblem.BROKEN_DOWNLOAD, e.toString());
+        }
     }
 
     public Controller getController() {
@@ -225,25 +272,6 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         return tempFile;
     }
 
-    /**
-     * Returns the base directory for transfer specific meta data. If the
-     * directory doesn't exist, it's created.
-     * 
-     * @return the base directory
-     * @throws IOException
-     *             if the directory couldn't be created
-     */
-    private File getMetaDataBaseDir() throws IOException {
-        File baseDir = new File(getFileInfo().getFolder(
-            getController().getFolderRepository()).getSystemSubDir(),
-            "transfers");
-        if (!baseDir.exists() && !baseDir.mkdirs()) {
-            throw new IOException(
-                "Couldn't create base directory for transfer meta data!");
-        }
-        return baseDir;
-    }
-
     public boolean isBroken() {
         return state == InternalState.BROKEN;
     }
@@ -253,13 +281,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
     }
 
     public boolean isDone() {
-        switch (state) {
-            case ABORTED :
-            case BROKEN :
-            case COMPLETED :
-                return true;
-        }
-        return false;
+        return state.isDone();
     }
 
     public boolean isRequestedAutomatic() {
@@ -274,6 +296,19 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         return started;
     }
 
+    /**
+     * Runs some task on the even dispatcher of this manager.
+     * 
+     * @param runnable
+     */
+    public void post(Runnable runnable) {
+        try {
+            eventDispatcher.execute(runnable);
+        } catch (RejectedExecutionException e) {
+            logFine(e);
+        }
+    }
+
     public synchronized void readyForRequests(Download download) {
         checkDownload(download);
         try {
@@ -286,31 +321,6 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         }
     }
 
-    public synchronized void chunkReceived(Download download, FileChunk chunk) {
-        Reject.noNullElements(download, chunk);
-        checkDownload(download);
-        assert chunk.file.isCompletelyIdentical(getFileInfo());
-        try {
-            if (receivedChunk0(download, chunk)) {
-                setCompleted();
-            }
-        } catch (BrokenDownloadException e) {
-            setBroken(TransferProblem.BROKEN_DOWNLOAD, e.toString());
-        }
-    }
-
-    public synchronized void filePartsRecordReceived(Download download,
-        FilePartsRecord record)
-    {
-        Reject.noNullElements(download, record);
-        checkDownload(download);
-        try {
-            receivedFilePartsRecord0(download, record);
-        } catch (BrokenDownloadException e) {
-            setBroken(TransferProblem.BROKEN_DOWNLOAD, e.toString());
-        }
-    }
-
     public synchronized void removeSource(Download download) {
         checkDownload(download);
         try {
@@ -318,6 +328,10 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         } catch (BrokenDownloadException e) {
             setBroken(TransferProblem.BROKEN_DOWNLOAD, e.toString());
         }
+    }
+
+    public synchronized void setBroken(String reason) {
+        setBroken(TransferProblem.BROKEN_DOWNLOAD, reason);
     }
 
     @Override
@@ -331,7 +345,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
 
     protected abstract void addSourceImpl(Download source);
 
-    protected boolean checkCompleted() {
+    protected boolean checkCompleted() throws InterruptedException {
 
         setTransferState(TransferState.VERIFYING);
         // logFine("Verifying file hash for " + this);
@@ -356,6 +370,8 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             counter = new TransferCounter(0, fileInfo.getSize());
             filePartsState.setPartState(Range.getRangeByLength(0,
                 filePartsState.getFileLength()), PartState.NEEDED);
+            // Maybe part record was bogus.
+            remotePartRecord = null;
 
             return false;
         } catch (NoSuchAlgorithmException e) {
@@ -363,7 +379,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             logSevere(e);
             throw new RuntimeException(e);
         } catch (InterruptedException e) {
-            logFiner(e);
+            throw e;
         } catch (Exception e) {
             logSevere(e);
             setBroken(TransferProblem.GENERAL_EXCEPTION, e.getMessage());
@@ -507,23 +523,15 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                 logWarning("Failed to delete temp file!");
             }
         }
+        for (Download d : getSources()) {
+            d.setBroken(problem, message);
+        }
         post(new Runnable() {
             public void run() {
-                for (Download d : getSources()) {
-                    d.setBroken(problem, message);
-                }
                 getController().getTransferManager().downloadManagerBroken(
                     AbstractDownloadManager.this, problem, message);
             }
         });
-    }
-
-    private void post(Runnable runnable) {
-        try {
-            eventDispatcher.execute(runnable);
-        } catch (RejectedExecutionException e) {
-            logFine(e);
-        }
     }
 
     protected synchronized void setCompleted() {
@@ -545,11 +553,11 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             public void run() {
                 getController().getTransferManager().setCompleted(
                     AbstractDownloadManager.this);
-                for (Download d : getSources()) {
-                    getController().getTransferManager().setCompleted(d);
-                }
             }
         });
+        for (Download d : getSources()) {
+            d.setCompleted();
+        }
     }
 
     protected synchronized void setFilePartsState(FilePartsState state) {
@@ -604,7 +612,9 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         shutdown = true;
         // logFine("Shutting down " + fileInfo);
         try {
-            if (worker != null) {
+            if (worker != null && worker.isAlive()
+                && worker != Thread.currentThread())
+            {
                 worker.interrupt();
                 try {
                     worker.join(2000);
@@ -613,6 +623,11 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                 }
                 if (worker.isAlive()) {
                     logSevere("Couldn't stop worker thread: " + worker);
+                    logSevere("Worker Stack:"
+                        + Debug.getStackTrace(worker.getStackTrace()));
+                    logSevere("My stack:"
+                        + Debug.getStackTrace(Thread.currentThread()
+                            .getStackTrace()));
                 }
             }
             // logSevere("Closing temp file!");
@@ -692,23 +707,10 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         }
     }
 
-    private void updateTempFile() {
-        assert getTempFile() != null && getTempFile().exists();
-
-        // logFine("Updating tempfile modification date to: " +
-        // getFileInfo().getModifiedDate());
-        if (getTempFile() == null
-            || !getTempFile().setLastModified(
-                getFileInfo().getModifiedDate().getTime()))
-        {
-            logSevere("Failed to update modification date! Detail:" + this);
-        }
-    }
-
     /**
      * @return true, if the download was completed by this call
      */
-    private boolean addSource0(final Download download)
+    private void addSource0(final Download download)
         throws BrokenDownloadException
     {
         checkDownload(download);
@@ -720,43 +722,20 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             case BROKEN :
                 // The connection could've broken while some other code
                 // tries to add sources
+                download.setBroken(TransferProblem.BROKEN_DOWNLOAD,
+                    "Manager already broken!");
                 break;
             case MATCHING_AND_COPYING :
             case CHECKING_FILE_VALIDITY :
+            case ACTIVE_DOWNLOAD :
+            case WAITING_FOR_UPLOAD_READY :
+            case WAITING_FOR_FILEPARTSRECORD :
                 addSourceImpl(download);
 
                 // Maybe rework the code so this request will be
                 // sent if we
                 // really need data
-                post(new Runnable() {
-                    public void run() {
-                        download.request(0);
-                    }
-                });
-                break;
-            case ACTIVE_DOWNLOAD :
-                addSourceImpl(download);
-                // We can use offset 0 here since the transfer will
-                // use
-                // requests
-                // anyways
-                post(new Runnable() {
-                    public void run() {
-                        download.request(0);
-                    }
-                });
-                break;
-            case WAITING_FOR_UPLOAD_READY :
-            case WAITING_FOR_FILEPARTSRECORD :
-                addSourceImpl(download);
-                // We can use offset 0 here since the transfer will use
-                // requests
-                // anyways
-                post(new Runnable() {
-                    public void run() {
-                        download.request(0);
-                    }
-                });
+                download.request(0);
                 break;
             case WAITING_FOR_SOURCE :
                 // Required for complete on load downloads
@@ -772,14 +751,14 @@ public abstract class AbstractDownloadManager extends PFComponent implements
 
                 // Zero sized files hack: Shouldn't request anything
                 if (getFileInfo().getSize() == 0) {
-                    return true;
+                    setCompleted();
+                    return;
                 }
 
                 long _offset = 0;
                 if (filePartsState != null) {
-                    if (filePartsState.isCompleted()) {
-                        return true;
-                    }
+                    assert !filePartsState.isCompleted();
+
                     Range range = filePartsState
                         .findFirstPart(PartState.NEEDED);
                     if (range != null) {
@@ -798,28 +777,25 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                     }
                 }
                 final long offset = _offset;
-                post(new Runnable() {
-                    public void run() {
-                        download.request(offset);
-                    }
-                });
+                download.request(offset);
                 break;
             case COMPLETED :
                 addSourceImpl(download);
-                post(new Runnable() {
-                    public void run() {
-                        if (!download.isCompleted()) {
-                            getController().getTransferManager().setCompleted(
-                                download);
-                        }
-                    }
-                });
+                if (!download.isCompleted() && !download.isBroken()) {
+                    download.setCompleted();
+                }
                 break;
             default :
                 illegalState("addSource");
                 break;
         }
-        return false;
+    }
+
+    private void checkDownload(Download download) {
+        Reject.ifNull(download, "Download is null!");
+        Reject.ifTrue(!download.getFile().isCompletelyIdentical(getFileInfo()),
+            "Download FileInfo differs: " + download.getFile().toDetailString()
+                + " vs mine: " + getFileInfo().toDetailString());
     }
 
     /**
@@ -831,21 +807,40 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             && filePartsState.getFileLength() == 0
             || state == InternalState.MATCHING_AND_COPYING : "Invalid state: "
             + state;
+        assert worker == null || !worker.isAlive();
 
         setState(InternalState.CHECKING_FILE_VALIDITY);
         worker = new Thread(new Runnable() {
             public void run() {
-                if (checkCompleted()) {
-                    setCompleted();
-                } else {
-                    for (Download d : getSources()) {
-                        logSevere("Source: " + d);
+                try {
+                    if (checkCompleted()) {
+                        // To prevent locks
+                        post(new Runnable() {
+                            public void run() {
+                                setCompleted();
+                            }
+                        });
+                    } else {
+                        // To prevent locks
+                        post(new Runnable() {
+                            public void run() {
+                                for (Download d : getSources()) {
+                                    logSevere("Source: " + d);
+                                }
+                                setBroken(TransferProblem.MD5_ERROR,
+                                    "File hash mismatch!");
+                            }
+                        });
                     }
-                    setBroken(TransferProblem.MD5_ERROR, "File hash mismatch!");
+                } catch (InterruptedException e) {
+                    logFiner(e);
                 }
             }
         }, "Downloadmanager file checker");
         worker.start();
+        if (Thread.interrupted()) {
+            worker.interrupt();
+        }
     }
 
     private void deleteMetaData() {
@@ -855,6 +850,42 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         {
             logSevere("Couldn't delete meta data file!");
         }
+    }
+
+    /**
+     * @param id
+     * @return
+     * @throws Error
+     */
+    private String getFileID() throws Error {
+        if (fileID == null) {
+            try {
+                fileID = new String(Util.encodeHex(Util.md5(getFileInfo()
+                    .getName().getBytes("UTF8"))));
+            } catch (UnsupportedEncodingException e) {
+                throw new Error(e);
+            }
+        }
+        return fileID;
+    }
+
+    /**
+     * Returns the base directory for transfer specific meta data. If the
+     * directory doesn't exist, it's created.
+     * 
+     * @return the base directory
+     * @throws IOException
+     *             if the directory couldn't be created
+     */
+    private File getMetaDataBaseDir() throws IOException {
+        File baseDir = new File(getFileInfo().getFolder(
+            getController().getFolderRepository()).getSystemSubDir(),
+            "transfers");
+        if (!baseDir.exists() && !baseDir.mkdirs()) {
+            throw new IOException(
+                "Couldn't create base directory for transfer meta data!");
+        }
+        return baseDir;
     }
 
     private File getMetaFile() {
@@ -875,23 +906,6 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         // metaFile = new File(diskFile.getParentFile(),
         // FileUtils.DOWNLOAD_META_FILE + diskFile.getName());
         return metaFile;
-    }
-
-    /**
-     * @param id
-     * @return
-     * @throws Error
-     */
-    private String getFileID() throws Error {
-        if (fileID == null) {
-            try {
-                fileID = new String(Util.encodeHex(Util.md5(getFileInfo()
-                    .getName().getBytes("UTF8"))));
-            } catch (UnsupportedEncodingException e) {
-                throw new Error(e);
-            }
-        }
-        return fileID;
     }
 
     private void illegalState(String operation) {
@@ -1032,11 +1046,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             case COMPLETED :
             case BROKEN :
             case ABORTED :
-                post(new Runnable() {
-                    public void run() {
-                        download.abort();
-                    }
-                });
+                download.abort();
                 break;
             default :
                 protocolStateError(download, "readyForRequests");
@@ -1047,7 +1057,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
     /**
      * @return true, if the download was completed by this chunk
      */
-    private boolean receivedChunk0(final Download download, FileChunk chunk)
+    private void receivedChunk0(final Download download, FileChunk chunk)
         throws BrokenDownloadException
     {
         switch (state) {
@@ -1055,16 +1065,12 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             case BROKEN :
                 logFine("Aborted download of " + fileInfo
                     + " received chunk from " + download);
-                post(new Runnable() {
-                    public void run() {
-                        download.abort();
-                    }
-                });
+                download.abort();
                 break;
             case PASSIVE_DOWNLOAD :
                 storeFileChunk(download, chunk);
                 if (filePartsState.isCompleted()) {
-                    return true;
+                    setCompleted();
                 }
                 break;
             case ACTIVE_DOWNLOAD :
@@ -1079,7 +1085,6 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                 protocolStateError(download, "receivedChunk");
                 break;
         }
-        return false;
     }
 
     private void receivedFilePartsRecord0(Download download,
@@ -1087,6 +1092,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
     {
         switch (state) {
             case WAITING_FOR_FILEPARTSRECORD :
+                assert worker == null || !worker.isAlive();
                 logFine("Matching and copying...");
                 setState(InternalState.MATCHING_AND_COPYING);
                 remotePartRecord = record;
@@ -1094,6 +1100,9 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                     public void run() {
                         try {
                             matchAndCopyData();
+                            if (isDone()) {
+                                return;
+                            }
                             if (filePartsState.isCompleted()) {
                                 checkFileValidity();
                             } else {
@@ -1102,16 +1111,31 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                                         "Out of sources");
                                 }
                                 if (!isDone()) {
-                                    startActiveDownload();
+                                    post(new Runnable() {
+
+                                        public void run() {
+                                            try {
+                                                startActiveDownload();
+                                            } catch (BrokenDownloadException e)
+                                            {
+                                                setBroken(
+                                                    TransferProblem.IO_EXCEPTION,
+                                                    e.toString());
+                                            }
+                                        }
+
+                                    });
                                 }
                             }
-                        } catch (BrokenDownloadException e) {
-                            setBroken(TransferProblem.IO_EXCEPTION, e
-                                .toString());
+                        } catch (final BrokenDownloadException e) {
+                            post(new Runnable() {
+                                public void run() {
+                                    setBroken(TransferProblem.IO_EXCEPTION, e
+                                        .toString());
+                                }
+                            });
                         } catch (InterruptedException e) {
-                            // TODO Maybe it should be setBroken
-                            // setBroken(TransferProblem.GENERAL_EXCEPTION,
-                            // e.toString());
+                            logFiner(e);
                         }
                     }
                 }, "Downloadmanager matching and copying");
@@ -1128,6 +1152,9 @@ public abstract class AbstractDownloadManager extends PFComponent implements
     {
         switch (state) {
             case WAITING_FOR_FILEPARTSRECORD :
+                removeSourceImpl(download);
+                requestFilePartsRecord(null);
+                break;
             case WAITING_FOR_UPLOAD_READY :
                 removeSourceImpl(download);
                 if (!hasSources()) {
@@ -1214,13 +1241,16 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             deleteMetaData();
         }
 
-        // This code shouldn't be locked
         for (Download d : getSources()) {
             d.abort();
         }
 
-        getController().getTransferManager().downloadManagerAborted(
-            AbstractDownloadManager.this);
+        post(new Runnable() {
+            public void run() {
+                getController().getTransferManager().downloadManagerAborted(
+                    AbstractDownloadManager.this);
+            }
+        });
     }
 
     private void setState(InternalState newState) {
@@ -1229,7 +1259,27 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             || !getSources().isEmpty();
         assert Thread.holdsLock(this);
 
+        if (newState == InternalState.WAITING_FOR_UPLOAD_READY) {
+            assert !filePartsState.isCompleted();
+            for (Download d : getSources()) {
+                assert (d.isStarted() && !d.isBroken());
+            }
+        }
+
         // logWarning("STATE " + newState + " for " + fileInfo);
         state = newState;
+    }
+
+    private void updateTempFile() {
+        assert getTempFile() != null && getTempFile().exists();
+
+        // logFine("Updating tempfile modification date to: " +
+        // getFileInfo().getModifiedDate());
+        if (getTempFile() == null
+            || !getTempFile().setLastModified(
+                getFileInfo().getModifiedDate().getTime()))
+        {
+            logSevere("Failed to update modification date! Detail:" + this);
+        }
     }
 }

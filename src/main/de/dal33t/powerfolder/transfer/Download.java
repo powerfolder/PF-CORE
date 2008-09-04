@@ -104,6 +104,8 @@ public class Download extends Transfer {
 
     public void setDownloadManager(DownloadManager handler) {
         Reject.ifNull(handler, "Handler is null!");
+        Reject.ifFalse(handler.getFileInfo().isCompletelyIdentical(getFile()),
+            "Fileinfos mismatch.");
         if (this.handler != null) {
             throw new IllegalStateException("DownloadManager already set!");
         }
@@ -139,7 +141,7 @@ public class Download extends Transfer {
     /**
      * Requests a FPR from the remote side.
      */
-    public void requestFilePartsRecord() {
+    public synchronized void requestFilePartsRecord() {
         assert Util.useDeltaSync(getController(), getPartner()) : "Requesting FilePartsRecord from a client that doesn't support that!";
         requestCheckState();
 
@@ -173,7 +175,9 @@ public class Download extends Transfer {
      * @return
      * @throws BrokenDownloadException
      */
-    public boolean requestPart(Range range) throws BrokenDownloadException {
+    public synchronized boolean requestPart(Range range)
+        throws BrokenDownloadException
+    {
         Validate.notNull(range);
         requestCheckState();
 
@@ -215,7 +219,11 @@ public class Download extends Transfer {
         Reject.ifNull(chunk, "Chunk is null");
         checkFileInfo(chunk.file);
 
-        getTransferManager().chunkAdded(this, chunk);
+        handler.post(new Runnable() {
+            public void run() {
+                getTransferManager().chunkAdded(Download.this, chunk);
+            }
+        });
 
         if (isBroken()) {
             setBroken(TransferProblem.BROKEN_DOWNLOAD, "isBroken()");
@@ -257,7 +265,7 @@ public class Download extends Transfer {
      * 
      * @param startOffset
      */
-    public void request(long startOffset) {
+    public synchronized void request(long startOffset) {
         Reject.ifTrue(startOffset < 0 || startOffset >= getFile().getSize(),
             "Invalid startOffset: " + startOffset);
         requestCheckState();
@@ -269,32 +277,52 @@ public class Download extends Transfer {
     /**
      * Requests to abort this dl
      */
-    public void abort() {
+    public synchronized void abort() {
         shutdown();
         if (getPartner() != null && getPartner().isCompleteyConnected()) {
             getPartner().sendMessageAsynchron(new AbortDownload(getFile()),
                 null);
         }
-        getController().getTransferManager().downloadAborted(this);
+        handler.post(new Runnable() {
+            public void run() {
+                getController().getTransferManager().downloadAborted(
+                    Download.this);
+            }
+        });
     }
 
     /**
      * This download is queued at the remote side
      */
-    public void setQueued() {
+    public void setQueued(FileInfo fInfo) {
+        Reject.ifNull(fInfo, "fInfo is null!");
+        checkFileInfo(fInfo);
         Loggable.logFinerStatic(Download.class, "DL queued by remote side: "
             + this);
         queued = true;
 
-        getTransferManager().downloadQueued(this, getPartner());
+        handler.post(new Runnable() {
+            public void run() {
+                getTransferManager()
+                    .downloadQueued(Download.this, getPartner());
+            }
+        });
     }
 
     @Override
-    void setCompleted() {
+    synchronized void setCompleted() {
+        super.setCompleted();
         if (Util.usePartRequests(getController(), getPartner())) {
             getPartner().sendMessagesAsynchron(new StopUpload(getFile()));
         }
-        super.setCompleted();
+
+        handler.post(new Runnable() {
+
+            public void run() {
+                getTransferManager().setCompleted(Download.this);
+            }
+
+        });
     }
 
     /**
@@ -314,20 +342,27 @@ public class Download extends Transfer {
      * @param problem
      * @param message
      */
-    public void setBroken(TransferProblem problem, String message) {
+    public synchronized void setBroken(final TransferProblem problem,
+        final String message)
+    {
         Member p = getPartner();
         if (p != null && p.isCompleteyConnected()) {
             p.sendMessageAsynchron(new AbortDownload(getFile()), null);
         }
         shutdown();
-        getTransferManager().downloadbroken(this, problem, message);
+        handler.post(new Runnable() {
+            public void run() {
+                getTransferManager().downloadbroken(Download.this, problem,
+                    message);
+            }
+        });
     }
 
     /**
      * @return if this download is broken. timed out or has no connection
      *         anymore or (on blacklist in folder and isRequestedAutomatic)
      */
-    public boolean isBroken() {
+    public synchronized boolean isBroken() {
         if (super.isBroken()) {
             return true;
         }
@@ -377,7 +412,7 @@ public class Download extends Transfer {
     /**
      * @return if this download is queued
      */
-    public boolean isQueued() {
+    public synchronized boolean isQueued() {
         return queued && !isBroken();
     }
 
@@ -426,7 +461,7 @@ public class Download extends Transfer {
     }
 
     private void checkFileInfo(FileInfo fileInfo) {
-        Reject.ifTrue(!fileInfo.isCompletelyIdentical(getFile()),
+        Reject.ifFalse(fileInfo.isCompletelyIdentical(getFile()),
             "FileInfo mismatch!");
     }
 }
