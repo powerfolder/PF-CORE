@@ -1333,8 +1333,8 @@ public class Folder extends PFComponent {
             File dbFileBackup = new File(getSystemSubDir(), DB_BACKUP_FILENAME);
             try {
 
-                FileInfo[] files = knownFiles.keySet()
-                    .toArray(new FileInfo[knownFiles.size()]);
+                FileInfo[] files = knownFiles.keySet().toArray(
+                    new FileInfo[knownFiles.size()]);
                 if (dbFile.exists()) {
                     if (!dbFile.delete()) {
                         logSevere("Failed to delete database file: " + dbFile);
@@ -1442,7 +1442,8 @@ public class Folder extends PFComponent {
                 if (rootDirectory != null) {
                     rootDirectory.removeFileInfo(file);
                 }
-                logInfo(file.getFilenameOnly() + " has expired.");
+                logInfo(file.getFilenameOnly() + " has expired: "
+                    + file.toDetailString());
             }
         }
         logFine("Maintained folder db. Expired: " + expired);
