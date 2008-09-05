@@ -441,10 +441,6 @@ public class FileUtils {
                 // Synthesize target file name.
                 String lastPart = nextOriginalFile.getName();
                 File nextTargetFile = new File(targetFile, lastPart);
-                if (nextOriginalFile.isDirectory()) {
-                    // Create target directory.
-                    nextTargetFile.mkdir();
-                }
                 recursiveMove(nextOriginalFile, nextTargetFile);
             }
             // Delete directory after move
