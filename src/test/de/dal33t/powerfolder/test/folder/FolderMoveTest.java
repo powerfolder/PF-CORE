@@ -145,12 +145,8 @@ public class FolderMoveTest extends ControllerTestCase {
             }
             assertTrue(foundTest2);
 
-            // Test delete
-            FileUtils.recursiveDelete(oldLocalBase);
-
             // The old location should be gone.
             assertTrue(!oldLocalBase.exists());
-
         } catch (IOException e) {
             e.printStackTrace();
         }

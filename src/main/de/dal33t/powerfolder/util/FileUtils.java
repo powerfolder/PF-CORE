@@ -422,49 +422,45 @@ public class FileUtils {
     /**
      * A recursive move of one directory to another.
      * 
-     * @param originalFile
+     * @param sourceFile
      * @param targetFile
      * @throws IOException
      */
-    public static void recursiveMove(File originalFile, File targetFile)
+    public static void recursiveMove(File sourceFile, File targetFile)
         throws IOException
     {
-        if (originalFile != null && targetFile != null) {
-            if (originalFile.isDirectory() && targetFile.isDirectory()) {
-                if (!targetFile.exists()) {
-                    throw new UnsupportedOperationException(
-                        "Target directory must exist");
-                }
+        Reject.ifNull(sourceFile, "Source directory is null");
+        Reject.ifNull(targetFile, "Target directory is null");
 
-                File[] files = originalFile.listFiles();
-                for (File nextOriginalFile : files) {
-
-                    // Synthesize target file name.
-                    String lastPart = nextOriginalFile.getName();
-                    File nextTargetFile = new File(targetFile, lastPart);
-
-                    if (nextOriginalFile.isDirectory()) {
-
-                        // Create target directory.
-                        nextTargetFile.mkdir();
-
-                        // Hide target if original is hidden.
-                        if (nextOriginalFile.isHidden()) {
-                            makeHiddenOnWindows(nextTargetFile);
-                        }
-                    }
-                    recursiveMove(nextOriginalFile, nextTargetFile);
-                }
-
-            } else if (!originalFile.isDirectory() && !targetFile.isDirectory())
-            {
-                originalFile.renameTo(targetFile);
-            } else {
-                throw new UnsupportedOperationException(
-                    "Can only copy directory to directory or file to file: "
-                        + originalFile.getAbsolutePath() + " --> "
-                        + targetFile.getAbsolutePath());
+        if (sourceFile.isDirectory() && targetFile.isDirectory()) {
+            if (!targetFile.exists()) {
+                targetFile.mkdirs();
             }
+            File[] files = sourceFile.listFiles();
+            for (File nextOriginalFile : files) {
+                // Synthesize target file name.
+                String lastPart = nextOriginalFile.getName();
+                File nextTargetFile = new File(targetFile, lastPart);
+                if (nextOriginalFile.isDirectory()) {
+                    // Create target directory.
+                    nextTargetFile.mkdir();
+                }
+                recursiveMove(nextOriginalFile, nextTargetFile);
+            }
+            // Delete directory after move
+            sourceFile.delete();
+        } else if (!sourceFile.isDirectory() && !targetFile.isDirectory()) {
+            sourceFile.renameTo(targetFile);
+        } else {
+            throw new UnsupportedOperationException(
+                "Can only copy directory to directory or file to file: "
+                    + sourceFile.getAbsolutePath() + " --> "
+                    + targetFile.getAbsolutePath());
+        }
+
+        // Hide target if original is hidden.
+        if (sourceFile.isHidden()) {
+            makeHiddenOnWindows(targetFile);
         }
     }
 
