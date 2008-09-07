@@ -353,7 +353,7 @@ public class FileFilterModel extends FilterModel {
                 keyword = keyword.substring(1);
                 if (keyword.length() != 0) {
                     // Match for filename
-                    String filename = file.getName().toLowerCase();
+                    String filename = file.getFilenameOnly().toLowerCase();
                     if (filename.indexOf(keyword) >= 0) {
                         // if negative keyword match we don't want to see this
                         // file
@@ -375,7 +375,7 @@ public class FileFilterModel extends FilterModel {
             } // normal search
 
             // Match for filename
-            String filename = file.getName().toLowerCase();
+            String filename = file.getFilenameOnly().toLowerCase();
             if (filename.indexOf(keyword) >= 0) {
                 // Match by name. Ok, continue
                 continue;
