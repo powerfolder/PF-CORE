@@ -1360,20 +1360,20 @@ public class FilesTab extends PFUIComponent implements FolderTab,
                 setEnabled(false);
                 return;
             }
-            boolean enable = true;
+            boolean enable = false;
             for (Object selection : selections) {
                 if (selection instanceof FileInfo) {
                     // Only enable if recently downloaded.
                     FileInfo fileInfo = (FileInfo) selection;
-                    if (!getController().getTransferManager()
-                            .isCompletedDownload(fileInfo)) {
-                        enable = false;
+                    if (getController().getTransferManager()
+							.isCompletedDownload(fileInfo)) {
+                        enable = true;
                         break;
                     }
                 } else if (selection instanceof Directory) {
                     Directory dir = (Directory) selection;
-                    if (!hasCompletedDownloads(dir)) {
-                        enable = false;
+                    if (hasCompletedDownloads(dir)) {
+                        enable = true;
                         break;
                     }
                 }
