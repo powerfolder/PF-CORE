@@ -105,7 +105,8 @@ public class Download extends Transfer {
     public void setDownloadManager(DownloadManager handler) {
         Reject.ifNull(handler, "Handler is null!");
         Reject.ifFalse(handler.getFileInfo().isCompletelyIdentical(getFile()),
-            "Fileinfos mismatch.");
+            "Fileinfos mismatch. expected " + getFile().toDetailString()
+                + ", got " + handler.getFileInfo().toDetailString());
         if (this.handler != null) {
             throw new IllegalStateException("DownloadManager already set!");
         }
@@ -399,10 +400,9 @@ public class Download extends Transfer {
              * version! // Check if newer file is available. boolean
              * newerFileAvailable = getFile().isNewerAvailable(
              * getController().getFolderRepository()); if (newerFileAvailable) {
-             * Loggable.logWarningStatic(Download.class,
-             * "Abort cause: Newer version available. " +
-             * getFile().toDetailString()); return true; // throw new
-             * RuntimeException("ABORT: " + this); }
+             * Loggable.logWarningStatic(Download.class, "Abort cause: Newer
+             * version available. " + getFile().toDetailString()); return true; //
+             * throw new RuntimeException("ABORT: " + this); }
              */
         }
 
