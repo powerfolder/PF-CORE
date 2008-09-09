@@ -92,8 +92,11 @@ public class FolderRemoveAction extends BaseAction {
 
         if (removeLocal) {
             if (convertToPreview) {
-                FolderPreviewHelper.convertFolderToPreview(getController(), folder,
-                    deleteSystemSubFolder);
+                boolean converted = FolderPreviewHelper.convertFolderToPreview(
+                        getController(), folder, deleteSystemSubFolder);
+                if (!converted) {
+                    return;
+                }
             } else {
                 getController().getFolderRepository().removeFolder(folder,
                     deleteSystemSubFolder);

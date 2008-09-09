@@ -71,7 +71,7 @@ public class FolderPreviewHelper {
      * @param folder
      * @param deleteSystemSubDir
      */
-    public static void convertFolderToPreview(Controller controller,
+    public static boolean convertFolderToPreview(Controller controller,
                                               Folder folder,
                                               boolean deleteSystemSubDir) {
 
@@ -82,6 +82,10 @@ public class FolderPreviewHelper {
 
         FolderSettings initialFolderSettings = folderRepository
                 .loadFolderSettings(folder.getName());
+
+        if (initialFolderSettings == null) {
+            return false;
+        }
 
         FolderSettings previewFolderSettings =
                 createPreviewFolderSettings(folder.getName());
@@ -101,6 +105,8 @@ public class FolderPreviewHelper {
                 previewFolderSettings);
         folderRepository.saveFolderConfig(folderInfo,
                 savedFolderSettings, true);
+
+        return true;
     }
 
     /**
