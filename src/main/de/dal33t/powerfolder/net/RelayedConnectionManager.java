@@ -61,7 +61,6 @@ public class RelayedConnectionManager extends PFComponent {
     private TransferCounter counter;
     private boolean printStats;
     private long nRelayedMsgs;
-    private boolean tringToConnect;
 
     public RelayedConnectionManager(Controller controller) {
         super(controller);
@@ -81,7 +80,7 @@ public class RelayedConnectionManager extends PFComponent {
      * 
      * @param destination
      *            the remote destination to connect to
-     * @return
+     * @return the relayed connection handler.
      * @throws ConnectionException
      */
     public ConnectionHandler initRelayedConnectionHandler(MemberInfo destination)
@@ -101,8 +100,8 @@ public class RelayedConnectionManager extends PFComponent {
             logFiner("Using relay " + relay);
         }
         if (isLogFiner()) {
-            logFiner(
-                "Sending SYN for relayed connection to " + destination.nick);
+            logFiner("Sending SYN for relayed connection to "
+                + destination.nick);
         }
         long connectionId;
         synchronized (RelayedConnectionManager.class) {
@@ -118,10 +117,9 @@ public class RelayedConnectionManager extends PFComponent {
         pendingConHansLock.unlock();
 
         if (pendingConHans.size() > 20) {
-            logSevere(
-                pendingConHans.size()
-                    + " PENDING RELAYED CONNECTION HANDLERS found: "
-                    + pendingConHans);
+            logSevere(pendingConHans.size()
+                + " PENDING RELAYED CONNECTION HANDLERS found: "
+                + pendingConHans);
         }
 
         RelayedMessage synMsg = new RelayedMessage(Type.SYN, getController()
@@ -197,6 +195,10 @@ public class RelayedConnectionManager extends PFComponent {
 
     public boolean isRelay(MemberInfo node) {
         Reject.ifNull(node, "Node info is null");
+        // TODO Remove later
+        if (node.id.equals("INFRASTRUCTURE01")) {
+            return false;
+        }
         return node.id.toUpperCase().contains("INFRASTRUCTURE")
             || node.id.toUpperCase().contains("RELAY");
     }
@@ -225,29 +227,26 @@ public class RelayedConnectionManager extends PFComponent {
                 .getConnectionId(), null);
             receivedFrom.sendMessagesAsynchron(msg);
             if (isLogFiner()) {
-                logFiner(
-                    "Unable to relay message. " + destinationMember.getNick()
-                        + " not connected, sending EOF/NACK. msg: " + message);
+                logFiner("Unable to relay message. "
+                    + destinationMember.getNick()
+                    + " not connected, sending EOF/NACK. msg: " + message);
             }
             return;
         }
         if (isLogFiner()) {
-            logFiner(
-                "Relaying msg to " + destinationMember.getNick() + ". msg: "
-                    + message);
+            logFiner("Relaying msg to " + destinationMember.getNick()
+                + ". msg: " + message);
         }
 
         if (!printStats) {
             printStats = true;
-            logInfo(
-                "Acting as relay. Received from " + receivedFrom.getNick()
-                    + ", msg: " + message);
+            logInfo("Acting as relay. Received from " + receivedFrom.getNick()
+                + ", msg: " + message);
             getController().scheduleAndRepeat(new TimerTask() {
                 @Override
                 public void run() {
-                    logFine(
-                        "Relay stats (RelayedCon): " + nRelayedMsgs
-                            + " msgs relayed. " + counter);
+                    logFine("Relay stats (RelayedCon): " + nRelayedMsgs
+                        + " msgs relayed. " + counter);
                 }
             }, 10000);
         }
@@ -259,9 +258,8 @@ public class RelayedConnectionManager extends PFComponent {
                 nRelayedMsgs++;
             }
         } catch (ConnectionException e) {
-            logWarning(
-                "Connection broken while relaying message to "
-                    + destinationMember.getNick(), e);
+            logWarning("Connection broken while relaying message to "
+                + destinationMember.getNick(), e);
             RelayedMessage eofMsg = new RelayedMessage(Type.EOF, message
                 .getDestination(), message.getSource(), message
                 .getConnectionId(), null);
@@ -278,8 +276,7 @@ public class RelayedConnectionManager extends PFComponent {
         switch (message.getType()) {
             case SYN :
                 if (isLogFiner()) {
-                    logFiner(
-                        "SYN received from " + message.getSource().nick);
+                    logFiner("SYN received from " + message.getSource().nick);
                 }
                 if (!getController().getIOProvider()
                     .getConnectionHandlerFactory().useRelayedConnections())
@@ -305,8 +302,7 @@ public class RelayedConnectionManager extends PFComponent {
                 return;
             case ACK :
                 if (isLogFiner()) {
-                    logFiner(
-                        "ACK received from " + message.getSource().nick);
+                    logFiner("ACK received from " + message.getSource().nick);
                 }
                 if (peer != null) {
                     peer.setAckReceived(true);
@@ -314,8 +310,7 @@ public class RelayedConnectionManager extends PFComponent {
                 return;
             case NACK :
                 if (isLogFiner()) {
-                    logFiner(
-                        "NACK received from " + message.getSource().nick);
+                    logFiner("NACK received from " + message.getSource().nick);
                 }
                 if (peer != null) {
                     peer.setNackReceived(true);
@@ -325,8 +320,7 @@ public class RelayedConnectionManager extends PFComponent {
                 return;
             case EOF :
                 if (isLogFiner()) {
-                    logFiner(
-                        "EOF received from " + message.getSource().nick);
+                    logFiner("EOF received from " + message.getSource().nick);
                 }
                 if (peer != null) {
                     peer.shutdownWithMember();
@@ -338,9 +332,8 @@ public class RelayedConnectionManager extends PFComponent {
         Reject.ifFalse(message.getType().equals(Type.DATA_ZIPPED),
             "Only zipped data allowed");
         if (isLogFiner()) {
-            logFiner(
-                "DATA received from " + message.getSource().nick + ": "
-                    + message);
+            logFiner("DATA received from " + message.getSource().nick + ": "
+                + message);
         }
 
         // if (!sourceMember.isCompleteyConnected()) {
@@ -354,9 +347,8 @@ public class RelayedConnectionManager extends PFComponent {
 
         if (peer == null) {
             if (isLogFiner()) {
-                logFiner(
-                    "Got unknown peer, while processing relayed message from "
-                        + message.getSource().nick);
+                logFiner("Got unknown peer, while processing relayed message from "
+                    + message.getSource().nick);
             }
             RelayedMessage eofMsg = new RelayedMessage(Type.EOF,
                 getController().getMySelf().getInfo(), message.getSource(),
@@ -400,11 +392,10 @@ public class RelayedConnectionManager extends PFComponent {
         }
 
         if (message.getType().equals(Type.DATA_ZIPPED)) {
-            logWarning(
-                "Unable to resolved pending con handler for "
-                    + message.getSource().nick + ", conId: "
-                    + message.getConnectionId() + ". Got these: "
-                    + pendingConHans + ". msg: " + message);
+            logWarning("Unable to resolved pending con handler for "
+                + message.getSource().nick + ", conId: "
+                + message.getConnectionId() + ". Got these: " + pendingConHans
+                + ". msg: " + message);
         }
         return null;
     }
@@ -469,9 +460,8 @@ public class RelayedConnectionManager extends PFComponent {
                 getController().getNodeManager().acceptConnection(relHan);
             } catch (ConnectionException e) {
                 relHan.shutdown();
-                logWarning(
-                    "Unable to accept connection: " + relHan + ". "
-                        + e.toString());
+                logWarning("Unable to accept connection: " + relHan + ". "
+                    + e.toString());
                 logFiner(e);
                 RelayedMessage nackMsg = new RelayedMessage(Type.NACK,
                     getController().getMySelf().getInfo(), message.getSource(),
@@ -495,9 +485,6 @@ public class RelayedConnectionManager extends PFComponent {
             if (isRelay(getController().getMySelf().getInfo())) {
                 return;
             }
-            if (tringToConnect) {
-                return;
-            }
             if (getController().isLanOnly()) {
                 return;
             }
@@ -509,43 +496,24 @@ public class RelayedConnectionManager extends PFComponent {
             if (!getController().getNodeManager().isStarted()) {
                 return;
             }
-            tringToConnect = true;
-            Runnable connector = new Runnable() {
-                public void run() {
-                    logFine("Triing to connect to a Relay");
-                    for (Member canidate : getController().getNodeManager()
-                        .getNodesAsCollection())
-                    {
-                        if (canidate.isCompleteyConnected()) {
-                            continue;
-                        }
-                        if (!isRelay(canidate.getInfo())) {
-                            continue;
-                        }
-
-                        try {
-                            if (!canidate.isReconnecting()) {
-                                logFine(
-                                    "Triing to connect to relay: " + canidate);
-                                if (canidate.reconnect()) {
-                                    break;
-                                }
-                            } else {
-                                logFine(
-                                    "Not reconnecting. Already triing to connect to "
-                                        + canidate);
-                            }
-                        } catch (ConnectionException e) {
-                            logWarning(
-                                "Unable to connect to relay: " + canidate
-                                    + ": " + e);
-                            logFiner(e);
-                        }
-                    }
-                    tringToConnect = false;
+            logFiner("Triing to connect to a Relay");
+            for (Member canidate : getController().getNodeManager()
+                .getNodesAsCollection())
+            {
+                if (canidate.isCompleteyConnected()) {
+                    continue;
                 }
-            };
-            getController().getIOProvider().startIO(connector);
+                if (!isRelay(canidate.getInfo())) {
+                    continue;
+                }
+                if (!canidate.isReconnecting()) {
+                    logFine("Triing to connect to relay: " + canidate + " id: " + canidate.getId());
+                    canidate.markForImmediateConnect();
+                } else {
+                    logFine("Not reconnecting to relay. Already triing to connect to "
+                        + canidate);
+                }
+            }
         }
     }
 }
