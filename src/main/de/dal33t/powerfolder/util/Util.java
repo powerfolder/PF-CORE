@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.util;
 
 import java.awt.Toolkit;
@@ -28,6 +28,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -35,6 +37,7 @@ import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -45,6 +48,7 @@ import org.apache.commons.lang.Validate;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.net.ConnectionListener;
 import de.dal33t.powerfolder.util.os.Win32.ShellLink;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
@@ -73,6 +77,62 @@ public class Util {
     public static final boolean isRunningProVersion() {
         return Util.class.getClassLoader().getResourceAsStream(
             "web-resources/js/ajax.js") != null;
+    }
+
+    public static final PublicKey getPublicKey(Controller controller,
+        MemberInfo node)
+    {
+        try {
+            Class<?> c = Class.forName("de.dal33t.powerfolder.BC");
+            Method m = c.getMethod("getPublicKey", Controller.class,
+                MemberInfo.class);
+            return (PublicKey) m.invoke(null, controller, node);
+        } catch (ClassNotFoundException e) {
+            Loggable.logSevereStatic(Util.class, e);
+        } catch (SecurityException e) {
+            Loggable.logSevereStatic(Util.class, e);
+        } catch (NoSuchMethodException e) {
+            Loggable.logSevereStatic(Util.class, e);
+        } catch (IllegalArgumentException e) {
+            Loggable.logSevereStatic(Util.class, e);
+        } catch (IllegalAccessException e) {
+            Loggable.logSevereStatic(Util.class, e);
+        } catch (InvocationTargetException e) {
+            Loggable.logSevereStatic(Util.class, e);
+        }
+        return null;
+    }
+
+    /**
+     * Adds a key for a node to the keystore if the key is new.
+     * 
+     * @param controller
+     * @param node
+     * @param key
+     * @return true if new key was inserted otherwise false.
+     */
+    public static final boolean addNodeToKeyStore(Controller controller,
+        MemberInfo node, PublicKey key)
+    {
+        try {
+            Class<?> c = Class.forName("de.dal33t.powerfolder.BC");
+            Method m = c.getMethod("addNodeToKeyStore", Controller.class,
+                MemberInfo.class, PublicKey.class);
+            return (Boolean) m.invoke(null, controller, node, key);
+        } catch (ClassNotFoundException e) {
+            Loggable.logSevereStatic(Util.class, e);
+        } catch (SecurityException e) {
+            Loggable.logSevereStatic(Util.class, e);
+        } catch (NoSuchMethodException e) {
+            Loggable.logSevereStatic(Util.class, e);
+        } catch (IllegalArgumentException e) {
+            Loggable.logSevereStatic(Util.class, e);
+        } catch (IllegalAccessException e) {
+            Loggable.logSevereStatic(Util.class, e);
+        } catch (InvocationTargetException e) {
+            Loggable.logSevereStatic(Util.class, e);
+        }
+        return false;
     }
 
     /**
@@ -219,8 +279,8 @@ public class Util {
                 .getResource(altLocation + '/' + res);
         }
         if (result == null) {
-            Loggable.logSevereStatic(Util.class, "Unable to load resource " + res + ". alt location "
-                + altLocation);
+            Loggable.logSevereStatic(Util.class, "Unable to load resource "
+                + res + ". alt location " + altLocation);
         }
         return result;
     }
@@ -251,13 +311,14 @@ public class Util {
         InputStream in = Thread.currentThread().getContextClassLoader()
             .getResourceAsStream(resource);
         if (in == null) {
-            Loggable.logFinerStatic(Util.class, "Unable to find resource: " + resource);
+            Loggable.logFinerStatic(Util.class, "Unable to find resource: "
+                + resource);
             // try harder
             in = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream(altLocation + "/" + resource);
             if (in == null) {
-                Loggable.logWarningStatic(Util.class, "Unable to find resource: " + altLocation + "/"
-                    + resource);
+                Loggable.logWarningStatic(Util.class,
+                    "Unable to find resource: " + altLocation + "/" + resource);
                 return null;
             }
         }
@@ -268,10 +329,12 @@ public class Util {
         try {
             FileUtils.copyFromStreamToFile(in, target);
         } catch (IOException ioe) {
-            Loggable.logWarningStatic(Util.class, "Unable to create target for resource: " + target);
+            Loggable.logWarningStatic(Util.class,
+                "Unable to create target for resource: " + target);
             return null;
         }
-        Loggable.logFinerStatic(Util.class, "created target for resource: " + target);
+        Loggable.logFinerStatic(Util.class, "created target for resource: "
+            + target);
         return target;
     }
 
@@ -300,7 +363,8 @@ public class Util {
             util.createLink(link, scut.getAbsolutePath());
             return true;
         } catch (IOException e) {
-            Loggable.logWarningStatic(Util.class, "Couldn't create shortcut " + scut.getAbsolutePath());
+            Loggable.logWarningStatic(Util.class, "Couldn't create shortcut "
+                + scut.getAbsolutePath());
             Loggable.logFinerStatic(Util.class, e);
         }
         return false;
@@ -317,7 +381,8 @@ public class Util {
         if (util == null) {
             return false;
         }
-        Loggable.logFinerStatic(Util.class, "Removing desktop shortcut: " + shortcutName);
+        Loggable.logFinerStatic(Util.class, "Removing desktop shortcut: "
+            + shortcutName);
         File scut = new File(util.getSystemFolderPath(WinUtils.CSIDL_DESKTOP,
             false), shortcutName + ".lnk");
         return scut.delete();
@@ -336,8 +401,10 @@ public class Util {
         try {
             Object content = url.getContent();
             if (!(content instanceof InputStream)) {
-                Loggable.logSevereStatic(Util.class, "Unable to get content from " + url
-                    + ". content is of type " + content.getClass().getName());
+                Loggable.logSevereStatic(Util.class,
+                    "Unable to get content from " + url
+                        + ". content is of type "
+                        + content.getClass().getName());
                 return null;
             }
             InputStream in = (InputStream) content;
@@ -348,8 +415,8 @@ public class Util {
             }
             return buf.toString();
         } catch (IOException e) {
-            Loggable.logSevereStatic(Util.class,
-                "Unable to get content from " + url + ". " + e.toString(), e);
+            Loggable.logSevereStatic(Util.class, "Unable to get content from "
+                + url + ". " + e.toString(), e);
         }
         return null;
     }
@@ -670,8 +737,8 @@ public class Util {
                 remotePort = Integer.parseInt(connectStr.substring(dotdot + 1,
                     connectStr.length()));
             } catch (NumberFormatException e) {
-                Loggable.logWarningStatic(Util.class, "Illegal port in " + connectStr
-                    + ", triing default port");
+                Loggable.logWarningStatic(Util.class, "Illegal port in "
+                    + connectStr + ", triing default port");
             }
         }
 
@@ -680,10 +747,9 @@ public class Util {
         return connectAddress;
     }
 
-
     /**
      * Replace every occurences of a string within a string
-     *
+     * 
      * @param target
      * @param from
      * @param to
