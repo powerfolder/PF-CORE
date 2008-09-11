@@ -95,7 +95,7 @@ public class DirectoryTableCellRenderer extends DefaultTableCellRenderer {
         }
         throw new IllegalStateException(
             "expected FileInfo, Directory or String not: "
-                + value.getClass().getName());
+                + (value != null ? value.getClass().getName() : ""));
 
     }
 
