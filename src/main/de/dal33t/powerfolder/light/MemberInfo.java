@@ -52,6 +52,9 @@ public class MemberInfo implements Serializable {
             e.printStackTrace();
         }
     }
+    
+    public static final String PROPERTYNAME_NICK = "nick";
+    public static final String PROPERTYNAME_ID = "id";
 
     // some idenification marks
     public String nick;
