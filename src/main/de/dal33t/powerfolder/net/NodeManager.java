@@ -266,9 +266,8 @@ public class NodeManager extends PFComponent {
             threadPool.shutdownNow();
         }
 
-        logFine(
-            "Shutting down " + acceptors.size()
-                + " incoming connections (Acceptors)");
+        logFine("Shutting down " + acceptors.size()
+            + " incoming connections (Acceptors)");
         List<Acceptor> tempList = new ArrayList<Acceptor>(acceptors);
         for (Acceptor acceptor : tempList) {
             acceptor.shutdown();
@@ -473,9 +472,8 @@ public class NodeManager extends PFComponent {
         int maxConnectionsAllowed = (int) (uploadKBs * Constants.MAX_NODES_CONNECTIONS_PER_KBS_UPLOAD);
 
         if (nConnected > maxConnectionsAllowed) {
-            logFiner(
-                "Not more connection slots open. Used " + nConnected + "/"
-                    + maxConnectionsAllowed);
+            logFiner("Not more connection slots open. Used " + nConnected + "/"
+                + maxConnectionsAllowed);
         }
 
         // Still capable of new connections?
@@ -706,16 +704,8 @@ public class NodeManager extends PFComponent {
             friends.add(node);
             nodesChanged = true;
             fireFriendAdded(node);
-
             // Mark node for immediate connection
-            if (!getController().getReconnectManager()
-                .markNodeForImmediateReconnection(node))
-            {
-                logSevere(
-                    "Problem while adding friend " + node.getNick()
-                        + ": Not added to reconnection queue!");
-            }
-
+            node.markForImmediateConnect();
             // Send a "you were added"
             getController().getTaskManager().scheduleTask(
                 new SendMessageTask(new Notification(
@@ -753,16 +743,14 @@ public class NodeManager extends PFComponent {
             {
                 // # of necessary connections probably reached, avoid more
                 // reconnection tries.
-                logFine(
-                    "Max # of connections reached. "
-                        + "Rebuilding reconnection queue");
+                logFine("Max # of connections reached. "
+                    + "Rebuilding reconnection queue");
                 getController().getReconnectManager().buildReconnectionQueue();
             }
             if (getController().getIOProvider().getRelayedConnectionManager()
                 .isRelay(node.getInfo()))
             {
-                logFine(
-                    "Connect to relay detected. Rebuilding reconnection queue");
+                logFine("Connect to relay detected. Rebuilding reconnection queue");
                 getController().getReconnectManager().buildReconnectionQueue();
             }
         } else {
@@ -921,9 +909,8 @@ public class NodeManager extends PFComponent {
 
         if (nQueuedNodes > 0 || nNewNodes > 0) {
             if (isLogFiner()) {
-                logFiner(
-                    "Queued " + nQueuedNodes + " new nodes for reconnection, "
-                        + nNewNodes + " added");
+                logFiner("Queued " + nQueuedNodes
+                    + " new nodes for reconnection, " + nNewNodes + " added");
             }
         }
     }
@@ -938,9 +925,8 @@ public class NodeManager extends PFComponent {
         // Create acceptor on socket
 
         if (!started) {
-            logWarning(
-                "Not accepting node from " + socket
-                    + ". NodeManager is not started");
+            logWarning("Not accepting node from " + socket
+                + ". NodeManager is not started");
             try {
                 socket.close();
             } catch (IOException e) {
@@ -962,16 +948,13 @@ public class NodeManager extends PFComponent {
         // we are currently processing.
         long waitTime = (acceptors.size() * getController().getWaitTime()) / 400;
         if (isLogFiner()) {
-            logFiner(
-                "Currently processing incoming connections ("
-                    + acceptors.size() + "), throttled (" + waitTime
-                    + "ms wait)");
+            logFiner("Currently processing incoming connections ("
+                + acceptors.size() + "), throttled (" + waitTime + "ms wait)");
         }
         if (acceptors.size() > Constants.MAX_INCOMING_CONNECTIONS) {
             // Show warning
-            logWarning(
-                "Processing too many incoming connections (" + acceptors.size()
-                    + "), throttled (" + waitTime + "ms wait)");
+            logWarning("Processing too many incoming connections ("
+                + acceptors.size() + "), throttled (" + waitTime + "ms wait)");
         }
         try {
             Thread.sleep(waitTime);
@@ -994,9 +977,8 @@ public class NodeManager extends PFComponent {
 
         if (!started) {
             try {
-                logWarning(
-                    "NodeManager already shut down. Not accepting any more nodes. Closing socket "
-                        + socket);
+                logWarning("NodeManager already shut down. Not accepting any more nodes. Closing socket "
+                    + socket);
                 socket.close();
             } catch (IOException e) {
                 throw new ConnectionException("Unable to close socket", e);
@@ -1040,9 +1022,8 @@ public class NodeManager extends PFComponent {
         throws ConnectionException
     {
         if (!started) {
-            logWarning(
-                "Not accepting node from " + handler
-                    + ". NodeManager is not started");
+            logWarning("Not accepting node from " + handler
+                + ". NodeManager is not started");
             handler.shutdown();
             throw new ConnectionException("Not accepting node from " + handler
                 + ". NodeManager is not started").with(handler);
@@ -1053,18 +1034,16 @@ public class NodeManager extends PFComponent {
 
         // check for valid identity
         if (remoteIdentity == null || !remoteIdentity.isValid()) {
-            logWarning(
-                "Received an illegal identity from " + handler
-                    + ". disconnecting. " + remoteIdentity);
+            logWarning("Received an illegal identity from " + handler
+                + ". disconnecting. " + remoteIdentity);
             handler.shutdown();
             throw new ConnectionException("Received an illegal identity from "
                 + handler + ". disconnecting. " + remoteIdentity).with(handler);
         }
 
         if (getMySelf().getInfo().equals(remoteIdentity.getMemberInfo())) {
-            logWarning(
-                "Loopback connection detected to " + handler
-                    + ", disconnecting");
+            logWarning("Loopback connection detected to " + handler
+                + ", disconnecting");
             handler.shutdown();
             throw new ConnectionException("Loopback connection detected to "
                 + handler + ", disconnecting").with(handler);
@@ -1078,10 +1057,8 @@ public class NodeManager extends PFComponent {
         // Accept only one node at a time
         synchronized (acceptLock) {
             if (isLogFiner()) {
-                logFiner(
-                    "Accept lock taken. Member: "
-                        + remoteIdentity.getMemberInfo() + ", Handler: "
-                        + handler);
+                logFiner("Accept lock taken. Member: "
+                    + remoteIdentity.getMemberInfo() + ", Handler: " + handler);
             }
             // Is this member already known to us ?
             member = getNode(remoteIdentity.getMemberInfo());
@@ -1104,24 +1081,25 @@ public class NodeManager extends PFComponent {
                     acceptHandler = true;
                     // #841 NOT isCompletelyConnected()
                 } else if (member.isConnected()) {
-                    rejectCause = "Duplicate connection detected to " + member
-                        + ", disconnecting";
+                    rejectCause = "Duplicate connection detected to "
+                        + member.getNick() + " ("
+                        + member.getReconnectAddress() + ")";
                     // Not accept node
                     acceptHandler = false;
-                } else if (member.isReconnecting()) {
-                    logWarning(
-                        "Not accepting, already connecting to :" + member);
-                    acceptHandler = false;
+                    // SKIP: Causes problems in LAN environment
+                    // } else if (member.isReconnecting()) {
+                    // rejectCause = "Already reconnecting";
+                    // logWarning("Not accepting, already connecting to :"
+                    // + member);
+                    // acceptHandler = false;
                 } else {
                     // Otherwise accept. (our member = disco)
                     acceptHandler = true;
                 }
             }
             if (isLogFiner()) {
-                logFiner(
-                    "Accept lock released. Member: "
-                        + remoteIdentity.getMemberInfo() + ", Handler: "
-                        + handler);
+                logFiner("Accept lock released. Member: "
+                    + remoteIdentity.getMemberInfo() + ", Handler: " + handler);
             }
         }
 
@@ -1258,9 +1236,8 @@ public class NodeManager extends PFComponent {
             int index = (int) (Math.random() * supernodes.size());
             Member supernode = supernodes.get(index);
             supernodes.remove(index);
-            logFine(
-                "Sending message to supernode: " + supernode.getNick() + ". "
-                    + message);
+            logFine("Sending message to supernode: " + supernode.getNick()
+                + ". " + message);
             supernode.sendMessageAsynchron(message, null);
             nNodes++;
         }
@@ -1305,9 +1282,8 @@ public class NodeManager extends PFComponent {
             int index = (int) (Math.random() * lanNodes.size());
             Member node = lanNodes.get(index);
             lanNodes.remove(index);
-            logFine(
-                "Sending message to lan node: " + node.getNick() + ". "
-                    + message);
+            logFine("Sending message to lan node: " + node.getNick() + ". "
+                + message);
             node.sendMessageAsynchron(message, null);
             nNodes++;
         }
@@ -1328,9 +1304,8 @@ public class NodeManager extends PFComponent {
         }
 
         if (!nodesFile.exists()) {
-            logFine(
-                "Unable to load nodes, file not found "
-                    + nodesFile.getAbsolutePath());
+            logFine("Unable to load nodes, file not found "
+                + nodesFile.getAbsolutePath());
             return false;
         }
 
@@ -1338,10 +1313,10 @@ public class NodeManager extends PFComponent {
             NodeList nodeList = new NodeList();
             nodeList.load(nodesFile);
 
-            logInfo(
-                "Loaded " + nodeList.getNodeList().size() + " nodes from "
-                    + nodesFile.getAbsolutePath());
-            queueNewNodes(nodeList.getNodeList().toArray(new MemberInfo[nodeList.getNodeList().size()]));
+            logInfo("Loaded " + nodeList.getNodeList().size() + " nodes from "
+                + nodesFile.getAbsolutePath());
+            queueNewNodes(nodeList.getNodeList().toArray(
+                new MemberInfo[nodeList.getNodeList().size()]));
 
             for (MemberInfo friend : nodeList.getFriendsSet()) {
                 Member node = friend.getNode(getController(), true);
@@ -1351,24 +1326,20 @@ public class NodeManager extends PFComponent {
             }
             return !nodeList.getNodeList().isEmpty();
         } catch (IOException e) {
-            logWarning(
-                "Unable to load nodes from file '" + filename + "'. "
-                    + e.getMessage());
+            logWarning("Unable to load nodes from file '" + filename + "'. "
+                + e.getMessage());
             logFiner(e);
         } catch (ClassCastException e) {
-            logWarning(
-                "Illegal format of supernodes files '" + filename
-                    + "', deleted");
+            logWarning("Illegal format of supernodes files '" + filename
+                + "', deleted");
             logFiner(e);
             if (!nodesFile.delete()) {
-                logSevere(
-                    "Failed to delete supernodes file: "
-                        + nodesFile.getAbsolutePath());
+                logSevere("Failed to delete supernodes file: "
+                    + nodesFile.getAbsolutePath());
             }
         } catch (ClassNotFoundException e) {
-            logWarning(
-                "Illegal format of supernodes files '" + filename
-                    + "', deleted");
+            logWarning("Illegal format of supernodes files '" + filename
+                + "', deleted");
             logFiner(e);
             nodesFile.delete();
         }
@@ -1382,9 +1353,8 @@ public class NodeManager extends PFComponent {
         String filename = getController().getConfigName() + ".nodes";
         if (!loadNodesFrom(filename)) {
             filename += ".backup";
-            logFine(
-                "Failed to load nodes, trying backup nodefile '" + filename
-                    + "'");
+            logFine("Failed to load nodes, trying backup nodefile '" + filename
+                + "'");
             if (!loadNodesFrom(filename)) {
                 return;
             }
@@ -1449,9 +1419,8 @@ public class NodeManager extends PFComponent {
             // for testing this directory needs to be created because we have
             // subs in the config name
             if (!nodesFile.getParentFile().mkdirs()) {
-                logSevere(
-                    "Failed to create directory: "
-                        + nodesFile.getAbsolutePath());
+                logSevere("Failed to create directory: "
+                    + nodesFile.getAbsolutePath());
             }
         }
 
@@ -1460,16 +1429,14 @@ public class NodeManager extends PFComponent {
             return false;
         }
 
-        logFine(
-            "Saving known nodes/friends with " + nodeList.getNodeList().size()
-                + " nodes to " + filename);
+        logFine("Saving known nodes/friends with "
+            + nodeList.getNodeList().size() + " nodes to " + filename);
         try {
             nodeList.save(nodesFile);
             return true;
         } catch (IOException e) {
-            logWarning(
-                "Unable to write supernodes to file '" + filename + "'. "
-                    + e.getMessage());
+            logWarning("Unable to write supernodes to file '" + filename
+                + "'. " + e.getMessage());
             logFiner(e);
             return false;
         }
@@ -1505,9 +1472,8 @@ public class NodeManager extends PFComponent {
                 }
 
                 if (isLogFiner()) {
-                    logFiner(
-                        node.toString() + " ,last connect: "
-                            + node.lastConnectTime);
+                    logFiner(node.toString() + " ,last connect: "
+                        + node.lastConnectTime);
                 }
 
                 // If supernode is outdated, fix date
@@ -1515,8 +1481,7 @@ public class NodeManager extends PFComponent {
                     || node.lastConnectTime.getTime() < (System
                         .currentTimeMillis() - Constants.MAX_NODE_OFFLINE_TIME))
                 {
-                    logFiner(
-                        "Fixed date of internet supernode list " + node);
+                    logFiner("Fixed date of internet supernode list " + node);
                     // Give supernode date last connect time 2 hours before
                     // no connection is retried.
                     node.lastConnectTime = new Date(System.currentTimeMillis()
@@ -1524,9 +1489,8 @@ public class NodeManager extends PFComponent {
                 }
             }
 
-            logInfo(
-                "Loaded " + supernodes.size() + " new supernodes from "
-                    + NODES_URL);
+            logInfo("Loaded " + supernodes.size() + " new supernodes from "
+                + NODES_URL);
 
             MemberInfo[] supernodesArr = new MemberInfo[supernodes.size()];
             supernodes.toArray(supernodesArr);
@@ -1600,9 +1564,8 @@ public class NodeManager extends PFComponent {
         public void run() {
             try {
                 startTime = new Date();
-                logFiner(
-                    "Accepting connection from: " + socket.getInetAddress()
-                        + ":" + socket.getPort());
+                logFiner("Accepting connection from: "
+                    + socket.getInetAddress() + ":" + socket.getPort());
                 acceptConnection(socket);
             } catch (ConnectionException e) {
                 logFiner("Unable to connect to " + socket, e);
@@ -1617,8 +1580,8 @@ public class NodeManager extends PFComponent {
             }
             long took = System.currentTimeMillis() - startTime.getTime();
             if (isLogFiner()) {
-                logFiner(
-                    "Acceptor finished to " + socket + ", took " + took + "ms");
+                logFiner("Acceptor finished to " + socket + ", took " + took
+                    + "ms");
             }
         }
 
@@ -1685,9 +1648,8 @@ public class NodeManager extends PFComponent {
             if (nodesWentOnline.isEmpty()) {
                 return;
             }
-            logFine(
-                "Broadcasting " + nodesWentOnline.size()
-                    + " nodes that went online");
+            logFine("Broadcasting " + nodesWentOnline.size()
+                + " nodes that went online");
             KnownNodes nodesWentOnlineMessage;
             synchronized (nodesWentOnline) {
                 MemberInfo[] nodes = new MemberInfo[nodesWentOnline.size()];
@@ -1707,15 +1669,13 @@ public class NodeManager extends PFComponent {
         public void run() {
             List<Acceptor> tempList = new ArrayList<Acceptor>(acceptors);
             ThreadPoolExecutor es = (ThreadPoolExecutor) threadPool;
-            logFine(
-                "Checking incoming connection queue (" + tempList.size() + ", "
-                    + es.getActiveCount() + "/" + es.getCorePoolSize()
-                    + " threads)");
+            logFine("Checking incoming connection queue (" + tempList.size()
+                + ", " + es.getActiveCount() + "/" + es.getCorePoolSize()
+                + " threads)");
             if (tempList.size() > Constants.MAX_INCOMING_CONNECTIONS) {
-                logWarning(
-                    "Processing too many incoming connections ("
-                        + tempList.size() + ", " + es.getActiveCount() + "/"
-                        + es.getCorePoolSize() + " threads)");
+                logWarning("Processing too many incoming connections ("
+                    + tempList.size() + ", " + es.getActiveCount() + "/"
+                    + es.getCorePoolSize() + " threads)");
             }
             for (Acceptor acceptor : tempList) {
                 if (acceptor.hasTimeout()) {
