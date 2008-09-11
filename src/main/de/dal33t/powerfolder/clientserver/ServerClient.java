@@ -438,7 +438,7 @@ public class ServerClient extends PFComponent {
         if (!isLastLoginOK()) {
             return;
         }
-        logWarning("Connecting to Hosting Servers");
+        logFine("Tring to connecting to hosting servers");
         Runnable retriever = new Runnable() {
             public void run() {
                 FolderInfo[] folders = getController().getFolderRepository()
