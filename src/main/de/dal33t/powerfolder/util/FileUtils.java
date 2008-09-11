@@ -372,30 +372,6 @@ public class FileUtils {
     }
 
     /**
-     * Creates a random folder in the user's .PowerFolder dir.
-     * 
-     * @return random file
-     * @throws IOException
-     */
-    public static File createTemporaryDirectory() throws IOException {
-        // Create a random temporary directory based on the current time.
-        String randomString = new String(Util.encodeHex(Util.md5(String
-            .valueOf(new Date().getTime()).getBytes())));
-        File tempDir = new File(System.getProperty("user.home")
-            + "/.PowerFolder/" + randomString);
-        if (tempDir.exists()) {
-            throw new IOException("Temporary directory " + tempDir
-                + " already exists.");
-        }
-        if (!tempDir.mkdir()) {
-            throw new IOException("Could not create temporary directory "
-                + tempDir);
-        }
-
-        return tempDir;
-    }
-
-    /**
      * A recursive delete of a directory.
      * 
      * @param file
@@ -567,6 +543,9 @@ public class FileUtils {
         }
 
         File[] files = directory.listFiles();
+        if (files == null) {
+            return 0;
+        }
         long sum = 0;
         for (File file : files) {
             if (file.isDirectory()) {
