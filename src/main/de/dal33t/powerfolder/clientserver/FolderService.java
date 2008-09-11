@@ -19,9 +19,12 @@
  */
 package de.dal33t.powerfolder.clientserver;
 
+import java.util.Collection;
+
 import de.dal33t.powerfolder.disk.FolderException;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Invitation;
 
 /**
@@ -60,7 +63,6 @@ public interface FolderService {
      *            the name of the user to be invited
      * @param invitation
      *            the folder to be invited to
-     * @throws FolderException
      * @deprecated Use {@link SendInvitationEmail} instead
      */
     @Deprecated
@@ -108,4 +110,11 @@ public interface FolderService {
      * @see #removeFolder(FolderInfo, boolean)
      */
     void revokeAdmin(FolderInfo... foInfos);
+
+    /**
+     * @param foInfos
+     *            the list of folders to retrieve the hosted servers for.
+     * @return the list of servers the folders are hosted on.
+     */
+    Collection<MemberInfo> getHostingServers(FolderInfo... foInfos);
 }

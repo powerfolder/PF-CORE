@@ -113,14 +113,6 @@ public interface AccountService {
     void checkAccounts(String... usernames);
 
     /**
-     * Adds a 31 days trial key to the given account.
-     * 
-     * @param account
-     * @return true if succeeded
-     */
-    boolean addTrialLicenseKey(Account account);
-
-    /**
      * @return all license key content for this account. or null if no key was
      *         found.
      */
