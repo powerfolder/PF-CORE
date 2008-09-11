@@ -53,6 +53,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.disk.ScanResult.ResultState;
 import de.dal33t.powerfolder.event.FileNameProblemEvent;
 import de.dal33t.powerfolder.event.FileNameProblemHandler;
 import de.dal33t.powerfolder.event.FolderEvent;
@@ -716,7 +717,9 @@ public class Folder extends PFComponent {
             FolderScanner scanner = getController().getFolderRepository()
                 .getFolderScanner();
             result = scanner.scanFolderWaitIfBusy(this);
-            logFine("Scan result: " + result.getResultState());
+            if (!result.getResultState().equals(ResultState.SCANNED)) {
+                logWarning("Scan result: " + result.getResultState());
+            }
         }
 
         try {
@@ -1381,12 +1384,12 @@ public class Folder extends PFComponent {
                 // Cleanup for older versions
                 File oldDbFile = new File(localBase, DB_FILENAME);
                 if (!oldDbFile.delete()) {
-                    logFine("Failed to delete 'old' database file: "
+                    logFiner("Failed to delete 'old' database file: "
                         + oldDbFile);
                 }
                 File oldDbFileBackup = new File(localBase, DB_BACKUP_FILENAME);
                 if (!oldDbFileBackup.delete()) {
-                    logFine("Failed to delete backup of 'old' database file: "
+                    logFiner("Failed to delete backup of 'old' database file: "
                         + oldDbFileBackup);
                 }
             } catch (IOException e) {
@@ -1400,11 +1403,9 @@ public class Folder extends PFComponent {
     }
 
     private boolean maintainFolderDBrequired() {
-
         if (lastDBMaintenance == null) {
             return true;
         }
-
         return lastDBMaintenance.getTime()
             + ConfigurationEntry.DB_MAINTENANCE_SECONDS
                 .getValueInt(getController()) * 1000L < System
@@ -1425,9 +1426,11 @@ public class Folder extends PFComponent {
             * ConfigurationEntry.MAX_FILEINFO_DELETED_AGE_SECONDS
                 .getValueInt(getController());
         int nFilesBefore = knownFiles.size();
-        logFine("Maintaining folder db, known files: " + nFilesBefore
-            + ". Expiring deleted files older than "
-            + new Date(removeBeforeDate));
+        if (isLogFiner()) {
+            logFiner("Maintaining folder db, known files: " + nFilesBefore
+                + ". Expiring deleted files older than "
+                + new Date(removeBeforeDate));
+        }
         int expired = 0;
         for (FileInfo file : knownFiles.keySet()) {
             if (!file.isDeleted()) {
@@ -1446,7 +1449,10 @@ public class Folder extends PFComponent {
                     + file.toDetailString());
             }
         }
-        logFine("Maintained folder db. Expired: " + expired);
+        logFine("Maintained folder db, " + nFilesBefore + " known files, "
+            + expired
+            + " expired FileInfos. Expiring deleted files older than "
+            + new Date(removeBeforeDate));
         if (expired > 0) {
             dirty = true;
         }
