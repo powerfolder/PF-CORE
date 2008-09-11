@@ -209,11 +209,8 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
     }
 
     /**
-     * Initalizes the connection handler.
+     * Initializes the connection handler.
      * 
-     * @param controller
-     * @param aSocket
-     *            the tctp/ip socket.
      * @throws ConnectionException
      */
     public void init() throws ConnectionException {
@@ -457,6 +454,11 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
                     .getTotalUploadTrafficCounter().bytesTransferred(
                         data.length + 4);
             }
+        } catch (RuntimeException e) {
+            logSevere("Runtime exception while serializing: " + message, e);
+            // Ensure shutdown
+            shutdownWithMember();
+            throw e;
         } catch (ConnectionException e) {
             // Ensure shutdown
             shutdownWithMember();
