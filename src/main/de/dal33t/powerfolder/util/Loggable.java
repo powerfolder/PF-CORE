@@ -457,10 +457,6 @@ public abstract class Loggable {
         if (!LogDispatch.isNickPrefix()) {
             return;
         }
-        if (LogDispatch.getCurrentPrefix() != null) {
-            // Already set
-            return;
-        }
         Controller c = null;
         if (this instanceof PFComponent) {
             c = ((PFComponent) this).getController();
