@@ -52,7 +52,9 @@ public class DirectoryTree extends JTree {
      * @param file
      */
     public void initializePath(File file) {
-
+        if (file == null) {
+            return;
+        }
         // If the file is dud, show the roots,
         // so the user does not see a blank tree.
         if (file == null || !file.exists()) {

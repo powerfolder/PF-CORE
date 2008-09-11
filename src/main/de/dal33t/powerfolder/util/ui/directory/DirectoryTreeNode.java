@@ -1,33 +1,32 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.util.ui.directory;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.io.File;
 
 /**
- * Class to represent a directory node in the tree.
- * Initially the node has a dummy node,
- * so that the node handle is displayed by the tree.
- * A node can be scanned, which removes the dummy node
- * and replaces with real file system subdirectories.
+ * Class to represent a directory node in the tree. Initially the node has a
+ * dummy node, so that the node handle is displayed by the tree. A node can be
+ * scanned, which removes the dummy node and replaces with real file system
+ * subdirectories.
  */
 public class DirectoryTreeNode extends DefaultMutableTreeNode {
 
@@ -36,7 +35,7 @@ public class DirectoryTreeNode extends DefaultMutableTreeNode {
 
     /**
      * Constructor.
-     *
+     * 
      * @param directory
      * @param volume
      */
@@ -45,7 +44,9 @@ public class DirectoryTreeNode extends DefaultMutableTreeNode {
         this.volume = volume;
         if (volume) {
             add(new DefaultMutableTreeNode());
-        } else if (directory != null && directory.isDirectory() && directory.canRead() && !directory.isHidden()) {
+        } else if (directory != null && directory.isDirectory()
+            && directory.canRead() && !directory.isHidden())
+        {
 
             // A quick peek.
             // If there are any subdirectories,
@@ -54,15 +55,16 @@ public class DirectoryTreeNode extends DefaultMutableTreeNode {
             // Otherwise if there are no readable directories,
             // set as scanned with no dummy node.
             scanned = true;
-            
+
             // Patch for Windows Vista.
             // Vista may deny access to directories
             // and this results in a null file list.
             File[] files = directory.listFiles();
             if (files != null) {
                 for (File f : files) {
-                    if (f != null && f.canRead() &&
-                            f.isDirectory() && !f.isHidden()) {
+                    if (f != null && f.canRead() && f.isDirectory()
+                        && !f.isHidden())
+                    {
                         add(new DefaultMutableTreeNode());
                         scanned = false;
                         break;
@@ -73,9 +75,8 @@ public class DirectoryTreeNode extends DefaultMutableTreeNode {
     }
 
     /**
-     * Scans the node directory.
-     * Remove any dummy node,
-     * and add nodes for any subdirectories.
+     * Scans the node directory. Remove any dummy node, and add nodes for any
+     * subdirectories.
      */
     public void scan() {
         while (getChildCount() > 0) {
@@ -83,10 +84,14 @@ public class DirectoryTreeNode extends DefaultMutableTreeNode {
         }
         File f = (File) getUserObject();
         if (f != null && f.isDirectory() && f.canRead()) {
-            for(File f2: f.listFiles()) {
-                if (f2.isDirectory() && !f2.isHidden() && f2.canRead()) {
-                    DirectoryTreeNode dtn2 = new DirectoryTreeNode(f2, false);
-                    add(dtn2);
+            File[] files = f.listFiles();
+            if (files != null) {
+                for (File f2 : files) {
+                    if (f2.isDirectory() && !f2.isHidden() && f2.canRead()) {
+                        DirectoryTreeNode dtn2 = new DirectoryTreeNode(f2,
+                            false);
+                        add(dtn2);
+                    }
                 }
             }
         }
@@ -99,7 +104,7 @@ public class DirectoryTreeNode extends DefaultMutableTreeNode {
 
     /**
      * Whether the node has been scanned.
-     *
+     * 
      * @return
      */
     public boolean isScanned() {
@@ -108,7 +113,7 @@ public class DirectoryTreeNode extends DefaultMutableTreeNode {
 
     /**
      * Whether the node is a base file system volume.
-     *
+     * 
      * @return
      */
     public boolean isVolume() {
