@@ -52,6 +52,7 @@ import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
@@ -858,6 +859,14 @@ public class NodeManager extends PFComponent {
                 if (filter.shouldAddNode(newNode)) {
                     ignoreNode = false;
                     break;
+                }
+            }
+
+            if (!ignoreNode) {
+                // Ignore temporary nodes
+                if (ServerClient.isTempServerNode(newNode)) {
+                    logWarning("Ignoring temporary server node: " + newNode);
+                    ignoreNode = true;
                 }
             }
             // Disabled: This causes problems when executing a search for users
