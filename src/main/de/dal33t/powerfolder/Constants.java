@@ -44,12 +44,12 @@ public class Constants {
      * URL of the PowerFolder Wiki
      */
     public static final String POWERFOLDER_WIKI_URL = "http://wiki.powerfolder.com/wiki";
-    
+
     /**
      * URL of the PowerFolder Support
      */
     public static final String POWERFOLDER_SUPPORT_URL = "http://www.powerfolder.com/support.html";
-    
+
     /**
      * URL of the PowerFolder Pro page
      */
@@ -199,6 +199,12 @@ public class Constants {
      * a warning may be displayed.
      */
     public static final long LIMITED_CONNECTIVITY_CHECK_DELAY = 180;
+
+    /**
+     * the number of seconds (aprox) between request for hosting servers for our
+     * joined folders. About 10 minutes.
+     */
+    public static final long HOSTING_FOLDERS_REQUEST_INTERVAL = 600;
 
     // Basic networking options ***********************************************
 

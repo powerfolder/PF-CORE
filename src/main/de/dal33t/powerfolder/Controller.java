@@ -109,7 +109,7 @@ public class Controller extends PFComponent {
     /**
      * program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "4.0.0 dev4";
+    public static final String PROGRAM_VERSION = "4.0.0 dev8";
 
     /** general wait time for all threads (5000 is a balanced value) */
     private static final long WAIT_TIME = 5000;
@@ -341,14 +341,12 @@ public class Controller extends PFComponent {
                 System.out.println("Loading language bundle from file "
                     + langfilename);
             } catch (FileNotFoundException fnfe) {
-                logSevere(
-                    "forced language file (" + langfilename + ") not found: "
-                        + fnfe.getMessage());
+                logSevere("forced language file (" + langfilename
+                    + ") not found: " + fnfe.getMessage());
                 logSevere("using setup language");
                 Translation.resetResourceBundle();
             } catch (IOException ioe) {
-                logSevere(
-                    "forced language file io error: " + ioe.getMessage());
+                logSevere("forced language file io error: " + ioe.getMessage());
                 logSevere("using setup language");
                 Translation.resetResourceBundle();
             }
@@ -381,14 +379,12 @@ public class Controller extends PFComponent {
 
         // initialize logger
         initLogger();
-        logInfo(
-            "PowerFolder v" + PROGRAM_VERSION + " (build: " + getBuildTime()
-                + ')');
+        logInfo("PowerFolder v" + PROGRAM_VERSION + " (build: "
+            + getBuildTime() + ')');
         logFine("OS: " + System.getProperty("os.name"));
-        logFine(
-            "Java: " + System.getProperty("java.version") + " ("
-                + System.getProperty("java.runtime.version") + ", "
-                + System.getProperty("java.vendor") + ')');
+        logFine("Java: " + System.getProperty("java.version") + " ("
+            + System.getProperty("java.runtime.version") + ", "
+            + System.getProperty("java.vendor") + ')');
         logFine("Current time: " + new Date());
         Debug.writeSystemProperties();
 
@@ -420,7 +416,6 @@ public class Controller extends PFComponent {
 
         // Folder repository
         folderRepository = new FolderRepository(this);
-
         setLoadingCompletion(20, 30);
 
         // initialize listener on local port
@@ -440,6 +435,9 @@ public class Controller extends PFComponent {
             // Nodemanager gets later (re) started by ProLoader.
             nodeManager.start();
         }
+
+        // Initialize client
+        initOnlineStorageClient();
         setLoadingCompletion(35, 60);
 
         // init repo (read folders)
@@ -471,17 +469,6 @@ public class Controller extends PFComponent {
 
         // open broadcast listener
         openBroadcastManager();
-
-        initOnlineStorageClient();
-        if (Feature.OS_CLIENT.isEnabled()) {
-            osClient.loginWithDefault();
-            osClient.start();
-        } else {
-            logWarning(
-                "NOT starting Online Storage (reconnection), "
-                    + "feature disable");
-        }
-
         setLoadingCompletion(85, 90);
         // Controller now started
         started = true;
@@ -521,9 +508,16 @@ public class Controller extends PFComponent {
             // Now start the connecting process
             reconnectManager.start();
         } else {
-            logWarning(
-                "Not starting reconnection process. "
-                    + "Config auto.connect set to false");
+            logWarning("Not starting reconnection process. "
+                + "Config auto.connect set to false");
+        }
+        // Start connecting to OS client.
+        if (Feature.OS_CLIENT.isEnabled()) {
+            osClient.loginWithLastKnown();
+            osClient.start();
+        } else {
+            logWarning("NOT starting Online Storage (reconnection), "
+                + "feature disable");
         }
 
         // Setup our background working tasks
@@ -533,15 +527,16 @@ public class Controller extends PFComponent {
     private void initOnlineStorageClient() {
         Member server = null;
         String host = ConfigurationEntry.SERVER_HOST.getValue(this);
-        if (StringUtils.isBlank(host)) {
+        if (!StringUtils.isBlank(host)) {
+            // Server host overridden
+            osClient = new ServerClient(this, host, true);
+        } else {
+            // Default: Online Storage
             MemberInfo osInfo = new MemberInfo("Online Storage",
                 Constants.ONLINE_STORAGE_NODE_ID);
             osInfo.setConnectAddress(Constants.ONLINE_STORAGE_ADDRESS);
             server = osInfo.getNode(this, true);
             osClient = new ServerClient(this, server);
-        } else {
-            // Server host overridden
-            osClient = new ServerClient(this, host);
         }
     }
 
@@ -572,12 +567,10 @@ public class Controller extends PFComponent {
                 + "-log.txt";
             LogDispatch.setLogFile(logFilename);
             if (LogDispatch.isLogToFileEnabled()) {
-                logInfo(
-                    "Running in VERBOSE mode, logging to file '" + logFilename
-                        + '\'');
+                logInfo("Running in VERBOSE mode, logging to file '"
+                    + logFilename + '\'');
             } else {
-                logInfo(
-                        "Running in VERBOSE mode, not logging to file (enable in Logger.java)'");
+                logInfo("Running in VERBOSE mode, not logging to file (enable in Logger.java)'");
             }
             Profiling.setEnabled(false);
             Profiling.reset();
@@ -621,16 +614,14 @@ public class Controller extends PFComponent {
                 System.out.println("Config file does not exist!");
             }
             if (OSUtil.isWebStart()) {
-                logFine(
-                    "WebStart, config file location: "
-                        + configFile.getAbsolutePath());
+                logFine("WebStart, config file location: "
+                    + configFile.getAbsolutePath());
             }
             bis = new BufferedInputStream(new FileInputStream(configFile));
             config.load(bis);
         } catch (FileNotFoundException e) {
-            logWarning(
-                "Unable to start config, file '" + filename
-                    + "' not found, using defaults");
+            logWarning("Unable to start config, file '" + filename
+                + "' not found, using defaults");
         } catch (IOException e) {
             logSevere("Unable to start config from file '" + filename + '\'');
             config = null;
@@ -743,8 +734,8 @@ public class Controller extends PFComponent {
         cal.add(Calendar.SECOND, 1);
 
         Date tomorrowMorning = cal.getTime();
-        logInfo(
-            "Initial log reconfigure at " + tomorrowMorning + " milliseconds");
+        logInfo("Initial log reconfigure at " + tomorrowMorning
+            + " milliseconds");
         timer.scheduleAtFixedRate(new TimerTask() {
             public void run() {
                 initLogger();
@@ -766,9 +757,8 @@ public class Controller extends PFComponent {
                 broadcastManager = new BroadcastMananger(this);
                 broadcastManager.start();
             } catch (ConnectionException e) {
-                logSevere(
-                        "Unable to open broadcast manager, you wont automatically join pf-network on local net: "
-                            + e.getMessage());
+                logSevere("Unable to open broadcast manager, you wont automatically join pf-network on local net: "
+                    + e.getMessage());
                 logSevere(e);
             }
         } else {
@@ -831,9 +821,8 @@ public class Controller extends PFComponent {
                             // return false; // Shouldn't reach this!
                         }
                     } catch (NumberFormatException e) {
-                        logFine(
-                            "Unable to read listener port ('" + portStr
-                                + "') from config");
+                        logFine("Unable to read listener port ('" + portStr
+                            + "') from config");
                     }
                 }
                 // If this is the GUI version we didn't kill the program yet,
@@ -881,8 +870,8 @@ public class Controller extends PFComponent {
      */
     private void portBindFailureProblem(String ports) {
         if (!isUIEnabled()) {
-            logSevere(
-                "Unable to open incoming port from the portlist: " + ports);
+            logSevere("Unable to open incoming port from the portlist: "
+                + ports);
             exit(1);
             return;
         }
@@ -927,8 +916,7 @@ public class Controller extends PFComponent {
             try {
                 connectionListener.start();
             } catch (ConnectionException e) {
-                logSevere("Problems starting listener " + connectionListener,
-                    e);
+                logSevere("Problems starting listener " + connectionListener, e);
             }
             for (Iterator<ConnectionListener> it = additionalConnectionListeners
                 .iterator(); it.hasNext();)
@@ -937,8 +925,8 @@ public class Controller extends PFComponent {
                     ConnectionListener addListener = it.next();
                     addListener.start();
                 } catch (ConnectionException e) {
-                    logSevere(
-                        "Problems starting listener " + connectionListener, e);
+                    logSevere("Problems starting listener "
+                        + connectionListener, e);
                 }
             }
         }
@@ -1562,8 +1550,7 @@ public class Controller extends PFComponent {
     public Member connect(InetSocketAddress address) throws ConnectionException
     {
         if (!isStarted()) {
-            logInfo(
-                "NOT Connecting to " + address + ". Controller not started");
+            logInfo("NOT Connecting to " + address + ". Controller not started");
             throw new ConnectionException("NOT Connecting to " + address
                 + ". Controller not started");
         }
@@ -1674,9 +1661,8 @@ public class Controller extends PFComponent {
     private boolean openListener(int port) {
         String bind = ConfigurationEntry.NET_BIND_ADDRESS
             .getValue(getController());
-        logFine(
-            "Opening incoming connection listener on port " + port
-                + " on interface " + (bind != null ? bind : "(all)"));
+        logFine("Opening incoming connection listener on port " + port
+            + " on interface " + (bind != null ? bind : "(all)"));
         while (true) {
             try {
                 ConnectionListener newListener = new ConnectionListener(this,
@@ -1692,8 +1678,7 @@ public class Controller extends PFComponent {
                 logWarning("Unable to bind to port " + port);
                 logFiner(e);
                 if (bind != null) {
-                    logSevere(
-                            "This could've been caused by a binding error on the interface... Retrying without binding");
+                    logSevere("This could've been caused by a binding error on the interface... Retrying without binding");
                     bind = null;
                 } else { // Already tried binding once or not at all so get
                     // out
@@ -1793,9 +1778,8 @@ public class Controller extends PFComponent {
 
         // Load configuration in misc file if config file if in
         if (OSUtil.isWebStart() || !aConfigFile.exists()) {
-            logFine(
-                "Config location base: "
-                    + getMiscFilesLocation().getAbsolutePath());
+            logFine("Config location base: "
+                + getMiscFilesLocation().getAbsolutePath());
             return getMiscFilesLocation();
         }
 
@@ -1813,8 +1797,8 @@ public class Controller extends PFComponent {
         File base = new File(System.getProperty("user.home") + "/.PowerFolder");
         if (!base.exists()) {
             if (!base.mkdirs()) {
-                Loggable.logSevereStatic(Controller.class,
-                    "Failed to create " + base.getAbsolutePath());
+                Loggable.logSevereStatic(Controller.class, "Failed to create "
+                    + base.getAbsolutePath());
             }
             if (OSUtil.isWindowsSystem()) {
                 // Hide on windows

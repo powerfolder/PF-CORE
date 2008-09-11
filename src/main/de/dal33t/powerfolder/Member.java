@@ -176,6 +176,9 @@ public class Member extends PFComponent {
     /** If already asked for friendship */
     private boolean askedForFriendship;
 
+    /** If the remote node is a server. */
+    private boolean server;
+
     /**
      * Constructs a member using parameters from another member. nick, id ,
      * connect address.
@@ -313,14 +316,15 @@ public class Member extends PFComponent {
             return false;
         }
 
-        if (getController().getOSClient().isServer(this)) {
+        // FIXME Does not work with temporary server nodes.
+        if (isServer() || getController().getOSClient().isServer(this)) {
             // Always interesting is the server!
             return true;
         }
 
         Identity id = getIdentity();
         if (id != null) {
-            logWarning("Got ID: " + id + ". pending msgs? "
+            logFiner("Got ID: " + id + ". pending msgs? "
                 + id.isPendingMessages());
             if (Util.compareVersions("2.0.0", id.getProgramVersion())) {
                 logWarning("Rejecting connection to old program client: " + id
@@ -2043,6 +2047,22 @@ public class Member extends PFComponent {
      */
     public Problem getLastProblem() {
         return lastProblem;
+    }
+
+    /**
+     * @return true if this is a server that should be reconnected
+     */
+    public boolean isServer() {
+        return server;
+    }
+
+    /**
+     * Sets/Unsets this member as server that should be reconnected.
+     * 
+     * @param server
+     */
+    public void setServer(boolean server) {
+        this.server = server;
     }
 
     /**
