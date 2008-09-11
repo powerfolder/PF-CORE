@@ -75,6 +75,9 @@ public class FolderRemoveAction extends BaseAction {
     /**
      * Called from FolderLeave Panel if the folder leave is confirmed.
      * 
+     * @param removeLocal
+     *            true to stop local sync. false if to keep folder locally as it
+     *            is
      * @param deleteSystemSubFolder
      *            whether to delete hte .PowerFolder directory
      * @param convertToPreview
@@ -111,6 +114,7 @@ public class FolderRemoveAction extends BaseAction {
                 getController().getOSClient().getFolderService().revokeAdmin(
                     folder.getInfo());
             }
+            getController().getOSClient().refreshAccountDetails();
 
             folderRepository = getController().getFolderRepository();
             FolderSettings folderSettings = folderRepository.loadFolderSettings(folder.getName());
