@@ -553,6 +553,9 @@ public class FolderRepository extends PFComponent implements Runnable {
         // Trigger file requestor
         getController().getFolderRepository().fileRequestor
             .triggerFileRequesting(folder.getInfo());
+        
+        // Trigger server connect
+        getController().getOSClient().connectHostingServers();
 
         // Fire event
         fireFolderCreated(folder);
