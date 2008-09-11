@@ -53,20 +53,6 @@ public interface SecurityManager {
      */
     void saveAccount(Account account);
 
-    /**
-     * Deletes an account. Afterwards the account is removed. Might not be
-     * supported by all SecurityManagers.
-     * <p>
-     * ATTENTION: If not supported, do nothing, NEVER throw a
-     * <code>UnsupportedOperationException</code>
-     * 
-     * @param oid
-     *            the OID of the Account to delete.
-     * @return true if the Account existed and has been removed, false if
-     *         account was not found.
-     */
-    boolean deleteAccount(String oid);
-
     // Full CRUD **************************************************************
 
     /**

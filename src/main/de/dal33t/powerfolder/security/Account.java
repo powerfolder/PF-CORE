@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.security;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -34,6 +35,7 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
+import de.dal33t.powerfolder.light.ServerInfo;
 import de.dal33t.powerfolder.os.OnlineStorageSubscriptionType;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Loggable;
@@ -57,6 +59,7 @@ public class Account extends Model implements Serializable {
     public static final String PROPERTYNAME_LAST_LOGIN_FROM = "lastLoginFrom";
     public static final String PROPERTYNAME_NEWSLETTER = "newsLetter";
     public static final String PROPERTYNAME_PRO_USER = "proUser";
+    public static final String PROPERTYNAME_SERVER = "server";
     public static final String PROPERTYNAME_DEFAULT_SYNCHRONIZED_FOLDER = "defaultSynchronizedFolder";
     public static final String PROPERTYNAME_OS_SUBSCRIPTION = "OSSubscription";
 
@@ -68,6 +71,11 @@ public class Account extends Model implements Serializable {
     private MemberInfo lastLoginFrom;
     private boolean newsLetter;
     private boolean proUser;
+
+    /**
+     * Server where the folders of this account are hosted on.
+     */
+    private ServerInfo server;
 
     /**
      * The possible license key files of this account.
@@ -93,13 +101,24 @@ public class Account extends Model implements Serializable {
         this.osSubscription.setType(OnlineStorageSubscriptionType.NONE);
         this.licenseKeyFiles = new CopyOnWriteArrayList<String>();
     }
+    
+    public void setColumbiaServer() {
+        // TODO Set this a better way
+        this.server = new ServerInfo();
+        MemberInfo serverNode = new MemberInfo("Columbia",
+            "WEBSERVICE004");
+        serverNode.setConnectAddress(new InetSocketAddress(
+            "78.46.242.66", 1337));
+        server.setNode(serverNode);
+        server.setWebUrl("https://server.powerfolder.com");
+    }
 
     // Basic permission stuff *************************************************
 
     public void grant(Permission... newPermissions) {
         Reject.ifNull(newPermissions, "Permission is null");
-        Loggable.logFineStatic(Account.class, "Granted permission to " + this + ": "
-            + Arrays.asList(newPermissions));
+        Loggable.logFineStatic(Account.class, "Granted permission to " + this
+            + ": " + Arrays.asList(newPermissions));
         for (Permission p : newPermissions) {
             if (hasPermission(p)) {
                 // Skip
@@ -111,8 +130,8 @@ public class Account extends Model implements Serializable {
 
     public void revoke(Permission... revokePermissions) {
         Reject.ifNull(revokePermissions, "Permission is null");
-        Loggable.logFineStatic (Account.class, "Revoked permission from " + this + ": "
-            + Arrays.asList(revokePermissions));
+        Loggable.logFineStatic(Account.class, "Revoked permission from " + this
+            + ": " + Arrays.asList(revokePermissions));
         for (Permission p : revokePermissions) {
             permissions.remove(p);
         }
@@ -212,6 +231,16 @@ public class Account extends Model implements Serializable {
         firePropertyChange(PROPERTYNAME_PRO_USER, oldValue, this.proUser);
     }
 
+    public ServerInfo getServer() {
+        return server;
+    }
+
+    public void setServer(ServerInfo server) {
+        Object oldValue = getServer();
+        this.server = server;
+        firePropertyChange(PROPERTYNAME_SERVER, oldValue, this.server);
+    }
+
     public FolderInfo getDefaultSynchronizedFolder() {
         return defaultSynchronizedFolder;
     }
@@ -224,7 +253,6 @@ public class Account extends Model implements Serializable {
         firePropertyChange(PROPERTYNAME_DEFAULT_SYNCHRONIZED_FOLDER, oldValue,
             this.defaultSynchronizedFolder);
     }
-    
 
     public MemberInfo getLastLoginFrom() {
         return lastLoginFrom;
@@ -233,7 +261,8 @@ public class Account extends Model implements Serializable {
     public void setLastLoginFrom(MemberInfo lastLoginFrom) {
         Object oldValue = getLastLoginFrom();
         this.lastLoginFrom = lastLoginFrom;
-        firePropertyChange(PROPERTYNAME_LAST_LOGIN_FROM, oldValue, this.lastLoginFrom);
+        firePropertyChange(PROPERTYNAME_LAST_LOGIN_FROM, oldValue,
+            this.lastLoginFrom);
     }
 
     public Date getLastLoginDate() {
@@ -293,7 +322,7 @@ public class Account extends Model implements Serializable {
                 Folder f = fp.getFolder().getFolder(controller);
                 if (f == null) {
                     Loggable.logWarningStatic(Account.class,
-                            "Got unjoined folder: " + fp.getFolder());
+                        "Got unjoined folder: " + fp.getFolder());
                     continue;
                 }
                 nFolders++;

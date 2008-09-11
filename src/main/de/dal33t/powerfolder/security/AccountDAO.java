@@ -2,6 +2,8 @@ package de.dal33t.powerfolder.security;
 
 import java.util.Collection;
 
+import de.dal33t.powerfolder.light.MemberInfo;
+
 /**
  * CRUD for Accounts.
  * <P>
@@ -14,11 +16,6 @@ import java.util.Collection;
 public interface AccountDAO {
 
     /**
-     * Closes the data storage of this DAO.
-     */
-    void close();
-
-    /**
      * @param oid
      * @return the account with the given OID or null if not found.
      */
@@ -29,9 +26,10 @@ public interface AccountDAO {
      * @return the account with the given username or null if not found.
      */
     Account findByUsername(String username);
-    
+
     /**
-     * @param permission the permission to search for.
+     * @param permission
+     *            the permission to search for.
      * @return all accounts that have this permission.
      */
     Collection<Account> findWithPermission(Permission permission);
@@ -40,6 +38,12 @@ public interface AccountDAO {
      * @return all accounts.
      */
     Collection<Account> getAccounts();
+
+    /**
+     * @param serverNode
+     * @return all accounts that are hosted on the given server node.
+     */
+    Collection<Account> findHostedOn(MemberInfo serverNode);
 
     /**
      * Stores or updates one or more accounts
