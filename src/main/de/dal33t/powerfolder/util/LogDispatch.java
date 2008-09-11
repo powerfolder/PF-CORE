@@ -524,16 +524,16 @@ public class LogDispatch {
         if (isLogToFileEnabled()) {
             try {
                 String f = Util.removeInvalidFilenameChars(logFileName);
-                int i = f.lastIndexOf('.');
-                if (i > 0) {
-                    // Insert number before extenstion.
-                    f = f.substring(0, i) + ".%g" + f.substring(i, f.length());
-                } else {
-                    f += ".%g";
-                }
+                // int i = f.lastIndexOf('.');
+                // if (i > 0) {
+                // // Insert number before extenstion.
+                // f = f.substring(0, i) + ".%g" + f.substring(i, f.length());
+                // } else {
+                // f += ".%g";
+                // }
                 FileHandler fileHandeler = new FileHandler(getDebugDir()
                     .getAbsolutePath()
-                    + '/' + f, 100000, 10, true);
+                    + '/' + f, true);
 
                 fileHandeler.setFormatter(new LogFormatter());
                 fileHandeler.setLevel(rootLogger.getLevel());
