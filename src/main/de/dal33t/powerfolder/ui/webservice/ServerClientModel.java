@@ -103,17 +103,20 @@ public class ServerClientModel extends PFUIComponent {
             return;
         }
 
-        if (!client.isDefaultAccountSet()) {
+        if (client.isLastLoginOK()) {
+            return;
+        }
+
+        if (!client.isLastLoginKnown()) {
             PFWizard.openLoginWebServiceWizard(getController(), client,
                 folderSetupAfterwards);
             return;
         }
-        SwingWorker worker = new SwingWorker() {
 
+        SwingWorker worker = new SwingWorker() {
             @Override
             public Object construct() {
-                // FIXME Use separate account stores for different servers?
-                return client.loginWithDefault().isValid();
+                return client.loginWithLastKnown().isValid();
             }
 
             @Override
@@ -163,9 +166,7 @@ public class ServerClientModel extends PFUIComponent {
         }
 
         public void actionPerformed(ActionEvent e) {
-            if (client.isDefaultAccountSet() && client.isConnected()
-                && client.isLastLoginOK())
-            {
+            if (client.isConnected() && client.isLastLoginOK()) {
                 PFWizard.openMirrorFolderWizard(getController());
             } else {
                 PFWizard.openLoginWebServiceWizard(getController(), client,
@@ -229,10 +230,12 @@ public class ServerClientModel extends PFUIComponent {
 
         public void accountUpdated(ServerClientEvent event) {
             accountModel.setBean(event.getAccountDetails().getAccount());
+            updateMirroredFolders();
         }
 
         public void login(ServerClientEvent event) {
             accountModel.setBean(event.getAccountDetails().getAccount());
+            updateMirroredFolders();
         }
 
         public void serverConnected(ServerClientEvent event) {

@@ -97,6 +97,11 @@ public class OnlineStorageQuickInfoPanel extends QuickInfoPanel {
             text1 = con ? Translation
                 .getTranslation("quickinfo.webservice.connected") : Translation
                 .getTranslation("quickinfo.webservice.notconnected");
+            if (getController().isVerbose()) {
+                text1 += " (" + client.getServer().getNick() + ", "
+                    + client.getServer().getHostName() + ":"
+                    + client.getServer().getPort() + ")";
+            }
         }
         String text2;
         if (con) {
