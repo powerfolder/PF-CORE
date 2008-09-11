@@ -126,11 +126,12 @@ public class FolderCreatePanel extends PFWizardPanel {
             WizardContextAttributes.FOLDER_LOCAL_BASE);
         SyncProfile syncProfile = (SyncProfile) getWizardContext()
             .getAttribute(WizardContextAttributes.SYNC_PROFILE_ATTRIBUTE);
-        Boolean saveLocalInvite = (Boolean) getWizardContext()
-            .getAttribute(WizardContextAttributes.SAVE_INVITE_LOCALLY);
+        Boolean saveLocalInvite = (Boolean) getWizardContext().getAttribute(
+            WizardContextAttributes.SAVE_INVITE_LOCALLY);
         Reject.ifNull(localBase, "Local base for folder is null/not set");
         Reject.ifNull(syncProfile, "Sync profile for folder is null/not set");
-        Reject.ifNull(saveLocalInvite, "Save invite locally attribute is null/not set");
+        Reject.ifNull(saveLocalInvite,
+            "Save invite locally attribute is null/not set");
 
         // Optional
         foInfo = (FolderInfo) getWizardContext().getAttribute(
@@ -225,12 +226,13 @@ public class FolderCreatePanel extends PFWizardPanel {
                     if (client.hasJoined(folder)) {
                         // Already have this os folder.
                         Loggable.logWarningStatic(FolderCreatePanel.class,
-                                "Already have os folder " + foInfo.name);
+                            "Already have os folder " + foInfo.name);
                         return null;
                     }
 
                     client.getFolderService().createFolder(foInfo,
                         SyncProfile.BACKUP_TARGET);
+                    client.refreshAccountDetails();
 
                     // Set as default synced folder?
                     Object attribute = getWizardContext().getAttribute(
@@ -240,13 +242,13 @@ public class FolderCreatePanel extends PFWizardPanel {
                         // folder? Which is placed on WizardContext.
                         client.getFolderService().setDefaultSynchronizedFolder(
                             foInfo);
+                        client.refreshAccountDetails();
                         createDefaultFolderHelpFile();
                         folder.recommendScanOnNextMaintenance();
                         try {
                             FileUtils.openFile(folder.getLocalBase());
                         } catch (IOException e) {
-                            Loggable.logFinerStatic(FolderCreatePanel.class,
-                                    e);
+                            Loggable.logFinerStatic(FolderCreatePanel.class, e);
                         }
                     }
                 } catch (FolderException e) {
@@ -256,7 +258,7 @@ public class FolderCreatePanel extends PFWizardPanel {
                         + "\n" + e.getMessage());
                     errorPane.setVisible(true);
                     Loggable.logSevereStatic(FolderCreatePanel.class,
-                            "Unable to backup folder to online storage", e);
+                        "Unable to backup folder to online storage", e);
                 }
             }
             return null;

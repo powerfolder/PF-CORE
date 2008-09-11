@@ -54,7 +54,6 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
-import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
@@ -138,16 +137,9 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
                 list.add(Translation
                     .getTranslation("online_storage.account_data"));
             }
-            // FIXME Use separate account stores for different servers?
-            ConfigurationEntry.WEBSERVICE_USERNAME.setValue(getController(),
-                usernameField.getText());
-            ConfigurationEntry.WEBSERVICE_PASSWORD.setValue(getController(),
-                new String(passwordField.getPassword()));
-            getController().saveConfig();
-
         } catch (Exception e) {
             Loggable.logSevereStatic(LoginOnlineStoragePanel.class,
-                    "Problem logging in", e);
+                "Problem logging in", e);
             list.add(Translation.getTranslation("online_storage.general_error",
                 e.getMessage()));
         }
@@ -194,8 +186,7 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
             getWizardContext().setAttribute(BACKUP_ONLINE_STOARGE,
                 accountFolder == null);
 
-            getWizardContext().setAttribute(SAVE_INVITE_LOCALLY,
-                Boolean.FALSE);
+            getWizardContext().setAttribute(SAVE_INVITE_LOCALLY, Boolean.FALSE);
 
             return new FolderCreatePanel(getController());
         }
@@ -262,12 +253,9 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
      */
     protected void initComponents() {
         // FIXME Use separate account stores for diffrent servers?
-        ValueModel usernameModel = new ValueHolder(
-            ConfigurationEntry.WEBSERVICE_USERNAME.getValue(getController()),
-            true);
+        ValueModel usernameModel = new ValueHolder(client.getUsername(), true);
         usernameField = BasicComponentFactory.createTextField(usernameModel);
-        passwordField = new JPasswordField(
-            ConfigurationEntry.WEBSERVICE_PASSWORD.getValue(getController()));
+        passwordField = new JPasswordField(client.getPassword());
         updateButtons();
         usernameModel.addValueChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {

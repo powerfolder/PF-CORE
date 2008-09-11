@@ -112,8 +112,10 @@ public class BasicSetupPanel extends PFWizardPanel {
         builder.addLabel(Translation
             .getTranslation("preferences.dialog.linesettings"), cc.xy(1, 5));
         builder.add(wanLineSpeed, cc.xy(3, 5));
-        builder.addLabel(Translation
-            .getTranslation("wizard.basic_setup.language_restart"), cc.xy(1, 7));
+        builder
+            .addLabel(Translation
+                .getTranslation("wizard.basic_setup.language_restart"), cc.xy(
+                1, 7));
         builder.add(languageChooser, cc.xy(3, 7));
 
         return builder.getPanel();
@@ -156,13 +158,12 @@ public class BasicSetupPanel extends PFWizardPanel {
         getController().getPreferences().putBoolean("openwizard2", false);
         getController().getPreferences().putBoolean("openwizard_os2", false);
 
-        if (StringUtils.isEmpty(ConfigurationEntry.WEBSERVICE_USERNAME
-                .getValue(getController()))) {
-            return new LoginOnlineStoragePanel(getController(),
-                    new WhatToDoPanel(getController()), false);
-        } else {
+        if (getController().getOSClient().isLastLoginOK()) {
+            // Directly jump to what to do panel
             return new WhatToDoPanel(getController());
         }
+        return new LoginOnlineStoragePanel(getController(), new WhatToDoPanel(
+            getController()), false);
     }
 
     /**
@@ -240,7 +241,7 @@ public class BasicSetupPanel extends PFWizardPanel {
 
     /**
      * Creates a language chooser, which contains the supported locales
-     *
+     * 
      * @return a language chooser, which contains the supported locales
      */
     private JComboBox createLanguageChooser() {
