@@ -23,6 +23,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 import java.util.UUID;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 
 import junit.framework.TestCase;
 
@@ -31,6 +33,7 @@ import org.apache.commons.io.FileUtils;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.PowerFolder;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
@@ -100,6 +103,10 @@ public class TwoControllerTestCase extends TestCase {
         TestHelper.cleanTestDir();
         FileUtils.deleteDirectory(new File(Controller.getMiscFilesLocation(),
             "build"));
+        cleanPreferences(Preferences.userNodeForPackage(PowerFolder.class)
+            .node("build/test/ControllerBart/PowerFolder"));
+        cleanPreferences(Preferences.userNodeForPackage(PowerFolder.class)
+            .node("build/test/ControllerLisa/PowerFolder"));
 
         // Copy fresh configs
         FileUtils.copyFile(
@@ -504,5 +511,22 @@ public class TwoControllerTestCase extends TestCase {
             + nameMatch + "\nSize: " + sizeMatch + "\nlastModifiedMatch: "
             + lastModifiedMatch + "\ndeleteStatus: " + deleteStatusMatch
             + "\nFileObjectEquals: " + fileObjectEquals, matches);
+    }
+
+    private void cleanPreferences(Preferences p) {
+        try {
+            String[] childs = p.childrenNames();
+            for (String child : childs) {
+                cleanPreferences(p.node(child));
+            }
+            String[] keys = p.keys();
+            for (String key : keys) {
+                p.remove(key);
+            }
+        } catch (BackingStoreException e) {
+            throw new RuntimeException(
+                "Unable to cleanup the preferencs: " + e, e);
+        }
+
     }
 }
