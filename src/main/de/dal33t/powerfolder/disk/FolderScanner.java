@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.disk;
 
 import java.io.File;
@@ -100,19 +100,19 @@ public class FolderScanner extends PFComponent {
         .synchronizedList(new ArrayList<FileInfo>());
 
     /** Total number of files in the current scanning folder */
-    private int totalFilesCount = 0;
+    private volatile int totalFilesCount = 0;
 
     /**
      * Because of multi threading we use a flag to indicate a failed besides
      * returning false
      */
-    private boolean failure = false;
+    private volatile boolean failure = false;
 
     /**
      * when set to true the scanning process will be aborted and the resultState
      * of the scan will be ScanResult.ResultState.USER_ABORT
      */
-    private boolean abort = false;
+    private volatile boolean abort = false;
 
     /**
      * The semaphore to aquire = means this thread got the folder scan now.
@@ -272,18 +272,16 @@ public class FolderScanner extends PFComponent {
                     // Is a directory. Remove all from remaining that are in
                     // that
                     // dir.
-                    logFiner(
-                        "Checking unreadable folder for files that were not scanned: "
-                            + dirPath);
+                    logFiner("Checking unreadable folder for files that were not scanned: "
+                        + dirPath);
                     for (Iterator<FileInfo> it = remaining.keySet().iterator(); it
                         .hasNext();)
                     {
                         FileInfo fInfo2 = it.next();
                         String locationInFolder = fInfo2.getLowerCaseName();
                         if (dirPath.endsWith(locationInFolder)) {
-                            logWarning(
-                                "Found file in unreadable folder. Unable to scan: "
-                                    + fInfo2);
+                            logWarning("Found file in unreadable folder. Unable to scan: "
+                                + fInfo2);
                             it.remove();
                             unableToScanFiles.add(fInfo2
                                 .getDiskFile(getController()
@@ -294,8 +292,8 @@ public class FolderScanner extends PFComponent {
             }
 
             if (isLogFiner()) {
-                logFiner(
-                    "Unable to scan " + unableToScanFiles.size() + " file(s)");
+                logFiner("Unable to scan " + unableToScanFiles.size()
+                    + " file(s)");
             }
             // Remaining files = deleted! But only if they are not already
             // flagged
@@ -331,17 +329,15 @@ public class FolderScanner extends PFComponent {
             reset();
             if (result.getResultState().equals(ResultState.SCANNED)) {
                 if (isLogFiner()) {
-                    logFiner(
-                            "Scan of folder " + folder.getName() + " done in "
-                                    + (System.currentTimeMillis() - started)
-                                    + "ms. Result: " + result.getResultState());
+                    logFiner("Scan of folder " + folder.getName() + " done in "
+                        + (System.currentTimeMillis() - started)
+                        + "ms. Result: " + result.getResultState());
                 }
             } else {
                 if (isLogWarning()) {
-                    logWarning(
-                            "Scan of folder " + folder.getName() + " done in "
-                                    + (System.currentTimeMillis() - started)
-                                    + "ms. Result: " + result.getResultState());
+                    logWarning("Scan of folder " + folder.getName()
+                        + " done in " + (System.currentTimeMillis() - started)
+                        + "ms. Result: " + result.getResultState());
                 }
             }
             return result;
@@ -369,9 +365,8 @@ public class FolderScanner extends PFComponent {
 
     private void waitForCrawlersToStop() {
         while (!activeDirectoryCrawlers.isEmpty()) {
-            logFine(
-                "Waiting for " + activeDirectoryCrawlers.size()
-                    + " crawlers to stop");
+            logFine("Waiting for " + activeDirectoryCrawlers.size()
+                + " crawlers to stop");
             synchronized (this) {
                 try {
                     wait();
@@ -473,10 +468,9 @@ public class FolderScanner extends PFComponent {
                     }
                 }
             } else {
-                logWarning(
-                    "Unable to scan file: " + file.getAbsolutePath()
-                        + ". Folder device disconnected? "
-                        + currentScanningFolder.isDeviceDisconnected());
+                logWarning("Unable to scan file: " + file.getAbsolutePath()
+                    + ". Folder device disconnected? "
+                    + currentScanningFolder.isDeviceDisconnected());
                 if (currentScanningFolder.isDeviceDisconnected()) {
                     // Hardware not longer available? BREAK scan!
                     failure = true;
@@ -541,9 +535,8 @@ public class FolderScanner extends PFComponent {
                 {
                     // possible movement detected
                     if (isLogFine()) {
-                        logFine(
-                                "Movement from: " + deletedFile + " to: "
-                                    + newFile);
+                        logFine("Movement from: " + deletedFile + " to: "
+                            + newFile);
                     }
                     returnValue.put(deletedFile, newFile);
                 }
@@ -607,18 +600,16 @@ public class FolderScanner extends PFComponent {
             } else {
                 boolean changed = !exists.inSyncWithDisk(fileToScan);
                 if (changed) {
-                    logFine(
-                        "Changed file detected: " + exists.toDetailString()
-                            + ". On disk: size: " + fileToScan.length()
-                            + ", lastMod: " + fileToScan.lastModified());
+                    logFine("Changed file detected: " + exists.toDetailString()
+                        + ". On disk: size: " + fileToScan.length()
+                        + ", lastMod: " + fileToScan.lastModified());
                     changedFiles.add(exists);
                 }
             }
         } else {// file is new
             if (isLogFiner()) {
-                logFiner(
-                    "NEW file found: " + fInfo.getName() + " hash: "
-                        + fInfo.hashCode());
+                logFiner("NEW file found: " + fInfo.getName() + " hash: "
+                    + fInfo.hashCode());
             }
             FileInfo info = new FileInfo(currentScanningFolder, fileToScan);
 
@@ -674,38 +665,45 @@ public class FolderScanner extends PFComponent {
 
         public void run() {
             while (true) {
-                while (root == null) {
-                    synchronized (this) {
-                        if (root != null) {
-                            // Make sure that we don't wait with root!
-                            continue;
-                        }
-                        try {
-                            wait();
-                            if (shutdown) {
+                try {
+
+                    while (root == null) {
+                        synchronized (this) {
+                            if (root != null) {
+                                // Make sure that we don't wait with root!
+                                continue;
+                            }
+                            try {
+                                wait();
+                                if (shutdown) {
+                                    return;
+                                }
+                            } catch (InterruptedException e) {
+                                logFiner(e.getMessage());
                                 return;
                             }
-                        } catch (InterruptedException e) {
-                            logFiner(e.getMessage());
-                            return;
                         }
                     }
-                }
-                if (!scanDir(root)) {
-                    // hardware failure
+                    if (!scanDir(root)) {
+                        // hardware failure
+                        failure = true;
+                    }
+                    root = null;
+
+                    synchronized (directoryCrawlersPool) {
+                        activeDirectoryCrawlers.remove(this);
+                        directoryCrawlersPool.add(this);
+                    }
+
+                } catch (RuntimeException e) {
+                    logSevere("Folder scanner crashed! " + e, e);
                     failure = true;
-                }
-                root = null;
-
-                synchronized (directoryCrawlersPool) {
-                    activeDirectoryCrawlers.remove(this);
-                    directoryCrawlersPool.add(this);
-                }
-
-                // scan of this directory is ready, notify FolderScanner we are
-                // ready for the next folder.
-                synchronized (FolderScanner.this) {
-                    FolderScanner.this.notify();
+                } finally {
+                    // scan of this directory is ready, notify FolderScanner we
+                    // are ready for the next folder.
+                    synchronized (FolderScanner.this) {
+                        FolderScanner.this.notify();
+                    }
                 }
             }
         }
@@ -725,10 +723,9 @@ public class FolderScanner extends PFComponent {
                 dirToScan);
             File[] files = dirToScan.listFiles();
             if (files == null) { // hardware failure
-                logWarning(
-                    "Unable to scan dir: " + dirToScan.getAbsolutePath()
-                        + ". Folder device disconnected? "
-                        + currentScanningFolder.isDeviceDisconnected());
+                logWarning("Unable to scan dir: " + dirToScan.getAbsolutePath()
+                    + ". Folder device disconnected? "
+                    + currentScanningFolder.isDeviceDisconnected());
                 unableToScanFiles.add(dirToScan);
                 if (!currentScanningFolder.isDeviceDisconnected()) {
                     return true;
@@ -742,12 +739,11 @@ public class FolderScanner extends PFComponent {
                 if (ConfigurationEntry.DELETE_EMPTY_DIRECTORIES
                     .getValueBoolean(getController()))
                 {
-                    logWarning(
-                        "Found EMPTY DIR, deleting it: "
-                            + dirToScan.getAbsolutePath());
+                    logWarning("Found EMPTY DIR, deleting it: "
+                        + dirToScan.getAbsolutePath());
                     if (!dirToScan.delete()) {
-                        logSevere(
-                            "Failed to delete: " + dirToScan.getAbsolutePath());
+                        logSevere("Failed to delete: "
+                            + dirToScan.getAbsolutePath());
                     }
                 }
                 return true;
@@ -774,10 +770,10 @@ public class FolderScanner extends PFComponent {
                         }
                     }
                 } else {
-                    logWarning(
-                        "Unable to scan file: " + subFile.getAbsolutePath()
-                            + ". Folder device disconnected? "
-                            + currentScanningFolder.isDeviceDisconnected());
+                    logWarning("Unable to scan file: "
+                        + subFile.getAbsolutePath()
+                        + ". Folder device disconnected? "
+                        + currentScanningFolder.isDeviceDisconnected());
                     if (currentScanningFolder.isDeviceDisconnected()) {
                         // hardware failure
                         failure = true;
