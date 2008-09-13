@@ -20,7 +20,6 @@
 package de.dal33t.powerfolder.util;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.ui.UIController;
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultStyledDocument;
@@ -28,10 +27,6 @@ import javax.swing.text.MutableAttributeSet;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
-
-import org.apache.commons.lang.StringUtils;
-
-import com.sun.org.apache.bcel.internal.generic.GETSTATIC;
 
 import java.awt.Color;
 import java.awt.EventQueue;
@@ -43,7 +38,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.*;
 
 /**
@@ -80,9 +74,6 @@ public class LogDispatch {
     private static boolean logPrefixes;
     private static ThreadLocal<String> LOG_PREFIX = new ThreadLocal<String>();
 
-    private static final AtomicBoolean shownOutOfMemoryErrorWarning = new AtomicBoolean();
-    private static UIController uiController;
-
     static {
         // Initially turn logging off logs.
         // Controller will set real level as required.
@@ -118,15 +109,6 @@ public class LogDispatch {
         SimpleAttributeSet finer = new SimpleAttributeSet();
         StyleConstants.setForeground(finer, Color.GRAY);
         logColors.put(Level.FINER.getName(), finer);
-    }
-
-    /**
-     * Set the uiController for showing OutOfMemoryErrors.
-     * 
-     * @param uiController
-     */
-    public static void setUIController(UIController uiController) {
-        LogDispatch.uiController = uiController;
     }
 
     /**
@@ -350,14 +332,6 @@ public class LogDispatch {
             if (logToTextPanelEnabled) {
                 logToTextPanel(level, className, message, t);
             }
-        }
-
-        // Handle OutOfMemoryError (once only)
-        if (t != null && t instanceof OutOfMemoryError
-            && !shownOutOfMemoryErrorWarning.get() && uiController != null)
-        {
-            shownOutOfMemoryErrorWarning.set(true);
-            uiController.showOutOfMemoryError((OutOfMemoryError) t);
         }
     }
 

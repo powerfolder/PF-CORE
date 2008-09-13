@@ -372,7 +372,6 @@ public class Controller extends PFComponent {
 
         if (isUIEnabled()) {
             uiController = new UIController(this);
-            LogDispatch.setUIController(uiController);
         }
 
         setLoadingCompletion(0, 10);
