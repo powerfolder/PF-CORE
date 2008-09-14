@@ -86,7 +86,9 @@ public class LogDispatch {
             handler.setLevel(Level.OFF);
             handler.setFormatter(new LogFormatter());
         }
-        rootLogger.setLevel(Level.OFF);
+        
+        // Always process severe messages for UIController OOME display.
+        rootLogger.setLevel(Level.SEVERE);
         loggingLevel = Level.OFF;
 
         // Initialize logging colors.
@@ -126,7 +128,7 @@ public class LogDispatch {
     /**
      * Log a message at FINE level.
      * 
-     * @param clazz
+     * @param className
      * @param message
      */
     public static void logFiner(String className, String message) {
@@ -451,7 +453,7 @@ public class LogDispatch {
      */
     public static boolean isLogToFileEnabled() {
         return logToFileEnabled && logFileName != null
-            && !logFileName.equals("");
+            && logFileName.length() != 0;
     }
 
     /**
@@ -467,7 +469,7 @@ public class LogDispatch {
     /**
      * Sets the logfile for all logging output (verbose included)
      * 
-     * @param logFilename
+     * @param logFileNameArg
      */
     public static void setLogFile(String logFileNameArg) {
         logFileName = logFileNameArg;
@@ -534,7 +536,12 @@ public class LogDispatch {
             handler.setLevel(level);
         }
         // Root logger.
-        rootLogger.setLevel(level);
+        if (level.equals(Level.OFF)) {
+            // Always process severe messages for UIController OOME display.
+            rootLogger.setLevel(Level.SEVERE);
+        } else {
+            rootLogger.setLevel(level);
+        }
         loggingConfigured = true;
         loggingLevel = level;
         logInfo(LogDispatch.class.getName(), "Logging level set to " + level);
@@ -603,7 +610,7 @@ public class LogDispatch {
      * @param nickPrefix
      */
     public static void setNickPrefix(boolean nickPrefix) {
-        LogDispatch.logPrefixes = nickPrefix;
+        logPrefixes = nickPrefix;
     }
 
     /**

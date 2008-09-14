@@ -19,48 +19,11 @@
  */
 package de.dal33t.powerfolder.ui;
 
-import java.awt.AWTException;
-import java.awt.EventQueue;
-import java.awt.Image;
-import java.awt.Menu;
-import java.awt.MenuItem;
-import java.awt.PopupMenu;
-import java.awt.SystemTray;
-import java.awt.TrayIcon;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.TimerTask;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import javax.imageio.ImageIO;
-import javax.swing.Action;
-import javax.swing.JFrame;
-import javax.swing.LookAndFeel;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.TreeNode;
-import javax.swing.tree.TreePath;
-
-import org.apache.commons.lang.StringUtils;
-
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.looks.plastic.PlasticTheme;
 import com.jgoodies.looks.plastic.PlasticXPLookAndFeel;
 import com.jgoodies.looks.plastic.theme.ExperienceBlue;
-
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
@@ -108,9 +71,46 @@ import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.OSUtil;
-import de.dal33t.powerfolder.util.ui.TreeNodeList;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
+import de.dal33t.powerfolder.util.ui.TreeNodeList;
+import org.apache.commons.lang.StringUtils;
+
+import javax.imageio.ImageIO;
+import javax.swing.Action;
+import javax.swing.JFrame;
+import javax.swing.LookAndFeel;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
+import java.awt.AWTException;
+import java.awt.EventQueue;
+import java.awt.Image;
+import java.awt.Menu;
+import java.awt.MenuItem;
+import java.awt.PopupMenu;
+import java.awt.SystemTray;
+import java.awt.TrayIcon;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.TimerTask;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 
 /**
  * The ui controller.
@@ -147,6 +147,7 @@ public class UIController extends PFComponent {
     private ServerClientModel serverClientModel;
     // TODO #278: Move into FolderRepoModel 
     private final ValueModel hidePreviewsVM;
+    private boolean seenOome;
 
     /**
      * Initializes a new UI controller. open UI with #start
@@ -155,6 +156,8 @@ public class UIController extends PFComponent {
      */
     public UIController(Controller controller) {
         super(controller);
+
+        configureOomeHandler();
 
         pendingJobs = Collections.synchronizedList(new LinkedList<Runnable>());
 
@@ -255,6 +258,31 @@ public class UIController extends PFComponent {
                     .folderStructureChanged();
             }
         });
+    }
+
+    /**
+     * Configure a handler for OutOfMemoryErrors.
+     *
+     * Note that the Logger must be configured to process Severe messages.
+     */
+    private void configureOomeHandler() {
+        Handler oomeHandler = new Handler() {
+            public void publish(LogRecord record) {
+                Throwable throwable = record.getThrown();
+                if (throwable instanceof OutOfMemoryError) {
+                    OutOfMemoryError oome = (OutOfMemoryError) throwable;
+                    showOutOfMemoryError(oome);
+                }
+            }
+
+            public void flush() {
+            }
+
+            public void close() throws SecurityException {
+            }
+        };
+        Logger logger = Logger.getLogger("");
+        logger.addHandler(oomeHandler);
     }
 
     /**
@@ -656,11 +684,19 @@ public class UIController extends PFComponent {
      * @param oome
      */
     public void showOutOfMemoryError(OutOfMemoryError oome) {
-        DialogFactory.genericDialog(getMainFrame().getUIComponent(),
-                Translation.getTranslation("low_memory.error.title"),
-                Translation.getTranslation("low_memory.error.text"),
-                new String[]{Translation.getTranslation("general.ok")},
-                0, GenericDialogType.ERROR);
+        if (!seenOome) {
+            seenOome = true;
+            int response = DialogFactory.genericDialog(
+                    getMainFrame().getUIComponent(),
+                    Translation.getTranslation("low_memory.error.title"),
+                    Translation.getTranslation("low_memory.error.text"),
+                    new String[]{Translation.getTranslation("general.ok"),
+                    Translation.getTranslation("dialog.alreadyrunning.exitbutton")},
+                    0, GenericDialogType.ERROR);
+            if (response == 1) { // Exit
+                getController().exit(0);
+            }
+        }
     }
 
     private class UpdateSystrayTask extends TimerTask {
