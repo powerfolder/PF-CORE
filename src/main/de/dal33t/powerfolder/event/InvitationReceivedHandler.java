@@ -34,6 +34,6 @@ public interface InvitationReceivedHandler {
      * forcePopup: 
      *            popup application (even when minimized)
      */
-    public void invitationReceived(InvitationReceivedEvent invitationRecievedEvent);
+    void invitationReceived(InvitationReceivedEvent invitationReceivedEvent);
     
 }

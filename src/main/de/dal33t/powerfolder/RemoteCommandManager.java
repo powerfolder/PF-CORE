@@ -19,6 +19,20 @@
 */
 package de.dal33t.powerfolder;
 
+import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.light.MemberInfo;
+import de.dal33t.powerfolder.message.Invitation;
+import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.wizard.ChooseDiskLocationPanel;
+import de.dal33t.powerfolder.ui.wizard.FolderSetupPanel;
+import de.dal33t.powerfolder.ui.wizard.PFWizard;
+import de.dal33t.powerfolder.ui.wizard.WizardContextAttributes;
+import de.dal33t.powerfolder.util.InvitationUtil;
+import de.dal33t.powerfolder.util.Loggable;
+import de.dal33t.powerfolder.util.Util;
+import org.apache.commons.lang.StringUtils;
+
 import java.awt.Frame;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -37,21 +51,6 @@ import java.net.UnknownHostException;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
-
-import org.apache.commons.lang.StringUtils;
-
-import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.message.Invitation;
-import de.dal33t.powerfolder.util.InvitationUtil;
-import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.util.Loggable;
-import de.dal33t.powerfolder.ui.wizard.ChooseDiskLocationPanel;
-import de.dal33t.powerfolder.ui.wizard.FolderSetupPanel;
-import de.dal33t.powerfolder.ui.wizard.PFWizard;
-import de.dal33t.powerfolder.ui.wizard.WizardContextAttributes;
-import de.dal33t.powerfolder.ui.Icons;
 
 /**
  * The remote command processor is responsible for binding on a socket and
@@ -348,7 +347,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
             Invitation invitation = InvitationUtil.load(file);
             if (invitation != null) {
                 getController().getFolderRepository().invitationReceived(
-                    invitation, false);
+                    invitation, true);
             }
         } else if (file.getName().endsWith(".nodes")) {
             // Load nodes file

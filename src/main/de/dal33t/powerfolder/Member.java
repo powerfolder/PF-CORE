@@ -19,23 +19,6 @@
  */
 package de.dal33t.powerfolder;
 
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-
-import org.apache.commons.lang.StringUtils;
-
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.ScanResult;
@@ -93,6 +76,23 @@ import de.dal33t.powerfolder.util.ProfilingEntry;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.Waiter;
+import org.apache.commons.lang.StringUtils;
+
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * A full quailfied member, can have a connection to interact with remote
@@ -1380,10 +1380,10 @@ public class Member extends PFComponent {
                 // Invitation to folder
                 Invitation invitation = (Invitation) message;
                 // To ensure invitor is correct
-                invitation.setInvitor(this.getInfo());
+                invitation.setInvitor(getInfo());
 
                 getController().getFolderRepository().invitationReceived(
-                    invitation, true);
+                    invitation, false);
                 expectedTime = 100;
 
             } else if (message instanceof Problem) {
@@ -1643,7 +1643,7 @@ public class Member extends PFComponent {
         folderJoinLock.lock();
         try {
             FolderRepository repo = getController().getFolderRepository();
-            HashSet<FolderInfo> joinedFolder = new HashSet<FolderInfo>();
+            Set<FolderInfo> joinedFolder = new HashSet<FolderInfo>();
             Collection<Folder> localFolders = repo.getFoldersAsCollection();
 
             String myMagicId = peer != null ? peer.getMyMagicId() : null;

@@ -19,20 +19,17 @@
  */
 package de.dal33t.powerfolder.ui;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.event.InvitationReceivedEvent;
 import de.dal33t.powerfolder.event.InvitationReceivedHandler;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.DialogFactory;
-import de.dal33t.powerfolder.util.ui.GenericDialogType;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.SwingUtilities;
 import java.util.TimerTask;
 
 /**
@@ -57,8 +54,8 @@ public class InvitationReceivedHandlerDefaultImpl extends PFComponent implements
         InvitationReceivedEvent invitationRecievedEvent)
     {
         final Invitation invitation = invitationRecievedEvent.getInvitation();
-        final boolean processSilently = invitationRecievedEvent
-            .isProcessSilently();
+        final boolean sendInviteIfJoined = invitationRecievedEvent
+                .isSendInvitationIfJoined();
         final FolderRepository repository = invitationRecievedEvent
             .getFolderRepository();
         if (invitation == null || invitation.folder == null) {
@@ -70,51 +67,32 @@ public class InvitationReceivedHandlerDefaultImpl extends PFComponent implements
 
         Runnable worker = new Runnable() {
             public void run() {
-                // Check if already on folder
-                if (repository.hasJoinedFolder(invitation.folder)) {
-                    // Already on folder, show message if not processing
-                    // silently
-                    if (!processSilently) {
-                        // Popup application
-                        getController().getUIController().getMainFrame()
-                            .getUIComponent().setVisible(true);
-                        getController().getUIController().getMainFrame()
-                            .getUIComponent().setExtendedState(Frame.NORMAL);
-
-                        DialogFactory.genericDialog(getController()
-                            .getUIController().getMainFrame().getUIComponent(),
-                            Translation.getTranslation(
-                                "joinfolder.already_joined_title",
-                                invitation.folder.name), Translation
-                                .getTranslation(
-                                    "joinfolder.already_joined_text",
-                                    invitation.folder.name),
-                            GenericDialogType.WARN);
-                    }
-                    return;
-                }
-
-                if (!ConfigurationEntry.SHOW_SYSTEM_NOTIFICATIONS
-                    .getValueBoolean(getController()))
-                {
-                    return;
-                }
 
                 TimerTask task = new TimerTask() {
                     public void run() {
-                        PFWizard.openInvitationReceivedWizard(getController(),
-                            invitation);
+                        if (repository.hasJoinedFolder(invitation.folder)) {
+                            if (sendInviteIfJoined) {
+                                PFWizard.openSendInvitationWizard(getController(),
+                                        invitation.folder);
+                            }
+                        } else {
+                            PFWizard.openInvitationReceivedWizard(getController(),
+                                    invitation);
+                        }
                     }
                 };
-                getController()
-                    .getUIController()
-                    .notifyMessage(
-                        Translation
-                            .getTranslation("invite_received_handler.notify.title"),
-                        Translation.getTranslation(
-                            "invite_received_handler.notify.message",
-                            invitation.getInvitor().getNode(getController())
-                                .getNick()), task, true);
+
+                if (ConfigurationEntry.SHOW_SYSTEM_NOTIFICATIONS
+                        .getValueBoolean(getController())) {
+                    getController().getUIController().notifyMessage(
+                            Translation.getTranslation(
+                                    "invite_received_handler.notify.title"),
+                            Translation.getTranslation(
+                                    "invite_received_handler.notify.message",
+                                    invitation.getInvitor().getNode(
+                                            getController()).getNick()),
+                            task, true);
+                }
             }
         };
 

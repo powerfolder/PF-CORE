@@ -346,7 +346,7 @@ public class NodeManager extends PFComponent {
      *            the folders the member joined.
      */
     public void askForFriendship(Member member,
-        HashSet<FolderInfo> joinedFolders, String personalMessage)
+        Set<FolderInfo> joinedFolders, String personalMessage)
     {
         if (askForFriendshipHandler != null) {
             askForFriendshipHandler.askForFriendship(new AskForFriendshipEvent(

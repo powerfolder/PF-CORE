@@ -19,16 +19,16 @@
 */
 package de.dal33t.powerfolder.event;
 
-import java.util.EventObject;
-
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.util.Reject;
 
+import java.util.EventObject;
+
 /**
  * Event which gets fired to <code>InvitationReceivedHandler</code> that is
  * listening to the <code>FolderRepository</code>.
- * 
+ *
  * @see de.dal33t.powerfolder.event.InvitationReceivedHandler
  * @see de.dal33t.powerfolder.disk.FolderRepository
  * @see de.dal33t.powerfolder.ui.InvitationReceivedHandlerDefaultImpl
@@ -38,23 +38,22 @@ import de.dal33t.powerfolder.util.Reject;
 public class InvitationReceivedEvent extends EventObject {
 
     private Invitation invitation;
-    private boolean processSilently;
+    private boolean sendInvitationIfJoined;
 
     /**
      * @param source
      *            the source folder repo
      * @param invitation
-     * @param processSilently
-     *            if the invitation should be processed silently if already on
-     *            folder (no error)
+     * @param sendInvitationIfJoined
+     *            If folder joined, offer to send invitation
      */
     public InvitationReceivedEvent(FolderRepository source,
-        Invitation invitation, boolean processSilently)
+        Invitation invitation, boolean sendInvitationIfJoined)
     {
         super(source);
         Reject.ifNull(source, "Folder Repository is null");
         this.invitation = invitation;
-        this.processSilently = processSilently;
+        this.sendInvitationIfJoined = sendInvitationIfJoined;
     }
 
     public FolderRepository getFolderRepository() {
@@ -65,7 +64,7 @@ public class InvitationReceivedEvent extends EventObject {
         return invitation;
     }
 
-    public boolean isProcessSilently() {
-        return processSilently;
+    public boolean isSendInvitationIfJoined() {
+        return sendInvitationIfJoined;
     }
 }

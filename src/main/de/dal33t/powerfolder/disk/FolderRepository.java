@@ -19,6 +19,11 @@
  */
 package de.dal33t.powerfolder.disk;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.PreferencesEntry;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_DIR;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_DONT_RECYCLE;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_ID;
@@ -26,30 +31,12 @@ import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREVIEW;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_SYNC_PROFILE;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_WHITELIST;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.concurrent.ConcurrentHashMap;
-
-import javax.swing.JFrame;
-
-import org.apache.commons.lang.StringUtils;
-
-import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.PreferencesEntry;
-import de.dal33t.powerfolder.event.*;
+import de.dal33t.powerfolder.event.FileNameProblemHandler;
+import de.dal33t.powerfolder.event.FolderRepositoryEvent;
+import de.dal33t.powerfolder.event.FolderRepositoryListener;
+import de.dal33t.powerfolder.event.InvitationReceivedEvent;
+import de.dal33t.powerfolder.event.InvitationReceivedHandler;
+import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.transfer.FileRequestor;
@@ -61,6 +48,20 @@ import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
 import de.dal33t.powerfolder.util.ui.NeverAskAgainResponse;
 import de.dal33t.powerfolder.util.ui.UIUtil;
+import org.apache.commons.lang.StringUtils;
+
+import javax.swing.JFrame;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Repository of all known power folders. Local and unjoined.
@@ -303,33 +304,6 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         return new FolderSettings(new File(folderDir), syncProfile, false,
             useRecycleBin, preview, whitelist);
-    }
-
-    /**
-     * Removes unused folder infos from the config.
-     *
-     * @param config
-     * @param errorFolderNames
-     */
-    private void removeFolderFromConfig(Properties config, String folderName) {
-        List<String> configErrors = new ArrayList<String>();
-
-        // Remove folder info from config
-        String folderConfigPrefix = FOLDER_SETTINGS_PREFIX + folderName;
-        for (Iterator it = config.keySet().iterator(); it.hasNext();) {
-            String configKey = (String) it.next();
-            if (configKey.startsWith(folderConfigPrefix)) {
-                configErrors.add(configKey);
-            }
-        }
-
-        // Remove bad config entries.
-        for (String configKey : configErrors) {
-            config.remove(configKey);
-        }
-
-        // Save config.
-        getController().saveConfig();
     }
 
     /**
@@ -860,12 +834,11 @@ public class FolderRepository extends PFComponent implements Runnable {
      * <P>
      *
      * @param invitation
-     * @param processSilently
-     *            if the invitation should be processed silently if already on
-     *            folder (no error)
+     * @param sendInviteIfJoined
+     *            if already joined folder, offer to send invite to others.
      */
-    public void invitationReceived(final Invitation invitation,
-        final boolean processSilently)
+    public void invitationReceived(Invitation invitation,
+        boolean sendInviteIfJoined)
     {
         if (invitationReceivedHandler == null) {
             // No invitation handler? do nothing.
@@ -873,7 +846,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
         Reject.ifNull(invitation, "Invitation is null");
         InvitationReceivedEvent event = new InvitationReceivedEvent(this,
-            invitation, processSilently);
+            invitation, sendInviteIfJoined);
         invitationReceivedHandler.invitationReceived(event);
     }
 
