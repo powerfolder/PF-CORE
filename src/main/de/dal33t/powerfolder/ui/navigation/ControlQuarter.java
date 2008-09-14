@@ -171,9 +171,6 @@ public class ControlQuarter extends PFUIComponent {
             // Selection listener to update selection model
             uiTree.getSelectionModel().addTreeSelectionListener(
                 new NavTreeSelectionAdapater());
-            // HACK
-            getUIController().getInformationQuarter().registerNavTreeListener(
-                uiTree);
             uiTree.getSelectionModel().setSelectionMode(
                 TreeSelectionModel.SINGLE_TREE_SELECTION);
 
@@ -459,8 +456,7 @@ public class ControlQuarter extends PFUIComponent {
      * Returns the selection model, contains the model for the selected item on
      * navtree. If you need information about the parent of the current
      * selection see <code>getSelectionParentModel</code>
-     * 
-     * @see #getSelectionParentModel()
+     *
      * @return
      */
     public SelectionModel getSelectionModel() {
@@ -534,7 +530,7 @@ public class ControlQuarter extends PFUIComponent {
 
     // Internal classes *******************************************************
 
-    private final class NavTreeSelectionAdapater implements
+    private class NavTreeSelectionAdapater implements
         TreeSelectionListener
     {
         public void valueChanged(TreeSelectionEvent e) {
@@ -669,7 +665,7 @@ public class ControlQuarter extends PFUIComponent {
     /** Helper class, Opens the local folder on action * */
     private class OpenLocalFolder extends BaseAction {
 
-        public OpenLocalFolder(Controller controller) {
+        OpenLocalFolder(Controller controller) {
             super("open_local_folder", controller);
         }
 

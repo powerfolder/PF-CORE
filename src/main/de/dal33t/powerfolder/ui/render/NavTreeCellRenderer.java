@@ -19,29 +19,27 @@
 */
 package de.dal33t.powerfolder.ui.render;
 
-import java.awt.Color;
-import java.awt.Component;
-
-import javax.swing.Icon;
-import javax.swing.JTree;
-import javax.swing.tree.DefaultTreeCellRenderer;
-import javax.swing.tree.TreeNode;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.ui.TopLevelItem;
 import de.dal33t.powerfolder.ui.UIController;
+import de.dal33t.powerfolder.ui.model.DirectoryModel;
 import de.dal33t.powerfolder.ui.model.FolderRepositoryModel;
 import de.dal33t.powerfolder.ui.model.NodeManagerModel;
-import de.dal33t.powerfolder.ui.model.DirectoryModel;
 import de.dal33t.powerfolder.ui.navigation.RootNode;
-import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Loggable;
+import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.UIUtil;
+
+import javax.swing.Icon;
+import javax.swing.JTree;
+import javax.swing.tree.DefaultTreeCellRenderer;
+import javax.swing.tree.TreeNode;
+import java.awt.Color;
+import java.awt.Component;
 
 /**
  * Main renderer for nav tree
@@ -78,20 +76,9 @@ public class NavTreeCellRenderer extends DefaultTreeCellRenderer {
         FolderRepositoryModel folderRepoModel = controller.getUIController()
             .getFolderRepositoryModel();
 
-        TopLevelItem item = null;
-        if (value instanceof TreeNode) {
-            item = controller.getUIController().getApplicationModel()
-                .getItemByTreeNode((TreeNode) value);
-        }
-
         Icon icon = null;
         String text = null;
-        String toolTip = null;
-        if (item != null) {
-            icon = (Icon) item.getIconModel().getValue();
-            text = (String) item.getTitelModel().getValue();
-            toolTip = (String) item.getTooltipModel().getValue();
-        } else if (userObject instanceof RootNode) {
+        if (userObject instanceof RootNode) {
             // Render root node
             icon = Icons.ROOT;
             text = Translation.getTranslation("navtree.node", controller
@@ -233,6 +220,7 @@ public class NavTreeCellRenderer extends DefaultTreeCellRenderer {
             setText(text);
         }
 
+        String toolTip = null;
         if (toolTip != null) {
             setToolTipText(toolTip);
         }

@@ -19,18 +19,6 @@
 */
 package de.dal33t.powerfolder.ui.navigation;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JToolBar;
-import javax.swing.border.EmptyBorder;
-import javax.swing.tree.TreeNode;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFUIComponent;
@@ -39,9 +27,19 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.event.NavigationEvent;
 import de.dal33t.powerfolder.event.NavigationListener;
 import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.ui.TopLevelItem;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.UIUtil;
+
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JToolBar;
+import javax.swing.border.EmptyBorder;
+import javax.swing.tree.TreeNode;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 
 /**
  * Holds the up/forward and back buttons and acts on a NavigationModel.
@@ -152,15 +150,7 @@ public class NavigationToolBar extends PFUIComponent implements
     private String getText(Object navObject) {
         Object userObject = UIUtil.getUserObject(navObject);
 
-        TopLevelItem item = null;
-        if (navObject instanceof TreeNode) {
-            item = getApplicationModel()
-                .getItemByTreeNode((TreeNode) navObject);
-        }
-
-        if (item != null) {
-            return (String) item.getTitelModel().getValue();
-        } else if (userObject instanceof RootNode) {
+        if (userObject instanceof RootNode) {
             return Translation.getTranslation("navtree.node", getController()
                 .getNodeManager().getMySelf().getNick());
         } else if (userObject instanceof Directory) {

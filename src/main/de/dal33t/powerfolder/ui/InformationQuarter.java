@@ -19,28 +19,10 @@
  */
 package de.dal33t.powerfolder.ui;
 
-import java.awt.CardLayout;
-import java.awt.Cursor;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.prefs.Preferences;
-
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JTree;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.DefaultStyledDocument;
-import javax.swing.text.StyledDocument;
-import javax.swing.tree.TreeNode;
-
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.uif_lite.panel.SimpleInternalFrame;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFUIComponent;
@@ -50,6 +32,7 @@ import de.dal33t.powerfolder.ui.chat.MemberChatPanel;
 import de.dal33t.powerfolder.ui.folder.FolderPanel;
 import de.dal33t.powerfolder.ui.friends.FriendsPanel;
 import de.dal33t.powerfolder.ui.home.RootPanel;
+import de.dal33t.powerfolder.ui.model.DirectoryModel;
 import de.dal33t.powerfolder.ui.myfolders.MyFoldersPanel;
 import de.dal33t.powerfolder.ui.navigation.ControlQuarter;
 import de.dal33t.powerfolder.ui.navigation.NavigationToolBar;
@@ -58,7 +41,6 @@ import de.dal33t.powerfolder.ui.recyclebin.RecycleBinPanel;
 import de.dal33t.powerfolder.ui.transfer.DownloadsPanel;
 import de.dal33t.powerfolder.ui.transfer.UploadsPanel;
 import de.dal33t.powerfolder.ui.webservice.OnlineStoragePanel;
-import de.dal33t.powerfolder.ui.model.DirectoryModel;
 import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Reject;
@@ -66,6 +48,17 @@ import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
 import de.dal33t.powerfolder.util.ui.SelectionChangeListener;
 import de.dal33t.powerfolder.util.ui.UIPanel;
+
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultStyledDocument;
+import javax.swing.text.StyledDocument;
+import java.awt.CardLayout;
+import java.awt.Cursor;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.prefs.Preferences;
 
 /**
  * TODO #278 Rename to InformationWindow, Hold Window.
@@ -159,17 +152,6 @@ public class InformationQuarter extends PFUIComponent {
             new ControlQuarterSelectionListener());
     }
 
-    /**
-     * Callback from UI tree initialization code.
-     * <p>
-     * TODO GURKE/HACK!!
-     * 
-     * @param tree
-     */
-    public void registerNavTreeListener(JTree tree) {
-        tree.addTreeSelectionListener(new MyTreeSelectionListener());
-    }
-
     // Selection code *********************************************************
 
     /**
@@ -186,29 +168,6 @@ public class InformationQuarter extends PFUIComponent {
                 setSelected(selection);
             }
         }
-    }
-
-    /**
-     * #621
-     */
-    private class MyTreeSelectionListener implements TreeSelectionListener {
-        public void valueChanged(TreeSelectionEvent e) {
-            Object selection = e.getPath().getLastPathComponent();
-
-            TopLevelItem item = null;
-            if (selection instanceof TreeNode) {
-                item = getApplicationModel().getItemByTreeNode(
-                    (TreeNode) selection);
-            }
-
-            if (item != null) {
-                logFiner("Displaying top level item: "
-                    + item.getTitelModel().getValue());
-                displayTopLevelItem(item);
-            }
-
-        }
-
     }
 
     private boolean showDebugReports() {
@@ -390,35 +349,6 @@ public class InformationQuarter extends PFUIComponent {
                 uiFrame.setTitle(Translation.getTranslation("infoside.title"));
             }
         }
-    }
-
-    private void displayTopLevelItem(TopLevelItem item) {
-
-        boolean alreadyAdded = Arrays.asList(cardPanel.getComponents())
-            .contains(item.getContentPanel());
-        if (!alreadyAdded) {
-            cardPanel.add(item.getPanelID(), item.getContentPanel());
-        }
-        cardLayout.show(cardPanel, item.getPanelID());
-
-        // boolean cursorChanged = false;
-        // if (uninitializedPanels.containsKey(panelName)) {
-        // cursorChanged = true;
-        // getUIController().getMainFrame().getUIComponent().setCursor(
-        // new Cursor(Cursor.WAIT_CURSOR));
-        // cardPanel.add(panelName, uninitializedPanels.get(panelName)
-        // .getUIComponent());
-        // uninitializedPanels.remove(panelName);
-        // }
-        // cardLayout.show(cardPanel, panelName);
-        // if (cursorChanged) {
-        // getUIController().getMainFrame().getUIComponent().setCursor(
-        // new Cursor(Cursor.DEFAULT_CURSOR));
-        // }
-
-        showCard(item.getPanelID());
-        setDisplayTarget(item);
-        setTitle((String) item.getTitelModel().getValue());
     }
 
     // Display some really small statistics
