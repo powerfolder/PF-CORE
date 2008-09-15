@@ -55,7 +55,7 @@ public class InvitationReceivedHandlerDefaultImpl extends PFComponent implements
     {
         final Invitation invitation = invitationRecievedEvent.getInvitation();
         final boolean sendInviteIfJoined = invitationRecievedEvent
-                .isSendInvitationIfJoined();
+            .isSendInvitationIfJoined();
         final FolderRepository repository = invitationRecievedEvent
             .getFolderRepository();
         if (invitation == null || invitation.folder == null) {
@@ -72,26 +72,31 @@ public class InvitationReceivedHandlerDefaultImpl extends PFComponent implements
                     public void run() {
                         if (repository.hasJoinedFolder(invitation.folder)) {
                             if (sendInviteIfJoined) {
-                                PFWizard.openSendInvitationWizard(getController(),
-                                        invitation.folder);
+                                PFWizard.openSendInvitationWizard(
+                                    getController(), invitation.folder);
                             }
                         } else {
-                            PFWizard.openInvitationReceivedWizard(getController(),
-                                    invitation);
+                            PFWizard.openInvitationReceivedWizard(
+                                getController(), invitation);
                         }
                     }
                 };
 
                 if (ConfigurationEntry.SHOW_SYSTEM_NOTIFICATIONS
-                        .getValueBoolean(getController())) {
-                    getController().getUIController().notifyMessage(
+                    .getValueBoolean(getController()))
+                {
+                    getController()
+                        .getUIController()
+                        .notifyMessage(
+                            Translation
+                                .getTranslation("invite_received_handler.notify.title"),
                             Translation.getTranslation(
-                                    "invite_received_handler.notify.title"),
-                            Translation.getTranslation(
-                                    "invite_received_handler.notify.message",
-                                    invitation.getInvitor().getNode(
-                                            getController()).getNick()),
-                            task, true);
+                                "invite_received_handler.notify.message",
+                                invitation.getInvitor()
+                                    .getNode(getController()).getNick()), task,
+                            true);
+                } else {
+                    task.run();
                 }
             }
         };
