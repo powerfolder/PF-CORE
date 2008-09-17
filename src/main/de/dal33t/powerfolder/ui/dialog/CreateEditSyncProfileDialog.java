@@ -19,29 +19,41 @@
 */
 package de.dal33t.powerfolder.ui.dialog;
 
-import java.awt.Component;
-import java.awt.event.*;
-import java.util.List;
-
-import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.factories.ButtonBarFactory;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.disk.SyncProfileConfiguration;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.BaseDialog;
-import de.dal33t.powerfolder.util.ui.SyncProfileSelectorPanel;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
+import de.dal33t.powerfolder.util.ui.SyncProfileSelectorPanel;
+
+import javax.swing.ButtonGroup;
+import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JRadioButton;
+import javax.swing.JSpinner;
+import javax.swing.JTextField;
+import javax.swing.SpinnerNumberModel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.util.List;
 
 /**
  * Dialog for creatigng or editing profile configuration. User can select a
@@ -200,7 +212,10 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
 
         // Profile name
         syncProfileName = new JTextField();
-        if (!create) {
+        if (create) {
+            String suggestedName = calculateBestName(initialProfile.getProfileName());
+            syncProfileName.setText(suggestedName);
+        } else {
             syncProfileName.setText(initialProfile.getProfileName());
         }
 
@@ -314,6 +329,50 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
             scanInfoLabel.setVisible(false);
             timeTypeCombo.setVisible(true);
         }
+    }
+
+    /**
+     * Create a suggested profile name based on current profile.
+     * Like 'Automatic download (copy)', or
+     * 'Manual synchronization (copy 6)'.
+     *
+     * @param profileName
+     * @return
+     */
+    private static String calculateBestName(String profileName) {
+
+        int copy = 0;
+        boolean unique;
+        String profileNameCopy;
+
+        do {
+
+            unique = true;
+
+            if (copy == 0) {
+                profileNameCopy = Translation.getTranslation(
+                        "dialog.create_edit_profile.suggestNameTemplate0",
+                        profileName);
+            } else {
+                profileNameCopy = Translation.getTranslation(
+                        "dialog.create_edit_profile.suggestNameTemplateN",
+                        profileName, String.valueOf(copy));
+            }
+
+            for (SyncProfile loopSyncProfile :
+                    SyncProfile.getSyncProfilesCopy()) {
+                String loopProfileName = loopSyncProfile.getProfileName();
+                if (loopProfileName.equalsIgnoreCase(profileNameCopy)) {
+                    unique = false;
+                    break;
+                }
+            }
+
+            copy ++;
+
+        } while (!unique);
+
+        return profileNameCopy;
     }
 
     /**
