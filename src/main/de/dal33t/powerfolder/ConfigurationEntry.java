@@ -146,7 +146,7 @@ public enum ConfigurationEntry {
     FOLDER_BASEDIR("foldersbase") {
         @Override
         protected void setDefaults() {
-            if (OSUtil.isWindowsSystem()) {
+            if (OSUtil.isWindowsSystem() && !OSUtil.isWindowsVistaSystem()) {
                 WinUtils util = WinUtils.getInstance();
                 if (util != null) {
                     defaultValue = util.getSystemFolderPath(
@@ -155,6 +155,7 @@ public enum ConfigurationEntry {
                     return;
                 }
             }
+            // Also place the base dir into user home on Vista.
             defaultValue = System.getProperty("user.home")
                 + System.getProperty("file.separator") + "PowerFolders";
         }
@@ -309,9 +310,9 @@ public enum ConfigurationEntry {
     HIDE_PREVIEW_FOLDERS("show.preview.folders", Boolean.FALSE.toString()),
 
     /**
-     * The number of seconds between db maintenance scans (5 minutes).
+     * The number of seconds between db maintenance scans (10 minutes).
      */
-    DB_MAINTENANCE_SECONDS("filedb.maintenance.seconds", String.valueOf(300)),
+    DB_MAINTENANCE_SECONDS("filedb.maintenance.seconds", String.valueOf(600)),
     
     /**
      * The age of a deleted file until it gets removed by the folder db
