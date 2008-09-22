@@ -43,10 +43,10 @@ import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.logging.Level;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.logging.Level;
 import java.util.prefs.Preferences;
 
 import javax.swing.JOptionPane;
@@ -74,6 +74,8 @@ import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.ForcedLanguageFileResourceBundle;
+import de.dal33t.powerfolder.util.LogDispatch;
+import de.dal33t.powerfolder.util.Loggable;
 import de.dal33t.powerfolder.util.Profiling;
 import de.dal33t.powerfolder.util.PropertiesUtil;
 import de.dal33t.powerfolder.util.Reject;
@@ -81,8 +83,6 @@ import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Updater;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.WrappingTimer;
-import de.dal33t.powerfolder.util.LogDispatch;
-import de.dal33t.powerfolder.util.Loggable;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.FirewallUtil;
 import de.dal33t.powerfolder.util.task.PersistentTaskManager;
@@ -544,7 +544,7 @@ public class Controller extends PFComponent {
         boolean autoSetupPlugins = StringUtils.isEmpty(pluginConfig)
             || !pluginConfig.contains(Constants.PRO_LOADER_PLUGIN_CLASS);
         if (Util.isRunningProVersion() && autoSetupPlugins) {
-            logWarning("Setting up pro plugins");
+            logInfo("Setting up pro plugins");
             ConfigurationEntry.PLUGINS.setValue(getController(),
                 Constants.PRO_LOADER_PLUGIN_CLASS);
         }
