@@ -19,21 +19,11 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.swing.Icon;
-import javax.swing.JPanel;
-
-import jwf.WizardPanel;
-
 import com.jgoodies.binding.list.SelectionInList;
 import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
@@ -42,8 +32,15 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.FolderComboBox;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
-import de.dal33t.powerfolder.util.Loggable;
+import de.dal33t.powerfolder.util.LogDispatch;
 import de.dal33t.powerfolder.util.Translation;
+import jwf.WizardPanel;
+
+import javax.swing.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.List;
 
 public class FolderOnlineStoragePanel extends PFWizardPanel {
 
@@ -80,7 +77,9 @@ public class FolderOnlineStoragePanel extends PFWizardPanel {
 
         LinkLabel link = new LinkLabel(Translation
             .getTranslation("wizard.webservice.learnmore"),
-            "http://www.powerfolder.com/node/webservice");
+            "http://www.powerfolder.com/online_storage_features.html");
+        // FIXME This is a hack because of "Fusch!"
+        link.setBorder(Borders.createEmptyBorder("0, 1px, 0, 0"));
         builder.add(link, cc.xyw(1, 5, 3));
         return builder.getPanel();
     }
@@ -91,7 +90,7 @@ public class FolderOnlineStoragePanel extends PFWizardPanel {
         // Actually setup mirror
         try {
             getController().getOSClient().getFolderService().createFolder(
-                folder.getInfo(), SyncProfile.BACKUP_TARGET);
+                folder.getInfo(), SyncProfile.BACKUP_TARGET_NO_CHANGE_DETECT);
             getController().getOSClient().refreshAccountDetails();
 
             // Choose location...
@@ -102,7 +101,7 @@ public class FolderOnlineStoragePanel extends PFWizardPanel {
                     + "Please keep in mind that the inital backup\n"
                     + "may take some time on big folders.");
         } catch (FolderException e) {
-            Loggable.logSevereStatic(FolderOnlineStoragePanel.class, e);
+            LogDispatch.logSevere(FolderOnlineStoragePanel.class.getName(), e);
             return new TextPanelPanel(getController(),
                 "Online Storage Setup Error",
                 "PowerFolder was unable\nto setup folder " + folder.getName()

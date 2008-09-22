@@ -19,20 +19,20 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
+import java.awt.Component;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
 import java.util.Locale;
 
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
 import javax.swing.JComboBox;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.JList;
 
 import jwf.WizardPanel;
 
@@ -47,7 +47,6 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.NetworkingMode;
-import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Translation;
@@ -71,6 +70,7 @@ public class BasicSetupPanel extends PFWizardPanel {
     private JTextField nameField;
     private JComboBox networkingModeChooser;
     private JComboBox languageChooser;
+    private DefaultFolderWizardHelper defaultFolderHelper;
 
     public BasicSetupPanel(Controller controller) {
         super(controller);
@@ -97,9 +97,8 @@ public class BasicSetupPanel extends PFWizardPanel {
     }
 
     protected JPanel buildContent() {
-
         FormLayout layout = new FormLayout("100dlu, $lcg, $wfield",
-            "pref, 10dlu, pref, 10dlu, pref, 10dlu, top:pref");
+            "pref, 7dlu, pref, 7dlu, pref, 7dlu, pref, 10dlu, top:pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
@@ -117,6 +116,7 @@ public class BasicSetupPanel extends PFWizardPanel {
                 .getTranslation("wizard.basic_setup.language_restart"), cc.xy(
                 1, 7));
         builder.add(languageChooser, cc.xy(3, 7));
+        builder.add(defaultFolderHelper.getUIComponent(), cc.xyw(1, 9, 3));
 
         return builder.getPanel();
     }
@@ -159,8 +159,9 @@ public class BasicSetupPanel extends PFWizardPanel {
         getController().getPreferences().putBoolean("openwizard_os2", false);
 
         if (getController().getOSClient().isLastLoginOK()) {
-            // Directly jump to what to do panel
-            return new WhatToDoPanel(getController());
+            // Setup default folder and go to what to do panel
+            return defaultFolderHelper.next(new WhatToDoPanel(getController()),
+                getWizardContext());
         }
         return new LoginOnlineStoragePanel(getController(), new WhatToDoPanel(
             getController()), false);
@@ -215,6 +216,8 @@ public class BasicSetupPanel extends PFWizardPanel {
             }
         });
 
+        defaultFolderHelper = new DefaultFolderWizardHelper(getController(),
+            getController().getOSClient());
     }
 
     protected String getTitle() {

@@ -19,6 +19,15 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
+import java.awt.Color;
+import java.util.List;
+
+import javax.swing.Icon;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+
+import jwf.WizardPanel;
+
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -30,12 +39,6 @@ import de.dal33t.powerfolder.ui.widget.AntialiasedLabel;
 import de.dal33t.powerfolder.util.Help;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
-import jwf.WizardPanel;
-
-import javax.swing.*;
-
-import java.awt.*;
-import java.util.List;
 
 /**
  * Base class for wizard panels All subclasses have a title, optional picto and
@@ -129,8 +132,21 @@ public abstract class PFWizardPanel extends WizardPanel {
      * Returns the picto for the panel. Can be null.
      * 
      * @return
+     * @deprecated use #getPictoComponent() instead
      */
-    protected abstract Icon getPicto();
+    protected Icon getPicto() {
+        return null;
+    }
+
+    /**
+     * @return the component representing the picto
+     */
+    protected JComponent getPictoComponent() {
+        if (getPicto() == null) {
+            return null;
+        }
+        return new JLabel(getPicto());
+    }
 
     /**
      * Returns the title for the panel
@@ -155,13 +171,24 @@ public abstract class PFWizardPanel extends WizardPanel {
 
     /** Always open online docu */
     public void help() {
-        Help.openHelp("documentation.html");
+        Help.openQuickstartGuides();
     }
 
     // Helper code ************************************************************
 
     /**
      * @return the default picto which is set on the WizardCotext.
+     */
+    protected JComponent getContextPictoComponent() {
+        if (getContextPicto() == null) {
+            return null;
+        }
+        return new JLabel(getContextPicto());
+    }
+
+    /**
+     * @return the component with the default picto which is set on the
+     *         WizardCotext.
      */
     protected Icon getContextPicto() {
         return (Icon) getWizardContext().getAttribute(PFWizard.PICTO_ICON);
@@ -217,10 +244,10 @@ public abstract class PFWizardPanel extends WizardPanel {
         pageBuilder.add(createTitleLabel(title), cc.xy(3, 1));
 
         // Add current wizard pico
-        Icon picto = getPicto();
+        JComponent picto = getPictoComponent();
         if (picto != null) {
-            pageBuilder.add(new JLabel(picto), cc.xy(1, 3,
-                CellConstraints.DEFAULT, CellConstraints.TOP));
+            pageBuilder.add(picto, cc.xy(1, 3, CellConstraints.DEFAULT,
+                CellConstraints.TOP));
         }
 
         pageBuilder.add(content, cc.xy(3, 3, CellConstraints.DEFAULT,

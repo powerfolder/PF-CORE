@@ -231,7 +231,7 @@ public class FolderCreatePanel extends PFWizardPanel {
                     }
 
                     client.getFolderService().createFolder(foInfo,
-                        SyncProfile.BACKUP_TARGET);
+                        SyncProfile.BACKUP_TARGET_NO_CHANGE_DETECT);
                     client.refreshAccountDetails();
 
                     // Set as default synced folder?
