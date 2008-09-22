@@ -138,14 +138,14 @@ public class UIController extends PFComponent {
 
     // The root of all models
     private ApplicationModel applicationModel;
-    
+
     // TODO #278: UI Models: Move into ApplicationModel
     private ChatModel chatModel;
     private NodeManagerModel nodeManagerModel;
     private FolderRepositoryModel folderRepoModel;
     private TransferManagerModel transferManagerModel;
     private ServerClientModel serverClientModel;
-    // TODO #278: Move into FolderRepoModel 
+    // TODO #278: Move into FolderRepoModel
     private final ValueModel hidePreviewsVM;
     private boolean seenOome;
 
@@ -187,16 +187,13 @@ public class UIController extends PFComponent {
                 }
             } catch (IllegalAccessException e) {
                 logSevere(
-                        "Unable to set look and feel, switching back to default",
-                        e);
+                    "Unable to set look and feel, switching back to default", e);
             } catch (ClassNotFoundException e) {
                 logSevere(
-                        "Unable to set look and feel, switching back to default",
-                        e);
+                    "Unable to set look and feel, switching back to default", e);
             } catch (InstantiationException e) {
                 logSevere(
-                        "Unable to set look and feel, switching back to default",
-                        e);
+                    "Unable to set look and feel, switching back to default", e);
             }
 
             if (!themeInitalized) {
@@ -261,9 +258,8 @@ public class UIController extends PFComponent {
     }
 
     /**
-     * Configure a handler for OutOfMemoryErrors.
-     *
-     * Note that the Logger must be configured to process Severe messages.
+     * Configure a handler for OutOfMemoryErrors. Note that the Logger must be
+     * configured to process Severe messages.
      */
     private void configureOomeHandler() {
         Handler oomeHandler = new Handler() {
@@ -378,16 +374,12 @@ public class UIController extends PFComponent {
         // Process all pending runners
         synchronized (pendingJobs) {
             if (!pendingJobs.isEmpty()) {
-                logFiner(
-                    "Executing " + pendingJobs.size() + " pending ui jobs");
+                logFiner("Executing " + pendingJobs.size() + " pending ui jobs");
                 for (Runnable runner : pendingJobs) {
                     SwingUtilities.invokeLater(runner);
                 }
             }
         }
-
-        // Open quickstart guides on first start
-        gotoQuickstartGuidesIfFirstStart();
 
         // Open wizard on first start. PRO version has activation wizard first
         if (!Util.isRunningProVersion()
@@ -405,26 +397,8 @@ public class UIController extends PFComponent {
             .getValueBoolean(getController()));
     }
 
-    private void gotoQuickstartGuidesIfFirstStart() {
-        boolean first = getController().getPreferences().getBoolean(
-            "first_start", true);
-        if (!first) {
-            return;
-        }
-        if (!getController().getPreferences().getBoolean("openwizard2", true)) {
-            getController().getPreferences().putBoolean("first_start", false);
-            return;
-        }
-        try {
-            BrowserLauncher.openURL(Constants.POWERFOLDER_QUICKSTART_URL);
-        } catch (IOException e1) {
-            logWarning("Unable to goto PowerFolder homepage", e1);
-        }
-        getController().getPreferences().putBoolean("first_start", false);
-    }
-
     private void gotoHPIfRequired() {
-        if (Util.isRunningProVersion()) {
+        if (Util.isRunningProVersion() && !Util.isTrial(getController())) {
             return;
         }
         String prefKey = "startCount" + Controller.PROGRAM_VERSION;
@@ -447,8 +421,8 @@ public class UIController extends PFComponent {
             return;
         }
         long totalFolderSize = calculateTotalLocalSharedSize();
-        logFine(
-            "Local shared folder size: " + Format.formatBytes(totalFolderSize));
+        logFine("Local shared folder size: "
+            + Format.formatBytes(totalFolderSize));
         boolean limitHit = totalFolderSize > 10L * 1024L * 1024L * 1024L
             || getController().getFolderRepository().getFoldersCount() > 3;
         if (limitHit) {
@@ -518,7 +492,8 @@ public class UIController extends PFComponent {
 
         menu.addSeparator();
 
-        sysTrayFoldersMenu = new Menu(Translation.getTranslation("general.powerfolder"));
+        sysTrayFoldersMenu = new Menu(Translation
+            .getTranslation("general.powerfolder"));
         sysTrayFoldersMenu.setEnabled(false);
         if (OSUtil.isMacOS() || OSUtil.isWindowsSystem()) {
             menu.add(sysTrayFoldersMenu);
@@ -581,7 +556,8 @@ public class UIController extends PFComponent {
         });
 
         // Load initial folders in menu.
-        for (Folder folder : getController().getFolderRepository().getFolders()) {
+        for (Folder folder : getController().getFolderRepository().getFolders())
+        {
             addFolderToSysTray(folder);
         }
     }
@@ -605,7 +581,7 @@ public class UIController extends PFComponent {
 
     /**
      * Add a folder to the SysTray menu structure.
-     *
+     * 
      * @param folder
      */
     private void addFolderToSysTray(Folder folder) {
@@ -621,8 +597,9 @@ public class UIController extends PFComponent {
         // Insert in the correct position.
         boolean done = false;
         for (int i = 0; i < sysTrayFoldersMenu.getItemCount(); i++) {
-            if (sysTrayFoldersMenu.getItem(i).getLabel().toLowerCase().compareTo(
-                    folder.getName().toLowerCase()) > 0) {
+            if (sysTrayFoldersMenu.getItem(i).getLabel().toLowerCase()
+                .compareTo(folder.getName().toLowerCase()) > 0)
+            {
                 sysTrayFoldersMenu.insert(menuItem, i);
                 done = true;
                 break;
@@ -649,7 +626,7 @@ public class UIController extends PFComponent {
 
     /**
      * Remove a folder from the SysTray menu structure.
-     *
+     * 
      * @param folder
      */
     private void removeFolderFromSysTray(Folder folder) {
@@ -686,13 +663,15 @@ public class UIController extends PFComponent {
     public void showOutOfMemoryError(OutOfMemoryError oome) {
         if (!seenOome) {
             seenOome = true;
-            int response = DialogFactory.genericDialog(
-                    getMainFrame().getUIComponent(),
-                    Translation.getTranslation("low_memory.error.title"),
-                    Translation.getTranslation("low_memory.error.text"),
-                    new String[]{Translation.getTranslation("general.ok"),
-                    Translation.getTranslation("dialog.alreadyrunning.exitbutton")},
-                    0, GenericDialogType.ERROR);
+            int response = DialogFactory.genericDialog(getMainFrame()
+                .getUIComponent(), Translation
+                .getTranslation("low_memory.error.title"), Translation
+                .getTranslation("low_memory.error.text"),
+                new String[]{
+                    Translation.getTranslation("general.ok"),
+                    Translation
+                        .getTranslation("dialog.alreadyrunning.exitbutton")},
+                0, GenericDialogType.ERROR);
             if (response == 1) { // Exit
                 getController().exit(0);
             }
@@ -710,7 +689,8 @@ public class UIController extends PFComponent {
                 tooltip.append(Translation
                     .getTranslation("systray.tooltip.syncing"));
             } else {
-                tooltip.append(Translation.getTranslation("systray.tooltip.insync"));
+                tooltip.append(Translation
+                    .getTranslation("systray.tooltip.insync"));
             }
             double totalCPSdownKB = getController().getTransferManager()
                 .getDownloadCounter().calculateAverageCPS() / 1024;
@@ -816,9 +796,10 @@ public class UIController extends PFComponent {
         return mainFrame == null ? null : mainFrame.getInformationQuarter();
     }
 
-   
     /**
-     * For a more convenience way you can also use PFUIComponent.getApplicationModel()
+     * For a more convenience way you can also use
+     * PFUIComponent.getApplicationModel()
+     * 
      * @return the application model
      * @see PFUIComponent#getApplicationModel()
      */
@@ -877,8 +858,7 @@ public class UIController extends PFComponent {
             // Install Icon if nessesary from jar
             Image currentIcon;
             try {
-                currentIcon = ImageIO.read(Util.getResource(iconName,
-                        "icons"));
+                currentIcon = ImageIO.read(Util.getResource(iconName, "icons"));
             } catch (IOException e) {
                 logSevere(e);
                 return;
@@ -1073,31 +1053,32 @@ public class UIController extends PFComponent {
 
                         // Find path to the chatting member.
                         TreeNodeList treeNodeList = getNodeManagerModel()
-                                .getFriendsTreeNode();
+                            .getFriendsTreeNode();
                         int childCount = treeNodeList.getChildCount();
                         if (m != null) {
                             for (int i = 0; i < childCount; i++) {
                                 TreeNode child = treeNodeList.getChildAt(i);
-                                if (child != null &&
-                                        child instanceof DefaultMutableTreeNode)
+                                if (child != null
+                                    && child instanceof DefaultMutableTreeNode)
                                 {
-                                     DefaultMutableTreeNode dmtn =
-                                             (DefaultMutableTreeNode) child;
+                                    DefaultMutableTreeNode dmtn = (DefaultMutableTreeNode) child;
                                     Object userObject = dmtn.getUserObject();
-                                    if (userObject != null &&
-                                            userObject instanceof Member) {
+                                    if (userObject != null
+                                        && userObject instanceof Member)
+                                    {
                                         Member member = (Member) userObject;
                                         if (m.equals(member)) {
                                             // Found member, use as path.
-                                            TreePath to = treeNodeList.getPathTo();
+                                            TreePath to = treeNodeList
+                                                .getPathTo();
                                             Object[] path = new Object[3];
                                             path[0] = to.getPath()[0];
                                             path[1] = to.getPath()[1];
                                             path[2] = dmtn;
                                             TreePath tp = new TreePath(path);
                                             getControlQuarter()
-                                                    .getNavigationModel()
-                                                    .setPath(tp);
+                                                .getNavigationModel().setPath(
+                                                    tp);
                                             return;
                                         }
                                     }
@@ -1108,14 +1089,14 @@ public class UIController extends PFComponent {
                         // If member not found for some reason, navigate to
                         // friend node.
                         getControlQuarter().getNavigationModel().setPath(
-                                treeNodeList.getPathTo());
+                            treeNodeList.getPathTo());
 
                     }
                 };
                 notifyMessage(Translation
                     .getTranslation("chat.notification.title"), Translation
-                    .getTranslation("chat.notification.member_message",
-                        m.getNick()), task, false);
+                    .getTranslation("chat.notification.member_message", m
+                        .getNick()), task, false);
             } else if (event.getSource() instanceof Folder) {
                 final Folder f = (Folder) event.getSource();
                 TimerTask task = new TimerTask() {
@@ -1123,35 +1104,36 @@ public class UIController extends PFComponent {
 
                         // Find path to the chatting folder.
                         TreeNodeList treeNodeList = getFolderRepositoryModel()
-                                .getMyFoldersTreeNode();
+                            .getMyFoldersTreeNode();
                         int childCount = treeNodeList.getChildCount();
                         if (f != null) {
                             for (int i = 0; i < childCount; i++) {
                                 TreeNode child = treeNodeList.getChildAt(i);
-                                if (child != null &&
-                                        child instanceof TreeNodeList)
+                                if (child != null
+                                    && child instanceof TreeNodeList)
                                 {
-                                     TreeNodeList tnl =
-                                             (TreeNodeList) child;
+                                    TreeNodeList tnl = (TreeNodeList) child;
                                     Object userObject = tnl.getUserObject();
-                                    if (userObject != null &&
-                                            userObject instanceof Folder) {
+                                    if (userObject != null
+                                        && userObject instanceof Folder)
+                                    {
                                         Folder folder = (Folder) userObject;
                                         if (f.equals(folder)) {
                                             // Found folder, use as path.
-                                            TreePath to = treeNodeList.getPathTo();
+                                            TreePath to = treeNodeList
+                                                .getPathTo();
                                             Object[] path = new Object[3];
                                             path[0] = to.getPath()[0];
                                             path[1] = to.getPath()[1];
                                             path[2] = tnl;
                                             TreePath tp = new TreePath(path);
                                             getControlQuarter()
-                                                    .getNavigationModel()
-                                                    .setPath(tp);
+                                                .getNavigationModel().setPath(
+                                                    tp);
 
                                             // Also select chat tab.
-                                            getInformationQuarter().displayChat(
-                                                    folder);
+                                            getInformationQuarter()
+                                                .displayChat(folder);
                                             return;
                                         }
                                     }
@@ -1162,7 +1144,7 @@ public class UIController extends PFComponent {
                         // If folder not found for some reason, navigate to
                         // folders node.
                         getControlQuarter().getNavigationModel().setPath(
-                                treeNodeList.getPathTo());
+                            treeNodeList.getPathTo());
 
                     }
                 };
@@ -1221,9 +1203,10 @@ public class UIController extends PFComponent {
 
             int synchronizingFolders = 0;
             for (Folder folder : folders) {
-                if (folder.isTransferring() ||
-                        Double.compare(folder.getStatistic().getTotalSyncPercentage(),
-                                100.0d) != 0) {
+                if (folder.isTransferring()
+                    || Double.compare(folder.getStatistic()
+                        .getTotalSyncPercentage(), 100.0d) != 0)
+                {
                     synchronizingFolders++;
                 }
                 nTotalBytes += folder.getStatistic().getTotalSize();
@@ -1302,7 +1285,8 @@ public class UIController extends PFComponent {
      *            Whether to run the task if PF is already shown.
      */
     public void notifyMessage(String title, String message, TimerTask task,
-                              boolean runIfShown) {
+        boolean runIfShown)
+    {
         if (mainFrame.isIconifiedOrHidden() && started
             && !getController().isShuttingDown())
         {
