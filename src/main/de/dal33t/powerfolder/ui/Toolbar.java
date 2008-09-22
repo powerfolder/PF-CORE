@@ -1,24 +1,25 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.ui;
 
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -26,6 +27,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 
 import javax.swing.Action;
 import javax.swing.Icon;
@@ -39,11 +41,16 @@ import javax.swing.ToolTipManager;
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.ButtonBarBuilder;
+import com.jgoodies.forms.builder.DefaultFormBuilder;
+import com.jgoodies.forms.factories.Borders;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
 
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
-import de.dal33t.powerfolder.ui.action.BuyProAction;
+import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.Util;
 
 /**
@@ -109,10 +116,9 @@ public class Toolbar extends PFUIComponent {
         JButton aboutButton = createToolbarButton(getUIController()
             .getOpenAboutAction(), Icons.ABOUT);
 
-        JButton buyProButton = null;
-        if (!Util.isRunningProVersion()) {
-            buyProButton = createToolbarButton(
-                new BuyProAction(getController()), Icons.BUY_PRO);
+        JComponent buyProButton = null;
+        if (!Util.isRunningProVersion() || Util.isTrial(getController())) {
+            buyProButton = createBuyNowButton(Icons.BUY_PRO);
         }
 
         ButtonBarBuilder bar2 = ButtonBarBuilder.createLeftToRightBuilder();
@@ -132,28 +138,43 @@ public class Toolbar extends PFUIComponent {
         bar2.addFixed(preferencesButton);
         bar2.addRelatedGap();
         bar2.addFixed(aboutButton);
+
+        FormLayout layout = new FormLayout("fill:pref, 0:grow, p", "pref");
+        DefaultFormBuilder builder = new DefaultFormBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+        builder.add(bar2.getPanel(), cc.xy(1, 1));
+
         if (buyProButton != null) {
-            bar2.addRelatedGap();
-            bar2.addFixed(buyProButton);
+            // bar2.addRelatedGap();
+            // bar2.addFixed();
+            builder.add(buyProButton, cc.xy(3, 1));
         }
 
-        // Create toolbar
-        // JComponent bar = ButtonBarFactory.buildLeftAlignedBar(new JButton[]{
-        // wizardButton,
-        // // connectButton,
-        // createFolderButton, joinLeaverFolderButton, scanFoldersButton,
-        // toggleSilentModeButton, preferencesButton, aboutButton});
+        return builder.getPanel();
+    }
 
-        // SimpleInternalFrame toolbarFrame = new SimpleInternalFrame(null);
-        // Border border = BorderFactory.createCompoundBorder(new
-        // SimpleInternalFrame.ShadowBorder(), Borders.DLU4_BORDER);
-        // bar.setBorder(border);
-        // bar.setBackground(Color.WHITE);
-        // bar.setBorder(Borders.DLU4_BORDER);
-        // toolbarFrame.add(bar);
-        // bar2.getPanel().setBackground(Color.WHITE);
-        // bar2.setBackground(Color.WHITE);
-        return bar2.getPanel();
+    /**
+     * @param icon
+     * @return a clickable Buy now picto component with the given icon.
+     */
+    private JComponent createBuyNowButton(Icon icon) {
+        if (smallToolbar) {
+            icon = Icons.scaleIcon((ImageIcon) icon, SMALL_ICON_SCALE_FACTOR);
+        }
+        JComponent pictoComponent = new JLabel(icon);
+        pictoComponent.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                try {
+                    BrowserLauncher.openURL(Constants.POWERFOLDER_PRO_URL);
+                } catch (IOException ex) {
+                    logSevere(ex);
+                }
+            }
+        });
+        pictoComponent
+            .setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        return pictoComponent;
     }
 
     /**
@@ -197,7 +218,7 @@ public class Toolbar extends PFUIComponent {
                     && JButton.ICON_CHANGED_PROPERTY.equals(evt
                         .getPropertyName()))
                 {
-                    // logWarning("Button change: " + evt);
+                    // log().warn("Button change: " + evt);
                     // String newText = (String) evt.getNewValue();
                     // if (!StringUtils.isEmpty(newText)) {
                     // changeFromHere = true;
