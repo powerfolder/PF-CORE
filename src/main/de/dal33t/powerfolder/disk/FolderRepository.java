@@ -65,7 +65,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Repository of all known power folders. Local and unjoined.
- *
+ * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.75 $
  */
@@ -246,7 +246,9 @@ public class FolderRepository extends PFComponent implements Runnable {
             FolderSettings folderSettings = loadFolderSettings(folderName);
 
             // Do not add if already added
-            if (!hasJoinedFolder(foInfo) && folderId != null) {
+            if (!hasJoinedFolder(foInfo) && folderId != null
+                && folderSettings != null)
+            {
                 createFolder0(foInfo, folderSettings, false);
             }
         }
@@ -288,19 +290,19 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         // Inverse logic for backward compatability.
         String dontRecycleSetting = config.getProperty(FOLDER_SETTINGS_PREFIX
-                + folderName + FOLDER_SETTINGS_DONT_RECYCLE);
+            + folderName + FOLDER_SETTINGS_DONT_RECYCLE);
         boolean useRecycleBin = dontRecycleSetting == null
-                || !"true".equalsIgnoreCase(dontRecycleSetting);
+            || !"true".equalsIgnoreCase(dontRecycleSetting);
 
         String previewSetting = config.getProperty(FOLDER_SETTINGS_PREFIX
-                + folderName + FOLDER_SETTINGS_PREVIEW);
+            + folderName + FOLDER_SETTINGS_PREVIEW);
         boolean preview = previewSetting != null
-                && "true".equalsIgnoreCase(previewSetting);
+            && "true".equalsIgnoreCase(previewSetting);
 
         String whitelistSetting = config.getProperty(FOLDER_SETTINGS_PREFIX
-                + folderName+ FOLDER_SETTINGS_WHITELIST);
+            + folderName + FOLDER_SETTINGS_WHITELIST);
         boolean whitelist = whitelistSetting != null
-                && "true".equalsIgnoreCase(whitelistSetting);
+            && "true".equalsIgnoreCase(whitelistSetting);
 
         return new FolderSettings(new File(folderDir), syncProfile, false,
             useRecycleBin, preview, whitelist);
@@ -407,7 +409,7 @@ public class FolderRepository extends PFComponent implements Runnable {
     /**
      * TODO Experimetal: Hands out a indirect reference to the value of internal
      * hashmap.
-     *
+     * 
      * @return the folders as unmodifiable collection
      */
     public Collection<Folder> getFoldersAsCollection() {
@@ -425,7 +427,8 @@ public class FolderRepository extends PFComponent implements Runnable {
      * @return a fresh list of all joined folders
      */
     public FolderInfo[] getJoinedFolderInfos() {
-        return folders.keySet().toArray(new FolderInfo[folders.keySet().size()]);
+        return folders.keySet()
+            .toArray(new FolderInfo[folders.keySet().size()]);
     }
 
     /**
@@ -433,7 +436,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      * <p>
      * Also stores a invitation file for the folder in the local directory if
      * wanted.
-     *
+     * 
      * @param folderInfo
      *            the folder info object
      * @param folderSettings
@@ -450,7 +453,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      * Used when creating a preview folder. FolderSettings should be as required
      * for the preview folder. Note that settings are not stored and the caller
      * is responsible for setting the preview config.
-     *
+     * 
      * @param folderInfo
      * @param folderSettings
      * @return
@@ -466,7 +469,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      * <p>
      * Also stores a invitation file for the folder in the local directory if
      * wanted.
-     *
+     * 
      * @param folderInfo
      *            the folder info object
      * @param folderSettings
@@ -527,23 +530,22 @@ public class FolderRepository extends PFComponent implements Runnable {
         // Trigger file requestor
         getController().getFolderRepository().fileRequestor
             .triggerFileRequesting(folder.getInfo());
-        
+
         // Trigger server connect
         getController().getOSClient().connectHostingServers();
 
         // Fire event
         fireFolderCreated(folder);
 
-        logInfo(
-            "Joined folder " + folderInfo.name + ", local copy at '"
-                + folderSettings.getLocalBaseDir() + '\'');
+        logInfo("Joined folder " + folderInfo.name + ", local copy at '"
+            + folderSettings.getLocalBaseDir() + '\'');
 
         return folder;
     }
 
     /**
      * Saves settings and info details to the config.
-     *
+     * 
      * @param folderInfo
      * @param folderSettings
      * @param saveConfig
@@ -581,7 +583,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     /**
      * Removes a folder from active folders, will be added as non-local folder
-     *
+     * 
      * @param folder
      * @param deleteSystemSubDir
      */
@@ -596,7 +598,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         // remove folder from config
         Properties config = getController().getConfig();
-        
+
         FolderInfo folderInfo = folder.getInfo();
         config.remove(FOLDER_SETTINGS_PREFIX + folderInfo.name
             + FOLDER_SETTINGS_ID);
@@ -614,9 +616,8 @@ public class FolderRepository extends PFComponent implements Runnable {
             + FOLDER_SETTINGS_WHITELIST);
 
         // Cleaning up old configs
-        config.remove(FOLDER_SETTINGS_PREFIX + folderInfo.name
-            + ".secret");
-        
+        config.remove(FOLDER_SETTINGS_PREFIX + folderInfo.name + ".secret");
+
         // Save config
         getController().saveConfig();
 
@@ -651,13 +652,13 @@ public class FolderRepository extends PFComponent implements Runnable {
 
             // Try to delete the invitation.
             File invite = new File(folder.getLocalBase(), folder.getName()
-                    + ".invitation");
+                + ".invitation");
             if (invite.exists()) {
                 try {
                     invite.delete();
                 } catch (Exception e) {
                     logSevere("Failed to delete invitation: "
-                            + invite.getAbsolutePath(), e);
+                        + invite.getAbsolutePath(), e);
                 }
             }
 
@@ -667,7 +668,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                     folder.getLocalBase().delete();
                 } catch (Exception e) {
                     logSevere("Failed to delete local base: "
-                            + folder.getLocalBase().getAbsolutePath(), e);
+                        + folder.getLocalBase().getAbsolutePath(), e);
                 }
             }
         }
@@ -678,7 +679,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     /**
      * Removes a member from all Folders.
-     *
+     * 
      * @param member
      */
     public void removeFromAllFolders(Member member) {
@@ -698,8 +699,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      */
     private void synchronizeAllFolderMemberships() {
         if (!started) {
-            logFiner(
-                "Not synchronizing Foldermemberships, repo not started, yet");
+            logFiner("Not synchronizing Foldermemberships, repo not started, yet");
         }
         if (isLogFiner()) {
             logFiner("All Nodes: Synchronize Foldermemberships");
@@ -774,9 +774,8 @@ public class FolderRepository extends PFComponent implements Runnable {
                 scanningFolders.clear();
                 scanningFolders.addAll(folders.values());
                 if (isLogFiner()) {
-                    logFiner(
-                            "Maintaining " + scanningFolders.size()
-                                + " folders...");
+                    logFiner("Maintaining " + scanningFolders.size()
+                        + " folders...");
                 }
                 Collections.sort(scanningFolders, new FolderComparator());
 
@@ -808,8 +807,8 @@ public class FolderRepository extends PFComponent implements Runnable {
                     }
                 }
                 if (isLogFiner()) {
-                    logFiner(
-                        "Maintained " + scanningFolders.size() + " folder(s)");
+                    logFiner("Maintained " + scanningFolders.size()
+                        + " folder(s)");
                 }
             }
 
@@ -832,7 +831,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      * Processes a invitation to a folder TODO: Autojoin invitation, make this
      * configurable in pref screen.
      * <P>
-     *
+     * 
      * @param invitation
      * @param sendInviteIfJoined
      *            if already joined folder, offer to send invite to others.
