@@ -51,6 +51,11 @@ public class Constants {
     public static final String POWERFOLDER_SUPPORT_URL = "http://www.powerfolder.com/support.html";
 
     /**
+     * URL where bugs or tickets can be filed.
+     */
+    public static final String POWERFOLDER_SUPPORT_FILE_TICKET_URL = "http://www.powerfolder.com/support/index.php?_m=tickets&_a=submit&step=1&departmentid=4";
+
+    /**
      * URL of the PowerFolder Pro page
      */
     public static final String POWERFOLDER_PRO_URL = "http://www.powerfolder.com/buynow.html";
@@ -66,31 +71,26 @@ public class Constants {
     public static final String BUG_REPORT_URL = "http://forums.powerfolder.com/forumdisplay.php?f=18";
 
     /**
-     * URL of the Online Storage.
-     */
-    public static final String ONLINE_STORAGE_URL = "https://access.powerfolder.com";
-
-    /**
-     * URL of the Online Storage registration
-     */
-    public static final String ONLINE_STORAGE_REGISTER_URL = "https://access.powerfolder.com/register";
-
-    /**
      * HTTP RPC URL for
      */
     public static final String HTTP_TUNNEL_RPC_URL = "http://access.powerfolder.com/rpc";
-
+    
+    /**
+     * URL of the Online Storage.
+     */
+    public static final String ONLINE_STORAGE_URL = "https://access.powerfolder.com";
+    
+    /**
+     * The official ID of the online storage.
+     */
+    public static final String ONLINE_STORAGE_NODE_ID = "WEBSERVICE03";
+   // public static final String ONLINE_STORAGE_NODE_ID = "INFRASTRUCTURE02";
+    
     /**
      * The Address of the online storage.
      */
     public static final InetSocketAddress ONLINE_STORAGE_ADDRESS = new InetSocketAddress(
         "access.powerfolder.com", 1337);
-
-    /**
-     * The official ID of the online storage.
-     */
-    public static final String ONLINE_STORAGE_NODE_ID = "WEBSERVICE03";
-    // public static final String ONLINE_STORAGE_NODE_ID = "INFRASTRUCTURE01";
 
     /**
      * The name of the subdirectory in every folder to store powerfolder

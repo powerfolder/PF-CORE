@@ -32,6 +32,11 @@ import de.dal33t.powerfolder.util.Loggable;
 public enum Feature {
 
     OS_CLIENT, EXIT_ON_SHUTDOWN,
+    
+    /**
+     * If the nodes of a server clusters should automatically connect.
+     */
+    CLUSTER_NODES_CONNECT,
 
     /**
      * If disabled all peers will be detected as on LAN.

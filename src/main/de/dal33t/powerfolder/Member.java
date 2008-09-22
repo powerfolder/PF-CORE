@@ -19,6 +19,24 @@
  */
 package de.dal33t.powerfolder;
 
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
+import org.apache.commons.lang.StringUtils;
+
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.ScanResult;
@@ -64,6 +82,7 @@ import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.net.InvalidIdentityException;
 import de.dal33t.powerfolder.net.PlainSocketConnectionHandler;
+import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.transfer.Upload;
@@ -76,23 +95,6 @@ import de.dal33t.powerfolder.util.ProfilingEntry;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.Waiter;
-import org.apache.commons.lang.StringUtils;
-
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * A full quailfied member, can have a connection to interact with remote
@@ -161,6 +163,11 @@ public class Member extends PFComponent {
 
     /** Last trasferstatus */
     private TransferStatus lastTransferStatus;
+
+    /**
+     * The account that is logged in from this node.
+     */
+    private Account account;
 
     /**
      * the last problem
@@ -324,10 +331,10 @@ public class Member extends PFComponent {
 
         Identity id = getIdentity();
         if (id != null) {
-            logFiner("Got ID: " + id + ". pending msgs? "
-                + id.isPendingMessages());
+            // logFiner("Got ID: " + id + ". pending msgs? "
+            // + id.isPendingMessages());
             if (Util.compareVersions("2.0.0", id.getProgramVersion())) {
-                logWarning("Rejecting connection to old program client: " + id
+                logFine("Rejecting connection to old program client: " + id
                     + " v" + id.getProgramVersion());
                 return false;
             }
@@ -786,10 +793,14 @@ public class Member extends PFComponent {
         }
 
         List<Folder> joinedFolders = getJoinedFolders();
-        if (isLogFine()) {
+        if (isLogFine() && !joinedFolders.isEmpty()) {
             logFine("Joined " + joinedFolders.size() + " folders: "
                 + joinedFolders);
+        } else if (isLogFiner()) {
+            logFiner("Joined " + joinedFolders.size() + " folders: "
+                + joinedFolders);
         }
+
         for (Folder folder : joinedFolders) {
             // FIX for #924
             waitForScan(folder);
@@ -990,7 +1001,8 @@ public class Member extends PFComponent {
         synchronized (handshakeCompletedWaiter) {
             handshakeCompletedWaiter.notifyAll();
         }
-
+        
+        shutdownPeer();
         lastFiles = null;
         lastFolderList = null;
         // Disco, assume completely
@@ -999,8 +1011,9 @@ public class Member extends PFComponent {
         lastHandshakeCompleted = null;
         lastTransferStatus = null;
         expectedListMessages = null;
-        shutdownPeer();
+        account = null;
         messageListenerSupport = null;
+
         if (wasHandshaked) {
             // Inform nodemanger about it
             getController().getNodeManager().onlineStateChanged(this);
@@ -1089,6 +1102,11 @@ public class Member extends PFComponent {
         if (Profiling.ENABLED) {
             profilingEntry = Profiling.start("Member.handleMessage", message
                 .getClass().getSimpleName());
+        }
+
+        // Create security context
+        if (getController().getSecurityManager() != null) {
+            getController().getSecurityManager().setSession(account);
         }
 
         try {
@@ -1528,6 +1546,11 @@ public class Member extends PFComponent {
             fireMessageToListeners(message);
         } finally {
             Profiling.end(profilingEntry, expectedTime);
+
+            // Destroy security context
+            if (getController().getSecurityManager() != null) {
+                getController().getSecurityManager().destroySession();
+            }
         }
     }
 
@@ -2063,6 +2086,14 @@ public class Member extends PFComponent {
      */
     public void setServer(boolean server) {
         this.server = server;
+    }
+
+    public Account getAccount() {
+        return account;
+    }
+
+    public void setAccount(Account account) {
+        this.account = account;
     }
 
     /**
