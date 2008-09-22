@@ -66,9 +66,8 @@ public class RequestExecutor extends PFComponent {
         requestId = request.getRequestId();
 
         if (isLogFiner()) {
-            logFiner(
-                "Sending request to " + node.getNick() + " (" + requestId
-                    + "): " + request);
+            logFiner("Sending request to " + node.getNick() + " (" + requestId
+                + "): " + request);
         }
         // Listen to receive the response
         getController().getNodeManager().addNodeManagerListener(discoListener);
@@ -88,9 +87,8 @@ public class RequestExecutor extends PFComponent {
             }
 
             if (isLogFiner()) {
-                logFiner(
-                    "Response from " + node.getNick() + " (" + requestId
-                        + "): " + response);
+                logFiner("Response from " + node.getNick() + " (" + requestId
+                    + "): " + response);
             }
         } finally {
             notifyAndcleanup();
@@ -106,9 +104,9 @@ public class RequestExecutor extends PFComponent {
             try {
                 waitForResponseLock.wait(seconds * 1000);
             } catch (InterruptedException e) {
-                logWarning(
-                        "Interrupted while waiting for response (" + node
-                            + ").", e);
+                logWarning("Interrupted while waiting for response (" + node
+                    + "): " + e);
+                logFiner(e);
             }
         }
     }

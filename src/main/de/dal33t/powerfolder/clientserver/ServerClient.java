@@ -82,6 +82,11 @@ public class ServerClient extends PFComponent {
 
     private ServerClientListener listenerSupport;
 
+    /**
+     * For test
+     */
+    private String webURL;
+
     // Construction ***********************************************************
 
     /**
@@ -190,6 +195,9 @@ public class ServerClient extends PFComponent {
      * @return the URL of the web access to the server (cluster).
      */
     public String getWebURL() {
+        if (webURL != null) {
+            return webURL;
+        }
         if (accountDetails != null
             && accountDetails.getAccount() != null
             && accountDetails.getAccount().getServer() != null
@@ -199,17 +207,46 @@ public class ServerClient extends PFComponent {
             return accountDetails.getAccount().getServer().getWebUrl();
         }
 
+        // FIXME: Does not work, http port does not get considered!
         // Fallback
-        String host = ConfigurationEntry.SERVER_HOST.getValue(getController());
-        if (!StringUtils.isBlank(host)) {
-            int i = host.indexOf(":");
-            if (i > 0) {
-                host = host.substring(0, i);
-            }
-            return "http://" + host;
-        }
-        // Default
+        // String host =
+        // ConfigurationEntry.SERVER_HOST.getValue(getController());
+        // if (!StringUtils.isBlank(host)) {
+        // int i = host.indexOf(":");
+        // if (i > 0) {
+        // host = host.substring(0, i);
+        // }
+        // return "http://" + host;
+        // }
+
+        // Default fallback
         return Constants.ONLINE_STORAGE_URL;
+    }
+
+    /**
+     * @param webURL
+     *            the WEB URL to use for basic web services
+     */
+    public void setWebURL(String webURL) {
+        this.webURL = webURL;
+    }
+
+    /**
+     * Convenience method for getting register URL
+     * 
+     * @return the registration URL for this server.
+     */
+    public String getRegisterURL() {
+        return getWebURL() + "/register";
+    }
+
+    /**
+     * Convenience method for getting activation URL
+     * 
+     * @return the activation URL for this server.
+     */
+    public String getActivationURL() {
+        return getWebURL() + "/activate";
     }
 
     public boolean isAllowServerChange() {
@@ -224,7 +261,7 @@ public class ServerClient extends PFComponent {
      */
     public boolean isLastLoginKnown() {
         return getController().getPreferences().get(
-            PREFS_PREFIX + "." + server.getHostName() + ".username", null) != null
+            PREFS_PREFIX + "." + server.getIP() + ".username", null) != null
             || isDefaultAccountSet();
     }
 
@@ -237,14 +274,18 @@ public class ServerClient extends PFComponent {
      */
     public Account loginWithLastKnown() {
         String un = getController().getPreferences().get(
-            PREFS_PREFIX + "." + server.getHostName() + ".username", null);
+            PREFS_PREFIX + "." + server.getIP() + ".username", null);
         String pw = getController().getPreferences().get(
-            PREFS_PREFIX + "." + server.getHostName() + ".info", null);
+            PREFS_PREFIX + "." + server.getIP() + ".info", null);
         if (!StringUtils.isBlank(un)) {
             return login(un, pw);
         }
         // Fallback
-        return loginWithDefault();
+        if (isDefaultAccountSet()) {
+            return loginWithDefault();
+        }
+        // Failed!
+        return null;
     }
 
     /**
@@ -438,7 +479,9 @@ public class ServerClient extends PFComponent {
         if (!isLastLoginOK()) {
             return;
         }
-        logFine("Tring to connecting to hosting servers");
+        if (isLogFiner()) {
+            logFiner("Connecting to hosting servers");
+        }
         Runnable retriever = new Runnable() {
             public void run() {
                 FolderInfo[] folders = getController().getFolderRepository()
@@ -504,9 +547,9 @@ public class ServerClient extends PFComponent {
             return;
         }
         getController().getPreferences().put(
-            PREFS_PREFIX + "." + server.getHostName() + ".username", username);
+            PREFS_PREFIX + "." + server.getIP() + ".username", username);
         getController().getPreferences().put(
-            PREFS_PREFIX + "." + server.getHostName() + ".info", password);
+            PREFS_PREFIX + "." + server.getIP() + ".info", password);
     }
 
     /**
@@ -515,7 +558,6 @@ public class ServerClient extends PFComponent {
      * @return true if the default account data has been set
      */
     private boolean isDefaultAccountSet() {
-        // FIXME Use separate account stores for diffrent servers?
         return !StringUtils.isEmpty(ConfigurationEntry.WEBSERVICE_USERNAME
             .getValue(getController()))
             && !StringUtils.isEmpty(ConfigurationEntry.WEBSERVICE_USERNAME
@@ -534,13 +576,19 @@ public class ServerClient extends PFComponent {
      *         if login failed. NEVER returns <code>null</code>
      */
     private Account loginWithDefault() {
-        return login(ConfigurationEntry.WEBSERVICE_USERNAME
+        Account a = login(ConfigurationEntry.WEBSERVICE_USERNAME
             .getValue(getController()), ConfigurationEntry.WEBSERVICE_PASSWORD
             .getValue(getController()));
+        // At least the last know has been written. remove username & password
+        // from config.
+        ConfigurationEntry.WEBSERVICE_USERNAME.removeValue(getController());
+        ConfigurationEntry.WEBSERVICE_PASSWORD.removeValue(getController());
+        getController().saveConfig();
+        return a;
     }
 
     private void changeToServer(ServerInfo targetServer) {
-        logWarning("Chaning server to " + targetServer.getNode());
+        logWarning("Changeing server to " + targetServer.getNode());
 
         // Add key of new server to keystore.
         if (Util.getPublicKey(getController(), targetServer.getNode()) == null)
@@ -565,10 +613,9 @@ public class ServerClient extends PFComponent {
 
         // Now actually switch to new server.
         setNewServerNode(targetServer.getNode().getNode(getController(), true));
-        if (server.isCompleteyConnected()) {
-            // Attempt to login
-            login(username, password);
-        } else {
+        // Attempt to login. At least remind login for real connect.
+        login(username, password);
+        if (!isConnected()) {
             // Mark new server for connect
             server.markForImmediateConnect();
         }
@@ -715,4 +762,5 @@ public class ServerClient extends PFComponent {
             }
         }
     }
+
 }

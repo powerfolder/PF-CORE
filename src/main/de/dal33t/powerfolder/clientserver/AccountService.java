@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.clientserver;
 
 import java.util.Collection;
 
+import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.clientserver.AccountDetails;
 import de.dal33t.powerfolder.security.Account;
 
@@ -117,4 +118,9 @@ public interface AccountService {
      *         found.
      */
     String[] getLicenseKeyContents();
+
+    /**
+     * @return the folder containing the license keys.
+     */
+    FolderInfo getLicenseKeyFolder();
 }
