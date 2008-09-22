@@ -553,7 +553,8 @@ public class ReconnectManager extends PFComponent {
                     // Temporary server node, directly connect to IP/hostname
                     logWarning("Tring to connect to temporary server node at "
                         + currentNode.getHostName() + ":"
-                        + currentNode.getPort());
+                        + currentNode.getPort() + ". ID: "
+                        + currentNode.getId());
                     try {
                         ConnectionHandler conHan = getController()
                             .getIOProvider().getConnectionHandlerFactory()

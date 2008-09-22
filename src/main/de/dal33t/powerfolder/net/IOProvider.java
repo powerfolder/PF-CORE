@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.net;
 
 import java.util.Collection;
@@ -160,6 +160,11 @@ public class IOProvider extends PFComponent {
      */
     public void startIO(final Runnable ioWorker) {
         Reject.ifNull(ioWorker, "IO Worker is null");
+        if (ioThreadPool.isTerminated() || ioThreadPool.isShutdown()) {
+            logWarning("Rejected executing of ioWorker, already stopped: "
+                + ioWorker);
+            return;
+        }
         if (isLogFiner()) {
             logFiner("Starting IO for " + ioWorker);
         }
@@ -208,14 +213,20 @@ public class IOProvider extends PFComponent {
 
         public void run() {
             try {
-                SecurityManager secMan = getController().getSecurityManager();
-                if (secMan != null) {
-                    secMan.destroySession();
-                }
+                destroySession();
                 ioWorker.run();
             } catch (RuntimeException e) {
                 logSevere("RuntimeError in IO worker", e);
                 throw e;
+            } finally {
+                destroySession();
+            }
+        }
+
+        private void destroySession() {
+            SecurityManager secMan = getController().getSecurityManager();
+            if (secMan != null) {
+                secMan.destroySession();
             }
         }
     }
@@ -228,9 +239,8 @@ public class IOProvider extends PFComponent {
             }
             while (started) {
                 if (isLogFine()) {
-                    logFine(
-                        "Checking " + keepAliveList.size()
-                            + " con handlers for keepalive");
+                    logFine("Checking " + keepAliveList.size()
+                        + " con handlers for keepalive");
                 }
                 Collection<ConnectionHandler> list = new HashSet<ConnectionHandler>(
                     keepAliveList);
@@ -248,8 +258,8 @@ public class IOProvider extends PFComponent {
                                 continue;
                             }
                             if (!list.contains(peer)) {
-                                logSevere(
-                                    "ConHan not in keepalive list of " + node);
+                                logSevere("ConHan not in keepalive list of "
+                                    + node);
                                 list.add(peer);
                             }
                         }
@@ -283,16 +293,15 @@ public class IOProvider extends PFComponent {
                     - lastKeepaliveMessage.getTime();
                 newPing = timeWithoutKeepalive >= TIME_WITHOUT_KEEPALIVE_UNTIL_PING;
                 if (isLogFiner()) {
-                    logFiner(
-                        "Keep-alive check. Received last keep alive message "
-                            + timeWithoutKeepalive + "ms ago, ping required? "
-                            + newPing + ". Node: " + conHan.getMember());
+                    logFiner("Keep-alive check. Received last keep alive message "
+                        + timeWithoutKeepalive
+                        + "ms ago, ping required? "
+                        + newPing + ". Node: " + conHan.getMember());
                 }
                 if (timeWithoutKeepalive > CONNECTION_KEEP_ALIVE_TIMOUT_MS) {
-                    logWarning(
-                        "Shutting down. Dead connection detected ("
-                            + (timeWithoutKeepalive / 1000) + "s timeout) to "
-                            + conHan.getMember());
+                    logWarning("Shutting down. Dead connection detected ("
+                        + (timeWithoutKeepalive / 1000) + "s timeout) to "
+                        + conHan.getMember());
                     conHan.shutdownWithMember();
                     return false;
                 }
