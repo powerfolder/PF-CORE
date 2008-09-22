@@ -2,7 +2,7 @@ package de.dal33t.powerfolder.security;
 
 import java.util.Collection;
 
-import de.dal33t.powerfolder.light.MemberInfo;
+import de.dal33t.powerfolder.clientserver.AccountFilterModel;
 
 /**
  * CRUD for Accounts.
@@ -40,10 +40,16 @@ public interface AccountDAO {
     Collection<Account> getAccounts();
 
     /**
-     * @param serverNode
+     * @param filterModel
+     * @return accounts that matches the filter
+     */
+    Collection<Account> getAccounts(AccountFilterModel filterModel);
+
+    /**
+     * @param serverNodeId
      * @return all accounts that are hosted on the given server node.
      */
-    Collection<Account> findHostedOn(MemberInfo serverNode);
+    Collection<Account> findHostedOn(String serverNodeId);
 
     /**
      * Stores or updates one or more accounts

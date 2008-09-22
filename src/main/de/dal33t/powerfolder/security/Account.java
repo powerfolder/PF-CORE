@@ -21,7 +21,6 @@ package de.dal33t.powerfolder.security;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -38,7 +37,7 @@ import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.light.ServerInfo;
 import de.dal33t.powerfolder.os.OnlineStorageSubscriptionType;
 import de.dal33t.powerfolder.util.IdGenerator;
-import de.dal33t.powerfolder.util.Loggable;
+import de.dal33t.powerfolder.util.LogDispatch;
 import de.dal33t.powerfolder.util.Reject;
 
 /**
@@ -54,6 +53,7 @@ public class Account extends Model implements Serializable {
     public static final String PROPERTYNAME_OID = "oid";
     public static final String PROPERTYNAME_USERNAME = "username";
     public static final String PROPERTYNAME_PASSWORD = "password";
+    public static final String PROPERTYNAME_PERMISSIONS = "permissions";
     public static final String PROPERTYNAME_REGISTER_DATE = "registerDate";
     public static final String PROPERTYNAME_LAST_LOGIN_DATE = "lastLoginDate";
     public static final String PROPERTYNAME_LAST_LOGIN_FROM = "lastLoginFrom";
@@ -62,6 +62,7 @@ public class Account extends Model implements Serializable {
     public static final String PROPERTYNAME_SERVER = "server";
     public static final String PROPERTYNAME_DEFAULT_SYNCHRONIZED_FOLDER = "defaultSynchronizedFolder";
     public static final String PROPERTYNAME_OS_SUBSCRIPTION = "OSSubscription";
+    public static final String PROPERTYNAME_LICENSE_KEY_FILES = "licenseKeyFiles";
 
     private String oid;
     private String username;
@@ -101,24 +102,13 @@ public class Account extends Model implements Serializable {
         this.osSubscription.setType(OnlineStorageSubscriptionType.NONE);
         this.licenseKeyFiles = new CopyOnWriteArrayList<String>();
     }
-    
-    public void setColumbiaServer() {
-        // TODO Set this a better way
-        this.server = new ServerInfo();
-        MemberInfo serverNode = new MemberInfo("Columbia",
-            "WEBSERVICE004");
-        serverNode.setConnectAddress(new InetSocketAddress(
-            "78.46.242.66", 1337));
-        server.setNode(serverNode);
-        server.setWebUrl("https://server.powerfolder.com");
-    }
 
     // Basic permission stuff *************************************************
 
     public void grant(Permission... newPermissions) {
         Reject.ifNull(newPermissions, "Permission is null");
-        Loggable.logFineStatic(Account.class, "Granted permission to " + this
-            + ": " + Arrays.asList(newPermissions));
+        LogDispatch.logFine(Account.class.getName(), "Granted permission to "
+            + this + ": " + Arrays.asList(newPermissions));
         for (Permission p : newPermissions) {
             if (hasPermission(p)) {
                 // Skip
@@ -130,8 +120,8 @@ public class Account extends Model implements Serializable {
 
     public void revoke(Permission... revokePermissions) {
         Reject.ifNull(revokePermissions, "Permission is null");
-        Loggable.logFineStatic(Account.class, "Revoked permission from " + this
-            + ": " + Arrays.asList(revokePermissions));
+        LogDispatch.logFine(Account.class.getName(), "Revoked permission from "
+            + this + ": " + Arrays.asList(revokePermissions));
         for (Permission p : revokePermissions) {
             permissions.remove(p);
         }
@@ -143,9 +133,14 @@ public class Account extends Model implements Serializable {
 
     public boolean hasPermission(Permission permission) {
         Reject.ifNull(permission, "Permission is null");
+        if (permissions == null) {
+            LogDispatch.logSevere(Account.class.getName(), "Illegal account "
+                + username + ", permissions is null");
+            return false;
+        }
 
         // TODO Solve this a better way.
-        if (permissions.contains(Permissions.ADMIN_PERMISSIONS)) {
+        if (permissions.contains(AdminPermission.INSTANCE)) {
             // Admin- everything allowed.
             return true;
         }
@@ -154,6 +149,20 @@ public class Account extends Model implements Serializable {
 
     public Collection<Permission> getPermissions() {
         return Collections.unmodifiableCollection(permissions);
+    }
+
+    public void repairPermissions() {
+        if (permissions == null) {
+            permissions = new CopyOnWriteArrayList<Permission>();
+        }
+    }
+
+    public boolean isIllegal() {
+        return permissions == null || osSubscription == null;
+    }
+
+    public Collection<Permission> getPermissionsInstance() {
+        return permissions;
     }
 
     // Accessing / API ********************************************************
@@ -211,6 +220,10 @@ public class Account extends Model implements Serializable {
     }
 
     public OnlineStorageSubscription getOSSubscription() {
+        if (osSubscription == null) {
+            // osSubscription = new OnlineStorageSubscription();
+            // osSubscription.setType(OnlineStorageSubscriptionType.TRIAL_5GB);
+        }
         return osSubscription;
     }
 
@@ -321,8 +334,6 @@ public class Account extends Model implements Serializable {
                 FolderAdminPermission fp = (FolderAdminPermission) p;
                 Folder f = fp.getFolder().getFolder(controller);
                 if (f == null) {
-                    Loggable.logWarningStatic(Account.class,
-                        "Got unjoined folder: " + fp.getFolder());
                     continue;
                 }
                 nFolders++;
@@ -348,7 +359,7 @@ public class Account extends Model implements Serializable {
         getOSSubscription().setDisabledUsageDate(null);
         getOSSubscription().setWarnedExpirationDate(null);
         getOSSubscription().setDisabledExpirationDate(null);
-        controller.getSecurityManager().saveAccount(this);
+        controller.getSecurityManager().getDAO().store(this);
 
         for (Permission p : getPermissions()) {
             if (!(p instanceof FolderAdminPermission)) {
@@ -359,7 +370,7 @@ public class Account extends Model implements Serializable {
             if (f == null) {
                 continue;
             }
-            f.setSyncProfile(SyncProfile.BACKUP_TARGET);
+            f.setSyncProfile(SyncProfile.BACKUP_TARGET_NO_CHANGE_DETECT);
         }
     }
 
