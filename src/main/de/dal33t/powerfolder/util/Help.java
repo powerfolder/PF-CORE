@@ -21,11 +21,9 @@ package de.dal33t.powerfolder.util;
 
 import java.io.IOException;
 
-import com.jgoodies.forms.factories.Borders;
-
 import de.dal33t.powerfolder.Constants;
-import de.dal33t.powerfolder.ui.widget.LinkLabel;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.widget.LinkLabel;
 
 /**
  * A general class to open help topics.
@@ -44,25 +42,15 @@ public class Help {
     }
 
     /**
-     * Opens a help topic from the PowerFolder homepage
-     * 
-     * @param homepageNodeId
-     *            the node id on the powerfolder homepage of this topic. e.g
-     *            node/faq
+     * Opens the quickstart guides
      */
-    public static void openHelp(String homepageNodeId) {
-        // TODO: Might show a message box to the user, that the help topic will
-        // be opend in browser
-        Loggable.logFineStatic(Help.class,
-                "Opening help. Homepage nodeId '" + homepageNodeId + "'");
+    public static void openQuickstartGuides() {
+        LogDispatch.logFine(Help.class.getName(), "Opening quickstart guides");
         try {
-            BrowserLauncher.openURL(Constants.POWERFOLDER_URL + "/"
-                + homepageNodeId);
+            BrowserLauncher.openURL(Constants.POWERFOLDER_QUICKSTART_URL);
         } catch (IOException e) {
-            Loggable.logSevereStatic(Help.class,
-                    "Unable to open help. Homepage nodeId '" + homepageNodeId
-                + "'", e);
-            // TODO: Show a message box to the user
+            LogDispatch.logSevere(Help.class.getName(),
+                "Unable to open quickstart guides", e);
         }
     }
 
@@ -98,6 +86,6 @@ public class Help {
     public static LinkLabel createWikiLinkLabel(String article) {
         String toolTips = Translation.getTranslation("general.what_is_this");
         return new LinkLabel(Icons.QUESTION, toolTips,
-            Constants.POWERFOLDER_WIKI_URL + "/" + article);
+            Constants.POWERFOLDER_WIKI_URL + '/' + article);
     }
 }

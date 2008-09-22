@@ -33,7 +33,6 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.RandomAccessFile;
 import java.net.URL;
-import java.util.Date;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
@@ -408,10 +407,11 @@ public class FileUtils {
         Reject.ifNull(sourceFile, "Source directory is null");
         Reject.ifNull(targetFile, "Target directory is null");
 
+        if (sourceFile.isDirectory() && !targetFile.exists()) {
+            targetFile.mkdirs();
+        }
+
         if (sourceFile.isDirectory() && targetFile.isDirectory()) {
-            if (!targetFile.exists()) {
-                targetFile.mkdirs();
-            }
             File[] files = sourceFile.listFiles();
             for (File nextOriginalFile : files) {
                 // Synthesize target file name.
