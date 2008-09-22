@@ -265,7 +265,7 @@ public class Folder extends PFComponent {
 
         // Check base dir
         try {
-            checkBaseDir(localBase);
+            checkBaseDir(localBase, false);
         } catch (FolderException e) {
             logWarning("local base inaccessible for " + fInfo.name);
             deviceDisconnected = true;
@@ -561,19 +561,25 @@ public class Folder extends PFComponent {
      * @throws FolderException
      *             if base dir is not ok
      */
-    private void checkBaseDir(File baseDir) throws FolderException {
+    private void checkBaseDir(File baseDir, boolean quite)
+        throws FolderException
+    {
         // Basic checks
         if (!localBase.exists()) {
             if (!localBase.mkdirs()) {
-                logSevere(" not able to create folder(" + getName()
-                    + "), (sub) dir (" + localBase + ") creation failed");
+                if (!quite) {
+                    logSevere(" not able to create folder(" + getName()
+                        + "), (sub) dir (" + localBase + ") creation failed");
+                }
                 throw new FolderException(currentInfo, Translation
                     .getTranslation("foldercreate.error.unable_to_create",
                         localBase.getAbsolutePath()));
             }
         } else if (!localBase.isDirectory()) {
-            logSevere(" not able to create folder(" + getName()
-                + "), (sub) dir (" + localBase + ") is no dir");
+            if (!quite) {
+                logSevere(" not able to create folder(" + getName()
+                    + "), (sub) dir (" + localBase + ") is no dir");
+            }
             throw new FolderException(currentInfo, Translation.getTranslation(
                 "foldercreate.error.unable_to_open", localBase
                     .getAbsolutePath()));
@@ -704,7 +710,7 @@ public class Folder extends PFComponent {
          * Check that we still have a good local base.
          */
         try {
-            checkBaseDir(localBase);
+            checkBaseDir(localBase, true);
             deviceDisconnected = false;
         } catch (FolderException e) {
             logWarning("invalid local base: " + e);
@@ -1441,12 +1447,14 @@ public class Folder extends PFComponent {
                 continue;
             }
             if (file.getModifiedDate().getTime() < removeBeforeDate) {
-                expired++;
-                knownFiles.remove(file);
-                if (rootDirectory != null) {
-                    rootDirectory.removeFileInfo(file);
+                synchronized (scanLock) {
+                    expired++;
+                    knownFiles.remove(file);
+                    if (rootDirectory != null) {
+                        rootDirectory.removeFileInfo(file);
+                    }
                 }
-                logInfo(file.getFilenameOnly() + " has expired: "
+                logFine(file.getFilenameOnly() + " has expired: "
                     + file.toDetailString());
             }
         }
