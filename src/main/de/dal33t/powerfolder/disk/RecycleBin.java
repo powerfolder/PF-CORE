@@ -62,7 +62,7 @@ public class RecycleBin extends PFComponent {
         moveFolders();
         allRecycledFiles.addAll(readRecyledFiles());
         logInfo("Recycle bin initialized, " + allRecycledFiles.size());
-        logFine("Created");
+        logFine(allRecycledFiles.size() + " files in recycle bin");
     }
 
     /** Move the old recycle bin to the new location */
