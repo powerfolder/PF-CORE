@@ -47,7 +47,7 @@ public class RootNode extends TreeNodeList {
     // components.
     final DefaultMutableTreeNode RECYCLEBIN_NODE = new DefaultMutableTreeNode(
         RECYCLEBIN_NODE_LABEL);
-    final DefaultMutableTreeNode WEBSERVICE_NODE = new DefaultMutableTreeNode(
+    public final DefaultMutableTreeNode WEBSERVICE_NODE = new DefaultMutableTreeNode(
         WEBSERVICE_NODE_LABEL);
     final DefaultMutableTreeNode DEBUG_NODE = new DefaultMutableTreeNode(
         DEBUG_NODE_LABEL);
