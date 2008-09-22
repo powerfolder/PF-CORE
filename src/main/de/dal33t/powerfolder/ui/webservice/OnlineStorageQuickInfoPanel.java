@@ -110,7 +110,7 @@ public class OnlineStorageQuickInfoPanel extends QuickInfoPanel {
                 .getFoldersCount();
             AccountDetails ad = client.getAccountDetails();
             String usedPerc = "? %";
-            if (ad != null) {
+            if (ad != null && ad.getAccount().isValid()) {
                 long storageSize = ad.getAccount().getOSSubscription()
                     .getType().getStorageSize();
                 if (storageSize != 0) {

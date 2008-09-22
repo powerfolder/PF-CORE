@@ -25,6 +25,7 @@ import java.util.List;
 
 import javax.swing.Action;
 import javax.swing.ListModel;
+import javax.swing.event.TreeModelEvent;
 
 import com.jgoodies.binding.PresentationModel;
 import com.jgoodies.binding.list.ArrayListModel;
@@ -41,6 +42,7 @@ import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.ui.action.BaseAction;
+import de.dal33t.powerfolder.ui.navigation.RootNode;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.compare.FolderComparator;
@@ -157,6 +159,16 @@ public class ServerClientModel extends PFUIComponent {
         mirroredFolders.addAll(folders);
     }
 
+    private void updateNavTree() {
+        // Ugly
+        RootNode rootNode = getUIController().getApplicationModel()
+            .getNavTreeModel().getRootNode();
+        TreeModelEvent te = new TreeModelEvent(this, new Object[]{rootNode,
+            rootNode.WEBSERVICE_NODE});
+        getUIController().getApplicationModel().getNavTreeModel()
+            .fireTreeNodesChangedEvent(te);
+    }
+
     // Actions ****************************************************************
 
     private class MirrorFolderAction extends BaseAction {
@@ -240,10 +252,12 @@ public class ServerClientModel extends PFUIComponent {
 
         public void serverConnected(ServerClientEvent event) {
             updateMirroredFolders();
+            updateNavTree();
         }
 
         public void serverDisconnected(ServerClientEvent event) {
             updateMirroredFolders();
+            updateNavTree();
         }
     }
 }
