@@ -79,6 +79,34 @@ public class Util {
             "web-resources/js/ajax.js") != null;
     }
 
+    /**
+     * @param controller
+     * @return true if running a trial or non-registered version.
+     */
+    public static final boolean isTrial(Controller controller) {
+        if (!isRunningProVersion()) {
+            return true;
+        }
+        try {
+            Class<?> c = Class.forName("de.dal33t.powerfolder.CD");
+            Method m = c.getMethod("isTrial", Controller.class);
+            return (Boolean) m.invoke(null, controller);
+        } catch (ClassNotFoundException e) {
+            Loggable.logSevereStatic(Util.class, e);
+        } catch (SecurityException e) {
+            Loggable.logSevereStatic(Util.class, e);
+        } catch (NoSuchMethodException e) {
+            Loggable.logSevereStatic(Util.class, e);
+        } catch (IllegalArgumentException e) {
+            Loggable.logSevereStatic(Util.class, e);
+        } catch (IllegalAccessException e) {
+            Loggable.logSevereStatic(Util.class, e);
+        } catch (InvocationTargetException e) {
+            Loggable.logSevereStatic(Util.class, e);
+        }
+        return true;
+    }
+
     public static final PublicKey getPublicKey(Controller controller,
         MemberInfo node)
     {
