@@ -1,4 +1,50 @@
-PowerFolder Version 3.1.1 - http://www.powerfolder.com
+PowerFolder Version 3.1.2 - http://www.powerfolder.com
+
+Enhancements:
+ * Folder database maintenance added to save memory
+ * Support for relative path in invitations
+ * Added warnings if target directory is not writable on folder setup
+
+Bugfixes:
+ * Fixed several activation bugs
+ * Now gracefully handles folder scanner crash caused by low memory
+
+Please give us feedback and request improvements at our forum:
+http://forums.powerfolder.com
+
+Minimum Java version is 6.0.
+
+Thanks to those who requested features in our forum and we hope to implement
+even more if you keep requesting them for the next version.
+
+- The PowerFolder Team
+
+Official Roadmap:
+http://www.powerfolder.com/roadmap.html
+
+Please remember: You agree to keep us free of any (legal) issues involved with
+downloading and using this PowerFolder!
+
+Contact information:
+
+Web  	: http://www.powerfolder.com
+Contact	: http://www.powerfolder.com/contact.html
+Support	: http://www.powerfolder.com/support.html
+Email	: contact@powerfolder.com
+IRC	: QuakeNet, Nick: TotMacherr, Flo and Nakata on channel #powerfolder
+ICQ	: 1898935
+
+External libraries used:
+- JGoodies looks, forms & binding (http://www.jgoodies.com). Under BSD License. (jar/jgoodies-LICENSE.txt)
+- systray (http://systray.sourceforge.net). Under LGPL License. (jar/systray-ReadMe.txt)
+- jakarta-commons (http://jakarta.apache.org/commons).
+  Under Apache License, Version 2.0
+
+
+History:
+
+Version 3.1.1
+-------------
 
 Enhancements:
  * Account registration is now integrated into PowerFolder.
@@ -52,41 +98,7 @@ Bugfixes:
  * Corrected sorting of uploads and downloads if sorted by "Progress".
  * Date of last file change in folder/home is not correct.
  * Many other cosmetic fixes.
-
-
-Please give us feedback and request improvements at our forum:
-http://forums.powerfolder.com
-
-Minimum Java version is 6.0.
-
-Thanks to those who requested features in our forum and we hope to implement
-even more if you keep requesting them for the next version.
-
-- The PowerFolder Team
-
-Official Roadmap:
-http://www.powerfolder.com/roadmap.html
-
-Please remember: You agree to keep us free of any (legal) issues involved with
-downloading and using this PowerFolder!
-
-Contact information:
-
-Web  	: http://www.powerfolder.com
-Contact	: http://www.powerfolder.com/contact.html
-Support	: http://www.powerfolder.com/support.html
-Email	: contact@powerfolder.com
-IRC	: QuakeNet, Nick: TotMacherr, Flo and Nakata on channel #powerfolder
-ICQ	: 1898935
-
-External libraries used:
-- JGoodies looks, forms & binding (http://www.jgoodies.com). Under BSD License. (jar/jgoodies-LICENSE.txt)
-- systray (http://systray.sourceforge.net). Under LGPL License. (jar/systray-ReadMe.txt)
-- jakarta-commons (http://jakarta.apache.org/commons).
-  Under Apache License, Version 2.0
-
-
-History:
+ 
 
 Version 3.1.0
 -------------
