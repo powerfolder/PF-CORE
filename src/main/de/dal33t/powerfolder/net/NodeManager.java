@@ -53,7 +53,11 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.clientserver.ServerClient;
-import de.dal33t.powerfolder.event.*;
+import de.dal33t.powerfolder.event.AskForFriendshipEvent;
+import de.dal33t.powerfolder.event.AskForFriendshipHandler;
+import de.dal33t.powerfolder.event.ListenerSupportFactory;
+import de.dal33t.powerfolder.event.NodeManagerEvent;
+import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Identity;
@@ -526,6 +530,9 @@ public class NodeManager extends PFComponent {
      */
     public boolean isOnLANorConfiguredOnLAN(InetAddress adr) {
         Reject.ifNull(adr, "Address is null");
+        if (!(adr instanceof Inet4Address)) {
+            return false;
+        }
         return NetworkUtil.isOnLanOrLoopback(adr)
             || isNodeOnConfiguredLan(adr)
             || (getController().getBroadcastManager() != null && getController()
