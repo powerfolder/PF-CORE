@@ -370,7 +370,9 @@ public class Account extends Model implements Serializable {
             if (f == null) {
                 continue;
             }
-            f.setSyncProfile(SyncProfile.BACKUP_TARGET_NO_CHANGE_DETECT);
+            if (f.getSyncProfile().equals(SyncProfile.DISABLED)) {
+                f.setSyncProfile(SyncProfile.BACKUP_TARGET_NO_CHANGE_DETECT);
+            }
         }
     }
 
