@@ -30,7 +30,7 @@ public class CreateShortcutAction extends BaseAction {
     public static final String SUPPORTED = "SUPPORTED";
 
     public CreateShortcutAction(Controller controller) {
-        super("createshortcut", controller);
+        super("create_shortcut", controller);
         putValue(SUPPORTED, OSUtil.isWindowsSystem());
     }
 

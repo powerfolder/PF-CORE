@@ -65,7 +65,7 @@ public class MemberChatPanel extends ChatPanel implements UIPanel {
     private SelectionModel memberSelectionModel;
 
     /**
-     * create a chatpanel
+     * create a chat_panel
      * 
      * @param controller
      */
@@ -128,7 +128,7 @@ public class MemberChatPanel extends ChatPanel implements UIPanel {
      */
     public String getTitle() {
         if (getChatPartner() != null) {
-            return Translation.getTranslation("chatpanel.chat_with") + " "
+            return Translation.getTranslation("chat_panel.chat_with") + " "
                 + getChatPartner().getNick();
         }
         return null;
@@ -235,7 +235,7 @@ public class MemberChatPanel extends ChatPanel implements UIPanel {
                             getUIController().getChatModel().addStatusChatLine(
                                 withMember,
                                 Translation.getTranslation(
-                                    "chatpanel.cannot_deliver", withMember
+                                    "chat_panel.cannot_deliver", withMember
                                         .getNick()));
                         }
                     }

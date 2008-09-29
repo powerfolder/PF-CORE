@@ -360,7 +360,7 @@ public class ChatModel implements MessageListener {
             Member node = folderEvent.getMember();
             Folder folder = (Folder) folderEvent.getSource();
             String statusMessage = Translation.getTranslation(
-                "chatpanel.member_joined_folder_at_time", node.getNick(),
+                "chat_panel.member_joined_folder_at_time", node.getNick(),
                 Format.getTimeOnlyDateFormat().format(new Date()) + "")
                 + "\n";
             addStatusChatLine(folder, node, statusMessage);
@@ -371,7 +371,7 @@ public class ChatModel implements MessageListener {
             Member node = folderEvent.getMember();
             Folder folder = (Folder) folderEvent.getSource();
             String statusMessage = Translation.getTranslation(
-                "chatpanel.member_left_folder_at_time", node.getNick(), Format
+                "chat_panel.member_left_folder_at_time", node.getNick(), Format
                     .getTimeOnlyDateFormat().format(new Date())
                     + "")
                 + "\n";
@@ -393,7 +393,7 @@ public class ChatModel implements MessageListener {
         public void nodeConnected(NodeManagerEvent e) {
             Member node = e.getNode();
             String statusMessage = Translation.getTranslation(
-                "chatpanel.member_connected_at_time", node.getNick(), Format
+                "chat_panel.member_connected_at_time", node.getNick(), Format
                     .getTimeOnlyDateFormat().format(new Date())
                     + "")
                 + "\n";
@@ -410,7 +410,7 @@ public class ChatModel implements MessageListener {
         public void nodeDisconnected(NodeManagerEvent e) {
             Member node = e.getNode();
             String statusMessage = Translation.getTranslation(
-                "chatpanel.member_disconnected_at_time", node.getNick(), Format
+                "chat_panel.member_disconnected_at_time", node.getNick(), Format
                     .getTimeOnlyDateFormat().format(new Date())
                     + "")
                 + "\n";

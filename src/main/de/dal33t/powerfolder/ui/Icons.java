@@ -115,7 +115,7 @@ public class Icons {
     public static final Icon WAKE_UP = getIconById("wake_up.icon");
     public static final Icon SYNC_NOW = getIconById("sync_now.icon");
     public static final Icon SYNC_NOW_ACTIVE = getIconById("sync_now_active.icon");
-    public static final Icon BUY_PRO = getIconById("buypro.icon");
+    public static final Icon BUY_PRO = getIconById("buy_pro.icon");
     public static final Icon QUESTION = getIconById("question.icon");
 
     public static final Icon SORT_UP = getIconById("sort_up.icon");

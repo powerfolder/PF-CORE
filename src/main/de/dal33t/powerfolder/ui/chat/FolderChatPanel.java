@@ -50,7 +50,7 @@ public class FolderChatPanel extends ChatPanel implements FolderTab {
     private Folder aboutFolder;
 
     /**
-     * create a chatpanel
+     * create a chat_panel
      * 
      * @param controller
      *            the controller.

@@ -534,7 +534,7 @@ public class DownloadsPanel extends PFUIPanel implements HasDetailsPanel {
      */
     private class ClearCompletedAction extends BaseAction {
         ClearCompletedAction() {
-            super("clearcompleteddownloads", DownloadsPanel.this
+            super("clear_completed_downloads", DownloadsPanel.this
                 .getController());
         }
 

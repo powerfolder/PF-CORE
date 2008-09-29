@@ -30,7 +30,7 @@ import de.dal33t.powerfolder.util.Loggable;
 public class BuyProAction extends BaseAction {
 
     public BuyProAction(Controller controller) {
-        super("buypro", controller);
+        super("buy_pro", controller);
     }
 
     public void actionPerformed(ActionEvent e) {

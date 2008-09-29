@@ -110,7 +110,7 @@ public class FreeLimitationDialog extends BaseDialog {
 
     private Component buildToolbar() {
         JButton buyProButton = new JButton(Translation
-            .getTranslation("freelimitdialog.buypro"));
+            .getTranslation("freelimitdialog.buy_pro"));
         buyProButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 try {

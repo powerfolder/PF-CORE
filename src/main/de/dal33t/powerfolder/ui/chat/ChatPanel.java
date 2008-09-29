@@ -65,7 +65,7 @@ public abstract class ChatPanel extends PFUIPanel {
     private static final String BOLD_BLUE = "bold-blue";
     private static final String BOLD_GREEN = "bold-green";
 
-    /** create a chatpanel 
+    /** create a chat_panel
      * @param controller */
     public ChatPanel(Controller controller) {
         super(controller);
