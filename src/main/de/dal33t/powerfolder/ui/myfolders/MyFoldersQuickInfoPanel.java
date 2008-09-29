@@ -57,7 +57,7 @@ public class MyFoldersQuickInfoPanel extends QuickInfoPanel {
     @Override
     protected void initComponents() {
         headerText = SimpleComponentFactory.createBiggerTextLabel(Translation
-            .getTranslation("quickinfo.myfolders.title"));
+            .getTranslation("quickinfo.my_folders.title"));
 
         infoText1 = SimpleComponentFactory.createBigTextLabel("");
         infoText2 = SimpleComponentFactory.createBigTextLabel("");
@@ -96,15 +96,15 @@ public class MyFoldersQuickInfoPanel extends QuickInfoPanel {
 
         String text1;
         if (synchronizingFolders == 0) {
-            text1 = Translation.getTranslation("quickinfo.myfolders.in_sync_all");
+            text1 = Translation.getTranslation("quickinfo.my_folders.in_sync_all");
         } else {
-            text1 = Translation.getTranslation("quickinfo.myfolders.syncing", synchronizingFolders);
+            text1 = Translation.getTranslation("quickinfo.my_folders.syncing", synchronizingFolders);
         }
 
         infoText1.setText(text1);
 
         String text2 = Translation.getTranslation(
-            "quickinfo.myfolders.powerfolders", Format.formatBytes(nTotalBytes),
+            "quickinfo.my_folders.powerfolders", Format.formatBytes(nTotalBytes),
                 folders.length);
         infoText2.setText(text2);
     }

@@ -83,14 +83,14 @@ public class NodeQuickInfoPanel extends QuickInfoPanel {
             if (user.isCompleteyConnected()) {
                 if (user.isOnLAN()) {
                     infoText1.setText(Translation
-                        .getTranslation("quickinfo.user.isconnectedlan"));
+                        .getTranslation("quickinfo.user.is_connected_lan"));
                 } else {
                     infoText1.setText(Translation
-                        .getTranslation("quickinfo.user.isconnectedinet"));
+                        .getTranslation("quickinfo.user.is_connected_inet"));
                 }
                 if (user.isSecure()) {
                     infoText2.setText(Translation
-                        .getTranslation("quickinfo.user.secureconnected"));
+                        .getTranslation("quickinfo.user.secure_connected"));
                 } else {
                     infoText2.setText("");
                 }
@@ -101,7 +101,7 @@ public class NodeQuickInfoPanel extends QuickInfoPanel {
                 }
             } else {
                 infoText1.setText(Translation
-                    .getTranslation("quickinfo.user.isdiconnected"));
+                    .getTranslation("quickinfo.user.is_diconnected"));
                 infoText2.setText("");
             }
         }

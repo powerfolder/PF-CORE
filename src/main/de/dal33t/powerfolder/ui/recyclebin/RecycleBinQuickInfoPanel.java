@@ -54,7 +54,7 @@ public class RecycleBinQuickInfoPanel extends QuickInfoPanel {
     @Override
     protected void initComponents() {
         headerText = SimpleComponentFactory.createBiggerTextLabel(Translation
-            .getTranslation("quickinfo.recylcebin.title"));
+            .getTranslation("quickinfo.recylce_bin.title"));
 
         infoText1 = SimpleComponentFactory.createBigTextLabel("");
         infoText2 = SimpleComponentFactory.createBigTextLabel("");
@@ -79,7 +79,7 @@ public class RecycleBinQuickInfoPanel extends QuickInfoPanel {
     private void updateText() {
         int nFiles = getController().getRecycleBin().countAllRecycledFiles();
         infoText1.setText(Translation.getTranslation(
-            "quickinfo.recylcebin.files", Integer.valueOf(nFiles)));
+            "quickinfo.recylce_bin.files", Integer.valueOf(nFiles)));
     }
 
     // Overridden stuff *******************************************************

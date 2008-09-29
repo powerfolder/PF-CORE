@@ -92,11 +92,11 @@ public class OnlineStorageQuickInfoPanel extends QuickInfoPanel {
         String text1;
         if (getController().isLanOnly()) {
             text1 = Translation
-                .getTranslation("quickinfo.webservice.notavailable");
+                .getTranslation("quickinfo.webservice.not_available");
         } else {
             text1 = con ? Translation
                 .getTranslation("quickinfo.webservice.connected") : Translation
-                .getTranslation("quickinfo.webservice.notconnected");
+                .getTranslation("quickinfo.webservice.not_connected");
             if (getController().isVerbose()) {
                 text1 += " (" + client.getServer().getNick() + ", "
                     + client.getServer().getHostName() + ":"
@@ -120,7 +120,7 @@ public class OnlineStorageQuickInfoPanel extends QuickInfoPanel {
                 }
             }
             text2 = Translation.getTranslation(
-                "quickinfo.webservice.foldersmirrored", nMirrored, nFolders,
+                "quickinfo.webservice.folders_mirrored", nMirrored, nFolders,
                 usedPerc);
         } else {
             text2 = "";

@@ -95,7 +95,7 @@ public class FriendsQuickInfoPanel extends QuickInfoPanel {
      */
     void setUsersFound(int nUsers) {
         infoText2.setText(Translation.getTranslation(
-            "quickinfo.friends.usersfound", String.valueOf(nUsers)));
+            "quickinfo.friends.users_found", String.valueOf(nUsers)));
     }
 
     // Overridden stuff *******************************************************

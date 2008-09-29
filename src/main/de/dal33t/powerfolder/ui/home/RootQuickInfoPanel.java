@@ -127,7 +127,7 @@ public class RootQuickInfoPanel extends QuickInfoPanel {
             syncText = getController().getFolderRepository()
                 .isAnyFolderTransferring() ? Translation
                 .getTranslation("quickinfo.root.syncing") : Translation
-                .getTranslation("quickinfo.root.insync");
+                .getTranslation("quickinfo.root.in_sync");
         }
         return syncText;
     }

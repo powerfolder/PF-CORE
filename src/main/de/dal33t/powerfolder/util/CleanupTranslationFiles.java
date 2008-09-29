@@ -47,11 +47,11 @@ public class CleanupTranslationFiles {
     /**
      * Removes the translation of the following keys to force retranslation
      */
-    private static final String[] RETRANSLATE = {"quickinfo.webservice.foldersmirrored"};
+    private static final String[] RETRANSLATE = {"quickinfo.webservice.folders_mirrored"};
     // "preferences.dialog.show_preview_panel.tooltip",
     //
     //        
-    // "preferences.dialog.startPanel.myFolders", "quickinfo.myfolders.title",
+    // "preferences.dialog.startPanel.myFolders", "quickinfo.my_folders.title",
     // "title.my.folders", "about.dialog.professional_folder_sharing_tool",
     // "create_shortcut.description", "dialog.add_member_to_friend_list.explain",
     // "dialog.add_member_to_friend_list.question",
