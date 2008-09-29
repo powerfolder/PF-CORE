@@ -46,7 +46,7 @@ public class ManuallyInvokedUpdater extends Updater {
             DialogFactory.genericDialog(
                     getParentFrame(),
                     Translation.getTranslation("general.powerfolder"),
-                    Translation.getTranslation("dialog.updatecheck.noUpdateAvailable"),
+                    Translation.getTranslation("dialog.update_check.noUpdateAvailable"),
                     GenericDialogType.INFO);
         }
     }

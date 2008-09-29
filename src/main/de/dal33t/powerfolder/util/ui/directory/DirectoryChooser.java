@@ -155,7 +155,7 @@ public class DirectoryChooser extends BaseDialog {
         // Set the components.
         CellConstraints cc = new CellConstraints();
         builder.add(LinkedTextBuilder.build(
-            Translation.getTranslation("dialog.directorychooser.text"))
+            Translation.getTranslation("dialog.directory_chooser.text"))
             .getPanel(), cc.xyw(1, 1, 5));
         builder.add(scrollPane, cc.xyw(1, 3, 5));
         builder.add(
@@ -186,7 +186,7 @@ public class DirectoryChooser extends BaseDialog {
      * @return
      */
     public String getTitle() {
-        return Translation.getTranslation("dialog.directorychooser.title");
+        return Translation.getTranslation("dialog.directory_chooser.title");
     }
 
     private void newDirectoryAction() {
@@ -215,9 +215,9 @@ public class DirectoryChooser extends BaseDialog {
                     DialogFactory.genericDialog(getController().getUIController()
                             .getMainFrame().getUIComponent(),
                             Translation.getTranslation(
-                                    "dialog.directorychooser.new.description"),
+                                    "dialog.directory_chooser.new.description"),
                             Translation.getTranslation(
-                                    "dialog.directorychooser.new.exists",
+                                    "dialog.directory_chooser.new.exists",
                                     f.getAbsolutePath()),
                             GenericDialogType.WARN);
                 } else {
@@ -257,8 +257,8 @@ public class DirectoryChooser extends BaseDialog {
                         }
                     } else {
                         DialogFactory.genericDialog(getController().getUIController().getMainFrame().getUIComponent(),
-                                Translation.getTranslation("dialog.directorychooser.new.description"),
-                                Translation.getTranslation("dialog.directorychooser.new.problem", f.getAbsolutePath()),
+                                Translation.getTranslation("dialog.directory_chooser.new.description"),
+                                Translation.getTranslation("dialog.directory_chooser.new.problem", f.getAbsolutePath()),
                                 GenericDialogType.WARN);
                     }
                 }
@@ -295,7 +295,7 @@ public class DirectoryChooser extends BaseDialog {
          * Constructor
          */
         NewDirectoryAction(Controller controller) {
-            super("dialog.directorychooser.new", controller);
+            super("dialog.directory_chooser.new", controller);
         }
 
         /**

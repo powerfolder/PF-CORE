@@ -670,7 +670,7 @@ public class UIController extends PFComponent {
                 new String[]{
                     Translation.getTranslation("general.ok"),
                     Translation
-                        .getTranslation("dialog.alreadyrunning.exitbutton")},
+                        .getTranslation("dialog.already_running.exit_button")},
                 0, GenericDialogType.ERROR);
             if (response == 1) { // Exit
                 getController().exit(0);

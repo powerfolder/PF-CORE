@@ -46,7 +46,7 @@ public class RemoveFileAction extends SelectionBaseAction {
      */
     public RemoveFileAction(Controller controller, SelectionModel selectionModel)
     {
-        super("deletefile", controller, selectionModel);
+        super("delete_file", controller, selectionModel);
         setEnabled(false);
     }
 
@@ -145,7 +145,7 @@ public class RemoveFileAction extends SelectionBaseAction {
                     fileListText += directory.getName()
                         + "     "
                         + Translation
-                            .getTranslation("delete_confimation.text_movetorecyclebin_DIR")
+                            .getTranslation("delete_confimation.text_move_to_recycle_bin_DIR")
                         + "\n";
                 }
             }
@@ -154,7 +154,7 @@ public class RemoveFileAction extends SelectionBaseAction {
             if (containsDirectory) {
                 if (folder.isUseRecycleBin()) {
                     warningText = Translation
-                        .getTranslation("delete_confimation.text_movetorecyclebin_directory");
+                        .getTranslation("delete_confimation.text_move_to_recycle_bin_directory");
                 } else {
                     warningText = Translation
                         .getTranslation("delete_confimation.text_delete_directory");
@@ -162,7 +162,7 @@ public class RemoveFileAction extends SelectionBaseAction {
             } else {
                 if (folder.isUseRecycleBin()) {
                     warningText = Translation
-                        .getTranslation("delete_confimation.text_movetorecyclebin");
+                        .getTranslation("delete_confimation.text_move_to_recycle_bin");
                 } else {
                     warningText = Translation
                         .getTranslation("delete_confimation.text_delete");

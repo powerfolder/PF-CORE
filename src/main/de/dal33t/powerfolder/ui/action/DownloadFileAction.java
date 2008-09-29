@@ -43,7 +43,7 @@ public class DownloadFileAction extends SelectionBaseAction {
     public DownloadFileAction(Controller controller,
         SelectionModel selectionModel)
     {
-        super("downloadfile", controller, selectionModel);
+        super("download_file", controller, selectionModel);
         setEnabled(false);
     }
 

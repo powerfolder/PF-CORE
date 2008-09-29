@@ -53,8 +53,8 @@ public class CleanupTranslationFiles {
     //        
     // "preferences.dialog.startPanel.myFolders", "quickinfo.myfolders.title",
     // "title.my.folders", "about.dialog.professional_folder_sharing_tool",
-    // "create_shortcut.description", "dialog.addmembertofriendlist.explain",
-    // "dialog.addmembertofriendlist.question",
+    // "create_shortcut.description", "dialog.add_member_to_friend_list.explain",
+    // "dialog.add_member_to_friend_list.question",
     // "filelist.status.no_files_available_add_files_and_invite",
     // "foldercreate.description", "foldercreate.dialog.backuperror.text",
     // "foldercreate.dialog.backuperror.title",

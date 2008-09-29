@@ -59,7 +59,7 @@ public class ToggleSilentModeAction extends BaseAction {
     private void adaptForScanSetting(boolean silentMode) {
         // Workaround for toolbar (for toolbar)
         if (silentMode) {
-            configureFromActionId("disablesilentmode");
+            configureFromActionId("disable_silent_mode");
             if (smallToolbar) {
                 ImageIcon scaledImage =
                         Icons.scaleIcon((ImageIcon) Icons.SLEEP,
@@ -69,7 +69,7 @@ public class ToggleSilentModeAction extends BaseAction {
                 putValue(Action.SMALL_ICON, Icons.SLEEP);
             }
         } else {
-            configureFromActionId("enablesilentmode");
+            configureFromActionId("enable_silent_mode");
             if (smallToolbar) {
                 ImageIcon scaledImage =
                         Icons.scaleIcon((ImageIcon) Icons.WAKE_UP,

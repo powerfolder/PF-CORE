@@ -97,14 +97,14 @@ public class AskForFriendshipHandlerDefaultImpl extends PFUIComponent implements
                     }
                     String[] options = {
                         Translation
-                            .getTranslation("dialog.addmembertofriendlist.button.add"),
+                            .getTranslation("dialog.add_member_to_friend_list.button.add"),
                         Translation.getTranslation("general.cancel")};
                     String text = Translation.getTranslation(
-                        "dialog.addmembertofriendlist.question", member
+                        "dialog.add_member_to_friend_list.question", member
                             .getNick(), folderString.toString())
                         + "\n\n"
                         + Translation
-                            .getTranslation("dialog.addmembertofriendlist.explain");
+                            .getTranslation("dialog.add_member_to_friend_list.explain");
                     // if mainframe is hidden we should wait till its opened
 
                     FormLayout layout = new FormLayout("pref",
@@ -116,7 +116,7 @@ public class AskForFriendshipHandlerDefaultImpl extends PFUIComponent implements
                     builder.add(panel1, cc.xy(1, 1));
                     if (!StringUtils.isEmpty(personalMessage)) {
                         builder.add(new JLabel(Translation.getTranslation(
-                            "dialog.addmembertofriendlist.messageTitle", member
+                            "dialog.add_member_to_friend_list.messageTitle", member
                                 .getNick())), cc.xy(1, 3));
                         JTextArea textArea = new JTextArea(personalMessage);
                         textArea.setEditable(false);
@@ -130,7 +130,7 @@ public class AskForFriendshipHandlerDefaultImpl extends PFUIComponent implements
                         .genericDialog(getController().getUIController()
                             .getMainFrame().getUIComponent(), Translation
                             .getTranslation(
-                                "dialog.addmembertofriendlist.title", member
+                                "dialog.add_member_to_friend_list.title", member
                                     .getNick()), panel, options, 0,
                             GenericDialogType.QUESTION, Translation
                                 .getTranslation("general.neverAskAgain"));
@@ -176,14 +176,14 @@ public class AskForFriendshipHandlerDefaultImpl extends PFUIComponent implements
 
                     String[] options = {
                         Translation
-                            .getTranslation("dialog.addmembertofriendlist.button.add"),
+                            .getTranslation("dialog.add_member_to_friend_list.button.add"),
                         Translation.getTranslation("general.cancel")};
                     String text = Translation.getTranslation(
-                        "dialog.addmembertofriendlist.question2", member
+                        "dialog.add_member_to_friend_list.question2", member
                             .getNick())
                         + "\n\n"
                         + Translation
-                            .getTranslation("dialog.addmembertofriendlist.explain");
+                            .getTranslation("dialog.add_member_to_friend_list.explain");
                     // if mainframe is hidden we should wait till its opened
 
                     FormLayout layout = new FormLayout("pref",
@@ -195,7 +195,7 @@ public class AskForFriendshipHandlerDefaultImpl extends PFUIComponent implements
                     builder.add(panel1, cc.xy(1, 1));
                     if (!StringUtils.isEmpty(personalMessage)) {
                         builder.add(new JLabel(Translation.getTranslation(
-                            "dialog.addmembertofriendlist.messageTitle", member
+                            "dialog.add_member_to_friend_list.messageTitle", member
                                 .getNick())), cc.xy(1, 3));
                         JTextArea textArea = new JTextArea(personalMessage);
                         textArea.setEditable(false);
@@ -209,7 +209,7 @@ public class AskForFriendshipHandlerDefaultImpl extends PFUIComponent implements
                         .genericDialog(getController().getUIController()
                             .getMainFrame().getUIComponent(), Translation
                             .getTranslation(
-                                "dialog.addmembertofriendlist.title", member
+                                "dialog.add_member_to_friend_list.title", member
                                     .getNick()), panel, options, 0,
                             GenericDialogType.QUESTION, Translation
                                 .getTranslation("general.neverAskAgain"));

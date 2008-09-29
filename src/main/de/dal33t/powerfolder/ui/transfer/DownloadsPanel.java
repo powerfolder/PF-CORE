@@ -480,12 +480,12 @@ public class DownloadsPanel extends PFUIPanel implements HasDetailsPanel {
 
                     @Override
                     protected String getTitle() {
-                        return Translation.getTranslation("downloads_panel.cleanup_activity.title");
+                        return Translation.getTranslation("downloads_panel.clean_up_activity.title");
                     }
 
                     @Override
                     protected String getWorkingText() {
-                        return Translation.getTranslation("downloads_panel.cleanup_activity.description");
+                        return Translation.getTranslation("downloads_panel.clean_up_activity.description");
                     }
 
                     public Object construct() {
