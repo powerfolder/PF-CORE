@@ -109,7 +109,7 @@ public class FolderPanel extends PFUIPanel {
                     tabbedPanel.add(' ' + settingsTab.getTitle() + ' ',
                         settingsComponent);
                     tabbedPanel.setMnemonicAt(settingsTabId, Translation
-                        .getTranslation("folderpanel.settings.key").charAt(0));
+                        .getTranslation("folder_panel.settings.key").charAt(0));
                     tabbedPanel.setIconAt(settingsTabId, Icons.SETTINGS);
                     settingsTabSet.set(true);
                 }
@@ -222,24 +222,24 @@ public class FolderPanel extends PFUIPanel {
             .getUIComponent());
 
         tabbedPanel.setMnemonicAt(homeTabId, Translation.getTranslation(
-            "folderpanel.home.key").charAt(0));
+            "folder_panel.home.key").charAt(0));
 
         tabbedPanel.add(' ' + filesTab.getTitle() + ' ', filesTab
             .getUIComponent());
         tabbedPanel.setMnemonicAt(filesTabId, Translation.getTranslation(
-            "folderpanel.files.key").charAt(0));
+            "folder_panel.files.key").charAt(0));
         tabbedPanel.setIconAt(filesTabId, Icons.DIRECTORY);
 
         tabbedPanel.add(' ' + membersTab.getTitle() + ' ', membersTab
             .getUIComponent());
         tabbedPanel.setMnemonicAt(membersTabId, Translation.getTranslation(
-            "folderpanel.members.key").charAt(0));
+            "folder_panel.members.key").charAt(0));
         tabbedPanel.setIconAt(membersTabId, Icons.NODE_FRIEND_CONNECTED);
 
         tabbedPanel.add(' ' + folderChatPanel.getTitle() + ' ', folderChatPanel
             .getUIComponent());
         tabbedPanel.setMnemonicAt(chatTabId, Translation.getTranslation(
-            "folderpanel.chat.key").charAt(0));
+            "folder_panel.chat.key").charAt(0));
         tabbedPanel.setIconAt(chatTabId, Icons.CHAT);
 
         UIUtil.removeBorder(tabbedPanel);

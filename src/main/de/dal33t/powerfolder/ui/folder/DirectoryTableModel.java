@@ -70,7 +70,7 @@ public class DirectoryTableModel extends PFComponent implements TableModel,
     private String[] columns = new String[]{"",
         Translation.getTranslation("filelist.name"),
         Translation.getTranslation("general.size"),
-        Translation.getTranslation("filelist.modifiedby"),
+        Translation.getTranslation("filelist.modified_by"),
         Translation.getTranslation("filelist.date"),
         Translation.getTranslation("filelist.availability")};
 

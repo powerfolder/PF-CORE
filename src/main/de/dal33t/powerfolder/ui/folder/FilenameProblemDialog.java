@@ -75,7 +75,7 @@ public class FilenameProblemDialog extends PFUIComponent {
     private String[] columns = new String[]{
         Translation.getTranslation("filelist.name"),
         Translation.getTranslation("general.description"),
-        Translation.getTranslation("filenameproblem.dialog.solution")};
+        Translation.getTranslation("filename_problem.dialog.solution")};
 
     private int option = -1;
     public final static int OK = 1;
@@ -150,7 +150,7 @@ public class FilenameProblemDialog extends PFUIComponent {
 
     public void openDialog() {
         dialog = new JDialog(getUIController().getMainFrame().getUIComponent(),
-            Translation.getTranslation("filenameproblem.dialog.title"), true); // modal
+            Translation.getTranslation("filename_problem.dialog.title"), true); // modal
         dialog.setContentPane(getUIComponent());
         dialog.pack();
         Component parent = dialog.getOwner();
@@ -180,7 +180,7 @@ public class FilenameProblemDialog extends PFUIComponent {
             CellConstraints cc = new CellConstraints();
 
             builder.add(SimpleComponentFactory.createBigTextLabel(Translation
-                .getTranslation("filenameproblem.dialog.description")), cc.xy(
+                .getTranslation("filename_problem.dialog.description")), cc.xy(
                 1, 2));
             builder.add(tableScroller, cc.xyw(1, 4, 2));
             builder.add(neverAskAgainJCheckBox, cc.xy(1, 5));
@@ -411,17 +411,17 @@ public class FilenameProblemDialog extends PFUIComponent {
             }
 
             JRadioButton nothingRadioButton = new JRadioButton(Translation
-                .getTranslation("filenameproblem.dialog.sync_anyways"));
+                .getTranslation("filename_problem.dialog.sync_anyways"));
             JRadioButton renameRadioButton = new JRadioButton(Translation
-                .getTranslation("filenameproblem.dialog.automatic_rename"));
+                .getTranslation("filename_problem.dialog.automatic_rename"));
             renameRadioButton
                 .setToolTipText(Translation
-                    .getTranslation("filenameproblem.dialog.automatic_rename.explained"));
+                    .getTranslation("filename_problem.dialog.automatic_rename.explained"));
             JRadioButton addToIgnoreRadioButton = new JRadioButton(Translation
-                .getTranslation("filenameproblem.dialog.exclude_from_sync"));
+                .getTranslation("filename_problem.dialog.exclude_from_sync"));
             addToIgnoreRadioButton
                 .setToolTipText(Translation
-                    .getTranslation("filenameproblem.dialog.exclude_from_sync.explained"));
+                    .getTranslation("filename_problem.dialog.exclude_from_sync.explained"));
             nothingRadioButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     solutionsMap.put(fileInfo, Solution.NOTHING);

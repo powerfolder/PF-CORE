@@ -43,10 +43,10 @@ public interface WizardContextAttributes {
     String SEND_INVIATION_AFTER_ATTRIBUTE = "disklocation.send_invitations";
     
     /** If a desktop shortcut should be created */
-    String CREATE_DESKTOP_SHORTCUT = "foldercreate.desktop_shortcut";
+    String CREATE_DESKTOP_SHORTCUT = "folder_create.desktop_shortcut";
     
     /** If the folder should be backed up by the Online Storage */
-    String BACKUP_ONLINE_STOARGE = "foldercreate.backup_by_os";
+    String BACKUP_ONLINE_STOARGE = "folder_create.backup_by_os";
 
     /** Determines if folder should be created as preview */
     String PREVIEW_FOLDER_ATTIRBUTE = "disklocation.preview_folder";

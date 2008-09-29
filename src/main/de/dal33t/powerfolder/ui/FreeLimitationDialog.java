@@ -61,7 +61,7 @@ public class FreeLimitationDialog extends BaseDialog {
     @Override
     public String getTitle()
     {
-        return Translation.getTranslation("freelimitdialog.title");
+        return Translation.getTranslation("free_limit_dialog.title");
     }
 
     @Override
@@ -81,27 +81,27 @@ public class FreeLimitationDialog extends BaseDialog {
         CellConstraints cc = new CellConstraints();
         int row = 1;
         builder.addLabel(Translation
-            .getTranslation("freelimitdialog.heavyusagedetected"), cc
+            .getTranslation("free_limit_dialog.heavy_usage_detected"), cc
             .xy(1, row));
         row += 2;
-        builder.addLabel(Translation.getTranslation("freelimitdialog.reason",
+        builder.addLabel(Translation.getTranslation("free_limit_dialog.reason",
             3, 10), cc.xy(1, row));
         row += 2;
         builder
             .addLabel(Translation
-                .getTranslation("freelimitdialog.buyrecommendation"), cc.xy(1,
+                .getTranslation("free_limit_dialog.buy_recommendation"), cc.xy(1,
                 row));
         row += 2;
         builder.addLabel(Translation
-            .getTranslation("freelimitdialog.buyrecommendation2"), cc
+            .getTranslation("free_limit_dialog.buy_recommendation2"), cc
             .xy(1, row));
         row += 2;
         builder.addLabel(Translation
-            .getTranslation("freelimitdialog.buyrecommendation3"), cc
+            .getTranslation("free_limit_dialog.buy_recommendation3"), cc
             .xy(1, row));
         row += 2;
         LinkLabel linkLabel = new LinkLabel(Translation
-            .getTranslation("freelimitdialog.whatispro"),
+            .getTranslation("free_limit_dialog.whatispro"),
             Constants.POWERFOLDER_PRO_URL);
         builder.add(linkLabel, cc.xy(1, row));
 
@@ -110,7 +110,7 @@ public class FreeLimitationDialog extends BaseDialog {
 
     private Component buildToolbar() {
         JButton buyProButton = new JButton(Translation
-            .getTranslation("freelimitdialog.buy_pro"));
+            .getTranslation("free_limit_dialog.buy_pro"));
         buyProButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 try {
@@ -122,7 +122,7 @@ public class FreeLimitationDialog extends BaseDialog {
         });
 
         JButton reduceButton = new JButton(Translation
-            .getTranslation("freelimitdialog.reduce"));
+            .getTranslation("free_limit_dialog.reduce"));
         reduceButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 close();

@@ -91,8 +91,8 @@ public class PreviewToJoinPanel extends BaseDialog {
         });
 
         // Buttons
-        joinButton = new JButton(Translation.getTranslation("folderjoin.join"));
-        joinButton.setMnemonic(Translation.getTranslation("folderjoin.join.key")
+        joinButton = new JButton(Translation.getTranslation("folder_join.join"));
+        joinButton.setMnemonic(Translation.getTranslation("folder_join.join.key")
             .trim().charAt(0));
 
         final FolderSettings existingFoldersSettings = getController()
@@ -122,7 +122,7 @@ public class PreviewToJoinPanel extends BaseDialog {
     // Methods for BaseDialog *************************************************
 
     public String getTitle() {
-        return Translation.getTranslation("folderjoin.dialog.title",
+        return Translation.getTranslation("folder_join.dialog.title",
             folder.getName());
     }
 

@@ -376,7 +376,7 @@ public class DirectoryTableCellRenderer extends DefaultTableCellRenderer {
             } else {
                 setIcon(Icons.EXPECTED);
                 statusForTooltip = Translation
-                    .getTranslation("fileinfo.newversion_availeble");
+                    .getTranslation("fileinfo.new_version_availeble");
             }
         } else {
             setForeground(NORMAL);
@@ -438,7 +438,7 @@ public class DirectoryTableCellRenderer extends DefaultTableCellRenderer {
             {
                 style = "deleted";
             } else if (statusForTooltip.equals(Translation
-                .getTranslation("fileinfo.newversion_availeble")))
+                .getTranslation("fileinfo.new_version_availeble")))
             {
                 style = "new_avail";
             } else {
@@ -484,7 +484,7 @@ public class DirectoryTableCellRenderer extends DefaultTableCellRenderer {
             {
                 style = "deleted";
             } else if (statusForTooltip.equals(Translation
-                .getTranslation("fileinfo.newversion_availeble")))
+                .getTranslation("fileinfo.new_version_availeble")))
             {
                 style = "new_avail";
             } else {
@@ -542,7 +542,7 @@ public class DirectoryTableCellRenderer extends DefaultTableCellRenderer {
             {
                 style = "deleted";
             } else if (statusForTooltip.equals(Translation
-                .getTranslation("fileinfo.newversion_availeble")))
+                .getTranslation("fileinfo.new_version_availeble")))
             {
                 style = "new_avail";
             } else {

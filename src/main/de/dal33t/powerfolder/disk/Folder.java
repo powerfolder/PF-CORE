@@ -584,7 +584,7 @@ public class Folder extends PFComponent {
                         + "), (sub) dir (" + localBase + ") creation failed");
                 }
                 throw new FolderException(currentInfo, Translation
-                    .getTranslation("foldercreate.error.unable_to_create",
+                    .getTranslation("folder_create.error.unable_to_create",
                         localBase.getAbsolutePath()));
             }
         } else if (!localBase.isDirectory()) {
@@ -593,7 +593,7 @@ public class Folder extends PFComponent {
                     + "), (sub) dir (" + localBase + ") is no dir");
             }
             throw new FolderException(currentInfo, Translation.getTranslation(
-                "foldercreate.error.unable_to_open", localBase
+                "folder_create.error.unable_to_open", localBase
                     .getAbsolutePath()));
         }
 
@@ -601,7 +601,7 @@ public class Folder extends PFComponent {
         FolderRepository repo = getController().getFolderRepository();
         if (new File(repo.getFoldersBasedir()).equals(baseDir)) {
             throw new FolderException(currentInfo, Translation.getTranslation(
-                "foldercreate.error.it_is_base_dir", baseDir.getAbsolutePath()));
+                "folder_create.error.it_is_base_dir", baseDir.getAbsolutePath()));
         }
     }
 

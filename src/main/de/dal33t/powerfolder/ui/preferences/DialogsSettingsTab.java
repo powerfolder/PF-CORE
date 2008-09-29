@@ -149,7 +149,7 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
             testConnectivity);
         warnOnPossibleFilenameProblems = new JCheckBox(
             Translation
-                .getTranslation("preferences.dialog.dialogs.warnonpossiblefilenameproblems"),
+                .getTranslation("preferences.dialog.dialogs.warnonpossiblefilename_problems"),
             filenamCheck);
         warnOnDuplicateFolders = new JCheckBox(
             Translation

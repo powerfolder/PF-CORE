@@ -174,9 +174,9 @@ public class FolderRepository extends PFComponent implements Runnable {
                     JFrame frame = getController().getUIController()
                         .getMainFrame().getUIComponent();
                     String title = Translation
-                        .getTranslation("folderrepository.warnonclose.title");
+                        .getTranslation("folder_repository.warn_on_close.title");
                     String text = Translation.getTranslation(
-                        "folderrepository.warnonclose.text", folderslist
+                        "folder_repository.warn_on_close.text", folderslist
                             .toString());
                     String question = Translation
                         .getTranslation("general.neverAskAgain");

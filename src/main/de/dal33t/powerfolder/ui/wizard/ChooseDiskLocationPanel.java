@@ -356,7 +356,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
             && Boolean.TRUE.equals(getWizardContext().getAttribute(
                 WizardContextAttributes.BACKUP_ONLINE_STOARGE));
         backupByOnlineStorageBox = new JCheckBox(Translation
-            .getTranslation("foldercreate.dialog.backupbyonlinestorage"));
+            .getTranslation("folder_create.dialog.backup_by_online_storage"));
         backupByOnlineStorageBox.setSelected(backupByOS);
         backupByOnlineStorageBox.getModel().addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
@@ -370,13 +370,13 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
 
         // Create desktop shortcut
         createDesktopShortcutBox = new JCheckBox(Translation
-            .getTranslation("foldercreate.dialog.create_desktop_shortcut"));
+            .getTranslation("folder_create.dialog.create_desktop_shortcut"));
 
         createDesktopShortcutBox.setOpaque(false);
 
         // Create manual sync cb
         manualSyncCheckBox = new JCheckBox(Translation
-            .getTranslation("foldercreate.dialog.maual_sync"));
+            .getTranslation("folder_create.dialog.maual_sync"));
 
         manualSyncCheckBox.setOpaque(false);
 
@@ -509,7 +509,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
 
         locationButton = new JButton(Icons.DIRECTORY);
         locationButton.setToolTipText(Translation
-            .getTranslation("foldercreate.dialog.select_file.text"));
+            .getTranslation("folder_create.dialog.select_file.text"));
         locationButton.addActionListener(new MyActionListener());
         builder.add(locationButton, cc.xy(3, 1));
         return builder.getPanel();

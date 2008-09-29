@@ -35,7 +35,7 @@ import de.dal33t.powerfolder.ui.Icons;
  */
 public class FolderCreateAction extends BaseAction {
     public FolderCreateAction(Controller controller) {
-        super("foldercreate", controller);
+        super("folder_create", controller);
     }
 
     public void actionPerformed(ActionEvent e) {

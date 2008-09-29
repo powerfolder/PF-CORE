@@ -263,17 +263,17 @@ public class FilenameProblem {
             case CONTAINS_ILLEGAL_MACOSX_CHARS : // fallthrough
             case CONTAINS_ILLEGAL_WINDOWS_CHARS :
                 return Translation
-                    .getTranslation("filenameproblem.not_recommended_chars");
+                    .getTranslation("filename_problem.not_recommended_chars");
             case ENDS_WITH_ILLEGAL_WINDOWS_CHARS :
                 return Translation
-                    .getTranslation("filenameproblem.ends_with_illegal_char");
+                    .getTranslation("filename_problem.ends_with_illegal_char");
             case IS_RESERVED_WINDOWS_WORD :
                 return Translation
-                    .getTranslation("filenameproblem.reserved_filename");
+                    .getTranslation("filename_problem.reserved_filename");
             case TO_LONG :
-                return Translation.getTranslation("filenameproblem.to_long");
+                return Translation.getTranslation("filename_problem.to_long");
             case DUPLICATE_FOUND :
-                return Translation.getTranslation("filenameproblem.duplicate");
+                return Translation.getTranslation("filename_problem.duplicate");
         }
         throw new IllegalStateException("invalid problemType: " + problemType);
     }
@@ -282,25 +282,25 @@ public class FilenameProblem {
         switch (problemType) {
             case CONTAINS_ILLEGAL_LINUX_CHARS :
                 return Translation
-                    .getTranslation("filenameproblem.not_recommended_chars_linux.description");
+                    .getTranslation("filename_problem.not_recommended_chars_linux.description");
             case CONTAINS_ILLEGAL_MACOSX_CHARS :
                 return Translation
-                    .getTranslation("filenameproblem.not_recommended_chars_mac_osx.description");
+                    .getTranslation("filename_problem.not_recommended_chars_mac_osx.description");
             case CONTAINS_ILLEGAL_WINDOWS_CHARS :
                 return Translation
-                    .getTranslation("filenameproblem.not_recommended_chars_windows.description");
+                    .getTranslation("filename_problem.not_recommended_chars_windows.description");
             case ENDS_WITH_ILLEGAL_WINDOWS_CHARS :
                 return Translation
-                    .getTranslation("filenameproblem.ends_with_illegal_char.description");
+                    .getTranslation("filename_problem.ends_with_illegal_char.description");
             case IS_RESERVED_WINDOWS_WORD :
                 return Translation
-                    .getTranslation("filenameproblem.reserved_filename.description");
+                    .getTranslation("filename_problem.reserved_filename.description");
             case TO_LONG :
                 return Translation
-                    .getTranslation("filenameproblem.to_long.description");
+                    .getTranslation("filename_problem.to_long.description");
             case DUPLICATE_FOUND :
                 return Translation.getTranslation(
-                    "filenameproblem.duplicate.description", fileInfoDupe
+                    "filename_problem.duplicate.description", fileInfoDupe
                         .getName());
         }
         throw new IllegalStateException("invalid problemType: " + problemType);

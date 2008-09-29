@@ -777,7 +777,7 @@ public class FilesTab extends PFUIComponent implements FolderTab,
                             Translation.getTranslation("general.overwrite_all"),
                             Translation.getTranslation("general.skip"),
                             Translation
-                                .getTranslation("folderpanel.filestab.dropfile_duplicate_dialog.skipall"),
+                                .getTranslation("folder_panel.files_tab.dropfile_duplicate_dialog.skipall"),
                             Translation.getTranslation("general.cancel")};
                         int option = JOptionPane
                             .showOptionDialog(
@@ -785,10 +785,10 @@ public class FilesTab extends PFUIComponent implements FolderTab,
                                     .getUIComponent(),
                                 Translation
                                     .getTranslation(
-                                        "folderpanel.filestab.dropfile_duplicate_dialog.text",
+                                        "folder_panel.files_tab.dropfile_duplicate_dialog.text",
                                         file.getName()),
                                 Translation
-                                    .getTranslation("folderpanel.filestab.dropfile_duplicate_dialog.title"),
+                                    .getTranslation("folder_panel.files_tab.dropfile_duplicate_dialog.title"),
 
                                 JOptionPane.YES_NO_CANCEL_OPTION,
                                 JOptionPane.QUESTION_MESSAGE, null, options,
@@ -824,10 +824,10 @@ public class FilesTab extends PFUIComponent implements FolderTab,
                                     .getUIComponent(),
                                 Translation
                                     .getTranslation(
-                                        "folderpanel.filestab.dropfile_duplicate_dialog.text",
+                                        "folder_panel.files_tab.dropfile_duplicate_dialog.text",
                                         file.getName()),
                                 Translation
-                                    .getTranslation("folderpanel.filestab.dropfile_duplicate_dialog.title"),
+                                    .getTranslation("folder_panel.files_tab.dropfile_duplicate_dialog.title"),
                                 JOptionPane.YES_NO_CANCEL_OPTION,
                                 JOptionPane.QUESTION_MESSAGE, null, options,
                                 options[2]);

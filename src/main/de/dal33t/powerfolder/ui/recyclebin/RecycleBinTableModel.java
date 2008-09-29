@@ -63,7 +63,7 @@ public class RecycleBinTableModel extends PFComponent implements TableModel,
             "",
             Translation.getTranslation("general.file"),
             Translation.getTranslation("general.size"),
-            Translation.getTranslation("fileinfo.modifieddate")};
+            Translation.getTranslation("fileinfo.modified_date")};
 
     private List<FileInfo> displayList = Collections
         .synchronizedList(new ArrayList<FileInfo>());

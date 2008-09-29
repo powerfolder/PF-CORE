@@ -93,7 +93,7 @@ public class FolderChatPanel extends ChatPanel implements FolderTab {
      * @return the title
      */
     public String getTitle() {
-        return Translation.getTranslation("folderpanel.chattab.title");
+        return Translation.getTranslation("folder_panel.chattab.title");
     }
 
     /**

@@ -181,7 +181,7 @@ public class FileCopier extends PFComponent {
                     if (dialog == null) {
                         dialog = new JDialog(getController().getUIController()
                             .getMainFrame().getUIComponent(), Translation
-                            .getTranslation("filecopier.progressdialog.title"),
+                            .getTranslation("file_copier.progress_dialog.title"),
                             false);
                         dialog
                             .setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
@@ -192,7 +192,7 @@ public class FileCopier extends PFComponent {
 
                         CellConstraints cc = new CellConstraints();
                         builder.add(new JLabel(Translation
-                            .getTranslation("filecopier.progressdialog.text")),
+                            .getTranslation("file_copier.progress_dialog.text")),
                             cc.xy(1, 1));
                         builder.add(progressBar, cc.xy(1, 3));
                         builder.add(filenameLabel, cc.xy(1, 5));

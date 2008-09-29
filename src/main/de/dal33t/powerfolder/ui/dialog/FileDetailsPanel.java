@@ -19,27 +19,15 @@
 */
 package de.dal33t.powerfolder.ui.dialog;
 
-import java.awt.Color;
-import java.io.File;
-import java.util.Collections;
-import java.util.List;
-
-import javax.swing.Icon;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Format;
@@ -48,6 +36,15 @@ import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
 import de.dal33t.powerfolder.util.ui.SelectionChangeListener;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
+
+import javax.swing.Icon;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import java.awt.Color;
+import java.io.File;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * A Panel to display detail infos about a file
@@ -188,14 +185,14 @@ public class FileDetailsPanel extends PFUIComponent implements
             status = Translation.getTranslation("fileinfo.expected");
         } else if (hasJoinedFolder()) {
             if (file.isNewerAvailable(getController().getFolderRepository())) {
-                status = Translation.getTranslation("fileinfo.neweravailable");
+                status = Translation.getTranslation("fileinfo.newer_available");
             } else {
                 status = Translation.getTranslation("fileinfo.normal");
             }
         } else if (nSources > 0) {
             status = Translation.getTranslation("fileinfo.available");
         } else {
-            status = Translation.getTranslation("fileinfo.notavailable");
+            status = Translation.getTranslation("fileinfo.not_available");
         }
 
         // Prepare diskfile
@@ -318,12 +315,12 @@ public class FileDetailsPanel extends PFUIComponent implements
                 cc.xy(5, 3)).setForeground(Color.BLACK);
             builder.add(folderField, cc.xy(7, 3));
 
-            builder.addLabel(Translation.getTranslation("fileinfo.modifiedby"),
+            builder.addLabel(Translation.getTranslation("fileinfo.modified_by"),
                 cc.xy(5, 5)).setForeground(Color.BLACK);
             builder.add(modifiedByField, cc.xy(7, 5));
 
             builder.addLabel(
-                Translation.getTranslation("fileinfo.modifieddate"),
+                Translation.getTranslation("fileinfo.modified_date"),
                 cc.xy(5, 7)).setForeground(Color.BLACK);
             builder.add(modifiedDateField, cc.xy(7, 7));
 

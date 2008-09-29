@@ -60,14 +60,14 @@ class MemberTableCellRenderer extends DefaultTableCellRenderer {
                 case 1 : {
                     if (member.isCompleteyConnected()) {
                         value = Translation
-                            .getTranslation("friendspanel.connected");
+                            .getTranslation("friends_panel.connected");
                     } else if (member.isConnectedToNetwork()) {
                         if (member.isUnableToConnect()) {
                             value = Translation
-                                .getTranslation("friendspanel.unable_to_connect");
+                                .getTranslation("friends_panel.unable_to_connect");
                         } else {
                             value = Translation
-                                .getTranslation("friendspanel.currently_online");
+                                .getTranslation("friends_panel.currently_online");
                         }
 
                     } else {
@@ -116,6 +116,6 @@ class MemberTableCellRenderer extends DefaultTableCellRenderer {
 
     private final static String replaceNullWithNA(String original) {
         return original == null ? Translation
-            .getTranslation("friendspanel.n_a") : original;
+            .getTranslation("friends_panel.n_a") : original;
     }
 }

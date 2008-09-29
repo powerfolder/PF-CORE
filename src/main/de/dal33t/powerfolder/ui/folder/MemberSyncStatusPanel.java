@@ -124,7 +124,7 @@ public class MemberSyncStatusPanel extends PFUIComponent {
                 cc.xy(1, 9)).setForeground(Color.BLACK);
         builder.add(localSizeLabel, cc.xy(3, 9));
 
-        builder.addLabel(Translation.getTranslation("folderinfo.totalsync"),
+        builder.addLabel(Translation.getTranslation("folderinfo.total_sync"),
             cc.xy(1, 11)).setForeground(Color.BLACK);
         builder.add(totalSyncLabel, cc.xy(3, 11));
 

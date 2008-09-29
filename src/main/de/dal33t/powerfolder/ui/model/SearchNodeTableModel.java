@@ -58,10 +58,10 @@ public class SearchNodeTableModel extends PFUIComponent implements TableModel,
     private Comparator comparator;
 
     private static final String[] COLUMN_NAMES = new String[]{
-        Translation.getTranslation("friendsearch.nodetable.name"),
-        Translation.getTranslation("friendsearch.nodetable.last_seen_online"),
-        Translation.getTranslation("friendsearch.nodetable.ip"),
-        Translation.getTranslation("friendsearch.nodetable.on_local_network")};
+        Translation.getTranslation("friend_search.node_table.name"),
+        Translation.getTranslation("friend_search.node_table.last_seen_online"),
+        Translation.getTranslation("friend_search.node_table.ip"),
+        Translation.getTranslation("friend_search.node_table.on_local_network")};
 
     /**
      * Initalizes the node table model which contains user/nodes
@@ -204,7 +204,7 @@ public class SearchNodeTableModel extends PFUIComponent implements TableModel,
     public Object getDataAt(int rowIndex) {
      
         if (members.isEmpty()) {
-            return Translation.getTranslation("friendsearch.no_user_found");
+            return Translation.getTranslation("friend_search.no_user_found");
         }
         return members.get(rowIndex);
     }

@@ -57,7 +57,7 @@ import de.dal33t.powerfolder.util.ui.TextLinesPanelBuilder;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
- * Displays the filenameproblems of a Folder
+ * Displays the filename_problems of a Folder
  *      *** DISABLED ***
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  */
@@ -66,7 +66,7 @@ public class ProblemsTab extends PFUIComponent implements FolderTab {
     private String[] columns = new String[]{
         Translation.getTranslation("filelist.name"),
         Translation.getTranslation("general.description"),
-        Translation.getTranslation("filenameproblemhandler.solution")};
+        Translation.getTranslation("filename_problemhandler.solution")};
 
     private static final int FILENAME_COLUMN = 0;
     private static final int PROBLEM_COLUMN = 1;
@@ -87,7 +87,7 @@ public class ProblemsTab extends PFUIComponent implements FolderTab {
     }
 
     public String getTitle() {
-        return Translation.getTranslation("folderpanel.problemstab.title");
+        return Translation.getTranslation("folder_panel.problemstab.title");
     }
 
     public JComponent getUIComponent() {

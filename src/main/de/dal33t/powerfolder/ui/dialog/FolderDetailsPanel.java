@@ -19,21 +19,10 @@
 */
 package de.dal33t.powerfolder.ui.dialog;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-
 import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.disk.Folder;
@@ -46,6 +35,15 @@ import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.ui.SyncProfileSelectorPanel;
 import de.dal33t.powerfolder.util.ui.SyncProfileUtil;
+
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 /**
  * A Information panel for a folder. Displays most important things
@@ -229,12 +227,12 @@ public class FolderDetailsPanel extends PFUIComponent {
             builder.add(sizeField, cc.xy(3, 3));
 
             builder
-                .addLabel(Translation.getTranslation("folderinfo.totalsync"),
+                .addLabel(Translation.getTranslation("folderinfo.total_sync"),
                     cc.xy(1, 5)).setForeground(Color.BLACK);
             builder.add(totalSyncField, cc.xy(3, 5));
 
             builder.addLabel(
-                Translation.getTranslation("folderinfo.syncprofile"),
+                Translation.getTranslation("folderinfo.transfer_mode"),
                 cc.xy(1, 7)).setForeground(Color.BLACK);
             builder.add(syncProfileSelectorPanel.getUIComponent(), cc.xy(3, 7));
 

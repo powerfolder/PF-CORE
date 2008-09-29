@@ -130,7 +130,7 @@ public class HomeTab extends PFUIComponent implements FolderTab {
     }
 
     public String getTitle() {
-        return Translation.getTranslation("folderpanel.hometab.title");
+        return Translation.getTranslation("folder_panel.home_tab.title");
     }
 
     public JComponent getUIComponent() {
@@ -162,7 +162,7 @@ public class HomeTab extends PFUIComponent implements FolderTab {
         syncFolderButton = new JButton(syncFolderAction);
         openLocalFolder = new OpenLocalFolder(getController());
         JLabel locFolderLabel = new JLabel(Translation
-            .getTranslation("folderpanel.hometab.local_folder_location"));
+            .getTranslation("folder_panel.home_tab.local_folder_location"));
         expectedFilesCountLabel = new JLabel();
         lastFileChangeDateLabel = new JLabel();
         totalNormalFilesCountLabel = new JLabel();
@@ -175,7 +175,7 @@ public class HomeTab extends PFUIComponent implements FolderTab {
         localFolderField.setEditable(false);
         localFolderButton = new JButton(Icons.DIRECTORY);
         localFolderButton.setToolTipText(Translation
-            .getTranslation("folderpanel.hometab.select_directory.text"));
+            .getTranslation("folder_panel.home_tab.select_directory.text"));
         localFolderButton.addActionListener(new MyActionListener());
 
         toolbar = createToolBar();
@@ -189,39 +189,39 @@ public class HomeTab extends PFUIComponent implements FolderTab {
 
         int row = 1;
         builder.addLabel(Translation
-            .getTranslation("folderpanel.hometab.synchronisation_percentage"),
+            .getTranslation("folder_panel.home_tab.synchronisation_percentage"),
             cc.xy(2, row));
         builder.add(syncPercentageLabel, cc.xyw(4, row, 4));
 
         row += 2;
         builder.addLabel(Translation
-            .getTranslation("folderpanel.hometab.synchronisation_eta"), cc.xy(
+            .getTranslation("folder_panel.home_tab.synchronisation_eta"), cc.xy(
             2, row));
         builder.add(syncETALabel, cc.xyw(4, row, 2));
 
         row += 2;
-        builder.addLabel(Translation.getTranslation("folderpanel.hometab."
+        builder.addLabel(Translation.getTranslation("folder_panel.home_tab."
             + "number_of_local_files_in_folder"), cc.xy(2, row));
         builder.add(totalNormalFilesCountLabel, cc.xyw(4, row, 2));
 
         row += 2;
-        builder.addLabel(Translation.getTranslation("folderpanel.hometab."
+        builder.addLabel(Translation.getTranslation("folder_panel.home_tab."
             + "number_of_available_files_at_other_members"), cc.xy(2, row));
         builder.add(expectedFilesCountLabel, cc.xyw(4, row, 2));
 
         row += 2;
-        builder.addLabel(Translation.getTranslation("folderpanel.hometab."
+        builder.addLabel(Translation.getTranslation("folder_panel.home_tab."
             + "last_file_change_date"), cc.xy(2, row));
         builder.add(lastFileChangeDateLabel, cc.xyw(4, row, 2));
 
         row += 2;
         builder.addLabel(Translation
-            .getTranslation("folderpanel.hometab.local_size"), cc.xy(2, row));
+            .getTranslation("folder_panel.home_tab.local_size"), cc.xy(2, row));
         builder.add(sizeLabel, cc.xyw(4, row, 2));
 
         row += 2;
         builder.addLabel(Translation
-            .getTranslation("folderpanel.hometab.total_size"), cc.xy(2, row));
+            .getTranslation("folder_panel.home_tab.total_size"), cc.xy(2, row));
         builder.add(totalSizeLabel, cc.xyw(4, row, 2));
 
         row += 2;
@@ -310,9 +310,9 @@ public class HomeTab extends PFUIComponent implements FolderTab {
     private void displayError(Exception e) {
         DialogFactory.genericDialog(getController().getUIController()
             .getMainFrame().getUIComponent(), Translation
-            .getTranslation("folderpanel.hometab.move_error.title"),
+            .getTranslation("folder_panel.home_tab.move_error.title"),
             Translation.getTranslation(
-                "folderpanel.hometab.move_error.other", e.getMessage()),
+                "folder_panel.home_tab.move_error.other", e.getMessage()),
             GenericDialogType.WARN);
     }
 
@@ -369,13 +369,13 @@ public class HomeTab extends PFUIComponent implements FolderTab {
     private int shouldMoveContent() {
         int result = DialogFactory.genericDialog(getController()
             .getUIController().getMainFrame().getUIComponent(), Translation
-            .getTranslation("folderpanel.hometab.move_content.title"),
-            Translation.getTranslation("folderpanel.hometab.move_content"),
+            .getTranslation("folder_panel.home_tab.move_content.title"),
+            Translation.getTranslation("folder_panel.home_tab.move_content"),
             new String[]{
                 Translation
-                    .getTranslation("folderpanel.hometab.move_content.move"),
+                    .getTranslation("folder_panel.home_tab.move_content.move"),
                     Translation
-                        .getTranslation("folderpanel.hometab.move_content.dont"),
+                        .getTranslation("folder_panel.home_tab.move_content.dont"),
                     Translation
                         .getTranslation("general.cancel"),
             },
@@ -391,9 +391,9 @@ public class HomeTab extends PFUIComponent implements FolderTab {
      */
     private boolean shouldMoveLocal(File newDirectory) {
         String title = Translation
-            .getTranslation("folderpanel.hometab.confirm_local_folder_move.title");
+            .getTranslation("folder_panel.home_tab.confirm_local_folder_move.title");
         String message = Translation.getTranslation(
-            "folderpanel.hometab.confirm_local_folder_move.text", folder
+            "folder_panel.home_tab.confirm_local_folder_move.text", folder
                 .getLocalBase().getAbsolutePath(), newDirectory
                 .getAbsolutePath());
 
@@ -420,9 +420,9 @@ public class HomeTab extends PFUIComponent implements FolderTab {
         {
             int result = DialogFactory.genericDialog(getController()
                 .getUIController().getMainFrame().getUIComponent(), Translation
-                .getTranslation("folderpanel.hometab.folder_not_empty.title"),
+                .getTranslation("folder_panel.home_tab.folder_not_empty.title"),
                 Translation.getTranslation(
-                    "folderpanel.hometab.folder_not_empty", newDirectory
+                    "folder_panel.home_tab.folder_not_empty", newDirectory
                         .getAbsolutePath()), new String[]{
                     Translation.getTranslation("general.continue"),
                     Translation.getTranslation("general.cancel")}, 1,
@@ -567,13 +567,13 @@ public class HomeTab extends PFUIComponent implements FolderTab {
         @Override
         protected String getTitle() {
             return Translation
-                .getTranslation("folderpanel.hometab.working.title");
+                .getTranslation("folder_panel.home_tab.working.title");
         }
 
         @Override
         protected String getWorkingText() {
             return Translation
-                .getTranslation("folderpanel.hometab.working.description");
+                .getTranslation("folder_panel.home_tab.working.description");
         }
 
         @Override
@@ -623,9 +623,9 @@ public class HomeTab extends PFUIComponent implements FolderTab {
                                     getController().getUIController()
                                             .getMainFrame().getUIComponent(),
                                     Translation.getTranslation(
-                                            "folderpanel.hometab.move_error.title"),
+                                            "folder_panel.home_tab.move_error.title"),
                                     Translation.getTranslation(
-                                            "folderpanel.hometab.move_error.temp"),
+                                            "folder_panel.home_tab.move_error.temp"),
                                     getController().isVerbose(), e);
                         }
                     }

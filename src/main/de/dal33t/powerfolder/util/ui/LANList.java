@@ -61,13 +61,13 @@ public class LANList extends PFComponent {
             .setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         addButton = new JButton();
         addButton.setText(Translation
-            .getTranslation("folderpanel.settingstab.addbutton.name"));
+            .getTranslation("folder_panel.settings_tab.addbutton.name"));
         removeButton = new JButton();
         removeButton.setText(Translation
-            .getTranslation("folderpanel.settingstab.removebutton.name"));
+            .getTranslation("folder_panel.settings_tab.removebutton.name"));
         editButton = new JButton();
         editButton.setText(Translation
-            .getTranslation("folderpanel.settingstab.editbutton.name"));
+            .getTranslation("folder_panel.settings_tab.editbutton.name"));
 
         addButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {

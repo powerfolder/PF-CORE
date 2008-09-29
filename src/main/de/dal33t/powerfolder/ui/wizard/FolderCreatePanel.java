@@ -254,7 +254,7 @@ public class FolderCreatePanel extends PFWizardPanel {
                 } catch (FolderException e) {
                     problems = true;
                     errorArea.setText(Translation
-                        .getTranslation("foldercreate.dialog.backuperror.text")
+                        .getTranslation("folder_create.dialog.backup_error.text")
                         + "\n" + e.getMessage());
                     errorPane.setVisible(true);
                     Loggable.logSevereStatic(FolderCreatePanel.class,

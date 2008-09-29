@@ -89,7 +89,7 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
     }
 
     public String getTitle() {
-        return Translation.getTranslation("folderpanel.settingstab.title");
+        return Translation.getTranslation("folder_panel.settings_tab.title");
     }
 
     /**
@@ -127,7 +127,7 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
         CellConstraints cc = new CellConstraints();
 
         builder.add(new JLabel(Translation
-            .getTranslation("folderpanel.settingstab.choose_transfer_mode")), cc
+            .getTranslation("folder_panel.settings_tab.choose_transfer_mode")), cc
             .xy(2, 2));
 
         syncProfileSelectorPanel = new SyncProfileSelectorPanel(getController());
@@ -137,7 +137,7 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
         builder.add(useRecycleBinBox, cc.xy(4, 4));
 
         builder.add(new JLabel(Translation
-            .getTranslation("folderpanel.settingstab.ignorepatterns")), cc.xy(
+            .getTranslation("folder_panel.settings_tab.ignorepatterns")), cc.xy(
             2, 6));
 
         builder.add(createPatternsPanel(), cc.xy(4, 6));
@@ -145,7 +145,7 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
         createBlackWhiteRadioButtons();
         // On hold until version 4 (#1016)
 //        builder.add(new JLabel(Translation
-//            .getTranslation("folderpanel.settingstab.ignore_pattern_type")), cc.xy(
+//            .getTranslation("folder_panel.settings_tab.ignore_pattern_type")), cc.xy(
 //            2, 8));
 //
 //        FormLayout layout2 = new FormLayout("pref, 4dlu, pref",
@@ -164,7 +164,7 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
 
     private void createUseRecycleBin() {
         useRecycleBinBox = new JCheckBox(new AbstractAction(Translation
-            .getTranslation("folderpanel.settingstab.userecyclebin"))
+            .getTranslation("folder_panel.settings_tab.userecyclebin"))
         {
             public void actionPerformed(ActionEvent event) {
                 folder.setUseRecycleBin(useRecycleBinBox.isSelected());
@@ -234,13 +234,13 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
      */
     private class AddAction extends BaseAction {
         public AddAction(Controller controller) {
-            super("folderpanel.settingstab.addbutton", controller);
+            super("folder_panel.settings_tab.addbutton", controller);
 
         }
 
         public void actionPerformed(ActionEvent e) {
             showAddPane(Translation
-                .getTranslation("folderpanel.settingstab.add_a_pattern.example"));
+                .getTranslation("folder_panel.settings_tab.add_a_pattern.example"));
         }
     }
 
@@ -252,9 +252,9 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
         if (st.countTokens() == 1) {
             String pattern = st.nextToken();
             String title = Translation
-                .getTranslation("folderpanel.settingstab.add_a_pattern.title");
+                .getTranslation("folder_panel.settings_tab.add_a_pattern.title");
             String text = Translation
-                .getTranslation("folderpanel.settingstab.add_a_pattern.text");
+                .getTranslation("folder_panel.settings_tab.add_a_pattern.text");
             String patternResult = (String) JOptionPane.showInputDialog(
                 getUIController().getMainFrame().getUIComponent(), text, title,
                 JOptionPane.PLAIN_MESSAGE, null, null, pattern);
@@ -279,10 +279,10 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
                 sb.append(pattern + '\n');
             }
             String message = Translation
-                .getTranslation("folderpanel.settingstab.add_patterns.text_1")
+                .getTranslation("folder_panel.settings_tab.add_patterns.text_1")
                 + "\n\n" + sb.toString();
             String title = Translation
-                .getTranslation("folderpanel.settingstab.add_patterns.title");
+                .getTranslation("folder_panel.settings_tab.add_patterns.title");
             int result = DialogFactory.genericDialog(getUIController()
                 .getMainFrame().getUIComponent(), title, message, new String[]{
                 Translation.getTranslation("general.ok"),
@@ -304,7 +304,7 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
     private class RemoveAction extends SelectionBaseAction {
         public RemoveAction(Controller controller, SelectionModel selectionModel)
         {
-            super("folderpanel.settingstab.removebutton", controller,
+            super("folder_panel.settings_tab.removebutton", controller,
                 selectionModel);
             setEnabled(false);
         }
@@ -374,16 +374,16 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
     /** opens a popup, input dialog to edit the selected pattern */
     private class EditAction extends SelectionBaseAction {
         EditAction(Controller controller, SelectionModel selectionModel) {
-            super("folderpanel.settingstab.editbutton", controller,
+            super("folder_panel.settings_tab.editbutton", controller,
                 selectionModel);
             setEnabled(false);
         }
 
         public void actionPerformed(ActionEvent e) {
             String text = Translation
-                .getTranslation("folderpanel.settingstab.edit_a_pattern.text");
+                .getTranslation("folder_panel.settings_tab.edit_a_pattern.text");
             String title = Translation
-                .getTranslation("folderpanel.settingstab.edit_a_pattern.title");
+                .getTranslation("folder_panel.settings_tab.edit_a_pattern.title");
 
             String pattern = (String) JOptionPane.showInputDialog(
                 getUIController().getMainFrame().getUIComponent(), text, title,
@@ -440,8 +440,8 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
                 boolean change = true;
                 if (whitelistRB.isSelected()) {
                     int result = DialogFactory.genericDialog(getController().getUIController().getMainFrame().getUIComponent(),
-                            Translation.getTranslation("folderpanel.settingstab.white_list.title"),
-                            Translation.getTranslation("folderpanel.settingstab.white_list.message"),
+                            Translation.getTranslation("folder_panel.settings_tab.white_list.title"),
+                            Translation.getTranslation("folder_panel.settings_tab.white_list.message"),
                             new String[]{Translation.getTranslation("general.ok"),
                             Translation.getTranslation("general.cancel")},
                             0, GenericDialogType.WARN);

@@ -26,7 +26,7 @@ import java.awt.event.ActionEvent;
 
 public class FindFriendAction extends BaseAction {
     public FindFriendAction(Controller controller) {
-        super("findfriends", controller);
+        super("find_friends", controller);
     }
 
     public void actionPerformed(ActionEvent e) {
