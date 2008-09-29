@@ -174,7 +174,7 @@ public class ServerClientModel extends PFUIComponent {
     private class MirrorFolderAction extends BaseAction {
 
         protected MirrorFolderAction(Controller controller) {
-            super("mirrorfolder", controller);
+            super("mirror_folder", controller);
         }
 
         public void actionPerformed(ActionEvent e) {

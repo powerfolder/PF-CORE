@@ -89,7 +89,7 @@ public class MembersTab extends PFUIComponent implements FolderTab,
     }
 
     public String getTitle() {
-        return Translation.getTranslation("myfolderstable.members");
+        return Translation.getTranslation("my_folders_table.members");
     }
 
     public JComponent getUIComponent() {
@@ -279,7 +279,7 @@ public class MembersTab extends PFUIComponent implements FolderTab,
             }
             if (member.isOnLAN()) {
                 tooltipText += " ("
-                    + Translation.getTranslation("member.onlan") + ")";
+                    + Translation.getTranslation("member.on_lan") + ")";
             }
             setToolTipText(tooltipText);
             return this;

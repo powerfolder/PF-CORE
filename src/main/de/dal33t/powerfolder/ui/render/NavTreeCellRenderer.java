@@ -183,7 +183,7 @@ public class NavTreeCellRenderer extends DefaultTreeCellRenderer {
                 icon = Icons.UPLOAD;
             }
         } else if (userObject == RootNode.RECYCLEBIN_NODE_LABEL) {
-            text = Translation.getTranslation("general.recyclebin") + " ("
+            text = Translation.getTranslation("general.recycle_bin") + " ("
                 + controller.getRecycleBin().countAllRecycledFiles() + ')';
             icon = Icons.RECYCLE_BIN;
         } else if (userObject == RootNode.WEBSERVICE_NODE_LABEL) {

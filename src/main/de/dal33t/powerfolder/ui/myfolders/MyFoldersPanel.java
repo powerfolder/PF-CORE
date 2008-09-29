@@ -131,10 +131,10 @@ public class MyFoldersPanel extends PFUIPanel {
 
         boolean[] defaults = myFoldersTableModel.getDefaultVisibilities();
         CustomTableHelper.setupFromPref(getController(), customTableModel,
-            "myfolderstable", defaults);
+            "my_folders_table", defaults);
         // customize the table popup menu
         JPopupMenu popup = CustomTableHelper.createSetUpColumnsMenu(
-            getController(), customTableModel, "myfolderstable", table);
+            getController(), customTableModel, "my_folders_table", table);
         UnsortedTableHeaderRenderer.associateHeaderRenderer(table
             .getColumnModel());
         // popup appears on the table header
@@ -245,7 +245,7 @@ public class MyFoldersPanel extends PFUIPanel {
                     int prefWidth = component.getPreferredSize().width;
                     if (currentColumnWidth < prefWidth) {
                         newValue = Translation.getTranslation(
-                            "myfolderstable.number_of_members", folder
+                            "my_folders_table.number_of_members", folder
                                 .getMembersCount()
                                 + "");
                     }

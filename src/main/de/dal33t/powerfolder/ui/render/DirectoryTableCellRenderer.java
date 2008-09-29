@@ -552,24 +552,24 @@ public class DirectoryTableCellRenderer extends DefaultTableCellRenderer {
                 + " colspan=2>&nbsp;" + statusForTooltip + "&nbsp;</TD></TR>");
         }
         textInHTML.append("<TD valign=top class=bold>&nbsp;"
-            + Translation.getTranslation("mp3fileinfo.title")
+            + Translation.getTranslation("mp3_file_info.title")
             + ":</TD><TD valign=top class=normal align=rigth>"
             + replaceNullWithNA(mp3FileInfo.getTitle()) + "&nbsp;</TD></TR>");
         textInHTML.append("<TD valign=top class=bold>&nbsp;"
-            + Translation.getTranslation("mp3fileinfo.artist")
+            + Translation.getTranslation("mp3_file_info.artist")
             + ":</TD><TD valign=top class=normal align=rigth>"
             + replaceNullWithNA(mp3FileInfo.getArtist()) + "&nbsp;</TD></TR>");
         textInHTML.append("<TD valign=top class=bold>&nbsp;"
-            + Translation.getTranslation("mp3fileinfo.album")
+            + Translation.getTranslation("mp3_file_info.album")
             + ":</TD><TD valign=top class=normal align=rigth>"
             + replaceNullWithNA(mp3FileInfo.getAlbum()) + "&nbsp;</TD></TR>");
         textInHTML.append("<TD valign=top class=bold>&nbsp;"
-            + Translation.getTranslation("mp3fileinfo.size")
+            + Translation.getTranslation("mp3_file_info.size")
             + ":</TD><TD valign=top class=normal align=rigth>"
             + Format.formatBytes(mp3FileInfo.getSize())
             + " bytes&nbsp;</TD></TR>");
         textInHTML.append("<TD valign=top class=bold>&nbsp;"
-            + Translation.getTranslation("mp3fileinfo.length")
+            + Translation.getTranslation("mp3_file_info.length")
             + ":</TD><TD valign=top class=normal align=rigth>"
             + mp3FileInfo.getLength() + " min:sec&nbsp;</TD></TR>");
         String style;
@@ -579,7 +579,7 @@ public class DirectoryTableCellRenderer extends DefaultTableCellRenderer {
             style = "normal";
         }
         textInHTML.append("<TD valign=top class=bold>&nbsp;"
-            + Translation.getTranslation("mp3fileinfo.bitrate")
+            + Translation.getTranslation("mp3_file_info.bit_rate")
             + ":</TD><TD valign=top  class=" + style + " align=rigth>"
             + mp3FileInfo.getBitrate() + " kbps&nbsp;</TD></TR>");
 
@@ -589,7 +589,7 @@ public class DirectoryTableCellRenderer extends DefaultTableCellRenderer {
             style = "normal";
         }
         textInHTML.append("<TD valign=top class=bold>&nbsp;"
-            + Translation.getTranslation("mp3fileinfo.samplerate")
+            + Translation.getTranslation("mp3_file_info.sample_rate")
             + ":</TD><TD valign=top  class=" + style + " align=rigth>"
             + Format.getNumberFormat().format(mp3FileInfo.getSamplerate())
             + "&nbsp;</TD></TR>");
@@ -602,7 +602,7 @@ public class DirectoryTableCellRenderer extends DefaultTableCellRenderer {
             text = "mono";
         }
         textInHTML.append("<TD valign=top class=bold>&nbsp;"
-            + Translation.getTranslation("mp3fileinfo.stereo_mono")
+            + Translation.getTranslation("mp3_file_info.stereo_mono")
             + ":&nbsp;</TD><TD valign=top  class=" + style + " align=rigth>"
             + text + "&nbsp;</TD></TR>");
         textInHTML.append("</TR></TABLE>");

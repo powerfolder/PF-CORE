@@ -133,7 +133,7 @@ public class RecycleBinPanel extends PFUIPanel implements HasDetailsPanel {
      * TODO #495
      */
     public String getTitle() {
-        return Translation.getTranslation("general.recyclebin");
+        return Translation.getTranslation("general.recycle_bin");
     }
 
     private JComponent getFileDetailsPanelComp() {

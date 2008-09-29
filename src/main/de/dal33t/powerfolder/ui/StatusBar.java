@@ -208,7 +208,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
     private void updateLimitedConnectivityLabel() {
         if (getController().isLimitedConnectivity()) {
             limitedConnectivityLabel.setText(Translation
-                .getTranslation("limitedconnection.title"));
+                .getTranslation("limited_connection.title"));
             limitedConnectivityLabel.setIcon(Icons.WARNING);
         } else {
             limitedConnectivityLabel.setText("");

@@ -80,10 +80,10 @@ public class MemoryMonitor implements Runnable {
                         .getUIComponent();
                 if (OSUtil.isWindowsSystem() && !OSUtil.isWebStart()) {
                     int response = DialogFactory.genericDialog(parent, Translation
-                            .getTranslation("lowmemory.title"), Translation
-                            .getTranslation("lowmemory.text"), new String[]{
-                            Translation.getTranslation("lowmemory.increase"),
-                            Translation.getTranslation("lowmemory.do_nothing")}, 0,
+                            .getTranslation("low_memory.title"), Translation
+                            .getTranslation("low_memory.text"), new String[]{
+                            Translation.getTranslation("low_memory.increase"),
+                            Translation.getTranslation("low_memory.do_nothing")}, 0,
                             GenericDialogType.WARN);
                     if (response == 0) { // Increase memory
                         increaseAvailableMemory();
@@ -91,8 +91,8 @@ public class MemoryMonitor implements Runnable {
                 } else {
                     // No ini - Can only warn user.
                     DialogFactory.genericDialog(parent, Translation
-                            .getTranslation("lowmemory.title"), Translation
-                            .getTranslation("lowmemory.warn"),
+                            .getTranslation("low_memory.title"), Translation
+                            .getTranslation("low_memory.warn"),
                             new String[]{Translation.getTranslation("general.ok")},
                             0, GenericDialogType.WARN);
                 }
@@ -155,13 +155,13 @@ public class MemoryMonitor implements Runnable {
             .getUIComponent();
         if (wroteNewIni) {
             DialogFactory.genericDialog(parent, Translation
-                .getTranslation("lowmemory.title"), Translation
-                .getTranslation("lowmemory.configure_success"),
+                .getTranslation("low_memory.title"), Translation
+                .getTranslation("low_memory.configure_success"),
                 GenericDialogType.INFO);
         } else {
             DialogFactory.genericDialog(parent, Translation
-                .getTranslation("lowmemory.title"), Translation
-                .getTranslation("lowmemory.configure_failure"),
+                .getTranslation("low_memory.title"), Translation
+                .getTranslation("low_memory.configure_failure"),
                 GenericDialogType.WARN);
         }
     }

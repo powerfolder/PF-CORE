@@ -276,11 +276,11 @@ public class LimitedConnectivityChecker extends Loggable {
                     .getUIComponent();
                 NeverAskAgainResponse response = DialogFactory.genericDialog(
                     parent, Translation
-                        .getTranslation("limitedconnection.title"), Translation
-                        .getTranslation("limitedconnection.text"),
+                        .getTranslation("limited_connection.title"), Translation
+                        .getTranslation("limited_connection.text"),
                     new String[]{Translation.getTranslation("general.ok")}, 0,
                     GenericDialogType.INFO, Translation
-                        .getTranslation("limitedconnection.dont_autodetect"));
+                        .getTranslation("limited_connection.dont_autodetect"));
 
                 if (response.isNeverAskAgain()) {
                     PreferencesEntry.TEST_CONNECTIVITY.setValue(controllerArg,

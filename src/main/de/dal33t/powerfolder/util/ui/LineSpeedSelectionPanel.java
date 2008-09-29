@@ -19,27 +19,25 @@
 */
 package de.dal33t.powerfolder.util.ui;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.text.ParseException;
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
+import de.dal33t.powerfolder.util.Loggable;
+import de.dal33t.powerfolder.util.Translation;
 
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Loggable;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.text.ParseException;
 
 /**
  * Panel with a combobox for selecting the line speed and a textfield for
  * entering upload speed. Editing the textfield is only possible if Custom
- * linespeed was chosen first.
+ * line_speed was chosen first.
  * 
  * @author Bytekeeper
  * @version $revision$
@@ -121,12 +119,12 @@ public class LineSpeedSelectionPanel extends JPanel {
         CellConstraints cc = new CellConstraints();
 
         builder.add(new JLabel(Translation
-            .getTranslation("linespeed.downloadspeed")), cc.xy(1, 1));
+            .getTranslation("line_speed.download_speed")), cc.xy(1, 1));
         builder.add(customDownloadSpeedField, cc.xy(3, 1));
         builder.add(new JLabel("KB/s"), cc.xy(5, 1));
 
         builder.add(new JLabel(Translation
-            .getTranslation("linespeed.uploadspeed")), cc.xy(1, 3));
+            .getTranslation("line_speed.upload_speed")), cc.xy(1, 3));
         builder.add(customUploadSpeedField, cc.xy(3, 3));
         builder.add(new JLabel("KB/s"), cc.xy(5, 3));
 
@@ -139,31 +137,31 @@ public class LineSpeedSelectionPanel extends JPanel {
      * Loads the selection with the default values for LAN
      */
     public void loadLANSelection() {
-        addLineSpeed("linespeed.lan10", 1000, 0);
-        addLineSpeed("linespeed.lan100", 10000, 0);
-        addLineSpeed("linespeed.lan1000", 100000, 0);
-        addLineSpeed("linespeed.unlimited", 0, 0);
-        defaultSpeed = addLineSpeed("linespeed.customspeed", 0, 0, true);
+        addLineSpeed("line_speed.lan10", 1000, 0);
+        addLineSpeed("line_speed.lan100", 10000, 0);
+        addLineSpeed("line_speed.lan1000", 100000, 0);
+        addLineSpeed("line_speed.unlimited", 0, 0);
+        defaultSpeed = addLineSpeed("line_speed.custom_speed", 0, 0, true);
     }
 
     /**
      * Loads the selection with the default values for WAN
      */
     public void loadWANSelection() {
-        addLineSpeed("linespeed.isdnspeed64", 5, 0);
-        addLineSpeed("linespeed.isdnspeed128", 11, 0);
-        addLineSpeed("linespeed.adsl128", 11, 0);
-        addLineSpeed("linespeed.adsl256", 23, 0);
-        addLineSpeed("linespeed.adsl512", 46, 0);
-        addLineSpeed("linespeed.adsl768", 69, 0);
-        addLineSpeed("linespeed.T1", 140, 0);
-        addLineSpeed("linespeed.T3", 3930, 0);
-        addLineSpeed("linespeed.unlimited", 0, 0);
-        defaultSpeed = addLineSpeed("linespeed.customspeed", 0, 0, true);
+        addLineSpeed("line_speed.isdn_speed64", 5, 0);
+        addLineSpeed("line_speed.isdn_speed128", 11, 0);
+        addLineSpeed("line_speed.adsl128", 11, 0);
+        addLineSpeed("line_speed.adsl256", 23, 0);
+        addLineSpeed("line_speed.adsl512", 46, 0);
+        addLineSpeed("line_speed.adsl768", 69, 0);
+        addLineSpeed("line_speed.T1", 140, 0);
+        addLineSpeed("line_speed.T3", 3930, 0);
+        addLineSpeed("line_speed.unlimited", 0, 0);
+        defaultSpeed = addLineSpeed("line_speed.custom_speed", 0, 0, true);
     }
 
     /**
-     * @return the default "fallback" linespeed if one was set, otherwise
+     * @return the default "fallback" line_speed if one was set, otherwise
      *         returns the current selected speed.
      */
     private LineSpeed getDefaultLineSpeed() {
@@ -173,7 +171,7 @@ public class LineSpeedSelectionPanel extends JPanel {
     }
 
     /**
-     * Sets the default "fallback" linespeed.
+     * Sets the default "fallback" line_speed.
      * 
      * @param speed
      *            the LineSpeed or null it should be cleared
@@ -208,7 +206,7 @@ public class LineSpeedSelectionPanel extends JPanel {
      *            true if the user should be allowed to modify the upload speed
      *            setting. (The value of LineSpeed.uploadSpeed remains
      *            untouched)
-     * @return the linespeed entry.
+     * @return the line_speed entry.
      */
     private LineSpeed addLineSpeed(String descr, long uploadSpeed,
         long downloadSpeed, boolean editable)

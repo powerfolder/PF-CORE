@@ -55,15 +55,15 @@ public class FoldersTableModel extends PFUIComponent implements TableModel {
     private final Collection<TableModelListener> listeners;
     private String[] columnHeaders = new String[]{
         Translation.getTranslation("general.folder"), // 0
-        Translation.getTranslation("myfolderstable.sync"), // 1
-        Translation.getTranslation("myfolderstable.syncprofile"), // 2
-        Translation.getTranslation("myfolderstable.members"), // 3
-        Translation.getTranslation("myfolderstable.number_of_local_files"), // 4
-        Translation.getTranslation("myfolderstable.local_size"), // 5
-        Translation.getTranslation("myfolderstable.number_of_incoming_files"), // 6
-        Translation.getTranslation("myfolderstable._total_number_of_files"), // 7
-        Translation.getTranslation("myfolderstable.total_size"), // 8
-        Translation.getTranslation("myfolderstable.new_files")}; // 9
+        Translation.getTranslation("my_folders_table.sync"), // 1
+        Translation.getTranslation("my_folders_table.transfer_mode"), // 2
+        Translation.getTranslation("my_folders_table.members"), // 3
+        Translation.getTranslation("my_folders_table.number_of_local_files"), // 4
+        Translation.getTranslation("my_folders_table.local_size"), // 5
+        Translation.getTranslation("my_folders_table.number_of_incoming_files"), // 6
+        Translation.getTranslation("my_folders_table._total_number_of_files"), // 7
+        Translation.getTranslation("my_folders_table.total_size"), // 8
+        Translation.getTranslation("my_folders_table.new_files")}; // 9
 
     // TODO: Is this a good place?
     private boolean[] defaultVisibility = new boolean[]{true, true, true, true,

@@ -118,7 +118,7 @@ public class RootTable extends JTable {
                         setIcon(Icons.UPLOAD);
                     }
                 } else if (userObject == RootNode.RECYCLEBIN_NODE_LABEL) {
-                    newValue = Translation.getTranslation("general.recyclebin");
+                    newValue = Translation.getTranslation("general.recycle_bin");
                     setIcon(Icons.RECYCLE_BIN);
                 } else if (userObject == RootNode.WEBSERVICE_NODE_LABEL) {
                     newValue = controller.getOSClient().getServer().getNick();
