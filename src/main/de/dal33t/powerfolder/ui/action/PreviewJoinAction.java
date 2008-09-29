@@ -40,7 +40,7 @@ public class PreviewJoinAction extends BaseAction {
     private SelectionModel selectionModel;
 
     public PreviewJoinAction(Controller controller, SelectionModel selectionModel) {
-        super("previewjoin", controller);
+        super("preview_join", controller);
         this.selectionModel = selectionModel;
         setEnabled(selectionModel.getSelection() != null);
 

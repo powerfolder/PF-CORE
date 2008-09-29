@@ -194,7 +194,7 @@ public class ErrorDialog extends PFUIComponent {
         CellConstraints cc = new CellConstraints();
         if (kindOfError == ErrorManager.WARN) {
             builder.add(new JLabel(Translation
-                .getTranslation("preferences.dialog.dyndnsUpdateWarning")
+                .getTranslation("preferences.dialog.dyn_dnsUpdateWarning")
                 + "  "
                 + getController().getDynDnsManager().activeDynDns
                     .getErrorShortText() + "  "), cc.xywh(1, 1, 1, 1));
@@ -202,7 +202,7 @@ public class ErrorDialog extends PFUIComponent {
         }
         if (kindOfError == ErrorManager.ERROR) {
             builder.add(new JLabel(Translation
-                .getTranslation("preferences.dialog.dyndnsUpdateError")
+                .getTranslation("preferences.dialog.dyn_dnsUpdateError")
                 + "  "
                 + getController().getDynDnsManager().activeDynDns
                     .getErrorShortText() + "  "), cc.xywh(1, 1, 1, 1));
@@ -225,7 +225,7 @@ public class ErrorDialog extends PFUIComponent {
      */
     private String getTitle() {
         return Translation
-            .getTranslation("preferences.dialog.dyndnsUpdateTitle");
+            .getTranslation("preferences.dialog.dyn_dnsUpdateTitle");
     }
 
     protected Component getButtonBar() {

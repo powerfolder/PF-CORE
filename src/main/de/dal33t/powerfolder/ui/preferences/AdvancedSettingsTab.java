@@ -157,29 +157,29 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
         });
 
         showPreviewPanelBox = SimpleComponentFactory.createCheckBox(Translation
-            .getTranslation("preferences.dialog.showpreviewpanel"));
+            .getTranslation("preferences.dialog.show_preview_panel"));
         showPreviewPanelBox.setToolTipText(Translation
-            .getTranslation("preferences.dialog.showpreviewpanel.tooltip"));
+            .getTranslation("preferences.dialog.show_preview_panel.tooltip"));
         showPreviewPanelBox.setSelected(PreferencesEntry.SHOW_PREVIEW_PANEL
             .getValueBoolean(getController()));
         useZipOnLanCheckBox = SimpleComponentFactory.createCheckBox(Translation
-            .getTranslation("preferences.dialog.useziponlan"));
+            .getTranslation("preferences.dialog.use_zip_on_lan"));
         useZipOnLanCheckBox.setToolTipText(Translation
-            .getTranslation("preferences.dialog.useziponlan.tooltip"));
+            .getTranslation("preferences.dialog.use_zip_on_lan.tooltip"));
         useZipOnLanCheckBox.setSelected(ConfigurationEntry.USE_ZIP_ON_LAN
                 .getValueBoolean(getController()));
 
         useDeltaSyncOnLanCheckBox = SimpleComponentFactory.createCheckBox(Translation
-        		.getTranslation("preferences.dialog.usedeltaonlan"));
+        		.getTranslation("preferences.dialog.use_delta_on_lan"));
         useDeltaSyncOnLanCheckBox.setToolTipText(Translation
-        		.getTranslation("preferences.dialog.usedeltaonlan.tooltip"));
+        		.getTranslation("preferences.dialog.use_delta_on_lan.tooltip"));
         useDeltaSyncOnLanCheckBox.setSelected(ConfigurationEntry.USE_DELTA_ON_LAN
                 .getValueBoolean(getController()));
         
         useDeltaSyncOnInternetCheckBox = SimpleComponentFactory.createCheckBox(Translation
-            .getTranslation("preferences.dialog.deltasync"));
+            .getTranslation("preferences.dialog.delta_sync"));
         useDeltaSyncOnInternetCheckBox.setToolTipText(Translation
-            .getTranslation("preferences.dialog.deltasync.tooltip"));
+            .getTranslation("preferences.dialog.delta_sync.tooltip"));
         useDeltaSyncOnInternetCheckBox
             .setSelected(ConfigurationEntry.USE_DELTA_ON_INTERNET
                 .getValueBoolean(getController()));
@@ -220,15 +220,15 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
 
         if (FirewallUtil.isFirewallAccessible()) {
             openport = SimpleComponentFactory.createCheckBox(Translation
-                .getTranslation("preferences.dialog.openport"));
+                .getTranslation("preferences.dialog.open_port"));
             openport.setToolTipText(Translation
-                .getTranslation("preferences.dialog.openport.tooltip"));
+                .getTranslation("preferences.dialog.open_port.tooltip"));
             openport.setSelected(ConfigurationEntry.NET_FIREWALL_OPENPORT
                 .getValueBoolean(getController()));
         }
 
         deleteEmtpyDirsBox = SimpleComponentFactory.createCheckBox(Translation
-                .getTranslation("preferences.dialog.deleteemptydirs"));
+                .getTranslation("preferences.dialog.delete_empty_dirs"));
         deleteEmtpyDirsBox
             .setSelected(ConfigurationEntry.DELETE_EMPTY_DIRECTORIES
                 .getValueBoolean(getController()));
@@ -293,7 +293,7 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
 
             row += 2;
             builder.addLabel(Translation
-                .getTranslation("preferences.dialog.iplanlist"), cc.xy(1, row));
+                .getTranslation("preferences.dialog.ip_lan_list"), cc.xy(1, row));
             builder.add(lanList.getUIPanel(), cc.xy(3, row));
 
             row += 2;

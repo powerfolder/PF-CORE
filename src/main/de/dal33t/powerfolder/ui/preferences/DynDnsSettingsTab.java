@@ -85,7 +85,7 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
     }
 
     public String getTabName() {
-        return Translation.getTranslation("preferences.dialog.dyndns.title");
+        return Translation.getTranslation("preferences.dialog.dyn_dns.title");
     }
 
     public boolean needsRestart() {
@@ -174,37 +174,37 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
 
             row += 2;
             builder.addLabel(Translation
-                .getTranslation("preferences.dialog.dyndnsAutoUpdate"), cc.xy(
+                .getTranslation("preferences.dialog.dyn_dnsAutoUpdate"), cc.xy(
                 1, row));
             builder.add(cbAutoUpdate, cc.xywh(3, row, 3, 1));
 
             row += 2;
             builder.addLabel(Translation
-                .getTranslation("preferences.dialog.dyndnsLoginPanel"), cc.xy(
+                .getTranslation("preferences.dialog.dyn_dnsLoginPanel"), cc.xy(
                 1, row));
 
             row += 2;
             builder.addLabel(Translation
-                .getTranslation("preferences.dialog.dyndnsUserName"), cc.xy(1,
+                .getTranslation("preferences.dialog.dyn_dnsUserName"), cc.xy(1,
                 row));
             builder.add(dyndnsUserField, cc.xywh(3, row, 3, 1));
 
             row += 2;
             dyndnsPasswordField.setEchoChar('*');
             builder.addLabel(Translation
-                .getTranslation("preferences.dialog.dyndnsPassword"), cc.xy(1,
+                .getTranslation("preferences.dialog.dyn_dnsPassword"), cc.xy(1,
                 row));
             builder.add(dyndnsPasswordField, cc.xywh(3, row, 3, 1));
 
             row += 4;
             builder.addLabel(Translation
-                .getTranslation("preferences.dialog.dyndnsCurrentIP"), cc.xy(1,
+                .getTranslation("preferences.dialog.dyn_dnsCurrentIP"), cc.xy(1,
                 row));
             builder.add(currentIPField, cc.xywh(3, row, 3, 1));
 
             row += 2;
             builder.addLabel(Translation
-                .getTranslation("preferences.dialog.dyndnsUpdatedIP"), cc.xy(1,
+                .getTranslation("preferences.dialog.dyn_dnsUpdatedIP"), cc.xy(1,
                 row));
             builder.add(updatedIPField, cc.xywh(3, row, 3, 1));
 
@@ -229,7 +229,7 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
             }
         });
         myDnsLabel = new LinkLabel(Translation
-            .getTranslation("preferences.dialog.dyndns"),
+            .getTranslation("preferences.dialog.dyn_dns"),
             "http://www.powerfolder.com/node/guide_supernode");
 
         if (ConfigurationEntry.DYNDNS_USERNAME.getValue(getController()) == null)
@@ -311,7 +311,7 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
 
     private JButton createUpdateButton(ActionListener listener) {
         updateButton = new JButton(Translation
-            .getTranslation("preferences.dialog.dyndnsUpdateButton"));
+            .getTranslation("preferences.dialog.dyn_dnsUpdateButton"));
         updateButton.addActionListener(listener);
         return updateButton;
     }

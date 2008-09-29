@@ -48,7 +48,7 @@ public class CleanupTranslationFiles {
      * Removes the translation of the following keys to force retranslation
      */
     private static final String[] RETRANSLATE = {"quickinfo.webservice.foldersmirrored"};
-    // "preferences.dialog.showpreviewpanel.tooltip",
+    // "preferences.dialog.show_preview_panel.tooltip",
     //
     //        
     // "preferences.dialog.startPanel.myFolders", "quickinfo.myfolders.title",

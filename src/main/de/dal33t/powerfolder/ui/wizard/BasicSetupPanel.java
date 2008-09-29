@@ -109,7 +109,7 @@ public class BasicSetupPanel extends PFWizardPanel {
             .getTranslation("wizard.basicsetup.networking"), cc.xy(1, 3));
         builder.add(networkingModeChooser, cc.xy(3, 3));
         builder.addLabel(Translation
-            .getTranslation("preferences.dialog.linesettings"), cc.xy(1, 5));
+            .getTranslation("preferences.dialog.line_settings"), cc.xy(1, 5));
         builder.add(wanLineSpeed, cc.xy(3, 5));
         builder
             .addLabel(Translation

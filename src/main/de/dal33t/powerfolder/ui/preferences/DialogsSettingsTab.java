@@ -141,15 +141,15 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
             askFriendshipMessage);
         warnOnCloseIfNotInSync = new JCheckBox(
             Translation
-                .getTranslation("preferences.dialog.dialogs.warnoncloseifnotinsync"),
+                .getTranslation("preferences.dialog.dialogs.warn_on_close_if_not_in_sync"),
             warnOnClose);
         warnOnLimitedConnectivity = new JCheckBox(
             Translation
-                .getTranslation("preferences.dialog.dialogs.warnonlimitedconnectivity"),
+                .getTranslation("preferences.dialog.dialogs.warn_on_limited_connectivity"),
             testConnectivity);
         warnOnPossibleFilenameProblems = new JCheckBox(
             Translation
-                .getTranslation("preferences.dialog.dialogs.warnonpossiblefilename_problems"),
+                .getTranslation("preferences.dialog.dialogs.warn_on_possible_file_name_problems"),
             filenamCheck);
         warnOnDuplicateFolders = new JCheckBox(
             Translation

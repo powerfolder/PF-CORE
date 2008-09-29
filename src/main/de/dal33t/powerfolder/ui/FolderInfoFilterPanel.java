@@ -19,19 +19,20 @@
 */
 package de.dal33t.powerfolder.ui;
 
-import java.awt.event.ActionEvent;
-
-import javax.swing.*;
-
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.ui.widget.FilterTextField;
 import de.dal33t.powerfolder.util.Translation;
+
+import javax.swing.AbstractAction;
+import javax.swing.JCheckBox;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+import java.awt.event.ActionEvent;
 
 /**
  * Holds a box with for entering keywords and 3 checkboxes (showNormal,
@@ -72,7 +73,7 @@ public class FolderInfoFilterPanel extends PFUIComponent {
     private void initComponents() {
         // First initalize filterbar components
         showEmptyBox = new JCheckBox(new AbstractAction(Translation
-            .getTranslation("publicfolders.filter.show_empty_folders"))
+            .getTranslation("public_folders.filter.show_empty_folders"))
         {
             public void actionPerformed(ActionEvent e) {
                 folderInfoFilterModel.setShowEmpty(showEmptyBox.isSelected());

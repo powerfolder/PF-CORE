@@ -192,7 +192,7 @@ public class PluginSettingsTab extends PFUIComponent implements PreferenceTab,
                 }
                 case PLUGIN_CLASS_COL : {
                     return Translation
-                        .getTranslation("preferences.dialog.plugin.classname");
+                        .getTranslation("preferences.dialog.plugin.class_name");
                 }
                 case PLUGIN_STATUS_COL : {
                     return Translation
@@ -331,7 +331,7 @@ public class PluginSettingsTab extends PFUIComponent implements PreferenceTab,
         public SettingsAction(Controller controller,
             SelectionModel selectionModel)
         {
-            super("pluginsettings", controller, selectionModel);
+            super("plugin_settings", controller, selectionModel);
             setEnabled(false);
         }
 

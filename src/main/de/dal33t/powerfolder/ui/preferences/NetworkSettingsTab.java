@@ -83,20 +83,20 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
     private void initComponents() {
         String[] options = new String[2];
         options[PRIVATE_MODE_INDEX] = Translation
-            .getTranslation("preferences.dialog.networkmode.private");
+            .getTranslation("preferences.dialog.network_mode.private");
         options[LANONLY_MODE_INDEX] = Translation
-            .getTranslation("preferences.dialog.networkmode.lanonly");
+            .getTranslation("preferences.dialog.network_mode.lan_only");
         networkingMode = new JComboBox(options);
         if (getController().isLanOnly()) {
             networkingMode.setSelectedIndex(LANONLY_MODE_INDEX);
             networkingMode
                 .setToolTipText(Translation
-                    .getTranslation("preferences.dialog.networkmode.lanonly.tooltip"));
+                    .getTranslation("preferences.dialog.network_mode.lan_only.tooltip"));
         } else { // private
             networkingMode.setSelectedIndex(PRIVATE_MODE_INDEX);
             networkingMode
                 .setToolTipText(Translation
-                    .getTranslation("preferences.dialog.networkmode.private.tooltip"));
+                    .getTranslation("preferences.dialog.network_mode.private.tooltip"));
         }
 
         networkingMode.addActionListener(new ActionListener() {
@@ -106,13 +106,13 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
                     case PRIVATE_MODE_INDEX : {
                         enableDisableComponents(false);
                         tooltip = Translation
-                            .getTranslation("preferences.dialog.networkmode.private.tooltip");
+                            .getTranslation("preferences.dialog.network_mode.private.tooltip");
                         break;
                     }
                     case LANONLY_MODE_INDEX : {
                         enableDisableComponents(true);
                         tooltip = Translation
-                            .getTranslation("preferences.dialog.networkmode.lanonly.tooltip");
+                            .getTranslation("preferences.dialog.network_mode.lan_only.tooltip");
                         break;
                     }
                 }
@@ -144,9 +144,9 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
             .getAllowedDownloadCPSForLAN() / 1024);
 
         silentThrottleLabel = new JLabel(Translation
-            .getTranslation("preferences.dialog.silentthrottle"));
+            .getTranslation("preferences.dialog.silent_throttle"));
         silentThrottleLabel.setToolTipText(Translation
-            .getTranslation("preferences.dialog.silentthrottle.tooltip"));
+            .getTranslation("preferences.dialog.silent_throttle.tooltip"));
 
         silentModeThrottle = new JSlider();
         silentModeThrottle.setMinimum(10);
@@ -205,7 +205,7 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
 
             int row = 1;
             builder.addLabel(Translation
-                .getTranslation("preferences.dialog.networkmode.name"), cc.xy(
+                .getTranslation("preferences.dialog.network_mode.name"), cc.xy(
                 1, row));
             builder.add(networkingMode, cc.xywh(3, row, 7, 1));
 
@@ -217,13 +217,13 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
 
             row += 2;
             builder.addLabel(Translation
-                .getTranslation("preferences.dialog.linesettings"), cc.xy(1,
+                .getTranslation("preferences.dialog.line_settings"), cc.xy(1,
                 row));
             builder.add(wanSpeed, cc.xywh(3, row, 7, 1));
 
             row += 2;
             builder.addLabel(Translation
-                .getTranslation("preferences.dialog.lanlinesettings"), cc.xy(1,
+                .getTranslation("preferences.dialog.lan_line_settings"), cc.xy(1,
                 row));
             builder.add(lanSpeed, cc.xywh(3, row, 7, 1));
 

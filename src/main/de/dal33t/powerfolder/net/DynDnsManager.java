@@ -139,9 +139,9 @@ public class DynDnsManager extends PFComponent {
                         // validation failed ask the user if he/she
                         // wants to continue with these settings
                         String message = Translation
-                            .getTranslation("preferences.dialog.dyndnsmanager.nomatch.text");
+                            .getTranslation("preferences.dialog.dyn_dns_manager.no_match.text");
                         String title = Translation
-                            .getTranslation("preferences.dialog.dyndnsmanager.nomatch.title");
+                            .getTranslation("preferences.dialog.dyn_dns_manager.no_match.title");
 
                         int result = DialogFactory.genericDialog(
                             getController().getUIController().getMainFrame()
@@ -237,8 +237,8 @@ public class DynDnsManager extends PFComponent {
 
         DialogFactory.genericDialog(getController().getUIController()
             .getMainFrame().getUIComponent(), Translation
-            .getTranslation("preferences.dialog.dyndnsUpdateTitle"),
-            Translation.getTranslation("preferences.dialog.dyndnsUpdateText",
+            .getTranslation("preferences.dialog.dyn_dnsUpdateTitle"),
+            Translation.getTranslation("preferences.dialog.dyn_dnsUpdateText",
                 err), GenericDialogType.ERROR);
     }
 
@@ -252,7 +252,7 @@ public class DynDnsManager extends PFComponent {
 
                 DialogFactory.genericDialog(getController().getUIController()
                     .getMainFrame().getUIComponent(), Translation
-                    .getTranslation("preferences.dialog.dyndnsUpdateTitle"),
+                    .getTranslation("preferences.dialog.dyn_dnsUpdateTitle"),
 
                 activeDynDns.getErrorText(), GenericDialogType.INFO);
                 break;
@@ -268,9 +268,9 @@ public class DynDnsManager extends PFComponent {
                         getController().getUIController().getMainFrame()
                             .getUIComponent(),
                         Translation
-                            .getTranslation("preferences.dialog.dyndnsUpdateTitle"),
+                            .getTranslation("preferences.dialog.dyn_dnsUpdateTitle"),
                         Translation
-                            .getTranslation("preferences.dialog.dyndnsUpdateUnknowError"),
+                            .getTranslation("preferences.dialog.dyn_dnsUpdateUnknowError"),
                         GenericDialogType.ERROR);
                 break;
 

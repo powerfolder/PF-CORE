@@ -203,17 +203,17 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         originalSmallToolbar = (Boolean) smallToolbarModel.getValue();
         smallToolbarBox = BasicComponentFactory.createCheckBox(
             smallToolbarModel, Translation
-                .getTranslation("preferences.dialog.smalltoolbar"));
+                .getTranslation("preferences.dialog.small_toolbar"));
 
         showAdvancedSettingsBox = BasicComponentFactory.createCheckBox(
             showAdvancedSettingsModel, Translation
-                .getTranslation("preferences.dialog.showadvanced"));
+                .getTranslation("preferences.dialog.show_advanced"));
 
         ValueModel urbModel = new ValueHolder(
             ConfigurationEntry.USE_RECYCLE_BIN.getValueBoolean(getController()));
         useRecycleBinBox = BasicComponentFactory.createCheckBox(
             new BufferedValueModel(urbModel, writeTrigger), Translation
-                .getTranslation("preferences.dialog.userecyclebin"));
+                .getTranslation("preferences.dialog.use_recycle_bin"));
 
         // Windows only...
         if (OSUtil.isWindowsSystem()) {
@@ -224,7 +224,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 .createCheckBox(
                     new BufferedValueModel(csModel, writeTrigger),
                     Translation
-                        .getTranslation("preferences.dialog.createdesktopshortcuts"));
+                        .getTranslation("preferences.dialog.create_desktop_shortcuts"));
 
             if (WinUtils.getInstance() != null) {
                 ValueModel startWithWindowsVM = new ValueHolder(WinUtils.getInstance()
@@ -246,7 +246,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                         startWithWindowsVM, writeTrigger);
                 startWithWindowsBox = BasicComponentFactory.createCheckBox(
                     tmpModel, Translation
-                        .getTranslation("preferences.dialog.startwithwindows"));
+                        .getTranslation("preferences.dialog.start_with_windows"));
             }
 
             // DesktopIni does not work on Vista
@@ -295,19 +295,19 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             row += 2;
             builder
                 .add(new JLabel(Translation
-                    .getTranslation("preferences.dialog.xbehavior")), cc.xy(1,
+                    .getTranslation("preferences.dialog.exit_behavior")), cc.xy(1,
                     row));
             builder.add(xBehaviorChooser, cc.xywh(3, row, 7, 1));
 
             row += 2;
             builder.add(new JLabel(Translation
-                .getTranslation("preferences.dialog.colortheme")), cc
+                .getTranslation("preferences.dialog.color_theme")), cc
                 .xy(1, row));
             builder.add(colorThemeChooser, cc.xywh(3, row, 7, 1));
 
             row += 2;
             builder.add(new JLabel(Translation
-                .getTranslation("preferences.dialog.basedir")), cc.xy(1, row));
+                .getTranslation("preferences.dialog.base_dir")), cc.xy(1, row));
             builder.add(locationField, cc.xywh(3, row, 7, 1));
 
             row += 2;
@@ -350,7 +350,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
                 row += 2;
                 builder.add(new JLabel(Translation
-                    .getTranslation("preferences.dialog.nonwindowsinfo"),
+                    .getTranslation("preferences.dialog.non_windows_info"),
                     SwingConstants.CENTER), cc.xywh(1, row, 9, 1));
             }
             panel = builder.getPanel();
@@ -576,10 +576,10 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                     isSelected, cellHasFocus);
                 if ((Boolean) value) {
                     setText(Translation
-                        .getTranslation("preferences.dialog.xbehavior.exit"));
+                        .getTranslation("preferences.dialog.exit_behavior.exit"));
                 } else {
                     setText(Translation
-                        .getTranslation("preferences.dialog.xbehavior.minimize"));
+                        .getTranslation("preferences.dialog.exit_behavior.minimize"));
                 }
                 return this;
             }
