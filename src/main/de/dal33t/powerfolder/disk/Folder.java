@@ -25,6 +25,7 @@ import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_SYNC_PRO
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -282,9 +283,20 @@ public class Folder extends PFComponent {
         logFine("Opening " + this.toString() + " at '"
             + localBase.getAbsolutePath() + "'");
 
-        if (localBase.list() != null && localBase.list().length == 0) {
+        FileFilter allExceptSystemDirFilter = new FileFilter() {
+            public boolean accept(File file) {
+                return !isSystemSubDir(file);
+            }
+        };
+        if (localBase.list() != null
+            && localBase.listFiles(allExceptSystemDirFilter).length == 0)
+        {
             // Empty folder... no scan required for database
             hasOwnDatabase = true;
+        } else if (!syncProfile.isAutoDetectLocalChanges()) {
+            logWarning("Folder is not empty, "
+                + "does not have an own database and "
+                + "is not on auto-detect changed");
         }
 
         diskItemFilter = new DiskItemFilter(whitelist);

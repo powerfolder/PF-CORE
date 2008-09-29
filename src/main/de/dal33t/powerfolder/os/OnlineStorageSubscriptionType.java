@@ -95,6 +95,10 @@ public enum OnlineStorageSubscriptionType {
     public long getStorageSize() {
         return storageSize;
     }
+    
+    public int getStorageSizeGB() {
+        return (int) (storageSize / 1024 / 1024 / 1024);
+    }
 
     public boolean isTrial() {
         return trial;

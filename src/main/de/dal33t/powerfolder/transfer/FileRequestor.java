@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.transfer;
 
 import java.util.ArrayList;
@@ -37,7 +37,7 @@ import de.dal33t.powerfolder.util.Reject;
 
 /**
  * The filerequestor handles all stuff about requesting new downloads
- *
+ * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.18 $
  */
@@ -66,7 +66,7 @@ public class FileRequestor extends PFComponent {
 
     /**
      * Triggers the worker to request new files on the given folder.
-     *
+     * 
      * @param foInfo
      *            the folder to st files on
      */
@@ -88,7 +88,7 @@ public class FileRequestor extends PFComponent {
 
     /**
      * Triggers to request missing files on all folders.
-     *
+     * 
      * @see #triggerFileRequesting(FolderInfo) for single folder file requesting
      *      (=lower CPU usage)
      */
@@ -125,7 +125,7 @@ public class FileRequestor extends PFComponent {
      * files, force the settings.
      * <p>
      * FIXME: Does requestFromFriends work?
-     *
+     * 
      * @param folder
      * @param requestFromFriends
      * @param requestFromOthers
@@ -164,7 +164,7 @@ public class FileRequestor extends PFComponent {
      * Requests missing files for autodownload. May not request any files if
      * folder is not in auto download sync profile. Checks the syncprofile for
      * each file. Sysncprofile may change in the meantime.
-     *
+     * 
      * @param folder
      *            the folder to request missing files on.
      */
@@ -176,20 +176,21 @@ public class FileRequestor extends PFComponent {
             return;
         }
         if (isLogFiner()) {
-            logFiner(
-                "Requesting files (autodownload), has own DB? "
-                    + folder.hasOwnDatabase());
+            logFiner("Requesting files (autodownload), has own DB? "
+                + folder.hasOwnDatabase());
         }
 
         // Dont request files until has own database
         if (!folder.hasOwnDatabase()) {
-            logFine("not requesting because no own database");
+            logFine("Not requesting files because no own database for "
+                + folder);
             return;
         }
 
         Collection<FileInfo> incomingFiles = folder.getIncomingFiles(folder
             .getSyncProfile().getConfiguration().isAutoDownloadFromOthers());
-        List<FileInfo> filesToDownload = new ArrayList<FileInfo>(incomingFiles.size());
+        List<FileInfo> filesToDownload = new ArrayList<FileInfo>(incomingFiles
+            .size());
         TransferManager tm = getController().getTransferManager();
         for (FileInfo fInfo : incomingFiles) {
             if (fInfo.isDeleted() || tm.isDownloadingActive(fInfo)
@@ -201,7 +202,7 @@ public class FileRequestor extends PFComponent {
 
             // Arrange for a download.
             boolean download = folder.getSyncProfile().getConfiguration()
-                    .isAutoDownloadFromOthers()
+                .isAutoDownloadFromOthers()
                 || folder.getSyncProfile().getConfiguration()
                     .isAutoDownloadFromFriends()
                 && fInfo.getModifiedBy().getNode(getController()).isFriend();
@@ -210,7 +211,8 @@ public class FileRequestor extends PFComponent {
                 filesToDownload.add(fInfo);
             }
         }
-        Collections.sort(filesToDownload, folder.getTransferPriorities().getComparator());
+        Collections.sort(filesToDownload, folder.getTransferPriorities()
+            .getComparator());
         for (FileInfo fInfo : filesToDownload) {
             tm.downloadNewestVersion(fInfo, true);
         }
@@ -238,8 +240,7 @@ public class FileRequestor extends PFComponent {
                 }
 
                 int nFolders = folderQueue.size();
-                logFine(
-                    "Start requesting files for " + nFolders + " folder(s)");
+                logFine("Start requesting files for " + nFolders + " folder(s)");
                 long start = System.currentTimeMillis();
                 for (Iterator<Folder> it = folderQueue.iterator(); it.hasNext();)
                 {
@@ -248,9 +249,8 @@ public class FileRequestor extends PFComponent {
                 }
                 if (isLogFiner()) {
                     long took = System.currentTimeMillis() - start;
-                    logFiner(
-                        "Requesting files for " + nFolders + " folder(s) took "
-                            + took + "ms.");
+                    logFiner("Requesting files for " + nFolders
+                        + " folder(s) took " + took + "ms.");
                 }
 
                 try {
