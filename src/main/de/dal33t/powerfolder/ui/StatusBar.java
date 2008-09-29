@@ -278,13 +278,13 @@ public class StatusBar extends PFUIComponent implements UIPanel {
 
         // System.err.println("Got " + nOnlineUser + " online users");
         if (!controller.getNodeManager().isStarted()) {
-            label.setText(Translation.getTranslation("onlinelabel.disabled"));
+            label.setText(Translation.getTranslation("online_label.disabled"));
             label.setIcon(Icons.WARNING);
             label.setToolTipText(Translation
-                .getTranslation("onlinelabel.disabled.text"));
+                .getTranslation("online_label.disabled.text"));
             newState = DISABLED;
         } else if (nOnlineUser > 0) {
-            String text = Translation.getTranslation("onlinelabel.online");
+            String text = Translation.getTranslation("online_label.online");
             if (controller.isLanOnly()) {
                 text += " (" + Translation.getTranslation("general.lan_only")
                     + ')';
@@ -292,10 +292,10 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             label.setText(text);
             label.setIcon(Icons.CONNECTED);
             label.setToolTipText(Translation
-                .getTranslation("onlinelabel.online.text"));
+                .getTranslation("online_label.online.text"));
             newState = CONNECTED;
         } else {
-            String text = Translation.getTranslation("onlinelabel.connecting");
+            String text = Translation.getTranslation("online_label.connecting");
             if (controller.isLanOnly()) {
                 text += " (" + Translation.getTranslation("general.lan_only")
                     + ')';
@@ -303,7 +303,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             label.setText(text);
             label.setIcon(Icons.DISCONNECTED);
             label.setToolTipText(Translation
-                .getTranslation("onlinelabel.connecting.text"));
+                .getTranslation("online_label.connecting.text"));
             newState = DISCONNECTED;
         }
 

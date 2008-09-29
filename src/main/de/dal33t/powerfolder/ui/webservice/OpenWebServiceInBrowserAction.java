@@ -30,7 +30,7 @@ import de.dal33t.powerfolder.util.Loggable;
 public class OpenWebServiceInBrowserAction extends BaseAction {
 
     protected OpenWebServiceInBrowserAction(Controller controller) {
-        super("openwebservice", controller);
+        super("open_web_service", controller);
     }
 
     public void actionPerformed(ActionEvent e) {

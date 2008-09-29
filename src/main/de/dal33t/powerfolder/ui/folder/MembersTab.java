@@ -256,7 +256,7 @@ public class MembersTab extends PFUIComponent implements FolderTab,
             Member member = (Member) value;
             String newValue = member.getNick();
             if (member.isMySelf()) {
-                newValue += " (" + Translation.getTranslation("navtree.me")
+                newValue += " (" + Translation.getTranslation("nav_tree.me")
                     + ")";
             }
             super.getListCellRendererComponent(list, newValue, index,
@@ -265,7 +265,7 @@ public class MembersTab extends PFUIComponent implements FolderTab,
             String tooltipText = "";
 
             if (member.isMySelf()) {
-                tooltipText += Translation.getTranslation("navtree.me");
+                tooltipText += Translation.getTranslation("nav_tree.me");
                 // } else if (member.isMutalFriend()) {
                 // tooltipText += Translation.getTranslation("member.friend");
             } else if (member.isFriend()) {

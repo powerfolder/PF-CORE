@@ -81,7 +81,7 @@ public class NavTreeCellRenderer extends DefaultTreeCellRenderer {
         if (userObject instanceof RootNode) {
             // Render root node
             icon = Icons.ROOT;
-            text = Translation.getTranslation("navtree.node", controller
+            text = Translation.getTranslation("nav_tree.node", controller
                 .getNodeManager().getMySelf().getNick());
         } else if (userObject instanceof DirectoryModel) {
             DirectoryModel directoryModel = (DirectoryModel) userObject;
@@ -109,7 +109,7 @@ public class NavTreeCellRenderer extends DefaultTreeCellRenderer {
             if (node.isCompleteyConnected()) {
                 text += " (";
                 if (node.isMySelf()) {
-                    text += Translation.getTranslation("navtree.me");
+                    text += Translation.getTranslation("nav_tree.me");
                     // } else if (!node.isCompleteyConnected()) {
                     // text +=
                     // Translation.getTranslation("general.disconnected");
@@ -203,7 +203,7 @@ public class NavTreeCellRenderer extends DefaultTreeCellRenderer {
         } else if (controller.isVerbose()
             && value == nmModel.getConnectedTreeNode())
         {
-            text = Translation.getTranslation("navtree.onlinenodes", String
+            text = Translation.getTranslation("nav_tree.onlinenodes", String
                 .valueOf(nmModel.getConnectedTreeNode().getChildCount()));
             icon = Icons.KNOWN_NODES;
         } else {

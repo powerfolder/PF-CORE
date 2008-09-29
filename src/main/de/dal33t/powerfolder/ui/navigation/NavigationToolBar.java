@@ -121,28 +121,28 @@ public class NavigationToolBar extends PFUIComponent implements
         String tooltext;
         Object up = navigationModel.peekUp();
         if (up != null) {
-            tooltext = Translation.getTranslation("navigationbuttons.up_to",
+            tooltext = Translation.getTranslation("navigation_buttons.up_to",
                 getText(up));
         } else {
-            tooltext = Translation.getTranslation("navigationbuttons.up");
+            tooltext = Translation.getTranslation("navigation_buttons.up");
         }
         upButton.setToolTipText(tooltext);
 
         Object back = navigationModel.peekBack();
         if (back != null) {
-            tooltext = Translation.getTranslation("navigationbuttons.back_to",
+            tooltext = Translation.getTranslation("navigation_buttons.back_to",
                 getText(back));
         } else {
-            tooltext = Translation.getTranslation("navigationbuttons.back");
+            tooltext = Translation.getTranslation("navigation_buttons.back");
         }
         backButton.setToolTipText(tooltext);
 
         Object forward = navigationModel.peekForward();
         if (forward != null) {
             tooltext = Translation.getTranslation(
-                "navigationbuttons.forward_to", getText(forward));
+                "navigation_buttons.forward_to", getText(forward));
         } else {
-            tooltext = Translation.getTranslation("navigationbuttons.forward");
+            tooltext = Translation.getTranslation("navigation_buttons.forward");
         }
         forwardButton.setToolTipText(tooltext);
     }
@@ -151,7 +151,7 @@ public class NavigationToolBar extends PFUIComponent implements
         Object userObject = UIUtil.getUserObject(navObject);
 
         if (userObject instanceof RootNode) {
-            return Translation.getTranslation("navtree.node", getController()
+            return Translation.getTranslation("nav_tree.node", getController()
                 .getNodeManager().getMySelf().getNick());
         } else if (userObject instanceof Directory) {
             Directory directory = (Directory) userObject;
@@ -161,7 +161,7 @@ public class NavigationToolBar extends PFUIComponent implements
             String text = "";
             text += node.getNick() + " (";
             if (node.isMySelf()) {
-                text += Translation.getTranslation("navtree.me");
+                text += Translation.getTranslation("nav_tree.me");
             } else {
                 text += node.isOnLAN() ? Translation
                     .getTranslation("general.localnet") : Translation
@@ -210,7 +210,7 @@ public class NavigationToolBar extends PFUIComponent implements
             && navObject == getUIController().getNodeManagerModel()
                 .getConnectedTreeNode())
         {
-            return Translation.getTranslation("navtree.onlinenodes",
+            return Translation.getTranslation("nav_tree.onlinenodes",
                     String.valueOf(getUIController().getNodeManagerModel()
                             .getConnectedTreeNode().getChildCount()));
 

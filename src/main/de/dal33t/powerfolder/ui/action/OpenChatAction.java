@@ -41,7 +41,7 @@ public class OpenChatAction extends SelectionBaseAction {
 
     public OpenChatAction(Controller controller, SelectionModel selectionModel)
     {
-        super("openchat", controller, selectionModel);
+        super("open_chat", controller, selectionModel);
         informationQuarter = controller.getUIController()
             .getInformationQuarter();
     }

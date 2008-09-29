@@ -126,61 +126,61 @@ public class NetworkStatisticsPanel extends PFUIComponent implements UIPanel {
 
         int row = 1;
         builder.add(new JLabel(Translation
-            .getTranslation("networkstatisticspanel.connected_users")), cc.xy(
+            .getTranslation("network_statistics_panel.connected_users")), cc.xy(
             1, row));
         builder.add(connectedUsers, cc.xy(3, row));
 
         row += 2;
         builder.add(new JLabel(Translation
-            .getTranslation("networkstatisticspanel.online_users")), cc.xy(1,
+            .getTranslation("network_statistics_panel.online_users")), cc.xy(1,
             row));
         builder.add(onlineUsers, cc.xy(3, row));
 
         row += 2;
         builder.add(new JLabel(Translation
-            .getTranslation("networkstatisticspanel.known_users")), cc.xy(1,
+            .getTranslation("network_statistics_panel.known_users")), cc.xy(1,
             row));
         builder.add(knownUsers, cc.xy(3, row));
 
         row += 2;
         builder.add(new JLabel(Translation
-            .getTranslation("networkstatisticspanel.reconnection_queue_size")),
+            .getTranslation("network_statistics_panel.reconnection_queue_size")),
             cc.xy(1, row));
         builder.add(reconnectionQueueSize, cc.xy(3, row));
 
         row += 2;
         builder.add(new JLabel(Translation
-            .getTranslation("networkstatisticspanel.local_folder_count")), cc
+            .getTranslation("network_statistics_panel.local_folder_count")), cc
             .xy(1, row));
         builder.add(localFolderCount, cc.xy(3, row));
 
         row += 2;
         builder.add(new JLabel(Translation
-            .getTranslation("networkstatisticspanel.number_of_local_files")),
+            .getTranslation("network_statistics_panel.number_of_local_files")),
             cc.xy(1, row));
         builder.add(numberOfLocalFiles, cc.xy(3, row));
 
         row += 2;
         builder.add(new JLabel(Translation
-            .getTranslation("networkstatisticspanel.local_folders_size")), cc
+            .getTranslation("network_statistics_panel.local_folders_size")), cc
             .xy(1, row));
         builder.add(localFoldersSize, cc.xy(3, row));
 
         row += 2;
         builder.add(new JLabel(Translation
-            .getTranslation("networkstatisticspanel.public_folder_count")), cc
+            .getTranslation("network_statistics_panel.public_folder_count")), cc
             .xy(1, row));
         builder.add(publicFolderCount, cc.xy(3, row));
 
         row += 2;
         builder.add(new JLabel(Translation
-            .getTranslation("networkstatisticspanel.number_of_public_files")),
+            .getTranslation("network_statistics_panel.number_of_public_files")),
             cc.xy(1, row));
         builder.add(numberOfPublicFiles, cc.xy(3, row));
 
         row += 2;
         builder.add(new JLabel(Translation
-            .getTranslation("networkstatisticspanel.public_folders_size")), cc
+            .getTranslation("network_statistics_panel.public_folders_size")), cc
             .xy(1, row));
         builder.add(publicFoldersSize, cc.xy(3, row));
 

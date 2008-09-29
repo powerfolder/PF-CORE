@@ -64,9 +64,9 @@ public class RequestReportAction extends SelectionBaseAction {
                 Loggable.logFinerStatic(RequestReportAction.class,
                         "Requesting node information from " + member);
                 member.sendMessageAsynchron(new RequestNodeInformation(),
-                    Translation.getTranslation("nodeinfo.error"));
+                    Translation.getTranslation("node_info.error"));
                 getUIController().getInformationQuarter().displayText(
-                    Translation.getTranslation("nodeinfo.requesting"));
+                    Translation.getTranslation("node_info.requesting"));
             }
         }
     }

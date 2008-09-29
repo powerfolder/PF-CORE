@@ -152,7 +152,7 @@ public class ControlQuarter extends PFUIComponent {
             builder.add(pane, cc.xy(1, 1));
 
             SimpleInternalFrame frame = new SimpleInternalFrame(Translation
-                .getTranslation("navtree.title"));
+                .getTranslation("nav_tree.title"));
             frame.setToolBar(new NavigationToolBar(getController(),
                 navigationModel).getUIComponent());
             frame.add(builder.getPanel());
@@ -454,7 +454,7 @@ public class ControlQuarter extends PFUIComponent {
 
     /**
      * Returns the selection model, contains the model for the selected item on
-     * navtree. If you need information about the parent of the current
+     * nav_tree. If you need information about the parent of the current
      * selection see <code>getSelectionParentModel</code>
      *
      * @return

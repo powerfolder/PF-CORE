@@ -243,7 +243,7 @@ public class FriendsPanel extends PFUIPanel {
     /** The Chat action to preform for button and popup menu item */
     private class ChatAction extends BaseAction {
         public ChatAction() {
-            super("openchat", FriendsPanel.this.getController());
+            super("open_chat", FriendsPanel.this.getController());
         }
 
         public void actionPerformed(ActionEvent e) {

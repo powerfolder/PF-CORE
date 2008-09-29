@@ -44,7 +44,7 @@ public class StartFileAction extends SelectionBaseAction {
 
     public StartFileAction(Controller controller, SelectionModel selectionModel)
     {
-        super("openfile", controller, selectionModel);
+        super("open_file", controller, selectionModel);
         setEnabled(false);
     }
 
