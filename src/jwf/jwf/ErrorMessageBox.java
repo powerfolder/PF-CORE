@@ -1,16 +1,21 @@
 
 package jwf;
 
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.Iterator;
-import java.util.List;
+import de.dal33t.powerfolder.util.Translation;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
+import java.awt.BorderLayout;
+import java.awt.Container;
+import java.awt.Dialog;
+import java.awt.Frame;
+import java.awt.Window;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Iterator;
+import java.util.List;
 
 /** Displays a list of error messages and blocks until ok is pressed.
  * @author Christopher Brind
@@ -39,15 +44,8 @@ public class ErrorMessageBox extends JDialog implements ActionListener {
 
     private void center(Window window) {
 
-        int x = 0;
-        int y = 0;
-
-        x = window.getLocation().x +
-            (window.getSize().width / 2) -
-            (this.getSize().width / 2);
-        y = window.getLocation().y +
-            (window.getSize().height / 2) -
-            (this.getSize().height / 2);
+        int x = window.getLocation().x + window.getSize().width / 2 - getSize().width / 2;
+        int y = window.getLocation().y + window.getSize().height / 2 - getSize().height / 2;
 
         setLocation(x, y);
     }
@@ -56,7 +54,7 @@ public class ErrorMessageBox extends JDialog implements ActionListener {
         Container c = getContentPane();
         c.setLayout(new BorderLayout());
         c.add(new JScrollPane(textPane), BorderLayout.CENTER);
-        JButton button = new JButton("ok");
+        JButton button = new JButton(Translation.getTranslation("general.ok") );
         button.addActionListener(this);
         c.add(button, BorderLayout.SOUTH);
         textPane.setEditable(false);
@@ -66,7 +64,7 @@ public class ErrorMessageBox extends JDialog implements ActionListener {
 
     /** Handles the ok press. */
     public void actionPerformed(ActionEvent ae) {
-        if ("ok".equals(ae.getActionCommand())) {
+        if (Translation.getTranslation("general.ok").equals(ae.getActionCommand())) {
             setVisible(false);
         }
     }

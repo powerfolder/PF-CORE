@@ -19,28 +19,27 @@
 */
 package de.dal33t.powerfolder.ui.dialog;
 
-import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.factories.Borders;
+import com.jgoodies.forms.factories.ButtonBarFactory;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.util.StreamCallback;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JProgressBar;
 import javax.swing.SwingConstants;
-
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.factories.Borders;
-import com.jgoodies.forms.factories.ButtonBarFactory;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.util.StreamCallback;
-import de.dal33t.powerfolder.util.ui.UIUtil;
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 /**
  * Dialog opened, when an programm update is detected and downloading
@@ -50,7 +49,6 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  */
 public class DownloadUpdateDialog extends PFUIComponent {
     private JDialog uiComponent;
-    private JButton cancelButton;
     private JProgressBar processBar;
 
     // The callback of the copy process
@@ -75,7 +73,7 @@ public class DownloadUpdateDialog extends PFUIComponent {
     public void initComponents() {
         // General dialog initalization
         uiComponent = new JDialog(getUIController().getMainFrame()
-            .getUIComponent(), "Updating", true);
+            .getUIComponent(), Translation.getTranslation("dialog.update.updating"), true);
 
         uiComponent.setResizable(false);
         uiComponent.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
@@ -86,8 +84,8 @@ public class DownloadUpdateDialog extends PFUIComponent {
         });
 
         // Cancel buttons
-        cancelButton = new JButton("Cancel");
-        cancelButton.setMnemonic('C');
+        JButton cancelButton = new JButton(Translation.getTranslation("general.cancel"));
+        cancelButton.setMnemonic(Translation.getTranslation("general.cancel").charAt(0));
         cancelButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 // Callback call to cancel
@@ -108,7 +106,7 @@ public class DownloadUpdateDialog extends PFUIComponent {
         CellConstraints cc = new CellConstraints();
 
         // Add components
-        builder.addLabel("Downloading update", cc.xywh(1, 1, 4, 1));
+        builder.addLabel(Translation.getTranslation("dialog.update.updating.text"), cc.xywh(1, 1, 4, 1));
         builder.add(processBar, cc.xywh(2, 3, 2, 1));
         builder.add(buttonBar, cc.xywh(2, 5, 2, 1));
 
@@ -167,16 +165,6 @@ public class DownloadUpdateDialog extends PFUIComponent {
     public void setCompletionPercentage(int compState) {
         if (processBar != null) {
             processBar.setValue(compState);
-        }
-    }
-
-    /**
-     * Displays (opens) the dialog if nessesary.
-     */
-    private void displayIfNessesary() {
-        if (!canceled && !getUIComponent().isVisible()) {
-            // Open dialog
-            openInEDT();
         }
     }
 

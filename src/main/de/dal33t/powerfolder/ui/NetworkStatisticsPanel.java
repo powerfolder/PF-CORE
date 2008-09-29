@@ -19,19 +19,10 @@
 */
 package de.dal33t.powerfolder.ui;
 
-import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFUIComponent;
@@ -45,6 +36,13 @@ import de.dal33t.powerfolder.net.NodeManager;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.UIPanel;
+
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 /**
  * Displays some network statistics and file statistics.
@@ -110,7 +108,7 @@ public class NetworkStatisticsPanel extends PFUIComponent implements UIPanel {
         numberOfLocalFiles = new JLabel();
         numberOfPublicFiles = new JLabel();
         reconnectionQueueSize = new JLabel();
-        updateButton = new JButton("Update");
+        updateButton = new JButton(Translation.getTranslation("general.update"));
         updateButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 update();
