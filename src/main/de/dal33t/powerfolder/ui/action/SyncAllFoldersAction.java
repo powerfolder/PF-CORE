@@ -38,7 +38,7 @@ import java.awt.event.KeyEvent;
 public class SyncAllFoldersAction extends BaseAction {
 
     public SyncAllFoldersAction(Controller controller) {
-        super("scanallfolders", controller);
+        super("scan_all_folders", controller);
         putValue(ACCELERATOR_KEY,
                 KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0));
     }

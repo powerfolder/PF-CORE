@@ -86,8 +86,8 @@ public class BasicSetupPanel extends PFWizardPanel {
         if (uploadSpeedKBPS == 0 && downloadSpeedKBPS == 0) {
             int result = DialogFactory.genericDialog(getController()
                 .getUIController().getMainFrame().getUIComponent(), Translation
-                .getTranslation("wizard.basicsetup.upload.title"), Translation
-                .getTranslation("wizard.basicsetup.upload.text"), new String[]{
+                .getTranslation("wizard.basic_setup.upload.title"), Translation
+                .getTranslation("wizard.basic_setup.upload.text"), new String[]{
                 Translation.getTranslation("general.continue"),
                 Translation.getTranslation("general.cancel")}, 0,
                 GenericDialogType.WARN); // Default is continue.
@@ -103,10 +103,10 @@ public class BasicSetupPanel extends PFWizardPanel {
         CellConstraints cc = new CellConstraints();
 
         builder.addLabel(Translation
-            .getTranslation("wizard.basicsetup.computer_name"), cc.xy(1, 1));
+            .getTranslation("wizard.basic_setup.computer_name"), cc.xy(1, 1));
         builder.add(nameField, cc.xy(3, 1));
         builder.addLabel(Translation
-            .getTranslation("wizard.basicsetup.networking"), cc.xy(1, 3));
+            .getTranslation("wizard.basic_setup.networking"), cc.xy(1, 3));
         builder.add(networkingModeChooser, cc.xy(3, 3));
         builder.addLabel(Translation
             .getTranslation("preferences.dialog.line_settings"), cc.xy(1, 5));
@@ -221,7 +221,7 @@ public class BasicSetupPanel extends PFWizardPanel {
     }
 
     protected String getTitle() {
-        return Translation.getTranslation("wizard.basicsetup.title");
+        return Translation.getTranslation("wizard.basic_setup.title");
     }
 
     protected Icon getPicto() {
@@ -232,13 +232,13 @@ public class BasicSetupPanel extends PFWizardPanel {
 
     private static class PrivateNetworking {
         public String toString() {
-            return Translation.getTranslation("wizard.basicsetup.private");
+            return Translation.getTranslation("wizard.basic_setup.private");
         }
     }
 
     private static class LanOnlyNetworking {
         public String toString() {
-            return Translation.getTranslation("wizard.basicsetup.lanonly");
+            return Translation.getTranslation("wizard.basic_setup.lan_only");
         }
     }
 

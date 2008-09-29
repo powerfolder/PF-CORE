@@ -144,7 +144,7 @@ public class ChangeFriendStatusAction extends SelectionBaseAction {
 
     private void configureButton(boolean isFriend) {
         if (isFriend) {
-            configureFromActionId("removefriend");
+            configureFromActionId("remove_friend");
         } else {
             configureFromActionId("add_friend");
         }

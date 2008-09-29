@@ -19,19 +19,17 @@
 */
 package de.dal33t.powerfolder.ui.action;
 
-import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-import javax.swing.Icon;
-import javax.swing.JButton;
-
 import com.jgoodies.forms.factories.ButtonBarFactory;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.dialog.FileDetailsPanel;
 import de.dal33t.powerfolder.util.ui.BaseDialog;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
+
+import javax.swing.Icon;
+import javax.swing.JButton;
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 /**
  * Action to show the currently selected file
@@ -52,7 +50,7 @@ public class ShowFileInfoAction extends BaseAction {
      */
     public ShowFileInfoAction(Controller controller, SelectionModel selectionModel)
     {
-        super("showfileinfo", controller);
+        super("show_file_info", controller);
         panel = new FileDetailsPanel(controller, selectionModel);
     }
 

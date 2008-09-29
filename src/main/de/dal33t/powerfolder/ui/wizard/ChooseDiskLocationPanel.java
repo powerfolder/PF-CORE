@@ -384,7 +384,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         boolean sendInvite = Boolean.TRUE.equals(getWizardContext()
             .getAttribute(SEND_INVIATION_AFTER_ATTRIBUTE));
         sendInviteAfterCB = SimpleComponentFactory.createCheckBox(Translation
-            .getTranslation("wizard.setup_folder.sendinvitation"));
+            .getTranslation("wizard.setup_folder.send_invitation"));
         sendInviteAfterCB.setOpaque(false);
         sendInviteAfterCB.setSelected(sendInvite);
 
@@ -400,7 +400,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
     }
 
     protected String getTitle() {
-        return Translation.getTranslation("wizard.choosedisklocation.select");
+        return Translation.getTranslation("wizard.choose_disk_location.select");
     }
 
     /**
@@ -690,7 +690,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
 
             folderSizeLabel
                 .setText(Translation
-                    .getTranslation("wizard.choosedisklocation.calculating_directory_size"));
+                    .getTranslation("wizard.choose_disk_location.calculating_directory_size"));
             folderSizeLabel.setForeground(SystemColor.textText);
         }
 
@@ -716,15 +716,15 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
                 if (initial.equals(locationModel.getValue())) {
                     if (nonExistent) {
                         folderSizeLabel.setText(Translation.getTranslation(
-                            "wizard.choosedisklocation.directory_non_existent"));
+                            "wizard.choose_disk_location.directory_non_existent"));
                         folderSizeLabel.setForeground(Color.red);
                     } else if (noWrite) {
                         folderSizeLabel.setText(Translation.getTranslation(
-                            "wizard.choosedisklocation.directory_no_write"));
+                            "wizard.choose_disk_location.directory_no_write"));
                         folderSizeLabel.setForeground(Color.red);
                     } else {
                         folderSizeLabel.setText(Translation.getTranslation(
-                            "wizard.choosedisklocation.directory_size", Format
+                            "wizard.choose_disk_location.directory_size", Format
                                 .formatBytes(directorySize)));
                         folderSizeLabel.setForeground(SystemColor.textText);
                     }

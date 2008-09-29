@@ -35,7 +35,7 @@ import javax.swing.*;
 public class SyncFolderAction extends BaseAction {
 
     public SyncFolderAction(Controller controller) {
-        super("scanfolder", controller);
+        super("scan_folder", controller);
         // Override icon
         putValue(SMALL_ICON, null);
 

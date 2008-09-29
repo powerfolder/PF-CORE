@@ -341,7 +341,7 @@ public class DownloadsPanel extends PFUIPanel implements HasDetailsPanel {
      */
     private class StartDownloadsAction extends BaseAction {
         public StartDownloadsAction() {
-            super("startdownloads", DownloadsPanel.this.getController());
+            super("start_downloads", DownloadsPanel.this.getController());
         }
 
         public void actionPerformed(ActionEvent e) {

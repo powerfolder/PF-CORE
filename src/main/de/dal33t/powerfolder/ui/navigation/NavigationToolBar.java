@@ -202,7 +202,7 @@ public class NavigationToolBar extends PFUIComponent implements
         } else if (navObject == getUIController().getNodeManagerModel()
             .getFriendsTreeNode())
         {
-            return Translation.getTranslation("rootpanel.friends")
+            return Translation.getTranslation("root_panel.friends")
                 + " ("
                 + getUIController().getNodeManagerModel().getFriendsTreeNode()
                     .getChildCount() + ')';

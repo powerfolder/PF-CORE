@@ -501,7 +501,7 @@ public class UIController extends PFComponent {
         }
 
         item = menu.add(new MenuItem(Translation
-            .getTranslation("systray.syncall")));
+            .getTranslation("systray.sync_all")));
         item.setActionCommand("syncall");
         item.addActionListener(systrayActionHandler);
 
@@ -690,7 +690,7 @@ public class UIController extends PFComponent {
                     .getTranslation("systray.tooltip.syncing"));
             } else {
                 tooltip.append(Translation
-                    .getTranslation("systray.tooltip.insync"));
+                    .getTranslation("systray.tooltip.in_sync"));
             }
             double totalCPSdownKB = getController().getTransferManager()
                 .getDownloadCounter().calculateAverageCPS() / 1024;

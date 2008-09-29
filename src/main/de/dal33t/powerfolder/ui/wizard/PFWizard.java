@@ -111,9 +111,9 @@ public class PFWizard extends PFUIComponent {
         wizard.getWizardContext().setAttribute(FOLDERINFO_ATTRIBUTE, foInfo);
 
         TextPanelPanel successPanel = new TextPanelPanel(controller,
-            Translation.getTranslation("wizard.sendinvitations.sendsuccess"),
+            Translation.getTranslation("wizard.send_invitations.send_success"),
             Translation
-                .getTranslation("wizard.sendinvitations.sendsuccessinfo"));
+                .getTranslation("wizard.send_invitations.send_success_info"));
         wizard.getWizardContext().setAttribute(SUCCESS_PANEL, successPanel);
 
         wizard.open(new SendInvitationsPanel(controller, false));
@@ -135,9 +135,9 @@ public class PFWizard extends PFUIComponent {
             Icons.PROJECT_WORK_PICTO);
 
         TextPanelPanel successPanel = new TextPanelPanel(controller,
-            Translation.getTranslation("wizard.sendinvitations.sendsuccess"),
+            Translation.getTranslation("wizard.send_invitations.send_success"),
             Translation
-                .getTranslation("wizard.sendinvitations.sendsuccessinfo"));
+                .getTranslation("wizard.send_invitations.send_success_info"));
         wizard.getWizardContext().setAttribute(SUCCESS_PANEL, successPanel);
 
         wizard.open(new SelectInvitationPanel(controller, member,
@@ -199,9 +199,9 @@ public class PFWizard extends PFUIComponent {
         wizard.getWizardContext().setAttribute(PICTO_ICON,
             Icons.WEBSERVICE_PICTO);
         // TextPanelPanel successPanel = new TextPanelPanel(controller,
-        // Translation.getTranslation("wizard.sendinvitations.sendsuccess"),
+        // Translation.getTranslation("wizard.send_invitations.send_success"),
         // Translation
-        // .getTranslation("wizard.sendinvitations.sendsuccessinfo"));
+        // .getTranslation("wizard.send_invitations.send_success_info"));
         // wizard.getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL,
         // successPanel);
         wizard.open(new FolderOnlineStoragePanel(controller));

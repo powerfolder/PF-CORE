@@ -126,9 +126,9 @@ public class WhatToDoPanel extends PFWizardPanel {
 
             // Setup sucess panel of this wizard path
             TextPanelPanel successPanel = new TextPanelPanel(getController(),
-                Translation.getTranslation("wizard.setupsuccess"), Translation
-                    .getTranslation("wizard.syncpcspanel.foldersyncsuccess")
-                    + Translation.getTranslation("wizard.syncpcspanel.pcsjoin"));
+                Translation.getTranslation("wizard.setup_success"), Translation
+                    .getTranslation("wizard.sync_pcs_panel.folder_sync_success")
+                    + Translation.getTranslation("wizard.sync_pcs_panel.pcs_join"));
             getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL,
                 successPanel);
 
@@ -168,10 +168,10 @@ public class WhatToDoPanel extends PFWizardPanel {
             // Setup sucess panel of this wizard path
             TextPanelPanel successPanel = new TextPanelPanel(
                 getController(),
-                Translation.getTranslation("wizard.setupsuccess"),
+                Translation.getTranslation("wizard.setup_success"),
                 Translation
                     .getTranslation("wizard.backup_panel.folder_backup_success")
-                    + Translation.getTranslation("wizard.backup_panel.pcsjoin"));
+                    + Translation.getTranslation("wizard.backup_panel.pcs_join"));
             getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL,
                 successPanel);
 
@@ -210,9 +210,9 @@ public class WhatToDoPanel extends PFWizardPanel {
 
             // Setup sucess panel of this wizard path
             TextPanelPanel successPanel = new TextPanelPanel(getController(),
-                Translation.getTranslation("wizard.setupsuccess"), Translation
+                Translation.getTranslation("wizard.setup_success"), Translation
                     .getTranslation("wizard.host_panel.folder_host_success")
-                    + Translation.getTranslation("wizard.host_panel.pcsjoin"));
+                    + Translation.getTranslation("wizard.host_panel.pcs_join"));
             getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL,
                 successPanel);
 
@@ -248,10 +248,10 @@ public class WhatToDoPanel extends PFWizardPanel {
             // Setup sucess panel of this wizard path
             TextPanelPanel successPanel = new TextPanelPanel(
                 getController(),
-                Translation.getTranslation("wizard.setupsuccess"),
+                Translation.getTranslation("wizard.setup_success"),
                 Translation
                     .getTranslation("wizard.project_panel.folder_project_success")
-                    + Translation.getTranslation("wizard.backup_panel.pcsjoin"));
+                    + Translation.getTranslation("wizard.backup_panel.pcs_join"));
             getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL,
                 successPanel);
 
@@ -271,12 +271,12 @@ public class WhatToDoPanel extends PFWizardPanel {
             getWizardContext().setAttribute(
                 PROMPT_TEXT_ATTRIBUTE,
                 Translation
-                    .getTranslation("wizard.invite.selectlocaldirectory"));
+                    .getTranslation("wizard.invite.select_local_directory"));
 
             // Setup sucess panel of this wizard path
             TextPanelPanel successPanel = new TextPanelPanel(getController(),
-                Translation.getTranslation("wizard.setupsuccess"), Translation
-                    .getTranslation("wizard.successjoin"));
+                Translation.getTranslation("wizard.setup_success"), Translation
+                    .getTranslation("wizard.success_join"));
             getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL,
                 successPanel);
             return new LoadInvitationPanel(getController());
@@ -299,32 +299,32 @@ public class WhatToDoPanel extends PFWizardPanel {
         });
 
         synchronizedLink = new ActionLabel(new WhatToDoAction(Translation
-            .getTranslation("wizard.whattodo.synchronized_folder"),
+            .getTranslation("wizard.what_to_do.synchronized_folder"),
             synchronizedOption, decision));
         SimpleComponentFactory.setFontSize(synchronizedLink,
             PFWizard.MED_FONT_SIZE);
 
         backupLink = new ActionLabel(new WhatToDoAction(Translation
-            .getTranslation("wizard.whattodo.backup_folder"), backupOption,
+            .getTranslation("wizard.what_to_do.backup_folder"), backupOption,
             decision));
         SimpleComponentFactory.setFontSize(backupLink, PFWizard.MED_FONT_SIZE);
 
         hostLink = new ActionLabel(new WhatToDoAction(Translation
-            .getTranslation("wizard.whattodo.hostwork"), hostOption, decision));
+            .getTranslation("wizard.what_to_do.host_work"), hostOption, decision));
         SimpleComponentFactory.setFontSize(hostLink, PFWizard.MED_FONT_SIZE);
 
         customLink = new ActionLabel(new WhatToDoAction(Translation
-            .getTranslation("wizard.whattodo.custom_sync"), customOption,
+            .getTranslation("wizard.what_to_do.custom_sync"), customOption,
             decision));
         SimpleComponentFactory.setFontSize(customLink, PFWizard.MED_FONT_SIZE);
 
         inviteLink = new ActionLabel(new WhatToDoAction(Translation
-            .getTranslation("wizard.whattodo.load_invite"), inviteOption,
+            .getTranslation("wizard.what_to_do.load_invite"), inviteOption,
             decision));
         SimpleComponentFactory.setFontSize(inviteLink, PFWizard.MED_FONT_SIZE);
 
         documentationLink = Help.createHomepageLinkLabel(Translation
-            .getTranslation("wizard.whattodo.openonlinedocumentation"),
+            .getTranslation("wizard.what_to_do.open_online_documentation"),
             "quickstart.html");
         SimpleComponentFactory.setFontSize(documentationLink,
             PFWizard.MED_FONT_SIZE);
@@ -335,7 +335,7 @@ public class WhatToDoPanel extends PFWizardPanel {
     }
 
     protected String getTitle() {
-        return Translation.getTranslation("wizard.whattodo.title");
+        return Translation.getTranslation("wizard.what_to_do.title");
     }
 
     private class WhatToDoAction extends AbstractAction {

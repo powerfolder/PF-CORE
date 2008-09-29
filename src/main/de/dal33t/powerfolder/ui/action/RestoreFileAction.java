@@ -34,7 +34,7 @@ public class RestoreFileAction extends SelectionBaseAction {
 
     public RestoreFileAction(Controller controller,
         SelectionModel selectionModel) {
-        super("restorefile", controller, selectionModel);
+        super("restore_file", controller, selectionModel);
         setEnabled(false);
     }
 

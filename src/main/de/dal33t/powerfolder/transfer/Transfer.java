@@ -62,7 +62,7 @@ public abstract class Transfer implements Serializable {
         NONE("None"), FILERECORD_REQUEST("transfers.requested"), MATCHING(
             "transfers.hashing"), DOWNLOADING("Downloading"), VERIFYING(
             "transfers.verifying"), DONE("transfers.completed"), REMOTEMATCHING(
-            "transfers.remotehashing"), UPLOADING("Uploading"), FILEHASHING(
+            "transfers.remote_hashing"), UPLOADING("Uploading"), FILEHASHING(
             "transfers.hashing"), COPYING("transfers.copying");
 
         private String translationId;

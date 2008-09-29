@@ -68,7 +68,7 @@ public class FolderOnlineStoragePanel extends PFWizardPanel {
         CellConstraints cc = new CellConstraints();
 
         builder.addLabel(Translation
-            .getTranslation("wizard.webservice.mirrorchoosefolder"), cc.xyw(1,
+            .getTranslation("wizard.webservice.mirror_choose_folder"), cc.xyw(1,
             1, 4));
 
         builder.addLabel(Translation.getTranslation("general.folder"), cc.xy(1,
@@ -76,7 +76,7 @@ public class FolderOnlineStoragePanel extends PFWizardPanel {
         builder.add(folderList.getUIComponent(), cc.xy(3, 3));
 
         LinkLabel link = new LinkLabel(Translation
-            .getTranslation("wizard.webservice.learnmore"),
+            .getTranslation("wizard.webservice.learn_more"),
             "http://www.powerfolder.com/online_storage_features.html");
         // FIXME This is a hack because of "Fusch!"
         link.setBorder(Borders.createEmptyBorder("0, 1px, 0, 0"));
@@ -134,6 +134,6 @@ public class FolderOnlineStoragePanel extends PFWizardPanel {
     }
 
     protected String getTitle() {
-        return Translation.getTranslation("wizard.webservice.mirrorsetup");
+        return Translation.getTranslation("wizard.webservice.mirror_setup");
     }
 }

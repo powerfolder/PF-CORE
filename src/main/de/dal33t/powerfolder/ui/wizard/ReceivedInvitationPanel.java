@@ -110,12 +110,12 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
 
         // Setup choose disk location panel
         getWizardContext().setAttribute(PROMPT_TEXT_ATTRIBUTE,
-            Translation.getTranslation("wizard.invite.selectlocaldirectory"));
+            Translation.getTranslation("wizard.invite.select_local_directory"));
 
         // Setup sucess panel of this wizard path
         TextPanelPanel successPanel = new TextPanelPanel(getController(),
-            Translation.getTranslation("wizard.setupsuccess"), Translation
-                .getTranslation("wizard.successjoin"));
+            Translation.getTranslation("wizard.setup_success"), Translation
+                .getTranslation("wizard.success_join"));
         getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL, successPanel);
 
         // If preview, validateNext has created the folder, so all done.

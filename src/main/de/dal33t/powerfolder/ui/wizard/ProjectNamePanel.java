@@ -60,7 +60,7 @@ public class ProjectNamePanel extends PFWizardPanel {
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
         builder.addLabel(Translation
-            .getTranslation("wizard.projectname.entername"), cc.xy(1, 1));
+            .getTranslation("wizard.project_name.enter_name"), cc.xy(1, 1));
         builder.add(nameField, cc.xy(3, 1));
 
         return builder.getPanel();
@@ -110,7 +110,7 @@ public class ProjectNamePanel extends PFWizardPanel {
     }
 
     protected String getTitle() {
-        return Translation.getTranslation("wizard.projectname.choose");
+        return Translation.getTranslation("wizard.project_name.choose");
     }
 
 }

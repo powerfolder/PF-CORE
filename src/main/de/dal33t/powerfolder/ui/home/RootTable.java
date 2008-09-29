@@ -135,12 +135,12 @@ public class RootTable extends JTable {
                         .getNodeManagerModel().getConnectedTreeNode())
                 {
                     newValue = Translation
-                        .getTranslation("rootpanel.connected_users");
+                        .getTranslation("root_panel.connected_users");
                     setIcon(Icons.KNOWN_NODES);
                 } else if (value == controller.getUIController()
                     .getNodeManagerModel().getFriendsTreeNode())
                 {
-                    newValue = Translation.getTranslation("rootpanel.friends");
+                    newValue = Translation.getTranslation("root_panel.friends");
                     setIcon(Icons.NODE_FRIEND_CONNECTED);
                 }
             } else {// size

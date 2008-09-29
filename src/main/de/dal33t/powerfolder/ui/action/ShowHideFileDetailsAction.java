@@ -37,7 +37,7 @@ public class ShowHideFileDetailsAction extends BaseAction {
 
     public ShowHideFileDetailsAction(HasDetailsPanel hasDetailsPanel,
         Controller controller) {
-        super("showhidefiledetails", controller);
+        super("show_hide_file_details", controller);
         if (hasDetailsPanel == null) {
             throw new NullPointerException("File details panel is null");
         }

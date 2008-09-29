@@ -95,7 +95,7 @@ public class DefaultFolderWizardHelper extends PFUIPanel {
 
         defaultSynchronizedFolder = new File(getController()
             .getFolderRepository().getFoldersBasedir(), Translation
-            .getTranslation("wizard.basicsetup.default_folder_name"));
+            .getTranslation("wizard.basic_setup.default_folder_name"));
 
         if (defaultSynchronizedFolder.exists()) {
             // Hmmm. User has already created this???

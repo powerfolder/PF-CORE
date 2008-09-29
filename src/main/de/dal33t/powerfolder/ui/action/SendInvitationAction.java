@@ -48,7 +48,7 @@ public class SendInvitationAction extends SelectionBaseAction {
     public SendInvitationAction(Controller controller,
         SelectionModel selectionModel)
     {
-        super("sendinvitation", controller, selectionModel);
+        super("send_invitation", controller, selectionModel);
     }
 
     public void selectionChanged(SelectionChangeEvent selectionChangeEvent) {
@@ -92,9 +92,9 @@ public class SendInvitationAction extends SelectionBaseAction {
         if (possibleInvitations.isEmpty()) {
             DialogFactory.genericDialog(
                     getUIController().getMainFrame().getUIComponent(),
-                    Translation.getTranslation("sendinvitation.allFolders.title",
+                    Translation.getTranslation("send_invitation.allFolders.title",
                             member.getNick()),
-                    Translation.getTranslation("sendinvitation.allFolders.text",
+                    Translation.getTranslation("send_invitation.allFolders.text",
                             member.getNick()),
                     GenericDialogType.WARN);
         } else {

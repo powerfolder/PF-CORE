@@ -197,7 +197,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
     private void updateSyncLabel() {
         if (getController().getFolderRepository().isAnyFolderTransferring()) {
             syncLabel.setText(Translation
-                .getTranslation("statusbar.synchronizing"));
+                .getTranslation("status_bar.synchronizing"));
             syncLabel.setIcon(Icons.DOWNLOAD_ACTIVE);
         } else {
             syncLabel.setText(null);
@@ -320,14 +320,14 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                 // State changed, notify ui.
                 String notificationText;
                 String title = Translation
-                    .getTranslation("statusbar.status_change.title");
+                    .getTranslation("status_bar.status_change.title");
                 if (newState == DISABLED) {
                     notificationText = Translation
-                        .getTranslation("statusbar.status_change.disabled");
+                        .getTranslation("status_bar.status_change.disabled");
                     getUIController().notifyMessage(title, notificationText);
                 } else if (newState == CONNECTED) {
                     notificationText = Translation
-                        .getTranslation("statusbar.status_change.connected");
+                        .getTranslation("status_bar.status_change.connected");
                     getUIController().notifyMessage(title, notificationText);
                 } else {
                     // Disconnected

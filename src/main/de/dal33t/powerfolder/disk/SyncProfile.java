@@ -19,13 +19,17 @@
  */
 package de.dal33t.powerfolder.disk;
 
-import java.util.*;
-import java.io.Serializable;
-
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.Loggable;
 import de.dal33t.powerfolder.message.Invitation;
+import de.dal33t.powerfolder.util.Loggable;
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.Translation;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.StringTokenizer;
 
 /**
  * Instance of this class describe how a folder should be synchronized with the
@@ -311,7 +315,7 @@ public class SyncProfile implements Serializable {
     }
 
     /**
-     * For preset config, the name is i18n using 'syncprofile.x.name'.
+     * For preset config, the name is i18n using 'transfer_mode.x.name'.
      * 
      * @param id
      *            translate 'syncprofile.[id].name'
@@ -320,7 +324,7 @@ public class SyncProfile implements Serializable {
      * @return
      */
     private static String translateId(String id) {
-        return Translation.getTranslation("syncprofile." + id + ".name");
+        return Translation.getTranslation("transfer_mode." + id + ".name");
     }
 
     /**

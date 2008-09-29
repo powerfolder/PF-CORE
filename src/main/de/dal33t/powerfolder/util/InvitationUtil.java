@@ -210,9 +210,9 @@ public class InvitationUtil {
 
         if (to == null) {
             to = (String) JOptionPane.showInputDialog(parent, Translation
-                .getTranslation("sendinvitation.ask_emailaddres.message"),
+                .getTranslation("send_invitation.ask_emailaddres.message"),
                 Translation
-                    .getTranslation("sendinvitation.ask_emailaddres.title"),
+                    .getTranslation("send_invitation.ask_emailaddres.title"),
                 JOptionPane.QUESTION_MESSAGE, null, null, Translation
                     .getTranslation("send_invitation.example_email_address"));
         }
@@ -248,9 +248,9 @@ public class InvitationUtil {
 
         if (to == null) {
             to = (String) JOptionPane.showInputDialog(parent, Translation
-                .getTranslation("sendinvitation.ask_emailaddres.message"),
+                .getTranslation("send_invitation.ask_emailaddres.message"),
                 Translation
-                    .getTranslation("sendinvitation.ask_emailaddres.title"),
+                    .getTranslation("send_invitation.ask_emailaddres.title"),
                 JOptionPane.QUESTION_MESSAGE, null, null, Translation
                     .getTranslation("send_invitation.example_email_address"));
         }
@@ -281,9 +281,9 @@ public class InvitationUtil {
         file.deleteOnExit();
 
         String invitationName = invitation.folder.name;
-        String subject = Translation.getTranslation("sendinvitation.subject",
+        String subject = Translation.getTranslation("send_invitation.subject",
             invitationName);
-        String body = Translation.getTranslation("sendinvitation.body", to,
+        String body = Translation.getTranslation("send_invitation.body", to,
             controller.getMySelf().getNick(), invitationName);
         if (!MailUtil.sendMail(to, subject, body, file)) {
             Loggable.logSevereStatic(InvitationUtil.class, "sendmail failed");
@@ -316,7 +316,7 @@ public class InvitationUtil {
         if (file == null) {
             JFileChooser fc = DialogFactory.createFileChooser();
             fc.setDialogTitle(Translation
-                .getTranslation("sendinvitation.placetostore"));
+                .getTranslation("send_invitation.placetostore"));
             // Recommended file
             fc
                 .setSelectedFile(new File(invitation.folder.name
