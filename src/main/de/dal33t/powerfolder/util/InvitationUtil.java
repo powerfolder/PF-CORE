@@ -184,7 +184,7 @@ public class InvitationUtil {
 
             public String getDescription() {
                 return Translation
-                    .getTranslation("invitationfiles.description");
+                    .getTranslation("invitation_files.description");
             }
         };
     }

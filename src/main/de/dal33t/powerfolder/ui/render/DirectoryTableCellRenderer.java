@@ -494,11 +494,11 @@ public class DirectoryTableCellRenderer extends DefaultTableCellRenderer {
                 + " colspan=2>&nbsp;" + statusForTooltip + "&nbsp;</TD></TR>");
         }
         textInHTML.append("<TR><TD valign=top class=bold>&nbsp;"
-            + Translation.getTranslation("imagefileinfo.resolution")
+            + Translation.getTranslation("image_file_info.resolution")
             + ":&nbsp;</TD><TD valign=top class=normal align=rigth>");
         if (imageFileInfo.getWidth() == -1 || imageFileInfo.getHeight() == -1) {
             textInHTML.append(Translation
-                .getTranslation("imagefileinfo.unknown"));
+                .getTranslation("image_file_info.unknown"));
         } else {
             textInHTML.append(imageFileInfo.getWidth() + "x"
                 + imageFileInfo.getHeight());

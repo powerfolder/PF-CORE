@@ -166,7 +166,7 @@ public class FolderDetailsPanel extends PFUIComponent {
             localCopyAtField.setText(folder.getLocalBase().getAbsolutePath());
         } else {
             String naText = "- "
-                + Translation.getTranslation("general.notavailable") + " -";
+                + Translation.getTranslation("general.not_available") + " -";
 
             totalSyncField.setText(naText);
             totalSyncField.setIcon(Icons.FOLDER_SYNC_UNKNOWN);
@@ -218,7 +218,7 @@ public class FolderDetailsPanel extends PFUIComponent {
             CellConstraints cc = new CellConstraints();
 
             // Top
-            builder.addLabel(Translation.getTranslation("general.foldername"),
+            builder.addLabel(Translation.getTranslation("general.folder_name"),
                 cc.xy(1, 1)).setForeground(Color.BLACK);
             builder.add(nameField, cc.xy(3, 1));
 

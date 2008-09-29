@@ -295,7 +295,7 @@ public class FindUsersPanel extends PFUIPanel {
     /** The hide offline user to perform on click on checkbox */
     private class HideOfflineAction extends BaseAction {
         private HideOfflineAction() {
-            super("hideoffline", FindUsersPanel.this.getController());
+            super("hide_offline", FindUsersPanel.this.getController());
         }
 
         public void actionPerformed(ActionEvent e) {

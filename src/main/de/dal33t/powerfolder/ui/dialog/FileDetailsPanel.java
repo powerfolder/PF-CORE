@@ -226,7 +226,7 @@ public class FileDetailsPanel extends PFUIComponent implements
 
         localCopyAtField.setText(diskFile != null
             ? diskFile.getAbsolutePath()
-            : "- " + Translation.getTranslation("general.notavailable") + " -");
+            : "- " + Translation.getTranslation("general.not_available") + " -");
         localCopyAtField.setCaretPosition(0);
     }
 

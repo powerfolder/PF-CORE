@@ -251,7 +251,7 @@ public class InformationQuarter extends PFUIComponent {
             builder.add(cardPanel, cc.xywh(1, 2, 2, 2));
 
             uiFrame = new SimpleInternalFrame(Translation
-                .getTranslation("infoside.title"));
+                .getTranslation("info_side.title"));
             uiFrame.add(builder.getPanel());
             uiFrame.setToolBar(new NavigationToolBar(getController(),
                 getUIController().getControlQuarter().getNavigationModel())
@@ -346,7 +346,7 @@ public class InformationQuarter extends PFUIComponent {
             if (title != null) {
                 uiFrame.setTitle(title);
             } else {
-                uiFrame.setTitle(Translation.getTranslation("infoside.title"));
+                uiFrame.setTitle(Translation.getTranslation("info_side.title"));
             }
         }
     }

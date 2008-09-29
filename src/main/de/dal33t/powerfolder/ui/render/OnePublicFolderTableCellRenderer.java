@@ -145,11 +145,11 @@ public class OnePublicFolderTableCellRenderer extends DefaultTableCellRenderer {
         textInHTML.append("</HEAD><BODY>");
         textInHTML.append("<TABLE cellspacing=0 cellpadding=0 border=0><TR>");
         textInHTML.append("<TD valign=top class=bold>&nbsp;"
-            + Translation.getTranslation("imagefileinfo.resolution")
+            + Translation.getTranslation("image_file_info.resolution")
             + ":&nbsp;</TD><TD valign=top class=normal align=rigth>");
         if (imageFileInfo.getWidth() == -1 || imageFileInfo.getHeight() == -1) {
             textInHTML.append(Translation
-                .getTranslation("imagefileinfo.unknown"));
+                .getTranslation("image_file_info.unknown"));
         } else {
             textInHTML.append(imageFileInfo.getWidth() + "x"
                 + imageFileInfo.getHeight());

@@ -79,7 +79,7 @@ public class FriendsPanel extends PFUIPanel {
     }
 
     public String getTitle() {
-        return Translation.getTranslation("general.friendlist");
+        return Translation.getTranslation("general.friend_list");
     }
 
     /** @return this ui component, creates it if not available * */
@@ -101,7 +101,7 @@ public class FriendsPanel extends PFUIPanel {
         findFriendsAction = getUIController().getFindFriendAction();
 
         quickinfo = new FriendsQuickInfoPanel(getController(), Translation
-            .getTranslation("general.friendlist"));
+            .getTranslation("general.friend_list"));
 
         friendsTable = new FriendsTable(getUIController().getNodeManagerModel()
             .getFriendsTableModel());
