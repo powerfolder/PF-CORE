@@ -29,7 +29,7 @@ import de.dal33t.powerfolder.util.Loggable;
 
 public class AboutWebServiceAction extends BaseAction {
     protected AboutWebServiceAction(Controller controller) {
-        super("aboutwebservice", controller);
+        super("about_web_service", controller);
     }
 
     public void actionPerformed(ActionEvent e) {

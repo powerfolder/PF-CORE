@@ -116,7 +116,7 @@ public class FileCopier extends PFComponent {
                     JProgressBar.HORIZONTAL, FileCopier.this);
                 filenameLabel.setPreferredSize(new Dimension(350, 20));
 
-                abortButton = new JButton(new BaseAction("abortcopy",
+                abortButton = new JButton(new BaseAction("abort_copy",
                     getController())
                 {
                     public void actionPerformed(ActionEvent e) {

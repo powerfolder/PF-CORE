@@ -48,7 +48,7 @@ public class ChangeFriendStatusAction extends SelectionBaseAction {
     public ChangeFriendStatusAction(Controller controller,
         SelectionModel selectionModel)
     {
-        super("addfriend", controller, selectionModel);
+        super("add_friend", controller, selectionModel);
         Object selection = selectionModel.getSelection();
         if (selection instanceof Member) {
             adaptFor((Member) selection);
@@ -146,7 +146,7 @@ public class ChangeFriendStatusAction extends SelectionBaseAction {
         if (isFriend) {
             configureFromActionId("removefriend");
         } else {
-            configureFromActionId("addfriend");
+            configureFromActionId("add_friend");
         }
     }
 

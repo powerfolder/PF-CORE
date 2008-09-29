@@ -167,7 +167,7 @@ class AddressEditor extends BaseDialog {
             if (!isValidRange()) {
                 result
                     .add(new SimpleValidationMessage(Translation
-                        .getTranslation("addressEditor.parseerror"),
+                        .getTranslation("addressEditor.parse_error"),
                         Severity.WARNING));
             }
 

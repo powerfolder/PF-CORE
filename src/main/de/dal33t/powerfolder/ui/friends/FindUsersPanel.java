@@ -306,7 +306,7 @@ public class FindUsersPanel extends PFUIPanel {
     /** The Add friends action for button and popup menu Item */
     private class AddFriendAction extends BaseAction {
         private AddFriendAction() {
-            super("addfriend", FindUsersPanel.this.getController());
+            super("add_friend", FindUsersPanel.this.getController());
         }
 
         public void actionPerformed(ActionEvent e) {

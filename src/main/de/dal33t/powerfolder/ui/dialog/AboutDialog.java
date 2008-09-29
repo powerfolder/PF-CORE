@@ -178,7 +178,7 @@ public class AboutDialog extends PFUIComponent {
         SimpleComponentFactory.setFontSize(docLink,
             SimpleComponentFactory.BIG_FONT_SIZE);
         homeLink = new LinkLabel(Translation
-            .getTranslation("about.dialog.homepage"), Constants.POWERFOLDER_URL);
+            .getTranslation("about.dialog.home_page"), Constants.POWERFOLDER_URL);
         SimpleComponentFactory.setFontSize(homeLink,
             SimpleComponentFactory.BIG_FONT_SIZE);
         supportLink = new LinkLabel(Translation
@@ -191,10 +191,10 @@ public class AboutDialog extends PFUIComponent {
             .getTranslation("general.powerfolder"), Translation.getTranslation(
             "about.dialog.power_folder.text", Controller.PROGRAM_VERSION)
             + '\n'
-            + Translation.getTranslation("about.dialog.power_folder.builddate",
+            + Translation.getTranslation("about.dialog.power_folder.build_date",
                 buildDate)
             + '\n'
-            + Translation.getTranslation("about.dialog.power_folder.buildtime",
+            + Translation.getTranslation("about.dialog.power_folder.build_time",
                 buildTime)
             + '\n'
             + Translation.getTranslation("about.dialog.power_folder.max",
@@ -205,14 +205,14 @@ public class AboutDialog extends PFUIComponent {
 
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
         system = createTextBox(Translation
-            .getTranslation("about.dialog.yoursystem.title"), Translation
-            .getTranslation("about.dialog.yoursystem.java_version", System
+            .getTranslation("about.dialog.your_system.title"), Translation
+            .getTranslation("about.dialog.your_system.java_version", System
                 .getProperty("java.version"))
             + '\n'
-            + Translation.getTranslation("about.dialog.yoursystem.os", System
+            + Translation.getTranslation("about.dialog.your_system.os", System
                 .getProperty("os.name"))
             + '\n'
-            + Translation.getTranslation("about.dialog.yoursystem.screen",
+            + Translation.getTranslation("about.dialog.your_system.screen",
                 dim.width, dim.height));
 
         team = createTextBox(

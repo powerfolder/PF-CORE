@@ -381,7 +381,7 @@ public class DownloadsPanel extends PFUIPanel implements HasDetailsPanel {
      */
     private class AbortDownloadAction extends BaseAction {
         public AbortDownloadAction() {
-            super("abortdownload", DownloadsPanel.this.getController());
+            super("abort_download", DownloadsPanel.this.getController());
         }
 
         public void actionPerformed(ActionEvent e) {

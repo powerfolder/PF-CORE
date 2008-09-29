@@ -39,7 +39,7 @@ import de.dal33t.powerfolder.util.ui.SelectionModel;
 public class AbortTransferAction extends SelectionBaseAction {
 
     public AbortTransferAction(Controller controller, SelectionModel selectionModel) {
-        super("aborttransfer", controller, selectionModel);
+        super("abort_transfer", controller, selectionModel);
         setEnabled(false);
     }
 
