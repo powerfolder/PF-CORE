@@ -65,11 +65,14 @@ import de.dal33t.powerfolder.message.FileChunk;
 import de.dal33t.powerfolder.message.RequestDownload;
 import de.dal33t.powerfolder.message.TransferStatus;
 import de.dal33t.powerfolder.net.ConnectionHandler;
+import de.dal33t.powerfolder.transfer.swarm.FileRecordManager;
+import de.dal33t.powerfolder.transfer.swarm.VolatileFileRecordManager;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.TransferCounter;
 import de.dal33t.powerfolder.util.compare.MemberComparator;
 import de.dal33t.powerfolder.util.compare.ReverseComparator;
+import de.dal33t.powerfolder.util.delta.FilePartsRecord;
 
 /**
  * Transfer manager for downloading/uploading files
@@ -113,6 +116,8 @@ public class TransferManager extends PFComponent {
      * are executed untill the lock is released.
      */
     private Lock uploadsLock = new ReentrantLock();
+
+    private FileRecordManager fileRecordManager;
 
     /** Threadpool for Upload Threads */
     private ExecutorService threadPool;
@@ -244,6 +249,8 @@ public class TransferManager extends PFComponent {
             logWarning("Not starting TransferManager. disabled by config");
             return;
         }
+        fileRecordManager = new VolatileFileRecordManager(getController());
+
         bandwidthProvider.start();
 
         threadPool = Executors.newCachedThreadPool();
@@ -294,6 +301,11 @@ public class TransferManager extends PFComponent {
         // done after storeDownloads(), so they are restored!
         for (DownloadManager man : dlManagers.values()) {
             man.setBroken("shutdown");
+        }
+
+        if (fileRecordManager != null) {
+            fileRecordManager.shutdown();
+            fileRecordManager = null;
         }
 
         started = false;
@@ -1059,6 +1071,16 @@ public class TransferManager extends PFComponent {
         } else {
             logFine("Failed to abort upload: " + fInfo + " to " + to);
         }
+    }
+
+    /**
+     * Returns the {@link FileRecordManager} managing the
+     * {@link FilePartsRecord}s for the various uploads/downloads.
+     * 
+     * @return
+     */
+    public FileRecordManager getFileRecordManager() {
+        return fileRecordManager;
     }
 
     /**

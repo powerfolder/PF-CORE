@@ -28,23 +28,27 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 import de.dal33t.powerfolder.util.CountedInputStream;
+import de.dal33t.powerfolder.util.ProgressObserver;
 import de.dal33t.powerfolder.util.Reject;
 
 public class MatchResultWorker implements Callable<List<MatchInfo>> {
     private final FilePartsRecord record;
     private final File inFile;
+    private final ProgressObserver progressObserver;
 
-    public MatchResultWorker(FilePartsRecord record, File inFile) {
+    public MatchResultWorker(FilePartsRecord record, File inFile,
+        ProgressObserver obs)
+    {
         Reject.noNullElements(record, inFile);
         this.record = record;
         this.inFile = inFile;
+        this.progressObserver = obs;
     }
 
     public List<MatchInfo> call() throws Exception {
-        CountedInputStream in = null;
+        CountedInputStream in = new CountedInputStream(new BufferedInputStream(
+            new FileInputStream(inFile)));
         try {
-            in = new CountedInputStream(new BufferedInputStream(
-                new FileInputStream(inFile)));
             final long fsize = inFile.length();
 
             PartInfoMatcher matcher = new PartInfoMatcher(in,
@@ -54,17 +58,15 @@ public class MatchResultWorker implements Callable<List<MatchInfo>> {
             List<MatchInfo> matches = new LinkedList<MatchInfo>();
             MatchInfo match = null;
             while ((match = matcher.nextMatch()) != null) {
-                setProgress((int) (in.getReadBytes() * 100.0 / fsize));
+                if (progressObserver != null) {
+                    progressObserver.progressed((double) in.getReadBytes()
+                        / fsize);
+                }
                 matches.add(match);
             }
             return matches;
         } finally {
-            if (in != null) {
-                in.close();
-            }
+            in.close();
         }
-    }
-
-    protected void setProgress(int percent) {
     }
 }

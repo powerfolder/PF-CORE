@@ -19,8 +19,6 @@
  */
 package de.dal33t.powerfolder.transfer;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -44,6 +42,7 @@ import de.dal33t.powerfolder.message.StopUpload;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.Loggable;
+import de.dal33t.powerfolder.util.ProgressObserver;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.delta.FilePartsRecord;
@@ -299,13 +298,13 @@ public class Upload extends Transfer {
         FilePartsRecord fpr;
         try {
             transferState.setState(TransferState.FILEHASHING);
-            fpr = fi.getFilePartsRecord(getController().getFolderRepository(),
-                new PropertyChangeListener() {
-                    public void propertyChange(PropertyChangeEvent evt) {
-                        transferState.setProgress(((double) (Long) evt
-                            .getNewValue())
-                            / fi.getSize());
+            fpr = getTransferManager().getFileRecordManager().retrieveRecord(
+                fi, new ProgressObserver() {
+
+                    public void progressed(double percent) {
+                        transferState.setProgress(percent);
                     }
+
                 });
             getPartner().sendMessagesAsynchron(
                 new ReplyFilePartsRecord(fi, fpr));

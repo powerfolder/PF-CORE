@@ -526,8 +526,9 @@ public class FileTransferTest extends TwoControllerTestCase {
         });
 
         // No active downloads?!
-        assertEquals(0, getContollerLisa().getTransferManager()
-            .countActiveDownloads());
+        assertEquals(getContollerLisa().getTransferManager()
+            .getActiveDownloads().toString(), 0, getContollerLisa()
+            .getTransferManager().countActiveDownloads());
 
         clearCompletedDownloadsAtLisa();
         assertEquals(nFiles, tm2Listener.downloadsCompletedRemoved);
@@ -1209,7 +1210,7 @@ public class FileTransferTest extends TwoControllerTestCase {
                     .countActiveDownloads() > 0;
             }
         });
-        
+
         // No pending download no more
         TestHelper.waitForCondition(10, new ConditionWithMessage() {
             public String message() {

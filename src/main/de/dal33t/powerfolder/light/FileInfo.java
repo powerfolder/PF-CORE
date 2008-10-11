@@ -19,19 +19,12 @@
  */
 package de.dal33t.powerfolder.light;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.lang.ref.SoftReference;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Date;
-import java.util.zip.Adler32;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -44,8 +37,6 @@ import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.util.Loggable;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.util.delta.FilePartsRecord;
-import de.dal33t.powerfolder.util.delta.FilePartsRecordBuilder;
 
 /**
  * File information of a local or remote file
@@ -719,67 +710,6 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         return "PowerFolder://|file|" + Util.endcodeForURL(folderInfo.name)
             + "|" + Util.endcodeForURL(folderInfo.id) + "|"
             + Util.endcodeForURL(this.fileName);
-    }
-
-    /**
-     * Returns the FilePartsRecord of this file. This method will only yield
-     * valid results if the file is locally available AND 100% downloaded.
-     * 
-     * @param repository
-     *            the repository of the file
-     * @return the FilePartsRecord
-     * @throws FileNotFoundException
-     *             if the file couldn't be found
-     * @throws IOException
-     *             if some read error occured
-     */
-    public FilePartsRecord getFilePartsRecord(FolderRepository repository,
-        PropertyChangeListener l) throws FileNotFoundException, IOException
-    {
-        // DISABLED because of #644
-        FilePartsRecord fileRecord = null;
-        if (fileRecord == null) {
-            FileInputStream in = null;
-            try {
-                long start = System.currentTimeMillis();
-                File f = getDiskFile(repository);
-
-                // TODO: All this IO code really shouldn't be here!
-                // TODO: Both, the RecordBuilder and the Matcher use "almost"
-                // the same algorithms, there should be a shared config.
-                // TODO: To select a part size I just took 4Gb as size and
-                // wanted the result to be ~512kb.
-                // But there should be a more thorough investigation on how to
-                // calculate it.
-                int partSize = Math.max(4096,
-                    (int) (Math.pow(f.length(), 0.25) * 2048));
-                FilePartsRecordBuilder b = new FilePartsRecordBuilder(
-                    new Adler32(), MessageDigest.getInstance("SHA-256"),
-                    MessageDigest.getInstance("MD5"), partSize);
-                in = new FileInputStream(f);
-                int read = 0;
-                byte buf[] = new byte[8192];
-                long processed = 0;
-                while ((read = in.read(buf)) > 0) {
-                    b.update(buf, 0, read);
-                    l.propertyChange(new PropertyChangeEvent(b,
-                        "processedBytesCount", processed, processed + read));
-                    processed += read;
-                }
-                fileRecord = b.getRecord();
-                long took = System.currentTimeMillis() - start;
-                Loggable.logInfoStatic(FileInfo.class, "Built file parts for "
-                    + this + ". took " + took + "ms" + " while processing "
-                    + processed + " bytes.");
-            } catch (NoSuchAlgorithmException e) {
-                throw new RuntimeException(e);
-            } finally {
-                if (in != null) {
-                    in.close();
-                }
-            }
-        }
-        return fileRecord;
     }
 
     /**

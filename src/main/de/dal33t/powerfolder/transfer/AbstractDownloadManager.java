@@ -49,6 +49,7 @@ import de.dal33t.powerfolder.transfer.Transfer.TransferState;
 import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.FileCheckWorker;
 import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.ProgressObserver;
 import de.dal33t.powerfolder.util.Range;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.TransferCounter;
@@ -436,15 +437,15 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             File src = getFile();
 
             setTransferState(TransferState.MATCHING);
-            Callable<List<MatchInfo>> mInfoWorker = new MatchResultWorker(
-                remotePartRecord, src)
-            {
+            ProgressObserver transferObs = new ProgressObserver() {
 
-                @Override
-                protected void setProgress(int percent) {
-                    setTransferState(percent / 100.0);
+                public void progressed(double percent) {
+                    setTransferState(percent);
                 }
+
             };
+            Callable<List<MatchInfo>> mInfoWorker = new MatchResultWorker(
+                remotePartRecord, src, transferObs);
             List<MatchInfo> mInfoRes = null;
             mInfoRes = mInfoWorker.call();
 
@@ -455,13 +456,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
 
             setTransferState(TransferState.COPYING);
             Callable<FilePartsState> pStateWorker = new MatchCopyWorker(src,
-                getTempFile(), remotePartRecord, mInfoRes)
-            {
-                @Override
-                protected void setProgress(int percent) {
-                    setTransferState(percent / 100.0);
-                }
-            };
+                getTempFile(), remotePartRecord, mInfoRes, transferObs);
             FilePartsState state = pStateWorker.call();
             if (state.getFileLength() != fileInfo.getSize()) {
                 // Concurrent file modification
@@ -807,7 +802,8 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             && filePartsState.getFileLength() == 0
             || state == InternalState.MATCHING_AND_COPYING : "Invalid state: "
             + state;
-        assert worker == null || !worker.isAlive();
+        assert worker == null || Thread.currentThread() == worker
+            || !worker.isAlive() : worker;
 
         setState(InternalState.CHECKING_FILE_VALIDITY);
         worker = new Thread(new Runnable() {
@@ -1260,10 +1256,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         assert Thread.holdsLock(this);
 
         if (newState == InternalState.WAITING_FOR_UPLOAD_READY) {
-            assert !filePartsState.isCompleted();
-            for (Download d : getSources()) {
-                assert (d.isStarted() && !d.isBroken());
-            }
+            assert filePartsState == null || !filePartsState.isCompleted();
         }
 
         // logWarning("STATE " + newState + " for " + fileInfo);

@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.ProgressObserver;
 import de.dal33t.powerfolder.util.Range;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.delta.FilePartsState.PartState;
@@ -37,9 +38,10 @@ public class MatchCopyWorker implements Callable<FilePartsState> {
 
     private RandomAccessFile src;
     private RandomAccessFile dst;
+    private final ProgressObserver progressObserver;
 
     public MatchCopyWorker(File srcFile, File dstFile, FilePartsRecord record,
-        List<MatchInfo> matchInfoList)
+        List<MatchInfo> matchInfoList, ProgressObserver obs)
     {
         super();
         Reject.noNullElements(srcFile, dstFile, record, matchInfoList);
@@ -47,45 +49,45 @@ public class MatchCopyWorker implements Callable<FilePartsState> {
         this.dstFile = dstFile;
         this.record = record;
         this.matchInfoList = matchInfoList;
+        this.progressObserver = obs;
     }
 
     public FilePartsState call() throws Exception {
+        src = new RandomAccessFile(srcFile, "r");
         try {
-            src = new RandomAccessFile(srcFile, "r");
             dst = new RandomAccessFile(dstFile, "rw");
+            try {
+                FilePartsState result = new FilePartsState(record
+                    .getFileLength());
+                int index = 0;
+                for (MatchInfo info : matchInfoList) {
+                    if (Thread.interrupted()) {
+                        throw new InterruptedException();
+                    }
+                    if (progressObserver != null) {
+                        progressObserver.progressed((double) index
+                            / matchInfoList.size());
+                    }
+                    index++;
 
-            FilePartsState result = new FilePartsState(record.getFileLength());
-            int index = 0;
-            for (MatchInfo info : matchInfoList) {
-                if (Thread.interrupted()) {
-                    throw new InterruptedException();
+                    src.seek(info.getMatchedPosition());
+                    long dstPos = info.getMatchedPart().getIndex()
+                        * record.getPartLength();
+                    dst.seek(dstPos);
+                    int rem = (int) Math.min(record.getPartLength(), record
+                        .getFileLength()
+                        - dstPos);
+                    FileUtils.ncopy(src, dst, rem);
+                    // The copied data is now AVAILABLE
+                    result.setPartState(Range.getRangeByLength(dstPos, rem),
+                        PartState.AVAILABLE);
                 }
-                setProgress(index * 100 / matchInfoList.size());
-                index++;
-
-                src.seek(info.getMatchedPosition());
-                long dstPos = info.getMatchedPart().getIndex()
-                    * record.getPartLength();
-                dst.seek(dstPos);
-                int rem = (int) Math.min(record.getPartLength(), record
-                    .getFileLength()
-                    - dstPos);
-                FileUtils.ncopy(src, dst, rem);
-                // The copied data is now AVAILABLE
-                result.setPartState(Range.getRangeByLength(dstPos, rem),
-                    PartState.AVAILABLE);
-            }
-            return result;
-        } finally {
-            if (src != null) {
-                src.close();
-            }
-            if (dst != null) {
+                return result;
+            } finally {
                 dst.close();
             }
+        } finally {
+            src.close();
         }
-    }
-
-    protected void setProgress(int percent) {
     }
 }
