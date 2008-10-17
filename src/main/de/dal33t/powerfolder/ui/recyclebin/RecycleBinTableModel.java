@@ -19,23 +19,27 @@
 */
 package de.dal33t.powerfolder.ui.recyclebin;
 
-import java.util.*;
-
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
-import javax.swing.table.TableModel;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.ui.model.SortedTableModel;
 import de.dal33t.powerfolder.disk.RecycleBin;
 import de.dal33t.powerfolder.event.RecycleBinEvent;
 import de.dal33t.powerfolder.event.RecycleBinListener;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.ui.model.SortedTableModel;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.compare.ReverseComparator;
 import de.dal33t.powerfolder.util.compare.RecycleBinComparator;
+import de.dal33t.powerfolder.util.compare.ReverseComparator;
 import de.dal33t.powerfolder.util.ui.UIUtil;
+
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
+import javax.swing.table.TableModel;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.logging.Logger;
 
 /**
  * Maps the files of the internal RecycleBin to a TableModel.
@@ -45,6 +49,8 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  */
 public class RecycleBinTableModel extends PFComponent implements TableModel,
         SortedTableModel {
+
+    private static final Logger log = Logger.getLogger(RecycleBinTableModel.class.getName());
 
     private static final int COLFOLDER = 0;
     private static final int COLTYPE = 1;
@@ -155,7 +161,7 @@ public class RecycleBinTableModel extends PFComponent implements TableModel,
      * Re-sorts the file list with the new comparator only if comparator differs
      * from old one
      *
-     * @param newComparator
+     * @param newComparatorType
      * @return if the table was freshly sorted
      */
     public boolean sortMe(int newComparatorType) {
@@ -218,7 +224,7 @@ public class RecycleBinTableModel extends PFComponent implements TableModel,
             if (displayList.contains(e.getFile())) {
                 displayList.remove(e.getFile());
             } else {
-                logSevere("file not there: " + e.getFile());
+                log.severe("file not there: " + e.getFile());
             }
 
             displayList.add(e.getFile());

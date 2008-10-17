@@ -19,10 +19,6 @@
  */
 package de.dal33t.powerfolder.disk;
 
-import java.util.*;
-
-import org.apache.commons.lang.time.DateUtils;
-
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.event.FolderAdapter;
@@ -36,6 +32,16 @@ import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.TransferCounter;
+import org.apache.commons.lang.time.DateUtils;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.TimerTask;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Class to hold pre-calculated static data for a folder. Only freshly
@@ -45,12 +51,14 @@ import de.dal33t.powerfolder.util.TransferCounter;
  * @version $Revision: 1.22 $
  */
 public class FolderStatistic extends PFComponent {
+
+    private static final Logger log = Logger.getLogger(FolderStatistic.class.getName());
     /**
      * if the number of files is more than MAX_ITEMS the updates will be delayed
      * to a maximum, one update every 20 seconds
      */
-    private final static int MAX_ITEMS = 5000;
-    private final static long DELAY = DateUtils.MILLIS_PER_SECOND * 10;
+    private static final int MAX_ITEMS = 5000;
+    private static final long DELAY = DateUtils.MILLIS_PER_SECOND * 10;
 
     private final Folder folder;
 
@@ -228,7 +236,7 @@ public class FolderStatistic extends PFComponent {
         if (!getController().getFolderRepository().hasJoinedFolder(
             folder.getInfo()))
         {
-            logWarning("Unable to calc stats. Folder not joined");
+            log.warning("Unable to calc stats. Folder not joined");
             return;
         }
         long millisPast = System.currentTimeMillis() - lastCalc;
@@ -261,7 +269,7 @@ public class FolderStatistic extends PFComponent {
             getController().schedule(task, timeToWait);
         } catch (IllegalStateException ise) {
             // ignore this happends if this shutdown in debug mode
-            logFiner(ise);
+            log.log(Level.FINER, "IllegalStateException", ise);
         }
     }
 
@@ -271,8 +279,8 @@ public class FolderStatistic extends PFComponent {
      * @private public because for test
      */
     public synchronized void calculate0() {
-        if (isLogFiner()) {
-            logFiner("-------------Recalculation statisitcs on " + folder);
+        if (log.isLoggable(Level.FINER)) {
+            log.finer("-------------Recalculation statisitcs on " + folder);
         }
         long startTime = System.currentTimeMillis();
         // clear statistics before
@@ -308,8 +316,8 @@ public class FolderStatistic extends PFComponent {
             lastFileChangeDate = date;
         }
 
-        if (isLogFiner()) {
-            logFiner(
+        if (log.isLoggable(Level.FINER)) {
+            log.finer(
                 "---------calc stats  " + folder.getName() + " done @: "
                     + (System.currentTimeMillis() - startTime));
         }
@@ -340,7 +348,7 @@ public class FolderStatistic extends PFComponent {
         Collection<FileInfo> files;
         files = folder.getFilesAsCollection(member);
         if (files == null) {
-            logFiner(
+            log.finer(
                 "Unable to calc stats on member, no filelist yet: " + member);
             return;
         }
@@ -399,7 +407,7 @@ public class FolderStatistic extends PFComponent {
             // }
             // inSync = false;
             // } else if (fInfo.isExpected(repo)) {
-            // logWarning("file expected: " + newestFileInfo.toDetailString());
+            // log.warning("file expected: " + newestFileInfo.toDetailString());
             // calculating.incomingFilesCount++;
             // inSync = false;
             // }
@@ -458,7 +466,7 @@ public class FolderStatistic extends PFComponent {
             }
             double sync = ((double) sizeInSync) / calculating.totalSize * 100;
             if (sync > 100) {
-                logWarning(
+                log.warning(
                     "Over 100% sync: "
                         + sync
                         + "% sync: "
@@ -471,15 +479,15 @@ public class FolderStatistic extends PFComponent {
                         + Format.formatBytesShort(calculating.totalSize));
             }
             if (calculating.totalSize == 0) {
-                logFiner("Got total size 0");
+                log.finer("Got total size 0");
                 sync = 100;
             }
             calculating.syncPercentages.put(member, sync);
             totalSync += sync;
             considered++;
 
-            if (isLogFiner()) {
-                logFiner(
+            if (log.isLoggable(Level.FINER)) {
+                log.finer(
                     member.getNick() + ": size: "
                         + calculating.sizes.get(member) + ", size(insync): "
                         + sizeInSync + ": " + sync + "%");

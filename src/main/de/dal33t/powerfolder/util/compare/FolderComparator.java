@@ -23,7 +23,7 @@ import java.util.Comparator;
 
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.util.Loggable;
+
 
 /**
  * Comparator which sorts folders
@@ -31,7 +31,7 @@ import de.dal33t.powerfolder.util.Loggable;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.6 $
  */
-public class FolderComparator extends Loggable implements Comparator {
+public class FolderComparator implements Comparator {
 
     public int compare(Object o1, Object o2) {
         int value = 0;

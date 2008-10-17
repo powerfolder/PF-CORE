@@ -20,19 +20,24 @@
 package de.dal33t.powerfolder;
 
 import de.dal33t.powerfolder.net.ConnectionException;
-import de.dal33t.powerfolder.util.Loggable;
 import de.dal33t.powerfolder.util.MemoryMonitor;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.LogDispatch;
+import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.os.OSUtil;
-import org.apache.commons.cli.*;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
+import org.apache.commons.cli.PosixParser;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.concurrent.ExecutorService;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 
 /**
@@ -42,7 +47,9 @@ import java.util.prefs.Preferences;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.46 $
  */
-public class PowerFolder extends Loggable {
+public class PowerFolder {
+
+    private static final Logger log = Logger.getLogger(PowerFolder.class.getName());
     public static final Options COMMAND_LINE_OPTIONS;
     static {
         // Command line parsing
@@ -54,7 +61,7 @@ public class PowerFolder extends Loggable {
         options.addOption("h", "help", false, "Displays this help");
         options.addOption("n", "nick", true, "<nickname> Sets the nickname");
         options.addOption("k", "kill", false, "Shutsdown a running PowerFolder instance");
-        options.addOption("l", "log", true, "<level> Sets logging to severe, warning, info, fine or finer level (e.g. \"--log info\", sets info level and above");
+        options.addOption("l", "log", true, "<level> Sets console logging to severe, warning, info, fine or finer level (e.g. \"--log info\", sets info level and above");
         options.addOption("f", "langfile", true, "<path\\file> Sets the language file to use (e.g. \"--langfile c:\\powerfolder\\translation\\translation_XX.properties\", forces PowerFolder to load this file as language file)");
         options.addOption("g", "language", true, "<language> Sets the language to use (e.g. \"--language de\", sets language to german)");
         options.addOption("p", "createfolder", true, "<createfolder> Creates a new PowerFolder");
@@ -75,13 +82,16 @@ public class PowerFolder extends Loggable {
         // Feature.DETECT_UPDATE_BY_VERSION.disable();
         // Feature.SYNC_PROFILE_CONTROLLER_FOLDER_SCAN_TIMING.disable();
 
+        // Touch Logger immediately to initialize handlers.
+        LoggingManager.isLogToFile();
+
         // Default exception logger
         Thread
             .setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler()
             {
                 public void uncaughtException(Thread t, Throwable e) {
                     e.printStackTrace();
-                    Loggable.logSevereStatic(PowerFolder.class,
+                    log.log(Level.SEVERE,
                             "Exception in " + t + ": " + e.toString(), e);
                 }
             });
@@ -91,19 +101,19 @@ public class PowerFolder extends Loggable {
             return;
         }
 
-        // -l --log levels (severe, warning, info, fine and finer).
+        // -l --log console log levels (severe, warning, info, fine and finer).
         if (commandLine.hasOption("l")) {
             String level = commandLine.getOptionValue("l");
             if (Level.SEVERE.getName().toLowerCase().equals(level)) {
-                LogDispatch.setLevel(Level.SEVERE);
+                LoggingManager.setConsoleLogging(Level.SEVERE);
             } else if (Level.WARNING.getName().toLowerCase().equals(level)) {
-                LogDispatch.setLevel(Level.WARNING);
+                LoggingManager.setConsoleLogging(Level.WARNING);
             } else if (Level.INFO.getName().toLowerCase().equals(level)) {
-                LogDispatch.setLevel(Level.INFO);
+                LoggingManager.setConsoleLogging(Level.INFO);
             } else if (Level.FINE.getName().toLowerCase().equals(level)) {
-                LogDispatch.setLevel(Level.FINE);
+                LoggingManager.setConsoleLogging(Level.FINE);
             } else if (Level.FINER.getName().toLowerCase().equals(level)) {
-                LogDispatch.setLevel(Level.FINER);
+                LoggingManager.setConsoleLogging(Level.FINER);
             }
         }
 
@@ -153,7 +163,7 @@ public class PowerFolder extends Loggable {
         boolean startController = !commandContainsRemoteCommands
             || !runningInstanceFound;
         try {
-            Loggable.logInfoStatic(PowerFolder.class, "PowerFolder v" + Controller.PROGRAM_VERSION);
+            log.info("PowerFolder v" + Controller.PROGRAM_VERSION);
 
             // Start controller
             if (startController) {
@@ -182,7 +192,7 @@ public class PowerFolder extends Loggable {
             }
         } catch (Throwable t) {
             t.printStackTrace();
-            Loggable.logSevereStatic(PowerFolder.class,  t);
+            log.log(Level.SEVERE, "Throwable", t);
             return;
         }
 
@@ -214,7 +224,7 @@ public class PowerFolder extends Loggable {
                     try {
                         Thread.sleep(2000);
                     } catch (InterruptedException e) {
-                        Loggable.logWarningStatic(PowerFolder.class,  e);
+                        log.log(Level.WARNING, "InterruptedException", e);
                         return;
                     }
                 }
@@ -232,7 +242,7 @@ public class PowerFolder extends Loggable {
                             thread.interrupt();
                         }
                     }
-                    Loggable.logInfoStatic(PowerFolder.class, "Restarting controller");
+                    log.info("Restarting controller");
                     System.out.println("------------ PowerFolder "
                         + Controller.PROGRAM_VERSION
                         + " restarting ------------");
@@ -251,7 +261,7 @@ public class PowerFolder extends Loggable {
         // Console mode comes here ...
 
         // Add shutdown hook
-        Loggable.logFinerStatic(PowerFolder.class,  "Adding shutdown hook");
+        log.finer("Adding shutdown hook");
         final Controller con = controller;
         Runtime.getRuntime().addShutdownHook(
             new Thread("Shutdown hook for PowerFolder") {
@@ -284,14 +294,14 @@ public class PowerFolder extends Loggable {
                     try {
                         controller.connect(conStr);
                     } catch (ConnectionException e) {
-                        Loggable.logSevereStatic(PowerFolder.class,  "Unable to connect to " + conStr);
+                        log.severe("Unable to connect to " + conStr);
                     }
                 } else if (line.startsWith("c ")) {
                     String conStr = line.substring(2);
                     try {
                         controller.connect(conStr);
                     } catch (ConnectionException e) {
-                        Loggable.logSevereStatic(PowerFolder.class,  "Unable to connect to " + conStr);
+                        log.severe("Unable to connect to " + conStr);
                     }
                 } else if (line.startsWith("ul ")) {
                     String ulimit = line.substring(3);
@@ -300,7 +310,7 @@ public class PowerFolder extends Loggable {
                             .setAllowedUploadCPSForWAN(
                                 (long) Double.parseDouble(ulimit) * 1024);
                     } catch (NumberFormatException e) {
-                        Loggable.logSevereStatic(PowerFolder.class,  "Unable to parse new upload limit bandwidth "
+                        log.severe("Unable to parse new upload limit bandwidth "
                             + ulimit);
                     }
                 } else if (line.startsWith("r")) {
@@ -313,10 +323,10 @@ public class PowerFolder extends Loggable {
                 // on linux background processing
                 Thread.sleep(200);
             } catch (IOException e) {
-                Loggable.logSevereStatic(PowerFolder.class,  e);
+                log.log(Level.SEVERE, "IOException", e);
                 break;
             } catch (InterruptedException e) {
-                Loggable.logSevereStatic(PowerFolder.class,  e);
+                log.log(Level.SEVERE, "IOException", e);
                 break;
             }
         }

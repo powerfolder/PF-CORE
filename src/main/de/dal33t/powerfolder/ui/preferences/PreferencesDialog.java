@@ -19,21 +19,6 @@
 */
 package de.dal33t.powerfolder.ui.preferences;
 
-import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.swing.Icon;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JTabbedPane;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -41,7 +26,6 @@ import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.factories.ButtonBarFactory;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
@@ -53,6 +37,20 @@ import de.dal33t.powerfolder.util.ui.BaseDialog;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
 import de.dal33t.powerfolder.util.ui.SwingWorker;
+
+import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JTabbedPane;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.List;
 
 public class PreferencesDialog extends BaseDialog {
 
@@ -113,7 +111,6 @@ public class PreferencesDialog extends BaseDialog {
             preferenceTabs.remove(tab);
             tabbedPane.remove(tab.getUIPanel());
         }
-        logFiner("preferenceTabs: " + preferenceTabs);
         rePack();
     }
 
@@ -122,7 +119,6 @@ public class PreferencesDialog extends BaseDialog {
     }
 
     void showDynDNSTab(boolean enable) {
-        logFiner("showing dyndns tab: " + enable);
         if (dynDnsSettingsTab == null) {
             // Initalize dyndns tab lazy
             dynDnsSettingsTab = new DynDnsSettingsTab(getController(),

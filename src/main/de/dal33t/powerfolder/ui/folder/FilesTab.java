@@ -19,6 +19,72 @@
  */
 package de.dal33t.powerfolder.ui.folder;
 
+import com.jgoodies.forms.builder.ButtonBarBuilder;
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.factories.Borders;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.disk.Directory;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.FolderRepository;
+import de.dal33t.powerfolder.event.FileFilterChangeListener;
+import de.dal33t.powerfolder.event.FileFilterChangedEvent;
+import de.dal33t.powerfolder.event.FolderAdapter;
+import de.dal33t.powerfolder.event.FolderEvent;
+import de.dal33t.powerfolder.event.FolderMembershipEvent;
+import de.dal33t.powerfolder.event.FolderMembershipListener;
+import de.dal33t.powerfolder.event.NodeManagerEvent;
+import de.dal33t.powerfolder.event.NodeManagerListener;
+import de.dal33t.powerfolder.event.TransferAdapter;
+import de.dal33t.powerfolder.event.TransferManagerEvent;
+import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.transfer.TransferManager;
+import de.dal33t.powerfolder.ui.PreviewPanel;
+import de.dal33t.powerfolder.ui.action.AbortTransferAction;
+import de.dal33t.powerfolder.ui.action.BaseAction;
+import de.dal33t.powerfolder.ui.action.ChangeFriendStatusAction;
+import de.dal33t.powerfolder.ui.action.DownloadFileAction;
+import de.dal33t.powerfolder.ui.action.HasDetailsPanel;
+import de.dal33t.powerfolder.ui.action.RemoveFileAction;
+import de.dal33t.powerfolder.ui.action.RestoreFileAction;
+import de.dal33t.powerfolder.ui.action.SelectionBaseAction;
+import de.dal33t.powerfolder.ui.action.ShowHideFileDetailsAction;
+import de.dal33t.powerfolder.ui.action.StartFileAction;
+import de.dal33t.powerfolder.ui.builder.ContentPanelBuilder;
+import de.dal33t.powerfolder.ui.dialog.FileDetailsPanel;
+import de.dal33t.powerfolder.util.DragDropChecker;
+import de.dal33t.powerfolder.util.FileCopier;
+import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.os.OSUtil;
+import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
+import de.dal33t.powerfolder.util.ui.SelectionModel;
+import de.dal33t.powerfolder.util.ui.UIUtil;
+import org.apache.commons.lang.time.DateUtils;
+
+import javax.swing.Action;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
+import javax.swing.JToggleButton;
+import javax.swing.JViewport;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableModel;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Point;
@@ -49,77 +115,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.TimerTask;
-
-import javax.swing.Action;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
-import javax.swing.JTable;
-import javax.swing.JToggleButton;
-import javax.swing.JViewport;
-import javax.swing.ListSelectionModel;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.table.JTableHeader;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableModel;
-
-import org.apache.commons.lang.time.DateUtils;
-
-import com.jgoodies.forms.builder.ButtonBarBuilder;
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.factories.Borders;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.PreferencesEntry;
-import de.dal33t.powerfolder.transfer.TransferManager;
-import de.dal33t.powerfolder.disk.Directory;
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.event.FileFilterChangeListener;
-import de.dal33t.powerfolder.event.FileFilterChangedEvent;
-import de.dal33t.powerfolder.event.FolderAdapter;
-import de.dal33t.powerfolder.event.FolderEvent;
-import de.dal33t.powerfolder.event.FolderMembershipEvent;
-import de.dal33t.powerfolder.event.FolderMembershipListener;
-import de.dal33t.powerfolder.event.NodeManagerEvent;
-import de.dal33t.powerfolder.event.NodeManagerListener;
-import de.dal33t.powerfolder.event.TransferAdapter;
-import de.dal33t.powerfolder.event.TransferManagerEvent;
-import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.ui.PreviewPanel;
-import de.dal33t.powerfolder.ui.action.AbortTransferAction;
-import de.dal33t.powerfolder.ui.action.BaseAction;
-import de.dal33t.powerfolder.ui.action.ChangeFriendStatusAction;
-import de.dal33t.powerfolder.ui.action.DownloadFileAction;
-import de.dal33t.powerfolder.ui.action.HasDetailsPanel;
-import de.dal33t.powerfolder.ui.action.RemoveFileAction;
-import de.dal33t.powerfolder.ui.action.RestoreFileAction;
-import de.dal33t.powerfolder.ui.action.SelectionBaseAction;
-import de.dal33t.powerfolder.ui.action.ShowHideFileDetailsAction;
-import de.dal33t.powerfolder.ui.action.StartFileAction;
-import de.dal33t.powerfolder.ui.builder.ContentPanelBuilder;
-import de.dal33t.powerfolder.ui.dialog.FileDetailsPanel;
-import de.dal33t.powerfolder.util.DragDropChecker;
-import de.dal33t.powerfolder.util.FileCopier;
-import de.dal33t.powerfolder.util.FileUtils;
-import de.dal33t.powerfolder.util.Loggable;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.os.OSUtil;
-import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
-import de.dal33t.powerfolder.util.ui.SelectionModel;
-import de.dal33t.powerfolder.util.ui.UIUtil;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Shows a Directory, holds a FileFilterPanel to filter the filelist and enable
@@ -132,6 +129,7 @@ public class FilesTab extends PFUIComponent implements FolderTab,
     HasDetailsPanel, FileFilterChangeListener
 {
 
+    private static final Logger log = Logger.getLogger(FilesTab.class.getName());
     /** enable/disable drag and drop */
     public static final boolean ENABLE_DRAG_N_DROP = false;
 
@@ -723,7 +721,7 @@ public class FilesTab extends PFUIComponent implements FolderTab,
      * helper class to enable drops of more file and one overwrite / skipp/
      * dialog and allows drop of directories
      */
-    private class Dropper extends Loggable {
+    private class Dropper {
         // count items to see if there are more for the dialog
         // options
         private int count = 0;
@@ -852,21 +850,21 @@ public class FilesTab extends PFUIComponent implements FolderTab,
             FilesTab.this.directoryTable.getParent().setCursor(
                 Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             if (move) {
-                logFine("Moving!: " + file + " to: " + directory);
+                log.fine("Moving!: " + file + " to: " + directory);
                 if (!directory.moveFileFrom(file)) {
-                    logSevere("something failed in drop/move");
+                    log.severe("something failed in drop/move");
                     FilesTab.this.directoryTable.getParent().setCursor(
                         Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                     // something failed
                     return false;
                 }
             } else {
-                logFine("copy: " + file + " to: " + directory);
+                log.fine("copy: " + file + " to: " + directory);
                 if (!directory.copyFileFrom(file, getFileCopier())) {
                     FilesTab.this.directoryTable.getParent().setCursor(
                         Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                     // something failed
-                    logSevere("something failed in drop/copy");
+                    log.severe("something failed in drop/copy");
                     return false;
                 }
             }
@@ -925,9 +923,9 @@ public class FilesTab extends PFUIComponent implements FolderTab,
             }
             return true;
         } catch (UnsupportedFlavorException ufe) {
-            logSevere(ufe);
+            log.log(Level.SEVERE, "UnsupportedFlavorException", ufe);
         } catch (IOException ioe) {
-            logSevere(ioe);
+            log.log(Level.SEVERE, "IOException", ioe);
         }
         return false;
     }
@@ -1083,7 +1081,7 @@ public class FilesTab extends PFUIComponent implements FolderTab,
             if (dir != null && folder == dir.getRootFolder()) {
                 update();
             } else {
-                logFine("not listening to folder " + folder);
+                log.fine("not listening to folder " + folder);
             }
         }
     }

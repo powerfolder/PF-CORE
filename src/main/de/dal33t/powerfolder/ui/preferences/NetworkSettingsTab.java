@@ -19,22 +19,10 @@
  */
 package de.dal33t.powerfolder.ui.preferences;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.Dictionary;
-import java.util.Hashtable;
-
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JSlider;
-
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.NetworkingMode;
@@ -45,7 +33,21 @@ import de.dal33t.powerfolder.util.net.UDTSocket;
 import de.dal33t.powerfolder.util.ui.LineSpeedSelectionPanel;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JSlider;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Dictionary;
+import java.util.Hashtable;
+import java.util.logging.Logger;
+
 public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
+
+    private static final Logger log = Logger.getLogger(NetworkSettingsTab.class.getName());
+
     private static final int PRIVATE_MODE_INDEX = 0;
     private static final int LANONLY_MODE_INDEX = 1;
 
@@ -174,7 +176,7 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
                 .parseInt(ConfigurationEntry.UPLOADLIMIT_SILENTMODE_THROTTLE
                     .getValue(getController()))));
         } catch (NumberFormatException e) {
-            logFine("silentmodethrottle" + e);
+            log.fine("silentmodethrottle" + e);
         }
         silentModeThrottle.setValue(smt);
 

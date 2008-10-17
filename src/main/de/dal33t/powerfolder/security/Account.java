@@ -19,16 +19,7 @@
  */
 package de.dal33t.powerfolder.security;
 
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.concurrent.CopyOnWriteArrayList;
-
 import com.jgoodies.binding.beans.Model;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
@@ -37,8 +28,16 @@ import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.light.ServerInfo;
 import de.dal33t.powerfolder.os.OnlineStorageSubscriptionType;
 import de.dal33t.powerfolder.util.IdGenerator;
-import de.dal33t.powerfolder.util.LogDispatch;
 import de.dal33t.powerfolder.util.Reject;
+
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Logger;
 
 /**
  * A access to the system indentified by username & password.
@@ -47,6 +46,8 @@ import de.dal33t.powerfolder.util.Reject;
  * @version $Revision: 1.5 $
  */
 public class Account extends Model implements Serializable {
+
+    private static final Logger log = Logger.getLogger(Account.class.getName());
     private static final long serialVersionUID = 100L;
 
     // Properties
@@ -107,7 +108,7 @@ public class Account extends Model implements Serializable {
 
     public void grant(Permission... newPermissions) {
         Reject.ifNull(newPermissions, "Permission is null");
-        LogDispatch.logFine(Account.class.getName(), "Granted permission to "
+        log.fine("Granted permission to "
             + this + ": " + Arrays.asList(newPermissions));
         for (Permission p : newPermissions) {
             if (hasPermission(p)) {
@@ -120,7 +121,7 @@ public class Account extends Model implements Serializable {
 
     public void revoke(Permission... revokePermissions) {
         Reject.ifNull(revokePermissions, "Permission is null");
-        LogDispatch.logFine(Account.class.getName(), "Revoked permission from "
+        log.fine("Revoked permission from "
             + this + ": " + Arrays.asList(revokePermissions));
         for (Permission p : revokePermissions) {
             permissions.remove(p);
@@ -134,7 +135,7 @@ public class Account extends Model implements Serializable {
     public boolean hasPermission(Permission permission) {
         Reject.ifNull(permission, "Permission is null");
         if (permissions == null) {
-            LogDispatch.logSevere(Account.class.getName(), "Illegal account "
+            log.severe("Illegal account "
                 + username + ", permissions is null");
             return false;
         }

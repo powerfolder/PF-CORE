@@ -19,6 +19,15 @@
  */
 package de.dal33t.powerfolder.disk;
 
+import de.dal33t.powerfolder.DiskItem;
+import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.light.MemberInfo;
+import de.dal33t.powerfolder.util.FileCopier;
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.Translation;
+
 import java.awt.datatransfer.DataFlavor;
 import java.io.File;
 import java.io.IOException;
@@ -33,16 +42,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Logger;
 
-import de.dal33t.powerfolder.DiskItem;
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.util.FileCopier;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Loggable;
 
 /**
  * Represents a directory of files. No actual disk access from this file, build
@@ -52,9 +53,9 @@ import de.dal33t.powerfolder.util.Loggable;
  * @author <a href="mailto:schaatser@powerfolder.com">Jan van Oosterom </a>
  * @version $Revision: 1.43 $
  */
-public class Directory extends Loggable implements Comparable<Directory>,
-    DiskItem
-{
+public class Directory implements Comparable<Directory>, DiskItem {
+
+    private static final Logger log = Logger.getLogger(Directory.class.getName());
     /**
      * The files (FileInfoHolder s) in this Directory key = fileInfo value =
      * FileInfoHolder
@@ -136,7 +137,7 @@ public class Directory extends Loggable implements Comparable<Directory>,
         final File newFileName = new File(getFile(), nameArg);
         if (!newFileName.exists()) {
             if (!newFileName.mkdir()) {
-                logInfo("Failed to create " + newFileName.getAbsolutePath());
+                log.info("Failed to create " + newFileName.getAbsolutePath());
             }
         }
         return sub;
@@ -187,7 +188,7 @@ public class Directory extends Loggable implements Comparable<Directory>,
             // target exists, rename it so we backup
             tmpFile = new File(newFile + ".tmp");
             if (!newFile.renameTo(tmpFile)) {
-                logSevere("Couldn't rename " + newFile.getAbsolutePath()
+                log.severe("Couldn't rename " + newFile.getAbsolutePath()
                     + " to " + tmpFile.getAbsolutePath());
             }
         }
@@ -195,7 +196,7 @@ public class Directory extends Loggable implements Comparable<Directory>,
             // rename failed restore if possible
             if (tmpFile != null) {
                 if (!tmpFile.renameTo(newFile)) {
-                    logSevere("Couldn't rename " + newFile.getAbsolutePath()
+                    log.severe("Couldn't rename " + newFile.getAbsolutePath()
                         + " to " + tmpFile.getAbsolutePath());
                 }
             }
@@ -203,7 +204,7 @@ public class Directory extends Loggable implements Comparable<Directory>,
             // success!
             if (tmpFile != null) {
                 if (!tmpFile.delete()) {
-                    logSevere("Couldn't delete " + tmpFile.getAbsolutePath());
+                    log.severe("Couldn't delete " + tmpFile.getAbsolutePath());
                 }
             }
         }

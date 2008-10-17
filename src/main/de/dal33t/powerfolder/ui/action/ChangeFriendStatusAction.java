@@ -19,23 +19,28 @@
 */
 package de.dal33t.powerfolder.ui.action;
 
-import java.awt.event.ActionEvent;
-import java.awt.*;
-
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.util.ui.*;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Loggable;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.ui.GenericDialogType;
+import de.dal33t.powerfolder.util.ui.NeverAskAgainResponse;
+import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
+import de.dal33t.powerfolder.util.ui.SelectionModel;
 
-import javax.swing.*;
-
-import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.builder.PanelBuilder;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.util.logging.Logger;
 
 /**
  * Actions which switches the friend status of a member
@@ -44,6 +49,8 @@ import com.jgoodies.forms.builder.PanelBuilder;
  * @version $Revision: 1.14 $
  */
 public class ChangeFriendStatusAction extends SelectionBaseAction {
+
+    private static final Logger log = Logger.getLogger(ChangeFriendStatusAction.class.getName());
 
     public ChangeFriendStatusAction(Controller controller,
         SelectionModel selectionModel)
@@ -74,8 +81,7 @@ public class ChangeFriendStatusAction extends SelectionBaseAction {
     public void actionPerformed(ActionEvent e) {
         Object selection = getSelectionModel().getSelection();
 
-        Loggable.logFinerStatic(ChangeFriendStatusAction.class,
-                "Performing on item: " + selection);
+        log.finer("Performing on item: " + selection);
         Member member = null;
 
         if (selection instanceof Member) {
@@ -137,8 +143,7 @@ public class ChangeFriendStatusAction extends SelectionBaseAction {
             }
 
         } else {
-            Loggable.logWarningStatic(ChangeFriendStatusAction.class,
-                    "Unable to change friend status, member not found");
+            log.warning("Unable to change friend status, member not found");
         }
     }
 

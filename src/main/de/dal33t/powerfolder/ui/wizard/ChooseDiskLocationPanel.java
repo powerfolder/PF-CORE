@@ -33,30 +33,47 @@ import static de.dal33t.powerfolder.disk.SyncProfile.AUTOMATIC_SYNCHRONIZATION;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.Icons;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.PROMPT_TEXT_ATTRIBUTE;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SYNC_PROFILE_ATTRIBUTE;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SEND_INVIATION_AFTER_ATTRIBUTE;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.INITIAL_FOLDER_NAME;
-import de.dal33t.powerfolder.util.*;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.PROMPT_TEXT_ATTRIBUTE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SEND_INVIATION_AFTER_ATTRIBUTE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SYNC_PROFILE_ATTRIBUTE;
+import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
-import de.dal33t.powerfolder.util.ui.*;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.ui.GenericDialogType;
+import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.ui.SwingWorker;
 import jwf.WizardPanel;
 import org.apache.commons.lang.StringUtils;
 
-import javax.swing.*;
+import javax.swing.ButtonGroup;
+import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JTextField;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.SystemColor;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
-import java.awt.event.ItemListener;
-import java.awt.event.ItemEvent;
-import java.awt.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * A generally used wizard panel for choosing a disk location for a folder.
@@ -65,6 +82,8 @@ import java.awt.*;
  * @version $Revision: 1.9 $
  */
 public class ChooseDiskLocationPanel extends PFWizardPanel {
+
+    private static final Logger log = Logger.getLogger(ChooseDiskLocationPanel.class.getName());
 
     // Some standard user directory names from various OS.
     private static final String USER_DIR_CONTACTS = "Contacts";
@@ -471,7 +490,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
                         }
                     }
                 } catch (Exception e) {
-                    Loggable.logWarningStatic(ChooseDiskLocationPanel.class, e);
+                    log.log(Level.WARNING, "Exception", e);
                 }
             }
         }
@@ -685,7 +704,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
                     }
                 }
             } catch (Exception e) {
-                Loggable.logWarningStatic(ChooseDiskLocationPanel.class, e);
+                log.log(Level.WARNING, "Exception", e);
             }
 
             folderSizeLabel
@@ -706,7 +725,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
                     directorySize = FileUtils.calculateDirectorySize(f, 0);
                 }
             } catch (Exception e) {
-                Loggable.logWarningStatic(ChooseDiskLocationPanel.class, e);
+                log.log(Level.WARNING, "Exception", e);
             }
             return null;
         }
@@ -730,7 +749,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
                     }
                 }
             } catch (Exception e) {
-                Loggable.logWarningStatic(ChooseDiskLocationPanel.class, e);
+                log.log(Level.WARNING, "Exception", e);
             }
         }
     }

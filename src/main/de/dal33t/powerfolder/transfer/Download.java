@@ -19,15 +19,6 @@
  */
 package de.dal33t.powerfolder.transfer;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.Queue;
-
-import org.apache.commons.lang.Validate;
-
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
@@ -38,11 +29,20 @@ import de.dal33t.powerfolder.message.RequestDownload;
 import de.dal33t.powerfolder.message.RequestFilePartsRecord;
 import de.dal33t.powerfolder.message.RequestPart;
 import de.dal33t.powerfolder.message.StopUpload;
-import de.dal33t.powerfolder.util.Loggable;
 import de.dal33t.powerfolder.util.Range;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.delta.FilePartsRecord;
+import org.apache.commons.lang.Validate;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Download class, containing file and member.<BR>
@@ -53,8 +53,9 @@ import de.dal33t.powerfolder.util.delta.FilePartsRecord;
  */
 public class Download extends Transfer {
 
+    private static final Logger log = Logger.getLogger(Download.class.getName());
     private static final long serialVersionUID = 100L;
-    public final static int MAX_REQUESTS_QUEUED = 15;
+    public static final int MAX_REQUESTS_QUEUED = 15;
 
     private Date lastTouch;
     private boolean automatic;
@@ -128,13 +129,11 @@ public class Download extends Transfer {
         checkFileInfo(fileInfo);
         lastTouch.setTime(System.currentTimeMillis());
         if (isStarted()) {
-            Loggable.logWarningStatic(Download.class,
-                "Received multiple upload start messages!");
+            log.warning("Received multiple upload start messages!");
             return;
         }
 
-        Loggable.logFinerStatic(Download.class,
-            "Uploader supports partial transfers.");
+        log.finer("Uploader supports partial transfers.");
         setStarted();
         handler.readyForRequests(Download.this);
     }
@@ -165,7 +164,7 @@ public class Download extends Transfer {
         checkFileInfo(fileInfo);
 
         lastTouch.setTime(System.currentTimeMillis());
-        Loggable.logInfoStatic(Download.class, "Received parts record");
+        log.info("Received parts record");
         handler.filePartsRecordReceived(Download.this, record);
     }
 
@@ -193,7 +192,7 @@ public class Download extends Transfer {
                     transferState.getProgress()));
             } catch (IllegalArgumentException e) {
                 // I need to do this because FileInfos are NOT immutable...
-                Loggable.logWarningStatic(Download.class,
+                log.log(Level.WARNING,
                     "Concurrent file change while requesting:" + e);
                 throw new BrokenDownloadException(
                     "Concurrent file change while requesting: " + e);
@@ -231,7 +230,7 @@ public class Download extends Transfer {
             return false;
         }
 
-        // logFine("Received " + chunk);
+        // log.fine("Received " + chunk);
 
         if (!isStarted()) {
             // donwload begins to start
@@ -298,7 +297,7 @@ public class Download extends Transfer {
     public void setQueued(FileInfo fInfo) {
         Reject.ifNull(fInfo, "fInfo is null!");
         checkFileInfo(fInfo);
-        Loggable.logFinerStatic(Download.class, "DL queued by remote side: "
+        log.finer("DL queued by remote side: "
             + this);
         queued = true;
 
@@ -373,14 +372,13 @@ public class Download extends Transfer {
             - Constants.DOWNLOAD_REQUEST_TIMEOUT_LIMIT > lastTouch.getTime()
             && !queued;
         if (timedOut) {
-            Loggable.logWarningStatic(Download.class, "Abort cause: Timeout.");
+            log.warning("Abort cause: Timeout.");
             return true;
         }
         // Check queueing at remote side
         boolean isQueuedAtPartner = stillQueuedAtPartner();
         if (!isQueuedAtPartner) {
-            Loggable.logWarningStatic(Download.class,
-                "Abort cause: not queued.");
+            log.warning("Abort cause: not queued.");
             return true;
         }
         // check blacklist
@@ -390,8 +388,7 @@ public class Download extends Transfer {
             boolean onBlacklist = folder.getDiskItemFilter().isExcluded(
                 getFile());
             if (onBlacklist) {
-                Loggable.logWarningStatic(Download.class,
-                    "Abort cause: On blacklist.");
+                log.warning("Abort cause: On blacklist.");
                 return true;
             }
 

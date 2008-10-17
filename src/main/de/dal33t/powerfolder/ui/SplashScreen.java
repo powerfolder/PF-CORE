@@ -19,6 +19,19 @@
 */
 package de.dal33t.powerfolder.ui;
 
+import com.jgoodies.forms.factories.Borders;
+import com.jgoodies.looks.plastic.PlasticLookAndFeel;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.Waiter;
+
+import javax.swing.JLabel;
+import javax.swing.JProgressBar;
+import javax.swing.JWindow;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
+import javax.swing.border.AbstractBorder;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -31,22 +44,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import javax.swing.JLabel;
-import javax.swing.JProgressBar;
-import javax.swing.JWindow;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
-import javax.swing.border.AbstractBorder;
-
-import com.jgoodies.forms.factories.Borders;
-import com.jgoodies.looks.plastic.PlasticLookAndFeel;
-
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.util.Waiter;
-import de.dal33t.powerfolder.util.Loggable;
 
 /**
  * Splash screen
@@ -55,6 +55,8 @@ import de.dal33t.powerfolder.util.Loggable;
  * @version $Revision: 1.16 $
  */
 public class SplashScreen extends JWindow {
+
+    private static final Logger log = Logger.getLogger(SplashScreen.class.getName());
 
     private static final Color FREE_BAR_COLOR1 = new Color(100, 10, 15);
     private static final Color FREE_BAR_COLOR2 = new Color(235, 235, 235);
@@ -152,7 +154,7 @@ public class SplashScreen extends JWindow {
                     try {
                         SwingUtilities.invokeAndWait(closerRunner);
                     } catch (Exception e) {
-                        Loggable.logSevereStatic(SplashScreen.class, e);
+                        log.log(Level.SEVERE, "Exception", e);
                     }
                 }
             }
@@ -224,9 +226,9 @@ public class SplashScreen extends JWindow {
                 }
             });
         } catch (InterruptedException e) {
-            Loggable.logSevereStatic(SplashScreen.class, e);
+            log.log(Level.SEVERE, "InterruptedException", e);
         } catch (InvocationTargetException e) {
-            Loggable.logSevereStatic(SplashScreen.class, e);
+            log.log(Level.SEVERE, "InvocationTargetException", e);
         }
     }
 

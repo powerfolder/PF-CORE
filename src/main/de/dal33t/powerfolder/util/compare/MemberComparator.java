@@ -29,7 +29,7 @@ import java.util.List;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.TransferStatus;
-import de.dal33t.powerfolder.util.Loggable;
+
 import de.dal33t.powerfolder.util.Reject;
 
 /**
@@ -38,7 +38,7 @@ import de.dal33t.powerfolder.util.Reject;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.12 $
  */
-public class MemberComparator extends Loggable implements Comparator {
+public class MemberComparator implements Comparator {
     /** In gui used member sorting */
     public static final MemberComparator IN_GUI = new MemberComparator(0);
     /** Sorts members by last (direct) connection date, latest first */
@@ -155,7 +155,7 @@ public class MemberComparator extends Loggable implements Comparator {
 
                 result += tsresult;
 
-                // logWarning("TS Result between " + member1.getNick() + " and "
+                // log.warning("TS Result between " + member1.getNick() + " and "
                 // + member2.getNick() +": " + tsresult);
             } else if (type == 5) { // nickname
                 return member1.getNick().toLowerCase().compareTo(

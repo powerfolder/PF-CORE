@@ -32,17 +32,21 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.FolderComboBox;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
-import de.dal33t.powerfolder.util.LogDispatch;
 import de.dal33t.powerfolder.util.Translation;
 import jwf.WizardPanel;
 
-import javax.swing.*;
+import javax.swing.Icon;
+import javax.swing.JPanel;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class FolderOnlineStoragePanel extends PFWizardPanel {
+
+    private static final Logger log = Logger.getLogger(FolderOnlineStoragePanel.class.getName());
 
     private SelectionInList<Folder> foldersModel;
     private FolderComboBox folderList;
@@ -101,7 +105,7 @@ public class FolderOnlineStoragePanel extends PFWizardPanel {
                     + "Please keep in mind that the inital backup\n"
                     + "may take some time on big folders.");
         } catch (FolderException e) {
-            LogDispatch.logSevere(FolderOnlineStoragePanel.class.getName(), e);
+            log.log(Level.SEVERE, "", e);
             return new TextPanelPanel(getController(),
                 "Online Storage Setup Error",
                 "PowerFolder was unable\nto setup folder " + folder.getName()

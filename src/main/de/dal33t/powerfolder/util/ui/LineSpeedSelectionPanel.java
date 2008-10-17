@@ -22,7 +22,6 @@ package de.dal33t.powerfolder.util.ui;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-import de.dal33t.powerfolder.util.Loggable;
 import de.dal33t.powerfolder.util.Translation;
 
 import javax.swing.JComboBox;
@@ -33,6 +32,7 @@ import javax.swing.JPanel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.ParseException;
+import java.util.logging.Logger;
 
 /**
  * Panel with a combobox for selecting the line speed and a textfield for
@@ -43,6 +43,8 @@ import java.text.ParseException;
  * @version $revision$
  */
 public class LineSpeedSelectionPanel extends JPanel {
+
+    private static final Logger log = Logger.getLogger(LineSpeedSelectionPanel.class.getName());
 
     private JComboBox speedSelectionBox;
     private JComponent customSpeedPanel;
@@ -186,7 +188,10 @@ public class LineSpeedSelectionPanel extends JPanel {
      * 
      * @param descr
      *            the translation property's name whose value will be used
-     * @param speed
+     * @param uploadSpeed
+     *            the upload speed in kb/s, 0 for unlimited
+     * @param downloadSpeed
+     *            the download speed in kb/s, 0 for unlimited
      * @return
      */
     private LineSpeed addLineSpeed(String descr, long uploadSpeed,
@@ -201,7 +206,10 @@ public class LineSpeedSelectionPanel extends JPanel {
      * 
      * @param descr
      *            the translation property's name whose value will be used
-     * @param speed
+     * @param uploadSpeed
+     *            the upload speed in kb/s, 0 for unlimited
+     * @param downloadSpeed
+     *            the download speed in kb/s, 0 for unlimited
      * @param editable
      *            true if the user should be allowed to modify the upload speed
      *            setting. (The value of LineSpeed.uploadSpeed remains
@@ -241,8 +249,10 @@ public class LineSpeedSelectionPanel extends JPanel {
      * lines might have the same upload limit (like ISDN/DSL) this method
      * currenlty selects the first matching item.
      * 
-     * @param speed
-     *            the speed in kb/s, 0 for unlimited
+     * @param uploadSpeed
+     *            the upload speed in kb/s, 0 for unlimited
+     * @param downloadSpeed
+     *            the download speed in kb/s, 0 for unlimited
      */
     public void setSpeedKBPS(long uploadSpeed, long downloadSpeed) {
         // Find the "best" item to select for the given speed
@@ -277,8 +287,7 @@ public class LineSpeedSelectionPanel extends JPanel {
             return (Long) customUploadSpeedField.getFormatter().stringToValue(
                 customUploadSpeedField.getText()) * 1024;
         } catch (ParseException e) {
-            Loggable.logWarningStatic(LineSpeedSelectionPanel.class,
-                    "Unable to parse uploadlimit '"
+            log.warning("Unable to parse uploadlimit '"
                 + customUploadSpeedField.getText() + '\'');
         }
         return -1;
@@ -294,8 +303,7 @@ public class LineSpeedSelectionPanel extends JPanel {
             return (Long) customDownloadSpeedField.getFormatter()
                 .stringToValue(customDownloadSpeedField.getText()) * 1024;
         } catch (ParseException e) {
-            Loggable.logWarningStatic(LineSpeedSelectionPanel.class,
-                    "Unable to parse downloadlimit '"
+            log.warning("Unable to parse downloadlimit '"
                 + customDownloadSpeedField.getText() + '\'');
         }
         return -1;

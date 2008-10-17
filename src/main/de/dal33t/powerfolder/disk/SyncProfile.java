@@ -20,7 +20,7 @@
 package de.dal33t.powerfolder.disk;
 
 import de.dal33t.powerfolder.message.Invitation;
-import de.dal33t.powerfolder.util.Loggable;
+
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 
@@ -247,12 +247,7 @@ public class SyncProfile implements Serializable {
             }
         }
 
-        String oldProfileName = this.profileName;
         this.profileName = profileName;
-        if (Loggable.isLogFinerStatic(SyncProfile.class)) {
-            Loggable.logFinerStatic(SyncProfile.class, "Set profile name from "
-                + oldProfileName + " to " + profileName);
-        }
     }
 
     public SyncProfileConfiguration getConfiguration() {
@@ -285,13 +280,7 @@ public class SyncProfile implements Serializable {
             }
         }
 
-        SyncProfileConfiguration oldConfiguration = this.configuration;
         this.configuration = configuration;
-        if (Loggable.isLogFinerStatic(SyncProfile.class)) {
-            Loggable.logFinerStatic(SyncProfile.class,
-                "Set configuration from " + oldConfiguration.toString()
-                    + " to " + configuration.toString());
-        }
     }
 
     /**

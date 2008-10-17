@@ -19,11 +19,13 @@
  */
 package de.dal33t.powerfolder.util;
 
-import java.io.IOException;
-
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
+
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * A general class to open help topics.
@@ -35,6 +37,8 @@ import de.dal33t.powerfolder.ui.widget.LinkLabel;
  */
 public class Help {
 
+    private static final Logger log = Logger.getLogger(Help.class.getName());
+
     /**
      * Static class, no instance allowed
      */
@@ -45,12 +49,11 @@ public class Help {
      * Opens the quickstart guides
      */
     public static void openQuickstartGuides() {
-        LogDispatch.logFine(Help.class.getName(), "Opening quickstart guides");
+        log.fine("Opening quickstart guides");
         try {
             BrowserLauncher.openURL(Constants.POWERFOLDER_QUICKSTART_URL);
         } catch (IOException e) {
-            LogDispatch.logSevere(Help.class.getName(),
-                "Unable to open quickstart guides", e);
+            log.log(Level.SEVERE, "Unable to open quickstart guides", e);
         }
     }
 
@@ -68,16 +71,13 @@ public class Help {
     public static LinkLabel createHomepageLinkLabel(String labelText,
         String homepageNodeId)
     {
-        LinkLabel label = new LinkLabel(labelText, Constants.POWERFOLDER_URL
-            + "/" + homepageNodeId);
-        return label;
+        return new LinkLabel(labelText, Constants.POWERFOLDER_URL
+            + '/' + homepageNodeId);
     }
 
     /**
      * Creates a linklabel, which links to a article on the PowerFolder wiki.
      * 
-     * @param labelText
-     *            the text of the lable
      * @param article
      *            The article url. e.g. LAN-IP-List for
      *            http://wiki.powerfolder.com/wiki/LAN-IP-List

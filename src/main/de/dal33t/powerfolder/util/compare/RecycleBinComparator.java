@@ -24,7 +24,7 @@ import java.io.File;
 
 import de.dal33t.powerfolder.disk.RecycleBin;
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.util.Loggable;
+
 
 /**
  * Comparator for FileInfo
@@ -32,7 +32,7 @@ import de.dal33t.powerfolder.util.Loggable;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.15 $
  */
-public class RecycleBinComparator extends Loggable implements Comparator<FileInfo> {
+public class RecycleBinComparator implements Comparator<FileInfo> {
 
     // All the available file comparators
     public static final int BY_FILETYPE = 0;

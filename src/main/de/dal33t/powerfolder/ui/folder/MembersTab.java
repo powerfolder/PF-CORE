@@ -19,30 +19,10 @@
  */
 package de.dal33t.powerfolder.ui.folder;
 
-import java.awt.Component;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-
-import javax.swing.AbstractListModel;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.JComponent;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.ListSelectionModel;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFUIComponent;
@@ -58,6 +38,25 @@ import de.dal33t.powerfolder.util.compare.MemberComparator;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
+import javax.swing.AbstractListModel;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JComponent;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.ListSelectionModel;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import java.awt.Component;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  * Displays the members of a Folder in a list, when a member is selected some
  * stats are displayed about the sync status of that member.
@@ -68,6 +67,8 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
 public class MembersTab extends PFUIComponent implements FolderTab,
     FolderMembershipListener
 {
+
+    private static final Logger log = Logger.getLogger(MembersTab.class.getName());
     private JPanel panel;
     private MemberSyncStatusPanel syncStatusPanel;
     private JList memberList;
@@ -208,8 +209,8 @@ public class MembersTab extends PFUIComponent implements FolderTab,
             Member member = (Member) memberListModel.getElementAt(memberList
                 .getSelectedIndex());
             selectionModel.setSelection(member);
-            if (isLogFiner()) {
-                logFiner("Selection: " + selectionModel.getSelection());
+            if (log.isLoggable(Level.FINER)) {
+                log.finer("Selection: " + selectionModel.getSelection());
             }
         }
     }

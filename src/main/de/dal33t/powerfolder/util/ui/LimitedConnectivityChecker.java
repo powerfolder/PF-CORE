@@ -19,6 +19,16 @@
 */
 package de.dal33t.powerfolder.util.ui;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Constants;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.message.KnownNodes;
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.Translation;
+import org.apache.commons.lang.StringUtils;
+
+import javax.swing.JFrame;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedInputStream;
@@ -33,19 +43,8 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.UnknownHostException;
 import java.nio.CharBuffer;
-
-import org.apache.commons.lang.StringUtils;
-
-import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Constants;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PreferencesEntry;
-import de.dal33t.powerfolder.message.KnownNodes;
-import de.dal33t.powerfolder.util.Loggable;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.Translation;
-
-import javax.swing.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Checks the connectivity if run and opens a dialog when UI is open.
@@ -53,7 +52,9 @@ import javax.swing.*;
  * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
-public class LimitedConnectivityChecker extends Loggable {
+public class LimitedConnectivityChecker {
+
+    private static final Logger log = Logger.getLogger(LimitedConnectivityChecker.class.getName());
     private static final String LIMITED_CONNECTIVITY_TEST_SUCCESSFULLY_STRING = "LIMITED CONNECTIVITY TEST SUCCESSFULLY";
     private Controller controller;
     private String host;
@@ -73,14 +74,14 @@ public class LimitedConnectivityChecker extends Loggable {
     public boolean hasLimitedConnecvitiy() {
         if (!controller.getNodeManager().getMySelf().isSupernode()) {
             if (controller.getOSClient().isConnected()) {
-                logFine(
+                log.fine(
                     "No limited connectivity. Connected to the Online Storage");
                 return false;
             }
             if (controller.getIOProvider().getRelayedConnectionManager()
                 .getRelay() != null)
             {
-                logFine("No limited connectivity. Connected to a relay");
+                log.fine("No limited connectivity. Connected to a relay");
                 return false;
             }
             // If not, try the full incoming connection check.
@@ -89,7 +90,7 @@ public class LimitedConnectivityChecker extends Loggable {
         // Be more restrictive on supernode. Needs incoming connections from
         // internet. or clients without a connected webservice.
         if (!resolveHostAndPort()) {
-            logWarning("Unable resolve own host");
+            log.warning("Unable resolve own host");
             return true;
         }
 
@@ -161,17 +162,17 @@ public class LimitedConnectivityChecker extends Loggable {
             }
             LimitedConnectivityChecker checker = new LimitedConnectivityChecker(
                 controller);
-            Loggable.logFineStatic(LimitedConnectivityChecker.class, "Checking for limited connectivity (" + checker.getHost()
-                + ":" + checker.getPort() + ")");
+            log.fine("Checking for limited connectivity (" + checker.getHost()
+                + ':' + checker.getPort() + ')');
             // boolean wasLimited = controller.isLimitedConnectivity();
             boolean nowLimited = checker.hasLimitedConnecvitiy();
             controller.setLimitedConnectivity(nowLimited);
 
             if (nowLimited) {
-                Loggable.logWarningStatic(LimitedConnectivityChecker.class, "Limited connectivity detected (" + checker.getHost()
-                    + ":" + checker.getPort() + ")");
+                log.warning("Limited connectivity detected (" + checker.getHost()
+                    + ':' + checker.getPort() + ')');
             } else {
-                Loggable.logInfoStatic(LimitedConnectivityChecker.class, "Connectivity is good (not limited)");
+                log.info("Connectivity is good (not limited)");
             }
 
             setSupernodeState(nowLimited);
@@ -183,7 +184,7 @@ public class LimitedConnectivityChecker extends Loggable {
             if (dyndnsSetup) {
                 controller.getMySelf().getInfo().isSupernode = !limitedCon;
                 if (controller.getMySelf().getInfo().isSupernode) {
-                    Loggable.logFineStatic(LimitedConnectivityChecker.class, "Acting as supernode on address "
+                    log.fine("Acting as supernode on address "
                         + controller.getMySelf().getInfo().getConnectAddress());
                     // Broadcast our new status, we want stats ;)
                     controller.getNodeManager().broadcastMessage(
@@ -216,7 +217,7 @@ public class LimitedConnectivityChecker extends Loggable {
             host = controller.getDynDnsManager().getIPviaHTTPCheckIP();
         }
 
-        logFiner("Will check connectivity on " + host + ":" + port);
+        log.finer("Will check connectivity on " + host + ':' + port);
         return !StringUtils.isEmpty(host);
     }
 
@@ -229,7 +230,7 @@ public class LimitedConnectivityChecker extends Loggable {
             url = new URL(Constants.LIMITED_CONNECTIVTY_CHECK_URL + "?host="
                 + host + "&port=" + port);
         } catch (MalformedURLException e) {
-            Loggable.logWarningStatic(LimitedConnectivityChecker.class, "Limited connectivity check failed for " + host + ":"
+            log.log(Level.WARNING, "Limited connectivity check failed for " + host + ':'
                 + port, e);
             return false;
         }
@@ -249,13 +250,12 @@ public class LimitedConnectivityChecker extends Loggable {
             return testString
                 .contains(LIMITED_CONNECTIVITY_TEST_SUCCESSFULLY_STRING);
         } catch (SocketTimeoutException e) {
-            Loggable.logWarningStatic(LimitedConnectivityChecker.class,
-                "Limited connectivity check failed for " + host + ":" + port
-                    + ": " + e);
-            Loggable.logFinerStatic(LimitedConnectivityChecker.class, e);
+            log.log(Level.WARNING, "Limited connectivity check failed for " + host + ':' + port
+                   , e);
+            log.log(Level.FINER, "SocketTimeoutException", e);
             return false;
         } catch (IOException e) {
-            Loggable.logWarningStatic(LimitedConnectivityChecker.class, "Limited connectivity check failed for " + host + ":"
+            log.log(Level.WARNING, "Limited connectivity check failed for " + host + ':'
                 + port, e);
             return false;
         } finally {
@@ -263,7 +263,7 @@ public class LimitedConnectivityChecker extends Loggable {
                 try {
                     in.close();
                 } catch (IOException e) {
-                    logFiner(e);
+                    log.log(Level.FINER, "IOException", e);
                 }
             }
         }
@@ -285,7 +285,7 @@ public class LimitedConnectivityChecker extends Loggable {
                 if (response.isNeverAskAgain()) {
                     PreferencesEntry.TEST_CONNECTIVITY.setValue(controllerArg,
                         false);
-                    Loggable.logWarningStatic(LimitedConnectivityChecker.class, "store do not show this dialog again");
+                    log.warning("store do not show this dialog again");
                 }
             }
         };

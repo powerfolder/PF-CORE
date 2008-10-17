@@ -19,29 +19,9 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SET_DEFAULT_SYNCHRONIZED_FOLDER;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-
-import javax.swing.Icon;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JProgressBar;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-
-import jwf.Wizard;
-import jwf.WizardPanel;
-
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.clientserver.ServerClient;
@@ -51,12 +31,29 @@ import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.dialog.SyncFolderPanel;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SET_DEFAULT_SYNCHRONIZED_FOLDER;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Loggable;
 import de.dal33t.powerfolder.util.ui.SwingWorker;
+import jwf.Wizard;
+import jwf.WizardPanel;
+
+import javax.swing.Icon;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JProgressBar;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * A panel that actually starts the creation process of a folder on display.
@@ -70,6 +67,8 @@ import de.dal33t.powerfolder.util.ui.SwingWorker;
  * @version $Revision$
  */
 public class FolderCreatePanel extends PFWizardPanel {
+
+    private static final Logger log = Logger.getLogger(FolderCreatePanel.class.getName());
 
     private FolderInfo foInfo;
     private boolean backupByOS;
@@ -225,7 +224,7 @@ public class FolderCreatePanel extends PFWizardPanel {
                     // Try to back this up by online storage.
                     if (client.hasJoined(folder)) {
                         // Already have this os folder.
-                        Loggable.logWarningStatic(FolderCreatePanel.class,
+                        log.log(Level.WARNING,
                             "Already have os folder " + foInfo.name);
                         return null;
                     }
@@ -248,17 +247,17 @@ public class FolderCreatePanel extends PFWizardPanel {
                         try {
                             FileUtils.openFile(folder.getLocalBase());
                         } catch (IOException e) {
-                            Loggable.logFinerStatic(FolderCreatePanel.class, e);
+                            log.log(Level.FINER, "IOException", e);
                         }
                     }
                 } catch (FolderException e) {
                     problems = true;
                     errorArea.setText(Translation
                         .getTranslation("folder_create.dialog.backup_error.text")
-                        + "\n" + e.getMessage());
+                        + '\n' + e.getMessage());
                     errorPane.setVisible(true);
-                    Loggable.logSevereStatic(FolderCreatePanel.class,
-                        "Unable to backup folder to online storage", e);
+                    log.log(Level.SEVERE,
+                            "Unable to backup folder to online storage", e);
                 }
             }
             return null;

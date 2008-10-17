@@ -19,24 +19,23 @@
  */
 package de.dal33t.powerfolder.light;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.Serializable;
-import java.lang.ref.SoftReference;
-import java.util.Date;
-
-import org.apache.commons.lang.StringUtils;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.DiskItem;
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.util.Loggable;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
+import org.apache.commons.lang.StringUtils;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.Serializable;
+import java.lang.ref.SoftReference;
+import java.util.Date;
+import java.util.logging.Logger;
 
 /**
  * File information of a local or remote file
@@ -45,6 +44,8 @@ import de.dal33t.powerfolder.util.Util;
  * @version $Revision: 1.33 $
  */
 public class FileInfo implements Serializable, DiskItem, Cloneable {
+
+    private static final Logger log = Logger.getLogger(FileInfo.class.getName());
     private static final long serialVersionUID = 100L;
 
     /** The filename (including the path from the base of the folder) */
@@ -165,7 +166,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         }
 
         // if (!diskFile.exists()) {
-        // logWarning("File does not exsists on disk: " + toDetailString());
+        // log.warning("File does not exsists on disk: " + toDetailString());
         // }
 
         boolean filesDiffered = !inSyncWithDisk(diskFile);
@@ -181,7 +182,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
                 setModifiedInfo(controller.getMySelf().getInfo(), new Date());
                 setSize(0);
             }
-            // logWarning("File updated to: " + this.toDetailString());
+            // log.warning("File updated to: " + this.toDetailString());
         }
 
         return filesDiffered;
@@ -501,7 +502,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
                 }
                 // Check if remote file in newer
                 if (remoteFile.isNewerThan(newestVersion)) {
-                    // logFiner("Newer version found at " + member);
+                    // log.finer("Newer version found at " + member);
                     newestVersion = remoteFile;
                 }
             }
@@ -537,7 +538,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
                 }
                 // Check if remote file is newer
                 if (remoteFile.isNewerThan(newestVersion)) {
-                    // logFiner("Newer version found at " + member);
+                    // log.finer("Newer version found at " + member);
                     newestVersion = remoteFile;
                 }
             }
@@ -620,8 +621,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
             && this.getModifiedDate().equals(otherFile.getModifiedDate())
             && !this.getModifiedBy().equals(otherFile.getModifiedBy()))
         {
-            Loggable.logSevereStatic(FileInfo.class,
-                "Found identical files, but diffrent modifier:"
+            log.severe("Found identical files, but diffrent modifier:"
                     + toDetailString() + " other: "
                     + otherFile.toDetailString());
         }

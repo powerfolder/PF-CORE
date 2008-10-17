@@ -19,12 +19,6 @@
 */
 package de.dal33t.powerfolder.util;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
@@ -34,13 +28,22 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.net.NodeManager;
 
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.logging.Logger;
+
 /** converts various stuff */
 public class Convert {
 
+    private static final Logger log = Logger.getLogger(Convert.class.getName());
+
     // no instances
     private Convert() {
-
     }
+
     // The local offset to UTC time in MS
     private static final long TIMEZONE_OFFSET_TO_UTC_MS =
             Calendar.getInstance().get(Calendar.ZONE_OFFSET)
@@ -70,12 +73,12 @@ public class Convert {
      */
     public static int convert2Int(byte[] b) {
         int w = 0;
-        for (int i = 0; i < b.length; i++) {
+        for (byte aB : b) {
             w <<= 8;
-            if (b[i] < 0) {
-                w += b[i] + 256;
+            if (aB < 0) {
+                w += aB + 256;
             } else {
-                w += b[i];
+                w += aB;
             }
         }
         return w;
@@ -179,15 +182,13 @@ public class Convert {
         for (FileInfo file : list) {
             FolderInfo fileFoInfo = file.getFolderInfo();
             if (fileFoInfo == null) {
-                Loggable.logWarningStatic(Convert.class,
-                        "Got fileinfo with folderinfo: null. "
+                log.warning("Got fileinfo with folderinfo: null. "
                     + file.toDetailString());
                 continue;
             }
             Folder folder = repo.getFolder(fileFoInfo);
             if (folder == null) {
-                Loggable.logWarningStatic(Convert.class,
-                        "Unable to cleanup file info instance. Folder not joined: "
+                log.warning("Unable to cleanup file info instance. Folder not joined: "
                         + fileFoInfo);
                 // FIXME: For list of folders that are not joined!
                 // Currently not used because no preview/public mode exists
@@ -227,8 +228,7 @@ public class Convert {
         for (FileInfo file : list) {
             MemberInfo fMInfo = file.getModifiedBy();
             if (fMInfo == null) {
-                Loggable.logWarningStatic(Convert.class,
-                        "Got fileinfo with modificator: null. "
+                log.warning("Got fileinfo with modificator: null. "
                     + file.toDetailString());
                 continue;
             }
@@ -278,8 +278,7 @@ public class Convert {
         // 1) Cleanup of member Info
         MemberInfo fMInfo = file.getModifiedBy();
         if (fMInfo == null) {
-            Loggable.logSevereStatic(Convert.class,
-                    "Got fileinfo with modificator: null. "
+            log.severe("Got fileinfo with modificator: null. "
                 + file.toDetailString());
             return;
         }
@@ -298,15 +297,13 @@ public class Convert {
         // 2) Cleanup of FolderInfo
         FolderInfo fileFoInfo = file.getFolderInfo();
         if (fileFoInfo == null) {
-            Loggable.logSevereStatic(Convert.class,
-                    "Got fileinfo with folderinfo: null. "
+            log.severe("Got fileinfo with folderinfo: null. "
                 + file.toDetailString());
             return;
         }
         Folder folder = repo.getFolder(fileFoInfo);
         if (folder == null) {
-            Loggable.logFinerStatic(Convert.class,
-                    "Unable to cleanup file info instance. "
+            log.finer("Unable to cleanup file info instance. "
                 + "Folder not joined: " + fileFoInfo);
             // FIXME: For list of folders that are not joined!
             // Currently not used because no preview/public mode exists

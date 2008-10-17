@@ -19,22 +19,25 @@
 */
 package de.dal33t.powerfolder.util;
 
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.util.os.OSUtil;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.ui.GenericDialogType;
+
+import javax.swing.JFrame;
+import java.awt.EventQueue;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.awt.EventQueue;
-
-import javax.swing.JFrame;
-
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.util.ui.DialogFactory;
-import de.dal33t.powerfolder.util.ui.GenericDialogType;
-import de.dal33t.powerfolder.util.os.OSUtil;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Detects if PowerFolder is running out of memory.
  */
 public class MemoryMonitor implements Runnable {
+
+    private static final Logger log = Logger.getLogger(MemoryMonitor.class.getName());
 
     private static final String POWERFOLDER_INI_FILE = "PowerFolder.l4j.ini";
     private Controller controller;
@@ -56,7 +59,7 @@ public class MemoryMonitor implements Runnable {
             }
 
             long totalMemory = runtime.totalMemory();
-            Loggable.logFineStatic(MemoryMonitor.class, "Max Memory: " + Format.formatBytesShort(maxMemory)
+            log.fine("Max Memory: " + Format.formatBytesShort(maxMemory)
                     + ", Total Memory: " + Format.formatBytesShort(totalMemory));
 
             // See if there is any more memory to allocate. Defer if dialog
@@ -109,9 +112,9 @@ public class MemoryMonitor implements Runnable {
         boolean wroteNewIni = false;
         PrintWriter pw = null;
         try {
-            Loggable.logFineStatic(MemoryMonitor.class, "Looking for ini...");
+            //log.fine("Looking for ini...");
             // br = new BufferedReader(new FileReader("PowerFolder.ini"));
-            Loggable.logFineStatic(MemoryMonitor.class, "Found ini...");
+            //Loggable.logFineStatic(MemoryMonitor.class, "Found ini...");
             // String line;
             // boolean found = false;
             // while ((line = br.readLine()) != null) {
@@ -126,17 +129,17 @@ public class MemoryMonitor implements Runnable {
             // Write a new one if found.
             if (!alreadyMax) {
                 pw = new PrintWriter(new FileWriter(POWERFOLDER_INI_FILE));
-                Loggable.logFineStatic(MemoryMonitor.class, "Writing new ini...");
+                log.fine("Writing new ini...");
                 pw.println("-Xms16m");
                 pw.println("-Xmx512m");
                 pw.println("-XX:MinHeapFreeRatio=10");
                 pw.println("-XX:MaxHeapFreeRatio=20");
                 pw.flush();
                 wroteNewIni = true;
-                Loggable.logFineStatic(MemoryMonitor.class, "Wrote new ini...");
+                log.fine("Wrote new ini...");
             }
         } catch (IOException e) {
-            Loggable.logFineStatic(MemoryMonitor.class, "Problem reconfiguring ini: " + e.getMessage());
+            log.log(Level.FINE, "Problem reconfiguring ini: " + e.getMessage());
         } finally {
             // if (br != null) {
             // try {

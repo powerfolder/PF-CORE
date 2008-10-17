@@ -20,7 +20,10 @@
 package de.dal33t.powerfolder;
 
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Loggable;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 
 /**
  * Enumeration of preferred preselected navigation panel.
@@ -30,6 +33,8 @@ public enum StartPanel {
     OVERVIEW("preferences.dialog.startPanel.overview"), MY_FOLDERS(
         "preferences.dialog.startPanel.myFolders"), DOWNLOADS(
         "preferences.dialog.startPanel.downloads");
+
+    private static final Logger log = Logger.getLogger(StartPanel.class.getName());
 
     private String description;
 
@@ -57,7 +62,7 @@ public enum StartPanel {
             }
             return valueOf(startPanelName);
         } catch (Exception e) {
-            Loggable.logSevereStatic(StartPanel.class, e);
+            log.log(Level.SEVERE, "Exception", e);
             return OVERVIEW;
         }
     }

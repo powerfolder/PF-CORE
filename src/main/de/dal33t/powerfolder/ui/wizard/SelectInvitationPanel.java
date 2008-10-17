@@ -29,11 +29,14 @@ import de.dal33t.powerfolder.message.Invitation;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
 import de.dal33t.powerfolder.util.InvitationUtil;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Loggable;
 import jwf.WizardPanel;
 
-import javax.swing.*;
+import javax.swing.Icon;
+import javax.swing.JComboBox;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
 import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * Wizard for sending an invitation to a user for a selected folder.
@@ -42,6 +45,8 @@ import java.util.List;
  * @version $Revision: 1.12 $
  */
 public class SelectInvitationPanel extends PFWizardPanel {
+
+    private static final Logger log = Logger.getLogger(SelectInvitationPanel.class.getName());
 
     private List<FolderInfo> possibleFolders;
     private Member member;
@@ -69,8 +74,7 @@ public class SelectInvitationPanel extends PFWizardPanel {
                 folderInfo.getFolder(getController()).getLocalBase());
         invitation.setInvitationText(messageField.getText());
         InvitationUtil.invitationToNode(getController(), invitation, member);
-        Loggable.logFinerStatic(SelectInvitationPanel.class,
-                "Invited " + member.getNick() + " to folder "
+        log.finer("Invited " + member.getNick() + " to folder "
                 + folderInfo.name);
         return true;
     }

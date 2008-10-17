@@ -19,14 +19,18 @@
 */
 package de.dal33t.powerfolder.util.os;
 
-import java.awt.SystemTray;
-import java.io.File;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.util.Loggable;
+
+import java.awt.SystemTray;
+import java.io.File;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 
 public class OSUtil {
+
+    private static final Logger log = Logger.getLogger(OSUtil.class.getName());
     private static boolean sysTraySupport = true;
 
     // no instances
@@ -129,7 +133,7 @@ public class OSUtil {
 
     private static boolean loadLibrary(Class clazz, String file, boolean absPath, boolean logErrorsVerbose) {
         try {
-            Loggable.logFinerStatic(clazz, "Loading library: " + file);
+            log.finer(clazz.getName() + " --> Loading library: " + file);
             if (absPath) {
                 System.load(file);
             } else {
@@ -138,9 +142,9 @@ public class OSUtil {
             return true;
         } catch (UnsatisfiedLinkError e) {
             if (logErrorsVerbose) {
-                Loggable.logFinerStatic(clazz, e);
+                log.log(Level.FINER, "UnsatisfiedLinkError", e);
             } else {
-                Loggable.logSevereStatic(clazz, e);
+                log.log(Level.SEVERE, "UnsatisfiedLinkError", e);
             }
             return false;
         }
@@ -149,7 +153,7 @@ public class OSUtil {
     /**
      * Tries to load a library of PowerFolder.
      * It tries to load the lib from several locations.
-     * @param log 
+     * @param clazz
      * @param lib
      */
     public static boolean loadLibrary(Class clazz, String lib) {
@@ -165,7 +169,7 @@ public class OSUtil {
             Controller.getTempFilesLocation(), true);
 
         if (fLib == null) { 
-            Loggable.logSevereStatic(clazz, "Completely failed to load " + lib + ": Failed to copy resource!");
+            log.severe(clazz.getName() + " --> Completely failed to load " + lib + ": Failed to copy resource!");
             return false;
         }
         if (loadLibrary(clazz, lib, false, true)) {
@@ -174,7 +178,7 @@ public class OSUtil {
         if (loadLibrary(clazz, fLib.getAbsolutePath(), true, false)) {
             return true;
         }  
-        Loggable.logSevereStatic(clazz, "Completely failed to load " + lib + " - see error above!");
+        log.severe(clazz.getName() + " --> Completely failed to load " + lib + " - see error above!");
         return false;
     }
 }

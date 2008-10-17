@@ -19,20 +19,20 @@
  */
 package de.dal33t.powerfolder.transfer.swarm;
 
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.util.ProgressObserver;
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.delta.FilePartsRecord;
+import de.dal33t.powerfolder.util.delta.FilePartsRecordBuilder;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.logging.Logger;
 import java.util.zip.Adler32;
-
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.util.Loggable;
-import de.dal33t.powerfolder.util.ProgressObserver;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.delta.FilePartsRecord;
-import de.dal33t.powerfolder.util.delta.FilePartsRecordBuilder;
 
 /**
  * Abstract {@link FileRecordManager} which can compute {@link FilePartsRecord}s
@@ -41,6 +41,8 @@ import de.dal33t.powerfolder.util.delta.FilePartsRecordBuilder;
  * @author Dennis "Bytekeeper" Waldherr
  */
 public abstract class AbstractFileRecordManager implements FileRecordManager {
+
+    private static final Logger log = Logger.getLogger(AbstractFileRecordManager.class.getName());
     private Controller controller;
 
     /**
@@ -87,7 +89,7 @@ public abstract class AbstractFileRecordManager implements FileRecordManager {
             }
             FilePartsRecord fileRecord = b.getRecord();
             long took = System.currentTimeMillis() - start;
-            Loggable.logInfoStatic(FileInfo.class, "Built file parts for "
+            log.info("Built file parts for "
                 + this + ". took " + took + "ms" + " while processing "
                 + processed + " bytes.");
             return fileRecord;

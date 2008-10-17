@@ -19,18 +19,17 @@
  */
 package de.dal33t.powerfolder;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-
-import org.apache.commons.lang.StringUtils;
-
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
-
-import de.dal33t.powerfolder.util.Loggable;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
+import org.apache.commons.lang.StringUtils;
+
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Refelects a entry setting in the configuration file. Provides basic method
@@ -341,6 +340,7 @@ public enum ConfigurationEntry {
 
     private String configKey;
     protected String defaultValue;
+    private static final Logger log = Logger.getLogger(ConfigurationEntry.class.getName());
 
     ConfigurationEntry(String aConfigKey) {
         this(aConfigKey, null);
@@ -386,8 +386,8 @@ public enum ConfigurationEntry {
         try {
             return new Integer(value);
         } catch (NumberFormatException e) {
-            Loggable.logWarningStatic(ConfigurationEntry.class,
-                "Unable to parse configuration entry '" + configKey
+            log.log(Level.WARNING,
+                    "Unable to parse configuration entry '" + configKey
                     + "' into a int. Value: " + value, e);
             return new Integer(defaultValue);
         }
@@ -409,8 +409,8 @@ public enum ConfigurationEntry {
         try {
             return value.equalsIgnoreCase("true");
         } catch (NumberFormatException e) {
-            Loggable.logWarningStatic(ConfigurationEntry.class,
-                "Unable to parse configuration entry '" + configKey
+            log.log(Level.WARNING,
+                    "Unable to parse configuration entry '" + configKey
                     + "' into a boolean. Value: " + value, e);
             return defaultValue.equalsIgnoreCase("true");
         }

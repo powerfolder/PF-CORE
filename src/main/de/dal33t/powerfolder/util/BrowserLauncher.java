@@ -24,6 +24,8 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Bare Bones Browser Launch
@@ -42,6 +44,8 @@ import java.net.URISyntaxException;
  * @version $Revision: 1.5 $
  */
 public class BrowserLauncher {
+
+    private static final Logger log = Logger.getLogger(BrowserLauncher.class.getName());
 
     private static final String errMsg = "Error attempting to launch web browser";
 
@@ -80,13 +84,12 @@ public class BrowserLauncher {
     private static boolean java6impl(String url) throws IOException {
         try {
             if (Desktop.isDesktopSupported()) {
-                Loggable.logFineStatic(BrowserLauncher.class,
-                        "Using Java6 Desktop.browse()") ;
+                log.fine("Using Java6 Desktop.browse()") ;
                 Desktop.getDesktop().browse(new URI(url));
                 return true;
             }
         } catch (LinkageError err) {
-            Loggable.logFinerStatic(BrowserLauncher.class, err);
+            log.log(Level.FINER, "LinkageError", err);
         } catch (URISyntaxException e) {
             throw (IOException) new IOException("Error:" + e.toString())
                 .initCause(e);

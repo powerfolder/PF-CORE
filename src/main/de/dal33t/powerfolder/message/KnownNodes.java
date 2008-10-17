@@ -19,12 +19,13 @@
 */
 package de.dal33t.powerfolder.message;
 
-import java.util.List;
-
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.Loggable;
+
+import java.util.List;
+import java.util.logging.Logger;
+
 
 /**
  * Contains information about nodes. This message is a answer message for
@@ -36,6 +37,8 @@ import de.dal33t.powerfolder.util.Loggable;
  * @version $Revision: 1.11 $
  */
 public class KnownNodes extends Message {
+
+    private static final Logger log = Logger.getLogger(KnownNodes.class.getName());
     private static final long serialVersionUID = 101L;
 
     public MemberInfo[] nodes;
@@ -66,8 +69,7 @@ public class KnownNodes extends Message {
         this.nodes = nodes;
 
         if (nodes.length > Constants.NODES_LIST_MAX_NODES_PER_MESSAGE) {
-            Loggable.logWarningStatic(KnownNodes.class,
-                    "Nodelist longer than max size: " + this);
+            log.warning("Nodelist longer than max size: " + this);
         }
     }
 
@@ -110,8 +112,7 @@ public class KnownNodes extends Message {
             messages[arrSize - 1] = new KnownNodes(slice);
         }
 
-        Loggable.logFinerStatic(KnownNodes.class,
-                "Built " + messages.length + " nodelists");
+        log.warning("Built " + messages.length + " nodelists");
 
         return messages;
     }

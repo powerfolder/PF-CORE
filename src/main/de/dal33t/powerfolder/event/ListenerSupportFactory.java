@@ -19,6 +19,11 @@
  */
 package de.dal33t.powerfolder.event;
 
+import de.dal33t.powerfolder.util.Profiling;
+import de.dal33t.powerfolder.util.ProfilingEntry;
+import de.dal33t.powerfolder.util.ui.UIUtil;
+
+import javax.swing.SwingUtilities;
 import java.awt.EventQueue;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
@@ -26,13 +31,8 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-
-import javax.swing.SwingUtilities;
-
-import de.dal33t.powerfolder.util.Profiling;
-import de.dal33t.powerfolder.util.ProfilingEntry;
-import de.dal33t.powerfolder.util.Loggable;
-import de.dal33t.powerfolder.util.ui.UIUtil;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Factory used to created event/listener support upon eventlistner interfaces.
@@ -51,8 +51,10 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  */
 public class ListenerSupportFactory {
 
+    private static final Logger log = Logger.getLogger(ListenerSupportFactory.class.getName());
+
     // AWT system check
-    private static final boolean awtAvailable = UIUtil.isAWTAvailable();
+    private static final boolean AWT_AVAILABLE = UIUtil.isAWTAvailable();
 
     /**
      * Creates a listener support for the listener event interface.
@@ -78,8 +80,7 @@ public class ListenerSupportFactory {
             listenerInterface);
         T listenerSupportImpl = (T) Proxy.newProxyInstance(cl,
             new Class[]{listenerInterface}, handler);
-        Loggable.logFinerStatic(ListenerSupportFactory.class,
-            "Created event listener support for interface '"
+        log.finer("Created event listener support for interface '"
                 + listenerInterface.getName() + '\'');
         return listenerSupportImpl;
     }
@@ -328,36 +329,32 @@ public class ListenerSupportFactory {
                                 try {
                                     method.invoke(listener, args);
                                 } catch (IllegalArgumentException e) {
-                                    Loggable.logSevereStatic(
-                                        ListenerSupportFactory.class,
+                                    log.log(Level.SEVERE,
                                         "Received an exception from listener '"
                                             + listener + "', class '"
                                             + listener.getClass().getName()
                                             + '\'', e);
                                 } catch (IllegalAccessException e) {
-                                    Loggable.logSevereStatic(
-                                        ListenerSupportFactory.class,
+                                    log.log(Level.SEVERE,
                                         "Received an exception from listener '"
                                             + listener + "', class '"
                                             + listener.getClass().getName()
                                             + '\'', e);
                                 } catch (InvocationTargetException e) {
-                                    Loggable.logSevereStatic(
-                                        ListenerSupportFactory.class,
-                                        "Received an exception from listener '"
+                                    log.log(Level.SEVERE,
+                                            "Received an exception from listener '"
                                             + listener + "', class '"
                                             + listener.getClass().getName()
                                             + '\'', e.getCause());
                                     // Also log original exception
-                                    Loggable.logFinerStatic(
-                                        ListenerSupportFactory.class, e);
+                                    log.log(Level.FINER, "InvocationTargetException", e);
                                 } finally {
                                     Profiling.end(profilingEntry, 100);
                                 }
                             }
                         }
                     };
-                    if (!awtAvailable || EventQueue.isDispatchThread()) {
+                    if (!AWT_AVAILABLE || EventQueue.isDispatchThread()) {
                         // NO awt system ? do not put in swing thread
                         // Already in swing thread ? also don't wrap
                         runner.run();
@@ -377,23 +374,22 @@ public class ListenerSupportFactory {
                     try {
                         method.invoke(listener, args);
                     } catch (IllegalArgumentException e) {
-                        Loggable.logSevereStatic(ListenerSupportFactory.class,
+                        log.log(Level.SEVERE,
                             "Received an exception from listener '" + listener
                                 + "', class '" + listener.getClass().getName()
                                 + '\'', e);
                     } catch (IllegalAccessException e) {
-                        Loggable.logSevereStatic(ListenerSupportFactory.class,
-                            "Received an exception from listener '" + listener
+                        log.log(Level.SEVERE,
+                                "Received an exception from listener '" + listener
                                 + "', class '" + listener.getClass().getName()
                                 + '\'', e);
                     } catch (InvocationTargetException e) {
-                        Loggable.logSevereStatic(ListenerSupportFactory.class,
-                            "Received an exception from listener '" + listener
+                        log.log(Level.SEVERE,
+                                "Received an exception from listener '" + listener
                                 + "', class '" + listener.getClass().getName()
                                 + '\'', e.getCause());
                         // Also log original exception
-                        Loggable
-                            .logFinerStatic(ListenerSupportFactory.class, e);
+                        log.log(Level.FINER, "", e);
                     } finally {
                         Profiling.end(profilingEntry, 50);
                     }

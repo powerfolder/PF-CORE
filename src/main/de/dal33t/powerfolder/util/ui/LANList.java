@@ -19,9 +19,16 @@
 */
 package de.dal33t.powerfolder.util.ui;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.text.ParseException;
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.factories.ButtonBarFactory;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.net.AddressRange;
+import de.dal33t.powerfolder.util.ui.AddressEditor.EditorResult;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -30,23 +37,19 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
-
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.factories.ButtonBarFactory;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-
-import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.net.AddressRange;
-import de.dal33t.powerfolder.util.ui.AddressEditor.EditorResult;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.text.ParseException;
+import java.util.logging.Logger;
 
 public class LANList extends PFComponent {
+
+    private static final Logger log = Logger.getLogger(LANList.class.getName());
     private JPanel panel;
     private JList networklist;
-    private JButton addButton, removeButton, editButton;
+    private JButton addButton;
+    private JButton removeButton;
+    private JButton editButton;
     private boolean modified;
 
     public LANList(Controller c) {
@@ -147,7 +150,7 @@ public class LANList extends PFComponent {
             try {
                 ar = AddressRange.parseRange(ip);
             } catch (ParseException e) {
-                logWarning("Invalid lanlist entry in configuration file!");
+                log.warning("Invalid lanlist entry in configuration file!");
                 continue;
             }
             ((DefaultListModel) networklist.getModel()).addElement(ar

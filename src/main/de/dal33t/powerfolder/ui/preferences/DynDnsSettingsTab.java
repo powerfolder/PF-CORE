@@ -19,13 +19,21 @@
 */
 package de.dal33t.powerfolder.ui.preferences;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.security.Security;
+import com.jgoodies.binding.adapter.BasicComponentFactory;
+import com.jgoodies.binding.value.ValueModel;
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.factories.Borders;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.ui.widget.LinkLabel;
+import de.dal33t.powerfolder.util.Help;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
+import de.dal33t.powerfolder.util.ui.SwingWorker;
+import org.apache.commons.lang.StringUtils;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -35,26 +43,18 @@ import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-
-import org.apache.commons.lang.StringUtils;
-
-import com.jgoodies.binding.adapter.BasicComponentFactory;
-import com.jgoodies.binding.value.ValueModel;
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.factories.Borders;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-
-import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.ui.widget.LinkLabel;
-import de.dal33t.powerfolder.util.Help;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
-import de.dal33t.powerfolder.util.ui.SwingWorker;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.security.Security;
+import java.util.logging.Logger;
 
 public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
+
+    private static final Logger log = Logger.getLogger(DynDnsSettingsTab.class.getName());
     // disposition constants for status messages
     final static int DISP_INFO = 0; // just informing message
     final static int DISP_WARNING = 1; // warning
@@ -273,7 +273,7 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
      * Starts a worker which gathers the current dyndns stuff. e.g. own ip.
      */
     protected void updateDynDnsInfo() {
-        logFine(
+        log.fine(
             "Gathering dyndns infos. Cache: "
                 + Security.getProperty("networkaddress.cache.ttl"));
         SwingWorker worker = new SwingWorker() {

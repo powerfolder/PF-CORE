@@ -19,15 +19,19 @@
 */
 package de.dal33t.powerfolder.ui.action;
 
-import java.awt.event.ActionEvent;
-import java.io.IOException;
-
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.BrowserLauncher;
-import de.dal33t.powerfolder.util.Loggable;
+
+import java.awt.event.ActionEvent;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 
 public class BuyProAction extends BaseAction {
+
+    private static final Logger log = Logger.getLogger(BuyProAction.class.getName());
 
     public BuyProAction(Controller controller) {
         super("buy_pro", controller);
@@ -37,7 +41,7 @@ public class BuyProAction extends BaseAction {
         try {
             BrowserLauncher.openURL(Constants.POWERFOLDER_PRO_URL);
         } catch (IOException ex) {
-            Loggable.logSevereStatic(BuyProAction.class, ex);
+            log.log(Level.SEVERE, "IOException", ex);
         }
     }
 

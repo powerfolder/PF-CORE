@@ -19,23 +19,30 @@
 */
 package de.dal33t.powerfolder.ui.model;
 
-import java.util.*;
-
-import javax.swing.event.*;
-import javax.swing.table.TableModel;
-
 import com.jgoodies.binding.list.LinkedListModel;
 import com.jgoodies.binding.list.ObservableList;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
-import de.dal33t.powerfolder.util.*;
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.compare.MemberComparator;
 import de.dal33t.powerfolder.util.compare.ReverseComparator;
 import de.dal33t.powerfolder.util.ui.UIUtil;
+
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
+import javax.swing.table.TableModel;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * A table model which contains the search result.
@@ -46,6 +53,8 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  */
 public class SearchNodeTableModel extends PFUIComponent implements TableModel,
         SortedTableModel {
+
+    private static final Logger log = Logger.getLogger(SearchNodeTableModel.class.getName());
     private List<TableModelListener> listeners = new LinkedList<TableModelListener>();
     private ObservableList members = new LinkedListModel();
     
@@ -93,7 +102,7 @@ public class SearchNodeTableModel extends PFUIComponent implements TableModel,
     /** add a member */
     public void add(Member member) {
         Reject.ifNull(member, "Member is null");
-        logFine("add member id: '" + member.getId() + '\'');
+        log.fine("add member id: '" + member.getId() + '\'');
         members.add(member);
         sort();
 

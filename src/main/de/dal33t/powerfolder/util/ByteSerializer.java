@@ -19,6 +19,8 @@
 */
 package de.dal33t.powerfolder.util;
 
+import org.apache.commons.io.output.ByteArrayOutputStream;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,9 +32,9 @@ import java.io.Serializable;
 import java.lang.ref.SoftReference;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
-
-import org.apache.commons.io.output.ByteArrayOutputStream;
 
 /**
  * Helper class which serializes and deserializes java objects into byte arrays
@@ -40,7 +42,9 @@ import org.apache.commons.io.output.ByteArrayOutputStream;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.14 $
  */
-public class ByteSerializer extends Loggable {
+public class ByteSerializer {
+
+    private static final Logger log = Logger.getLogger(ByteSerializer.class.getName());
     private static final int MAX_BUFFER_SIZE = 10 * 1024 * 1024;
     // Should at least cover one file chunk. if packet is greater, the buffer
     // won't get cached = memory waste.
@@ -91,7 +95,7 @@ public class ByteSerializer extends Loggable {
             byteOut = outBufferRef.get();
             byteOut.reset();
         } else {
-            logFiner("Creating send buffer (512bytes)");
+            log.finer("Creating send buffer (512bytes)");
             // Create new bytearray output, 512b buffer
             byteOut = new ByteArrayOutputStream(512);
             if (CACHE_OUT_BUFFER) {
@@ -129,7 +133,7 @@ public class ByteSerializer extends Loggable {
         byteOut.close();
 
         if (byteOut.size() >= 128 * 1024) {
-            logWarning("Send buffer exceeds 128KB! "
+            log.warning("Send buffer exceeds 128KB! "
                 + Format.formatBytes(byteOut.size()) + ". Message: " + target);
         }
 
@@ -161,7 +165,7 @@ public class ByteSerializer extends Loggable {
      */
     public byte[] read(InputStream in, int expectedSize) throws IOException {
         if (expectedSize > MAX_BUFFER_SIZE) {
-            logSevere("Max buffersize overflow while reading. expected size "
+            log.severe("Max buffersize overflow while reading. expected size "
                 + expectedSize);
             return null;
         }
@@ -169,8 +173,8 @@ public class ByteSerializer extends Loggable {
 
         // Dont cache buffer
         if (expectedSize > MAX_CACHE_BUFFER_SIZE) {
-            if (isLogFiner()) {
-                logFiner("Uncached buffer: " + expectedSize);
+            if (log.isLoggable(Level.FINER)) {
+                log.finer("Uncached buffer: " + expectedSize);
             }
             byteIn = new byte[expectedSize];
             // Read into receivebuffer
@@ -186,13 +190,13 @@ public class ByteSerializer extends Loggable {
 
         // Check buffer
         if (byteIn == null || byteIn.length < expectedSize) {
-            if (isLogFiner()) {
+            if (log.isLoggable(Level.FINER)) {
                 String action = (byteIn == null) ? "Creating" : "Extending";
-                logFiner(action + " receive buffer ("
+                log.finer(action + " receive buffer ("
                     + Format.formatBytes(expectedSize) + ")");
             }
             if (expectedSize >= 128 * 1024) {
-                logWarning("Recived buffer exceeds 128KB! "
+                log.warning("Recived buffer exceeds 128KB! "
                     + Format.formatBytes(byteIn.length));
             }
             byteIn = new byte[expectedSize];

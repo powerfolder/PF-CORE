@@ -19,7 +19,21 @@
  */
 package de.dal33t.powerfolder.util;
 
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.disk.Folder;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_ID;
+import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.MemberInfo;
+import de.dal33t.powerfolder.message.Identity;
+import de.dal33t.powerfolder.message.NodeInformation;
+import de.dal33t.powerfolder.transfer.Download;
+import de.dal33t.powerfolder.transfer.DownloadManager;
+import de.dal33t.powerfolder.transfer.TransferManager;
+import de.dal33t.powerfolder.transfer.Upload;
+import de.dal33t.powerfolder.util.compare.DiskItemComparator;
+import de.dal33t.powerfolder.util.compare.MemberComparator;
+import de.dal33t.powerfolder.util.logging.LoggingManager;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -42,20 +56,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
-
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.message.Identity;
-import de.dal33t.powerfolder.message.NodeInformation;
-import de.dal33t.powerfolder.transfer.Download;
-import de.dal33t.powerfolder.transfer.DownloadManager;
-import de.dal33t.powerfolder.transfer.TransferManager;
-import de.dal33t.powerfolder.transfer.Upload;
-import de.dal33t.powerfolder.util.compare.DiskItemComparator;
-import de.dal33t.powerfolder.util.compare.MemberComparator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Utility class with methods for debugging
@@ -64,6 +66,8 @@ import de.dal33t.powerfolder.util.compare.MemberComparator;
  * @version $Revision: 1.30 $
  */
 public class Debug {
+
+    private static final Logger log = Logger.getLogger(Debug.class.getName());
     private static final MyThreadLocal DATE_FORMAT = new MyThreadLocal();
 
     // private static Map<File, Collection<Object>> fileWatch = new
@@ -77,20 +81,19 @@ public class Debug {
      * Dumps the system properties into the debug directory.
      */
     public static void writeSystemProperties() {
-        if (!LogDispatch.isLogToFileEnabled()) {
+        if (!LoggingManager.isLogToFile()) {
             return;
         }
-        File file = new File(LogDispatch.getDebugDir(), "system_properties.txt");
+        File file = new File(LoggingManager.getDebugDir(), "system_properties.txt");
         try {
             Properties sysprops = System.getProperties();
             PropertiesUtil.saveConfig(file, sysprops, "Current time: "
                 + new Date());
         } catch (FileNotFoundException e) {
-            LogDispatch.logSevere(Debug.class.getName(),
-                "Unable to create SystemInfo file");
+            log.severe("Unable to create SystemInfo file");
         } catch (IOException e) {
-            LogDispatch.logSevere(Debug.class.getName(), "Unable to Write to '"
-                + file + "'");
+            log.severe("Unable to Write to '"
+                + file + '\'');
         }
     }
 
@@ -109,7 +112,7 @@ public class Debug {
         Reject.ifBlank(folderName, "folderName is null");
         Reject.ifBlank(memberName, "memberName is null");
         Reject.ifNull(fileInfos, "Files are null");
-        File logFile = new File(LogDispatch.getDebugDir(), Util
+        File logFile = new File(LoggingManager.getDebugDir(), Util
             .removeInvalidFilenameChars(folderName)
             + File.separator
             + Util.removeInvalidFilenameChars(memberName)
@@ -133,15 +136,13 @@ public class Debug {
                 logFile.getParentFile().mkdirs();
                 logFile.createNewFile();
             } catch (IOException e) {
-                Loggable.logSevereStatic(Debug.class,
-                    "Unable to write filelist to " + logFile.getAbsolutePath());
-                Loggable.logFinerStatic(Debug.class, e);
+                log.severe("Unable to write filelist to " + logFile.getAbsolutePath());
+                log.log(Level.FINER, "IOException", e);
                 return false;
             }
         }
         if (!logFile.canWrite()) {
-            Loggable.logSevereStatic(Debug.class,
-                "Unable to write filelist to " + logFile.getAbsolutePath());
+            log.severe("Unable to write filelist to " + logFile.getAbsolutePath());
             return false;
         }
 
@@ -156,15 +157,14 @@ public class Debug {
             fOut.write(("# " + header + "\n\n").getBytes("UTF-8"));
             fOut.write("Change time      ;Filename;Changer;Size;Version\n\n"
                 .getBytes());
-            for (int i = 0; i < list.length; i++) {
-                fOut.write(toCSVLine(list[i]).getBytes("UTF-8"));
+            for (FileInfo aList : list) {
+                fOut.write(toCSVLine(aList).getBytes("UTF-8"));
             }
             fOut.close();
         } catch (IOException e) {
-            Loggable.logWarningStatic(Debug.class,
-                "Unable to write nodelist to '" + logFile.getAbsolutePath()
-                    + "'");
-            Loggable.logFinerStatic(Debug.class, e);
+            log.severe("Unable to write nodelist to '" + logFile.getAbsolutePath()
+                    + '\'');
+            log.log(Level.FINER, "IOException", e);
         }
 
         return false;
@@ -173,8 +173,7 @@ public class Debug {
     /**
      * Details infos about the fileinfo to a comma separated line.
      * 
-     * @param b
-     * @param m
+     * @param f
      */
     private static String toCSVLine(FileInfo f) {
         Reject.ifNull(f, "FileInfo is null");
@@ -188,16 +187,16 @@ public class Debug {
             b.append("(del) ");
         }
         b.append(f.getName());
-        b.append(";");
+        b.append(';');
 
         b.append(f.getModifiedBy().nick);
-        b.append(";");
+        b.append(';');
 
         b.append(Format.formatBytes(f.getSize()));
-        b.append(";");
+        b.append(';');
 
         b.append(f.getVersion());
-        b.append("\n");
+        b.append('\n');
 
         return b.toString();
     }
@@ -205,7 +204,7 @@ public class Debug {
     /**
      * Builds a debug report for remote analyse
      * 
-     * @param controller
+     * @param c
      * @return
      */
     public static String buildDebugReport(Controller c) {
@@ -221,16 +220,16 @@ public class Debug {
             long uptimeMinutes = c.getUptime() / 1000 / 60;
 
             b.append("\nVersion: " + Controller.PROGRAM_VERSION + " ("
-                + c.getBuildTime() + ")");
+                + c.getBuildTime() + ')');
             b.append("\nConfig: " + c.getConfigName());
             b.append("\nCurrent time: " + new Date());
             b.append("\nLocale: " + Locale.getDefault() + " ("
-                + Locale.getDefault().getDisplayCountry() + ")");
+                + Locale.getDefault().getDisplayCountry() + ')');
             b.append("\nUptime: " + uptimeMinutes + " minutes");
             b.append("\nOS: " + System.getProperty("os.name"));
             b.append("\nJava: " + System.getProperty("java.version") + " ("
                 + System.getProperty("java.runtime.version") + ", "
-                + System.getProperty("java.vendor") + ")");
+                + System.getProperty("java.vendor") + ')');
 
             b.append("\nNetworking mode: ");
             b.append(c.getNetworkingMode().name());
@@ -264,14 +263,14 @@ public class Debug {
                 } else {
                     b.append(", acting as standardnode");
                 }
-                b.append("\n");
+                b.append('\n');
             } else {
                 b.append("Not listening on a local port\n");
             }
             b.append("MySelf: ");
             addDetailInfo(b, c.getMySelf());
 
-            b.append("\n");
+            b.append('\n');
 
             if (c.isStarted()) {
                 // All folders
@@ -283,7 +282,7 @@ public class Debug {
                     Folder folder = folders[i];
                     addDetailInfo(b, folder);
                 }
-                b.append("\n");
+                b.append('\n');
                 if (folders.length == 0) {
                     b.append(" (none)\n");
                 }
@@ -309,7 +308,7 @@ public class Debug {
                         b.append(" " + dl);
                     }
                 }
-                b.append("\n");
+                b.append('\n');
                 if (downloads.size() == 0) {
                     b.append(" (none)\n");
                 }
@@ -342,7 +341,7 @@ public class Debug {
                     b.append(upload.isStarted() ? "(active)" : "(queued)");
                     b.append(" " + upload);
                 }
-                b.append("\n");
+                b.append('\n');
                 if (actULs.length == 0 && quedULs.length == 0) {
                     b.append(" (none)\n");
                 }
@@ -367,7 +366,7 @@ public class Debug {
                         addDetailInfo(b, knownMembers[i]);
                     }
                 }
-                b.append("\n");
+                b.append('\n');
                 if (knownMembers.length == 0) {
                     b.append(" (none)\n");
                 }
@@ -397,7 +396,7 @@ public class Debug {
                 }
                 b.append("\n   " + key + " = " + value);
             }
-            b.append("\n");
+            b.append('\n');
 
             /*
              * b.append("\nFolder details:"); for (int i = 0; i <
@@ -425,7 +424,6 @@ public class Debug {
     /**
      * Details infos about the member.
      * 
-     * @param b
      * @param m
      */
     private static String toDetailInfo(Member m) {
@@ -458,7 +456,6 @@ public class Debug {
     /**
      * Details infos about the member ad a comma separated line.
      * 
-     * @param b
      * @param m
      */
     private static String toCSVLine(Member m) {
@@ -479,19 +476,19 @@ public class Debug {
             b.append("offline");
         }
 
-        b.append(";");
+        b.append(';');
         if (m.getInfo().isSupernode) {
-            b.append("s");
+            b.append('s');
         } else {
-            b.append("n");
+            b.append('n');
         }
 
-        b.append(";");
+        b.append(';');
         b.append(m.getNick());
 
-        b.append(";" + m.getId());
+        b.append(';' + m.getId());
 
-        b.append(";");
+        b.append(';');
         Identity id = m.getIdentity();
         b.append((id != null ? id.getProgramVersion() : "-"));
 
@@ -541,7 +538,7 @@ public class Debug {
         try {
             // Create in debug directory
             // Create dir
-            File dir = new File(LogDispatch.getDebugDir(), "nodeinfos");
+            File dir = new File(LoggingManager.getDebugDir(), "nodeinfos");
             dir.mkdirs();
             OutputStream fOut = new BufferedOutputStream(new FileOutputStream(
                 new File(dir, fileName)));
@@ -549,7 +546,7 @@ public class Debug {
             fOut.close();
             return true;
         } catch (IOException e) {
-            Loggable.logSevereStatic(Debug.class, e);
+            log.log(Level.FINER, "IOException", e);
         }
         return false;
     }
@@ -565,7 +562,7 @@ public class Debug {
         Reject.ifNull(node, "Node is null");
         String fileName = "Node." + node.nick + ".report.txt";
         try {
-            File file = new File(LogDispatch.getDebugDir(), "nodeinfos/"
+            File file = new File(LoggingManager.getDebugDir(), "nodeinfos/"
                 + fileName);
             InputStream fIn = new BufferedInputStream(new FileInputStream(file));
 
@@ -573,8 +570,8 @@ public class Debug {
             fIn.read(buffer);
             return new String(buffer);
         } catch (IOException e) {
-            Loggable.logWarningStatic(Debug.class, "Debug report for "
-                + node.nick + " not found (" + fileName + ")");
+            log.warning("Debug report for "
+                + node.nick + " not found (" + fileName + ')');
             // Loggable.logFinerStatic(Debug.class, e);
         }
         return null;
@@ -593,16 +590,15 @@ public class Debug {
         Reject.ifNull(nodes, "Nodelist is null");
         try {
             OutputStream fOut = new BufferedOutputStream(new FileOutputStream(
-                new File(LogDispatch.getDebugDir(), fileName)));
+                new File(LoggingManager.getDebugDir(), fileName)));
             for (Member node : nodes) {
-                fOut.write(Debug.toDetailInfo(node).getBytes());
+                fOut.write(toDetailInfo(node).getBytes());
                 fOut.write("\n".getBytes());
             }
             fOut.close();
         } catch (IOException e) {
-            Loggable.logWarningStatic(Debug.class,
-                "Unable to write nodelist to '" + fileName + "'");
-            Loggable.logFinerStatic(Debug.class, e);
+            log.warning("Unable to write nodelist to '" + fileName + '\'');
+            log.log(Level.FINER, "IOException", e);
         }
     }
 
@@ -620,7 +616,7 @@ public class Debug {
         Reject.ifNull(nodes, "Nodelist is null");
         try {
             OutputStream fOut = new BufferedOutputStream(new FileOutputStream(
-                new File(LogDispatch.getDebugDir(), fileName)));
+                new File(LoggingManager.getDebugDir(), fileName)));
             fOut
                 .write("connect;supernode;nick;id;version;address;last connect time;last online time\n"
                     .getBytes());
@@ -632,9 +628,9 @@ public class Debug {
             }
             fOut.close();
         } catch (IOException e) {
-            Loggable.logWarningStatic(Debug.class,
-                "Unable to write nodelist to '" + fileName + "'");
-            Loggable.logFinerStatic(Debug.class, e);
+            log.warning("Unable to write nodelist to '" + fileName + '\'');
+            log.log(Level.FINER, "IOException", e);
+
         }
     }
 
@@ -650,15 +646,14 @@ public class Debug {
                 .getConfigName()
                 + ".netstat.csv", true));
             Date now = new Date();
-            String statLine = Format.getFullDateFormat().format(now) + ";"
-                + now.getTime() + ";"
-                + c.getNodeManager().countConnectedNodes() + ";"
-                + c.getNodeManager().countOnlineNodes() + ";"
-                + c.getNodeManager().getNodesAsCollection().size() + "\n";
+            String statLine = Format.getFullDateFormat().format(now) + ';'
+                + now.getTime() + ';'
+                + c.getNodeManager().countConnectedNodes() + ';'
+                + c.getNodeManager().countOnlineNodes() + ';'
+                + c.getNodeManager().getNodesAsCollection().size() + '\n';
             fOut.write(statLine.getBytes());
         } catch (IOException e) {
-            Loggable.logWarningStatic(Debug.class,
-                "Unable to write network statistics file", e);
+            log.log(Level.WARNING, "Unable to write network statistics file", e);
             // Ignore
         } finally {
             try {
@@ -735,7 +730,7 @@ public class Debug {
     }
 
     public static void dumpCurrentStackTrace() {
-        Loggable.logFineStatic(Debug.class, getStackTrace(Thread
+        log.fine(getStackTrace(Thread
             .currentThread().getStackTrace()));
     }
 
@@ -760,7 +755,7 @@ public class Debug {
             } catch (IllegalAccessException e) {
                 buffer.append(e);
             }
-            buffer.append("]");
+            buffer.append(']');
             fld.setAccessible(false);
         }
         return buffer.toString();
@@ -777,29 +772,30 @@ public class Debug {
     private static void showGroupInfo(ThreadGroup group) {
         Thread threads[] = new Thread[group.activeCount()];
         group.enumerate(threads, false);
-        Loggable.logFineStatic(Debug.class, "");
-        Loggable
-            .logFineStatic(Debug.class, group + " ########################");
+        log.fine("");
+        log.fine(group + " ########################");
 
-        for (int i = 0; i < threads.length; i++) {
-            if (threads[i] != null) {
-                Loggable.logFineStatic(Debug.class, " " + threads[i]
-                    + " --------------------------------------");
-                dumpStackTrace(threads[i]);
-                Loggable.logFineStatic(Debug.class, "");
+        for (Thread thread : threads) {
+            if (thread != null) {
+                log.fine(" " + thread
+                        + " --------------------------------------");
+                dumpStackTrace(thread);
+                log.fine("");
             }
         }
-        ThreadGroup activeGroup[] = new ThreadGroup[group.activeGroupCount()];
+        ThreadGroup[] activeGroup = new ThreadGroup[group.activeGroupCount()];
         group.enumerate(activeGroup, false);
 
-        for (int i = 0; i < activeGroup.length; i++) {
+        int i = 0;
+        while (i < activeGroup.length) {
             showGroupInfo(activeGroup[i]);
+            i++;
         }
     }
 
-    private static final void dumpStackTrace(Thread t) {
+    private static void dumpStackTrace(Thread t) {
         for (StackTraceElement te : t.getStackTrace()) {
-            Loggable.logFineStatic(Debug.class, "  " + te);
+            log.fine("  " + te);
         }
     }
 

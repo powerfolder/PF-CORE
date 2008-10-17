@@ -21,12 +21,15 @@ package de.dal33t.powerfolder.util;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Logger;
 
 /**
  * Class to monitor and log long-running method calls (only in Verbose mode).
  * Used for analysis and improvements to PowerFolder.
  */
 public class Profiling {
+
+    private static final Logger log = Logger.getLogger(Profiling.class.getName());
 
     /**
      * Allow public access for faster check
@@ -137,8 +140,7 @@ public class Profiling {
         }
         if (profilingEntry == null) {
             // This i
-            Loggable.logSevereStatic(Profiling.class, new RuntimeException(
-                "Cannot end profiling, entry is null"));
+            log.severe("Cannot end profiling, entry is null");
             return;
         }
 
@@ -152,7 +154,7 @@ public class Profiling {
                 t += " [" + profilingEntry.getDetails() + "]";
             }
             t += " took " + elapsed + " milliseconds";
-            Loggable.logSevereStatic(Profiling.class, t);
+            log.severe(t);
         }
         totalTime += elapsed;
         totalCount++;
@@ -175,7 +177,7 @@ public class Profiling {
 
     public static String dumpStats() {
         if (!ENABLED) {
-            Loggable.logSevereStatic(Profiling.class, "Unable to dump stats. Profiling is disabled");
+            log.severe("Unable to dump stats. Profiling is disabled");
             return "Unable to dump stats. Profiling is disabled";
         }
 

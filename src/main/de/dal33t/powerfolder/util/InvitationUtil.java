@@ -19,6 +19,19 @@
  */
 package de.dal33t.powerfolder.util;
 
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.clientserver.SendInvitationEmail;
+import de.dal33t.powerfolder.light.MemberInfo;
+import de.dal33t.powerfolder.message.Invitation;
+import de.dal33t.powerfolder.util.task.SendMessageTask;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.ui.GenericDialogType;
+
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.filechooser.FileFilter;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -29,20 +42,8 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
-
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
-import javax.swing.filechooser.FileFilter;
-
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.clientserver.SendInvitationEmail;
-import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.message.Invitation;
-import de.dal33t.powerfolder.util.task.SendMessageTask;
-import de.dal33t.powerfolder.util.ui.DialogFactory;
-import de.dal33t.powerfolder.util.ui.GenericDialogType;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * methods for loading and saving powerfolder invitations
@@ -50,6 +51,8 @@ import de.dal33t.powerfolder.util.ui.GenericDialogType;
  * @see Invitation
  */
 public class InvitationUtil {
+
+    private static final Logger log = Logger.getLogger(InvitationUtil.class.getName());
 
     // No instances
     private InvitationUtil() {
@@ -70,12 +73,12 @@ public class InvitationUtil {
         if (!file.exists() || file.isDirectory() || !file.canRead()) {
             return null;
         }
-        Loggable.logFinerStatic(InvitationUtil.class, "Loading invitation " + file);
+        log.fine("Loading invitation " + file);
         try {
             FileInputStream fIn = new FileInputStream(file);
             return load(fIn);
         } catch (IOException e) {
-            Loggable.logSevereStatic(InvitationUtil.class, "Unable to read invitation file stream", e);
+            log.log(Level.SEVERE, "Unable to read invitation file stream", e);
         }
         return null;
     }
@@ -92,7 +95,7 @@ public class InvitationUtil {
         if (in == null) {
             throw new NullPointerException("File is null");
         }
-        Loggable.logFinerStatic(InvitationUtil.class, "Loading invitation from " + in);
+        log.fine("Loading invitation from " + in);
         try {
             ObjectInputStream oIn = new ObjectInputStream(in);
             Invitation invitation = (Invitation) oIn.readObject();
@@ -115,13 +118,13 @@ public class InvitationUtil {
 
             return invitation;
         } catch (ClassCastException e) {
-            Loggable.logSevereStatic(InvitationUtil.class,
+            log.log(Level.SEVERE,
                     "Unable to read invitation file stream", e);
         } catch (IOException e) {
-            Loggable.logSevereStatic(InvitationUtil.class,
+            log.log(Level.SEVERE,
                     "Unable to read invitation file stream", e);
         } catch (ClassNotFoundException e) {
-            Loggable.logSevereStatic(InvitationUtil.class,
+            log.log(Level.SEVERE,
                     "Unable to read invitation file stream", e);
         }
         return null;
@@ -141,7 +144,7 @@ public class InvitationUtil {
             return save(invitation, new BufferedOutputStream(
                 new FileOutputStream(file)));
         } catch (FileNotFoundException e) {
-            Loggable.logSevereStatic(InvitationUtil.class,
+            log.log(Level.SEVERE,
                     "Unable to write invitation file stream", e);
             return false;
         }
@@ -157,7 +160,7 @@ public class InvitationUtil {
      * @return true if successful
      */
     public static boolean save(Invitation invitation, OutputStream out) {
-        Loggable.logFinerStatic(InvitationUtil.class, "Saving invitation to " + out);
+        log.finer("Saving invitation to " + out);
         ObjectOutputStream oOut;
         try {
             oOut = new ObjectOutputStream(out);
@@ -165,8 +168,7 @@ public class InvitationUtil {
             oOut.close();
             return true;
         } catch (IOException e) {
-            Loggable.logSevereStatic(InvitationUtil.class,
-                    "Unable to save invitation file stream", e);
+            log.log(Level.SEVERE, "Unable to save invitation file stream", e);
         }
         return false;
     }
@@ -275,7 +277,7 @@ public class InvitationUtil {
             file = new File(filename + ".invitation");
         }
         if (!save(invitation, file)) {
-            Loggable.logSevereStatic(InvitationUtil.class, "sendmail failed");
+            log.severe("sendmail failed");
             return false;
         }
         file.deleteOnExit();
@@ -286,7 +288,7 @@ public class InvitationUtil {
         String body = Translation.getTranslation("send_invitation.body", to,
             controller.getMySelf().getNick(), invitationName);
         if (!MailUtil.sendMail(to, subject, body, file)) {
-            Loggable.logSevereStatic(InvitationUtil.class, "sendmail failed");
+            log.severe("sendmail failed");
             file.delete();
             return false;
         }
@@ -338,7 +340,7 @@ public class InvitationUtil {
             }
         }
 
-        Loggable.logInfoStatic(InvitationUtil.class, "Writing invitation to " + file);
+        log.info("Writing invitation to " + file);
         if (!save(invitation, file)) {
             DialogFactory.genericDialog(controller.getUIController()
                 .getMainFrame().getUIComponent(), Translation

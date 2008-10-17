@@ -31,6 +31,9 @@ import de.dal33t.powerfolder.message.clientserver.Response;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.util.Reject;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  * Performs a basic request - response message cycle.
  * <p>
@@ -40,6 +43,8 @@ import de.dal33t.powerfolder.util.Reject;
  * @version $Revision: 1.5 $
  */
 public class RequestExecutor extends PFComponent {
+
+    private static final Logger log = Logger.getLogger(RequestExecutor.class.getName());
     private Object waitForResponseLock = new Object();
     private Member node;
 
@@ -65,8 +70,8 @@ public class RequestExecutor extends PFComponent {
         response = null;
         requestId = request.getRequestId();
 
-        if (isLogFiner()) {
-            logFiner("Sending request to " + node.getNick() + " (" + requestId
+        if (log.isLoggable(Level.FINER)) {
+            log.finer("Sending request to " + node.getNick() + " (" + requestId
                 + "): " + request);
         }
         // Listen to receive the response
@@ -86,8 +91,8 @@ public class RequestExecutor extends PFComponent {
                 throw new ConnectionException("Timeout to " + node.getNick());
             }
 
-            if (isLogFiner()) {
-                logFiner("Response from " + node.getNick() + " (" + requestId
+            if (log.isLoggable(Level.FINER)) {
+                log.finer("Response from " + node.getNick() + " (" + requestId
                     + "): " + response);
             }
         } finally {
@@ -104,16 +109,16 @@ public class RequestExecutor extends PFComponent {
             try {
                 waitForResponseLock.wait(seconds * 1000);
             } catch (InterruptedException e) {
-                logWarning("Interrupted while waiting for response (" + node
+                log.warning("Interrupted while waiting for response (" + node
                     + "): " + e);
-                logFiner(e);
+                log.log(Level.FINER, "InterruptedException", e);
             }
         }
     }
 
     private void notifyAndcleanup() {
-        if (isLogFiner()) {
-            logFiner("Cleanup of request: " + requestId);
+        if (log.isLoggable(Level.FINER)) {
+            log.finer("Cleanup of request: " + requestId);
         }
         synchronized (waitForResponseLock) {
             waitForResponseLock.notifyAll();

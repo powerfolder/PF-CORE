@@ -19,16 +19,6 @@
  */
 package de.dal33t.powerfolder.clientserver;
 
-import java.io.File;
-import java.io.UnsupportedEncodingException;
-import java.security.PublicKey;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.TimerTask;
-
-import org.apache.commons.lang.StringUtils;
-
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
@@ -51,6 +41,17 @@ import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
+import org.apache.commons.lang.StringUtils;
+
+import java.io.File;
+import java.io.UnsupportedEncodingException;
+import java.security.PublicKey;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.TimerTask;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Client to a server.
@@ -61,6 +62,8 @@ import de.dal33t.powerfolder.util.Util;
  * @version $Revision: 1.5 $
  */
 public class ServerClient extends PFComponent {
+
+    private static final Logger log = Logger.getLogger(ServerClient.class.getName());
     private static final String PREFS_PREFIX = "server";
     private static final String MEMBER_ID_TEMP_PREFIX = "TEMP_IDENTITY_";
 
@@ -131,7 +134,7 @@ public class ServerClient extends PFComponent {
             .getTranslation("online_storage.connecting"), MEMBER_ID_TEMP_PREFIX
             + "|" + IdGenerator.makeId());
         serverInfo.setConnectAddress(Util.parseConnectionString(host));
-        logInfo("Using server from config: " + serverInfo + ", ID: "
+        log.info("Using server from config: " + serverInfo + ", ID: "
             + serverInfo.id);
         // Avoid adding temporary nodes to nodemanager
         return new Member(getController(), serverInfo);
@@ -317,13 +320,13 @@ public class ServerClient extends PFComponent {
         }
         boolean loginOk = userService.login(theUsername, passwordMD5, salt);
         if (!loginOk) {
-            logWarning("Login to server server " + server.getReconnectAddress()
+            log.warning("Login to server server " + server.getReconnectAddress()
                 + " (user " + theUsername + ") failed!");
             setAnonAccount();
             return accountDetails.getAccount();
         }
         AccountDetails newAccountDetails = userService.getAccountDetails();
-        logInfo("Login to server " + server.getReconnectAddress() + " (user "
+        log.info("Login to server " + server.getReconnectAddress() + " (user "
             + theUsername + ") result: " + accountDetails);
         if (newAccountDetails != null) {
             accountDetails = newAccountDetails;
@@ -443,24 +446,24 @@ public class ServerClient extends PFComponent {
         // .getJoinedFolderInfos();
         //
         // if (logWarn) {
-        // logWarning(
+        // log.warning(
         // "Granting admin permission on: " + Arrays.asList(myFolders));
         // }
         // getFolderService().grantAdmin(myFolders);
 
-        logWarning("Rights: " + getAccount().getPermissions().size());
+        log.warning("Rights: " + getAccount().getPermissions().size());
         // TODO Also get READ/WRITE permission folder
         Collection<FolderInfo> foInfos = FolderAdminPermission
             .filter(getAccount());
-        logWarning("Rights on: " + foInfos);
+        log.warning("Rights on: " + foInfos);
         for (FolderInfo foInfo : foInfos) {
-            logWarning("Checking: " + foInfo);
+            log.warning("Checking: " + foInfo);
             if (getController().getFolderRepository().hasJoinedFolder(foInfo)) {
                 continue;
             }
             FolderSettings settings = new FolderSettings(new File("."),
                 SyncProfile.AUTOMATIC_SYNCHRONIZATION, true, true, true, false);
-            logWarning("Adding as preview: " + foInfo);
+            log.warning("Adding as preview: " + foInfo);
             getController().getFolderRepository().createPreviewFolder(foInfo,
                 settings);
         }
@@ -479,8 +482,8 @@ public class ServerClient extends PFComponent {
         if (!isLastLoginOK()) {
             return;
         }
-        if (isLogFiner()) {
-            logFiner("Connecting to hosting servers");
+        if (log.isLoggable(Level.FINER)) {
+            log.finer("Connecting to hosting servers");
         }
         Runnable retriever = new Runnable() {
             public void run() {
@@ -488,7 +491,7 @@ public class ServerClient extends PFComponent {
                     .getJoinedFolderInfos();
                 Collection<MemberInfo> servers = getFolderService()
                     .getHostingServers(folders);
-                logWarning("Got " + servers.size() + " servers for our "
+                log.warning("Got " + servers.size() + " servers for our "
                     + folders.length + " folders: " + servers);
                 for (MemberInfo serverMInfo : servers) {
                     Member hostingServer = serverMInfo.getNode(getController(),
@@ -588,7 +591,7 @@ public class ServerClient extends PFComponent {
     }
 
     private void changeToServer(ServerInfo targetServer) {
-        logWarning("Changeing server to " + targetServer.getNode());
+        log.warning("Changeing server to " + targetServer.getNode());
 
         // Add key of new server to keystore.
         if (Util.getPublicKey(getController(), targetServer.getNode()) == null)
@@ -596,7 +599,7 @@ public class ServerClient extends PFComponent {
             PublicKey serverKey = publicKeyService.getPublicKey(targetServer
                 .getNode());
             if (serverKey != null) {
-                logWarning("Retrieved new key for server "
+                log.warning("Retrieved new key for server "
                     + targetServer.getNode() + ". " + serverKey);
                 Util.addNodeToKeyStore(getController(), targetServer.getNode(),
                     serverKey);
@@ -646,7 +649,7 @@ public class ServerClient extends PFComponent {
      */
     private class MyNodeManagerListener implements NodeManagerListener {
         public void nodeConnected(NodeManagerEvent e) {
-            // logWarning("Is server " + e.getNode() + "? " +
+            // log.warning("Is server " + e.getNode() + "? " +
             // isServer(e.getNode()));
             if (isServer(e.getNode())) {
                 // Our server member instance is a temporary one. Lets get real.
@@ -656,7 +659,7 @@ public class ServerClient extends PFComponent {
                     setNewServerNode(e.getNode());
                     // Remove old temporary server entry without ID.
                     getController().getNodeManager().removeNode(oldServer);
-                    logFine("Got connect to server: " + server);
+                    log.fine("Got connect to server: " + server);
                 }
 
                 if (username != null) {
@@ -717,7 +720,7 @@ public class ServerClient extends PFComponent {
                 return;
             }
             if (getController().isLanOnly() && !server.isOnLAN()) {
-                logFine("NOT connecting to server: " + server
+                log.fine("NOT connecting to server: " + server
                     + ". Reason: Not on LAN");
                 return;
             }

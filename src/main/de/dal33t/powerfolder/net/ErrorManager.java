@@ -19,8 +19,11 @@
 */
 package de.dal33t.powerfolder.net;
 
-import java.util.Hashtable;
 import de.dal33t.powerfolder.PFComponent;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Logger;
 
 /*
  * The ErrorManager manages the errors 
@@ -30,16 +33,18 @@ import de.dal33t.powerfolder.PFComponent;
  */
 public class ErrorManager extends PFComponent {
 
+    private static final Logger log = Logger.getLogger(ErrorManager.class.getName());
+
     // display
     public static final int NO_ERROR = 0;
     public static final int WARN = 1;
     public static final int ERROR = 2;
     public static final int UNKNOWN = 3;
 
-    public Hashtable<String, ErrorInfo> errors;
+    public Map<String, ErrorInfo> errors;
 
     public ErrorManager() {
-        errors = new Hashtable<String, ErrorInfo>();
+        errors = new HashMap<String, ErrorInfo>();
     }
 
     public int getType(String errorCode) {
@@ -48,7 +53,7 @@ public class ErrorManager extends PFComponent {
         if (info != null) {
             return info.getType();
         }
-        logFiner("Uknown errorCode received: " + errorCode);
+        log.finer("Uknown errorCode received: " + errorCode);
         return UNKNOWN;
 
     }
@@ -58,7 +63,7 @@ public class ErrorManager extends PFComponent {
         if (info != null) {
             return info.getCode();
         }
-        logFiner("Uknown errorCode received: " + errorCode);
+        log.finer("Uknown errorCode received: " + errorCode);
         return UNKNOWN;
     }
 
@@ -67,7 +72,7 @@ public class ErrorManager extends PFComponent {
         if (info != null) {
             return info.getText();
         }
-        logFiner("Uknown errorCode received: " + errorCode);
+        log.finer("Uknown errorCode received: " + errorCode);
         return "";
     }
 

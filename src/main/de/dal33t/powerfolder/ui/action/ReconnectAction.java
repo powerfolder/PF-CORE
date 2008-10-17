@@ -19,16 +19,17 @@
 */
 package de.dal33t.powerfolder.ui.action;
 
-import java.awt.event.ActionEvent;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.ui.dialog.ConnectDialog;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Loggable;
 import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
+
+import java.awt.event.ActionEvent;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Reconnects to the member
@@ -37,6 +38,8 @@ import de.dal33t.powerfolder.util.ui.SelectionModel;
  * @version $Revision: 1.10 $
  */
 public class ReconnectAction extends SelectionBaseAction {
+
+    private static final Logger log = Logger.getLogger(ReconnectAction.class.getName());
 
     public ReconnectAction(Controller controller, SelectionModel selectionModel) {
         super("reconnect", controller, selectionModel);
@@ -78,7 +81,7 @@ public class ReconnectAction extends SelectionBaseAction {
                     }
                 } catch (ConnectionException ex) {
                     connectDialog.close();
-                    Loggable.logFinerStatic(ReconnectAction.class, ex);
+                    log.log(Level.FINER, "ConnectionException", ex);
                     if (!connectDialog.isCanceled() && !member.isConnected()) {
                         // Show if user didn't canceled
                         ex.show(getController());
@@ -87,8 +90,7 @@ public class ReconnectAction extends SelectionBaseAction {
 
                 // Close dialog
                 connectDialog.close();
-                Loggable.logFinerStatic(ReconnectAction.class,
-                        "Re-connector thread finished");
+                log.finer("Re-connector thread finished");
             }
         };
 

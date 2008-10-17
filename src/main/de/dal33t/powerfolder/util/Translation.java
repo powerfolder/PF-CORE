@@ -19,14 +19,16 @@
 */
 package de.dal33t.powerfolder.util;
 
+import org.apache.commons.lang.StringUtils;
+
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
-
-import org.apache.commons.lang.StringUtils;
 
 /**
  * Basic class which provides accessor to tranlation files
@@ -35,6 +37,8 @@ import org.apache.commons.lang.StringUtils;
  * @version $Revision: 1.13 $
  */
 public class Translation {
+
+    private static final Logger log = Logger.getLogger(Translation.class.getName());
 
     // Useful locales, which are not already included in Locale
     public static final Locale DUTCH = new Locale("nl");
@@ -160,13 +164,11 @@ public class Translation {
                 resourceBundle = ResourceBundle.getBundle("Translation",
                     confLang);
 
-                Loggable.logWarningStatic(Translation.class,
-                        "Default Locale '" + Locale.getDefault()
+                log.warning("Default Locale '" + Locale.getDefault()
                     + "', using '" + resourceBundle.getLocale()
                     + "', in config '" + confLang + '\'') ;
             } catch (MissingResourceException e) {
-                Loggable.logSevereStatic(Translation.class,
-                        "Unable to load translation file", e);
+                log.log(Level.SEVERE, "Unable to load translation file", e);
             }
         }
         return resourceBundle;
@@ -186,16 +188,15 @@ public class Translation {
         }
         try {
             String translation = rb.getString(id);
-            // logWarning("Translation for '" + id + "': " + translation);
+            // log.warning("Translation for '" + id + "': " + translation);
             return translation;
         } catch (MissingResourceException e) {
             if (id != null && !id.startsWith("date_format.")) {
                 // Only log non-date format errors.
                 // Date format error may occur during logging, prevent
                 // stackoverflow error.
-                Loggable.logWarningStatic(Translation.class,
-                    "Unable to find translation for ID '" + id + '\'');
-                Loggable.logSevereStatic(Translation.class, e);
+                log.warning("Unable to find translation for ID '" + id + '\'');
+                log.log(Level.FINER, "MissingResourceException", e);
             }
             return "- " + id + " -";
         }
@@ -242,7 +243,7 @@ public class Translation {
             translation = translation.substring(0, i) + param2
                 + translation.substring(i + 3, translation.length());
         }
-        // logWarning("Translation for '" + id + "': " + translation);
+        // log.warning("Translation for '" + id + "': " + translation);
         return translation;
     }
 
@@ -270,7 +271,7 @@ public class Translation {
             translation = translation.substring(0, i) + param3
                 + translation.substring(i + 3, translation.length());
         }
-        // logWarning("Translation for '" + id + "': " + translation);
+        // log.warning("Translation for '" + id + "': " + translation);
         return translation;
     }
 }

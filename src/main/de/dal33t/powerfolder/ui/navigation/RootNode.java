@@ -19,14 +19,14 @@
 */
 package de.dal33t.powerfolder.ui.navigation;
 
-import java.util.Enumeration;
-
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.TreeNode;
-
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.ui.TreeNodeList;
+
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreeNode;
+import java.util.Enumeration;
+import java.util.logging.Logger;
 
 /**
  * The root node of the navigation tree
@@ -35,13 +35,16 @@ import de.dal33t.powerfolder.util.ui.TreeNodeList;
  * @version $Revision: 1.7 $
  */
 public class RootNode extends TreeNodeList {
+
+    private static final Logger log = Logger.getLogger(RootNode.class.getName());
+
     // All nodes un
-    public final static String DOWNLOADS_NODE_LABEL = "DOWNLOADS_NODE";
-    public final static String UPLOADS_NODE_LABEL = "UPLOADS_NODE";
-    public final static String RECYCLEBIN_NODE_LABEL = "RECYCLEBIN_NODE";
-    public final static String WEBSERVICE_NODE_LABEL = "WEBSERVICE_NODE";
-    public final static String DEBUG_NODE_LABEL = "DEBUG_NODE";
-    public final static String DIALOG_TESTING_NODE_LABEL = "DIALOG_TESTING";
+    public static final String DOWNLOADS_NODE_LABEL = "DOWNLOADS_NODE";
+    public static final String UPLOADS_NODE_LABEL = "UPLOADS_NODE";
+    public static final String RECYCLEBIN_NODE_LABEL = "RECYCLEBIN_NODE";
+    public static final String WEBSERVICE_NODE_LABEL = "WEBSERVICE_NODE";
+    public static final String DEBUG_NODE_LABEL = "DEBUG_NODE";
+    public static final String DIALOG_TESTING_NODE_LABEL = "DIALOG_TESTING";
 
     // FIXME The following should be refactored into own "Models" for the core
     // components.
@@ -96,7 +99,7 @@ public class RootNode extends TreeNodeList {
         if (initalized) {
             return;
         }
-        logFiner("Initalizing Children");
+        log.finer("Initalizing Children");
         initalized = true;
         addChild(controller.getUIController().getFolderRepositoryModel()
             .getMyFoldersTreeNode());

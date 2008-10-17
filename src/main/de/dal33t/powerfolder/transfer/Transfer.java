@@ -19,17 +19,17 @@
  */
 package de.dal33t.powerfolder.transfer;
 
-import java.io.Serializable;
-import java.util.Date;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.util.Loggable;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.TransferCounter;
+
+import java.io.Serializable;
+import java.util.Date;
+import java.util.logging.Logger;
 
 /**
  * Abstract version of a Transfer.<BR>
@@ -39,6 +39,8 @@ import de.dal33t.powerfolder.util.TransferCounter;
  * @version $Revision: 1.14 $
  */
 public abstract class Transfer implements Serializable {
+
+    private static final Logger log = Logger.getLogger(Transfer.class.getName());
     private static final long serialVersionUID = 100L;
 
     private transient TransferManager transferManager;
@@ -148,7 +150,7 @@ public abstract class Transfer implements Serializable {
      */
     public void init(TransferManager aTransferManager) {
         if (transferManager != null) {
-            Loggable.logSevereStatic(Transfer.class,
+            log.severe(
                 "Unable to set TransferManager. Having already one. " + this);
             return;
         }
@@ -297,19 +299,18 @@ public abstract class Transfer implements Serializable {
             return false;
         }
         if (getPartner() == null) {
-            Loggable.logWarningStatic(Transfer.class,
-                "Abort cause: partner is null.");
+            log.warning("Abort cause: partner is null.");
             return true;
         }
         if (!getPartner().isCompleteyConnected()) {
-            Loggable.logWarningStatic(Transfer.class, "Abort cause: "
+            log.warning("Abort cause: "
                 + getPartner().getNick() + " not connected.");
             return true;
         }
         boolean partnerOnFolder = stillPartnerOnFolder();
         if (!partnerOnFolder) {
             // broken if partner left folder
-            Loggable.logWarningStatic(Transfer.class, "Abort cause: "
+            log.warning("Abort cause: "
                 + getPartner().getNick() + " not on folder.");
             return true;
         }

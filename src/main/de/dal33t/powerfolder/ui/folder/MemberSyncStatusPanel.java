@@ -19,21 +19,10 @@
 */
 package de.dal33t.powerfolder.ui.folder;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-
-import javax.swing.BorderFactory;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.UIManager;
-
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFUIComponent;
@@ -48,6 +37,17 @@ import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.ui.SyncProfileUtil;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
+import javax.swing.BorderFactory;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.UIManager;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  * Display the synchronisation status of a member for the current folder. Shows
  * information about: - Member name - Folder name - Folder Size - Local Size -
@@ -58,6 +58,8 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  */
 
 public class MemberSyncStatusPanel extends PFUIComponent {
+
+    private static final Logger log = Logger.getLogger(MemberSyncStatusPanel.class.getName());
     private Folder folder;
     private Member member;
     private FolderStatisticListener statsListener;
@@ -296,8 +298,8 @@ public class MemberSyncStatusPanel extends PFUIComponent {
 
         public void statisticsCalculated(FolderEvent folderEvent) {
             updatePanel();
-            if (isLogFiner()) {
-                logFiner(
+            if (log.isLoggable(Level.FINER)) {
+                log.finer(
                     "Updated SyncStatusPanel due to change in: " + folderEvent);
             }
         }

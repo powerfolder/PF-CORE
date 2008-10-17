@@ -19,21 +19,20 @@
 */
 package de.dal33t.powerfolder.ui.friends;
 
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.QuickInfoPanel;
-import de.dal33t.powerfolder.util.Loggable;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
 import de.dal33t.powerfolder.util.ui.SelectionChangeListener;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
+
+import javax.swing.JComponent;
+import javax.swing.JLabel;
 
 /**
  * Quick info panel for a user.
@@ -93,11 +92,6 @@ public class NodeQuickInfoPanel extends QuickInfoPanel {
                         .getTranslation("quickinfo.user.secure_connected"));
                 } else {
                     infoText2.setText("");
-                }
-                if (getController().isVerbose()) {
-                    // FIXME WHAT A UGLY HACK
-                    infoText2.setText(""
-                        + ((Loggable) user.getPeer()).getLoggerName());
                 }
             } else {
                 infoText1.setText(Translation

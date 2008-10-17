@@ -19,6 +19,12 @@
 */
 package de.dal33t.powerfolder.util;
 
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.spi.IIORegistry;
+import javax.imageio.spi.ImageReaderSpi;
+import javax.imageio.spi.ImageWriterSpi;
+import javax.imageio.stream.ImageInputStream;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Image;
@@ -28,13 +34,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-
-import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
-import javax.imageio.spi.IIORegistry;
-import javax.imageio.spi.ImageReaderSpi;
-import javax.imageio.spi.ImageWriterSpi;
-import javax.imageio.stream.ImageInputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Class with some convenience methods for image handeling.
@@ -44,9 +45,18 @@ import javax.imageio.stream.ImageInputStream;
  */
 public class ImageSupport {
 
+    private static final Logger log = Logger.getLogger(ImageSupport.class.getName());
+
     // Use a set to filter duplicates
-    private static Set supportedReadFileTypes = new HashSet();
-    private static Set supportedWriteFileTypes = new HashSet();
+    private static final Set<String> supportedReadFileTypes = new HashSet<String>();
+    private static final Set<String> supportedWriteFileTypes = new HashSet<String>();
+
+    private static BufferedImage lastImage;
+    private static int lastWidth;
+    private static int lastHeight;
+    private static Image lastResizedImage;
+    private static int lastScalingType;
+
     static {
         Iterator<ImageReaderSpi> it = IIORegistry.getDefaultInstance()
             .getServiceProviders(ImageReaderSpi.class, true);
@@ -57,7 +67,7 @@ public class ImageSupport {
         supportedReadFileTypes.remove(""); // Seems to get added for some
         // reason...
         
-        Iterator<ImageWriterSpi> writers = IIORegistry.getDefaultInstance().getServiceProviders(javax.imageio.spi.ImageWriterSpi.class, true);
+        Iterator<ImageWriterSpi> writers = IIORegistry.getDefaultInstance().getServiceProviders(ImageWriterSpi.class, true);
         while (writers.hasNext()) {
             ImageWriterSpi spi = writers.next();
             supportedWriteFileTypes.addAll(Arrays.asList(spi.getFileSuffixes()));
@@ -72,7 +82,7 @@ public class ImageSupport {
      * @return true if there is a ImageReader for this type of file.
      */
     public static boolean isReadSupportedImage(String filename) {
-        int index = filename.lastIndexOf(".");
+        int index = filename.lastIndexOf('.');
         if (index > 0) {
             String fileSuffix = filename
                 .substring(index + 1, filename.length()).toLowerCase();
@@ -103,7 +113,7 @@ public class ImageSupport {
             throw new IllegalStateException("File must exists: " + file);
         }
         try {
-            int index = file.getName().lastIndexOf(".");
+            int index = file.getName().lastIndexOf('.');
             if (index > 0) {
                 String fileSuffix = file.getName().substring(index + 1,
                     file.getName().length());
@@ -118,7 +128,7 @@ public class ImageSupport {
                 return new Dimension(width, height);
             }
         } catch (Exception e) {
-            Loggable.logFinerStatic(ImageSupport.class, "Unable to read image: " + file.getAbsolutePath(), e);
+            log.log(Level.FINER, "Unable to read image: " + file.getAbsolutePath(), e);
         }
         return null;
     }
@@ -131,7 +141,7 @@ public class ImageSupport {
             throw new IllegalStateException("File must exists: " + file);
         }
         try {
-            int index = file.getName().lastIndexOf(".");
+            int index = file.getName().lastIndexOf('.');
             if (index > 0) {
                 String fileSuffix = file.getName().substring(index + 1,
                     file.getName().length());
@@ -145,7 +155,7 @@ public class ImageSupport {
                 return image;
             }
         } catch (Exception e) {
-            Loggable.logFinerStatic(ImageSupport.class, "Unable to read image: " + file.getAbsolutePath(), e);
+            log.log(Level.FINER, "Unable to read image: " + file.getAbsolutePath(), e);
         }
         return null;
     }
@@ -156,11 +166,6 @@ public class ImageSupport {
         return readers.next();
     }
     
-    private static BufferedImage lastImage;
-    private static int lastWidth;
-    private static int lastHeight;
-    private static Image lastResizedImage;
-    private static int lastScalingType;
 
     public static void clearCache() {
         if (lastImage != null) {
@@ -232,7 +237,7 @@ public class ImageSupport {
             lastResizedImage = destImage;
             return destImage;
         } catch (Exception e) {
-            e.printStackTrace();
+            log.log(Level.SEVERE, "Exception", e);
         }
         return null;
     }

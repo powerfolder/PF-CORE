@@ -19,28 +19,37 @@
 */
 package de.dal33t.powerfolder.util;
 
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.EventQueue;
-import java.awt.event.ActionEvent;
-import java.io.*;
-import java.util.LinkedList;
-import java.util.Queue;
-import java.util.TimerTask;
-
-import javax.swing.*;
-
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.factories.ButtonBarFactory;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.util.ui.FileCopierProgressBar;
+
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JProgressBar;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.EventQueue;
+import java.awt.event.ActionEvent;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.TimerTask;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * FileCopier to copy files in a different Thread, shows a progress bar after
@@ -50,6 +59,8 @@ import de.dal33t.powerfolder.util.ui.FileCopierProgressBar;
  * @version $Revision: 1.11 $
  */
 public class FileCopier extends PFComponent {
+
+    private static final Logger log = Logger.getLogger(FileCopier.class.getName());
     private static final String TEMP_FILENAME_SUFFIX = "(copy_temp_powerfolder)";
 
     private JDialog dialog;
@@ -131,7 +142,7 @@ public class FileCopier extends PFComponent {
             try {
                 EventQueue.invokeAndWait(runner);
             } catch (Exception e) {
-                logSevere(e);
+                log.log(Level.SEVERE, "Exception", e);
             }
         }
         
@@ -158,7 +169,7 @@ public class FileCopier extends PFComponent {
                 // call the directory to notify we have a new file
                 currentFromTo.directory.add(currentFromTo.to);
             } catch (IOException ioe) {
-                logSevere(ioe);
+                log.log(Level.SEVERE, "IOException", ioe);
             }
 
         }
@@ -270,15 +281,15 @@ public class FileCopier extends PFComponent {
         if (from.equals(to)) {
             throw new IllegalArgumentException("cannot copy onto itself");
         }
-        logFiner("coping file start: "+ from + " to: " + to);
+        log.finer("coping file start: "+ from + " to: " + to);
         File backup = new File(to.getAbsoluteFile()+ TEMP_FILENAME_SUFFIX);
         if (to.exists()) {
             //try create backup (will be restored on abort)
             if (to.renameTo(backup)) {
                 backup.deleteOnExit();
-                logFiner("backup created: " +backup);
+                log.finer("backup created: " +backup);
             } else {
-                logFiner("backup failed: " +backup);
+                log.finer("backup failed: " +backup);
                 //backup failed
                 //delete old one
                 if (!to.delete()) {
@@ -310,11 +321,11 @@ public class FileCopier extends PFComponent {
                     to.delete();
                     //restore backup if its there
                     if (backup.exists()) {
-                        logFine("backup restore? :" +backup);
+                        log.fine("backup restore? :" +backup);
                         if (backup.renameTo(to)) {
-                            logFiner("backup restore succes :" +backup);
+                            log.finer("backup restore succes :" +backup);
                         } else {
-                            logFiner("backup restore failed :" +backup);
+                            log.finer("backup restore failed :" +backup);
                         }
                     }
                     break;
@@ -336,10 +347,10 @@ public class FileCopier extends PFComponent {
             //remove the backup
             if (backup.exists()) {
                 backup.delete();
-                logFiner("backup removed:" +backup);
+                log.finer("backup removed:" +backup);
             }                
         }
-        logFiner("coping file end: "+ from + " to: " + to);
+        log.finer("coping file end: "+ from + " to: " + to);
     }
 
     /**

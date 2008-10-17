@@ -19,11 +19,6 @@
 */
 package de.dal33t.powerfolder.ui.action;
 
-import java.awt.event.ActionEvent;
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.disk.Folder;
@@ -31,8 +26,16 @@ import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Loggable;
-import de.dal33t.powerfolder.util.ui.*;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
+import de.dal33t.powerfolder.util.ui.SelectionModel;
+import de.dal33t.powerfolder.util.ui.SwingWorker;
+
+import java.awt.event.ActionEvent;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * Action, which removes files locally on disk
@@ -41,6 +44,8 @@ import de.dal33t.powerfolder.util.ui.*;
  * @version $Revision: 1.19 $
  */
 public class RemoveFileAction extends SelectionBaseAction {
+
+    private static final Logger log = Logger.getLogger(RemoveFileAction.class.getName());
     /**
      * @param controller
      */
@@ -113,8 +118,7 @@ public class RemoveFileAction extends SelectionBaseAction {
         } else if (target instanceof Folder) {
             folder = (Folder) target;
         } else {
-            Loggable.logWarningStatic(RemoveFileAction.class,
-                    "Unable to remove files on target: " + target);
+            log.warning("Unable to remove files on target: " + target);
             return;
         }
         Object[] selections = getSelectionModel().getSelections();
@@ -127,8 +131,7 @@ public class RemoveFileAction extends SelectionBaseAction {
                 } else if (selections[i] instanceof Directory) {
                     toRemove.add(selections[i]);
                 } else {
-                    Loggable.logFineStatic(RemoveFileAction.class,
-                        "cannot remove: " + selections[i].getClass().getName());
+                    log.fine("cannot remove: " + selections[i].getClass().getName());
                     return;
                 }
             }
@@ -205,8 +208,7 @@ public class RemoveFileAction extends SelectionBaseAction {
                             } else if (object instanceof Directory) {
                                 Directory directoryToRemove = (Directory) object;
                                 if (!moveToRecycleBin(directoryToRemove)) {
-                                    Loggable.logSevereStatic(RemoveFileAction.class,
-                                        "move to recyclebin failed for:"
+                                    log.severe("move to recyclebin failed for:"
                                             + directoryToRemove);
                                 }
                                 // dirRemoved = true;

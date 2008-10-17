@@ -19,18 +19,18 @@
 */
 package de.dal33t.powerfolder.disk;
 
-import java.awt.EventQueue;
-import java.io.Serializable;
-import java.lang.reflect.InvocationTargetException;
-
-import javax.swing.JFrame;
-import javax.swing.SwingUtilities;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Loggable;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
+
+import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
+import java.awt.EventQueue;
+import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * General Exception for folder
@@ -39,6 +39,8 @@ import de.dal33t.powerfolder.util.ui.DialogFactory;
  * @version $Revision: 1.5 $
  */
 public class FolderException extends Exception implements Serializable {
+
+    private static final Logger log = Logger.getLogger(FolderException.class.getName());
     private static final long serialVersionUID = 100L;
     
     public FolderInfo fInfo;
@@ -125,9 +127,9 @@ public class FolderException extends Exception implements Serializable {
                 try {
                     SwingUtilities.invokeAndWait(runner);
                 } catch (InterruptedException e) {
-                    Loggable.logSevereStatic(FolderException.class, e);
+                    log.log(Level.SEVERE, "InterruptedException", e);
                 } catch (InvocationTargetException e) {
-                    Loggable.logSevereStatic(FolderException.class, e);
+                    log.log(Level.SEVERE, "InvocationTargetException", e);
                 }
             }
         }

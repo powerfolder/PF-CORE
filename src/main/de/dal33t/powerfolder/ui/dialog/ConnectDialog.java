@@ -19,27 +19,26 @@
 */
 package de.dal33t.powerfolder.ui.dialog;
 
-import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.factories.Borders;
+import com.jgoodies.forms.factories.ButtonBarFactory;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.util.Translation;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JProgressBar;
-
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.factories.Borders;
-import com.jgoodies.forms.factories.ButtonBarFactory;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.util.Translation;
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.util.logging.Logger;
 
 /**
  * The dialog opened when connecting
@@ -48,6 +47,8 @@ import de.dal33t.powerfolder.util.Translation;
  * @version $Revision: 1.8 $
  */
 public class ConnectDialog extends PFUIComponent {
+
+    private static final Logger log = Logger.getLogger(ConnectDialog.class.getName());
 
     private JDialog uiComponent;
     private JLabel infoText;
@@ -181,7 +182,7 @@ public class ConnectDialog extends PFUIComponent {
                         break;
                     }
                 }
-                logFiner("Connectionbar runner stopped");
+                log.finer("Connectionbar runner stopped");
             }
         };
         new Thread(barUpdater, "Connectionbar runner").start();

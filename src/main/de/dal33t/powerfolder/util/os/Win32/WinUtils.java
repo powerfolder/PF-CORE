@@ -19,12 +19,12 @@
 */
 package de.dal33t.powerfolder.util.os.Win32;
 
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.os.OSUtil;
+
 import java.io.File;
 import java.io.IOException;
-
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Loggable;
-import de.dal33t.powerfolder.util.os.OSUtil;
+import java.util.logging.Logger;
 
 /**
  * Utilities for windows.
@@ -35,7 +35,9 @@ import de.dal33t.powerfolder.util.os.OSUtil;
  */
 public class WinUtils {
 
-    public final static String SHORTCUTNAME = "PowerFolder.lnk";
+    private static final Logger log = Logger.getLogger(WinUtils.class.getName());
+
+    public static final String SHORTCUTNAME = "PowerFolder.lnk";
 
     /**
      * The file system directory that contains the programs that appear in the
@@ -43,7 +45,7 @@ public class WinUtils {
      * Settings\All Users\Start Menu\Programs\Startup. Valid only for Windows NT
      * systems.
      */
-    public final static int CSIDL_COMMON_STARTUP = 0x0018;
+    public static final int CSIDL_COMMON_STARTUP = 0x0018;
 
     /**
      * The file system directory that corresponds to the user's Startup program
@@ -51,31 +53,31 @@ public class WinUtils {
      * Windows NT or starts Windows 95. A typical path is C:\Documents and
      * Settings\\username\\Start Menu\\Programs\\Startup.
      */
-    public final static int CSIDL_STARTUP = 0x0007;
+    public static final int CSIDL_STARTUP = 0x0007;
 
-    public final static int CSIDL_DESKTOP = 0x0000;
+    public static final int CSIDL_DESKTOP = 0x0000;
 
     // Eigenen Dokumente / My Documents
-    public final static int CSIDL_PERSONAL = 0x0005;
+    public static final int CSIDL_PERSONAL = 0x0005;
 
     // Favoriten / Favorites
-    public final static int CSIDL_FAVORITES = 0x0006;
+    public static final int CSIDL_FAVORITES = 0x0006;
 
     // Meine Musik / My Music
-    public final static int CSIDL_MYMUSIC = 0x000d;
+    public static final int CSIDL_MYMUSIC = 0x000d;
 
     // Meine Videos / My Videaos
-    public final static int CSIDL_MYVIDEO = 0x000e;
+    public static final int CSIDL_MYVIDEO = 0x000e;
 
     // Meine Bilder / My Pictures
-    public final static int CSIDL_MYPICTURES = 0x0027;
+    public static final int CSIDL_MYPICTURES = 0x0027;
 
     // e.g. C:\Windows
-    public final static int CSIDL_WINDOWS = 0x0024;
+    public static final int CSIDL_WINDOWS = 0x0024;
 
     // Program files
-    public final static int CSIDL_APP_DATA = 0x001A;
-    public final static int CSIDL_LOCAL_SETTINGS_APP_DATA = 0x001C;
+    public static final int CSIDL_APP_DATA = 0x001A;
+    public static final int CSIDL_LOCAL_SETTINGS_APP_DATA = 0x001C;
 
     /*
      * Other CSLIDs:
@@ -115,23 +117,23 @@ public class WinUtils {
 			new File(System.getProperty("java.class.path")).getParentFile(),
 			"PowerFolder.exe");
 		if (!pfile.exists()) {
-			Loggable.logSevereStatic(WinUtils.class, "Couldn't find PowerFolder executable! "
+			log.severe("Couldn't find PowerFolder executable! "
 					+ "Note: Setting up a shortcut only works "
 					+ "when PowerFolder was started by PowerFolder.exe");
 			return;
 		}
-		Loggable.logFinerStatic(WinUtils.class, "Found " + pfile.getAbsolutePath());
+		log.finer("Found " + pfile.getAbsolutePath());
 		File pflnk = new File(getSystemFolderPath(CSIDL_STARTUP, false), SHORTCUTNAME);
-		if (!setup) {
-			Loggable.logFinerStatic(WinUtils.class, "Deleting startup link.");
-			pflnk.delete();
-		} else {
-		    ShellLink sl = new ShellLink("--minimized", Translation
-                .getTranslation("winutils.shortcut.description"), pfile
-                .getAbsolutePath(), pfile.getParent());
-            Loggable.logFinerStatic(WinUtils.class, "Creating startup link: " + pflnk.getAbsolutePath());
-			createLink(sl, pflnk.getAbsolutePath());
-		}
+        if (setup) {
+            ShellLink sl = new ShellLink("--minimized", Translation
+                    .getTranslation("winutils.shortcut.description"), pfile
+                    .getAbsolutePath(), pfile.getParent());
+            log.finer("Creating startup link: " + pflnk.getAbsolutePath());
+            createLink(sl, pflnk.getAbsolutePath());
+        } else {
+            log.finer("Deleting startup link.");
+            pflnk.delete();
+        }
 	}
 
 	public boolean isPFStartup() {

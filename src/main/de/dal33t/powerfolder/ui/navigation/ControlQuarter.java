@@ -24,18 +24,26 @@ import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.uif_lite.panel.SimpleInternalFrame;
-import de.dal33t.powerfolder.*;
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.event.NavigationEvent;
 import de.dal33t.powerfolder.event.NavigationListener;
 import de.dal33t.powerfolder.ui.DebugPanel;
-import de.dal33t.powerfolder.ui.model.FolderModel;
-import de.dal33t.powerfolder.ui.model.DirectoryModel;
+import de.dal33t.powerfolder.ui.action.BaseAction;
+import de.dal33t.powerfolder.ui.action.ChangeFriendStatusAction;
+import de.dal33t.powerfolder.ui.action.CreateShortcutAction;
+import de.dal33t.powerfolder.ui.action.OpenChatAction;
+import de.dal33t.powerfolder.ui.action.SendInvitationAction;
+import de.dal33t.powerfolder.ui.action.SyncFolderAction;
 import de.dal33t.powerfolder.ui.dialog.PreviewToJoinPanel;
-import de.dal33t.powerfolder.ui.action.*;
 import de.dal33t.powerfolder.ui.folder.FilesTab;
 import de.dal33t.powerfolder.ui.folder.FolderPanel;
+import de.dal33t.powerfolder.ui.model.DirectoryModel;
+import de.dal33t.powerfolder.ui.model.FolderModel;
 import de.dal33t.powerfolder.ui.render.NavTreeCellRenderer;
 import de.dal33t.powerfolder.ui.widget.AutoScrollingJTree;
 import de.dal33t.powerfolder.util.BrowserLauncher;
@@ -47,22 +55,39 @@ import de.dal33t.powerfolder.util.ui.SelectionModel;
 import de.dal33t.powerfolder.util.ui.TreeNodeList;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
-import javax.swing.*;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JTree;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
-import javax.swing.tree.*;
-import java.awt.*;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.MutableTreeNode;
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
+import javax.swing.tree.TreeSelectionModel;
+import java.awt.Dimension;
+import java.awt.EventQueue;
+import java.awt.Point;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.UnsupportedFlavorException;
-import java.awt.dnd.*;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetDragEvent;
+import java.awt.dnd.DropTargetDropEvent;
+import java.awt.dnd.DropTargetEvent;
+import java.awt.dnd.DropTargetListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 
 /**
@@ -73,6 +98,8 @@ import java.util.prefs.Preferences;
  * @version $Revision: 1.11 $
  */
 public class ControlQuarter extends PFUIComponent {
+
+    private static final Logger log = Logger.getLogger(ControlQuarter.class.getName());
 
     /* Complete panel */
     private JPanel uiPanel;
@@ -187,15 +214,15 @@ public class ControlQuarter extends PFUIComponent {
                 public void treeCollapsed(TreeExpansionEvent treeExpansionEvent)
                 {
                     TreePath closedPath = treeExpansionEvent.getPath();
-                    // logFine("closed path : " + closedPath);
-                    // logFine("lastExpandedPath path: " +
+                    // log.fine("closed path : " + closedPath);
+                    // log.fine("lastExpandedPath path: " +
                     // lastExpandedPath);
 
                     // note that this method name maybe confusing
                     // it is true if lastExpandedPath is a descendant of
                     // closedPath
                     if (closedPath.isDescendant(lastExpandedPath)) {
-                        // logFine("isDescendant!");
+                        // log.fine("isDescendant!");
                         lastExpandedPath = null;
                     }
                 }
@@ -330,7 +357,7 @@ public class ControlQuarter extends PFUIComponent {
      *            The newly selected directory
      */
     public void setSelected(Directory directory) {
-        logFiner("setSelected:" + directory);
+        log.finer("setSelected:" + directory);
         if (directory != null) {
             Folder folder = directory.getRootFolder();
             FolderModel folderModel = getController().getUIController()
@@ -507,7 +534,7 @@ public class ControlQuarter extends PFUIComponent {
                 BrowserLauncher.openURL(getController().getOSClient()
                     .getWebURL());
             } catch (IOException e) {
-                logSevere("Unable to open online storage in browser", e);
+                log.log(Level.SEVERE, "Unable to open online storage in browser", e);
             }
         }
         Folder folder = getSelectedFolder();
@@ -523,7 +550,7 @@ public class ControlQuarter extends PFUIComponent {
             try {
                 FileUtils.openFile(localBase);
             } catch (IOException ioe) {
-                logSevere(ioe);
+                log.log(Level.SEVERE, "IOException", ioe);
             }
         }
     }
@@ -535,8 +562,8 @@ public class ControlQuarter extends PFUIComponent {
     {
         public void valueChanged(TreeSelectionEvent e) {
             TreePath selectionPath = e.getPath();
-            if (isLogFiner()) {
-                logFiner(selectionPath.toString());
+            if (log.isLoggable(Level.FINER)) {
+                log.finer(selectionPath.toString());
             }
             // First set parent of selection
             if (selectionPath.getPathCount() > 1) {
@@ -550,8 +577,8 @@ public class ControlQuarter extends PFUIComponent {
             Object newSelection = UIUtil.getUserObject(selectionPath
                 .getLastPathComponent());
             selectionModel.setSelection(newSelection);
-            if (isLogFiner()) {
-                logFiner(
+            if (log.isLoggable(Level.FINER)) {
+                log.finer(
                     "Selection: " + selectionModel.getSelection()
                         + ", parent: " + selectionParent);
             }
@@ -610,7 +637,7 @@ public class ControlQuarter extends PFUIComponent {
                 boolean debugReportsEnabled = ConfigurationEntry.DEBUG_REPORTS
                     .getValueBoolean(getController());
                 if (debugReportsEnabled
-                    && pref.getBoolean(DebugPanel.showDebugReportsPrefKey,
+                    && pref.getBoolean(DebugPanel.SHOW_DEBUG_REPORTS_PREF_KEY,
                         false))
                 {
                     // Show request debug only in debugReports mode set
@@ -638,7 +665,7 @@ public class ControlQuarter extends PFUIComponent {
                     friendsListMenu.show(evt.getComponent(), evt.getX(), evt
                         .getY());
                 } else {
-                    logWarning(
+                    log.warning(
                             "Not displaing friendlist/master user selection context menu");
                 }
             } else if (selection instanceof Directory) {
@@ -838,9 +865,9 @@ public class ControlQuarter extends PFUIComponent {
                                     return;
                                 }
                             } catch (UnsupportedFlavorException e) {
-                                logSevere(e);
+                                log.log(Level.SEVERE, "UnsupportedFlavorException", e);
                             } catch (IOException ioe) {
-                                logSevere(ioe);
+                                log.log(Level.SEVERE, "IOException", ioe);
                             }
                         }
                         dtde.acceptDrop(DnDConstants.ACTION_COPY);

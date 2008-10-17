@@ -28,7 +28,7 @@ import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.net.ConnectionException;
-import de.dal33t.powerfolder.util.LogDispatch;
+import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.ui.UIPanel;
 
 import javax.swing.JButton;
@@ -43,6 +43,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 
 /**
@@ -53,6 +54,8 @@ import java.util.prefs.Preferences;
  * @version $Revision: 1.12 $
  */
 public class DebugPanel extends PFUIComponent implements UIPanel {
+
+    private static final Logger log = Logger.getLogger(DebugPanel.class.getName());
     private JPanel panel;
     private TextPanel textPanel;
 
@@ -79,12 +82,10 @@ public class DebugPanel extends PFUIComponent implements UIPanel {
 
     private JComboBox logLevelCombo;
 
-    private JCheckBox logToFileCheckBox;
-
     private JCheckBox scrollLockCheckBox;
     private JCheckBox showDebugReportsCheckBox;
 
-    public static final String showDebugReportsPrefKey = "Debug.showDebugReports";
+    public static final String SHOW_DEBUG_REPORTS_PREF_KEY = "Debug.showDebugReports";
 
     public DebugPanel(Controller controller) {
         super(controller);
@@ -92,12 +93,12 @@ public class DebugPanel extends PFUIComponent implements UIPanel {
 
     private boolean showDebugReports() {
         Preferences pref = getController().getPreferences();
-        return pref.getBoolean(showDebugReportsPrefKey, false);
+        return pref.getBoolean(SHOW_DEBUG_REPORTS_PREF_KEY, false);
     }
 
     private void setShowDebugReports(boolean show) {
         Preferences pref = getController().getPreferences();
-        pref.putBoolean(showDebugReportsPrefKey, show);
+        pref.putBoolean(SHOW_DEBUG_REPORTS_PREF_KEY, show);
     }
 
     public static String getTitle() {
@@ -150,7 +151,7 @@ public class DebugPanel extends PFUIComponent implements UIPanel {
 
     private void initComponents() {
         textPanel = new TextPanel();
-        textPanel.setText(LogDispatch.getLogBuffer(), true);
+        textPanel.setText(LoggingManager.getLogBuffer(), true);
         logLevelCombo = new JComboBox();
         logLevelCombo.addItem(Level.OFF);
         logLevelCombo.addItem(Level.SEVERE);
@@ -158,23 +159,20 @@ public class DebugPanel extends PFUIComponent implements UIPanel {
         logLevelCombo.addItem(Level.INFO);
         logLevelCombo.addItem(Level.FINE);
         logLevelCombo.addItem(Level.FINER);
-        logLevelCombo.setSelectedItem(LogDispatch.getLoggingLevel());
+        logLevelCombo.setSelectedItem(LoggingManager.getDocumentLoggingLevel());
 
-        logToFileCheckBox = new JCheckBox("Write log files");
         scrollLockCheckBox = new JCheckBox("Scroll lock");
 
         showDebugReportsCheckBox = new JCheckBox("Show debug reports");
         showDebugReportsCheckBox
-                .setToolTipText("Toggles between Chat and Debut reports if clicked on user in tree");
+                .setToolTipText("Toggles between Chat and Debug reports if clicked on user in tree");
         updateBoxes();
 
         ItemListener itemListener = new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
                 if (e.getSource() == logLevelCombo) {
                     Object selectedItem = logLevelCombo.getSelectedItem();
-                    LogDispatch.setLevel((Level) selectedItem);
-                } else if (e.getSource() == logToFileCheckBox) {
-                    LogDispatch.setLogFileEnabled(logToFileCheckBox.isSelected());
+                    LoggingManager.setDocumentLogging((Level) selectedItem);
                 } else if (e.getSource() == scrollLockCheckBox) {
                     textPanel.setAutoScroll(!scrollLockCheckBox.isSelected());
                 } else if (e.getSource() == showDebugReportsCheckBox) {
@@ -184,7 +182,6 @@ public class DebugPanel extends PFUIComponent implements UIPanel {
         };
 
         logLevelCombo.addItemListener(itemListener);
-        logToFileCheckBox.addItemListener(itemListener);
         scrollLockCheckBox.addItemListener(itemListener);
         showDebugReportsCheckBox.addItemListener(itemListener);
 
@@ -368,7 +365,7 @@ public class DebugPanel extends PFUIComponent implements UIPanel {
                 try {
                     getController().getConnectionListener().start();
                 } catch (ConnectionException ce) {
-                    logSevere("Problems starting listener "
+                    log.log(Level.SEVERE, "Problems starting listener "
                             + getController().getConnectionListener(), ce);
                 }
                 shutdownConnectionListener.setEnabled(true);
@@ -389,7 +386,7 @@ public class DebugPanel extends PFUIComponent implements UIPanel {
                 try {
                     getController().getBroadcastManager().start();
                 } catch (ConnectionException ce) {
-                    logSevere("Problems starting manager "
+                    log.log(Level.SEVERE, "Problems starting manager "
                             + getController().getBroadcastManager(), ce);
                 }
                 shutdownBroadcastMananger.setEnabled(true);
@@ -399,7 +396,6 @@ public class DebugPanel extends PFUIComponent implements UIPanel {
     }
 
     private void updateBoxes() {
-        logToFileCheckBox.setSelected(LogDispatch.isLogToFileEnabled());
         scrollLockCheckBox.setSelected(!textPanel.isAutoScroll());
         showDebugReportsCheckBox.setSelected(showDebugReports());
     }
@@ -417,8 +413,6 @@ public class DebugPanel extends PFUIComponent implements UIPanel {
             bar.addRelatedGap();
         }
 
-        bar.addFixed(logToFileCheckBox);
-        bar.addRelatedGap();
         bar.addFixed(scrollLockCheckBox);
         bar.addRelatedGap();
         bar.setBorder(Borders.createEmptyBorder("1dlu, 1dlu, 1dlu, 1dlu"));

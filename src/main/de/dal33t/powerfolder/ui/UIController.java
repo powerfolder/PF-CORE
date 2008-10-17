@@ -109,6 +109,7 @@ import java.util.List;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Handler;
+import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
@@ -121,6 +122,9 @@ import java.util.logging.Logger;
  * @version $Revision: 1.86 $
  */
 public class UIController extends PFComponent {
+
+    private static final Logger log = Logger.getLogger(UIController.class.getName());
+
     private static final LookAndFeel DEFAULT_LOOK_AND_FEEL = new PlasticXPLookAndFeel();
 
     private static final PlasticTheme DEFAULT_THEME = new ExperienceBlue();
@@ -186,13 +190,13 @@ public class UIController extends PFComponent {
                     themeInitalized = true;
                 }
             } catch (IllegalAccessException e) {
-                logSevere(
+                log.log(Level.SEVERE,
                     "Unable to set look and feel, switching back to default", e);
             } catch (ClassNotFoundException e) {
-                logSevere(
+                log.log(Level.SEVERE,
                     "Unable to set look and feel, switching back to default", e);
             } catch (InstantiationException e) {
-                logSevere(
+                log.log(Level.SEVERE,
                     "Unable to set look and feel, switching back to default", e);
             }
 
@@ -220,7 +224,7 @@ public class UIController extends PFComponent {
                 // SyntheticaBlackStarLookAndFeel());
 
             } catch (UnsupportedLookAndFeelException e) {
-                logSevere("Unable to set look and feel", e);
+                log.log(Level.SEVERE, "Unable to set look and feel", e);
             }
         }
 
@@ -229,14 +233,14 @@ public class UIController extends PFComponent {
             try {
                 EventQueue.invokeAndWait(new Runnable() {
                     public void run() {
-                        logFiner("Opening splashscreen");
+                        log.finer("Opening splashscreen");
                         splash = new SplashScreen(getController(), 260 * 1000);
                     }
                 });
             } catch (InterruptedException e) {
-                logSevere(e);
+                log.log(Level.SEVERE, "InterruptedException", e);
             } catch (InvocationTargetException e) {
-                logSevere(e);
+                log.log(Level.SEVERE, "InvocationTargetException", e);
             }
         }
 
@@ -324,15 +328,15 @@ public class UIController extends PFComponent {
         try {
             EventQueue.invokeAndWait(new Runnable() {
                 public void run() {
-                    logFine("Building UI");
+                    log.fine("Building UI");
                     mainFrame.buildUI();
-                    logFine("UI built");
+                    log.fine("UI built");
                 }
             });
         } catch (InterruptedException e) {
-            logSevere(e);
+            log.log(Level.SEVERE, "InterruptedException", e);
         } catch (InvocationTargetException e) {
-            logSevere(e);
+            log.log(Level.SEVERE, "InvocationTargetException", e);
         }
 
         // // Show window contents while dragging
@@ -345,13 +349,13 @@ public class UIController extends PFComponent {
         if (OSUtil.isSystraySupported()) {
             initalizeSystray();
         } else {
-            logWarning("System tray currently only supported on windows (>98)");
+            log.warning("System tray currently only supported on windows (>98)");
             mainFrame.getUIComponent().setDefaultCloseOperation(
                 JFrame.EXIT_ON_CLOSE);
         }
 
         if (getController().isStartMinimized()) {
-            logWarning("Starting minimized");
+            log.warning("Starting minimized");
         }
 
         // Show mainwindow
@@ -364,9 +368,9 @@ public class UIController extends PFComponent {
                 }
             });
         } catch (InterruptedException e) {
-            logSevere(e);
+            log.log(Level.SEVERE, "InterruptedException", e);
         } catch (InvocationTargetException e) {
-            logSevere(e);
+            log.log(Level.SEVERE, "InvocationTargetException", e);
         }
 
         started = true;
@@ -374,7 +378,7 @@ public class UIController extends PFComponent {
         // Process all pending runners
         synchronized (pendingJobs) {
             if (!pendingJobs.isEmpty()) {
-                logFiner("Executing " + pendingJobs.size() + " pending ui jobs");
+                log.finer("Executing " + pendingJobs.size() + " pending ui jobs");
                 for (Runnable runner : pendingJobs) {
                     SwingUtilities.invokeLater(runner);
                 }
@@ -409,7 +413,7 @@ public class UIController extends PFComponent {
             try {
                 BrowserLauncher.openURL(Constants.POWERFOLDER_PRO_URL);
             } catch (IOException e1) {
-                logWarning("Unable to goto PowerFolder homepage", e1);
+                log.log(Level.WARNING, "Unable to goto PowerFolder homepage", e1);
             }
         }
         thisVersionStartCount++;
@@ -421,7 +425,7 @@ public class UIController extends PFComponent {
             return;
         }
         long totalFolderSize = calculateTotalLocalSharedSize();
-        logFine("Local shared folder size: "
+        log.fine("Local shared folder size: "
             + Format.formatBytes(totalFolderSize));
         boolean limitHit = totalFolderSize > 10L * 1024L * 1024L * 1024L
             || getController().getFolderRepository().getFoldersCount() > 3;
@@ -448,7 +452,7 @@ public class UIController extends PFComponent {
             defaultIcon = ImageIO.read(Util.getResource(Icons.ST_POWERFOLDER,
                 "icons"));
         } catch (IOException e) {
-            logSevere(e);
+            log.log(Level.SEVERE, "IOException", e);
             OSUtil.disableSystray();
             return;
         }
@@ -481,7 +485,7 @@ public class UIController extends PFComponent {
                     try {
                         BrowserLauncher.openURL(Constants.POWERFOLDER_URL);
                     } catch (IOException e1) {
-                        logWarning("Unable to goto PowerFolder homepage", e1);
+                        log.log(Level.WARNING, "Unable to goto PowerFolder homepage", e1);
                     }
                 }
             }
@@ -535,7 +539,7 @@ public class UIController extends PFComponent {
         try {
             SystemTray.getSystemTray().add(sysTrayMenu);
         } catch (AWTException e) {
-            logSevere(e);
+            log.log(Level.SEVERE, "AWTException", e);
             OSUtil.disableSystray();
             return;
         }
@@ -588,7 +592,7 @@ public class UIController extends PFComponent {
         for (int i = 0; i < sysTrayFoldersMenu.getItemCount(); i++) {
             MenuItem menuItem = sysTrayFoldersMenu.getItem(i);
             if (menuItem.getLabel().equals(folder.getName())) {
-                logWarning("Already have folder " + folder.getName());
+                log.warning("Already have folder " + folder.getName());
                 return;
             }
         }
@@ -617,7 +621,7 @@ public class UIController extends PFComponent {
                     try {
                         FileUtils.openFile(localBase);
                     } catch (IOException e1) {
-                        logSevere("Problem opening folder " + folderName, e1);
+                        log.log(Level.WARNING, "Problem opening folder " + folderName, e1);
                     }
                 }
             }
@@ -860,7 +864,7 @@ public class UIController extends PFComponent {
             try {
                 currentIcon = ImageIO.read(Util.getResource(iconName, "icons"));
             } catch (IOException e) {
-                logSevere(e);
+                log.log(Level.SEVERE, "IOException", e);
                 return;
             }
             if (sysTrayMenu != null) {
@@ -881,7 +885,7 @@ public class UIController extends PFComponent {
         if (started) {
             SwingUtilities.invokeLater(runner);
         } else {
-            logFine("Added runner to pending jobs: " + runner);
+            log.fine("Added runner to pending jobs: " + runner);
             // Add to pending jobs
             pendingJobs.add(runner);
         }

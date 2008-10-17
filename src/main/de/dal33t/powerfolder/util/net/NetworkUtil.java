@@ -19,6 +19,8 @@
 */
 package de.dal33t.powerfolder.util.net;
 
+import de.dal33t.powerfolder.util.Reject;
+
 import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.InetAddress;
@@ -29,9 +31,8 @@ import java.net.SocketException;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.Loggable;
 
 /**
  * Utility class for all low level networking stuff.
@@ -40,6 +41,8 @@ import de.dal33t.powerfolder.util.Loggable;
  * @version $Revision: 1.4 $
  */
 public class NetworkUtil {
+
+    private static final Logger log = Logger.getLogger(NetworkUtil.class.getName());
     private static final int LAN_SOCKET_BUFFER_SIZE = 64 * 1024;
     private static final int INET_SOCKET_BUFFER_SIZE = 16 * 1024;
     private static final int LAN_SOCKET_BUFFER_LIMIT = 1024 * 1024;
@@ -75,7 +78,7 @@ public class NetworkUtil {
             ? LAN_SOCKET_BUFFER_SIZE
             : INET_SOCKET_BUFFER_SIZE);
         // socket.setTcpNoDelay(true);
-        Loggable.logFinerStatic(NetworkUtil.class, "Socket setup: (" + socket.getSendBufferSize() + "/"
+        log.finer("Socket setup: (" + socket.getSendBufferSize() + "/"
             + socket.getReceiveBufferSize() + "/" + socket.getSoLinger()
             + "ms) " + socket);
     }
@@ -108,7 +111,7 @@ public class NetworkUtil {
         socket.setSoReceiverBufferLimit(onLan
             ? LAN_SOCKET_BUFFER_LIMIT
             : INET_SOCKET_BUFFER_LIMIT);
-        Loggable.logFinerStatic(NetworkUtil.class, "Socket setup: ("
+        log.finer("Socket setup: ("
                 + socket.getSoUDPSenderBufferSize() + "/"
             + socket.getSoUDPReceiverBufferSize() + " " + socket);
     }
@@ -121,8 +124,7 @@ public class NetworkUtil {
     public static boolean isOnLanOrLoopback(InetAddress addr) {
         Reject.ifNull(addr, "Address is null");
         if (!(addr instanceof Inet4Address)) {
-            Loggable.logWarningStatic(NetworkUtil.class,
-                    "Inet6 not supported yet: " + addr);
+            log.warning("Inet6 not supported yet: " + addr);
         }
         try {
             return addr.isLoopbackAddress() || addr.isSiteLocalAddress()

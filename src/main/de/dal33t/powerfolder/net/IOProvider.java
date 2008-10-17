@@ -19,14 +19,6 @@
  */
 package de.dal33t.powerfolder.net;
 
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
@@ -37,6 +29,16 @@ import de.dal33t.powerfolder.util.NamedThreadFactory;
 import de.dal33t.powerfolder.util.Range;
 import de.dal33t.powerfolder.util.Reject;
 
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  * Provides basic IO stuff.
  * 
@@ -44,6 +46,8 @@ import de.dal33t.powerfolder.util.Reject;
  * @version $Revision: 1.5 $
  */
 public class IOProvider extends PFComponent {
+
+    private static final Logger log = Logger.getLogger(IOProvider.class.getName());
     private static final long CONNECTION_KEEP_ALIVE_TIMOUT_MS = Constants.CONNECTION_KEEP_ALIVE_TIMOUT * 1000L;
     private static final long TIME_WITHOUT_KEEPALIVE_UNTIL_PING = CONNECTION_KEEP_ALIVE_TIMOUT_MS / 3L;
 
@@ -96,7 +100,7 @@ public class IOProvider extends PFComponent {
     public void shutdown() {
         started = false;
         if (ioThreadPool != null) {
-            logFine("Shutting down connection I/O threadpool");
+            log.fine("Shutting down connection I/O threadpool");
             ioThreadPool.shutdownNow();
         }
     }
@@ -112,7 +116,7 @@ public class IOProvider extends PFComponent {
         ConnectionHandlerFactory conHanFactory)
     {
         Reject.ifNull(conHanFactory, "The factory must not be null");
-        logFiner("Setting new connection factory: " + conHanFactory);
+        log.finer("Setting new connection factory: " + conHanFactory);
         this.conHanFactory = conHanFactory;
     }
 
@@ -145,8 +149,8 @@ public class IOProvider extends PFComponent {
     public void startIO(Runnable ioSender, Runnable ioReceiver) {
         Reject.ifNull(ioSender, "IO Sender is null");
         Reject.ifNull(ioReceiver, "IO Receiver is null");
-        if (isLogFiner()) {
-            logFiner("Starting IO for " + ioSender + " " + ioReceiver);
+        if (log.isLoggable(Level.FINER)) {
+            log.finer("Starting IO for " + ioSender + " " + ioReceiver);
         }
         startIO(ioSender);
         startIO(ioReceiver);
@@ -161,12 +165,12 @@ public class IOProvider extends PFComponent {
     public void startIO(final Runnable ioWorker) {
         Reject.ifNull(ioWorker, "IO Worker is null");
         if (ioThreadPool.isTerminated() || ioThreadPool.isShutdown()) {
-            logWarning("Rejected executing of ioWorker, already stopped: "
+            log.warning("Rejected executing of ioWorker, already stopped: "
                 + ioWorker);
             return;
         }
-        if (isLogFiner()) {
-            logFiner("Starting IO for " + ioWorker);
+        if (log.isLoggable(Level.FINER)) {
+            log.finer("Starting IO for " + ioWorker);
         }
         // Ensure clean security context. Unsure destructed session.
         Runnable sessionDestroyer = new SessionDestroyerRunnable(ioWorker);
@@ -216,7 +220,7 @@ public class IOProvider extends PFComponent {
                 destroySession();
                 ioWorker.run();
             } catch (RuntimeException e) {
-                logSevere("RuntimeError in IO worker", e);
+                log.log(Level.SEVERE, "RuntimeError in IO worker", e);
                 throw e;
             } finally {
                 destroySession();
@@ -238,8 +242,8 @@ public class IOProvider extends PFComponent {
                 return;
             }
             while (started) {
-                if (isLogFine()) {
-                    logFine("Checking " + keepAliveList.size()
+                if (log.isLoggable(Level.FINE)) {
+                    log.fine("Checking " + keepAliveList.size()
                         + " con handlers for keepalive");
                 }
                 Collection<ConnectionHandler> list = new HashSet<ConnectionHandler>(
@@ -258,7 +262,7 @@ public class IOProvider extends PFComponent {
                                 continue;
                             }
                             if (!list.contains(peer)) {
-                                logSevere("ConHan not in keepalive list of "
+                                log.severe("ConHan not in keepalive list of "
                                     + node);
                                 list.add(peer);
                             }
@@ -277,7 +281,7 @@ public class IOProvider extends PFComponent {
                 try {
                     Thread.sleep(TIME_WITHOUT_KEEPALIVE_UNTIL_PING);
                 } catch (InterruptedException e) {
-                    logFiner(e);
+                    log.log(Level.FINER, "InterruptedException", e);
                     return;
                 }
             }
@@ -292,14 +296,14 @@ public class IOProvider extends PFComponent {
                 long timeWithoutKeepalive = System.currentTimeMillis()
                     - lastKeepaliveMessage.getTime();
                 newPing = timeWithoutKeepalive >= TIME_WITHOUT_KEEPALIVE_UNTIL_PING;
-                if (isLogFiner()) {
-                    logFiner("Keep-alive check. Received last keep alive message "
+                if (log.isLoggable(Level.FINER)) {
+                    log.finer("Keep-alive check. Received last keep alive message "
                         + timeWithoutKeepalive
                         + "ms ago, ping required? "
                         + newPing + ". Node: " + conHan.getMember());
                 }
                 if (timeWithoutKeepalive > CONNECTION_KEEP_ALIVE_TIMOUT_MS) {
-                    logWarning("Shutting down. Dead connection detected ("
+                    log.warning("Shutting down. Dead connection detected ("
                         + (timeWithoutKeepalive / 1000) + "s timeout) to "
                         + conHan.getMember());
                     conHan.shutdownWithMember();

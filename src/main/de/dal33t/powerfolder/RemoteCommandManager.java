@@ -29,7 +29,6 @@ import de.dal33t.powerfolder.ui.wizard.FolderSetupPanel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.ui.wizard.WizardContextAttributes;
 import de.dal33t.powerfolder.util.InvitationUtil;
-import de.dal33t.powerfolder.util.Loggable;
 import de.dal33t.powerfolder.util.Util;
 import org.apache.commons.lang.StringUtils;
 
@@ -51,6 +50,8 @@ import java.net.UnknownHostException;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * The remote command processor is responsible for binding on a socket and
@@ -75,6 +76,9 @@ import java.util.StringTokenizer;
  * @version $Revision: 1.10 $
  */
 public class RemoteCommandManager extends PFComponent implements Runnable {
+
+    private static final Logger log = Logger.getLogger(RemoteCommandManager.class.getName());
+
     // The default port to listen for remote commands
     private static final int DEFAULT_REMOTECOMMAND_PORT = 1338;
     // The default prefix for all rcon commands
@@ -124,7 +128,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
                 try {
                     testSocket.close();
                 } catch (IOException e) {
-                    Loggable.logSevereStatic(RemoteCommandManager.class,
+                    log.log(Level.SEVERE,
                             "Unable to close already running test socket. "
                         + testSocket, e);
                 }
@@ -142,8 +146,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
      */
     public static boolean sendCommand(String command) {
         try {
-            Loggable.logFineStatic(RemoteCommandManager.class,
-                    "Sending remote command '" + command + "'") ;
+            log.log(Level.SEVERE, "Sending remote command '" + command + "'") ;
             Socket socket = new Socket("127.0.0.1", 1338);
             PrintWriter writer = new PrintWriter(new OutputStreamWriter(socket
                 .getOutputStream(), ENCODING));
@@ -155,8 +158,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
 
             return true;
         } catch (IOException e) {
-            Loggable.logSevereStatic(RemoteCommandManager.class,
-                    "Unable to send remote command", e);
+            log.log(Level.SEVERE, "Unable to send remote command", e);
         }
         return false;
     }
@@ -174,15 +176,15 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
             myThread = new Thread(this, "Remote command Manager");
             myThread.start();
         } catch (UnknownHostException e) {
-            logWarning(
+            log.warning(
                 "Unable to open remote command manager on port "
                     + DEFAULT_REMOTECOMMAND_PORT + ": " + e);
-            logFiner(e);
+            log.log(Level.FINER, "UnknownHostException", e);
         } catch (IOException e) {
-            logWarning(
+            log.warning(
                 "Unable to open remote command manager on port "
                     + DEFAULT_REMOTECOMMAND_PORT + ": " + e);
-            logFiner(e);
+            log.log(Level.FINER, "IOException", e);
         }
     }
 
@@ -197,13 +199,13 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
             try {
                 serverSocket.close();
             } catch (IOException e) {
-                logFiner("Unable to close rcon socket", e);
+                log.log(Level.FINER, "Unable to close rcon socket", e);
             }
         }
     }
 
     public void run() {
-        logInfo(
+        log.info(
             "Listening for remote commands on port "
                 + serverSocket.getLocalPort());
         while (!Thread.currentThread().isInterrupted()) {
@@ -211,11 +213,11 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
             try {
                 socket = serverSocket.accept();
             } catch (IOException e) {
-                logFiner("Rcon socket closed, stopping", e);
+                log.log(Level.FINER, "Rcon socket closed, stopping", e);
                 break;
             }
 
-            logFiner("Remote command from " + socket);
+            log.finer("Remote command from " + socket);
             try {
                 String address = socket.getInetAddress().getHostAddress();
                 if (address.equals("localhost") || address.equals("127.0.0.1"))
@@ -230,7 +232,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
                 }
                 socket.close();
             } catch (IOException e) {
-                logWarning("Problems parsing remote command from " + socket);
+                log.warning("Problems parsing remote command from " + socket);
             }
         }
     }
@@ -242,10 +244,10 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
      */
     private void processCommand(String command) {
         if (StringUtils.isBlank(command)) {
-            logSevere("Received a empty remote command");
+            log.severe("Received a empty remote command");
             return;
         }
-        logFine("Received remote command: '" + command + "'");
+        log.fine("Received remote command: '" + command + "'");
         if (QUIT.equalsIgnoreCase(command)) {
             getController().exit(0);
         } else if (command.startsWith(OPEN)) {
@@ -284,7 +286,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
                 makeFolder(nick + '-' + lastPart, s);
             }
         } else {
-            logWarning("Remote command not recognizable '" + command + '\'');
+            log.warning("Remote command not recognizable '" + command + '\'');
         }
     }
 
@@ -295,7 +297,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
      */
     private void openLink(String link) {
         String plainLink = link.substring(POWERFOLDER_LINK_PREFIX.length());
-        logWarning("Got plain link: " + plainLink);
+        log.warning("Got plain link: " + plainLink);
 
         // Chop off ending /
         if (plainLink.endsWith("/")) {
@@ -327,7 +329,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
                     fInfo);
             }
         } catch (NoSuchElementException e) {
-            logSevere("Illegal link '" + link + '\'');
+            log.severe("Illegal link '" + link + '\'');
         }
     }
 
@@ -338,7 +340,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
      */
     private void openFile(File file) {
         if (!file.exists()) {
-            logWarning("File not found " + file.getAbsolutePath());
+            log.warning("File not found " + file.getAbsolutePath());
             return;
         }
 
@@ -377,7 +379,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
                     .INITIAL_FOLDER_NAME, name);
             wizard.open(panel);
         } else {
-            logWarning(
+            log.warning(
                     "Remote creation of folders in non-gui mode is not supported yet.");
         }
     }
@@ -397,17 +399,17 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
             // Load nodes
             List nodes = (List) oIn.readObject();
 
-            logWarning("Loaded " + nodes.size() + " nodes");
+            log.warning("Loaded " + nodes.size() + " nodes");
             MemberInfo[] nodesArrary = new MemberInfo[nodes.size()];
             nodes.toArray(nodesArrary);
 
             return nodesArrary;
         } catch (IOException e) {
-            logSevere("Unable to load nodes from file '" + file + "'.", e);
+            log.log(Level.SEVERE, "Unable to load nodes from file '" + file + "'.", e);
         } catch (ClassCastException e) {
-            logSevere("Illegal format of nodes file '" + file + "'.", e);
+            log.log(Level.SEVERE, "Illegal format of nodes file '" + file + "'.", e);
         } catch (ClassNotFoundException e) {
-            logSevere("Illegal format of nodes file '" + file + "'.", e);
+            log.log(Level.SEVERE, "Illegal format of nodes file '" + file + "'.", e);
         }
 
         return null;

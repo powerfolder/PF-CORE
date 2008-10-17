@@ -19,6 +19,9 @@
  */
 package de.dal33t.powerfolder.util.task;
 
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PFComponent;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -29,12 +32,8 @@ import java.io.ObjectOutputStream;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
-
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.message.Notification;
-import de.dal33t.powerfolder.util.Reject;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Loads, stores and initializes persistent Tasks. While RuntimeExceptions on
@@ -48,6 +47,8 @@ import de.dal33t.powerfolder.util.Reject;
  * @version $Revision$
  */
 public class PersistentTaskManager extends PFComponent {
+
+    private static final Logger log = Logger.getLogger(PersistentTaskManager.class.getName());
     private List<PersistentTask> tasks;
     /**
      * Pending tasks that await initialization.
@@ -80,42 +81,42 @@ public class PersistentTaskManager extends PFComponent {
         pendingTasks = new Vector<PersistentTask>();
         File taskfile = getTaskFile();
         if (taskfile.exists()) {
-            logInfo("Loading taskfile");
+            log.info("Loading taskfile");
             ObjectInputStream oin = null;
             try {
                 oin = new ObjectInputStream(new FileInputStream(taskfile));
                 tasks = (List<PersistentTask>) oin.readObject();
                 oin.close();
-                logInfo("Loaded " + tasks.size() + " tasks.");
+                log.info("Loaded " + tasks.size() + " tasks.");
             } catch (FileNotFoundException e) {
-                logSevere(e);
+                log.log(Level.SEVERE, "FileNotFoundException", e);
             } catch (IOException e) {
-                logSevere(e);
+                log.log(Level.SEVERE, "IOException", e);
             } catch (ClassNotFoundException e) {
-                logSevere(e);
+                log.log(Level.SEVERE, "ClassNotFoundException", e);
             } catch (ClassCastException e) {
-                logSevere(e);
+                log.log(Level.SEVERE, "ClassCastException", e);
             } finally {
                 if (oin != null) {
                     try {
                         oin.close();
                     } catch (IOException e) {
-                        logSevere(e);
+                        log.log(Level.SEVERE, "IOException", e);
                     }
                 }
             }
         } else {
-            logInfo("No taskfile found - probably first start of PF.");
+            log.info("No taskfile found - probably first start of PF.");
         }
         // If no taskfile was found or errors occurred while loading it
         if (tasks == null) {
             tasks = new LinkedList<PersistentTask>();
         }
-        for (PersistentTask t : tasks.toArray(new PersistentTask[0])) {
+        for (PersistentTask t : tasks.toArray(new PersistentTask[tasks.size()])) {
             try {
                 t.init(this);
             } catch (RuntimeException e) {
-                logSevere(e);
+                log.log(Level.SEVERE, "RuntimeException", e);
                 tasks.remove(t);
             }
         }
@@ -129,7 +130,7 @@ public class PersistentTaskManager extends PFComponent {
     public synchronized void shutdown() {
         shuttingDown = true;
         if (tasks == null || pendingTasks == null) {
-            logSevere("Shutdown before initialization!");
+            log.severe("Shutdown before initialization!");
             return;
         }
         waitForPendingTasks();
@@ -137,25 +138,25 @@ public class PersistentTaskManager extends PFComponent {
             try {
                 t.shutdown();
             } catch (RuntimeException e) {
-                logSevere(e);
+                log.log(Level.SEVERE, "RuntimeException", e);
             }
         }
         File taskFile = getTaskFile();
         ObjectOutputStream oout = null;
         try {
-            logInfo("There are " + tasks.size() + " tasks not completed yet.");
+            log.info("There are " + tasks.size() + " tasks not completed yet.");
             oout = new ObjectOutputStream(new FileOutputStream(taskFile));
             oout.writeUnshared(tasks);
         } catch (FileNotFoundException e) {
-            logSevere(e);
+            log.log(Level.SEVERE, "FileNotFoundException", e);
         } catch (IOException e) {
-            logSevere(e);
+            log.log(Level.SEVERE, "IOException", e);
         } finally {
             if (oout != null) {
                 try {
                     oout.close();
                 } catch (IOException e) {
-                    logSevere(e);
+                    log.log(Level.SEVERE, "IOException", e);
                 }
             }
             tasks = null;
@@ -171,13 +172,13 @@ public class PersistentTaskManager extends PFComponent {
      */
     public synchronized void scheduleTask(final PersistentTask task) {
         if (tasks == null) {
-            logSevere(
+            log.log(Level.SEVERE,
                 "Unable to shedule task, taskmanager not initialized! Task: "
                     + task, new RuntimeException("here"));
             return;
         }
         if (!tasks.contains(task) && !shuttingDown) {
-            logInfo("Adding " + task);
+            log.info("Adding " + task);
             tasks.add(task);
             Runnable adder = new Runnable() {
                 public void run() {
@@ -213,7 +214,7 @@ public class PersistentTaskManager extends PFComponent {
             task.shutdown();
             tasks.remove(task);
         } else {
-            logInfo(task
+            log.info(task
                 + " shouldn't call remove() in shutdown(), it will automatically be removed!");
         }
         shuttingDown = oldSD;
@@ -264,13 +265,13 @@ public class PersistentTaskManager extends PFComponent {
         }
         for (PersistentTask task : tasks) {
             if (task instanceof SendMessageTask) {
-                logFine("Found pending message(s). total active tasks: "
+                log.fine("Found pending message(s). total active tasks: "
                     + tasks.size());
                 return true;
             }
             // SendMessageTask sendTask = (SendMessageTask) task;
             // if (!sendTask.getTargetID().equals(node.id)) {
-            // logWarning("Found pending message(s) to " + node);
+            // log.warning("Found pending message(s) to " + node);
             // return true;
             // }
         }
@@ -284,7 +285,7 @@ public class PersistentTaskManager extends PFComponent {
             try {
                 wait();
             } catch (InterruptedException e) {
-                logSevere(e);
+                log.log(Level.SEVERE, "InterruptedException", e);
             }
         }
         if (!pendingTasks.isEmpty()) {
@@ -293,7 +294,7 @@ public class PersistentTaskManager extends PFComponent {
             for (PersistentTask t : pendingTasks)
                 b.append(' ').append(t);
             b.append(" and will be removed!");
-            logSevere(b.toString());
+            log.severe(b.toString());
             // Note: This will also remove tasks which "might" still finish
             // initialization
             tasks.removeAll(pendingTasks);

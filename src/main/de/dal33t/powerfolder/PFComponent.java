@@ -22,21 +22,15 @@ package de.dal33t.powerfolder;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 
-import de.dal33t.powerfolder.util.Loggable;
-
 /**
  * Base class for all classes, which use the Controller (most classes in
- * PowerFolder do). Gives also access to logging and PropertyChangeSupport. After
- * extending from this class make sure the Controller is set in the Constructor.<BR>
- * Log example: <CODE> logFine("This is a debug log text"); </CODE> see
- * Logger for more info.
+ * PowerFolder do).
  * 
  * @see Controller
- * @see de.dal33t.powerfolder.util.Logger
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.13 $
  */
-public abstract class PFComponent extends Loggable {
+public abstract class PFComponent {
     /** The controller instance this is linked to */
     private Controller controller;
     private PropertyChangeSupport changeSupport;

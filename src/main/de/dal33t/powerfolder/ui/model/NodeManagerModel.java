@@ -19,19 +19,7 @@
 */
 package de.dal33t.powerfolder.ui.model;
 
-import java.awt.EventQueue;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.Collection;
-
-import javax.swing.JTree;
-import javax.swing.event.TreeModelEvent;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.TreeNode;
-import javax.swing.tree.TreePath;
-
 import com.jgoodies.binding.value.ValueModel;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFUIComponent;
@@ -47,6 +35,17 @@ import de.dal33t.powerfolder.ui.navigation.NavTreeModel;
 import de.dal33t.powerfolder.util.compare.MemberComparator;
 import de.dal33t.powerfolder.util.ui.TreeNodeList;
 
+import javax.swing.JTree;
+import javax.swing.event.TreeModelEvent;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
+import java.awt.EventQueue;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.Collection;
+import java.util.logging.Logger;
+
 /**
  * UI-Model for the nodemanager. Prepare data from the nodemanager in a
  * "swing-compatible" way. E.g. as <code>TreeNode</code> or
@@ -57,6 +56,8 @@ import de.dal33t.powerfolder.util.ui.TreeNodeList;
  * @version $Revision: 1.5 $
  */
 public class NodeManagerModel extends PFUIComponent {
+
+    private static final Logger log = Logger.getLogger(NodeManagerModel.class.getName());
     private NavTreeModel navTreeModel;
     private ChatModel chatModel;
     private TreeNodeList friendsTreeNode;
@@ -309,7 +310,7 @@ public class NodeManagerModel extends PFUIComponent {
         if (getController().getUIController().getNodeManagerModel()
             .getFriendsTreeNode().getChildCount() > 0)
         {
-            logFiner("Expanding friendlist");
+            log.finer("Expanding friendlist");
             Runnable runner = new Runnable() {
                 public void run() {
                     getController().getUIController().getControlQuarter()
@@ -333,7 +334,7 @@ public class NodeManagerModel extends PFUIComponent {
             return;
         }
         if (notInFriendsTreeNodes.getChildCount() == 1) {
-            logFiner("Expanding not friendlist");
+            log.finer("Expanding not friendlist");
             Runnable runner = new Runnable() {
                 public void run() {
                     getController().getUIController().getControlQuarter()

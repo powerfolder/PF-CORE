@@ -19,15 +19,6 @@
  */
 package de.dal33t.powerfolder.ui.dialog;
 
-import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-import javax.swing.Icon;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-
 import com.jgoodies.binding.adapter.BasicComponentFactory;
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
@@ -35,7 +26,6 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.ButtonBarFactory;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.ui.Icons;
@@ -43,6 +33,15 @@ import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.BaseDialog;
 import de.dal33t.powerfolder.util.ui.SwingWorker;
+
+import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.logging.Logger;
 
 /**
  * The Sync action panel. user can input his sync actions. e.g. scan. scan &
@@ -52,6 +51,8 @@ import de.dal33t.powerfolder.util.ui.SwingWorker;
  * @version $Revision: 1.3 $
  */
 public class SyncFolderPanel extends BaseDialog {
+
+    private static final Logger log = Logger.getLogger(SyncFolderPanel.class.getName());
 
     private static final Object SEND_OPTION = new Object();
     private static final Object RECEIVE_OPTION = new Object();
@@ -180,14 +181,14 @@ public class SyncFolderPanel extends BaseDialog {
             if (optionModel.getValue() == SEND_OPTION
                 || optionModel.getValue() == SEND_RECEIVE_OPTION)
             {
-                logInfo(folder + ": Performing send/scan");
+                log.info(folder + ": Performing send/scan");
                 folder.scanLocalFiles();
             }
 
             if (optionModel.getValue() == RECEIVE_OPTION
                 || optionModel.getValue() == SEND_RECEIVE_OPTION)
             {
-                logInfo(folder + ": Performing receive");
+                log.info(folder + ": Performing receive");
                 // Perform remote deltions
                 folder.syncRemoteDeletedFiles(true);
                 // Request ALL files now modified by friends

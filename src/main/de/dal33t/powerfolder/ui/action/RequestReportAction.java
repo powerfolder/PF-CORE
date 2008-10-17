@@ -19,18 +19,17 @@
 */
 package de.dal33t.powerfolder.ui.action;
 
-import java.awt.event.ActionEvent;
-
-import javax.swing.Action;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.message.RequestNodeInformation;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Loggable;
 import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
+
+import javax.swing.Action;
+import java.awt.event.ActionEvent;
+import java.util.logging.Logger;
 
 /**
  * Requests the debug report from a member
@@ -39,6 +38,8 @@ import de.dal33t.powerfolder.util.ui.SelectionModel;
  * @version $Revision: 1.8 $
  */
 public class RequestReportAction extends SelectionBaseAction {
+
+    private static final Logger log = Logger.getLogger(RequestReportAction.class.getName());
 
     public RequestReportAction(Controller controller,
         SelectionModel selectionModel)
@@ -61,8 +62,7 @@ public class RequestReportAction extends SelectionBaseAction {
         if (selection instanceof Member) {
             Member member = (Member) selection;
             if (member.isConnected() || member.isMySelf()) {
-                Loggable.logFinerStatic(RequestReportAction.class,
-                        "Requesting node information from " + member);
+                log.finer("Requesting node information from " + member);
                 member.sendMessageAsynchron(new RequestNodeInformation(),
                     Translation.getTranslation("node_info.error"));
                 getUIController().getInformationQuarter().displayText(

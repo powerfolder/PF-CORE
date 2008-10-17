@@ -19,6 +19,14 @@
  */
 package de.dal33t.powerfolder.net;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.Util;
+import org.apache.commons.lang.StringUtils;
+
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -33,15 +41,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.TimerTask;
-
-import org.apache.commons.lang.StringUtils;
-
-import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.Util;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Listener, which listens for incoming broadcast messages
@@ -50,6 +51,8 @@ import de.dal33t.powerfolder.util.Util;
  * @version $Revision: 1.19 $
  */
 public class BroadcastMananger extends PFComponent implements Runnable {
+
+    private static final Logger log = Logger.getLogger(BroadcastMananger.class.getName());
     private static final int DEFAULT_BROADCAST_PORT = 1337;
     private static final int IN_BUFFER_SIZE = 128;
 
@@ -121,13 +124,13 @@ public class BroadcastMananger extends PFComponent implements Runnable {
                 bindAddr = InetAddress.getLocalHost();
             }
 
-            logFiner("Binding multicast on address: " + bindAddr);
+            log.finer("Binding multicast on address: " + bindAddr);
             socket.setInterface(bindAddr);
             socket.setSoTimeout((int) waitTime);
             socket.joinGroup(group);
             socket.setTimeToLive(65);
             /*
-             * logFiner( "Opened broadcast manager on nic: " +
+             * log.finer( "Opened broadcast manager on nic: " +
              * socket.getNetworkInterface());
              */
             socket.setBroadcast(true);
@@ -139,7 +142,7 @@ public class BroadcastMananger extends PFComponent implements Runnable {
             + socket.getLocalPort());
         myThread.setPriority(Thread.MIN_PRIORITY);
         myThread.start();
-        logFine("Started");
+        log.fine("Started");
 
         if (getController().getConnectionListener() != null) {
             getController().scheduleAndRepeat(new TimerTask() {
@@ -149,7 +152,7 @@ public class BroadcastMananger extends PFComponent implements Runnable {
                         return;
                     }
                     if (broadCastString == null) {
-                        logWarning("Not sending network broadcast");
+                        log.warning("Not sending network broadcast");
                         return;
                     }
                     getController().getIOProvider().startIO(
@@ -169,7 +172,7 @@ public class BroadcastMananger extends PFComponent implements Runnable {
         if (socket != null) {
             socket.close();
         }
-        logFine("Stopped");
+        log.fine("Stopped");
     }
 
     public void run() {
@@ -193,7 +196,7 @@ public class BroadcastMananger extends PFComponent implements Runnable {
             } catch (SocketTimeoutException e) {
                 // ignore
             } catch (IOException e) {
-                logFiner("Closing broadcastmanager", e);
+                log.log(Level.FINER, "Closing broadcastmanager", e);
                 break;
             }
         }
@@ -230,15 +233,15 @@ public class BroadcastMananger extends PFComponent implements Runnable {
      */
     private void sendBroadcast(DatagramPacket broadcast) {
         // send broadcast set
-        if (isLogFiner()) {
-            logFiner("Sending broadcast: " + broadCastString);
+        if (log.isLoggable(Level.FINER)) {
+            log.finer("Sending broadcast: " + broadCastString);
         }
         for (int i = 0; i < senderSockets.length; i++) {
             if (senderSockets[i] != null) {
                 try {
                     senderSockets[i].send(broadcast);
                 } catch (IOException e) {
-                    logFiner(
+                    log.log(Level.FINER,
                         "Removing socket from future sendings. "
                             + senderSockets[i], e);
                     senderSockets[i].close();
@@ -284,8 +287,8 @@ public class BroadcastMananger extends PFComponent implements Runnable {
 
         String message = new String(content);
 
-        if (isLogFiner()) {
-            logFiner(
+        if (log.isLoggable(Level.FINER)) {
+            log.finer(
                 "Received broadcast: " + message + ", " + packet.getAddress());
         }
 
@@ -300,7 +303,7 @@ public class BroadcastMananger extends PFComponent implements Runnable {
             try {
                 port = Integer.parseInt(portStr);
             } catch (NumberFormatException e) {
-                logFiner("Unable to parse port from broadcast message");
+                log.finer("Unable to parse port from broadcast message");
                 return false;
             }
         } else {
@@ -320,7 +323,7 @@ public class BroadcastMananger extends PFComponent implements Runnable {
         Member node = getController().getNodeManager().getNode(id);
         if (node == null || (!node.isMySelf() && !node.isConnected())) {
             receivedBroadcastsFrom.add(packet.getAddress());
-            logInfo(
+            log.info(
                 "Found user on local network: " + address
                     + ((node != null) ? ", " + node : ""));
             try {
@@ -331,13 +334,13 @@ public class BroadcastMananger extends PFComponent implements Runnable {
                 }
 
             } catch (ConnectionException e) {
-                logWarning("Unable to connect to node on subnet: " + address
+                log.warning("Unable to connect to node on subnet: " + address
                     + ": " + e);
-                logFiner(e);
+                log.log(Level.FINER, "ConnectionException", e);
             }
         } else {
-            if (isLogFiner()) {
-                logFiner("Node already known: ID: " + id + ", " + node);
+            if (log.isLoggable(Level.FINER)) {
+                log.finer("Node already known: ID: " + id + ", " + node);
             }
             // Node must be on lan
             node.setOnLAN(true);
@@ -392,7 +395,7 @@ public class BroadcastMananger extends PFComponent implements Runnable {
         updateLocalAddresses();
 
         if (compareLocalAddresses(localAddresses, oldLocalAddresses)) {
-            logFine("NetworkInterfaces initialiazing or change detected");
+            log.fine("NetworkInterfaces initialiazing or change detected");
 
             InetAddress[] inet = new InetAddress[localAddresses.size()];
             localAddresses.toArray(inet);
@@ -401,10 +404,10 @@ public class BroadcastMananger extends PFComponent implements Runnable {
                 for (int i = 0; i < senderSockets.length; i++) {
                     if (senderSockets[i] != null) {
                         try {
-                            logFine("closing socket");
+                            log.fine("closing socket");
                             senderSockets[i].close();
                         } catch (Exception e) {
-                            logSevere("closing socket", e);
+                            log.log(Level.SEVERE, "closing socket", e);
                         }
                     }
                 }
@@ -413,15 +416,15 @@ public class BroadcastMananger extends PFComponent implements Runnable {
             for (int i = 0; i < inet.length; i++) {
                 try {
                     senderSockets[i] = new DatagramSocket(0, inet[i]);
-                    if (isLogFiner()) {
-                        logFiner(
+                    if (log.isLoggable(Level.FINER)) {
+                        log.finer(
                             "Successfully opened broadcast sender for "
                                 + inet[i]);
                     }
 
                 } catch (IOException e) {
-                    if (isLogFiner()) {
-                        logFiner(
+                    if (log.isLoggable(Level.FINER)) {
+                        log.finer(
                             "Unable to open broadcast sender for " + inet[i]
                                 + ": " + e.getMessage());
                     }
@@ -445,7 +448,7 @@ public class BroadcastMananger extends PFComponent implements Runnable {
             try {
                 localAddresses.add(InetAddress.getByName(cfgBind));
             } catch (UnknownHostException e) {
-                logSevere(
+                log.log(Level.SEVERE,
                     "Warning, \"net.bindaddress\" is NOT an IP address!", e);
             }
         else {
@@ -474,8 +477,8 @@ public class BroadcastMananger extends PFComponent implements Runnable {
             en = NetworkInterface.getNetworkInterfaces();
 
         } catch (SocketException e) {
-            logSevere("Unable to get local network interfaces");
-            logFiner(e);
+            log.severe("Unable to get local network interfaces");
+            log.log(Level.FINER, "SocketException", e);
             return;
         }
 
@@ -491,8 +494,8 @@ public class BroadcastMananger extends PFComponent implements Runnable {
             byte[] msg = broadCastString.getBytes();
             broadcast = new DatagramPacket(msg, msg.length, group,
                 DEFAULT_BROADCAST_PORT);
-            if (isLogFiner()) {
-                logFiner("Sending network broadcast");
+            if (log.isLoggable(Level.FINER)) {
+                log.finer("Sending network broadcast");
             }
             // check for added or removed net interfaces
             // and update our internal list of sender sockets

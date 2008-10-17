@@ -19,17 +19,16 @@
 */
 package de.dal33t.powerfolder.ui.action;
 
-import java.awt.event.ActionEvent;
-
-import javax.swing.JOptionPane;
-
-import org.apache.commons.lang.StringUtils;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.ui.dialog.ConnectDialog;
-import de.dal33t.powerfolder.util.Loggable;
 import de.dal33t.powerfolder.util.Translation;
+import org.apache.commons.lang.StringUtils;
+
+import javax.swing.JOptionPane;
+import java.awt.event.ActionEvent;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Asks for ip and tries to connect
@@ -38,6 +37,8 @@ import de.dal33t.powerfolder.util.Translation;
  * @version $Revision: 1.8 $
  */
 public class ConnectAction extends BaseAction {
+
+    private static final Logger log = Logger.getLogger(ConnectAction.class.getName());
 
     public ConnectAction(Controller controller) {
         super("connect", controller);
@@ -69,7 +70,7 @@ public class ConnectAction extends BaseAction {
                     getController().connect(conStr);
                 } catch (ConnectionException ex) {
                     connectDialog.close();
-                    Loggable.logFinerStatic(ConnectAction.class, ex);
+                    log.log(Level.FINER, "", ex);
                     if (!connectDialog.isCanceled()) {
                         // Show if user didn't canceled
                         ex.show(getController());
@@ -78,8 +79,7 @@ public class ConnectAction extends BaseAction {
 
                 // Close dialog
                 connectDialog.close();
-                Loggable.logFinerStatic(ConnectAction.class,
-                        "Connector thread finished");
+                log.finer("Connector thread finished");
             }
         };
 

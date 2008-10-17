@@ -19,6 +19,15 @@
  */
 package de.dal33t.powerfolder.util;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.light.MemberInfo;
+import de.dal33t.powerfolder.net.ConnectionListener;
+import de.dal33t.powerfolder.util.os.Win32.ShellLink;
+import de.dal33t.powerfolder.util.os.Win32.WinUtils;
+import org.apache.commons.lang.Validate;
+
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.ClipboardOwner;
@@ -42,16 +51,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.StringTokenizer;
-
-import org.apache.commons.lang.Validate;
-
-import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.net.ConnectionListener;
-import de.dal33t.powerfolder.util.os.Win32.ShellLink;
-import de.dal33t.powerfolder.util.os.Win32.WinUtils;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Util helper class.
@@ -60,6 +61,8 @@ import de.dal33t.powerfolder.util.os.Win32.WinUtils;
  * @version $Revision: 1.64 $
  */
 public class Util {
+
+    private static final Logger log = Logger.getLogger(Util.class.getName());
 
     /**
      * Used building output as Hex
@@ -92,17 +95,17 @@ public class Util {
             Method m = c.getMethod("isTrial", Controller.class);
             return (Boolean) m.invoke(null, controller);
         } catch (ClassNotFoundException e) {
-            Loggable.logSevereStatic(Util.class, e);
+            log.log(Level.SEVERE, "ClassNotFoundException", e);
         } catch (SecurityException e) {
-            Loggable.logSevereStatic(Util.class, e);
+            log.log(Level.SEVERE, "SecurityException", e);
         } catch (NoSuchMethodException e) {
-            Loggable.logSevereStatic(Util.class, e);
+            log.log(Level.SEVERE, "NoSuchMethodException", e);
         } catch (IllegalArgumentException e) {
-            Loggable.logSevereStatic(Util.class, e);
+            log.log(Level.SEVERE, "IllegalArgumentException", e);
         } catch (IllegalAccessException e) {
-            Loggable.logSevereStatic(Util.class, e);
+            log.log(Level.SEVERE, "IllegalAccessException", e);
         } catch (InvocationTargetException e) {
-            Loggable.logSevereStatic(Util.class, e);
+            log.log(Level.SEVERE, "InvocationTargetException", e);
         }
         return true;
     }
@@ -116,17 +119,17 @@ public class Util {
                 MemberInfo.class);
             return (PublicKey) m.invoke(null, controller, node);
         } catch (ClassNotFoundException e) {
-            Loggable.logSevereStatic(Util.class, e);
+            log.log(Level.SEVERE, "ClassNotFoundException", e);
         } catch (SecurityException e) {
-            Loggable.logSevereStatic(Util.class, e);
+            log.log(Level.SEVERE, "SecurityException", e);
         } catch (NoSuchMethodException e) {
-            Loggable.logSevereStatic(Util.class, e);
+            log.log(Level.SEVERE, "NoSuchMethodException", e);
         } catch (IllegalArgumentException e) {
-            Loggable.logSevereStatic(Util.class, e);
+            log.log(Level.SEVERE, "IllegalArgumentException", e);
         } catch (IllegalAccessException e) {
-            Loggable.logSevereStatic(Util.class, e);
+            log.log(Level.SEVERE, "IllegalAccessException", e);
         } catch (InvocationTargetException e) {
-            Loggable.logSevereStatic(Util.class, e);
+            log.log(Level.SEVERE, "InvocationTargetException", e);
         }
         return null;
     }
@@ -148,17 +151,17 @@ public class Util {
                 MemberInfo.class, PublicKey.class);
             return (Boolean) m.invoke(null, controller, node, key);
         } catch (ClassNotFoundException e) {
-            Loggable.logSevereStatic(Util.class, e);
+            log.log(Level.SEVERE, "ClassNotFoundException", e);
         } catch (SecurityException e) {
-            Loggable.logSevereStatic(Util.class, e);
+            log.log(Level.SEVERE, "SecurityException", e);
         } catch (NoSuchMethodException e) {
-            Loggable.logSevereStatic(Util.class, e);
+            log.log(Level.SEVERE, "NoSuchMethodException", e);
         } catch (IllegalArgumentException e) {
-            Loggable.logSevereStatic(Util.class, e);
+            log.log(Level.SEVERE, "IllegalArgumentException", e);
         } catch (IllegalAccessException e) {
-            Loggable.logSevereStatic(Util.class, e);
+            log.log(Level.SEVERE, "IllegalAccessException", e);
         } catch (InvocationTargetException e) {
-            Loggable.logSevereStatic(Util.class, e);
+            log.log(Level.SEVERE, "InvocationTargetException", e);
         }
         return false;
     }
@@ -307,7 +310,7 @@ public class Util {
                 .getResource(altLocation + '/' + res);
         }
         if (result == null) {
-            Loggable.logSevereStatic(Util.class, "Unable to load resource "
+            log.severe("Unable to load resource "
                 + res + ". alt location " + altLocation);
         }
         return result;
@@ -339,14 +342,13 @@ public class Util {
         InputStream in = Thread.currentThread().getContextClassLoader()
             .getResourceAsStream(resource);
         if (in == null) {
-            Loggable.logFinerStatic(Util.class, "Unable to find resource: "
+            log.finer("Unable to find resource: "
                 + resource);
             // try harder
             in = Thread.currentThread().getContextClassLoader()
-                .getResourceAsStream(altLocation + "/" + resource);
+                .getResourceAsStream(altLocation + '/' + resource);
             if (in == null) {
-                Loggable.logWarningStatic(Util.class,
-                    "Unable to find resource: " + altLocation + "/" + resource);
+                log.warning("Unable to find resource: " + altLocation + '/' + resource);
                 return null;
             }
         }
@@ -357,11 +359,10 @@ public class Util {
         try {
             FileUtils.copyFromStreamToFile(in, target);
         } catch (IOException ioe) {
-            Loggable.logWarningStatic(Util.class,
-                "Unable to create target for resource: " + target);
+            log.warning("Unable to create target for resource: " + target);
             return null;
         }
-        Loggable.logFinerStatic(Util.class, "created target for resource: "
+        log.finer("created target for resource: "
             + target);
         return target;
     }
@@ -380,7 +381,7 @@ public class Util {
         if (util == null) {
             return false;
         }
-        Loggable.logFinerStatic(Util.class, "Creating desktop shortcut to "
+        log.finer("Creating desktop shortcut to "
             + shortcutTarget.getAbsolutePath());
         ShellLink link = new ShellLink(null, "PowerFolder", shortcutTarget
             .getAbsolutePath(), null);
@@ -391,9 +392,9 @@ public class Util {
             util.createLink(link, scut.getAbsolutePath());
             return true;
         } catch (IOException e) {
-            Loggable.logWarningStatic(Util.class, "Couldn't create shortcut "
+            log.warning("Couldn't create shortcut "
                 + scut.getAbsolutePath());
-            Loggable.logFinerStatic(Util.class, e);
+            log.log(Level.FINER, "IOException", e);
         }
         return false;
     }
@@ -409,7 +410,7 @@ public class Util {
         if (util == null) {
             return false;
         }
-        Loggable.logFinerStatic(Util.class, "Removing desktop shortcut: "
+        log.finer("Removing desktop shortcut: "
             + shortcutName);
         File scut = new File(util.getSystemFolderPath(WinUtils.CSIDL_DESKTOP,
             false), shortcutName + ".lnk");
@@ -429,8 +430,7 @@ public class Util {
         try {
             Object content = url.getContent();
             if (!(content instanceof InputStream)) {
-                Loggable.logSevereStatic(Util.class,
-                    "Unable to get content from " + url
+                log.severe("Unable to get content from " + url
                         + ". content is of type "
                         + content.getClass().getName());
                 return null;
@@ -443,7 +443,7 @@ public class Util {
             }
             return buf.toString();
         } catch (IOException e) {
-            Loggable.logSevereStatic(Util.class, "Unable to get content from "
+            log.log(Level.SEVERE, "Unable to get content from "
                 + url + ". " + e.toString(), e);
         }
         return null;
@@ -765,8 +765,8 @@ public class Util {
                 remotePort = Integer.parseInt(connectStr.substring(dotdot + 1,
                     connectStr.length()));
             } catch (NumberFormatException e) {
-                Loggable.logWarningStatic(Util.class, "Illegal port in "
-                    + connectStr + ", triing default port");
+                log.warning("Illegal port in "
+                    + connectStr + ", trying default port");
             }
         }
 

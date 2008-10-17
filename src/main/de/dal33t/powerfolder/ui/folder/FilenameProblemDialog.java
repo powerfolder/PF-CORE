@@ -19,19 +19,22 @@
 */
 package de.dal33t.powerfolder.ui.folder;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.EventQueue;
-import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.File;
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.factories.Borders;
+import com.jgoodies.forms.factories.ButtonBarFactory;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.disk.FilenameProblem;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.ScanResult;
+import de.dal33t.powerfolder.event.FileNameProblemEvent;
+import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 import javax.swing.AbstractCellEditor;
 import javax.swing.ButtonGroup;
@@ -48,30 +51,30 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
-
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.factories.Borders;
-import com.jgoodies.forms.factories.ButtonBarFactory;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.disk.FilenameProblem;
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.ScanResult;
-import de.dal33t.powerfolder.event.FileNameProblemEvent;
-import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
-import de.dal33t.powerfolder.util.ui.UIUtil;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.EventQueue;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Displays a dialog if filename problems are found. This mainly happens on
  * linux, since those file systems allow almost all characters
  */
 public class FilenameProblemDialog extends PFUIComponent {
+
+    private static final Logger log = Logger.getLogger(FilenameProblemDialog.class.getName());
+
     private String[] columns = new String[]{
         Translation.getTranslation("filelist.name"),
         Translation.getTranslation("general.description"),
@@ -136,9 +139,9 @@ public class FilenameProblemDialog extends PFUIComponent {
                 }
             });
         } catch (InterruptedException e) {
-            logFiner(e);
+            log.log(Level.FINER, "InterruptedException", e);
         } catch (InvocationTargetException e) {
-            logSevere(e);
+            log.log(Level.SEVERE, "InvocationTargetException", e);
         }
     }
 
@@ -308,7 +311,7 @@ public class FilenameProblemDialog extends PFUIComponent {
         }
 
         if (fileInfoSolved == null) {
-            logWarning(
+            log.warning(
                 "something went wrong with solving the filename problems for:"
                     + problemFileInfo);
         } else if (problemEvent.getScanResult() != null) {

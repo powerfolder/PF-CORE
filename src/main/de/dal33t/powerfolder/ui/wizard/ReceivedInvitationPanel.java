@@ -28,18 +28,27 @@ import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.ui.Icons;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.*;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.PREVIEW_FOLDER_ATTIRBUTE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.PROMPT_TEXT_ATTRIBUTE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SAVE_INVITE_LOCALLY;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SEND_INVIATION_AFTER_ATTRIBUTE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SYNC_PROFILE_ATTRIBUTE;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Loggable;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.ui.SyncProfileSelectorPanel;
 import jwf.WizardPanel;
 
-import javax.swing.*;
+import javax.swing.Icon;
+import javax.swing.JCheckBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * Class to do folder creation for a specified invite.
@@ -48,6 +57,8 @@ import java.util.List;
  * @version $Revision: 1.11 $
  */
 public class ReceivedInvitationPanel extends PFWizardPanel {
+
+    private static final Logger log = Logger.getLogger(ReceivedInvitationPanel.class.getName());
 
     private final Invitation invitation;
 
@@ -243,8 +254,7 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
     }
 
     private void loadInvitation() {
-        Loggable.logInfoStatic(ReceivedInvitationPanel.class,
-                "Loaded invitation " + invitation);
+        log.info("Loaded invitation " + invitation);
         if (invitation != null) {
             folderHintLabel.setEnabled(true);
             folderNameLabel.setText(invitation.folder.name);

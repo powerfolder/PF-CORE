@@ -19,6 +19,14 @@
 */
 package de.dal33t.powerfolder.util.ui;
 
+import com.jgoodies.binding.value.ValueModel;
+import org.apache.commons.lang.StringUtils;
+
+import javax.swing.ComboBoxEditor;
+import javax.swing.JComboBox;
+import javax.swing.JTextField;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import java.awt.Color;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -26,18 +34,9 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 
-import javax.swing.ComboBoxEditor;
-import javax.swing.JComboBox;
-import javax.swing.JTextField;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-
-import org.apache.commons.lang.StringUtils;
-
-import com.jgoodies.binding.value.ValueModel;
-import de.dal33t.powerfolder.util.Loggable;
 
 
 /**
@@ -49,6 +48,8 @@ import de.dal33t.powerfolder.util.Loggable;
  * @version $Revision: 1.6 $
  */
 public class EditableHistoryComboBox extends JComboBox {
+
+    private static final Logger log = Logger.getLogger(EditableHistoryComboBox.class.getName());
     private static final int DEFAULT_HISTORY_LENGTH = 30;
     private ValueModel textModel;
     private int maxHistoryLength;
@@ -116,7 +117,7 @@ public class EditableHistoryComboBox extends JComboBox {
         textModel.addValueChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (!textModelChangedFromInnerBox) {
-                    Loggable.logFinerStatic(EditableHistoryComboBox.class, "Value changed from below to "
+                    log.finer("Value changed from below to "
                         + evt.getNewValue());
                     // Only set selected item if textmodel not changed from
                     // ourself
@@ -131,12 +132,12 @@ public class EditableHistoryComboBox extends JComboBox {
         addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
                 if (selectionChangedFromTextModel) {
-                    Loggable.logFinerStatic(EditableHistoryComboBox.class, "Ingonoring Selection, came from textmodel directly item: "
+                    log.finer("Ingonoring Selection, came from textmodel directly item: "
                             + e.getItem());
                     return;
                 }
                 if (e.getStateChange() == ItemEvent.SELECTED) {
-                    Loggable.logFinerStatic(EditableHistoryComboBox.class, "Selected item: " + e.getItem());
+                    log.finer("Selected item: " + e.getItem());
                     nDocumentEventToIgnore = 2;
 
                     // update text model value
@@ -174,7 +175,7 @@ public class EditableHistoryComboBox extends JComboBox {
                         editorsDocumentListener);
                 }
 
-                Loggable.logFinerStatic(EditableHistoryComboBox.class, "Editor has changed");
+                log.finer("Editor has changed");
             }
         });
 
@@ -215,7 +216,7 @@ public class EditableHistoryComboBox extends JComboBox {
         FocusListener focusListener = new FocusListener() {
             public void focusGained(FocusEvent e) {
                 // Reset field to origial values
-                Loggable.logFinerStatic(EditableHistoryComboBox.class, "Resetting input field to orignal content");
+                log.finer("Resetting input field to orignal content");
                 field.setText(originalText);
                 field.setForeground(originalColor);
                 //field.removeFocusListener(this);
@@ -309,7 +310,7 @@ public class EditableHistoryComboBox extends JComboBox {
             }
         }
 
-        Loggable.logFinerStatic(EditableHistoryComboBox.class, "Adding to history: " + item);
+        log.finer("Adding to history: " + item);
 
         // Add Item at top position
         insertItemAt(item, 0);

@@ -19,13 +19,13 @@
 */
 package de.dal33t.powerfolder.transfer;
 
+import de.dal33t.powerfolder.util.WrappingTimer;
+
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.WeakHashMap;
-
-import de.dal33t.powerfolder.util.Loggable;
-import de.dal33t.powerfolder.util.WrappingTimer;
+import java.util.logging.Logger;
 
 /**
  * A BandwidthProvider can be used to periodically assign BandwidthLimiters a
@@ -35,7 +35,10 @@ import de.dal33t.powerfolder.util.WrappingTimer;
  * @author Dennis "Dante" Waldherr
  * @version $Revision: 1.5 $
  */
-public class BandwidthProvider extends Loggable {
+public class BandwidthProvider {
+
+    private static final Logger log = Logger.getLogger(BandwidthProvider.class.getName());
+    
     // ms between bandwidth "pushs"
     public static final int PERIOD = 1000;
 
@@ -86,7 +89,7 @@ public class BandwidthProvider extends Loggable {
             synchronized (limits) {
                 limits.put(limiter, bps);
             }
-            logFiner("Bandwidth limiter initalized, max CPS: " + bps);
+            log.finer("Bandwidth limiter initalized, max CPS: " + bps);
         }
     }
 

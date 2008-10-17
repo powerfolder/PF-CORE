@@ -19,17 +19,14 @@
 */
 package de.dal33t.powerfolder;
 
+import de.dal33t.powerfolder.net.NodeList;
+import org.apache.commons.cli.Options;
+
+import javax.swing.JFileChooser;
 import java.io.File;
 import java.io.IOException;
 
-import javax.swing.JFileChooser;
-
-import org.apache.commons.cli.Options;
-
-import de.dal33t.powerfolder.net.NodeList;
-import de.dal33t.powerfolder.util.Loggable;
-
-public class NodeListEditor extends Loggable {
+public class NodeListEditor {
     private NodeList nodeList;
     
     private JFileChooser nodeFileChooser;

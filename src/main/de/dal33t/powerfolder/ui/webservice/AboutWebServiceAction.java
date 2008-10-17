@@ -19,15 +19,20 @@
  */
 package de.dal33t.powerfolder.ui.webservice;
 
-import java.awt.event.ActionEvent;
-import java.io.IOException;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.util.BrowserLauncher;
-import de.dal33t.powerfolder.util.Loggable;
+
+import java.awt.event.ActionEvent;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 
 public class AboutWebServiceAction extends BaseAction {
+
+    private static final Logger log = Logger.getLogger(AboutWebServiceAction.class.getName());
+    
     protected AboutWebServiceAction(Controller controller) {
         super("about_web_service", controller);
     }
@@ -37,7 +42,7 @@ public class AboutWebServiceAction extends BaseAction {
             BrowserLauncher
                 .openURL("http://www.powerfolder.com/online_storage_features.html");
         } catch (IOException e1) {
-            Loggable.logSevereStatic(AboutWebServiceAction.class, e1);
+            log.log(Level.SEVERE, "IOException", e1);
         }
     }
 }

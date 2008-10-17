@@ -19,21 +19,6 @@
  */
 package de.dal33t.powerfolder.util.test;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-import java.util.UUID;
-import java.util.Map.Entry;
-
-import junit.framework.TestCase;
-
-import org.apache.commons.io.FileUtils;
-
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
@@ -41,15 +26,25 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
-import de.dal33t.powerfolder.event.FolderRepositoryEvent;
-import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.util.Format;
-import de.dal33t.powerfolder.util.LogDispatch;
 import de.dal33t.powerfolder.util.PropertiesUtil;
 import de.dal33t.powerfolder.util.Reject;
+import junit.framework.TestCase;
+import org.apache.commons.io.FileUtils;
+
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.UUID;
 
 /**
  * Provides basic testcase-setup with N controllers.
@@ -93,7 +88,6 @@ public abstract class MultipleControllerTestCase extends TestCase {
                 }
             });
         Feature.setupForTests();
-        LogDispatch.setNickPrefix(true);
         
         // Cleanup
         TestHelper.cleanTestDir();

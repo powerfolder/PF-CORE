@@ -19,33 +19,11 @@
  */
 package de.dal33t.powerfolder.ui;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Frame;
-import java.awt.HeadlessException;
-import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.prefs.Preferences;
-
-import javax.swing.AbstractAction;
-import javax.swing.JFrame;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JSplitPane;
-import javax.swing.KeyStroke;
-import javax.swing.WindowConstants;
-
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.uif_lite.component.UIFSplitPane;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
@@ -60,6 +38,27 @@ import de.dal33t.powerfolder.ui.navigation.RootNode;
 import de.dal33t.powerfolder.ui.transfer.DownloadsPanel;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
+import javax.swing.AbstractAction;
+import javax.swing.JFrame;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JSplitPane;
+import javax.swing.KeyStroke;
+import javax.swing.WindowConstants;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Frame;
+import java.awt.HeadlessException;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.logging.Logger;
+import java.util.prefs.Preferences;
+
 /**
  * Powerfoldes gui mainframe
  * <p>
@@ -70,6 +69,8 @@ import de.dal33t.powerfolder.util.os.OSUtil;
  * @version $Revision: 1.44 $
  */
 public class MainFrame extends PFUIComponent {
+
+    private static final Logger log = Logger.getLogger(MainFrame.class.getName());
     private JFrame uiComponent;
 
     /** The toolbar ontop */
@@ -213,7 +214,7 @@ public class MainFrame extends PFUIComponent {
      * Initalizes all ui components
      */
     private void initComponents() {
-        logFine("Screen resolution: "
+        log.fine("Screen resolution: "
             + Toolkit.getDefaultToolkit().getScreenSize());
 
         uiComponent = new JFrame();

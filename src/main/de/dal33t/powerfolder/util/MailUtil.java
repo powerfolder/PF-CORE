@@ -19,16 +19,17 @@
 */
 package de.dal33t.powerfolder.util;
 
+import de.dal33t.powerfolder.util.os.OSUtil;
+import org.apache.commons.lang.StringUtils;
+
 import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
-
-import org.apache.commons.lang.StringUtils;
-
-import de.dal33t.powerfolder.util.os.OSUtil;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Utility class for sending emails.
@@ -37,6 +38,8 @@ import de.dal33t.powerfolder.util.os.OSUtil;
  * @version $Revision: 1.5 $
  */
 public class MailUtil {
+
+    private static final Logger log = Logger.getLogger(MailUtil.class.getName());
 
     // No instance possible
     private MailUtil() {
@@ -80,14 +83,14 @@ public class MailUtil {
                 return false;
             }
         } catch (LinkageError err) {
-            Loggable.logFinerStatic(MailUtil.class, err);
+            log.log(Level.FINER, "LinkageError", err);
             return false;
         }
         
         StringBuilder headers = new StringBuilder();
-        char separator = '?';
-        
+
         try {
+            char separator = '?';
             if (!StringUtils.isBlank(to)) {
                 headers.append(separator).append("to=").append(Util.encodeURI(to));
                 separator = '&';
@@ -108,13 +111,13 @@ public class MailUtil {
                 separator = '&';
             }
 
-            Loggable.logFineStatic(MailUtil.class, "mailto:" + headers);
+            log.finer("mailto:" + headers);
             Desktop.getDesktop().mail(new URI("mailto:" + headers));
         } catch (UnsupportedEncodingException e) {
-            Loggable.logSevereStatic(MailUtil.class, e);
+            log.log(Level.SEVERE, "UnsupportedEncodingException", e);
             return false;
         } catch (IOException e) {
-            Loggable.logSevereStatic(MailUtil.class, e);
+            log.log(Level.SEVERE, "IOException", e);
             return false;
         } catch (URISyntaxException e) {
             // TODO Auto-generated catch block

@@ -19,6 +19,11 @@
 */
 package de.dal33t.powerfolder.net;
 
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.util.Base64;
+import org.apache.commons.lang.StringUtils;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
@@ -28,14 +33,9 @@ import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.apache.commons.lang.StringUtils;
-
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.util.Base64;
 
 /*
  * The class DynDnsOrg is implemented to provide update service for those 
@@ -45,6 +45,8 @@ import de.dal33t.powerfolder.util.Base64;
  */
 
 public class DynDnsOrg extends PFComponent implements DynDns {
+
+    private static final Logger log = Logger.getLogger(DynDnsOrg.class.getName());
 
     // error code
     private static final int GOOD = 0;
@@ -229,7 +231,7 @@ public class DynDnsOrg extends PFComponent implements DynDns {
                 // charBuffer.clear();
             }
 
-            logFiner("DynDns update result" + charBuffer);
+            log.finer("DynDns update result" + charBuffer);
 
             // get the response
 
@@ -252,9 +254,9 @@ public class DynDnsOrg extends PFComponent implements DynDns {
                 }
             }
         } catch (UnknownHostException e) {
-            logWarning(" " + e.toString());
+            log.warning(" " + e.toString());
         } catch (IOException e) {
-            logWarning(" " + e.toString());
+            log.warning(" " + e.toString());
         } finally {
             if (channel != null) {
                 try {

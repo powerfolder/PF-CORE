@@ -19,10 +19,15 @@
 */
 package de.dal33t.powerfolder.ui.dialog;
 
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.factories.Borders;
+import com.jgoodies.forms.factories.ButtonBarFactory;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.net.ErrorManager;
+import de.dal33t.powerfolder.util.Translation;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -31,17 +36,11 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.border.TitledBorder;
-
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.factories.Borders;
-import com.jgoodies.forms.factories.ButtonBarFactory;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.net.ErrorManager;
-import de.dal33t.powerfolder.util.Translation;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.logging.Logger;
 
 /*
  * This class creates a dialog box which is designed to display 
@@ -51,6 +50,8 @@ import de.dal33t.powerfolder.util.Translation;
  *
  */
 public class ErrorDialog extends PFUIComponent {
+
+    private static final Logger log = Logger.getLogger(ErrorDialog.class.getName());
 
     private JButton okButton;
     private JButton detailsButton;
@@ -78,7 +79,7 @@ public class ErrorDialog extends PFUIComponent {
     public final void open(String errorTxt, int kindOfError) {
         this.errorTxt = errorTxt;
         this.kindOfError = kindOfError;
-        logFiner("Open called: " + this);
+        log.finer("Open called: " + this);
         if (isOpen()) {
             close();
         }
@@ -89,7 +90,7 @@ public class ErrorDialog extends PFUIComponent {
      * Disposes the dialog.
      */
     public final void close() {
-        logFiner("Close called: " + this);
+        log.finer("Close called: " + this);
         if (uiComponent != null) {
             uiComponent.dispose();
             uiComponent = null;
@@ -100,7 +101,7 @@ public class ErrorDialog extends PFUIComponent {
      * Disposes the dialog.
      */
     public final boolean isOpen() {
-        logFiner("Close called: " + this);
+        log.finer("Close called: " + this);
         if (uiComponent != null) {
             return true;
         }
@@ -270,7 +271,7 @@ public class ErrorDialog extends PFUIComponent {
         initComponents();
 
         if (uiComponent == null) {
-            logFiner("Building ui component for " + this);
+            log.finer("Building ui component for " + this);
             uiComponent = new JDialog(getUIController().getMainFrame()
                 .getUIComponent(), getTitle(), modal);
             uiComponent.setResizable(false);

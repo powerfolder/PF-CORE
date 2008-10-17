@@ -19,10 +19,6 @@
 */
 package de.dal33t.powerfolder.test;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Date;
-
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.disk.DiskItemFilter;
 import de.dal33t.powerfolder.light.FileInfo;
@@ -33,7 +29,11 @@ import de.dal33t.powerfolder.message.FileList;
 import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.util.ByteSerializer;
 import de.dal33t.powerfolder.util.IdGenerator;
-import de.dal33t.powerfolder.util.Loggable;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.logging.Logger;
 
 /**
  * Tests the serializing perfomance
@@ -42,6 +42,8 @@ import de.dal33t.powerfolder.util.Loggable;
  * @version $Revision: 1.2 $
  */
 public class TestSerialize {
+
+    private static final Logger log = Logger.getLogger(TestSerialize.class.getName());
 
     /**
      * @param args
@@ -54,8 +56,7 @@ public class TestSerialize {
             long start = System.currentTimeMillis();
             raw = ByteSerializer.serializeStatic(testMsgs[i], true);
             long took = System.currentTimeMillis() - start;
-            Loggable.logInfoStatic(TestSerialize.class,
-                    "Serialize took " + took + "ms (" + raw.length
+            log.info("Serialize took " + took + "ms (" + raw.length
                 + " bytes) of " + testMsgs[i]);
         }
     }

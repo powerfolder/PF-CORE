@@ -19,12 +19,6 @@
  */
 package de.dal33t.powerfolder.transfer;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.FileInfo;
@@ -37,12 +31,21 @@ import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.delta.FilePartsRecord;
 import de.dal33t.powerfolder.util.delta.FilePartsState.PartState;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.logging.Logger;
+
 /**
  * This download manager will try to download from all available sources.
  * 
  * @author Dennis "Bytekeeper" Waldherr
  */
 public class MultiSourceDownloadManager extends AbstractDownloadManager {
+
+    private static final Logger log = Logger.getLogger(MultiSourceDownloadManager.class.getName());
     private final ConcurrentMap<MemberInfo, Download> downloads = new ConcurrentHashMap<MemberInfo, Download>();
 
     private Download pendingPartRecordFrom;
@@ -69,10 +72,10 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
         assert download != null;
         assert canAddSource(download.getPartner());
 
-        // logFine("Adding source: " + download);
+        // log.fine("Adding source: " + download);
 
         if (downloads.put(download.getPartner().getInfo(), download) != null) {
-            logSevere("Overridden previous download for member: "
+            log.severe("Overridden previous download for member: "
                 + download.getPartner() + ". " + download);
         }
 
@@ -183,13 +186,13 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
         assert isUsingPartRequests();
 
         if (pendingPartRecordFrom != null) {
-            // logFine("Pending FPR from: " + pendingPartRecordFrom);
+            // log.fine("Pending FPR from: " + pendingPartRecordFrom);
 
             // Check if we really need to do this first
             if (!pendingPartRecordFrom.isBroken()) {
                 return;
             }
-            logSevere("Source should have been removed: "
+            log.severe("Source should have been removed: "
                 + pendingPartRecordFrom);
             pendingPartRecordFrom = null;
         }
@@ -197,12 +200,12 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
             download = findPartRecordSource(null);
         }
 
-        // logFine("Selected FPR source: " + download);
+        // log.fine("Selected FPR source: " + download);
 
         if (download != null) {
             assert Util.useDeltaSync(getController(), download.getPartner());
 
-            logFine("Requesting Filepartsrecord from " + download);
+            log.fine("Requesting Filepartsrecord from " + download);
             setTransferState(TransferState.FILERECORD_REQUEST);
             pendingPartRecordFrom = download;
             pendingPartRecordFrom.requestFilePartsRecord();
@@ -212,7 +215,7 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
     }
 
     protected void sendPartRequests() throws BrokenDownloadException {
-        // logFine("Sending part requests: " +
+        // log.fine("Sending part requests: " +
         // filePartsState.countPartStates(filePartsState.getRange(),
         // PartState.NEEDED));
 

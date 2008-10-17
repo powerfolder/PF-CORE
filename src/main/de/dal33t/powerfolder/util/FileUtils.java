@@ -19,6 +19,10 @@
  */
 package de.dal33t.powerfolder.util;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.util.os.OSUtil;
+
 import java.awt.Desktop;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -33,16 +37,16 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.RandomAccessFile;
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
-import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.util.os.OSUtil;
-
 public class FileUtils {
+
+    private static Logger log = Logger.getLogger(FileUtils.class.getName());
 
     private static final int BYTE_CHUNK_SIZE = 8192;
 
@@ -51,7 +55,6 @@ public class FileUtils {
 
     // no instances
     private FileUtils() {
-
     }
 
     /**
@@ -272,8 +275,7 @@ public class FileUtils {
                 return;
             }
         } catch (NoClassDefFoundError e) {
-            Loggable.logFineStatic(FileUtils.class,
-                "OpenFile() fallback for old JVM.");
+            log.fine("OpenFile() fallback for old JVM.");
         }
 
         // Fallback
@@ -286,7 +288,7 @@ public class FileUtils {
             Runtime.getRuntime().exec(
                 "rundll32 url.dll,FileProtocolHandler " + url.toString());
         } else {
-            Loggable.logSevereStatic(FileUtils.class, "Unable to start file '"
+            log.severe("Unable to start file '"
                 + file + "', system not supported");
         }
     }
@@ -307,10 +309,10 @@ public class FileUtils {
             proc.waitFor();
             return true;
         } catch (IOException e) {
-            Loggable.logFinerStatic(FileUtils.class, e);
+            log.log(Level.FINER, "IOException", e);
             return false;
         } catch (InterruptedException e) {
-            Loggable.logFinerStatic(FileUtils.class, e);
+            log.log(Level.FINER, "InterruptedException", e);
             return false;
         }
     }
@@ -331,10 +333,10 @@ public class FileUtils {
             proc.waitFor();
             return true;
         } catch (IOException e) {
-            Loggable.logFinerStatic(FileUtils.class, e);
+            log.log(Level.FINER, "IOException", e);
             return false;
         } catch (InterruptedException e) {
-            Loggable.logFinerStatic(FileUtils.class, e);
+            log.log(Level.FINER, "InterruptedException", e);
             return false;
         }
     }
@@ -362,10 +364,10 @@ public class FileUtils {
             proc.waitFor();
             return true;
         } catch (IOException e) {
-            Loggable.logFinerStatic(FileUtils.class, e);
+            log.log(Level.FINER, "IOException", e);
             return false;
         } catch (InterruptedException e) {
-            Loggable.logFinerStatic(FileUtils.class, e);
+            log.log(Level.FINER, "InterruptedException", e);
             return false;
         }
     }
@@ -474,8 +476,7 @@ public class FileUtils {
                 String herePath = hereFile.getAbsolutePath();
                 File powerFolderFile = new File(herePath, "PowerFolder.exe");
                 if (!powerFolderFile.exists()) {
-                    Loggable.logSevereStatic(FileUtils.class,
-                        "Could not find PowerFolder.exe at "
+                    log.severe("Could not find PowerFolder.exe at "
                             + powerFolderFile.getAbsolutePath());
                     return;
                 }
@@ -497,8 +498,7 @@ public class FileUtils {
                 // Now need to set folder as system for desktop.ini to work.
                 makeSystemOnWindows(directory);
             } catch (IOException e) {
-                Loggable.logSevereStatic(FileUtils.class,
-                    "Problem writing Desktop.ini file(s)", e);
+                log.log(Level.SEVERE, "Problem writing Desktop.ini file(s)", e);
             } finally {
                 if (pw != null) {
                     try {

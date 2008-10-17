@@ -19,19 +19,6 @@
  */
 package de.dal33t.powerfolder.ui.folder;
 
-import java.awt.EventQueue;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.swing.ListSelectionModel;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
-import javax.swing.table.TableModel;
-
 import de.dal33t.powerfolder.DiskItem;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
@@ -47,6 +34,19 @@ import de.dal33t.powerfolder.util.compare.DiskItemComparator;
 import de.dal33t.powerfolder.util.compare.ReverseComparator;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
+import javax.swing.ListSelectionModel;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
+import javax.swing.table.TableModel;
+import java.awt.EventQueue;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.logging.Logger;
+
 /**
  * Maps a Directory to a tablemodel, optional uses a recursive list (all the
  * files in the sub directories), uses a FileFilter model to filter the file
@@ -58,6 +58,8 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
 public class DirectoryTableModel extends PFComponent implements TableModel,
     SortedTableModel
 {
+
+    private static final Logger log = Logger.getLogger(DirectoryTableModel.class.getName());
 
     private Set<TableModelListener> tableListener = new HashSet<TableModelListener>();
     private Directory directory;
@@ -279,7 +281,7 @@ public class DirectoryTableModel extends PFComponent implements TableModel,
 
             }
             if (rowIndex >= displayList.size() || rowIndex < 0) {
-                logSevere(
+                log.severe(
                     "Illegal access. want to get row " + rowIndex + ", have "
                         + displayList.size());
                 return null;
@@ -376,7 +378,7 @@ public class DirectoryTableModel extends PFComponent implements TableModel,
      * Re-sorts the file list with the new comparator only if comparator differs
      * from old one
      * 
-     * @param newComparator
+     * @param newComparatorType
      * @return if the table was freshly sorted
      */
     public boolean sortBy(int newComparatorType, boolean now) {

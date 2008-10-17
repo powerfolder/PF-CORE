@@ -19,6 +19,34 @@
  */
 package de.dal33t.powerfolder.ui.dialog;
 
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.factories.Borders;
+import com.jgoodies.forms.factories.ButtonBarFactory;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
+import de.dal33t.powerfolder.Constants;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.widget.LinkLabel;
+import de.dal33t.powerfolder.util.BrowserLauncher;
+import de.dal33t.powerfolder.util.ManuallyInvokedUpdater;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
+import de.dal33t.powerfolder.util.ui.TextLinesPanelBuilder;
+import org.apache.commons.lang.StringUtils;
+
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.KeyStroke;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.TitledBorder;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
@@ -37,43 +65,16 @@ import java.util.Date;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
-
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.KeyStroke;
-import javax.swing.border.CompoundBorder;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.TitledBorder;
-
-import org.apache.commons.lang.StringUtils;
-
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.factories.Borders;
-import com.jgoodies.forms.factories.ButtonBarFactory;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-
-import de.dal33t.powerfolder.Constants;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.PreferencesEntry;
-import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.ui.widget.LinkLabel;
-import de.dal33t.powerfolder.util.BrowserLauncher;
-import de.dal33t.powerfolder.util.ManuallyInvokedUpdater;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
-import de.dal33t.powerfolder.util.ui.TextLinesPanelBuilder;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.16 $
  */
 public class AboutDialog extends PFUIComponent {
+
+    private static final Logger log = Logger.getLogger(AboutDialog.class.getName());
 
     // read from jar manifest
     private String buildDate;
@@ -370,7 +371,7 @@ public class AboutDialog extends PFUIComponent {
             try {
                 BrowserLauncher.openURL(Constants.BUG_REPORT_URL);
             } catch (IOException e1) {
-                logSevere(e1);
+                log.log(Level.SEVERE, "IOException", e1);
             }
         }
 
@@ -449,7 +450,7 @@ public class AboutDialog extends PFUIComponent {
             Manifest mf = file.getManifest();
             Attributes attr = mf.getMainAttributes();
 
-            logFine(attr.getValue("BuildDateTime"));
+            log.fine(attr.getValue("BuildDateTime"));
 
             String buildDateTimeString = attr.getValue("BuildDateTime");
             SimpleDateFormat parser = new SimpleDateFormat();
@@ -468,7 +469,7 @@ public class AboutDialog extends PFUIComponent {
 
             file.close();
         } catch (Exception e) {
-            logSevere("Build date/time works only from jar.");
+            log.severe("Build date/time works only from jar.");
             buildTime = "n/a";
             buildDate = "n/a";
         }

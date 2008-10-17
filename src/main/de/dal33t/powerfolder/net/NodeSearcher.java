@@ -19,11 +19,6 @@
 */
 package de.dal33t.powerfolder.net;
 
-import java.lang.Thread.State;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
-
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
@@ -35,6 +30,13 @@ import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.message.SearchNodeRequest;
 import de.dal33t.powerfolder.util.Reject;
 
+import java.lang.Thread.State;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  * This class searches nodes matching a given pattern.
  * <p>
@@ -44,6 +46,8 @@ import de.dal33t.powerfolder.util.Reject;
  * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
  */
 public class NodeSearcher extends PFComponent {
+
+    private static final Logger log = Logger.getLogger(NodeSearcher.class.getName());
     private String pattern;
     /** indicates that we want to interrupt a search */
     private boolean stopSearching;
@@ -67,7 +71,7 @@ public class NodeSearcher extends PFComponent {
      * dispatcher thread!)
      * 
      * @param controller
-     * @param thePattern
+     * @param pattern
      * @param resultListModel
      *            the list that will contain the results of the search.
      * @param ignoreFriends
@@ -121,7 +125,7 @@ public class NodeSearcher extends PFComponent {
             }
         } catch (InterruptedException ie) {
             // This might mean that 2 Threads called cancelSearch()
-            logSevere(ie);
+            log.log(Level.SEVERE, "InterruptedException", ie);
         }
     }
 
@@ -247,7 +251,7 @@ public class NodeSearcher extends PFComponent {
                     try {
                         searchThread.wait();
                     } catch (InterruptedException e) {
-                        logWarning("Search was interrupted", e);
+                        log.log(Level.WARNING, "Search was interrupted", e);
                         break;
                     }
                 }

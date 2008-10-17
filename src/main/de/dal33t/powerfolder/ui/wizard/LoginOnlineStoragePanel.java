@@ -19,39 +19,38 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.List;
-
-import javax.swing.Icon;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JPasswordField;
-import javax.swing.JTextField;
-
-import jwf.WizardPanel;
-
-import org.apache.commons.lang.StringUtils;
-
 import com.jgoodies.binding.adapter.BasicComponentFactory;
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
-import de.dal33t.powerfolder.util.LogDispatch;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
+import jwf.WizardPanel;
+import org.apache.commons.lang.StringUtils;
+
+import javax.swing.Icon;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class LoginOnlineStoragePanel extends PFWizardPanel {
+
+    private static final Logger log = Logger.getLogger(LoginOnlineStoragePanel.class.getName());
 
     private ServerClient client;
 
@@ -116,7 +115,7 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
                     .getTranslation("online_storage.account_data"));
             }
         } catch (Exception e) {
-            LogDispatch.logSevere(LoginOnlineStoragePanel.class.getName(),
+            log.log(Level.SEVERE,
                 "Problem logging in", e);
             list.add(Translation.getTranslation("online_storage.general_error",
                 e.getMessage()));

@@ -19,10 +19,12 @@
 */
 package de.dal33t.powerfolder.util.ui;
 
-import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.util.Translation;
 
 import javax.swing.Icon;
 import javax.swing.JButton;
@@ -30,14 +32,11 @@ import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.KeyStroke;
-
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.util.Translation;
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.util.logging.Logger;
 
 /**
  * A basic class for all dialogs. It offers the posibility to set and icon and
@@ -52,6 +51,9 @@ import de.dal33t.powerfolder.util.Translation;
  * @version $Revision: 1.3 $
  */
 public abstract class BaseDialog extends PFUIComponent {
+
+    private static final Logger log = Logger.getLogger(BaseDialog.class.getName());
+
     private JDialog dialog;
     private boolean modal;
     private boolean border;
@@ -176,7 +178,7 @@ public abstract class BaseDialog extends PFUIComponent {
      * Shows (and builds) the dialog
      */
     public final void open() {
-        logFiner("Open called: " + this);
+        log.finer("Open called: " + this);
         getUIComponent().setVisible(true);
     }
 
@@ -184,7 +186,7 @@ public abstract class BaseDialog extends PFUIComponent {
      * Disposes the dialog.
      */
     public final void close() {
-        logFiner("Close called: " + this);
+        log.finer("Close called: " + this);
         if (dialog != null) {
             dialog.dispose();
             dialog = null;
@@ -233,7 +235,7 @@ public abstract class BaseDialog extends PFUIComponent {
      */
     protected final JDialog getUIComponent() {
         if (dialog == null) {
-            logFiner("Building ui component for " + this);
+            log.finer("Building ui component for " + this);
             dialog = new JDialog(getUIController().getMainFrame()
                 .getUIComponent(), getTitle(), modal);
             dialog.setResizable(allowResize());            

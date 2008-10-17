@@ -19,11 +19,16 @@
 */
 package de.dal33t.powerfolder.util;
 
-import java.util.*;
-
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.message.MessageListener;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * Helper class to handle message listener/firering
@@ -32,23 +37,8 @@ import de.dal33t.powerfolder.message.MessageListener;
  * @version $Revision: 1.8 $
  */
 public class MessageListenerSupport {
-    private Loggable source;
     // Listeners for incoming messages
     private Map<Class, Collection<MessageListener>> messageListener;
-
-    /**
-     * Initializes the the message listener support with a logger from the
-     * parent
-     * 
-     * @param source
-     *            the source
-     */
-    public MessageListenerSupport(Loggable source) {
-        this.source = source;
-        if (this.source == null) {
-            throw new NullPointerException("Source in null");
-        }
-    }
 
     // Message listener de-/registering ***************************************
 
@@ -91,7 +81,7 @@ public class MessageListenerSupport {
         }
         // String msgType = (messageType == null) ? "all messages" : messageType
         // .getName();
-        // source.logFiner(
+        // source.log.finer(
         // "Added message listener (" + aListener + ") for " + msgType);
     }
 
@@ -189,7 +179,7 @@ public class MessageListenerSupport {
         }
 
         if (lSpcCount > 0 || lGenCount > 0) {
-            // theSource.logFiner(
+            // theSource.log.finer(
             // "Deligated message (" + message.getClass().getName() + ") to "
             // + lGenCount + " general and " + lSpcCount
             // + " special message listener");

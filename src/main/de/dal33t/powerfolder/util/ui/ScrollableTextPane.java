@@ -19,15 +19,20 @@
 */
 package de.dal33t.powerfolder.util.ui;
 
-import de.dal33t.powerfolder.util.Loggable;
 
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.JEditorPane;
+import javax.swing.JScrollPane;
+import javax.swing.JViewport;
+import javax.swing.Timer;
 import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
-
-import javax.swing.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 /**
@@ -37,6 +42,8 @@ import javax.swing.*;
  * @version $Revision: 1.5 $
  */
 public class ScrollableTextPane extends JScrollPane {
+
+    private static final Logger log = Logger.getLogger(ScrollableTextPane.class.getName());
 
     /** Timer to control the scrolling */
     protected Timer timer;
@@ -71,7 +78,7 @@ public class ScrollableTextPane extends JScrollPane {
                     timer.setDelay(30);
                     scroll();
                 } catch (Throwable t) {
-                    Loggable.logSevereStatic(ScrollableTextPane.class, t);
+                    log.log(Level.SEVERE, "Throwable", t);
                 }
             }
         };

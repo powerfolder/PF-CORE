@@ -19,11 +19,11 @@
 */
 package de.dal33t.powerfolder.util.delta;
 
-import java.io.Serializable;
-
 import de.dal33t.powerfolder.util.Partitions;
 import de.dal33t.powerfolder.util.Range;
-import de.dal33t.powerfolder.util.Loggable;
+
+import java.io.Serializable;
+
 
 /**
  * Manages the parts of a file which contain data or not.
@@ -34,7 +34,8 @@ import de.dal33t.powerfolder.util.Loggable;
  *
  */
 public class FilePartsState implements Serializable {
-	private static final long serialVersionUID = 1L;
+
+    private static final long serialVersionUID = 1L;
 
 	public static enum PartState {
 		NEEDED, // Not available and not yet requested
@@ -120,10 +121,5 @@ public class FilePartsState implements Serializable {
 			return false;
 		}
 		return r.equals(parts.getPartionedRange());
-	}
-	
-	public synchronized void debugOutput(Class clazz) {
-	    Loggable.logInfoStatic(clazz, "FilePartsState:");
-		parts.logRanges(clazz);
 	}
 }

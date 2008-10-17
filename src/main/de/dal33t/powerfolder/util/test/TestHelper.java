@@ -19,6 +19,15 @@
  */
 package de.dal33t.powerfolder.util.test;
 
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.transfer.DownloadManager;
+import de.dal33t.powerfolder.transfer.Upload;
+import de.dal33t.powerfolder.util.Reject;
+import junit.framework.Assert;
+import junit.framework.TestCase;
+import org.apache.commons.io.FileUtils;
+
 import java.awt.EventQueue;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -43,25 +52,13 @@ import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
 
-import junit.framework.Assert;
-import junit.framework.TestCase;
-
-import org.apache.commons.io.FileUtils;
-
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.transfer.DownloadManager;
-import de.dal33t.powerfolder.transfer.Upload;
-import de.dal33t.powerfolder.util.Loggable;
-import de.dal33t.powerfolder.util.Reject;
-
 /**
  * Offers several helping methods for junit tests.
  * 
  * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
-public class TestHelper extends Loggable {
+public class TestHelper {
     /**
      * FIXME: Change to "server.powerfolder.com" after successfully migration.
      */
@@ -224,7 +221,7 @@ public class TestHelper extends Loggable {
                     FileUtils.forceDelete(file);
                 }
             } catch (IOException e) {
-                // logSevere(e);
+                // log.log(Level.SEVERE, "IOException", e);
             }
         }
         if (0 != testDir.listFiles().length) {

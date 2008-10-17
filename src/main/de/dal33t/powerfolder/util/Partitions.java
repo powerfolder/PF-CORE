@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.util;
 
 import java.io.Serializable;
+import java.util.logging.Logger;
 
 /**
  * Helper class representing a set of ranges containing values.
@@ -32,9 +33,13 @@ import java.io.Serializable;
  *
  */
 public class Partitions<T> implements Serializable {
-	private static final long serialVersionUID = 1L;
 
-	private Partitions<T> parent, a, b;
+    private static final Logger log = Logger.getLogger(Partitions.class.getName());
+    private static final long serialVersionUID = 1L;
+
+	private Partitions<T> parent;
+    private Partitions<T> a;
+    private Partitions<T> b;
 
 	private Range range;
 	private T content;
@@ -145,10 +150,12 @@ public class Partitions<T> implements Serializable {
 
 		Range ra = a.search(r, val);
 		Range rb = b.search(r, val);
-		if (ra == null)
-			return rb;
-		if (rb == null)
-			return ra;
+		if (ra == null) {
+            return rb;
+        }
+		if (rb == null) {
+            return ra;
+        }
 		if (ra.getEnd() + 1 == rb.getStart()) {
 			return Range.getRangeByNumbers(ra.getStart(), rb.getEnd());
 		}
@@ -172,7 +179,7 @@ public class Partitions<T> implements Serializable {
 
 	public void logRanges(Class clazz) {
 		if (isLeaf()) {
-			Loggable.logInfoStatic(clazz, getPartionedRange() + " with value " + content);
+			log.info(clazz.getName() + ' ' + getPartionedRange() + " with value " + content);
 			return;
 		}
 		a.logRanges(clazz);

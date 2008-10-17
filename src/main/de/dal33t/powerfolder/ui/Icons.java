@@ -19,6 +19,20 @@
  */
 package de.dal33t.powerfolder.ui;
 
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.disk.Directory;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.transfer.DownloadManager;
+import de.dal33t.powerfolder.transfer.Transfer;
+import de.dal33t.powerfolder.transfer.Upload;
+import de.dal33t.powerfolder.util.Reject;
+
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.filechooser.FileSystemView;
+import javax.swing.plaf.IconUIResource;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsConfiguration;
@@ -41,22 +55,9 @@ import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.filechooser.FileSystemView;
-import javax.swing.plaf.IconUIResource;
-
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.disk.Directory;
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.transfer.DownloadManager;
-import de.dal33t.powerfolder.transfer.Transfer;
-import de.dal33t.powerfolder.transfer.Upload;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.Loggable;
 
 /**
  * Contains all icons for the powerfolder application
@@ -65,6 +66,8 @@ import de.dal33t.powerfolder.util.Loggable;
  * @version $Revision: 1.74 $
  */
 public class Icons {
+
+    private static final Logger log = Logger.getLogger(Icons.class.getName());
 
     private static Properties iconProperties;
     private static final String ICON_PROPERTIES_FILENAME = "Icons.properties";
@@ -308,7 +311,7 @@ public class Icons {
      */
     protected static final Icon getIcon(String name) {
         if (name == null) {
-            Loggable.logSevereStatic(Icons.class, "Icon name is null");
+            log.severe("Icon name is null");
             return null;
         }
         if (name.length() <= 6) { // required prefix = icons/
@@ -318,7 +321,7 @@ public class Icons {
         URL iconURL = Thread.currentThread().getContextClassLoader()
             .getResource(name);
         if (iconURL == null) {
-            Loggable.logSevereStatic(Icons.class, "Icon not found '" + name + '\'');
+            log.severe("Icon not found '" + name + '\'');
             return null;
         }
 
@@ -358,8 +361,7 @@ public class Icons {
                 buffered = new BufferedInputStream(in);
                 iconProperties.load(buffered);
             } catch (IOException ioe) {
-                Loggable.logSevereStatic(Icons.class,
-                        "Cannot read: " + ICON_PROPERTIES_FILENAME, ioe);
+                log.log(Level.SEVERE, "Cannot read: " + ICON_PROPERTIES_FILENAME, ioe);
             } finally {
                 if (buffered != null) {
                     try {
@@ -628,13 +630,12 @@ public class Icons {
                     Icon icon = FileSystemView.getFileSystemView()
                         .getSystemIcon(tempFile);
                     if (!tempFile.delete()) {
-                        Loggable.logWarningStatic(Icons.class,"Failed to delete temporary file.");
+                        log.warning("Failed to delete temporary file.");
                         tempFile.deleteOnExit();
                     }
                     return icon;
                 } else {
-                    Loggable.logSevereStatic(Icons.class,
-                            "Couldn't create temporary file for icon retrieval for extension:'"
+                    log.severe("Couldn't create temporary file for icon retrieval for extension:'"
                             + extension + '\'');
                 }
             }
@@ -837,8 +838,7 @@ public class Icons {
                 Icon inner = (Icon) delegateField.get(iconUIResource);
                 return getImageFromIcon(inner);
             } catch (Exception e) {
-                Loggable.logSevereStatic(Icons.class,
-                        "Could not get icon from IconUIResource", e);
+                log.log(Level.SEVERE, "Could not get icon from IconUIResource", e);
             }
         }
 

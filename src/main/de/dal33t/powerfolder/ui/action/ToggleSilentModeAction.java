@@ -19,17 +19,17 @@
 */
 package de.dal33t.powerfolder.ui.action;
 
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.Toolbar;
+
+import javax.swing.Action;
+import javax.swing.ImageIcon;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-
-import javax.swing.*;
-
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PreferencesEntry;
-import de.dal33t.powerfolder.util.Loggable;
-import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.ui.Toolbar;
+import java.util.logging.Logger;
 
 /**
  * Action which enables/disables silent mode
@@ -38,6 +38,8 @@ import de.dal33t.powerfolder.ui.Toolbar;
  * @version $Revision: 1.4 $
  */
 public class ToggleSilentModeAction extends BaseAction {
+
+    private static final Logger log = Logger.getLogger(ToggleSilentModeAction.class.getName());
 
     private boolean smallToolbar;
 
@@ -89,8 +91,7 @@ public class ToggleSilentModeAction extends BaseAction {
     public void actionPerformed(ActionEvent e) {
         // Just toggle
         getController().setSilentMode(!getController().isSilentMode());
-        Loggable.logFinerStatic(ToggleSilentModeAction.class,
-                "Is silentmode: " + getController().isSilentMode());
+        log.finer("Is silentmode: " + getController().isSilentMode());
     }
 
 }

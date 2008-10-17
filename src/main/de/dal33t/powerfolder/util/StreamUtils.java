@@ -26,6 +26,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.logging.Logger;
 
 /**
  * Class containing utility methods for working with streams.
@@ -34,6 +35,8 @@ import java.io.OutputStream;
  * @version $Revision: 1.5 $
  */
 public class StreamUtils {
+
+    private static final Logger log = Logger.getLogger(StreamUtils.class.getName());
 
     private static final int BUFFER_SIZE = 1024;
 
@@ -143,7 +146,7 @@ public class StreamUtils {
             try {
                 nRead = in.read(buffer, offset + nTotalRead, size - nTotalRead);
             } catch (IndexOutOfBoundsException e) {
-                Loggable.logSevereStatic(StreamUtils.class, "buffer.lenght: " + buffer.length + ", offset");
+                log.severe("buffer.length: " + buffer.length + ", offset");
                 throw e;
             }
             if (nRead < 0) {

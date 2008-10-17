@@ -22,6 +22,8 @@ package de.dal33t.powerfolder.util;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Timer that does not get canceled when any timer task throws an exception.
@@ -30,6 +32,8 @@ import java.util.TimerTask;
  * @version $Revision: 1.5 $
  */
 public class WrappingTimer extends Timer {
+
+    private static final Logger log = Logger.getLogger(WrappingTimer.class.getName());
 
     // Construction ***********************************************************
 
@@ -117,7 +121,7 @@ public class WrappingTimer extends Timer {
             try {
                 deligate.run();
             } catch (Throwable e) {
-                Loggable.logSevereStatic(WrappingTimer.class, "Exception in timertask: " + deligate, e);
+                log.log(Level.SEVERE, "Exception in timertask: " + deligate, e);
             }
         }
     }

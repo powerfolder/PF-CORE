@@ -19,14 +19,16 @@
 */
 package de.dal33t.powerfolder.ui.folder;
 
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.event.FileNameProblemEvent;
 import de.dal33t.powerfolder.event.FileNameProblemHandler;
+
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * shows a dialog to solve problems with filenames. may edit the scan result
@@ -35,6 +37,9 @@ import de.dal33t.powerfolder.event.FileNameProblemHandler;
 public class FileNameProblemHandlerDefaultImpl extends PFUIComponent implements
     FileNameProblemHandler
 {
+
+    private static final Logger log = Logger.getLogger(FileNameProblemHandlerDefaultImpl.class.getName());
+
     private Lock dialogOpenLock = new ReentrantLock(); 
     
     public FileNameProblemHandlerDefaultImpl(Controller controller) {
@@ -44,8 +49,8 @@ public class FileNameProblemHandlerDefaultImpl extends PFUIComponent implements
     public void fileNameProblemsDetected(
         FileNameProblemEvent fileNameProblemEvent)
     {
-        if (isLogFine()) {
-            logFine(
+        if (log.isLoggable(Level.FINE)) {
+            log.fine(
                 fileNameProblemEvent.getFolder() + " "
                     + fileNameProblemEvent.getProblems().size()
                     + " problematic files");

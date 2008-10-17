@@ -19,8 +19,10 @@
 */
 package de.dal33t.powerfolder.ui.chat;
 
-import java.awt.Color;
-import java.awt.Rectangle;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.util.PFUIPanel;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -32,11 +34,10 @@ import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
 import javax.swing.text.StyledDocument;
-
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.util.PFUIPanel;
-import de.dal33t.powerfolder.util.ui.UIUtil;
+import java.awt.Color;
+import java.awt.Rectangle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * A simple chat functionality. Base class. TODO: make styled messages
@@ -45,6 +46,8 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * @version $Revision: 1.2 $
  */
 public abstract class ChatPanel extends PFUIPanel {
+
+    private static final Logger log = Logger.getLogger(ChatPanel.class.getName());
 
     /** The Input field where the user can enter chatlines */
     JTextArea chatInput;
@@ -82,7 +85,7 @@ public abstract class ChatPanel extends PFUIPanel {
         try {
             doc.insertString(0, "", null);
         } catch (BadLocationException ble) {
-            logWarning("Couldn't insert initial text into text pane.");
+            log.warning("Couldn't insert initial text into text pane.");
         }
         scrollPaneInput = new JScrollPane(chatInput,
             JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
@@ -147,7 +150,7 @@ public abstract class ChatPanel extends PFUIPanel {
                 }
             }
         } catch (BadLocationException ble) {
-            logWarning("could not set chat text", ble);
+            log.log(Level.WARNING, "could not set chat text", ble);
         }
 
         Runnable runner = new Runnable() {
@@ -160,7 +163,7 @@ public abstract class ChatPanel extends PFUIPanel {
                     try {
                         doc.insertString(0, "\n", null);
                     } catch (BadLocationException ble) {
-                        logWarning("could not set chat text", ble);
+                        log.log(Level.WARNING, "could not set chat text", ble);
                     }
                 }
 

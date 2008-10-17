@@ -19,15 +19,20 @@
 */
 package de.dal33t.powerfolder.ui.preferences;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.util.Enumeration;
-import java.util.StringTokenizer;
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.factories.Borders;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.net.ConnectionListener;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.os.Win32.FirewallUtil;
+import de.dal33t.powerfolder.util.ui.LANList;
+import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
+import org.apache.commons.lang.StringUtils;
 
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -39,25 +44,21 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
-
-import org.apache.commons.lang.StringUtils;
-
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.factories.Borders;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-
-import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.PreferencesEntry;
-import de.dal33t.powerfolder.net.ConnectionListener;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.os.Win32.FirewallUtil;
-import de.dal33t.powerfolder.util.ui.LANList;
-import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.util.Enumeration;
+import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
+
+    private static final Logger log = Logger.getLogger(AdvancedSettingsTab.class.getName());
     private JPanel panel;
     private JTextField advPort;
     private JComboBox bindAddress;
@@ -75,7 +76,7 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
     private JCheckBox useSwarmingOnLanCheckBox;
     private JCheckBox useSwarmingOnInternetCheckBox;
 
-    boolean needsRestart = false;
+    boolean needsRestart;
 
     public AdvancedSettingsTab(Controller controller) {
         super(controller);
@@ -136,7 +137,7 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
                 }
             }
         } catch (SocketException e1) {
-            logSevere(e1);
+            log.log(Level.SEVERE, "SocketException", e1);
         }
 
         ifDescr = new JTextArea(3, 20);
@@ -376,7 +377,7 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
 
             ConfigurationEntry.NET_BIND_PORT.setValue(getController(), port);
         } catch (NumberFormatException e) {
-            logWarning("Unparsable port number");
+            log.warning("Unparsable port number");
         }
         String cfgBind = ConfigurationEntry.NET_BIND_ADDRESS
             .getValue(getController());

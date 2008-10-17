@@ -19,14 +19,6 @@
 */
 package de.dal33t.powerfolder.ui.transfer;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.*;
-
-import javax.swing.SwingUtilities;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
-import javax.swing.table.TableModel;
-
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.event.TransferAdapter;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
@@ -34,13 +26,28 @@ import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.transfer.TransferProblem;
-import de.dal33t.powerfolder.ui.model.TransferManagerModel;
 import de.dal33t.powerfolder.ui.model.SortedTableModel;
+import de.dal33t.powerfolder.ui.model.TransferManagerModel;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.compare.ReverseComparator;
 import de.dal33t.powerfolder.util.compare.TransferComparator;
 import de.dal33t.powerfolder.util.ui.UIUtil;
+
+import javax.swing.SwingUtilities;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
+import javax.swing.table.TableModel;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.TimerTask;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * A Tablemodel adapter which acts upon a transfermanager.
@@ -50,6 +57,8 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  */
 public class DownloadsTableModel extends PFComponent implements TableModel,
         SortedTableModel {
+
+    private static final Logger log = Logger.getLogger(DownloadsTableModel.class.getName());
     private static final int COLTYPE = 0;
     private static final int COLFILE = 1;
     private static final int COLPROGRESS = 2;
@@ -83,8 +92,6 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
 
     /**
      * Initalizes the model upon a transfer manager
-     * 
-     * @param tm
      */
     public void initialize() {
         TransferManager tm = model.getTransferManager();
@@ -158,7 +165,7 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
      * Re-sorts the file list with the new comparator only if comparator differs
      * from old one
      * 
-     * @param newComparator
+     * @param newComparatorType
      * @return if the table was freshly sorted
      */
     public boolean sortMe(int newComparatorType) {
@@ -285,7 +292,7 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
                 }
                 addOrUpdateDownload(dl);
             } else {
-                logSevere("Download not found in model: " + dl);
+                log.severe("Download not found in model: " + dl);
             }
             rowsUpdatedAll();
         }
@@ -363,7 +370,7 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
             if (index >= 0) {
                 downloads.remove(index);
             } else {
-                logSevere(
+                log.severe(
                     "Unable to remove download from tablemodel, not found: "
                         + download);
             }
@@ -414,13 +421,12 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
             try {
                 SwingUtilities.invokeAndWait(wrapper);
             } catch (InterruptedException e) {
-                logFiner("Interrupteed while updating downloadstable", e);
+                log.log(Level.FINER, "Interrupteed while updating downloadstable", e);
 
             } catch (InvocationTargetException e) {
-                logSevere("Unable to update downloadstable", e);
+                log.log(Level.FINER, "Unable to update downloadstable", e);
 
             }
-            // }
         }
     }
 
@@ -458,7 +464,7 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
 
     public Object getValueAt(int rowIndex, int columnIndex) {
         if (rowIndex >= downloads.size()) {
-            logSevere(
+            log.severe(
                 "Illegal rowIndex requested. rowIndex " + rowIndex
                     + ", downloads " + downloads.size());
             return null;
@@ -530,7 +536,7 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
      * Fires an modelevent to all listeners, that model has changed
      */
     private void modelChanged(final TableModelEvent e) {
-        // logFiner("Download tablemodel changed");
+        // log.finer("Download tablemodel changed");
         Runnable runner = new Runnable() {
             public void run() {
                 synchronized (listeners) {

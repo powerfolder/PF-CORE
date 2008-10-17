@@ -19,19 +19,18 @@
 */
 package de.dal33t.powerfolder.ui.action;
 
-import java.awt.event.ActionEvent;
-import java.io.File;
-import java.io.IOException;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Loggable;
-import de.dal33t.powerfolder.util.os.OSUtil;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
-import de.dal33t.powerfolder.util.ui.DialogFactory;
+
+import java.awt.event.ActionEvent;
+import java.io.File;
+import java.io.IOException;
+import java.util.logging.Logger;
 
 /**
  * Action to start a file, currently only available on windows systems.
@@ -41,6 +40,8 @@ import de.dal33t.powerfolder.util.ui.DialogFactory;
  * @version $Revision: 1.12 $
  */
 public class StartFileAction extends SelectionBaseAction {
+
+    private static final Logger log = Logger.getLogger(StartFileAction.class.getName());
 
     public StartFileAction(Controller controller, SelectionModel selectionModel)
     {
@@ -84,8 +85,7 @@ public class StartFileAction extends SelectionBaseAction {
                     if (fInfo.diskFileExists(getController())) {
                         File file = fInfo.getDiskFile(getController()
                             .getFolderRepository());
-                        Loggable.logFineStatic(StartFileAction.class,
-                            "Starting " + file.getAbsolutePath());
+                        log.fine("Starting " + file.getAbsolutePath());
                         try {
                             FileUtils.openFile(file);
                         } catch (IOException ex) {

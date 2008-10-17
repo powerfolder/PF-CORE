@@ -19,15 +19,15 @@
 */
 package de.dal33t.powerfolder.ui.dialog;
 
+import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.factories.ButtonBarFactory;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.binding.value.ValueModel;
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.ui.friends.FindUsersDialog;
 import de.dal33t.powerfolder.ui.model.NodesSelectTableModel;
 import de.dal33t.powerfolder.util.Translation;
@@ -43,11 +43,14 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Collection;
+import java.util.logging.Logger;
 
 /**
  * Dialog for selecting a number of users for the invite wizard.
  */
 public class NodesSelectDialog extends PFUIComponent {
+
+    private static final Logger log = Logger.getLogger(NodesSelectTableModel.class.getName());
 
     private ValueModel viaPowerFolderModel;
     private Collection<Member> viaPowerFolderMembers;
@@ -184,7 +187,7 @@ public class NodesSelectDialog extends PFUIComponent {
      * @return not used
      */
     public boolean open() {
-        logWarning("Opening download dialog");
+        log.warning("Opening download dialog");
         getUIComponent().setVisible(true);
         return true;
     }

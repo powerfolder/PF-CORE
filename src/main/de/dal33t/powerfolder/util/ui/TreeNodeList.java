@@ -26,7 +26,7 @@ import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
-import de.dal33t.powerfolder.util.Loggable;
+
 
 /**
  * A List which is accesible as treenode. Threadsafe.
@@ -37,7 +37,7 @@ import de.dal33t.powerfolder.util.Loggable;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.5 $
  */
-public class TreeNodeList extends Loggable implements MutableTreeNode {
+public class TreeNodeList implements MutableTreeNode {
     private TreeNode parent;
     private Object userObject;
     private Comparator comparator;

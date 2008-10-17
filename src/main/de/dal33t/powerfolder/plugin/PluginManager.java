@@ -19,6 +19,12 @@
 */
 package de.dal33t.powerfolder.plugin;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.util.Reject;
+import org.apache.commons.lang.StringUtils;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -26,16 +32,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.concurrent.CopyOnWriteArrayList;
-
-import org.apache.commons.lang.StringUtils;
-
-import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.util.Reject;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /** @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A> */
 public class PluginManager extends PFComponent {
+
+    private static final Logger log = Logger.getLogger(PluginManager.class.getName());
     private List<Plugin> plugins;
     private List<Plugin> disabledPlugins;
     private List<PluginManagerListener> listeners;
@@ -64,7 +67,7 @@ public class PluginManager extends PFComponent {
         if (plugins != null) {
             for (Plugin plugin : plugins) {
                 plugin.stop();
-                logFine(plugin.getName() + " stopped");
+                log.fine(plugin.getName() + " stopped");
             }
         }
         plugins.clear();
@@ -81,7 +84,7 @@ public class PluginManager extends PFComponent {
         if (StringUtils.isBlank(pluginsStr)) {
             return;
         }
-        logInfo("Initalizing plugins: " + pluginsStr);
+        log.info("Initalizing plugins: " + pluginsStr);
         StringTokenizer nizer = new StringTokenizer(pluginsStr, ",");
         while (nizer.hasMoreElements()) {
             String pluginClassName = nizer.nextToken().trim();
@@ -100,7 +103,7 @@ public class PluginManager extends PFComponent {
      */
     private void startEnabledPlugins() {
         for (Plugin plugin : plugins) {
-            logInfo("Starting plugin: " + plugin.getName());
+            log.info("Starting plugin: " + plugin.getName());
             plugin.start();
         }
     }
@@ -115,7 +118,7 @@ public class PluginManager extends PFComponent {
         if (StringUtils.isBlank(pluginsStr)) {
             return;
         }
-        logFine("Read disabled plugins: " + pluginsStr);
+        log.fine("Read disabled plugins: " + pluginsStr);
         StringTokenizer nizer = new StringTokenizer(pluginsStr, ",");
         while (nizer.hasMoreElements()) {
             String pluginClassName = nizer.nextToken();
@@ -124,7 +127,7 @@ public class PluginManager extends PFComponent {
             }
             Plugin plugin = initalizePlugin(pluginClassName);
             if (plugin != null) {
-                logFine("Found disabled plugin: " + plugin.getName());
+                log.fine("Found disabled plugin: " + plugin.getName());
                 disabledPlugins.add(plugin);
             }
         }
@@ -141,8 +144,8 @@ public class PluginManager extends PFComponent {
             throw new IllegalArgumentException("Plugin string blank");
         }
 
-        if (isLogFine()) {
-            logFine("Initializing plugin: " + pluginClassName);
+        if (log.isLoggable(Level.FINE)) {
+            log.fine("Initializing plugin: " + pluginClassName);
         }
         try {
             Class pluginClass = Class.forName(pluginClassName);
@@ -159,7 +162,7 @@ public class PluginManager extends PFComponent {
                     plugin = (Plugin) pluginClass.newInstance();
                 } catch (ClassCastException e2) {
                     // failed, not a Plugin to...!
-                    logSevere(
+                    log.log(Level.SEVERE,
                             "failed to load: "
                                 + pluginClassName
                                 + "does not extends AbstractPFPlugin or implements Plugin",
@@ -169,17 +172,17 @@ public class PluginManager extends PFComponent {
             }
             return plugin;
         } catch (ClassNotFoundException e) {
-            logSevere(
-                "Unable to find plugin class '" + pluginClassName + "'", e);
+            log.log(Level.SEVERE,
+                "Unable to find plugin class '" + pluginClassName + '\'', e);
         } catch (InstantiationException e) {
-            logSevere(
-                "Unable to find plugin class '" + pluginClassName + "'", e);
+            log.log(Level.SEVERE,
+                "Unable to find plugin class '" + pluginClassName + '\'', e);
         } catch (InvocationTargetException e) {
-            logSevere(
-                "Unable to find plugin class '" + pluginClassName + "'", e);
+            log.log(Level.SEVERE,
+                "Unable to find plugin class '" + pluginClassName + '\'', e);
         } catch (IllegalAccessException e) {
-            logSevere(
-                "Unable to find plugin class '" + pluginClassName + "'", e);
+            log.log(Level.SEVERE,
+                "Unable to find plugin class '" + pluginClassName + '\'', e);
         }
         return null;
     }
@@ -208,7 +211,7 @@ public class PluginManager extends PFComponent {
      *            new status of the plugin
      */
     public void setEnabled(Plugin plugin, boolean enabled) {
-        logFine("enable: " + enabled + " " + plugin);
+        log.fine("enable: " + enabled + ' ' + plugin);
         if (enabled) {
             disabledPlugins.remove(plugin);
             plugins.add(plugin);

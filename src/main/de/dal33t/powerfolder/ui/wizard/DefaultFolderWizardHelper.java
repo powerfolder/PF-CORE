@@ -19,7 +19,20 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
+import com.jgoodies.binding.adapter.BasicComponentFactory;
+import com.jgoodies.binding.value.ValueHolder;
+import com.jgoodies.binding.value.ValueModel;
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.clientserver.ServerClient;
+import de.dal33t.powerfolder.clientserver.ServerClientEvent;
+import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import static de.dal33t.powerfolder.disk.SyncProfile.AUTOMATIC_SYNCHRONIZATION;
+import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.security.Account;
 import static de.dal33t.powerfolder.ui.wizard.PFWizard.SUCCESS_PANEL;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.BACKUP_ONLINE_STOARGE;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.CREATE_DESKTOP_SHORTCUT;
@@ -28,37 +41,20 @@ import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDER_LOC
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SAVE_INVITE_LOCALLY;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SEND_INVIATION_AFTER_ATTRIBUTE;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SYNC_PROFILE_ATTRIBUTE;
-
-import java.awt.Color;
-import java.awt.Component;
-import java.io.File;
-
-import javax.swing.JCheckBox;
-import javax.swing.JComponent;
-
-import jwf.WizardContext;
-import jwf.WizardPanel;
-
-import com.jgoodies.binding.adapter.BasicComponentFactory;
-import com.jgoodies.binding.value.ValueHolder;
-import com.jgoodies.binding.value.ValueModel;
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PreferencesEntry;
-import de.dal33t.powerfolder.clientserver.ServerClient;
-import de.dal33t.powerfolder.clientserver.ServerClientEvent;
-import de.dal33t.powerfolder.clientserver.ServerClientListener;
-import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.util.Help;
 import de.dal33t.powerfolder.util.IdGenerator;
-import de.dal33t.powerfolder.util.LogDispatch;
 import de.dal33t.powerfolder.util.PFUIPanel;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
+import jwf.WizardContext;
+import jwf.WizardPanel;
+
+import javax.swing.JCheckBox;
+import javax.swing.JComponent;
+import java.awt.Color;
+import java.awt.Component;
+import java.io.File;
+import java.util.logging.Logger;
 
 /**
  * Helper class to setup the default folder during wizard steps
@@ -67,6 +63,8 @@ import de.dal33t.powerfolder.util.Translation;
  * @version $Revision$
  */
 public class DefaultFolderWizardHelper extends PFUIPanel {
+
+    private static final Logger log = Logger.getLogger(DefaultFolderWizardHelper.class.getName());
 
     private ServerClient client;
     private ServerClientListener listener;
@@ -138,8 +136,7 @@ public class DefaultFolderWizardHelper extends PFUIPanel {
 
             // If there is already a default folder for this account, use that
             FolderInfo accountFolder = account.getDefaultSynchronizedFolder();
-            LogDispatch.logInfo(DefaultFolderWizardHelper.class.getName(),
-                "Default synced folder on " + account.getUsername() + " is "
+            log.info("Default synced folder on " + account.getUsername() + " is "
                     + accountFolder);
 
             FolderInfo foInfo;

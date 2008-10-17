@@ -44,6 +44,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.logging.Logger;
 
 /**
  * A Information panel for a folder. Displays most important things
@@ -52,8 +53,10 @@ import java.beans.PropertyChangeListener;
  * @version $Revision: 1.9 $
  */
 public class FolderDetailsPanel extends PFUIComponent {
+
+    private static final Logger log = Logger.getLogger(FolderDetailsPanel.class.getName());
+
     private FolderInfo foInfo;
-    private Folder folder;
     private JPanel panel;
 
     private JLabel nameField;
@@ -128,7 +131,7 @@ public class FolderDetailsPanel extends PFUIComponent {
 
         // Get new folders
         this.foInfo = aFoInfo;
-        this.folder = aFoInfo.getFolder(getController());
+        Folder folder = aFoInfo.getFolder(getController());
 
         // Add update listener
         if (folder != null) {
@@ -191,7 +194,7 @@ public class FolderDetailsPanel extends PFUIComponent {
 
         public void statisticsCalculated(FolderEvent folderEvent) {
             // Update folder
-            logFiner("Statistic has been recalc on " + folderEvent);
+            log.finer("Statistic has been recalc on " + folderEvent);
             setFolder(foInfo);
         }
 

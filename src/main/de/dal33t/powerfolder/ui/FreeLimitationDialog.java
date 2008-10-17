@@ -19,26 +19,26 @@
 */
 package de.dal33t.powerfolder.ui;
 
-import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.IOException;
-
-import javax.swing.Icon;
-import javax.swing.JButton;
-
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.factories.ButtonBarFactory;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
 import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.BaseDialog;
+
+import javax.swing.Icon;
+import javax.swing.JButton;
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * A dialog that gets displayed when the free version hits its limits.
@@ -47,6 +47,8 @@ import de.dal33t.powerfolder.util.ui.BaseDialog;
  * @version $Revision: 1.5 $
  */
 public class FreeLimitationDialog extends BaseDialog {
+
+    private static final Logger log = Logger.getLogger(FreeLimitationDialog.class.getName());
 
     protected FreeLimitationDialog(Controller controller) {
         super(controller, false);
@@ -116,7 +118,7 @@ public class FreeLimitationDialog extends BaseDialog {
                 try {
                     BrowserLauncher.openURL(Constants.POWERFOLDER_PRO_URL);
                 } catch (IOException e1) {
-                    logSevere(e1);
+                    log.log(Level.SEVERE, "IOException", e1);
                 }
             }
         });
