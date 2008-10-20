@@ -19,6 +19,8 @@
 */
 package de.dal33t.powerfolder;
 
+import de.dal33t.powerfolder.util.logging.Loggable;
+
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 
@@ -30,7 +32,7 @@ import java.beans.PropertyChangeSupport;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.13 $
  */
-public abstract class PFComponent {
+public abstract class PFComponent extends Loggable {
     /** The controller instance this is linked to */
     private Controller controller;
     private PropertyChangeSupport changeSupport;

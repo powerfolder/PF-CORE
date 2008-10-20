@@ -36,7 +36,6 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.util.logging.Logger;
 
 /**
  * A basic class for all dialogs. It offers the posibility to set and icon and
@@ -51,8 +50,6 @@ import java.util.logging.Logger;
  * @version $Revision: 1.3 $
  */
 public abstract class BaseDialog extends PFUIComponent {
-
-    private static final Logger log = Logger.getLogger(BaseDialog.class.getName());
 
     private JDialog dialog;
     private boolean modal;
@@ -178,7 +175,7 @@ public abstract class BaseDialog extends PFUIComponent {
      * Shows (and builds) the dialog
      */
     public final void open() {
-        log.finer("Open called: " + this);
+        logFiner("Open called: " + this);
         getUIComponent().setVisible(true);
     }
 
@@ -186,7 +183,7 @@ public abstract class BaseDialog extends PFUIComponent {
      * Disposes the dialog.
      */
     public final void close() {
-        log.finer("Close called: " + this);
+        logFiner("Close called: " + this);
         if (dialog != null) {
             dialog.dispose();
             dialog = null;
@@ -235,7 +232,7 @@ public abstract class BaseDialog extends PFUIComponent {
      */
     protected final JDialog getUIComponent() {
         if (dialog == null) {
-            log.finer("Building ui component for " + this);
+            logFiner("Building ui component for " + this);
             dialog = new JDialog(getUIController().getMainFrame()
                 .getUIComponent(), getTitle(), modal);
             dialog.setResizable(allowResize());            
