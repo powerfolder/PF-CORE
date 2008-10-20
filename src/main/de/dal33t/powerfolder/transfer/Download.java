@@ -19,6 +19,17 @@
  */
 package de.dal33t.powerfolder.transfer;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import org.apache.commons.lang.Validate;
+
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
@@ -29,20 +40,11 @@ import de.dal33t.powerfolder.message.RequestDownload;
 import de.dal33t.powerfolder.message.RequestFilePartsRecord;
 import de.dal33t.powerfolder.message.RequestPart;
 import de.dal33t.powerfolder.message.StopUpload;
+import de.dal33t.powerfolder.transfer.swarm.TransferUtil;
 import de.dal33t.powerfolder.util.Range;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.delta.FilePartsRecord;
-import org.apache.commons.lang.Validate;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.Queue;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Download class, containing file and member.<BR>
@@ -53,7 +55,8 @@ import java.util.logging.Logger;
  */
 public class Download extends Transfer {
 
-    private static final Logger log = Logger.getLogger(Download.class.getName());
+    private static final Logger log = Logger
+        .getLogger(Download.class.getName());
     private static final long serialVersionUID = 100L;
     public static final int MAX_REQUESTS_QUEUED = 15;
 
@@ -219,7 +222,7 @@ public class Download extends Transfer {
         Reject.ifNull(chunk, "Chunk is null");
         checkFileInfo(chunk.file);
 
-        handler.post(new Runnable() {
+        TransferUtil.invokeLater(new Runnable() {
             public void run() {
                 getTransferManager().chunkAdded(Download.this, chunk);
             }
@@ -283,7 +286,7 @@ public class Download extends Transfer {
             getPartner().sendMessageAsynchron(new AbortDownload(getFile()),
                 null);
         }
-        handler.post(new Runnable() {
+        TransferUtil.invokeLater(new Runnable() {
             public void run() {
                 getController().getTransferManager().downloadAborted(
                     Download.this);
@@ -297,11 +300,10 @@ public class Download extends Transfer {
     public void setQueued(FileInfo fInfo) {
         Reject.ifNull(fInfo, "fInfo is null!");
         checkFileInfo(fInfo);
-        log.finer("DL queued by remote side: "
-            + this);
+        log.finer("DL queued by remote side: " + this);
         queued = true;
 
-        handler.post(new Runnable() {
+        TransferUtil.invokeLater(new Runnable() {
             public void run() {
                 getTransferManager()
                     .downloadQueued(Download.this, getPartner());
@@ -312,11 +314,9 @@ public class Download extends Transfer {
     @Override
     synchronized void setCompleted() {
         super.setCompleted();
-        if (Util.usePartRequests(getController(), getPartner())) {
-            getPartner().sendMessagesAsynchron(new StopUpload(getFile()));
-        }
+        getPartner().sendMessagesAsynchron(new StopUpload(getFile()));
 
-        handler.post(new Runnable() {
+        TransferUtil.invokeLater(new Runnable() {
 
             public void run() {
                 getTransferManager().setCompleted(Download.this);
@@ -350,7 +350,7 @@ public class Download extends Transfer {
             p.sendMessageAsynchron(new AbortDownload(getFile()), null);
         }
         shutdown();
-        handler.post(new Runnable() {
+        TransferUtil.invokeLater(new Runnable() {
             public void run() {
                 getTransferManager().downloadbroken(Download.this, problem,
                     message);
@@ -398,8 +398,8 @@ public class Download extends Transfer {
              * newerFileAvailable = getFile().isNewerAvailable(
              * getController().getFolderRepository()); if (newerFileAvailable) {
              * Loggable.logWarningStatic(Download.class, "Abort cause: Newer
-             * version available. " + getFile().toDetailString()); return true; //
-             * throw new RuntimeException("ABORT: " + this); }
+             * version available. " + getFile().toDetailString()); return true;
+             * // throw new RuntimeException("ABORT: " + this); }
              */
         }
 

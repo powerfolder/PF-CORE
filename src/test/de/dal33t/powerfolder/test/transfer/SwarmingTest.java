@@ -380,7 +380,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
             }
         };
 
-        TestHelper.waitForCondition(numC * 5 + 10, new ConditionWithMessage() {
+        TestHelper.waitForCondition(numC * 20 + 10, new ConditionWithMessage() {
             public boolean reached() {
                 boolean test = true;
                 int ups = 0, downs = 0;

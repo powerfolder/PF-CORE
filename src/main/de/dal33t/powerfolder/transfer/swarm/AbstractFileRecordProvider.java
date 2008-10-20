@@ -19,13 +19,6 @@
  */
 package de.dal33t.powerfolder.transfer.swarm;
 
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.util.ProgressObserver;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.delta.FilePartsRecord;
-import de.dal33t.powerfolder.util.delta.FilePartsRecordBuilder;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -34,21 +27,29 @@ import java.security.NoSuchAlgorithmException;
 import java.util.logging.Logger;
 import java.util.zip.Adler32;
 
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.util.ProgressObserver;
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.delta.FilePartsRecord;
+import de.dal33t.powerfolder.util.delta.FilePartsRecordBuilder;
+
 /**
- * Abstract {@link FileRecordManager} which can compute {@link FilePartsRecord}s
- * based on {@link FileInfo}s.
+ * Abstract {@link FileRecordProvider} which can compute {@link FilePartsRecord}
+ * s based on {@link FileInfo}s.
  * 
  * @author Dennis "Bytekeeper" Waldherr
  */
-public abstract class AbstractFileRecordManager implements FileRecordManager {
+public abstract class AbstractFileRecordProvider implements FileRecordProvider {
 
-    private static final Logger log = Logger.getLogger(AbstractFileRecordManager.class.getName());
+    private static final Logger log = Logger
+        .getLogger(AbstractFileRecordProvider.class.getName());
     private Controller controller;
 
     /**
      * @param controller
      */
-    public AbstractFileRecordManager(Controller controller) {
+    public AbstractFileRecordProvider(Controller controller) {
         Reject.ifNull(controller, "Controller is null!");
         this.controller = controller;
     }
@@ -89,9 +90,8 @@ public abstract class AbstractFileRecordManager implements FileRecordManager {
             }
             FilePartsRecord fileRecord = b.getRecord();
             long took = System.currentTimeMillis() - start;
-            log.info("Built file parts for "
-                + this + ". took " + took + "ms" + " while processing "
-                + processed + " bytes.");
+            log.info("Built file parts for " + this + ". took " + took + "ms"
+                + " while processing " + processed + " bytes.");
             return fileRecord;
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);

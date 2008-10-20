@@ -20,8 +20,6 @@
 package de.dal33t.powerfolder.transfer.swarm;
 
 import java.io.IOException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.light.FileInfo;
@@ -30,33 +28,16 @@ import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.delta.FilePartsRecord;
 
 /**
- * This {@link FileRecordManager} never caches or remembers
+ * This {@link FileRecordProvider} never caches or remembers
  * {@link FilePartsRecord}s. Every request performs a new computation of the
  * record.
  * 
  * @author Dennis "Bytekeeper" Waldherr
  */
-public class VolatileFileRecordManager extends AbstractFileRecordManager {
-    private ExecutorService service = Executors.newSingleThreadExecutor();
+public class VolatileFileRecordProvider extends AbstractFileRecordProvider {
 
-    public VolatileFileRecordManager(Controller controller) {
+    public VolatileFileRecordProvider(Controller controller) {
         super(controller);
-    }
-
-    public void retrieveRecord(final FileInfo fileInfo,
-        final Callback callback, final ProgressObserver obs)
-    {
-        Reject.noNullElements(fileInfo, callback);
-        service.execute(new Runnable() {
-            public void run() {
-                try {
-                    callback.recordAvailable(computeFilePartsRecord(fileInfo,
-                        obs));
-                } catch (IOException e) {
-                    callback.failed(e);
-                }
-            }
-        });
     }
 
     public FilePartsRecord retrieveRecord(FileInfo fileInfo,
@@ -67,7 +48,5 @@ public class VolatileFileRecordManager extends AbstractFileRecordManager {
     }
 
     public void shutdown() {
-        service.shutdown();
-        service = null;
     }
 }

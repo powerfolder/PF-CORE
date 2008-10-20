@@ -19,15 +19,6 @@
  */
 package de.dal33t.powerfolder.util;
 
-import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.net.ConnectionListener;
-import de.dal33t.powerfolder.util.os.Win32.ShellLink;
-import de.dal33t.powerfolder.util.os.Win32.WinUtils;
-import org.apache.commons.lang.Validate;
-
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.ClipboardOwner;
@@ -53,6 +44,16 @@ import java.util.List;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.apache.commons.lang.Validate;
+
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.light.MemberInfo;
+import de.dal33t.powerfolder.net.ConnectionListener;
+import de.dal33t.powerfolder.util.os.Win32.ShellLink;
+import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 
 /**
  * Util helper class.
@@ -277,19 +278,12 @@ public class Util {
 
     public static boolean useSwarming(Controller c, Member other) {
         Reject.ifNull(c, "Controller is null");
-        return other.isSupportingPartTransfers()
-            && allowSwarming(c, other.isOnLAN());
-    }
-
-    public static boolean usePartRequests(Controller c, Member other) {
-        Validate.notNull(c);
-        return useDeltaSync(c, other) || useSwarming(c, other);
+        return allowSwarming(c, other.isOnLAN());
     }
 
     public static boolean useDeltaSync(Controller c, Member other) {
         Validate.notNull(c);
-        return other.isSupportingPartTransfers()
-            && allowDeltaSync(c, other.isOnLAN());
+        return allowDeltaSync(c, other.isOnLAN());
     }
 
     /**
@@ -310,8 +304,8 @@ public class Util {
                 .getResource(altLocation + '/' + res);
         }
         if (result == null) {
-            log.severe("Unable to load resource "
-                + res + ". alt location " + altLocation);
+            log.severe("Unable to load resource " + res + ". alt location "
+                + altLocation);
         }
         return result;
     }
@@ -342,13 +336,13 @@ public class Util {
         InputStream in = Thread.currentThread().getContextClassLoader()
             .getResourceAsStream(resource);
         if (in == null) {
-            log.finer("Unable to find resource: "
-                + resource);
+            log.finer("Unable to find resource: " + resource);
             // try harder
             in = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream(altLocation + '/' + resource);
             if (in == null) {
-                log.warning("Unable to find resource: " + altLocation + '/' + resource);
+                log.warning("Unable to find resource: " + altLocation + '/'
+                    + resource);
                 return null;
             }
         }
@@ -362,8 +356,7 @@ public class Util {
             log.warning("Unable to create target for resource: " + target);
             return null;
         }
-        log.finer("created target for resource: "
-            + target);
+        log.finer("created target for resource: " + target);
         return target;
     }
 
@@ -392,8 +385,7 @@ public class Util {
             util.createLink(link, scut.getAbsolutePath());
             return true;
         } catch (IOException e) {
-            log.warning("Couldn't create shortcut "
-                + scut.getAbsolutePath());
+            log.warning("Couldn't create shortcut " + scut.getAbsolutePath());
             log.log(Level.FINER, "IOException", e);
         }
         return false;
@@ -410,8 +402,7 @@ public class Util {
         if (util == null) {
             return false;
         }
-        log.finer("Removing desktop shortcut: "
-            + shortcutName);
+        log.finer("Removing desktop shortcut: " + shortcutName);
         File scut = new File(util.getSystemFolderPath(WinUtils.CSIDL_DESKTOP,
             false), shortcutName + ".lnk");
         return scut.delete();
@@ -431,8 +422,7 @@ public class Util {
             Object content = url.getContent();
             if (!(content instanceof InputStream)) {
                 log.severe("Unable to get content from " + url
-                        + ". content is of type "
-                        + content.getClass().getName());
+                    + ". content is of type " + content.getClass().getName());
                 return null;
             }
             InputStream in = (InputStream) content;
@@ -443,8 +433,8 @@ public class Util {
             }
             return buf.toString();
         } catch (IOException e) {
-            log.log(Level.SEVERE, "Unable to get content from "
-                + url + ". " + e.toString(), e);
+            log.log(Level.SEVERE, "Unable to get content from " + url + ". "
+                + e.toString(), e);
         }
         return null;
     }
@@ -765,8 +755,8 @@ public class Util {
                 remotePort = Integer.parseInt(connectStr.substring(dotdot + 1,
                     connectStr.length()));
             } catch (NumberFormatException e) {
-                log.warning("Illegal port in "
-                    + connectStr + ", trying default port");
+                log.warning("Illegal port in " + connectStr
+                    + ", trying default port");
             }
         }
 

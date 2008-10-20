@@ -19,29 +19,6 @@
  */
 package de.dal33t.powerfolder.transfer;
 
-import de.dal33t.powerfolder.Constants;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.disk.FolderStatistic;
-import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.message.FileChunk;
-import de.dal33t.powerfolder.transfer.Transfer.State;
-import de.dal33t.powerfolder.transfer.Transfer.TransferState;
-import de.dal33t.powerfolder.util.Debug;
-import de.dal33t.powerfolder.util.FileCheckWorker;
-import de.dal33t.powerfolder.util.FileUtils;
-import de.dal33t.powerfolder.util.ProgressObserver;
-import de.dal33t.powerfolder.util.Range;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.TransferCounter;
-import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.util.delta.FilePartsRecord;
-import de.dal33t.powerfolder.util.delta.FilePartsState;
-import de.dal33t.powerfolder.util.delta.FilePartsState.PartState;
-import de.dal33t.powerfolder.util.delta.MatchCopyWorker;
-import de.dal33t.powerfolder.util.delta.MatchInfo;
-import de.dal33t.powerfolder.util.delta.MatchResultWorker;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -56,12 +33,33 @@ import java.security.NoSuchAlgorithmException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.ThreadFactory;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import de.dal33t.powerfolder.Constants;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.disk.FolderStatistic;
+import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.message.FileChunk;
+import de.dal33t.powerfolder.transfer.Transfer.State;
+import de.dal33t.powerfolder.transfer.Transfer.TransferState;
+import de.dal33t.powerfolder.transfer.swarm.TransferUtil;
+import de.dal33t.powerfolder.util.Debug;
+import de.dal33t.powerfolder.util.FileCheckWorker;
+import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.ProgressObserver;
+import de.dal33t.powerfolder.util.Range;
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.TransferCounter;
+import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.delta.FilePartsRecord;
+import de.dal33t.powerfolder.util.delta.FilePartsState;
+import de.dal33t.powerfolder.util.delta.MatchCopyWorker;
+import de.dal33t.powerfolder.util.delta.MatchInfo;
+import de.dal33t.powerfolder.util.delta.MatchResultWorker;
+import de.dal33t.powerfolder.util.delta.FilePartsState.PartState;
 
 /**
  * Shared implementation of download managers. This class leaves details on what
@@ -73,7 +71,8 @@ public abstract class AbstractDownloadManager extends PFComponent implements
     DownloadManager
 {
 
-    private static final Logger log = Logger.getLogger(AbstractDownloadManager.class.getName());
+    private static final Logger log = Logger
+        .getLogger(AbstractDownloadManager.class.getName());
 
     private enum InternalState {
         WAITING_FOR_SOURCE, WAITING_FOR_UPLOAD_READY, WAITING_FOR_FILEPARTSRECORD,
@@ -97,11 +96,6 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             }
 
         },
-
-        /**
-         * Receive chunks in linear fashion from one source only
-         */
-        PASSIVE_DOWNLOAD,
 
         /**
          * Request chunks
@@ -138,22 +132,6 @@ public abstract class AbstractDownloadManager extends PFComponent implements
     private String fileID;
 
     private File tempFile;
-
-    /**
-     * Custom ExecutorService: Single threaded with guaranteed sequential
-     * execution
-     */
-    private ExecutorService eventDispatcher = Executors
-        .newSingleThreadExecutor(new ThreadFactory() {
-
-            public Thread newThread(Runnable r) {
-                Thread t = new Thread(r,
-                    "Event dispatcher queue of AbstractDownloadManager");
-                t.setDaemon(true);
-                return t;
-            }
-
-        });
 
     public AbstractDownloadManager(Controller controller, FileInfo file,
         boolean automatic) throws IOException
@@ -199,7 +177,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
     }
 
     public synchronized void addSource(Download download) {
-        checkDownload(download);
+        validateDownload(download);
         Reject.ifFalse(download.isCompleted()
             || canAddSource(download.getPartner()),
             "Illegal addSource() call!!");
@@ -212,7 +190,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
 
     public synchronized void chunkReceived(Download download, FileChunk chunk) {
         Reject.noNullElements(download, chunk);
-        checkDownload(download);
+        validateDownload(download);
         assert chunk.file.isCompletelyIdentical(getFileInfo());
         try {
             receivedChunk0(download, chunk);
@@ -225,7 +203,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         FilePartsRecord record)
     {
         Reject.noNullElements(download, record);
-        checkDownload(download);
+        validateDownload(download);
         try {
             receivedFilePartsRecord0(download, record);
         } catch (BrokenDownloadException e) {
@@ -302,21 +280,16 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         return started;
     }
 
-    /**
-     * Runs some task on the even dispatcher of this manager.
-     * 
-     * @param runnable
-     */
-    public void post(Runnable runnable) {
+    private void post(Runnable runnable) {
         try {
-            eventDispatcher.execute(runnable);
+            TransferUtil.invokeLater(runnable);
         } catch (RejectedExecutionException e) {
             log.log(Level.FINE, "RejectedExecutionException", e);
         }
     }
 
     public synchronized void readyForRequests(Download download) {
-        checkDownload(download);
+        validateDownload(download);
         try {
             readyForRequests0(download);
         } catch (BrokenDownloadException e) {
@@ -328,7 +301,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
     }
 
     public synchronized void removeSource(Download download) {
-        checkDownload(download);
+        validateDownload(download);
         try {
             removeSource0(download);
         } catch (BrokenDownloadException e) {
@@ -432,8 +405,6 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             && fileInfo.getSize() >= Constants.MIN_SIZE_FOR_PARTTRANSFERS
             && fileInfo.diskFileExists(getController());
     }
-
-    protected abstract boolean isUsingPartRequests();
 
     protected void matchAndCopyData() throws BrokenDownloadException,
         InterruptedException
@@ -547,6 +518,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         setState(InternalState.COMPLETED);
         shutdown();
         deleteMetaData();
+
         // Should be called without locking:
         // It's more "event" style and prevents deadlocks
         post(new Runnable() {
@@ -562,6 +534,12 @@ public abstract class AbstractDownloadManager extends PFComponent implements
 
     protected synchronized void setFilePartsState(FilePartsState state) {
         assert filePartsState == null;
+
+        if (filePartsState != null) {
+            log.severe("FilePartsState should've been null, but was "
+                + filePartsState);
+            Debug.dumpCurrentStackTrace();
+        }
 
         filePartsState = state;
     }
@@ -661,8 +639,6 @@ public abstract class AbstractDownloadManager extends PFComponent implements
     {
         assert !getSources().isEmpty();
         assert !isDone();
-        assert Util.usePartRequests(getController(), getSources().iterator()
-            .next().getPartner());
 
         setStarted();
         setState(InternalState.ACTIVE_DOWNLOAD);
@@ -713,7 +689,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
     private void addSource0(final Download download)
         throws BrokenDownloadException
     {
-        checkDownload(download);
+        validateDownload(download);
         // This should be true because the addSource() caller should be
         // locking the calls
         assert download.isCompleted() || canAddSource(download.getPartner()) : "Illegal addSource() call!!";
@@ -768,16 +744,8 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                             || filePartsState.findFirstPart(PartState.PENDING) != null;
                     }
                 }
-                if (isUsingPartRequests()) {
-                    setState(InternalState.WAITING_FOR_UPLOAD_READY);
-                } else {
-                    setState(InternalState.PASSIVE_DOWNLOAD);
-                    if (filePartsState == null) {
-                        setFilePartsState(new FilePartsState(fileInfo.getSize()));
-                    }
-                }
-                final long offset = _offset;
-                download.request(offset);
+                setState(InternalState.WAITING_FOR_UPLOAD_READY);
+                download.request(_offset);
                 break;
             case COMPLETED :
                 addSourceImpl(download);
@@ -791,7 +759,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         }
     }
 
-    private void checkDownload(Download download) {
+    private void validateDownload(Download download) {
         Reject.ifNull(download, "Download is null!");
         Reject.ifTrue(!download.getFile().isCompletelyIdentical(getFileInfo()),
             "Download FileInfo differs: " + download.getFile().toDetailString()
@@ -926,7 +894,8 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         if (getTempFile() != null && getTempFile().exists()
             && !getTempFile().delete())
         {
-            log.warning("Couldn't delete old temporary file, some other process could be using it! Trying to set it's length to 0.");
+            log
+                .warning("Couldn't delete old temporary file, some other process could be using it! Trying to set it's length to 0.");
             RandomAccessFile f = new RandomAccessFile(getTempFile(), "rw");
             try {
                 f.setLength(0);
@@ -1000,9 +969,10 @@ public abstract class AbstractDownloadManager extends PFComponent implements
     {
         String msg = "PROTOCOL ERROR caused by " + cause + ": " + operation
             + " not allowed in state " + state;
-        msg += " " + cause.getPartner().isSupportingPartTransfers();
-        msg += " " + Util.useDeltaSync(getController(), cause.getPartner())
-            + " " + Util.useSwarming(getController(), cause.getPartner());
+        msg += " use DS: "
+            + Util.useDeltaSync(getController(), cause.getPartner())
+            + " use Swarm: "
+            + Util.useSwarming(getController(), cause.getPartner());
         log.warning(msg);
 
         throw new BrokenDownloadException(msg);
@@ -1035,8 +1005,9 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                         setFilePartsState(new FilePartsState(fileInfo.getSize()));
                     }
                     if (filePartsState.isCompleted()) {
-                        log.fine("Not requesting anything, seems to be a zero file: "
-                            + fileInfo);
+                        log
+                            .fine("Not requesting anything, seems to be a zero file: "
+                                + fileInfo);
                         checkFileValidity();
                     } else {
                         log.fine("Not requesting record for this download.");
@@ -1067,12 +1038,6 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                 log.fine("Aborted download of " + fileInfo
                     + " received chunk from " + download);
                 download.abort();
-                break;
-            case PASSIVE_DOWNLOAD :
-                storeFileChunk(download, chunk);
-                if (filePartsState.isCompleted()) {
-                    setCompleted();
-                }
                 break;
             case ACTIVE_DOWNLOAD :
                 storeFileChunk(download, chunk);
@@ -1167,10 +1132,6 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                     setState(InternalState.WAITING_FOR_SOURCE);
                 }
                 break;
-            case PASSIVE_DOWNLOAD :
-                removeSourceImpl(download);
-                throw new BrokenDownloadException(
-                    "Broken single-source download!");
             case ACTIVE_DOWNLOAD :
                 removeSourceImpl(download);
                 if (hasSources()) {
@@ -1256,8 +1217,6 @@ public abstract class AbstractDownloadManager extends PFComponent implements
 
     private void setState(InternalState newState) {
 
-        assert newState != InternalState.PASSIVE_DOWNLOAD
-            || !getSources().isEmpty();
         assert Thread.holdsLock(this);
 
         if (newState == InternalState.WAITING_FOR_UPLOAD_READY) {

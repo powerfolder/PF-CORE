@@ -66,6 +66,7 @@ public class Identity extends Message {
     // Earlier this was based on a user setting, but that's wrong since we
     // shouldn't deny the
     // remote side to decide how it wants to download.
+    // Leftover for semi-old clients
     private boolean supportingPartTransfers = true;
 
     /**
@@ -96,8 +97,7 @@ public class Identity extends Message {
         // the remote side! Currently true if we hava ANY pending messages to be
         // sent. Problem: The remote side cannot be known at the time the
         // identity is created, so we have to use this workaround.
-        this.pendingMessages = controller.getTaskManager()
-            .hasSendMessageTask();
+        this.pendingMessages = controller.getTaskManager().hasSendMessageTask();
     }
 
     /**
@@ -133,13 +133,6 @@ public class Identity extends Message {
      */
     public boolean isSupportsEncryption() {
         return supportsEncryption;
-    }
-
-    /**
-     * @return true if partial transfers of data are supported
-     */
-    public boolean isSupportingPartTransfers() {
-        return supportingPartTransfers;
     }
 
     /**

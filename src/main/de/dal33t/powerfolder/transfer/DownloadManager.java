@@ -93,11 +93,4 @@ public interface DownloadManager extends DownloadSourceHandler, DownloadControl
     boolean isDone();
 
     boolean hasSource(Download download);
-
-    /**
-     * Invokes the given runnable on an event dispatcher thread.
-     * 
-     * @param run
-     */
-    void post(Runnable run);
 }

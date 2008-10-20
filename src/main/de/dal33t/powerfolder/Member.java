@@ -19,6 +19,26 @@
  */
 package de.dal33t.powerfolder;
 
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import org.apache.commons.lang.StringUtils;
+
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.ScanResult;
@@ -77,25 +97,6 @@ import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.Waiter;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
-import org.apache.commons.lang.StringUtils;
-
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * A full quailfied member, can have a connection to interact with remote
@@ -420,11 +421,6 @@ public class Member extends PFComponent {
         return info.isSupernode;
     }
 
-    public boolean isSupportingPartTransfers() {
-        return isCompleteyConnected()
-            && getPeer().getIdentity().isSupportingPartTransfers();
-    }
-
     /**
      * Answers if this member is on the local area network.
      * 
@@ -628,8 +624,8 @@ public class Member extends PFComponent {
             return false;
         }
         if (log.isLoggable(Level.FINE)) {
-            log.fine("Reconnecting (tried " + connectionRetries + " time(s) to "
-                + this + ")");
+            log.fine("Reconnecting (tried " + connectionRetries
+                + " time(s) to " + this + ")");
         }
 
         connectionRetries++;
@@ -737,7 +733,8 @@ public class Member extends PFComponent {
             }
             if (!receivedFolderList) {
                 if (isConnected()) {
-                    log.fine("Did not receive a folder list after 60s, disconnecting");
+                    log
+                        .fine("Did not receive a folder list after 60s, disconnecting");
                     return false;
                 }
                 shutdown();
@@ -834,12 +831,14 @@ public class Member extends PFComponent {
                 long took = System.currentTimeMillis() - start;
                 if (peer == null || !peer.isConnected()) {
                     if (lastProblem == null) {
-                        log.warning("Peer disconnected while waiting for handshake acknownledge (or problem)");
+                        log
+                            .warning("Peer disconnected while waiting for handshake acknownledge (or problem)");
                     }
                 } else {
                     if (lastProblem == null) {
-                        log.warning("Did not receive a handshake not acknownledged (or problem) by remote side after "
-                            + (int) (took / 1000) + 's');
+                        log
+                            .warning("Did not receive a handshake not acknownledged (or problem) by remote side after "
+                                + (int) (took / 1000) + 's');
                     }
                 }
                 shutdown();
@@ -1004,7 +1003,7 @@ public class Member extends PFComponent {
         synchronized (handshakeCompletedWaiter) {
             handshakeCompletedWaiter.notifyAll();
         }
-        
+
         shutdownPeer();
         lastFiles = null;
         lastFolderList = null;
@@ -1176,7 +1175,9 @@ public class Member extends PFComponent {
                 if (targetFolder != null
                     && targetFolder.getSyncProfile().isAutoDetectLocalChanges())
                 {
-                    log.finer("Remote sync command received on " + targetFolder);
+                    log
+                        .finer("Remote sync command received on "
+                            + targetFolder);
                     getController().setSilentMode(false);
                     // Now trigger the scan
                     targetFolder.recommendScanOnNextMaintenance();
@@ -1419,7 +1420,8 @@ public class Member extends PFComponent {
                     isConnectedToNetwork = true;
                 } else if (lastProblem.problemCode == Problem.DUPLICATE_CONNECTION)
                 {
-                    log.warning("Problem received: Node thinks we have a dupe connection to him");
+                    log
+                        .warning("Problem received: Node thinks we have a dupe connection to him");
                 } else {
                     log.warning("Problem received: " + lastProblem);
                 }
@@ -1674,12 +1676,14 @@ public class Member extends PFComponent {
 
             String myMagicId = peer != null ? peer.getMyMagicId() : null;
             if (peer == null) {
-                log.finer("Unable to join to local folders. peer is null/disconnected");
+                log
+                    .finer("Unable to join to local folders. peer is null/disconnected");
                 return;
             }
             if (StringUtils.isBlank(myMagicId)) {
-                log.severe("Unable to join to local folders. Own magic id of peer is blank: "
-                    + peer);
+                log
+                    .severe("Unable to join to local folders. Own magic id of peer is blank: "
+                        + peer);
                 return;
             }
 

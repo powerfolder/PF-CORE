@@ -19,6 +19,15 @@
  */
 package de.dal33t.powerfolder.transfer;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
@@ -37,16 +46,6 @@ import de.dal33t.powerfolder.util.ProgressObserver;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.delta.FilePartsRecord;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.Queue;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Simple class for a scheduled Upload
@@ -112,12 +111,6 @@ public class Upload extends Transfer {
             return;
         }
 
-        if (!Util.usePartRequests(getController(), this.getPartner())) {
-            log.warning("Downloader sent a PartRequest (Protocol violation). Aborting.");
-            getTransferManager().setBroken(this,
-                TransferProblem.TRANSFER_EXCEPTION);
-            return;
-        }
         // Requests for different files on the same transfer connection are not
         // supported currently
         if (!pr.getFile().isCompletelyIdentical(getFile())
@@ -175,8 +168,7 @@ public class Upload extends Transfer {
      */
     synchronized void start() {
         if (isStarted()) {
-            log.warning("Upload already started. "
-                + this);
+            log.warning("Upload already started. " + this);
             return;
         }
 
@@ -196,51 +188,45 @@ public class Upload extends Transfer {
 
                     // If our partner supports requests, let him request. This
                     // is required for swarming to work.
-                    if (Util.usePartRequests(getController(), getPartner())) {
-                        if (log.isLoggable(Level.FINER)) {
-                            log.finer("Both clients support partial transfers!");
-                        }
-                        debugState = "Sending StartUpload";
-                        try {
-                            getPartner()
-                                .sendMessage(new StartUpload(getFile()));
-                        } catch (ConnectionException e) {
-                            throw new TransferException(e);
-                        }
-                        debugState = "Waiting for requests";
-                        if (waitForRequests()) {
-                            log.info("Checking for parts request.");
+                    if (log.isLoggable(Level.FINER)) {
+                        log.finer("Both clients support partial transfers!");
+                    }
+                    debugState = "Sending StartUpload";
+                    try {
+                        getPartner().sendMessage(new StartUpload(getFile()));
+                    } catch (ConnectionException e) {
+                        throw new TransferException(e);
+                    }
+                    debugState = "Waiting for requests";
+                    if (waitForRequests()) {
+                        log.info("Checking for parts request.");
 
-                            debugState = "Checking for FPR request.";
+                        debugState = "Checking for FPR request.";
 
-                            // Check if the first request is for a
-                            // FilePartsRecord
-                            if (checkForFilePartsRecordRequest()) {
-                                debugState = "Waiting for remote matching";
-                                transferState
-                                    .setState(TransferState.REMOTEMATCHING);
-                                log.finer("Waiting for initial part requests!");
-                                waitForRequests();
-                            }
-                            debugState = "Starting to send parts";
-                            log.info("Upload started " + this);
-                            long startTime = System.currentTimeMillis();
-
-                            // FIXME: It shouldn't be possible to loop endlessly
-                            // This fixme has to solved somewhere else partly
-                            // since
-                            // it's like:
-                            // "How long do we allow to upload to some party" -
-                            // which can't be decided here.
-                            while (sendPart()) {
-                            }
-                            long took = System.currentTimeMillis() - startTime;
-                            getTransferManager().logTransfer(false, took,
-                                getFile(), getPartner());
+                        // Check if the first request is for a
+                        // FilePartsRecord
+                        if (checkForFilePartsRecordRequest()) {
+                            debugState = "Waiting for remote matching";
+                            transferState
+                                .setState(TransferState.REMOTEMATCHING);
+                            log.finer("Waiting for initial part requests!");
+                            waitForRequests();
                         }
-                    } else {
-                        transferState.setState(TransferState.UPLOADING);
-                        sendChunks();
+                        debugState = "Starting to send parts";
+                        log.info("Upload started " + this);
+                        long startTime = System.currentTimeMillis();
+
+                        // FIXME: It shouldn't be possible to loop endlessly
+                        // This fixme has to solved somewhere else partly
+                        // since
+                        // it's like:
+                        // "How long do we allow to upload to some party" -
+                        // which can't be decided here.
+                        while (sendPart()) {
+                        }
+                        long took = System.currentTimeMillis() - startTime;
+                        getTransferManager().logTransfer(false, took,
+                            getFile(), getPartner());
                     }
                     getTransferManager().setCompleted(Upload.this);
                 } catch (TransferException e) {
@@ -464,7 +450,8 @@ public class Upload extends Transfer {
         }
 
         if (!stillQueuedAtPartner()) {
-            log.warning("Upload broken because not enqued @ partner: queedAtPartner: "
+            log
+                .warning("Upload broken because not enqued @ partner: queedAtPartner: "
                     + stillQueuedAtPartner()
                     + ", folder: "
                     + getFile()
@@ -478,10 +465,13 @@ public class Upload extends Transfer {
         File diskFile = getFile().getDiskFile(
             getController().getFolderRepository());
         if (diskFile == null || !diskFile.exists()) {
-            log.warning("Upload broken because diskfile is not available, folder: "
+            log
+                .warning("Upload broken because diskfile is not available, folder: "
                     + getFile()
                         .getFolder(getController().getFolderRepository())
-                    + ", diskfile: " + diskFile + ", last contime: "
+                    + ", diskfile: "
+                    + diskFile
+                    + ", last contime: "
                     + getPartner().getLastConnectTime());
             return true;
         }
@@ -522,161 +512,6 @@ public class Upload extends Transfer {
             msg += " (local-net)";
         }
         return msg;
-    }
-
-    /**
-     * Transfers a file to a member.
-     * 
-     * @throws TransferException
-     *             if something unexepected occoured.
-     */
-    private void sendChunks() throws TransferException {
-        assert getPartner() != null : "Upload member is null";
-        assert getFile() != null : "Upload file is null";
-
-        if (isBroken()) {
-            throw new TransferException("Upload broken: " + this);
-        }
-
-        Member member = getPartner();
-        Date lastFileCheck;
-        FileInfo theFile = getFile();
-
-        // connection still alive ?
-        if (!member.isConnected()) {
-            throw new TransferException("Upload broken, member disconnected: "
-                + this);
-        }
-
-        // TODO: check if member is in folder of file
-        File f = theFile.getDiskFile(getController().getFolderRepository());
-        if (f == null) {
-            throw new TransferException(this + ": Myself not longer on "
-                + theFile.getFolderInfo());
-        }
-        if (!f.exists()) {
-            throw new TransferException(theFile
-                + " not found, download canceled. '" + f.getAbsolutePath()
-                + "'");
-        }
-        if (!f.canRead()) {
-            throw new TransferException("Cannot read file. '"
-                + f.getAbsolutePath() + "'");
-        }
-        checkLastModificationDate(theFile, f);
-        lastFileCheck = new Date();
-
-        log.info("Upload started " + this
-            + " starting at " + getStartOffset());
-        long startTime = System.currentTimeMillis();
-
-        try {
-            if (f.length() == 0) {
-                // Handle files with zero size.
-                // Just send one empty FileChunk
-                FileChunk chunk = new FileChunk(theFile, 0, new byte[]{});
-                member.sendMessage(chunk);
-            } else {
-                // Handle usual files. size > 0
-
-                // Chunk size
-                int chunkSize = member.isOnLAN()
-                    ? TransferManager.MAX_CHUNK_SIZE
-                    : (int) getTransferManager().getAllowedUploadCPSForWAN();
-                if (chunkSize == 0) {
-                    chunkSize = TransferManager.MAX_CHUNK_SIZE;
-                }
-                // Keep care of maximum chunk size
-                chunkSize = Math.min(chunkSize, TransferManager.MAX_CHUNK_SIZE);
-
-                if (chunkSize <= 0) {
-                    log.severe("Illegal chunk size: " + chunkSize);
-                }
-
-                // InputStream fin = new BufferedInputStream(
-                // new FileInputStream(f));
-                // starting at offset
-                // fin.skip(upload.getStartOffset());
-                long offset = getStartOffset();
-
-                byte[] buffer = new byte[chunkSize];
-                int read;
-                do {
-                    if (isAborted()) {
-                        throw new TransferException("Upload aborted: " + this);
-                    }
-                    if (isBroken()) {
-                        throw new TransferException("Upload broken: " + this);
-                    }
-
-                    raf.seek(offset);
-                    read = raf.read(buffer);
-                    // read = fin.read(buffer);
-                    if (read < 0) {
-                        // stop ul
-                        break;
-                    }
-
-                    byte[] data;
-
-                    if (read == buffer.length) {
-                        // Take buffer unchanged as data
-                        data = buffer;
-                    } else {
-                        // We have read less bytes then our buffer, copy
-                        // data
-                        data = new byte[read];
-                        System.arraycopy(buffer, 0, data, 0, read);
-                    }
-
-                    FileChunk chunk = new FileChunk(theFile, offset, data);
-                    offset += data.length;
-
-                    member.sendMessage(chunk);
-                    getCounter().chunkTransferred(chunk);
-                    getTransferManager().getUploadCounter().chunkTransferred(
-                        chunk);
-                    transferState.setProgress(getCounter()
-                        .calculateCompletionPercentage() / 100);
-
-                    // Check file every 15 seconds
-                    if (lastFileCheck.before(new Date(System
-                        .currentTimeMillis() - 15 * 1000)))
-                    {
-                        if (log.isLoggable(Level.FINER)) {
-                            log.finer("Checking uploading file: "
-                                    + theFile.toDetailString());
-                        }
-                        checkLastModificationDate(theFile, f);
-                        lastFileCheck = new Date();
-                    }
-
-                    //if (Loggable.isLogFinerStatic(Upload.class)) {
-                        // Loggable.logFinerStatic(Upload.class,
-                        // "Chunk, "
-                        // + Format.NUMBER_FORMATS.format(chunkSize)
-                        // + " bytes, uploaded in "
-                        // + (System.currentTimeMillis() - start)
-                        // + "ms to " + member.getNick());
-                    //}
-                } while (read > 0);
-
-                // fin.close();
-            }
-
-            long took = System.currentTimeMillis() - startTime;
-            getTransferManager().logTransfer(false, took, theFile, member);
-
-            // upload completed successfully
-        } catch (FileNotFoundException e) {
-            throw new TransferException("File not found to upload. " + theFile,
-                e);
-        } catch (IOException e) {
-            throw new TransferException("Problem reading file. " + theFile, e);
-        } catch (ConnectionException e) {
-            throw new TransferException(
-                "Connection problem to " + getPartner(), e);
-        }
     }
 
     private void checkLastModificationDate(FileInfo theFile, File f)

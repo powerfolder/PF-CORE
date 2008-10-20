@@ -19,6 +19,13 @@
  */
 package de.dal33t.powerfolder.transfer;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.logging.Logger;
+
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.FileInfo;
@@ -31,13 +38,6 @@ import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.delta.FilePartsRecord;
 import de.dal33t.powerfolder.util.delta.FilePartsState.PartState;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.logging.Logger;
-
 /**
  * This download manager will try to download from all available sources.
  * 
@@ -45,12 +45,11 @@ import java.util.logging.Logger;
  */
 public class MultiSourceDownloadManager extends AbstractDownloadManager {
 
-    private static final Logger log = Logger.getLogger(MultiSourceDownloadManager.class.getName());
+    private static final Logger log = Logger
+        .getLogger(MultiSourceDownloadManager.class.getName());
     private final ConcurrentMap<MemberInfo, Download> downloads = new ConcurrentHashMap<MemberInfo, Download>();
 
     private Download pendingPartRecordFrom;
-
-    private boolean usingPartRequests;
 
     public static final DownloadManagerFactory factory = new DownloadManagerFactory()
     {
@@ -83,19 +82,11 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
         if (isRequestedAutomatic() != download.isRequestedAutomatic()) {
             setAutomatic(false);
         }
-
-        if (isUsingPartRequests()
-            || Util.usePartRequests(getController(), download.getPartner()))
-        {
-            usingPartRequests = true;
-        }
     }
 
     public boolean canAddSource(Member member) {
         Reject.ifNull(member, "Member is null");
-        return downloads.isEmpty()
-            || (isUsingPartRequests() && Util.useSwarming(getController(),
-                member));
+        return downloads.isEmpty() || Util.useSwarming(getController(), member);
     }
 
     public Download getSourceFor(Member member) {
@@ -124,21 +115,16 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
     protected void removeSourceImpl(Download download) {
         assert download != null;
         assert hasSource(download);
-        assert download.isBroken() || download.isCompleted()
-            || !download.isStarted();
 
         if (downloads.remove(download.getPartner().getInfo()) == null) {
 
             throw new AssertionError("Removed non-managed download:" + download
                 + " " + download.getPartner().getInfo());
         }
-        if (isUsingPartRequests()) {
-            // All pending requests from that download are void.
-            if (filePartsState != null) {
-                for (RequestPart req : download.getPendingRequests()) {
-                    filePartsState.setPartState(req.getRange(),
-                        PartState.NEEDED);
-                }
+        // All pending requests from that download are void.
+        if (filePartsState != null) {
+            for (RequestPart req : download.getPendingRequests()) {
+                filePartsState.setPartState(req.getRange(), PartState.NEEDED);
             }
         }
     }
@@ -183,7 +169,6 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
     protected void requestFilePartsRecord(Download download) {
         assert download == null
             || Util.useDeltaSync(getController(), download.getPartner());
-        assert isUsingPartRequests();
 
         if (pendingPartRecordFrom != null) {
             // log.fine("Pending FPR from: " + pendingPartRecordFrom);
@@ -289,10 +274,5 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
             }
         }
         return false;
-    }
-
-    @Override
-    protected boolean isUsingPartRequests() {
-        return usingPartRequests;
     }
 }

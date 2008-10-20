@@ -19,33 +19,6 @@
  */
 package de.dal33t.powerfolder.transfer;
 
-import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Constants;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.event.ListenerSupportFactory;
-import de.dal33t.powerfolder.event.TransferManagerEvent;
-import de.dal33t.powerfolder.event.TransferManagerListener;
-import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.message.AbortUpload;
-import de.dal33t.powerfolder.message.DownloadQueued;
-import de.dal33t.powerfolder.message.FileChunk;
-import de.dal33t.powerfolder.message.RequestDownload;
-import de.dal33t.powerfolder.message.TransferStatus;
-import de.dal33t.powerfolder.net.ConnectionHandler;
-import de.dal33t.powerfolder.transfer.swarm.FileRecordManager;
-import de.dal33t.powerfolder.transfer.swarm.VolatileFileRecordManager;
-import de.dal33t.powerfolder.util.Format;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.TransferCounter;
-import de.dal33t.powerfolder.util.compare.MemberComparator;
-import de.dal33t.powerfolder.util.compare.ReverseComparator;
-import de.dal33t.powerfolder.util.delta.FilePartsRecord;
-import org.apache.commons.lang.Validate;
-
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -75,6 +48,34 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.commons.lang.Validate;
+
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Constants;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.FolderRepository;
+import de.dal33t.powerfolder.event.ListenerSupportFactory;
+import de.dal33t.powerfolder.event.TransferManagerEvent;
+import de.dal33t.powerfolder.event.TransferManagerListener;
+import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.message.AbortUpload;
+import de.dal33t.powerfolder.message.DownloadQueued;
+import de.dal33t.powerfolder.message.FileChunk;
+import de.dal33t.powerfolder.message.RequestDownload;
+import de.dal33t.powerfolder.message.TransferStatus;
+import de.dal33t.powerfolder.net.ConnectionHandler;
+import de.dal33t.powerfolder.transfer.swarm.FileRecordProvider;
+import de.dal33t.powerfolder.transfer.swarm.VolatileFileRecordProvider;
+import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.TransferCounter;
+import de.dal33t.powerfolder.util.compare.MemberComparator;
+import de.dal33t.powerfolder.util.compare.ReverseComparator;
+import de.dal33t.powerfolder.util.delta.FilePartsRecord;
+
 /**
  * Transfer manager for downloading/uploading files
  * 
@@ -83,7 +84,8 @@ import java.util.logging.Logger;
  */
 public class TransferManager extends PFComponent {
 
-    private static final Logger log = Logger.getLogger(TransferManager.class.getName());
+    private static final Logger log = Logger.getLogger(TransferManager.class
+        .getName());
 
     /** The maximum size of a chunk transferred at once */
     public static final int MAX_CHUNK_SIZE = 32 * 1024;
@@ -121,13 +123,10 @@ public class TransferManager extends PFComponent {
      */
     private Lock uploadsLock = new ReentrantLock();
 
-    private FileRecordManager fileRecordManager;
+    private FileRecordProvider fileRecordProvider;
 
     /** Threadpool for Upload Threads */
     private ExecutorService threadPool;
-
-    /** Single threaded execution queue for swarming */
-    private ExecutorService swarmEvents;
 
     /** The currently calculated transferstatus */
     private TransferStatus transferStatus;
@@ -253,13 +252,11 @@ public class TransferManager extends PFComponent {
             log.warning("Not starting TransferManager. disabled by config");
             return;
         }
-        fileRecordManager = new VolatileFileRecordManager(getController());
+        fileRecordProvider = new VolatileFileRecordProvider(getController());
 
         bandwidthProvider.start();
 
         threadPool = Executors.newCachedThreadPool();
-
-        swarmEvents = Executors.newSingleThreadExecutor();
 
         myThread = new Thread(new TransferChecker(), "Transfer manager");
         myThread.start();
@@ -307,9 +304,9 @@ public class TransferManager extends PFComponent {
             man.setBroken("shutdown");
         }
 
-        if (fileRecordManager != null) {
-            fileRecordManager.shutdown();
-            fileRecordManager = null;
+        if (fileRecordProvider != null) {
+            fileRecordProvider.shutdown();
+            fileRecordProvider = null;
         }
 
         started = false;
@@ -926,8 +923,9 @@ public class TransferManager extends PFComponent {
         if (Folder.DB_FILENAME.equalsIgnoreCase(dl.file.getName())
             || Folder.DB_BACKUP_FILENAME.equalsIgnoreCase(dl.file.getName()))
         {
-            log.severe(from.getNick()
-                + " has illegally requested to download a folder database file");
+            log
+                .severe(from.getNick()
+                    + " has illegally requested to download a folder database file");
             return null;
         }
         if (dl.file.getFolder(getController().getFolderRepository()) == null) {
@@ -937,7 +935,8 @@ public class TransferManager extends PFComponent {
         }
 
         if (dlManagers.containsKey(dl.file)) {
-            log.warning("Not queuing upload, active download of the file is in progress.");
+            log
+                .warning("Not queuing upload, active download of the file is in progress.");
             return null;
         }
 
@@ -989,8 +988,9 @@ public class TransferManager extends PFComponent {
         }
 
         if (oldUpload != null) {
-            log.warning("Received already known download request for " + dl.file
-                + " from " + from.getNick() + ", overwriting old request");
+            log.warning("Received already known download request for "
+                + dl.file + " from " + from.getNick()
+                + ", overwriting old request");
             // Stop former upload request
             oldUpload.abort();
             oldUpload.shutdown();
@@ -1078,13 +1078,13 @@ public class TransferManager extends PFComponent {
     }
 
     /**
-     * Returns the {@link FileRecordManager} managing the
+     * Returns the {@link FileRecordProvider} managing the
      * {@link FilePartsRecord}s for the various uploads/downloads.
      * 
      * @return
      */
-    public FileRecordManager getFileRecordManager() {
-        return fileRecordManager;
+    public FileRecordProvider getFileRecordManager() {
+        return fileRecordProvider;
     }
 
     /**
@@ -1191,7 +1191,8 @@ public class TransferManager extends PFComponent {
             if (man.hasSource(download)) {
                 man.removeSource(download);
                 if (!man.hasSources()) {
-                    log.fine("No further sources in that manager, removing it!");
+                    log
+                        .fine("No further sources in that manager, removing it!");
                     if (!man.isDone()) {
                         man.setBroken("Out of sources for download");
                     }
@@ -1406,8 +1407,9 @@ public class TransferManager extends PFComponent {
                 if (newestVersionFile.isNewerAvailable(getController()
                     .getFolderRepository()))
                 {
-                    log.severe("Downloading old version while newer is available: "
-                        + localFile);
+                    log
+                        .severe("Downloading old version while newer is available: "
+                            + localFile);
                 }
                 requestDownload(download, bestSource);
             }
@@ -1441,7 +1443,8 @@ public class TransferManager extends PFComponent {
             {
                 if (man != null) {
                     if (!man.isDone()) {
-                        log.fine("Got active download of different file version, aborting.");
+                        log
+                            .fine("Got active download of different file version, aborting.");
                         man.abortAndCleanup();
                     }
                     return;

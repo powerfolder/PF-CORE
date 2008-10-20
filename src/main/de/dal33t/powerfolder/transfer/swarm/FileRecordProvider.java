@@ -31,38 +31,7 @@ import de.dal33t.powerfolder.util.delta.FilePartsRecord;
  * 
  * @author Dennis "Bytekeeper" Waldherr
  */
-public interface FileRecordManager {
-    /**
-     * Callback for record retrieving.
-     */
-    public interface Callback {
-        /**
-         * Invoked if an exception occurred while creating the record.
-         * 
-         * @param e
-         */
-        void failed(IOException e);
-
-        /**
-         * Invoked if the record is available.
-         * 
-         * @param record
-         *            the record
-         */
-        void recordAvailable(FilePartsRecord record);
-    }
-
-    /**
-     * Called to request a {@link FilePartsRecord}. This method will return
-     * immediately and later notify the callback.
-     * 
-     * @param fileInfo
-     * @param progObs
-     * @param callback
-     */
-    void retrieveRecord(FileInfo fileInfo, Callback callback,
-        ProgressObserver progObs);
-
+public interface FileRecordProvider {
     /**
      * Called to request a {@link FilePartsRecord}. Waits for the record to
      * become available and returns it.

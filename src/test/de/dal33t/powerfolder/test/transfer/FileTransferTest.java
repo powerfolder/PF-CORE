@@ -427,7 +427,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         long totalSize = 0;
         final int nFiles = 450;
         for (int i = 0; i < nFiles; i++) {
-            File f = TestHelper.createRandomFile(getFolderAtBart()
+            final File f = TestHelper.createRandomFile(getFolderAtBart()
                 .getLocalBase(), (long) (Math.random() * 40) + 1);
             totalSize += f.length();
         }
@@ -524,6 +524,10 @@ public class FileTransferTest extends TwoControllerTestCase {
                     + nFiles;
             }
         });
+
+        // Give the system a small amount of time to acknowledge the completion
+        // of all downloads
+        TestHelper.waitMilliSeconds(100);
 
         // No active downloads?!
         assertEquals(getContollerLisa().getTransferManager()
