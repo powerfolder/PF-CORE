@@ -26,6 +26,26 @@ public abstract class Loggable {
 
     private Logger log;
 
+    protected boolean isSevere() {
+        return isLog(Level.SEVERE);
+    }
+
+    protected boolean isWarning() {
+        return isLog(Level.WARNING);
+    }
+
+    protected boolean isInfo() {
+        return isLog(Level.INFO);
+    }
+
+    protected boolean isFine() {
+        return isLog(Level.FINE);
+    }
+
+    protected boolean isFiner() {
+        return isLog(Level.FINER);
+    }
+
     protected void logSevere(String message) {
         logIt(Level.SEVERE, message, null);
     }
@@ -84,6 +104,13 @@ public abstract class Loggable {
 
     protected void logFiner(Throwable t) {
         logIt(Level.FINER, t.getMessage(), t);
+    }
+
+    private boolean isLog(Level level) {
+        if (log == null) {
+            log = Logger.getLogger(getClass().getName());
+        }
+        return log.isLoggable(level);
     }
 
     private void logIt(Level level, String message, Throwable t) {
