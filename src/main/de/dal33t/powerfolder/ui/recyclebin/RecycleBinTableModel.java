@@ -50,8 +50,6 @@ import java.util.logging.Logger;
 public class RecycleBinTableModel extends PFComponent implements TableModel,
         SortedTableModel {
 
-    private static final Logger log = Logger.getLogger(RecycleBinTableModel.class.getName());
-
     private static final int COLFOLDER = 0;
     private static final int COLTYPE = 1;
     private static final int COLFILE = 2;
@@ -224,7 +222,7 @@ public class RecycleBinTableModel extends PFComponent implements TableModel,
             if (displayList.contains(e.getFile())) {
                 displayList.remove(e.getFile());
             } else {
-                log.severe("file not there: " + e.getFile());
+                logSevere("file not there: " + e.getFile());
             }
 
             displayList.add(e.getFile());

@@ -19,14 +19,10 @@
  */
 package de.dal33t.powerfolder.disk;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.FileInfo;
+
+import java.util.*;
 
 /**
  * Holds a FileInfo for each Member of the Folder

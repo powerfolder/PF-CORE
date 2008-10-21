@@ -46,8 +46,6 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.TimerTask;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * A Tablemodel adapter which acts upon a transfermanager.
@@ -57,8 +55,6 @@ import java.util.logging.Logger;
  */
 public class UploadsTableModel extends PFComponent implements TableModel,
         SortedTableModel {
-
-    private static final Logger log = Logger.getLogger(UploadsTableModel.class.getName());
 
     public static final int UPDATE_TIME = 1000;
 
@@ -125,7 +121,7 @@ public class UploadsTableModel extends PFComponent implements TableModel,
     public Upload getUploadAtRow(int rowIndex) {
         synchronized (uploads) {
             if (rowIndex >= uploads.size() || rowIndex == -1) {
-                log.severe(
+                logSevere(
                     "Illegal rowIndex requested. rowIndex " + rowIndex
                         + ", uploads " + uploads.size());
                 return null;
@@ -137,7 +133,7 @@ public class UploadsTableModel extends PFComponent implements TableModel,
     // Application logic ******************************************************
 
     public void clearCompleted() {
-        log.warning("Clearing completed uploads");
+        logWarning("Clearing completed uploads");
 
         List<Upload> ul2remove = new LinkedList<Upload>();
         synchronized (uploads) {
@@ -289,7 +285,7 @@ public class UploadsTableModel extends PFComponent implements TableModel,
             if (index >= 0) {
                 rowsUpdated(index, index);
             } else {
-                log.severe(
+                logSevere(
                     "Download not found in model: " + event.getDownload());
                 rowsUpdatedAll();
             }
@@ -372,10 +368,10 @@ public class UploadsTableModel extends PFComponent implements TableModel,
         synchronized (uploads) {
             index = uploads.indexOf(upload);
             if (index >= 0) {
-                log.finer("Remove upload from tablemodel: " + upload);
+                logFiner("Remove upload from tablemodel: " + upload);
                 uploads.remove(index);
             } else {
-                log.severe(
+                logSevere(
                     "Unable to remove upload from tablemodel, not found: "
                         + upload);
             }
@@ -403,10 +399,10 @@ public class UploadsTableModel extends PFComponent implements TableModel,
             try {
                 SwingUtilities.invokeAndWait(wrapper);
             } catch (InterruptedException e) {
-                log.log(Level.FINER, "Interrupteed while updating downloadstable", e);
+                logFiner("Interrupteed while updating downloadstable", e);
 
             } catch (InvocationTargetException e) {
-                log.log(Level.SEVERE, "Unable to update downloadstable", e);
+                logSevere("Unable to update downloadstable", e);
             }
         }
     }
@@ -458,7 +454,7 @@ public class UploadsTableModel extends PFComponent implements TableModel,
 
     public Object getValueAt(int rowIndex, int columnIndex) {
         if (rowIndex >= uploads.size()) {
-            log.severe(
+            logSevere(
                 "Illegal rowIndex requested. rowIndex " + rowIndex
                     + ", uploads " + uploads.size());
             return null;
@@ -532,7 +528,7 @@ public class UploadsTableModel extends PFComponent implements TableModel,
      * Fires an modelevent to all listeners, that model has changed
      */
     private void modelChanged(final TableModelEvent e) {
-        // log.finer("Upload tablemodel changed");
+        // logFiner("Upload tablemodel changed");
         Runnable runner = new Runnable() {
             public void run() {
                 synchronized (listeners) {

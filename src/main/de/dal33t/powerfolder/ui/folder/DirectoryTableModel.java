@@ -45,7 +45,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Logger;
 
 /**
  * Maps a Directory to a tablemodel, optional uses a recursive list (all the
@@ -58,8 +57,6 @@ import java.util.logging.Logger;
 public class DirectoryTableModel extends PFComponent implements TableModel,
     SortedTableModel
 {
-
-    private static final Logger log = Logger.getLogger(DirectoryTableModel.class.getName());
 
     private Set<TableModelListener> tableListener = new HashSet<TableModelListener>();
     private Directory directory;
@@ -281,7 +278,7 @@ public class DirectoryTableModel extends PFComponent implements TableModel,
 
             }
             if (rowIndex >= displayList.size() || rowIndex < 0) {
-                log.severe(
+                logSevere(
                     "Illegal access. want to get row " + rowIndex + ", have "
                         + displayList.size());
                 return null;

@@ -40,7 +40,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.util.logging.Logger;
 
 /**
  * Dialog opened, when an programm update is detected and downloading
@@ -49,8 +48,6 @@ import java.util.logging.Logger;
  * @version $Revision: 1.4 $
  */
 public class DownloadUpdateDialog extends PFUIComponent {
-
-    private static final Logger log = Logger.getLogger(DownloadUpdateDialog.class.getName());
 
     private JDialog uiComponent;
     private JProgressBar processBar;
@@ -144,7 +141,7 @@ public class DownloadUpdateDialog extends PFUIComponent {
      * Opens the dialog
      */
     public void openInEDT() {
-        log.fine("Opening download dialog");
+        logFine("Opening download dialog");
         UIUtil.invokeLaterInEDT(new Runnable() {
             public void run() {
                 getUIComponent().setVisible(true);

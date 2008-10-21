@@ -81,7 +81,7 @@ public class MessageListenerSupport {
         }
         // String msgType = (messageType == null) ? "all messages" : messageType
         // .getName();
-        // source.log.finer(
+        // source.logFiner(
         // "Added message listener (" + aListener + ") for " + msgType);
     }
 
@@ -179,7 +179,7 @@ public class MessageListenerSupport {
         }
 
         if (lSpcCount > 0 || lGenCount > 0) {
-            // theSource.log.finer(
+            // theSource.logFiner(
             // "Deligated message (" + message.getClass().getName() + ") to "
             // + lGenCount + " general and " + lSpcCount
             // + " special message listener");

@@ -20,16 +20,11 @@
 package de.dal33t.powerfolder.disk;
 
 import de.dal33t.powerfolder.message.Invitation;
-
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-import java.util.StringTokenizer;
+import java.util.*;
 
 /**
  * Instance of this class describe how a folder should be synchronized with the

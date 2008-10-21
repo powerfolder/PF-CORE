@@ -40,7 +40,6 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.logging.Logger;
 
 /*
  * This class creates a dialog box which is designed to display 
@@ -50,8 +49,6 @@ import java.util.logging.Logger;
  *
  */
 public class ErrorDialog extends PFUIComponent {
-
-    private static final Logger log = Logger.getLogger(ErrorDialog.class.getName());
 
     private JButton okButton;
     private JButton detailsButton;
@@ -79,7 +76,7 @@ public class ErrorDialog extends PFUIComponent {
     public final void open(String errorTxt, int kindOfError) {
         this.errorTxt = errorTxt;
         this.kindOfError = kindOfError;
-        log.finer("Open called: " + this);
+        logFiner("Open called: " + this);
         if (isOpen()) {
             close();
         }
@@ -90,7 +87,7 @@ public class ErrorDialog extends PFUIComponent {
      * Disposes the dialog.
      */
     public final void close() {
-        log.finer("Close called: " + this);
+        logFiner("Close called: " + this);
         if (uiComponent != null) {
             uiComponent.dispose();
             uiComponent = null;
@@ -101,7 +98,7 @@ public class ErrorDialog extends PFUIComponent {
      * Disposes the dialog.
      */
     public final boolean isOpen() {
-        log.finer("Close called: " + this);
+        logFiner("Close called: " + this);
         if (uiComponent != null) {
             return true;
         }
@@ -271,7 +268,7 @@ public class ErrorDialog extends PFUIComponent {
         initComponents();
 
         if (uiComponent == null) {
-            log.finer("Building ui component for " + this);
+            logFiner("Building ui component for " + this);
             uiComponent = new JDialog(getUIController().getMainFrame()
                 .getUIComponent(), getTitle(), modal);
             uiComponent.setResizable(false);

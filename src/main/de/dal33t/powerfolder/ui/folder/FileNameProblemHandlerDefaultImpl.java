@@ -50,7 +50,7 @@ public class FileNameProblemHandlerDefaultImpl extends PFUIComponent implements
         FileNameProblemEvent fileNameProblemEvent)
     {
         if (log.isLoggable(Level.FINE)) {
-            log.fine(
+            logFine(
                 fileNameProblemEvent.getFolder() + " "
                     + fileNameProblemEvent.getProblems().size()
                     + " problematic files");

@@ -37,8 +37,6 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * A dialog that gets displayed when the free version hits its limits.
@@ -47,8 +45,6 @@ import java.util.logging.Logger;
  * @version $Revision: 1.5 $
  */
 public class FreeLimitationDialog extends BaseDialog {
-
-    private static final Logger log = Logger.getLogger(FreeLimitationDialog.class.getName());
 
     protected FreeLimitationDialog(Controller controller) {
         super(controller, false);
@@ -118,7 +114,7 @@ public class FreeLimitationDialog extends BaseDialog {
                 try {
                     BrowserLauncher.openURL(Constants.POWERFOLDER_PRO_URL);
                 } catch (IOException e1) {
-                    log.log(Level.SEVERE, "IOException", e1);
+                    logSevere("IOException", e1);
                 }
             }
         });

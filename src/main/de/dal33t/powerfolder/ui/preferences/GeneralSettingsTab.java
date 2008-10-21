@@ -68,12 +68,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.Locale;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
-    private static final Logger log = Logger.getLogger(GeneralSettingsTab.class.getName());
     private JPanel panel;
     private JTextField nickField;
     private JCheckBox createDesktopShortcutsBox;
@@ -239,7 +236,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                                         evt.getNewValue().equals(true));
                                 }
                             } catch (IOException e) {
-                                log.log(Level.SEVERE, "IOException", e);
+                                logSevere("IOException", e);
                             }
                         }
                     });

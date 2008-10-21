@@ -40,7 +40,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.util.logging.Logger;
 
 /**
  * Holds the up/forward and back buttons and acts on a NavigationModel.
@@ -52,8 +51,6 @@ import java.util.logging.Logger;
 public class NavigationToolBar extends PFUIComponent implements
     NavigationListener
 {
-
-    private static final Logger log = Logger.getLogger(NavigationToolBar.class.getName());
 
     private JToolBar toolbar;
     // buttons
@@ -221,7 +218,7 @@ public class NavigationToolBar extends PFUIComponent implements
         } else if (userObject == RootNode.DEBUG_NODE_LABEL) {
             return "Debug";
         } else {
-            log.warning("Unknown content: " + userObject);
+            logWarning("Unknown content: " + userObject);
             return "";
         }
     }

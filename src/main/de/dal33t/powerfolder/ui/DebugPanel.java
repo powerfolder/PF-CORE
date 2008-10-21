@@ -43,7 +43,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 
 /**
@@ -55,7 +54,6 @@ import java.util.prefs.Preferences;
  */
 public class DebugPanel extends PFUIComponent implements UIPanel {
 
-    private static final Logger log = Logger.getLogger(DebugPanel.class.getName());
     private JPanel panel;
     private TextPanel textPanel;
 
@@ -365,7 +363,7 @@ public class DebugPanel extends PFUIComponent implements UIPanel {
                 try {
                     getController().getConnectionListener().start();
                 } catch (ConnectionException ce) {
-                    log.log(Level.SEVERE, "Problems starting listener "
+                    logSevere("Problems starting listener "
                             + getController().getConnectionListener(), ce);
                 }
                 shutdownConnectionListener.setEnabled(true);
@@ -386,7 +384,7 @@ public class DebugPanel extends PFUIComponent implements UIPanel {
                 try {
                     getController().getBroadcastManager().start();
                 } catch (ConnectionException ce) {
-                    log.log(Level.SEVERE, "Problems starting manager "
+                    logSevere("Problems starting manager "
                             + getController().getBroadcastManager(), ce);
                 }
                 shutdownBroadcastMananger.setEnabled(true);

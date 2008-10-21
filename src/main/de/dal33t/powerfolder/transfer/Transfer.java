@@ -26,10 +26,10 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.TransferCounter;
+import de.dal33t.powerfolder.util.logging.Loggable;
 
 import java.io.Serializable;
 import java.util.Date;
-import java.util.logging.Logger;
 
 /**
  * Abstract version of a Transfer.<BR>
@@ -38,9 +38,8 @@ import java.util.logging.Logger;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.14 $
  */
-public abstract class Transfer implements Serializable {
+public abstract class Transfer extends Loggable implements Serializable {
 
-    private static final Logger log = Logger.getLogger(Transfer.class.getName());
     private static final long serialVersionUID = 100L;
 
     private transient TransferManager transferManager;
@@ -150,7 +149,7 @@ public abstract class Transfer implements Serializable {
      */
     public void init(TransferManager aTransferManager) {
         if (transferManager != null) {
-            log.severe(
+            logSevere(
                 "Unable to set TransferManager. Having already one. " + this);
             return;
         }
@@ -299,18 +298,18 @@ public abstract class Transfer implements Serializable {
             return false;
         }
         if (getPartner() == null) {
-            log.warning("Abort cause: partner is null.");
+            logWarning("Abort cause: partner is null.");
             return true;
         }
         if (!getPartner().isCompleteyConnected()) {
-            log.warning("Abort cause: "
+            logWarning("Abort cause: "
                 + getPartner().getNick() + " not connected.");
             return true;
         }
         boolean partnerOnFolder = stillPartnerOnFolder();
         if (!partnerOnFolder) {
             // broken if partner left folder
-            log.warning("Abort cause: "
+            logWarning("Abort cause: "
                 + getPartner().getNick() + " not on folder.");
             return true;
         }

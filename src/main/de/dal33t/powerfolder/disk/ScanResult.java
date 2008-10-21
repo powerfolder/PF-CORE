@@ -19,9 +19,9 @@
 */
 package de.dal33t.powerfolder.disk;
 
-import java.util.*;
-
 import de.dal33t.powerfolder.light.FileInfo;
+
+import java.util.*;
 
 /**
  * This class lists all the differences between the database of files in a

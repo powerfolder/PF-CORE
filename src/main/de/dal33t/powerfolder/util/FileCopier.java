@@ -48,8 +48,6 @@ import java.io.OutputStream;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.TimerTask;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * FileCopier to copy files in a different Thread, shows a progress bar after
@@ -60,7 +58,6 @@ import java.util.logging.Logger;
  */
 public class FileCopier extends PFComponent {
 
-    private static final Logger log = Logger.getLogger(FileCopier.class.getName());
     private static final String TEMP_FILENAME_SUFFIX = "(copy_temp_powerfolder)";
 
     private JDialog dialog;
@@ -142,7 +139,7 @@ public class FileCopier extends PFComponent {
             try {
                 EventQueue.invokeAndWait(runner);
             } catch (Exception e) {
-                log.log(Level.SEVERE, "Exception", e);
+                logSevere("Exception", e);
             }
         }
         
@@ -169,7 +166,7 @@ public class FileCopier extends PFComponent {
                 // call the directory to notify we have a new file
                 currentFromTo.directory.add(currentFromTo.to);
             } catch (IOException ioe) {
-                log.log(Level.SEVERE, "IOException", ioe);
+                logSevere("IOException", ioe);
             }
 
         }
@@ -281,15 +278,15 @@ public class FileCopier extends PFComponent {
         if (from.equals(to)) {
             throw new IllegalArgumentException("cannot copy onto itself");
         }
-        log.finer("coping file start: "+ from + " to: " + to);
+        logFiner("coping file start: "+ from + " to: " + to);
         File backup = new File(to.getAbsoluteFile()+ TEMP_FILENAME_SUFFIX);
         if (to.exists()) {
             //try create backup (will be restored on abort)
             if (to.renameTo(backup)) {
                 backup.deleteOnExit();
-                log.finer("backup created: " +backup);
+                logFiner("backup created: " +backup);
             } else {
-                log.finer("backup failed: " +backup);
+                logFiner("backup failed: " +backup);
                 //backup failed
                 //delete old one
                 if (!to.delete()) {
@@ -321,11 +318,11 @@ public class FileCopier extends PFComponent {
                     to.delete();
                     //restore backup if its there
                     if (backup.exists()) {
-                        log.fine("backup restore? :" +backup);
+                        logFine("backup restore? :" +backup);
                         if (backup.renameTo(to)) {
-                            log.finer("backup restore succes :" +backup);
+                            logFiner("backup restore succes :" +backup);
                         } else {
-                            log.finer("backup restore failed :" +backup);
+                            logFiner("backup restore failed :" +backup);
                         }
                     }
                     break;
@@ -347,10 +344,10 @@ public class FileCopier extends PFComponent {
             //remove the backup
             if (backup.exists()) {
                 backup.delete();
-                log.finer("backup removed:" +backup);
+                logFiner("backup removed:" +backup);
             }                
         }
-        log.finer("coping file end: "+ from + " to: " + to);
+        logFiner("coping file end: "+ from + " to: " + to);
     }
 
     /**

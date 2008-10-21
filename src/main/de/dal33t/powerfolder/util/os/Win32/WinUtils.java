@@ -20,11 +20,11 @@
 package de.dal33t.powerfolder.util.os.Win32;
 
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.logging.Loggable;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.logging.Logger;
 
 /**
  * Utilities for windows.
@@ -33,9 +33,7 @@ import java.util.logging.Logger;
  * @author <A HREF="mailto:bytekeeper@powerfolder.com">Dennis Waldherr</A>
  * @version $Revision$
  */
-public class WinUtils {
-
-    private static final Logger log = Logger.getLogger(WinUtils.class.getName());
+public class WinUtils extends Loggable {
 
     public static final String SHORTCUTNAME = "PowerFolder.lnk";
 
@@ -117,21 +115,21 @@ public class WinUtils {
 			new File(System.getProperty("java.class.path")).getParentFile(),
 			"PowerFolder.exe");
 		if (!pfile.exists()) {
-			log.severe("Couldn't find PowerFolder executable! "
+			logSevere("Couldn't find PowerFolder executable! "
 					+ "Note: Setting up a shortcut only works "
 					+ "when PowerFolder was started by PowerFolder.exe");
 			return;
 		}
-		log.finer("Found " + pfile.getAbsolutePath());
+		logFiner("Found " + pfile.getAbsolutePath());
 		File pflnk = new File(getSystemFolderPath(CSIDL_STARTUP, false), SHORTCUTNAME);
         if (setup) {
             ShellLink sl = new ShellLink("--minimized", Translation
                     .getTranslation("winutils.shortcut.description"), pfile
                     .getAbsolutePath(), pfile.getParent());
-            log.finer("Creating startup link: " + pflnk.getAbsolutePath());
+            logFiner("Creating startup link: " + pflnk.getAbsolutePath());
             createLink(sl, pflnk.getAbsolutePath());
         } else {
-            log.finer("Deleting startup link.");
+            logFiner("Deleting startup link.");
             pflnk.delete();
         }
 	}

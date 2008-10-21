@@ -46,8 +46,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.TimerTask;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * A Tablemodel adapter which acts upon a transfermanager.
@@ -58,7 +56,6 @@ import java.util.logging.Logger;
 public class DownloadsTableModel extends PFComponent implements TableModel,
         SortedTableModel {
 
-    private static final Logger log = Logger.getLogger(DownloadsTableModel.class.getName());
     private static final int COLTYPE = 0;
     private static final int COLFILE = 1;
     private static final int COLPROGRESS = 2;
@@ -292,7 +289,7 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
                 }
                 addOrUpdateDownload(dl);
             } else {
-                log.severe("Download not found in model: " + dl);
+                logSevere("Download not found in model: " + dl);
             }
             rowsUpdatedAll();
         }
@@ -370,7 +367,7 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
             if (index >= 0) {
                 downloads.remove(index);
             } else {
-                log.severe(
+                logSevere(
                     "Unable to remove download from tablemodel, not found: "
                         + download);
             }
@@ -421,10 +418,10 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
             try {
                 SwingUtilities.invokeAndWait(wrapper);
             } catch (InterruptedException e) {
-                log.log(Level.FINER, "Interrupteed while updating downloadstable", e);
+                logFiner("Interrupteed while updating downloadstable", e);
 
             } catch (InvocationTargetException e) {
-                log.log(Level.FINER, "Unable to update downloadstable", e);
+                logFiner("Unable to update downloadstable", e);
 
             }
         }
@@ -464,7 +461,7 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
 
     public Object getValueAt(int rowIndex, int columnIndex) {
         if (rowIndex >= downloads.size()) {
-            log.severe(
+            logSevere(
                 "Illegal rowIndex requested. rowIndex " + rowIndex
                     + ", downloads " + downloads.size());
             return null;
@@ -536,7 +533,7 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
      * Fires an modelevent to all listeners, that model has changed
      */
     private void modelChanged(final TableModelEvent e) {
-        // log.finer("Download tablemodel changed");
+        // logFiner("Download tablemodel changed");
         Runnable runner = new Runnable() {
             public void run() {
                 synchronized (listeners) {

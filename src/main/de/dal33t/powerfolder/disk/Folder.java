@@ -19,73 +19,29 @@
  */
 package de.dal33t.powerfolder.disk;
 
-import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Constants;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.*;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_SYNC_PROFILE;
 import de.dal33t.powerfolder.disk.ScanResult.ResultState;
-import de.dal33t.powerfolder.event.FileNameProblemEvent;
-import de.dal33t.powerfolder.event.FileNameProblemHandler;
-import de.dal33t.powerfolder.event.FolderEvent;
-import de.dal33t.powerfolder.event.FolderListener;
-import de.dal33t.powerfolder.event.FolderMembershipEvent;
-import de.dal33t.powerfolder.event.FolderMembershipListener;
-import de.dal33t.powerfolder.event.ListenerSupportFactory;
+import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.message.FileList;
-import de.dal33t.powerfolder.message.FolderFilesChanged;
-import de.dal33t.powerfolder.message.Invitation;
-import de.dal33t.powerfolder.message.Message;
-import de.dal33t.powerfolder.message.ScanCommand;
+import de.dal33t.powerfolder.message.*;
 import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.transfer.TransferPriorities;
 import de.dal33t.powerfolder.transfer.TransferPriorities.TransferPriority;
-import de.dal33t.powerfolder.util.Convert;
-import de.dal33t.powerfolder.util.Debug;
-import de.dal33t.powerfolder.util.FileCopier;
-import de.dal33t.powerfolder.util.FileUtils;
-import de.dal33t.powerfolder.util.InvitationUtil;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.util.logging.LoggingManager;
+import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.compare.DiskItemComparator;
+import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
 import de.dal33t.powerfolder.util.ui.NeverAskAgainResponse;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.SortedMap;
-import java.util.TimerTask;
-import java.util.TreeMap;
+import java.io.*;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -271,7 +227,7 @@ public class Folder extends PFComponent {
         try {
             checkBaseDir(localBase, false);
         } catch (FolderException e) {
-            log.warning("local base inaccessible for " + fInfo.name);
+            logWarning("local base inaccessible for " + fInfo.name);
             deviceDisconnected = true;
         }
 
@@ -283,7 +239,7 @@ public class Folder extends PFComponent {
         // put myself in membership
         join0(controller.getMySelf());
 
-        log.fine("Opening " + this.toString() + " at '"
+        logFine("Opening " + this.toString() + " at '"
             + localBase.getAbsolutePath() + "'");
 
         FileFilter allExceptSystemDirFilter = new FileFilter() {
@@ -297,7 +253,7 @@ public class Folder extends PFComponent {
             // Empty folder... no scan required for database
             hasOwnDatabase = true;
         } else if (!syncProfile.isAutoDetectLocalChanges()) {
-            log.warning("Folder is not empty, "
+            logWarning("Folder is not empty, "
                 + "does not have an own database and "
                 + "is not on auto-detect changed");
         }
@@ -319,8 +275,8 @@ public class Folder extends PFComponent {
 
         // // maintain desktop shortcut if wanted
         // setDesktopShortcut();
-        if (log.isLoggable(Level.FINER)) {
-            log.finer("Has own database (" + getName() + ")? " + hasOwnDatabase);
+        if (isFiner()) {
+            logFiner("Has own database (" + getName() + ")? " + hasOwnDatabase);
         }
         if (hasOwnDatabase) {
             if (LoggingManager.isLogToFile()) {
@@ -372,7 +328,7 @@ public class Folder extends PFComponent {
             // add to the DB
             FileInfo old = knownFiles.put(newFileInfo, newFileInfo);
             if (old != null) {
-                log.severe("hmmzzz it was new!?!?!?!: old: "
+                logSevere("hmmzzz it was new!?!?!?!: old: "
                     + old.toDetailString() + " , new: "
                     + newFileInfo.toDetailString());
                 // Remove old file from info
@@ -393,8 +349,8 @@ public class Folder extends PFComponent {
             // Runnable runner = new Runnable() {
             // public void run() {
             if (rootDirectory != null) {
-                if (log.isLoggable(Level.FINER)) {
-                    log.finer("Adding " + scanResult.getNewFiles().size()
+                if (isFiner()) {
+                    logFiner("Adding " + scanResult.getNewFiles().size()
                         + " to directory");
                 }
                 for (FileInfo newFileInfo : scanResult.getNewFiles()) {
@@ -447,7 +403,7 @@ public class Folder extends PFComponent {
 
         hasOwnDatabase = true;
         if (log.isLoggable(Level.FINE)) {
-            log.fine("Scanned " + scanResult.getTotalFilesCount() + " total, "
+            logFine("Scanned " + scanResult.getTotalFilesCount() + " total, "
                 + scanResult.getChangedFiles().size() + " changed, "
                 + scanResult.getNewFiles().size() + " new, "
                 + scanResult.getRestoredFiles().size() + " restored, "
@@ -473,8 +429,8 @@ public class Folder extends PFComponent {
         // if (fileInfosToConvert.size() > 0) {
         // convertToMeta(fileInfosToConvert);
         // }
-        if (log.isLoggable(Level.FINER)) {
-            log.finer("commitScanResult DONE");
+        if (isFiner()) {
+            logFiner("commitScanResult DONE");
         }
     }
 
@@ -487,7 +443,7 @@ public class Folder extends PFComponent {
     // .getFolderRepository().getFileMetaInfoReader().convert(
     // Folder.this, fileInfosToConvert);
     // if (logEnabled) {
-    // log.fine("Converted: " + converted);
+    // logFine("Converted: " + converted);
     // }
     // for (FileInfo convertedFileInfo : converted) {
     // FileInfo old = knownFiles.put(convertedFileInfo,
@@ -583,7 +539,7 @@ public class Folder extends PFComponent {
         if (!localBase.exists()) {
             if (!localBase.mkdirs()) {
                 if (!quite) {
-                    log.severe(" not able to create folder(" + getName()
+                    logSevere(" not able to create folder(" + getName()
                         + "), (sub) dir (" + localBase + ") creation failed");
                 }
                 throw new FolderException(currentInfo, Translation
@@ -592,7 +548,7 @@ public class Folder extends PFComponent {
             }
         } else if (!localBase.isDirectory()) {
             if (!quite) {
-                log.severe(" not able to create folder(" + getName()
+                logSevere(" not able to create folder(" + getName()
                     + "), (sub) dir (" + localBase + ") is no dir");
             }
             throw new FolderException(currentInfo, Translation.getTranslation(
@@ -653,14 +609,14 @@ public class Folder extends PFComponent {
         if (!targetFile.getParentFile().exists()
             && !targetFile.getParentFile().mkdirs())
         {
-            log.severe("Couldn't create directory structure for " + targetFile);
+            logSevere("Couldn't create directory structure for " + targetFile);
             return false;
         }
         synchronized (deleteLock) {
             if (targetFile.exists()) {
                 // if file was a "newer file" the file already esists here
-                if (log.isLoggable(Level.FINER)) {
-                    log.finer("file already exists: " + targetFile
+                if (isFiner()) {
+                    logFiner("file already exists: " + targetFile
                         + " moving to recycle bin");
                 }
                 deleteFile(fInfo, targetFile);
@@ -668,14 +624,14 @@ public class Folder extends PFComponent {
         }
         synchronized (scanLock) {
             if (!tempFile.renameTo(targetFile)) {
-                log.warning("Was not able to rename tempfile, copiing "
+                logWarning("Was not able to rename tempfile, copiing "
                     + tempFile.getAbsolutePath());
                 try {
                     FileUtils.copyFile(tempFile, targetFile);
                 } catch (IOException e) {
                     // TODO give a diskfull warning?
                     log.log(Level.FINE, "IOException", e);
-                    log.severe("Unable to store completed download "
+                    logSevere("Unable to store completed download "
                         + targetFile.getAbsolutePath() + ". " + e.getMessage()
                         + ". " + fInfo.toDetailString());
                     return false;
@@ -683,13 +639,13 @@ public class Folder extends PFComponent {
             }
 
             if (tempFile.exists() && !tempFile.delete()) {
-                log.severe("Unable to remove temp file: " + tempFile);
+                logSevere("Unable to remove temp file: " + tempFile);
             }
 
             // Set modified date of remote
             if (!targetFile.setLastModified(fInfo.getModifiedDate().getTime()))
             {
-                log.severe("Failed to set modified date on " + targetFile
+                logSevere("Failed to set modified date on " + targetFile
                     + " to " + fInfo.getModifiedDate().getTime());
                 return false;
             }
@@ -728,8 +684,8 @@ public class Folder extends PFComponent {
             checkBaseDir(localBase, true);
             deviceDisconnected = false;
         } catch (FolderException e) {
-            log.warning("invalid local base: " + e);
-            log.log(Level.FINER, "FolderException", e);
+            logWarning("invalid local base: " + e);
+            logFiner("FolderException", e);
             deviceDisconnected = true;
             return false;
         }
@@ -740,7 +696,7 @@ public class Folder extends PFComponent {
                 .getFolderScanner();
             result = scanner.scanFolderWaitIfBusy(this);
             if (!result.getResultState().equals(ResultState.SCANNED)) {
-                log.warning("Scan result: " + result.getResultState());
+                logWarning("Scan result: " + result.getResultState());
             }
         }
 
@@ -774,8 +730,8 @@ public class Folder extends PFComponent {
      */
     private boolean autoScanRequired() {
         if (!syncProfile.isAutoDetectLocalChanges()) {
-            if (log.isLoggable(Level.FINER)) {
-                log.finer("Skipping scan");
+            if (isFiner()) {
+                logFiner("Skipping scan");
             }
             return false;
         }
@@ -785,8 +741,8 @@ public class Folder extends PFComponent {
 
         if (syncProfile.getConfiguration().isDailySync()) {
             if (!shouldDoDailySync()) {
-                if (log.isLoggable(Level.FINER)) {
-                    log.finer("Skipping daily scan");
+                if (isFiner()) {
+                    logFiner("Skipping daily scan");
                 }
                 return false;
             }
@@ -795,8 +751,8 @@ public class Folder extends PFComponent {
             long secondsSinceLastSync = (System.currentTimeMillis() - lastScan
                 .getTime()) / 1000;
             if (secondsSinceLastSync < syncProfile.getSecondsBetweenScans()) {
-                if (log.isLoggable(Level.FINER)) {
-                    log.finer("Skipping regular scan");
+                if (isFiner()) {
+                    logFiner("Skipping regular scan");
                 }
                 return false;
             }
@@ -811,8 +767,8 @@ public class Folder extends PFComponent {
         Calendar lastScannedCalendar = new GregorianCalendar();
         lastScannedCalendar.setTime(lastScan);
         int lastScannedDay = lastScannedCalendar.get(Calendar.DAY_OF_YEAR);
-        if (log.isLoggable(Level.FINER)) {
-            log.finer("Last scanned " + lastScannedCalendar.getTime());
+        if (isFiner()) {
+            logFiner("Last scanned " + lastScannedCalendar.getTime());
         }
 
         Calendar todayCalendar = new GregorianCalendar();
@@ -824,8 +780,8 @@ public class Folder extends PFComponent {
                 .get(Calendar.YEAR))
         {
             // Scanned today, so skip.
-            if (log.isLoggable(Level.FINER)) {
-                log.finer("Skipping daily scan (already scanned today)");
+            if (isFiner()) {
+                logFiner("Skipping daily scan (already scanned today)");
             }
             return false;
         }
@@ -834,8 +790,8 @@ public class Folder extends PFComponent {
         int currentHour = todayCalendar.get(Calendar.HOUR_OF_DAY);
         if (requiredSyncHour != currentHour) {
             // Not correct time, so skip.
-            if (log.isLoggable(Level.FINER)) {
-                log.finer("Skipping daily scan (not correct time)");
+            if (isFiner()) {
+                logFiner("Skipping daily scan (not correct time)");
             }
             return false;
         }
@@ -851,8 +807,8 @@ public class Folder extends PFComponent {
                 if (currentDay == Calendar.SATURDAY
                     || currentDay == Calendar.SUNDAY)
                 {
-                    if (log.isLoggable(Level.FINER)) {
-                        log.finer("Skipping daily scan (not weekday)");
+                    if (isFiner()) {
+                        logFiner("Skipping daily scan (not weekday)");
                     }
                     return false;
                 }
@@ -861,15 +817,15 @@ public class Folder extends PFComponent {
                 if (currentDay != Calendar.SATURDAY
                     && currentDay != Calendar.SUNDAY)
                 {
-                    if (log.isLoggable(Level.FINER)) {
-                        log.finer("Skipping daily scan (not weekend)");
+                    if (isFiner()) {
+                        logFiner("Skipping daily scan (not weekend)");
                     }
                     return false;
                 }
             } else {
                 if (currentDay != requiredSyncDay) {
-                    if (log.isLoggable(Level.FINER)) {
-                        log.finer("Skipping daily scan (not correct day)");
+                    if (isFiner()) {
+                        logFiner("Skipping daily scan (not correct day)");
                     }
                     return false;
                 }
@@ -901,14 +857,14 @@ public class Folder extends PFComponent {
                 fInfo.setModifiedInfo(from.getInfo(), fInfo.getModifiedDate());
             }
 
-            if (log.isLoggable(Level.FINER)) {
-                log.finer("Scanning file: " + fInfo + ", folderId: " + fInfo);
+            if (isFiner()) {
+                logFiner("Scanning file: " + fInfo + ", folderId: " + fInfo);
             }
             File file = getDiskFile(fInfo);
 
             if (!file.canRead()) {
                 // ignore not readable
-                log.warning("File not readable: " + file);
+                logWarning("File not readable: " + file);
                 return false;
             }
 
@@ -919,7 +875,7 @@ public class Folder extends PFComponent {
                 if (!file.isHidden()) {
                     FileUtils.makeHiddenOnWindows(file);
                 }
-                log.fine("Ignoring folder database file: " + file);
+                logFine("Ignoring folder database file: " + file);
                 return false;
             }
 
@@ -929,13 +885,13 @@ public class Folder extends PFComponent {
                 if (FileUtils.isCompletedTempDownloadFile(file)
                     || fInfo.isDeleted())
                 {
-                    log.fine("Removing temp download file: " + file);
+                    logFine("Removing temp download file: " + file);
                     if (!file.delete()) {
-                        log.severe("Failed to remove temp download file: "
+                        logSevere("Failed to remove temp download file: "
                             + file);
                     }
                 } else {
-                    log.fine("Ignoring incomplete download file: " + file);
+                    logFine("Ignoring incomplete download file: " + file);
                 }
                 return false;
             }
@@ -952,7 +908,7 @@ public class Folder extends PFComponent {
             /*
              * if (file.exists()) { File placeHolderFile =
              * Util.getPlaceHolderFile(file); if (placeHolderFile.exists()) {
-             * log.fine("Removing placeholder file for: " + file);
+             * logFine("Removing placeholder file for: " + file);
              * placeHolderFile.delete(); } }
              */
             if (PreferencesEntry.FILE_NAME_CHECK
@@ -964,8 +920,8 @@ public class Folder extends PFComponent {
             // link new file to our folder
             fInfo.setFolderInfo(this.currentInfo);
             if (!isKnown(fInfo)) {
-                if (log.isLoggable(Level.FINER)) {
-                    log.finer(fInfo + ", modified by: " + fInfo.getModifiedBy());
+                if (isFiner()) {
+                    logFiner(fInfo + ", modified by: " + fInfo.getModifiedBy());
                 }
                 // Update last - modified data
                 MemberInfo modifiedBy = fInfo.getModifiedBy();
@@ -998,8 +954,8 @@ public class Folder extends PFComponent {
                 // Fire folder change event
                 // fireEvent(new FolderChanged());
 
-                if (log.isLoggable(Level.FINER)) {
-                    log.finer(this.toString() + ": Local file scanned: "
+                if (isFiner()) {
+                    logFiner(this.toString() + ": Local file scanned: "
                         + fInfo.toDetailString());
                 }
                 return true;
@@ -1011,8 +967,8 @@ public class Folder extends PFComponent {
             boolean fileChanged = dbFile.syncFromDiskIfRequired(
                 getController(), file);
 
-            if (log.isLoggable(Level.FINER)) {
-                log.finer("File already known: " + fInfo);
+            if (isFiner()) {
+                logFiner("File already known: " + fInfo);
             }
 
             return fileChanged;
@@ -1033,7 +989,7 @@ public class Folder extends PFComponent {
         String totalName = localBase.getName() + fileInfo.getName();
 
         if (totalName.length() >= 255) {
-            log.warning("path maybe to long: " + fileInfo);
+            logWarning("path maybe to long: " + fileInfo);
             // path may become to long
             if (UIUtil.isAWTAvailable() && !getController().isConsoleMode()) {
                 String title = Translation
@@ -1051,10 +1007,10 @@ public class Folder extends PFComponent {
                 if (response.isNeverAskAgain()) {
                     PreferencesEntry.FILE_NAME_CHECK.setValue(getController(),
                         false);
-                    log.warning("store do not show this dialog again");
+                    logWarning("store do not show this dialog again");
                 }
             } else {
-                log.warning("Path maybe to long for folder: " + getName()
+                logWarning("Path maybe to long for folder: " + getName()
                     + " File:" + fileInfo.getName());
             }
         }
@@ -1066,7 +1022,7 @@ public class Folder extends PFComponent {
         // String[] parts = totalName.split("\\/");
         // for (String pathPart : parts) {
         // if (pathPart.length() > 30) {
-        // log.warning("filename or dir maybe to long: " + fileInfo);
+        // logWarning("filename or dir maybe to long: " + fileInfo);
         // // (sub)directory name or filename to long
         // if (Util.isAWTAvailable() && !getController().isConsoleMode()) {
         // String title = Translation
@@ -1083,10 +1039,10 @@ public class Folder extends PFComponent {
         // if (!showAgain) {
         // getController().getPreferences().putBoolean(
         // PREF_FILE_NAME_CHECK, false);
-        // log.warning("store do not show this dialog again");
+        // logWarning("store do not show this dialog again");
         // }
         // } else {
-        // log.warning(
+        // logWarning(
         // "Filename or subdirectory name maybe to long for folder: "
         // + getName() + " File:" + fileInfo.getName());
         //
@@ -1118,7 +1074,7 @@ public class Folder extends PFComponent {
             currentInfo.removeFile(old);
         }
 
-        // log.warning("Adding " + fInfo.getClass() + ", removing " + old);
+        // logWarning("Adding " + fInfo.getClass() + ", removing " + old);
 
         // Add file to folder
         currentInfo.addFile(fInfo);
@@ -1142,14 +1098,14 @@ public class Folder extends PFComponent {
      * @return true if the folder was changed
      */
     private boolean removeFileLocal(FileInfo fInfo) {
-        if (log.isLoggable(Level.FINER)) {
-            log.finer("Remove file local: " + fInfo + ", Folder equal ? "
+        if (isFiner()) {
+            logFiner("Remove file local: " + fInfo + ", Folder equal ? "
                 + Util.equals(fInfo.getFolderInfo(), currentInfo));
         }
         boolean folderChanged = false;
         if (!isKnown(fInfo)) {
             if (log.isLoggable(Level.WARNING)) {
-                log.warning("Tried to remove a not-known file: "
+                logWarning("Tried to remove a not-known file: "
                     + fInfo.toDetailString());
             }
             return false;
@@ -1219,7 +1175,7 @@ public class Folder extends PFComponent {
     private boolean loadFolderDB(File dbFile) {
         synchronized (scanLock) {
             if (!dbFile.exists()) {
-                log.fine(this + ": Database file not found: "
+                logFine(this + ": Database file not found: "
                     + dbFile.getAbsolutePath());
                 return false;
             }
@@ -1239,7 +1195,7 @@ public class Folder extends PFComponent {
                 // read them always ..
                 MemberInfo[] members1 = (MemberInfo[]) in.readObject();
                 // Do not load members
-                log.fine("Loading " + members1.length + " members");
+                logFine("Loading " + members1.length + " members");
                 for (MemberInfo memberInfo : members1) {
                     if (memberInfo.isInvalid(getController())) {
                         continue;
@@ -1256,13 +1212,13 @@ public class Folder extends PFComponent {
                     for (FileInfo info : infos) {
                         diskItemFilter.addPattern(info.getName());
                         if (log.isLoggable(Level.FINE)) {
-                            log.fine("ignore@" + info.getName());
+                            logFine("ignore@" + info.getName());
                         }
                     }
                 } catch (java.io.EOFException e) {
-                    log.fine("ignore nothing for " + this);
+                    logFine("ignore nothing for " + this);
                 } catch (Exception e) {
-                    log.log(Level.SEVERE, "read ignore error: " + this + e.getMessage(), e);
+                    logSevere("read ignore error: " + this + e.getMessage(), e);
                 }
 
                 try {
@@ -1270,27 +1226,27 @@ public class Folder extends PFComponent {
                     if (object instanceof Date) {
                         lastScan = (Date) object;
                         if (log.isLoggable(Level.FINE)) {
-                            log.fine("lastScan" + lastScan);
+                            logFine("lastScan" + lastScan);
                         }
                     }
                 } catch (java.io.EOFException e) {
                     // ignore nothing available for ignore
-                    log.fine("ignore nothing for " + this);
+                    logFine("ignore nothing for " + this);
                 } catch (Exception e) {
-                    log.log(Level.SEVERE, "read ignore error: " + this + e.getMessage(), e);
+                    logSevere("read ignore error: " + this + e.getMessage(), e);
                 }
                 in.close();
                 fIn.close();
 
-                log.fine("Loaded folder database (" + files.length
+                logFine("Loaded folder database (" + files.length
                     + " files) from " + dbFile.getAbsolutePath());
             } catch (IOException e) {
-                log.warning(this + ": Unable to read database file: "
+                logWarning(this + ": Unable to read database file: "
                     + dbFile.getAbsolutePath());
                 log.log(Level.FINE, "IOException", e);
                 return false;
             } catch (ClassNotFoundException e) {
-                log.warning(this + ": Unable to read database file: "
+                logWarning(this + ": Unable to read database file: "
                     + dbFile.getAbsolutePath());
                 log.log(Level.FINE, "ClassNotFoundException", e);
                 return false;
@@ -1319,14 +1275,14 @@ public class Folder extends PFComponent {
             return;
         }
 
-        log.fine("Unable to read folder db, even from backup. Maybe new folder?");
+        logFine("Unable to read folder db, even from backup. Maybe new folder?");
     }
 
     /**
      * Shuts down the folder
      */
     public void shutdown() {
-        log.fine("shutting down folder " + this);
+        logFine("shutting down folder " + this);
 
         // Remove listeners, not bothering them by boring shutdown events
         // disabled this so the ui is updated (more or less) that the folders
@@ -1362,11 +1318,11 @@ public class Folder extends PFComponent {
                     new FileInfo[knownFiles.size()]);
                 if (dbFile.exists()) {
                     if (!dbFile.delete()) {
-                        log.severe("Failed to delete database file: " + dbFile);
+                        logSevere("Failed to delete database file: " + dbFile);
                     }
                 }
                 if (!dbFile.createNewFile()) {
-                    log.severe("Failed to create database file: " + dbFile);
+                    logSevere("Failed to create database file: " + dbFile);
                 }
                 OutputStream fOut = new BufferedOutputStream(
                     new FileOutputStream(dbFile));
@@ -1381,12 +1337,12 @@ public class Folder extends PFComponent {
                 oOut.writeObject(new ArrayList<FileInfo>());
                 if (lastScan == null) {
                     if (log.isLoggable(Level.FINE)) {
-                        log.fine("write default time: " + new Date());
+                        logFine("write default time: " + new Date());
                     }
                     oOut.writeObject(new Date());
                 } else {
                     if (log.isLoggable(Level.FINE)) {
-                        log.fine("write time: " + lastScan);
+                        logFine("write time: " + lastScan);
                     }
                     oOut.writeObject(lastScan);
                 }
@@ -1395,7 +1351,7 @@ public class Folder extends PFComponent {
                 fOut.close();
 
                 if (log.isLoggable(Level.FINE)) {
-                    log.fine("Successfully wrote folder database file ("
+                    logFine("Successfully wrote folder database file ("
                         + files.length + " files)");
                 }
 
@@ -1406,18 +1362,18 @@ public class Folder extends PFComponent {
                 // Cleanup for older versions
                 File oldDbFile = new File(localBase, DB_FILENAME);
                 if (!oldDbFile.delete()) {
-                    log.finer("Failed to delete 'old' database file: "
+                    logFiner("Failed to delete 'old' database file: "
                         + oldDbFile);
                 }
                 File oldDbFileBackup = new File(localBase, DB_BACKUP_FILENAME);
                 if (!oldDbFileBackup.delete()) {
-                    log.finer("Failed to delete backup of 'old' database file: "
+                    logFiner("Failed to delete backup of 'old' database file: "
                         + oldDbFileBackup);
                 }
             } catch (IOException e) {
                 // TODO: if something failed shoudn't we try to restore the
                 // backup (if backup exists and bd file not after this?
-                log.log(Level.SEVERE, this + ": Unable to write database file "
+                logSevere(this + ": Unable to write database file "
                     + dbFile.getAbsolutePath(), e);
                 log.log(Level.FINE, "IOException", e);
             }
@@ -1448,8 +1404,8 @@ public class Folder extends PFComponent {
             * ConfigurationEntry.MAX_FILEINFO_DELETED_AGE_SECONDS
                 .getValueInt(getController());
         int nFilesBefore = knownFiles.size();
-        if (log.isLoggable(Level.FINER)) {
-            log.finer("Maintaining folder db, known files: " + nFilesBefore
+        if (isFiner()) {
+            logFiner("Maintaining folder db, known files: " + nFilesBefore
                 + ". Expiring deleted files older than "
                 + new Date(removeBeforeDate));
         }
@@ -1469,11 +1425,11 @@ public class Folder extends PFComponent {
                         rootDirectory.removeFileInfo(file);
                     }
                 }
-                log.fine(file.getFilenameOnly() + " has expired: "
+                logFine(file.getFilenameOnly() + " has expired: "
                     + file.toDetailString());
             }
         }
-        log.fine("Maintained folder db, " + nFilesBefore + " known files, "
+        logFine("Maintained folder db, " + nFilesBefore + " known files, "
             + expired
             + " expired FileInfos. Expiring deleted files older than "
             + new Date(removeBeforeDate));
@@ -1494,12 +1450,12 @@ public class Folder extends PFComponent {
             throw new NullPointerException("File (desktop.ini) is null");
         }
         if (!OSUtil.isWindowsSystem()) {
-            log.fine("Not a windows system, ignoring folder icon. "
+            logFine("Not a windows system, ignoring folder icon. "
                 + desktopIni.getAbsolutePath());
             return;
         }
 
-        log.fine("Setting icon of "
+        logFine("Setting icon of "
             + desktopIni.getParentFile().getAbsolutePath());
 
         FileUtils.setAttributesOnWindows(desktopIni, true, true);
@@ -1581,7 +1537,7 @@ public class Folder extends PFComponent {
             return;
         }
 
-        log.fine("Setting " + aSyncProfile.getProfileName());
+        logFine("Setting " + aSyncProfile.getProfileName());
         syncProfile = aSyncProfile;
 
         // Store on disk
@@ -1622,8 +1578,8 @@ public class Folder extends PFComponent {
         {
             return;
         }
-        if (log.isLoggable(Level.FINER)) {
-            log.finer("recommendScanOnNextMaintenance");
+        if (isFiner()) {
+            logFiner("recommendScanOnNextMaintenance");
         }
         scanForced = true;
         lastScan = null;
@@ -1634,10 +1590,10 @@ public class Folder extends PFComponent {
      * with remotesides.
      */
     public void maintain() {
-        log.finer("Maintaining '" + getName() + '\'');
+        logFiner("Maintaining '" + getName() + '\'');
 
         // local files
-        log.finer("Forced: " + scanForced);
+        logFiner("Forced: " + scanForced);
         boolean forcedNow = scanForced;
         scanForced = false;
         if (forcedNow || autoScanRequired()) {
@@ -1679,8 +1635,8 @@ public class Folder extends PFComponent {
         Reject.ifNull(member, "Member is null, unable to join");
         // member will be joined, here on local
         boolean wasMember = members.put(member, member) != null;
-        if (log.isLoggable(Level.FINER)) {
-            log.finer("Member joined " + member);
+        if (isFiner()) {
+            logFiner("Member joined " + member);
         }
         // send him our list of files if completely connected. otherwise this
         // gets sent by Member.completeHandshake();
@@ -1699,7 +1655,7 @@ public class Folder extends PFComponent {
             // Skip if not member
             return;
         }
-        log.fine("Member left " + member);
+        logFine("Member left " + member);
 
         // remove files of this member in our datastructure
         // don't do this in the server version
@@ -1757,8 +1713,8 @@ public class Folder extends PFComponent {
      *            folder. otherwise it checks the modifier.
      */
     public void syncRemoteDeletedFiles(boolean force) {
-        if (log.isLoggable(Level.FINER)) {
-            log.finer("Deleting files, which are deleted by friends. con-members: "
+        if (isFiner()) {
+            logFiner("Deleting files, which are deleted by friends. con-members: "
                 + Arrays.asList(getConnectedMembers()));
         }
 
@@ -1776,8 +1732,8 @@ public class Folder extends PFComponent {
                 continue;
             }
 
-            if (log.isLoggable(Level.FINER)) {
-                log.finer("RemoteFileDeletion sync. Member '" + member.getNick()
+            if (isFiner()) {
+                logFiner("RemoteFileDeletion sync. Member '" + member.getNick()
                     + "' has " + fileList.size() + " possible files");
             }
             for (FileInfo remoteFile : fileList) {
@@ -1801,14 +1757,14 @@ public class Folder extends PFComponent {
 
                 if (!remoteFileNewer) {
                     // Not newer, skip file
-                    // log.warning(
+                    // logWarning(
                     // "Ingoring file (not newer): " + remoteFile.getName()
                     // + ". local-ver: " + localFile.getVersion()
                     // + ", remote-ver: " + remoteFile.getVersion());
                     continue;
                 }
 
-                // log.warning("Remote file has a newer file :" +
+                // logWarning("Remote file has a newer file :" +
                 // remoteFile.toDetailString());
 
                 // Okay the remote file is newer
@@ -1822,12 +1778,12 @@ public class Folder extends PFComponent {
                 }
 
                 if (localFile != null) {
-                    // log.warning("Okay we have local file :" + localFile);
+                    // logWarning("Okay we have local file :" + localFile);
                     if (remoteFile.isDeleted() && !localFile.isDeleted()) {
                         File localCopy = localFile.getDiskFile(getController()
                             .getFolderRepository());
 
-                        log.fine("File was deleted by " + member
+                        logFine("File was deleted by " + member
                             + ", deleting local: " + localCopy);
 
                         // Abort dl if one is active
@@ -1888,8 +1844,8 @@ public class Folder extends PFComponent {
      * Broadcasts the remote commando to scan the folder.
      */
     public void broadcastScanCommand() {
-        if (log.isLoggable(Level.FINER)) {
-            log.finer("Broadcasting remote scan commando");
+        if (isFiner()) {
+            logFiner("Broadcasting remote scan commando");
         }
         Message scanCommand = new ScanCommand(currentInfo);
         broadcastMessages(scanCommand);
@@ -1940,7 +1896,7 @@ public class Folder extends PFComponent {
             }
         }
         if (log.isLoggable(Level.FINE)) {
-            log.fine("Broadcasted folder changes " + addedMsgs + " addedmsgs, "
+            logFine("Broadcasted folder changes " + addedMsgs + " addedmsgs, "
                 + changedMsgs + " changedmsgs, " + deletedMsgs
                 + " deletedmsgs, " + restoredMsgs + " restoredmsgs");
         }
@@ -1953,7 +1909,7 @@ public class Folder extends PFComponent {
      * @param newList
      */
     public void fileListChanged(Member from, FileList newList) {
-        // log.fine(
+        // logFine(
         // "New Filelist received from " + from + " #files: "
         // + newList.files.length);
 
@@ -1967,8 +1923,8 @@ public class Folder extends PFComponent {
 
         if (syncProfile.isAutodownload()) {
             // Trigger file requestor
-            if (log.isLoggable(Level.FINER)) {
-                log.finer("Triggering file requestor because of new remote file list from "
+            if (isFiner()) {
+                logFiner("Triggering file requestor because of new remote file list from "
                     + from);
             }
             getController().getFolderRepository().getFileRequestor()
@@ -1996,7 +1952,7 @@ public class Folder extends PFComponent {
     public void fileListChanged(final Member from,
         final FolderFilesChanged changes)
     {
-        // log.fine("File changes received from " + from);
+        // logFine("File changes received from " + from);
 
         // Try to find same files
         if (changes.added != null) {
@@ -2038,14 +1994,14 @@ public class Folder extends PFComponent {
             }
 
             if (triggerFileRequestor) {
-                if (log.isLoggable(Level.FINER)) {
-                    log.finer("Triggering file requestor because of remote file list change "
+                if (isFiner()) {
+                    logFiner("Triggering file requestor because of remote file list change "
                         + changes + " from " + from);
                 }
                 getController().getFolderRepository().getFileRequestor()
                     .triggerFileRequesting(changes.folder);
-            } else if (log.isLoggable(Level.FINER)) {
-                log.finer("Not triggering filerequestor, no new files in remote filelist"
+            } else if (isFiner()) {
+                logFiner("Not triggering filerequestor, no new files in remote filelist"
                     + changes + " from " + from);
             }
         }
@@ -2084,8 +2040,8 @@ public class Folder extends PFComponent {
         Collection<FileInfo> remoteFileInfos)
     {
         Reject.ifNull(remoteFileInfos, "Remote file info list is null");
-        if (log.isLoggable(Level.FINER)) {
-            log.finer("Trying to find same files in remote list with "
+        if (isFiner()) {
+            logFiner("Trying to find same files in remote list with "
                 + remoteFileInfos.size() + " files from " + remotePeer);
         }
         boolean checkForFilenameProblems = OSUtil.isWindowsSystem();
@@ -2116,7 +2072,7 @@ public class Folder extends PFComponent {
                 // .getModifiedDate());
                 if (fileSizeSame && dateSame) {
                     if (log.isLoggable(Level.WARNING)) {
-                        log.warning("Found identical file remotely: local "
+                        logWarning("Found identical file remotely: local "
                             + localFileInfo.toDetailString() + " remote: "
                             + remoteFileInfo.toDetailString()
                             + ". Taking over modification infos");
@@ -2129,8 +2085,8 @@ public class Folder extends PFComponent {
                 }
                 // Disabled because of TRAC #999. Causes strange behavior.
                 // if (localFileNewer) {
-                // if (islog.warning()) {
-                // log.warning(
+                // if (islogWarning()) {
+                // logWarning(
                 // "Found file remotely, but local is newer: local "
                 // + localFileInfo.toDetailString() + " remote: "
                 // + remoteFileInfo.toDetailString()
@@ -2146,7 +2102,7 @@ public class Folder extends PFComponent {
             }
         }
 
-        // log.warning("Canidates files: " + problemCanidates);
+        // logWarning("Canidates files: " + problemCanidates);
 
         // Check for problematic files (TRAC #232)
         // Disabled for windows #836
@@ -2169,18 +2125,18 @@ public class Folder extends PFComponent {
         }
 
         if (log.isLoggable(Level.WARNING) && !problemFiles.isEmpty()) {
-            log.warning("Got " + problemFiles.size() + " problematic files");
+            logWarning("Got " + problemFiles.size() + " problematic files");
         }
 
         FileNameProblemHandler handler = getController().getFolderRepository()
             .getFileNameProblemHandler();
-        // log.warning("Problem handler: " + handler);
+        // logWarning("Problem handler: " + handler);
         if (handler != null && !problemFiles.isEmpty()) {
             handler.fileNameProblemsDetected(new FileNameProblemEvent(this,
                 problemFiles));
         }
 
-        // log.warning("Handled problematic files: " + problemFiles);
+        // logWarning("Handled problematic files: " + problemFiles);
     }
 
     /**
@@ -2212,7 +2168,7 @@ public class Folder extends PFComponent {
      * Persists settings to disk.
      */
     private void persist() {
-        log.finer("Persisting settings");
+        logFiner("Persisting settings");
 
         storeFolderDB();
 
@@ -2258,7 +2214,7 @@ public class Folder extends PFComponent {
             if (systemSubDir.mkdirs()) {
                 FileUtils.makeHiddenOnWindows(systemSubDir);
             } else {
-                log.severe("Failed to create system subdir: " + systemSubDir);
+                logSevere("Failed to create system subdir: " + systemSubDir);
             }
         }
 
@@ -2343,14 +2299,14 @@ public class Folder extends PFComponent {
         if (useRecycleBin) {
             RecycleBin recycleBin = getController().getRecycleBin();
             if (!recycleBin.moveToRecycleBin(fileInfo, file)) {
-                log.severe("Unable to move file to recycle bin" + file);
+                logSevere("Unable to move file to recycle bin" + file);
                 if (!file.delete()) {
-                    log.severe("Unable to delete file " + file);
+                    logSevere("Unable to delete file " + file);
                 }
             }
         } else {
             if (!file.delete()) {
-                log.severe("Unable to delete file " + file);
+                logSevere("Unable to delete file " + file);
             }
         }
     }
@@ -2378,7 +2334,7 @@ public class Folder extends PFComponent {
                 continue;
             }
             if (!member.hasCompleteFileListFor(currentInfo)) {
-                log.warning("Skipping " + member
+                logWarning("Skipping " + member
                     + " no complete filelist from him");
                 continue;
             }
@@ -2418,9 +2374,9 @@ public class Folder extends PFComponent {
         }
 
         if (incomingFiles.isEmpty()) {
-            log.fine("No Incoming files");
+            logFine("No Incoming files");
         } else {
-            log.fine("Incoming files " + incomingFiles.size());
+            logFine("Incoming files " + incomingFiles.size());
         }
 
         return Collections.unmodifiableCollection(incomingFiles.keySet());
@@ -2703,32 +2659,32 @@ public class Folder extends PFComponent {
     }
 
     private void fireFileChanged(FileInfo fileInfo) {
-        if (log.isLoggable(Level.FINER)) {
-            log.finer("fireFileChanged: " + this);
+        if (isFiner()) {
+            logFiner("fireFileChanged: " + this);
         }
         FolderEvent folderEvent = new FolderEvent(this, fileInfo);
         folderListenerSupport.fileChanged(folderEvent);
     }
 
     private void fireFilesDeleted(Collection<FileInfo> fileInfos) {
-        if (log.isLoggable(Level.FINER)) {
-            log.finer("fireFilesDeleted: " + this);
+        if (isFiner()) {
+            logFiner("fireFilesDeleted: " + this);
         }
         FolderEvent folderEvent = new FolderEvent(this, fileInfos);
         folderListenerSupport.filesDeleted(folderEvent);
     }
 
     private void fireRemoteContentsChanged(FileList list) {
-        if (log.isLoggable(Level.FINER)) {
-            log.finer("fireRemoteContentsChanged: " + this);
+        if (isFiner()) {
+            logFiner("fireRemoteContentsChanged: " + this);
         }
         FolderEvent folderEvent = new FolderEvent(this, list);
         folderListenerSupport.remoteContentsChanged(folderEvent);
     }
 
     private void fireRemoteContentsChanged(FolderFilesChanged list) {
-        if (log.isLoggable(Level.FINER)) {
-            log.finer("fireRemoteContentsChanged: " + this);
+        if (isFiner()) {
+            logFiner("fireRemoteContentsChanged: " + this);
         }
         FolderEvent folderEvent = new FolderEvent(this, list);
         folderListenerSupport.remoteContentsChanged(folderEvent);
@@ -2740,8 +2696,8 @@ public class Folder extends PFComponent {
     }
 
     private void fireScanResultCommited(ScanResult scanResult) {
-        if (log.isLoggable(Level.FINER)) {
-            log.finer("fireScanResultCommited: " + this);
+        if (isFiner()) {
+            logFiner("fireScanResultCommited: " + this);
         }
         FolderEvent folderEvent = new FolderEvent(this, scanResult);
         folderListenerSupport.scanResultCommited(folderEvent);

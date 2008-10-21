@@ -155,7 +155,7 @@ public class MemberComparator implements Comparator {
 
                 result += tsresult;
 
-                // log.warning("TS Result between " + member1.getNick() + " and "
+                // logWarning("TS Result between " + member1.getNick() + " and "
                 // + member2.getNick() +": " + tsresult);
             } else if (type == 5) { // nickname
                 return member1.getNick().toLowerCase().compareTo(

@@ -224,7 +224,7 @@ public class UIController extends PFComponent {
                 // SyntheticaBlackStarLookAndFeel());
 
             } catch (UnsupportedLookAndFeelException e) {
-                log.log(Level.SEVERE, "Unable to set look and feel", e);
+                logSevere("Unable to set look and feel", e);
             }
         }
 
@@ -233,14 +233,14 @@ public class UIController extends PFComponent {
             try {
                 EventQueue.invokeAndWait(new Runnable() {
                     public void run() {
-                        log.finer("Opening splashscreen");
+                        logFiner("Opening splashscreen");
                         splash = new SplashScreen(getController(), 260 * 1000);
                     }
                 });
             } catch (InterruptedException e) {
-                log.log(Level.SEVERE, "InterruptedException", e);
+                logSevere("InterruptedException", e);
             } catch (InvocationTargetException e) {
-                log.log(Level.SEVERE, "InvocationTargetException", e);
+                logSevere("InvocationTargetException", e);
             }
         }
 
@@ -328,15 +328,15 @@ public class UIController extends PFComponent {
         try {
             EventQueue.invokeAndWait(new Runnable() {
                 public void run() {
-                    log.fine("Building UI");
+                    logFine("Building UI");
                     mainFrame.buildUI();
-                    log.fine("UI built");
+                    logFine("UI built");
                 }
             });
         } catch (InterruptedException e) {
-            log.log(Level.SEVERE, "InterruptedException", e);
+            logSevere("InterruptedException", e);
         } catch (InvocationTargetException e) {
-            log.log(Level.SEVERE, "InvocationTargetException", e);
+            logSevere("InvocationTargetException", e);
         }
 
         // // Show window contents while dragging
@@ -349,13 +349,13 @@ public class UIController extends PFComponent {
         if (OSUtil.isSystraySupported()) {
             initalizeSystray();
         } else {
-            log.warning("System tray currently only supported on windows (>98)");
+            logWarning("System tray currently only supported on windows (>98)");
             mainFrame.getUIComponent().setDefaultCloseOperation(
                 JFrame.EXIT_ON_CLOSE);
         }
 
         if (getController().isStartMinimized()) {
-            log.warning("Starting minimized");
+            logWarning("Starting minimized");
         }
 
         // Show mainwindow
@@ -368,9 +368,9 @@ public class UIController extends PFComponent {
                 }
             });
         } catch (InterruptedException e) {
-            log.log(Level.SEVERE, "InterruptedException", e);
+            logSevere("InterruptedException", e);
         } catch (InvocationTargetException e) {
-            log.log(Level.SEVERE, "InvocationTargetException", e);
+            logSevere("InvocationTargetException", e);
         }
 
         started = true;
@@ -378,7 +378,7 @@ public class UIController extends PFComponent {
         // Process all pending runners
         synchronized (pendingJobs) {
             if (!pendingJobs.isEmpty()) {
-                log.finer("Executing " + pendingJobs.size() + " pending ui jobs");
+                logFiner("Executing " + pendingJobs.size() + " pending ui jobs");
                 for (Runnable runner : pendingJobs) {
                     SwingUtilities.invokeLater(runner);
                 }
@@ -425,7 +425,7 @@ public class UIController extends PFComponent {
             return;
         }
         long totalFolderSize = calculateTotalLocalSharedSize();
-        log.fine("Local shared folder size: "
+        logFine("Local shared folder size: "
             + Format.formatBytes(totalFolderSize));
         boolean limitHit = totalFolderSize > 10L * 1024L * 1024L * 1024L
             || getController().getFolderRepository().getFoldersCount() > 3;
@@ -452,7 +452,7 @@ public class UIController extends PFComponent {
             defaultIcon = ImageIO.read(Util.getResource(Icons.ST_POWERFOLDER,
                 "icons"));
         } catch (IOException e) {
-            log.log(Level.SEVERE, "IOException", e);
+            logSevere("IOException", e);
             OSUtil.disableSystray();
             return;
         }
@@ -539,7 +539,7 @@ public class UIController extends PFComponent {
         try {
             SystemTray.getSystemTray().add(sysTrayMenu);
         } catch (AWTException e) {
-            log.log(Level.SEVERE, "AWTException", e);
+            logSevere("AWTException", e);
             OSUtil.disableSystray();
             return;
         }
@@ -592,7 +592,7 @@ public class UIController extends PFComponent {
         for (int i = 0; i < sysTrayFoldersMenu.getItemCount(); i++) {
             MenuItem menuItem = sysTrayFoldersMenu.getItem(i);
             if (menuItem.getLabel().equals(folder.getName())) {
-                log.warning("Already have folder " + folder.getName());
+                logWarning("Already have folder " + folder.getName());
                 return;
             }
         }
@@ -864,7 +864,7 @@ public class UIController extends PFComponent {
             try {
                 currentIcon = ImageIO.read(Util.getResource(iconName, "icons"));
             } catch (IOException e) {
-                log.log(Level.SEVERE, "IOException", e);
+                logSevere("IOException", e);
                 return;
             }
             if (sysTrayMenu != null) {
@@ -885,7 +885,7 @@ public class UIController extends PFComponent {
         if (started) {
             SwingUtilities.invokeLater(runner);
         } else {
-            log.fine("Added runner to pending jobs: " + runner);
+            logFine("Added runner to pending jobs: " + runner);
             // Add to pending jobs
             pendingJobs.add(runner);
         }

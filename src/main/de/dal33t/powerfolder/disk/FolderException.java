@@ -24,9 +24,8 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 
-import javax.swing.JFrame;
-import javax.swing.SwingUtilities;
-import java.awt.EventQueue;
+import javax.swing.*;
+import java.awt.*;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Level;

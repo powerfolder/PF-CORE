@@ -221,7 +221,7 @@ public class TestHelper {
                     FileUtils.forceDelete(file);
                 }
             } catch (IOException e) {
-                // log.log(Level.SEVERE, "IOException", e);
+                // logSevere("IOException", e);
             }
         }
         if (0 != testDir.listFiles().length) {

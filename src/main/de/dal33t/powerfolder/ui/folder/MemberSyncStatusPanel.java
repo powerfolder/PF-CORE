@@ -45,8 +45,6 @@ import javax.swing.UIManager;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Display the synchronisation status of a member for the current folder. Shows
@@ -59,7 +57,6 @@ import java.util.logging.Logger;
 
 public class MemberSyncStatusPanel extends PFUIComponent {
 
-    private static final Logger log = Logger.getLogger(MemberSyncStatusPanel.class.getName());
     private Folder folder;
     private Member member;
     private FolderStatisticListener statsListener;
@@ -298,8 +295,8 @@ public class MemberSyncStatusPanel extends PFUIComponent {
 
         public void statisticsCalculated(FolderEvent folderEvent) {
             updatePanel();
-            if (log.isLoggable(Level.FINER)) {
-                log.finer(
+            if (isFiner()) {
+                logFiner(
                     "Updated SyncStatusPanel due to change in: " + folderEvent);
             }
         }

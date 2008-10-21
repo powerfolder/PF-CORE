@@ -86,8 +86,6 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 
 /**
@@ -98,8 +96,6 @@ import java.util.prefs.Preferences;
  * @version $Revision: 1.11 $
  */
 public class ControlQuarter extends PFUIComponent {
-
-    private static final Logger log = Logger.getLogger(ControlQuarter.class.getName());
 
     /* Complete panel */
     private JPanel uiPanel;
@@ -214,15 +210,15 @@ public class ControlQuarter extends PFUIComponent {
                 public void treeCollapsed(TreeExpansionEvent treeExpansionEvent)
                 {
                     TreePath closedPath = treeExpansionEvent.getPath();
-                    // log.fine("closed path : " + closedPath);
-                    // log.fine("lastExpandedPath path: " +
+                    // logFine("closed path : " + closedPath);
+                    // logFine("lastExpandedPath path: " +
                     // lastExpandedPath);
 
                     // note that this method name maybe confusing
                     // it is true if lastExpandedPath is a descendant of
                     // closedPath
                     if (closedPath.isDescendant(lastExpandedPath)) {
-                        // log.fine("isDescendant!");
+                        // logFine("isDescendant!");
                         lastExpandedPath = null;
                     }
                 }
@@ -357,7 +353,7 @@ public class ControlQuarter extends PFUIComponent {
      *            The newly selected directory
      */
     public void setSelected(Directory directory) {
-        log.finer("setSelected:" + directory);
+        logFiner("setSelected:" + directory);
         if (directory != null) {
             Folder folder = directory.getRootFolder();
             FolderModel folderModel = getController().getUIController()
@@ -534,7 +530,7 @@ public class ControlQuarter extends PFUIComponent {
                 BrowserLauncher.openURL(getController().getOSClient()
                     .getWebURL());
             } catch (IOException e) {
-                log.log(Level.SEVERE, "Unable to open online storage in browser", e);
+                logSevere("Unable to open online storage in browser", e);
             }
         }
         Folder folder = getSelectedFolder();
@@ -550,7 +546,7 @@ public class ControlQuarter extends PFUIComponent {
             try {
                 FileUtils.openFile(localBase);
             } catch (IOException ioe) {
-                log.log(Level.SEVERE, "IOException", ioe);
+                logSevere("IOException", ioe);
             }
         }
     }
@@ -562,8 +558,8 @@ public class ControlQuarter extends PFUIComponent {
     {
         public void valueChanged(TreeSelectionEvent e) {
             TreePath selectionPath = e.getPath();
-            if (log.isLoggable(Level.FINER)) {
-                log.finer(selectionPath.toString());
+            if (isFiner()) {
+                logFiner(selectionPath.toString());
             }
             // First set parent of selection
             if (selectionPath.getPathCount() > 1) {
@@ -577,8 +573,8 @@ public class ControlQuarter extends PFUIComponent {
             Object newSelection = UIUtil.getUserObject(selectionPath
                 .getLastPathComponent());
             selectionModel.setSelection(newSelection);
-            if (log.isLoggable(Level.FINER)) {
-                log.finer(
+            if (isFiner()) {
+                logFiner(
                     "Selection: " + selectionModel.getSelection()
                         + ", parent: " + selectionParent);
             }
@@ -665,7 +661,7 @@ public class ControlQuarter extends PFUIComponent {
                     friendsListMenu.show(evt.getComponent(), evt.getX(), evt
                         .getY());
                 } else {
-                    log.warning(
+                    logWarning(
                             "Not displaing friendlist/master user selection context menu");
                 }
             } else if (selection instanceof Directory) {
@@ -865,9 +861,9 @@ public class ControlQuarter extends PFUIComponent {
                                     return;
                                 }
                             } catch (UnsupportedFlavorException e) {
-                                log.log(Level.SEVERE, "UnsupportedFlavorException", e);
+                                logSevere("UnsupportedFlavorException", e);
                             } catch (IOException ioe) {
-                                log.log(Level.SEVERE, "IOException", ioe);
+                                logSevere("IOException", ioe);
                             }
                         }
                         dtde.acceptDrop(DnDConstants.ACTION_COPY);

@@ -26,16 +26,8 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.Reject;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Queue;
-import java.util.TimerTask;
+import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * The filerequestor handles all stuff about requesting new downloads
@@ -45,7 +37,6 @@ import java.util.logging.Logger;
  */
 public class FileRequestor extends PFComponent {
 
-    private static final Logger log = Logger.getLogger(FileRequestor.class.getName());
     private Thread myThread;
     private final Queue<Folder> folderQueue;
 
@@ -61,7 +52,7 @@ public class FileRequestor extends PFComponent {
         myThread = new Thread(new Worker(), "FileRequestor");
         myThread.setPriority(Thread.MIN_PRIORITY);
         myThread.start();
-        log.fine("Started");
+        logFine("Started");
 
         long waitTime = Controller.getWaitTime() * 12;
         getController()
@@ -79,7 +70,7 @@ public class FileRequestor extends PFComponent {
 
         Folder folder = foInfo.getFolder(getController());
         if (folder == null) {
-            log.warning("Folder not joined, not requesting files: " + foInfo);
+            logWarning("Folder not joined, not requesting files: " + foInfo);
         }
         if (folderQueue.contains(folder)) {
             return;
@@ -121,7 +112,7 @@ public class FileRequestor extends PFComponent {
         synchronized (folderQueue) {
             folderQueue.notifyAll();
         }
-        log.fine("Stopped");
+        logFine("Stopped");
     }
 
     /**
@@ -174,19 +165,19 @@ public class FileRequestor extends PFComponent {
      */
     private void requestMissingFilesForAutodownload(Folder folder) {
         if (!folder.getSyncProfile().isAutodownload()) {
-            if (log.isLoggable(Level.FINER)) {
-                log.finer("Skipping " + folder + ". not on auto donwload");
+            if (isFiner()) {
+                logFiner("Skipping " + folder + ". not on auto donwload");
             }
             return;
         }
-        if (log.isLoggable(Level.FINER)) {
-            log.finer("Requesting files (autodownload), has own DB? "
+        if (isFiner()) {
+            logFiner("Requesting files (autodownload), has own DB? "
                 + folder.hasOwnDatabase());
         }
 
         // Dont request files until has own database
         if (!folder.hasOwnDatabase()) {
-            log.fine("Not requesting files because no own database for "
+            logFine("Not requesting files because no own database for "
                 + folder);
             return;
         }
@@ -236,24 +227,24 @@ public class FileRequestor extends PFComponent {
                         try {
                             folderQueue.wait();
                         } catch (InterruptedException e) {
-                            log.fine("Stopped");
-                            log.log(Level.FINER, "InterruptedException", e);
+                            logFine("Stopped");
+                            logFiner("InterruptedException", e);
                             break;
                         }
                     }
                 }
 
                 int nFolders = folderQueue.size();
-                log.fine("Start requesting files for " + nFolders + " folder(s)");
+                logFine("Start requesting files for " + nFolders + " folder(s)");
                 long start = System.currentTimeMillis();
                 for (Iterator<Folder> it = folderQueue.iterator(); it.hasNext();)
                 {
                     requestMissingFilesForAutodownload(it.next());
                     it.remove();
                 }
-                if (log.isLoggable(Level.FINER)) {
+                if (isFiner()) {
                     long took = System.currentTimeMillis() - start;
-                    log.finer("Requesting files for " + nFolders
+                    logFiner("Requesting files for " + nFolders
                         + " folder(s) took " + took + "ms.");
                 }
 
@@ -261,8 +252,8 @@ public class FileRequestor extends PFComponent {
                     // Sleep a bit to avoid spamming
                     Thread.sleep(250);
                 } catch (InterruptedException e) {
-                    log.fine("Stopped");
-                    log.log(Level.FINER, "InterruptedException", e);
+                    logFine("Stopped");
+                    logFiner("InterruptedException", e);
                     break;
                 }
             }

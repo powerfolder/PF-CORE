@@ -33,8 +33,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * The default factory which creates <code>ConnectionHandler</code>s.
@@ -44,8 +42,6 @@ import java.util.logging.Logger;
  * @version $Revision: 1.5 $
  */
 public class ConnectionHandlerFactory extends PFComponent {
-
-    private static final Logger log = Logger.getLogger(ConnectionHandlerFactory.class.getName());
 
     public ConnectionHandlerFactory(Controller controller) {
         super(controller);
@@ -75,7 +71,7 @@ public class ConnectionHandlerFactory extends PFComponent {
         try {
             return tryToConnectSocket(remoteNode.getConnectAddress());
         } catch (ConnectionException e) {
-            log.log(Level.FINER, "ConnectionException", e);
+            logFiner("ConnectionException", e);
         }
 
         try {
@@ -83,7 +79,7 @@ public class ConnectionHandlerFactory extends PFComponent {
                 return tryToConnectUDTSocket(remoteNode);
             }
         } catch (ConnectionException e) {
-            log.log(Level.FINER, "ConnectionException", e);
+            logFiner("ConnectionException", e);
         }
 
         try {
@@ -91,7 +87,7 @@ public class ConnectionHandlerFactory extends PFComponent {
                 return tryToConnectRelayed(remoteNode);
             }
         } catch (ConnectionException e) {
-            log.log(Level.FINER, "ConnectionException", e);
+            logFiner("ConnectionException", e);
         }
         throw new ConnectionException("No further connection alternatives.");
     }
@@ -160,8 +156,8 @@ public class ConnectionHandlerFactory extends PFComponent {
     protected ConnectionHandler tryToConnectRelayed(MemberInfo remoteNode)
         throws ConnectionException
     {
-        if (log.isLoggable(Level.FINER)) {
-            log.finer("Trying relayed connection to " + remoteNode.nick);
+        if (isFiner()) {
+            logFiner("Trying relayed connection to " + remoteNode.nick);
         }
         ConnectionHandler conHan = null;
         try {
@@ -189,8 +185,8 @@ public class ConnectionHandlerFactory extends PFComponent {
     protected ConnectionHandler tryToConnectUDTSocket(MemberInfo remoteNode)
         throws ConnectionException
     {
-        if (log.isLoggable(Level.FINER)) {
-            log.finer("Trying UDT socket connection to " + remoteNode.nick);
+        if (isFiner()) {
+            logFiner("Trying UDT socket connection to " + remoteNode.nick);
         }
         ConnectionHandler conHan = null;
         try {
@@ -275,20 +271,20 @@ public class ConnectionHandlerFactory extends PFComponent {
             // In PowerFolder UDT sockets will always rendezvous
             socket.setSoRendezvous(true);
             MemberInfo myInfo = dest.getNode(getController(), true).getInfo();
-            log.fine(
+            logFine(
                 "UDT connect to " + dest + " at " + myInfo.getConnectAddress());
             socket.connect(new InetSocketAddress(myInfo.getConnectAddress()
                 .getAddress(), port));
-            log.fine(
+            logFine(
                 "UDT socket is connected to " + dest + " at "
                     + myInfo.getConnectAddress() + "!!");
             conHan.init();
         } catch (ConnectionException e) {
-            log.log(Level.SEVERE, "ConnectionException", e);
+            logSevere("ConnectionException", e);
             conHan.shutdown();
             throw e;
         } catch (IOException e) {
-            log.log(Level.SEVERE, "IOException", e);
+            logSevere("IOException", e);
             conHan.shutdown();
             throw new ConnectionException(e);
         }

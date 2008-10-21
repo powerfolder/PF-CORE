@@ -64,8 +64,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Displays a dialog if filename problems are found. This mainly happens on
@@ -73,16 +71,14 @@ import java.util.logging.Logger;
  */
 public class FilenameProblemDialog extends PFUIComponent {
 
-    private static final Logger log = Logger.getLogger(FilenameProblemDialog.class.getName());
-
     private String[] columns = new String[]{
         Translation.getTranslation("filelist.name"),
         Translation.getTranslation("general.description"),
         Translation.getTranslation("filename_problem.dialog.solution")};
 
     private int option = -1;
-    public final static int OK = 1;
-    public final static int CANCEL = 2;
+    public static final int OK = 1;
+    public static final int CANCEL = 2;
     private static final int FILENAME_COLUMN = 0;
     private static final int PROBLEM_COLUMN = 1;
     private static final int SOLUTION_COLUMN = 2;
@@ -139,9 +135,9 @@ public class FilenameProblemDialog extends PFUIComponent {
                 }
             });
         } catch (InterruptedException e) {
-            log.log(Level.FINER, "InterruptedException", e);
+            logFiner("InterruptedException", e);
         } catch (InvocationTargetException e) {
-            log.log(Level.SEVERE, "InvocationTargetException", e);
+            logSevere("InvocationTargetException", e);
         }
     }
 
@@ -311,7 +307,7 @@ public class FilenameProblemDialog extends PFUIComponent {
         }
 
         if (fileInfoSolved == null) {
-            log.warning(
+            logWarning(
                 "something went wrong with solving the filename problems for:"
                     + problemFileInfo);
         } else if (problemEvent.getScanResult() != null) {

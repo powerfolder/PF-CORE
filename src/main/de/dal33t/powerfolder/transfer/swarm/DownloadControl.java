@@ -1,9 +1,9 @@
 package de.dal33t.powerfolder.transfer.swarm;
 
-import java.util.Collection;
-
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.transfer.Download;
+
+import java.util.Collection;
 
 public interface DownloadControl {
     /**

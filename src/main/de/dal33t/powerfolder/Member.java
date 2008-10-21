@@ -101,7 +101,7 @@ import de.dal33t.powerfolder.util.logging.LoggingManager;
 /**
  * A full quailfied member, can have a connection to interact with remote
  * member/fried/peer.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.115 $
  */
@@ -196,7 +196,7 @@ public class Member extends PFComponent {
      * <p>
      * Attention:Does not takes friend status from memberinfo !! you have to
      * manually
-     * 
+     *
      * @param controller
      *            Reference to the Controller
      * @param mInfo
@@ -213,7 +213,7 @@ public class Member extends PFComponent {
 
     /**
      * Constructs a new local member without a connection
-     * 
+     *
      * @param controller
      * @param nick
      * @param id
@@ -270,7 +270,7 @@ public class Member extends PFComponent {
 
     /**
      * Answers if this is myself
-     * 
+     *
      * @return true if this object references to "myself" else false
      */
     public boolean isMySelf() {
@@ -279,7 +279,7 @@ public class Member extends PFComponent {
 
     /**
      * Answers if this member is a friend, also true if isMySelf()
-     * 
+     *
      * @return true if this user is a friend or myself.
      */
     public boolean isFriend() {
@@ -288,7 +288,7 @@ public class Member extends PFComponent {
 
     /**
      * Sets friend status of this member
-     * 
+     *
      * @param newFriend
      *            The new friend status.
      * @param personalMessage
@@ -315,12 +315,12 @@ public class Member extends PFComponent {
      * Answers if this node is interesting for us, that is defined as friends
      * users on LAN and has joined one of our folders. Or if its a supernode of
      * we are a supernode and there are still open connections slots.
-     * 
+     *
      * @return true if this node is interesting for us
      */
     public boolean isInteresting() {
-        // log.fine("isOnLAN(): " + isOnLAN());
-        // log.fine("getController().isLanOnly():" +
+        // logFine("isOnLAN(): " + isOnLAN());
+        // logFine("getController().isLanOnly():" +
         // getController().isLanOnly());
 
         if (getController().isLanOnly() && !isOnLAN()) {
@@ -335,10 +335,10 @@ public class Member extends PFComponent {
 
         Identity id = getIdentity();
         if (id != null) {
-            // log.finer("Got ID: " + id + ". pending msgs? "
+            // logFiner("Got ID: " + id + ". pending msgs? "
             // + id.isPendingMessages());
             if (Util.compareVersions("2.0.0", id.getProgramVersion())) {
-                log.fine("Rejecting connection to old program client: " + id
+                logFine("Rejecting connection to old program client: " + id
                     + " v" + id.getProgramVersion());
                 return false;
             }
@@ -355,8 +355,8 @@ public class Member extends PFComponent {
             return true;
         }
 
-        // log.fine("isFriend(): " + isFriend());
-        // log.fine("hasJoinedAnyFolder(): " + hasJoinedAnyFolder());
+        // logFine("isFriend(): " + isFriend());
+        // logFine("hasJoinedAnyFolder(): " + hasJoinedAnyFolder());
 
         if (isFriend() || isOnLAN() || hasJoinedAnyFolder()) {
             return true;
@@ -380,7 +380,7 @@ public class Member extends PFComponent {
 
     /**
      * Answers if this node is currently reconnecting
-     * 
+     *
      * @return true if currently reconnecting
      */
     public boolean isReconnecting() {
@@ -391,7 +391,7 @@ public class Member extends PFComponent {
      * Answers if this member has a connected peer (a open socket). To check if
      * a node is completey connected & handshaked see
      * <code>isCompletelyConnected</code>
-     * 
+     *
      * @see #isCompleteyConnected()
      * @return true if connected
      */
@@ -405,7 +405,7 @@ public class Member extends PFComponent {
 
     /**
      * Answers if this node is completely connected & handshaked
-     * 
+     *
      * @return true if connected & handshaked
      */
     public boolean isCompleteyConnected() {
@@ -414,7 +414,7 @@ public class Member extends PFComponent {
 
     /**
      * Convinience method
-     * 
+     *
      * @return true if the node is a supernode
      */
     public boolean isSupernode() {
@@ -423,7 +423,7 @@ public class Member extends PFComponent {
 
     /**
      * Answers if this member is on the local area network.
-     * 
+     *
      * @return true if this member is on LAN.
      */
     public boolean isOnLAN() {
@@ -442,7 +442,7 @@ public class Member extends PFComponent {
 
     /**
      * To set the lan status of the member for external source
-     * 
+     *
      * @param onlan
      *            new LAN status
      */
@@ -454,7 +454,7 @@ public class Member extends PFComponent {
 
     /**
      * Answers if we received a wrong identity on reconnect
-     * 
+     *
      * @return true if we received a wrong identity on reconnect
      */
     public boolean receivedWrongIdentity() {
@@ -483,7 +483,7 @@ public class Member extends PFComponent {
 
     /**
      * Sets the new connection handler for this member
-     * 
+     *
      * @param newPeer
      *            The peer / connection handler to set
      * @throws InvalidIdentityException
@@ -496,13 +496,13 @@ public class Member extends PFComponent {
         Reject.ifNull(newPeer, "Illegal call of setPeer(null)");
 
         if (!newPeer.isConnected()) {
-            log.warning("Peer disconnected while initializing connection: "
+            logWarning("Peer disconnected while initializing connection: "
                 + newPeer);
             return false;
         }
 
-        if (log.isLoggable(Level.FINER)) {
-            log.finer("Setting peer to " + newPeer);
+        if (isFiner()) {
+            logFiner("Setting peer to " + newPeer);
         }
 
         Identity identity = newPeer.getIdentity();
@@ -526,7 +526,7 @@ public class Member extends PFComponent {
                 newPeer.sendMessage(IdentityReply.reject("Invalid identity: "
                     + identityId + ", expeced " + info));
             } catch (ConnectionException e) {
-                log.log(Level.FINER, "Unable to send identity reject", e);
+                logFiner("Unable to send identity reject", e);
             } finally {
                 newPeer.shutdown();
             }
@@ -541,7 +541,7 @@ public class Member extends PFComponent {
         if (!accepted) {
             // Shutdown this member
             newPeer.shutdown();
-            log.finer("Remote side did not accept our identity: " + newPeer);
+            logFiner("Remote side did not accept our identity: " + newPeer);
             return false;
         }
 
@@ -595,7 +595,7 @@ public class Member extends PFComponent {
 
     /**
      * Calls which can only be executed with connection
-     * 
+     *
      * @throws ConnectionException
      *             if not connected
      */
@@ -608,7 +608,7 @@ public class Member extends PFComponent {
 
     /**
      * Tries to reconnect peer
-     * 
+     *
      * @return true if succeeded
      * @throws InvalidIdentityException
      */
@@ -633,7 +633,7 @@ public class Member extends PFComponent {
         ConnectionHandler handler = null;
         try {
             if (info.getConnectAddress().getPort() <= 0) {
-                log.warning(this + " has illegal connect port "
+                logWarning(this + " has illegal connect port "
                     + info.getConnectAddress().getPort());
                 return false;
             }
@@ -643,8 +643,8 @@ public class Member extends PFComponent {
 
             // Re-resolve connect address
             String theHostname = getHostName(); // cached hostname
-            if (log.isLoggable(Level.FINER)) {
-                log.finer("Reconnect hostname to " + getNick() + " is: "
+            if (isFiner()) {
+                logFiner("Reconnect hostname to " + getNick() + " is: "
                     + theHostname);
             }
             if (!StringUtils.isBlank(theHostname)) {
@@ -662,15 +662,15 @@ public class Member extends PFComponent {
                 .getConnectionHandlerFactory().tryToConnect(this.getInfo());
             successful = setPeer(handler);
         } catch (InvalidIdentityException e) {
-            log.log(Level.FINER, "InvalidIdentityException", e);
+            logFiner("InvalidIdentityException", e);
             // Shut down reconnect handler
             if (handler != null) {
                 handler.shutdown();
             }
             throw e;
         } catch (ConnectionException e) {
-            log.fine(e.getMessage());
-            log.log(Level.FINER, "ConnectionException", e);
+            logFine(e.getMessage());
+            logFiner("ConnectionException", e);
             // Shut down reconnect handler
             if (handler != null) {
                 handler.shutdown();
@@ -684,21 +684,21 @@ public class Member extends PFComponent {
             connectionRetries = 0;
         } else {
             if (connectionRetries >= 15 && isConnectedToNetwork) {
-                log.warning("Unable to connect directly");
+                logWarning("Unable to connect directly");
                 // FIXME: Find a better ways
                 // unableToConnect = true;
                 isConnectedToNetwork = false;
             }
         }
 
-        // log.warning("Reconnect over, now connected: " + successful);
+        // logWarning("Reconnect over, now connected: " + successful);
 
         return successful;
     }
 
     /**
      * Completes the handshake between nodes. Exchanges the relevant information
-     * 
+     *
      * @return true when handshake was successfully and user is now connected
      */
     private boolean completeHandshake() {
@@ -713,7 +713,7 @@ public class Member extends PFComponent {
 
         synchronized (peerInitalizeLock) {
             if (!isConnected() || identity == null) {
-                log.fine("Disconnected while completing handshake");
+                logFine("Disconnected while completing handshake");
                 return false;
             }
             // Send node informations now
@@ -728,7 +728,7 @@ public class Member extends PFComponent {
         boolean receivedFolderList = waitForFolderList();
         synchronized (peerInitalizeLock) {
             if (!isConnected()) {
-                log.fine("Disconnected while completing handshake");
+                logFine("Disconnected while completing handshake");
                 return false;
             }
             if (!receivedFolderList) {
@@ -741,7 +741,7 @@ public class Member extends PFComponent {
                 return false;
             }
             if (!isConnected()) {
-                log.fine("Disconnected while waiting for folder list");
+                logFine("Disconnected while waiting for folder list");
                 return false;
             }
         }
@@ -752,12 +752,12 @@ public class Member extends PFComponent {
 
         synchronized (peerInitalizeLock) {
             if (!isConnected()) {
-                log.fine("Disconnected while completing handshake");
+                logFine("Disconnected while completing handshake");
                 return false;
             }
 
             if (!isInteresting()) {
-                log.fine("Rejected, Node not interesting");
+                logFine("Rejected, Node not interesting");
                 // Tell remote side
                 try {
                     peer.sendMessage(new Problem("You are boring", true,
@@ -783,8 +783,8 @@ public class Member extends PFComponent {
             && acceptByConnectionHandler;
 
         if (!thisHandshakeCompleted) {
-            if (log.isLoggable(Level.FINER)) {
-                log.finer("not handshaked: connected? " + isConnected()
+            if (isFiner()) {
+                logFiner("not handshaked: connected? " + isConnected()
                     + ", acceptByCH? " + acceptByConnectionHandler
                     + ", interesting? " + isInteresting() + ", peer " + peer);
             }
@@ -794,10 +794,10 @@ public class Member extends PFComponent {
 
         List<Folder> joinedFolders = getJoinedFolders();
         if (log.isLoggable(Level.FINE) && !joinedFolders.isEmpty()) {
-            log.fine("Joined " + joinedFolders.size() + " folders: "
+            logFine("Joined " + joinedFolders.size() + " folders: "
                 + joinedFolders);
-        } else if (log.isLoggable(Level.FINER)) {
-            log.finer("Joined " + joinedFolders.size() + " folders: "
+        } else if (isFiner()) {
+            logFiner("Joined " + joinedFolders.size() + " folders: "
                 + joinedFolders);
         }
 
@@ -810,17 +810,17 @@ public class Member extends PFComponent {
 
         boolean ok = waitForFileLists(joinedFolders);
         if (!ok) {
-            log.warning("Disconnecting. Did not receive the full filelists");
+            logWarning("Disconnecting. Did not receive the full filelists");
 
             for (Folder folder : joinedFolders) {
-                log.fine("Got filelist for " + folder.getName() + " ? "
+                logFine("Got filelist for " + folder.getName() + " ? "
                     + hasCompleteFileListFor(folder.getInfo()));
             }
             shutdown();
             return false;
         }
-        if (log.isLoggable(Level.FINER)) {
-            log.finer("Got complete filelists");
+        if (isFiner()) {
+            logFiner("Got complete filelists");
         }
 
         // Wait for acknowledgement from remote side
@@ -843,8 +843,8 @@ public class Member extends PFComponent {
                 }
                 shutdown();
                 return false;
-            } else if (log.isLoggable(Level.FINER)) {
-                log.finer("Got handshake completion!!");
+            } else if (isFiner()) {
+                logFiner("Got handshake completion!!");
             }
         }
 
@@ -863,7 +863,7 @@ public class Member extends PFComponent {
         getController().getNodeManager().onlineStateChanged(this);
 
         if (log.isLoggable(Level.INFO)) {
-            log.info("Connected ("
+            logInfo("Connected ("
                 + getController().getNodeManager().countConnectedNodes()
                 + " total)");
         }
@@ -889,14 +889,14 @@ public class Member extends PFComponent {
     private boolean waitForScan(Folder folder) {
         ScanResult.ResultState lastScanResultState = folder
             .getLastScanResultState();
-        if (log.isLoggable(Level.FINER)) {
-            log.finer("Scanning " + folder + "? " + folder.isScanning());
+        if (isFiner()) {
+            logFiner("Scanning " + folder + "? " + folder.isScanning());
         }
         if (!folder.isScanning()) {
             // folder OK!
             return true;
         }
-        log.fine("Waiting for " + folder + " to complete scan");
+        logFine("Waiting for " + folder + " to complete scan");
         while (folder.isScanning()
             && lastScanResultState == folder.getLastScanResultState())
         {
@@ -906,20 +906,20 @@ public class Member extends PFComponent {
                 return false;
             }
         }
-        log.fine("Scan completed on " + folder + ". Continue with connect.");
+        logFine("Scan completed on " + folder + ". Continue with connect.");
         return true;
     }
 
     /**
      * Waits for the filelists on those folders. After a certain amount of time
      * it runs on a timeout if no filelists were received. Waits max 2 minutes.
-     * 
+     *
      * @param folders
      * @return true if the filelists of those folders received successfully.
      */
     private boolean waitForFileLists(List<Folder> folders) {
-        if (log.isLoggable(Level.FINER)) {
-            log.finer("Waiting for complete fileslists...");
+        if (isFiner()) {
+            logFiner("Waiting for complete fileslists...");
         }
         Waiter waiter = new Waiter(1000L * 60 * 20);
         boolean fileListsCompleted = false;
@@ -937,31 +937,31 @@ public class Member extends PFComponent {
             waiter.waitABit();
         }
         if (waiter.isTimeout()) {
-            log.severe("Got timeout ("
+            logSevere("Got timeout ("
                 + (waiter.getTimoutTimeMS() / (1000 * 60))
                 + " minutes) while waiting for filelist");
         }
         if (!isConnected()) {
-            log.warning("Disconnected while waiting for filelist");
+            logWarning("Disconnected while waiting for filelist");
         }
         return fileListsCompleted;
     }
 
     /**
      * Waits some time for the folder list
-     * 
+     *
      * @return true if list was received successfully
      */
     private boolean waitForFolderList() {
         synchronized (folderListWaiter) {
             if (getLastFolderList() == null) {
                 try {
-                    if (log.isLoggable(Level.FINER)) {
-                        log.finer("Waiting for folderlist");
+                    if (isFiner()) {
+                        logFiner("Waiting for folderlist");
                     }
                     folderListWaiter.wait(60000);
                 } catch (InterruptedException e) {
-                    log.log(Level.FINER, "InterruptedException", e);
+                    logFiner("InterruptedException", e);
                 }
             }
         }
@@ -970,20 +970,20 @@ public class Member extends PFComponent {
 
     /**
      * Waits some time for the handshake to be completed
-     * 
+     *
      * @return true if list was received successfully
      */
     private boolean waitForHandshakeCompletion() {
         synchronized (handshakeCompletedWaiter) {
             if (lastHandshakeCompleted == null) {
                 try {
-                    if (log.isLoggable(Level.FINER)) {
-                        log.finer("Waiting for handshake completions");
+                    if (isFiner()) {
+                        logFiner("Waiting for handshake completions");
                     }
                     handshakeCompletedWaiter
                         .wait(Constants.INCOMING_CONNECTION_TIMEOUT * 1000);
                 } catch (InterruptedException e) {
-                    log.log(Level.FINER, "InterruptedException", e);
+                    logFiner("InterruptedException", e);
                 }
             }
         }
@@ -1021,19 +1021,19 @@ public class Member extends PFComponent {
             getController().getNodeManager().onlineStateChanged(this);
 
             if (log.isLoggable(Level.INFO)) {
-                log.info("Disconnected ("
+                logInfo("Disconnected ("
                     + getController().getNodeManager().countConnectedNodes()
                     + " still connected)");
             }
         } else {
-            // log.finer("Shutdown");
+            // logFiner("Shutdown");
         }
     }
 
     /**
      * Helper method for sending messages on peer handler. Method waits for the
      * sendmessagebuffer to get empty
-     * 
+     *
      * @param message
      *            The message to send
      * @throws ConnectionException
@@ -1057,7 +1057,7 @@ public class Member extends PFComponent {
     /**
      * Enque one messages for sending. code execution does not wait util message
      * was sent successfully
-     * 
+     *
      * @see PlainSocketConnectionHandler#sendMessagesAsynchron(Message[])
      * @param message
      *            the message to send
@@ -1075,7 +1075,7 @@ public class Member extends PFComponent {
     /**
      * Enque multiple messages for sending. code execution does not wait util
      * message was sent successfully
-     * 
+     *
      * @see PlainSocketConnectionHandler#sendMessagesAsynchron(Message[])
      * @param messages
      *            the messages to send
@@ -1088,7 +1088,7 @@ public class Member extends PFComponent {
 
     /**
      * Handles an incomming message from the remote peer (ConnectionHandler)
-     * 
+     *
      * @param message
      *            The message to handle
      */
@@ -1121,7 +1121,7 @@ public class Member extends PFComponent {
                     targetFolder = getController().getFolderRepository()
                         .getFolder(targetedFolderInfo);
                 } else {
-                    log.severe("Got folder message without FolderInfo: "
+                    logSevere("Got folder message without FolderInfo: "
                         + message);
                 }
             }
@@ -1158,8 +1158,8 @@ public class Member extends PFComponent {
             } else if (message instanceof RequestFileList) {
                 if (targetFolder != null) {
                     // a file list of a folder
-                    if (log.isLoggable(Level.FINER)) {
-                        log.finer(targetFolder + ": Sending new filelist to "
+                    if (isFiner()) {
+                        logFiner(targetFolder + ": Sending new filelist to "
                             + this);
                     }
                     sendMessagesAsynchron(FileList
@@ -1192,7 +1192,7 @@ public class Member extends PFComponent {
                     this, dlReq);
                 if (ul == null) {
                     // Send abort
-                    log.warning("Sending abort of " + dlReq.file);
+                    logWarning("Sending abort of " + dlReq.file);
                     sendMessagesAsynchron(new AbortUpload(dlReq.file));
                 }
                 expectedTime = 100;
@@ -1205,7 +1205,7 @@ public class Member extends PFComponent {
                 if (dl != null) {
                     dl.setQueued(dlQueued.file);
                 } else {
-                    log.warning("Remote side queued non-existant download.");
+                    logWarning("Remote side queued non-existant download.");
                     sendMessageAsynchron(new AbortDownload(dlQueued.file), null);
                 }
                 expectedTime = 100;
@@ -1276,8 +1276,8 @@ public class Member extends PFComponent {
                 expectedTime = 50;
 
             } else if (message instanceof NodeInformation) {
-                if (log.isLoggable(Level.FINER)) {
-                    log.finer("Node information received");
+                if (isFiner()) {
+                    logFiner("Node information received");
                 }
                 if (LoggingManager.isLogToFile()) {
                     Debug.writeNodeInformation((NodeInformation) message);
@@ -1289,7 +1289,7 @@ public class Member extends PFComponent {
             } else if (message instanceof SettingsChange) {
                 SettingsChange settingsChange = (SettingsChange) message;
                 if (settingsChange.newInfo != null) {
-                    log.fine(this.getInfo().nick + " changed nick to "
+                    logFine(this.getInfo().nick + " changed nick to "
                         + settingsChange.newInfo.nick);
                     setNick(settingsChange.newInfo.nick);
                 }
@@ -1299,7 +1299,7 @@ public class Member extends PFComponent {
                 FileList remoteFileList = (FileList) message;
                 Convert.cleanFileList(getController(), remoteFileList.files);
                 if (log.isLoggable(Level.FINE)) {
-                    log.fine("Received new filelist. Expecting "
+                    logFine("Received new filelist. Expecting "
                         + remoteFileList.nFollowingDeltas + " more deltas. "
                         + message);
                 }
@@ -1344,7 +1344,7 @@ public class Member extends PFComponent {
                 // Correct filelist
                 Map<FileInfo, FileInfo> cachedFileList = getLastFileList0(changes.folder);
                 if (cachedFileList == null || nExpected == null) {
-                    log.warning("Received folder changes on "
+                    logWarning("Received folder changes on "
                         + changes.folder.name
                         + ", but not received the full filelist");
                     return;
@@ -1360,8 +1360,8 @@ public class Member extends PFComponent {
 
                         // file "changed" so if downloading break the
                         // download
-                        if (log.isLoggable(Level.FINER)) {
-                            log.finer("downloading changed file, breaking it! "
+                        if (isFiner()) {
+                            logFiner("downloading changed file, breaking it! "
                                 + file + " " + this);
                         }
                         tm.abortDownload(file, this);
@@ -1373,8 +1373,8 @@ public class Member extends PFComponent {
                         cachedFileList.remove(file);
                         cachedFileList.put(file, file);
                         // file removed so if downloading break the download
-                        if (log.isLoggable(Level.FINER)) {
-                            log.finer("downloading removed file, breaking it! "
+                        if (isFiner()) {
+                            logFiner("downloading removed file, breaking it! "
                                 + file + ' ' + this);
                         }
                         tm.abortDownload(file, this);
@@ -1389,10 +1389,10 @@ public class Member extends PFComponent {
                 if (log.isLoggable(Level.FINE)) {
                     int msgs = expectedListMessages.get(targetedFolderInfo);
                     if (msgs >= 0) {
-                        log.fine("Received folder change. Expecting " + msgs
+                        logFine("Received folder change. Expecting " + msgs
                             + " more deltas. " + message);
                     } else {
-                        log.fine("Received folder change. Received " + (-msgs)
+                        logFine("Received folder change. Received " + (-msgs)
                             + " additional deltas. " + message);
                     }
                 }
@@ -1414,7 +1414,7 @@ public class Member extends PFComponent {
                 if (lastProblem.problemCode == Problem.DO_NOT_LONGER_CONNECT) {
                     // Finds us boring
                     // set unable to connect
-                    log.fine("Problem received: Node reject our connection, "
+                    logFine("Problem received: Node reject our connection, "
                         + "we should not longer try to connect");
                     // Not connected to public network
                     isConnectedToNetwork = true;
@@ -1423,7 +1423,7 @@ public class Member extends PFComponent {
                     log
                         .warning("Problem received: Node thinks we have a dupe connection to him");
                 } else {
-                    log.warning("Problem received: " + lastProblem);
+                    logWarning("Problem received: " + lastProblem);
                 }
 
                 if (lastProblem.fatal) {
@@ -1461,7 +1461,7 @@ public class Member extends PFComponent {
             } else if (message instanceof Notification) {
                 Notification not = (Notification) message;
                 if (not.getEvent() == null) {
-                    log.warning("Unknown event from peer");
+                    logWarning("Unknown event from peer");
                 } else {
                     switch (not.getEvent()) {
                         case ADDED_TO_FRIENDS :
@@ -1469,7 +1469,7 @@ public class Member extends PFComponent {
                                 this, not.getPersonalMessage());
                             break;
                         default :
-                            log.warning("Unhandled event: " + not.getEvent());
+                            logWarning("Unhandled event: " + not.getEvent());
                     }
                 }
                 expectedTime = 50;
@@ -1492,7 +1492,7 @@ public class Member extends PFComponent {
                 if (dl != null) {
                     dl.uploadStarted(su.getFile());
                 } else {
-                    log.info("Download invalid or obsolete:" + su.getFile());
+                    logInfo("Download invalid or obsolete:" + su.getFile());
                     sendMessageAsynchron(new AbortDownload(su.getFile()), null);
                 }
                 expectedTime = 100;
@@ -1524,7 +1524,7 @@ public class Member extends PFComponent {
                 if (dl != null) {
                     dl.receivedFilePartsRecord(rep.getFile(), rep.getRecord());
                 } else {
-                    log.info("Download not found: " + dl);
+                    logInfo("Download not found: " + dl);
                     sendMessageAsynchron(new AbortDownload(rep.getFile()), null);
                 }
                 expectedTime = 100;
@@ -1541,7 +1541,7 @@ public class Member extends PFComponent {
                 expectedTime = 50;
 
             } else {
-                log.finer("Message not known to message handling code, "
+                logFiner("Message not known to message handling code, "
                     + "maybe handled in listener: " + message);
             }
 
@@ -1561,7 +1561,7 @@ public class Member extends PFComponent {
 
     /**
      * Adds a message listener
-     * 
+     *
      * @param aListener
      *            The listener to add
      */
@@ -1572,7 +1572,7 @@ public class Member extends PFComponent {
     /**
      * Adds a message listener, which is only triggerd if a message of type
      * <code>messageType</code> is received.
-     * 
+     *
      * @param messageType
      *            The type of messages to register too.
      * @param aListener
@@ -1586,7 +1586,7 @@ public class Member extends PFComponent {
 
     /**
      * Removes a message listener completely from this member
-     * 
+     *
      * @param aListener
      *            The listener to remove
      */
@@ -1596,11 +1596,11 @@ public class Member extends PFComponent {
 
     /**
      * Overriden, removes message listeners also
-     * 
+     *
      * @see de.dal33t.powerfolder.PFComponent#removeAllListeners()
      */
     public void removeAllListeners() {
-        log.finer("Removing all listeners from member. " + this);
+        logFiner("Removing all listeners from member. " + this);
         super.removeAllListeners();
         // Remove message listeners
         getMessageListenerSupport().removeAllListeners();
@@ -1608,7 +1608,7 @@ public class Member extends PFComponent {
 
     /**
      * Fires a message to all message listeners
-     * 
+     *
      * @param message
      *            the message to fire
      */
@@ -1629,7 +1629,7 @@ public class Member extends PFComponent {
 
     /**
      * Synchronizes the folder memberships on both sides
-     * 
+     *
      * @param joinedFolders
      *            the currently joined folders of ourself
      */
@@ -1649,7 +1649,7 @@ public class Member extends PFComponent {
                 joinToLocalFolders(folderList);
             } else {
                 // Hopefully we receive this later.
-                log.severe("Unable to synchronize memberships, "
+                logSevere("Unable to synchronize memberships, "
                     + "did not received folderlist from remote");
             }
 
@@ -1664,7 +1664,7 @@ public class Member extends PFComponent {
     /**
      * Joins member to all local folders which are also available on remote
      * peer, removes member from all local folders, if not longer member of
-     * 
+     *
      * @throws ConnectionException
      */
     private void joinToLocalFolders(FolderList folderList) {
@@ -1708,7 +1708,7 @@ public class Member extends PFComponent {
                 for (int i = 0; i < folderList.secretFolders.length; i++) {
                     FolderInfo secretFolder = folderList.secretFolders[i];
                     if (localSecretFolders.containsKey(secretFolder)) {
-                        log.finer("Also has secret folder: " + secretFolder);
+                        logFiner("Also has secret folder: " + secretFolder);
                         Folder folder = localSecretFolders.get(secretFolder);
                         // Okay, join him into folder
                         joinedFolder.add(folder.getInfo());
@@ -1728,7 +1728,7 @@ public class Member extends PFComponent {
             }
 
             if (!joinedFolder.isEmpty()) {
-                log.info(getNick() + " joined " + joinedFolder.size()
+                logInfo(getNick() + " joined " + joinedFolder.size()
                     + " folder(s)");
                 if (!isFriend()) {
                     // Ask for friendship of guy
@@ -1747,7 +1747,7 @@ public class Member extends PFComponent {
 
     /**
      * Answers the latest received folder list
-     * 
+     *
      * @return the latest received folder list
      */
     public FolderList getLastFolderList() {
@@ -1756,7 +1756,7 @@ public class Member extends PFComponent {
 
     /**
      * Answers if user has a filelist for the folder
-     * 
+     *
      * @param foInfo
      *            the FolderInfo to check if there is a file list filelist for.
      * @return true if user has a filelist for the folder
@@ -1768,7 +1768,7 @@ public class Member extends PFComponent {
     /**
      * Answers if we received the complete filelist (+all nessesary deltas) on
      * that folder.
-     * 
+     *
      * @param foInfo
      * @return true if we received the complete filelist (+all nessesary deltas)
      *         on that folder.
@@ -1792,7 +1792,7 @@ public class Member extends PFComponent {
 
     /**
      * Answers the last filelist of a member/folder May return null.
-     * 
+     *
      * @param foInfo
      *            The folder to get the listlist for
      * @return A Map<FileInfo, FileInfo> for this folder (foInfo)
@@ -1814,7 +1814,7 @@ public class Member extends PFComponent {
     /**
      * Answers the last filelist of a member/folder. Returns null if no filelist
      * has been received yet. But may return empty collection
-     * 
+     *
      * @param foInfo
      *            The folder to get the listlist for
      * @return A Array containing the FileInfo s
@@ -1838,7 +1838,7 @@ public class Member extends PFComponent {
      * <p>
      * Avoids temporary list creation by returning an (unmodifiable) reference
      * to the keyset of the cached filelist.
-     * 
+     *
      * @param foInfo
      *            The folder to get the listlist for
      * @return an collection unmodifieable containing the fileinfos.
@@ -1853,7 +1853,7 @@ public class Member extends PFComponent {
 
     /**
      * Returns the last transfer status of this node
-     * 
+     *
      * @return the last transfer status of this node
      */
     public TransferStatus getLastTransferStatus() {
@@ -1867,7 +1867,7 @@ public class Member extends PFComponent {
      * Answers if user joined any folder.
      * <p>
      * TODO: Add if the user is on any folder based on network folder list.
-     * 
+     *
      * @return true if user joined any folder
      */
     public boolean hasJoinedAnyFolder() {
@@ -1899,7 +1899,7 @@ public class Member extends PFComponent {
     /**
      * Answers if member has the file available to download. Does NOT check
      * version match
-     * 
+     *
      * @param file
      *            the FileInfo to find at this user
      * @return true if this user has this file, or false if not or if no
@@ -1914,7 +1914,7 @@ public class Member extends PFComponent {
      * Returns the remote file info from the node. May return null if file is
      * not known by remote or no filelist was received yet. Does return the
      * internal database file if myself.
-     * 
+     *
      * @param file
      *            local file
      * @return the fileInfo of remote side, or null
@@ -1959,7 +1959,7 @@ public class Member extends PFComponent {
 
     /**
      * set the nick name of this member
-     * 
+     *
      * @param nick
      *            The nick to set
      */
@@ -1971,7 +1971,7 @@ public class Member extends PFComponent {
 
     /**
      * Returns the identity of this member.
-     * 
+     *
      * @return the identity if connection is established, otherwise null
      */
     public Identity getIdentity() {
@@ -1991,7 +1991,7 @@ public class Member extends PFComponent {
     /**
      * Answers when the member connected last time or null, if member never
      * connected
-     * 
+     *
      * @return Date Object representing the last connect time or null, if member
      *         never connected
      */
@@ -2003,7 +2003,7 @@ public class Member extends PFComponent {
      * Answers the last connect time of the user to the network. Last connect
      * time is determinded by the information about users from other nodes and
      * own last connection date to that node
-     * 
+     *
      * @return Date object representing the last time on the network
      */
     public Date getLastNetworkConnectTime() {
@@ -2020,7 +2020,7 @@ public class Member extends PFComponent {
 
     /**
      * Returns the member information. add connected info
-     * 
+     *
      * @return the MemberInfo object
      */
     public MemberInfo getInfo() {
@@ -2037,7 +2037,7 @@ public class Member extends PFComponent {
 
     /**
      * Answers if this member is connected to the PF network
-     * 
+     *
      * @return true if this member is connected to the PF network
      */
     public boolean isConnectedToNetwork() {
@@ -2046,7 +2046,7 @@ public class Member extends PFComponent {
 
     /**
      * set the connected to network status
-     * 
+     *
      * @param connected
      *            flag indicating if this member is connected
      */
@@ -2056,7 +2056,7 @@ public class Member extends PFComponent {
 
     /**
      * Answers if we the remote node told us not longer to connect.
-     * 
+     *
      * @return true if the remote side didn't want to be connected.
      */
     public boolean isDontConnect() {
@@ -2088,7 +2088,7 @@ public class Member extends PFComponent {
 
     /**
      * Sets/Unsets this member as server that should be reconnected.
-     * 
+     *
      * @param server
      */
     public void setServer(boolean server) {
@@ -2107,7 +2107,7 @@ public class Member extends PFComponent {
      * Updates connection information, if the other is more 'valueble'.
      * <p>
      * TODO CLEAN UP THIS MESS!!!! -> Define behaviour and write tests.
-     * 
+     *
      * @param newInfo
      *            The new MemberInfo to use if more valueble
      * @return true if we found valueble information
@@ -2117,8 +2117,8 @@ public class Member extends PFComponent {
         if (!isConnected() && newInfo.isConnected) {
             // take info, if this is now a supernode
             if (newInfo.isSupernode && !info.isSupernode) {
-                if (log.isLoggable(Level.FINER)) {
-                    log.finer("Received new supernode information: " + newInfo);
+                if (isFiner()) {
+                    logFiner("Received new supernode information: " + newInfo);
                 }
             }
             info.isSupernode = newInfo.isSupernode;
@@ -2137,7 +2137,7 @@ public class Member extends PFComponent {
                 .before(newInfo.lastConnectTime));
 
         if (!isConnected() && updateLastNetworkConnectTime) {
-            // log.finer(
+            // logFiner(
             // "Last connect time fresher on remote side. this "
             // + lastNetworkConnectTime + ", remote: "
             // + newInfo.lastConnectTime);

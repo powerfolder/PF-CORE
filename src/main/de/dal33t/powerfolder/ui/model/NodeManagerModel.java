@@ -44,7 +44,6 @@ import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
-import java.util.logging.Logger;
 
 /**
  * UI-Model for the nodemanager. Prepare data from the nodemanager in a
@@ -57,7 +56,6 @@ import java.util.logging.Logger;
  */
 public class NodeManagerModel extends PFUIComponent {
 
-    private static final Logger log = Logger.getLogger(NodeManagerModel.class.getName());
     private NavTreeModel navTreeModel;
     private ChatModel chatModel;
     private TreeNodeList friendsTreeNode;
@@ -310,7 +308,7 @@ public class NodeManagerModel extends PFUIComponent {
         if (getController().getUIController().getNodeManagerModel()
             .getFriendsTreeNode().getChildCount() > 0)
         {
-            log.finer("Expanding friendlist");
+            logFiner("Expanding friendlist");
             Runnable runner = new Runnable() {
                 public void run() {
                     getController().getUIController().getControlQuarter()
@@ -334,7 +332,7 @@ public class NodeManagerModel extends PFUIComponent {
             return;
         }
         if (notInFriendsTreeNodes.getChildCount() == 1) {
-            log.finer("Expanding not friendlist");
+            logFiner("Expanding not friendlist");
             Runnable runner = new Runnable() {
                 public void run() {
                     getController().getUIController().getControlQuarter()

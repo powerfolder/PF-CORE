@@ -38,7 +38,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.util.logging.Logger;
 
 /**
  * The dialog opened when connecting
@@ -47,8 +46,6 @@ import java.util.logging.Logger;
  * @version $Revision: 1.8 $
  */
 public class ConnectDialog extends PFUIComponent {
-
-    private static final Logger log = Logger.getLogger(ConnectDialog.class.getName());
 
     private JDialog uiComponent;
     private JLabel infoText;
@@ -182,7 +179,7 @@ public class ConnectDialog extends PFUIComponent {
                         break;
                     }
                 }
-                log.finer("Connectionbar runner stopped");
+                logFiner("Connectionbar runner stopped");
             }
         };
         new Thread(barUpdater, "Connectionbar runner").start();

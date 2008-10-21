@@ -74,7 +74,7 @@ public abstract class BaseAction extends AbstractAction {
      *            the action id
      */
     protected void configureFromActionId(String actionId) {
-        // log.finer("Configuring from id: " + actionId);
+        // logFiner("Configuring from id: " + actionId);
         putValue(Action.NAME, Translation.getTranslation(actionId + ".name"));
         setMnemonicKey(Translation.getTranslation(actionId + ".key"));
         putValue(Action.SHORT_DESCRIPTION, Translation.getTranslation(actionId

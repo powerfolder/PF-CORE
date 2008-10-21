@@ -38,8 +38,6 @@ import javax.swing.tree.TreeNode;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Prepares core data as (swing) ui models. e.g. <code>TreeModel</code>
@@ -51,7 +49,6 @@ import java.util.logging.Logger;
  */
 public class FolderRepositoryModel extends PFUIComponent {
 
-    private static final Logger log = Logger.getLogger(FolderRepositoryModel.class.getName());
     private NavTreeModel navTreeModel;
     // a list containing all joined folder
     private TreeNodeList myFoldersTreeNode;
@@ -137,7 +134,7 @@ public class FolderRepositoryModel extends PFUIComponent {
      */
     private void expandFolderRepository() {
         if (myFoldersTreeNode.getChildCount() > 0 && !expandedMyFolders) {
-            log.finer("Expanding foined folders on nav_tree");
+            logFiner("Expanding foined folders on nav_tree");
             // Expand joined folders
             getController().getUIController().getControlQuarter().getUITree()
                 .expandPath(myFoldersTreeNode.getPathTo());
@@ -168,7 +165,7 @@ public class FolderRepositoryModel extends PFUIComponent {
             folder.recommendScanOnNextMaintenance();
         }
 
-        log.fine("Disable silent mode");
+        logFine("Disable silent mode");
         getController().setSilentMode(false);
 
         // Now trigger the scan
@@ -204,8 +201,8 @@ public class FolderRepositoryModel extends PFUIComponent {
     /** update Folder treenode for a folder */
     void updateFolderTreeNode(FolderModel folderModel) {
         // Update tree on that folder
-        if (log.isLoggable(Level.FINER)) {
-            log.finer("Updating files of folder " + folderModel.getFolder());
+        if (isFiner()) {
+            logFiner("Updating files of folder " + folderModel.getFolder());
         }
         TreeNodeList list = myFoldersTreeNode;
         Object[] path = new Object[]{navTreeModel.getRoot(), list,

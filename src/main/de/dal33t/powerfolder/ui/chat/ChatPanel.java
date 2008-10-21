@@ -85,7 +85,7 @@ public abstract class ChatPanel extends PFUIPanel {
         try {
             doc.insertString(0, "", null);
         } catch (BadLocationException ble) {
-            log.warning("Couldn't insert initial text into text pane.");
+            logWarning("Couldn't insert initial text into text pane.");
         }
         scrollPaneInput = new JScrollPane(chatInput,
             JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,

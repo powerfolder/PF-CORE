@@ -43,7 +43,6 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -238,8 +237,8 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
 
         // Create identity
         myIdentity = createOwnIdentity();
-        if (log.isLoggable(Level.FINER)) {
-            log.finer(
+        if (isFiner()) {
+            logFiner(
                 "Sending my identity, nick: '"
                     + myIdentity.getMemberInfo().nick + "', ID: "
                     + myIdentity.getMemberInfo().id);
@@ -265,11 +264,11 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
         // Check if IP is on LAN
         // onLAN = getController().getBroadcastManager().receivedBroadcastFrom(
         // socket.getInetAddress());
-        // log.warning("Received broadcast from ? " + onLAN);
+        // logWarning("Received broadcast from ? " + onLAN);
 
         long took = System.currentTimeMillis() - startTime;
-        if (log.isLoggable(Level.FINER)) {
-            log.finer(
+        if (isFiner()) {
+            logFiner(
                 "Connect took " + took + "ms, time differ: "
                     + ((getTimeDeltaMS() / 1000) / 60) + " min, remote ident: "
                     + getIdentity());
@@ -307,8 +306,8 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
         if (!started) {
             return;
         }
-        if (log.isLoggable(Level.FINER)) {
-            log.finer("Shutting down");
+        if (isFiner()) {
+            logFiner("Shutting down");
         }
         // if (isConnected() && started) {
         // // Send "EOF" if possible, the last thing you see
@@ -441,8 +440,8 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
 
         try {
             synchronized (sendLock) {
-                if (log.isLoggable(Level.FINER)) {
-                    log.finer("-- (sending) -> " + message);
+                if (isFiner()) {
+                    logFiner("-- (sending) -> " + message);
                 }
                 if (!isConnected() || !started) {
                     throw new ConnectionException(
@@ -459,7 +458,7 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
                         data.length + 4);
             }
         } catch (RuntimeException e) {
-            log.log(Level.SEVERE, "Runtime exception while serializing: " + message, e);
+            logSevere("Runtime exception while serializing: " + message, e);
             // Ensure shutdown
             shutdownWithMember();
             throw e;
@@ -531,7 +530,7 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
                     identityWaiter.wait(60000);
                 } catch (InterruptedException e) {
                     // Ignore
-                    log.log(Level.FINER, "InterruptedException", e);
+                    logFiner("InterruptedException", e);
                 }
             }
         }
@@ -543,8 +542,8 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
         member = node;
 
         // now handshake
-        if (log.isLoggable(Level.FINER)) {
-            log.finer("Sending accept of identity to " + this);
+        if (isFiner()) {
+            logFiner("Sending accept of identity to " + this);
         }
         sendMessagesAsynchron(IdentityReply.accept());
 
@@ -555,14 +554,14 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
                 try {
                     identityAcceptWaiter.wait(20000);
                 } catch (InterruptedException e) {
-                    log.log(Level.FINER, "InterruptedException", e);
+                    logFiner("InterruptedException", e);
                 }
             }
         }
 
         long took = (System.currentTimeMillis() - start) / 1000;
         if (identityReply != null && !identityReply.accepted) {
-            log.warning(
+            logWarning(
                     "Remote peer rejected our connection: "
                         + identityReply.message);
             member = null;
@@ -570,7 +569,7 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
         }
 
         if (!isConnected()) {
-            log.warning(
+            logWarning(
                 "Remote member disconnected while waiting for identity reply. "
                     + identity);
             member = null;
@@ -578,7 +577,7 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
         }
 
         if (identityReply == null) {
-            log.warning(
+            logWarning(
                 "Did not receive a identity reply after " + took
                     + "s. Connected? " + isConnected() + ". remote id: "
                     + identity);
@@ -587,12 +586,12 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
         }
 
         if (identityReply.accepted) {
-            if (log.isLoggable(Level.FINER)) {
-                log.finer("Identity accepted by remote peer. " + this);
+            if (isFiner()) {
+                logFiner("Identity accepted by remote peer. " + this);
             }
         } else {
             member = null;
-            log.warning("Identity rejected by remote peer. " + this);
+            logWarning("Identity rejected by remote peer. " + this);
         }
 
         return identityReply.accepted;
@@ -602,7 +601,7 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
         long waited = 0;
         while (!messagesToSendQueue.isEmpty() && isConnected()) {
             try {
-                // log.warning("Waiting for empty send buffer to " +
+                // logWarning("Waiting for empty send buffer to " +
                 // getMember());
                 waited += 50;
                 // Wait a bit the let the send queue get empty
@@ -613,13 +612,13 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
                     break;
                 }
             } catch (InterruptedException e) {
-                log.log(Level.FINER, "InterruptedException", e);
+                logFiner("InterruptedException", e);
                 break;
             }
         }
         if (waited > 0) {
-            if (log.isLoggable(Level.FINER)) {
-                log.finer(
+            if (isFiner()) {
+                logFiner(
                     "Waited " + waited
                         + "ms for empty sendbuffer, clear now, proceeding to "
                         + getMember());
@@ -633,12 +632,12 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
      */
     private void analyseConnection() {
         if (Feature.CORRECT_LAN_DETECTION.isDisabled()) {
-            log.warning("ON LAN because of correct connection analyse disabled");
+            logWarning("ON LAN because of correct connection analyse disabled");
             setOnLAN(true);
             return;
         }
         if (Feature.CORRECT_INTERNET_DETECTION.isDisabled()) {
-            log.warning("ON Internet because of correct connection analyse disabled");
+            logWarning("ON Internet because of correct connection analyse disabled");
             setOnLAN(false);
             return;
         }
@@ -654,8 +653,8 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
                 adr));
         }
 
-        if (log.isLoggable(Level.FINER)) {
-            log.finer("analyse connection: lan: " + onLAN);
+        if (isFiner()) {
+            logFiner("analyse connection: lan: " + onLAN);
         }
     }
 
@@ -712,34 +711,34 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
             // && getMember().getPeer() !=
             // AbstractSocketConnectionHandler.this)
             // {
-            // log.severe(
+            // logSevere(
             // "DEAD connection handler found for member: "
             // + getMember());
             // shutdown();
             // return;
             // }
-            if (log.isLoggable(Level.FINER)) {
-                log.finer(
+            if (isFiner()) {
+                logFiner(
                     "<- (received, " + Format.formatBytes(data.length) + ") - "
                         + obj);
             }
 
             if (!getController().isStarted()) {
-                log.finer("Peer still active, shutting down " + getMember());
+                logFiner("Peer still active, shutting down " + getMember());
                 shutdownWithMember();
                 return;
             }
 
             if (obj instanceof Identity) {
-                if (log.isLoggable(Level.FINER)) {
-                    log.finer("Received remote identity: " + obj);
+                if (isFiner()) {
+                    logFiner("Received remote identity: " + obj);
                 }
                 // the remote identity
                 identity = (Identity) obj;
 
                 // Get magic id
-                if (log.isLoggable(Level.FINER)) {
-                    log.finer("Received magicId: " + identity.getMagicId());
+                if (isFiner()) {
+                    logFiner("Received magicId: " + identity.getMagicId());
                 }
 
                 // Trigger identitywaiter
@@ -748,8 +747,8 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
                 }
 
             } else if (obj instanceof IdentityReply) {
-                if (log.isLoggable(Level.FINER)) {
-                    log.finer("Received identity reply: " + obj);
+                if (isFiner()) {
+                    logFiner("Received identity reply: " + obj);
                 }
                 // remote side accpeted our identity
                 identityReply = (IdentityReply) obj;
@@ -768,7 +767,7 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
                 if (member != null) {
                     member.handleMessage(problem);
                 } else {
-                    log.warning(
+                    logWarning(
                         "("
                             + (identity != null
                                 ? identity.getMemberInfo().nick
@@ -791,27 +790,27 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
                     // Simply break. Already disconnected
                     shutdownWithMember();
                 } else {
-                    log.severe(
+                    logSevere(
                         "Connection closed, message received, before peer identified itself: "
                             + obj);
                     // connection closed
                     shutdownWithMember();
                 }
             } else {
-                log.severe("Received unknown message from peer: " + obj);
+                logSevere("Received unknown message from peer: " + obj);
             }
 
         } catch (ConnectionException e) {
-            log.log(Level.FINER, "ConnectionException", e);
+            logFiner("ConnectionException", e);
             logConnectionClose(e);
         } catch (ClassNotFoundException e) {
-            log.log(Level.FINER, "ClassNotFoundException", e);
-            log.warning(
+            logFiner("ClassNotFoundException", e);
+            logWarning(
                 "Received unknown packet/class: " + e.getMessage() + " from "
                     + AbstractRelayedConnectionHandler.this);
             // do not break connection
         } catch (RuntimeException e) {
-            log.log(Level.SEVERE, "RuntimeException", e);
+            logSevere("RuntimeException", e);
             shutdownWithMember();
             throw e;
         }
@@ -830,8 +829,8 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
         if (e != null) {
             msg += ". Cause: " + e.toString();
         }
-        log.fine(msg);
-        log.log(Level.FINER, "Exception", e);
+        logFine(msg);
+        logFiner("Exception", e);
     }
 
     // General ****************************************************************
@@ -850,22 +849,22 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
      */
     class Sender implements Runnable {
         public void run() {
-            if (log.isLoggable(Level.FINER)) {
-                log.finer(
+            if (isFiner()) {
+                logFiner(
                     "Asynchron message send triggered, sending "
                         + messagesToSendQueue.size() + " message(s)");
             }
 
             if (!isConnected()) {
                 // Client disconnected, stop
-                log.fine(
+                logFine(
                     "Peer disconnected while sender got active. Msgs in queue: "
                         + messagesToSendQueue.size() + ": "
                         + messagesToSendQueue);
                 return;
             }
 
-            // log.warning(
+            // logWarning(
             // "Sender started with " + messagesToSendQueue.size()
             // + " messages in queue");
 
@@ -884,7 +883,7 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
 
                 i++;
                 if (!started) {
-                    log.warning("Peer shutdown while sending: " + msg);
+                    logWarning("Peer shutdown while sending: " + msg);
                     senderSpawnLock.lock();
                     sender = null;
                     senderSpawnLock.unlock();
@@ -892,15 +891,15 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
                     break;
                 }
                 try {
-                    // log.warning(
+                    // logWarning(
                     // "Sending async (" + messagesToSendQueue.size()
                     // + "): " + asyncMsg.getMessage());
                     sendMessage(msg);
-                    // log.warning("Send complete: " +
+                    // logWarning("Send complete: " +
                     // asyncMsg.getMessage());
                 } catch (ConnectionException e) {
-                    log.warning("Unable to send message asynchronly. " + e);
-                    log.log(Level.FINER, "ConnectionException", e);
+                    logWarning("Unable to send message asynchronly. " + e);
+                    logFiner("ConnectionException", e);
                     senderSpawnLock.lock();
                     sender = null;
                     senderSpawnLock.unlock();
@@ -908,7 +907,7 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
                     // Stop thread execution
                     break;
                 } catch (Throwable t) {
-                    log.log(Level.SEVERE, "Unable to send message asynchronly. " + t, t);
+                    logSevere("Unable to send message asynchronly. " + t, t);
                     senderSpawnLock.lock();
                     sender = null;
                     senderSpawnLock.unlock();
@@ -917,7 +916,7 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
                     break;
                 }
             }
-            // log.warning("Sender finished after sending " + i + " messages");
+            // logWarning("Sender finished after sending " + i + " messages");
         }
     }
 

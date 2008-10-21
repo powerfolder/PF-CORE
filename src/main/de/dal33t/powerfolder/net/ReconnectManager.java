@@ -76,7 +76,7 @@ public class ReconnectManager extends PFComponent {
     public void start() {
         started = true;
         // Start reconnectors
-        log.fine("Starting Reconnection Manager. Going to connect to other nodes now...");
+        logFine("Starting Reconnection Manager. Going to connect to other nodes now...");
         buildReconnectionQueue();
         // Resize reconnector pool from time to time. First execution: NOW
         getController().getController().scheduleAndRepeat(
@@ -88,7 +88,7 @@ public class ReconnectManager extends PFComponent {
         started = false;
         // Shutdown reconnectors
         synchronized (reconnectors) {
-            log.fine("Shutting down " + reconnectors.size() + " reconnectors");
+            logFine("Shutting down " + reconnectors.size() + " reconnectors");
             for (Iterator<Reconnector> it = reconnectors.iterator(); it
                 .hasNext();)
             {
@@ -123,8 +123,8 @@ public class ReconnectManager extends PFComponent {
      * @param node
      */
     public void markNodeForImmediateReconnection(Member node) {
-        if (log.isLoggable(Level.FINER)) {
-            log.finer("Marking node for immediate reconnect: " + node);
+        if (isFiner()) {
+            logFiner("Marking node for immediate reconnect: " + node);
         }
         if (node.isCompleteyConnected() || node.isReconnecting()) {
             // Skip, not neccessary.
@@ -142,17 +142,17 @@ public class ReconnectManager extends PFComponent {
         try {
             Thread.sleep(10);
         } catch (InterruptedException e) {
-            log.log(Level.FINER, "InterruptedException", e);
+            logFiner("InterruptedException", e);
             return;
         }
 
         // None has take the node to reconnect.
         // Spawn new reconnector
         if (reconnectionQueue.contains(node)) {
-            log.warning("Spawing new Reconnector (" + (reconnectors.size() + 1)
+            logWarning("Spawing new Reconnector (" + (reconnectors.size() + 1)
                 + " total) to get faster reconnect to " + node);
             if (!started) {
-                log.severe("ReconnectManager not started. Unable to spawn new reconnector to "
+                logSevere("ReconnectManager not started. Unable to spawn new reconnector to "
                     + node + ". Queue: " + reconnectionQueue);
                 return;
             }
@@ -164,7 +164,7 @@ public class ReconnectManager extends PFComponent {
                 reconnector.start();
             }
         } else {
-            log.warning("Not required to spawn new reconnector to " + node
+            logWarning("Not required to spawn new reconnector to " + node
                 + ". Queue: " + reconnectionQueue);
         }
     }
@@ -215,7 +215,7 @@ public class ReconnectManager extends PFComponent {
                 MemberComparator.BY_RECONNECTION_PRIORITY);
 
             if (log.isLoggable(Level.FINE)) {
-                log.fine("Freshly filled reconnection queue with "
+                logFine("Freshly filled reconnection queue with "
                     + reconnectionQueue.size() + " nodes, " + nBefore
                     + " were in queue before");
             }
@@ -226,7 +226,7 @@ public class ReconnectManager extends PFComponent {
             }
 
             if (reconnectionQueue.size() > 100) {
-                log.warning("Reconnection queue contains more than 200 nodes");
+                logWarning("Reconnection queue contains more than 200 nodes");
             }
 
             // Notify threads
@@ -288,7 +288,7 @@ public class ReconnectManager extends PFComponent {
         // if (!causedByDupeConnection) {
         // // Do not connect if not connection is possible
         // // But RE-try if this was caused by a dupe connection.
-        // log.finer(
+        // logFiner(
         // "Not tring to connect because of unable to connect: "
         // + node);
         // return false;
@@ -357,8 +357,8 @@ public class ReconnectManager extends PFComponent {
 
                 int reconDiffer = reqReconnectors - nReconnector;
 
-                if (log.isLoggable(Level.FINER)) {
-                    log.finer("Got " + reconnectionQueue.size()
+                if (isFiner()) {
+                    logFiner("Got " + reconnectionQueue.size()
                         + " nodes queued for reconnection");
                 }
 
@@ -373,24 +373,24 @@ public class ReconnectManager extends PFComponent {
                         reconnector.start();
                     }
 
-                    log.fine("Spawned " + reconDiffer + " reconnectors. "
+                    logFine("Spawned " + reconDiffer + " reconnectors. "
                         + reconnectors.size() + "/" + reqReconnectors
                         + ", nodes in reconnection queue: "
                         + reconnectionQueue.size());
                 } else if (reconDiffer < 0) {
-                    log.fine("Killing " + -reconDiffer
+                    logFine("Killing " + -reconDiffer
                         + " Reconnectors. Currently have: " + nReconnector
                         + " Reconnectors");
                     for (int i = 0; i < -reconDiffer; i++) {
                         // Kill one reconnector
                         if (reconnectors.size() <= 1) {
-                            log.warning("Not killing last reconnector");
+                            logWarning("Not killing last reconnector");
                             // Have at least one reconnector
                             break;
                         }
                         Reconnector reconnector = reconnectors.remove(0);
                         if (reconnector != null) {
-                            log.finer("Killing reconnector " + reconnector);
+                            logFiner("Killing reconnector " + reconnector);
                             reconnector.softShutdown();
                         }
                     }
@@ -444,17 +444,17 @@ public class ReconnectManager extends PFComponent {
         }
 
         public void run() {
-            if (log.isLoggable(Level.FINER)) {
-                log.finer("Starting reconnector: " + getName());
+            if (isFiner()) {
+                logFiner("Starting reconnector: " + getName());
             }
 
             while (this.reconStarted) {
                 if (!started) {
-                    log.fine("Stopping " + this + ". ReconnectManager is down");
+                    logFine("Stopping " + this + ". ReconnectManager is down");
                     break;
                 }
                 if (!getController().getNodeManager().isStarted()) {
-                    log.fine("Stopping " + this + ". NodeManager is down");
+                    logFine("Stopping " + this + ". NodeManager is down");
                     break;
                 }
 
@@ -470,13 +470,13 @@ public class ReconnectManager extends PFComponent {
                     }
                 }
                 if (goIdle) {
-                    log.fine("Reconnection queue empty after rebuild."
+                    logFine("Reconnection queue empty after rebuild."
                         + "Going on idle for 20 seconds");
                     synchronized (reconnectionQueue) {
                         try {
                             reconnectionQueue.wait(20000);
                         } catch (InterruptedException e) {
-                            log.log(Level.FINER, "InterruptedException", e);
+                            logFiner("InterruptedException", e);
                             break;
                         }
                     }
@@ -490,8 +490,8 @@ public class ReconnectManager extends PFComponent {
                             || currentNode.isReconnecting())
                         {
                             // Already reconnecting. Skip
-                            if (log.isLoggable(Level.FINER)) {
-                                log.finer("Not reconnecting to "
+                            if (isFiner()) {
+                                logFiner("Not reconnecting to "
                                     + currentNode.getNick()
                                     + ", already reconnecting/connected");
                             }
@@ -506,8 +506,8 @@ public class ReconnectManager extends PFComponent {
 
                 // if (currentNode == null) {
                 //                    
-                // if (log.isLoggable(Level.FINER)) {
-                // log.finer(this + " is on idle");
+                // if (isFiner()) {
+                // logFiner(this + " is on idle");
                 // }
                 // // Otherwise wait a bit
                 // synchronized (reconnectionQueue) {
@@ -515,7 +515,7 @@ public class ReconnectManager extends PFComponent {
                 // reconnectionQueue
                 // .wait(Constants.SOCKET_CONNECT_TIMEOUT / 2);
                 // } catch (InterruptedException e) {
-                // log.fine(this + " Stopping. cause: " + e.toString());
+                // logFine(this + " Stopping. cause: " + e.toString());
                 // break;
                 // }
                 // }
@@ -549,13 +549,13 @@ public class ReconnectManager extends PFComponent {
                                 getController().getNodeManager()
                                     .acceptConnection(conHan);
                             } catch (ConnectionException e1) {
-                                log.log(Level.FINER, "ConnectionException", e1);
+                                logFiner("ConnectionException", e1);
                             }
                         }
                     }
                 } else {
                     // Temporary server node, directly connect to IP/hostname
-                    log.warning("Tring to connect to temporary server node at "
+                    logWarning("Tring to connect to temporary server node at "
                         + currentNode.getHostName() + ":"
                         + currentNode.getPort() + ". ID: "
                         + currentNode.getId());
@@ -566,7 +566,7 @@ public class ReconnectManager extends PFComponent {
                         getController().getNodeManager().acceptConnection(
                             conHan);
                     } catch (ConnectionException e1) {
-                        log.log(Level.FINER, "ConnectionException", e1);
+                        logFiner("ConnectionException", e1);
                     }
                 }
 
@@ -576,13 +576,13 @@ public class ReconnectManager extends PFComponent {
                 if (waitUntilNextTry > 0) {
                     synchronized (reconnectionQueue) {
                         try {
-                            if (log.isLoggable(Level.FINER)) {
-                                log.finer(this + ": Going on idle for "
+                            if (isFiner()) {
+                                logFiner(this + ": Going on idle for "
                                     + waitUntilNextTry + "ms");
                             }
                             reconnectionQueue.wait(waitUntilNextTry);
                         } catch (InterruptedException e) {
-                            log.finer(this + " interrupted, breaking");
+                            logFiner(this + " interrupted, breaking");
                             break;
                         }
                     }

@@ -19,24 +19,9 @@
  */
 package de.dal33t.powerfolder.disk;
 
-import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.PreferencesEntry;
-import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_DIR;
-import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_DONT_RECYCLE;
-import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_ID;
-import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX;
-import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREVIEW;
-import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_SYNC_PROFILE;
-import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_WHITELIST;
-import de.dal33t.powerfolder.event.FileNameProblemHandler;
-import de.dal33t.powerfolder.event.FolderRepositoryEvent;
-import de.dal33t.powerfolder.event.FolderRepositoryListener;
-import de.dal33t.powerfolder.event.InvitationReceivedEvent;
-import de.dal33t.powerfolder.event.InvitationReceivedHandler;
-import de.dal33t.powerfolder.event.ListenerSupportFactory;
+import de.dal33t.powerfolder.*;
+import static de.dal33t.powerfolder.disk.FolderSettings.*;
+import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.transfer.FileRequestor;
@@ -50,17 +35,9 @@ import de.dal33t.powerfolder.util.ui.NeverAskAgainResponse;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 import org.apache.commons.lang.StringUtils;
 
-import javax.swing.JFrame;
+import javax.swing.*;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -141,7 +118,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     public void setSuspendFireEvents(boolean suspended) {
         ListenerSupportFactory.setSuspended(listenerSupport, suspended);
-        log.fine("setSuspendFireEvents: " + suspended);
+        logFine("setSuspendFireEvents: " + suspended);
     }
 
     /**
@@ -164,7 +141,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 getFolders().length);
             for (Folder folder : getFolders()) {
                 if (folder.isTransferring()) {
-                    log.warning("Close warning on folder: " + folder);
+                    logWarning("Close warning on folder: " + folder);
                     foldersToWarn.add(folder);
                 }
             }
@@ -198,7 +175,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 }
                 // server closing someone running a server knows what he is
                 // doing
-                log.warning("server closing while folders are not synchronized");
+                logWarning("server closing while folders are not synchronized");
                 return true;
 
             }
@@ -270,7 +247,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             + folderName + FOLDER_SETTINGS_DIR);
 
         if (folderDir == null) {
-            log.severe("No folder directory for " + folderName);
+            logSevere("No folder directory for " + folderName);
             return null;
         }
 
@@ -319,7 +296,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         if (!ConfigurationEntry.FOLDER_REPOSITORY_ENABLED
             .getValueBoolean(getController()))
         {
-            log.warning("Not starting FolderRepository. disabled by config");
+            logWarning("Not starting FolderRepository. disabled by config");
             return;
         }
         folderScanner.start();
@@ -361,7 +338,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         // make sure that on restart of folder the folders are freshly read
         folders.clear();
-        log.fine("Stopped");
+        logFine("Stopped");
     }
 
     /**
@@ -495,7 +472,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 if (folder.isPreviewOnly()
                     && folder.getInfo().equals(folderInfo))
                 {
-                    log.info("Removed preview folder " + folder.getName());
+                    logInfo("Removed preview folder " + folder.getName());
                     removeFolder(folder, true);
                     break;
                 }
@@ -541,7 +518,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         // Fire event
         fireFolderCreated(folder);
 
-        log.info("Joined folder " + folderInfo.name + ", local copy at '"
+        logInfo("Joined folder " + folderInfo.name + ", local copy at '"
             + folderSettings.getLocalBaseDir() + '\'');
 
         return folder;
@@ -647,11 +624,11 @@ public class FolderRepository extends PFComponent implements Runnable {
             File[] files = systemSubDir.listFiles();
             for (File file : files) {
                 if (!file.delete()) {
-                    log.severe("Failed to delete: " + file);
+                    logSevere("Failed to delete: " + file);
                 }
             }
             if (!systemSubDir.delete()) {
-                log.severe("Failed to delete: " + systemSubDir);
+                logSevere("Failed to delete: " + systemSubDir);
             }
 
             // Try to delete the invitation.
@@ -661,7 +638,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 try {
                     invite.delete();
                 } catch (Exception e) {
-                    log.log(Level.SEVERE, "Failed to delete invitation: "
+                    logSevere("Failed to delete invitation: "
                         + invite.getAbsolutePath(), e);
                 }
             }
@@ -671,7 +648,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 try {
                     folder.getLocalBase().delete();
                 } catch (Exception e) {
-                    log.log(Level.SEVERE, "Failed to delete local base: "
+                    logSevere("Failed to delete local base: "
                         + folder.getLocalBase().getAbsolutePath(), e);
                 }
             }
@@ -687,14 +664,14 @@ public class FolderRepository extends PFComponent implements Runnable {
      * @param member
      */
     public void removeFromAllFolders(Member member) {
-        if (log.isLoggable(Level.FINER)) {
-            log.finer("Removing node from all folders: " + member);
+        if (isFiner()) {
+            logFiner("Removing node from all folders: " + member);
         }
         for (Folder folder : getFolders()) {
             folder.remove(member);
         }
-        if (log.isLoggable(Level.FINER)) {
-            log.finer("Node removed from all folders: " + member);
+        if (isFiner()) {
+            logFiner("Node removed from all folders: " + member);
         }
     }
 
@@ -703,10 +680,10 @@ public class FolderRepository extends PFComponent implements Runnable {
      */
     private void synchronizeAllFolderMemberships() {
         if (!started) {
-            log.finer("Not synchronizing Foldermemberships, repo not started, yet");
+            logFiner("Not synchronizing Foldermemberships, repo not started, yet");
         }
-        if (log.isLoggable(Level.FINER)) {
-            log.finer("All Nodes: Synchronize Foldermemberships");
+        if (isFiner()) {
+            logFiner("All Nodes: Synchronize Foldermemberships");
         }
         Collection<Member> connectedNodes = getController().getNodeManager()
             .getConnectedNodes();
@@ -721,7 +698,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      */
     public void broadcastScanCommandOnAllFolders() {
         if (log.isLoggable(Level.FINE)) {
-            log.fine("Sending remote scan commando");
+            logFine("Sending remote scan commando");
         }
         for (Folder folder : getFolders()) {
             folder.broadcastScanCommand();
@@ -741,8 +718,8 @@ public class FolderRepository extends PFComponent implements Runnable {
      * depending on settings.
      */
     public void triggerMaintenance() {
-        if (log.isLoggable(Level.FINER)) {
-            log.finer("Scan triggerd");
+        if (isFiner()) {
+            logFiner("Scan triggerd");
         }
         triggered = true;
         synchronized (scanTrigger) {
@@ -766,7 +743,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                     scanTrigger.wait(getController().getWaitTime() * 4);
                 }
             } catch (InterruptedException e) {
-                log.log(Level.FINER, "InterruptedException", e);
+                logFiner("InterruptedException", e);
                 return;
             }
         }
@@ -777,8 +754,8 @@ public class FolderRepository extends PFComponent implements Runnable {
             if (!getController().isSilentMode()) {
                 scanningFolders.clear();
                 scanningFolders.addAll(folders.values());
-                if (log.isLoggable(Level.FINER)) {
-                    log.finer("Maintaining " + scanningFolders.size()
+                if (isFiner()) {
+                    logFiner("Maintaining " + scanningFolders.size()
                         + " folders...");
                 }
                 Collections.sort(scanningFolders, new FolderComparator());
@@ -810,8 +787,8 @@ public class FolderRepository extends PFComponent implements Runnable {
                         break;
                     }
                 }
-                if (log.isLoggable(Level.FINER)) {
-                    log.finer("Maintained " + scanningFolders.size()
+                if (isFiner()) {
+                    logFiner("Maintained " + scanningFolders.size()
                         + " folder(s)");
                 }
             }
@@ -823,7 +800,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                         scanTrigger.wait(waitTime);
                     }
                 } catch (InterruptedException e) {
-                    log.log(Level.FINER, "InterruptedException", e);
+                    logFiner("InterruptedException", e);
                     break;
                 }
             }

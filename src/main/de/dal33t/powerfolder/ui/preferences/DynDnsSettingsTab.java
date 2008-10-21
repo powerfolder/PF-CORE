@@ -50,15 +50,13 @@ import java.awt.event.FocusListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.security.Security;
-import java.util.logging.Logger;
 
 public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
 
-    private static final Logger log = Logger.getLogger(DynDnsSettingsTab.class.getName());
     // disposition constants for status messages
-    final static int DISP_INFO = 0; // just informing message
-    final static int DISP_WARNING = 1; // warning
-    final static int DISP_ERROR = 2; // error
+    static final int DISP_INFO = 0; // just informing message
+    static final int DISP_WARNING = 1; // warning
+    static final int DISP_ERROR = 2; // error
 
     // FIXME: This is very ugly(tm) public vars!
     public static String password;
@@ -273,7 +271,7 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
      * Starts a worker which gathers the current dyndns stuff. e.g. own ip.
      */
     protected void updateDynDnsInfo() {
-        log.fine(
+        logFine(
             "Gathering dyndns infos. Cache: "
                 + Security.getProperty("networkaddress.cache.ttl"));
         SwingWorker worker = new SwingWorker() {

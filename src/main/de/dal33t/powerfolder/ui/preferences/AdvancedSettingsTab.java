@@ -53,12 +53,9 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Enumeration;
 import java.util.StringTokenizer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
 
-    private static final Logger log = Logger.getLogger(AdvancedSettingsTab.class.getName());
     private JPanel panel;
     private JTextField advPort;
     private JComboBox bindAddress;
@@ -137,7 +134,7 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
                 }
             }
         } catch (SocketException e1) {
-            log.log(Level.SEVERE, "SocketException", e1);
+            logSevere("SocketException", e1);
         }
 
         ifDescr = new JTextArea(3, 20);
@@ -377,7 +374,7 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
 
             ConfigurationEntry.NET_BIND_PORT.setValue(getController(), port);
         } catch (NumberFormatException e) {
-            log.warning("Unparsable port number");
+            logWarning("Unparsable port number");
         }
         String cfgBind = ConfigurationEntry.NET_BIND_ADDRESS
             .getValue(getController());

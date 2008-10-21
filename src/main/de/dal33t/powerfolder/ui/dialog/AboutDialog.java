@@ -65,16 +65,12 @@ import java.util.Date;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.16 $
  */
 public class AboutDialog extends PFUIComponent {
-
-    private static final Logger log = Logger.getLogger(AboutDialog.class.getName());
 
     // read from jar manifest
     private String buildDate;
@@ -371,7 +367,7 @@ public class AboutDialog extends PFUIComponent {
             try {
                 BrowserLauncher.openURL(Constants.BUG_REPORT_URL);
             } catch (IOException e1) {
-                log.log(Level.SEVERE, "IOException", e1);
+                logSevere("IOException", e1);
             }
         }
 
@@ -450,7 +446,7 @@ public class AboutDialog extends PFUIComponent {
             Manifest mf = file.getManifest();
             Attributes attr = mf.getMainAttributes();
 
-            log.fine(attr.getValue("BuildDateTime"));
+            logFine(attr.getValue("BuildDateTime"));
 
             String buildDateTimeString = attr.getValue("BuildDateTime");
             SimpleDateFormat parser = new SimpleDateFormat();
@@ -469,7 +465,7 @@ public class AboutDialog extends PFUIComponent {
 
             file.close();
         } catch (Exception e) {
-            log.severe("Build date/time works only from jar.");
+            logSevere("Build date/time works only from jar.");
             buildTime = "n/a";
             buildDate = "n/a";
         }

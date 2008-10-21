@@ -42,7 +42,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Logger;
 
 /**
  * A table model which contains the search result.
@@ -54,7 +53,6 @@ import java.util.logging.Logger;
 public class SearchNodeTableModel extends PFUIComponent implements TableModel,
         SortedTableModel {
 
-    private static final Logger log = Logger.getLogger(SearchNodeTableModel.class.getName());
     private List<TableModelListener> listeners = new LinkedList<TableModelListener>();
     private ObservableList members = new LinkedListModel();
     
@@ -102,7 +100,7 @@ public class SearchNodeTableModel extends PFUIComponent implements TableModel,
     /** add a member */
     public void add(Member member) {
         Reject.ifNull(member, "Member is null");
-        log.fine("add member id: '" + member.getId() + '\'');
+        logFine("add member id: '" + member.getId() + '\'');
         members.add(member);
         sort();
 

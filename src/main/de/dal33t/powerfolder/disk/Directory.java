@@ -27,22 +27,13 @@ import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.FileCopier;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.logging.Loggable;
 
 import java.awt.datatransfer.DataFlavor;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Logger;
 
 
 /**
@@ -53,9 +44,8 @@ import java.util.logging.Logger;
  * @author <a href="mailto:schaatser@powerfolder.com">Jan van Oosterom </a>
  * @version $Revision: 1.43 $
  */
-public class Directory implements Comparable<Directory>, DiskItem {
+public class Directory extends Loggable implements Comparable<Directory>, DiskItem {
 
-    private static final Logger log = Logger.getLogger(Directory.class.getName());
     /**
      * The files (FileInfoHolder s) in this Directory key = fileInfo value =
      * FileInfoHolder
@@ -137,7 +127,7 @@ public class Directory implements Comparable<Directory>, DiskItem {
         final File newFileName = new File(getFile(), nameArg);
         if (!newFileName.exists()) {
             if (!newFileName.mkdir()) {
-                log.info("Failed to create " + newFileName.getAbsolutePath());
+                logInfo("Failed to create " + newFileName.getAbsolutePath());
             }
         }
         return sub;
@@ -188,7 +178,7 @@ public class Directory implements Comparable<Directory>, DiskItem {
             // target exists, rename it so we backup
             tmpFile = new File(newFile + ".tmp");
             if (!newFile.renameTo(tmpFile)) {
-                log.severe("Couldn't rename " + newFile.getAbsolutePath()
+                logSevere("Couldn't rename " + newFile.getAbsolutePath()
                     + " to " + tmpFile.getAbsolutePath());
             }
         }
@@ -196,7 +186,7 @@ public class Directory implements Comparable<Directory>, DiskItem {
             // rename failed restore if possible
             if (tmpFile != null) {
                 if (!tmpFile.renameTo(newFile)) {
-                    log.severe("Couldn't rename " + newFile.getAbsolutePath()
+                    logSevere("Couldn't rename " + newFile.getAbsolutePath()
                         + " to " + tmpFile.getAbsolutePath());
                 }
             }
@@ -204,7 +194,7 @@ public class Directory implements Comparable<Directory>, DiskItem {
             // success!
             if (tmpFile != null) {
                 if (!tmpFile.delete()) {
-                    log.severe("Couldn't delete " + tmpFile.getAbsolutePath());
+                    logSevere("Couldn't delete " + tmpFile.getAbsolutePath());
                 }
             }
         }

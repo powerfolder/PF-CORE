@@ -41,7 +41,6 @@ import javax.swing.JLabel;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.logging.Logger;
 
 /**
  * The Sync action panel. user can input his sync actions. e.g. scan. scan &
@@ -51,8 +50,6 @@ import java.util.logging.Logger;
  * @version $Revision: 1.3 $
  */
 public class SyncFolderPanel extends BaseDialog {
-
-    private static final Logger log = Logger.getLogger(SyncFolderPanel.class.getName());
 
     private static final Object SEND_OPTION = new Object();
     private static final Object RECEIVE_OPTION = new Object();
@@ -181,14 +178,14 @@ public class SyncFolderPanel extends BaseDialog {
             if (optionModel.getValue() == SEND_OPTION
                 || optionModel.getValue() == SEND_RECEIVE_OPTION)
             {
-                log.info(folder + ": Performing send/scan");
+                logInfo(folder + ": Performing send/scan");
                 folder.scanLocalFiles();
             }
 
             if (optionModel.getValue() == RECEIVE_OPTION
                 || optionModel.getValue() == SEND_RECEIVE_OPTION)
             {
-                log.info(folder + ": Performing receive");
+                logInfo(folder + ": Performing receive");
                 // Perform remote deltions
                 folder.syncRemoteDeletedFiles(true);
                 // Request ALL files now modified by friends

@@ -850,21 +850,21 @@ public class FilesTab extends PFUIComponent implements FolderTab,
             FilesTab.this.directoryTable.getParent().setCursor(
                 Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             if (move) {
-                log.fine("Moving!: " + file + " to: " + directory);
+                logFine("Moving!: " + file + " to: " + directory);
                 if (!directory.moveFileFrom(file)) {
-                    log.severe("something failed in drop/move");
+                    logSevere("something failed in drop/move");
                     FilesTab.this.directoryTable.getParent().setCursor(
                         Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                     // something failed
                     return false;
                 }
             } else {
-                log.fine("copy: " + file + " to: " + directory);
+                logFine("copy: " + file + " to: " + directory);
                 if (!directory.copyFileFrom(file, getFileCopier())) {
                     FilesTab.this.directoryTable.getParent().setCursor(
                         Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                     // something failed
-                    log.severe("something failed in drop/copy");
+                    logSevere("something failed in drop/copy");
                     return false;
                 }
             }
@@ -923,9 +923,9 @@ public class FilesTab extends PFUIComponent implements FolderTab,
             }
             return true;
         } catch (UnsupportedFlavorException ufe) {
-            log.log(Level.SEVERE, "UnsupportedFlavorException", ufe);
+            logSevere("UnsupportedFlavorException", ufe);
         } catch (IOException ioe) {
-            log.log(Level.SEVERE, "IOException", ioe);
+            logSevere("IOException", ioe);
         }
         return false;
     }
@@ -1081,7 +1081,7 @@ public class FilesTab extends PFUIComponent implements FolderTab,
             if (dir != null && folder == dir.getRootFolder()) {
                 update();
             } else {
-                log.fine("not listening to folder " + folder);
+                logFine("not listening to folder " + folder);
             }
         }
     }

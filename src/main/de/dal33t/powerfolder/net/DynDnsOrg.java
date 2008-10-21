@@ -33,7 +33,6 @@ import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -45,8 +44,6 @@ import java.util.regex.Pattern;
  */
 
 public class DynDnsOrg extends PFComponent implements DynDns {
-
-    private static final Logger log = Logger.getLogger(DynDnsOrg.class.getName());
 
     // error code
     private static final int GOOD = 0;
@@ -231,7 +228,7 @@ public class DynDnsOrg extends PFComponent implements DynDns {
                 // charBuffer.clear();
             }
 
-            log.finer("DynDns update result" + charBuffer);
+            logFiner("DynDns update result" + charBuffer);
 
             // get the response
 
@@ -254,9 +251,9 @@ public class DynDnsOrg extends PFComponent implements DynDns {
                 }
             }
         } catch (UnknownHostException e) {
-            log.warning(" " + e.toString());
+            logWarning(" " + e.toString());
         } catch (IOException e) {
-            log.warning(" " + e.toString());
+            logWarning(" " + e.toString());
         } finally {
             if (channel != null) {
                 try {

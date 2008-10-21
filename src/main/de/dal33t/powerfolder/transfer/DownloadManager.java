@@ -19,13 +19,13 @@
  */
 package de.dal33t.powerfolder.transfer;
 
-import java.io.File;
-
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.transfer.Transfer.State;
 import de.dal33t.powerfolder.transfer.swarm.DownloadControl;
 import de.dal33t.powerfolder.transfer.swarm.DownloadSourceHandler;
 import de.dal33t.powerfolder.util.TransferCounter;
+
+import java.io.File;
 
 /**
  * @author Dennis "Bytekeeper" Waldherr

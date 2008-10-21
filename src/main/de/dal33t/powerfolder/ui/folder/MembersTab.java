@@ -54,8 +54,6 @@ import java.awt.event.MouseEvent;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Displays the members of a Folder in a list, when a member is selected some
@@ -68,7 +66,6 @@ public class MembersTab extends PFUIComponent implements FolderTab,
     FolderMembershipListener
 {
 
-    private static final Logger log = Logger.getLogger(MembersTab.class.getName());
     private JPanel panel;
     private MemberSyncStatusPanel syncStatusPanel;
     private JList memberList;
@@ -209,8 +206,8 @@ public class MembersTab extends PFUIComponent implements FolderTab,
             Member member = (Member) memberListModel.getElementAt(memberList
                 .getSelectedIndex());
             selectionModel.setSelection(member);
-            if (log.isLoggable(Level.FINER)) {
-                log.finer("Selection: " + selectionModel.getSelection());
+            if (isFiner()) {
+                logFiner("Selection: " + selectionModel.getSelection());
             }
         }
     }

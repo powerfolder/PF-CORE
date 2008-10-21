@@ -125,7 +125,7 @@ public class NodeSearcher extends PFComponent {
             }
         } catch (InterruptedException ie) {
             // This might mean that 2 Threads called cancelSearch()
-            log.log(Level.SEVERE, "InterruptedException", ie);
+            logSevere("InterruptedException", ie);
         }
     }
 

@@ -32,15 +32,10 @@ import org.apache.commons.lang.Validate;
 
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.transfer.swarm.TransferUtil;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.message.AbortDownload;
-import de.dal33t.powerfolder.message.FileChunk;
-import de.dal33t.powerfolder.message.RequestDownload;
-import de.dal33t.powerfolder.message.RequestFilePartsRecord;
-import de.dal33t.powerfolder.message.RequestPart;
-import de.dal33t.powerfolder.message.StopUpload;
-import de.dal33t.powerfolder.transfer.swarm.TransferUtil;
+import de.dal33t.powerfolder.message.*;
 import de.dal33t.powerfolder.util.Range;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
@@ -49,14 +44,13 @@ import de.dal33t.powerfolder.util.delta.FilePartsRecord;
 /**
  * Download class, containing file and member.<BR>
  * Serializable for remembering completed Downloads in DownLoadTableModel.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.30 $
  */
 public class Download extends Transfer {
 
-    private static final Logger log = Logger
-        .getLogger(Download.class.getName());
+    private static final Logger log = Logger.getLogger(Download.class.getName());
     private static final long serialVersionUID = 100L;
     public static final int MAX_REQUESTS_QUEUED = 15;
 
@@ -90,7 +84,7 @@ public class Download extends Transfer {
     /**
      * Re-initalized the Transfer with the TransferManager. Use this only if you
      * are know what you are doing .
-     * 
+     *
      * @param aTransferManager
      *            the transfermanager
      */
@@ -123,7 +117,7 @@ public class Download extends Transfer {
 
     /**
      * Called when the partner supports part-transfers and is ready to upload
-     * 
+     *
      * @param fileInfo
      *            the fileInfo the remote side uses.
      * @param usedFileInfo
@@ -132,11 +126,11 @@ public class Download extends Transfer {
         checkFileInfo(fileInfo);
         lastTouch.setTime(System.currentTimeMillis());
         if (isStarted()) {
-            log.warning("Received multiple upload start messages!");
+            logWarning("Received multiple upload start messages!");
             return;
         }
 
-        log.finer("Uploader supports partial transfers.");
+        logFiner("Uploader supports partial transfers.");
         setStarted();
         handler.readyForRequests(Download.this);
     }
@@ -154,7 +148,7 @@ public class Download extends Transfer {
 
     /**
      * Invoked when a record for this download was received.
-     * 
+     *
      * @param fileInfo
      *            the fileInfo the remote side uses.
      * @param record
@@ -167,13 +161,13 @@ public class Download extends Transfer {
         checkFileInfo(fileInfo);
 
         lastTouch.setTime(System.currentTimeMillis());
-        log.info("Received parts record");
+        logInfo("Received parts record");
         handler.filePartsRecordReceived(Download.this, record);
     }
 
     /**
      * Requests a single part from the remote peer.
-     * 
+     *
      * @param range
      * @return
      * @throws BrokenDownloadException
@@ -214,7 +208,7 @@ public class Download extends Transfer {
 
     /**
      * Adds a chunk to the download
-     * 
+     *
      * @param chunk
      * @return true if the chunk was successfully appended to the download file.
      */
@@ -233,7 +227,7 @@ public class Download extends Transfer {
             return false;
         }
 
-        // log.fine("Received " + chunk);
+        // logFine("Received " + chunk);
 
         if (!isStarted()) {
             // donwload begins to start
@@ -265,7 +259,7 @@ public class Download extends Transfer {
 
     /**
      * Requests this download from the partner.
-     * 
+     *
      * @param startOffset
      */
     public synchronized void request(long startOffset) {
@@ -338,7 +332,7 @@ public class Download extends Transfer {
 
     /**
      * Sets the download to a broken state.
-     * 
+     *
      * @param problem
      * @param message
      */
@@ -372,13 +366,13 @@ public class Download extends Transfer {
             - Constants.DOWNLOAD_REQUEST_TIMEOUT_LIMIT > lastTouch.getTime()
             && !queued;
         if (timedOut) {
-            log.warning("Abort cause: Timeout.");
+            logWarning("Abort cause: Timeout.");
             return true;
         }
         // Check queueing at remote side
         boolean isQueuedAtPartner = stillQueuedAtPartner();
         if (!isQueuedAtPartner) {
-            log.warning("Abort cause: not queued.");
+            logWarning("Abort cause: not queued.");
             return true;
         }
         // check blacklist
@@ -388,7 +382,7 @@ public class Download extends Transfer {
             boolean onBlacklist = folder.getDiskItemFilter().isExcluded(
                 getFile());
             if (onBlacklist) {
-                log.warning("Abort cause: On blacklist.");
+                logWarning("Abort cause: On blacklist.");
                 return true;
             }
 

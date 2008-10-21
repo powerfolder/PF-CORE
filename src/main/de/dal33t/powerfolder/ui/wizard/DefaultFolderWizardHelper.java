@@ -54,7 +54,6 @@ import javax.swing.JComponent;
 import java.awt.Color;
 import java.awt.Component;
 import java.io.File;
-import java.util.logging.Logger;
 
 /**
  * Helper class to setup the default folder during wizard steps
@@ -63,8 +62,6 @@ import java.util.logging.Logger;
  * @version $Revision$
  */
 public class DefaultFolderWizardHelper extends PFUIPanel {
-
-    private static final Logger log = Logger.getLogger(DefaultFolderWizardHelper.class.getName());
 
     private ServerClient client;
     private ServerClientListener listener;
@@ -136,7 +133,7 @@ public class DefaultFolderWizardHelper extends PFUIPanel {
 
             // If there is already a default folder for this account, use that
             FolderInfo accountFolder = account.getDefaultSynchronizedFolder();
-            log.info("Default synced folder on " + account.getUsername() + " is "
+            logInfo("Default synced folder on " + account.getUsername() + " is "
                     + accountFolder);
 
             FolderInfo foInfo;

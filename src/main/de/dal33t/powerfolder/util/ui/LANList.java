@@ -40,11 +40,9 @@ import javax.swing.ListSelectionModel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.ParseException;
-import java.util.logging.Logger;
 
 public class LANList extends PFComponent {
 
-    private static final Logger log = Logger.getLogger(LANList.class.getName());
     private JPanel panel;
     private JList networklist;
     private JButton addButton;
@@ -150,7 +148,7 @@ public class LANList extends PFComponent {
             try {
                 ar = AddressRange.parseRange(ip);
             } catch (ParseException e) {
-                log.warning("Invalid lanlist entry in configuration file!");
+                logWarning("Invalid lanlist entry in configuration file!");
                 continue;
             }
             ((DefaultListModel) networklist.getModel()).addElement(ar

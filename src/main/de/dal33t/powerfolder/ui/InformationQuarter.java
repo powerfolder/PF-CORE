@@ -58,8 +58,6 @@ import java.awt.CardLayout;
 import java.awt.Cursor;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 
 /**
@@ -73,7 +71,6 @@ import java.util.prefs.Preferences;
  */
 public class InformationQuarter extends PFUIComponent {
 
-    private static final Logger log = Logger.getLogger(InformationQuarter.class.getName());
     private static final String ROOT_PANEL = "root";
     private static final String MY_FOLDER_PANEL = "my_folder";
     private static final String PREVIEW_FOLDER_PANEL = "preview_folder";
@@ -563,7 +560,7 @@ public class InformationQuarter extends PFUIComponent {
         try {
             doc.insertString(0, text, null);
         } catch (BadLocationException e) {
-            log.log(Level.FINER, "BadLocationException", e);
+            logFiner("BadLocationException", e);
         }
         displayText(doc, false);
     }

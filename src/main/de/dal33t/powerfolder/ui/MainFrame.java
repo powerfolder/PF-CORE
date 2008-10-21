@@ -56,7 +56,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 
 /**
@@ -70,7 +69,6 @@ import java.util.prefs.Preferences;
  */
 public class MainFrame extends PFUIComponent {
 
-    private static final Logger log = Logger.getLogger(MainFrame.class.getName());
     private JFrame uiComponent;
 
     /** The toolbar ontop */
@@ -214,7 +212,7 @@ public class MainFrame extends PFUIComponent {
      * Initalizes all ui components
      */
     private void initComponents() {
-        log.fine("Screen resolution: "
+        logFine("Screen resolution: "
             + Toolkit.getDefaultToolkit().getScreenSize());
 
         uiComponent = new JFrame();

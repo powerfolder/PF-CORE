@@ -49,8 +49,6 @@ import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Main toolbar of the application.
@@ -59,8 +57,6 @@ import java.util.logging.Logger;
  * @version $Revision: 1.5 $
  */
 public class Toolbar extends PFUIComponent {
-
-    private static final Logger log = Logger.getLogger(Toolbar.class.getName());
 
     /** Amount by which to reduce toolbar icons in small mode. */
     public static final double SMALL_ICON_SCALE_FACTOR = 0.5;
@@ -169,7 +165,7 @@ public class Toolbar extends PFUIComponent {
                 try {
                     BrowserLauncher.openURL(Constants.POWERFOLDER_PRO_URL);
                 } catch (IOException ex) {
-                    log.log(Level.SEVERE,  "IOException", ex);
+                    logSevere( "IOException", ex);
                 }
             }
         });

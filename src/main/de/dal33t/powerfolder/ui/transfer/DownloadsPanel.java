@@ -71,8 +71,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Contains all information about downloads
@@ -81,8 +79,6 @@ import java.util.logging.Logger;
  * @version $Revision: 1.3 $
  */
 public class DownloadsPanel extends PFUIPanel implements HasDetailsPanel {
-
-    private static final Logger log = Logger.getLogger(DownloadsPanel.class.getName());
 
     private JComponent panel;
 
@@ -379,7 +375,7 @@ public class DownloadsPanel extends PFUIPanel implements HasDetailsPanel {
                     try {
                         FileUtils.openFile(file);
                     } catch (IOException ex) {
-                        log.log(Level.SEVERE, "IOException", ex);
+                        logSevere("IOException", ex);
                     }
                 }
             }

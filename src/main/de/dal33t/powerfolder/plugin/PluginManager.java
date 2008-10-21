@@ -67,7 +67,7 @@ public class PluginManager extends PFComponent {
         if (plugins != null) {
             for (Plugin plugin : plugins) {
                 plugin.stop();
-                log.fine(plugin.getName() + " stopped");
+                logFine(plugin.getName() + " stopped");
             }
         }
         plugins.clear();
@@ -84,7 +84,7 @@ public class PluginManager extends PFComponent {
         if (StringUtils.isBlank(pluginsStr)) {
             return;
         }
-        log.info("Initalizing plugins: " + pluginsStr);
+        logInfo("Initalizing plugins: " + pluginsStr);
         StringTokenizer nizer = new StringTokenizer(pluginsStr, ",");
         while (nizer.hasMoreElements()) {
             String pluginClassName = nizer.nextToken().trim();
@@ -103,7 +103,7 @@ public class PluginManager extends PFComponent {
      */
     private void startEnabledPlugins() {
         for (Plugin plugin : plugins) {
-            log.info("Starting plugin: " + plugin.getName());
+            logInfo("Starting plugin: " + plugin.getName());
             plugin.start();
         }
     }
@@ -118,7 +118,7 @@ public class PluginManager extends PFComponent {
         if (StringUtils.isBlank(pluginsStr)) {
             return;
         }
-        log.fine("Read disabled plugins: " + pluginsStr);
+        logFine("Read disabled plugins: " + pluginsStr);
         StringTokenizer nizer = new StringTokenizer(pluginsStr, ",");
         while (nizer.hasMoreElements()) {
             String pluginClassName = nizer.nextToken();
@@ -127,7 +127,7 @@ public class PluginManager extends PFComponent {
             }
             Plugin plugin = initalizePlugin(pluginClassName);
             if (plugin != null) {
-                log.fine("Found disabled plugin: " + plugin.getName());
+                logFine("Found disabled plugin: " + plugin.getName());
                 disabledPlugins.add(plugin);
             }
         }
@@ -145,7 +145,7 @@ public class PluginManager extends PFComponent {
         }
 
         if (log.isLoggable(Level.FINE)) {
-            log.fine("Initializing plugin: " + pluginClassName);
+            logFine("Initializing plugin: " + pluginClassName);
         }
         try {
             Class pluginClass = Class.forName(pluginClassName);
@@ -211,7 +211,7 @@ public class PluginManager extends PFComponent {
      *            new status of the plugin
      */
     public void setEnabled(Plugin plugin, boolean enabled) {
-        log.fine("enable: " + enabled + ' ' + plugin);
+        logFine("enable: " + enabled + ' ' + plugin);
         if (enabled) {
             disabledPlugins.remove(plugin);
             plugins.add(plugin);

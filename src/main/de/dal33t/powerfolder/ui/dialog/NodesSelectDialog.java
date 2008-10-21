@@ -43,14 +43,11 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Collection;
-import java.util.logging.Logger;
 
 /**
  * Dialog for selecting a number of users for the invite wizard.
  */
 public class NodesSelectDialog extends PFUIComponent {
-
-    private static final Logger log = Logger.getLogger(NodesSelectTableModel.class.getName());
 
     private ValueModel viaPowerFolderModel;
     private Collection<Member> viaPowerFolderMembers;
@@ -187,7 +184,7 @@ public class NodesSelectDialog extends PFUIComponent {
      * @return not used
      */
     public boolean open() {
-        log.warning("Opening download dialog");
+        logWarning("Opening download dialog");
         getUIComponent().setVisible(true);
         return true;
     }

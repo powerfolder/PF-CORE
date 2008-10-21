@@ -25,21 +25,12 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.LinkedList;
 import java.util.Queue;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.message.FileChunk;
-import de.dal33t.powerfolder.message.Message;
-import de.dal33t.powerfolder.message.ReplyFilePartsRecord;
-import de.dal33t.powerfolder.message.RequestDownload;
-import de.dal33t.powerfolder.message.RequestFilePartsRecord;
-import de.dal33t.powerfolder.message.RequestPart;
-import de.dal33t.powerfolder.message.StartUpload;
-import de.dal33t.powerfolder.message.StopUpload;
+import de.dal33t.powerfolder.message.*;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.ProgressObserver;
@@ -49,14 +40,13 @@ import de.dal33t.powerfolder.util.delta.FilePartsRecord;
 
 /**
  * Simple class for a scheduled Upload
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.13 $
  */
 @SuppressWarnings("serial")
 public class Upload extends Transfer {
 
-    private static final Logger log = Logger.getLogger(Upload.class.getName());
     public static final int MAX_REQUESTS_QUEUED = 20;
 
     private boolean aborted;
@@ -69,7 +59,7 @@ public class Upload extends Transfer {
     /**
      * Constructs a new uploads, package protected, can only be called by
      * transfermanager
-     * 
+     *
      * @param manager
      * @param member
      * @param dl
@@ -97,7 +87,7 @@ public class Upload extends Transfer {
                 pendingRequests.notifyAll();
             }
         } catch (TransferException e) {
-            log.log(Level.SEVERE, "TransferException", e);
+            logSevere("TransferException", e);
             getTransferManager().setBroken(this,
                 TransferProblem.TRANSFER_EXCEPTION, e.getMessage());
         }
@@ -117,7 +107,7 @@ public class Upload extends Transfer {
             || pr.getRange().getLength() > TransferManager.MAX_CHUNK_SIZE
             || pr.getRange().getLength() <= 0)
         {
-            log.severe("Received invalid part request!");
+            logSevere("Received invalid part request!");
             getTransferManager().setBroken(this, TransferProblem.INVALID_PART);
             return;
         }
@@ -128,13 +118,13 @@ public class Upload extends Transfer {
     public void receivedFilePartsRecordRequest(RequestFilePartsRecord r) {
         Reject.ifNull(r, "Record is null");
 
-        log.info("Received request for a parts record.");
+        logInfo("Received request for a parts record.");
         // If the download was aborted
         if (aborted || !isStarted()) {
             return;
         }
         if (getFile().getSize() < Constants.MIN_SIZE_FOR_PARTTRANSFERS) {
-            log.warning("Remote side requested invalid PartsRecordRequest!");
+            logWarning("Remote side requested invalid PartsRecordRequest!");
 
             getTransferManager().setBroken(this,
                 TransferProblem.GENERAL_EXCEPTION,
@@ -168,7 +158,7 @@ public class Upload extends Transfer {
      */
     synchronized void start() {
         if (isStarted()) {
-            log.warning("Upload already started. " + this);
+            logWarning("Upload already started. " + this);
             return;
         }
 
@@ -188,8 +178,8 @@ public class Upload extends Transfer {
 
                     // If our partner supports requests, let him request. This
                     // is required for swarming to work.
-                    if (log.isLoggable(Level.FINER)) {
-                        log.finer("Both clients support partial transfers!");
+                    if (isFiner()) {
+                        logFiner("Both clients support partial transfers!");
                     }
                     debugState = "Sending StartUpload";
                     try {
@@ -199,7 +189,7 @@ public class Upload extends Transfer {
                     }
                     debugState = "Waiting for requests";
                     if (waitForRequests()) {
-                        log.info("Checking for parts request.");
+                        logInfo("Checking for parts request.");
 
                         debugState = "Checking for FPR request.";
 
@@ -209,11 +199,11 @@ public class Upload extends Transfer {
                             debugState = "Waiting for remote matching";
                             transferState
                                 .setState(TransferState.REMOTEMATCHING);
-                            log.finer("Waiting for initial part requests!");
+                            logFiner("Waiting for initial part requests!");
                             waitForRequests();
                         }
                         debugState = "Starting to send parts";
-                        log.info("Upload started " + this);
+                        logInfo("Upload started " + this);
                         long startTime = System.currentTimeMillis();
 
                         // FIXME: It shouldn't be possible to loop endlessly
@@ -239,7 +229,7 @@ public class Upload extends Transfer {
                     try {
                         raf.close();
                     } catch (IOException e) {
-                        log.log(Level.SEVERE, "IOException", e);
+                        logSevere("IOException", e);
                     }
                 }
             }
@@ -259,7 +249,7 @@ public class Upload extends Transfer {
         RequestFilePartsRecord r = null;
         synchronized (pendingRequests) {
             if (pendingRequests.isEmpty()) {
-                log.warning("Cancelled message too fast");
+                logWarning("Cancelled message too fast");
                 return false;
             }
             if (pendingRequests.peek() instanceof RequestFilePartsRecord) {
@@ -287,11 +277,11 @@ public class Upload extends Transfer {
                 new ReplyFilePartsRecord(fi, fpr));
             transferState.setState(TransferState.UPLOADING);
         } catch (FileNotFoundException e) {
-            log.log(Level.SEVERE, "FileNotFoundException", e);
+            logSevere("FileNotFoundException", e);
             getTransferManager().setBroken(Upload.this,
                 TransferProblem.FILE_NOT_FOUND_EXCEPTION, e.getMessage());
         } catch (IOException e) {
-            log.log(Level.SEVERE, "IOException", e);
+            logSevere("IOException", e);
             getTransferManager().setBroken(Upload.this,
                 TransferProblem.IO_EXCEPTION, e.getMessage());
         }
@@ -300,7 +290,7 @@ public class Upload extends Transfer {
 
     /**
      * Sends one requested part.
-     * 
+     *
      * @return false if the upload should stop, true otherwise
      * @throws TransferException
      */
@@ -325,7 +315,7 @@ public class Upload extends Transfer {
                 try {
                     pendingRequests.wait(Constants.UPLOAD_PART_REQUEST_TIMEOUT);
                 } catch (InterruptedException e) {
-                    log.log(Level.SEVERE, "InterruptedException", e);
+                    logSevere("InterruptedException", e);
                     throw new TransferException(e);
                 }
             }
@@ -358,7 +348,7 @@ public class Upload extends Transfer {
             while (pos < data.length) {
                 int read = raf.read(data, pos, data.length - pos);
                 if (read < 0) {
-                    log.warning("Requested part exceeds filesize!");
+                    logWarning("Requested part exceeds filesize!");
                     throw new TransferException(
                         "Requested part exceeds filesize!");
                 }
@@ -375,15 +365,15 @@ public class Upload extends Transfer {
             checkLastModificationDate(pr.getFile(), f);
 
         } catch (FileNotFoundException e) {
-            log.log(Level.SEVERE, "FileNotFoundException", e);
+            logSevere("FileNotFoundException", e);
             throw new TransferException(e);
         } catch (IOException e) {
-            log.log(Level.SEVERE, "IOException", e);
+            logSevere("IOException", e);
             throw new TransferException(e);
         } catch (ConnectionException e) {
-            log.warning("Connectiopn problem while uploading. " + e.toString());
-            if (log.isLoggable(Level.FINER)) {
-                log.log(Level.FINER, "ConnectionException", e);
+            logWarning("Connectiopn problem while uploading. " + e.toString());
+            if (isFiner()) {
+                logFiner("ConnectionException", e);
             }
             throw new TransferException(e);
         }
@@ -404,7 +394,7 @@ public class Upload extends Transfer {
                     pendingRequests.wait();
                 }
             } catch (InterruptedException e) {
-                log.log(Level.SEVERE, "InterruptedException", e);
+                logSevere("InterruptedException", e);
             }
         }
         return !isBroken() && !aborted && !pendingRequests.isEmpty();
@@ -414,7 +404,7 @@ public class Upload extends Transfer {
      * Aborts this dl if currently transferrings
      */
     synchronized void abort() {
-        log.finer("Upload aborted: " + this);
+        logFiner("Upload aborted: " + this);
         aborted = true;
 
         stopUploads();
@@ -450,8 +440,7 @@ public class Upload extends Transfer {
         }
 
         if (!stillQueuedAtPartner()) {
-            log
-                .warning("Upload broken because not enqued @ partner: queedAtPartner: "
+            logWarning("Upload broken because not enqued @ partner: queedAtPartner: "
                     + stillQueuedAtPartner()
                     + ", folder: "
                     + getFile()
@@ -465,8 +454,7 @@ public class Upload extends Transfer {
         File diskFile = getFile().getDiskFile(
             getController().getFolderRepository());
         if (diskFile == null || !diskFile.exists()) {
-            log
-                .warning("Upload broken because diskfile is not available, folder: "
+            logWarning("Upload broken because diskfile is not available, folder: "
                     + getFile()
                         .getFolder(getController().getFolderRepository())
                     + ", diskfile: "

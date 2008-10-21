@@ -19,15 +19,15 @@
 */
 package de.dal33t.powerfolder.disk;
 
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.util.Translation;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.util.Translation;
 
 /**
  * Identifies problems with filenames. Note the directory names mostly have the

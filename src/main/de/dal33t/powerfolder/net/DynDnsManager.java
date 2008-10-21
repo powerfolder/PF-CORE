@@ -45,7 +45,6 @@ import java.net.URLConnection;
 import java.net.UnknownHostException;
 import java.util.Hashtable;
 import java.util.TimerTask;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -57,8 +56,6 @@ import java.util.regex.Pattern;
  */
 
 public class DynDnsManager extends PFComponent {
-
-    private static final Logger log = Logger.getLogger(DynDnsManager.class.getName());
 
     private static final long DYNDNS_TIMER_INTERVAL = 1000 * 60 * 5;
     private TimerTask updateTask;
@@ -172,7 +169,7 @@ public class DynDnsManager extends PFComponent {
                         return false;
 
                     case ConnectionListener.OK :
-                        log.info(
+                        logInfo(
                             "Successfully validated dyndns '" + dynDns + '\'');
                         // getController().getUIController()
                         // .showMessage(null,
@@ -281,7 +278,7 @@ public class DynDnsManager extends PFComponent {
      * close the wait message box
      */
     public final void close() {
-        log.finer("Close called: " + this);
+        logFiner("Close called: " + this);
         if (uiComponent != null) {
             uiComponent.dispose();
             uiComponent = null;
@@ -292,7 +289,7 @@ public class DynDnsManager extends PFComponent {
      * Shows (and builds) the wait message box
      */
     public final void show(String dyndns) {
-        log.finer("Open called: " + this);
+        logFiner("Open called: " + this);
         getUIComponent(dyndns).setVisible(true);
     }
 
@@ -325,7 +322,7 @@ public class DynDnsManager extends PFComponent {
      */
     protected final JDialog getUIComponent(String dyndns) {
         if (uiComponent == null) {
-            log.finer("Building ui component for " + this);
+            logFiner("Building ui component for " + this);
             uiComponent = new JDialog(getController().getUIController()
                 .getMainFrame().getUIComponent(), getTitle());
             uiComponent.setResizable(false);
@@ -374,7 +371,7 @@ public class DynDnsManager extends PFComponent {
         String myHostIP = getIPviaHTTPCheckIP();
         String lastUpdatedIP = ConfigurationEntry.DYNDNS_LAST_UPDATED_IP
             .getValue(getController());
-        log.fine(
+        logFine(
             "Dyndns hostname IP: " + dyndnsIP + ". Real IP: " + myHostIP
                 + ". Last update IP: " + lastUpdatedIP);
         if (dyndnsIP.equals(myHostIP)) {
@@ -398,12 +395,12 @@ public class DynDnsManager extends PFComponent {
         DynDnsUpdateData updateData = activeDynDns.getDynDnsUpdateData();
         int res = activeDynDns.update(updateData);
 
-        log.info("Updated dyndns. Result: " + res);
+        logInfo("Updated dyndns. Result: " + res);
         if (res == ErrorManager.NO_ERROR) {
             saveUpdatedIP(updateData);
         }
 
-        log.finer("the updated dyndns > " + externalIP);
+        logFiner("the updated dyndns > " + externalIP);
         return res;
     }
 
@@ -422,11 +419,11 @@ public class DynDnsManager extends PFComponent {
         }
         if (updateTask == null) {
             setupUpdateTask();
-            log.finer("DNS Autoupdate requested. Starting updater.");
+            logFiner("DNS Autoupdate requested. Starting updater.");
         }
 
         if (updateThread != null) {
-            log.fine("No dyndns update performed. Already running");
+            logFine("No dyndns update performed. Already running");
             return;
         }
 
@@ -435,14 +432,14 @@ public class DynDnsManager extends PFComponent {
             @Override
             public void run() {
                 boolean dyndnsIsValid = dyndnsValid();
-                log.fine(
+                logFine(
                     "Dyndns updater start. Update required? " + dyndnsIsValid);
                 if (!dyndnsIsValid) {
                     updateDynDNS();
                 } else {
-                    log.finer("No dyndns update performed: IP still valid");
+                    logFiner("No dyndns update performed: IP still valid");
                 }
-                log.finer("Dyndns updater finished");
+                logFiner("Dyndns updater finished");
                 updateThread = null;
             }
         };
@@ -484,9 +481,9 @@ public class DynDnsManager extends PFComponent {
                 strDyndnsIP = myDyndnsIP.getHostAddress();
             }
         } catch (IllegalArgumentException ex) {
-            log.severe("Can't get the host ip address" + ex.toString());
+            logSevere("Can't get the host ip address" + ex.toString());
         } catch (UnknownHostException ex) {
-            log.severe("Can't get the host ip address" + ex.toString());
+            logSevere("Can't get the host ip address" + ex.toString());
         }
         return strDyndnsIP;
     }
@@ -521,7 +518,7 @@ public class DynDnsManager extends PFComponent {
             }
 
             String ipText = tempBuffer.toString();
-            log.finer("Received '" + ipText + "' from " + dyndns);
+            logFiner("Received '" + ipText + "' from " + dyndns);
             ipAddr = filterIPs(ipText);
 
         } catch (IOException e) {

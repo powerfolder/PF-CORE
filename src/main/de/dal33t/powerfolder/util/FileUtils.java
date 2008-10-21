@@ -46,7 +46,7 @@ import java.util.zip.ZipOutputStream;
 
 public class FileUtils {
 
-    private static Logger log = Logger.getLogger(FileUtils.class.getName());
+    private static final Logger log = Logger.getLogger(FileUtils.class.getName());
 
     private static final int BYTE_CHUNK_SIZE = 8192;
 
