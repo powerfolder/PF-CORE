@@ -31,15 +31,13 @@ import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.Sizes;
-import com.jgoodies.looks.plastic.PlasticTheme;
-import com.jgoodies.looks.plastic.PlasticXPLookAndFeel;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.StartPanel;
 import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.ui.theme.ThemeSupport;
+import de.dal33t.powerfolder.ui.theme.LookAndFeelSupport;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.OSUtil;
@@ -56,8 +54,10 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.LookAndFeel;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -78,7 +78,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     private JCheckBox startWithWindowsBox;
 
     private JComboBox languageChooser;
-    private JComboBox colorThemeChooser;
+    private JComboBox lookAndFeelChooser;
     private JComboBox xBehaviorChooser;
     private JComboBox startPanelChooser;
     private JTextField locationTF;
@@ -96,8 +96,8 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     private JCheckBox usePowerFolderIconBox;
 
     private boolean needsRestart;
-    // The original theme
-    private PlasticTheme oldTheme;
+    // The original look and feel
+    private LookAndFeel oldLaf;
     // The triggers the writing into core
     private Trigger writeTrigger;
 
@@ -131,12 +131,15 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     }
 
     public void undoChanges() {
-        PlasticTheme activeTheme = ThemeSupport.getActivePlasticTheme();
+        LookAndFeel activeLaf = UIManager.getLookAndFeel();
         // Reset to old look and feel
-        if (!Util.equals(oldTheme, activeTheme)) {
-            ThemeSupport.setPlasticTheme(oldTheme, getUIController()
-                .getMainFrame().getUIComponent(), null);
-            colorThemeChooser.setSelectedItem(oldTheme);
+        if (!Util.equals(oldLaf, activeLaf)) {
+            try {
+                UIManager.setLookAndFeel(oldLaf);
+            } catch (UnsupportedLookAndFeelException e) {
+                logSevere(e);
+            }
+            lookAndFeelChooser.setSelectedItem(oldLaf);
         }
     }
 
@@ -155,14 +158,8 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         languageChooser = createLanguageChooser();
 
         // Build color theme chooser
-        colorThemeChooser = createThemeChooser();
-        if (UIManager.getLookAndFeel() instanceof PlasticXPLookAndFeel) {
-            colorThemeChooser.setEnabled(true);
-            oldTheme = PlasticXPLookAndFeel.getPlasticTheme();
-        } else {
-            // Only available if PlasicXPLookAndFeel is enabled
-            colorThemeChooser.setEnabled(false);
-        }
+        oldLaf = UIManager.getLookAndFeel();
+        lookAndFeelChooser = createLookAndFeelChooser();
 
         // Create xBehaviorchooser
         ValueModel xBehaviorModel = PreferencesEntry.QUIT_ON_X
@@ -301,7 +298,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             builder.add(new JLabel(Translation
                 .getTranslation("preferences.dialog.color_theme")), cc
                 .xy(1, row));
-            builder.add(colorThemeChooser, cc.xywh(3, row, 7, 1));
+            builder.add(lookAndFeelChooser, cc.xywh(3, row, 7, 1));
 
             row += 2;
             builder.add(new JLabel(Translation
@@ -409,16 +406,12 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         String folderbase = (String) locationModel.getValue();
         ConfigurationEntry.FOLDER_BASEDIR.setValue(getController(), folderbase);
 
-        // Store ui theme
-        if (UIManager.getLookAndFeel() instanceof PlasticXPLookAndFeel) {
-            PlasticTheme theme = PlasticXPLookAndFeel.getPlasticTheme();
-            PreferencesEntry.UI_COLOUR_THEME.setValue(getController(), theme
-                .getClass().getName());
-            if (!Util.equals(theme, oldTheme)) {
-                // FIXME: Themechange does not repaint SimpleInternalFrames.
-                // thus restart required
-                needsRestart = true;
-            }
+        // Store ui laf
+        LookAndFeel laf = UIManager.getLookAndFeel();
+        if (!Util.equals(laf, oldLaf)) {
+            PreferencesEntry.UI_LOOK_AND_FEEL.setValue(getController(),
+                    laf.getClass().getName());
+            needsRestart = true;
         }
         // Nickname
         if (!StringUtils.isBlank(nickField.getText())) {
@@ -506,16 +499,17 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     }
 
     /**
-     * Build the ui theme chooser combobox
+     * Build the ui look and feel chooser combobox
      */
-    private JComboBox createThemeChooser() {
+    private JComboBox createLookAndFeelChooser() {
         JComboBox chooser = new JComboBox();
-        final PlasticTheme[] availableThemes = ThemeSupport
-            .getAvailableThemes();
-        for (int i = 0; i < availableThemes.length; i++) {
-            chooser.addItem(availableThemes[i].getName());
-            if (availableThemes[i].getClass().getName().equals(
-                getUIController().getUIThemeConfig()))
+        final LookAndFeel[] availableLafs = LookAndFeelSupport
+            .getAvailableLookAndFeels();
+        for (int i = 0; i < availableLafs.length; i++) {
+            String shortName = trimLafName(availableLafs[i].getName());
+            chooser.addItem(shortName);
+            if (availableLafs[i].getClass().getName().equals(
+                getUIController().getUILookAndFeelConfig()))
             {
                 chooser.setSelectedIndex(i);
             }
@@ -525,14 +519,45 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 if (e.getStateChange() != ItemEvent.SELECTED) {
                     return;
                 }
-                PlasticTheme theme = availableThemes[colorThemeChooser
+                LookAndFeel laf = availableLafs[lookAndFeelChooser
                     .getSelectedIndex()];
-                ThemeSupport.setPlasticTheme(theme, getUIController()
-                    .getMainFrame().getUIComponent(), null);
+                try {
+                    UIManager.setLookAndFeel(laf);
+                } catch (UnsupportedLookAndFeelException e1) {
+                    logSevere(e1);
+                }
 
             }
         });
         return chooser;
+    }
+
+    /**
+     * Convert something like 'Synthetica BlueMoon Look and Feel' to
+     * 'Blue Moon' for display in the look and feel combo.
+     *
+     * @param name
+     * @return
+     */
+    private static String trimLafName(String name) {
+        if (name == null) {
+            return null;
+        }
+        if (name.startsWith("Synthetica")) {
+            name = name.substring("Synthetica".length());
+        }
+        if (name.endsWith("Look and Feel")) {
+            name = name.substring(0, name.length() - "Look and Feel".length());
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < name.length(); i++) {
+            String s = name.substring(i, i + 1);
+            if (i > 0 && s.toUpperCase().equals(s)) {
+                sb.append(' ');
+            }
+            sb.append(s);
+        }
+        return sb.toString().trim();
     }
 
     /**

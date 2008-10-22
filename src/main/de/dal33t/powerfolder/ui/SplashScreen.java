@@ -19,13 +19,12 @@
 */
 package de.dal33t.powerfolder.ui;
 
-import com.jgoodies.forms.factories.Borders;
-import com.jgoodies.looks.plastic.PlasticLookAndFeel;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.Waiter;
 
+import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JProgressBar;
 import javax.swing.JWindow;
@@ -39,6 +38,7 @@ import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Graphics;
 import java.awt.Insets;
+import java.awt.SystemColor;
 import java.awt.Toolkit;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Date;
@@ -106,7 +106,7 @@ public class SplashScreen extends JWindow {
             bar.setBackground(FREE_BAR_COLOR2);
             getContentPane().setBackground(FREE_BAR_COLOR2);
         }
-        bar.setBorder(Borders.EMPTY_BORDER);
+        bar.setBorder(BorderFactory.createEmptyBorder());
 
         // l.setBorder(new SplashBorder());
         // bar.setBorder(new SplashBorder());
@@ -257,7 +257,7 @@ public class SplashScreen extends JWindow {
         public void paintBorder(Component c, Graphics g, int x, int y,
             int width, int height)
         {
-            g.setColor(PlasticLookAndFeel.getControlDarkShadow());
+            g.setColor(SystemColor.controlDkShadow);
             g.drawRect(x, y, width - 1, height - 1);
         }
 

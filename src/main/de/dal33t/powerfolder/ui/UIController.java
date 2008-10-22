@@ -21,9 +21,6 @@ package de.dal33t.powerfolder.ui;
 
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
-import com.jgoodies.looks.plastic.PlasticTheme;
-import com.jgoodies.looks.plastic.PlasticXPLookAndFeel;
-import com.jgoodies.looks.plastic.theme.ExperienceBlue;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
@@ -74,6 +71,7 @@ import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
 import de.dal33t.powerfolder.util.ui.TreeNodeList;
+import de.javasoft.plaf.synthetica.SyntheticaStandardLookAndFeel;
 import org.apache.commons.lang.StringUtils;
 
 import javax.imageio.ImageIO;
@@ -103,6 +101,7 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.text.ParseException;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -124,10 +123,6 @@ import java.util.logging.Logger;
 public class UIController extends PFComponent {
 
     private static final Logger log = Logger.getLogger(UIController.class.getName());
-
-    private static final LookAndFeel DEFAULT_LOOK_AND_FEEL = new PlasticXPLookAndFeel();
-
-    private static final PlasticTheme DEFAULT_THEME = new ExperienceBlue();
 
     private boolean started;
     private SplashScreen splash;
@@ -165,29 +160,17 @@ public class UIController extends PFComponent {
 
         pendingJobs = Collections.synchronizedList(new LinkedList<Runnable>());
 
-        // SwingHelper #365
-        // RepaintManager.setCurrentManager(new
-        // CheckThreadViolationRepaintManager());
-        // EventDispatchThreadHangMonitor.initMonitoring();
-
-        // Set properties for font policy (jgoodies looks)
-        System.setProperty("Windows.controlFont", "Dialog-plain-11");
-        System.setProperty("Windows.menuFont", "Dialog-plain-12");
-        System.setProperty("Plastic.controlFont", "Dialog-plain-11");
-        System.setProperty("Plastic.menuFont", "Dialog-plain-12");
-
-        boolean defaultLFsupported = !(OSUtil.isWindowsMEorOlder() || OSUtil
-            .isMacOS());
+        boolean defaultLFsupported = !(OSUtil.isWindowsMEorOlder() ||
+                OSUtil.isMacOS());
         if (defaultLFsupported) {
-            boolean themeInitalized = false;
+            boolean lafInitalized = false;
             try {
                 // Now setup the theme
-                if (getUIThemeConfig() != null) {
-                    Class<?> themeClass = Class.forName(getUIThemeConfig());
-                    PlasticTheme theme = (PlasticTheme) themeClass
-                        .newInstance();
-                    PlasticXPLookAndFeel.setPlasticTheme(theme);
-                    themeInitalized = true;
+                if (getUILookAndFeelConfig() != null) {
+                    Class<?> lafClass = Class.forName(getUILookAndFeelConfig());
+                    LookAndFeel laf = (LookAndFeel) lafClass.newInstance();
+                    UIManager.setLookAndFeel(laf);
+                    lafInitalized = true;
                 }
             } catch (IllegalAccessException e) {
                 log.log(Level.SEVERE,
@@ -198,33 +181,23 @@ public class UIController extends PFComponent {
             } catch (InstantiationException e) {
                 log.log(Level.SEVERE,
                     "Unable to set look and feel, switching back to default", e);
-            }
-
-            if (!themeInitalized) {
-                // Set default theme
-                PlasticXPLookAndFeel.setPlasticTheme(DEFAULT_THEME);
-            }
-
-            try {
-                // Set l&f
-                UIManager.setLookAndFeel(DEFAULT_LOOK_AND_FEEL);
-                // UIManager.put("Synthetica.tabbedPane.tab.selected.bold",
-                // Boolean.FALSE);
-                // UIManager.put("Synthetica.toolBar.button.font.style",
-                // "PLAIN");
-                // UIManager.put("Synthetica.toolBar.button.font.size", new
-                // Integer(30));
-
-                // SyntheticaLookAndFeel.setWindowsDecorated(false);
-                // SyntheticaLookAndFeel.setExtendedFileChooserEnabled(false);
-                // UIManager.setLookAndFeel(new
-                // SyntheticaWhiteVisionLookAndFeel());
-                // SyntheticaLookAndFeel.setFont("Dialog", 12);
-                // UIManager.setLookAndFeel(new
-                // SyntheticaBlackStarLookAndFeel());
-
             } catch (UnsupportedLookAndFeelException e) {
-                logSevere("Unable to set look and feel", e);
+                log.log(Level.SEVERE,
+                    "Unable to set look and feel, switching back to default", e);
+            } catch (ClassCastException e) {
+                log.log(Level.SEVERE,
+                    "Unable to set look and feel, switching back to default", e);
+            }
+
+            if (!lafInitalized) {
+                try {
+                    // Set default l&f
+                    UIManager.setLookAndFeel(new SyntheticaStandardLookAndFeel());
+                } catch (UnsupportedLookAndFeelException e) {
+                    logSevere("Unable to set look and feel", e);
+                } catch (ParseException e) {
+                    logSevere("Unable to set look and feel", e);
+                }
             }
         }
 
@@ -751,10 +724,10 @@ public class UIController extends PFComponent {
     }
 
     /**
-     * @return the setted ui theme as String (classname)
+     * @return the setted ui laf as String (classname)
      */
-    public String getUIThemeConfig() {
-        return PreferencesEntry.UI_COLOUR_THEME.getValueString(getController());
+    public String getUILookAndFeelConfig() {
+        return PreferencesEntry.UI_LOOK_AND_FEEL.getValueString(getController());
     }
 
     /**

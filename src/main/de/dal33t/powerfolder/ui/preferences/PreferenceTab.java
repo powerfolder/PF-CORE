@@ -44,7 +44,7 @@ public interface PreferenceTab {
     public JPanel getUIPanel();
 
     /**
-     * undo those changes that where done immediately like theme change *
+     * undo those changes that where done immediately like laf change *
      */
     public void undoChanges();
 }

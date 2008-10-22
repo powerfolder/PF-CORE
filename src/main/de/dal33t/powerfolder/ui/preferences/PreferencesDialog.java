@@ -309,7 +309,7 @@ public class PreferencesDialog extends BaseDialog {
 
     /**
      * call undoChanges on all tabs, those changes that where done immediately
-     * like theme change
+     * like laf change
      */
     private void undoChanges() {
         for (PreferenceTab tab : preferenceTabs) {

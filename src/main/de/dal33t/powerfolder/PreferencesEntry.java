@@ -56,7 +56,7 @@ public enum PreferencesEntry {
 
     SHOW_PREVIEW_PANEL("ShowPreviewPanel", false),
 
-    UI_COLOUR_THEME("UIColorTheme", null),
+    UI_LOOK_AND_FEEL("UILookAndFeel", null),
 
     SHOW_ADVANCED_SETTINGS("ShowAdvancedSettings", false),
 
