@@ -30,11 +30,11 @@
     <classpathentry kind="lib" path="synthetica/syntheticaBlueIce.jar"/>
     <classpathentry kind="lib" path="synthetica/syntheticaBlueMoon.jar"/>
     <classpathentry kind="lib" path="synthetica/syntheticaBlueSteel.jar"/>
-    <classpathentry kind="lib" path="synthetica/syntheticaGreanDream.jar"/>
-    <classpathentry kind="lib" path="synthetica/syntheticaMauveMetalic.jar"/>
-    <classpathentry kind="lib" path="synthetica/syntheticaOrangeMetalic.jar"/>
+    <classpathentry kind="lib" path="synthetica/syntheticaGreenDream.jar"/>
+    <classpathentry kind="lib" path="synthetica/syntheticaMauveMetallic.jar"/>
+    <classpathentry kind="lib" path="synthetica/syntheticaOrangeMetallic.jar"/>
     <classpathentry kind="lib" path="synthetica/syntheticaSilverMoon.jar"/>
-    <classpathentry kind="lib" path="synthetica/syntheticaSkyMetalic.jar"/>
+    <classpathentry kind="lib" path="synthetica/syntheticaSkyMetallic.jar"/>
     <classpathentry kind="lib" path="synthetica/syntheticaWhiteVision.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/forms-1.2.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/validation-2.0.1.jar"/>

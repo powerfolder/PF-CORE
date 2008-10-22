@@ -91,11 +91,11 @@ For creation of the installer:
             <include name="synthetica/syntheticaBlueIce.jar" />
             <include name="synthetica/syntheticaBlueMoon.jar" />
             <include name="synthetica/syntheticaBlueSteel.jar" />
-            <include name="synthetica/syntheticaGreanDream.jar" />
-            <include name="synthetica/syntheticaMauveMetalic.jar" />
-            <include name="synthetica/syntheticaOrangeMetalic.jar" />
+            <include name="synthetica/syntheticaGreenDream.jar" />
+            <include name="synthetica/syntheticaMauveMetallic.jar" />
+            <include name="synthetica/syntheticaOrangeMetallic.jar" />
             <include name="synthetica/syntheticaSilverMoon.jar" />
-            <include name="synthetica/syntheticaSkyMetalic.jar" />
+            <include name="synthetica/syntheticaSkyMetallic.jar" />
             <include name="synthetica/syntheticaWhiteVision.jar" />
 		</fileset>
 
