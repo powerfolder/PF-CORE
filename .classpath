@@ -18,7 +18,24 @@
 	<classpathentry kind="lib" path="lib/jmock/jmock-junit3-2.4.0.jar"/>
 	<classpathentry kind="lib" path="lib/jmock/jmock-junit4-2.4.0.jar"/>
 	<classpathentry kind="lib" path="lib/jmock/jmock-legacy-2.4.0.jar"/>
-	<classpathentry kind="lib" path="lib/jmock/objenesis-1.0.jar"/>
+    <classpathentry kind="lib" path="lib/jmock/objenesis-1.0.jar"/>
+    <classpathentry kind="lib" path="synthetica/commons-logging-1.1.jar"/>
+    <classpathentry kind="lib" path="synthetica/flexdock.jar"/>
+    <classpathentry kind="lib" path="synthetica/swing-worker-1.1.jar"/>
+    <classpathentry kind="lib" path="synthetica/swingx.jar"/>
+    <classpathentry kind="lib" path="synthetica/synthetica.jar"/>
+    <classpathentry kind="lib" path="synthetica/syntheticaAddons.jar"/>
+    <classpathentry kind="lib" path="synthetica/syntheticaBlackMoon.jar"/>
+    <classpathentry kind="lib" path="synthetica/syntheticaBlackStar.jar"/>
+    <classpathentry kind="lib" path="synthetica/syntheticaBlueIce.jar"/>
+    <classpathentry kind="lib" path="synthetica/syntheticaBlueMoon.jar"/>
+    <classpathentry kind="lib" path="synthetica/syntheticaBlueSteel.jar"/>
+    <classpathentry kind="lib" path="synthetica/syntheticaGreanDream.jar"/>
+    <classpathentry kind="lib" path="synthetica/syntheticaMauveMetalic.jar"/>
+    <classpathentry kind="lib" path="synthetica/syntheticaOrangeMetalic.jar"/>
+    <classpathentry kind="lib" path="synthetica/syntheticaSilverMoon.jar"/>
+    <classpathentry kind="lib" path="synthetica/syntheticaSkyMetalic.jar"/>
+    <classpathentry kind="lib" path="synthetica/syntheticaWhiteVision.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/forms-1.2.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/validation-2.0.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/binding-2.0.1.jar"/>

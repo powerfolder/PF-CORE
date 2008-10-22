@@ -80,6 +80,23 @@ For creation of the installer:
 			<include name="looks-2.1.4.jar" />
 			<include name="uif_lite-2.0.4.jar" />
 			<include name="validation-2.0.1.jar" />
+            <include name="synthetica/commons-logging-1.1.jar" />
+            <include name="synthetica/flexdock.jar" />
+            <include name="synthetica/swing-worker-1.1.jar" />
+            <include name="synthetica/swingx.jar" />
+            <include name="synthetica/synthetica.jar" />
+            <include name="synthetica/syntheticaAddons.jar" />
+            <include name="synthetica/syntheticaBlackMoon.jar" />
+            <include name="synthetica/syntheticaBlackStar.jar" />
+            <include name="synthetica/syntheticaBlueIce.jar" />
+            <include name="synthetica/syntheticaBlueMoon.jar" />
+            <include name="synthetica/syntheticaBlueSteel.jar" />
+            <include name="synthetica/syntheticaGreanDream.jar" />
+            <include name="synthetica/syntheticaMauveMetalic.jar" />
+            <include name="synthetica/syntheticaOrangeMetalic.jar" />
+            <include name="synthetica/syntheticaSilverMoon.jar" />
+            <include name="synthetica/syntheticaSkyMetalic.jar" />
+            <include name="synthetica/syntheticaWhiteVision.jar" />
 		</fileset>
 
 		<fileset id="testlibs" dir="lib" casesensitive="yes">
