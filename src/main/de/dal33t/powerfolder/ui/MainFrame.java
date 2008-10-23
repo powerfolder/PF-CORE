@@ -37,6 +37,7 @@ import de.dal33t.powerfolder.ui.navigation.ControlQuarter;
 import de.dal33t.powerfolder.ui.navigation.RootNode;
 import de.dal33t.powerfolder.ui.transfer.DownloadsPanel;
 import de.dal33t.powerfolder.util.os.OSUtil;
+import de.javasoft.plaf.synthetica.SyntheticaRootPaneUI;
 
 import javax.swing.AbstractAction;
 import javax.swing.JFrame;
@@ -45,6 +46,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JSplitPane;
 import javax.swing.KeyStroke;
 import javax.swing.WindowConstants;
+import javax.swing.plaf.RootPaneUI;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Frame;
@@ -164,13 +166,18 @@ public class MainFrame extends PFUIComponent {
             divider = 280;
         }
         uiComponent.setSize(width, height);
-        // uiComponent.setSize(950, 630);
 
         // Now set divider location
         mainPane.setDividerLocation(getController().getPreferences().getInt(
             "mainframe.dividerlocation", divider));
 
         if (prefs.getBoolean("mainframe.maximized", false)) {
+            // Fix Synthetica maximization, otherwise it covers the task bar.
+            // See http://www.javasoft.de/jsf/public/products/synthetica/faq#q13
+            RootPaneUI ui = uiComponent.getRootPane().getUI();
+            if (ui instanceof SyntheticaRootPaneUI) {
+                ((SyntheticaRootPaneUI) ui).setMaximizedBounds(uiComponent);
+            }
             uiComponent.setExtendedState(Frame.MAXIMIZED_BOTH);
         }
 
