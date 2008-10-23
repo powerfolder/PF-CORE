@@ -135,7 +135,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         // Reset to old look and feel
         if (!Util.equals(oldLaf, activeLaf)) {
             try {
-                UIManager.setLookAndFeel(oldLaf);
+                LookAndFeelSupport.setLookAndFeel(oldLaf);
             } catch (UnsupportedLookAndFeelException e) {
                 logSevere(e);
             }
@@ -523,7 +523,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 LookAndFeel laf = availableLafs[lookAndFeelChooser
                     .getSelectedIndex()];
                 try {
-                    UIManager.setLookAndFeel(laf);
+                    LookAndFeelSupport.setLookAndFeel(laf);
                 } catch (UnsupportedLookAndFeelException e1) {
                     logSevere(e1);
                 }

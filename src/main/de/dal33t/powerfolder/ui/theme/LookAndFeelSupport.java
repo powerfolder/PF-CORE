@@ -19,21 +19,10 @@
 */
 package de.dal33t.powerfolder.ui.theme;
 
-import de.javasoft.plaf.synthetica.SyntheticaBlackMoonLookAndFeel;
-import de.javasoft.plaf.synthetica.SyntheticaBlackStarLookAndFeel;
-import de.javasoft.plaf.synthetica.SyntheticaBlueIceLookAndFeel;
-import de.javasoft.plaf.synthetica.SyntheticaBlueMoonLookAndFeel;
-import de.javasoft.plaf.synthetica.SyntheticaBlueSteelLookAndFeel;
-import de.javasoft.plaf.synthetica.SyntheticaGreenDreamLookAndFeel;
-import de.javasoft.plaf.synthetica.SyntheticaMauveMetallicLookAndFeel;
-import de.javasoft.plaf.synthetica.SyntheticaOrangeMetallicLookAndFeel;
-import de.javasoft.plaf.synthetica.SyntheticaSilverMoonLookAndFeel;
-import de.javasoft.plaf.synthetica.SyntheticaSkyMetallicLookAndFeel;
-import de.javasoft.plaf.synthetica.SyntheticaStandardLookAndFeel;
-import de.javasoft.plaf.synthetica.SyntheticaWhiteVisionLookAndFeel;
+import de.javasoft.plaf.synthetica.*;
 import de.dal33t.powerfolder.util.Translation;
 
-import javax.swing.LookAndFeel;
+import javax.swing.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -71,6 +60,11 @@ public class LookAndFeelSupport {
         // Only static methods available
     }
 
+    /**
+     * Returns all availble look and feel names, I18N
+     *
+     * @return
+     */
     public static synchronized String[] getAvailableLookAndFeelNames() {
         if (availableLafNames == null) {
             availableLafNames = new String[AVAILABLE_LAF_CLASSES.length];
@@ -139,4 +133,16 @@ public class LookAndFeelSupport {
         return availableLafs;
     }
 
+    /**
+     * Sets the look and feel, and sets font so that Asian fonts display okay.
+     * See http://www.javasoft.de/jsf/public/products/synthetica/faq#q12
+     *
+     * @param laf
+     * @throws UnsupportedLookAndFeelException
+     */
+    public static void setLookAndFeel(LookAndFeel laf)
+            throws UnsupportedLookAndFeelException {
+        UIManager.setLookAndFeel(laf);
+        SyntheticaLookAndFeel.setFont("Dialog", 12);
+    }
 }

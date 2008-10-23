@@ -62,6 +62,7 @@ import de.dal33t.powerfolder.ui.recyclebin.RecycleBinConfirmationHandlerDefaultI
 import de.dal33t.powerfolder.ui.render.BlinkManager;
 import de.dal33t.powerfolder.ui.webservice.ServerClientModel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
+import de.dal33t.powerfolder.ui.theme.LookAndFeelSupport;
 import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
@@ -169,7 +170,7 @@ public class UIController extends PFComponent {
                 if (getUILookAndFeelConfig() != null) {
                     Class<?> lafClass = Class.forName(getUILookAndFeelConfig());
                     LookAndFeel laf = (LookAndFeel) lafClass.newInstance();
-                    UIManager.setLookAndFeel(laf);
+                    LookAndFeelSupport.setLookAndFeel(laf);
                     lafInitalized = true;
                 }
             } catch (IllegalAccessException e) {
@@ -192,7 +193,7 @@ public class UIController extends PFComponent {
             if (!lafInitalized) {
                 try {
                     // Set default l&f
-                    UIManager.setLookAndFeel(new SyntheticaStandardLookAndFeel());
+                    LookAndFeelSupport.setLookAndFeel(new SyntheticaStandardLookAndFeel());
                 } catch (UnsupportedLookAndFeelException e) {
                     logSevere("Unable to set look and feel", e);
                 } catch (ParseException e) {
