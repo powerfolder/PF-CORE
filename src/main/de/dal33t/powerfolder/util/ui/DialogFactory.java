@@ -24,10 +24,8 @@ import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.CellConstraints;
-import com.sun.java.swing.plaf.windows.WindowsFileChooserUI;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.ui.directory.DirectoryChooser;
 
 import javax.swing.*;

@@ -37,11 +37,7 @@ import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 import jwf.WizardPanel;
 import org.apache.commons.lang.StringUtils;
 
-import javax.swing.Icon;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JPasswordField;
-import javax.swing.JTextField;
+import javax.swing.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
@@ -185,8 +181,8 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
             client);
     }
 
-    protected Icon getPicto() {
-        return Icons.WEBSERVICE_PICTO;
+    protected JComponent getPictoComponent() {
+        return new JLabel(Icons.WEBSERVICE_PICTO);
     }
 
     protected String getTitle() {

@@ -43,7 +43,6 @@ import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.ui.SyncProfileSelectorPanel;
 import jwf.WizardPanel;
 
-import javax.swing.Icon;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
@@ -265,8 +264,8 @@ public class LoadInvitationPanel extends PFWizardPanel {
         });
     }
 
-    protected Icon getPicto() {
-        return getContextPicto();
+    protected JComponent getPictoComponent() {
+        return new JLabel(getContextPicto());
     }
 
     protected String getTitle() {

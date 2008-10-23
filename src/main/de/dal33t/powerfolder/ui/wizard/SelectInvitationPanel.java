@@ -31,10 +31,7 @@ import de.dal33t.powerfolder.util.InvitationUtil;
 import de.dal33t.powerfolder.util.Translation;
 import jwf.WizardPanel;
 
-import javax.swing.Icon;
-import javax.swing.JComboBox;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
+import javax.swing.*;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -134,8 +131,8 @@ public class SelectInvitationPanel extends PFWizardPanel {
         messageField = new JTextField();
     }
 
-    protected Icon getPicto() {
-        return getContextPicto();
+    protected JComponent getPictoComponent() {
+        return new JLabel(getContextPicto());
     }
 
     protected String getTitle() {

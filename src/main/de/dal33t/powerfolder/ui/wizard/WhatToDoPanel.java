@@ -330,8 +330,8 @@ public class WhatToDoPanel extends PFWizardPanel {
             PFWizard.MED_FONT_SIZE);
     }
 
-    protected Icon getPicto() {
-        return Icons.FILESHARING_PICTO;
+    protected JComponent getPictoComponent() {
+        return new JLabel(Icons.FILESHARING_PICTO);
     }
 
     protected String getTitle() {

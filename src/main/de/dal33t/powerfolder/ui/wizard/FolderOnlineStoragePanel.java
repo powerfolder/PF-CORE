@@ -35,8 +35,7 @@ import de.dal33t.powerfolder.ui.widget.LinkLabel;
 import de.dal33t.powerfolder.util.Translation;
 import jwf.WizardPanel;
 
-import javax.swing.Icon;
-import javax.swing.JPanel;
+import javax.swing.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -133,8 +132,8 @@ public class FolderOnlineStoragePanel extends PFWizardPanel {
         updateButtons();
     }
 
-    protected Icon getPicto() {
-        return Icons.WEBSERVICE_PICTO;
+    protected JComponent getPictoComponent() {
+        return new JLabel(Icons.WEBSERVICE_PICTO);
     }
 
     protected String getTitle() {

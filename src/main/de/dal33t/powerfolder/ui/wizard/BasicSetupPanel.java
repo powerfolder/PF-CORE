@@ -27,12 +27,7 @@ import java.beans.PropertyChangeListener;
 import java.util.List;
 import java.util.Locale;
 
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.Icon;
-import javax.swing.JComboBox;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
+import javax.swing.*;
 
 import jwf.WizardPanel;
 
@@ -224,8 +219,8 @@ public class BasicSetupPanel extends PFWizardPanel {
         return Translation.getTranslation("wizard.basic_setup.title");
     }
 
-    protected Icon getPicto() {
-        return Icons.PROJECT_WORK_PICTO;
+    protected JComponent getPictoComponent() {
+        return new JLabel(Icons.PROJECT_WORK_PICTO);
     }
 
     // Helper classes *********************************************************

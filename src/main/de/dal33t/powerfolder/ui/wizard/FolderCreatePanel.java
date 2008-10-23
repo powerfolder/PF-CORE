@@ -40,7 +40,6 @@ import de.dal33t.powerfolder.util.ui.SwingWorker;
 import jwf.Wizard;
 import jwf.WizardPanel;
 
-import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -180,8 +179,8 @@ public class FolderCreatePanel extends PFWizardPanel {
     protected void initComponents() {
     }
 
-    protected Icon getPicto() {
-        return getContextPicto();
+    protected JComponent getPictoComponent() {
+        return new JLabel(getContextPicto());
     }
 
     protected String getTitle() {

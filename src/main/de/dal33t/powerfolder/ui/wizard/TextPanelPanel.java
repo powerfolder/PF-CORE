@@ -84,8 +84,8 @@ public class TextPanelPanel extends PFWizardPanel {
     protected void initComponents() {
     }
 
-    protected Icon getPicto() {
-        return getContextPicto();
+    protected JComponent getPictoComponent() {
+        return new JLabel(getContextPicto());
     }
 
     protected String getTitle() {
