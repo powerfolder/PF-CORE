@@ -29,7 +29,6 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.ui.directory.DirectoryChooser;
-import sun.swing.WindowsPlacesBar;
 
 import javax.swing.*;
 import java.awt.*;
@@ -127,53 +126,12 @@ public class DialogFactory {
      * windows look and feel. This adds the buttons like "recent", "My
      * Documents" etc.
      *
+     * Now uses the Synthetica chooser.
+     *
      * @return a file chooser
      */
     public static JFileChooser createFileChooser() {
-        JFileChooser fc = new JFileChooser();
-        if (OSUtil.isWindowsSystem()) {
-            WindowsFileChooserUI winUI = (WindowsFileChooserUI) WindowsFileChooserUI
-                .createUI(fc);
-            winUI.installUI(fc);
-            // now fix some borders and decorations
-            // makes nicer togglebuttons
-            // removes border on the top toolbar
-            for (int i = 0; i < fc.getComponentCount(); i++) {
-                Component component = fc.getComponent(i);
-                if (component instanceof WindowsPlacesBar) {
-                    WindowsPlacesBar places = (WindowsPlacesBar) component;
-                    // TODO detect if win XP style and
-                    // set lighter background of this toolbar
-
-                    // if win2K maybe some fillers are needed but don't
-                    // know if we can insert them
-                    ToggleButtonDecorator decorator = new ToggleButtonDecorator();
-                    // loop all buttons in this bar
-                    for (int j = 0; j < places.getComponentCount(); j++) {
-                        Component placesButton = places.getComponent(j);
-                        // make sure they are what we think
-                        if (placesButton instanceof JToggleButton) {
-                            JToggleButton jToggleButton = (JToggleButton) placesButton;
-                            jToggleButton.addActionListener(decorator);
-                            jToggleButton.addMouseListener(decorator);
-                            decorator.updateButton(jToggleButton);
-                        }
-                    }
-                } else if (component instanceof JToolBar) {
-                    JToolBar toolbar = (JToolBar) component;
-                    for (int j = 0; j < toolbar.getComponentCount(); j++) {
-                        Component toolBarComponent = toolbar.getComponent(j);
-                        // make sure its the top toolbar by detecting the
-                        // combobox
-                        if (toolBarComponent instanceof JComboBox) {
-                            // remove border
-                            toolbar.setBorder(null);
-                        }
-                    }
-                }
-            }
-        }
-        return fc;
+        return new JFileChooser();
     }
 
     // //////////////////////////////////////////////////////////////////
