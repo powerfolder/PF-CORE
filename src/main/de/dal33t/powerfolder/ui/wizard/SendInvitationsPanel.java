@@ -37,14 +37,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import javax.swing.Icon;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JFileChooser;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
-import javax.swing.JTextField;
+import javax.swing.*;
 
 import jwf.WizardPanel;
 
@@ -367,8 +360,8 @@ public class SendInvitationsPanel extends PFWizardPanel {
         });
     }
 
-    protected Icon getPicto() {
-        return getContextPicto();
+    protected JComponent getPictoComponent() {
+        return new JLabel(getContextPicto());
     }
 
     protected String getTitle() {
