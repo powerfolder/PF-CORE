@@ -505,9 +505,10 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         JComboBox chooser = new JComboBox();
         final LookAndFeel[] availableLafs = LookAndFeelSupport
             .getAvailableLookAndFeels();
+        final String[] availableLafNames = LookAndFeelSupport
+                .getAvailableLookAndFeelNames();
         for (int i = 0; i < availableLafs.length; i++) {
-            String shortName = trimLafName(availableLafs[i].getName());
-            chooser.addItem(shortName);
+            chooser.addItem(availableLafNames[i]);
             if (availableLafs[i].getClass().getName().equals(
                 getUIController().getUILookAndFeelConfig()))
             {
@@ -530,34 +531,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             }
         });
         return chooser;
-    }
-
-    /**
-     * Convert something like 'Synthetica BlueMoon Look and Feel' to
-     * 'Blue Moon' for display in the look and feel combo.
-     *
-     * @param name
-     * @return
-     */
-    private static String trimLafName(String name) {
-        if (name == null) {
-            return null;
-        }
-        if (name.startsWith("Synthetica")) {
-            name = name.substring("Synthetica".length());
-        }
-        if (name.endsWith("Look and Feel")) {
-            name = name.substring(0, name.length() - "Look and Feel".length());
-        }
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < name.length(); i++) {
-            String s = name.substring(i, i + 1);
-            if (i > 0 && s.toUpperCase().equals(s)) {
-                sb.append(' ');
-            }
-            sb.append(s);
-        }
-        return sb.toString().trim();
     }
 
     /**

@@ -31,6 +31,7 @@ import de.javasoft.plaf.synthetica.SyntheticaSilverMoonLookAndFeel;
 import de.javasoft.plaf.synthetica.SyntheticaSkyMetallicLookAndFeel;
 import de.javasoft.plaf.synthetica.SyntheticaStandardLookAndFeel;
 import de.javasoft.plaf.synthetica.SyntheticaWhiteVisionLookAndFeel;
+import de.dal33t.powerfolder.util.Translation;
 
 import javax.swing.LookAndFeel;
 import java.util.logging.Level;
@@ -63,10 +64,57 @@ public class LookAndFeelSupport {
             SyntheticaSkyMetallicLookAndFeel.class,
             SyntheticaWhiteVisionLookAndFeel.class};
 
+    private static String[] availableLafNames;
     private static LookAndFeel[] availableLafs;
 
     private LookAndFeelSupport() {
         // Only static methods available
+    }
+
+    public static synchronized String[] getAvailableLookAndFeelNames() {
+        if (availableLafNames == null) {
+            availableLafNames = new String[AVAILABLE_LAF_CLASSES.length];
+            for (int i = 0; i < AVAILABLE_LAF_CLASSES.length; i++) {
+                try {
+                    Class lafClass = AVAILABLE_LAF_CLASSES[i];
+                    String name;
+                    if (lafClass.equals(SyntheticaStandardLookAndFeel.class)) {
+                        name = Translation.getTranslation("look_and_feel.standard");
+                    } else if (lafClass.equals(SyntheticaBlackMoonLookAndFeel.class)) {
+                        name = Translation.getTranslation("look_and_feel.black_moon");
+                    } else if (lafClass.equals(SyntheticaBlackStarLookAndFeel.class)) {
+                        name = Translation.getTranslation("look_and_feel.black_star");
+                    } else if (lafClass.equals(SyntheticaBlueIceLookAndFeel.class)) {
+                        name = Translation.getTranslation("look_and_feel.blue_ice");
+                    } else if (lafClass.equals(SyntheticaBlueMoonLookAndFeel.class)) {
+                        name = Translation.getTranslation("look_and_feel.blue_moon");
+                    } else if (lafClass.equals(SyntheticaBlueSteelLookAndFeel.class)) {
+                        name = Translation.getTranslation("look_and_feel.blue_steel");
+                    } else if (lafClass.equals(SyntheticaGreenDreamLookAndFeel.class)) {
+                        name = Translation.getTranslation("look_and_feel.green_dream");
+                    } else if (lafClass.equals(SyntheticaMauveMetallicLookAndFeel.class)) {
+                        name = Translation.getTranslation("look_and_feel.mauve_metallic");
+                    } else if (lafClass.equals(SyntheticaOrangeMetallicLookAndFeel.class)) {
+                        name = Translation.getTranslation("look_and_feel.orange_metallic");
+                    } else if (lafClass.equals(SyntheticaSilverMoonLookAndFeel.class)) {
+                        name = Translation.getTranslation("look_and_feel.silver_moon");
+                    } else if (lafClass.equals(SyntheticaSkyMetallicLookAndFeel.class)) {
+                        name = Translation.getTranslation("look_and_feel.sky_metallic");
+                    } else if (lafClass.equals(SyntheticaWhiteVisionLookAndFeel.class)) {
+                        name = Translation.getTranslation("look_and_feel.white_vision");
+                    } else {
+                        LookAndFeel laf = (LookAndFeel) lafClass.newInstance();
+                        name = laf.getName();
+                    }
+                    availableLafNames[i] = name;
+                } catch (InstantiationException e) {
+                    log.log(Level.SEVERE, "Unable to initalize look and feel name", e);
+                } catch (IllegalAccessException e) {
+                    log.log(Level.SEVERE, "Unable to initalize look and feel name", e);
+                }
+            }
+        }
+        return availableLafNames;
     }
 
     /**
