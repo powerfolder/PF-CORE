@@ -28,8 +28,21 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.text.DecimalFormat;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
@@ -65,7 +78,7 @@ import de.dal33t.powerfolder.util.delta.FilePartsRecord;
 
 /**
  * Transfer manager for downloading/uploading files
- *
+ * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.92 $
  */
@@ -200,7 +213,7 @@ public class TransferManager extends PFComponent {
     /**
      * Checks if the configration entry exists, and if not sets it to a given
      * value.
-     *
+     * 
      * @param entry
      * @param _cps
      */
@@ -302,7 +315,7 @@ public class TransferManager extends PFComponent {
 
     /**
      * for debug
-     *
+     * 
      * @param suspended
      */
     public void setSuspendFireEvents(boolean suspended) {
@@ -339,7 +352,7 @@ public class TransferManager extends PFComponent {
 
     /**
      * Returns the transferstatus by calculating it new
-     *
+     * 
      * @return the current status
      */
     public TransferStatus getStatus() {
@@ -380,7 +393,7 @@ public class TransferManager extends PFComponent {
 
     /**
      * Returns the MultiSourceDownload, that's managing the given info.
-     *
+     * 
      * @param loaddownload
      * @return
      * @return
@@ -396,7 +409,7 @@ public class TransferManager extends PFComponent {
 
     /**
      * Sets an transfer as started
-     *
+     * 
      * @param transfer
      *            the transfer
      */
@@ -423,7 +436,7 @@ public class TransferManager extends PFComponent {
 
     /**
      * Callback to inform, that a download has been enqued at the remote ide
-     *
+     * 
      * @param download
      *            the download request
      * @param member
@@ -435,7 +448,7 @@ public class TransferManager extends PFComponent {
 
     /**
      * Sets a transfer as broken, removes from queues
-     *
+     * 
      * @param tranfer
      *            the transfer
      * @param transferProblem
@@ -462,7 +475,7 @@ public class TransferManager extends PFComponent {
 
     /**
      * Sets a transfer as broken, removes from queues
-     *
+     * 
      * @param tranfer
      *            the transfer
      * @param transferProblem
@@ -512,7 +525,7 @@ public class TransferManager extends PFComponent {
 
     /**
      * Breaks all transfers from and to that node. Usually done on disconnect
-     *
+     * 
      * @param node
      */
     public void breakTransfers(final Member node) {
@@ -609,7 +622,7 @@ public class TransferManager extends PFComponent {
 
     /**
      * Returns all uploads of the given file.
-     *
+     * 
      * @param info
      * @return
      */
@@ -625,7 +638,7 @@ public class TransferManager extends PFComponent {
 
     /**
      * Callback method to indicate that a transfer is completed
-     *
+     * 
      * @param transfer
      */
     void setCompleted(Transfer transfer) {
@@ -735,7 +748,7 @@ public class TransferManager extends PFComponent {
 
     /**
      * Sets the maximum upload bandwidth usage in CPS
-     *
+     * 
      * @param allowedCPS
      */
     public void setAllowedUploadCPSForWAN(long allowedCPS) {
@@ -767,7 +780,7 @@ public class TransferManager extends PFComponent {
 
     /**
      * Sets the maximum download bandwidth usage in CPS
-     *
+     * 
      * @param allowedCPS
      */
     public void setAllowedDownloadCPSForWAN(long allowedCPS) {
@@ -799,7 +812,7 @@ public class TransferManager extends PFComponent {
 
     /**
      * Sets the maximum upload bandwidth usage in CPS for LAN
-     *
+     * 
      * @param allowedCPS
      */
     public void setAllowedUploadCPSForLAN(long allowedCPS) {
@@ -830,7 +843,7 @@ public class TransferManager extends PFComponent {
 
     /**
      * Sets the maximum upload bandwidth usage in CPS for LAN
-     *
+     * 
      * @param allowedCPS
      */
     public void setAllowedDownloadCPSForLAN(long allowedCPS) {
@@ -896,7 +909,7 @@ public class TransferManager extends PFComponent {
      * for the file from that member. Will not be queued if file not exists or
      * is deleted in the meantime or if the connection with the requestor is
      * lost.
-     *
+     * 
      * @param from
      * @param dl
      * @return the enqued upload, or null if not queued.
@@ -1004,7 +1017,7 @@ public class TransferManager extends PFComponent {
 
     /**
      * Aborts a upload
-     *
+     * 
      * @param fInfo
      *            the file to upload
      * @param to
@@ -1067,7 +1080,7 @@ public class TransferManager extends PFComponent {
     /**
      * Returns the {@link FileRecordProvider} managing the
      * {@link FilePartsRecord}s for the various uploads/downloads.
-     *
+     * 
      * @return
      */
     public FileRecordProvider getFileRecordManager() {
@@ -1076,7 +1089,7 @@ public class TransferManager extends PFComponent {
 
     /**
      * Perfoms a upload in the tranfsermanagers threadpool.
-     *
+     * 
      * @param uploadPerformer
      */
     void perfomUpload(Runnable uploadPerformer) {
@@ -1127,7 +1140,7 @@ public class TransferManager extends PFComponent {
 
     /**
      * Answers all queued uploads
-     *
+     * 
      * @return Array of all queued upload
      */
     public Upload[] getQueuedUploads() {
@@ -1137,7 +1150,7 @@ public class TransferManager extends PFComponent {
 
     /**
      * Answers, if we are uploading to this member
-     *
+     * 
      * @param member
      *            the receiver
      * @return true if we are uploading to that member
@@ -1205,7 +1218,7 @@ public class TransferManager extends PFComponent {
     /**
      * Addds a file for download if source is not known. Download will be
      * started when a source is found.
-     *
+     * 
      * @param download
      * @return true if succeeded
      */
@@ -1236,7 +1249,7 @@ public class TransferManager extends PFComponent {
 
         synchronized (pendingDownloads) {
             if (!pendingDownloads.contains(download)
-                && !dlManagers.containsKey(download.getFile()))
+                && !isDownloadingActive(download.getFile()))
             {
                 contained = false;
                 pendingDownloads.add(0, download);
@@ -1263,7 +1276,7 @@ public class TransferManager extends PFComponent {
     /**
      * Requests to download the newest version of the file. Returns null if
      * download wasn't enqued at a node. Download is then pending
-     *
+     * 
      * @param fInfo
      * @return the member where the dl was requested at, or null if no source
      *         available (DL was NOT started)
@@ -1276,7 +1289,7 @@ public class TransferManager extends PFComponent {
      * Requests to download the newest version of the file. Returns null if
      * download wasn't enqued at a node. Download is then pending or blacklisted
      * (for autodownload)
-     *
+     * 
      * @param fInfo
      * @param automatic
      *            if this download was requested automatically
@@ -1412,12 +1425,20 @@ public class TransferManager extends PFComponent {
 
     /**
      * Requests the download from that member
-     *
+     * 
      * @param download
      * @param from
      */
     private void requestDownload(final Download download, final Member from) {
         final FileInfo fInfo = download.getFile();
+        FileInfo localFile = getController().getFolderRepository().getFolder(
+            fInfo.getFolderInfo()).getFile(fInfo);
+
+        if (localFile != null && localFile.isCompletelyIdentical(fInfo)) {
+            log
+                .warning("Tried to request download for file with same version as local file!");
+            return;
+        }
 
         boolean dlWasRequested = false;
         // Lock/Disable transfer checker
@@ -1499,7 +1520,7 @@ public class TransferManager extends PFComponent {
      * The members are sorted in order of best source.
      * <p>
      * WARNING: Versions of files are ingnored
-     *
+     * 
      * @param fInfo
      * @return the list of members, where the file is available
      */
@@ -1531,7 +1552,7 @@ public class TransferManager extends PFComponent {
 
     /**
      * Aborts all automatically enqueued download of a folder.
-     *
+     * 
      * @param folder
      *            the folder to break downloads on
      */
@@ -1590,7 +1611,7 @@ public class TransferManager extends PFComponent {
 
     /**
      * abort a download, only if the downloading partner is the same
-     *
+     * 
      * @param fileInfo
      * @param from
      */
@@ -1636,7 +1657,7 @@ public class TransferManager extends PFComponent {
 
     /**
      * Invoked by Download, if a new chunk was received
-     *
+     * 
      * @param chunk
      * @param from
      */
@@ -1687,7 +1708,7 @@ public class TransferManager extends PFComponent {
 
     /**
      * Returns the upload for the given file to the given member
-     *
+     * 
      * @param to
      *            the member which the upload transfers to
      * @param fInfo
@@ -1860,7 +1881,7 @@ public class TransferManager extends PFComponent {
      * contains:
      * <p>
      * Member -> Number of active or enqued downloads to that node
-     *
+     * 
      * @return Member -> Number of active or enqued downloads to that node
      */
     private Map<Member, Integer> countNodesActiveAndQueuedDownloads() {
@@ -1887,7 +1908,7 @@ public class TransferManager extends PFComponent {
 
     /**
      * Answers if we have active downloads from that member (not used)
-     *
+     * 
      * @param from
      * @return
      */
@@ -2007,7 +2028,7 @@ public class TransferManager extends PFComponent {
 
     /**
      * Removes completed download for a fileInfo.
-     *
+     * 
      * @param fileInfo
      */
     public void clearCompletedDownload(FileInfo fileInfo) {
@@ -2213,7 +2234,7 @@ public class TransferManager extends PFComponent {
 
     /**
      * logs a up- or download with speed and time
-     *
+     * 
      * @param download
      * @param took
      * @param fInfo

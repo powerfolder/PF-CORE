@@ -64,7 +64,7 @@ import de.dal33t.powerfolder.util.delta.FilePartsState.PartState;
 /**
  * Shared implementation of download managers. This class leaves details on what
  * to request from whom to the implementing class.
- *
+ * 
  * @author Dennis "Bytekeeper" Waldherr
  */
 public abstract class AbstractDownloadManager extends PFComponent implements
@@ -217,7 +217,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
 
     /**
      * Returns the transfer counter
-     *
+     * 
      * @return
      */
     public TransferCounter getCounter() {
@@ -426,7 +426,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             mInfoRes = mInfoWorker.call();
 
             // logFine("Records: " + record.getInfos().length);
-            logFine("Matches: " + mInfoRes.size() + " which are "
+            log.fine("Matches: " + mInfoRes.size() + " which are "
                 + (remotePartRecord.getPartLength() * mInfoRes.size())
                 + " bytes (bit less maybe).");
 
@@ -467,7 +467,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
      * internal locks in place. Reason: This method will access filepartsstate,
      * which is also accessed in here. TODO: Find a "cleaner" way so this method
      * doesn't need to be locked.
-     *
+     * 
      * @throws BrokenDownloadException
      */
     protected abstract void sendPartRequests() throws BrokenDownloadException;
@@ -482,7 +482,8 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         if (isBroken()) {
             return;
         }
-        logFine("Download broken: " + fileInfo);
+        log.fine("Download broken: " + fileInfo + ", problem: " + problem
+            + ", message: " + message);
         setState(InternalState.BROKEN);
         shutdown();
 
@@ -513,7 +514,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             return;
         }
 
-        logFine("Completed download of " + fileInfo + ".");
+        log.fine("Completed download of " + fileInfo + ".");
 
         setState(InternalState.COMPLETED);
         shutdown();
@@ -597,7 +598,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                 try {
                     worker.join(2000);
                 } catch (InterruptedException e) {
-                    logFiner("InterruptedException", e);
+                    log.finer("InterruptedException:" + e);
                 }
                 if (worker.isAlive()) {
                     logSevere("Couldn't stop worker thread: " + worker);
@@ -642,7 +643,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
 
         setStarted();
         setState(InternalState.ACTIVE_DOWNLOAD);
-        logFine("Requesting parts");
+        log.fine("Requesting parts");
         sendPartRequests();
     }
 
@@ -802,7 +803,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                         });
                     }
                 } catch (InterruptedException e) {
-                    logFiner("InterruptedException", e);
+                    log.finer("InterruptedException:" + e);
                 }
             }
         }, "Downloadmanager file checker");
@@ -841,7 +842,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
     /**
      * Returns the base directory for transfer specific meta data. If the
      * directory doesn't exist, it's created.
-     *
+     * 
      * @return the base directory
      * @throws IOException
      *             if the directory couldn't be created
@@ -1010,7 +1011,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                                 + fileInfo);
                         checkFileValidity();
                     } else {
-                        logFine("Not requesting record for this download.");
+                        log.fine("Not requesting record for this download.");
                         startActiveDownload();
                     }
                 }
@@ -1035,7 +1036,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         switch (state) {
             case ABORTED :
             case BROKEN :
-                logFine("Aborted download of " + fileInfo
+                log.fine("Aborted download of " + fileInfo
                     + " received chunk from " + download);
                 download.abort();
                 break;
@@ -1059,7 +1060,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         switch (state) {
             case WAITING_FOR_FILEPARTSRECORD :
                 assert worker == null || !worker.isAlive();
-                logFine("Matching and copying...");
+                log.fine("Matching and copying...");
                 setState(InternalState.MATCHING_AND_COPYING);
                 remotePartRecord = record;
                 worker = new Thread(new Runnable() {
@@ -1101,7 +1102,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                                 }
                             });
                         } catch (InterruptedException e) {
-                            logFiner("InterruptedException", e);
+                            log.finer("InterruptedException: " + e);
                         }
                     }
                 }, "Downloadmanager matching and copying");
@@ -1187,7 +1188,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         if (isDone()) {
             return;
         }
-        logFine("Download aborted: " + fileInfo);
+        log.fine("Download aborted: " + fileInfo);
 
         setState(InternalState.ABORTED);
         shutdown();

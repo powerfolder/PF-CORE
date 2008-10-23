@@ -32,10 +32,15 @@ import org.apache.commons.lang.Validate;
 
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.transfer.swarm.TransferUtil;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.message.*;
+import de.dal33t.powerfolder.message.AbortDownload;
+import de.dal33t.powerfolder.message.FileChunk;
+import de.dal33t.powerfolder.message.RequestDownload;
+import de.dal33t.powerfolder.message.RequestFilePartsRecord;
+import de.dal33t.powerfolder.message.RequestPart;
+import de.dal33t.powerfolder.message.StopUpload;
+import de.dal33t.powerfolder.transfer.swarm.TransferUtil;
 import de.dal33t.powerfolder.util.Range;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
@@ -44,13 +49,14 @@ import de.dal33t.powerfolder.util.delta.FilePartsRecord;
 /**
  * Download class, containing file and member.<BR>
  * Serializable for remembering completed Downloads in DownLoadTableModel.
- *
+ * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.30 $
  */
 public class Download extends Transfer {
 
-    private static final Logger log = Logger.getLogger(Download.class.getName());
+    private static final Logger log = Logger
+        .getLogger(Download.class.getName());
     private static final long serialVersionUID = 100L;
     public static final int MAX_REQUESTS_QUEUED = 15;
 
@@ -61,6 +67,11 @@ public class Download extends Transfer {
     private Queue<RequestPart> pendingRequests = new LinkedList<RequestPart>();
 
     private transient DownloadManager handler;
+
+    /**
+     * Indicates that this download is broken.
+     */
+    private boolean broken;
 
     /** for serialisation */
     public Download() {
@@ -84,7 +95,7 @@ public class Download extends Transfer {
     /**
      * Re-initalized the Transfer with the TransferManager. Use this only if you
      * are know what you are doing .
-     *
+     * 
      * @param aTransferManager
      *            the transfermanager
      */
@@ -117,7 +128,7 @@ public class Download extends Transfer {
 
     /**
      * Called when the partner supports part-transfers and is ready to upload
-     *
+     * 
      * @param fileInfo
      *            the fileInfo the remote side uses.
      * @param usedFileInfo
@@ -148,7 +159,7 @@ public class Download extends Transfer {
 
     /**
      * Invoked when a record for this download was received.
-     *
+     * 
      * @param fileInfo
      *            the fileInfo the remote side uses.
      * @param record
@@ -167,7 +178,7 @@ public class Download extends Transfer {
 
     /**
      * Requests a single part from the remote peer.
-     *
+     * 
      * @param range
      * @return
      * @throws BrokenDownloadException
@@ -208,7 +219,7 @@ public class Download extends Transfer {
 
     /**
      * Adds a chunk to the download
-     *
+     * 
      * @param chunk
      * @return true if the chunk was successfully appended to the download file.
      */
@@ -259,7 +270,7 @@ public class Download extends Transfer {
 
     /**
      * Requests this download from the partner.
-     *
+     * 
      * @param startOffset
      */
     public synchronized void request(long startOffset) {
@@ -332,13 +343,19 @@ public class Download extends Transfer {
 
     /**
      * Sets the download to a broken state.
-     *
+     * 
      * @param problem
      * @param message
      */
     public synchronized void setBroken(final TransferProblem problem,
         final String message)
     {
+        // Prevent setBroken from being called more than once on a single
+        // download
+        if (broken) {
+            return;
+        }
+        broken = true;
         Member p = getPartner();
         if (p != null && p.isCompleteyConnected()) {
             p.sendMessageAsynchron(new AbortDownload(getFile()), null);
@@ -357,7 +374,7 @@ public class Download extends Transfer {
      *         anymore or (on blacklist in folder and isRequestedAutomatic)
      */
     public synchronized boolean isBroken() {
-        if (super.isBroken()) {
+        if (super.isBroken() || broken) {
             return true;
         }
         // timeout is, when dl is not enqued at remote side,

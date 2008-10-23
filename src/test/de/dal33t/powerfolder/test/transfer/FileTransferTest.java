@@ -494,9 +494,11 @@ public class FileTransferTest extends TwoControllerTestCase {
 
     public void testManyPow2FilesCopy() {
         // Register listeners
-        final MyTransferManagerListener tm1Listener = new MyTransferManagerListener();
+        final MyTransferManagerListener tm1Listener = new MyTransferManagerListener(
+            true);
         getContollerBart().getTransferManager().addListener(tm1Listener);
-        final MyTransferManagerListener tm2Listener = new MyTransferManagerListener();
+        final MyTransferManagerListener tm2Listener = new MyTransferManagerListener(
+            true);
         getContollerLisa().getTransferManager().addListener(tm2Listener);
 
         final int nFiles = 450;
@@ -541,6 +543,12 @@ public class FileTransferTest extends TwoControllerTestCase {
     }
 
     public void testMultipleManPow2() throws Exception {
+        // Logger l = Logger.getLogger(AbstractDownloadManager.class.getName());
+        // l.setFilter(null);
+        // l.setLevel(Level.ALL);
+        // ConsoleHandler ch = new ConsoleHandler();
+        // ch.setLevel(Level.ALL);
+        // l.addHandler(ch);
         for (int i = 0; i < 10; i++) {
             if (i > 0) {
                 tearDown();
@@ -719,7 +727,13 @@ public class FileTransferTest extends TwoControllerTestCase {
     }
 
     public void testMultipleResumeTransfer() throws Exception {
-        for (int i = 0; i < 10; i++) {
+        // Logger l = Logger.getLogger(AbstractDownloadManager.class.getName());
+        // l.setFilter(null);
+        // l.setLevel(Level.ALL);
+        // ConsoleHandler ch = new ConsoleHandler();
+        // ch.setLevel(Level.ALL);
+        // l.addHandler(ch);
+        for (int i = 0; i < 20; i++) {
             testResumeTransfer();
             tearDown();
             setUp();
@@ -732,10 +746,12 @@ public class FileTransferTest extends TwoControllerTestCase {
      * TRAC #415
      */
     public void testResumeTransfer() {
-        getContollerBart().setSilentMode(true);
-        getContollerLisa().setSilentMode(true);
-        ConfigurationEntry.UPLOADLIMIT_LAN.setValue(getContollerBart(), "1000");
-        ConfigurationEntry.UPLOADLIMIT_LAN.setValue(getContollerLisa(), "1000");
+        getContollerBart().getTransferManager().setAllowedUploadCPSForLAN(
+            4000000);
+        getContollerBart().getTransferManager().setAllowedUploadCPSForWAN(
+            4000000);
+
+        TestHelper.waitMilliSeconds(2000);
 
         // Register listeners
         final MyTransferManagerListener bartsListener = new MyTransferManagerListener();
@@ -787,9 +803,15 @@ public class FileTransferTest extends TwoControllerTestCase {
                 return incompleteFile.length() > mbUntilBreak * 1024 * 1024;
             }
         });
+        assertEquals(1, getContollerLisa().getTransferManager()
+            .getActiveDownload(fInfo).getSources().size());
 
         // Disconnected
         disconnectBartAndLisa();
+
+        TestHelper.waitMilliSeconds(500);
+
+        assertTrue(incompleteFile.length() < testFile.length());
 
         assertTrue(incompleteFile.exists());
         assertTrue(incompleteFile.length() > 0);
@@ -815,7 +837,9 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertTrue(incompleteFile.length() > mbUntilBreak * 1024 * 1024);
         long bytesDownloaded = getContollerLisa().getTransferManager()
             .getDownloadCounter().getBytesTransferred();
-        assertEquals(bytesDownloaded, incompleteFile.length());
+        // Test has to be >= because it could happen that the download gets
+        // broken before the received data is written
+        assertTrue(bytesDownloaded >= incompleteFile.length());
         // System.err.println("Incomplete file: " +
         // incompleteFile.lastModified()
         // + ", size: " + incompleteFile.length());
@@ -1337,12 +1361,26 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         public List<FileInfo> uploadsRequested = new ArrayList<FileInfo>();
         public List<FileInfo> downloadsRequested = new ArrayList<FileInfo>();
+        private final boolean failOnSecondRequest;
+
+        public MyTransferManagerListener(boolean failOnSecondRequest) {
+            this.failOnSecondRequest = failOnSecondRequest;
+        }
+
+        public MyTransferManagerListener() {
+            failOnSecondRequest = false;
+        }
 
         public synchronized void downloadRequested(TransferManagerEvent event) {
             downloadRequested++;
             if (downloadsRequested.contains(event.getFile())) {
-                System.err.println("Second download request for "
-                    + event.getFile().toDetailString());
+                if (failOnSecondRequest) {
+                    fail("Second download request for "
+                        + event.getFile().toDetailString());
+                } else {
+                    System.err.println("Second download request for "
+                        + event.getFile().toDetailString());
+                }
             }
             downloadsRequested.add(event.getFile());
         }
