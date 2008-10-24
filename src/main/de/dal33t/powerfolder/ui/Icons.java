@@ -253,6 +253,7 @@ public class Icons {
 
     // Wizard pictos from the quick info panels
     public static final Icon LOGO96X96 = getIcon("icons/pictos/PowerFolderLogo96x96.png");
+    public static final Icon LOGO400UI = getIcon("icons/pictos/PowerFolder_logo_400_UI.png");
     public static final Icon FRIENDS_PICTO = getIcon("icons/pictos/Friends.png");
     public static final Icon USER_PICTO = getIcon("icons/pictos/User.png");
     public static final Icon UPLOAD_PICTO = getIcon("icons/pictos/Upload.png");

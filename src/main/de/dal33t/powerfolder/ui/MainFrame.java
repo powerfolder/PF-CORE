@@ -39,13 +39,7 @@ import de.dal33t.powerfolder.ui.transfer.DownloadsPanel;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.javasoft.plaf.synthetica.SyntheticaRootPaneUI;
 
-import javax.swing.AbstractAction;
-import javax.swing.JFrame;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JSplitPane;
-import javax.swing.KeyStroke;
-import javax.swing.WindowConstants;
+import javax.swing.*;
 import javax.swing.plaf.RootPaneUI;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -73,18 +67,18 @@ public class MainFrame extends PFUIComponent {
 
     private JFrame uiComponent;
 
-    /** The toolbar ontop */
-    private Toolbar toolbar;
-
-    /** The main split pane */
-    private JSplitPane mainPane;
-
-    /** left side */
-    private ControlQuarter controlQuarter;
-
-    /** right side */
-    private InformationQuarter informationQuarter;
-
+//    /** The toolbar ontop */
+//    private Toolbar toolbar;
+//
+//    /** The main split pane */
+//    private JSplitPane mainPane;
+//
+//    /** left side */
+//    private ControlQuarter controlQuarter;
+//
+//    /** right side */
+//    private InformationQuarter informationQuarter;
+//
     /**
      * The status bar on the lower side of the screen.
      */
@@ -100,9 +94,9 @@ public class MainFrame extends PFUIComponent {
 
         // Initalize controle and informationquarter eager, since some model get
         // used. e.g. NavTreeModel which is built in controlquarter
-        controlQuarter = new ControlQuarter(getController());
-        informationQuarter = new InformationQuarter(controlQuarter,
-            getController());
+//        controlQuarter = new ControlQuarter(getController());
+//        informationQuarter = new InformationQuarter(controlQuarter,
+//            getController());
     }
 
     /**
@@ -115,28 +109,34 @@ public class MainFrame extends PFUIComponent {
         }
 
         FormLayout layout = new FormLayout("fill:pref:grow",
-            "pref, 4dlu, fill:0:grow, 1dlu, pref, 0dlu");
+            "pref, 1dlu, fill:0:grow, 1dlu, pref, 0dlu");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         builder.setBorder(Borders.createEmptyBorder("4dlu, 2dlu, 2dlu, 2dlu"));
         CellConstraints cc = new CellConstraints();
 
         // This menu bar is not displayed (0dlu).
         // It is only used to trigger Actions by accelerator keys.
-        JMenuBar mb = new JMenuBar();
-        JMenuItem mi = new JMenuItem(getUIController()
-            .getSyncAllFoldersAction());
-        mb.add(mi);
-        mi = new JMenuItem(new MySyncFolderAction());
-        mb.add(mi);
-        mi = new JMenuItem(new MyCleanupAction());
-        mb.add(mi);
-        mi = new JMenuItem(new MyDetailsAction());
-        mb.add(mi);
+//        JMenuBar mb = new JMenuBar();
+//        JMenuItem mi = new JMenuItem(getUIController()
+//            .getSyncAllFoldersAction());
+//        mb.add(mi);
+//        mi = new JMenuItem(new MySyncFolderAction());
+//        mb.add(mi);
+//        mi = new JMenuItem(new MyCleanupAction());
+//        mb.add(mi);
+//        mi = new JMenuItem(new MyDetailsAction());
+//        mb.add(mi);
 
-        builder.add(toolbar.getUIComponent(), cc.xy(1, 1));
-        builder.add(mainPane, cc.xy(1, 3));
+//        builder.add(toolbar.getUIComponent(), cc.xy(1, 1));
+//        builder.add(mainPane, cc.xy(1, 3));
+        builder.add(new JLabel(Icons.LOGO400UI, SwingConstants.LEFT), cc.xy(1, 1));
+        JTabbedPane tp = new JTabbedPane();
+        tp.add("Home", new JPanel());
+        tp.add("Folders", new JPanel());
+        tp.add("Computers", new JPanel());
+        builder.add(tp, cc.xy(1, 3));
         builder.add(statusBar.getUIComponent(), cc.xy(1, 5));
-        builder.add(mb, cc.xy(1, 6));
+//        builder.add(mb, cc.xy(1, 6));
 
         uiComponent.getContentPane().add(builder.getPanel());
         uiComponent.setBackground(Color.white);
@@ -146,8 +146,8 @@ public class MainFrame extends PFUIComponent {
         uiComponent.setLocation(prefs.getInt("mainframe.x", 100), prefs.getInt(
             "mainframe.y", 100));
 
-        mainPane.setContinuousLayout(true);
-        mainPane.setResizeWeight(0.3);
+//        mainPane.setContinuousLayout(true);
+//        mainPane.setResizeWeight(0.3);
 
         // Pack elements
         uiComponent.pack();
@@ -155,21 +155,24 @@ public class MainFrame extends PFUIComponent {
         Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
         int width;
         int height;
-        int divider;
         if (screen.width <= 1024) {
             width = prefs.getInt("mainframe.width", 950);
             height = prefs.getInt("mainframe.height", 630);
-            divider = 240;
         } else {
             width = prefs.getInt("mainframe.width", 1100);
             height = prefs.getInt("mainframe.height", 730);
-            divider = 280;
+        }
+        if (width < 0) {
+            width = 50;
+        }
+        if (height < 50) {
+            height = 50;
         }
         uiComponent.setSize(width, height);
 
         // Now set divider location
-        mainPane.setDividerLocation(getController().getPreferences().getInt(
-            "mainframe.dividerlocation", divider));
+//        mainPane.setDividerLocation(getController().getPreferences().getInt(
+//            "mainframe.dividerlocation", divider));
 
         if (prefs.getBoolean("mainframe.maximized", false)) {
             // Fix Synthetica maximization, otherwise it covers the task bar.
@@ -226,26 +229,26 @@ public class MainFrame extends PFUIComponent {
         uiComponent.setIconImage(Icons.POWERFOLDER_IMAGE);
         // TODO: Maybe own theme: uiComponent.setUndecorated(true);
 
-        mainPane = new UIFSplitPane(JSplitPane.HORIZONTAL_SPLIT, controlQuarter
-            .getUIComponent(), informationQuarter.getUIComponent());
-        mainPane.setBorder(Borders.EMPTY_BORDER);
-        mainPane.setDividerSize(6);
-        // mainPane.setOneTouchExpandable(true);
-
-        // Set up the initial selection on the control quarter.
-        String startPanelName = PreferencesEntry.START_PANEL
-            .getValueString(getController());
-        StartPanel startPanel = StartPanel.valueForLegacyName(startPanelName);
-        if (startPanel.equals(StartPanel.OVERVIEW)) {
-            controlQuarter.selectOverview();
-        } else if (startPanel.equals(StartPanel.MY_FOLDERS)) {
-            controlQuarter.selectMyFolders();
-        } else if (startPanel.equals(StartPanel.DOWNLOADS)) {
-            controlQuarter.selectDownloads();
-        }
+//        mainPane = new UIFSplitPane(JSplitPane.HORIZONTAL_SPLIT, controlQuarter
+//            .getUIComponent(), informationQuarter.getUIComponent());
+//        mainPane.setBorder(Borders.EMPTY_BORDER);
+//        mainPane.setDividerSize(6);
+//        // mainPane.setOneTouchExpandable(true);
+//
+//        // Set up the initial selection on the control quarter.
+//        String startPanelName = PreferencesEntry.START_PANEL
+//            .getValueString(getController());
+//        StartPanel startPanel = StartPanel.valueForLegacyName(startPanelName);
+//        if (startPanel.equals(StartPanel.OVERVIEW)) {
+//            controlQuarter.selectOverview();
+//        } else if (startPanel.equals(StartPanel.MY_FOLDERS)) {
+//            controlQuarter.selectMyFolders();
+//        } else if (startPanel.equals(StartPanel.DOWNLOADS)) {
+//            controlQuarter.selectDownloads();
+//        }
 
         // Create toolbar
-        toolbar = new Toolbar(getController());
+//        toolbar = new Toolbar(getController());
 
         statusBar = new StatusBar(getController());
 
@@ -308,8 +311,8 @@ public class MainFrame extends PFUIComponent {
             prefs.putInt("mainframe.height", uiComponent.getHeight());
             prefs.putBoolean("mainframe.maximized", false);
         }
-        prefs
-            .putInt("mainframe.dividerlocation", mainPane.getDividerLocation());
+//        prefs
+//            .putInt("mainframe.dividerlocation", mainPane.getDividerLocation());
     }
 
     /*
@@ -317,11 +320,13 @@ public class MainFrame extends PFUIComponent {
      */
 
     ControlQuarter getControlQuarter() {
-        return controlQuarter;
+//        return controlQuarter;
+        return null;
     }
 
     InformationQuarter getInformationQuarter() {
-        return informationQuarter;
+//        return informationQuarter;
+        return null;
     }
 
     /**
