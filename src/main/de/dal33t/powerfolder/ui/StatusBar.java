@@ -19,39 +19,37 @@
  */
 package de.dal33t.powerfolder.ui;
 
-import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import javax.swing.*;
-import javax.swing.plaf.ButtonUI;
-import javax.swing.plaf.ComponentUI;
-import javax.swing.plaf.metal.MetalButtonUI;
-
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.ui.widget.JButton3Icons;
-import de.dal33t.powerfolder.ui.action.SyncAllFoldersAction;
+import de.dal33t.powerfolder.event.NodeManagerEvent;
+import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
-import de.dal33t.powerfolder.event.NodeManagerListener;
-import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.net.ConnectionListener;
+import de.dal33t.powerfolder.ui.action.SyncAllFoldersAction;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.ui.ComplexComponentFactory;
-import de.dal33t.powerfolder.util.ui.UIPanel;
 import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker;
+import de.dal33t.powerfolder.util.ui.UIPanel;
+
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JSeparator;
+import javax.swing.SwingConstants;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.EventQueue;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * The status bar on the lower side of the main window.
@@ -75,6 +73,9 @@ public class StatusBar extends PFUIComponent implements UIPanel {
     private JLabel upStats;
     private JLabel downStats;
     private JLabel portLabel;
+    private JButton aboutButton;
+    private JButton preferencesButton;
+    private JLabel spacerLabel;
 
     /** Connection state */
     private final AtomicInteger state = new AtomicInteger(UNKNOWN);
@@ -98,19 +99,43 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             // Upper section
 
             FormLayout upperLayout = new FormLayout(
-                    "center:pref:grow, 3dlu, pref", "pref, 3dlu, pref");
+                    "pref, 3dlu, center:pref:grow, 3dlu, pref", "pref, 3dlu, pref");
             DefaultFormBuilder upperBuilder = new DefaultFormBuilder(upperLayout);
 
-            JButton3Icons b = new JButton3Icons(Icons.SYNC_40,
-                    Icons.SYNC_40, Icons.SYNC_40);
-            b.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    SyncAllFoldersAction.perfomSync(getController());
+            final JLabel b = new JLabel(Icons.SYNC_40_NORMAL);
+            final AtomicBoolean over = new AtomicBoolean();
+            b.addMouseListener(new MouseAdapter(){
+
+                public void mousePressed(MouseEvent e) {
+                    b.setIcon(Icons.SYNC_40_PUSH);
+                }
+
+                public void mouseReleased(MouseEvent e) {
+                    boolean bool = over.get();
+                    if (bool) {
+                        b.setIcon(Icons.SYNC_40_HOVER);
+                        SyncAllFoldersAction.perfomSync(getController());
+                    } else {
+                        b.setIcon(Icons.SYNC_40_NORMAL);
+                    }
+                }
+
+                public void mouseEntered(MouseEvent e) {
+                    b.setIcon(Icons.SYNC_40_HOVER);
+                    over.set(true);
+                }
+
+                public void mouseExited(MouseEvent e) {
+                    b.setIcon(Icons.SYNC_40_NORMAL);
+                    over.set(false);
                 }
             });
-            upperBuilder.add(b, cc.xywh(1, 1, 1, 3));
-            upperBuilder.add(new JButton(getController().getUIController().getOpenPreferencesAction()), cc.xy(3, 1));
-            upperBuilder.add(new JButton(getController().getUIController().getOpenAboutAction()), cc.xy(3, 3));
+
+
+            upperBuilder.add(spacerLabel, cc.xy(1, 1));
+            upperBuilder.add(b, cc.xywh(3, 1, 1, 3));
+            upperBuilder.add(preferencesButton, cc.xy(5, 1));
+            upperBuilder.add(aboutButton, cc.xy(5, 3));
 
             // Lower section
 
@@ -234,6 +259,17 @@ public class StatusBar extends PFUIComponent implements UIPanel {
         portLabel = new JLabel(Translation.getTranslation("status.port",
             getController().getConnectionListener().getPort()));
         portLabel.setToolTipText(Translation.getTranslation("status.port.text"));
+
+        preferencesButton = new JButton(getController().getUIController().getOpenPreferencesAction());
+        aboutButton = new JButton(getController().getUIController().getOpenAboutAction());
+        spacerLabel = new JLabel() {
+            public Dimension getPreferredSize() {
+                int w = Math.max((int) preferencesButton.getPreferredSize().getWidth(), 
+                        (int) aboutButton.getPreferredSize().getWidth());
+                return new Dimension(w, super.getHeight());
+            }
+        };
+
     }
 
     private void updateSyncLabel() {
