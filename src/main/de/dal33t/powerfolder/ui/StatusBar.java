@@ -19,27 +19,24 @@
  */
 package de.dal33t.powerfolder.ui;
 
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.EventQueue;
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.swing.JLabel;
-import javax.swing.JSeparator;
-import javax.swing.SwingConstants;
+import javax.swing.*;
 
 import com.jgoodies.forms.builder.DefaultFormBuilder;
-import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+import com.jgoodies.forms.factories.Borders;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.ui.widget.JButton3Icons;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
 import de.dal33t.powerfolder.event.NodeManagerListener;
@@ -82,44 +79,62 @@ public class StatusBar extends PFUIComponent implements UIPanel {
     }
 
     public Component getUIComponent() {
+
         if (comp == null) {
+
             boolean showPort = ConfigurationEntry.NET_BIND_RANDOM_PORT
                 .getValueBoolean(getController())
-                && getController().getConnectionListener().getPort() != ConnectionListener.DEFAULT_PORT;
+                && getController().getConnectionListener().getPort() !=
+                    ConnectionListener.DEFAULT_PORT;
             initComponents();
 
-            FormLayout layout;
+            CellConstraints cc = new CellConstraints();
+
+            // Upper section
+
+            FormLayout upperLayout = new FormLayout(
+                    "center:pref:grow, 3dlu, pref", "pref, 3dlu, pref");
+            DefaultFormBuilder upperBuilder = new DefaultFormBuilder(upperLayout);
+
+            JButton3Icons b = new JButton3Icons(Icons.SYNC_40,
+                    Icons.SYNC_40, Icons.SYNC_40);
+
+            upperBuilder.add(b, cc.xywh(1, 1, 1, 3));
+            upperBuilder.add(new JButton(getController().getUIController().getOpenPreferencesAction()), cc.xy(3, 1));
+            upperBuilder.add(new JButton(getController().getUIController().getOpenAboutAction()), cc.xy(3, 3));
+
+            // Lower section
+
+            FormLayout lowerLayout;
             if (showPort) {
-                layout = new FormLayout(
+                lowerLayout = new FormLayout(
                     "pref, 3dlu, pref, 3dlu, pref, fill:pref:grow, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref",
                     "pref");
             } else {
-                layout = new FormLayout(
+                lowerLayout = new FormLayout(
                     "pref, 3dlu, pref, 3dlu, pref, fill:pref:grow, pref, 3dlu, pref, 3dlu, pref",
                     "pref");
             }
-            DefaultFormBuilder b = new DefaultFormBuilder(layout);
-            b.setBorder(Borders.createEmptyBorder("0, 1dlu, 0, 2dlu"));
+            DefaultFormBuilder lowerBuilder = new DefaultFormBuilder(lowerLayout);
 
-            CellConstraints cc = new CellConstraints();
             int col = 1;
-            b.add(onlineStateInfo, cc.xy(col, 1));
+            lowerBuilder.add(onlineStateInfo, cc.xy(col, 1));
             col += 2;
 
-            b.add(syncLabel, cc.xy(col, 1));
+            lowerBuilder.add(syncLabel, cc.xy(col, 1));
             col += 2;
 
-            b.add(limitedConnectivityLabel, cc.xy(col, 1));
+            lowerBuilder.add(limitedConnectivityLabel, cc.xy(col, 1));
             col += 2;
 
             if (showPort) {
-                b.add(portLabel, cc.xy(col, 1));
+                lowerBuilder.add(portLabel, cc.xy(col, 1));
                 col += 2;
 
                 JSeparator sep0 = new JSeparator(SwingConstants.VERTICAL);
                 sep0.setPreferredSize(new Dimension(2, 12));
 
-                b.add(sep0, cc.xy(col, 1));
+                lowerBuilder.add(sep0, cc.xy(col, 1));
                 col += 2;
 
             }
@@ -127,13 +142,21 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             JSeparator sep1 = new JSeparator(SwingConstants.VERTICAL);
             sep1.setPreferredSize(new Dimension(2, 12));
 
-            b.add(downStats, cc.xy(col, 1));
+            lowerBuilder.add(downStats, cc.xy(col, 1));
             col += 2;
-            b.add(sep1, cc.xy(col, 1));
+            lowerBuilder.add(sep1, cc.xy(col, 1));
             col += 2;
-            b.add(upStats, cc.xy(col, 1));
-            comp = b.getPanel();
-            return b.getPanel();
+            lowerBuilder.add(upStats, cc.xy(col, 1));
+
+            // Main section
+
+            FormLayout mainLayout = new FormLayout(
+                    "fill:pref:grow", "pref, 3dlu, pref");
+            DefaultFormBuilder mainBuilder = new DefaultFormBuilder(mainLayout);
+            mainBuilder.add(upperBuilder.getPanel(), cc.xy(1, 1));
+            mainBuilder.add(lowerBuilder.getPanel(), cc.xy(1, 3));
+            comp = mainBuilder.getPanel();
+            return mainBuilder.getPanel();
         }
         return comp;
     }
