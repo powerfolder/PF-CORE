@@ -19,16 +19,15 @@
 */
 package de.dal33t.powerfolder.ui.action;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.Icon;
-
-import org.apache.commons.lang.StringUtils;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.util.Translation;
+import org.apache.commons.lang.StringUtils;
+
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.Icon;
 
 /**
  * Superclass for all actions used in pf
@@ -101,8 +100,8 @@ public abstract class BaseAction extends AbstractAction {
      */
     protected void setMnemonicKey(String key) {
         if (!StringUtils.isBlank(key)) {
-            putValue(Action.MNEMONIC_KEY, new Integer(Character.toUpperCase(key
-                .charAt(0))));
+            putValue(Action.MNEMONIC_KEY, Integer.valueOf(Character.toUpperCase(key
+                    .charAt(0))));
         } else {
             putValue(Action.MNEMONIC_KEY, null);
         }

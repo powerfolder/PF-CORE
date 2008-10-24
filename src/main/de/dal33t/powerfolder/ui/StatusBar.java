@@ -76,6 +76,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
     private JButton aboutButton;
     private JButton preferencesButton;
     private JLabel spacerLabel;
+    private JLabel syncAllLabel;
 
     /** Connection state */
     private final AtomicInteger state = new AtomicInteger(UNKNOWN);
@@ -102,38 +103,8 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                     "pref, 3dlu, center:pref:grow, 3dlu, pref", "pref, 3dlu, pref");
             DefaultFormBuilder upperBuilder = new DefaultFormBuilder(upperLayout);
 
-            final JLabel b = new JLabel(Icons.SYNC_40_NORMAL);
-            final AtomicBoolean over = new AtomicBoolean();
-            b.addMouseListener(new MouseAdapter(){
-
-                public void mousePressed(MouseEvent e) {
-                    b.setIcon(Icons.SYNC_40_PUSH);
-                }
-
-                public void mouseReleased(MouseEvent e) {
-                    boolean bool = over.get();
-                    if (bool) {
-                        b.setIcon(Icons.SYNC_40_HOVER);
-                        SyncAllFoldersAction.perfomSync(getController());
-                    } else {
-                        b.setIcon(Icons.SYNC_40_NORMAL);
-                    }
-                }
-
-                public void mouseEntered(MouseEvent e) {
-                    b.setIcon(Icons.SYNC_40_HOVER);
-                    over.set(true);
-                }
-
-                public void mouseExited(MouseEvent e) {
-                    b.setIcon(Icons.SYNC_40_NORMAL);
-                    over.set(false);
-                }
-            });
-
-
             upperBuilder.add(spacerLabel, cc.xy(1, 1));
-            upperBuilder.add(b, cc.xywh(3, 1, 1, 3));
+            upperBuilder.add(syncAllLabel, cc.xywh(3, 1, 1, 3));
             upperBuilder.add(preferencesButton, cc.xy(5, 1));
             upperBuilder.add(aboutButton, cc.xy(5, 3));
 
@@ -256,19 +227,59 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             new MyTransferManagerListener());
         updateSyncLabel();
 
-        portLabel = new JLabel(Translation.getTranslation("status.port",
-            getController().getConnectionListener().getPort()));
+        portLabel = new JLabel(String.valueOf(
+                getController().getConnectionListener().getPort()));
+        portLabel.setIcon(Icons.MAC);
         portLabel.setToolTipText(Translation.getTranslation("status.port.text"));
 
         preferencesButton = new JButton(getController().getUIController().getOpenPreferencesAction());
         aboutButton = new JButton(getController().getUIController().getOpenAboutAction());
         spacerLabel = new JLabel() {
+
+            /**
+             * This keeps the sync button in the center of the panel.
+             * @return
+             */
             public Dimension getPreferredSize() {
                 int w = Math.max((int) preferencesButton.getPreferredSize().getWidth(), 
                         (int) aboutButton.getPreferredSize().getWidth());
                 return new Dimension(w, super.getHeight());
             }
         };
+
+        syncAllLabel = new JLabel(Icons.SYNC_40_NORMAL);
+        syncAllLabel.setToolTipText(Translation.getTranslation("scan_all_folders.description"));
+        final JLabel finalLabel = syncAllLabel;
+        final AtomicBoolean over = new AtomicBoolean();
+        syncAllLabel.addMouseListener(new MouseAdapter(){
+
+            public void mousePressed(MouseEvent e) {
+                finalLabel.setIcon(Icons.SYNC_40_PUSH);
+            }
+
+            public void mouseReleased(MouseEvent e) {
+                boolean bool = over.get();
+                if (bool) {
+                    finalLabel.setIcon(Icons.SYNC_40_HOVER);
+                    SyncAllFoldersAction.perfomSync(getController());
+                } else {
+                    finalLabel.setIcon(Icons.SYNC_40_NORMAL);
+                }
+            }
+
+            public void mouseEntered(MouseEvent e) {
+                finalLabel.setIcon(Icons.SYNC_40_HOVER);
+                over.set(true);
+            }
+
+            public void mouseExited(MouseEvent e) {
+                finalLabel.setIcon(Icons.SYNC_40_NORMAL);
+                over.set(false);
+            }
+        });
+
+
+
 
     }
 

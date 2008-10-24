@@ -23,31 +23,25 @@ import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.uif_lite.component.UIFSplitPane;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
-import de.dal33t.powerfolder.StartPanel;
-import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
-import de.dal33t.powerfolder.ui.action.HasDetailsPanel;
-import de.dal33t.powerfolder.ui.folder.FolderPanel;
 import de.dal33t.powerfolder.ui.navigation.ControlQuarter;
-import de.dal33t.powerfolder.ui.navigation.RootNode;
-import de.dal33t.powerfolder.ui.transfer.DownloadsPanel;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.javasoft.plaf.synthetica.SyntheticaRootPaneUI;
 
-import javax.swing.*;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.SwingConstants;
+import javax.swing.WindowConstants;
 import javax.swing.plaf.RootPaneUI;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.HeadlessException;
 import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.Calendar;
@@ -56,10 +50,7 @@ import java.util.prefs.Preferences;
 
 /**
  * Powerfoldes gui mainframe
- * <p>
- * TODO #278 Throw away, I think it's better to start with MainWindow from
- * scratch.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.44 $
  */
@@ -67,18 +58,8 @@ public class MainFrame extends PFUIComponent {
 
     private JFrame uiComponent;
 
-//    /** The toolbar ontop */
-//    private Toolbar toolbar;
-//
-//    /** The main split pane */
-//    private JSplitPane mainPane;
-//
-//    /** left side */
-//    private ControlQuarter controlQuarter;
-//
-//    /** right side */
-//    private InformationQuarter informationQuarter;
-//
+    private MainTabbedPane mainTabbedPane;
+
     /**
      * The status bar on the lower side of the screen.
      */
@@ -91,12 +72,6 @@ public class MainFrame extends PFUIComponent {
      */
     public MainFrame(Controller controller) throws HeadlessException {
         super(controller);
-
-        // Initalize controle and informationquarter eager, since some model get
-        // used. e.g. NavTreeModel which is built in controlquarter
-//        controlQuarter = new ControlQuarter(getController());
-//        informationQuarter = new InformationQuarter(controlQuarter,
-//            getController());
     }
 
     /**
@@ -114,29 +89,9 @@ public class MainFrame extends PFUIComponent {
         builder.setBorder(Borders.createEmptyBorder("4dlu, 2dlu, 2dlu, 2dlu"));
         CellConstraints cc = new CellConstraints();
 
-        // This menu bar is not displayed (0dlu).
-        // It is only used to trigger Actions by accelerator keys.
-//        JMenuBar mb = new JMenuBar();
-//        JMenuItem mi = new JMenuItem(getUIController()
-//            .getSyncAllFoldersAction());
-//        mb.add(mi);
-//        mi = new JMenuItem(new MySyncFolderAction());
-//        mb.add(mi);
-//        mi = new JMenuItem(new MyCleanupAction());
-//        mb.add(mi);
-//        mi = new JMenuItem(new MyDetailsAction());
-//        mb.add(mi);
-
-//        builder.add(toolbar.getUIComponent(), cc.xy(1, 1));
-//        builder.add(mainPane, cc.xy(1, 3));
         builder.add(new JLabel(Icons.LOGO400UI, SwingConstants.LEFT), cc.xy(1, 1));
-        JTabbedPane tp = new JTabbedPane();
-        tp.add("Home", new JPanel());
-        tp.add("Folders", new JPanel());
-        tp.add("Computers", new JPanel());
-        builder.add(tp, cc.xy(1, 3));
+        builder.add(mainTabbedPane.getUIComponent(), cc.xy(1, 3));
         builder.add(statusBar.getUIComponent(), cc.xy(1, 5));
-//        builder.add(mb, cc.xy(1, 6));
 
         uiComponent.getContentPane().add(builder.getPanel());
         uiComponent.setBackground(Color.white);
@@ -145,9 +100,6 @@ public class MainFrame extends PFUIComponent {
         Preferences prefs = getController().getPreferences();
         uiComponent.setLocation(prefs.getInt("mainframe.x", 100), prefs.getInt(
             "mainframe.y", 100));
-
-//        mainPane.setContinuousLayout(true);
-//        mainPane.setResizeWeight(0.3);
 
         // Pack elements
         uiComponent.pack();
@@ -169,10 +121,6 @@ public class MainFrame extends PFUIComponent {
             height = 50;
         }
         uiComponent.setSize(width, height);
-
-        // Now set divider location
-//        mainPane.setDividerLocation(getController().getPreferences().getInt(
-//            "mainframe.dividerlocation", divider));
 
         if (prefs.getBoolean("mainframe.maximized", false)) {
             // Fix Synthetica maximization, otherwise it covers the task bar.
@@ -227,28 +175,8 @@ public class MainFrame extends PFUIComponent {
 
         uiComponent = new JFrame();
         uiComponent.setIconImage(Icons.POWERFOLDER_IMAGE);
-        // TODO: Maybe own theme: uiComponent.setUndecorated(true);
 
-//        mainPane = new UIFSplitPane(JSplitPane.HORIZONTAL_SPLIT, controlQuarter
-//            .getUIComponent(), informationQuarter.getUIComponent());
-//        mainPane.setBorder(Borders.EMPTY_BORDER);
-//        mainPane.setDividerSize(6);
-//        // mainPane.setOneTouchExpandable(true);
-//
-//        // Set up the initial selection on the control quarter.
-//        String startPanelName = PreferencesEntry.START_PANEL
-//            .getValueString(getController());
-//        StartPanel startPanel = StartPanel.valueForLegacyName(startPanelName);
-//        if (startPanel.equals(StartPanel.OVERVIEW)) {
-//            controlQuarter.selectOverview();
-//        } else if (startPanel.equals(StartPanel.MY_FOLDERS)) {
-//            controlQuarter.selectMyFolders();
-//        } else if (startPanel.equals(StartPanel.DOWNLOADS)) {
-//            controlQuarter.selectDownloads();
-//        }
-
-        // Create toolbar
-//        toolbar = new Toolbar(getController());
+        mainTabbedPane = new MainTabbedPane(getController());
 
         statusBar = new StatusBar(getController());
 
@@ -315,8 +243,6 @@ public class MainFrame extends PFUIComponent {
             }
             prefs.putBoolean("mainframe.maximized", false);
         }
-//        prefs
-//            .putInt("mainframe.dividerlocation", mainPane.getDividerLocation());
     }
 
     /*
@@ -324,12 +250,10 @@ public class MainFrame extends PFUIComponent {
      */
 
     ControlQuarter getControlQuarter() {
-//        return controlQuarter;
         return null;
     }
 
     InformationQuarter getInformationQuarter() {
-//        return informationQuarter;
         return null;
     }
 
@@ -361,97 +285,6 @@ public class MainFrame extends PFUIComponent {
         state &= ~Frame.ICONIFIED;
         // Deiconify the frame
         uiComponent.setExtendedState(state);
-    }
-
-    /**
-     * Simple class to call controller scanSelectedFolder.
-     */
-    private class MySyncFolderAction extends AbstractAction {
-        MySyncFolderAction() {
-            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_1,
-                ActionEvent.ALT_MASK));
-        }
-
-        /**
-         * Scan selected folder (if any).
-         * 
-         * @param e
-         */
-        public void actionPerformed(ActionEvent e) {
-            getController().getUIController().getFolderRepositoryModel()
-                .scanSelectedFolder();
-        }
-    }
-
-    /**
-     * Simple class to call cleanup in downloads.
-     */
-    private class MyCleanupAction extends AbstractAction {
-        MyCleanupAction() {
-            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_3,
-                ActionEvent.ALT_MASK));
-        }
-
-        /**
-         * Scan selected folder (if any).
-         * 
-         * @param e
-         */
-        public void actionPerformed(ActionEvent e) {
-
-            DownloadsPanel panel = getController().getUIController()
-                .getInformationQuarter().getDownloadsPanel();
-
-            if (panel != null) {
-                // Ensure this has been fully created before it is called.
-                panel.getUIComponent();
-
-                // Clear downloads
-                panel.clearDownloads();
-            }
-        }
-    }
-
-    /**
-     * Simple action class to call details in the selected information panel (if
-     * appropriate).
-     */
-    private class MyDetailsAction extends AbstractAction {
-
-        MyDetailsAction() {
-            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_4,
-                ActionEvent.ALT_MASK));
-        }
-
-        /**
-         * @param e
-         */
-        public void actionPerformed(ActionEvent e) {
-            Object o = getControlQuarter().getSelectedItem();
-            if (o instanceof Folder) {
-                Folder f = (Folder) o;
-                if (f.isPreviewOnly()) {
-                    FolderPanel panel = getInformationQuarter()
-                        .getPreviewFolderPanel();
-                    panel.toggleDetails();
-                } else {
-                    FolderPanel panel = getInformationQuarter()
-                        .getMyFolderPanel();
-                    panel.toggleDetails();
-                }
-            } else if (o instanceof String) {
-                String s = (String) o;
-                HasDetailsPanel p = null;
-                if (s.equals(RootNode.DOWNLOADS_NODE_LABEL)) {
-                    p = getInformationQuarter().getDownloadsPanel();
-                } else if (s.equals(RootNode.UPLOADS_NODE_LABEL)) {
-                    p = getInformationQuarter().getUploadsPanel();
-                }
-                if (p != null) {
-                    p.toggeDetails();
-                }
-            }
-        }
     }
 
     private void configureSyncNowAction() {
