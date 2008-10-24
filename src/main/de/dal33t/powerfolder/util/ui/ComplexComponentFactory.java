@@ -27,13 +27,7 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.TimerTask;
 
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 
 import com.jgoodies.binding.adapter.BasicComponentFactory;
@@ -181,8 +175,8 @@ public class ComplexComponentFactory {
     }
 
     public static JLabel createTransferCounterLabel(
-        Controller controller, final String format,
-        final TransferCounter tc)
+        Controller controller, final Icon icon, final String format,
+        final TransferCounter tc, final String toolTip)
     {
         final JLabel label = new JLabel();
         // Create task which updates the counter each second
@@ -191,8 +185,10 @@ public class ComplexComponentFactory {
             public void run() {
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
+                        label.setIcon(icon);
                         label.setText(String.format(format, tc
                             .calculateCurrentKBS()));
+                        label.setToolTipText(toolTip);
                     }
                 });
             }

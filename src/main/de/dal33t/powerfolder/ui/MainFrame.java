@@ -162,7 +162,7 @@ public class MainFrame extends PFUIComponent {
             width = prefs.getInt("mainframe.width", 1100);
             height = prefs.getInt("mainframe.height", 730);
         }
-        if (width < 0) {
+        if (width < 50) {
             width = 50;
         }
         if (height < 50) {
@@ -306,9 +306,13 @@ public class MainFrame extends PFUIComponent {
             prefs.putBoolean("mainframe.maximized", true);
         } else {
             prefs.putInt("mainframe.x", uiComponent.getX());
-            prefs.putInt("mainframe.width", uiComponent.getWidth());
+            if (uiComponent.getWidth() > 0) {
+                prefs.putInt("mainframe.width", uiComponent.getWidth());
+            }
             prefs.putInt("mainframe.y", uiComponent.getY());
-            prefs.putInt("mainframe.height", uiComponent.getHeight());
+            if (uiComponent.getHeight() > 0) {
+                prefs.putInt("mainframe.height", uiComponent.getHeight());
+            }
             prefs.putBoolean("mainframe.maximized", false);
         }
 //        prefs

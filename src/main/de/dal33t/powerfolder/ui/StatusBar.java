@@ -91,7 +91,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             FormLayout layout;
             if (showPort) {
                 layout = new FormLayout(
-                    "pref, 3dlu, pref, 3dlu, pref, fill:pref:grow, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref",
+                    "pref, 3dlu, pref, 3dlu, pref, fill:pref:grow, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref",
                     "pref");
             } else {
                 layout = new FormLayout(
@@ -115,6 +115,13 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             if (showPort) {
                 b.add(portLabel, cc.xy(col, 1));
                 col += 2;
+
+                JSeparator sep0 = new JSeparator(SwingConstants.VERTICAL);
+                sep0.setPreferredSize(new Dimension(2, 12));
+
+                b.add(sep0, cc.xy(col, 1));
+                col += 2;
+
             }
 
             JSeparator sep1 = new JSeparator(SwingConstants.VERTICAL);
@@ -148,12 +155,14 @@ public class StatusBar extends PFUIComponent implements UIPanel {
         });
 
         upStats = ComplexComponentFactory.createTransferCounterLabel(
-            getController(), Translation.getTranslation("status.upload"),
-            getController().getTransferManager().getUploadCounter());
+            getController(), Icons.UPLOAD, Translation.getTranslation("status.upload"),
+            getController().getTransferManager().getUploadCounter(),
+                Translation.getTranslation("status.upload.text"));
 
         downStats = ComplexComponentFactory.createTransferCounterLabel(
-            getController(), Translation.getTranslation("status.download"),
-            getController().getTransferManager().getDownloadCounter());
+            getController(), Icons.DOWNLOAD, Translation.getTranslation("status.download"),
+            getController().getTransferManager().getDownloadCounter(),
+                Translation.getTranslation("status.download.text"));
 
         limitedConnectivityLabel = new JLabel();
         limitedConnectivityLabel.addMouseListener(new MouseAdapter() {
@@ -192,11 +201,12 @@ public class StatusBar extends PFUIComponent implements UIPanel {
 
         portLabel = new JLabel(Translation.getTranslation("status.port",
             getController().getConnectionListener().getPort()));
+        portLabel.setToolTipText(Translation.getTranslation("status.port.text"));
     }
 
     private void updateSyncLabel() {
         if (getController().getFolderRepository().isAnyFolderTransferring()) {
-            syncLabel.setText(Translation
+            syncLabel.setToolTipText(Translation
                 .getTranslation("status_bar.synchronizing"));
             syncLabel.setIcon(Icons.DOWNLOAD_ACTIVE);
         } else {
@@ -207,7 +217,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
 
     private void updateLimitedConnectivityLabel() {
         if (getController().isLimitedConnectivity()) {
-            limitedConnectivityLabel.setText(Translation
+            limitedConnectivityLabel.setToolTipText(Translation
                 .getTranslation("limited_connection.title"));
             limitedConnectivityLabel.setIcon(Icons.WARNING);
         } else {
@@ -278,10 +288,8 @@ public class StatusBar extends PFUIComponent implements UIPanel {
 
         // System.err.println("Got " + nOnlineUser + " online users");
         if (!controller.getNodeManager().isStarted()) {
-            label.setText(Translation.getTranslation("online_label.disabled"));
+            label.setToolTipText(Translation.getTranslation("online_label.disabled"));
             label.setIcon(Icons.WARNING);
-            label.setToolTipText(Translation
-                .getTranslation("online_label.disabled.text"));
             newState = DISABLED;
         } else if (nOnlineUser > 0) {
             String text = Translation.getTranslation("online_label.online");
@@ -289,10 +297,8 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                 text += " (" + Translation.getTranslation("general.lan_only")
                     + ')';
             }
-            label.setText(text);
+            label.setToolTipText(text);
             label.setIcon(Icons.CONNECTED);
-            label.setToolTipText(Translation
-                .getTranslation("online_label.online.text"));
             newState = CONNECTED;
         } else {
             String text = Translation.getTranslation("online_label.connecting");
@@ -300,10 +306,8 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                 text += " (" + Translation.getTranslation("general.lan_only")
                     + ')';
             }
-            label.setText(text);
+            label.setToolTipText(text);
             label.setIcon(Icons.DISCONNECTED);
-            label.setToolTipText(Translation
-                .getTranslation("online_label.connecting.text"));
             newState = DISCONNECTED;
         }
 
