@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id: FolderExpireTest.java 4282 2008-06-16 03:25:09Z tot $
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id: FolderExpireTest.java 4282 2008-06-16 03:25:09Z tot $
+ */
 package de.dal33t.powerfolder.test.folder;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
@@ -54,7 +54,8 @@ public class FolderExpireTest extends ControllerTestCase {
         assertTrue(deletedFile.createNewFile());
 
         // Speed things up!
-        ConfigurationEntry.DB_MAINTENANCE_SECONDS.setValue(getController(), "10");
+        ConfigurationEntry.DB_MAINTENANCE_SECONDS.setValue(getController(),
+            "5");
 
         scanFolder(getFolder());
 
@@ -66,7 +67,7 @@ public class FolderExpireTest extends ControllerTestCase {
     public void testFolderExpire() {
 
         // Start with two files...
-        assertEquals(getFolder().getKnownFilesCount(), 2);
+        assertEquals(2, getFolder().getKnownFilesCount());
 
         File localBase = getFolder().getLocalBase();
 
@@ -85,8 +86,8 @@ public class FolderExpireTest extends ControllerTestCase {
         assertEquals(getFolder().getKnownFilesCount(), 2);
 
         // Change expiry from 3 monthes to 10 seconds.
-        ConfigurationEntry.MAX_FILEINFO_DELETED_AGE_SECONDS
-                .setValue(getController(), "10");
+        ConfigurationEntry.MAX_FILEINFO_DELETED_AGE_SECONDS.setValue(
+            getController(), "5");
 
         try {
             Thread.sleep(15000);
@@ -97,7 +98,7 @@ public class FolderExpireTest extends ControllerTestCase {
         scanFolder(getFolder());
 
         // deleted.txt should be removed from known files.
-        assertEquals(getFolder().getKnownFilesCount(), 1);
+        assertEquals(1, getFolder().getKnownFilesCount());
 
         // Check: Look for:-
         // 'Successfully wrote folder database file (1 files)'
