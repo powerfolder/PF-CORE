@@ -32,23 +32,8 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
-import de.dal33t.powerfolder.ui.action.ActionModel;
-import de.dal33t.powerfolder.ui.action.ConnectAction;
-import de.dal33t.powerfolder.ui.action.CreateShortcutAction;
-import de.dal33t.powerfolder.ui.action.FindFriendAction;
-import de.dal33t.powerfolder.ui.action.FolderCreateAction;
-import de.dal33t.powerfolder.ui.action.FolderRemoveAction;
-import de.dal33t.powerfolder.ui.action.OpenAboutBoxAction;
-import de.dal33t.powerfolder.ui.action.OpenPreferencesAction;
-import de.dal33t.powerfolder.ui.action.OpenWizardAction;
-import de.dal33t.powerfolder.ui.action.PreviewFolderRemoveAction;
-import de.dal33t.powerfolder.ui.action.PreviewJoinAction;
-import de.dal33t.powerfolder.ui.action.ReconnectAction;
-import de.dal33t.powerfolder.ui.action.RequestReportAction;
-import de.dal33t.powerfolder.ui.action.SendInvitationAction;
-import de.dal33t.powerfolder.ui.action.ShowHidePreviewFoldersAction;
-import de.dal33t.powerfolder.ui.action.SyncAllFoldersAction;
-import de.dal33t.powerfolder.ui.action.ToggleSilentModeAction;
+import de.dal33t.powerfolder.ui.actionold.ActionModel;
+import de.dal33t.powerfolder.ui.actionold.SyncAllFoldersAction;
 import de.dal33t.powerfolder.ui.chat.ChatModel;
 import de.dal33t.powerfolder.ui.folder.FileNameProblemHandlerDefaultImpl;
 import de.dal33t.powerfolder.ui.friends.AskForFriendshipHandlerDefaultImpl;
@@ -869,149 +854,88 @@ public class UIController extends PFComponent {
     // Actions ****************************************************************
 
     // TODO Remove these actions and place them into the approriate model (ActionModel).
-    private Action openWizardAction;
-    private Action connectAction;
-    private Action openPreferencesAction;
-    private Action folderCreateAction;
-    private Action folderLeaveAction;
-    private Action previewFolderRemoveAction;
-    private Action previewJoinAction;
-    private Action openAboutAction;
-    private Action toggleSilentModeAction;
-    private Action hidePreviewsAction;
-    private Action findFriendAction;
-
-    // on folders
-    private Action syncAllFoldersAction;
-
-    private Action inviteAction;
-
-    // on members
-    private Action requestReportAction;
-    private Action reconnectAction;
-    private Action createShortcutAction;
-
     public ActionModel getActionModel() {
         return actionModel;
     }
 
     public Action getOpenWizardAction() {
-        if (openWizardAction == null) {
-            openWizardAction = new OpenWizardAction(getController());
-        }
-        return openWizardAction;
+        // @todo remove - use ActionModel
+        return null;
     }
 
     public Action getConnectAction() {
-        if (connectAction == null) {
-            connectAction = new ConnectAction(getController());
-        }
-        return connectAction;
+        // @todo remove - use ActionModel
+        return null;
     }
 
     Action getOpenPreferencesAction() {
-        if (openPreferencesAction == null) {
-            openPreferencesAction = new OpenPreferencesAction(getController());
-        }
-        return openPreferencesAction;
+        // @todo remove - use ActionModel
+        return null;
     }
 
     public Action getFolderLeaveAction() {
-        if (folderLeaveAction == null) {
-            folderLeaveAction = new FolderRemoveAction(getController(),
-                getControlQuarter().getSelectionModel());
-        }
-        return folderLeaveAction;
+        // @todo remove - use ActionModel
+        return null;
     }
 
     public Action getPreviewFolderRemoveAction() {
-        if (previewFolderRemoveAction == null) {
-            previewFolderRemoveAction = new PreviewFolderRemoveAction(
-                getController(), getControlQuarter().getSelectionModel());
-        }
-        return previewFolderRemoveAction;
+        // @todo remove - use ActionModel
+        return null;
     }
 
     public Action getPreviewJoinAction() {
-        if (previewJoinAction == null) {
-            previewJoinAction = new PreviewJoinAction(getController(),
-                getControlQuarter().getSelectionModel());
-        }
-        return previewJoinAction;
+        // @todo remove - use ActionModel
+        return null;
     }
 
     public Action getFolderCreateAction() {
-        if (folderCreateAction == null) {
-            folderCreateAction = new FolderCreateAction(getController());
-        }
-        return folderCreateAction;
+        // @todo remove - use ActionModel
+        return null;
     }
 
     public Action getOpenAboutAction() {
-        if (openAboutAction == null) {
-            openAboutAction = new OpenAboutBoxAction(getController());
-        }
-        return openAboutAction;
+        // @todo remove - use ActionModel
+        return null;
     }
 
     public Action getToggleSilentModeAction() {
-        if (toggleSilentModeAction == null) {
-            toggleSilentModeAction = new ToggleSilentModeAction(getController());
-        }
-        return toggleSilentModeAction;
+        // @todo remove - use ActionModel
+        return null;
     }
 
     public Action getHidePreviewsAction() {
-        if (hidePreviewsAction == null) {
-            hidePreviewsAction = new ShowHidePreviewFoldersAction(
-                hidePreviewsVM, getController());
-        }
-        return hidePreviewsAction;
+        // @todo remove - use ActionModel
+        return null;
     }
 
     public Action getFindFriendAction() {
-        if (findFriendAction == null) {
-            findFriendAction = new FindFriendAction(getController());
-        }
-        return findFriendAction;
+        // @todo remove - use ActionModel
+        return null;
     }
 
     public Action getFolderCreateShortcutAction() {
-        if (createShortcutAction == null) {
-            createShortcutAction = new CreateShortcutAction(getController());
-        }
-        return createShortcutAction;
+        // @todo remove - use ActionModel
+        return null;
     }
 
     public Action getSyncAllFoldersAction() {
-        if (syncAllFoldersAction == null) {
-            syncAllFoldersAction = new SyncAllFoldersAction(getController());
-        }
-        return syncAllFoldersAction;
+        // @todo remove - use ActionModel
+        return null;
     }
 
     public Action getRequestReportAction() {
-        if (requestReportAction == null) {
-            requestReportAction = new RequestReportAction(getController(),
-                getControlQuarter().getSelectionModel());
-        }
-        return requestReportAction;
+        // @todo remove - use ActionModel
+        return null;
     }
 
     public Action getReconnectAction() {
-        if (reconnectAction == null) {
-            reconnectAction = new ReconnectAction(getController(),
-                getControlQuarter().getSelectionModel());
-        }
-        return reconnectAction;
+        // @todo remove - use ActionModel
+        return null;
     }
 
     public Action getInviteUserAction() {
-        if (inviteAction == null) {
-            inviteAction = new SendInvitationAction(getController(),
-                getControlQuarter().getSelectionModel());
-        }
-        return inviteAction;
+        // @todo remove - use ActionModel
+        return null;
     }
 
     private class ChatNotificationManager implements

@@ -17,29 +17,30 @@
 *
 * $Id$
 */
-package de.dal33t.powerfolder.ui.webservice;
+package de.dal33t.powerfolder.ui.actionold;
+
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.ui.preferences.PreferencesDialog;
 
 import java.awt.event.ActionEvent;
 
-import de.dal33t.powerfolder.clientserver.ServerClient;
-import de.dal33t.powerfolder.ui.actionold.BaseAction;
-
 /**
- * Sync the folder membership with the rights on the server
+ * Actions which is executed to open the preferences
  * 
- * @author Christian Sprajc
- * @version $Revision$
+ * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
+ * @version $Revision: 1.7 $
  */
-public class SyncFolderRightsAction extends BaseAction {
-    private ServerClient client;
-
-    protected SyncFolderRightsAction(ServerClient client) {
-        super("sync_folder_rights", client.getController());
-        this.client = client;
+public class OpenPreferencesAction extends BaseAction {
+    private PreferencesDialog panel;
+    
+    public OpenPreferencesAction(Controller controller) {
+        super("action_open_preferences", controller);
     }
 
     public void actionPerformed(ActionEvent e) {
-        client.syncFolderRights();
+        if (panel == null) {
+            panel = new PreferencesDialog(getController());
+        }
+        panel.open();
     }
-
 }

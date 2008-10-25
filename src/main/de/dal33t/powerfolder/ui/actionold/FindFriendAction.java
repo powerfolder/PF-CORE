@@ -17,29 +17,21 @@
 *
 * $Id$
 */
-package de.dal33t.powerfolder.ui.webservice;
+package de.dal33t.powerfolder.ui.actionold;
+
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.ui.friends.FindUsersDialog;
 
 import java.awt.event.ActionEvent;
 
-import de.dal33t.powerfolder.clientserver.ServerClient;
-import de.dal33t.powerfolder.ui.actionold.BaseAction;
-
-/**
- * Sync the folder membership with the rights on the server
- * 
- * @author Christian Sprajc
- * @version $Revision$
- */
-public class SyncFolderRightsAction extends BaseAction {
-    private ServerClient client;
-
-    protected SyncFolderRightsAction(ServerClient client) {
-        super("sync_folder_rights", client.getController());
-        this.client = client;
+public class FindFriendAction extends BaseAction {
+    public FindFriendAction(Controller controller) {
+        super("find_friends", controller);
     }
 
     public void actionPerformed(ActionEvent e) {
-        client.syncFolderRights();
+        FindUsersDialog dialog = new FindUsersDialog(getController(), true);
+        dialog.open();
     }
-
 }
+

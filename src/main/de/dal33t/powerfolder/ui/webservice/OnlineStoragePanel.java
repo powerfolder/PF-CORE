@@ -41,7 +41,7 @@ import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.ui.QuickInfoPanel;
-import de.dal33t.powerfolder.ui.action.BaseAction;
+import de.dal33t.powerfolder.ui.actionold.BaseAction;
 import de.dal33t.powerfolder.ui.builder.ContentPanelBuilder;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.widget.FolderListPanel;

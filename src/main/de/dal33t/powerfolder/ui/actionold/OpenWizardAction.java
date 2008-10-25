@@ -17,29 +17,25 @@
 *
 * $Id$
 */
-package de.dal33t.powerfolder.ui.webservice;
+package de.dal33t.powerfolder.ui.actionold;
 
 import java.awt.event.ActionEvent;
 
-import de.dal33t.powerfolder.clientserver.ServerClient;
-import de.dal33t.powerfolder.ui.actionold.BaseAction;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.ui.wizard.PFWizard;
 
 /**
- * Sync the folder membership with the rights on the server
+ * Action that invokes the wizard
  * 
- * @author Christian Sprajc
- * @version $Revision$
+ * @author <a href="mailto:jsallis@users.sourceforge.net">Jason Sallis</a>
+ * @version $Revision: 1.2 $
  */
-public class SyncFolderRightsAction extends BaseAction {
-    private ServerClient client;
-
-    protected SyncFolderRightsAction(ServerClient client) {
-        super("sync_folder_rights", client.getController());
-        this.client = client;
+public class OpenWizardAction extends BaseAction {
+    public OpenWizardAction(Controller controller) {
+        super("setup", controller);
     }
 
     public void actionPerformed(ActionEvent e) {
-        client.syncFolderRights();
+        PFWizard.openWhatToDoWizard(getController());
     }
-
 }

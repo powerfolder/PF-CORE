@@ -17,29 +17,16 @@
 *
 * $Id$
 */
-package de.dal33t.powerfolder.ui.webservice;
-
-import java.awt.event.ActionEvent;
-
-import de.dal33t.powerfolder.clientserver.ServerClient;
-import de.dal33t.powerfolder.ui.actionold.BaseAction;
+package de.dal33t.powerfolder.ui.actionold;
 
 /**
- * Sync the folder membership with the rights on the server
- * 
- * @author Christian Sprajc
- * @version $Revision$
+ * Standard interface for panels that can show/hide a details panel.
  */
-public class SyncFolderRightsAction extends BaseAction {
-    private ServerClient client;
+public interface HasDetailsPanel {
 
-    protected SyncFolderRightsAction(ServerClient client) {
-        super("sync_folder_rights", client.getController());
-        this.client = client;
-    }
-
-    public void actionPerformed(ActionEvent e) {
-        client.syncFolderRights();
-    }
-
+    /**
+     * Show / hide the details panel
+     * (invert its visible state).
+     */
+    void toggeDetails();
 }

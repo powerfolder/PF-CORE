@@ -39,7 +39,7 @@ import de.dal33t.powerfolder.disk.RecycleBin;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.ui.QuickInfoPanel;
 import de.dal33t.powerfolder.ui.dialog.FileDetailsPanel;
-import de.dal33t.powerfolder.ui.action.*;
+import de.dal33t.powerfolder.ui.actionold.*;
 import de.dal33t.powerfolder.ui.builder.ContentPanelBuilder;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.PFUIPanel;

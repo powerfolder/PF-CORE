@@ -41,7 +41,7 @@ import de.dal33t.powerfolder.event.FolderMembershipListener;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.security.Account;
-import de.dal33t.powerfolder.ui.action.BaseAction;
+import de.dal33t.powerfolder.ui.actionold.BaseAction;
 import de.dal33t.powerfolder.ui.navigation.RootNode;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.Reject;

@@ -21,7 +21,7 @@ package de.dal33t.powerfolder.ui;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.ui.action.SyncAllFoldersAction;
+import de.dal33t.powerfolder.ui.actionold.SyncAllFoldersAction;
 import de.dal33t.powerfolder.util.Translation;
 
 import javax.swing.JLabel;

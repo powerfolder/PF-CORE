@@ -15,31 +15,25 @@
 * You should have received a copy of the GNU General Public License
 * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
 *
-* $Id$
+* $Id: SearchComputerAction.java 5419 2008-09-29 12:18:20Z harry $
 */
-package de.dal33t.powerfolder.ui.webservice;
+package de.dal33t.powerfolder.ui.actionold;
+
+import de.dal33t.powerfolder.Controller;
 
 import java.awt.event.ActionEvent;
 
-import de.dal33t.powerfolder.clientserver.ServerClient;
-import de.dal33t.powerfolder.ui.actionold.BaseAction;
-
 /**
- * Sync the folder membership with the rights on the server
- * 
- * @author Christian Sprajc
- * @version $Revision$
+ * Action which opens search computer dialog.
+ *
+ * @author <a href="mailto:hglasgow@powerfolder.com">Harry Glasgow</a>
+ * @version $Revision: 4.0 $
  */
-public class SyncFolderRightsAction extends BaseAction {
-    private ServerClient client;
-
-    protected SyncFolderRightsAction(ServerClient client) {
-        super("sync_folder_rights", client.getController());
-        this.client = client;
+public class SearchComputerAction extends BaseAction {
+    public SearchComputerAction(Controller controller) {
+        super("action_search_computer", controller);
     }
 
     public void actionPerformed(ActionEvent e) {
-        client.syncFolderRights();
     }
-
 }

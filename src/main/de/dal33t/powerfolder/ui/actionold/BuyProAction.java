@@ -17,29 +17,32 @@
 *
 * $Id$
 */
-package de.dal33t.powerfolder.ui.webservice;
+package de.dal33t.powerfolder.ui.actionold;
+
+import de.dal33t.powerfolder.Constants;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.util.BrowserLauncher;
 
 import java.awt.event.ActionEvent;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import de.dal33t.powerfolder.clientserver.ServerClient;
-import de.dal33t.powerfolder.ui.actionold.BaseAction;
 
-/**
- * Sync the folder membership with the rights on the server
- * 
- * @author Christian Sprajc
- * @version $Revision$
- */
-public class SyncFolderRightsAction extends BaseAction {
-    private ServerClient client;
+public class BuyProAction extends BaseAction {
 
-    protected SyncFolderRightsAction(ServerClient client) {
-        super("sync_folder_rights", client.getController());
-        this.client = client;
+    private static final Logger log = Logger.getLogger(BuyProAction.class.getName());
+
+    public BuyProAction(Controller controller) {
+        super("buy_pro", controller);
     }
 
     public void actionPerformed(ActionEvent e) {
-        client.syncFolderRights();
+        try {
+            BrowserLauncher.openURL(Constants.POWERFOLDER_PRO_URL);
+        } catch (IOException ex) {
+            log.log(Level.SEVERE, "IOException", ex);
+        }
     }
 
 }
