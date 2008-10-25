@@ -17,7 +17,7 @@
 *
 * $Id$
 */
-package de.dal33t.powerfolder.ui.home;
+package de.dal33t.powerfolder.ui.homeold;
 
 import javax.swing.JComponent;
 import javax.swing.JLabel;

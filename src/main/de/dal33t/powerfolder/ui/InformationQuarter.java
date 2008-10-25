@@ -31,7 +31,7 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.ui.chat.MemberChatPanel;
 import de.dal33t.powerfolder.ui.folder.FolderPanel;
 import de.dal33t.powerfolder.ui.friends.FriendsPanel;
-import de.dal33t.powerfolder.ui.home.RootPanel;
+import de.dal33t.powerfolder.ui.homeold.RootPanel;
 import de.dal33t.powerfolder.ui.model.DirectoryModel;
 import de.dal33t.powerfolder.ui.myfolders.MyFoldersPanel;
 import de.dal33t.powerfolder.ui.navigation.ControlQuarter;

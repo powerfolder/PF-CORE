@@ -17,7 +17,7 @@
 *
 * $Id$
 */
-package de.dal33t.powerfolder.ui.home;
+package de.dal33t.powerfolder.ui.homeold;
 
 import java.awt.Component;
 import java.awt.Dimension;
