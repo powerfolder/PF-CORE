@@ -38,6 +38,7 @@ public class ActionModel extends PFComponent {
     private SearchComputerAction searchComputerAction;
     private OpenPreferencesAction openPreferencesAction;
     private OpenAboutBoxAction openAboutBoxAction;
+    private ConnectAction connectAction;
 
     public NewFolderAction getNewFolderAction() {
         if (newFolderAction == null) {
@@ -65,5 +66,12 @@ public class ActionModel extends PFComponent {
             openAboutBoxAction = new OpenAboutBoxAction(getController());
         }
         return openAboutBoxAction;
+    }
+
+    public ConnectAction getConnectAction() {
+        if (connectAction == null) {
+            connectAction = new ConnectAction(getController());
+        }
+        return connectAction;
     }
 }

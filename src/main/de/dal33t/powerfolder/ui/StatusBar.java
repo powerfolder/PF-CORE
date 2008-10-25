@@ -171,7 +171,8 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             public void mouseClicked(MouseEvent e) {
                 // open connect dialog
                 if (getController().getNodeManager().isStarted()) {
-                    getUIController().getConnectAction().actionPerformed(null);
+                    getUIController().getActionModel().getConnectAction()
+                            .actionPerformed(null);
                 } else if (!Util.isRunningProVersion()) {
                     // Smells like hack(tm).
                     new FreeLimitationDialog(getController()).open();

@@ -17,12 +17,11 @@
 *
 * $Id$
 */
-package de.dal33t.powerfolder.ui.actionold;
+package de.dal33t.powerfolder.ui.action;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.ui.dialog.ConnectDialog;
-import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.util.Translation;
 import org.apache.commons.lang.StringUtils;
 
@@ -42,7 +41,7 @@ public class ConnectAction extends BaseAction {
     private static final Logger log = Logger.getLogger(ConnectAction.class.getName());
 
     public ConnectAction(Controller controller) {
-        super("connect", controller);
+        super("action_connect", controller);
     }
 
     public void actionPerformed(ActionEvent e) {
