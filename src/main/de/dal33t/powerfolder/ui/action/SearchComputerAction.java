@@ -15,32 +15,25 @@
 * You should have received a copy of the GNU General Public License
 * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
 *
-* $Id$
+* $Id: SearchComputerAction.java 5419 2008-09-29 12:18:20Z harry $
 */
-package de.dal33t.powerfolder.ui.actionold;
+package de.dal33t.powerfolder.ui.action;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.ui.dialog.AboutDialog;
 
 import java.awt.event.ActionEvent;
 
 /**
- * Creates an Action event that displays the About Box dialog.
- * 
- * @author <a href=mailto:xsj@users.sourceforge.net">Daniel Harabor</a>
- * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
- * 
- * @version 1.0 	Last Modified: 10/04/05
+ * Action which opens search computer dialog.
+ *
+ * @author <a href="mailto:hglasgow@powerfolder.com">Harry Glasgow</a>
+ * @version $Revision: 4.0 $
  */
-
-
-public class OpenAboutBoxAction extends BaseAction {
-    public OpenAboutBoxAction(Controller controller) {
-        super("action_open_about_box", controller);
+public class SearchComputerAction extends BaseAction {
+    public SearchComputerAction(Controller controller) {
+        super("action_search_computer", controller);
     }
 
     public void actionPerformed(ActionEvent e) {
-        AboutDialog aboutbox = new AboutDialog(getController());
-        aboutbox.open();
     }
 }

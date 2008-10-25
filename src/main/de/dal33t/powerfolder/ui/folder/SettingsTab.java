@@ -46,7 +46,7 @@ import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.event.FolderAdapter;
 import de.dal33t.powerfolder.event.FolderEvent;
-import de.dal33t.powerfolder.ui.actionold.BaseAction;
+import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.actionold.SelectionBaseAction;
 import de.dal33t.powerfolder.ui.model.DiskItemFilterPatternsListModel;
 import de.dal33t.powerfolder.util.PatternMatch;

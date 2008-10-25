@@ -15,26 +15,32 @@
 * You should have received a copy of the GNU General Public License
 * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
 *
-* $Id: NewFolderAction.java 5419 2008-09-29 12:18:20Z harry $
+* $Id$
 */
-package de.dal33t.powerfolder.ui.actionold;
+package de.dal33t.powerfolder.ui.action;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.ui.preferences.PreferencesDialog;
 
 import java.awt.event.ActionEvent;
 
 /**
- * Action which opens folder create wizard.
- *
- * @author <a href="mailto:hglasgow@powerfolder.com">Harry Glasgow</a>
- * @version $Revision: 4.0 $
+ * Actions which is executed to open the preferences
+ * 
+ * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
+ * @version $Revision: 1.7 $
  */
-public class NewFolderAction extends BaseAction {
-
-    public NewFolderAction(Controller controller) {
-        super("action_new_folder", controller);
+public class OpenPreferencesAction extends BaseAction {
+    private PreferencesDialog panel;
+    
+    public OpenPreferencesAction(Controller controller) {
+        super("action_open_preferences", controller);
     }
 
     public void actionPerformed(ActionEvent e) {
+        if (panel == null) {
+            panel = new PreferencesDialog(getController());
+        }
+        panel.open();
     }
 }

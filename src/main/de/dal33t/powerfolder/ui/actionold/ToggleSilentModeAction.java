@@ -23,6 +23,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.Toolbar;
+import de.dal33t.powerfolder.ui.action.BaseAction;
 
 import javax.swing.Action;
 import javax.swing.ImageIcon;

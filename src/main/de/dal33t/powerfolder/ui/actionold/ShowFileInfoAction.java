@@ -22,6 +22,7 @@ package de.dal33t.powerfolder.ui.actionold;
 import com.jgoodies.forms.factories.ButtonBarFactory;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.dialog.FileDetailsPanel;
+import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.util.ui.BaseDialog;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
 

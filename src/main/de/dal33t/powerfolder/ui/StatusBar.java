@@ -231,10 +231,8 @@ public class StatusBar extends PFUIComponent implements UIPanel {
 
         openPreferencesButton = new JButton(getController().getUIController()
                 .getActionModel().getOpenPreferencesAction());
-        openPreferencesButton.setIcon(Icons.SETTINGS);
         openAboutBoxButton = new JButton(getController().getUIController()
                 .getActionModel().getOpenAboutBoxAction());
-        openAboutBoxButton.setIcon(Icons.INFORMATION);
         spacerLabel = new JLabel() {
 
             /**

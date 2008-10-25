@@ -17,30 +17,30 @@
 *
 * $Id$
 */
-package de.dal33t.powerfolder.ui.actionold;
+package de.dal33t.powerfolder.ui.action;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.ui.preferences.PreferencesDialog;
+import de.dal33t.powerfolder.ui.dialog.AboutDialog;
 
 import java.awt.event.ActionEvent;
 
 /**
- * Actions which is executed to open the preferences
+ * Creates an Action event that displays the About Box dialog.
  * 
+ * @author <a href=mailto:xsj@users.sourceforge.net">Daniel Harabor</a>
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
- * @version $Revision: 1.7 $
+ * 
+ * @version 1.0 	Last Modified: 10/04/05
  */
-public class OpenPreferencesAction extends BaseAction {
-    private PreferencesDialog panel;
-    
-    public OpenPreferencesAction(Controller controller) {
-        super("action_open_preferences", controller);
+
+
+public class OpenAboutBoxAction extends BaseAction {
+    public OpenAboutBoxAction(Controller controller) {
+        super("action_open_about_box", controller);
     }
 
     public void actionPerformed(ActionEvent e) {
-        if (panel == null) {
-            panel = new PreferencesDialog(getController());
-        }
-        panel.open();
+        AboutDialog aboutbox = new AboutDialog(getController());
+        aboutbox.open();
     }
 }

@@ -33,7 +33,7 @@ import de.dal33t.powerfolder.ui.QuickInfoPanel;
 import de.dal33t.powerfolder.ui.model.TransferManagerModel;
 import de.dal33t.powerfolder.ui.actionold.HasDetailsPanel;
 import de.dal33t.powerfolder.ui.actionold.ShowHideFileDetailsAction;
-import de.dal33t.powerfolder.ui.actionold.BaseAction;
+import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.builder.ContentPanelBuilder;
 import de.dal33t.powerfolder.ui.dialog.FileDetailsPanel;
 import de.dal33t.powerfolder.util.PFUIPanel;

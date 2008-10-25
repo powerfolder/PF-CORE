@@ -33,7 +33,7 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.event.NavigationEvent;
 import de.dal33t.powerfolder.event.NavigationListener;
 import de.dal33t.powerfolder.ui.DebugPanel;
-import de.dal33t.powerfolder.ui.actionold.BaseAction;
+import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.actionold.ChangeFriendStatusAction;
 import de.dal33t.powerfolder.ui.actionold.CreateShortcutAction;
 import de.dal33t.powerfolder.ui.actionold.OpenChatAction;

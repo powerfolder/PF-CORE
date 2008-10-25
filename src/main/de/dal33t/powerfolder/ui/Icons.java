@@ -72,11 +72,6 @@ public class Icons {
     private static Properties iconProperties;
     private static final String ICON_PROPERTIES_FILENAME = "Icons.properties";
 
-    /**
-     * text to add to the key for finding a disabled icon in the cache of icons.
-     * 
-     * @see knownIcons
-     */
     private static final String DISABLED_EXTENSION_ADDITION = "_disabled";
 
     public static final Icon FILTER_TEXTFIELD_CLEARBUTTON_NORMAL = getIcon("icons/filter_textfield_clearbutton_normal.png");
@@ -310,8 +305,6 @@ public class Icons {
      * Protected because only this class, subclasses and Translation.properties
      * refer to images
      * 
-     * @deprecated use getIconById to redirect via Icons.properties for better
-     *             configurability
      * @param name
      * @return
      */
@@ -386,6 +379,7 @@ public class Icons {
      * 
      * @param id
      *            the icon id
+     * @deprecated use getIcon()
      * @return the icon
      */
     public static final Icon getIconById(String id) {

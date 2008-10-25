@@ -23,6 +23,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.ui.action.BaseAction;
 
 import javax.swing.*;
 

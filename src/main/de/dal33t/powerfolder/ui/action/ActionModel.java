@@ -17,10 +17,10 @@
 *
 * $Id: ActionModel.java 5419 2008-09-29 12:18:20Z harry $
 */
-package de.dal33t.powerfolder.ui.actionold;
+package de.dal33t.powerfolder.ui.action;
 
-import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PFComponent;
 
 /**
  * Holder of all singleton actions.

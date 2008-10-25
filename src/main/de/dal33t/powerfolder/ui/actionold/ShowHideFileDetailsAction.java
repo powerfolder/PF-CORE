@@ -22,6 +22,7 @@ package de.dal33t.powerfolder.ui.actionold;
 import java.awt.event.ActionEvent;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.ui.action.BaseAction;
 
 /**
  * Action for toggeling a visibility of a file details panel. Makes it

@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.ui.actionold;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.friends.FindUsersDialog;
+import de.dal33t.powerfolder.ui.action.BaseAction;
 
 import java.awt.event.ActionEvent;
 

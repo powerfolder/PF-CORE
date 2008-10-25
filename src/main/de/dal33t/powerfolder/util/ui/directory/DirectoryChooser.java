@@ -29,7 +29,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.ui.*;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.ui.actionold.BaseAction;
+import de.dal33t.powerfolder.ui.action.BaseAction;
 
 import javax.swing.*;
 import javax.swing.event.TreeSelectionListener;

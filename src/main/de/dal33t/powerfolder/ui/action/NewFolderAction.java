@@ -15,23 +15,24 @@
 * You should have received a copy of the GNU General Public License
 * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
 *
-* $Id: SearchComputerAction.java 5419 2008-09-29 12:18:20Z harry $
+* $Id: NewFolderAction.java 5419 2008-09-29 12:18:20Z harry $
 */
-package de.dal33t.powerfolder.ui.actionold;
+package de.dal33t.powerfolder.ui.action;
 
 import de.dal33t.powerfolder.Controller;
 
 import java.awt.event.ActionEvent;
 
 /**
- * Action which opens search computer dialog.
+ * Action which opens folder create wizard.
  *
  * @author <a href="mailto:hglasgow@powerfolder.com">Harry Glasgow</a>
  * @version $Revision: 4.0 $
  */
-public class SearchComputerAction extends BaseAction {
-    public SearchComputerAction(Controller controller) {
-        super("action_search_computer", controller);
+public class NewFolderAction extends BaseAction {
+
+    public NewFolderAction(Controller controller) {
+        super("action_new_folder", controller);
     }
 
     public void actionPerformed(ActionEvent e) {

@@ -26,6 +26,7 @@ import de.dal33t.powerfolder.ui.wizard.ChooseDiskLocationPanel;
 import de.dal33t.powerfolder.ui.wizard.FolderSetupPanel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.action.BaseAction;
 
 /**
  * Shares a folder action

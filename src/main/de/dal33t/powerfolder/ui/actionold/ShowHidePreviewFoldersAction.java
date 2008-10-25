@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.ui.actionold;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.util.Translation;
 
 import java.awt.event.ActionEvent;

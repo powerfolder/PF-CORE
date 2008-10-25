@@ -22,6 +22,7 @@ package de.dal33t.powerfolder.ui.actionold;
 import java.awt.event.ActionEvent;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.util.os.OSUtil;
 

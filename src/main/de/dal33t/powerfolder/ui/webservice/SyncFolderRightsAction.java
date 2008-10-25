@@ -22,7 +22,7 @@ package de.dal33t.powerfolder.ui.webservice;
 import java.awt.event.ActionEvent;
 
 import de.dal33t.powerfolder.clientserver.ServerClient;
-import de.dal33t.powerfolder.ui.actionold.BaseAction;
+import de.dal33t.powerfolder.ui.action.BaseAction;
 
 /**
  * Sync the folder membership with the rights on the server
