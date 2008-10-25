@@ -36,7 +36,7 @@ public class MainTabbedPane extends PFUIComponent {
     private static final int COMPUTERS_INDEX = 2;
 
     /**
-     * The main tabbed pain.
+     * The main tabbed pane.
      */
     private JTabbedPane uiComponent;
 
@@ -66,6 +66,7 @@ public class MainTabbedPane extends PFUIComponent {
                 (int) Character.toUpperCase(key.charAt(0)));
         uiComponent.setToolTipTextAt(HOME_INDEX,
                 Translation.getTranslation("main_tabbed_pane.home.description"));
+        uiComponent.setIconAt(HOME_INDEX, Icons.STAR);
 
         uiComponent.add(Translation.getTranslation("main_tabbed_pane.folders.name"),
                 new JPanel());
@@ -74,6 +75,7 @@ public class MainTabbedPane extends PFUIComponent {
                 (int) Character.toUpperCase(key.charAt(0)));
         uiComponent.setToolTipTextAt(FOLDERS_INDEX,
                 Translation.getTranslation("main_tabbed_pane.folders.description"));
+        uiComponent.setIconAt(FOLDERS_INDEX, Icons.DIRECTORY);
 
         uiComponent.add(Translation.getTranslation("main_tabbed_pane.computers.name"),
                 new JPanel());
@@ -82,6 +84,7 @@ public class MainTabbedPane extends PFUIComponent {
                 (int) Character.toUpperCase(key.charAt(0)));
         uiComponent.setToolTipTextAt(COMPUTERS_INDEX,
                 Translation.getTranslation("main_tabbed_pane.computers.description"));
+        uiComponent.setIconAt(COMPUTERS_INDEX, Icons.NODE_FRIEND_CONNECTED);
 
         return uiComponent;
     }

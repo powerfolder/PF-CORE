@@ -232,8 +232,12 @@ public class StatusBar extends PFUIComponent implements UIPanel {
         portLabel.setIcon(Icons.MAC);
         portLabel.setToolTipText(Translation.getTranslation("status.port.text"));
 
-        preferencesButton = new JButton(getController().getUIController().getOpenPreferencesAction());
-        aboutButton = new JButton(getController().getUIController().getOpenAboutAction());
+        preferencesButton = new JButton(getController().getUIController()
+                .getOpenPreferencesAction());
+        preferencesButton.setIcon(Icons.SETTINGS);
+        aboutButton = new JButton(getController().getUIController()
+                .getOpenAboutAction());
+        aboutButton.setIcon(Icons.INFORMATION);
         spacerLabel = new JLabel() {
 
             /**

@@ -97,6 +97,8 @@ public class Icons {
 
     public static final Icon CHAT = getIcon("icons/Chat.gif");
     public static final Icon SETTINGS = getIconById("settings.icon");
+    public static final Icon STAR = getIcon("icons/Star.gif");
+    public static final Icon INFORMATION = getIcon("icons/information.png");
 
     // Arrows
     public static final Icon ARROW_UP = getIcon("icons/ArrowUp.gif");
