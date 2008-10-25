@@ -30,7 +30,6 @@ import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
 import de.dal33t.powerfolder.net.ConnectionListener;
-import de.dal33t.powerfolder.ui.action.SyncAllFoldersAction;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.ui.ComplexComponentFactory;
@@ -48,7 +47,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -65,8 +63,6 @@ public class StatusBar extends PFUIComponent implements UIPanel {
     private static final int DISCONNECTED = 2;
 
     private Component comp;
-
-    /** Online state info field */
     private JLabel onlineStateInfo;
     private JLabel limitedConnectivityLabel;
     private JLabel syncLabel;
@@ -76,7 +72,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
     private JButton aboutButton;
     private JButton preferencesButton;
     private JLabel spacerLabel;
-    private JLabel syncAllLabel;
+    private SyncButtonComponent syncButtonComponent;
 
     /** Connection state */
     private final AtomicInteger state = new AtomicInteger(UNKNOWN);
@@ -104,7 +100,8 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             DefaultFormBuilder upperBuilder = new DefaultFormBuilder(upperLayout);
 
             upperBuilder.add(spacerLabel, cc.xy(1, 1));
-            upperBuilder.add(syncAllLabel, cc.xywh(3, 1, 1, 3));
+            upperBuilder.add(syncButtonComponent.getUIComponent(),
+                    cc.xywh(3, 1, 1, 3));
             upperBuilder.add(preferencesButton, cc.xy(5, 1));
             upperBuilder.add(aboutButton, cc.xy(5, 3));
 
@@ -251,40 +248,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             }
         };
 
-        syncAllLabel = new JLabel(Icons.SYNC_40_NORMAL);
-        syncAllLabel.setToolTipText(Translation.getTranslation("scan_all_folders.description"));
-        final JLabel finalLabel = syncAllLabel;
-        final AtomicBoolean over = new AtomicBoolean();
-        syncAllLabel.addMouseListener(new MouseAdapter(){
-
-            public void mousePressed(MouseEvent e) {
-                finalLabel.setIcon(Icons.SYNC_40_PUSH);
-            }
-
-            public void mouseReleased(MouseEvent e) {
-                boolean bool = over.get();
-                if (bool) {
-                    finalLabel.setIcon(Icons.SYNC_40_HOVER);
-                    SyncAllFoldersAction.perfomSync(getController());
-                } else {
-                    finalLabel.setIcon(Icons.SYNC_40_NORMAL);
-                }
-            }
-
-            public void mouseEntered(MouseEvent e) {
-                finalLabel.setIcon(Icons.SYNC_40_HOVER);
-                over.set(true);
-            }
-
-            public void mouseExited(MouseEvent e) {
-                finalLabel.setIcon(Icons.SYNC_40_NORMAL);
-                over.set(false);
-            }
-        });
-
-
-
-
+        syncButtonComponent = new SyncButtonComponent(getController());
     }
 
     private void updateSyncLabel() {
