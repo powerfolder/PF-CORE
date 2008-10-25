@@ -69,8 +69,8 @@ public class StatusBar extends PFUIComponent implements UIPanel {
     private JLabel upStats;
     private JLabel downStats;
     private JLabel portLabel;
-    private JButton aboutButton;
-    private JButton preferencesButton;
+    private JButton openAboutBoxButton;
+    private JButton openPreferencesButton;
     private JLabel spacerLabel;
     private SyncButtonComponent syncButtonComponent;
 
@@ -102,8 +102,8 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             upperBuilder.add(spacerLabel, cc.xy(1, 1));
             upperBuilder.add(syncButtonComponent.getUIComponent(),
                     cc.xywh(3, 1, 1, 3));
-            upperBuilder.add(preferencesButton, cc.xy(5, 1));
-            upperBuilder.add(aboutButton, cc.xy(5, 3));
+            upperBuilder.add(openPreferencesButton, cc.xy(5, 1));
+            upperBuilder.add(openAboutBoxButton, cc.xy(5, 3));
 
             // Lower section
 
@@ -229,12 +229,12 @@ public class StatusBar extends PFUIComponent implements UIPanel {
         portLabel.setIcon(Icons.MAC);
         portLabel.setToolTipText(Translation.getTranslation("status.port.text"));
 
-        preferencesButton = new JButton(getController().getUIController()
-                .getOpenPreferencesAction());
-        preferencesButton.setIcon(Icons.SETTINGS);
-        aboutButton = new JButton(getController().getUIController()
-                .getOpenAboutAction());
-        aboutButton.setIcon(Icons.INFORMATION);
+        openPreferencesButton = new JButton(getController().getUIController()
+                .getActionModel().getOpenPreferencesAction());
+        openPreferencesButton.setIcon(Icons.SETTINGS);
+        openAboutBoxButton = new JButton(getController().getUIController()
+                .getActionModel().getOpenAboutBoxAction());
+        openAboutBoxButton.setIcon(Icons.INFORMATION);
         spacerLabel = new JLabel() {
 
             /**
@@ -242,8 +242,8 @@ public class StatusBar extends PFUIComponent implements UIPanel {
              * @return
              */
             public Dimension getPreferredSize() {
-                int w = Math.max((int) preferencesButton.getPreferredSize().getWidth(), 
-                        (int) aboutButton.getPreferredSize().getWidth());
+                int w = Math.max((int) openPreferencesButton.getPreferredSize().getWidth(),
+                        (int) openAboutBoxButton.getPreferredSize().getWidth());
                 return new Dimension(w, super.getHeight());
             }
         };

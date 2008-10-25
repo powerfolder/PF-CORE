@@ -19,10 +19,10 @@
 */
 package de.dal33t.powerfolder.ui.action;
 
-import java.awt.event.ActionEvent;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.preferences.PreferencesDialog;
+
+import java.awt.event.ActionEvent;
 
 /**
  * Actions which is executed to open the preferences
@@ -34,7 +34,7 @@ public class OpenPreferencesAction extends BaseAction {
     private PreferencesDialog panel;
     
     public OpenPreferencesAction(Controller controller) {
-        super("preferences", controller);
+        super("action_open_preferences", controller);
     }
 
     public void actionPerformed(ActionEvent e) {
