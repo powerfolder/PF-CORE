@@ -19,12 +19,65 @@
  */
 package de.dal33t.powerfolder.ui.computers;
 
-import de.dal33t.powerfolder.PFUIComponent;
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.builder.ButtonBarBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
+import com.jgoodies.forms.factories.Borders;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PFUIComponent;
+
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JButton;
 
 public class ComputersTab extends PFUIComponent {
 
+    private JPanel uiComponent;
+
     public ComputersTab(Controller controller) {
         super(controller);
+    }
+
+    public JPanel getUIComponent() {
+        if (uiComponent == null) {
+            buildUI();
+        }
+        return uiComponent;
+    }
+
+    private void buildUI() {
+        initComponents();
+
+        // Build ui
+        FormLayout layout = new FormLayout("pref:grow",
+            "pref, pref, 3dlu, pref:grow");
+        PanelBuilder builder = new PanelBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+
+        JPanel toolbar = createToolBar();
+        builder.add(toolbar, cc.xy(1, 1));
+        builder.addSeparator(null, cc.xy(1, 2));
+        builder.add(new JLabel("test"), cc.xy(1, 4));
+        uiComponent = builder.getPanel();
+    }
+
+    private void initComponents() {
+    }
+
+    /**
+     * @return the toolbar
+     */
+    private JPanel createToolBar() {
+        JButton searchComputerButton = new JButton(getUIController().getActionModel()
+                .getSearchComputerAction());
+
+        ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
+        bar.addGridded(searchComputerButton);
+
+        JPanel barPanel = bar.getPanel();
+        barPanel.setBorder(Borders.DLU4_BORDER);
+
+        return barPanel;
     }
 }

@@ -19,13 +19,12 @@
  */
 package de.dal33t.powerfolder.ui.builder;
 
-import javax.swing.JComponent;
-
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-
 import de.dal33t.powerfolder.util.Reject;
+
+import javax.swing.JComponent;
 
 /**
  * A builder to easily create a content panel with:

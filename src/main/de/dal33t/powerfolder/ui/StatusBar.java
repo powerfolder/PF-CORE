@@ -153,10 +153,10 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             // Main section
 
             FormLayout mainLayout = new FormLayout(
-                    "fill:pref:grow", "pref, 3dlu, pref");
+                    "1dlu, fill:pref:grow, 1dlu", "pref, 3dlu, pref, 1dlu");
             DefaultFormBuilder mainBuilder = new DefaultFormBuilder(mainLayout);
-            mainBuilder.add(upperBuilder.getPanel(), cc.xy(1, 1));
-            mainBuilder.add(lowerBuilder.getPanel(), cc.xy(1, 3));
+            mainBuilder.add(upperBuilder.getPanel(), cc.xy(2, 1));
+            mainBuilder.add(lowerBuilder.getPanel(), cc.xy(2, 3));
             comp = mainBuilder.getPanel();
             return mainBuilder.getPanel();
         }

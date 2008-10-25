@@ -32,6 +32,7 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
+import de.dal33t.powerfolder.ui.action.ActionModel;
 import de.dal33t.powerfolder.ui.action.ConnectAction;
 import de.dal33t.powerfolder.ui.action.CreateShortcutAction;
 import de.dal33t.powerfolder.ui.action.FindFriendAction;
@@ -62,7 +63,6 @@ import de.dal33t.powerfolder.ui.recyclebin.RecycleBinConfirmationHandlerDefaultI
 import de.dal33t.powerfolder.ui.render.BlinkManager;
 import de.dal33t.powerfolder.ui.webservice.ServerClientModel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
-import de.dal33t.powerfolder.ui.LookAndFeelSupport;
 import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
@@ -147,6 +147,7 @@ public class UIController extends PFComponent {
     // TODO #278: Move into FolderRepoModel
     private final ValueModel hidePreviewsVM;
     private boolean seenOome;
+    private ActionModel actionModel;
 
     /**
      * Initializes a new UI controller. open UI with #start
@@ -160,6 +161,7 @@ public class UIController extends PFComponent {
 
         pendingJobs = Collections.synchronizedList(new LinkedList<Runnable>());
 
+        actionModel = new ActionModel(controller);
         boolean defaultLFsupported = !(OSUtil.isWindowsMEorOlder() ||
                 OSUtil.isMacOS());
         if (defaultLFsupported) {
@@ -866,8 +868,7 @@ public class UIController extends PFComponent {
 
     // Actions ****************************************************************
 
-    // TODO Remove these actions and place them into the approriate model.
-    // used primary in control quarter
+    // TODO Remove these actions and place them into the approriate model (ActionModel).
     private Action openWizardAction;
     private Action connectAction;
     private Action openPreferencesAction;
@@ -889,6 +890,10 @@ public class UIController extends PFComponent {
     private Action requestReportAction;
     private Action reconnectAction;
     private Action createShortcutAction;
+
+    public ActionModel getActionModel() {
+        return actionModel;
+    }
 
     public Action getOpenWizardAction() {
         if (openWizardAction == null) {

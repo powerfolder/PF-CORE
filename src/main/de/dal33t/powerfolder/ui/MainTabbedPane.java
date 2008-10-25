@@ -21,9 +21,11 @@ package de.dal33t.powerfolder.ui;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.ui.computers.ComputersTab;
+import de.dal33t.powerfolder.ui.folders.FoldersTab;
+import de.dal33t.powerfolder.ui.home.HomeTab;
 import de.dal33t.powerfolder.util.Translation;
 
-import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 
 /**
@@ -34,6 +36,10 @@ public class MainTabbedPane extends PFUIComponent {
     private static final int HOME_INDEX = 0;
     private static final int FOLDERS_INDEX = 1;
     private static final int COMPUTERS_INDEX = 2;
+
+    private HomeTab homeTab;
+    private FoldersTab foldersTab;
+    private ComputersTab computersTab;
 
     /**
      * The main tabbed pane.
@@ -60,7 +66,7 @@ public class MainTabbedPane extends PFUIComponent {
         }
 
         uiComponent.add(Translation.getTranslation("main_tabbed_pane.home.name"),
-                new JPanel());
+                homeTab.getUIComponent());
         String key = Translation.getTranslation("main_tabbed_pane.home.key");
         uiComponent.setMnemonicAt(HOME_INDEX,
                 (int) Character.toUpperCase(key.charAt(0)));
@@ -69,7 +75,7 @@ public class MainTabbedPane extends PFUIComponent {
         uiComponent.setIconAt(HOME_INDEX, Icons.STAR);
 
         uiComponent.add(Translation.getTranslation("main_tabbed_pane.folders.name"),
-                new JPanel());
+                foldersTab.getUIComponent());
         key = Translation.getTranslation("main_tabbed_pane.folders.key");
         uiComponent.setMnemonicAt(FOLDERS_INDEX,
                 (int) Character.toUpperCase(key.charAt(0)));
@@ -78,7 +84,7 @@ public class MainTabbedPane extends PFUIComponent {
         uiComponent.setIconAt(FOLDERS_INDEX, Icons.DIRECTORY);
 
         uiComponent.add(Translation.getTranslation("main_tabbed_pane.computers.name"),
-                new JPanel());
+                computersTab.getUIComponent());
         key = Translation.getTranslation("main_tabbed_pane.computers.key");
         uiComponent.setMnemonicAt(COMPUTERS_INDEX, 
                 (int) Character.toUpperCase(key.charAt(0)));
@@ -94,6 +100,9 @@ public class MainTabbedPane extends PFUIComponent {
      */
     private void initComponents() {
         uiComponent = new JTabbedPane();
+        homeTab = new HomeTab(getController());
+        foldersTab = new FoldersTab(getController());
+        computersTab = new ComputersTab(getController());
     }
 
 }
