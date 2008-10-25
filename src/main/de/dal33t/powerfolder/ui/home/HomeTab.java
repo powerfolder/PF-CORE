@@ -15,16 +15,16 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id: FoldersTab.java 5495 2008-10-24 04:59:13Z harry $
+ * $Id: HomeTab.java 5495 2008-10-24 04:59:13Z harry $
  */
-package de.dal33t.powerfolder.ui.folders;
+package de.dal33t.powerfolder.ui.home;
 
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.Controller;
 
-public class FoldersTab extends PFUIComponent {
-    
-    public FoldersTab(Controller controller) {
+public class HomeTab extends PFUIComponent {
+
+    public HomeTab(Controller controller) {
         super(controller);
     }
 }
