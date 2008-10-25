@@ -62,7 +62,7 @@ import de.dal33t.powerfolder.ui.recyclebin.RecycleBinConfirmationHandlerDefaultI
 import de.dal33t.powerfolder.ui.render.BlinkManager;
 import de.dal33t.powerfolder.ui.webservice.ServerClientModel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
-import de.dal33t.powerfolder.ui.theme.LookAndFeelSupport;
+import de.dal33t.powerfolder.ui.LookAndFeelSupport;
 import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
@@ -80,7 +80,6 @@ import javax.swing.Action;
 import javax.swing.JFrame;
 import javax.swing.LookAndFeel;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;

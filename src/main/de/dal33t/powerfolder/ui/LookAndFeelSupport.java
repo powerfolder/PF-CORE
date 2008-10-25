@@ -17,7 +17,7 @@
 *
 * $Id$
 */
-package de.dal33t.powerfolder.ui.theme;
+package de.dal33t.powerfolder.ui;
 
 import de.javasoft.plaf.synthetica.*;
 import de.dal33t.powerfolder.util.Translation;

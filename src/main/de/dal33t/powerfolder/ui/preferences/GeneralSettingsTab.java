@@ -37,7 +37,7 @@ import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.StartPanel;
 import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.ui.theme.LookAndFeelSupport;
+import de.dal33t.powerfolder.ui.LookAndFeelSupport;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.OSUtil;
