@@ -27,7 +27,6 @@ import javax.swing.event.TableModelListener;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.disk.SyncProfile;
-import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.ui.model.TransferManagerModel;
 import de.dal33t.powerfolder.ui.navigation.NavTreeModel;
 import de.dal33t.powerfolder.ui.transfer.UploadsTableModel;
@@ -160,11 +159,8 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         // Upload requested + started
         assertEquals(2, bartModelListener.events.size());
 
-        // Abort
-        DownloadManager download = getContollerLisa().getTransferManager()
-            .getActiveDownloads().iterator().next();
+        // Abort thru change of sync profile
         getFolderAtLisa().setSyncProfile(SyncProfile.HOST_FILES);
-        download.abort();
 
         TestHelper.waitForCondition(50, new Condition() {
             public boolean reached() {
