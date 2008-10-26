@@ -51,7 +51,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * The status bar on the lower side of the main window.
- * 
+ *
  * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */

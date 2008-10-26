@@ -114,9 +114,6 @@ public class Icons {
     public static final Icon SLEEP = getIconById("sleep.icon");
     public static final Icon WAKE_UP = getIconById("wake_up.icon");
     public static final Icon SYNC_NOW = getIconById("sync_now.icon");
-    public static final Icon SYNC_40_NORMAL = getIcon("icons/pictos/Sync40Normal.png");
-    public static final Icon SYNC_40_PUSH = getIcon("icons/pictos/Sync40Push.png");
-    public static final Icon SYNC_40_HOVER = getIcon("icons/pictos/Sync40Hover.png");
     public static final Icon SYNC_NOW_ACTIVE = getIconById("sync_now_active.icon");
     public static final Icon BUY_PRO = getIconById("buy_pro.icon");
     public static final Icon QUESTION = getIconById("question.icon");
@@ -379,7 +376,6 @@ public class Icons {
      * 
      * @param id
      *            the icon id
-     * @deprecated use getIcon()
      * @return the icon
      */
     public static final Icon getIconById(String id) {
