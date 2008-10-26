@@ -25,6 +25,7 @@ import de.dal33t.powerfolder.ui.actionold.SyncAllFoldersAction;
 import de.dal33t.powerfolder.util.Translation;
 
 import javax.swing.JLabel;
+import javax.swing.Icon;
 import java.awt.Component;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -37,6 +38,8 @@ public class SyncButtonComponent extends PFUIComponent {
 
     private JLabel syncAllLabel;
     private final AtomicBoolean mouseOver;
+    private final AtomicBoolean anyFoldersTransfering;
+    private final AtomicBoolean mousePressed;
 
     /**
      * Constructor
@@ -46,7 +49,9 @@ public class SyncButtonComponent extends PFUIComponent {
     public SyncButtonComponent(Controller controller) {
         super(controller);
         mouseOver = new AtomicBoolean();
-
+        anyFoldersTransfering = new AtomicBoolean();
+        mousePressed = new AtomicBoolean();
+        controller.getThreadPool().submit(new MyRunnable());
     }
 
     /**
@@ -65,7 +70,11 @@ public class SyncButtonComponent extends PFUIComponent {
         syncAllLabel = new JLabel(Icons.SYNC_40_NORMAL);
         syncAllLabel.setToolTipText(
                 Translation.getTranslation("scan_all_folders.description"));
-        syncAllLabel.addMouseListener(new MyMouseAdapter(syncAllLabel));
+        syncAllLabel.addMouseListener(new MyMouseAdapter());
+    }
+
+    public void setAnyFolderTransferring(boolean anyFolderTransferring) {
+        anyFoldersTransfering.set(anyFolderTransferring);
     }
 
     /**
@@ -73,34 +82,68 @@ public class SyncButtonComponent extends PFUIComponent {
      */
     private class MyMouseAdapter extends MouseAdapter {
 
-        private final JLabel syncLabel;
-
-        private MyMouseAdapter(JLabel syncLabel) {
-            this.syncLabel = syncLabel;
-        }
-
         public void mousePressed(MouseEvent e) {
-            syncLabel.setIcon(Icons.SYNC_40_PUSH);
+            mousePressed.set(true);
+            logFine("Triggering SyncAllFoldersAction perfomSync");
+            SyncAllFoldersAction.perfomSync(getController());
         }
 
         public void mouseReleased(MouseEvent e) {
-            boolean bool = mouseOver.get();
-            if (bool) {
-                syncLabel.setIcon(Icons.SYNC_40_HOVER);
-                SyncAllFoldersAction.perfomSync(getController());
-            } else {
-                syncLabel.setIcon(Icons.SYNC_40_NORMAL);
-            }
+            mousePressed.set(false);
         }
 
         public void mouseEntered(MouseEvent e) {
-            syncLabel.setIcon(Icons.SYNC_40_HOVER);
             mouseOver.set(true);
         }
 
         public void mouseExited(MouseEvent e) {
-            syncLabel.setIcon(Icons.SYNC_40_NORMAL);
             mouseOver.set(false);
+        }
+    }
+
+    private class MyRunnable implements Runnable {
+        public void run() {
+            int index = 0;
+            while (!getController().getThreadPool().isShutdown()) {
+                try {
+                    Thread.sleep(100);
+                    if (anyFoldersTransfering.get()) {
+                        index++;
+                        if (index > 17) {
+                            index = 0;
+                        }
+                    } else {
+                        index = 0;
+                    }
+
+                    String numberString;
+                    if (index > 9) {
+                        numberString = String.valueOf(index);
+                    } else {
+                        numberString = '0' + String.valueOf(index);
+                    }
+
+                    String directoryString;
+                    if (mouseOver.get()) {
+                        if (mousePressed.get()) {
+                            directoryString = "push";
+                        } else {
+                            directoryString = "hover";
+                        }
+                    } else {
+                        directoryString = "normal";
+                    }
+
+                    String iconString = "icons/sync/" + directoryString +
+                            "/sync_" + numberString + ".png";
+                    Icon icon = Icons.getIcon(iconString);
+                    syncAllLabel.setIcon(icon);
+
+                } catch (InterruptedException e) {
+                    // Ignore.
+                }
+            }
+            logFine("Thread terminated");
         }
     }
 }

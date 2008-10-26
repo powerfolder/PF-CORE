@@ -65,7 +65,6 @@ public class StatusBar extends PFUIComponent implements UIPanel {
     private Component comp;
     private JLabel onlineStateInfo;
     private JLabel limitedConnectivityLabel;
-    private JLabel syncLabel;
     private JLabel upStats;
     private JLabel downStats;
     private JLabel portLabel;
@@ -110,20 +109,17 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             FormLayout lowerLayout;
             if (showPort) {
                 lowerLayout = new FormLayout(
-                    "pref, 3dlu, pref, 3dlu, pref, fill:pref:grow, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref",
+                    "pref, 3dlu, pref, fill:pref:grow, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref",
                     "pref");
             } else {
                 lowerLayout = new FormLayout(
-                    "pref, 3dlu, pref, 3dlu, pref, fill:pref:grow, pref, 3dlu, pref, 3dlu, pref",
+                    "pref, 3dlu, pref, fill:pref:grow, pref, 3dlu, pref, 3dlu, pref",
                     "pref");
             }
             DefaultFormBuilder lowerBuilder = new DefaultFormBuilder(lowerLayout);
 
             int col = 1;
             lowerBuilder.add(onlineStateInfo, cc.xy(col, 1));
-            col += 2;
-
-            lowerBuilder.add(syncLabel, cc.xy(col, 1));
             col += 2;
 
             lowerBuilder.add(limitedConnectivityLabel, cc.xy(col, 1));
@@ -220,10 +216,8 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                 }
             });
 
-        syncLabel = new JLabel();
         getController().getTransferManager().addListener(
             new MyTransferManagerListener());
-        updateSyncLabel();
 
         portLabel = new JLabel(String.valueOf(
                 getController().getConnectionListener().getPort()));
@@ -251,14 +245,8 @@ public class StatusBar extends PFUIComponent implements UIPanel {
     }
 
     private void updateSyncLabel() {
-        if (getController().getFolderRepository().isAnyFolderTransferring()) {
-            syncLabel.setToolTipText(Translation
-                .getTranslation("status_bar.synchronizing"));
-            syncLabel.setIcon(Icons.DOWNLOAD_ACTIVE);
-        } else {
-            syncLabel.setText(null);
-            syncLabel.setIcon(null);
-        }
+        syncButtonComponent.setAnyFolderTransferring(getController()
+                .getFolderRepository().isAnyFolderTransferring());
     }
 
     private void updateLimitedConnectivityLabel() {
