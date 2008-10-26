@@ -26,15 +26,18 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.event.TransferManagerListener;
-import de.dal33t.powerfolder.event.TransferManagerEvent;
-import de.dal33t.powerfolder.event.FolderRepositoryListener;
+import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
+import de.dal33t.powerfolder.event.FolderRepositoryListener;
+import de.dal33t.powerfolder.event.TransferManagerEvent;
+import de.dal33t.powerfolder.event.TransferManagerListener;
+import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import java.text.DecimalFormat;
 
 public class HomeTab extends PFUIComponent {
 
@@ -42,14 +45,46 @@ public class HomeTab extends PFUIComponent {
 
     private JLabel synchronizationStatusLabel;
     private JLabel numberOfFoldersLabel;
+    private JLabel sizeOfFoldersLabel;
+    private JLabel sizeOfFoldersDescriptionLabel;
 
     public HomeTab(Controller controller) {
         super(controller);
     }
 
     private void updateFoldersText() {
-        int numberOfFolder = getController().getFolderRepository().getFolders().length;
+        Folder[] folders = getController().getFolderRepository().getFolders();
+        int numberOfFolder = folders.length;
         numberOfFoldersLabel.setText(String.valueOf(numberOfFolder));
+        long totalSize = 0;
+        for (Folder folder : folders) {
+            totalSize += folder.getStatistic().getTotalSize();
+        }
+        String descriptionKey = "home_tab.total_bytes";
+        long divisor = 1;
+        if (totalSize >= 1024) {
+            divisor *= 1024;
+            descriptionKey = "home_tab.total_kilobytes";
+        }
+        if (totalSize / divisor >= 1024) {
+            divisor *= 1024;
+            descriptionKey = "home_tab.total_megabytes";
+        }
+        if (totalSize / divisor >= 1024) {
+            divisor *= 1024;
+            descriptionKey = "home_tab.total_gigabytes";
+        }
+        String num;
+        if (divisor == 1) {
+            num = String.valueOf(totalSize);
+        } else {
+            DecimalFormat numberFormat = Format.getNumberFormat();
+            num = numberFormat.format((double) totalSize / (double) divisor);
+        }
+
+        sizeOfFoldersLabel.setText(num);
+        sizeOfFoldersDescriptionLabel.setText(
+                Translation.getTranslation(descriptionKey));
     }
 
     private void updateSyncText() {
@@ -89,7 +124,7 @@ public class HomeTab extends PFUIComponent {
 
     private JPanel buildMainPanel() {
         FormLayout layout = new FormLayout("3dlu, right:pref, 3dlu, pref:grow, 3dlu",
-            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref:grow");
+            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref:grow");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
@@ -104,9 +139,16 @@ public class HomeTab extends PFUIComponent {
                 cc.xyw(2, row, 3));
         row +=2;
 
+        builder.addSeparator(null, cc.xyw(2, row, 3));
+        row +=2;
+
         builder.add(numberOfFoldersLabel, cc.xy(2, row));
         builder.add(new JLabel(Translation.getTranslation("home_tab.folders")),
                 cc.xy(4, row));
+        row += 2;
+
+        builder.add(sizeOfFoldersLabel, cc.xy(2, row));
+        builder.add(sizeOfFoldersDescriptionLabel, cc.xy(4, row));
         row += 2;
 
         return builder.getPanel();
@@ -115,6 +157,8 @@ public class HomeTab extends PFUIComponent {
     private void initComponents() {
         synchronizationStatusLabel = new JLabel();
         numberOfFoldersLabel = new JLabel();
+        sizeOfFoldersLabel = new JLabel();
+        sizeOfFoldersDescriptionLabel = new JLabel();
         updateSyncText();
         updateFoldersText();
         registerListeners();
@@ -163,9 +207,11 @@ public class HomeTab extends PFUIComponent {
         }
 
         public void maintenanceFinished(FolderRepositoryEvent e) {
+            updateFoldersText();
         }
 
         public void maintenanceStarted(FolderRepositoryEvent e) {
+            updateFoldersText();
         }
     }
 
