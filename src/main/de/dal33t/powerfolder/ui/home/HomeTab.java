@@ -19,6 +19,7 @@
  */
 package de.dal33t.powerfolder.ui.home;
 
+import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
@@ -33,10 +34,12 @@ import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import java.text.DecimalFormat;
 
 public class HomeTab extends PFUIComponent {
@@ -47,9 +50,18 @@ public class HomeTab extends PFUIComponent {
     private JLabel numberOfFoldersLabel;
     private JLabel sizeOfFoldersLabel;
     private JLabel sizeOfFoldersDescriptionLabel;
+    private JLabel downloadsLabel;
+    private JLabel uploadsLabel;
+    private final ValueModel downloadsCountVM;
+    private final ValueModel uploadsCountVM;
 
     public HomeTab(Controller controller) {
         super(controller);
+        downloadsCountVM = controller.getUIController()
+                .getTransferManagerModel().getCompletedDownloadsCountVM();
+        uploadsCountVM = controller.getUIController()
+                .getTransferManagerModel().getCompletedUploadsCountVM();
+
     }
 
     private void updateFoldersText() {
@@ -87,8 +99,10 @@ public class HomeTab extends PFUIComponent {
                 Translation.getTranslation(descriptionKey));
     }
 
-    private void updateSyncText() {
+    private void updateTransferText() {
         synchronizationStatusLabel.setText(getSyncText());
+        downloadsLabel.setText(String.valueOf(downloadsCountVM.getValue()));
+        uploadsLabel.setText(String.valueOf(uploadsCountVM.getValue()));
     }
 
     private String getSyncText() {
@@ -110,7 +124,7 @@ public class HomeTab extends PFUIComponent {
 
         // Build ui
         FormLayout layout = new FormLayout("pref:grow",
-            "pref, pref, 3dlu, pref, pref:grow");
+            "pref, pref, 3dlu, fill:0:grow");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
@@ -118,13 +132,15 @@ public class HomeTab extends PFUIComponent {
         builder.add(toolbar, cc.xy(1, 1));
         builder.addSeparator(null, cc.xy(1, 2));
         JPanel mainPanel = buildMainPanel();
-        builder.add(mainPanel, cc.xy(1, 4));
+        JScrollPane scrollPane = new JScrollPane(mainPanel);
+        UIUtil.removeBorder(scrollPane);
+        builder.add(scrollPane, cc.xy(1, 4));
         uiComponent = builder.getPanel();
     }
 
     private JPanel buildMainPanel() {
         FormLayout layout = new FormLayout("3dlu, right:pref, 3dlu, pref:grow, 3dlu",
-            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref:grow");
+            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, pref:grow");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
@@ -138,6 +154,16 @@ public class HomeTab extends PFUIComponent {
         builder.add(new JLabel(Translation.getTranslation("home_tab.you_have")),
                 cc.xyw(2, row, 3));
         row +=2;
+
+        builder.add(downloadsLabel, cc.xy(2, row));
+        builder.add(new JLabel(Translation.getTranslation("home_tab.files_downloaded")),
+                cc.xy(4, row));
+        row += 2;
+
+        builder.add(uploadsLabel, cc.xy(2, row));
+        builder.add(new JLabel(Translation.getTranslation("home_tab.files_uploaded")),
+                cc.xy(4, row));
+        row += 2;
 
         builder.addSeparator(null, cc.xyw(2, row, 3));
         row +=2;
@@ -159,7 +185,9 @@ public class HomeTab extends PFUIComponent {
         numberOfFoldersLabel = new JLabel();
         sizeOfFoldersLabel = new JLabel();
         sizeOfFoldersDescriptionLabel = new JLabel();
-        updateSyncText();
+        uploadsLabel = new JLabel();
+        downloadsLabel = new JLabel();
+        updateTransferText();
         updateFoldersText();
         registerListeners();
     }
@@ -218,55 +246,55 @@ public class HomeTab extends PFUIComponent {
     private class MyTransferManagerListener implements TransferManagerListener {
 
         public void downloadRequested(TransferManagerEvent event) {
-            updateSyncText();
+            updateTransferText();
         }
 
         public void downloadQueued(TransferManagerEvent event) {
-            updateSyncText();
+            updateTransferText();
         }
 
         public void downloadStarted(TransferManagerEvent event) {
-            updateSyncText();
+            updateTransferText();
         }
 
         public void downloadAborted(TransferManagerEvent event) {
-            updateSyncText();
+            updateTransferText();
         }
 
         public void downloadBroken(TransferManagerEvent event) {
-            updateSyncText();
+            updateTransferText();
         }
 
         public void downloadCompleted(TransferManagerEvent event) {
-            updateSyncText();
+            updateTransferText();
         }
 
         public void completedDownloadRemoved(TransferManagerEvent event) {
-            updateSyncText();
+            updateTransferText();
         }
 
         public void pendingDownloadEnqueud(TransferManagerEvent event) {
-            updateSyncText();
+            updateTransferText();
         }
 
         public void uploadAborted(TransferManagerEvent event) {
-            updateSyncText();
+            updateTransferText();
         }
 
         public void uploadBroken(TransferManagerEvent event) {
-            updateSyncText();
+            updateTransferText();
         }
 
         public void uploadCompleted(TransferManagerEvent event) {
-            updateSyncText();
+            updateTransferText();
         }
 
         public void uploadRequested(TransferManagerEvent event) {
-            updateSyncText();
+            updateTransferText();
         }
 
         public void uploadStarted(TransferManagerEvent event) {
-            updateSyncText();
+            updateTransferText();
         }
 
         public boolean fireInEventDispathThread() {
@@ -274,7 +302,7 @@ public class HomeTab extends PFUIComponent {
         }
 
         public void completedUploadRemoved(TransferManagerEvent event) {
-            updateSyncText();
+            updateTransferText();
         }
 
     }
