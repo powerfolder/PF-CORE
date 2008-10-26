@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.ui.action;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.ui.wizard.PFWizard;
 
 import java.awt.event.ActionEvent;
 
@@ -36,5 +37,6 @@ public class NewFolderAction extends BaseAction {
     }
 
     public void actionPerformed(ActionEvent e) {
+        PFWizard.openWhatToDoWizard(getController());
     }
 }

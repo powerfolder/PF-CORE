@@ -54,7 +54,7 @@ public class SearchNodeTableModel extends PFUIComponent implements TableModel,
         SortedTableModel {
 
     private List<TableModelListener> listeners = new LinkedList<TableModelListener>();
-    private ObservableList members = new LinkedListModel();
+    private ObservableList<Member> members = new LinkedListModel<Member>();
     
     /**
      * The comparators for the columns, initalized in constructor
@@ -197,7 +197,7 @@ public class SearchNodeTableModel extends PFUIComponent implements TableModel,
      * 
      * @return the listmodel containing the nodes.
      */
-    public ObservableList getListModel() {        
+    public ObservableList<Member> getListModel() {        
         return members;
     }
     
