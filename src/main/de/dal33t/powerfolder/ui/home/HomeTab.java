@@ -28,6 +28,8 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
+import de.dal33t.powerfolder.event.FolderRepositoryListener;
+import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.util.Translation;
 
 import javax.swing.JButton;
@@ -39,9 +41,15 @@ public class HomeTab extends PFUIComponent {
     private JPanel uiComponent;
 
     private JLabel synchronizationStatusLabel;
+    private JLabel numberOfFoldersLabel;
 
     public HomeTab(Controller controller) {
         super(controller);
+    }
+
+    private void updateFoldersText() {
+        int numberOfFolder = getController().getFolderRepository().getFolders().length;
+        numberOfFoldersLabel.setText(String.valueOf(numberOfFolder));
     }
 
     private void updateSyncText() {
@@ -81,7 +89,7 @@ public class HomeTab extends PFUIComponent {
 
     private JPanel buildMainPanel() {
         FormLayout layout = new FormLayout("3dlu, right:pref, 3dlu, pref:grow, 3dlu",
-            "pref, 3dlu, pref, 3dlu, pref:grow");
+            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref:grow");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
@@ -96,18 +104,27 @@ public class HomeTab extends PFUIComponent {
                 cc.xyw(2, row, 3));
         row +=2;
 
+        builder.add(numberOfFoldersLabel, cc.xy(2, row));
+        builder.add(new JLabel(Translation.getTranslation("home_tab.folders")),
+                cc.xy(4, row));
+        row += 2;
+
         return builder.getPanel();
     }
 
     private void initComponents() {
         synchronizationStatusLabel = new JLabel();
+        numberOfFoldersLabel = new JLabel();
         updateSyncText();
+        updateFoldersText();
         registerListeners();
     }
 
     private void registerListeners() {
         getController().getTransferManager().addListener(
             new MyTransferManagerListener());
+        getController().getFolderRepository().addFolderRepositoryListener(
+            new MyFolderRepositoryListener());
     }
 
 
@@ -131,6 +148,26 @@ public class HomeTab extends PFUIComponent {
         return barPanel;
     }
 
+    private class MyFolderRepositoryListener
+            implements FolderRepositoryListener {
+        public boolean fireInEventDispathThread() {
+            return true;
+        }
+
+        public void folderCreated(FolderRepositoryEvent e) {
+            updateFoldersText();
+        }
+
+        public void folderRemoved(FolderRepositoryEvent e) {
+            updateFoldersText();
+        }
+
+        public void maintenanceFinished(FolderRepositoryEvent e) {
+        }
+
+        public void maintenanceStarted(FolderRepositoryEvent e) {
+        }
+    }
 
     private class MyTransferManagerListener implements TransferManagerListener {
 
