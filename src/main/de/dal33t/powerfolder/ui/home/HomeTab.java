@@ -26,6 +26,9 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.event.TransferManagerListener;
+import de.dal33t.powerfolder.event.TransferManagerEvent;
+import de.dal33t.powerfolder.util.Translation;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -35,8 +38,21 @@ public class HomeTab extends PFUIComponent {
 
     private JPanel uiComponent;
 
+    private JLabel synchronizationStatusLabel;
+
     public HomeTab(Controller controller) {
         super(controller);
+    }
+
+    private void updateSyncText() {
+        synchronizationStatusLabel.setText(getSyncText());
+    }
+
+    private String getSyncText() {
+        return getController().getFolderRepository()
+                .isAnyFolderTransferring() ?
+                Translation.getTranslation("home_tab.synchronizing") :
+                Translation.getTranslation("home_tab.in_sync");
     }
 
     public JPanel getUIComponent() {
@@ -51,19 +67,49 @@ public class HomeTab extends PFUIComponent {
 
         // Build ui
         FormLayout layout = new FormLayout("pref:grow",
-            "pref, pref, 3dlu, pref:grow");
+            "pref, pref, 3dlu, pref, pref:grow");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
         JPanel toolbar = createToolBar();
         builder.add(toolbar, cc.xy(1, 1));
         builder.addSeparator(null, cc.xy(1, 2));
-        builder.add(new JLabel("test"), cc.xy(1, 4));
+        JPanel mainPanel = buildMainPanel();
+        builder.add(mainPanel, cc.xy(1, 4));
         uiComponent = builder.getPanel();
     }
 
-    private void initComponents() {
+    private JPanel buildMainPanel() {
+        FormLayout layout = new FormLayout("3dlu, right:pref, 3dlu, pref:grow, 3dlu",
+            "pref, 3dlu, pref, 3dlu, pref:grow");
+        PanelBuilder builder = new PanelBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+
+        int row = 1;
+        builder.add(synchronizationStatusLabel, cc.xyw(2, row, 3));
+        row += 2;
+
+        builder.addSeparator(null, cc.xyw(2, row, 3));
+        row +=2;
+
+        builder.add(new JLabel(Translation.getTranslation("home_tab.you_have")),
+                cc.xyw(2, row, 3));
+        row +=2;
+
+        return builder.getPanel();
     }
+
+    private void initComponents() {
+        synchronizationStatusLabel = new JLabel();
+        updateSyncText();
+        registerListeners();
+    }
+
+    private void registerListeners() {
+        getController().getTransferManager().addListener(
+            new MyTransferManagerListener());
+    }
+
 
     /**
      * @return the toolbar
@@ -84,6 +130,72 @@ public class HomeTab extends PFUIComponent {
 
         return barPanel;
     }
+
+
+    private class MyTransferManagerListener implements TransferManagerListener {
+
+        public void downloadRequested(TransferManagerEvent event) {
+            updateSyncText();
+        }
+
+        public void downloadQueued(TransferManagerEvent event) {
+            updateSyncText();
+        }
+
+        public void downloadStarted(TransferManagerEvent event) {
+            updateSyncText();
+        }
+
+        public void downloadAborted(TransferManagerEvent event) {
+            updateSyncText();
+        }
+
+        public void downloadBroken(TransferManagerEvent event) {
+            updateSyncText();
+        }
+
+        public void downloadCompleted(TransferManagerEvent event) {
+            updateSyncText();
+        }
+
+        public void completedDownloadRemoved(TransferManagerEvent event) {
+            updateSyncText();
+        }
+
+        public void pendingDownloadEnqueud(TransferManagerEvent event) {
+            updateSyncText();
+        }
+
+        public void uploadAborted(TransferManagerEvent event) {
+            updateSyncText();
+        }
+
+        public void uploadBroken(TransferManagerEvent event) {
+            updateSyncText();
+        }
+
+        public void uploadCompleted(TransferManagerEvent event) {
+            updateSyncText();
+        }
+
+        public void uploadRequested(TransferManagerEvent event) {
+            updateSyncText();
+        }
+
+        public void uploadStarted(TransferManagerEvent event) {
+            updateSyncText();
+        }
+
+        public boolean fireInEventDispathThread() {
+            return true;
+        }
+
+        public void completedUploadRemoved(TransferManagerEvent event) {
+            updateSyncText();
+        }
+
+    }
+
 
 
 }
