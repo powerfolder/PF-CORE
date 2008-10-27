@@ -60,7 +60,7 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
         }
     };
 
-    public MultiSourceDownloadManager(Controller controller, FileInfo file,
+    private MultiSourceDownloadManager(Controller controller, FileInfo file,
         boolean automatic) throws IOException
     {
         super(controller, file, automatic);

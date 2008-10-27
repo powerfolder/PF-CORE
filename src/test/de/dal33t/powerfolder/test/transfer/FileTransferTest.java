@@ -747,9 +747,9 @@ public class FileTransferTest extends TwoControllerTestCase {
      */
     public void testResumeTransfer() {
         getContollerBart().getTransferManager().setAllowedUploadCPSForLAN(
-            4000000);
+            500000);
         getContollerBart().getTransferManager().setAllowedUploadCPSForWAN(
-            4000000);
+            500000);
 
         TestHelper.waitMilliSeconds(2000);
 
@@ -853,6 +853,9 @@ public class FileTransferTest extends TwoControllerTestCase {
             .lastModified());
 
         System.err.println("Transferred " + incompleteFile.length() + " bytes");
+
+        getContollerBart().getTransferManager().setAllowedUploadCPSForLAN(0);
+        getContollerBart().getTransferManager().setAllowedUploadCPSForWAN(0);
 
         // Reconnect /Resume transfer
         connectBartAndLisa();

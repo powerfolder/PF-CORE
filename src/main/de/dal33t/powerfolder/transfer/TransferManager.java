@@ -609,14 +609,12 @@ public class TransferManager extends PFComponent {
                 abortedUL = true;
             }
         }
-        List<Upload> remove = new LinkedList<Upload>();
-        for (Upload u : queuedUploads) {
+        for (Upload u : queuedUploads.toArray(new Upload[0])) {
             if (u.getFile().equals(fInfo)) {
+                abortUpload(fInfo, u.getPartner());
                 abortedUL = true;
-                remove.add(u);
             }
         }
-        queuedUploads.removeAll(remove);
         return abortedUL;
     }
 
@@ -1458,8 +1456,7 @@ public class TransferManager extends PFComponent {
                     return;
                 }
                 try {
-                    man = new MultiSourceDownloadManager(getController(),
-                        fInfo, download.isRequestedAutomatic());
+                    man = downloadManagerFactory.createDownloadManager(getController(), fInfo, download.isRequestedAutomatic());
                 } catch (IOException e) {
                     // Something gone badly wrong
                     logSevere("IOException", e);
