@@ -1,24 +1,21 @@
 package de.dal33t.powerfolder.ui.folders;
 
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.ui.widget.JButton3Icons;
-import de.dal33t.powerfolder.ui.widget.JButtonMini;
-
-import javax.swing.*;
-import javax.swing.border.Border;
-import static javax.swing.JLabel.*;
-import java.awt.*;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.factories.Borders;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.widget.JButtonMini;
+import de.dal33t.powerfolder.util.Translation;
+
+import javax.swing.BorderFactory;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ExpandableFolderView extends PFUIComponent {
 
@@ -28,7 +25,7 @@ public class ExpandableFolderView extends PFUIComponent {
 
     private JPanel uiComponent;
 
-    private JPanel lowerPanel;
+    private JPanel lowerOuterPanel;
 
     private AtomicBoolean expanded;
 
@@ -53,25 +50,48 @@ public class ExpandableFolderView extends PFUIComponent {
         upperBuilder.add(expandCollapseButton, cc.xy(8, 1));
 
         JPanel upperPanel = upperBuilder.getPanel();
-        upperPanel.setBorder(BorderFactory.createEtchedBorder());
 
-        // Build ui
-        FormLayout lowerLayout = new FormLayout("pref, 3dlu, pref:grow",
-            "pref");
+        // Build lower detials with lower etched border.
+        FormLayout lowerLayout = new FormLayout("3dlu, pref:grow, 3dlu",
+            "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
         PanelBuilder lowerBuilder = new PanelBuilder(lowerLayout);
 
-        lowerBuilder.add(new JLabel(folder.getLocalBase().getAbsolutePath()), cc.xy(1, 1));
+        String transferMode = Translation.getTranslation("exp_folder_view.transfer_mode",
+                folder.getSyncProfile().getProfileName());
+        lowerBuilder.add(new JLabel(transferMode), cc.xy(2, 2));
 
-        lowerPanel = lowerBuilder.getPanel();
-        lowerPanel.setVisible(false);
+        lowerBuilder.addSeparator(null, cc.xy(2, 4));
 
-        // Build ui
+        String files = Translation.getTranslation("exp_folder_view.files",
+                folder.getKnownFilesCount());
+        lowerBuilder.add(new JLabel(files), cc.xy(2, 6));
+
+        JPanel lowerPanel = lowerBuilder.getPanel();
+        lowerPanel.setBorder(BorderFactory.createLoweredBevelBorder());
+
+        // Build spacer then lower outer with lower panel
+        FormLayout lowerOuterLayout = new FormLayout("pref:grow",
+            "3dlu, pref");
+        PanelBuilder lowerOuterBuilder = new PanelBuilder(lowerOuterLayout);
+        lowerOuterPanel = lowerOuterBuilder.getPanel();
+        lowerOuterPanel.setVisible(false);
+        lowerOuterBuilder.add(lowerPanel, cc.xy(1, 2));
+
+        // Build border around upper and lower
+        FormLayout borderLayout = new FormLayout("3dlu, pref:grow, 3dlu",
+            "3dlu, pref, pref, 3dlu");
+        PanelBuilder borderBuilder = new PanelBuilder(borderLayout);
+        borderBuilder.add(upperPanel, cc.xy(2, 2));
+        borderBuilder.add(lowerOuterBuilder.getPanel(), cc.xy(2, 3));
+        JPanel borderPanel = borderBuilder.getPanel();
+        borderPanel.setBorder(BorderFactory.createEtchedBorder());
+
+        // Build ui with vertical space before the next one
         FormLayout outerLayout = new FormLayout("3dlu, pref:grow, 3dlu",
-            "pref, 3dlu, pref, 3dlu");
+            "pref, 3dlu");
         PanelBuilder outerBuilder = new PanelBuilder(outerLayout);
+        outerBuilder.add(borderPanel, cc.xy(2, 1));
 
-        outerBuilder.add(upperPanel, cc.xy(2, 1));
-        outerBuilder.add(lowerPanel, cc.xy(2, 3));
         uiComponent = outerBuilder.getPanel();
 
     }
@@ -100,11 +120,11 @@ public class ExpandableFolderView extends PFUIComponent {
             if (exp) {
                 expanded.set(false);
                 expandCollapseButton.setIcon(Icons.EXPAND);
-                lowerPanel.setVisible(false);
+                lowerOuterPanel.setVisible(false);
             } else {
                 expanded.set(true);
                 expandCollapseButton.setIcon(Icons.COLLAPSE);
-                lowerPanel.setVisible(true);
+                lowerOuterPanel.setVisible(true);
             }
         }
     }
