@@ -86,6 +86,7 @@ public class Icons {
     public static final Icon STOP = getIcon("icons/Forbid.gif");
     public static final Icon RUN = getIcon("icons/Play.gif");
     public static final Icon SUSPEND = getIcon("icons/Suspend.gif");
+    public static final Icon HOME = getIcon("icons/Home.gif");
 
     public static final Icon UNKNOWNFILE = getIcon("icons/Unknown.gif");
     public static final Icon UNKNOWNFILE_GRAY = getGrayIcon(UNKNOWNFILE);
