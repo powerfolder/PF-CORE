@@ -20,13 +20,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class ExpandableFolderView extends PFUIComponent {
 
     private final Folder folder;
-
     private JButtonMini expandCollapseButton;
-
+    private JButtonMini syncFolderButton;
     private JPanel uiComponent;
-
     private JPanel lowerOuterPanel;
-
     private AtomicBoolean expanded;
 
     public ExpandableFolderView(Controller controller, Folder folder) {
@@ -46,12 +43,12 @@ public class ExpandableFolderView extends PFUIComponent {
 
         upperBuilder.add(new JLabel(Icons.DIRECTORY), cc.xy(1, 1));
         upperBuilder.add(new JLabel(folder.getName()), cc.xy(3, 1));
-        upperBuilder.add(new JButtonMini(Icons.DOWNLOAD_ACTIVE), cc.xy(6, 1));
+        upperBuilder.add(syncFolderButton, cc.xy(6, 1));
         upperBuilder.add(expandCollapseButton, cc.xy(8, 1));
 
         JPanel upperPanel = upperBuilder.getPanel();
 
-        // Build lower detials with lower etched border.
+        // Build lower detials with line border.
         FormLayout lowerLayout = new FormLayout("3dlu, pref:grow, 3dlu",
             "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
         PanelBuilder lowerBuilder = new PanelBuilder(lowerLayout);
@@ -67,7 +64,7 @@ public class ExpandableFolderView extends PFUIComponent {
         lowerBuilder.add(new JLabel(files), cc.xy(2, 6));
 
         JPanel lowerPanel = lowerBuilder.getPanel();
-        lowerPanel.setBorder(BorderFactory.createLoweredBevelBorder());
+        lowerPanel.setBorder(BorderFactory.createEtchedBorder());
 
         // Build spacer then lower outer with lower panel
         FormLayout lowerOuterLayout = new FormLayout("pref:grow",
@@ -99,8 +96,11 @@ public class ExpandableFolderView extends PFUIComponent {
     private void initComponent() {
         expanded = new AtomicBoolean();
 
-        expandCollapseButton = new JButtonMini(Icons.EXPAND);
+        expandCollapseButton = new JButtonMini(Icons.EXPAND,
+                Translation.getTranslation("exp_folder_view.expand_collapse"));
         expandCollapseButton.addActionListener(new MyActionListener());
+        syncFolderButton = new JButtonMini(Icons.DOWNLOAD_ACTIVE,
+                Translation.getTranslation("exp_folder_view.synchronize_folder"));
     }
 
     public JPanel getUIComponent() {
