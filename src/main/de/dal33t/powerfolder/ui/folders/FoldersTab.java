@@ -26,14 +26,14 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.factories.Borders;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JButton;
+import javax.swing.*;
 
 public class FoldersTab extends PFUIComponent {
 
     private JPanel uiComponent;
+    private FoldersList foldersList;
     
     public FoldersTab(Controller controller) {
         super(controller);
@@ -51,18 +51,21 @@ public class FoldersTab extends PFUIComponent {
 
         // Build ui
         FormLayout layout = new FormLayout("pref:grow",
-            "pref, pref, 3dlu, pref:grow");
+            "pref, pref, 3dlu, fill:0:grow");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
         JPanel toolbar = createToolBar();
         builder.add(toolbar, cc.xy(1, 1));
         builder.addSeparator(null, cc.xy(1, 2));
-        builder.add(new JLabel("test"), cc.xy(1, 4));
+        JScrollPane scrollPane = new JScrollPane(foldersList.getUIComponent());
+        UIUtil.removeBorder(scrollPane);
+        builder.add(scrollPane, cc.xy(1, 4));
         uiComponent = builder.getPanel();
     }
 
     private void initComponents() {
+        foldersList = new FoldersList(getController());
     }
 
     /**
