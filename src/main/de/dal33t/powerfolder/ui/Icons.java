@@ -81,6 +81,7 @@ public class Icons {
 
     public static final Icon WARNING = getIcon("icons/Warning.png");
     public static final Icon DEBUG = getIcon("icons/LadyBug.gif");
+    public static final Icon UPDATES = getIcon("icons/Updates.gif");
     public static final Icon DIALOG_TESTING = getIconById("dialog.icon");
     public static final Icon STOP = getIcon("icons/Forbid.gif");
     public static final Icon RUN = getIcon("icons/Play.gif");
