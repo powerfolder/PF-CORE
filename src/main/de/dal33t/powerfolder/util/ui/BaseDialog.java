@@ -32,7 +32,10 @@ import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.KeyStroke;
+import javax.swing.WindowConstants;
 import java.awt.Component;
+import java.awt.Cursor;
+import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -117,7 +120,7 @@ public abstract class BaseDialog extends PFUIComponent {
     protected abstract Component getButtonBar();
 
     /**  overwrite amnd return null to allow resize */
-    protected  boolean allowResize() {
+    protected static boolean allowResize() {
          return false;
     }
     // Helper methods *********************************************************
@@ -129,7 +132,7 @@ public abstract class BaseDialog extends PFUIComponent {
      *            the listener to be put on the button
      * @return
      */
-    protected JButton createOKButton(ActionListener listener) {
+    protected static JButton createOKButton(ActionListener listener) {
         JButton okButton = new JButton(Translation.getTranslation("general.ok"));
         okButton.setMnemonic(Translation.getTranslation("general.ok.key")
             .trim().charAt(0));
@@ -144,7 +147,7 @@ public abstract class BaseDialog extends PFUIComponent {
      *            the listener to be put on the button
      * @return
      */
-    protected JButton createCancelButton(ActionListener listener) {
+    protected static JButton createCancelButton(ActionListener listener) {
         JButton cancelButton = new JButton(Translation
             .getTranslation("general.cancel"));
         cancelButton.setMnemonic(Translation.getTranslation("general.cancel.key").trim()
@@ -160,7 +163,7 @@ public abstract class BaseDialog extends PFUIComponent {
      *            the listener to be put on the button
      * @return
      */
-    protected JButton createCloseButton(ActionListener listener) {
+    protected static JButton createCloseButton(ActionListener listener) {
         JButton closeButton = new JButton(Translation
             .getTranslation("general.close"));
         closeButton.setMnemonic(Translation.getTranslation("general.close.key").trim()
@@ -232,48 +235,58 @@ public abstract class BaseDialog extends PFUIComponent {
      */
     protected final JDialog getUIComponent() {
         if (dialog == null) {
-            logFiner("Building ui component for " + this);
-            dialog = new JDialog(getUIController().getMainFrame()
-                .getUIComponent(), getTitle(), modal);
-            dialog.setResizable(allowResize());            
-            
-            dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
-            JLabel iconLabel = new JLabel(getIcon());
-            // iconLabel.setVerticalAlignment(SwingConstants.TOP);
+            Frame frame = getController().getUIController().getMainFrame().getUIComponent();
+            Cursor oldCursor = frame.getCursor();
+            frame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
-            FormLayout layout = new FormLayout(
-                "7dlu, pref, 14dlu, pref:grow, 14dlu",
-                "7dlu, pref, pref:grow, 7dlu, pref, 7dlu");
-            PanelBuilder builder = new PanelBuilder(layout);
+            try {
 
-            CellConstraints cc = new CellConstraints();
+                logFiner("Building ui component for " + this);
+                dialog = new JDialog(getUIController().getMainFrame()
+                    .getUIComponent(), getTitle(), modal);
+                dialog.setResizable(allowResize());
 
-            // Build
-            builder.add(iconLabel, cc.xy(2, 2));
-            if (border) {
-                builder.add(getContent(), cc.xywh(4, 2, 1, 2));
-            } else {
-                builder.add(getContent(), cc.xywh(4, 1, 2, 3));
+                dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+
+                JLabel iconLabel = new JLabel(getIcon());
+                // iconLabel.setVerticalAlignment(SwingConstants.TOP);
+
+                FormLayout layout = new FormLayout(
+                    "7dlu, pref, 14dlu, pref:grow, 14dlu",
+                    "7dlu, pref, pref:grow, 7dlu, pref, 7dlu");
+                PanelBuilder builder = new PanelBuilder(layout);
+
+                CellConstraints cc = new CellConstraints();
+
+                // Build
+                builder.add(iconLabel, cc.xy(2, 2));
+                if (border) {
+                    builder.add(getContent(), cc.xywh(4, 2, 1, 2));
+                } else {
+                    builder.add(getContent(), cc.xywh(4, 1, 2, 3));
+                }
+
+                builder.add(getButtonBar(), cc.xywh(2, 5, 4, 1));
+
+                // Add panel to component
+                dialog.getContentPane().add(builder.getPanel());
+
+                // add escape key as close
+                KeyStroke strokeEsc = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
+                JComponent rootPane = dialog.getRootPane();
+                rootPane.registerKeyboardAction(new CloseAction(), strokeEsc,
+                    JComponent.WHEN_IN_FOCUSED_WINDOW);
+
+                dialog.pack();
+                Component parent = dialog.getOwner();
+                int x = parent.getX() + (parent.getWidth() - dialog.getWidth()) / 2;
+                int y = parent.getY() + (parent.getHeight() - dialog.getHeight())
+                    / 2;
+                dialog.setLocation(x, y);
+            } finally {
+                frame.setCursor(oldCursor);
             }
-
-            builder.add(getButtonBar(), cc.xywh(2, 5, 4, 1));
-
-            // Add panel to component
-            dialog.getContentPane().add(builder.getPanel());
-
-            // add escape key as close
-            KeyStroke strokeEsc = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
-            JComponent rootPane = dialog.getRootPane();
-            rootPane.registerKeyboardAction(new CloseAction(), strokeEsc,
-                JComponent.WHEN_IN_FOCUSED_WINDOW);
-
-            dialog.pack();
-            Component parent = dialog.getOwner();
-            int x = parent.getX() + (parent.getWidth() - dialog.getWidth()) / 2;
-            int y = parent.getY() + (parent.getHeight() - dialog.getHeight())
-                / 2;
-            dialog.setLocation(x, y);
 
         }
         return dialog;
