@@ -40,6 +40,7 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import java.awt.Font;
 import java.text.DecimalFormat;
 
 public class HomeTab extends PFUIComponent {
@@ -151,8 +152,10 @@ public class HomeTab extends PFUIComponent {
         builder.addSeparator(null, cc.xyw(2, row, 3));
         row +=2;
 
-        builder.add(new JLabel(Translation.getTranslation("home_tab.you_have")),
-                cc.xyw(2, row, 3));
+        JLabel youHaveLabel = new JLabel(Translation.getTranslation("home_tab.you_have"));
+        Font f = youHaveLabel.getFont();
+        youHaveLabel.setFont(new Font(f.getName(), Font.BOLD, f.getSize()));
+        builder.add(youHaveLabel, cc.xyw(2, row, 3));
         row +=2;
 
         builder.add(downloadsLabel, cc.xy(2, row));
