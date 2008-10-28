@@ -97,7 +97,7 @@ public class ExpandableFolderView extends PFUIComponent {
         expanded = new AtomicBoolean();
 
         expandCollapseButton = new JButtonMini(Icons.EXPAND,
-                Translation.getTranslation("exp_folder_view.expand_collapse"));
+                Translation.getTranslation("exp_folder_view.expand"));
         expandCollapseButton.addActionListener(new MyActionListener());
         syncFolderButton = new JButtonMini(Icons.DOWNLOAD_ACTIVE,
                 Translation.getTranslation("exp_folder_view.synchronize_folder"));
@@ -120,10 +120,14 @@ public class ExpandableFolderView extends PFUIComponent {
             if (exp) {
                 expanded.set(false);
                 expandCollapseButton.setIcon(Icons.EXPAND);
+                expandCollapseButton.setToolTipText(
+                        Translation.getTranslation("exp_folder_view.expand"));
                 lowerOuterPanel.setVisible(false);
             } else {
                 expanded.set(true);
                 expandCollapseButton.setIcon(Icons.COLLAPSE);
+                expandCollapseButton.setToolTipText(
+                        Translation.getTranslation("exp_folder_view.collapse"));
                 lowerOuterPanel.setVisible(true);
             }
         }
