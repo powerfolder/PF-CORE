@@ -136,8 +136,8 @@ public class FolderRepositoryModel extends PFUIComponent {
         if (myFoldersTreeNode.getChildCount() > 0 && !expandedMyFolders) {
             logFiner("Expanding foined folders on nav_tree");
             // Expand joined folders
-            getController().getUIController().getControlQuarter().getUITree()
-                .expandPath(myFoldersTreeNode.getPathTo());
+//            getController().getUIController().getControlQuarter().getUITree()
+//                .expandPath(myFoldersTreeNode.getPathTo());
             expandedMyFolders = true;
         }
     }

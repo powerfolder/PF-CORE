@@ -311,8 +311,8 @@ public class NodeManagerModel extends PFUIComponent {
             logFiner("Expanding friendlist");
             Runnable runner = new Runnable() {
                 public void run() {
-                    getController().getUIController().getControlQuarter()
-                        .getUITree().expandPath(friendsTreeNode.getPathTo());
+//                    getController().getUIController().getControlQuarter()
+//                        .getUITree().expandPath(friendsTreeNode.getPathTo());
                     expandedFriends = true;
                 }
             };
