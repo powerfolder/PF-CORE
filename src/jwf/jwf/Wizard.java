@@ -13,6 +13,7 @@ import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.factories.ButtonBarFactory;
 
 import de.dal33t.powerfolder.util.os.OSUtil;
+import de.dal33t.powerfolder.ui.Icons;
 
 /**
  * This class controls a wizard.
@@ -136,8 +137,11 @@ public class Wizard extends JPanel implements ActionListener {
             finishButton.setText((String) map.get(FINISH_I18N));
             cancelButton.setText((String) map.get(CANCEL_I18N));
             helpButton.setText((String) map.get(HELP_I18N));
+            helpButton.setIcon(Icons.QUESTION);
             nextButton.setToolTipText((String) map.get(NEXT_I18N_DESCRIPTION));
+            nextButton.setIcon(Icons.ARROW_RIGHT);
             backButton.setToolTipText((String) map.get(BACK_I18N_DESCRIPTION));
+            backButton.setIcon(Icons.ARROW_LEFT);
             finishButton.setToolTipText((String) map
                 .get(FINISH_I18N_DESCRIPTION));
             cancelButton.setToolTipText((String) map
