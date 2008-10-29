@@ -28,12 +28,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.event.FolderListener;
-import de.dal33t.powerfolder.event.FolderRepositoryEvent;
-import de.dal33t.powerfolder.event.FolderRepositoryListener;
-import de.dal33t.powerfolder.event.TransferManagerEvent;
-import de.dal33t.powerfolder.event.TransferManagerListener;
-import de.dal33t.powerfolder.event.FolderEvent;
+import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.UIUtil;
@@ -57,6 +52,7 @@ public class HomeTab extends PFUIComponent {
     private JLabel sizeOfFoldersLabel;
     private JLabel sizeOfFoldersDescriptionLabel;
     private JLabel filesAvailableLabel;
+    private JLabel computersLabel;
     private JLabel downloadsLabel;
     private JLabel uploadsLabel;
     private final ValueModel downloadsCountVM;
@@ -123,9 +119,11 @@ public class HomeTab extends PFUIComponent {
         filesAvailableLabel = new JLabel();
         downloadsLabel = new JLabel();
         uploadsLabel = new JLabel();
+        computersLabel = new JLabel();
         updateTransferText();
         updateFoldersText();
         recalculateFilesAvailable();
+        updateComputers();
         registerListeners();
     }
 
@@ -137,6 +135,8 @@ public class HomeTab extends PFUIComponent {
             new MyTransferManagerListener());
         getController().getFolderRepository().addFolderRepositoryListener(
             new MyFolderRepositoryListener());
+        getController().getNodeManager().addNodeManagerListener(
+            new MyNodeManagerListener());
     }
 
     /**
@@ -145,7 +145,7 @@ public class HomeTab extends PFUIComponent {
      */
     private JPanel buildMainPanel() {
         FormLayout layout = new FormLayout("3dlu, right:pref, 3dlu, pref:grow, 3dlu",
-            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, pref:grow");
+            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, pref:grow");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
@@ -187,6 +187,11 @@ public class HomeTab extends PFUIComponent {
 
         builder.add(sizeOfFoldersLabel, cc.xy(2, row));
         builder.add(sizeOfFoldersDescriptionLabel, cc.xy(4, row));
+        row += 2;
+
+        builder.add(computersLabel, cc.xy(2, row));
+        builder.add(new JLabel(Translation.getTranslation("home_tab.computers")),
+                cc.xy(4, row));
         row += 2;
 
         return builder.getPanel();
@@ -284,6 +289,14 @@ public class HomeTab extends PFUIComponent {
                     folder.getStatistic().getIncomingFilesCount());
         }
         filesAvailableLabel.setText(String.valueOf(count));
+    }
+
+    /**
+     * Updates the information about the number of computers.
+     */
+    private void updateComputers() {
+        int nodeCount = getController().getNodeManager().getNodesAsCollection().size();
+        computersLabel.setText(String.valueOf(nodeCount));
     }
 
     /**
@@ -413,4 +426,36 @@ public class HomeTab extends PFUIComponent {
 
     }
 
+    private class MyNodeManagerListener implements NodeManagerListener {
+
+        public void nodeRemoved(NodeManagerEvent e) {
+        }
+
+        public void nodeAdded(NodeManagerEvent e) {
+        }
+
+        public void nodeConnected(NodeManagerEvent e) {
+            updateComputers();
+        }
+
+        public void nodeDisconnected(NodeManagerEvent e) {
+            updateComputers();
+        }
+
+        public void friendAdded(NodeManagerEvent e) {
+        }
+
+        public void friendRemoved(NodeManagerEvent e) {
+        }
+
+        public void settingsChanged(NodeManagerEvent e) {
+        }
+
+        public void startStop(NodeManagerEvent e) {
+        }
+
+        public boolean fireInEventDispathThread() {
+            return true;
+        }
+    }
 }
