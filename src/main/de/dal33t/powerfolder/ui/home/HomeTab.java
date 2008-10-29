@@ -28,8 +28,14 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.event.*;
-import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.event.FolderEvent;
+import de.dal33t.powerfolder.event.FolderListener;
+import de.dal33t.powerfolder.event.FolderRepositoryEvent;
+import de.dal33t.powerfolder.event.FolderRepositoryListener;
+import de.dal33t.powerfolder.event.NodeManagerEvent;
+import de.dal33t.powerfolder.event.NodeManagerListener;
+import de.dal33t.powerfolder.event.TransferManagerEvent;
+import de.dal33t.powerfolder.event.TransferManagerListener;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
@@ -38,7 +44,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import java.awt.Font;
-import java.text.DecimalFormat;
 
 /**
  * Class for the Home tab in the main tab area of the UI.
@@ -48,13 +53,12 @@ public class HomeTab extends PFUIComponent {
     private JPanel uiComponent;
 
     private JLabel synchronizationStatusLabel;
-    private JLabel numberOfFoldersLabel;
-    private JLabel sizeOfFoldersLabel;
-    private JLabel sizeOfFoldersDescriptionLabel;
-    private JLabel filesAvailableLabel;
-    private JLabel computersLabel;
-    private JLabel downloadsLabel;
-    private JLabel uploadsLabel;
+    private HomeTabLine numberOfFoldersLine;
+    private HomeTabLine sizeOfFoldersLine;
+    private HomeTabLine filesAvailableLine;
+    private HomeTabLine computersLine;
+    private HomeTabLine downloadsLine;
+    private HomeTabLine uploadsLine;
     private final ValueModel downloadsCountVM;
     private final ValueModel uploadsCountVM;
     private final MyFolderListener folderListener;
@@ -113,13 +117,26 @@ public class HomeTab extends PFUIComponent {
      */
     private void initComponents() {
         synchronizationStatusLabel = new JLabel();
-        numberOfFoldersLabel = new JLabel();
-        sizeOfFoldersLabel = new JLabel();
-        sizeOfFoldersDescriptionLabel = new JLabel();
-        filesAvailableLabel = new JLabel();
-        downloadsLabel = new JLabel();
-        uploadsLabel = new JLabel();
-        computersLabel = new JLabel();
+        numberOfFoldersLine = new HomeTabLine(getController(),
+                Translation.getTranslation("home_tab.folders"),
+                Translation.getTranslation("home_tab.no_folders"),
+                false, true);
+        sizeOfFoldersLine = new HomeTabLine(getController(),
+                Translation.getTranslation("home_tab.total_bytes"),
+                null, true, true);
+        filesAvailableLine = new HomeTabLine(getController(),
+                Translation.getTranslation("home_tab.files_available"), null,
+                true, true);
+        downloadsLine = new HomeTabLine(getController(),
+                Translation.getTranslation("home_tab.files_downloaded"), null,
+                false, true);
+        uploadsLine = new HomeTabLine(getController(),
+                Translation.getTranslation("home_tab.files_uploaded"), null,
+                false, true);
+        computersLine = new HomeTabLine(getController(),
+                Translation.getTranslation("home_tab.computers"),
+                Translation.getTranslation("home_tab.no_computers"),
+                false, true);
         updateTransferText();
         updateFoldersText();
         recalculateFilesAvailable();
@@ -144,55 +161,43 @@ public class HomeTab extends PFUIComponent {
      * @return
      */
     private JPanel buildMainPanel() {
-        FormLayout layout = new FormLayout("3dlu, right:pref, 3dlu, pref:grow, 3dlu",
-            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, pref:grow");
+        FormLayout layout = new FormLayout("3dlu, pref:grow, 3dlu",
+            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, pref, pref, pref, 3dlu, pref, pref, pref, pref:grow");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
         int row = 1;
-        builder.add(synchronizationStatusLabel, cc.xyw(2, row, 3));
+        builder.add(synchronizationStatusLabel, cc.xy(2, row));
         row += 2;
 
-        builder.addSeparator(null, cc.xyw(2, row, 3));
+        builder.addSeparator(null, cc.xy(2, row));
         row +=2;
 
         JLabel youHaveLabel = new JLabel(Translation.getTranslation("home_tab.you_have"));
         Font f = youHaveLabel.getFont();
         youHaveLabel.setFont(new Font(f.getName(), Font.BOLD, f.getSize()));
-        builder.add(youHaveLabel, cc.xyw(2, row, 3));
+        builder.add(youHaveLabel, cc.xy(2, row));
         row +=2;
 
-        builder.add(filesAvailableLabel, cc.xy(2, row));
-        builder.add(new JLabel(Translation.getTranslation("home_tab.files_available")),
-                cc.xy(4, row));
-        row += 2;
+        builder.add(filesAvailableLine.getUIComponent(), cc.xy(2, row));
+        row++;
 
-        builder.add(downloadsLabel, cc.xy(2, row));
-        builder.add(new JLabel(Translation.getTranslation("home_tab.files_downloaded")),
-                cc.xy(4, row));
-        row += 2;
+        builder.add(downloadsLine.getUIComponent(), cc.xy(2, row));
+        row++;
 
-        builder.add(uploadsLabel, cc.xy(2, row));
-        builder.add(new JLabel(Translation.getTranslation("home_tab.files_uploaded")),
-                cc.xy(4, row));
-        row += 2;
+        builder.add(uploadsLine.getUIComponent(), cc.xy(2, row));
+        row++;
 
-        builder.addSeparator(null, cc.xyw(2, row, 3));
+        builder.addSeparator(null, cc.xy(2, row));
         row +=2;
 
-        builder.add(numberOfFoldersLabel, cc.xy(2, row));
-        builder.add(new JLabel(Translation.getTranslation("home_tab.folders")),
-                cc.xy(4, row));
-        row += 2;
+        builder.add(numberOfFoldersLine.getUIComponent(), cc.xy(2, row));
+        row++;
 
-        builder.add(sizeOfFoldersLabel, cc.xy(2, row));
-        builder.add(sizeOfFoldersDescriptionLabel, cc.xy(4, row));
-        row += 2;
+        builder.add(sizeOfFoldersLine.getUIComponent(), cc.xy(2, row));
+        row++;
 
-        builder.add(computersLabel, cc.xy(2, row));
-        builder.add(new JLabel(Translation.getTranslation("home_tab.computers")),
-                cc.xy(4, row));
-        row += 2;
+        builder.add(computersLine.getUIComponent(), cc.xy(2, row));
 
         return builder.getPanel();
     }
@@ -203,7 +208,7 @@ public class HomeTab extends PFUIComponent {
     private void updateFoldersText() {
         Folder[] folders = getController().getFolderRepository().getFolders();
         int numberOfFolder = folders.length;
-        numberOfFoldersLabel.setText(String.valueOf(numberOfFolder));
+        numberOfFoldersLine.setValue(numberOfFolder);
         long totalSize = 0;
         for (Folder folder : folders) {
             totalSize += folder.getStatistic().getTotalSize();
@@ -222,16 +227,15 @@ public class HomeTab extends PFUIComponent {
             divisor *= 1024;
             descriptionKey = "home_tab.total_gigabytes";
         }
-        String num;
+        double num;
         if (divisor == 1) {
-            num = String.valueOf(totalSize);
+            num = totalSize;
         } else {
-            DecimalFormat numberFormat = Format.getNumberFormat();
-            num = numberFormat.format((double) totalSize / (double) divisor);
+            num = (double) totalSize / (double) divisor;
         }
 
-        sizeOfFoldersLabel.setText(num);
-        sizeOfFoldersDescriptionLabel.setText(
+        sizeOfFoldersLine.setValue(num);
+        sizeOfFoldersLine.setNormalLabelText(
                 Translation.getTranslation(descriptionKey));
     }
 
@@ -240,8 +244,8 @@ public class HomeTab extends PFUIComponent {
      */
     private void updateTransferText() {
         synchronizationStatusLabel.setText(getSyncText());
-        downloadsLabel.setText(String.valueOf(downloadsCountVM.getValue()));
-        uploadsLabel.setText(String.valueOf(uploadsCountVM.getValue()));
+        downloadsLine.setValue((Integer) downloadsCountVM.getValue());
+        uploadsLine.setValue((Integer) uploadsCountVM.getValue());
     }
 
     /**
@@ -288,7 +292,7 @@ public class HomeTab extends PFUIComponent {
             logFine("Folder: " + folder.getName() + ", incoming: " +
                     folder.getStatistic().getIncomingFilesCount());
         }
-        filesAvailableLabel.setText(String.valueOf(count));
+        filesAvailableLine.setValue(count);
     }
 
     /**
@@ -296,7 +300,7 @@ public class HomeTab extends PFUIComponent {
      */
     private void updateComputers() {
         int nodeCount = getController().getNodeManager().getNodesAsCollection().size();
-        computersLabel.setText(String.valueOf(nodeCount));
+        computersLine.setValue(nodeCount);
     }
 
     /**
