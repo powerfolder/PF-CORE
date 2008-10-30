@@ -5,8 +5,7 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.event.FolderEvent;
-import de.dal33t.powerfolder.event.FolderAdapter;
+import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
@@ -33,9 +32,10 @@ public class ExpandableFolderView extends PFUIComponent {
     private JLabel filesLabel;
     private JLabel syncPercentLabel;
     private JLabel totalSizeLabel;
+    private JLabel membersLabel;
 
     private MyFolderListener myFolderListener;
-
+    private MyFolderMembershipListener myFolderMembershipListener;
     public ExpandableFolderView(Controller controller, Folder folder) {
         super(controller);
         this.folder = folder;
@@ -60,7 +60,7 @@ public class ExpandableFolderView extends PFUIComponent {
 
         // Build lower detials with line border.
         FormLayout lowerLayout = new FormLayout("3dlu, pref:grow, 3dlu",
-            "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
+            "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
         PanelBuilder lowerBuilder = new PanelBuilder(lowerLayout);
 
         String transferMode = Translation.getTranslation("exp_folder_view.transfer_mode",
@@ -74,6 +74,10 @@ public class ExpandableFolderView extends PFUIComponent {
         lowerBuilder.add(syncPercentLabel, cc.xy(2, 8));
 
         lowerBuilder.add(totalSizeLabel, cc.xy(2, 10));
+
+        lowerBuilder.addSeparator(null, cc.xy(2, 12));
+
+        lowerBuilder.add(membersLabel, cc.xy(2, 14));
 
         JPanel lowerPanel = lowerBuilder.getPanel();
         lowerPanel.setBorder(BorderFactory.createEtchedBorder());
@@ -116,9 +120,11 @@ public class ExpandableFolderView extends PFUIComponent {
         filesLabel = new JLabel();
         syncPercentLabel = new JLabel();
         totalSizeLabel = new JLabel();
+        membersLabel = new JLabel();
         updateNumberOfFiles();
         updateStatsDetails();
         registerListeners();
+        updateFolderMembershipDetails();
     }
 
     /**
@@ -127,11 +133,14 @@ public class ExpandableFolderView extends PFUIComponent {
      */
     public void detatch() {
         folder.removeFolderListener(myFolderListener);
+        folder.removeMembershipListener(myFolderMembershipListener);
     }
 
     private void registerListeners() {
         myFolderListener = new MyFolderListener();
         folder.addFolderListener(myFolderListener);
+        myFolderMembershipListener = new MyFolderMembershipListener();
+        folder.addMembershipListener(myFolderMembershipListener);
     }
 
     public JPanel getUIComponent() {
@@ -192,10 +201,31 @@ public class ExpandableFolderView extends PFUIComponent {
         filesLabel.setText(filesText);
     }
 
+    private void updateFolderMembershipDetails() {
+        int count = folder.getMembersCount();
+        membersLabel.setText(Translation.getTranslation(
+                "exp_folder_view.members", count));
+    }
+
     private class MyFolderListener extends FolderAdapter {
 
         public void statisticsCalculated(FolderEvent folderEvent) {
             updateStatsDetails();
+        }
+
+        public boolean fireInEventDispathThread() {
+            return true;
+        }
+    }
+
+    private class MyFolderMembershipListener implements FolderMembershipListener {
+
+        public void memberJoined(FolderMembershipEvent folderEvent) {
+            updateFolderMembershipDetails();
+        }
+
+        public void memberLeft(FolderMembershipEvent folderEvent) {
+            updateFolderMembershipDetails();
         }
 
         public boolean fireInEventDispathThread() {
