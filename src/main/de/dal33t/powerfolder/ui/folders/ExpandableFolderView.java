@@ -5,6 +5,9 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.event.FolderListener;
+import de.dal33t.powerfolder.event.FolderEvent;
+import de.dal33t.powerfolder.event.FolderAdapter;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
@@ -25,6 +28,11 @@ public class ExpandableFolderView extends PFUIComponent {
     private JPanel uiComponent;
     private JPanel lowerOuterPanel;
     private AtomicBoolean expanded;
+
+    private JLabel filesLabel;
+    private JLabel syncPercentLabel;
+
+    private MyFolderListener myFolderListener;
 
     public ExpandableFolderView(Controller controller, Folder folder) {
         super(controller);
@@ -50,7 +58,7 @@ public class ExpandableFolderView extends PFUIComponent {
 
         // Build lower detials with line border.
         FormLayout lowerLayout = new FormLayout("3dlu, pref:grow, 3dlu",
-            "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
+            "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
         PanelBuilder lowerBuilder = new PanelBuilder(lowerLayout);
 
         String transferMode = Translation.getTranslation("exp_folder_view.transfer_mode",
@@ -59,9 +67,9 @@ public class ExpandableFolderView extends PFUIComponent {
 
         lowerBuilder.addSeparator(null, cc.xy(2, 4));
 
-        String files = Translation.getTranslation("exp_folder_view.files",
-                folder.getKnownFilesCount());
-        lowerBuilder.add(new JLabel(files), cc.xy(2, 6));
+        lowerBuilder.add(filesLabel, cc.xy(2, 6));
+
+        lowerBuilder.add(syncPercentLabel, cc.xy(2, 8));
 
         JPanel lowerPanel = lowerBuilder.getPanel();
         lowerPanel.setBorder(BorderFactory.createEtchedBorder());
@@ -101,6 +109,24 @@ public class ExpandableFolderView extends PFUIComponent {
         expandCollapseButton.addActionListener(new MyActionListener());
         syncFolderButton = new JButtonMini(Icons.DOWNLOAD_ACTIVE,
                 Translation.getTranslation("exp_folder_view.synchronize_folder"));
+        filesLabel = new JLabel();
+        syncPercentLabel = new JLabel();
+        updateNumberOfFiles();
+        updateSyncPercentage();
+        registerListeners();
+    }
+
+    /**
+     * This should be called if the folder is removed from the repository,
+     * so that the listener gets removed.
+     */
+    public void detatch() {
+        folder.removeFolderListener(myFolderListener);
+    }
+
+    private void registerListeners() {
+        myFolderListener = new MyFolderListener();
+        folder.addFolderListener(myFolderListener);
     }
 
     public JPanel getUIComponent() {
@@ -112,6 +138,36 @@ public class ExpandableFolderView extends PFUIComponent {
 
     public String getFolderName() {
         return folder.getName();
+    }
+
+    private void updateSyncPercentage() {
+        double sync = folder.getStatistic().getHarmonizedSyncPercentage();
+        if (sync < 0) {
+            sync = 0;
+        }
+        if (sync > 100) {
+            sync = 100;
+        }
+        String syncText = Translation.getTranslation(
+                "exp_folder_view.synchronized", sync);
+        syncPercentLabel.setText(syncText);
+    }
+
+    private void updateNumberOfFiles() {
+        String filesText = Translation.getTranslation("exp_folder_view.files",
+                folder.getKnownFilesCount());
+        filesLabel.setText(filesText);
+    }
+
+    private class MyFolderListener extends FolderAdapter {
+
+        public void statisticsCalculated(FolderEvent folderEvent) {
+            updateSyncPercentage();
+        }
+
+        public boolean fireInEventDispathThread() {
+            return true;
+        }
     }
 
     private class MyActionListener implements ActionListener {
