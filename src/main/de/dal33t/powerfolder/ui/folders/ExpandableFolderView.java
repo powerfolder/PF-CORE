@@ -5,13 +5,13 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.event.FolderListener;
 import de.dal33t.powerfolder.event.FolderEvent;
 import de.dal33t.powerfolder.event.FolderAdapter;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Format;
 
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
@@ -19,6 +19,7 @@ import javax.swing.JPanel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.text.DecimalFormat;
 
 public class ExpandableFolderView extends PFUIComponent {
 
@@ -31,6 +32,7 @@ public class ExpandableFolderView extends PFUIComponent {
 
     private JLabel filesLabel;
     private JLabel syncPercentLabel;
+    private JLabel totalSizeLabel;
 
     private MyFolderListener myFolderListener;
 
@@ -58,7 +60,7 @@ public class ExpandableFolderView extends PFUIComponent {
 
         // Build lower detials with line border.
         FormLayout lowerLayout = new FormLayout("3dlu, pref:grow, 3dlu",
-            "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
+            "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
         PanelBuilder lowerBuilder = new PanelBuilder(lowerLayout);
 
         String transferMode = Translation.getTranslation("exp_folder_view.transfer_mode",
@@ -70,6 +72,8 @@ public class ExpandableFolderView extends PFUIComponent {
         lowerBuilder.add(filesLabel, cc.xy(2, 6));
 
         lowerBuilder.add(syncPercentLabel, cc.xy(2, 8));
+
+        lowerBuilder.add(totalSizeLabel, cc.xy(2, 10));
 
         JPanel lowerPanel = lowerBuilder.getPanel();
         lowerPanel.setBorder(BorderFactory.createEtchedBorder());
@@ -111,8 +115,9 @@ public class ExpandableFolderView extends PFUIComponent {
                 Translation.getTranslation("exp_folder_view.synchronize_folder"));
         filesLabel = new JLabel();
         syncPercentLabel = new JLabel();
+        totalSizeLabel = new JLabel();
         updateNumberOfFiles();
-        updateSyncPercentage();
+        updateStatsDetails();
         registerListeners();
     }
 
@@ -140,7 +145,7 @@ public class ExpandableFolderView extends PFUIComponent {
         return folder.getName();
     }
 
-    private void updateSyncPercentage() {
+    private void updateStatsDetails() {
         double sync = folder.getStatistic().getHarmonizedSyncPercentage();
         if (sync < 0) {
             sync = 0;
@@ -151,6 +156,34 @@ public class ExpandableFolderView extends PFUIComponent {
         String syncText = Translation.getTranslation(
                 "exp_folder_view.synchronized", sync);
         syncPercentLabel.setText(syncText);
+
+        long totalSize = folder.getStatistic().getTotalSize();
+        String descriptionKey = "exp_folder_view.total_bytes";
+        long divisor = 1;
+        if (totalSize >= 1024) {
+            divisor *= 1024;
+            descriptionKey = "exp_folder_view.total_kilobytes";
+        }
+        if (totalSize / divisor >= 1024) {
+            divisor *= 1024;
+            descriptionKey = "exp_folder_view.total_megabytes";
+        }
+        if (totalSize / divisor >= 1024) {
+            divisor *= 1024;
+            descriptionKey = "exp_folder_view.total_gigabytes";
+        }
+        double num;
+        if (divisor == 1) {
+            num = totalSize;
+        } else {
+            num = (double) totalSize / (double) divisor;
+        }
+
+        DecimalFormat numberFormat = Format.getNumberFormat();
+        String formattedNum = numberFormat.format(num);
+
+        totalSizeLabel.setText(Translation.getTranslation(
+                descriptionKey, formattedNum));
     }
 
     private void updateNumberOfFiles() {
@@ -162,7 +195,7 @@ public class ExpandableFolderView extends PFUIComponent {
     private class MyFolderListener extends FolderAdapter {
 
         public void statisticsCalculated(FolderEvent folderEvent) {
-            updateSyncPercentage();
+            updateStatsDetails();
         }
 
         public boolean fireInEventDispathThread() {
