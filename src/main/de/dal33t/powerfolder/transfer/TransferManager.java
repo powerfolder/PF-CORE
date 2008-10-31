@@ -1456,7 +1456,9 @@ public class TransferManager extends PFComponent {
                     return;
                 }
                 try {
-                    man = downloadManagerFactory.createDownloadManager(getController(), fInfo, download.isRequestedAutomatic());
+                    man = downloadManagerFactory
+                        .createDownloadManager(getController(), fInfo, download
+                            .isRequestedAutomatic());
                 } catch (IOException e) {
                     // Something gone badly wrong
                     logSevere("IOException", e);
@@ -1944,7 +1946,9 @@ public class TransferManager extends PFComponent {
                 if (download.isCompleted()) {
                     DownloadManager man = null;
                     for (DownloadManager tmp : completedDownloads) {
-                        if (tmp.getFileInfo().equals(download.getFile())) {
+                        if (tmp.getFileInfo().isCompletelyIdentical(
+                            download.getFile()))
+                        {
                             man = tmp;
                             break;
                         }
