@@ -21,8 +21,13 @@ package de.dal33t.powerfolder.ui;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.event.FolderRepositoryEvent;
+import de.dal33t.powerfolder.event.FolderRepositoryListener;
+import de.dal33t.powerfolder.event.TransferManagerEvent;
+import de.dal33t.powerfolder.event.TransferManagerListener;
 import de.dal33t.powerfolder.ui.actionold.SyncAllFoldersAction;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 import javax.swing.JLabel;
 import javax.swing.Icon;
@@ -38,26 +43,28 @@ public class SyncButtonComponent extends PFUIComponent {
 
     private JLabel syncAllLabel;
     private final AtomicBoolean mouseOver;
-    private final AtomicBoolean anyFoldersTransfering;
+    private final AtomicBoolean anyFolderSyncing;
     private final AtomicBoolean mousePressed;
 
     /**
      * Constructor
-     *
+     * 
      * @param controller
      */
     public SyncButtonComponent(Controller controller) {
         super(controller);
         mouseOver = new AtomicBoolean();
-        anyFoldersTransfering = new AtomicBoolean();
+        anyFolderSyncing = new AtomicBoolean();
         mousePressed = new AtomicBoolean();
+        getController().getTransferManager().addListener(
+            new MyTransferManagerListener());
+        getController().getFolderRepository().addFolderRepositoryListener(
+            new MyFolderRepositoryListener());
         controller.getThreadPool().submit(new MyRunnable());
     }
 
     /**
-     * Gets the sync 'button'.
-     *
-     * @return
+     * @return the sync 'button'.
      */
     public Component getUIComponent() {
         if (syncAllLabel == null) {
@@ -67,14 +74,103 @@ public class SyncButtonComponent extends PFUIComponent {
     }
 
     private void initComponents() {
-        syncAllLabel = new JLabel(Icons.getIconById("icons/sync/normal/sync_00.png"));
-        syncAllLabel.setToolTipText(
-                Translation.getTranslation("scan_all_folders.description"));
+        syncAllLabel = new JLabel(Icons
+            .getIconById("icons/sync/normal/sync_00.png"));
+        syncAllLabel.setToolTipText(Translation
+            .getTranslation("scan_all_folders.description"));
         syncAllLabel.addMouseListener(new MyMouseAdapter());
     }
 
-    public void setAnyFolderTransferring(boolean anyFolderTransferring) {
-        anyFoldersTransfering.set(anyFolderTransferring);
+    private void updateSyncLabel() {
+        anyFolderSyncing.set(getController().getFolderRepository()
+            .isAnyFolderTransferring()
+            || getController().getFolderRepository()
+                .getCurrentlyMaintainingFolder() != null);
+    }
+
+    private class MyFolderRepositoryListener implements
+        FolderRepositoryListener
+    {
+        public void folderCreated(FolderRepositoryEvent e) {
+        }
+
+        public void folderRemoved(FolderRepositoryEvent e) {
+        }
+
+        public void maintenanceFinished(FolderRepositoryEvent e) {
+        }
+
+        public void maintenanceStarted(FolderRepositoryEvent e) {
+            updateSyncLabel();
+        }
+
+        public boolean fireInEventDispathThread() {
+            return true;
+        }
+
+    }
+
+    private class MyTransferManagerListener implements TransferManagerListener {
+
+        public void completedDownloadRemoved(TransferManagerEvent event) {
+        }
+
+        public void downloadAborted(TransferManagerEvent event) {
+            updateSyncLabel();
+        }
+
+        public void downloadBroken(TransferManagerEvent event) {
+            updateSyncLabel();
+        }
+
+        public void downloadCompleted(TransferManagerEvent event) {
+            updateSyncLabel();
+        }
+
+        public void downloadQueued(TransferManagerEvent event) {
+            updateSyncLabel();
+        }
+
+        public void downloadRequested(TransferManagerEvent event) {
+            updateSyncLabel();
+        }
+
+        public void downloadStarted(TransferManagerEvent event) {
+            updateSyncLabel();
+        }
+
+        public void pendingDownloadEnqueud(TransferManagerEvent event) {
+            updateSyncLabel();
+        }
+
+        public void uploadAborted(TransferManagerEvent event) {
+            updateSyncLabel();
+        }
+
+        public void uploadBroken(TransferManagerEvent event) {
+            updateSyncLabel();
+        }
+
+        public void uploadCompleted(TransferManagerEvent event) {
+            updateSyncLabel();
+        }
+
+        public void uploadRequested(TransferManagerEvent event) {
+            updateSyncLabel();
+        }
+
+        public void uploadStarted(TransferManagerEvent event) {
+            updateSyncLabel();
+        }
+
+        public void completedUploadRemoved(TransferManagerEvent event) {
+            updateSyncLabel();
+        }
+
+        public boolean fireInEventDispathThread() {
+            return true;
+        }
+
     }
 
     /**
@@ -106,8 +202,8 @@ public class SyncButtonComponent extends PFUIComponent {
             int index = 0;
             while (!getController().getThreadPool().isShutdown()) {
                 try {
-                    Thread.sleep(100);
-                    if (anyFoldersTransfering.get()) {
+                    Thread.sleep(40);
+                    if (anyFolderSyncing.get()) {
                         index++;
                         if (index > 17) {
                             index = 0;
@@ -134,10 +230,16 @@ public class SyncButtonComponent extends PFUIComponent {
                         directoryString = "normal";
                     }
 
-                    String iconString = "icons/sync/" + directoryString +
-                            "/sync_" + numberString + ".png";
-                    Icon icon = Icons.getIcon(iconString);
-                    syncAllLabel.setIcon(icon);
+                    String iconString = "icons/sync/" + directoryString
+                        + "/sync_" + numberString + ".png";
+                    final Icon icon = Icons.getIcon(iconString);
+                    // Move into EDT, otherwise it violates the one thread EDT
+                    // rule.
+                    UIUtil.invokeAndWaitInEDT(new Runnable() {
+                        public void run() {
+                            syncAllLabel.setIcon(icon);
+                        }
+                    });
 
                 } catch (InterruptedException e) {
                     // Ignore.

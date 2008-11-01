@@ -19,27 +19,6 @@
  */
 package de.dal33t.powerfolder.ui;
 
-import com.jgoodies.forms.builder.DefaultFormBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.event.NodeManagerEvent;
-import de.dal33t.powerfolder.event.NodeManagerListener;
-import de.dal33t.powerfolder.event.TransferManagerEvent;
-import de.dal33t.powerfolder.event.TransferManagerListener;
-import de.dal33t.powerfolder.net.ConnectionListener;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.util.ui.ComplexComponentFactory;
-import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker;
-import de.dal33t.powerfolder.util.ui.UIPanel;
-
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JSeparator;
-import javax.swing.SwingConstants;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
@@ -49,9 +28,30 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JSeparator;
+import javax.swing.SwingConstants;
+
+import com.jgoodies.forms.builder.DefaultFormBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
+
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.event.NodeManagerEvent;
+import de.dal33t.powerfolder.event.NodeManagerListener;
+import de.dal33t.powerfolder.net.ConnectionListener;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.ui.ComplexComponentFactory;
+import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker;
+import de.dal33t.powerfolder.util.ui.UIPanel;
+
 /**
  * The status bar on the lower side of the main window.
- *
+ * 
  * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
@@ -86,8 +86,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
 
             boolean showPort = ConfigurationEntry.NET_BIND_RANDOM_PORT
                 .getValueBoolean(getController())
-                && getController().getConnectionListener().getPort() !=
-                    ConnectionListener.DEFAULT_PORT;
+                && getController().getConnectionListener().getPort() != ConnectionListener.DEFAULT_PORT;
             initComponents();
 
             CellConstraints cc = new CellConstraints();
@@ -95,12 +94,13 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             // Upper section
 
             FormLayout upperLayout = new FormLayout(
-                    "pref, 3dlu, center:pref:grow, 3dlu, pref", "pref, 3dlu, pref");
-            DefaultFormBuilder upperBuilder = new DefaultFormBuilder(upperLayout);
+                "pref, 3dlu, center:pref:grow, 3dlu, pref", "pref, 3dlu, pref");
+            DefaultFormBuilder upperBuilder = new DefaultFormBuilder(
+                upperLayout);
 
             upperBuilder.add(spacerLabel, cc.xy(1, 1));
-            upperBuilder.add(syncButtonComponent.getUIComponent(),
-                    cc.xywh(3, 1, 1, 3));
+            upperBuilder.add(syncButtonComponent.getUIComponent(), cc.xywh(3,
+                1, 1, 3));
             upperBuilder.add(openPreferencesButton, cc.xy(5, 1));
             upperBuilder.add(openAboutBoxButton, cc.xy(5, 3));
 
@@ -116,7 +116,8 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                     "pref, 3dlu, pref, fill:pref:grow, pref, 3dlu, pref, 3dlu, pref",
                     "pref");
             }
-            DefaultFormBuilder lowerBuilder = new DefaultFormBuilder(lowerLayout);
+            DefaultFormBuilder lowerBuilder = new DefaultFormBuilder(
+                lowerLayout);
 
             int col = 1;
             lowerBuilder.add(onlineStateInfo, cc.xy(col, 1));
@@ -149,7 +150,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             // Main section
 
             FormLayout mainLayout = new FormLayout(
-                    "1dlu, fill:pref:grow, 1dlu", "pref, 3dlu, pref, 1dlu");
+                "1dlu, fill:pref:grow, 1dlu", "pref, 3dlu, pref, 1dlu");
             DefaultFormBuilder mainBuilder = new DefaultFormBuilder(mainLayout);
             mainBuilder.add(upperBuilder.getPanel(), cc.xy(2, 1));
             mainBuilder.add(lowerBuilder.getPanel(), cc.xy(2, 3));
@@ -168,7 +169,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                 // open connect dialog
                 if (getController().getNodeManager().isStarted()) {
                     getUIController().getActionModel().getConnectAction()
-                            .actionPerformed(null);
+                        .actionPerformed(null);
                 } else if (!Util.isRunningProVersion()) {
                     // Smells like hack(tm).
                     new FreeLimitationDialog(getController()).open();
@@ -177,14 +178,16 @@ public class StatusBar extends PFUIComponent implements UIPanel {
         });
 
         upStats = ComplexComponentFactory.createTransferCounterLabel(
-            getController(), Icons.UPLOAD, Translation.getTranslation("status.upload"),
-            getController().getTransferManager().getUploadCounter(),
-                Translation.getTranslation("status.upload.text"));
+            getController(), Icons.UPLOAD, Translation
+                .getTranslation("status.upload"), getController()
+                .getTransferManager().getUploadCounter(), Translation
+                .getTranslation("status.upload.text"));
 
         downStats = ComplexComponentFactory.createTransferCounterLabel(
-            getController(), Icons.DOWNLOAD, Translation.getTranslation("status.download"),
-            getController().getTransferManager().getDownloadCounter(),
-                Translation.getTranslation("status.download.text"));
+            getController(), Icons.DOWNLOAD, Translation
+                .getTranslation("status.download"), getController()
+                .getTransferManager().getDownloadCounter(), Translation
+                .getTranslation("status.download.text"));
 
         limitedConnectivityLabel = new JLabel();
         limitedConnectivityLabel.addMouseListener(new MouseAdapter() {
@@ -216,37 +219,32 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                 }
             });
 
-        getController().getTransferManager().addListener(
-            new MyTransferManagerListener());
-
-        portLabel = new JLabel(String.valueOf(
-                getController().getConnectionListener().getPort()));
+        portLabel = new JLabel(String.valueOf(getController()
+            .getConnectionListener().getPort()));
         portLabel.setIcon(Icons.MAC);
-        portLabel.setToolTipText(Translation.getTranslation("status.port.text"));
+        portLabel
+            .setToolTipText(Translation.getTranslation("status.port.text"));
 
         openPreferencesButton = new JButton(getController().getUIController()
-                .getActionModel().getOpenPreferencesAction());
+            .getActionModel().getOpenPreferencesAction());
         openAboutBoxButton = new JButton(getController().getUIController()
-                .getActionModel().getOpenAboutBoxAction());
+            .getActionModel().getOpenAboutBoxAction());
         spacerLabel = new JLabel() {
 
             /**
              * This keeps the sync button in the center of the panel.
-             * @return
+             * 
+             * @return the preferred size
              */
             public Dimension getPreferredSize() {
-                int w = Math.max((int) openPreferencesButton.getPreferredSize().getWidth(),
-                        (int) openAboutBoxButton.getPreferredSize().getWidth());
+                int w = Math.max((int) openPreferencesButton.getPreferredSize()
+                    .getWidth(), (int) openAboutBoxButton.getPreferredSize()
+                    .getWidth());
                 return new Dimension(w, super.getHeight());
             }
         };
 
         syncButtonComponent = new SyncButtonComponent(getController());
-    }
-
-    private void updateSyncLabel() {
-        syncButtonComponent.setAnyFolderTransferring(getController()
-                .getFolderRepository().isAnyFolderTransferring());
     }
 
     private void updateLimitedConnectivityLabel() {
@@ -322,7 +320,8 @@ public class StatusBar extends PFUIComponent implements UIPanel {
 
         // System.err.println("Got " + nOnlineUser + " online users");
         if (!controller.getNodeManager().isStarted()) {
-            label.setToolTipText(Translation.getTranslation("online_label.disabled"));
+            label.setToolTipText(Translation
+                .getTranslation("online_label.disabled"));
             label.setIcon(Icons.WARNING);
             newState = DISABLED;
         } else if (nOnlineUser > 0) {
@@ -372,68 +371,5 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                 }
             }
         }
-    }
-
-    private class MyTransferManagerListener implements TransferManagerListener {
-
-        public void completedDownloadRemoved(TransferManagerEvent event) {
-        }
-
-        public void downloadAborted(TransferManagerEvent event) {
-            updateSyncLabel();
-        }
-
-        public void downloadBroken(TransferManagerEvent event) {
-            updateSyncLabel();
-        }
-
-        public void downloadCompleted(TransferManagerEvent event) {
-            updateSyncLabel();
-        }
-
-        public void downloadQueued(TransferManagerEvent event) {
-            updateSyncLabel();
-        }
-
-        public void downloadRequested(TransferManagerEvent event) {
-            updateSyncLabel();
-        }
-
-        public void downloadStarted(TransferManagerEvent event) {
-            updateSyncLabel();
-        }
-
-        public void pendingDownloadEnqueud(TransferManagerEvent event) {
-            updateSyncLabel();
-        }
-
-        public void uploadAborted(TransferManagerEvent event) {
-            updateSyncLabel();
-        }
-
-        public void uploadBroken(TransferManagerEvent event) {
-            updateSyncLabel();
-        }
-
-        public void uploadCompleted(TransferManagerEvent event) {
-            updateSyncLabel();
-        }
-
-        public void uploadRequested(TransferManagerEvent event) {
-            updateSyncLabel();
-        }
-
-        public void uploadStarted(TransferManagerEvent event) {
-            updateSyncLabel();
-        }
-
-        public void completedUploadRemoved(TransferManagerEvent event) {
-            updateSyncLabel();
-        }
-
-        public boolean fireInEventDispathThread() {
-            return true;
-        }
-
     }
 }
