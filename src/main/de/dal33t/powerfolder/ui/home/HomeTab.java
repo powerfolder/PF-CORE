@@ -330,11 +330,17 @@ public class HomeTab extends PFUIComponent {
             onlineStorageLabel.setText(Translation.getTranslation(
                     "home_tab.online_storage.not_setup"));
         } else if (client.isConnected()) {
-            onlineStorageLabel.setText(Translation.getTranslation(
-                    "home_tab.online_storage.account", client.getUsername()));
+            if (client.getAccount().getOSSubscription().isDisabled()) {
+                onlineStorageLabel.setText(Translation.getTranslation(
+                        "home_tab.online_storage.account_disabled",
+                        client.getUsername()));
+            } else {
+                onlineStorageLabel.setText(Translation.getTranslation(
+                        "home_tab.online_storage.account", client.getUsername()));
+            }
         } else {
             onlineStorageLabel.setText(Translation.getTranslation(
-                    "home_tab.online_storage.account_connecting", 
+                    "home_tab.online_storage.account_connecting",
                     client.getUsername()));
         }
     }
