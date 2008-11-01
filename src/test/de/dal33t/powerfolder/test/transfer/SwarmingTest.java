@@ -312,7 +312,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
         TestHelper.assertIncompleteFilesGone(this);
     }
 
-    public void testMultiFileAlterations() throws Exception {
+    public void xtestMultiFileAlterations() throws Exception {
         for (int i = 0; i < 20; i++) {
             testFileAlterations();
             tearDown();
