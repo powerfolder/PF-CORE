@@ -26,6 +26,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.net.AddressRange;
 import de.dal33t.powerfolder.util.ui.AddressEditor.EditorResult;
@@ -60,13 +61,13 @@ public class LANList extends PFComponent {
         networklist = new JList(new DefaultListModel());
         networklist
             .setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        addButton = new JButton();
+        addButton = new JButton(Icons.WORLD_ADD);
         addButton.setText(Translation
             .getTranslation("folder_panel.settings_tab.addbutton.name"));
-        removeButton = new JButton();
+        removeButton = new JButton(Icons.WORLD_DELETE);
         removeButton.setText(Translation
             .getTranslation("folder_panel.settings_tab.removebutton.name"));
-        editButton = new JButton();
+        editButton = new JButton(Icons.WORLD_EDIT);
         editButton.setText(Translation
             .getTranslation("folder_panel.settings_tab.editbutton.name"));
 

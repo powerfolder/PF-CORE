@@ -88,6 +88,11 @@ public class Icons {
     public static final Icon SUSPEND = getIcon("icons/Suspend.gif");
     public static final Icon HOME = getIcon("icons/Home.gif");
 
+    public static final Icon WORLD_ADD = getIcon("icons/WorldAdd.png");
+    public static final Icon WORLD_EDIT = getIcon("icons/WorldEdit.png");
+    public static final Icon WORLD_DELETE = getIcon("icons/WorldDelete.png");
+    public static final Icon FORCE_UPDATE = getIcon("icons/ForceUpdate.png");
+
     public static final Icon UNKNOWNFILE = getIcon("icons/Unknown.gif");
     public static final Icon UNKNOWNFILE_GRAY = getGrayIcon(UNKNOWNFILE);
     public static final Icon UNKNOWNFILE_RED = convertToRed(UNKNOWNFILE_GRAY);

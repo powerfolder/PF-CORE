@@ -30,7 +30,6 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.forms.layout.Sizes;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
@@ -38,6 +37,7 @@ import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.StartPanel;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.LookAndFeelSupport;
+import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.OSUtil;
@@ -59,7 +59,6 @@ import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -189,9 +188,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         });
 
         locationField = createLocationField();
-        Dimension dims = locationField.getPreferredSize();
-        dims.width = Sizes.dialogUnitXAsPixel(147, locationField);
-        locationField.setPreferredSize(dims);
         
         ValueModel smallToolbarModel = new ValueHolder(
             PreferencesEntry.SMALL_TOOLBAR.getValueBoolean(getController()));
@@ -263,7 +259,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     public JPanel getUIPanel() {
         if (panel == null) {
             FormLayout layout = new FormLayout(
-                "right:100dlu, 3dlu, 30dlu, 3dlu, 15dlu, 10dlu, 30dlu, 30dlu, pref",
+                "right:100dlu, 3dlu, 100dlu, 3dlu, pref:grow",
                 "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, top:pref, 3dlu, top:pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
 
             PanelBuilder builder = new PanelBuilder(layout);
@@ -274,45 +270,45 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
             builder.add(new JLabel(Translation
                 .getTranslation("preferences.dialog.nickname")), cc.xy(1, row));
-            builder.add(nickField, cc.xywh(3, row, 7, 1));
+            builder.add(nickField, cc.xy(3, row));
 
             row += 2;
             builder.add(new JLabel(Translation
                 .getTranslation("preferences.dialog.language")), cc.xy(1, row));
-            builder.add(languageChooser, cc.xywh(3, row, 7, 1));
+            builder.add(languageChooser, cc.xy(3, row));
 
             row += 2;
             builder.add(new JLabel(Translation
                 .getTranslation("preferences.dialog.startPanel")), cc
                 .xy(1, row));
-            builder.add(startPanelChooser, cc.xywh(3, row, 7, 1));
+            builder.add(startPanelChooser, cc.xy(3, row));
 
             row += 2;
             builder
                 .add(new JLabel(Translation
                     .getTranslation("preferences.dialog.exit_behavior")), cc.xy(1,
                     row));
-            builder.add(xBehaviorChooser, cc.xywh(3, row, 7, 1));
+            builder.add(xBehaviorChooser, cc.xy(3, row));
 
             row += 2;
             builder.add(new JLabel(Translation
                 .getTranslation("preferences.dialog.color_theme")), cc
                 .xy(1, row));
-            builder.add(lookAndFeelChooser, cc.xywh(3, row, 7, 1));
+            builder.add(lookAndFeelChooser, cc.xy(3, row));
 
             row += 2;
             builder.add(new JLabel(Translation
                 .getTranslation("preferences.dialog.base_dir")), cc.xy(1, row));
-            builder.add(locationField, cc.xywh(3, row, 7, 1));
+            builder.add(locationField, cc.xy(3, row));
 
             row += 2;
-            builder.add(showAdvancedSettingsBox, cc.xywh(3, row, 7, 1));
+            builder.add(showAdvancedSettingsBox, cc.xywh(3, row, 3, 1));
 
             row += 2;
-            builder.add(smallToolbarBox, cc.xywh(3, row, 7, 1));
+            builder.add(smallToolbarBox, cc.xywh(3, row, 3, 1));
 
             row += 2;
-            builder.add(useRecycleBinBox, cc.xywh(3, row, 7, 1));
+            builder.add(useRecycleBinBox, cc.xywh(3, row, 3, 1));
 
             // Add info for non-windows systems
             if (OSUtil.isWindowsSystem()) { // Windows System
@@ -326,18 +322,18 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 }
 
                 row += 2;
-                builder.add(createDesktopShortcutsBox, cc.xywh(3, row, 7, 1));
+                builder.add(createDesktopShortcutsBox, cc.xywh(3, row, 3, 1));
 
                 if (startWithWindowsBox != null) {
                     row += 2;
-                    builder.add(startWithWindowsBox, cc.xywh(3, row, 7, 1));
+                    builder.add(startWithWindowsBox, cc.xywh(3, row, 3, 1));
                 }
 
                 if (!OSUtil.isWindowsVistaSystem()) {
                     builder.appendRow("3dlu");
                     builder.appendRow("pref");
                     row += 2;
-                    builder.add(usePowerFolderIconBox, cc.xywh(3, row, 7, 1));
+                    builder.add(usePowerFolderIconBox, cc.xywh(3, row, 3, 1));
                 }
             } else {
                 builder.appendRow("7dlu");
@@ -346,7 +342,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 row += 2;
                 builder.add(new JLabel(Translation
                     .getTranslation("preferences.dialog.non_windows_info"),
-                    SwingConstants.CENTER), cc.xywh(1, row, 9, 1));
+                    SwingConstants.CENTER), cc.xywh(1, row, 5, 1));
             }
             panel = builder.getPanel();
         }
@@ -369,7 +365,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
      * @return
      */
     private JComponent createLocationField() {
-        FormLayout layout = new FormLayout("100dlu, 4dlu, 15dlu", "pref");
+        FormLayout layout = new FormLayout("85dlu, 3dlu, pref", "pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
@@ -379,9 +375,8 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         locationTF.setText((String) locationModel.getValue());
         builder.add(locationTF, cc.xy(1, 1));
 
-        JButton locationButton = new JButton(Icons.DIRECTORY);
-        locationButton.setToolTipText(Translation
-            .getTranslation("folder_create.dialog.select_file.text"));
+        JButton locationButton = new JButtonMini(Icons.DIRECTORY,
+                Translation.getTranslation("folder_create.dialog.select_file.text"));
         locationButton.addActionListener(new MyActionListener());
         builder.add(locationButton, cc.xy(3, 1));
         return builder.getPanel();

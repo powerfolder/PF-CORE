@@ -28,6 +28,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
 import de.dal33t.powerfolder.util.Help;
 import de.dal33t.powerfolder.util.Translation;
@@ -155,7 +156,7 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
     public JPanel getUIPanel() {
         if (panel == null) {
             FormLayout layout = new FormLayout(
-                "right:100dlu, 3dlu, 80dlu, 3dlu, left:40dlu",
+                "right:100dlu, 3dlu, 90dlu, 3dlu, left:40dlu",
                 "pref, 3dlu, pref, 7dlu, pref, 4dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, "
                     + "3dlu, pref, 7dlu, pref, 7dlu");
 
@@ -309,7 +310,8 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
 
     private JButton createUpdateButton(ActionListener listener) {
         updateButton = new JButton(Translation
-            .getTranslation("preferences.dialog.dyn_dnsUpdateButton"));
+            .getTranslation("preferences.dialog.dyn_dnsUpdateButton"),
+                Icons.FORCE_UPDATE);
         updateButton.addActionListener(listener);
         return updateButton;
     }
