@@ -27,6 +27,9 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.clientserver.ServerClient;
+import de.dal33t.powerfolder.clientserver.ServerClientListener;
+import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.event.FolderEvent;
 import de.dal33t.powerfolder.event.FolderListener;
@@ -62,6 +65,8 @@ public class HomeTab extends PFUIComponent {
     private final ValueModel downloadsCountVM;
     private final ValueModel uploadsCountVM;
     private final MyFolderListener folderListener;
+    private ServerClient client;
+    private JLabel onlineStorageLabel;
 
     /**
      * Constructor
@@ -75,6 +80,7 @@ public class HomeTab extends PFUIComponent {
         uploadsCountVM = controller.getUIController()
                 .getTransferManagerModel().getCompletedUploadsCountVM();
         folderListener = new MyFolderListener();
+        client = getUIController().getServerClientModel().getClient();
     }
 
     /**
@@ -137,10 +143,12 @@ public class HomeTab extends PFUIComponent {
                 Translation.getTranslation("home_tab.computers"),
                 Translation.getTranslation("home_tab.no_computers"),
                 false, true);
+        onlineStorageLabel = new JLabel();
         updateTransferText();
         updateFoldersText();
         recalculateFilesAvailable();
         updateComputers();
+        updateOnlineStorageDetails();
         registerListeners();
     }
 
@@ -154,6 +162,7 @@ public class HomeTab extends PFUIComponent {
             new MyFolderRepositoryListener());
         getController().getNodeManager().addNodeManagerListener(
             new MyNodeManagerListener());
+        client.addListener(new MyServerClientListener());
     }
 
     /**
@@ -162,7 +171,8 @@ public class HomeTab extends PFUIComponent {
      */
     private JPanel buildMainPanel() {
         FormLayout layout = new FormLayout("3dlu, pref:grow, 3dlu",
-            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, pref, pref, pref, 3dlu, pref, pref, pref, pref:grow");
+            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, pref, pref, pref, 3dlu, pref, pref, pref, pref, 3dlu, pref, 3dlu, pref:grow");
+        //   sync        sep         you-have    files down  upl   sep         #fol  szfo  comp  sep         on-st
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
@@ -198,6 +208,13 @@ public class HomeTab extends PFUIComponent {
         row++;
 
         builder.add(computersLine.getUIComponent(), cc.xy(2, row));
+        row++;
+
+        builder.addSeparator(null, cc.xy(2, row));
+        row +=2;
+
+        builder.add(onlineStorageLabel, cc.xy(2, row));
+        row += 2;
 
         return builder.getPanel();
     }
@@ -299,8 +316,27 @@ public class HomeTab extends PFUIComponent {
      * Updates the information about the number of computers.
      */
     private void updateComputers() {
-        int nodeCount = getController().getNodeManager().getNodesAsCollection().size();
+        int nodeCount = getController().getNodeManager().getNodesAsCollection()
+                .size();
         computersLine.setValue(nodeCount);
+    }
+
+    /**
+     * Updates the Online Storage details.
+     */
+    private void updateOnlineStorageDetails() {
+        if (client == null || client.getUsername() == null ||
+                client.getUsername().trim().length() == 0) {
+            onlineStorageLabel.setText(Translation.getTranslation(
+                    "home_tab.online_storage.not_setup"));
+        } else if (client.isConnected()) {
+            onlineStorageLabel.setText(Translation.getTranslation(
+                    "home_tab.online_storage.account", client.getUsername()));
+        } else {
+            onlineStorageLabel.setText(Translation.getTranslation(
+                    "home_tab.online_storage.account_connecting", 
+                    client.getUsername()));
+        }
     }
 
     /**
@@ -460,6 +496,29 @@ public class HomeTab extends PFUIComponent {
 
         public boolean fireInEventDispathThread() {
             return true;
+        }
+    }
+
+    private class MyServerClientListener implements ServerClientListener {
+
+        public void accountUpdated(ServerClientEvent event) {
+            updateOnlineStorageDetails();
+        }
+
+        public boolean fireInEventDispathThread() {
+            return true;
+        }
+
+        public void login(ServerClientEvent event) {
+            updateOnlineStorageDetails();
+        }
+
+        public void serverConnected(ServerClientEvent event) {
+            updateOnlineStorageDetails();
+        }
+
+        public void serverDisconnected(ServerClientEvent event) {
+            updateOnlineStorageDetails();
         }
     }
 }
