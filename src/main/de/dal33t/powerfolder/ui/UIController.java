@@ -57,7 +57,7 @@ import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
 import de.dal33t.powerfolder.util.ui.TreeNodeList;
-import de.javasoft.plaf.synthetica.SyntheticaStandardLookAndFeel;
+import de.javasoft.plaf.synthetica.SyntheticaSilverMoonLookAndFeel;
 import org.apache.commons.lang.StringUtils;
 
 import javax.imageio.ImageIO;
@@ -179,7 +179,7 @@ public class UIController extends PFComponent {
             if (!lafInitalized) {
                 try {
                     // Set default l&f
-                    LookAndFeelSupport.setLookAndFeel(new SyntheticaStandardLookAndFeel());
+                    LookAndFeelSupport.setLookAndFeel(new SyntheticaSilverMoonLookAndFeel());
                 } catch (UnsupportedLookAndFeelException e) {
                     logSevere("Unable to set look and feel", e);
                 } catch (ParseException e) {

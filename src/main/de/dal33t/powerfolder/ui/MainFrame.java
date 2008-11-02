@@ -98,22 +98,14 @@ public class MainFrame extends PFUIComponent {
         uiComponent.setResizable(true);
 
         Preferences prefs = getController().getPreferences();
-        uiComponent.setLocation(prefs.getInt("mainframe.x", 100), prefs.getInt(
-            "mainframe.y", 100));
+        uiComponent.setLocation(prefs.getInt("mainframe4.x", 100), prefs.getInt(
+            "mainframe4.y", 100));
 
         // Pack elements
         uiComponent.pack();
 
-        Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
-        int width;
-        int height;
-        if (screen.width <= 1024) {
-            width = prefs.getInt("mainframe.width", 950);
-            height = prefs.getInt("mainframe.height", 630);
-        } else {
-            width = prefs.getInt("mainframe.width", 1100);
-            height = prefs.getInt("mainframe.height", 730);
-        }
+        int width = prefs.getInt("mainframe4.width", 500);
+        int height = prefs.getInt("mainframe4.height", 600);
         if (width < 50) {
             width = 50;
         }
@@ -122,7 +114,7 @@ public class MainFrame extends PFUIComponent {
         }
         uiComponent.setSize(width, height);
 
-        if (prefs.getBoolean("mainframe.maximized", false)) {
+        if (prefs.getBoolean("mainframe4.maximized", false)) {
             // Fix Synthetica maximization, otherwise it covers the task bar.
             // See http://www.javasoft.de/jsf/public/products/synthetica/faq#q13
             RootPaneUI ui = uiComponent.getRootPane().getUI();
@@ -231,17 +223,17 @@ public class MainFrame extends PFUIComponent {
 
         if ((uiComponent.getExtendedState() & Frame.MAXIMIZED_BOTH) == Frame.MAXIMIZED_BOTH)
         {
-            prefs.putBoolean("mainframe.maximized", true);
+            prefs.putBoolean("mainframe4.maximized", true);
         } else {
-            prefs.putInt("mainframe.x", uiComponent.getX());
+            prefs.putInt("mainframe4.x", uiComponent.getX());
             if (uiComponent.getWidth() > 0) {
-                prefs.putInt("mainframe.width", uiComponent.getWidth());
+                prefs.putInt("mainframe4.width", uiComponent.getWidth());
             }
-            prefs.putInt("mainframe.y", uiComponent.getY());
+            prefs.putInt("mainframe4.y", uiComponent.getY());
             if (uiComponent.getHeight() > 0) {
-                prefs.putInt("mainframe.height", uiComponent.getHeight());
+                prefs.putInt("mainframe4.height", uiComponent.getHeight());
             }
-            prefs.putBoolean("mainframe.maximized", false);
+            prefs.putBoolean("mainframe4.maximized", false);
         }
     }
 
