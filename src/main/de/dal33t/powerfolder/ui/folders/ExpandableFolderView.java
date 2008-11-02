@@ -1,3 +1,22 @@
+/*
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id: ExpandableFolderView.java 5495 2008-10-24 04:59:13Z harry $
+ */
 package de.dal33t.powerfolder.ui.folders;
 
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -20,6 +39,9 @@ import java.awt.event.ActionListener;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.text.DecimalFormat;
 
+/**
+ * Class to render expandable view of a folder.
+ */
 public class ExpandableFolderView extends PFUIComponent {
 
     private final Folder folder;
@@ -36,11 +58,32 @@ public class ExpandableFolderView extends PFUIComponent {
 
     private MyFolderListener myFolderListener;
     private MyFolderMembershipListener myFolderMembershipListener;
+
+    /**
+     * Constructor
+     *
+     * @param controller
+     * @param folder
+     */
     public ExpandableFolderView(Controller controller, Folder folder) {
         super(controller);
         this.folder = folder;
     }
 
+    /**
+     * Gets the ui component, building if required.
+     * @return
+     */
+    public JPanel getUIComponent() {
+        if (uiComponent == null) {
+            buildUI();
+        }
+        return uiComponent;
+    }
+
+    /**
+     * Builds the ui component.
+     */
     private void buildUI() {
 
         initComponent();
@@ -82,7 +125,6 @@ public class ExpandableFolderView extends PFUIComponent {
         lowerBuilder.add(membersLabel, cc.xy(2, 16));
 
         JPanel lowerPanel = lowerBuilder.getPanel();
-       // lowerPanel.setBorder(BorderFactory.createEtchedBorder());
 
         // Build spacer then lower outer with lower panel
         FormLayout lowerOuterLayout = new FormLayout("pref:grow",
@@ -111,6 +153,9 @@ public class ExpandableFolderView extends PFUIComponent {
 
     }
 
+    /**
+     * Initializes the components.
+     */
     private void initComponent() {
         expanded = new AtomicBoolean();
 
@@ -130,14 +175,18 @@ public class ExpandableFolderView extends PFUIComponent {
     }
 
     /**
-     * This should be called if the folder is removed from the repository,
-     * so that the listener gets removed.
+     * Class finalization. Required to unregister listeners.
+     *
+     * @throws Throwable
      */
-    public void detatch() {
-        folder.removeFolderListener(myFolderListener);
-        folder.removeMembershipListener(myFolderMembershipListener);
+    protected void finalize() throws Throwable {
+        unregisterListeners();
+        super.finalize();
     }
 
+    /**
+     * Register listeners of the folder.
+     */
     private void registerListeners() {
         myFolderListener = new MyFolderListener();
         folder.addFolderListener(myFolderListener);
@@ -145,17 +194,25 @@ public class ExpandableFolderView extends PFUIComponent {
         folder.addMembershipListener(myFolderMembershipListener);
     }
 
-    public JPanel getUIComponent() {
-        if (uiComponent == null) {
-            buildUI();
-        }
-        return uiComponent;
+    /**
+     * Unregister listeners of the folder.
+     */
+    private void unregisterListeners() {
+        folder.removeFolderListener(myFolderListener);
+        folder.removeMembershipListener(myFolderMembershipListener);
     }
 
+    /**
+     * Gets the name of the associated folder.
+     * @return
+     */
     public String getFolderName() {
         return folder.getName();
     }
 
+    /**
+     * Updates the statistics details of the folder.
+     */
     private void updateStatsDetails() {
         double sync = folder.getStatistic().getHarmonizedSyncPercentage();
         if (sync < 0) {
@@ -197,18 +254,27 @@ public class ExpandableFolderView extends PFUIComponent {
                 descriptionKey, formattedNum));
     }
 
+    /**
+     * Updates the number of files details of the folder.
+     */
     private void updateNumberOfFiles() {
         String filesText = Translation.getTranslation("exp_folder_view.files",
                 folder.getKnownFilesCount());
         filesLabel.setText(filesText);
     }
 
+    /**
+     * Updates the folder member details.
+     */
     private void updateFolderMembershipDetails() {
         int count = folder.getMembersCount();
         membersLabel.setText(Translation.getTranslation(
                 "exp_folder_view.members", count));
     }
 
+    /**
+     * Class to respond to folder events.
+     */
     private class MyFolderListener extends FolderAdapter {
 
         public void statisticsCalculated(FolderEvent folderEvent) {
@@ -220,6 +286,9 @@ public class ExpandableFolderView extends PFUIComponent {
         }
     }
 
+    /**
+     * Class to respond to folder membership events.
+     */
     private class MyFolderMembershipListener implements FolderMembershipListener {
 
         public void memberJoined(FolderMembershipEvent folderEvent) {
@@ -235,6 +304,9 @@ public class ExpandableFolderView extends PFUIComponent {
         }
     }
 
+    /**
+     * Class to respond to expand / collapse events.
+     */
     private class MyActionListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             boolean exp = expanded.get();
