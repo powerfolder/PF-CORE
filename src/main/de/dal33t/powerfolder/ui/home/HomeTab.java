@@ -28,8 +28,8 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.clientserver.ServerClient;
-import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
+import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.event.FolderEvent;
 import de.dal33t.powerfolder.event.FolderListener;
@@ -39,12 +39,15 @@ import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
+import de.dal33t.powerfolder.os.OnlineStorageSubscriptionType;
+import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import java.awt.Font;
 
@@ -66,7 +69,9 @@ public class HomeTab extends PFUIComponent {
     private final ValueModel uploadsCountVM;
     private final MyFolderListener folderListener;
     private ServerClient client;
-    private JLabel onlineStorageLabel;
+    private JLabel onlineStorageAccountLabel;
+    private JProgressBar onlineStorageUsagePB;
+    private JLabel onlineStorageUsageLabel;
 
     /**
      * Constructor
@@ -143,7 +148,10 @@ public class HomeTab extends PFUIComponent {
                 Translation.getTranslation("home_tab.computers"),
                 Translation.getTranslation("home_tab.no_computers"),
                 false, true);
-        onlineStorageLabel = new JLabel();
+        onlineStorageAccountLabel = new JLabel();
+        onlineStorageUsagePB = new JProgressBar(0, 0, 100);
+        onlineStorageUsageLabel = new JLabel(Translation
+                .getTranslation("home_tab.online_storage.usage", "0"));
         updateTransferText();
         updateFoldersText();
         recalculateFilesAvailable();
@@ -170,50 +178,56 @@ public class HomeTab extends PFUIComponent {
      * @return
      */
     private JPanel buildMainPanel() {
-        FormLayout layout = new FormLayout("3dlu, pref:grow, 3dlu",
-            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, pref, pref, pref, 3dlu, pref, pref, pref, pref, 3dlu, pref, 3dlu, pref:grow");
-        //   sync        sep         you-have    files down  upl   sep         #fol  szfo  comp  sep         on-st
+        FormLayout layout = new FormLayout("3dlu, 100dlu, pref:grow, 3dlu",
+            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, pref, pref, pref, 3dlu, pref, pref, pref, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref:grow");
+        //   sync        sep         you-have    files down  upl   sep         #fol  szfo  comp  sep         os-acc      os pb       os usage
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
         int row = 1;
-        builder.add(synchronizationStatusLabel, cc.xy(2, row));
+        builder.add(synchronizationStatusLabel, cc.xywh(2, row, 3, 1));
         row += 2;
 
-        builder.addSeparator(null, cc.xy(2, row));
+        builder.addSeparator(null, cc.xywh(2, row, 3, 1));
         row +=2;
 
         JLabel youHaveLabel = new JLabel(Translation.getTranslation("home_tab.you_have"));
         Font f = youHaveLabel.getFont();
         youHaveLabel.setFont(new Font(f.getName(), Font.BOLD, f.getSize()));
-        builder.add(youHaveLabel, cc.xy(2, row));
+        builder.add(youHaveLabel, cc.xywh(2, row, 3, 1));
         row +=2;
 
-        builder.add(filesAvailableLine.getUIComponent(), cc.xy(2, row));
+        builder.add(filesAvailableLine.getUIComponent(), cc.xywh(2, row, 3, 1));
         row++;
 
-        builder.add(downloadsLine.getUIComponent(), cc.xy(2, row));
+        builder.add(downloadsLine.getUIComponent(), cc.xywh(2, row, 3, 1));
         row++;
 
-        builder.add(uploadsLine.getUIComponent(), cc.xy(2, row));
+        builder.add(uploadsLine.getUIComponent(), cc.xywh(2, row, 3, 1));
         row++;
 
-        builder.addSeparator(null, cc.xy(2, row));
+        builder.addSeparator(null, cc.xywh(2, row, 3, 1));
         row +=2;
 
-        builder.add(numberOfFoldersLine.getUIComponent(), cc.xy(2, row));
+        builder.add(numberOfFoldersLine.getUIComponent(), cc.xywh(2, row, 3, 1));
         row++;
 
-        builder.add(sizeOfFoldersLine.getUIComponent(), cc.xy(2, row));
+        builder.add(sizeOfFoldersLine.getUIComponent(), cc.xywh(2, row, 3, 1));
         row++;
 
-        builder.add(computersLine.getUIComponent(), cc.xy(2, row));
+        builder.add(computersLine.getUIComponent(), cc.xywh(2, row, 3, 1));
         row++;
 
-        builder.addSeparator(null, cc.xy(2, row));
+        builder.addSeparator(null, cc.xywh(2, row, 3, 1));
         row +=2;
 
-        builder.add(onlineStorageLabel, cc.xy(2, row));
+        builder.add(onlineStorageAccountLabel, cc.xywh(2, row, 3, 1));
+        row += 2;
+
+        builder.add(onlineStorageUsagePB, cc.xy(2, row));
+        row += 2;
+
+        builder.add(onlineStorageUsageLabel, cc.xywh(2, row, 3, 1));
         row += 2;
 
         return builder.getPanel();
@@ -325,23 +339,37 @@ public class HomeTab extends PFUIComponent {
      * Updates the Online Storage details.
      */
     private void updateOnlineStorageDetails() {
+        boolean active = false;
         if (client == null || client.getUsername() == null ||
                 client.getUsername().trim().length() == 0) {
-            onlineStorageLabel.setText(Translation.getTranslation(
+            onlineStorageAccountLabel.setText(Translation.getTranslation(
                     "home_tab.online_storage.not_setup"));
         } else if (client.isConnected()) {
             if (client.getAccount().getOSSubscription().isDisabled()) {
-                onlineStorageLabel.setText(Translation.getTranslation(
+                onlineStorageAccountLabel.setText(Translation.getTranslation(
                         "home_tab.online_storage.account_disabled",
                         client.getUsername()));
             } else {
-                onlineStorageLabel.setText(Translation.getTranslation(
+                onlineStorageAccountLabel.setText(Translation.getTranslation(
                         "home_tab.online_storage.account", client.getUsername()));
+                active = true;
             }
         } else {
-            onlineStorageLabel.setText(Translation.getTranslation(
+            onlineStorageAccountLabel.setText(Translation.getTranslation(
                     "home_tab.online_storage.account_connecting",
                     client.getUsername()));
+        }
+        if (active) {
+            OnlineStorageSubscriptionType storageSubscriptionType =
+                    client.getAccount().getOSSubscription().getType();
+            long totalStorage = storageSubscriptionType.getStorageSize();
+            long spaceUsed = client.getAccountDetails().getSpaceUsed();
+            double spacedUsedPercentage = (int) (100.0 * (double) spaceUsed /
+                    (double) totalStorage);
+            onlineStorageUsagePB.setValue((int) spacedUsedPercentage);
+            onlineStorageUsageLabel.setText(
+                    Translation.getTranslation("home_tab.online_storage.usage",
+                            Format.formatNumber(spacedUsedPercentage)));
         }
     }
 
