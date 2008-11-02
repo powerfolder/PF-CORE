@@ -40,14 +40,12 @@ import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
 import de.dal33t.powerfolder.os.OnlineStorageSubscriptionType;
-import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import java.awt.Font;
 
@@ -70,8 +68,7 @@ public class HomeTab extends PFUIComponent {
     private final MyFolderListener folderListener;
     private ServerClient client;
     private JLabel onlineStorageAccountLabel;
-    private JProgressBar onlineStorageUsagePB;
-    private JLabel onlineStorageUsageLabel;
+    private OnlineStorageSection onlineStorageSection;
 
     /**
      * Constructor
@@ -149,9 +146,7 @@ public class HomeTab extends PFUIComponent {
                 Translation.getTranslation("home_tab.no_computers"),
                 false, true);
         onlineStorageAccountLabel = new JLabel();
-        onlineStorageUsagePB = new JProgressBar(0, 0, 100);
-        onlineStorageUsageLabel = new JLabel(Translation
-                .getTranslation("home_tab.online_storage.usage", "0"));
+        onlineStorageSection = new OnlineStorageSection(getController());
         updateTransferText();
         updateFoldersText();
         recalculateFilesAvailable();
@@ -179,8 +174,8 @@ public class HomeTab extends PFUIComponent {
      */
     private JPanel buildMainPanel() {
         FormLayout layout = new FormLayout("3dlu, 100dlu, pref:grow, 3dlu",
-            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, pref, pref, pref, 3dlu, pref, pref, pref, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref:grow");
-        //   sync        sep         you-have    files down  upl   sep         #fol  szfo  comp  sep         os-acc      os pb       os usage
+            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, pref, pref, pref, 3dlu, pref, pref, pref, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref:grow");
+        //   sync        sep         you-have    files down  upl   sep         #fol  szfo  comp  sep         os-acc      osSec
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
@@ -194,40 +189,37 @@ public class HomeTab extends PFUIComponent {
         JLabel youHaveLabel = new JLabel(Translation.getTranslation("home_tab.you_have"));
         Font f = youHaveLabel.getFont();
         youHaveLabel.setFont(new Font(f.getName(), Font.BOLD, f.getSize()));
-        builder.add(youHaveLabel, cc.xywh(2, row, 3, 1));
+        builder.add(youHaveLabel, cc.xywh(2, row, 2, 1));
         row +=2;
 
-        builder.add(filesAvailableLine.getUIComponent(), cc.xywh(2, row, 3, 1));
+        builder.add(filesAvailableLine.getUIComponent(), cc.xywh(2, row, 2, 1));
         row++;
 
-        builder.add(downloadsLine.getUIComponent(), cc.xywh(2, row, 3, 1));
+        builder.add(downloadsLine.getUIComponent(), cc.xywh(2, row, 2, 1));
         row++;
 
-        builder.add(uploadsLine.getUIComponent(), cc.xywh(2, row, 3, 1));
+        builder.add(uploadsLine.getUIComponent(), cc.xywh(2, row, 2, 1));
         row++;
 
-        builder.addSeparator(null, cc.xywh(2, row, 3, 1));
+        builder.addSeparator(null, cc.xywh(2, row, 2, 1));
         row +=2;
 
-        builder.add(numberOfFoldersLine.getUIComponent(), cc.xywh(2, row, 3, 1));
+        builder.add(numberOfFoldersLine.getUIComponent(), cc.xywh(2, row, 2, 1));
         row++;
 
-        builder.add(sizeOfFoldersLine.getUIComponent(), cc.xywh(2, row, 3, 1));
+        builder.add(sizeOfFoldersLine.getUIComponent(), cc.xywh(2, row, 2, 1));
         row++;
 
-        builder.add(computersLine.getUIComponent(), cc.xywh(2, row, 3, 1));
+        builder.add(computersLine.getUIComponent(), cc.xywh(2, row, 2, 1));
         row++;
 
-        builder.addSeparator(null, cc.xywh(2, row, 3, 1));
+        builder.addSeparator(null, cc.xywh(2, row, 2, 1));
         row +=2;
 
-        builder.add(onlineStorageAccountLabel, cc.xywh(2, row, 3, 1));
+        builder.add(onlineStorageAccountLabel, cc.xywh(2, row, 2, 1));
         row += 2;
 
-        builder.add(onlineStorageUsagePB, cc.xy(2, row));
-        row += 2;
-
-        builder.add(onlineStorageUsageLabel, cc.xywh(2, row, 3, 1));
+        builder.add(onlineStorageSection.getUIComponent(), cc.xywh(2, row, 2, 1));
         row += 2;
 
         return builder.getPanel();
@@ -364,12 +356,23 @@ public class HomeTab extends PFUIComponent {
                     client.getAccount().getOSSubscription().getType();
             long totalStorage = storageSubscriptionType.getStorageSize();
             long spaceUsed = client.getAccountDetails().getSpaceUsed();
-            double spacedUsedPercentage = (int) (100.0 * (double) spaceUsed /
-                    (double) totalStorage);
-            onlineStorageUsagePB.setValue((int) spacedUsedPercentage);
-            onlineStorageUsageLabel.setText(
-                    Translation.getTranslation("home_tab.online_storage.usage",
-                            Format.formatNumber(spacedUsedPercentage)));
+            double spacedUsedPercentage = 100.0d * (double) spaceUsed /
+                    (double) totalStorage;
+            if (spacedUsedPercentage < 0.0d) {
+                spacedUsedPercentage = 0.0d;
+            }
+            if (spacedUsedPercentage > 100.0d) {
+                spacedUsedPercentage = 100.0d;
+            }
+
+            onlineStorageSection.getUIComponent().setVisible(true);
+            boolean trial = storageSubscriptionType.isTrial();
+            int daysLeft = client.getAccount().getOSSubscription().getDaysLeft();
+            onlineStorageSection.setInfo(spacedUsedPercentage,
+                    trial,
+                    daysLeft);
+        } else {
+            onlineStorageSection.getUIComponent().setVisible(false);
         }
     }
 
