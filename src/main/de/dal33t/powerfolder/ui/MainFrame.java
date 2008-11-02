@@ -288,8 +288,8 @@ public class MainFrame extends PFUIComponent {
     }
 
     private void configureSyncNowAction() {
-        getUIController().getSyncAllFoldersAction().setEnabled(
-            getController().getFolderRepository().getFolders().length != 0);
+//        getUIController().getSyncAllFoldersAction().setEnabled(
+//            getController().getFolderRepository().getFolders().length != 0);
     }
 
     private class RepositoryListener implements FolderRepositoryListener {

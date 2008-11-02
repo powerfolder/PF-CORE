@@ -83,7 +83,7 @@ public class Icons {
     public static final Icon DEBUG = getIcon("icons/LadyBug.gif");
     public static final Icon UPDATES = getIcon("icons/Updates.gif");
     public static final Icon DIALOG_TESTING = getIconById("dialog.icon");
-    public static final Icon STOP = getIcon("icons/Forbid.gif");
+    public static final Icon STOP = getIcon("icons/Abort.gif");
     public static final Icon RUN = getIcon("icons/Play.gif");
     public static final Icon SUSPEND = getIcon("icons/Suspend.gif");
     public static final Icon HOME = getIcon("icons/Home.gif");
@@ -93,9 +93,9 @@ public class Icons {
     public static final Icon WORLD_DELETE = getIcon("icons/WorldDelete.png");
     public static final Icon FORCE_UPDATE = getIcon("icons/ForceUpdate.png");
 
-    public static final Icon UNKNOWNFILE = getIcon("icons/Unknown.gif");
-    public static final Icon UNKNOWNFILE_GRAY = getGrayIcon(UNKNOWNFILE);
-    public static final Icon UNKNOWNFILE_RED = convertToRed(UNKNOWNFILE_GRAY);
+    public static final Icon UNKNOWN_FILE = getIcon("icons/Unknown.gif");
+    public static final Icon UNKNOWN_FILE_GRAY = getGrayIcon(UNKNOWN_FILE);
+    public static final Icon UNKNOWN_FILE_RED = convertToRed(UNKNOWN_FILE_GRAY);
 
     public static final Icon CHAT = getIcon("icons/Chat.gif");
     public static final Icon SETTINGS = getIconById("settings.icon");
@@ -480,7 +480,7 @@ public class Icons {
             if (exists) { // create one if local file is there
                 icon = FileSystemView.getFileSystemView().getSystemIcon(file);
                 if (icon == null) {
-                    return UNKNOWNFILE;
+                    return UNKNOWN_FILE;
                 }
                 if (!hasUniqueIcon(extension)) {// do not cache executables
                     KNOWN_ICONS.put(extension, icon);// put in cache
@@ -493,11 +493,11 @@ public class Icons {
                 if (hasUniqueIcon(extension)) {// if *.exe or *.ico we don't
                     // know the icon
                     // fixes speed with lots of *.ico or *.exe files
-                    icon = UNKNOWNFILE_GRAY;
+                    icon = UNKNOWN_FILE_GRAY;
                 } else {
                     icon = getIconExtension(extension);
                     if (icon == null) {
-                        icon = UNKNOWNFILE_GRAY;
+                        icon = UNKNOWN_FILE_GRAY;
                     } else {
                         Icon disabled = getGrayIcon(icon);
                         if (!hasUniqueIcon(extension)) {// do not cache *.exe
@@ -545,7 +545,7 @@ public class Icons {
         Icon icon = null;
         String extension = fileInfo.getExtension();
         if (extension == null) { // no file extension
-            return UNKNOWNFILE;
+            return UNKNOWN_FILE;
         }
         if (KNOWN_ICONS.containsKey(extension)) { // getIcon from cache
             return KNOWN_ICONS.get(extension);
@@ -609,12 +609,12 @@ public class Icons {
         Controller controller)
     {
         if (fileInfo.diskFileExists(controller)) {
-            return UNKNOWNFILE;
+            return UNKNOWN_FILE;
         }
         if (fileInfo.isDeleted()) {
-            return UNKNOWNFILE_RED;
+            return UNKNOWN_FILE_RED;
         }
-        return UNKNOWNFILE_GRAY;
+        return UNKNOWN_FILE_GRAY;
     }
 
     /**

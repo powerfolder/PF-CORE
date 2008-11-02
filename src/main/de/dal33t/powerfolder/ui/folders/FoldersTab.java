@@ -20,25 +20,42 @@
 package de.dal33t.powerfolder.ui.folders;
 
 import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.builder.ButtonBarBuilder;
+import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.forms.factories.Borders;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
-import javax.swing.*;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 
+/**
+ * Class to display the forders tab.
+ */
 public class FoldersTab extends PFUIComponent {
 
     private JPanel uiComponent;
     private FoldersList foldersList;
-    
+    private JComboBox folderTypeList;
+
+    /**
+     * Constructor
+     *
+     * @param controller
+     */
     public FoldersTab(Controller controller) {
         super(controller);
     }
 
+    /**
+     * Returns the ui component.
+     *
+     * @return
+     */
     public JPanel getUIComponent() {
         if (uiComponent == null) {
             buildUI();
@@ -46,6 +63,9 @@ public class FoldersTab extends PFUIComponent {
         return uiComponent;
     }
 
+    /**
+     * Builds the ui component.
+     */
     private void buildUI() {
         initComponents();
 
@@ -64,8 +84,15 @@ public class FoldersTab extends PFUIComponent {
         uiComponent = builder.getPanel();
     }
 
+    /**
+     * Initialize the required components.
+     */
     private void initComponents() {
         foldersList = new FoldersList(getController());
+        folderTypeList = new JComboBox();
+        folderTypeList.addItem(Translation.getTranslation("folders_tab.all_folders"));
+        folderTypeList.addItem(Translation.getTranslation("folders_tab.only_local_folders"));
+        folderTypeList.addItem(Translation.getTranslation("folders_tab.only_online_folders"));
     }
 
     /**
@@ -75,10 +102,14 @@ public class FoldersTab extends PFUIComponent {
         JButton newFolderButton = new JButton(getUIController().getActionModel()
                 .getNewFolderAction());
 
-        ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
-        bar.addGridded(newFolderButton);
+        FormLayout layout = new FormLayout("pref, pref:grow, pref",
+            "pref");
+        PanelBuilder builder = new PanelBuilder(layout);
+        CellConstraints cc = new CellConstraints();
 
-        JPanel barPanel = bar.getPanel();
+        builder.add(newFolderButton, cc.xy(1, 1));
+        builder.add(folderTypeList, cc.xy(3, 1));
+        JPanel barPanel = builder.getPanel();
         barPanel.setBorder(Borders.DLU4_BORDER);
 
         return barPanel;
