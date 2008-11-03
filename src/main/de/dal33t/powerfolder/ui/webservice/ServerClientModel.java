@@ -154,7 +154,7 @@ public class ServerClientModel extends PFUIComponent {
 
     private void updateMirroredFolders() {
         List<Folder> folders = client.getJoinedFolders();
-        Collections.sort(folders, new FolderComparator());
+        Collections.sort(folders, FolderComparator.INSTANCE);
         mirroredFolders.clear();
         mirroredFolders.addAll(folders);
     }
