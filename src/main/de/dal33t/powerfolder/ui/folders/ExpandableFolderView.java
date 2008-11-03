@@ -94,7 +94,11 @@ public class ExpandableFolderView extends PFUIComponent {
         PanelBuilder upperBuilder = new PanelBuilder(upperLayout);
         CellConstraints cc = new CellConstraints();
 
-        upperBuilder.add(new JLabel(Icons.DIRECTORY), cc.xy(1, 1));
+        if (folder.isPreviewOnly()) {
+            upperBuilder.add(new JLabel(Icons.PF_PREVIEW), cc.xy(1, 1));
+        } else {
+            upperBuilder.add(new JLabel(Icons.PF_LOCAL), cc.xy(1, 1));
+        }
         upperBuilder.add(new JLabel(folder.getName()), cc.xy(3, 1));
         upperBuilder.add(syncFolderButton, cc.xy(6, 1));
         upperBuilder.add(expandCollapseButton, cc.xy(8, 1));
@@ -275,10 +279,25 @@ public class ExpandableFolderView extends PFUIComponent {
     /**
      * Class to respond to folder events.
      */
-    private class MyFolderListener extends FolderAdapter {
+    private class MyFolderListener implements FolderListener {
 
         public void statisticsCalculated(FolderEvent folderEvent) {
             updateStatsDetails();
+        }
+
+        public void fileChanged(FolderEvent folderEvent) {
+        }
+
+        public void filesDeleted(FolderEvent folderEvent) {
+        }
+
+        public void remoteContentsChanged(FolderEvent folderEvent) {
+        }
+
+        public void scanResultCommited(FolderEvent folderEvent) {
+        }
+
+        public void syncProfileChanged(FolderEvent folderEvent) {
         }
 
         public boolean fireInEventDispathThread() {

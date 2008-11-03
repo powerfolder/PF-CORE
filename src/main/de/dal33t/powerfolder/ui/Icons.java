@@ -217,6 +217,11 @@ public class Icons {
     public static final Icon FOLDER_ROTATION_7 = getIcon("icons/Folder_rotation_7.gif");
     public static final Icon FOLDER_ROTATION_8 = getIcon("icons/Folder_rotation_8.gif");
 
+    public static final Icon PF_LOCAL = getIcon("icons/PFLocal.png");
+    public static final Icon PF_LOCAL_AND_ONLINE = getIcon("icons/PFLocalAndOnline.png");
+    public static final Icon PF_ONLINE = getIcon("icons/PFOnline.png");
+    public static final Icon PF_PREVIEW = getIcon("icons/PFPreview.png");
+
     // Navitree & toolbar
     public static final Icon ROOT = getIcon("icons/Root.gif");
     public static final Icon KNOWN_NODES = getIcon("icons/KnownNodes.gif");
