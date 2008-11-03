@@ -19,28 +19,55 @@
  */
 package de.dal33t.powerfolder.disk;
 
-import de.dal33t.powerfolder.*;
-import static de.dal33t.powerfolder.disk.FolderSettings.*;
-import de.dal33t.powerfolder.event.*;
+import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_DIR;
+import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_DONT_RECYCLE;
+import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_ID;
+import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX;
+import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREVIEW;
+import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_SYNC_PROFILE;
+import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_WHITELIST;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.swing.JFrame;
+
+import org.apache.commons.lang.StringUtils;
+
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.event.FileNameProblemHandler;
+import de.dal33t.powerfolder.event.FolderRepositoryEvent;
+import de.dal33t.powerfolder.event.FolderRepositoryListener;
+import de.dal33t.powerfolder.event.InvitationReceivedEvent;
+import de.dal33t.powerfolder.event.InvitationReceivedHandler;
+import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.transfer.FileRequestor;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Waiter;
 import de.dal33t.powerfolder.util.compare.FolderComparator;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
 import de.dal33t.powerfolder.util.ui.NeverAskAgainResponse;
 import de.dal33t.powerfolder.util.ui.UIUtil;
-import org.apache.commons.lang.StringUtils;
-
-import javax.swing.*;
-import java.io.File;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Repository of all known power folders. Local and unjoined.
@@ -50,7 +77,8 @@ import java.util.logging.Logger;
  */
 public class FolderRepository extends PFComponent implements Runnable {
 
-    private static final Logger log = Logger.getLogger(FolderRepository.class.getName());
+    private static final Logger log = Logger.getLogger(FolderRepository.class
+        .getName());
     private Map<FolderInfo, Folder> folders;
     private Thread myThread;
     private FileRequestor fileRequestor;
@@ -372,6 +400,8 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
+     * TODO Replace calls to this by {@link #getFoldersAsCollection()}
+     * 
      * @return the folders
      */
     public Folder[] getFolders() {
@@ -379,17 +409,8 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
-     * @return the folders, sorted as List
-     */
-    public List<Folder> getFoldersAsSortedList() {
-        List<Folder> foldersList = new ArrayList<Folder>(folders.values());
-        Collections.sort(foldersList, new FolderComparator());
-        return foldersList;
-    }
-
-    /**
-     * TODO Experimetal: Hands out a indirect reference to the value of internal
-     * hashmap.
+     * The indirect reference to the internal concurrect hashmap. Contents may
+     * changed after get. Very fast.
      * 
      * @return the folders as unmodifiable collection
      */
@@ -468,7 +489,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         // If non-preview folder and already have this folder as preview,
         // silently remove the preview.
         if (!folderSettings.isPreviewOnly()) {
-            for (Folder folder : getFoldersAsSortedList()) {
+            for (Folder folder : folders.values()) {
                 if (folder.isPreviewOnly()
                     && folder.getInfo().equals(folderInfo))
                 {
@@ -737,34 +758,42 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         if (getController().isUIEnabled()) {
             // Wait to build up ui
+            Waiter w = new Waiter(30L * 1000);
+            while (!w.isTimeout()) {
+                if (getController().isUIOpen()) {
+                    break;
+                }
+                w.waitABit();
+            }
             try {
-                // inital wait before first scan
+                // initial wait before first scan
                 synchronized (scanTrigger) {
-                    scanTrigger.wait(getController().getWaitTime() * 4);
+                    scanTrigger.wait(Controller.getWaitTime() * 4);
                 }
             } catch (InterruptedException e) {
-                logFiner("InterruptedException", e);
+                logFiner(e);
                 return;
             }
         }
 
         List<Folder> scanningFolders = new ArrayList<Folder>();
+        Controller controller = getController();
+
         while (!myThread.isInterrupted() && myThread.isAlive()) {
             // Only scan if not in silent mode
-            if (!getController().isSilentMode()) {
+            if (!controller.isSilentMode()) {
                 scanningFolders.clear();
-                scanningFolders.addAll(folders.values());
+                for (Folder folder : folders.values()) {
+                    if (folder.isMaintenanceRequired()) {
+                        scanningFolders.add(folder);
+                    }
+                }
+                Collections.sort(scanningFolders, FolderComparator.INSTANCE);
                 if (isFiner()) {
                     logFiner("Maintaining " + scanningFolders.size()
                         + " folders...");
                 }
-                Collections.sort(scanningFolders, new FolderComparator());
-
                 for (Folder folder : scanningFolders) {
-                    if (!folder.isMaintenanceRequired()) {
-                        // Skip.
-                        continue;
-                    }
                     currentlyMaintaitingFolder = folder;
                     // Fire event
                     fireMaintanceStarted(currentlyMaintaitingFolder);
@@ -774,9 +803,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                     // Fire event
                     fireMaintenanceFinished(maintainedFolder);
 
-                    if (getController().isSilentMode()
-                        || myThread.isInterrupted())
-                    {
+                    if (controller.isSilentMode() || myThread.isInterrupted()) {
                         break;
                     }
 
@@ -800,7 +827,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                         scanTrigger.wait(waitTime);
                     }
                 } catch (InterruptedException e) {
-                    logFiner("InterruptedException", e);
+                    logFiner(e);
                     break;
                 }
             }
