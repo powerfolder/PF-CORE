@@ -583,7 +583,8 @@ public class TransferManager extends PFComponent {
             assert getActiveUploads(fInfo).size() == 0;
 
             if (!folder.scanDownloadFile(fInfo, download.getTempFile())) {
-                logFine("Scanning of completed file failed.");
+                logSevere("Scanning of completed file failed: "
+                    + fInfo.toDetailString());
                 return;
             }
         }
@@ -1915,8 +1916,8 @@ public class TransferManager extends PFComponent {
      * private boolean hasActiveDownloadsFrom(Member from) { synchronized
      * (downloads) { for (Iterator it = downloads.values().iterator();
      * it.hasNext();) { Download download = (Download) it.next(); if
-     * (download.isStarted() && download.getFrom().equals(from)) { return true;
-     * } } } return false; }
+     * (download.isStarted() && download.getFrom().equals(from)) { return true; } } }
+     * return false; }
      */
 
     /**
