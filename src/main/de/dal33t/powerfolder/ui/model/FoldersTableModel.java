@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.ui.model;
 
 import java.util.*;
@@ -55,15 +55,15 @@ public class FoldersTableModel extends PFUIComponent implements TableModel {
     private final Collection<TableModelListener> listeners;
     private String[] columnHeaders = new String[]{
         Translation.getTranslation("general.folder"), // 0
-        Translation.getTranslation("my_folders_table.sync"), // 1
-        Translation.getTranslation("my_folders_table.transfer_mode"), // 2
-        Translation.getTranslation("my_folders_table.members"), // 3
-        Translation.getTranslation("my_folders_table.number_of_local_files"), // 4
-        Translation.getTranslation("my_folders_table.local_size"), // 5
-        Translation.getTranslation("my_folders_table.number_of_incoming_files"), // 6
-        Translation.getTranslation("my_folders_table._total_number_of_files"), // 7
-        Translation.getTranslation("my_folders_table.total_size"), // 8
-        Translation.getTranslation("my_folders_table.new_files")}; // 9
+        Translation.getTranslation("myfolderstable.sync"), // 1
+        Translation.getTranslation("myfolderstable.syncprofile"), // 2
+        Translation.getTranslation("myfolderstable.members"), // 3
+        Translation.getTranslation("myfolderstable.number_of_local_files"), // 4
+        Translation.getTranslation("myfolderstable.local_size"), // 5
+        Translation.getTranslation("myfolderstable.number_of_incoming_files"), // 6
+        Translation.getTranslation("myfolderstable._total_number_of_files"), // 7
+        Translation.getTranslation("myfolderstable.total_size"), // 8
+        Translation.getTranslation("myfolderstable.new_files")}; // 9
 
     // TODO: Is this a good place?
     private boolean[] defaultVisibility = new boolean[]{true, true, true, true,
@@ -74,12 +74,13 @@ public class FoldersTableModel extends PFUIComponent implements TableModel {
     private FolderListener folderListener;
     private FolderMembershipListener folderMembershipListener;
 
-    public FoldersTableModel(FolderRepository repository, Controller controller) {
+    public FoldersTableModel(FolderRepository repository, Controller controller)
+    {
         super(controller);
         this.listeners = Collections
             .synchronizedList(new LinkedList<TableModelListener>());
         this.repository = repository;
-        folders = filterPreviews(repository.getFoldersAsSortedList());
+        folders = filterPreviews();
         repository
             .addFolderRepositoryListener(new MyFolderRepositoryListener());
         folderListener = new MyFolderListener();
@@ -92,13 +93,16 @@ public class FoldersTableModel extends PFUIComponent implements TableModel {
             UPDATE_TIME_MS);
     }
 
-    private List<Folder> filterPreviews(List<Folder> foldersAsSortedList) {
+    private List<Folder> filterPreviews() {
         List<Folder> folders = new ArrayList<Folder>();
-        for (Folder folder : foldersAsSortedList) {
+        for (Folder folder : getController().getFolderRepository()
+            .getFoldersAsCollection())
+        {
             if (!hideFolder(folder)) {
                 folders.add(folder);
             }
         }
+        Collections.sort(folders, FolderComparator.INSTANCE);
         return folders;
     }
 
@@ -156,8 +160,7 @@ public class FoldersTableModel extends PFUIComponent implements TableModel {
     // Helper method **********************************************************
 
     private void fireFullModelChanged() {
-        modelChanged(new TableModelEvent(this, 0,
-            getRowCount() - 1));
+        modelChanged(new TableModelEvent(this, 0, getRowCount() - 1));
     }
 
     /**
@@ -225,8 +228,10 @@ public class FoldersTableModel extends PFUIComponent implements TableModel {
     }
 
     public void folderStructureChanged() {
-        synchronized(folders) {
-            List<Folder> list = repository.getFoldersAsSortedList();
+        synchronized (folders) {
+            List<Folder> list = new ArrayList<Folder>(repository
+                .getFoldersAsCollection());
+            Collections.sort(list, FolderComparator.INSTANCE);
             for (Folder folder : list) {
                 if (folders.contains(folder) && hideFolder(folder)) {
                     removeFolder(folder);
@@ -235,7 +240,7 @@ public class FoldersTableModel extends PFUIComponent implements TableModel {
                 }
             }
         }
-    }    
+    }
 
     private class MyFolderRepositoryListener implements
         FolderRepositoryListener
@@ -296,19 +301,19 @@ public class FoldersTableModel extends PFUIComponent implements TableModel {
 
     /**
      * Only show folders if not preview or show preview config is true.
-     *
+     * 
      * @param folder
      * @return
      */
     private boolean hideFolder(Folder folder) {
-        return folder.isPreviewOnly() &&
-                ConfigurationEntry.HIDE_PREVIEW_FOLDERS
-                        .getValueBoolean(getController());
+        return folder.isPreviewOnly()
+            && ConfigurationEntry.HIDE_PREVIEW_FOLDERS
+                .getValueBoolean(getController());
     }
 
     private void addFolder(Folder folder) {
         folders.add(folder);
-        Collections.sort(folders, new FolderComparator());
+        Collections.sort(folders, FolderComparator.INSTANCE);
         folder.addFolderListener(folderListener);
         folder.addMembershipListener(folderMembershipListener);
         modelChanged(new TableModelEvent(this));

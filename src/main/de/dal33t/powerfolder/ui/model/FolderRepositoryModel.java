@@ -68,7 +68,7 @@ public class FolderRepositoryModel extends PFUIComponent {
 
         TreeNode rootNode = navTreeModel.getRootNode();
         myFoldersTreeNode = new TreeNodeList(rootNode);
-        myFoldersTreeNode.sortBy(new FolderComparator());
+        myFoldersTreeNode.sortBy(FolderComparator.INSTANCE);
 
         // Table model initalization
         myFoldersTableModel = new FoldersTableModel(getController()
@@ -136,8 +136,8 @@ public class FolderRepositoryModel extends PFUIComponent {
         if (myFoldersTreeNode.getChildCount() > 0 && !expandedMyFolders) {
             logFiner("Expanding foined folders on nav_tree");
             // Expand joined folders
-//            getController().getUIController().getControlQuarter().getUITree()
-//                .expandPath(myFoldersTreeNode.getPathTo());
+            // getController().getUIController().getControlQuarter().getUITree()
+            // .expandPath(myFoldersTreeNode.getPathTo());
             expandedMyFolders = true;
         }
     }
@@ -225,7 +225,8 @@ public class FolderRepositoryModel extends PFUIComponent {
             Folder folder = e.getFolder();
             FolderModel folderModel = locateFolderModel(folder);
             if (folderModel == null
-                    || !myFoldersTreeNode.contains(folderModel.getTreeNode())) {
+                || !myFoldersTreeNode.contains(folderModel.getTreeNode()))
+            {
                 return;
             }
 
