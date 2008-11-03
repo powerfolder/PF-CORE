@@ -179,7 +179,7 @@ public class ExpandableFolderView extends PFUIComponent {
         expandCollapseButton = new JButtonMini(Icons.EXPAND,
                 Translation.getTranslation("exp_folder_view.expand"));
         expandCollapseButton.addActionListener(new MyActionListener());
-        syncFolderButton = new JButtonMini(Icons.DOWNLOAD_ACTIVE,
+        syncFolderButton = new JButtonMini(Icons.SYNC,
                 Translation.getTranslation("exp_folder_view.synchronize_folder"));
         filesLabel = new JLabel();
         syncPercentLabel = new JLabel();
