@@ -214,7 +214,7 @@ public class PreferencesDialog extends BaseDialog {
             .getShowAdvancedSettingsModel().getValue()));
 
         tabbedPane.setSelectedIndex(0);
-        tabbedPane.setBorder(Borders.createEmptyBorder("3dlu,0,0,3dlu"));
+        tabbedPane.setBorder(Borders.createEmptyBorder("3dlu,3dlu,3dlu,3dlu"));
 
         // Buttons
         okButton = createOKButton();

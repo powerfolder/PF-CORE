@@ -54,6 +54,7 @@ import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -116,7 +117,7 @@ public class Icons {
     public static final Icon NEW_FOLDER = getIconById("new_folder.icon");
     public static final Icon JOIN_FOLDER = getIconById("join_folder.icon");
     public static final Icon REMOVE_FOLDER = getIconById("remove_folder.icon");
-    public static final Icon PREFERENCES = getIconById("preferences.icon");
+    public static final Icon PREFERENCES = getIcon("icons/pictos/Preferences.png");
     public static final Icon ABOUT = getIconById("about.icon");
     public static final Icon SLEEP = getIconById("sleep.icon");
     public static final Icon WAKE_UP = getIconById("wake_up.icon");
@@ -308,7 +309,7 @@ public class Icons {
     public static final String ST_CHAT = "Chat.gif";
     public static final String ST_NODE = "Node_Friend_Connected.gif";
 
-    private static final HashMap<String, Icon> KNOWN_ICONS = new HashMap<String, Icon>();
+    private static final Map<String, Icon> KNOWN_ICONS = new HashMap<String, Icon>();
 
     protected Icons() {
     }
@@ -672,11 +673,11 @@ public class Icons {
             for (int y = 0; y < height; y++) {
                 int rgb = src.getRGB(x, y);
                 int istrans = rgb & 0xFF000000;
-                if (istrans != 0xFF000000) {// set original if transparent
-                    dst.setRGB(x, y, rgb);
-                } else { // map to alpha
+                if (istrans == 0xFF000000) { // map to alpha
                     int alpha = 255 - (src.getRGB(x, y) & 0x000000FF);
                     dst.setRGB(x, y, alpha << 24 | targetColor);
+                } else {// set original if transparent
+                    dst.setRGB(x, y, rgb);
                 }
             }
         }
@@ -693,42 +694,42 @@ public class Icons {
         Reject.ifNull(folder, "Folder is null");
 
         if (folder.isPreviewOnly()) {
-            return Icons.FOLDER_PREVIEW;
+            return FOLDER_PREVIEW;
         } else if (folder.isDeviceDisconnected()) {
             return FOLDER_INVALID;
         }
 
         boolean isSyncing = folder.isTransferring() || folder.isScanning();
 
-        Icon fIcon = Icons.FOLDER;
+        Icon fIcon = FOLDER;
 
         if (isSyncing) {
             long time = System.currentTimeMillis() / 400;
             int iconNum = (int) (time % 8);
             switch (iconNum) {
                 case 0 :
-                    fIcon = Icons.FOLDER_ROTATION_1;
+                    fIcon = FOLDER_ROTATION_1;
                     break;
                 case 1 :
-                    fIcon = Icons.FOLDER_ROTATION_2;
+                    fIcon = FOLDER_ROTATION_2;
                     break;
                 case 2 :
-                    fIcon = Icons.FOLDER_ROTATION_3;
+                    fIcon = FOLDER_ROTATION_3;
                     break;
                 case 3 :
-                    fIcon = Icons.FOLDER_ROTATION_4;
+                    fIcon = FOLDER_ROTATION_4;
                     break;
                 case 4 :
-                    fIcon = Icons.FOLDER_ROTATION_5;
+                    fIcon = FOLDER_ROTATION_5;
                     break;
                 case 5 :
-                    fIcon = Icons.FOLDER_ROTATION_6;
+                    fIcon = FOLDER_ROTATION_6;
                     break;
                 case 6 :
-                    fIcon = Icons.FOLDER_ROTATION_7;
+                    fIcon = FOLDER_ROTATION_7;
                     break;
                 case 7 :
-                    fIcon = Icons.FOLDER_ROTATION_8;
+                    fIcon = FOLDER_ROTATION_8;
                     break;
                 default :
                     break;
@@ -740,7 +741,7 @@ public class Icons {
             // fIcon = Icons.FOLDER_SYNC;
             // }
         } else {
-            fIcon = Icons.FOLDER;
+            fIcon = FOLDER;
         }
 
         return fIcon;
@@ -759,11 +760,11 @@ public class Icons {
         Controller controller)
     {
         if (dir.isDeleted()) {
-            return isOpen ? Icons.DIRECTORY_OPEN_RED : Icons.DIRECTORY_RED;
+            return isOpen ? DIRECTORY_OPEN_RED : DIRECTORY_RED;
         } else if (dir.isExpected(controller.getFolderRepository())) {
-            return isOpen ? Icons.DIRECTORY_OPEN_GRAY : Icons.DIRECTORY_GRAY;
+            return isOpen ? DIRECTORY_OPEN_GRAY : DIRECTORY_GRAY;
         } else {
-            return isOpen ? Icons.DIRECTORY_OPEN : Icons.DIRECTORY;
+            return isOpen ? DIRECTORY_OPEN : DIRECTORY;
         }
     }
 
@@ -782,16 +783,16 @@ public class Icons {
             DownloadManager dl = controller.getTransferManager()
                 .getActiveDownload(fInfo);
             if (dl != null && dl.isStarted()) {
-                icon = Icons.DOWNLOAD_ACTIVE;
+                icon = DOWNLOAD_ACTIVE;
             } else {
-                icon = Icons.DOWNLOAD;
+                icon = DOWNLOAD;
             }
         } else if (fInfo.isDeleted()) {
-            icon = Icons.DELETE;
+            icon = DELETE;
         } else if (fInfo.isExpected(controller.getFolderRepository())) {
-            icon = Icons.EXPECTED;
+            icon = EXPECTED;
         } else if (fInfo.getFolder(controller.getFolderRepository()) == null) {
-            icon = Icons.EXPECTED;
+            icon = EXPECTED;
         } else {
             icon = null;
         }
