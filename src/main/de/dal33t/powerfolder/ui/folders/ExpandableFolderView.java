@@ -94,7 +94,7 @@ public class ExpandableFolderView extends PFUIComponent {
         initComponent();
 
         // Build ui
-                                            //  idon        name   space            # files     sync        ex/co
+                                            //  icon        name   space            # files     sync        ex/co
         FormLayout upperLayout = new FormLayout("pref, 3dlu, pref, pref:grow, 3dlu, pref, 3dlu, pref, 3dlu, pref",
             "pref");
         PanelBuilder upperBuilder = new PanelBuilder(upperLayout);

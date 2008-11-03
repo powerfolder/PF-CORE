@@ -90,6 +90,8 @@ public class FoldersTab extends PFUIComponent {
     private void initComponents() {
         foldersList = new FoldersList(getController());
         folderTypeList = new JComboBox();
+        folderTypeList.setToolTipText(Translation.getTranslation(
+                "folders_tab.folder_type_list.text"));
         folderTypeList.addItem(Translation.getTranslation("folders_tab.all_folders"));
         folderTypeList.addItem(Translation.getTranslation("folders_tab.only_local_folders"));
         folderTypeList.addItem(Translation.getTranslation("folders_tab.only_online_folders"));
