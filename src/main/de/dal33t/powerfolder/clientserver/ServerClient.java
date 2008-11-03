@@ -19,14 +19,22 @@
  */
 package de.dal33t.powerfolder.clientserver;
 
+import java.io.UnsupportedEncodingException;
+import java.security.PublicKey;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.TimerTask;
+
+import org.apache.commons.lang.StringUtils;
+
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.FolderSettings;
-import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
@@ -36,20 +44,11 @@ import de.dal33t.powerfolder.light.ServerInfo;
 import de.dal33t.powerfolder.message.clientserver.AccountDetails;
 import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.security.AnonymousAccount;
-import de.dal33t.powerfolder.security.FolderAdminPermission;
+import de.dal33t.powerfolder.util.Base64;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
-import org.apache.commons.lang.StringUtils;
-
-import java.io.File;
-import java.io.UnsupportedEncodingException;
-import java.security.PublicKey;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.TimerTask;
 
 /**
  * Client to a server.
@@ -60,7 +59,6 @@ import java.util.TimerTask;
  * @version $Revision: 1.5 $
  */
 public class ServerClient extends PFComponent {
-
     private static final String PREFS_PREFIX = "server";
     private static final String MEMBER_ID_TEMP_PREFIX = "TEMP_IDENTITY_";
 
@@ -142,9 +140,18 @@ public class ServerClient extends PFComponent {
         return server.getId().startsWith(MEMBER_ID_TEMP_PREFIX);
     }
 
+    private boolean isRemindPassword() {
+        return PreferencesEntry.SERVER_REMIND_PASSWORD
+            .getValueBoolean(getController());
+    }
+
     // Basics *****************************************************************
 
     public void start() {
+        if (getController().isLanOnly() && !server.isOnLAN()) {
+            logFine("Not connecting to server: " + server
+                + ". Reason: Server not on LAN");
+        }
         getController().scheduleAndRepeat(new OnlineStorageConnectTask(),
             3L * 1000L, 1000L * 20);
         // Wait 10 seconds at start
@@ -276,7 +283,19 @@ public class ServerClient extends PFComponent {
         String un = getController().getPreferences().get(
             PREFS_PREFIX + "." + server.getIP() + ".username", null);
         String pw = getController().getPreferences().get(
-            PREFS_PREFIX + "." + server.getIP() + ".info", null);
+            PREFS_PREFIX + "." + server.getIP() + ".info2", null);
+        if (!StringUtils.isBlank(pw)) {
+            try {
+                pw = new String(Base64.decode(pw), "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            // Fallback (TRAC #1291)
+            pw = getController().getPreferences().get(
+                PREFS_PREFIX + "." + server.getIP() + ".info", null);
+        }
+
         if (!StringUtils.isBlank(un)) {
             return login(un, pw);
         }
@@ -450,20 +469,20 @@ public class ServerClient extends PFComponent {
 
         logWarning("Rights: " + getAccount().getPermissions().size());
         // TODO Also get READ/WRITE permission folder
-        Collection<FolderInfo> foInfos = FolderAdminPermission
-            .filter(getAccount());
-        logWarning("Rights on: " + foInfos);
-        for (FolderInfo foInfo : foInfos) {
-            logWarning("Checking: " + foInfo);
-            if (getController().getFolderRepository().hasJoinedFolder(foInfo)) {
-                continue;
-            }
-            FolderSettings settings = new FolderSettings(new File("."),
-                SyncProfile.AUTOMATIC_SYNCHRONIZATION, true, true, true, false);
-            logWarning("Adding as preview: " + foInfo);
-            getController().getFolderRepository().createPreviewFolder(foInfo,
-                settings);
-        }
+        // Collection<FolderInfo> foInfos = FolderAdminPermission
+        // .filter(getAccount());
+        // logWarning("Rights on: " + foInfos);
+        // for (FolderInfo foInfo : foInfos) {
+        // logWarning("Checking: " + foInfo);
+        // if (getController().getFolderRepository().hasJoinedFolder(foInfo)) {
+        // continue;
+        // }
+        // FolderSettings settings = new FolderSettings(new File("."),
+        // SyncProfile.AUTOMATIC_SYNCHRONIZATION, true, true, true, false);
+        // logWarning("Adding as preview: " + foInfo);
+        // getController().getFolderRepository().createPreviewFolder(foInfo,
+        // settings);
+        // }
     }
 
     /**
@@ -543,13 +562,27 @@ public class ServerClient extends PFComponent {
     }
 
     private void saveLastKnowLogin() {
-        if (StringUtils.isBlank(username)) {
-            return;
+        if (!StringUtils.isBlank(username)) {
+            getController().getPreferences().put(
+                PREFS_PREFIX + "." + server.getIP() + ".username", username);
         }
-        getController().getPreferences().put(
-            PREFS_PREFIX + "." + server.getIP() + ".username", username);
-        getController().getPreferences().put(
-            PREFS_PREFIX + "." + server.getIP() + ".info", password);
+
+        if (isRemindPassword() && !StringUtils.isBlank(password)) {
+            try {
+                getController().getPreferences().put(
+                    PREFS_PREFIX + "." + server.getIP() + ".info2",
+                    Base64.encodeBytes(password.getBytes("UTF-8")));
+            } catch (UnsupportedEncodingException e) {
+                throw new RuntimeException("UTF-8 not found", e);
+            }
+        } else {
+            getController().getPreferences().remove(
+                PREFS_PREFIX + "." + server.getIP() + ".info2");
+        }
+
+        // Clear plain text password (TRAC #1291)
+        getController().getPreferences().remove(
+            PREFS_PREFIX + "." + server.getIP() + ".info");
     }
 
     /**
@@ -717,7 +750,7 @@ public class ServerClient extends PFComponent {
                 return;
             }
             if (getController().isLanOnly() && !server.isOnLAN()) {
-                logFine("NOT connecting to server: " + server
+                logFiner("NOT connecting to server: " + server
                     + ". Reason: Not on LAN");
                 return;
             }
@@ -742,25 +775,25 @@ public class ServerClient extends PFComponent {
         }
     }
 
-    private class AccountRefresh extends TimerTask {
-        @Override
-        public void run() {
-            if (isConnected()) {
-                return;
-            }
-            if (server.isMySelf()) {
-                // Don't connect to myself
-                return;
-            }
-            if (isLastLoginOK()) {
-                Runnable refresher = new Runnable() {
-                    public void run() {
-                        refreshAccountDetails();
-                    }
-                };
-                getController().getIOProvider().startIO(refresher);
-            }
-        }
-    }
+    // private class AccountRefresh extends TimerTask {
+    // @Override
+    // public void run() {
+    // if (isConnected()) {
+    // return;
+    // }
+    // if (server.isMySelf()) {
+    // // Don't connect to myself
+    // return;
+    // }
+    // if (isLastLoginOK()) {
+    // Runnable refresher = new Runnable() {
+    // public void run() {
+    // refreshAccountDetails();
+    // }
+    // };
+    // getController().getIOProvider().startIO(refresher);
+    // }
+    // }
+    // }
 
 }
