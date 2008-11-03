@@ -55,7 +55,8 @@ import java.util.logging.Logger;
  */
 public class FolderScanner extends PFComponent {
 
-    private static final Logger log = Logger.getLogger(FolderScanner.class.getName());
+    private static final Logger log = Logger.getLogger(FolderScanner.class
+        .getName());
     /** The folder that is being scanned */
     private Folder currentScanningFolder;
 
@@ -289,9 +290,14 @@ public class FolderScanner extends PFComponent {
                 }
             }
 
-            if (isFiner()) {
-                logFiner("Unable to scan " + unableToScanFiles.size()
-                    + " file(s)");
+            if (isWarning()) {
+                if (unableToScanFiles.size() > 0) {
+                    logWarning("Unable to scan " + unableToScanFiles.size()
+                        + " file(s)");
+                } else {
+                    logFiner("Unable to scan " + unableToScanFiles.size()
+                        + " file(s)");
+                }
             }
             // Remaining files = deleted! But only if they are not already
             // flagged
@@ -340,10 +346,10 @@ public class FolderScanner extends PFComponent {
             }
             return result;
         } finally {
-            // Remove ownership for this thread
-            threadOwnership.release();
             // Not longer scanning
             currentScanningFolder = null;
+            // Remove ownership for this thread
+            threadOwnership.release();
         }
     }
 
@@ -552,8 +558,8 @@ public class FolderScanner extends PFComponent {
      *            The location the use when creating a FileInfo. This is that
      *            same for each file in the same directory and so not neccesary
      *            to "calculate" this per file.
-     * @return true on succes and false on IOError (disk failure or file removed
-     *         in the meantime)
+     * @return true on success and false on IOError (disk failure or file
+     *         removed in the meantime)
      */
     private final boolean scanFile(File fileToScan, String currentDirName) {
         Reject.ifNull(currentScanningFolder,
@@ -572,7 +578,7 @@ public class FolderScanner extends PFComponent {
         if (currentDirName.length() == 0) {
             filename = fileToScan.getName();
         } else {
-            filename = currentDirName + "/" + fileToScan.getName();
+            filename = currentDirName + '/' + fileToScan.getName();
         }
 
         // this is a incomplete fileinfo just find one fast in the remaining
