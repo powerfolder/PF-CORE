@@ -49,7 +49,8 @@ import java.util.logging.Logger;
  */
 public class ReconnectManager extends PFComponent {
 
-    private static final Logger log = Logger.getLogger(ReconnectManager.class.getName());
+    private static final Logger log = Logger.getLogger(ReconnectManager.class
+        .getName());
 
     /** Queue holding all nodes, which are waiting to be reconnected */
     private List<Member> reconnectionQueue;
@@ -149,7 +150,7 @@ public class ReconnectManager extends PFComponent {
         // None has take the node to reconnect.
         // Spawn new reconnector
         if (reconnectionQueue.contains(node)) {
-            logWarning("Spawing new Reconnector (" + (reconnectors.size() + 1)
+            logFine("Spawing new Reconnector (" + (reconnectors.size() + 1)
                 + " total) to get faster reconnect to " + node);
             if (!started) {
                 logSevere("ReconnectManager not started. Unable to spawn new reconnector to "
@@ -163,8 +164,8 @@ public class ReconnectManager extends PFComponent {
                 // and start
                 reconnector.start();
             }
-        } else {
-            logWarning("Not required to spawn new reconnector to " + node
+        } else if (isFiner()) {
+            logFiner("Not required to spawn new reconnector to " + node
                 + ". Queue: " + reconnectionQueue);
         }
     }
@@ -531,8 +532,8 @@ public class ReconnectManager extends PFComponent {
                         // Reconnect
                         currentNode.reconnect();
                     } catch (InvalidIdentityException e) {
-                        log.log(Level.WARNING, "Invalid identity from " + currentNode
-                            + ". Trying to connect to IP", e);
+                        log.log(Level.WARNING, "Invalid identity from "
+                            + currentNode + ". Trying to connect to IP", e);
 
                         Identity otherNodeId = e.getFrom().getIdentity();
                         MemberInfo otherNodeInfo = otherNodeId != null

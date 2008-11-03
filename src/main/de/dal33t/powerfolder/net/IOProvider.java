@@ -47,7 +47,8 @@ import java.util.logging.Logger;
  */
 public class IOProvider extends PFComponent {
 
-    private static final Logger log = Logger.getLogger(IOProvider.class.getName());
+    private static final Logger log = Logger.getLogger(IOProvider.class
+        .getName());
     private static final long CONNECTION_KEEP_ALIVE_TIMOUT_MS = Constants.CONNECTION_KEEP_ALIVE_TIMOUT * 1000L;
     private static final long TIME_WITHOUT_KEEPALIVE_UNTIL_PING = CONNECTION_KEEP_ALIVE_TIMOUT_MS / 3L;
 
@@ -220,7 +221,7 @@ public class IOProvider extends PFComponent {
                 destroySession();
                 ioWorker.run();
             } catch (RuntimeException e) {
-                logSevere("RuntimeError in IO worker", e);
+                logSevere("RuntimeError in IO worker: " + e, e);
                 throw e;
             } finally {
                 destroySession();
