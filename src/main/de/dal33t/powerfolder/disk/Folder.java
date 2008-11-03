@@ -275,8 +275,14 @@ public class Folder extends PFComponent {
 
         // // maintain desktop shortcut if wanted
         // setDesktopShortcut();
-        if (isFiner()) {
-            logFiner("Has own database (" + getName() + ")? " + hasOwnDatabase);
+        if (isFine()) {
+            if (hasOwnDatabase) {
+                logFiner("Has own database (" + getName() + ")? "
+                    + hasOwnDatabase);
+            } else {
+                logFine("Has own database (" + getName() + ")? "
+                    + hasOwnDatabase);
+            }
         }
         if (hasOwnDatabase) {
             if (LoggingManager.isLogToFile()) {
@@ -559,8 +565,9 @@ public class Folder extends PFComponent {
         // Complex checks
         FolderRepository repo = getController().getFolderRepository();
         if (new File(repo.getFoldersBasedir()).equals(baseDir)) {
-            throw new FolderException(currentInfo, Translation.getTranslation(
-                "folder_create.error.it_is_base_dir", baseDir.getAbsolutePath()));
+            throw new FolderException(currentInfo, Translation
+                .getTranslation("folder_create.error.it_is_base_dir", baseDir
+                    .getAbsolutePath()));
         }
     }
 
@@ -688,6 +695,18 @@ public class Folder extends PFComponent {
             logFiner("FolderException", e);
             deviceDisconnected = true;
             return false;
+        }
+
+        // #1249
+        if (!knownFiles.isEmpty() && (OSUtil.isMacOS() || OSUtil.isLinux())) {
+            boolean inaccessible = localBase.list() == null
+                || localBase.list().length == 0;
+            if (inaccessible) {
+                logWarning("Local base empty on linux file system, but has known files. "
+                    + localBase);
+                deviceDisconnected = true;
+                return false;
+            }
         }
 
         ScanResult result;
@@ -1381,6 +1400,9 @@ public class Folder extends PFComponent {
     }
 
     private boolean maintainFolderDBrequired() {
+        if (knownFiles.isEmpty()) {
+            return false;
+        }
         if (lastDBMaintenance == null) {
             return true;
         }
@@ -1418,12 +1440,10 @@ public class Folder extends PFComponent {
                 continue;
             }
             if (file.getModifiedDate().getTime() < removeBeforeDate) {
-                synchronized (scanLock) {
-                    expired++;
-                    knownFiles.remove(file);
-                    if (rootDirectory != null) {
-                        rootDirectory.removeFileInfo(file);
-                    }
+                expired++;
+                knownFiles.remove(file);
+                if (rootDirectory != null) {
+                    rootDirectory.removeFileInfo(file);
                 }
                 logFine(file.getFilenameOnly() + " has expired: "
                     + file.toDetailString());
