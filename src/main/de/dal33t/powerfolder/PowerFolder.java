@@ -1,35 +1,23 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder;
-
-import de.dal33t.powerfolder.net.ConnectionException;
-import de.dal33t.powerfolder.util.MemoryMonitor;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.logging.LoggingManager;
-import de.dal33t.powerfolder.util.os.OSUtil;
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
-import org.apache.commons.cli.PosixParser;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -40,6 +28,18 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
+import org.apache.commons.cli.PosixParser;
+
+import de.dal33t.powerfolder.net.ConnectionException;
+import de.dal33t.powerfolder.util.MemoryMonitor;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.logging.LoggingManager;
+
 /**
  * Main class for the PowerFolder application.
  * <p>
@@ -49,22 +49,49 @@ import java.util.prefs.Preferences;
  */
 public class PowerFolder {
 
-    private static final Logger log = Logger.getLogger(PowerFolder.class.getName());
+    private static final Logger log = Logger.getLogger(PowerFolder.class
+        .getName());
     public static final Options COMMAND_LINE_OPTIONS;
     static {
         // Command line parsing
         Options options = new Options();
-        options.addOption("c", "config", true, "<config file>. Sets the configuration file to start. Default: PowerFolder.config");
-        options.addOption("m", "minimized", false, "Start PowerFolder minimized");
-        options.addOption("s", "server", false, "Start PowerFolder as server/supernode. GUI will be disabled");
-        options.addOption("d", "dns", true, "<ip/dns>. Sets the dns/ip to listen to. May also be an dyndns address");
+        options
+            .addOption(
+                "c",
+                "config",
+                true,
+                "<config file>. Sets the configuration file to start. Default: PowerFolder.config");
+        options.addOption("m", "minimized", false,
+            "Start PowerFolder minimized");
+        options.addOption("s", "server", false,
+            "Start PowerFolder as server/supernode. GUI will be disabled");
+        options
+            .addOption("d", "dns", true,
+                "<ip/dns>. Sets the dns/ip to listen to. May also be an dyndns address");
         options.addOption("h", "help", false, "Displays this help");
         options.addOption("n", "nick", true, "<nickname> Sets the nickname");
-        options.addOption("k", "kill", false, "Shutsdown a running PowerFolder instance");
-        options.addOption("l", "log", true, "<level> Sets console logging to severe, warning, info, fine or finer level (e.g. \"--log info\", sets info level and above");
-        options.addOption("f", "langfile", true, "<path\\file> Sets the language file to use (e.g. \"--langfile c:\\powerfolder\\translation\\translation_XX.properties\", forces PowerFolder to load this file as language file)");
-        options.addOption("g", "language", true, "<language> Sets the language to use (e.g. \"--language de\", sets language to german)");
-        options.addOption("p", "createfolder", true, "<createfolder> Creates a new PowerFolder");
+        options.addOption("k", "kill", false,
+            "Shutsdown a running PowerFolder instance");
+        options
+            .addOption(
+                "l",
+                "log",
+                true,
+                "<level> Sets console logging to severe, warning, info, fine or finer level (e.g. \"--log info\", sets info level and above");
+        options
+            .addOption(
+                "f",
+                "langfile",
+                true,
+                "<path\\file> Sets the language file to use (e.g. \"--langfile c:\\powerfolder\\translation\\translation_XX.properties\", forces PowerFolder to load this file as language file)");
+        options
+            .addOption(
+                "g",
+                "language",
+                true,
+                "<language> Sets the language to use (e.g. \"--language de\", sets language to german)");
+        options.addOption("p", "createfolder", true,
+            "<createfolder> Creates a new PowerFolder");
         COMMAND_LINE_OPTIONS = options;
     }
 
@@ -91,8 +118,8 @@ public class PowerFolder {
             {
                 public void uncaughtException(Thread t, Throwable e) {
                     e.printStackTrace();
-                    log.log(Level.SEVERE,
-                            "Exception in " + t + ": " + e.toString(), e);
+                    log.log(Level.SEVERE, "Exception in " + t + ": "
+                        + e.toString(), e);
                 }
             });
 
@@ -171,7 +198,7 @@ public class PowerFolder {
             }
 
             // Send remote command if there a files in commandline
-            if (files.length > 0) {
+            if (files != null && files.length > 0) {
                 // Parse filenames and build remote command
                 StringBuffer openFilesRCommand = new StringBuffer(
                     RemoteCommandManager.OPEN);
@@ -197,14 +224,10 @@ public class PowerFolder {
         }
 
         // Begin monitoring memory usage.
-        // Not for webstart.
-        if (!OSUtil.isWebStart())
-        {
-            ExecutorService service = controller.getThreadPool();
-            synchronized (service) {
-                if (!service.isShutdown()) {
-                    service.submit(new MemoryMonitor(controller));
-                }
+        ExecutorService service = controller.getThreadPool();
+        synchronized (service) {
+            if (!service.isShutdown()) {
+                service.submit(new MemoryMonitor(controller));
             }
         }
 
@@ -271,11 +294,6 @@ public class PowerFolder {
                 }
             });
 
-        if (controller == null) {
-            // Stop
-            return;
-        }
-
         // Console loop
         BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
         while (controller.isStarted()) {
@@ -310,8 +328,9 @@ public class PowerFolder {
                             .setAllowedUploadCPSForWAN(
                                 (long) Double.parseDouble(ulimit) * 1024);
                     } catch (NumberFormatException e) {
-                        log.severe("Unable to parse new upload limit bandwidth "
-                            + ulimit);
+                        log
+                            .severe("Unable to parse new upload limit bandwidth "
+                                + ulimit);
                     }
                 } else if (line.startsWith("r")) {
                     // write report

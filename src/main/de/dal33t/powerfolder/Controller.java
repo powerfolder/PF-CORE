@@ -19,6 +19,41 @@
  */
 package de.dal33t.powerfolder;
 
+import java.awt.Component;
+import java.awt.GraphicsEnvironment;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.security.Security;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
+import java.util.ResourceBundle;
+import java.util.StringTokenizer;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.prefs.Preferences;
+
+import javax.swing.JOptionPane;
+
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.lang.StringUtils;
+
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.RecycleBin;
@@ -53,39 +88,6 @@ import de.dal33t.powerfolder.util.task.PersistentTaskManager;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
 import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker;
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.lang.StringUtils;
-
-import javax.swing.JOptionPane;
-import java.awt.Component;
-import java.awt.GraphicsEnvironment;
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.security.Security;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-import java.util.ResourceBundle;
-import java.util.StringTokenizer;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.prefs.Preferences;
 
 /**
  * Central class gives access to all core components in PowerFolder. Make sure
@@ -96,7 +98,8 @@ import java.util.prefs.Preferences;
  */
 public class Controller extends PFComponent {
 
-    private static final Logger log = Logger.getLogger(Controller.class.getName());
+    private static final Logger log = Logger.getLogger(Controller.class
+        .getName());
 
     /**
      * the (java beans like) property, listen to changes of the networking mode
@@ -338,8 +341,7 @@ public class Controller extends PFComponent {
                 ResourceBundle resourceBundle = new ForcedLanguageFileResourceBundle(
                     langfilename);
                 Translation.setResourceBundle(resourceBundle);
-                logInfo("Loading language bundle from file "
-                    + langfilename);
+                logInfo("Loading language bundle from file " + langfilename);
             } catch (FileNotFoundException fnfe) {
                 logSevere("forced language file (" + langfilename
                     + ") not found: " + fnfe.getMessage());
@@ -544,9 +546,13 @@ public class Controller extends PFComponent {
         boolean autoSetupPlugins = StringUtils.isEmpty(pluginConfig)
             || !pluginConfig.contains(Constants.PRO_LOADER_PLUGIN_CLASS);
         if (Util.isRunningProVersion() && autoSetupPlugins) {
-            logInfo("Setting up pro plugins");
+            logFine("Setting up pro loader");
+            String newPluginConfig = Constants.PRO_LOADER_PLUGIN_CLASS;
+            if (!StringUtils.isBlank(pluginConfig)) {
+                newPluginConfig += "," + pluginConfig;
+            }
             ConfigurationEntry.PLUGINS.setValue(getController(),
-                Constants.PRO_LOADER_PLUGIN_CLASS);
+                newPluginConfig);
         }
     }
 
@@ -1788,8 +1794,7 @@ public class Controller extends PFComponent {
         File base = new File(System.getProperty("user.home") + "/.PowerFolder");
         if (!base.exists()) {
             if (!base.mkdirs()) {
-                log.severe("Failed to create "
-                    + base.getAbsolutePath());
+                log.severe("Failed to create " + base.getAbsolutePath());
             }
             if (OSUtil.isWindowsSystem()) {
                 // Hide on windows
@@ -1823,8 +1828,10 @@ public class Controller extends PFComponent {
         }
         if (!isStartMinimized() && isUIEnabled()) {
             Object[] options = new Object[]{
-                Translation.getTranslation("dialog.already_running.start_button"),
-                Translation.getTranslation("dialog.already_running.exit_button")};
+                Translation
+                    .getTranslation("dialog.already_running.start_button"),
+                Translation
+                    .getTranslation("dialog.already_running.exit_button")};
             if (JOptionPane.showOptionDialog(parent, Translation
                 .getTranslation("dialog.already_running.warning"), Translation
                 .getTranslation("dialog.already_running.title"),
