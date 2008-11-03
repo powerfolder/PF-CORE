@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.ui.chat;
 
 import java.util.Date;
@@ -76,7 +76,7 @@ public class ChatModel implements MessageListener {
         folderMembershipListener = new MembershipFoldersListener();
         addListenerToExsistingFolders();
         repository.addFolderRepositoryListener(new RepositoryListener());
-        chatModelListeners = (ChatModelListener) ListenerSupportFactory
+        chatModelListeners = ListenerSupportFactory
             .createListenerSupport(ChatModelListener.class);
 
     }
@@ -110,8 +110,8 @@ public class ChatModel implements MessageListener {
      *            The other Member that is chatted with
      * @param typedMember
      *            The member that typed the message (myself or the other member)
-     * @param The
-     *            actual line of text
+     * @param message
+     *            The actual line of text
      */
     public void addChatLine(Member other, Member typedMember, String message) {
         ChatBox chat = getChatBox(other);
@@ -151,7 +151,7 @@ public class ChatModel implements MessageListener {
     /**
      * Get all chatlines from a chat with a member
      * 
-     * @param meber
+     * @param member
      *            Which member to get the chat lines for
      * @return A array of all chat lines, first item is the oldest chat line.
      */
@@ -208,7 +208,11 @@ public class ChatModel implements MessageListener {
         }
     }
 
-    /** add a listener that will recieve events if chatlines are recieved */
+    /**
+     * add a listener that will receive events if chatlines are received
+     * 
+     * @param cmListener
+     */
     public void addChatModelListener(ChatModelListener cmListener) {
         ListenerSupportFactory.addListener(chatModelListeners, cmListener);
     }
@@ -398,9 +402,7 @@ public class ChatModel implements MessageListener {
                     + "")
                 + "\n";
             addStatusChatLine(node, statusMessage);
-            List folders = repository.getFoldersAsSortedList();
-            for (int i = 0; i < folders.size(); i++) {
-                Folder folder = (Folder) folders.get(i);
+            for (Folder folder : repository.getFoldersAsCollection()) {
                 if (folder.hasMember(node)) {
                     addStatusChatLine(folder, node, statusMessage);
                 }
@@ -410,14 +412,11 @@ public class ChatModel implements MessageListener {
         public void nodeDisconnected(NodeManagerEvent e) {
             Member node = e.getNode();
             String statusMessage = Translation.getTranslation(
-                "chat_panel.member_disconnected_at_time", node.getNick(), Format
-                    .getTimeOnlyDateFormat().format(new Date())
-                    + "")
+                "chat_panel.member_disconnected_at_time", node.getNick(),
+                Format.getTimeOnlyDateFormat().format(new Date()) + "")
                 + "\n";
             addStatusChatLine(node, statusMessage);
-            List folders = repository.getFoldersAsSortedList();
-            for (int i = 0; i < folders.size(); i++) {
-                Folder folder = (Folder) folders.get(i);
+            for (Folder folder : repository.getFoldersAsCollection()) {
                 if (folder.hasMember(node)) {
                     addStatusChatLine(folder, node, statusMessage);
                 }
