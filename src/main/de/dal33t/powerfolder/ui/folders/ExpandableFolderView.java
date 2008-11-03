@@ -114,26 +114,26 @@ public class ExpandableFolderView extends PFUIComponent {
 
         // Build lower detials with line border.
         FormLayout lowerLayout = new FormLayout("3dlu, pref:grow, 3dlu",
-            "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
+            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
         PanelBuilder lowerBuilder = new PanelBuilder(lowerLayout);
 
         String transferMode = Translation.getTranslation("exp_folder_view.transfer_mode",
                 folder.getSyncProfile().getProfileName());
-        lowerBuilder.addSeparator(null, cc.xy(2, 2));
+        lowerBuilder.addSeparator(null, cc.xy(2, 1));
         
-        lowerBuilder.add(new JLabel(transferMode), cc.xy(2, 4));
+        lowerBuilder.add(new JLabel(transferMode), cc.xy(2, 3));
 
-        lowerBuilder.addSeparator(null, cc.xy(2, 6));
+        lowerBuilder.addSeparator(null, cc.xy(2, 5));
 
-        lowerBuilder.add(syncPercentLabel, cc.xy(2, 8));
+        lowerBuilder.add(syncPercentLabel, cc.xy(2, 7));
         
-        lowerBuilder.add(filesLabel, cc.xy(2, 10));
+        lowerBuilder.add(filesLabel, cc.xy(2, 9));
 
-        lowerBuilder.add(totalSizeLabel, cc.xy(2, 12));
+        lowerBuilder.add(totalSizeLabel, cc.xy(2, 11));
 
-        lowerBuilder.addSeparator(null, cc.xy(2, 14));
+        lowerBuilder.addSeparator(null, cc.xy(2, 13));
 
-        lowerBuilder.add(membersLabel, cc.xy(2, 16));
+        lowerBuilder.add(membersLabel, cc.xy(2, 15));
 
         JPanel lowerPanel = lowerBuilder.getPanel();
 
