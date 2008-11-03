@@ -87,7 +87,7 @@ public class Icons {
     public static final Icon STOP = getIcon("icons/Abort.gif");
     public static final Icon RUN = getIcon("icons/Play.gif");
     public static final Icon SUSPEND = getIcon("icons/Suspend.gif");
-    public static final Icon HOME = getIcon("icons/Home.gif");
+    public static final Icon HOME = getIcon("icons/Home.png");
 
     public static final Icon WORLD_ADD = getIcon("icons/WorldAdd.png");
     public static final Icon WORLD_EDIT = getIcon("icons/WorldEdit.png");
@@ -99,9 +99,10 @@ public class Icons {
     public static final Icon UNKNOWN_FILE_RED = convertToRed(UNKNOWN_FILE_GRAY);
 
     public static final Icon CHAT = getIcon("icons/Chat.gif");
-    public static final Icon SETTINGS = getIconById("settings.icon");
+    public static final Icon SETTINGS = getIcon("icons/Settings.png");
     public static final Icon STAR = getIcon("icons/Star.gif");
     public static final Icon INFORMATION = getIcon("icons/information.png");
+    public static final Icon COMPUTER = getIcon("icons/Computer.png");
 
     // Arrows
     public static final Icon ARROW_UP = getIcon("icons/ArrowUp.gif");
@@ -204,7 +205,7 @@ public class Icons {
     public static final Icon NODE_NON_FRIEND_DISCONNECTED = getIcon("icons/Node_NonFriend_Disconnected.gif");
 
     // Folder icons
-    public static final Icon FOLDERS = getIconById("folders.icon");
+    public static final Icon FOLDERS = getIcon("icons/Folders.png");
     public static final Icon FOLDER_INVALID = getIconById("folder_invalid.icon");
 
     public static final Icon FOLDER = getIcon("icons/Folder.gif");
@@ -230,9 +231,9 @@ public class Icons {
 
     public static final Icon BLACK_LIST = getIconById("black_list.icon");
     public static final Icon WHITE_LIST = getIconById("white_list.icon");
-    public static final Icon DOWNLOAD = getIcon("icons/Download.gif");
+    public static final Icon DOWNLOAD = getIcon("icons/Down.png");
     public static final Icon DOWNLOAD_ACTIVE = getIcon("icons/Download_active.gif");
-    public static final Icon UPLOAD = getIcon("icons/Upload.gif");
+    public static final Icon UPLOAD = getIcon("icons/Up.png");
     public static final Icon UPLOAD_ACTIVE = getIcon("icons/Upload_active.gif");
     public static final Icon IN_ACTIVE = getIcon("icons/In_active.gif");
     public static final Icon EXPECTED = getIcon("icons/Expected.gif");
@@ -250,8 +251,8 @@ public class Icons {
     public static final Icon CHECKED = getIcon("icons/Checked.gif");
 
     // Online state icons
-    public static final Icon CONNECTED = getIcon("icons/Connected.gif");
-    public static final Icon DISCONNECTED = getIcon("icons/Disconnected.gif");
+    public static final Icon CONNECTED = getIcon("icons/ConnectBright.png");
+    public static final Icon DISCONNECTED = getIcon("icons/ConnectNot.png");
 
     public static final Icon WEBSERVICE = getIcon("icons/WebService.png");
 
