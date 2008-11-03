@@ -35,11 +35,8 @@ import de.dal33t.powerfolder.ui.navigation.NavTreeModel;
 import de.dal33t.powerfolder.util.compare.MemberComparator;
 import de.dal33t.powerfolder.util.ui.TreeNodeList;
 
-import javax.swing.JTree;
 import javax.swing.event.TreeModelEvent;
-import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
-import javax.swing.tree.TreePath;
 import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -265,13 +262,13 @@ public class NodeManagerModel extends PFUIComponent {
         // Update connected nodes
         ControlQuarter controlQuarter = getController().getUIController()
             .getControlQuarter();
-        JTree tree = controlQuarter.getTree();
+        //JTree tree = controlQuarter.getTree();
 
-        TreePath selectionPath = tree.getSelectionPath();
-        Object selected = null;
-        if (selectionPath != null) {
-            selected = selectionPath.getLastPathComponent();
-        }
+        //TreePath selectionPath = tree.getSelectionPath();
+        //Object selected = null;
+        //if (selectionPath != null) {
+        //    selected = selectionPath.getLastPathComponent();
+        //}
 
         treeNode.sort();
         TreeModelEvent treeNodeEvent = new TreeModelEvent(this, treeNode
@@ -283,14 +280,14 @@ public class NodeManagerModel extends PFUIComponent {
         expandNotInFriendsList();
 
         // Restore selection
-        if (selected != null && selected instanceof DefaultMutableTreeNode) {
-            DefaultMutableTreeNode node = (DefaultMutableTreeNode) selected;
-            Object userObject = node.getUserObject();
-            if (userObject instanceof Member) {
-                getController().getUIController().getControlQuarter()
-                    .setSelected((Member) userObject);
-            }
-        }
+//        if (selected != null && selected instanceof DefaultMutableTreeNode) {
+//            DefaultMutableTreeNode node = (DefaultMutableTreeNode) selected;
+//            Object userObject = node.getUserObject();
+//            if (userObject instanceof Member) {
+//                getController().getUIController().getControlQuarter()
+//                    .setSelected((Member) userObject);
+//            }
+//        }
     }
 
     // Helper methods *********************************************************

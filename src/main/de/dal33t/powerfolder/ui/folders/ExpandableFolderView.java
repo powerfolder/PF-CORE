@@ -24,20 +24,24 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.FolderStatistic;
+import de.dal33t.powerfolder.event.FolderEvent;
+import de.dal33t.powerfolder.event.FolderListener;
+import de.dal33t.powerfolder.event.FolderMembershipEvent;
+import de.dal33t.powerfolder.event.FolderMembershipListener;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
-import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.Translation;
 
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.text.DecimalFormat;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Class to render expandable view of a folder.
@@ -55,6 +59,7 @@ public class ExpandableFolderView extends PFUIComponent {
     private JLabel syncPercentLabel;
     private JLabel totalSizeLabel;
     private JLabel membersLabel;
+    private JLabel filesAvailableLabel;
 
     private MyFolderListener myFolderListener;
     private MyFolderMembershipListener myFolderMembershipListener;
@@ -89,7 +94,8 @@ public class ExpandableFolderView extends PFUIComponent {
         initComponent();
 
         // Build ui
-        FormLayout upperLayout = new FormLayout("pref, 3dlu, pref, pref:grow, 3dlu, pref, 3dlu, pref",
+                                            //  idon        name   space            # files     sync        ex/co
+        FormLayout upperLayout = new FormLayout("pref, 3dlu, pref, pref:grow, 3dlu, pref, 3dlu, pref, 3dlu, pref",
             "pref");
         PanelBuilder upperBuilder = new PanelBuilder(upperLayout);
         CellConstraints cc = new CellConstraints();
@@ -100,8 +106,9 @@ public class ExpandableFolderView extends PFUIComponent {
             upperBuilder.add(new JLabel(Icons.PF_LOCAL), cc.xy(1, 1));
         }
         upperBuilder.add(new JLabel(folder.getName()), cc.xy(3, 1));
-        upperBuilder.add(syncFolderButton, cc.xy(6, 1));
-        upperBuilder.add(expandCollapseButton, cc.xy(8, 1));
+        upperBuilder.add(filesAvailableLabel, cc.xy(6, 1));
+        upperBuilder.add(syncFolderButton, cc.xy(8, 1));
+        upperBuilder.add(expandCollapseButton, cc.xy(10, 1));
 
         JPanel upperPanel = upperBuilder.getPanel();
 
@@ -172,6 +179,7 @@ public class ExpandableFolderView extends PFUIComponent {
         syncPercentLabel = new JLabel();
         totalSizeLabel = new JLabel();
         membersLabel = new JLabel();
+        filesAvailableLabel = new JLabel();
         updateNumberOfFiles();
         updateStatsDetails();
         registerListeners();
@@ -218,7 +226,8 @@ public class ExpandableFolderView extends PFUIComponent {
      * Updates the statistics details of the folder.
      */
     private void updateStatsDetails() {
-        double sync = folder.getStatistic().getHarmonizedSyncPercentage();
+        FolderStatistic statistic = folder.getStatistic();
+        double sync = statistic.getHarmonizedSyncPercentage();
         if (sync < 0) {
             sync = 0;
         }
@@ -229,7 +238,7 @@ public class ExpandableFolderView extends PFUIComponent {
                 "exp_folder_view.synchronized", sync);
         syncPercentLabel.setText(syncText);
 
-        long totalSize = folder.getStatistic().getTotalSize();
+        long totalSize = statistic.getTotalSize();
         String descriptionKey = "exp_folder_view.total_bytes";
         long divisor = 1;
         if (totalSize >= 1024) {
@@ -256,6 +265,13 @@ public class ExpandableFolderView extends PFUIComponent {
 
         totalSizeLabel.setText(Translation.getTranslation(
                 descriptionKey, formattedNum));
+        int count = statistic.getIncomingFilesCount();
+        if (count == 0) {
+            filesAvailableLabel.setText("");
+        } else {
+            filesAvailableLabel.setText(Translation.getTranslation(
+                    "exp_folder_view.files_available", count));
+        }
     }
 
     /**
