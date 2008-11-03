@@ -100,11 +100,17 @@ public class ExpandableFolderView extends PFUIComponent {
         PanelBuilder upperBuilder = new PanelBuilder(upperLayout);
         CellConstraints cc = new CellConstraints();
 
+        JLabel jLabel;
         if (folder.isPreviewOnly()) {
-            upperBuilder.add(new JLabel(Icons.PF_PREVIEW), cc.xy(1, 1));
+            jLabel = new JLabel(Icons.PF_PREVIEW);
+            jLabel.setToolTipText(Translation.getTranslation(
+                    "exp_folder_view.folder_preview_text"));
         } else {
-            upperBuilder.add(new JLabel(Icons.PF_LOCAL), cc.xy(1, 1));
+            jLabel = new JLabel(Icons.PF_LOCAL);
+            jLabel.setToolTipText(Translation.getTranslation(
+                    "exp_folder_view.folder_local_text"));
         }
+        upperBuilder.add(jLabel, cc.xy(1, 1));
         upperBuilder.add(new JLabel(folder.getName()), cc.xy(3, 1));
         upperBuilder.add(filesAvailableLabel, cc.xy(6, 1));
         upperBuilder.add(syncFolderButton, cc.xy(8, 1));

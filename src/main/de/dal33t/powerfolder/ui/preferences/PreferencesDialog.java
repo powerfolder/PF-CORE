@@ -143,16 +143,12 @@ public class PreferencesDialog extends BaseDialog {
         mydnsndsModel = new ValueHolder(ConfigurationEntry.DYNDNS_HOSTNAME
             .getValue(getController()));
 
-//        if (OSUtil.isMacOS()) {
-            tabbedPane = new JTabbedPane(SwingConstants.TOP);
-//        } else {
-//            tabbedPane = new JTabbedPane(JTabbedPane.LEFT);
-//        }
+        tabbedPane = new JTabbedPane(SwingConstants.TOP);
 
         GeneralSettingsTab generalSettingsTab = new GeneralSettingsTab(
             getController());
         preferenceTabs.add(generalSettingsTab);
-        tabbedPane.addTab("     " + generalSettingsTab.getTabName() + "      ",
+        tabbedPane.addTab(generalSettingsTab.getTabName(),
             null, generalSettingsTab.getUIPanel(), null);
 
         NetworkSettingsTab networkSettingsTab = new NetworkSettingsTab(
