@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder;
 
 import com.jgoodies.binding.adapter.PreferencesAdapter;
@@ -45,14 +45,13 @@ public enum PreferencesEntry {
     FRIENDSEARCH_HIDEOFFLINE("FriendsSearch_HideOfflineUsers", false),
 
     QUIT_ON_X("quitonx", false),
-    
+
     WARN_ON_CLOSE("WarnOnClose", true),
 
     ASK_FOR_FRIENDSHIP_ON_PRIVATE_FOLDER_JOIN(
         "AskForFriendshipOnPrivateFolderJoin", true),
 
-    ASK_FOR_FRIENDSHIP_MESSAGE(
-        "AskForFriendshipMessage", true),
+    ASK_FOR_FRIENDSHIP_MESSAGE("AskForFriendshipMessage", true),
 
     SHOW_PREVIEW_PANEL("ShowPreviewPanel", false),
 
@@ -69,14 +68,19 @@ public enum PreferencesEntry {
     START_PANEL("start.panel", StartPanel.OVERVIEW.name()),
 
     /**
-     * the pref that holds a boolean value if the connection should be
-     * tested and a warning displayed if limited connectivty is given.
+     * the pref that holds a boolean value if the connection should be tested
+     * and a warning displayed if limited connectivty is given.
      */
     TEST_CONNECTIVITY("test_for_connectivity", true),
 
     DUPLICATE_FOLDER_USE("duplicaet_folder_use", true),
-    
-    SETUP_DEFAULT_FOLDER("setup_default_folder", true);
+
+    SETUP_DEFAULT_FOLDER("setup_default_folder", true),
+
+    /**
+     * If the last password of login should be reminded.
+     */
+    SERVER_REMIND_PASSWORD("server_remind_password", true);
 
     /** String, Boolean, Integer */
     private Class type;
