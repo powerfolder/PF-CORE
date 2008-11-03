@@ -19,13 +19,32 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.swing.Icon;
+import javax.swing.JCheckBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
+
+import jwf.WizardPanel;
+
+import org.apache.commons.lang.StringUtils;
+
 import com.jgoodies.binding.adapter.BasicComponentFactory;
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
@@ -34,25 +53,17 @@ import de.dal33t.powerfolder.ui.widget.LinkLabel;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
-import jwf.WizardPanel;
-import org.apache.commons.lang.StringUtils;
-
-import javax.swing.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class LoginOnlineStoragePanel extends PFWizardPanel {
-
-    private static final Logger log = Logger.getLogger(LoginOnlineStoragePanel.class.getName());
+    private static final Logger LOG = Logger
+        .getLogger(LoginOnlineStoragePanel.class.getName());
 
     private ServerClient client;
 
     private JTextField usernameField;
     private JPasswordField passwordField;
     private JLabel connectingLabel;
+    private JCheckBox remindPasswordBox;
     private WizardPanel nextPanel;
     private DefaultFolderWizardHelper defaultFolderHelper;
 
@@ -111,8 +122,7 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
                     .getTranslation("online_storage.account_data"));
             }
         } catch (Exception e) {
-            log.log(Level.SEVERE,
-                "Problem logging in", e);
+            LOG.log(Level.SEVERE, "Problem logging in", e);
             list.add(Translation.getTranslation("online_storage.general_error",
                 e.getMessage()));
         }
@@ -124,13 +134,14 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
     }
 
     protected JPanel buildContent() {
-        FormLayout layout = new FormLayout("$wlabel, $lcg, $wfield, 0:g",
-            "pref, 10dlu, pref, 5dlu, pref, 5dlu, pref, 15dlu, pref, 5dlu, pref");
+        FormLayout layout = new FormLayout(
+            "$wlabel, $lcg, $wfield, 0:g",
+            "pref, 10dlu, pref, 5dlu, pref, 5dlu, pref, 5dlu, pref, 15dlu, pref, 5dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
         builder.addLabel(Translation
-            .getTranslation("wizard.webservice.enter_account"), cc.xyw(1, 1, 4));
+            .getTranslation("wizard.webservice.enteraccount"), cc.xyw(1, 1, 4));
 
         builder.addLabel(Translation
             .getTranslation("wizard.webservice.username"), cc.xy(1, 3));
@@ -141,17 +152,19 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
             .getTranslation("wizard.webservice.password"), cc.xy(1, 5));
         builder.add(passwordField, cc.xy(3, 5));
 
+        builder.add(remindPasswordBox, cc.xy(3, 7));
+
         builder.add(new LinkLabel(Translation
             .getTranslation("pro.wizard.activation.register_now"), client
-            .getRegisterURL()), cc.xy(3, 7));
+            .getRegisterURL()), cc.xy(3, 9));
 
         LinkLabel link = new LinkLabel(Translation
-            .getTranslation("wizard.webservice.learn_more"),
+            .getTranslation("wizard.webservice.learnmore"),
             "http://www.powerfolder.com/online_storage_features.html");
-        builder.add(link, cc.xyw(1, 9, 4));
+        builder.add(link, cc.xyw(1, 11, 4));
 
         // Default setup
-        builder.add(defaultFolderHelper.getUIComponent(), cc.xyw(1, 11, 4));
+        builder.add(defaultFolderHelper.getUIComponent(), cc.xyw(1, 13, 4));
 
         return builder.getPanel();
     }
@@ -172,6 +185,11 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
                 updateButtons();
             }
         });
+        remindPasswordBox = BasicComponentFactory.createCheckBox(
+            PreferencesEntry.SERVER_REMIND_PASSWORD.getModel(getController()),
+            Translation
+                .getTranslation("wizard.login_online_storage.remind_password"));
+        remindPasswordBox.setOpaque(false);
         connectingLabel = SimpleComponentFactory.createLabel(Translation
             .getTranslation("wizard.login_online_storage.connecting"));
         updateOnlineStatus();
@@ -181,8 +199,8 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
             client);
     }
 
-    protected JComponent getPictoComponent() {
-        return new JLabel(Icons.WEBSERVICE_PICTO);
+    protected Icon getPicto() {
+        return Icons.WEBSERVICE_PICTO;
     }
 
     protected String getTitle() {
