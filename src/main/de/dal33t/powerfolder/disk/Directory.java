@@ -19,6 +19,20 @@
  */
 package de.dal33t.powerfolder.disk;
 
+import java.awt.datatransfer.DataFlavor;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.logging.Logger;
+
 import de.dal33t.powerfolder.DiskItem;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.FileInfo;
@@ -27,14 +41,6 @@ import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.FileCopier;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.logging.Loggable;
-
-import java.awt.datatransfer.DataFlavor;
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-
 
 /**
  * Represents a directory of files. No actual disk access from this file, build
@@ -44,17 +50,16 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author <a href="mailto:schaatser@powerfolder.com">Jan van Oosterom </a>
  * @version $Revision: 1.43 $
  */
-public class Directory extends Loggable implements Comparable<Directory>, DiskItem {
-
+public class Directory implements Comparable<Directory>, DiskItem {
     /**
      * The files (FileInfoHolder s) in this Directory key = fileInfo value =
      * FileInfoHolder
      */
-    private Map<FileInfo, FileInfoHolder> fileInfoHolderMap = new HashMap<FileInfo, FileInfoHolder>(
-        2);
+    private ConcurrentMap<FileInfo, FileInfoHolder> fileInfoHolderMap = new ConcurrentHashMap<FileInfo, FileInfoHolder>(
+        2, 0.75f, 4);
     /** key = dir name, value = Directory* */
     private Map<String, Directory> subDirectoriesMap = new ConcurrentHashMap<String, Directory>(
-        2);
+        2, 0.75f, 4);
     /**
      * the path to this directory (including its name, excluding the localbase
      * (see Folder)
@@ -66,6 +71,7 @@ public class Directory extends Loggable implements Comparable<Directory>, DiskIt
     private Folder rootFolder;
     /** The parent Directory (may be null, if no parent!) */
     private Directory parent;
+    private Logger log = Logger.getLogger(Directory.class.getName());
 
     /** The TreeNode that displayes this Directory in the Tree */
     // private DefaultMutableTreeNode treeNode;
@@ -127,7 +133,7 @@ public class Directory extends Loggable implements Comparable<Directory>, DiskIt
         final File newFileName = new File(getFile(), nameArg);
         if (!newFileName.exists()) {
             if (!newFileName.mkdir()) {
-                logInfo("Failed to create " + newFileName.getAbsolutePath());
+                log.info("Failed to create " + newFileName.getAbsolutePath());
             }
         }
         return sub;
@@ -178,7 +184,7 @@ public class Directory extends Loggable implements Comparable<Directory>, DiskIt
             // target exists, rename it so we backup
             tmpFile = new File(newFile + ".tmp");
             if (!newFile.renameTo(tmpFile)) {
-                logSevere("Couldn't rename " + newFile.getAbsolutePath()
+                log.severe("Couldn't rename " + newFile.getAbsolutePath()
                     + " to " + tmpFile.getAbsolutePath());
             }
         }
@@ -186,7 +192,7 @@ public class Directory extends Loggable implements Comparable<Directory>, DiskIt
             // rename failed restore if possible
             if (tmpFile != null) {
                 if (!tmpFile.renameTo(newFile)) {
-                    logSevere("Couldn't rename " + newFile.getAbsolutePath()
+                    log.severe("Couldn't rename " + newFile.getAbsolutePath()
                         + " to " + tmpFile.getAbsolutePath());
                 }
             }
@@ -194,7 +200,7 @@ public class Directory extends Loggable implements Comparable<Directory>, DiskIt
             // success!
             if (tmpFile != null) {
                 if (!tmpFile.delete()) {
-                    logSevere("Couldn't delete " + tmpFile.getAbsolutePath());
+                    log.severe("Couldn't delete " + tmpFile.getAbsolutePath());
                 }
             }
         }
@@ -237,6 +243,7 @@ public class Directory extends Loggable implements Comparable<Directory>, DiskIt
             return true;
         }
         return false;
+
     }
 
     /**
@@ -246,21 +253,21 @@ public class Directory extends Loggable implements Comparable<Directory>, DiskIt
      * @return if the fileinfo has been removed.
      */
     public boolean removeFileInfo(FileInfo fInfo) {
-        synchronized (fileInfoHolderMap) {
-            Iterator<FileInfoHolder> fileInfoHolders = fileInfoHolderMap
-                .values().iterator();
-            while (fileInfoHolders.hasNext()) {
-                FileInfoHolder holder = fileInfoHolders.next();
-                if (holder.getFileInfo().equals(fInfo)) {
-                    fileInfoHolders.remove();
-                    return true;
+        for (FileInfoHolder holder : fileInfoHolderMap.values()) {
+            if (holder.getFileInfo().equals(fInfo)) {
+                synchronized (fileInfoHolderMap) {
+                    fileInfoHolderMap.remove(fInfo);
                 }
+                return true;
             }
         }
-        Set<String> dirnames = subDirectoriesMap.keySet();
-        for (Iterator<String> it = dirnames.iterator(); it.hasNext();) {
-            Directory dir = subDirectoriesMap.get(it.next());
+        for (Directory dir : subDirectoriesMap.values()) {
             if (dir.removeFileInfo(fInfo)) {
+                if (dir.fileInfoHolderMap.isEmpty()) {
+                    synchronized (subDirectoriesMap) {
+                        subDirectoriesMap.remove(dir);
+                    }
+                }
                 return true;
             }
         }
@@ -270,26 +277,26 @@ public class Directory extends Loggable implements Comparable<Directory>, DiskIt
 
     public boolean removeFilesOfMember(Member member) {
         boolean removed = false;
-        synchronized (fileInfoHolderMap) {
-            Iterator<FileInfoHolder> fileInfoHolders = fileInfoHolderMap
-                .values().iterator();
-            List<FileInfo> toRemove = new LinkedList<FileInfo>();
-            while (fileInfoHolders.hasNext()) {
-                FileInfoHolder holder = fileInfoHolders.next();
-                boolean empty = holder.removeFileOfMember(member);
-                if (empty) {
-                    removed = true;
-                    fileInfoHolders.remove();
+        for (FileInfoHolder holder : fileInfoHolderMap.values()) {
+            boolean empty = holder.removeFileOfMember(member);
+            if (empty) {
+                removed = true;
+                synchronized (fileInfoHolderMap) {
+                    fileInfoHolderMap.remove(holder.getFileInfo());
                 }
             }
-            removed = toRemove.size() > 0;
         }
-        Set<String> dirnames = subDirectoriesMap.keySet();
-        for (Iterator<String> it = dirnames.iterator(); it.hasNext();) {
-            Directory dir = subDirectoriesMap.get(it.next());
+
+        for (Directory dir : subDirectoriesMap.values()) {
             boolean dirRemoved = dir.removeFilesOfMember(member);
+            if (dir.fileInfoHolderMap.isEmpty()) {
+                synchronized (subDirectoriesMap) {
+                    subDirectoriesMap.remove(dir);
+                }
+            }
             removed = removed || dirRemoved;
         }
+
         return removed;
     }
 
@@ -299,8 +306,9 @@ public class Directory extends Loggable implements Comparable<Directory>, DiskIt
      * @return the holder of the fileinfo
      */
     public FileInfoHolder getFileInfoHolder(FileInfo fileInfo) {
-        if (fileInfoHolderMap.containsKey(fileInfo)) {
-            return fileInfoHolderMap.get(fileInfo);
+        FileInfoHolder holder = fileInfoHolderMap.get(fileInfo);
+        if (holder != null) {
+            return holder;
         }
         String path = fileInfo.getLocationInFolder();
         String dirName;
@@ -352,10 +360,6 @@ public class Directory extends Loggable implements Comparable<Directory>, DiskIt
             + fileInfo.getName());
     }
 
-    public Collection<Directory> getSubDirectories() {
-        return subDirectoriesMap.values();
-    }
-
     /** */
     public Directory getSubDirectory(String dirName) {
         String tmpDirName;
@@ -386,14 +390,9 @@ public class Directory extends Loggable implements Comparable<Directory>, DiskIt
      */
     public List<FileInfo> getFiles() {
         List<FileInfo> files = new ArrayList<FileInfo>();
-        synchronized (fileInfoHolderMap) {
-            Iterator<FileInfo> fileInfos = fileInfoHolderMap.keySet()
-                .iterator();
-            while (fileInfos.hasNext()) {
-                FileInfo fileInfo = fileInfos.next();
-                if (fileInfo.diskFileExists(rootFolder.getController())) {
-                    files.add(fileInfo);
-                }
+        for (FileInfo fileInfo : fileInfoHolderMap.keySet()) {
+            if (fileInfo.diskFileExists(rootFolder.getController())) {
+                files.add(fileInfo);
             }
         }
         return files;
@@ -407,20 +406,13 @@ public class Directory extends Loggable implements Comparable<Directory>, DiskIt
      */
     public List<FileInfo> getFilesRecursive() {
         List<FileInfo> files = new ArrayList<FileInfo>();
-        synchronized (fileInfoHolderMap) {
-            Iterator<FileInfoHolder> fileInfoHolders = fileInfoHolderMap
-                .values().iterator();
-            while (fileInfoHolders.hasNext()) {
-                FileInfoHolder holder = fileInfoHolders.next();
-                if (holder.isValid()) {
-                    files.add(holder.getFileInfo());
-                }
+        for (FileInfoHolder holder : fileInfoHolderMap.values()) {
+            if (holder.isValid()) {
+                files.add(holder.getFileInfo());
             }
         }
-        Iterator<Directory> subs = subDirectoriesMap.values().iterator();
-        while (subs.hasNext()) {
-            Directory subDir = subs.next();
-            files.addAll(subDir.getFilesRecursive());
+        for (Directory dir : subDirectoriesMap.values()) {
+            files.addAll(dir.getFilesRecursive());
         }
         return files;
     }
@@ -505,6 +497,7 @@ public class Directory extends Loggable implements Comparable<Directory>, DiskIt
      *            the file to add to this Directory
      */
     private void addFile(Member member, FileInfo fileInfo) {
+        // Keep synchronization here.
         synchronized (fileInfoHolderMap) {
             if (fileInfoHolderMap.containsKey(fileInfo)) { // already there
                 FileInfoHolder fileInfoHolder = fileInfoHolderMap.get(fileInfo);
@@ -537,23 +530,18 @@ public class Directory extends Loggable implements Comparable<Directory>, DiskIt
      * @return if the directory is expected
      */
     public boolean isExpected(FolderRepository folderRepository) {
-        synchronized (fileInfoHolderMap) {
-            Iterator<FileInfoHolder> fileInfoHolders = fileInfoHolderMap
-                .values().iterator();
-            while (fileInfoHolders.hasNext()) {
-                FileInfo fInfo = fileInfoHolders.next().getFileInfo();
-                if (fInfo.isDeleted()) {
-                    // Don't consider deleted
-                    continue;
-                }
-                if (!fInfo.isExpected(folderRepository)) {
-                    return false;
-                }
+        for (FileInfoHolder holder : fileInfoHolderMap.values()) {
+            FileInfo fInfo = holder.getFileInfo();
+            if (fInfo.isDeleted()) {
+                // Don't consider deleted
+                continue;
+            }
+            if (!fInfo.isExpected(folderRepository)) {
+                return false;
             }
         }
-        Iterator<Directory> it = subDirectoriesMap.values().iterator();
-        while (it.hasNext()) {
-            Directory dir = it.next();
+
+        for (Directory dir : subDirectoriesMap.values()) {
             if (!dir.isExpected(folderRepository)) {
                 return false;
             }
@@ -569,18 +557,12 @@ public class Directory extends Loggable implements Comparable<Directory>, DiskIt
         if (fileInfoHolderMap.isEmpty() && subDirectoriesMap.isEmpty()) {
             return false;
         }
-        synchronized (fileInfoHolderMap) {
-            Iterator<FileInfoHolder> fileInfoHolders = fileInfoHolderMap
-                .values().iterator();
-            while (fileInfoHolders.hasNext()) {
-                if (!fileInfoHolders.next().getFileInfo().isDeleted()) {
-                    return false; // one file not deleted
-                }
+        for (FileInfoHolder holder : fileInfoHolderMap.values()) {
+            if (!holder.getFileInfo().isDeleted()) {
+                return false; // one file not deleted
             }
         }
-        Iterator<Directory> it = subDirectoriesMap.values().iterator();
-        while (it.hasNext()) {
-            Directory dir = it.next();
+        for (Directory dir : subDirectoriesMap.values()) {
             if (!dir.isDeleted()) {
                 return false;
             }
@@ -596,102 +578,84 @@ public class Directory extends Loggable implements Comparable<Directory>, DiskIt
         if (fileInfoHolderMap.isEmpty() && subDirectoriesMap.isEmpty()) {
             return false;
         }
-        synchronized (fileInfoHolderMap) {
-            for (FileInfoHolder fileInfoHolder : fileInfoHolderMap.values()) {
-                if (fileInfoHolder.getFileInfo().isDeleted()) {
-                    return true;
-                }
+        for (FileInfoHolder fileInfoHolder : fileInfoHolderMap.values()) {
+            if (fileInfoHolder.getFileInfo().isDeleted()) {
+                return true;
             }
         }
-        synchronized (subDirectoriesMap) {
-            for (Directory directory : subDirectoriesMap.values()) {
-                if (directory.containsDeleted()) {
-                    return true;
-                }
+        for (Directory directory : subDirectoriesMap.values()) {
+            if (directory.containsDeleted()) {
+                return true;
             }
         }
         return false;
     }
 
     /**
-     * True if this directory contains any local files.
-     * 
-     * @return
+     * @return True if this directory contains any local files.
      */
     public boolean containsLocalFiles() {
         if (fileInfoHolderMap.isEmpty() && subDirectoriesMap.isEmpty()) {
             return false;
         }
-        synchronized (fileInfoHolderMap) {
-            for (FileInfoHolder fileInfoHolder : fileInfoHolderMap.values()) {
-                FileInfo fileInfo = fileInfoHolder.getFileInfo();
-                FileInfo newestVersion = null;
-                if (fileInfo.getFolder(rootFolder.getController()
-                    .getFolderRepository()) != null)
-                {
-                    newestVersion = fileInfo
-                        .getNewestNotDeletedVersion(rootFolder.getController()
-                            .getFolderRepository());
-                }
+        for (FileInfoHolder fileInfoHolder : fileInfoHolderMap.values()) {
+            FileInfo fileInfo = fileInfoHolder.getFileInfo();
+            FileInfo newestVersion = null;
+            if (fileInfo.getFolder(rootFolder.getController()
+                .getFolderRepository()) != null)
+            {
+                newestVersion = fileInfo.getNewestNotDeletedVersion(rootFolder
+                    .getController().getFolderRepository());
+            }
 
-                boolean isIncoming = fileInfo.isDownloading(rootFolder
-                    .getController())
-                    || fileInfo.isExpected(rootFolder.getController()
-                        .getFolderRepository())
-                    || newestVersion != null
-                    && newestVersion.isNewerThan(fileInfo);
-                if (!isIncoming && !fileInfo.isDeleted()) {
-                    return true;
-                }
+            boolean isIncoming = fileInfo.isDownloading(rootFolder
+                .getController())
+                || fileInfo.isExpected(rootFolder.getController()
+                    .getFolderRepository())
+                || newestVersion != null
+                && newestVersion.isNewerThan(fileInfo);
+            if (!isIncoming && !fileInfo.isDeleted()) {
+                return true;
             }
         }
-        synchronized (subDirectoriesMap) {
-            for (Directory directory : subDirectoriesMap.values()) {
-                if (directory.containsLocalFiles()) {
-                    return true;
-                }
+        for (Directory directory : subDirectoriesMap.values()) {
+            if (directory.containsLocalFiles()) {
+                return true;
             }
         }
         return false;
     }
 
     /**
-     * Returns true if the directory contains any incoming files.
-     * 
-     * @return
+     * @return true if the directory contains any incoming files.
      */
     public boolean containsIncomingFiles() {
         if (fileInfoHolderMap.isEmpty() && subDirectoriesMap.isEmpty()) {
             return false;
         }
-        synchronized (fileInfoHolderMap) {
-            for (FileInfoHolder fileInfoHolder : fileInfoHolderMap.values()) {
-                FileInfo fileInfo = fileInfoHolder.getFileInfo();
-                FileInfo newestVersion = null;
-                if (fileInfo.getFolder(rootFolder.getController()
-                    .getFolderRepository()) != null)
-                {
-                    newestVersion = fileInfo
-                        .getNewestNotDeletedVersion(rootFolder.getController()
-                            .getFolderRepository());
-                }
+        for (FileInfoHolder fileInfoHolder : fileInfoHolderMap.values()) {
+            FileInfo fileInfo = fileInfoHolder.getFileInfo();
+            FileInfo newestVersion = null;
+            if (fileInfo.getFolder(rootFolder.getController()
+                .getFolderRepository()) != null)
+            {
+                newestVersion = fileInfo.getNewestNotDeletedVersion(rootFolder
+                    .getController().getFolderRepository());
+            }
 
-                boolean isIncoming = fileInfo.isDownloading(rootFolder
-                    .getController())
-                    || fileInfo.isExpected(rootFolder.getController()
-                        .getFolderRepository())
-                    || newestVersion != null
-                    && newestVersion.isNewerThan(fileInfo);
-                if (isIncoming) {
-                    return true;
-                }
+            boolean isIncoming = fileInfo.isDownloading(rootFolder
+                .getController())
+                || fileInfo.isExpected(rootFolder.getController()
+                    .getFolderRepository())
+                || newestVersion != null
+                && newestVersion.isNewerThan(fileInfo);
+            if (isIncoming) {
+                return true;
             }
         }
-        synchronized (subDirectoriesMap) {
-            for (Directory directory : subDirectoriesMap.values()) {
-                if (directory.containsIncomingFiles()) {
-                    return true;
-                }
+        for (Directory directory : subDirectoriesMap.values()) {
+            if (directory.containsIncomingFiles()) {
+                return true;
             }
         }
         return false;
@@ -709,21 +673,17 @@ public class Directory extends Loggable implements Comparable<Directory>, DiskIt
         if (fileInfoHolderMap.isEmpty() && subDirectoriesMap.isEmpty()) {
             return false;
         }
-        synchronized (fileInfoHolderMap) {
-            for (FileInfoHolder fInfoHolder : fileInfoHolderMap.values()) {
-                // TODO UARG ugly access to controller.
-                if (rootFolder.getController().getTransferManager()
-                    .isCompletedDownload(fInfoHolder.getFileInfo()))
-                {
-                    return true;
-                }
+        for (FileInfoHolder fInfoHolder : fileInfoHolderMap.values()) {
+            // TODO UARG ugly access to controller.
+            if (rootFolder.getController().getTransferManager()
+                .isCompletedDownload(fInfoHolder.getFileInfo()))
+            {
+                return true;
             }
         }
-        synchronized (subDirectoriesMap) {
-            for (Directory dir : subDirectoriesMap.values()) {
-                if (dir.containsCompletedDownloads()) {
-                    return true;
-                }
+        for (Directory dir : subDirectoriesMap.values()) {
+            if (dir.containsCompletedDownloads()) {
+                return true;
             }
         }
         return false; // nothing found.
@@ -738,14 +698,9 @@ public class Directory extends Loggable implements Comparable<Directory>, DiskIt
      */
     public List<FileInfo> getValidFiles() {
         List<FileInfo> files = new ArrayList<FileInfo>();
-        synchronized (fileInfoHolderMap) {
-            Iterator<FileInfoHolder> fileInfoHolders = fileInfoHolderMap
-                .values().iterator();
-            while (fileInfoHolders.hasNext()) {
-                FileInfoHolder holder = fileInfoHolders.next();
-                if (holder.isValid()) {
-                    files.add(holder.getFileInfo());
-                }
+        for (FileInfoHolder holder : fileInfoHolderMap.values()) {
+            if (holder.isValid()) {
+                files.add(holder.getFileInfo());
             }
         }
         return files;
@@ -814,17 +769,19 @@ public class Directory extends Loggable implements Comparable<Directory>, DiskIt
                 dirName = thePath.substring(0, index);
                 rest = thePath.substring(index + 1, thePath.length());
             }
-            if (subDirectoriesMap.containsKey(dirName)) {
-                Directory dir = subDirectoriesMap.get(dirName);
-                dir.add(member, file, rest);
-                // TODO fire change ?
-            } else {
-                Directory dir = new Directory(this, dirName, dirName,
-                    rootFolder);
-                // rootFolder.addDirectory(dir);
-                subDirectoriesMap.put(dirName, dir);
-                dir.add(member, file, rest);
-                // TODO fire change ?
+            synchronized (subDirectoriesMap) {
+                if (subDirectoriesMap.containsKey(dirName)) {
+                    Directory dir = subDirectoriesMap.get(dirName);
+                    dir.add(member, file, rest);
+                    // TODO fire change ?
+                } else {
+                    Directory dir = new Directory(this, dirName, dirName,
+                        rootFolder);
+                    // rootFolder.addDirectory(dir);
+                    subDirectoriesMap.put(dirName, dir);
+                    dir.add(member, file, rest);
+                    // TODO fire change ?
+                }
             }
         }
     }
@@ -843,16 +800,18 @@ public class Directory extends Loggable implements Comparable<Directory>, DiskIt
                 dirName = restPath.substring(0, index);
                 rest = restPath.substring(index + 1, restPath.length());
             }
-            if (subDirectoriesMap.containsKey(dirName)) {
-                Directory dir = subDirectoriesMap.get(dirName);
-                dir.add(member, file, rest);
-                // TODO fire Change?
-            } else {
-                Directory dir = new Directory(this, dirName, path + '/'
-                    + dirName, rootFolder);
-                subDirectoriesMap.put(dirName, dir);
-                dir.add(member, file, rest);
-                // TODO fire change ?
+            synchronized (subDirectoriesMap) {
+                if (subDirectoriesMap.containsKey(dirName)) {
+                    Directory dir = subDirectoriesMap.get(dirName);
+                    dir.add(member, file, rest);
+                    // TODO fire Change?
+                } else {
+                    Directory dir = new Directory(this, dirName, path + '/'
+                        + dirName, rootFolder);
+                    subDirectoriesMap.put(dirName, dir);
+                    dir.add(member, file, rest);
+                    // TODO fire change ?
+                }
             }
         }
     }
@@ -867,26 +826,22 @@ public class Directory extends Loggable implements Comparable<Directory>, DiskIt
     private StringBuilder toAscii(StringBuilder str, int depth) {
         int newdepth = depth + 1;
         String tabs = getTabs(depth);
-        Iterator it = subDirectoriesMap.values().iterator();
-        while (it.hasNext()) {
+        for (Directory dir : subDirectoriesMap.values()) {
             str.append(tabs);
             str.append("<DIR>");
-            Directory sub = (Directory) it.next();
-            str.append(sub.name);
+            str.append(dir.name);
             str.append("\n");
-            sub.toAscii(str, newdepth);
+            dir.toAscii(str, newdepth);
         }
         tabs = getTabs(newdepth);
-        synchronized (fileInfoHolderMap) {
-            it = fileInfoHolderMap.values().iterator();
-            while (it.hasNext()) {
-                str.append(tabs);
-                str.append("<FILE>");
-                FileInfo file = ((FileInfoHolder) it.next()).getFileInfo();
-                str.append(file.getFilenameOnly());
-                str.append("\n");
-            }
+        for (FileInfoHolder holder : fileInfoHolderMap.values()) {
+            str.append(tabs);
+            str.append("<FILE>");
+            FileInfo file = holder.getFileInfo();
+            str.append(file.getFilenameOnly());
+            str.append("\n");
         }
+
         return str;
     }
 
