@@ -194,7 +194,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (getController().isLimitedConnectivity()) {
-                    getController().getIOProvider().startIO(
+                    getController().getThreadPool().execute(
                         new LimitedConnectivityChecker.CheckTask(
                             getController(), false));
                     // Directly show dialog, not after check! may take up to 30
