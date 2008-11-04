@@ -19,8 +19,9 @@
  */
 package de.dal33t.powerfolder.util;
 
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -28,8 +29,8 @@ import java.util.logging.Logger;
  * Used for analysis and improvements to PowerFolder.
  */
 public class Profiling {
-
-    private static final Logger log = Logger.getLogger(Profiling.class.getName());
+    private static final Logger LOG = Logger.getLogger(Profiling.class
+        .getName());
 
     /**
      * Allow public access for faster check
@@ -41,7 +42,7 @@ public class Profiling {
     private static long maximumTime;
     private static long totalCount;
 
-    private static final List<ProfilingStat> stats = new CopyOnWriteArrayList<ProfilingStat>();
+    private static final Map<String, ProfilingStat> stats = new ConcurrentHashMap<String, ProfilingStat>();
 
     /**
      * No instances allowed.
@@ -140,7 +141,8 @@ public class Profiling {
         }
         if (profilingEntry == null) {
             // This i
-            log.severe("Cannot end profiling, entry is null");
+            LOG.log(Level.SEVERE, "Cannot end profiling, entry is null",
+                new RuntimeException("Cannot end profiling, entry is null"));
             return;
         }
 
@@ -149,12 +151,12 @@ public class Profiling {
         long elapsed = profilingEntry.elapsedMilliseconds();
         String operationName = profilingEntry.getOperationName();
         if (profileMillis > 0 && elapsed >= profileMillis) {
-            String t = profilingEntry.getOperationName();
-            if (profilingEntry.getDetails() != null) {
-                t += " [" + profilingEntry.getDetails() + "]";
-            }
-            t += " took " + elapsed + " milliseconds";
-            log.severe(t);
+            // String t = profilingEntry.getOperationName();
+            // if (profilingEntry.getDetails() != null) {
+            // t += " [" + profilingEntry.getDetails() + "]";
+            // }
+            // t += " took " + elapsed + " milliseconds";
+            // LOG.error(t);
         }
         totalTime += elapsed;
         totalCount++;
@@ -165,19 +167,20 @@ public class Profiling {
             maximumTime = elapsed;
         }
 
-        for (ProfilingStat profilingStat : stats) {
-            if (profilingStat.getOperationName().equals(operationName)) {
-                profilingStat.addElapsed(elapsed);
+        synchronized (stats) {
+            ProfilingStat stat = stats.get(operationName);
+            if (stat != null) {
+                stat.addElapsed(elapsed);
                 return;
             }
+            stat = new ProfilingStat(operationName, elapsed);
+            stats.put(operationName, stat);
         }
-        ProfilingStat stat = new ProfilingStat(operationName, elapsed);
-        stats.add(stat);
     }
 
     public static String dumpStats() {
         if (!ENABLED) {
-            log.severe("Unable to dump stats. Profiling is disabled");
+            LOG.severe("Unable to dump stats. Profiling is disabled");
             return "Unable to dump stats. Profiling is disabled";
         }
 
@@ -192,7 +195,7 @@ public class Profiling {
         sb.append("Min elapsed time: " + minimumTime + "ms\n");
         sb.append("Max elapsed time: " + maximumTime + "ms\n");
         sb.append("\n");
-        for (ProfilingStat stat : stats) {
+        for (ProfilingStat stat : stats.values()) {
             sb.append("'" + stat.getOperationName() + "' invocations "
                 + stat.getCount() + " elapsed " + stat.getElapsed()
                 + "ms average " + stat.getElapsed() / stat.getCount() + "ms\n");
