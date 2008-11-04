@@ -39,7 +39,9 @@ import com.jgoodies.forms.layout.Sizes;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.util.TransferCounter;
+import de.dal33t.powerfolder.util.Translation;
 
 /**
  * Factory for several complexer fields.
@@ -103,7 +105,8 @@ public class ComplexComponentFactory {
         textField.setPreferredSize(p);
 
         // The button
-        final JButton button = new JButton(Icons.DIRECTORY);
+        final JButton button = new JButtonMini(Icons.DIRECTORY, Translation
+            .getTranslation("folder_create.dialog.select_file.text"));
         Dimension d = button.getPreferredSize();
         d.height = textField.getPreferredSize().height;
         button.setPreferredSize(d);

@@ -32,6 +32,7 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import static de.dal33t.powerfolder.disk.SyncProfile.AUTOMATIC_SYNCHRONIZATION;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.INITIAL_FOLDER_NAME;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.PROMPT_TEXT_ATTRIBUTE;
@@ -525,8 +526,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         locationTF.setText((String) locationModel.getValue());
         builder.add(locationTF, cc.xy(1, 1));
 
-        locationButton = new JButton(Icons.DIRECTORY);
-        locationButton.setToolTipText(Translation
+        locationButton = new JButtonMini(Icons.DIRECTORY, Translation
             .getTranslation("folder_create.dialog.select_file.text"));
         locationButton.addActionListener(new MyActionListener());
         builder.add(locationButton, cc.xy(3, 1));
