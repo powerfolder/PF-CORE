@@ -88,7 +88,9 @@ public class FoldersTab extends PFUIComponent {
      * Initialize the required components.
      */
     private void initComponents() {
+
         foldersList = new FoldersList(getController());
+
         folderTypeList = new JComboBox();
         folderTypeList.setToolTipText(Translation.getTranslation(
                 "folders_tab.folder_type_list.text"));

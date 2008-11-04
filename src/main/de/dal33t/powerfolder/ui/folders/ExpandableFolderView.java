@@ -186,10 +186,12 @@ public class ExpandableFolderView extends PFUIComponent {
         totalSizeLabel = new JLabel();
         membersLabel = new JLabel();
         filesAvailableLabel = new JLabel();
+
         updateNumberOfFiles();
         updateStatsDetails();
-        registerListeners();
         updateFolderMembershipDetails();
+
+        registerListeners();
     }
 
     /**
