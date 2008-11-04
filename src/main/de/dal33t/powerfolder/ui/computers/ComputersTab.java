@@ -20,20 +20,23 @@
 package de.dal33t.powerfolder.ui.computers;
 
 import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.builder.ButtonBarBuilder;
+import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.forms.factories.Borders;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.util.Translation;
 
+import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JButton;
 
 public class ComputersTab extends PFUIComponent {
 
     private JPanel uiComponent;
+
+    private JComboBox computerTypeList;
 
     public ComputersTab(Controller controller) {
         super(controller);
@@ -63,19 +66,29 @@ public class ComputersTab extends PFUIComponent {
     }
 
     private void initComponents() {
+        computerTypeList = new JComboBox();
+        computerTypeList.setToolTipText(Translation.getTranslation(
+                "computers_tab.computer_type_list.text"));
+        computerTypeList.addItem(Translation.getTranslation("computers_tab.all_computers"));
+        computerTypeList.addItem(Translation.getTranslation("computers_tab.only_online_friends"));
+        computerTypeList.addItem(Translation.getTranslation("computers_tab.all_online"));
     }
 
     /**
      * @return the toolbar
      */
     private JPanel createToolBar() {
-        JButton searchComputerButton = new JButton(getUIController().getActionModel()
-                .getSearchComputerAction());
+        JButton searchComputerButton = new JButton(getUIController()
+                .getActionModel().getSearchComputerAction());
 
-        ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
-        bar.addGridded(searchComputerButton);
+        FormLayout layout = new FormLayout("pref, pref:grow, pref",
+            "pref");
+        PanelBuilder builder = new PanelBuilder(layout);
+        CellConstraints cc = new CellConstraints();
 
-        JPanel barPanel = bar.getPanel();
+        builder.add(searchComputerButton, cc.xy(1, 1));
+        builder.add(computerTypeList, cc.xy(3, 1));
+        JPanel barPanel = builder.getPanel();
         barPanel.setBorder(Borders.DLU4_BORDER);
 
         return barPanel;
