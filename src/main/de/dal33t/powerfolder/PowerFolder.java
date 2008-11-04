@@ -224,10 +224,12 @@ public class PowerFolder {
         }
 
         // Begin monitoring memory usage.
-        ExecutorService service = controller.getThreadPool();
-        synchronized (service) {
-            if (!service.isShutdown()) {
-                service.submit(new MemoryMonitor(controller));
+        if (controller.isUIEnabled()) {
+            ExecutorService service = controller.getThreadPool();
+            synchronized (service) {
+                if (!service.isShutdown()) {
+                    service.submit(new MemoryMonitor(controller));
+                }
             }
         }
 
