@@ -129,23 +129,10 @@ public abstract class PFWizardPanel extends WizardPanel {
     }
 
     /**
-     * Returns the picto for the panel. Can be null.
-     * 
-     * @return
-     * @deprecated use #getPictoComponent() instead
-     */
-    protected Icon getPicto() {
-        return null;
-    }
-
-    /**
      * @return the component representing the picto
      */
     protected JComponent getPictoComponent() {
-        if (getPicto() == null) {
-            return null;
-        }
-        return new JLabel(getPicto());
+        return new JLabel();
     }
 
     /**

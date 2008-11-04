@@ -25,12 +25,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.swing.Icon;
-import javax.swing.JCheckBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JPasswordField;
-import javax.swing.JTextField;
+import javax.swing.*;
 
 import jwf.WizardPanel;
 
@@ -199,8 +194,8 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
             client);
     }
 
-    protected Icon getPicto() {
-        return Icons.WEBSERVICE_PICTO;
+    protected JComponent getPictoComponent() {
+        return new JLabel(Icons.WEBSERVICE_PICTO);
     }
 
     protected String getTitle() {
