@@ -42,7 +42,7 @@ public enum PreferencesEntry {
         true),
 
     /** find offline users */
-    FRIENDSEARCH_HIDEOFFLINE("FriendsSearch_HideOfflineUsers", false),
+    FRIEND_SEARCH_HIDE_OFFLINE("FriendsSearch_HideOfflineUsers", false),
 
     QUIT_ON_X("quitonx", false),
 

@@ -32,9 +32,9 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.*;
 
-public class FindUsersTable extends JTable {
+public class FindComputersTable extends JTable {
 
-    public FindUsersTable(SearchNodeTableModel tableModel) {
+    public FindComputersTable(SearchNodeTableModel tableModel) {
         super(tableModel);
         setRowHeight(Icons.NODE_NON_FRIEND_CONNECTED
             .getIconHeight() + 3);

@@ -50,7 +50,7 @@ import java.beans.PropertyChangeEvent;
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.7 $
  */
-public class FindUsersPanel extends PFUIPanel {
+public class FindComputersPanel extends PFUIPanel {
 
     /** input field for search text */
     private FilterTextField searchInput;
@@ -74,7 +74,7 @@ public class FindUsersPanel extends PFUIPanel {
     private JCheckBox hideOffline;
 
     /** create a FriendsPanel */
-    public FindUsersPanel(Controller controller) {
+    public FindComputersPanel(Controller controller) {
         super(controller);
         addFriendAction = new AddFriendAction();
     }
@@ -92,9 +92,9 @@ public class FindUsersPanel extends PFUIPanel {
 
     private void initComponents() {
         searchInput = new FilterTextField(12, Translation
-                .getTranslation("find_users_panel.search_for_user.hint"),
+                .getTranslation("find_computers_panel.search_for_computer.hint"),
                 Translation
-                .getTranslation("find_users_panel.search_for_user.tooltip"));
+                .getTranslation("find_computers_panel.search_for_computer.tooltip"));
         searchInputVM = searchInput.getValueModel();
         searchInputVM.addValueChangeListener(new MySearchInputVMListener());
 
@@ -102,7 +102,7 @@ public class FindUsersPanel extends PFUIPanel {
 
         addFriendAction.setEnabled(false);
 
-        searchResult = new FindUsersTable(searchNodeTableModel);
+        searchResult = new FindComputersTable(searchNodeTableModel);
         searchResult.getSelectionModel().addListSelectionListener(
             new SearchResultSelectionListener());
         searchResult.addMouseListener(new PopupMenuOpener(createPopupMenu()));
@@ -139,12 +139,12 @@ public class FindUsersPanel extends PFUIPanel {
 
     private JPanel createSearchPanel() {
         hideOffline = new JCheckBox(new HideOfflineAction());
-        hideOffline.setSelected(PreferencesEntry.FRIENDSEARCH_HIDEOFFLINE
+        hideOffline.setSelected(PreferencesEntry.FRIEND_SEARCH_HIDE_OFFLINE
             .getValueBoolean(getController()));
         hideOffline.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
                 // save to pref if hide off line checkbox clicked
-                PreferencesEntry.FRIENDSEARCH_HIDEOFFLINE.setValue(
+                PreferencesEntry.FRIEND_SEARCH_HIDE_OFFLINE.setValue(
                     getController(), hideOffline.isSelected());
             }
         });
@@ -294,7 +294,7 @@ public class FindUsersPanel extends PFUIPanel {
     /** The hide offline user to perform on click on checkbox */
     private class HideOfflineAction extends BaseAction {
         private HideOfflineAction() {
-            super("hide_offline", FindUsersPanel.this.getController());
+            super("action_hide_offline", FindComputersPanel.this.getController());
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -305,7 +305,7 @@ public class FindUsersPanel extends PFUIPanel {
     /** The Add friends action for button and popup menu Item */
     private class AddFriendAction extends BaseAction {
         private AddFriendAction() {
-            super("add_friend", FindUsersPanel.this.getController());
+            super("action_add_friend", FindComputersPanel.this.getController());
         }
 
         public void actionPerformed(ActionEvent e) {

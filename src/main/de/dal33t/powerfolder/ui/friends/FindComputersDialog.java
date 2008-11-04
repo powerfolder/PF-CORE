@@ -32,19 +32,19 @@ import java.awt.event.ActionEvent;
 
 import com.jgoodies.forms.factories.ButtonBarFactory;
 
-public class FindUsersDialog extends BaseDialog {
+public class FindComputersDialog extends BaseDialog {
 
-    private FindUsersPanel panel;
+    private FindComputersPanel panel;
     private JButton addToFriendsButton;
     private JButton closeButton;
 
-    public FindUsersDialog(Controller controller, boolean modal) {
+    public FindComputersDialog(Controller controller, boolean modal) {
         super(controller, modal);
         initComponents();
     }
 
     private void initComponents() {
-        panel = new FindUsersPanel(getController());
+        panel = new FindComputersPanel(getController());
         addToFriendsButton = createAddToFriendsButton();
         closeButton = createCloseButton();
     }
@@ -54,7 +54,7 @@ public class FindUsersDialog extends BaseDialog {
     }
 
     public String getTitle() {
-        return Translation.getTranslation("find_users_dialog.title");
+        return Translation.getTranslation("find_computers_dialog.title");
     }
 
     protected Icon getIcon() {

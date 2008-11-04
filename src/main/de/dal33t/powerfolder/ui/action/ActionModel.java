@@ -35,7 +35,7 @@ public class ActionModel extends PFComponent {
     }
 
     private NewFolderAction newFolderAction;
-    private SearchComputerAction searchComputerAction;
+    private FindComputersAction findComputersAction;
     private OpenPreferencesAction openPreferencesAction;
     private OpenAboutBoxAction openAboutBoxAction;
     private ConnectAction connectAction;
@@ -47,11 +47,11 @@ public class ActionModel extends PFComponent {
         return newFolderAction;
     }
 
-    public SearchComputerAction getSearchComputerAction() {
-        if (searchComputerAction == null) {
-            searchComputerAction = new SearchComputerAction(getController());
+    public FindComputersAction getSearchComputerAction() {
+        if (findComputersAction == null) {
+            findComputersAction = new FindComputersAction(getController());
         }
-        return searchComputerAction;
+        return findComputersAction;
     }
 
     public OpenPreferencesAction getOpenPreferencesAction() {

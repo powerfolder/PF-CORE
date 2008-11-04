@@ -15,12 +15,12 @@
 * You should have received a copy of the GNU General Public License
 * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
 *
-* $Id: SearchComputerAction.java 5419 2008-09-29 12:18:20Z harry $
+* $Id: FindComputersAction.java 5419 2008-09-29 12:18:20Z harry $
 */
 package de.dal33t.powerfolder.ui.action;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.ui.friends.FindUsersDialog;
+import de.dal33t.powerfolder.ui.friends.FindComputersDialog;
 
 import java.awt.event.ActionEvent;
 
@@ -30,13 +30,13 @@ import java.awt.event.ActionEvent;
  * @author <a href="mailto:hglasgow@powerfolder.com">Harry Glasgow</a>
  * @version $Revision: 4.0 $
  */
-public class SearchComputerAction extends BaseAction {
-    public SearchComputerAction(Controller controller) {
-        super("action_search_computer", controller);
+public class FindComputersAction extends BaseAction {
+    public FindComputersAction(Controller controller) {
+        super("action_find_computers", controller);
     }
 
     public void actionPerformed(ActionEvent e) {
-        FindUsersDialog dialog = new FindUsersDialog(getController(), true);
+        FindComputersDialog dialog = new FindComputersDialog(getController(), true);
         dialog.open();
     }
 }

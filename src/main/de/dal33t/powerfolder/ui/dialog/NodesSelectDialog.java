@@ -28,7 +28,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.ui.friends.FindUsersDialog;
+import de.dal33t.powerfolder.ui.friends.FindComputersDialog;
 import de.dal33t.powerfolder.ui.model.NodesSelectTableModel;
 import de.dal33t.powerfolder.util.Translation;
 
@@ -99,7 +99,7 @@ public class NodesSelectDialog extends PFUIComponent {
             .getTranslation("general.search"));
         findFriendsButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                FindUsersDialog dialog = new FindUsersDialog(getController(),
+                FindComputersDialog dialog = new FindComputersDialog(getController(),
                     true);
                 dialog.open();
             }
