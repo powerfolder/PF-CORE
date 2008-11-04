@@ -19,11 +19,6 @@
  */
 package de.dal33t.powerfolder.event;
 
-import de.dal33t.powerfolder.util.Profiling;
-import de.dal33t.powerfolder.util.ProfilingEntry;
-import de.dal33t.powerfolder.util.ui.UIUtil;
-
-import javax.swing.SwingUtilities;
 import java.awt.EventQueue;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
@@ -33,6 +28,12 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.swing.SwingUtilities;
+
+import de.dal33t.powerfolder.util.Profiling;
+import de.dal33t.powerfolder.util.ProfilingEntry;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * Factory used to created event/listener support upon eventlistner interfaces.
@@ -51,7 +52,8 @@ import java.util.logging.Logger;
  */
 public class ListenerSupportFactory {
 
-    private static final Logger log = Logger.getLogger(ListenerSupportFactory.class.getName());
+    private static final Logger log = Logger
+        .getLogger(ListenerSupportFactory.class.getName());
 
     // AWT system check
     private static final boolean AWT_AVAILABLE = UIUtil.isAWTAvailable();
@@ -81,7 +83,7 @@ public class ListenerSupportFactory {
         T listenerSupportImpl = (T) Proxy.newProxyInstance(cl,
             new Class[]{listenerInterface}, handler);
         log.finer("Created event listener support for interface '"
-                + listenerInterface.getName() + '\'');
+            + listenerInterface.getName() + '\'');
         return listenerSupportImpl;
     }
 
@@ -342,14 +344,15 @@ public class ListenerSupportFactory {
                                             + '\'', e);
                                 } catch (InvocationTargetException e) {
                                     log.log(Level.SEVERE,
-                                            "Received an exception from listener '"
+                                        "Received an exception from listener '"
                                             + listener + "', class '"
                                             + listener.getClass().getName()
                                             + '\'', e.getCause());
                                     // Also log original exception
-                                    log.log(Level.FINER, "InvocationTargetException", e);
+                                    log.log(Level.FINER,
+                                        "InvocationTargetException", e);
                                 } finally {
-                                    Profiling.end(profilingEntry, 100);
+                                    Profiling.end(profilingEntry, 200);
                                 }
                             }
                         }
@@ -380,12 +383,12 @@ public class ListenerSupportFactory {
                                 + '\'', e);
                     } catch (IllegalAccessException e) {
                         log.log(Level.SEVERE,
-                                "Received an exception from listener '" + listener
+                            "Received an exception from listener '" + listener
                                 + "', class '" + listener.getClass().getName()
                                 + '\'', e);
                     } catch (InvocationTargetException e) {
                         log.log(Level.SEVERE,
-                                "Received an exception from listener '" + listener
+                            "Received an exception from listener '" + listener
                                 + "', class '" + listener.getClass().getName()
                                 + '\'', e.getCause());
                         // Also log original exception
