@@ -27,12 +27,7 @@ import java.text.MessageFormat;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 
-import javax.swing.Action;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
+import javax.swing.*;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -67,7 +62,7 @@ import de.dal33t.powerfolder.util.ui.GenericDialogType;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
 import de.dal33t.powerfolder.util.ui.SyncProfileUtil;
 import de.dal33t.powerfolder.util.ui.TimeEstimator;
-import de.dal33t.powerfolder.util.ui.directory.DirectoryChooser;
+import de.javasoft.synthetica.addons.DirectoryChooser;
 
 /**
  * Shows information about the (Joined) Folder and gives the user some actions
@@ -292,11 +287,16 @@ public class HomeTab extends PFUIComponent implements FolderTab {
         File originalDirectory = folder.getLocalBase();
 
         // Select the new folder.
-        ValueModel vm = new ValueHolder(originalDirectory.getAbsolutePath());
-        DirectoryChooser dc = new DirectoryChooser(getController(), vm);
-        vm.addValueChangeListener(new MyPropertyChangeListener(vm,
-                originalDirectory, moveContent));
-        dc.open();
+        DirectoryChooser dc = new DirectoryChooser();
+        if (originalDirectory != null) {
+            dc.setSelectedFile(originalDirectory);
+        }
+        int i = dc.showOpenDialog(getController().getUIController()
+                .getMainFrame().getUIComponent());
+        if (i == JFileChooser.APPROVE_OPTION) {
+            File selectedFile = dc.getSelectedFile();
+            moveDirectory(originalDirectory, selectedFile, moveContent == 0);
+        }
     }
 
     /**
@@ -584,50 +584,31 @@ public class HomeTab extends PFUIComponent implements FolderTab {
         }
     }
 
-    /**
-     * PropertyChangeListener to detect changes to selected local base. 
-     */
-    private class MyPropertyChangeListener implements PropertyChangeListener {
+    public void moveDirectory(File originalDirectory, File newDirectory,
+                              boolean moveContent) {
+        if (!newDirectory.equals(originalDirectory)) {
 
-        private ValueModel vm;
-        private File originalDirectory;
-        private int moveContent;
+            // Check for any problems with the new folder.
+            if (checkNewLocalFolder(newDirectory)) {
 
-        private MyPropertyChangeListener(ValueModel vm, File originalDirectory,
-                                       int moveContent) {
-            this.vm = vm;
-            this.originalDirectory = originalDirectory;
-            this.moveContent = moveContent;
-        }
-
-        public void propertyChange(PropertyChangeEvent evt) {
-            String path = (String) vm.getValue();
-            File newDirectory = new File(path);
-            if (!newDirectory.equals(originalDirectory)) {
-
-                // Check for any problems with the new folder.
-                if (checkNewLocalFolder(newDirectory)) {
-
-                    // Confirm move.
-                    if (shouldMoveLocal(newDirectory)) {
-                        try {
-                            // Move contentes selected
-                            boolean move = moveContent == 0;
-                            ActivityVisualizationWorker worker = new
-                                    MyActivityVisualizationWorker(
-                                    move, originalDirectory, newDirectory);
-                            worker.start();
-                        } catch (Exception e) {
-                            // Probably failed to create temp directory.
-                            DialogFactory.genericDialog(
-                                    getController().getUIController()
-                                            .getMainFrame().getUIComponent(),
-                                    Translation.getTranslation(
-                                            "folder_panel.home_tab.move_error.title"),
-                                    Translation.getTranslation(
-                                            "folder_panel.home_tab.move_error.temp"),
-                                    getController().isVerbose(), e);
-                        }
+                // Confirm move.
+                if (shouldMoveLocal(newDirectory)) {
+                    try {
+                        // Move contentes selected
+                        ActivityVisualizationWorker worker = new
+                                MyActivityVisualizationWorker(
+                                moveContent, originalDirectory, newDirectory);
+                        worker.start();
+                    } catch (Exception e) {
+                        // Probably failed to create temp directory.
+                        DialogFactory.genericDialog(
+                                getController().getUIController()
+                                        .getMainFrame().getUIComponent(),
+                                Translation.getTranslation(
+                                        "folder_panel.home_tab.move_error.title"),
+                                Translation.getTranslation(
+                                        "folder_panel.home_tab.move_error.temp"),
+                                getController().isVerbose(), e);
                     }
                 }
             }

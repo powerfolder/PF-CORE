@@ -19,18 +19,17 @@
 */
 package de.dal33t.powerfolder.util.ui;
 
-import com.jgoodies.binding.value.ValueHolder;
-import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.CellConstraints;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.directory.DirectoryChooser;
+import de.javasoft.synthetica.addons.DirectoryChooser;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.io.File;
 
 /**
  * Provides some convenient one method access to some dialogs.
@@ -109,10 +108,17 @@ public class DialogFactory {
     {
         try {
             dialogInUse.set(true);
-            ValueModel valueModel = new ValueHolder(initialDirectory);
-            DirectoryChooser dc = new DirectoryChooser(controller, valueModel);
-            dc.open();
-            return (String) valueModel.getValue();
+            DirectoryChooser dc = new DirectoryChooser();
+            if (initialDirectory != null &&
+                    initialDirectory.trim().length() != 0) {
+                dc.setSelectedFile(new File(initialDirectory));
+            }
+            int i = dc.showOpenDialog(controller.getUIController().getMainFrame()
+                    .getUIComponent());
+            if (i == JFileChooser.APPROVE_OPTION) {
+                return dc.getSelectedFile().getAbsolutePath();
+            }
+            return initialDirectory;
         } finally {
             dialogInUse.set(false);
         }
