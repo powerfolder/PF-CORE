@@ -1309,7 +1309,7 @@ public class TransferManager extends PFComponent {
         try {
             fInfo.validate();
         } catch (Exception e) {
-            logSevere("Exception", e);
+            logWarning(e);
             return null;
         }
 
@@ -1383,7 +1383,7 @@ public class TransferManager extends PFComponent {
             try {
                 newestVersionFile.validate();
             } catch (Exception e) {
-                logSevere("Exception", e);
+                logWarning(e);
                 return null;
             }
 
@@ -2053,7 +2053,7 @@ public class TransferManager extends PFComponent {
      */
     private class TransferChecker implements Runnable {
         public void run() {
-            long waitTime = getController().getWaitTime() * 2;
+            long waitTime = Controller.getWaitTime() * 2;
             int count = 0;
 
             while (!Thread.currentThread().isInterrupted()) {
@@ -2076,6 +2076,9 @@ public class TransferManager extends PFComponent {
                     logFine("Transfers: "
                         + countActiveDownloads()
                         + " download(s), "
+                        + Format.getNumberFormat().format(
+                            getDownloadCounter().calculateCurrentKBS())
+                        + " KByte/s, "
                         + activeUploads.size()
                         + " active upload(s), "
                         + queuedUploads.size()
