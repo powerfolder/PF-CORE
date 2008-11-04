@@ -19,19 +19,70 @@
  */
 package de.dal33t.powerfolder.disk;
 
-import de.dal33t.powerfolder.*;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_SYNC_PROFILE;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.SortedMap;
+import java.util.TimerTask;
+import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Constants;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.ScanResult.ResultState;
-import de.dal33t.powerfolder.event.*;
+import de.dal33t.powerfolder.event.FileNameProblemEvent;
+import de.dal33t.powerfolder.event.FileNameProblemHandler;
+import de.dal33t.powerfolder.event.FolderEvent;
+import de.dal33t.powerfolder.event.FolderListener;
+import de.dal33t.powerfolder.event.FolderMembershipEvent;
+import de.dal33t.powerfolder.event.FolderMembershipListener;
+import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.message.*;
+import de.dal33t.powerfolder.message.FileList;
+import de.dal33t.powerfolder.message.FolderFilesChanged;
+import de.dal33t.powerfolder.message.Invitation;
+import de.dal33t.powerfolder.message.Message;
+import de.dal33t.powerfolder.message.ScanCommand;
 import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.transfer.TransferPriorities;
 import de.dal33t.powerfolder.transfer.TransferPriorities.TransferPriority;
-import de.dal33t.powerfolder.util.*;
+import de.dal33t.powerfolder.util.Convert;
+import de.dal33t.powerfolder.util.Debug;
+import de.dal33t.powerfolder.util.FileCopier;
+import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.InvitationUtil;
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.compare.DiskItemComparator;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.os.OSUtil;
@@ -39,12 +90,6 @@ import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
 import de.dal33t.powerfolder.util.ui.NeverAskAgainResponse;
 import de.dal33t.powerfolder.util.ui.UIUtil;
-
-import java.io.*;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * The main class representing a folder. Scans for new files automatically.
@@ -1328,75 +1373,76 @@ public class Folder extends PFComponent {
                 return;
             }
         }
-        synchronized (scanLock) {
-            File dbFile = new File(getSystemSubDir(), DB_FILENAME);
-            File dbFileBackup = new File(getSystemSubDir(), DB_BACKUP_FILENAME);
-            try {
 
-                FileInfo[] files = knownFiles.keySet().toArray(
+        File dbFile = new File(getSystemSubDir(), DB_FILENAME);
+        File dbFileBackup = new File(getSystemSubDir(), DB_BACKUP_FILENAME);
+        try {
+            FileInfo[] files;
+            synchronized (scanLock) {
+                files = knownFiles.keySet().toArray(
                     new FileInfo[knownFiles.size()]);
-                if (dbFile.exists()) {
-                    if (!dbFile.delete()) {
-                        logSevere("Failed to delete database file: " + dbFile);
-                    }
-                }
-                if (!dbFile.createNewFile()) {
-                    logSevere("Failed to create database file: " + dbFile);
-                }
-                OutputStream fOut = new BufferedOutputStream(
-                    new FileOutputStream(dbFile));
-                ObjectOutputStream oOut = new ObjectOutputStream(fOut);
-                // Store files
-                oOut.writeObject(files);
-                // Store members
-                oOut.writeObject(Convert.asMemberInfos(getMembersAsCollection()
-                    .toArray(new Member[getMembersAsCollection().size()])));
-                // Old blacklist. Maintained for backward serialization
-                // compatability. Do not remove.
-                oOut.writeObject(new ArrayList<FileInfo>());
-                if (lastScan == null) {
-                    if (log.isLoggable(Level.FINE)) {
-                        logFine("write default time: " + new Date());
-                    }
-                    oOut.writeObject(new Date());
-                } else {
-                    if (log.isLoggable(Level.FINE)) {
-                        logFine("write time: " + lastScan);
-                    }
-                    oOut.writeObject(lastScan);
-                }
-
-                oOut.close();
-                fOut.close();
-
-                if (log.isLoggable(Level.FINE)) {
-                    logFine("Successfully wrote folder database file ("
-                        + files.length + " files)");
-                }
-
-                // Make backup
-                FileUtils.copyFile(dbFile, dbFileBackup);
-
-                // TODO Remove this in later version
-                // Cleanup for older versions
-                File oldDbFile = new File(localBase, DB_FILENAME);
-                if (!oldDbFile.delete()) {
-                    logFiner("Failed to delete 'old' database file: "
-                        + oldDbFile);
-                }
-                File oldDbFileBackup = new File(localBase, DB_BACKUP_FILENAME);
-                if (!oldDbFileBackup.delete()) {
-                    logFiner("Failed to delete backup of 'old' database file: "
-                        + oldDbFileBackup);
-                }
-            } catch (IOException e) {
-                // TODO: if something failed shoudn't we try to restore the
-                // backup (if backup exists and bd file not after this?
-                logSevere(this + ": Unable to write database file "
-                    + dbFile.getAbsolutePath(), e);
-                log.log(Level.FINE, "IOException", e);
             }
+            if (dbFile.exists()) {
+                if (!dbFile.delete()) {
+                    logSevere("Failed to delete database file: " + dbFile);
+                }
+            }
+            if (!dbFile.createNewFile()) {
+                logSevere("Failed to create database file: " + dbFile);
+            }
+            OutputStream fOut = new BufferedOutputStream(new FileOutputStream(
+                dbFile));
+            ObjectOutputStream oOut = new ObjectOutputStream(fOut);
+            // Store files
+            oOut.writeObject(files);
+            // Store members
+            oOut.writeObject(Convert.asMemberInfos(getMembersAsCollection()
+                .toArray(new Member[getMembersAsCollection().size()])));
+            // Old blacklist. Maintained for backward serialization
+            // compatability. Do not remove.
+            oOut.writeObject(new ArrayList<FileInfo>());
+            if (lastScan == null) {
+                if (log.isLoggable(Level.FINE)) {
+                    logFine("write default time: " + new Date());
+                }
+                oOut.writeObject(new Date());
+            } else {
+                if (log.isLoggable(Level.FINE)) {
+                    logFine("write time: " + lastScan);
+                }
+                oOut.writeObject(lastScan);
+            }
+
+            oOut.close();
+            fOut.close();
+
+            if (log.isLoggable(Level.FINE)) {
+                logFine("Successfully wrote folder database file ("
+                    + files.length + " files)");
+            }
+
+            // Make backup
+            FileUtils.copyFile(dbFile, dbFileBackup);
+
+            // TODO Remove this in later version
+            // Cleanup for older versions
+            File oldDbFile = new File(localBase, DB_FILENAME);
+            if (!oldDbFile.delete()) {
+                logFiner("Failed to delete 'old' database file: " + oldDbFile);
+            }
+            File oldDbFileBackup = new File(localBase, DB_BACKUP_FILENAME);
+            if (!oldDbFileBackup.delete()) {
+                logFiner("Failed to delete backup of 'old' database file: "
+                    + oldDbFileBackup);
+            }
+        } catch (IOException e) {
+            // TODO: if something failed shoudn't we try to restore the
+            // backup (if backup exists and bd file not after this?
+            logSevere(this + ": Unable to write database file "
+                + dbFile.getAbsolutePath(), e);
+            log.log(Level.FINE, "IOException", e);
         }
+
     }
 
     private boolean maintainFolderDBrequired() {
@@ -1941,7 +1987,7 @@ public class Folder extends PFComponent {
             rootDirectory.addAll(from, newList.files);
         }
 
-        if (syncProfile.isAutodownload()) {
+        if (syncProfile.isAutodownload() && from.isCompleteyConnected()) {
             // Trigger file requestor
             if (isFiner()) {
                 logFiner("Triggering file requestor because of new remote file list from "
@@ -1998,8 +2044,8 @@ public class Folder extends PFComponent {
 
         if (syncProfile.isAutodownload()) {
             // Check if we need to trigger the filerequestor
-            boolean triggerFileRequestor = true;
-            if (singleFileMsg) {
+            boolean triggerFileRequestor = from.isCompleteyConnected();
+            if (triggerFileRequestor && singleFileMsg) {
                 // This was caused by a completed download
                 // TODO Maybe check this also on bigger lists!
                 FileInfo localfileInfo = getFile(changes.added[0]);
