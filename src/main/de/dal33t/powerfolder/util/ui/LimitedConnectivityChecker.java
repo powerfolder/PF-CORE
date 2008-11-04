@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.util.ui;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
@@ -54,7 +54,8 @@ import java.util.logging.Logger;
  */
 public class LimitedConnectivityChecker {
 
-    private static final Logger log = Logger.getLogger(LimitedConnectivityChecker.class.getName());
+    private static final Logger log = Logger
+        .getLogger(LimitedConnectivityChecker.class.getName());
     private static final String LIMITED_CONNECTIVITY_TEST_SUCCESSFULLY_STRING = "LIMITED CONNECTIVITY TEST SUCCESSFULLY";
     private Controller controller;
     private String host;
@@ -74,8 +75,8 @@ public class LimitedConnectivityChecker {
     public boolean hasLimitedConnecvitiy() {
         if (!controller.getNodeManager().getMySelf().isSupernode()) {
             if (controller.getOSClient().isConnected()) {
-                log.fine(
-                    "No limited connectivity. Connected to the Online Storage");
+                log
+                    .fine("No limited connectivity. Connected to the Online Storage");
                 return false;
             }
             if (controller.getIOProvider().getRelayedConnectionManager()
@@ -109,7 +110,7 @@ public class LimitedConnectivityChecker {
     public static void install(final Controller controller) {
         Reject.ifNull(controller, "Controller is null");
         CheckTask task = new CheckTask(controller, true);
-        controller.getIOProvider().startIO(task);
+        controller.getThreadPool().execute(task);
 
         // Support networking mode switch.
         controller.addPropertyChangeListener(
@@ -169,8 +170,8 @@ public class LimitedConnectivityChecker {
             controller.setLimitedConnectivity(nowLimited);
 
             if (nowLimited) {
-                log.warning("Limited connectivity detected (" + checker.getHost()
-                    + ':' + checker.getPort() + ')');
+                log.warning("Limited connectivity detected ("
+                    + checker.getHost() + ':' + checker.getPort() + ')');
             } else {
                 log.info("Connectivity is good (not limited)");
             }
@@ -230,8 +231,8 @@ public class LimitedConnectivityChecker {
             url = new URL(Constants.LIMITED_CONNECTIVTY_CHECK_URL + "?host="
                 + host + "&port=" + port);
         } catch (MalformedURLException e) {
-            log.log(Level.WARNING, "Limited connectivity check failed for " + host + ':'
-                + port, e);
+            log.log(Level.WARNING, "Limited connectivity check failed for "
+                + host + ':' + port, e);
             return false;
         }
 
@@ -250,13 +251,13 @@ public class LimitedConnectivityChecker {
             return testString
                 .contains(LIMITED_CONNECTIVITY_TEST_SUCCESSFULLY_STRING);
         } catch (SocketTimeoutException e) {
-            log.log(Level.WARNING, "Limited connectivity check failed for " + host + ':' + port
-                   , e);
+            log.log(Level.WARNING, "Limited connectivity check failed for "
+                + host + ':' + port, e);
             log.log(Level.FINER, "SocketTimeoutException", e);
             return false;
         } catch (IOException e) {
-            log.log(Level.WARNING, "Limited connectivity check failed for " + host + ':'
-                + port, e);
+            log.log(Level.WARNING, "Limited connectivity check failed for "
+                + host + ':' + port, e);
             return false;
         } finally {
             if (in != null) {
@@ -276,8 +277,8 @@ public class LimitedConnectivityChecker {
                     .getUIComponent();
                 NeverAskAgainResponse response = DialogFactory.genericDialog(
                     parent, Translation
-                        .getTranslation("limited_connection.title"), Translation
-                        .getTranslation("limited_connection.text"),
+                        .getTranslation("limited_connection.title"),
+                    Translation.getTranslation("limited_connection.text"),
                     new String[]{Translation.getTranslation("general.ok")}, 0,
                     GenericDialogType.INFO, Translation
                         .getTranslation("limited_connection.dont_autodetect"));
