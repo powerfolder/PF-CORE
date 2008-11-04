@@ -578,7 +578,7 @@ public class Controller extends PFComponent {
             } else {
                 logInfo("Running in VERBOSE mode, not logging to file");
             }
-            Profiling.setEnabled(false);
+            Profiling.setEnabled(true);
             Profiling.reset();
         }
 
@@ -742,6 +742,15 @@ public class Controller extends PFComponent {
                 logInfo("Reconfigured log file");
             }
         }, tomorrowMorning, 1000L * 24 * 3600);
+
+        if (Profiling.ENABLED) {
+            scheduleAndRepeat(new TimerTask() {
+                @Override
+                public void run() {
+                    logFine(Profiling.dumpStats());
+                }
+            }, 60L * 1000);
+        }
     }
 
     /**
@@ -1177,7 +1186,7 @@ public class Controller extends PFComponent {
         // }
 
         if (Profiling.isEnabled()) {
-            logInfo(Profiling.dumpStats());
+            logFine(Profiling.dumpStats());
         }
 
         // stop
