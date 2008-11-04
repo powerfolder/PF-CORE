@@ -111,7 +111,7 @@ public class DialogFactory {
             DirectoryChooser dc = new DirectoryChooser();
             if (initialDirectory != null &&
                     initialDirectory.trim().length() != 0) {
-                dc.setSelectedFile(new File(initialDirectory));
+                dc.setCurrentDirectory(new File(initialDirectory));
             }
             int i = dc.showOpenDialog(controller.getUIController().getMainFrame()
                     .getUIComponent());

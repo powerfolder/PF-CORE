@@ -211,7 +211,7 @@ public class SearchNodeTableModel extends PFUIComponent implements TableModel,
     public Object getDataAt(int rowIndex) {
      
         if (members.isEmpty()) {
-            return Translation.getTranslation("friend_search.no_user_found");
+            return Translation.getTranslation("friend_search.no_computers_found");
         }
         return members.get(rowIndex);
     }

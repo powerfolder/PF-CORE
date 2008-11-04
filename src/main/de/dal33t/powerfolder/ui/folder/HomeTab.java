@@ -285,7 +285,7 @@ public class HomeTab extends PFUIComponent implements FolderTab {
         // Select the new folder.
         DirectoryChooser dc = new DirectoryChooser();
         if (originalDirectory != null) {
-            dc.setSelectedFile(originalDirectory);
+            dc.setCurrentDirectory(originalDirectory);
         }
         int i = dc.showOpenDialog(getController().getUIController()
                 .getMainFrame().getUIComponent());
