@@ -24,6 +24,8 @@ import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.util.Profiling;
+import de.dal33t.powerfolder.util.ProfilingEntry;
 import de.dal33t.powerfolder.util.Reject;
 
 import java.util.*;
@@ -88,15 +90,16 @@ public class FileRequestor extends PFComponent {
      *      (=lower CPU usage)
      */
     public void triggerFileRequesting() {
+        ProfilingEntry pe = Profiling.start();
         for (Folder folder : getController().getFolderRepository()
             .getFoldersAsCollection())
         {
             if (folderQueue.contains(folder)) {
                 continue;
             }
-
             folderQueue.offer(folder);
         }
+        Profiling.end(pe, 100);
         synchronized (folderQueue) {
             folderQueue.notifyAll();
         }
@@ -179,6 +182,13 @@ public class FileRequestor extends PFComponent {
         if (!folder.hasOwnDatabase()) {
             logFine("Not requesting files because no own database for "
                 + folder);
+            return;
+        }
+        if (folder.getConnectedMembersCount() == 0) {
+            if (isFiner()) {
+                logFiner("Not requesting files. No member connected on "
+                    + folder);
+            }
             return;
         }
 
