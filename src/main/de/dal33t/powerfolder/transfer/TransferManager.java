@@ -1303,13 +1303,18 @@ public class TransferManager extends PFComponent {
             // on shutdown folder maybe null here
             return null;
         }
+        // FIXME Does not actually CHECK the base dir, but takes result of last
+        // scan. Possible problem on Mac/Linux: Unmounted path might exist.
+        if (folder.isDeviceDisconnected()) {
+            return null;
+        }
 
         // Check if the FileInfo is valid.
         // (This wouldn't be necessary, if the info had already checked itself.)
         try {
             fInfo.validate();
         } catch (Exception e) {
-            logWarning(e);
+            logWarning(e.getMessage() + ". " + fInfo.toDetailString(), e);
             return null;
         }
 
@@ -1329,13 +1334,6 @@ public class TransferManager extends PFComponent {
             }
         }
 
-        if (!getController().getFolderRepository().hasJoinedFolder(
-            fInfo.getFolderInfo()))
-        {
-            return null;
-        }
-
-        // only if we have joined the folder
         List<Member> sources = getSourcesFor(fInfo);
         // logFiner("Got " + sources.length + " sources for " + fInfo);
 
@@ -1382,7 +1380,7 @@ public class TransferManager extends PFComponent {
             try {
                 newestVersionFile.validate();
             } catch (Exception e) {
-                logWarning(e);
+                logWarning(e.getMessage() + ". " + fInfo.toDetailString(), e);
                 return null;
             }
 
@@ -1540,7 +1538,9 @@ public class TransferManager extends PFComponent {
                 sources.add(node);
             }
         }
-
+        if (sources.isEmpty()) {
+            return sources;
+        }
         // Sort by the best upload availibility
         Collections.shuffle(sources);
         Collections.sort(sources, new ReverseComparator(
