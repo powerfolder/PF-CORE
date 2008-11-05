@@ -43,7 +43,9 @@ import java.util.Date;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.33 $
  */
-public class FileInfo extends Loggable implements Serializable, DiskItem, Cloneable {
+public class FileInfo extends Loggable implements Serializable, DiskItem,
+    Cloneable
+{
 
     private static final long serialVersionUID = 100L;
 
@@ -621,8 +623,7 @@ public class FileInfo extends Loggable implements Serializable, DiskItem, Clonea
             && !this.getModifiedBy().equals(otherFile.getModifiedBy()))
         {
             logSevere("Found identical files, but diffrent modifier:"
-                    + toDetailString() + " other: "
-                    + otherFile.toDetailString());
+                + toDetailString() + " other: " + otherFile.toDetailString());
         }
         return identical;
     }
@@ -668,7 +669,7 @@ public class FileInfo extends Loggable implements Serializable, DiskItem, Clonea
      * @param str
      *            the stringbuilder to add the detail info to.
      */
-    public final void toDetailString(StringBuilder str) {
+    private final void toDetailString(StringBuilder str) {
         if (deleted) {
             str.append("(del) ");
         }
@@ -701,17 +702,6 @@ public class FileInfo extends Loggable implements Serializable, DiskItem, Clonea
     }
 
     /**
-     * Converts this file into a powerfolder link
-     * 
-     * @return the converted string.
-     */
-    public String toPowerFolderLink() {
-        return "PowerFolder://|file|" + Util.endcodeForURL(folderInfo.name)
-            + "|" + Util.endcodeForURL(folderInfo.id) + "|"
-            + Util.endcodeForURL(this.fileName);
-    }
-
-    /**
      * Validates the state of the FileInfo. This should actually not be public -
      * checks should be made while constructing this class (by
      * constructor/deserialization).
@@ -720,16 +710,13 @@ public class FileInfo extends Loggable implements Serializable, DiskItem, Clonea
      *             if the state is corrupt
      */
     public void validate() {
-        Reject.ifTrue(StringUtils.isEmpty(fileName), "Filename is empty. "
-            + toDetailString());
-        Reject.ifNull(size, "Size is null. " + toDetailString());
-        Reject.ifFalse(size >= 0, "Negative file size. " + toDetailString());
-        Reject.ifNull(lastModifiedDate, "Modification date is null. "
-            + toDetailString());
+        Reject.ifTrue(StringUtils.isEmpty(fileName), "Filename is empty");
+        Reject.ifNull(size, "Size is null");
+        Reject.ifFalse(size >= 0, "Negative file size");
+        Reject.ifNull(lastModifiedDate, "Modification date is null");
         Reject.ifFalse(lastModifiedDate.getTime() >= 0,
-            "Modification date is invalid: " + lastModifiedDate + ". "
-                + toDetailString());
-        Reject.ifNull(folderInfo, "FolderInfo is null. " + toDetailString());
+            "Modification date is invalid: " + lastModifiedDate);
+        Reject.ifNull(folderInfo, "FolderInfo is null");
     }
 
     // Serialization optimization *********************************************
