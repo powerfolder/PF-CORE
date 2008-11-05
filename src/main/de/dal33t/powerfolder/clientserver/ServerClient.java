@@ -757,7 +757,7 @@ public class ServerClient extends PFComponent {
             if (!getController().getNodeManager().isStarted()) {
                 return;
             }
-            if (server.isReconnecting()) {
+            if (server.isReconnecting() || server.isConnected()) {
                 return;
             }
             // Try to connect
