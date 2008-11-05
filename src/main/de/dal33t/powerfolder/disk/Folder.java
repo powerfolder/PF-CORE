@@ -737,7 +737,8 @@ public class Folder extends PFComponent {
      * @return if the local files where scanned
      */
     public boolean scanLocalFiles() {
-
+        
+        boolean wasDeviceDisconnected = deviceDisconnected;
         /**
          * Check that we still have a good local base.
          */
@@ -761,6 +762,12 @@ public class Folder extends PFComponent {
                 deviceDisconnected = true;
                 return false;
             }
+        }
+        if (wasDeviceDisconnected && !deviceDisconnected
+            && knownFiles.isEmpty())
+        {
+            // Try to load db from connected device now.
+            loadFolderDB();
         }
 
         ScanResult result;
