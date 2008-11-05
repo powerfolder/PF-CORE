@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.ui.folder;
 
 import java.awt.event.ActionEvent;
@@ -179,15 +179,17 @@ public class HomeTab extends PFUIComponent implements FolderTab {
         CellConstraints cc = new CellConstraints();
 
         int row = 1;
-        builder.addLabel(Translation
-            .getTranslation("folder_panel.home_tab.synchronisation_percentage"),
-            cc.xy(2, row));
+        builder
+            .addLabel(
+                Translation
+                    .getTranslation("folder_panel.home_tab.synchronisation_percentage"),
+                cc.xy(2, row));
         builder.add(syncPercentageLabel, cc.xyw(4, row, 4));
 
         row += 2;
         builder.addLabel(Translation
-            .getTranslation("folder_panel.home_tab.synchronisation_eta"), cc.xy(
-            2, row));
+            .getTranslation("folder_panel.home_tab.synchronisation_eta"), cc
+            .xy(2, row));
         builder.add(syncETALabel, cc.xyw(4, row, 2));
 
         row += 2;
@@ -288,7 +290,7 @@ public class HomeTab extends PFUIComponent implements FolderTab {
             dc.setCurrentDirectory(originalDirectory);
         }
         int i = dc.showOpenDialog(getController().getUIController()
-                .getMainFrame().getUIComponent());
+            .getMainFrame().getUIComponent());
         if (i == JFileChooser.APPROVE_OPTION) {
             File selectedFile = dc.getSelectedFile();
             moveDirectory(originalDirectory, selectedFile, moveContent == 0);
@@ -325,11 +327,12 @@ public class HomeTab extends PFUIComponent implements FolderTab {
         File newDirectory)
     {
         try {
-            
+
             // Copy the files from the temp directory to the new local base
             if (!newDirectory.exists()) {
                 if (!newDirectory.mkdirs()) {
-                    throw new IOException("Failed to create directory: " + newDirectory);
+                    throw new IOException("Failed to create directory: "
+                        + newDirectory);
                 }
             }
 
@@ -345,7 +348,8 @@ public class HomeTab extends PFUIComponent implements FolderTab {
             // Create the new Folder in the repository.
             FolderInfo fi = new FolderInfo(folder);
             FolderSettings fs = new FolderSettings(newDirectory, folder
-                .getSyncProfile(), false, folder.isUseRecycleBin(), false, false);
+                .getSyncProfile(), false, folder.isUseRecycleBin(), false,
+                false);
             folder = repository.createFolder(fi, fs);
 
             // Update with new folder info.
@@ -370,12 +374,10 @@ public class HomeTab extends PFUIComponent implements FolderTab {
             new String[]{
                 Translation
                     .getTranslation("folder_panel.home_tab.move_content.move"),
-                    Translation
-                        .getTranslation("folder_panel.home_tab.move_content.dont"),
-                    Translation
-                        .getTranslation("general.cancel"),
-            },
-            0, GenericDialogType.INFO); // Default is move content.
+                Translation
+                    .getTranslation("folder_panel.home_tab.move_content.dont"),
+                Translation.getTranslation("general.cancel"),}, 0,
+            GenericDialogType.INFO); // Default is move content.
         return result;
     }
 
@@ -414,15 +416,18 @@ public class HomeTab extends PFUIComponent implements FolderTab {
         if (newDirectory != null && newDirectory.exists()
             && newDirectory.listFiles().length > 0)
         {
-            int result = DialogFactory.genericDialog(getController()
-                .getUIController().getMainFrame().getUIComponent(), Translation
-                .getTranslation("folder_panel.home_tab.folder_not_empty.title"),
-                Translation.getTranslation(
-                    "folder_panel.home_tab.folder_not_empty", newDirectory
-                        .getAbsolutePath()), new String[]{
-                    Translation.getTranslation("general.continue"),
-                    Translation.getTranslation("general.cancel")}, 1,
-                GenericDialogType.WARN); // Default is cancel.
+            int result = DialogFactory
+                .genericDialog(
+                    getController().getUIController().getMainFrame()
+                        .getUIComponent(),
+                    Translation
+                        .getTranslation("folder_panel.home_tab.folder_not_empty.title"),
+                    Translation.getTranslation(
+                        "folder_panel.home_tab.folder_not_empty", newDirectory
+                            .getAbsolutePath()), new String[]{
+                        Translation.getTranslation("general.continue"),
+                        Translation.getTranslation("general.cancel")}, 1,
+                    GenericDialogType.WARN); // Default is cancel.
             if (result != 0) {
                 // User does not want to move to new folder.
                 return false;
@@ -461,7 +466,8 @@ public class HomeTab extends PFUIComponent implements FolderTab {
         FolderStatistic folderStatistic = folder.getStatistic();
         expectedFilesCountLabel.setText(MessageFormat.format("{0}",
             folderStatistic.getIncomingFilesCount()));
-        lastFileChangeDateLabel.setText(Format.formatDate(folder.getLastFileChangeDate()));
+        lastFileChangeDateLabel.setText(Format.formatDate(folder.getStatistic()
+            .getLastFileChangeDate()));
         totalNormalFilesCountLabel.setText(String.valueOf(folderStatistic
             .getLocalFilesCount()));
         totalSizeLabel.setText(Format.formatBytes(folderStatistic
@@ -476,7 +482,8 @@ public class HomeTab extends PFUIComponent implements FolderTab {
         if (previewMode) {
 
             // Folder uses NO_SYNC profile in preview mode,
-            // but this is identical to MANUAL_SYNCHRONIZATION, so show NO_SYNC text.
+            // but this is identical to MANUAL_SYNCHRONIZATION, so show NO_SYNC
+            // text.
             syncPercentageLabel.setText(SyncProfile.NO_SYNC.getProfileName());
             syncPercentageLabel.setIcon(SyncProfileUtil.getSyncIcon(0));
         } else {
@@ -486,8 +493,9 @@ public class HomeTab extends PFUIComponent implements FolderTab {
             syncPercentageLabel.setIcon(SyncProfileUtil.getSyncIcon(sync));
         }
 
-        if (folderStatistic.getDownloadCounter() == null || sync >= 100 ||
-                !folder.getSyncProfile().isAutodownload()) {
+        if (folderStatistic.getDownloadCounter() == null || sync >= 100
+            || !folder.getSyncProfile().isAutodownload())
+        {
             syncETALabel.setText("");
         } else {
             syncETAEstimator.addValue(folderStatistic.getLocalSyncPercentage());
@@ -581,7 +589,8 @@ public class HomeTab extends PFUIComponent implements FolderTab {
     }
 
     public void moveDirectory(File originalDirectory, File newDirectory,
-                              boolean moveContent) {
+        boolean moveContent)
+    {
         if (!newDirectory.equals(originalDirectory)) {
 
             // Check for any problems with the new folder.
@@ -591,19 +600,19 @@ public class HomeTab extends PFUIComponent implements FolderTab {
                 if (shouldMoveLocal(newDirectory)) {
                     try {
                         // Move contentes selected
-                        ActivityVisualizationWorker worker = new
-                                MyActivityVisualizationWorker(
-                                moveContent, originalDirectory, newDirectory);
+                        ActivityVisualizationWorker worker = new MyActivityVisualizationWorker(
+                            moveContent, originalDirectory, newDirectory);
                         worker.start();
                     } catch (Exception e) {
                         // Probably failed to create temp directory.
-                        DialogFactory.genericDialog(
+                        DialogFactory
+                            .genericDialog(
                                 getController().getUIController()
-                                        .getMainFrame().getUIComponent(),
-                                Translation.getTranslation(
-                                        "folder_panel.home_tab.move_error.title"),
-                                Translation.getTranslation(
-                                        "folder_panel.home_tab.move_error.temp"),
+                                    .getMainFrame().getUIComponent(),
+                                Translation
+                                    .getTranslation("folder_panel.home_tab.move_error.title"),
+                                Translation
+                                    .getTranslation("folder_panel.home_tab.move_error.temp"),
                                 getController().isVerbose(), e);
                     }
                 }
