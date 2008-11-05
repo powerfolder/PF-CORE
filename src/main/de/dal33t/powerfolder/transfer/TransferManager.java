@@ -1345,7 +1345,6 @@ public class TransferManager extends PFComponent {
             .getFolderRepository());
 
         assert !fInfo.isNewerThan(newestVersionFile) : "getNewestVersion returned older version.";
-        // ap<>
         Map<Member, Integer> downloadCountList = countNodesActiveAndQueuedDownloads();
 
         Collection<Member> bestSources = new LinkedList<Member>();
