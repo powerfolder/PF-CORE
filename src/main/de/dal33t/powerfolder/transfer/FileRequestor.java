@@ -192,6 +192,7 @@ public class FileRequestor extends PFComponent {
             return;
         }
 
+        ProfilingEntry pe = Profiling.start();
         Collection<FileInfo> incomingFiles = folder.getIncomingFiles(folder
             .getSyncProfile().getConfiguration().isAutoDownloadFromOthers());
         List<FileInfo> filesToDownload = new ArrayList<FileInfo>(incomingFiles
@@ -216,11 +217,13 @@ public class FileRequestor extends PFComponent {
                 filesToDownload.add(fInfo);
             }
         }
+        // Disabled, probabily slows down.
         Collections.sort(filesToDownload, folder.getTransferPriorities()
             .getComparator());
         for (FileInfo fInfo : filesToDownload) {
             tm.downloadNewestVersion(fInfo, true);
         }
+        Profiling.end(pe);
     }
 
     /**
