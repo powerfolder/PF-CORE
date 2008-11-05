@@ -258,10 +258,10 @@ public class Folder extends PFComponent {
         syncProfile = folderSettings.getSyncProfile();
 
         // Create listener support
-        this.folderListenerSupport = (FolderListener) ListenerSupportFactory
+        this.folderListenerSupport = ListenerSupportFactory
             .createListenerSupport(FolderListener.class);
 
-        this.folderMembershipListenerSupport = (FolderMembershipListener) ListenerSupportFactory
+        this.folderMembershipListenerSupport = ListenerSupportFactory
             .createListenerSupport(FolderMembershipListener.class);
 
         useRecycleBin = folderSettings.isUseRecycleBin();
@@ -529,7 +529,7 @@ public class Folder extends PFComponent {
      *         descriptions
      */
     public Map<FileInfo, List<FilenameProblem>> getProblemFiles() {
-        return Collections.EMPTY_MAP;
+        return Collections.emptyMap();
         // return problemFiles;
     }
 
@@ -588,6 +588,15 @@ public class Folder extends PFComponent {
     {
         // Basic checks
         if (!localBase.exists()) {
+            // TRAC #1249
+            if ((OSUtil.isMacOS() || OSUtil.isLinux())
+                && localBase.getAbsolutePath().toLowerCase().startsWith(
+                    "/volumes"))
+            {
+                throw new FolderException(currentInfo,
+                    "Unmounted volume not available at "
+                        + localBase.getAbsolutePath());
+            }
             if (!localBase.mkdirs()) {
                 if (!quite) {
                     logSevere(" not able to create folder(" + getName()
@@ -745,7 +754,7 @@ public class Folder extends PFComponent {
         // #1249
         if (!knownFiles.isEmpty() && (OSUtil.isMacOS() || OSUtil.isLinux())) {
             boolean inaccessible = localBase.list() == null
-                || localBase.list().length == 0;
+                || localBase.list().length == 0 || !localBase.exists();
             if (inaccessible) {
                 logWarning("Local base empty on linux file system, but has known files. "
                     + localBase);
@@ -1236,6 +1245,7 @@ public class Folder extends PFComponent {
      *            the file to load as db file
      * @return true if succeeded
      */
+    @SuppressWarnings("unchecked")
     private boolean loadFolderDB(File dbFile) {
         synchronized (scanLock) {
             if (!dbFile.exists()) {
@@ -2562,15 +2572,6 @@ public class Folder extends PFComponent {
      */
     public String getId() {
         return currentInfo.id;
-    }
-
-    /**
-     * Date of the last file change for this folder.
-     * 
-     * @return
-     */
-    public Date getLastFileChangeDate() {
-        return statistic.getLastFileChangeDate();
     }
 
     /**
