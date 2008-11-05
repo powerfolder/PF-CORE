@@ -84,14 +84,26 @@ public class ExpandableComputerView extends PFUIComponent {
         CellConstraints cc = new CellConstraints();
 
         JLabel jLabel;
-        if (member.isOnLAN()) {
-            jLabel = new JLabel(Icons.PF_PREVIEW);
-            jLabel.setToolTipText(Translation.getTranslation(
-                    "exp_folder_view.folder_preview_text"));
+        if (member.isConnected()) {
+            if (member.isFriend()) {
+                jLabel = new JLabel(Icons.NODE_FRIEND_CONNECTED);
+                jLabel.setToolTipText(Translation.getTranslation(
+                        "exp_computer_view.node_friend_connected_text"));
+            } else {
+                jLabel = new JLabel(Icons.NODE_NON_FRIEND_CONNECTED);
+                jLabel.setToolTipText(Translation.getTranslation(
+                        "exp_computer_view.node_non_friend_connected_text"));
+            }
         } else {
-            jLabel = new JLabel(Icons.PF_LOCAL);
-            jLabel.setToolTipText(Translation.getTranslation(
-                    "exp_folder_view.folder_local_text"));
+            if (member.isFriend()) {
+                jLabel = new JLabel(Icons.NODE_FRIEND_DISCONNECTED);
+                jLabel.setToolTipText(Translation.getTranslation(
+                        "exp_computer_view.node_friend_disconnected_text"));
+            } else {
+                jLabel = new JLabel(Icons.NODE_NON_FRIEND_DISCONNECTED);
+                jLabel.setToolTipText(Translation.getTranslation(
+                        "exp_computer_view.node_non_friend_disconnected_text"));
+            }
         }
         upperBuilder.add(jLabel, cc.xy(1, 1));
         upperBuilder.add(new JLabel(member.getNick()), cc.xy(3, 1));
@@ -142,7 +154,7 @@ public class ExpandableComputerView extends PFUIComponent {
         expanded = new AtomicBoolean();
 
         expandCollapseButton = new JButtonMini(Icons.EXPAND,
-                Translation.getTranslation("exp_folder_view.expand"));
+                Translation.getTranslation("exp_computer_view.expand"));
         expandCollapseButton.addActionListener(new MyActionListener());
         registerListeners();
     }
@@ -187,13 +199,13 @@ public class ExpandableComputerView extends PFUIComponent {
                 expanded.set(false);
                 expandCollapseButton.setIcon(Icons.EXPAND);
                 expandCollapseButton.setToolTipText(
-                        Translation.getTranslation("exp_folder_view.expand"));
+                        Translation.getTranslation("exp_computer_view.expand"));
                 lowerOuterPanel.setVisible(false);
             } else {
                 expanded.set(true);
                 expandCollapseButton.setIcon(Icons.COLLAPSE);
                 expandCollapseButton.setToolTipText(
-                        Translation.getTranslation("exp_folder_view.collapse"));
+                        Translation.getTranslation("exp_computer_view.collapse"));
                 lowerOuterPanel.setVisible(true);
             }
         }
