@@ -1,25 +1,23 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.util;
-
-import org.apache.commons.io.output.ByteArrayOutputStream;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -32,7 +30,10 @@ import java.io.Serializable;
 import java.lang.ref.SoftReference;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
+
+import org.apache.commons.io.output.ByteArrayOutputStream;
 
 import de.dal33t.powerfolder.util.logging.Loggable;
 
@@ -43,6 +44,8 @@ import de.dal33t.powerfolder.util.logging.Loggable;
  * @version $Revision: 1.14 $
  */
 public class ByteSerializer extends Loggable {
+    private static final Logger LOG = Logger.getLogger(ByteSerializer.class
+        .getName());
 
     private static final int MAX_BUFFER_SIZE = 10 * 1024 * 1024;
     // Should at least cover one file chunk. if packet is greater, the buffer
@@ -196,7 +199,7 @@ public class ByteSerializer extends Loggable {
             }
             if (expectedSize >= 128 * 1024) {
                 logWarning("Recived buffer exceeds 128KB! "
-                    + Format.formatBytes(byteIn.length));
+                    + Format.formatBytes(expectedSize));
             }
             byteIn = new byte[expectedSize];
             // Chache buffer
@@ -262,6 +265,8 @@ public class ByteSerializer extends Loggable {
             // try the other way, if that also fails
             // we should forget it
             result = deserialize0(base, !expectCompression);
+            LOG.warning("Stream was not as expected (compression: "
+                + expectCompression + ") on " + result);
         }
         return result;
     }
