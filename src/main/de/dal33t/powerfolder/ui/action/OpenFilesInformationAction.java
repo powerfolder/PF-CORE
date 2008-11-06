@@ -25,14 +25,14 @@ import de.dal33t.powerfolder.disk.Folder;
 import java.awt.event.ActionEvent;
 
 /**
- * Creates an Action that displays the settings information for a folder.
+ * Creates an Action that displays the file information for a folder.
  *
  * @author <a href="mailto:harry@powerfolder.com">Harry Glasgow</a>
  */
-public class OpenSettingsInformationAction extends BaseAction {
+public class OpenFilesInformationAction extends BaseAction {
 
-    public OpenSettingsInformationAction(Controller controller) {
-        super("action_open_settings_information", controller);
+    public OpenFilesInformationAction(Controller controller) {
+        super("action_open_files_information", controller);
     }
 
     public void actionPerformed(ActionEvent e) {

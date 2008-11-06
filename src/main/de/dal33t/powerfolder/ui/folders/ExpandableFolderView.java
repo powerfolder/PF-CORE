@@ -31,6 +31,7 @@ import de.dal33t.powerfolder.event.FolderListener;
 import de.dal33t.powerfolder.event.FolderMembershipEvent;
 import de.dal33t.powerfolder.event.FolderMembershipListener;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.action.ActionModel;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
@@ -57,6 +58,8 @@ public class ExpandableFolderView extends PFUIComponent {
 
     private JLabel filesLabel;
     private JButtonMini openSettingsInformationButton;
+    private JButtonMini openFilesInformationButton;
+    private JButtonMini openComputersInformationButton;
     private JLabel syncPercentLabel;
     private JLabel totalSizeLabel;
     private JLabel membersLabel;
@@ -134,7 +137,8 @@ public class ExpandableFolderView extends PFUIComponent {
         lowerBuilder.addSeparator(null, cc.xywh(2, 5, 4, 1));
 
         lowerBuilder.add(syncPercentLabel, cc.xy(2, 7));
-        
+        lowerBuilder.add(openFilesInformationButton, cc.xy(5, 7));
+
         lowerBuilder.add(filesLabel, cc.xy(2, 9));
 
         lowerBuilder.add(totalSizeLabel, cc.xy(2, 11));
@@ -142,6 +146,7 @@ public class ExpandableFolderView extends PFUIComponent {
         lowerBuilder.addSeparator(null, cc.xywh(2, 13, 4, 1));
 
         lowerBuilder.add(membersLabel, cc.xy(2, 15));
+        lowerBuilder.add(openComputersInformationButton, cc.xy(5, 15));
 
         JPanel lowerPanel = lowerBuilder.getPanel();
 
@@ -178,9 +183,17 @@ public class ExpandableFolderView extends PFUIComponent {
     private void initComponent() {
         expanded = new AtomicBoolean();
 
-        openSettingsInformationButton = new JButtonMini(getController()
-                .getUIController().getActionModel()
+        ActionModel actionModel = getController()
+                .getUIController().getActionModel();
+        
+        openSettingsInformationButton = new JButtonMini(actionModel
                 .getOpenSettingsInformationAction());
+
+        openFilesInformationButton = new JButtonMini(actionModel
+                .getOpenFilesInformationAction());
+
+        openComputersInformationButton = new JButtonMini(actionModel
+                .getOpenComputersInformationAction());
 
         expandCollapseButton = new JButtonMini(Icons.EXPAND,
                 Translation.getTranslation("exp_folder_view.expand"));
