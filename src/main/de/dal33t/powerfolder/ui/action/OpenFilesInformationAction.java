@@ -40,7 +40,7 @@ public class OpenFilesInformationAction extends BaseAction {
         Object source = e.getSource();
         if (source instanceof ExpandableFolderView) {
             String folderName = ((ExpandableFolderView) source).getFolderName();
-            // ...
+            getController().getUIController().openFilesInformation(folderName);
         }
     }
 }

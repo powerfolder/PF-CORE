@@ -642,6 +642,45 @@ public class UIController extends PFComponent {
         }
     }
 
+    /**
+     * Displays the information window if not already displayed.
+     */
+    private void displayInformationWindow() {
+        // @todo display window
+    }
+
+    /**
+     * Opens the Files information for a folder.
+     * 
+     * @param folderName name of the folder to display files information for.
+     */
+    public void openFilesInformation(String folderName) {
+        // @todo set files for folder
+        displayInformationWindow();        
+    }
+
+    /**
+     * Opens the Settings information for a folder.
+     *
+     * @param folderName name of the folder to display member settings
+     * information for.
+     */
+    public void openSettingsInformation(String folderName) {
+        // @todo set settings for folder
+        displayInformationWindow();
+    }
+
+    /**
+     * Opens the Computers information for a folder.
+     *
+     * @param folderName name of the folder to display member computer
+     * information for.
+     */
+    public void openComputersInformation(String folderName) {
+        // @todo set memnbers for folder
+        displayInformationWindow();
+    }
+
     private class UpdateSystrayTask extends TimerTask {
         public void run() {
             StringBuilder tooltip = new StringBuilder();
