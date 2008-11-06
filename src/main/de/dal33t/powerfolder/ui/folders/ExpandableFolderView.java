@@ -188,16 +188,22 @@ public class ExpandableFolderView extends PFUIComponent {
         
         openSettingsInformationButton = new JButtonMini(actionModel
                 .getOpenSettingsInformationAction());
+        openSettingsInformationButton.addActionListener(
+                new MyOpenSettingsInformationActionListener());
 
         openFilesInformationButton = new JButtonMini(actionModel
                 .getOpenFilesInformationAction());
+        openFilesInformationButton.addActionListener(
+                new MyOpenFilesInformationActionListener());
 
         openComputersInformationButton = new JButtonMini(actionModel
                 .getOpenComputersInformationAction());
+        openComputersInformationButton.addActionListener(
+                new MyOpenComputersInformationActionListener());
 
         expandCollapseButton = new JButtonMini(Icons.EXPAND,
                 Translation.getTranslation("exp_folder_view.expand"));
-        expandCollapseButton.addActionListener(new MyActionListener());
+        expandCollapseButton.addActionListener(new MyExpColActionListener());
         syncFolderButton = new JButtonMini(Icons.SYNC,
                 Translation.getTranslation("exp_folder_view.synchronize_folder"));
         filesLabel = new JLabel();
@@ -369,7 +375,7 @@ public class ExpandableFolderView extends PFUIComponent {
     /**
      * Class to respond to expand / collapse events.
      */
-    private class MyActionListener implements ActionListener {
+    private class MyExpColActionListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             boolean exp = expanded.get();
             if (exp) {
@@ -385,6 +391,33 @@ public class ExpandableFolderView extends PFUIComponent {
                         Translation.getTranslation("exp_folder_view.collapse"));
                 lowerOuterPanel.setVisible(true);
             }
+        }
+    }
+
+    private class MyOpenSettingsInformationActionListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            ActionEvent ae = new ActionEvent(ExpandableFolderView.this,
+                    (int) e.getWhen(), e.getActionCommand(), e.getModifiers());
+            getController().getUIController().getActionModel().
+                    getOpenSettingsInformationAction().actionPerformed(ae);
+        }
+    }
+
+    private class MyOpenFilesInformationActionListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            ActionEvent ae = new ActionEvent(ExpandableFolderView.this,
+                    (int) e.getWhen(), e.getActionCommand(), e.getModifiers());
+            getController().getUIController().getActionModel().
+                    getOpenSettingsInformationAction().actionPerformed(ae);
+        }
+    }
+
+    private class MyOpenComputersInformationActionListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            ActionEvent ae = new ActionEvent(ExpandableFolderView.this,
+                    (int) e.getWhen(), e.getActionCommand(), e.getModifiers());
+            getController().getUIController().getActionModel().
+                    getOpenSettingsInformationAction().actionPerformed(ae);
         }
     }
 }

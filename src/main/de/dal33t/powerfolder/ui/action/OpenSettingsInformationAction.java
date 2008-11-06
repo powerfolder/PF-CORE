@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.ui.action;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.ui.folders.ExpandableFolderView;
 import de.dal33t.powerfolder.disk.Folder;
 
 import java.awt.event.ActionEvent;
@@ -37,7 +38,8 @@ public class OpenSettingsInformationAction extends BaseAction {
 
     public void actionPerformed(ActionEvent e) {
         Object source = e.getSource();
-        if (source instanceof Folder) {
+        if (source instanceof ExpandableFolderView) {
+            String folderName = ((ExpandableFolderView) source).getFolderName();
             // ...
         }
     }
