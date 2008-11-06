@@ -391,7 +391,6 @@ public class InformationQuarter extends PFUIComponent {
     public void displayRootPanel() {
         showCard(ROOT_PANEL);
         setDisplayTarget(rootPanel);
-        setTitle(rootPanel.getTitle());
     }
 
     public void displayFolder(Folder folder) {

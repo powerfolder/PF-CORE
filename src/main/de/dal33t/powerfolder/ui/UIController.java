@@ -79,8 +79,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -263,7 +261,6 @@ public class UIController extends PFComponent {
         transferManagerModel = new TransferManagerModel(getController()
             .getTransferManager(), navTreeModel);
         transferManagerModel.initialize();
-        applicationModel.getRootTabelModel().initialize();
         serverClientModel = new ServerClientModel(getController(),
             getController().getOSClient());
 

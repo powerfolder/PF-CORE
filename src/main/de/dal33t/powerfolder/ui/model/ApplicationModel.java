@@ -33,7 +33,6 @@ import de.dal33t.powerfolder.ui.navigation.NavTreeModel;
 public class ApplicationModel extends PFUIComponent {
     // TODO #278 Throw away?
     private NavTreeModel navTreeModel;
-    private RootTableModel rootTabelModel;
 
     /**
      * Constructs a non-initialized application model. Before the model can used
@@ -51,7 +50,6 @@ public class ApplicationModel extends PFUIComponent {
      */
     public void initialize() {
         navTreeModel = new NavTreeModel(getController());
-        rootTabelModel = new RootTableModel(getController(), navTreeModel);
     }
 
     // Exposing ***************************************************************
@@ -59,9 +57,4 @@ public class ApplicationModel extends PFUIComponent {
     public NavTreeModel getNavTreeModel() {
         return navTreeModel;
     }
-
-    public RootTableModel getRootTabelModel() {
-        return rootTabelModel;
-    }
-
 }
