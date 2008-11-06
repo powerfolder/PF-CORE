@@ -19,8 +19,6 @@
  */
 package de.dal33t.powerfolder.ui;
 
-import com.jgoodies.binding.value.ValueHolder;
-import com.jgoodies.binding.value.ValueModel;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
@@ -129,8 +127,6 @@ public class UIController extends PFComponent {
     private FolderRepositoryModel folderRepoModel;
     private TransferManagerModel transferManagerModel;
     private ServerClientModel serverClientModel;
-    // TODO #278: Move into FolderRepoModel
-    private final ValueModel hidePreviewsVM;
     private boolean seenOome;
     private ActionModel actionModel;
 
@@ -206,19 +202,6 @@ public class UIController extends PFComponent {
 
         started = false;
 
-        hidePreviewsVM = new ValueHolder();
-        hidePreviewsVM.setValue(Boolean.FALSE);
-        hidePreviewsVM.addValueChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                ConfigurationEntry.HIDE_PREVIEW_FOLDERS.setValue(
-                    getController(), Boolean.valueOf(
-                        (Boolean) evt.getNewValue()).toString());
-                getController().saveConfig();
-                folderRepoModel.folderStructureChanged();
-                getFolderRepositoryModel().getMyFoldersTableModel()
-                    .folderStructureChanged();
-            }
-        });
     }
 
     /**
@@ -357,8 +340,9 @@ public class UIController extends PFComponent {
         gotoHPIfRequired();
         detectAndShowLimitDialog();
 
-        hidePreviewsVM.setValue(ConfigurationEntry.HIDE_PREVIEW_FOLDERS
-            .getValueBoolean(getController()));
+        folderRepoModel.getHidePreviewsValueModel().setValue(
+                ConfigurationEntry.HIDE_PREVIEW_FOLDERS.getValueBoolean(
+                        getController()));
     }
 
     private void gotoHPIfRequired() {
@@ -609,14 +593,6 @@ public class UIController extends PFComponent {
         if (splash != null) {
             splash.shutdown();
         }
-    }
-
-    public ValueModel getHidePreviewsValueModel() {
-        return hidePreviewsVM;
-    }
-
-    public boolean isHidePreviews() {
-        return (Boolean) hidePreviewsVM.getValue();
     }
 
     /**

@@ -38,6 +38,11 @@ import javax.swing.tree.TreeNode;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
+
+import com.jgoodies.binding.value.ValueModel;
+import com.jgoodies.binding.value.ValueHolder;
 
 /**
  * Prepares core data as (swing) ui models. e.g. <code>TreeModel</code>
@@ -56,6 +61,8 @@ public class FolderRepositoryModel extends PFUIComponent {
 
     private boolean expandedMyFolders;
 
+    private final ValueModel hidePreviewsVM;
+
     private Map<Folder, FolderModel> folderModelMap = Collections
         .synchronizedMap(new HashMap<Folder, FolderModel>());
 
@@ -73,6 +80,19 @@ public class FolderRepositoryModel extends PFUIComponent {
         // Table model initalization
         myFoldersTableModel = new FoldersTableModel(getController()
             .getFolderRepository(), getController());
+
+        hidePreviewsVM = new ValueHolder();
+        hidePreviewsVM.setValue(Boolean.FALSE);
+        hidePreviewsVM.addValueChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                ConfigurationEntry.HIDE_PREVIEW_FOLDERS.setValue(
+                    getController(), Boolean.valueOf(
+                        (Boolean) evt.getNewValue()).toString());
+                getController().saveConfig();
+                folderStructureChanged();
+                getMyFoldersTableModel().folderStructureChanged();
+            }
+        });
     }
 
     // Inizalization **********************************************************
@@ -107,6 +127,14 @@ public class FolderRepositoryModel extends PFUIComponent {
 
     // Exposing ***************************************************************
 
+    public ValueModel getHidePreviewsValueModel() {
+        return hidePreviewsVM;
+    }
+
+    public boolean isHidePreviews() {
+        return (Boolean) hidePreviewsVM.getValue();
+    }
+    
     public TreeNodeList getMyFoldersTreeNode() {
         return myFoldersTreeNode;
     }

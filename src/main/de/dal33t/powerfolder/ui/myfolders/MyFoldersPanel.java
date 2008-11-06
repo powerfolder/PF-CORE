@@ -141,8 +141,8 @@ public class MyFoldersPanel extends PFUIPanel {
         table.getTableHeader().addMouseListener(new PopupMenuOpener(popup));
 
         hidePreviewsCB = BasicComponentFactory.createCheckBox(getUIController()
-            .getHidePreviewsValueModel(), Translation
-            .getTranslation("my_folders_panel.hide_previews"));
+                .getFolderRepositoryModel().getHidePreviewsValueModel(),
+                Translation.getTranslation("my_folders_panel.hide_previews"));
 
         // Create toolbar
         toolbar = createToolBar();
