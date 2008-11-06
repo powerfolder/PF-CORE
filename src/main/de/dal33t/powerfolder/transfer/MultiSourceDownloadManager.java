@@ -22,6 +22,7 @@ package de.dal33t.powerfolder.transfer;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Logger;
@@ -40,7 +41,7 @@ import de.dal33t.powerfolder.util.delta.FilePartsState.PartState;
 
 /**
  * This download manager will try to download from all available sources.
- *
+ * 
  * @author Dennis "Bytekeeper" Waldherr
  */
 public class MultiSourceDownloadManager extends AbstractDownloadManager {
@@ -78,7 +79,7 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
                 + download.getPartner() + ". " + download);
         }
 
-        // Non-automatic overrides automatic                                                                               
+        // Non-automatic overrides automatic
         if (isRequestedAutomatic() != download.isRequestedAutomatic()) {
             setAutomatic(false);
         }
@@ -101,10 +102,11 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
 
     /*
      * Returns the sources of this manager.
+     * 
      * @see de.dal33t.powerfolder.transfer.MultiSourceDownload#getSources()
      */
     public Collection<Download> getSources() {
-        return new ArrayList<Download>(downloads.values());
+        return Collections.unmodifiableCollection(downloads.values());
     }
 
     public boolean hasSources() {
@@ -148,7 +150,7 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
 
     /**
      * Returns an available source for requesting the {@link FilePartsRecord}
-     *
+     * 
      * @param download
      * @return
      */
