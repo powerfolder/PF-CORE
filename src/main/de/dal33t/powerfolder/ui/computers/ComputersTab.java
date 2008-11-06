@@ -85,7 +85,7 @@ public class ComputersTab extends PFUIComponent {
      */
     private JPanel createToolBar() {
         JButton searchComputerButton = new JButton(getUIController()
-                .getActionModel().getSearchComputerAction());
+                .getActionModel().getFindComputersAction());
 
         FormLayout layout = new FormLayout("pref, pref:grow, pref",
             "pref");

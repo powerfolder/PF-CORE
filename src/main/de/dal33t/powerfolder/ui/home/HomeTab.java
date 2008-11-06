@@ -291,7 +291,7 @@ public class HomeTab extends PFUIComponent {
         JButton newFolderButton = new JButton(getUIController().getActionModel()
                 .getNewFolderAction());
         JButton searchComputerButton = new JButton(getUIController().getActionModel()
-                .getSearchComputerAction());
+                .getFindComputersAction());
 
         ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
         bar.addGridded(newFolderButton);

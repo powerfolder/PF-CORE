@@ -56,6 +56,7 @@ public class ExpandableFolderView extends PFUIComponent {
     private AtomicBoolean expanded;
 
     private JLabel filesLabel;
+    private JButtonMini openSettingsInformationButton;
     private JLabel syncPercentLabel;
     private JLabel totalSizeLabel;
     private JLabel membersLabel;
@@ -119,17 +120,18 @@ public class ExpandableFolderView extends PFUIComponent {
         JPanel upperPanel = upperBuilder.getPanel();
 
         // Build lower detials with line border.
-        FormLayout lowerLayout = new FormLayout("3dlu, pref:grow, 3dlu",
+        FormLayout lowerLayout = new FormLayout("3dlu, pref, pref:grow, 3dlu, pref, 3dlu",
             "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
         PanelBuilder lowerBuilder = new PanelBuilder(lowerLayout);
 
         String transferMode = Translation.getTranslation("exp_folder_view.transfer_mode",
                 folder.getSyncProfile().getProfileName());
-        lowerBuilder.addSeparator(null, cc.xy(2, 1));
+        lowerBuilder.addSeparator(null, cc.xywh(2, 1, 4, 1));
         
         lowerBuilder.add(new JLabel(transferMode), cc.xy(2, 3));
+        lowerBuilder.add(openSettingsInformationButton, cc.xy(5, 3));
 
-        lowerBuilder.addSeparator(null, cc.xy(2, 5));
+        lowerBuilder.addSeparator(null, cc.xywh(2, 5, 4, 1));
 
         lowerBuilder.add(syncPercentLabel, cc.xy(2, 7));
         
@@ -137,7 +139,7 @@ public class ExpandableFolderView extends PFUIComponent {
 
         lowerBuilder.add(totalSizeLabel, cc.xy(2, 11));
 
-        lowerBuilder.addSeparator(null, cc.xy(2, 13));
+        lowerBuilder.addSeparator(null, cc.xywh(2, 13, 4, 1));
 
         lowerBuilder.add(membersLabel, cc.xy(2, 15));
 
@@ -175,6 +177,10 @@ public class ExpandableFolderView extends PFUIComponent {
      */
     private void initComponent() {
         expanded = new AtomicBoolean();
+
+        openSettingsInformationButton = new JButtonMini(getController()
+                .getUIController().getActionModel()
+                .getOpenSettingsInformationAction());
 
         expandCollapseButton = new JButtonMini(Icons.EXPAND,
                 Translation.getTranslation("exp_folder_view.expand"));

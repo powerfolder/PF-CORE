@@ -30,12 +30,18 @@ import java.awt.*;
  */
 public class JButtonMini extends JButton {
 
-    public JButtonMini(Icon icon) {
-        this(icon, null);
+    public JButtonMini(Action action) {
+        this((Icon) action.getValue(Action.SMALL_ICON),
+                (String) action.getValue(Action.SHORT_DESCRIPTION));
     }
-    
+
     public JButtonMini(Icon icon, String toolTipText) {
-        super(icon);
+        if (icon == null) {
+            setText("???");
+        } else {
+            setIcon(icon);
+        }
+
         setOpaque(false);
         setBorder(null);
         setBorder(Borders.EMPTY_BORDER);

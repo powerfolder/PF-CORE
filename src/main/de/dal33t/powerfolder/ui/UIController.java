@@ -853,17 +853,12 @@ public class UIController extends PFComponent {
 
     // Actions ****************************************************************
 
-    // TODO Remove these actions and place them into the approriate model (ActionModel).
     public ActionModel getActionModel() {
         return actionModel;
     }
 
+    // TODO Remove these actions and place them into the approriate model (ActionModel).
     public Action getOpenWizardAction() {
-        // @todo remove - use ActionModel
-        return null;
-    }
-
-    public Action getConnectAction() {
         // @todo remove - use ActionModel
         return null;
     }

@@ -15,30 +15,31 @@
 * You should have received a copy of the GNU General Public License
 * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
 *
-* $Id$
+* $Id: OpenSettingsInformationAction.java 5514 2008-10-25 15:23:59Z harry $
 */
 package de.dal33t.powerfolder.ui.action;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.ui.dialog.AboutDialog;
+import de.dal33t.powerfolder.disk.Folder;
 
 import java.awt.event.ActionEvent;
 
 /**
- * Creates an Action event that displays the About Box dialog.
- * 
+ * Creates an Action that displays the settings information for a folder.
+ *
  * @author <a href=mailto:xsj@users.sourceforge.net">Daniel Harabor</a>
- * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
- * 
- * @version 1.0 	Last Modified: 10/04/05
+ * @author <a href="mailto:harry@powerfolder.com">Harry Glasgow</a>
  */
-public class OpenAboutBoxAction extends BaseAction {
-    public OpenAboutBoxAction(Controller controller) {
-        super("action_open_about_box", controller);
+public class OpenSettingsInformationAction extends BaseAction {
+
+    public OpenSettingsInformationAction(Controller controller) {
+        super("action_open_settings_information", controller);
     }
 
     public void actionPerformed(ActionEvent e) {
-        AboutDialog aboutbox = new AboutDialog(getController());
-        aboutbox.open();
+        Object source = e.getSource();
+        if (source instanceof Folder) {
+            // ...
+        }
     }
 }
