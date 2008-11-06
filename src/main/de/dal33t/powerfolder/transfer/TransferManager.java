@@ -648,17 +648,16 @@ public class TransferManager extends PFComponent {
             fireDownloadCompleted(new TransferManagerEvent(this,
                 (Download) transfer));
 
-            Integer nDlFromNode = countNodesActiveAndQueuedDownloads().get(
-                transfer.getPartner());
-            boolean requestMoreFiles = nDlFromNode == null
-                || nDlFromNode.intValue() == 0;
+            int nDlFromNode = countActiveAndQueuedDownloads(transfer
+                .getPartner());
+            boolean requestMoreFiles = nDlFromNode == 0;
             if (!requestMoreFiles) {
                 // Hmm maybe end of transfer queue is near (20% or less filled),
                 // request if yes!
                 if (transfer.getPartner().isOnLAN()) {
-                    requestMoreFiles = nDlFromNode.intValue() <= Constants.MAX_DLS_FROM_LAN_MEMBER / 5;
+                    requestMoreFiles = nDlFromNode <= Constants.MAX_DLS_FROM_LAN_MEMBER / 5;
                 } else {
-                    requestMoreFiles = nDlFromNode.intValue() <= Constants.MAX_DLS_FROM_INET_MEMBER / 5;
+                    requestMoreFiles = nDlFromNode <= Constants.MAX_DLS_FROM_INET_MEMBER / 5;
                 }
             }
 
@@ -1314,7 +1313,7 @@ public class TransferManager extends PFComponent {
         try {
             fInfo.validate();
         } catch (Exception e) {
-            logWarning(e.getMessage() + ". " + fInfo.toDetailString(), e);
+            logSevere(e.getMessage() + ". " + fInfo.toDetailString(), e);
             return null;
         }
 
@@ -1334,8 +1333,8 @@ public class TransferManager extends PFComponent {
             }
         }
 
-        List<Member> sources = getSourcesFor(fInfo);
-        // logFiner("Got " + sources.length + " sources for " + fInfo);
+        List<Member> sources = getSourcesWithFreeUploadCapacity(fInfo);
+        // log().verbose("Got " + sources.length + " sources for " + fInfo);
 
         // Now walk through all sources and get the best one
         // Member bestSource = null;
@@ -1343,7 +1342,9 @@ public class TransferManager extends PFComponent {
             .getFolderRepository());
 
         assert !fInfo.isNewerThan(newestVersionFile) : "getNewestVersion returned older version.";
-        Map<Member, Integer> downloadCountList = countNodesActiveAndQueuedDownloads();
+        // ap<>
+        // Map<Member, Integer> downloadCountList =
+        // countNodesActiveAndQueuedDownloads();
 
         Collection<Member> bestSources = new LinkedList<Member>();
         for (Member source : sources) {
@@ -1357,18 +1358,18 @@ public class TransferManager extends PFComponent {
                 continue;
             }
 
-            int nDownloadFrom = 0;
-            if (downloadCountList.containsKey(source)) {
-                nDownloadFrom = downloadCountList.get(source).intValue();
-            }
-            int maxAllowedDls = source.isOnLAN()
-                ? Constants.MAX_DLS_FROM_LAN_MEMBER
-                : Constants.MAX_DLS_FROM_INET_MEMBER;
-            if (nDownloadFrom >= maxAllowedDls) {
-                // No more dl from this node allowed, skip
-                // logWarning("No more download allowed from " + source);
-                continue;
-            }
+            // int nDownloadFrom = countActiveAndQueuedDownloads(source);
+            // // if (downloadCountList.containsKey(source)) {
+            // // nDownloadFrom = downloadCountList.get(source).intValue();
+            // // }
+            // int maxAllowedDls = source.isOnLAN()
+            // ? Constants.MAX_DLS_FROM_LAN_MEMBER
+            // : Constants.MAX_DLS_FROM_INET_MEMBER;
+            // if (nDownloadFrom >= maxAllowedDls) {
+            // // No more dl from this node allowed, skip
+            // // log().warn("No more download allowed from " + source);
+            // continue;
+            // }
 
             bestSources.add(source);
         }
@@ -1403,9 +1404,8 @@ public class TransferManager extends PFComponent {
                 if (newestVersionFile.isNewerAvailable(getController()
                     .getFolderRepository()))
                 {
-                    log
-                        .severe("Downloading old version while newer is available: "
-                            + localFile);
+                    logSevere("Downloading old version while newer is available: "
+                        + localFile);
                 }
                 requestDownload(download, bestSource);
             }
@@ -1522,6 +1522,28 @@ public class TransferManager extends PFComponent {
      * @return the list of members, where the file is available
      */
     public List<Member> getSourcesFor(FileInfo fInfo) {
+        return getSourcesFor0(fInfo, false);
+    }
+
+    private List<Member> getSourcesWithFreeUploadCapacity(FileInfo fInfo) {
+        return getSourcesFor0(fInfo, true);
+    }
+
+    /**
+     * Finds the sources for the file. Returns only sources which are connected
+     * The members are sorted in order of best source.
+     * <p>
+     * WARNING: Versions of files are ignored
+     * 
+     * @param fInfo
+     * @param withUploadCapacityOnly
+     *            if only those sources should be considered, that have free
+     *            upload capacity.
+     * @return the list of members, where the file is available
+     */
+    private List<Member> getSourcesFor0(FileInfo fInfo,
+        boolean withUploadCapacityOnly)
+    {
         Reject.ifNull(fInfo, "File is null");
         Folder folder = fInfo.getFolder(getController().getFolderRepository());
         Reject.ifNull(folder, "Folder not joined of file: " + fInfo);
@@ -1534,6 +1556,18 @@ public class TransferManager extends PFComponent {
             if (node.isCompleteyConnected() && !node.isMySelf()
                 && node.hasFile(fInfo))
             {
+
+                if (withUploadCapacityOnly) {
+                    int nDownloadFrom = countActiveAndQueuedDownloads(node);
+                    int maxAllowedDls = node.isOnLAN()
+                        ? Constants.MAX_DLS_FROM_LAN_MEMBER
+                        : Constants.MAX_DLS_FROM_INET_MEMBER;
+                    if (nDownloadFrom >= maxAllowedDls) {
+                        // Skip source
+                        continue;
+                    }
+                }
+
                 // node is connected and has file
                 sources.add(node);
             }
@@ -1903,6 +1937,25 @@ public class TransferManager extends PFComponent {
         }
 
         return countList;
+    }
+
+    /**
+     * Counts the number of downloads from this node.
+     * 
+     * @return Number of active or enqued downloads to that node
+     */
+    private int countActiveAndQueuedDownloads(Member node) {
+        int nDownloadsFrom = 0;
+        for (DownloadManager man : dlManagers.values()) {
+            for (Download download : man.getSources()) {
+                if (download.getPartner().equals(node)
+                    && !download.isCompleted() && !download.isBroken())
+                {
+                    nDownloadsFrom++;
+                }
+            }
+        }
+        return nDownloadsFrom;
     }
 
     /**
