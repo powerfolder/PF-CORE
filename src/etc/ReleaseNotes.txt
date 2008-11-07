@@ -1,13 +1,15 @@
-PowerFolder Version 3.1.2 - http://www.powerfolder.com
+PowerFolder Version 3.1.3 - http://www.powerfolder.com
 
 Enhancements:
- * Folder database maintenance added to save memory
- * Support for relative path in invitations
- * Added warnings if target directory is not writable on folder setup
+ * Passwords get now encrypted stored if "Remind password" is checked.
+ * The Activation wizard not longer pops up every 5 seconds.
+ * Several other minor improvements.
 
 Bugfixes:
- * Fixed several activation bugs
- * Now gracefully handles folder scanner crash caused by low memory
+ * Fixes incomplete sync/transfer errors in some rare cases.
+ * Fixed Webinterface folder join functionality.
+ * Mac/Linux: Unmounted devices not get correctly detected.
+ * Several other minor bugfixs.
 
 Please give us feedback and request improvements at our forum:
 http://forums.powerfolder.com
@@ -42,6 +44,19 @@ External libraries used:
 
 
 History:
+
+Version 3.1.2
+-------------
+
+Enhancements:
+ * Folder database maintenance added to save memory
+ * Support for relative path in invitations
+ * Added warnings if target directory is not writable on folder setup
+
+Bugfixes:
+ * Fixed several activation bugs
+ * Now gracefully handles folder scanner crash caused by low memory
+ 
 
 Version 3.1.1
 -------------
