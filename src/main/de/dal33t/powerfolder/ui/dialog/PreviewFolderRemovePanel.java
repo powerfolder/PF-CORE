@@ -83,7 +83,7 @@ public class PreviewFolderRemovePanel extends BaseDialog {
             .getTranslation("folder_remove.dialog.remove_from_os"));
         removeFromServerBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                getUIController().getServerClientModel()
+                getApplicationModel().getServerClientModel()
                     .checkAndSetupAccount();
             }
         });

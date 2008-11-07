@@ -82,7 +82,7 @@ public class HomeTab extends PFUIComponent {
         uploadsCountVM = getApplicationModel()
                 .getTransferManagerModel().getCompletedUploadsCountVM();
         folderListener = new MyFolderListener();
-        client = getUIController().getServerClientModel().getClient();
+        client = getApplicationModel().getServerClientModel().getClient();
     }
 
     /**

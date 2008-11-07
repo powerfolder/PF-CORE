@@ -112,7 +112,7 @@ public class FolderRemovePanel extends BaseDialog {
         removeFromServerBox.addActionListener(new ConvertActionListener());
         removeFromServerBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                getUIController().getServerClientModel()
+                getApplicationModel().getServerClientModel()
                     .checkAndSetupAccount();
             }
         });

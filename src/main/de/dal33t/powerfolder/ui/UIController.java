@@ -41,7 +41,6 @@ import de.dal33t.powerfolder.ui.navigation.ControlQuarter;
 import de.dal33t.powerfolder.ui.notification.NotificationHandler;
 import de.dal33t.powerfolder.ui.recyclebin.RecycleBinConfirmationHandlerDefaultImpl;
 import de.dal33t.powerfolder.ui.render.BlinkManager;
-import de.dal33t.powerfolder.ui.webservice.ServerClientModel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.FileUtils;
@@ -116,8 +115,6 @@ public class UIController extends PFComponent {
     // The root of all models
     private ApplicationModel applicationModel;
 
-    // TODO #278: UI Models: Move into ApplicationModel
-    private ServerClientModel serverClientModel;
     private boolean seenOome;
 
     private InformationFrame informationFrame;
@@ -246,9 +243,6 @@ public class UIController extends PFComponent {
         new ChatNotificationManager(chatModel);
         getController().getFolderRepository().addFolderRepositoryListener(
             new MyFolderRepositoryListener());
-
-        serverClientModel = new ServerClientModel(getController(),
-            getController().getOSClient());
 
         // now load
         try {
@@ -772,13 +766,6 @@ public class UIController extends PFComponent {
      */
     public ApplicationModel getApplicationModel() {
         return applicationModel;
-    }
-
-    /**
-     * @return the model of the Online Storage client
-     */
-    public ServerClientModel getServerClientModel() {
-        return serverClientModel;
     }
 
     // Systray interface/install code *****************************************

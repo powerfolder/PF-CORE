@@ -23,6 +23,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.ui.action.ActionModel;
 import de.dal33t.powerfolder.ui.chat.ChatModel;
+import de.dal33t.powerfolder.ui.webservice.ServerClientModel;
 
 /**
  * Contains all core models for the application.
@@ -37,6 +38,7 @@ public class ApplicationModel extends PFUIComponent {
     private NodeManagerModel nodeManagerModel;
     private FolderRepositoryModel folderRepositoryModel;
     private TransferManagerModel transferManagerModel;
+    private ServerClientModel serverClientModel;
 
     /**
      * Constructs a non-initialized application model. Before the model can used
@@ -61,6 +63,8 @@ public class ApplicationModel extends PFUIComponent {
         transferManagerModel = new TransferManagerModel(getController()
             .getTransferManager());
         transferManagerModel.initialize();
+        serverClientModel = new ServerClientModel(getController(),
+            getController().getOSClient());
     }
 
     // Exposing ***************************************************************
@@ -83,5 +87,9 @@ public class ApplicationModel extends PFUIComponent {
 
     public TransferManagerModel getTransferManagerModel() {
         return transferManagerModel;
+    }
+
+    public ServerClientModel getServerClientModel() {
+        return serverClientModel;
     }
 }

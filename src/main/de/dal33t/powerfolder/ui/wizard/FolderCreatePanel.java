@@ -154,8 +154,8 @@ public class FolderCreatePanel extends PFWizardPanel {
             WizardContextAttributes.BACKUP_ONLINE_STOARGE);
         backupByOS = osAtt != null && osAtt;
         if (backupByOS) {
-            getController().getUIController().getServerClientModel()
-                .checkAndSetupAccount();
+            getController().getUIController().getApplicationModel()
+                    .getServerClientModel().checkAndSetupAccount();
         }
         // Send invitation after by default.
         Boolean sendInvsAtt = (Boolean) getWizardContext().getAttribute(

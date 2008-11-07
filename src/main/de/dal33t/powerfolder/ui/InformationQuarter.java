@@ -280,8 +280,8 @@ public class InformationQuarter extends PFUIComponent {
         myFoldersPanel = new MyFoldersPanel(getController());
 
         recycleBinPanel = new RecycleBinPanel(getController());
-        osPanel = new OnlineStoragePanel(getController(), getUIController()
-            .getServerClientModel());
+        osPanel = new OnlineStoragePanel(getController(), getApplicationModel()
+                .getServerClientModel());
         debugPanel = new DebugPanel(getController());
         dialogTestingPanel = new DialogTestingPanel(getController());
         // chat
@@ -380,10 +380,10 @@ public class InformationQuarter extends PFUIComponent {
     public void displayOnlineStoragePanel() {
         showCard(ONLINE_STORAGE_PANEL);
         setDisplayTarget(osPanel);
-        if (getUIController().getServerClientModel().getClient().isConnected())
+        if (getApplicationModel().getServerClientModel().getClient().isConnected())
         {
             // Only popup if connected
-            getUIController().getServerClientModel().checkAndSetupAccount(true);
+            getApplicationModel().getServerClientModel().checkAndSetupAccount(true);
         }
         setTitle(osPanel.getTitle());
     }
