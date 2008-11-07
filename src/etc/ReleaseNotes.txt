@@ -10,6 +10,16 @@ Bugfixes:
  * Fixed Webinterface folder join functionality.
  * Mac/Linux: Unmounted devices not get correctly detected.
  * Several other minor bugfixs.
+ 
+Other changes:
+ * Added check for fair use policy during trial period:
+
+During the 30 days trial period PowerFolder Pro limits the total amount of
+managed data to a fair use of 10 GB and 3 managed PowerFolders
+(The number sub-directories is not limited).
+
+The full version of PowerFolder Pro does not limit the total amount of managed
+data or the number of managed PowerFolders.
 
 Please give us feedback and request improvements at our forum:
 http://forums.powerfolder.com
