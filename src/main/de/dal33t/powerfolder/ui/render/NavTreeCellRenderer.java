@@ -76,7 +76,7 @@ public class NavTreeCellRenderer extends DefaultTreeCellRenderer {
         NodeManagerModel nmModel = controller.getUIController().getApplicationModel()
             .getNodeManagerModel();
         FolderRepositoryModel folderRepoModel = controller.getUIController()
-            .getFolderRepositoryModel();
+                .getApplicationModel().getFolderRepositoryModel();
 
         Icon icon = null;
         String text = null;

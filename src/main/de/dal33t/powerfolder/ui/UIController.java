@@ -37,7 +37,6 @@ import de.dal33t.powerfolder.ui.folder.FileNameProblemHandlerDefaultImpl;
 import de.dal33t.powerfolder.ui.friends.AskForFriendshipHandlerDefaultImpl;
 import de.dal33t.powerfolder.ui.information.InformationFrame;
 import de.dal33t.powerfolder.ui.model.ApplicationModel;
-import de.dal33t.powerfolder.ui.model.FolderRepositoryModel;
 import de.dal33t.powerfolder.ui.model.TransferManagerModel;
 import de.dal33t.powerfolder.ui.navigation.ControlQuarter;
 import de.dal33t.powerfolder.ui.notification.NotificationHandler;
@@ -119,7 +118,6 @@ public class UIController extends PFComponent {
     private ApplicationModel applicationModel;
 
     // TODO #278: UI Models: Move into ApplicationModel
-    private FolderRepositoryModel folderRepoModel;
     private TransferManagerModel transferManagerModel;
     private ServerClientModel serverClientModel;
     private boolean seenOome;
@@ -250,8 +248,6 @@ public class UIController extends PFComponent {
         new ChatNotificationManager(chatModel);
         getController().getFolderRepository().addFolderRepositoryListener(
             new MyFolderRepositoryListener());
-        folderRepoModel = new FolderRepositoryModel(getController());
-        folderRepoModel.initalize();
 
         transferManagerModel = new TransferManagerModel(getController()
             .getTransferManager());
@@ -332,7 +328,8 @@ public class UIController extends PFComponent {
         gotoHPIfRequired();
         detectAndShowLimitDialog();
 
-        folderRepoModel.getHidePreviewsValueModel().setValue(
+        getApplicationModel().getFolderRepositoryModel()
+                .getHidePreviewsValueModel().setValue(
                 ConfigurationEntry.HIDE_PREVIEW_FOLDERS.getValueBoolean(
                         getController()));
     }
@@ -787,13 +784,6 @@ public class UIController extends PFComponent {
     }
 
     /**
-     * @return the model for the folder repository
-     */
-    public FolderRepositoryModel getFolderRepositoryModel() {
-        return folderRepoModel;
-    }
-
-    /**
      * @return the model of the Online Storage client
      */
     public ServerClientModel getServerClientModel() {
@@ -997,8 +987,9 @@ public class UIController extends PFComponent {
                     public void run() {
 
                         // Find path to the chatting folder.
-                        TreeNodeList treeNodeList = getFolderRepositoryModel()
-                            .getMyFoldersTreeNode();
+                        TreeNodeList treeNodeList = getApplicationModel()
+                                .getFolderRepositoryModel()
+                                .getMyFoldersTreeNode();
                         int childCount = treeNodeList.getChildCount();
                         if (f != null) {
                             for (int i = 0; i < childCount; i++) {

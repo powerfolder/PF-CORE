@@ -356,7 +356,8 @@ public class ControlQuarter extends PFUIComponent {
         if (directory != null) {
             Folder folder = directory.getRootFolder();
             FolderModel folderModel = getController().getUIController()
-                .getFolderRepositoryModel().locateFolderModel(folder);
+                    .getApplicationModel().getFolderRepositoryModel()
+                    .locateFolderModel(folder);
             for (DirectoryModel directoryModel : folderModel
                 .getSubdirectories())
             {
@@ -390,7 +391,8 @@ public class ControlQuarter extends PFUIComponent {
 
     public void setSelected(Folder folder) {
         FolderModel folderModel = getController().getUIController()
-            .getFolderRepositoryModel().locateFolderModel(folder);
+                .getApplicationModel().getFolderRepositoryModel()
+                .locateFolderModel(folder);
         MutableTreeNode node = folderModel.getTreeNode();
         TreeNode[] path = new TreeNode[3];
 //        path[0] = navTreeModel.getRootNode();
@@ -668,7 +670,7 @@ public class ControlQuarter extends PFUIComponent {
                     directoryMenu.show(evt.getComponent(), evt.getX(), evt
                         .getY());
                 }
-            } else if (selection == getUIController()
+            } else if (selection == getUIController().getApplicationModel()
                 .getFolderRepositoryModel().getMyFoldersTreeNode())
             {
                 myFoldersMenu.show(evt.getComponent(), evt.getX(), evt.getY());

@@ -94,7 +94,7 @@ public class RootTable extends JTable {
             TreeNode node = (TreeNode) value;
             Object userObject = UIUtil.getUserObject(value);
             if (columnInModel == 0) { // name
-                if (value == controller.getUIController()
+                if (value == controller.getUIController().getApplicationModel()
                     .getFolderRepositoryModel().getMyFoldersTreeNode())
                 {
                     setIcon(Icons.FOLDERS);

@@ -19,14 +19,6 @@
  */
 package de.dal33t.powerfolder.ui.model;
 
-import java.awt.EventQueue;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.TimerTask;
-
-import javax.swing.tree.MutableTreeNode;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.disk.Directory;
@@ -39,6 +31,13 @@ import de.dal33t.powerfolder.event.FolderMembershipEvent;
 import de.dal33t.powerfolder.event.FolderMembershipListener;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.ui.TreeNodeList;
+
+import javax.swing.tree.MutableTreeNode;
+import java.awt.EventQueue;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.TimerTask;
 
 /**
  * UI-Model for a folder. Prepare folder data in a "swing-compatible" way. E.g.
@@ -90,7 +89,8 @@ public class FolderModel extends PFUIComponent {
      */
     private void initialize() {
         treeNode = new TreeNodeList(folder, getController().getUIController()
-            .getFolderRepositoryModel().getMyFoldersTreeNode());
+                .getApplicationModel().getFolderRepositoryModel()
+                .getMyFoldersTreeNode());
         rebuild();
         repoModel.updateFolderTreeNode(this);
     }

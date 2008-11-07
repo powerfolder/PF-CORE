@@ -178,8 +178,8 @@ public class NavigationToolBar extends PFUIComponent implements
         } else if (userObject instanceof Folder) {
             Folder folder = (Folder) userObject;
             return folder.getName() + " (" + folder.getMembersCount() + ')';
-        } else if (navObject == getUIController().getFolderRepositoryModel()
-            .getMyFoldersTreeNode())
+        } else if (navObject == getUIController().getApplicationModel()
+                .getFolderRepositoryModel().getMyFoldersTreeNode())
         {
             TreeNode node = (TreeNode) navObject;
             return Translation.getTranslation("title.my.folders") + " ("

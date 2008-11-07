@@ -35,6 +35,7 @@ public class ApplicationModel extends PFUIComponent {
     private ActionModel actionModel;
     private ChatModel chatModel;
     private NodeManagerModel nodeManagerModel;
+    private FolderRepositoryModel folderRepositoryModel;
 
     /**
      * Constructs a non-initialized application model. Before the model can used
@@ -45,7 +46,6 @@ public class ApplicationModel extends PFUIComponent {
      */
     public ApplicationModel(Controller controller) {
         super(controller);
-
     }
 
     /**
@@ -55,6 +55,8 @@ public class ApplicationModel extends PFUIComponent {
         actionModel = new ActionModel(getController());
         chatModel = new ChatModel(getController());
         nodeManagerModel = new NodeManagerModel(getController(), chatModel);
+        folderRepositoryModel = new FolderRepositoryModel(getController());
+        folderRepositoryModel.initalize();
     }
 
     // Exposing ***************************************************************
@@ -69,5 +71,9 @@ public class ApplicationModel extends PFUIComponent {
 
     public NodeManagerModel getNodeManagerModel() {
         return nodeManagerModel;
+    }
+
+    public FolderRepositoryModel getFolderRepositoryModel() {
+        return folderRepositoryModel;
     }
 }

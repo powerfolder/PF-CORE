@@ -19,13 +19,12 @@
 */
 package de.dal33t.powerfolder.ui.actionold;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 
-import javax.swing.*;
+import javax.swing.KeyStroke;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 
 /**
  * Action to manually sync a folder.
@@ -48,6 +47,7 @@ public class SyncFolderAction extends BaseAction {
     }
 
     public void actionPerformed(ActionEvent e) {
-        getController().getUIController().getFolderRepositoryModel().scanSelectedFolder();
+        getController().getUIController().getApplicationModel()
+                .getFolderRepositoryModel().scanSelectedFolder();
     }
 }

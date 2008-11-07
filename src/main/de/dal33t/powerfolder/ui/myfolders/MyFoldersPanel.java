@@ -19,33 +19,20 @@
  */
 package de.dal33t.powerfolder.ui.myfolders;
 
-import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-
-import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableColumnModel;
-
+import com.jgoodies.binding.adapter.BasicComponentFactory;
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.factories.Borders;
-import com.jgoodies.binding.adapter.BasicComponentFactory;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderStatistic;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.ui.render.UnsortedTableHeaderRenderer;
 import de.dal33t.powerfolder.ui.actionold.FolderRemoveAction;
 import de.dal33t.powerfolder.ui.actionold.PreviewJoinAction;
 import de.dal33t.powerfolder.ui.builder.ContentPanelBuilder;
 import de.dal33t.powerfolder.ui.model.FoldersTableModel;
+import de.dal33t.powerfolder.ui.render.UnsortedTableHeaderRenderer;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.PFUIPanel;
 import de.dal33t.powerfolder.util.Translation;
@@ -56,6 +43,29 @@ import de.dal33t.powerfolder.util.ui.PopupMenuOpener;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
 import de.dal33t.powerfolder.util.ui.SyncProfileUtil;
 import de.dal33t.powerfolder.util.ui.UIUtil;
+
+import javax.swing.AbstractAction;
+import javax.swing.DefaultCellEditor;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.SwingConstants;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 
 /**
  * Shows a Table with the Folders that are "joined" and toolbar. Uses a table
@@ -106,8 +116,8 @@ public class MyFoldersPanel extends PFUIPanel {
     private void initComponents() {
         quickinfo = new MyFoldersQuickInfoPanel(getController());
 
-        myFoldersTableModel = getUIController().getFolderRepositoryModel()
-            .getMyFoldersTableModel();
+        myFoldersTableModel = getUIController().getApplicationModel()
+                .getFolderRepositoryModel().getMyFoldersTableModel();
         customTableModel = new CustomTableModel(myFoldersTableModel);
         table = new MyFoldersTable(customTableModel);
 
@@ -141,7 +151,8 @@ public class MyFoldersPanel extends PFUIPanel {
         table.getTableHeader().addMouseListener(new PopupMenuOpener(popup));
 
         hidePreviewsCB = BasicComponentFactory.createCheckBox(getUIController()
-                .getFolderRepositoryModel().getHidePreviewsValueModel(),
+                .getApplicationModel().getFolderRepositoryModel()
+                .getHidePreviewsValueModel(),
                 Translation.getTranslation("my_folders_panel.hide_previews"));
 
         // Create toolbar

@@ -203,8 +203,8 @@ public class InformationQuarter extends PFUIComponent {
 
         } else if (selection instanceof RootNode) {
             displayRootPanel();
-        } else if (selection == getUIController().getFolderRepositoryModel()
-            .getMyFoldersTreeNode())
+        } else if (selection == getUIController().getApplicationModel()
+                .getFolderRepositoryModel().getMyFoldersTreeNode())
         {
             displayMyFolders();
         } else if (selection == RootNode.DOWNLOADS_NODE_LABEL) {
