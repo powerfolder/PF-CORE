@@ -45,6 +45,7 @@ import de.dal33t.powerfolder.ui.recyclebin.RecycleBinConfirmationHandlerDefaultI
 import de.dal33t.powerfolder.ui.render.BlinkManager;
 import de.dal33t.powerfolder.ui.webservice.ServerClientModel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
+import de.dal33t.powerfolder.ui.information.InformationFrame;
 import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
@@ -126,6 +127,7 @@ public class UIController extends PFComponent {
     private ServerClientModel serverClientModel;
     private boolean seenOome;
     private ActionModel actionModel;
+    InformationFrame informationFrame;
 
     /**
      * Initializes a new UI controller. open UI with #start
@@ -196,6 +198,8 @@ public class UIController extends PFComponent {
                 logSevere("InvocationTargetException", e);
             }
         }
+
+        informationFrame = new InformationFrame(getController());
 
         started = false;
 
@@ -616,7 +620,7 @@ public class UIController extends PFComponent {
      * Displays the information window if not already displayed.
      */
     private void displayInformationWindow() {
-        // @todo display window
+        informationFrame.getUIComponent().setVisible(true);
     }
 
     /**
@@ -702,6 +706,10 @@ public class UIController extends PFComponent {
         hideSplash();
 
         if (started) {
+            informationFrame.storeValues();
+            informationFrame.getUIComponent().setVisible(false);
+            informationFrame.getUIComponent().dispose();
+
             mainFrame.storeValues();
             mainFrame.getUIComponent().setVisible(false);
             mainFrame.getUIComponent().dispose();
