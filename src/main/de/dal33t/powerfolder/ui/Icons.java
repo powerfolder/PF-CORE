@@ -299,9 +299,13 @@ public class Icons {
     public static final Icon PRO_LOGO = getIcon("icons/ProLogo.png");
     public static final Icon SMALL_LOGO = getIconById("small_logo.icon");
 
+    public static final Icon SPLASH = getIcon("icons/Splash.png");
+
     // Images icons
     public static final Image POWERFOLDER_IMAGE = getImage("icons/PowerFolder_32x32.gif");
-    public static final Icon SPLASH = getIcon("icons/Splash.png");
+    public static final Image MEMBERS_IMAGE = getImage("icons/Node_Friend_Connected.gif");
+    public static final Image FOLDERS_IMAGE = getImage("icons/Folders.png");
+    public static final Image SETTINGS_IMAGE = getImage("icons/Settings.png");
 
     // About stuff
     public static final Icon ABOUT_ANIMATION = getIcon("icons/about/AboutAnimation.gif");

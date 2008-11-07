@@ -20,8 +20,8 @@
 package de.dal33t.powerfolder.ui.action;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.folders.ExpandableFolderView;
-import de.dal33t.powerfolder.disk.Folder;
 
 import java.awt.event.ActionEvent;
 
@@ -30,17 +30,17 @@ import java.awt.event.ActionEvent;
  *
  * @author <a href="mailto:harry@powerfolder.com">Harry Glasgow</a>
  */
-public class OpenComputersInformationAction extends BaseAction {
+public class OpenMembersInformationAction extends BaseAction {
 
-    public OpenComputersInformationAction(Controller controller) {
-        super("action_open_computers_information", controller);
+    public OpenMembersInformationAction(Controller controller) {
+        super("action_open_members_information", controller);
     }
 
     public void actionPerformed(ActionEvent e) {
         Object source = e.getSource();
         if (source instanceof ExpandableFolderView) {
-            String folderName = ((ExpandableFolderView) source).getFolderName();
-            getController().getUIController().openComputersInformation(folderName);
+            FolderInfo folderInfo = ((ExpandableFolderView) source).getFolderInfo();
+            getController().getUIController().openMembersInformation(folderInfo);
         }
     }
 }

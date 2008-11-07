@@ -26,6 +26,7 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
@@ -626,32 +627,32 @@ public class UIController extends PFComponent {
     /**
      * Opens the Files information for a folder.
      * 
-     * @param folderName name of the folder to display files information for.
+     * @param folderInfo info of the folder to display files information for.
      */
-    public void openFilesInformation(String folderName) {
-        // @todo set files for folder
-        displayInformationWindow();        
+    public void openFilesInformation(FolderInfo folderInfo) {
+        informationFrame.displayFiles(folderInfo);
+        displayInformationWindow();
     }
 
     /**
      * Opens the Settings information for a folder.
      *
-     * @param folderName name of the folder to display member settings
+     * @param folderInfo info of the folder to display member settings
      * information for.
      */
-    public void openSettingsInformation(String folderName) {
-        // @todo set settings for folder
+    public void openSettingsInformation(FolderInfo folderInfo) {
+        informationFrame.displaySettings(folderInfo);
         displayInformationWindow();
     }
 
     /**
-     * Opens the Computers information for a folder.
+     * Opens the Memberss information for a folder.
      *
-     * @param folderName name of the folder to display member computer
+     * @param folderInfo info of the folder to display member computer
      * information for.
      */
-    public void openComputersInformation(String folderName) {
-        // @todo set memnbers for folder
+    public void openMembersInformation(FolderInfo folderInfo) {
+        informationFrame.displayMembers(folderInfo);
         displayInformationWindow();
     }
 

@@ -24,6 +24,7 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
@@ -84,10 +85,10 @@ public class FoldersList extends PFUIComponent {
     private class MyFolderRepositoryListener implements FolderRepositoryListener {
 
         public void folderRemoved(FolderRepositoryEvent e) {
-            String folderName = e.getFolder().getName();
+            FolderInfo folderInfo = e.getFolder().getInfo();
             Component[] components = folderListPanel.getComponents();
             for (ExpandableFolderView view : views) {
-                if (view.getFolderName().equals(folderName)) {
+                if (view.getFolderInfo().equals(folderInfo)) {
                     for (Component component : components) {
                         if (component.equals(view.getUIComponent())) {
                             folderListPanel.remove(component);

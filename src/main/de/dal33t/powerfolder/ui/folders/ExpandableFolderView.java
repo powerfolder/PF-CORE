@@ -24,6 +24,7 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderStatistic;
 import de.dal33t.powerfolder.event.FolderEvent;
@@ -197,9 +198,9 @@ public class ExpandableFolderView extends PFUIComponent {
                 new MyOpenFilesInformationActionListener());
 
         openComputersInformationButton = new JButtonMini(actionModel
-                .getOpenComputersInformationAction());
+                .getOpenMembersInformationAction());
         openComputersInformationButton.addActionListener(
-                new MyOpenComputersInformationActionListener());
+                new MyOpenMembersInformationActionListener());
 
         expandCollapseButton = new JButtonMini(Icons.EXPAND,
                 Translation.getTranslation("exp_folder_view.expand"));
@@ -251,8 +252,8 @@ public class ExpandableFolderView extends PFUIComponent {
      * Gets the name of the associated folder.
      * @return
      */
-    public String getFolderName() {
-        return folder.getName();
+    public FolderInfo getFolderInfo() {
+        return folder.getInfo();
     }
 
     /**
@@ -408,16 +409,16 @@ public class ExpandableFolderView extends PFUIComponent {
             ActionEvent ae = new ActionEvent(ExpandableFolderView.this,
                     (int) e.getWhen(), e.getActionCommand(), e.getModifiers());
             getController().getUIController().getActionModel().
-                    getOpenSettingsInformationAction().actionPerformed(ae);
+                    getOpenFilesInformationAction().actionPerformed(ae);
         }
     }
 
-    private class MyOpenComputersInformationActionListener implements ActionListener {
+    private class MyOpenMembersInformationActionListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             ActionEvent ae = new ActionEvent(ExpandableFolderView.this,
                     (int) e.getWhen(), e.getActionCommand(), e.getModifiers());
             getController().getUIController().getActionModel().
-                    getOpenSettingsInformationAction().actionPerformed(ae);
+                    getOpenMembersInformationAction().actionPerformed(ae);
         }
     }
 }

@@ -41,7 +41,7 @@ public class ActionModel extends PFComponent {
     private ConnectAction connectAction;
     private OpenSettingsInformationAction openSettingsInformationAction;
     private OpenFilesInformationAction openFilesInformationAction;
-    private OpenComputersInformationAction openComputersInformationAction;
+    private OpenMembersInformationAction openMembersInformationAction;
 
     public NewFolderAction getNewFolderAction() {
         if (newFolderAction == null) {
@@ -92,10 +92,10 @@ public class ActionModel extends PFComponent {
         return openFilesInformationAction;
     }
 
-    public OpenComputersInformationAction getOpenComputersInformationAction() {
-        if (openComputersInformationAction == null) {
-            openComputersInformationAction = new OpenComputersInformationAction(getController());
+    public OpenMembersInformationAction getOpenMembersInformationAction() {
+        if (openMembersInformationAction == null) {
+            openMembersInformationAction = new OpenMembersInformationAction(getController());
         }
-        return openComputersInformationAction;
+        return openMembersInformationAction;
     }
 }

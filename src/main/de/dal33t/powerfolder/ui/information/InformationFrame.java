@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.ui.information;
 
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.Icons;
 import de.javasoft.plaf.synthetica.SyntheticaRootPaneUI;
 
@@ -122,6 +123,26 @@ public class InformationFrame extends PFUIComponent {
             }
             prefs.putBoolean("infoframe4.maximized", false);
         }
+    }
+
+    public void displayFiles(FolderInfo folderinfo) {
+        InformationFilesCard card = new InformationFilesCard(getController(), folderinfo);
+        displayCard(card);
+    }
+
+    public void displaySettings(FolderInfo folderinfo) {
+        InformationSettingsCard card = new InformationSettingsCard(getController(), folderinfo);
+        displayCard(card);
+    }
+
+    public void displayMembers(FolderInfo folderinfo) {
+        InformationMembersCard card = new InformationMembersCard(getController(), folderinfo);
+        displayCard(card);
+    }
+
+    private void displayCard(InformationCard card) {
+        getUIComponent().setIconImage(card.getCardImage());
+        getUIComponent().setTitle(card.getCardTitle());
     }
 
 }
