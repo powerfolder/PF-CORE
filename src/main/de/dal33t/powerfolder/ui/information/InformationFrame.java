@@ -64,7 +64,7 @@ public class InformationFrame extends PFUIComponent {
      */
     private void buildUIComponent() {
         Preferences prefs = getController().getPreferences();
-        uiComponent.setLocation(prefs.getInt("infonframe4.x", 50), prefs.getInt(
+        uiComponent.setLocation(prefs.getInt("infoframe4.x", 50), prefs.getInt(
             "infoframe4.y", 50));
 
         // Pack elements

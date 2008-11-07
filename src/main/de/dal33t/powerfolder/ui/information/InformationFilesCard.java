@@ -1,17 +1,16 @@
 package de.dal33t.powerfolder.ui.information;
 
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.ui.Icons;
-
-import javax.swing.*;
-import java.awt.*;
-
-import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.util.Translation;
+
+import javax.swing.JPanel;
+import java.awt.Image;
 
 public class InformationFilesCard extends InformationCard {
 
@@ -24,7 +23,7 @@ public class InformationFilesCard extends InformationCard {
     }
 
     public Image getCardImage() {
-        return Icons.FOLDERS_IMAGE;
+        return Icons.FILES_IMAGE;
     }
 
     public String getCardTitle() {

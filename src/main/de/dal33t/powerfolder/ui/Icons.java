@@ -304,7 +304,7 @@ public class Icons {
     // Images icons
     public static final Image POWERFOLDER_IMAGE = getImage("icons/PowerFolder_32x32.gif");
     public static final Image MEMBERS_IMAGE = getImage("icons/Node_Friend_Connected.gif");
-    public static final Image FOLDERS_IMAGE = getImage("icons/Folders.png");
+    public static final Image FILES_IMAGE = getImage("icons/Folders.png");
     public static final Image SETTINGS_IMAGE = getImage("icons/Settings.png");
 
     // About stuff
