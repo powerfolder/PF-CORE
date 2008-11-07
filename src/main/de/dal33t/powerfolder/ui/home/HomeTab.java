@@ -77,9 +77,9 @@ public class HomeTab extends PFUIComponent {
      */
     public HomeTab(Controller controller) {
         super(controller);
-        downloadsCountVM = controller.getUIController()
+        downloadsCountVM = getApplicationModel()
                 .getTransferManagerModel().getCompletedDownloadsCountVM();
-        uploadsCountVM = controller.getUIController()
+        uploadsCountVM = getApplicationModel()
                 .getTransferManagerModel().getCompletedUploadsCountVM();
         folderListener = new MyFolderListener();
         client = getUIController().getServerClientModel().getClient();

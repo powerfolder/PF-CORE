@@ -36,6 +36,7 @@ public class ApplicationModel extends PFUIComponent {
     private ChatModel chatModel;
     private NodeManagerModel nodeManagerModel;
     private FolderRepositoryModel folderRepositoryModel;
+    private TransferManagerModel transferManagerModel;
 
     /**
      * Constructs a non-initialized application model. Before the model can used
@@ -57,6 +58,9 @@ public class ApplicationModel extends PFUIComponent {
         nodeManagerModel = new NodeManagerModel(getController(), chatModel);
         folderRepositoryModel = new FolderRepositoryModel(getController());
         folderRepositoryModel.initalize();
+        transferManagerModel = new TransferManagerModel(getController()
+            .getTransferManager());
+        transferManagerModel.initialize();
     }
 
     // Exposing ***************************************************************
@@ -75,5 +79,9 @@ public class ApplicationModel extends PFUIComponent {
 
     public FolderRepositoryModel getFolderRepositoryModel() {
         return folderRepositoryModel;
+    }
+
+    public TransferManagerModel getTransferManagerModel() {
+        return transferManagerModel;
     }
 }

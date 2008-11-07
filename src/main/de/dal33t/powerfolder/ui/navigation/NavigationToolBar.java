@@ -185,12 +185,12 @@ public class NavigationToolBar extends PFUIComponent implements
             return Translation.getTranslation("title.my.folders") + " ("
                 + node.getChildCount() + ')';
         } else if (userObject == RootNode.DOWNLOADS_NODE_LABEL) {
-            Object value = getController().getUIController()
+            Object value = getApplicationModel()
                     .getTransferManagerModel().getAllDownloadsCountVM().getValue();
             return Translation.getTranslation("general.downloads") + " ("
                 + (value == null ? "0" : value.toString()) + ')';
         } else if (userObject == RootNode.UPLOADS_NODE_LABEL) {
-            Object value = getController().getUIController()
+            Object value = getApplicationModel()
                     .getTransferManagerModel().getAllUploadsCountVM().getValue();
             return Translation.getTranslation("general.uploads") + " ("
                 + (value == null ? "0" : value.toString()) + ')';

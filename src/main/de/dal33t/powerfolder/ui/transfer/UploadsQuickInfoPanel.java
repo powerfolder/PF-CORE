@@ -19,9 +19,7 @@
 */
 package de.dal33t.powerfolder.ui.transfer;
 
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-
+import com.jgoodies.binding.value.ValueModel;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.event.TransferAdapter;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
@@ -29,10 +27,11 @@ import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.QuickInfoPanel;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
-import com.jgoodies.binding.value.ValueModel;
 
-import java.beans.PropertyChangeListener;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 /**
  * Show concentrated information about the uploads
@@ -53,7 +52,7 @@ public class UploadsQuickInfoPanel extends QuickInfoPanel {
         super(controller);
 
         // Begin listening for changes to uploads from the transfer manager model.
-        completedUploadsCountVM = getController().getUIController()
+        completedUploadsCountVM = getApplicationModel()
                 .getTransferManagerModel().getCompletedUploadsCountVM();
         completedUploadsCountVM.addValueChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
@@ -62,7 +61,7 @@ public class UploadsQuickInfoPanel extends QuickInfoPanel {
             }
         });
 
-        activeUploadsCountVM = getController().getUIController()
+        activeUploadsCountVM = getApplicationModel()
                 .getTransferManagerModel().getActiveUploadsCountVM();
         activeUploadsCountVM.addValueChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {

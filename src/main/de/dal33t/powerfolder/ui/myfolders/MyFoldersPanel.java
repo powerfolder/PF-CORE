@@ -295,7 +295,7 @@ public class MyFoldersPanel extends PFUIPanel {
                     break;
                 }
                 case 9 : {// new files
-                    int count = getController().getUIController()
+                    int count = getController().getUIController().getApplicationModel()
                             .getTransferManagerModel().countCompletedDownloads(folder);
                     newValue = String.valueOf(count);
                     break;

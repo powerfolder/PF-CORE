@@ -105,10 +105,10 @@ public class RootNode extends TreeNodeList {
                 .getFolderRepositoryModel().getMyFoldersTreeNode());
         addChild(WEBSERVICE_NODE);
         addChild(RECYCLEBIN_NODE);
-        addChild(controller.getUIController().getTransferManagerModel()
-            .getDownloadsTreeNode());
-        addChild(controller.getUIController().getTransferManagerModel()
-            .getUploadsTreeNode());
+        addChild(controller.getUIController().getApplicationModel()
+                .getTransferManagerModel().getDownloadsTreeNode());
+        addChild(controller.getUIController().getApplicationModel()
+                .getTransferManagerModel().getUploadsTreeNode());
         addChild(controller.getUIController().getApplicationModel()
                 .getNodeManagerModel().getFriendsTreeNode());
 

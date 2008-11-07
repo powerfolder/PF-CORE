@@ -126,12 +126,12 @@ public class UploadsPanel extends PFUIPanel implements HasDetailsPanel {
      */
 
     private void initComponents() {
-        final TransferManagerModel model = getUIController()
+        final TransferManagerModel model = getApplicationModel()
             .getTransferManagerModel();
 
         quickInfo = new UploadsQuickInfoPanel(getController());
         // Uploads table
-        table = new UploadsTable(getUIController().getTransferManagerModel());
+        table = new UploadsTable(getApplicationModel().getTransferManagerModel());
         table.getTableHeader().addMouseListener(
             new TableHeaderMouseListener());
         tableModel = (UploadsTableModel) table.getModel();

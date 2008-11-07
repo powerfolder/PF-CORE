@@ -19,19 +19,21 @@
 */
 package de.dal33t.powerfolder.ui.homeold;
 
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-
+import com.jgoodies.binding.value.ValueModel;
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.event.*;
+import de.dal33t.powerfolder.event.NodeManagerEvent;
+import de.dal33t.powerfolder.event.NodeManagerListener;
+import de.dal33t.powerfolder.event.TransferManagerEvent;
+import de.dal33t.powerfolder.event.TransferManagerListener;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.QuickInfoPanel;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
-import com.jgoodies.binding.value.ValueModel;
 
-import java.beans.PropertyChangeListener;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 /**
  * The panel the contains the most important and concentrated information about
@@ -57,7 +59,7 @@ public class RootQuickInfoPanel extends QuickInfoPanel {
         super(controller);
 
         // Begin listening for changes to uploads from the transfer manager model.
-        completedDownloadsCountVM = getController().getUIController()
+        completedDownloadsCountVM = getApplicationModel()
                 .getTransferManagerModel().getCompletedDownloadsCountVM();
         completedDownloadsCountVM.addValueChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {

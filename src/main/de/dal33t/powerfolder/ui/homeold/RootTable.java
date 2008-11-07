@@ -62,13 +62,13 @@ public class RootTable extends JTable {
         // Associate a header renderer with all columns.
         UnsortedTableHeaderRenderer.associateHeaderRenderer(getColumnModel());
 
-        allUploadsCountVM = controller.getUIController()
+        allUploadsCountVM = controller.getUIController().getApplicationModel()
                 .getTransferManagerModel().getAllUploadsCountVM();
-        activeUploadsCountVM = controller.getUIController()
+        activeUploadsCountVM = controller.getUIController().getApplicationModel()
                 .getTransferManagerModel().getActiveUploadsCountVM();
-        allDownloadsCountVM = controller.getUIController()
+        allDownloadsCountVM = controller.getUIController().getApplicationModel()
                 .getTransferManagerModel().getAllDownloadsCountVM();
-        activeDownloadsCountVM = controller.getUIController()
+        activeDownloadsCountVM = controller.getUIController().getApplicationModel()
                 .getTransferManagerModel().getActiveDownloadsCountVM();
     }
 

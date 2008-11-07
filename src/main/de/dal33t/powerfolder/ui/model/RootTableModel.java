@@ -19,17 +19,7 @@
 */
 package de.dal33t.powerfolder.ui.model;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
-
-import javax.swing.SwingUtilities;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
-import javax.swing.table.TableModel;
-
+import com.jgoodies.binding.value.ValueModel;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
@@ -38,9 +28,17 @@ import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
-import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
-import com.jgoodies.binding.value.ValueModel;
+
+import javax.swing.SwingUtilities;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
+import javax.swing.table.TableModel;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
 /**
  * Maps the child nodes of the rootnode to a table model.
@@ -79,7 +77,7 @@ public class RootTableModel extends PFUIComponent implements TableModel {
      * Begin listening for changes to uploads from the transfer manager model.
      */
     public void initialize() {
-        ValueModel allUploadsCountVM = getController().getUIController()
+        ValueModel allUploadsCountVM = getApplicationModel()
                 .getTransferManagerModel().getAllUploadsCountVM();
         allUploadsCountVM.addValueChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
@@ -88,7 +86,7 @@ public class RootTableModel extends PFUIComponent implements TableModel {
             }
         });
 
-        ValueModel activeUploadsCountVM = getController().getUIController()
+        ValueModel activeUploadsCountVM = getApplicationModel()
                 .getTransferManagerModel().getActiveUploadsCountVM();
         activeUploadsCountVM.addValueChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {

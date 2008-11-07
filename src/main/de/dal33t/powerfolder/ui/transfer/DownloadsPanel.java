@@ -139,7 +139,7 @@ public class DownloadsPanel extends PFUIPanel implements HasDetailsPanel {
     private void initComponents() {
         quickInfo = new DownloadsQuickInfoPanel(getController());
 
-        final TransferManagerModel model = getUIController()
+        final TransferManagerModel model = getApplicationModel()
             .getTransferManagerModel();
         // Download table
         table = new DownloadsTable(model);

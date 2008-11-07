@@ -157,9 +157,9 @@ public class NavTreeCellRenderer extends DefaultTreeCellRenderer {
             text = Translation.getTranslation("title.my.folders") + " ("
                 + node.getChildCount() + ')';
         } else if (userObject == RootNode.DOWNLOADS_NODE_LABEL) {
-            Object countAllDownloads = controller.getUIController()
+            Object countAllDownloads = controller.getUIController().getApplicationModel()
                     .getTransferManagerModel().getAllDownloadsCountVM().getValue();
-            Object countActiveDownloads = controller.getUIController()
+            Object countActiveDownloads = controller.getUIController().getApplicationModel()
                     .getTransferManagerModel().getActiveDownloadsCountVM().getValue();
 
             text = Translation.getTranslation("general.downloads") + " ("
@@ -171,9 +171,9 @@ public class NavTreeCellRenderer extends DefaultTreeCellRenderer {
                 icon = Icons.DOWNLOAD;
             }
         } else if (userObject == RootNode.UPLOADS_NODE_LABEL) {
-            Object countAllUploads = controller.getUIController()
+            Object countAllUploads = controller.getUIController().getApplicationModel()
                     .getTransferManagerModel().getAllUploadsCountVM().getValue();
-            Object countActiveUploads = controller.getUIController()
+            Object countActiveUploads = controller.getUIController().getApplicationModel()
                     .getTransferManagerModel().getActiveUploadsCountVM().getValue();
 
             text = Translation.getTranslation("general.uploads") + " ("

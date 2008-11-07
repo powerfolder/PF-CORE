@@ -37,7 +37,6 @@ import de.dal33t.powerfolder.ui.folder.FileNameProblemHandlerDefaultImpl;
 import de.dal33t.powerfolder.ui.friends.AskForFriendshipHandlerDefaultImpl;
 import de.dal33t.powerfolder.ui.information.InformationFrame;
 import de.dal33t.powerfolder.ui.model.ApplicationModel;
-import de.dal33t.powerfolder.ui.model.TransferManagerModel;
 import de.dal33t.powerfolder.ui.navigation.ControlQuarter;
 import de.dal33t.powerfolder.ui.notification.NotificationHandler;
 import de.dal33t.powerfolder.ui.recyclebin.RecycleBinConfirmationHandlerDefaultImpl;
@@ -118,7 +117,6 @@ public class UIController extends PFComponent {
     private ApplicationModel applicationModel;
 
     // TODO #278: UI Models: Move into ApplicationModel
-    private TransferManagerModel transferManagerModel;
     private ServerClientModel serverClientModel;
     private boolean seenOome;
 
@@ -249,9 +247,6 @@ public class UIController extends PFComponent {
         getController().getFolderRepository().addFolderRepositoryListener(
             new MyFolderRepositoryListener());
 
-        transferManagerModel = new TransferManagerModel(getController()
-            .getTransferManager());
-        transferManagerModel.initialize();
         serverClientModel = new ServerClientModel(getController(),
             getController().getOSClient());
 
@@ -777,10 +772,6 @@ public class UIController extends PFComponent {
      */
     public ApplicationModel getApplicationModel() {
         return applicationModel;
-    }
-
-    public TransferManagerModel getTransferManagerModel() {
-        return transferManagerModel;
     }
 
     /**
