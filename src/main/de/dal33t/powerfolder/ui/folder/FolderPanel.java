@@ -19,11 +19,6 @@
  */
 package de.dal33t.powerfolder.ui.folder;
 
-import javax.swing.JComponent;
-import javax.swing.JTabbedPane;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.disk.Folder;
@@ -33,6 +28,10 @@ import de.dal33t.powerfolder.util.PFUIPanel;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
+import javax.swing.JComponent;
+import javax.swing.JTabbedPane;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -214,7 +213,7 @@ public class FolderPanel extends PFUIPanel {
         filesTab = new FilesTab(getController(), this);
         membersTab = new MembersTab(getController());
         folderChatPanel = new FolderChatPanel(getController(),
-            getUIController().getChatModel());
+            getApplicationModel().getChatModel());
         homeTab = new HomeTab(getController(), previewMode);
         settingsTab = new SettingsTab(getController(), previewMode, this);
 

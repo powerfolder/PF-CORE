@@ -120,7 +120,6 @@ public class UIController extends PFComponent {
     private ApplicationModel applicationModel;
 
     // TODO #278: UI Models: Move into ApplicationModel
-    private ChatModel chatModel;
     private NodeManagerModel nodeManagerModel;
     private FolderRepositoryModel folderRepoModel;
     private TransferManagerModel transferManagerModel;
@@ -248,7 +247,7 @@ public class UIController extends PFComponent {
         mainFrame = new MainFrame(getController());
 
         // create the models
-        chatModel = new ChatModel(getController());
+        ChatModel chatModel = applicationModel.getChatModel();
         nodeManagerModel = new NodeManagerModel(getController(),
             chatModel);
         blinkManager = new BlinkManager(getController(), chatModel);
@@ -787,12 +786,6 @@ public class UIController extends PFComponent {
         return applicationModel;
     }
 
-    /**
-     * @return the model holding all chat data
-     */
-    public ChatModel getChatModel() {
-        return chatModel;
-    }
 
     /**
      * @return the model representig the nodemanager

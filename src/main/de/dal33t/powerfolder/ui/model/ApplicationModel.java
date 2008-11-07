@@ -22,6 +22,7 @@ package de.dal33t.powerfolder.ui.model;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.ui.action.ActionModel;
+import de.dal33t.powerfolder.ui.chat.ChatModel;
 
 /**
  * Contains all core models for the application.
@@ -32,6 +33,8 @@ import de.dal33t.powerfolder.ui.action.ActionModel;
 public class ApplicationModel extends PFUIComponent {
 
     private ActionModel actionModel;
+    private ChatModel chatModel;
+
 
     /**
      * Constructs a non-initialized application model. Before the model can used
@@ -50,11 +53,16 @@ public class ApplicationModel extends PFUIComponent {
      */
     public void initialize() {
         actionModel = new ActionModel(getController());
+        chatModel = new ChatModel(getController());
     }
 
     // Exposing ***************************************************************
 
     public ActionModel getActionModel() {
         return actionModel;
+    }
+
+    public ChatModel getChatModel() {
+        return chatModel;
     }
 }

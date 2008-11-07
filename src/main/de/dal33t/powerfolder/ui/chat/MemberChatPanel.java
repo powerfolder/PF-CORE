@@ -19,19 +19,11 @@
 */
 package de.dal33t.powerfolder.ui.chat;
 
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
@@ -44,6 +36,12 @@ import de.dal33t.powerfolder.ui.render.BlinkManager;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
 import de.dal33t.powerfolder.util.ui.UIPanel;
+
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 
 /**
  * Chat with a member.
@@ -109,7 +107,7 @@ public class MemberChatPanel extends ChatPanel implements UIPanel {
         super.initComponents();
         quickInfoPanel = new NodeQuickInfoPanel(getController());
         toolBar = createToolBar();
-        getUIController().getChatModel().addChatModelListener(
+        getApplicationModel().getChatModel().addChatModelListener(
             new TheChatModelListener());
         chatInput.addKeyListener(new ChatKeyListener());
     }
@@ -157,7 +155,7 @@ public class MemberChatPanel extends ChatPanel implements UIPanel {
     private void updateChat() {
         ChatModel.ChatLine[] lines = null;
         if (getChatPartner() != null) {
-            lines = getUIController().getChatModel().getChatText(
+            lines = getApplicationModel().getChatModel().getChatText(
                 getChatPartner());
             if (lines != null) {
                 updateChat(lines);
@@ -222,7 +220,7 @@ public class MemberChatPanel extends ChatPanel implements UIPanel {
                 if (message.trim().length() > 0) { // no SPAM on "enter"
                     if (getChatPartner() != null) {
                         if (withMember.isCompleteyConnected()) {
-                            getUIController().getChatModel().addChatLine(
+                            getApplicationModel().getChatModel().addChatLine(
                                 withMember, getController().getMySelf(),
                                 message);
                             chatInput.setText("");
@@ -232,7 +230,7 @@ public class MemberChatPanel extends ChatPanel implements UIPanel {
                             withMember.sendMessageAsynchron(mcMessage,
                                 "chatline not send");
                         } else {
-                            getUIController().getChatModel().addStatusChatLine(
+                            getApplicationModel().getChatModel().addStatusChatLine(
                                 withMember,
                                 Translation.getTranslation(
                                     "chat_panel.cannot_deliver", withMember
