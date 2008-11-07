@@ -38,7 +38,6 @@ import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
-import de.dal33t.powerfolder.ui.navigation.NavTreeModel;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import com.jgoodies.binding.value.ValueModel;
@@ -51,15 +50,15 @@ import com.jgoodies.binding.value.ValueModel;
  */
 public class RootTableModel extends PFUIComponent implements TableModel {
     private Set<TableModelListener> tableListeners = new HashSet<TableModelListener>();
-    private NavTreeModel navTreeModel;
+//    private NavTreeModel navTreeModel;
     private String[] columns = new String[]{
         Translation.getTranslation("filelist.name"),
         Translation.getTranslation("general.size")};
 
-    RootTableModel(Controller controller, NavTreeModel aNavTreeModel) {
+    RootTableModel(Controller controller) {
         super(controller);
-        Reject.ifNull(aNavTreeModel, "Nav tree model is null");
-        this.navTreeModel = aNavTreeModel;
+//        Reject.ifNull(aNavTreeModel, "Nav tree model is null");
+//        this.navTreeModel = aNavTreeModel;
         // UI Updating for the repository
         controller.getFolderRepository().addFolderRepositoryListener(
             new MyFolderRepositoryListener());
@@ -113,11 +112,13 @@ public class RootTableModel extends PFUIComponent implements TableModel {
     }
 
     public int getRowCount() {
-        return navTreeModel.getRootNode().getChildCount();
+//        return navTreeModel.getRootNode().getChildCount();
+        return 0;
     }
 
     public Object getValueAt(int rowIndex, int columnIndex) {
-        return navTreeModel.getRootNode().getChildAt(rowIndex);
+//        return navTreeModel.getRootNode().getChildAt(rowIndex);
+        return null;
     }
 
     public boolean isCellEditable(int rowIndex, int columnIndex) {

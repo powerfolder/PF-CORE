@@ -49,7 +49,7 @@ public class TransferManagerModel extends PFUIComponent {
     private ValueModel uploadsAutoCleanupModel;
     private UploadsTableModel uploadsTableModel;
 
-    private NavTreeModel navTree;
+//    private NavTreeModel navTree;
     private final DefaultMutableTreeNode DOWNLOADS_NODE = new DefaultMutableTreeNode(
         RootNode.DOWNLOADS_NODE_LABEL);
     private final DefaultMutableTreeNode UPLOADS_NODE = new DefaultMutableTreeNode(
@@ -73,12 +73,10 @@ public class TransferManagerModel extends PFUIComponent {
     /** Value model with integer number of completed displayed uploads. */
     private final ValueModel completedDownloadsCountVM = new ValueHolder();
 
-    public TransferManagerModel(TransferManager transferManager,
-        NavTreeModel theNavTreeModel)
-    {
+    public TransferManagerModel(TransferManager transferManager) {
         super(transferManager.getController());
-        Reject.ifNull(theNavTreeModel, "Nav tree model is null");
-        navTree = theNavTreeModel;
+//        Reject.ifNull(theNavTreeModel, "Nav tree model is null");
+//        navTree = theNavTreeModel;
         this.transferManager = transferManager;
         downloadsAutoCleanupModel = new ValueHolder();
         downloadsAutoCleanupModel
@@ -256,9 +254,9 @@ public class TransferManagerModel extends PFUIComponent {
     }
 
     private void updateDownloadsTreeNode() {
-        TreeModelEvent te = new TreeModelEvent(this, new Object[]{
-            navTree.getRoot(), DOWNLOADS_NODE});
-        navTree.fireTreeNodesChangedEvent(te);
+//        TreeModelEvent te = new TreeModelEvent(this, new Object[]{
+//            navTree.getRoot(), DOWNLOADS_NODE});
+//        navTree.fireTreeNodesChangedEvent(te);
 
         // Recalculate totals for downloads.
         int downloadCount = downloadsTableModel.getRowCount();
@@ -282,9 +280,9 @@ public class TransferManagerModel extends PFUIComponent {
     }
 
     private void updateUploadsTreeNode() {
-        TreeModelEvent te = new TreeModelEvent(this, new Object[]{
-            navTree.getRoot(), UPLOADS_NODE});
-        navTree.fireTreeNodesChangedEvent(te);
+//        TreeModelEvent te = new TreeModelEvent(this, new Object[]{
+//            navTree.getRoot(), UPLOADS_NODE});
+//        navTree.fireTreeNodesChangedEvent(te);
 
         // Recalculate total and active uploads.
         int uploadCount = uploadsTableModel.getRowCount();

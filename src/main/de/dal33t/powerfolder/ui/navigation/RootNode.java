@@ -60,14 +60,14 @@ public class RootNode extends TreeNodeList {
     private Controller controller;
     private boolean initalized;
 
-    public RootNode(Controller controller, NavTreeModel navTreeModel) {
+    public RootNode(Controller controller) {
         super(null, null);
         if (controller == null) {
             throw new NullPointerException("Controller is null");
         }
-        if (navTreeModel == null) {
-            throw new NullPointerException("Navtreemodel is null");
-        }
+//        if (navTreeModel == null) {
+//            throw new NullPointerException("Navtreemodel is null");
+//        }
         this.controller = controller;
         initalized = false;
     }

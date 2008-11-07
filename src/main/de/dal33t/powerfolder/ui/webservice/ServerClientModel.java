@@ -159,15 +159,15 @@ public class ServerClientModel extends PFUIComponent {
         mirroredFolders.addAll(folders);
     }
 
-    private void updateNavTree() {
-        // Ugly
-        RootNode rootNode = getUIController().getApplicationModel()
-            .getNavTreeModel().getRootNode();
-        TreeModelEvent te = new TreeModelEvent(this, new Object[]{rootNode,
-            rootNode.WEBSERVICE_NODE});
-        getUIController().getApplicationModel().getNavTreeModel()
-            .fireTreeNodesChangedEvent(te);
-    }
+//    private void updateNavTree() {
+//        // Ugly
+//        RootNode rootNode = getUIController().getApplicationModel()
+//            .getNavTreeModel().getRootNode();
+//        TreeModelEvent te = new TreeModelEvent(this, new Object[]{rootNode,
+//            rootNode.WEBSERVICE_NODE});
+//        getUIController().getApplicationModel().getNavTreeModel()
+//            .fireTreeNodesChangedEvent(te);
+//    }
 
     // Actions ****************************************************************
 
@@ -252,12 +252,12 @@ public class ServerClientModel extends PFUIComponent {
 
         public void serverConnected(ServerClientEvent event) {
             updateMirroredFolders();
-            updateNavTree();
+//            updateNavTree();
         }
 
         public void serverDisconnected(ServerClientEvent event) {
             updateMirroredFolders();
-            updateNavTree();
+//            updateNavTree();
         }
     }
 }

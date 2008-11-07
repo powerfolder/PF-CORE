@@ -21,18 +21,14 @@ package de.dal33t.powerfolder.ui.model;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.ui.navigation.NavTreeModel;
 
 /**
- * Contains all models for the application such as the (additional) top level
- * items or the core models (TODO #278).
+ * Contains all core models for the application.
  * 
  * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
 public class ApplicationModel extends PFUIComponent {
-    // TODO #278 Throw away?
-    private NavTreeModel navTreeModel;
 
     /**
      * Constructs a non-initialized application model. Before the model can used
@@ -49,12 +45,7 @@ public class ApplicationModel extends PFUIComponent {
      * Initializes this and all submodels
      */
     public void initialize() {
-        navTreeModel = new NavTreeModel(getController());
     }
 
     // Exposing ***************************************************************
-
-    public NavTreeModel getNavTreeModel() {
-        return navTreeModel;
-    }
 }

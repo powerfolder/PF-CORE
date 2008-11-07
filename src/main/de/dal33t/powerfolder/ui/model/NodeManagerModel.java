@@ -31,7 +31,6 @@ import de.dal33t.powerfolder.ui.chat.ChatModel;
 import de.dal33t.powerfolder.ui.chat.ChatModel.ChatModelEvent;
 import de.dal33t.powerfolder.ui.chat.ChatModel.ChatModelListener;
 import de.dal33t.powerfolder.ui.navigation.ControlQuarter;
-import de.dal33t.powerfolder.ui.navigation.NavTreeModel;
 import de.dal33t.powerfolder.util.compare.MemberComparator;
 import de.dal33t.powerfolder.util.ui.TreeNodeList;
 
@@ -53,11 +52,11 @@ import java.util.Collection;
  */
 public class NodeManagerModel extends PFUIComponent {
 
-    private NavTreeModel navTreeModel;
+//    private NavTreeModel navTreeModel;
     private ChatModel chatModel;
-    private TreeNodeList friendsTreeNode;
-    private TreeNodeList connectedTreeNode;
-    private TreeNodeList notInFriendsTreeNodes;
+//    private TreeNodeList friendsTreeNode;
+//    private TreeNodeList connectedTreeNode;
+//    private TreeNodeList notInFriendsTreeNodes;
     private FriendsNodeTableModel friendsTableModel;
     private ValueModel hideOfflineUsersModel;
     private ValueModel includeLanUsersModel;
@@ -65,10 +64,10 @@ public class NodeManagerModel extends PFUIComponent {
     private boolean expandedFriends;
 
     public NodeManagerModel(Controller controller,
-        NavTreeModel theNavTreeModel, ChatModel theChatModel)
+        ChatModel theChatModel)
     {
         super(controller);
-        navTreeModel = theNavTreeModel;
+//        navTreeModel = theNavTreeModel;
         chatModel = theChatModel;
         initalize();
     }
@@ -97,31 +96,31 @@ public class NodeManagerModel extends PFUIComponent {
                 }
             });
 
-        TreeNode rootNode = navTreeModel.getRootNode();
+//        TreeNode rootNode = navTreeModel.getRootNode();
 
         // Init friends treenodes
-        friendsTreeNode = new TreeNodeList(rootNode);
-        friendsTreeNode.sortBy(MemberComparator.IN_GUI);
+//        friendsTreeNode = new TreeNodeList(rootNode);
+//        friendsTreeNode.sortBy(MemberComparator.IN_GUI);
         rebuildFriendslist();
 
-        notInFriendsTreeNodes = new TreeNodeList(rootNode);
-        notInFriendsTreeNodes.sortBy(MemberComparator.IN_GUI);
+//        notInFriendsTreeNodes = new TreeNodeList(rootNode);
+//        notInFriendsTreeNodes.sortBy(MemberComparator.IN_GUI);
 
         if (getController().isVerbose()) {
             // Initalize online nodestree
-            connectedTreeNode = new TreeNodeList(rootNode);
-            connectedTreeNode.sortBy(MemberComparator.IN_GUI);
+//            connectedTreeNode = new TreeNodeList(rootNode);
+//            connectedTreeNode.sortBy(MemberComparator.IN_GUI);
 
             // Get all connected nodes
             Collection<Member> nodes = getController().getNodeManager()
                 .getConnectedNodes();
-            for (Member node : nodes) {
-                if (!connectedTreeNode.contains(node)
-                    && node.isCompleteyConnected())
-                {
-                    connectedTreeNode.addChild(node);
-                }
-            }
+//            for (Member node : nodes) {
+//                if (!connectedTreeNode.contains(node)
+//                    && node.isCompleteyConnected())
+//                {
+//                    connectedTreeNode.addChild(node);
+//                }
+//            }
         }
 
         // Register listener on nodemanager
@@ -170,36 +169,40 @@ public class NodeManagerModel extends PFUIComponent {
      * @return the tree node containing all friends
      */
     public TreeNodeList getFriendsTreeNode() {
-        return friendsTreeNode;
+//        return friendsTreeNode;
+        return null;
     }
 
     /**
      * @return the tree node containing all connected nodes
      */
     public TreeNodeList getConnectedTreeNode() {
-        if (!getController().isVerbose()) {
-            throw new IllegalStateException("only when verbose...");
-        }
-        return connectedTreeNode;
+//        if (!getController().isVerbose()) {
+//            throw new IllegalStateException("only when verbose...");
+//        }
+//        return connectedTreeNode;
+        return null;
     }
 
     /**
      * @return the tree node containing all non-friend members in chat.
      */
     public TreeNodeList getNotInFriendsTreeNodes() {
-        return notInFriendsTreeNodes;
+//        return notInFriendsTreeNodes;
+        return null;
     }
 
     public boolean hasMemberNode(Member node) {
-        return friendsTreeNode.indexOf(node) >= 0
-            || notInFriendsTreeNodes.indexOf(node) >= 0;
+//        return friendsTreeNode.indexOf(node) >= 0
+//            || notInFriendsTreeNodes.indexOf(node) >= 0;
+        return false;
     }
 
     public void addChatMember(Member node) {
-        if (!notInFriendsTreeNodes.contains(node) && !node.isMySelf()) {
-            notInFriendsTreeNodes.addChild(node);
-            fireTreeNodeStructureChangeEvent(notInFriendsTreeNodes);
-        }
+//        if (!notInFriendsTreeNodes.contains(node) && !node.isMySelf()) {
+//            notInFriendsTreeNodes.addChild(node);
+//            fireTreeNodeStructureChangeEvent(notInFriendsTreeNodes);
+//        }
     }
 
     // Logic ******************************************************************
@@ -217,36 +220,36 @@ public class NodeManagerModel extends PFUIComponent {
         friendsTableModel.setIncludeLan(isIncludeLanUsers());
         
 
-        // remove all:
-        friendsTreeNode.removeAllChildren();
-
-        // setting changed
-        Member[] friends = getController().getNodeManager().getFriends();
-        boolean hideOffline = isHideOfflineFriends();
-        for (Member friend : friends) {
-            // add friends to treenode
-            if (hideOffline) {
-                if (friend.isCompleteyConnected()
-                    || friend.isConnectedToNetwork())
-                {
-                    friendsTreeNode.addChild(friend);
-                }
-            } else {
-                friendsTreeNode.addChild(friend);
-            }
-        }
-
-        if (isIncludeLanUsers()) {
-            for (Member node : getController().getNodeManager()
-                .getConnectedNodes())
-            {
-                if (node.isOnLAN() && !friendsTreeNode.contains(node)) {
-                    friendsTreeNode.addChild(node);
-                }
-            }
-        }
-        
-        fireTreeNodeStructureChangeEvent(friendsTreeNode);
+//        // remove all:
+//        friendsTreeNode.removeAllChildren();
+//
+//        // setting changed
+//        Member[] friends = getController().getNodeManager().getFriends();
+//        boolean hideOffline = isHideOfflineFriends();
+//        for (Member friend : friends) {
+//            // add friends to treenode
+//            if (hideOffline) {
+//                if (friend.isCompleteyConnected()
+//                    || friend.isConnectedToNetwork())
+//                {
+//                    friendsTreeNode.addChild(friend);
+//                }
+//            } else {
+//                friendsTreeNode.addChild(friend);
+//            }
+//        }
+//
+//        if (isIncludeLanUsers()) {
+//            for (Member node : getController().getNodeManager()
+//                .getConnectedNodes())
+//            {
+//                if (node.isOnLAN() && !friendsTreeNode.contains(node)) {
+//                    friendsTreeNode.addChild(node);
+//                }
+//            }
+//        }
+//
+//        fireTreeNodeStructureChangeEvent(friendsTreeNode);
     }
 
     /**
@@ -273,7 +276,7 @@ public class NodeManagerModel extends PFUIComponent {
         treeNode.sort();
         TreeModelEvent treeNodeEvent = new TreeModelEvent(this, treeNode
             .getPathTo());
-        navTreeModel.fireTreeStructureChanged(treeNodeEvent);
+//        navTreeModel.fireTreeStructureChanged(treeNodeEvent);
 
         // Expand treenodes
         expandFriendList();
@@ -302,23 +305,23 @@ public class NodeManagerModel extends PFUIComponent {
         if (expandedFriends) {
             return;
         }
-        if (getController().getUIController().getNodeManagerModel()
-            .getFriendsTreeNode().getChildCount() > 0)
-        {
-            logFiner("Expanding friendlist");
-            Runnable runner = new Runnable() {
-                public void run() {
+//        if (getController().getUIController().getNodeManagerModel()
+//            .getFriendsTreeNode().getChildCount() > 0)
+//        {
+//            logFiner("Expanding friendlist");
+//            Runnable runner = new Runnable() {
+//                public void run() {
 //                    getController().getUIController().getControlQuarter()
 //                        .getUITree().expandPath(friendsTreeNode.getPathTo());
-                    expandedFriends = true;
-                }
-            };
-            if (EventQueue.isDispatchThread()) {
-                runner.run();
-            } else {
-                EventQueue.invokeLater(runner);
-            }
-        }
+//                    expandedFriends = true;
+//                }
+//            };
+//            if (EventQueue.isDispatchThread()) {
+//                runner.run();
+//            } else {
+//                EventQueue.invokeLater(runner);
+//            }
+//        }
     }
 
     /**
@@ -328,21 +331,21 @@ public class NodeManagerModel extends PFUIComponent {
         if (!getUIController().isStarted()) {
             return;
         }
-        if (notInFriendsTreeNodes.getChildCount() == 1) {
-            logFiner("Expanding not friendlist");
-            Runnable runner = new Runnable() {
-                public void run() {
-                    getController().getUIController().getControlQuarter()
-                        .getUITree().expandPath(
-                            notInFriendsTreeNodes.getPathTo());
-                }
-            };
-            if (EventQueue.isDispatchThread()) {
-                runner.run();
-            } else {
-                EventQueue.invokeLater(runner);
-            }
-        }
+//        if (notInFriendsTreeNodes.getChildCount() == 1) {
+//            logFiner("Expanding not friendlist");
+//            Runnable runner = new Runnable() {
+//                public void run() {
+//                    getController().getUIController().getControlQuarter()
+//                        .getUITree().expandPath(
+//                            notInFriendsTreeNodes.getPathTo());
+//                }
+//            };
+//            if (EventQueue.isDispatchThread()) {
+//                runner.run();
+//            } else {
+//                EventQueue.invokeLater(runner);
+//            }
+//        }
     }
 
     /**
@@ -353,36 +356,36 @@ public class NodeManagerModel extends PFUIComponent {
         public void friendAdded(NodeManagerEvent e) {
             Member node = e.getNode();
             PreferencesEntry hideOffline = PreferencesEntry.NODEMANAGERMODEL_HIDEOFFLINEFRIENDS;
-            if (hideOffline.getValueBoolean(getController())) {
-                if (node.isCompleteyConnected()) {
-                    if (!friendsTreeNode.contains(node)) {
-                        friendsTreeNode.addChild(node);
-                    }
-                    fireTreeNodeStructureChangeEvent(friendsTreeNode);
-                }
-            } else {
-                if (!friendsTreeNode.contains(node)) {
-                    friendsTreeNode.addChild(node);
-                }
-                fireTreeNodeStructureChangeEvent(friendsTreeNode);
-            }
-            if (notInFriendsTreeNodes.removeChild(node)) {
-                fireTreeNodeStructureChangeEvent(notInFriendsTreeNodes);
-            }
+//            if (hideOffline.getValueBoolean(getController())) {
+//                if (node.isCompleteyConnected()) {
+//                    if (!friendsTreeNode.contains(node)) {
+//                        friendsTreeNode.addChild(node);
+//                    }
+//                    fireTreeNodeStructureChangeEvent(friendsTreeNode);
+//                }
+//            } else {
+//                if (!friendsTreeNode.contains(node)) {
+//                    friendsTreeNode.addChild(node);
+//                }
+//                fireTreeNodeStructureChangeEvent(friendsTreeNode);
+//            }
+//            if (notInFriendsTreeNodes.removeChild(node)) {
+//                fireTreeNodeStructureChangeEvent(notInFriendsTreeNodes);
+//            }
         }
 
         public void friendRemoved(NodeManagerEvent e) {
             Member node = e.getNode();
 
             // Treenode
-            if (friendsTreeNode.removeChild(node)) {
-                fireTreeNodeStructureChangeEvent(friendsTreeNode);
-            }
-
-            if (!notInFriendsTreeNodes.contains(node)) {
-                notInFriendsTreeNodes.addChild(node);
-                fireTreeNodeStructureChangeEvent(notInFriendsTreeNodes);
-            }
+//            if (friendsTreeNode.removeChild(node)) {
+//                fireTreeNodeStructureChangeEvent(friendsTreeNode);
+//            }
+//
+//            if (!notInFriendsTreeNodes.contains(node)) {
+//                notInFriendsTreeNodes.addChild(node);
+//                fireTreeNodeStructureChangeEvent(notInFriendsTreeNodes);
+//            }
         }
 
         public void nodeAdded(NodeManagerEvent e) {
@@ -390,54 +393,54 @@ public class NodeManagerModel extends PFUIComponent {
 
         public void nodeConnected(NodeManagerEvent e) {
             Member node = e.getNode();
-            if (connectedTreeNode != null && !connectedTreeNode.contains(node))
-            {
-                connectedTreeNode.addChild(node);
-                fireTreeNodeStructureChangeEvent(connectedTreeNode);
-            }
-            if (node.isFriend()) {
-                if (!friendsTreeNode.contains(node)) {
-                    friendsTreeNode.addChild(node);
-                }
-                fireTreeNodeStructureChangeEvent(friendsTreeNode);
-            } else if (node.isOnLAN()) {
-                if (!notInFriendsTreeNodes.contains(node)) {
-                    notInFriendsTreeNodes.addChild(node);
-                }
-                fireTreeNodeStructureChangeEvent(notInFriendsTreeNodes);
-                if (isIncludeLanUsers() && !friendsTreeNode.contains(node)) {
-                    friendsTreeNode.addChild(node);
-                    fireTreeNodeStructureChangeEvent(friendsTreeNode);
-                }
-            }
+//            if (connectedTreeNode != null && !connectedTreeNode.contains(node))
+//            {
+//                connectedTreeNode.addChild(node);
+//                fireTreeNodeStructureChangeEvent(connectedTreeNode);
+//            }
+//            if (node.isFriend()) {
+//                if (!friendsTreeNode.contains(node)) {
+//                    friendsTreeNode.addChild(node);
+//                }
+//                fireTreeNodeStructureChangeEvent(friendsTreeNode);
+//            } else if (node.isOnLAN()) {
+//                if (!notInFriendsTreeNodes.contains(node)) {
+//                    notInFriendsTreeNodes.addChild(node);
+//                }
+//                fireTreeNodeStructureChangeEvent(notInFriendsTreeNodes);
+//                if (isIncludeLanUsers() && !friendsTreeNode.contains(node)) {
+//                    friendsTreeNode.addChild(node);
+//                    fireTreeNodeStructureChangeEvent(friendsTreeNode);
+//                }
+//            }
         }
 
         public void nodeDisconnected(NodeManagerEvent e) {
-            Member node = e.getNode();
-            if (connectedTreeNode != null) {
-                connectedTreeNode.removeChild(e.getNode());
-                fireTreeNodeStructureChangeEvent(connectedTreeNode);
-            }
-            if (friendsTreeNode.removeChild(node)) {
-                fireTreeNodeStructureChangeEvent(friendsTreeNode);
-            }
-            if (notInFriendsTreeNodes.removeChild(node)) {
-                fireTreeNodeStructureChangeEvent(notInFriendsTreeNodes);
-            }
+//            Member node = e.getNode();
+//            if (connectedTreeNode != null) {
+//                connectedTreeNode.removeChild(e.getNode());
+//                fireTreeNodeStructureChangeEvent(connectedTreeNode);
+//            }
+//            if (friendsTreeNode.removeChild(node)) {
+//                fireTreeNodeStructureChangeEvent(friendsTreeNode);
+//            }
+//            if (notInFriendsTreeNodes.removeChild(node)) {
+//                fireTreeNodeStructureChangeEvent(notInFriendsTreeNodes);
+//            }
         }
 
         public void nodeRemoved(NodeManagerEvent e) {
-            if (friendsTreeNode.removeChild(e.getNode())) {
-                fireTreeNodeStructureChangeEvent(friendsTreeNode);
-            }
-            if (notInFriendsTreeNodes.removeChild(e.getNode())) {
-                fireTreeNodeStructureChangeEvent(notInFriendsTreeNodes);
-            }
-            if (connectedTreeNode != null) {
-                if (connectedTreeNode.removeChild(e.getNode())) {
-                    fireTreeNodeStructureChangeEvent(connectedTreeNode);
-                }
-            }
+//            if (friendsTreeNode.removeChild(e.getNode())) {
+//                fireTreeNodeStructureChangeEvent(friendsTreeNode);
+//            }
+//            if (notInFriendsTreeNodes.removeChild(e.getNode())) {
+//                fireTreeNodeStructureChangeEvent(notInFriendsTreeNodes);
+//            }
+//            if (connectedTreeNode != null) {
+//                if (connectedTreeNode.removeChild(e.getNode())) {
+//                    fireTreeNodeStructureChangeEvent(connectedTreeNode);
+//                }
+//            }
         }
 
         public void settingsChanged(NodeManagerEvent e) {

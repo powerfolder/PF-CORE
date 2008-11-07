@@ -40,7 +40,6 @@ import de.dal33t.powerfolder.ui.model.FolderRepositoryModel;
 import de.dal33t.powerfolder.ui.model.NodeManagerModel;
 import de.dal33t.powerfolder.ui.model.TransferManagerModel;
 import de.dal33t.powerfolder.ui.navigation.ControlQuarter;
-import de.dal33t.powerfolder.ui.navigation.NavTreeModel;
 import de.dal33t.powerfolder.ui.notification.NotificationHandler;
 import de.dal33t.powerfolder.ui.recyclebin.RecycleBinConfirmationHandlerDefaultImpl;
 import de.dal33t.powerfolder.ui.render.BlinkManager;
@@ -96,7 +95,7 @@ import java.util.logging.Logger;
 /**
  * The ui controller.
  * <P>
- * TODO Remove all Actions an put them into Models.
+ * TODO Remove all Actions and put them into Models.
  * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.86 $
@@ -246,20 +245,18 @@ public class UIController extends PFComponent {
         mainFrame = new MainFrame(getController());
 
         // create the models
-        NavTreeModel navTreeModel = applicationModel.getNavTreeModel();
         chatModel = new ChatModel(getController());
-        nodeManagerModel = new NodeManagerModel(getController(), navTreeModel,
+        nodeManagerModel = new NodeManagerModel(getController(),
             chatModel);
         blinkManager = new BlinkManager(getController(), chatModel);
         new ChatNotificationManager(chatModel);
         getController().getFolderRepository().addFolderRepositoryListener(
             new MyFolderRepositoryListener());
-        folderRepoModel = new FolderRepositoryModel(getController(),
-            navTreeModel);
+        folderRepoModel = new FolderRepositoryModel(getController());
         folderRepoModel.initalize();
 
         transferManagerModel = new TransferManagerModel(getController()
-            .getTransferManager(), navTreeModel);
+            .getTransferManager());
         transferManagerModel.initialize();
         serverClientModel = new ServerClientModel(getController(),
             getController().getOSClient());

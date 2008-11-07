@@ -42,7 +42,7 @@ import de.dal33t.powerfolder.ui.chat.MemberChatPanel;
 import de.dal33t.powerfolder.ui.chat.ChatModel.ChatModelEvent;
 import de.dal33t.powerfolder.ui.chat.ChatModel.ChatModelListener;
 import de.dal33t.powerfolder.ui.navigation.ControlQuarter;
-import de.dal33t.powerfolder.ui.navigation.NavTreeModel;
+//import de.dal33t.powerfolder.ui.navigation.NavTreeModel;
 import de.dal33t.powerfolder.util.ui.TreeNodeList;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
@@ -226,10 +226,10 @@ public class BlinkManager extends PFUIComponent {
         if (controlQuarter == null) {
             return;
         }
-        NavTreeModel treeModel = getApplicationModel().getNavTreeModel();
-        if (treeModel == null) {
-            return;
-        }
+//        NavTreeModel treeModel = getApplicationModel().getNavTreeModel();
+//        if (treeModel == null) {
+//            return;
+//        }
 
         boolean blink = ((System.currentTimeMillis() / 1000) % 2) == 1;
         if (blink && !blinkingMembers.isEmpty()) {
@@ -238,73 +238,73 @@ public class BlinkManager extends PFUIComponent {
             uiController.setTrayIcon(null); // means the default
         }
 
-        updateNodeBlinking(treeModel);
-        updateFolderBlinking(treeModel);
+//        updateNodeBlinking(treeModel);
+//        updateFolderBlinking(treeModel);
     }
 
     /**
      * @param treeModel
      *            the model where the blinking occours
      */
-    private void updateNodeBlinking(NavTreeModel treeModel) {
-        if (blinkingMembers.isEmpty()) {
-            return;
-        }
-        for (Member member : blinkingMembers.keySet()) {
-            if (member.isCompleteyConnected()) {
-                fireUpdate(treeModel, member);
-            } else {
-                blinkingMembers.remove(member);
-            }
-        }
-    }
+//    private void updateNodeBlinking(NavTreeModel treeModel) {
+//        if (blinkingMembers.isEmpty()) {
+//            return;
+//        }
+//        for (Member member : blinkingMembers.keySet()) {
+//            if (member.isCompleteyConnected()) {
+//                fireUpdate(treeModel, member);
+//            } else {
+//                blinkingMembers.remove(member);
+//            }
+//        }
+//    }
 
     /**
      * @param treeModel
      *            the model where the blinking occours
      */
-    private void updateFolderBlinking(NavTreeModel treeModel) {
-        if (blinkingFolders.isEmpty()) {
-            return;
-        }
-        for (Folder folder : blinkingFolders.keySet()) {
-            if (getController().getFolderRepository().hasJoinedFolder(
-                folder.getInfo()))
-            {
-                fireUpdate(treeModel, folder);
-            } else {
-                blinkingFolders.remove(folder);
-            }
-        }
-    }
+//    private void updateFolderBlinking(NavTreeModel treeModel) {
+//        if (blinkingFolders.isEmpty()) {
+//            return;
+//        }
+//        for (Folder folder : blinkingFolders.keySet()) {
+//            if (getController().getFolderRepository().hasJoinedFolder(
+//                folder.getInfo()))
+//            {
+//                fireUpdate(treeModel, folder);
+//            } else {
+//                blinkingFolders.remove(folder);
+//            }
+//        }
+//    }
 
-    private void fireUpdate(NavTreeModel treeModel, Member member) {
-        TreeNodeList nodeList = getController().getUIController()
-            .getNodeManagerModel().getFriendsTreeNode();
-        TreeNode nodeTreeNode = nodeList.getChildTreeNode(member);
-        if (nodeTreeNode != null) {
-            TreeModelEvent te = new TreeModelEvent(this, UIUtil
-                .getPathTo(nodeTreeNode));
-            treeModel.fireTreeNodesChangedEvent(te);
-        }
+//    private void fireUpdate(NavTreeModel treeModel, Member member) {
+//        TreeNodeList nodeList = getController().getUIController()
+//            .getNodeManagerModel().getFriendsTreeNode();
+//        TreeNode nodeTreeNode = nodeList.getChildTreeNode(member);
+//        if (nodeTreeNode != null) {
+//            TreeModelEvent te = new TreeModelEvent(this, UIUtil
+//                .getPathTo(nodeTreeNode));
+//            treeModel.fireTreeNodesChangedEvent(te);
+//        }
+//
+//        nodeList = getController().getUIController().getNodeManagerModel()
+//            .getNotInFriendsTreeNodes();
+//        nodeTreeNode = nodeList.getChildTreeNode(member);
+//        if (nodeTreeNode != null) {
+//            TreeModelEvent te = new TreeModelEvent(this, UIUtil
+//                .getPathTo(nodeTreeNode));
+//            treeModel.fireTreeNodesChangedEvent(te);
+//        }
+//    }
 
-        nodeList = getController().getUIController().getNodeManagerModel()
-            .getNotInFriendsTreeNodes();
-        nodeTreeNode = nodeList.getChildTreeNode(member);
-        if (nodeTreeNode != null) {
-            TreeModelEvent te = new TreeModelEvent(this, UIUtil
-                .getPathTo(nodeTreeNode));
-            treeModel.fireTreeNodesChangedEvent(te);
-        }
-    }
-
-    private void fireUpdate(NavTreeModel treeModel, Folder folder) {
-        FolderModel folderModel = getController().getUIController()
-                .getFolderRepositoryModel().locateFolderModel(folder);
-        TreeModelEvent te = new TreeModelEvent(this, UIUtil.getPathTo(folderModel
-            .getTreeNode()));
-        treeModel.fireTreeNodesChangedEvent(te);
-    }
+//    private void fireUpdate(NavTreeModel treeModel, Folder folder) {
+//        FolderModel folderModel = getController().getUIController()
+//                .getFolderRepositoryModel().locateFolderModel(folder);
+//        TreeModelEvent te = new TreeModelEvent(this, UIUtil.getPathTo(folderModel
+//            .getTreeNode()));
+//        treeModel.fireTreeNodesChangedEvent(te);
+//    }
 
     // Internal classes ********************************************************
 

@@ -28,7 +28,6 @@ import javax.swing.event.TableModelListener;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.ui.model.TransferManagerModel;
-import de.dal33t.powerfolder.ui.navigation.NavTreeModel;
 import de.dal33t.powerfolder.ui.transfer.UploadsTableModel;
 import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
@@ -57,8 +56,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
 
         bartModelListener = new MyUploadTableModelListener();
         bartModel = new UploadsTableModel(new TransferManagerModel(
-            getContollerBart().getTransferManager(), new NavTreeModel(
-                getContollerBart())), false);
+            getContollerBart().getTransferManager()), false);
         bartModel.addTableModelListener(bartModelListener);
     }
 

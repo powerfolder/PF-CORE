@@ -81,13 +81,13 @@ public class NavTreeModel extends PFUIComponent implements TreeModel {
 
     public RootNode getRootNode() {
         if (rootNode == null) {
-            // Init lazily
-            synchronized (this) {
-                if (rootNode == null) {
-                    rootNode = new RootNode(getController(), this);
-                    // rootNode.initalizeChildren();
-                }
-            }
+//            // Init lazily
+//            synchronized (this) {
+//                if (rootNode == null) {
+//                    rootNode = new RootNode(getController(), this);
+//                    // rootNode.initalizeChildren();
+//                }
+//            }
         }
         return rootNode;
     }

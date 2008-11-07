@@ -103,7 +103,7 @@ public class ControlQuarter extends PFUIComponent {
     /* Navtree */
     // TODO #278 Kill?!
     private JTree uiTree;
-    private NavTreeModel navTreeModel;
+//    private NavTreeModel navTreeModel;
     /**
      * The path in the tree that was last expanded, use to restore the tree
      * state if a tree structure change was fired.
@@ -133,7 +133,7 @@ public class ControlQuarter extends PFUIComponent {
      */
     public ControlQuarter(Controller controller) {
         super(controller);
-        navTreeModel = getApplicationModel().getNavTreeModel();
+//        navTreeModel = getApplicationModel().getNavTreeModel();
         selectionModel = new SelectionModel();
         selectionParent = null;
     }
@@ -189,7 +189,7 @@ public class ControlQuarter extends PFUIComponent {
      */
     public JTree getUITree() {
         if (uiTree == null) {
-            uiTree = new AutoScrollingJTree(navTreeModel);
+//            uiTree = new AutoScrollingJTree(navTreeModel);
 
             // Selection listener to update selection model
             uiTree.getSelectionModel().addTreeSelectionListener(
@@ -307,16 +307,16 @@ public class ControlQuarter extends PFUIComponent {
      */
     public void setSelected(TreeNode node) {
         if (node != null) {
-            if (node == navTreeModel.getRootNode()) {
-                TreeNode[] path = new TreeNode[1];
-                path[0] = navTreeModel.getRootNode();
-                setSelectedPath(path);
-            } else {
-                TreeNode[] path = new TreeNode[2];
-                path[0] = navTreeModel.getRootNode();
-                path[1] = node;
-                setSelectedPath(path);
-            }
+//            if (node == navTreeModel.getRootNode()) {
+//                TreeNode[] path = new TreeNode[1];
+//                path[0] = navTreeModel.getRootNode();
+//                setSelectedPath(path);
+//            } else {
+//                TreeNode[] path = new TreeNode[2];
+//                path[0] = navTreeModel.getRootNode();
+//                path[1] = node;
+//                setSelectedPath(path);
+//            }
         }
     }
 
@@ -363,22 +363,22 @@ public class ControlQuarter extends PFUIComponent {
             {
                 TreeNode[] subpath = directoryModel.getPathTo(directory);
                 if (subpath != null) {
-                    TreeNode[] path = new TreeNode[3 + subpath.length];
-                    path[0] = navTreeModel.getRootNode();
-                    path[1] = getUIController().getFolderRepositoryModel()
-                        .getMyFoldersTreeNode();
-                    path[2] = folderModel.getTreeNode();
-                    System.arraycopy(subpath, 0, path, 3, subpath.length);
-                    setSelectedPath(path);
+//                    TreeNode[] path = new TreeNode[3 + subpath.length];
+//                    path[0] = navTreeModel.getRootNode();
+//                    path[1] = getUIController().getFolderRepositoryModel()
+//                        .getMyFoldersTreeNode();
+//                    path[2] = folderModel.getTreeNode();
+//                    System.arraycopy(subpath, 0, path, 3, subpath.length);
+//                    setSelectedPath(path);
                     return;
                 }
             }
-            TreeNode[] path = new TreeNode[3];
-            path[0] = navTreeModel.getRootNode();
-            path[1] = getUIController().getFolderRepositoryModel()
-                .getMyFoldersTreeNode();
-            path[2] = folderModel.getTreeNode();
-            setSelectedPath(path);
+//            TreeNode[] path = new TreeNode[3];
+//            path[0] = navTreeModel.getRootNode();
+//            path[1] = getUIController().getFolderRepositoryModel()
+//                .getMyFoldersTreeNode();
+//            path[2] = folderModel.getTreeNode();
+//            setSelectedPath(path);
         }
     }
 
@@ -394,10 +394,10 @@ public class ControlQuarter extends PFUIComponent {
             .getFolderRepositoryModel().locateFolderModel(folder);
         MutableTreeNode node = folderModel.getTreeNode();
         TreeNode[] path = new TreeNode[3];
-        path[0] = navTreeModel.getRootNode();
-        path[1] = getUIController().getFolderRepositoryModel()
-            .getMyFoldersTreeNode();
-        path[2] = node;
+//        path[0] = navTreeModel.getRootNode();
+//        path[1] = getUIController().getFolderRepositoryModel()
+//            .getMyFoldersTreeNode();
+//        path[2] = node;
         setSelectedPath(path);
     }
 
@@ -409,11 +409,11 @@ public class ControlQuarter extends PFUIComponent {
                 DefaultMutableTreeNode node = (DefaultMutableTreeNode) friendsNode
                     .getChildAt(i);
                 if (member == node.getUserObject()) {
-                    TreeNode[] path = new TreeNode[3];
-                    path[0] = navTreeModel.getRootNode();
-                    path[1] = friendsNode;
-                    path[2] = node;
-                    setSelectedPath(path);
+//                    TreeNode[] path = new TreeNode[3];
+//                    path[0] = navTreeModel.getRootNode();
+//                    path[1] = friendsNode;
+//                    path[2] = node;
+//                    setSelectedPath(path);
                     return;
                 }
             }
@@ -424,11 +424,11 @@ public class ControlQuarter extends PFUIComponent {
                 DefaultMutableTreeNode node = (DefaultMutableTreeNode) chatsNode
                     .getChildAt(i);
                 if (member == node.getUserObject()) {
-                    TreeNode[] path = new TreeNode[3];
-                    path[0] = navTreeModel.getRootNode();
-                    path[1] = chatsNode;
-                    path[2] = node;
-                    setSelectedPath(path);
+//                    TreeNode[] path = new TreeNode[3];
+//                    path[0] = navTreeModel.getRootNode();
+//                    path[1] = chatsNode;
+//                    path[2] = node;
+//                    setSelectedPath(path);
                     return;
                 }
             }
@@ -442,11 +442,11 @@ public class ControlQuarter extends PFUIComponent {
                 DefaultMutableTreeNode node = (DefaultMutableTreeNode) otherNode
                     .getChildAt(i);
                 if (member == node.getUserObject()) {
-                    TreeNode[] path = new TreeNode[3];
-                    path[0] = navTreeModel.getRootNode();
-                    path[1] = otherNode;
-                    path[2] = node;
-                    setSelectedPath(path);
+//                    TreeNode[] path = new TreeNode[3];
+//                    path[0] = navTreeModel.getRootNode();
+//                    path[1] = otherNode;
+//                    path[2] = node;
+//                    setSelectedPath(path);
                     return;
                 }
             }
@@ -505,23 +505,23 @@ public class ControlQuarter extends PFUIComponent {
     }
 
     public void selectOverview() {
-        setSelected(navTreeModel.getRootNode());
+//        setSelected(navTreeModel.getRootNode());
     }
 
     public void selectMyFolders() {
-        TreeNode[] path = new TreeNode[2];
-        path[0] = navTreeModel.getRootNode();
-        path[1] = getUIController().getFolderRepositoryModel()
-            .getMyFoldersTreeNode();
-        setSelectedPath(path);
+//        TreeNode[] path = new TreeNode[2];
+//        path[0] = navTreeModel.getRootNode();
+//        path[1] = getUIController().getFolderRepositoryModel()
+//            .getMyFoldersTreeNode();
+//        setSelectedPath(path);
     }
 
     public void selectDownloads() {
-        TreeNode[] path = new TreeNode[2];
-        path[0] = navTreeModel.getRootNode();
-        path[1] = getUIController().getTransferManagerModel()
-            .getDownloadsTreeNode();
-        setSelectedPath(path);
+//        TreeNode[] path = new TreeNode[2];
+//        path[0] = navTreeModel.getRootNode();
+//        path[1] = getUIController().getTransferManagerModel()
+//            .getDownloadsTreeNode();
+//        setSelectedPath(path);
     }
 
     private void doubleClicked() {
