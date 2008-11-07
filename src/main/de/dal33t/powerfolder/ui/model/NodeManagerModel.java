@@ -31,12 +31,9 @@ import de.dal33t.powerfolder.ui.chat.ChatModel;
 import de.dal33t.powerfolder.ui.chat.ChatModel.ChatModelEvent;
 import de.dal33t.powerfolder.ui.chat.ChatModel.ChatModelListener;
 import de.dal33t.powerfolder.ui.navigation.ControlQuarter;
-import de.dal33t.powerfolder.util.compare.MemberComparator;
 import de.dal33t.powerfolder.util.ui.TreeNodeList;
 
 import javax.swing.event.TreeModelEvent;
-import javax.swing.tree.TreeNode;
-import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
@@ -459,7 +456,7 @@ public class NodeManagerModel extends PFUIComponent {
             if (!event.isStatus() && (event.getSource() instanceof Member)
                 && !hasMemberNode((Member) event.getSource()))
             {
-                getUIController().getNodeManagerModel().addChatMember(
+                getApplicationModel().getNodeManagerModel().addChatMember(
                     (Member) event.getSource());
             }
         }

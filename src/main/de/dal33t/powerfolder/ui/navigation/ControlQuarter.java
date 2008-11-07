@@ -45,7 +45,6 @@ import de.dal33t.powerfolder.ui.folder.FolderPanel;
 import de.dal33t.powerfolder.ui.model.DirectoryModel;
 import de.dal33t.powerfolder.ui.model.FolderModel;
 import de.dal33t.powerfolder.ui.render.NavTreeCellRenderer;
-import de.dal33t.powerfolder.ui.widget.AutoScrollingJTree;
 import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.DragDropChecker;
 import de.dal33t.powerfolder.util.FileUtils;
@@ -403,7 +402,7 @@ public class ControlQuarter extends PFUIComponent {
 
     public void setSelected(Member member) {
         if (member.isFriend()) { // try to select the friend node
-            TreeNodeList friendsNode = getUIController().getNodeManagerModel()
+            TreeNodeList friendsNode = getApplicationModel().getNodeManagerModel()
                 .getFriendsTreeNode();
             for (int i = 0; i < friendsNode.getChildCount(); i++) {
                 DefaultMutableTreeNode node = (DefaultMutableTreeNode) friendsNode
@@ -418,7 +417,7 @@ public class ControlQuarter extends PFUIComponent {
                 }
             }
         } else { // else try to find the member in "chats"
-            TreeNodeList chatsNode = getUIController().getNodeManagerModel()
+            TreeNodeList chatsNode = getApplicationModel().getNodeManagerModel()
                 .getNotInFriendsTreeNodes();
             for (int i = 0; i < chatsNode.getChildCount(); i++) {
                 DefaultMutableTreeNode node = (DefaultMutableTreeNode) chatsNode
@@ -436,7 +435,7 @@ public class ControlQuarter extends PFUIComponent {
         // Neither a friend nor in a chat:
         // select the connected member node
         if (getController().isVerbose()) {
-            TreeNodeList otherNode = getUIController().getNodeManagerModel()
+            TreeNodeList otherNode = getApplicationModel().getNodeManagerModel()
                 .getConnectedTreeNode();
             for (int i = 0; i < otherNode.getChildCount(); i++) {
                 DefaultMutableTreeNode node = (DefaultMutableTreeNode) otherNode
@@ -651,7 +650,7 @@ public class ControlQuarter extends PFUIComponent {
                     myFolderMenu.show(evt.getComponent(), evt.getX(), evt
                         .getY());
                 }
-            } else if (selection == getUIController().getNodeManagerModel()
+            } else if (selection == getApplicationModel().getNodeManagerModel()
                 .getFriendsTreeNode())
             {
                 friendsListMenu

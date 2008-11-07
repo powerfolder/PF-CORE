@@ -34,7 +34,7 @@ public class ApplicationModel extends PFUIComponent {
 
     private ActionModel actionModel;
     private ChatModel chatModel;
-
+    private NodeManagerModel nodeManagerModel;
 
     /**
      * Constructs a non-initialized application model. Before the model can used
@@ -54,6 +54,7 @@ public class ApplicationModel extends PFUIComponent {
     public void initialize() {
         actionModel = new ActionModel(getController());
         chatModel = new ChatModel(getController());
+        nodeManagerModel = new NodeManagerModel(getController(), chatModel);
     }
 
     // Exposing ***************************************************************
@@ -64,5 +65,9 @@ public class ApplicationModel extends PFUIComponent {
 
     public ChatModel getChatModel() {
         return chatModel;
+    }
+
+    public NodeManagerModel getNodeManagerModel() {
+        return nodeManagerModel;
     }
 }

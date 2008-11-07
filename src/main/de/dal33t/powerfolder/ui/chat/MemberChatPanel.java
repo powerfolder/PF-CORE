@@ -193,10 +193,10 @@ public class MemberChatPanel extends ChatPanel implements UIPanel {
 
                 // FIXME Move this into nodemanager model
                 if (!event.isStatus()) {
-                    if (!getUIController().getNodeManagerModel().hasMemberNode(
+                    if (!getApplicationModel().getNodeManagerModel().hasMemberNode(
                         member))
                     {
-                        getUIController().getNodeManagerModel().addChatMember(
+                        getApplicationModel().getNodeManagerModel().addChatMember(
                             member);
                     }
                 }

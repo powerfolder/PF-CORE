@@ -103,7 +103,7 @@ public class FriendsPanel extends PFUIPanel {
         quickinfo = new FriendsQuickInfoPanel(getController(), Translation
             .getTranslation("general.friend_list"));
 
-        friendsTable = new FriendsTable(getUIController().getNodeManagerModel()
+        friendsTable = new FriendsTable(getApplicationModel().getNodeManagerModel()
             .getFriendsTableModel());
         
 
@@ -151,7 +151,7 @@ public class FriendsPanel extends PFUIPanel {
         statusFilterCombo.addItem(Translation.getTranslation("friends_panel.show_online_friends_only"));
         statusFilterCombo.addItem(Translation.getTranslation("friends_panel.show_online_friends_and_connected_lan"));
 
-        NodeManagerModel model = getController().getUIController().getNodeManagerModel();
+        NodeManagerModel model = getApplicationModel().getNodeManagerModel();
         final ValueModel hideOfflineUsersModel = model.getHideOfflineUsersModel();
         final ValueModel includeLanUsersModel = model.getIncludeLanUsersModel();
         if ((Boolean) hideOfflineUsersModel.getValue()) {
@@ -214,7 +214,7 @@ public class FriendsPanel extends PFUIPanel {
 
     /** called if button chat clicked or if in popupmenu selected */
     private void chatWithSelected() {
-        synchronized (getUIController().getNodeManagerModel()
+        synchronized (getApplicationModel().getNodeManagerModel()
             .getFriendsTableModel())
         {
             int[] selectedIndexes = friendsTable.getSelectedRows();
@@ -223,11 +223,11 @@ public class FriendsPanel extends PFUIPanel {
                 return;
             }
             int index = selectedIndexes[0];
-            Member member = (Member) getUIController().getNodeManagerModel()
+            Member member = (Member) getApplicationModel().getNodeManagerModel()
                 .getFriendsTableModel().getDataAt(index);
-            if (!getUIController().getNodeManagerModel().hasMemberNode(member))
+            if (!getApplicationModel().getNodeManagerModel().hasMemberNode(member))
             {
-                getUIController().getNodeManagerModel().addChatMember(member);
+                getApplicationModel().getNodeManagerModel().addChatMember(member);
             }
             if (member.isCompleteyConnected()) {
                 getController().getUIController().getControlQuarter()
@@ -302,7 +302,7 @@ public class FriendsPanel extends PFUIPanel {
         // only single selection for chat and with connected members
         if (selectedIndexes.length == 1) {
             int index = selectedIndexes[0];
-            Object item = getUIController().getNodeManagerModel()
+            Object item = getApplicationModel().getNodeManagerModel()
                 .getFriendsTableModel().getDataAt(index);
             if (item instanceof Member) {
                 Member member = (Member) item;
@@ -312,7 +312,7 @@ public class FriendsPanel extends PFUIPanel {
 
         // if at least one member selected
         for (int index : selectedIndexes) {
-            Object item = getUIController().getNodeManagerModel()
+            Object item = getApplicationModel().getNodeManagerModel()
                     .getFriendsTableModel().getDataAt(index);
             if (item instanceof Member) {
                 Member user = (Member) item;

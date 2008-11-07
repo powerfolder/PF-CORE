@@ -200,19 +200,19 @@ public class NavigationToolBar extends PFUIComponent implements
         } else if (userObject == RootNode.WEBSERVICE_NODE_LABEL) {
             return getController().getOSClient().getServer().getNick();
             // return Translation.getTranslation("general.webservice");
-        } else if (navObject == getUIController().getNodeManagerModel()
+        } else if (navObject == getApplicationModel().getNodeManagerModel()
             .getFriendsTreeNode())
         {
             return Translation.getTranslation("root_panel.friends")
                 + " ("
-                + getUIController().getNodeManagerModel().getFriendsTreeNode()
+                + getApplicationModel().getNodeManagerModel().getFriendsTreeNode()
                     .getChildCount() + ')';
         } else if (getController().isVerbose()
-            && navObject == getUIController().getNodeManagerModel()
+            && navObject == getApplicationModel().getNodeManagerModel()
                 .getConnectedTreeNode())
         {
             return Translation.getTranslation("nav_tree.onlinenodes",
-                    String.valueOf(getUIController().getNodeManagerModel()
+                    String.valueOf(getApplicationModel().getNodeManagerModel()
                             .getConnectedTreeNode().getChildCount()));
 
         } else if (userObject == RootNode.DEBUG_NODE_LABEL) {

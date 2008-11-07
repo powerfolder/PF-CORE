@@ -38,7 +38,6 @@ import de.dal33t.powerfolder.ui.friends.AskForFriendshipHandlerDefaultImpl;
 import de.dal33t.powerfolder.ui.information.InformationFrame;
 import de.dal33t.powerfolder.ui.model.ApplicationModel;
 import de.dal33t.powerfolder.ui.model.FolderRepositoryModel;
-import de.dal33t.powerfolder.ui.model.NodeManagerModel;
 import de.dal33t.powerfolder.ui.model.TransferManagerModel;
 import de.dal33t.powerfolder.ui.navigation.ControlQuarter;
 import de.dal33t.powerfolder.ui.notification.NotificationHandler;
@@ -120,13 +119,12 @@ public class UIController extends PFComponent {
     private ApplicationModel applicationModel;
 
     // TODO #278: UI Models: Move into ApplicationModel
-    private NodeManagerModel nodeManagerModel;
     private FolderRepositoryModel folderRepoModel;
     private TransferManagerModel transferManagerModel;
     private ServerClientModel serverClientModel;
     private boolean seenOome;
 
-    InformationFrame informationFrame;
+    private InformationFrame informationFrame;
 
     /**
      * Initializes a new UI controller. open UI with #start
@@ -248,8 +246,6 @@ public class UIController extends PFComponent {
 
         // create the models
         ChatModel chatModel = applicationModel.getChatModel();
-        nodeManagerModel = new NodeManagerModel(getController(),
-            chatModel);
         blinkManager = new BlinkManager(getController(), chatModel);
         new ChatNotificationManager(chatModel);
         getController().getFolderRepository().addFolderRepositoryListener(
@@ -786,14 +782,6 @@ public class UIController extends PFComponent {
         return applicationModel;
     }
 
-
-    /**
-     * @return the model representig the nodemanager
-     */
-    public NodeManagerModel getNodeManagerModel() {
-        return nodeManagerModel;
-    }
-
     public TransferManagerModel getTransferManagerModel() {
         return transferManagerModel;
     }
@@ -958,8 +946,8 @@ public class UIController extends PFComponent {
                     public void run() {
 
                         // Find path to the chatting member.
-                        TreeNodeList treeNodeList = getNodeManagerModel()
-                            .getFriendsTreeNode();
+                        TreeNodeList treeNodeList = getApplicationModel()
+                                .getNodeManagerModel().getFriendsTreeNode();
                         int childCount = treeNodeList.getChildCount();
                         if (m != null) {
                             for (int i = 0; i < childCount; i++) {

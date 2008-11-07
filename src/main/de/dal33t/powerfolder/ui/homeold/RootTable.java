@@ -19,8 +19,13 @@
 */
 package de.dal33t.powerfolder.ui.homeold;
 
-import java.awt.Component;
-import java.awt.Dimension;
+import com.jgoodies.binding.value.ValueModel;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.navigation.RootNode;
+import de.dal33t.powerfolder.ui.render.UnsortedTableHeaderRenderer;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
@@ -28,15 +33,8 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import javax.swing.tree.TreeNode;
-
-import com.jgoodies.binding.value.ValueModel;
-
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.ui.navigation.RootNode;
-import de.dal33t.powerfolder.ui.render.UnsortedTableHeaderRenderer;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.UIUtil;
+import java.awt.Component;
+import java.awt.Dimension;
 
 /**
  * Maps the root items to a table.
@@ -131,13 +129,13 @@ public class RootTable extends JTable {
                     newValue = "Debug";
                     setIcon(Icons.DEBUG);
                 } else if (controller.isVerbose()
-                    && value == controller.getUIController()
+                    && value == controller.getUIController().getApplicationModel()
                         .getNodeManagerModel().getConnectedTreeNode())
                 {
                     newValue = Translation
                         .getTranslation("root_panel.connected_users");
                     setIcon(Icons.KNOWN_NODES);
-                } else if (value == controller.getUIController()
+                } else if (value == controller.getUIController().getApplicationModel()
                     .getNodeManagerModel().getFriendsTreeNode())
                 {
                     newValue = Translation.getTranslation("root_panel.friends");

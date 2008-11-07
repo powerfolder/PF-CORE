@@ -73,7 +73,7 @@ public class NavTreeCellRenderer extends DefaultTreeCellRenderer {
         Object userObject = UIUtil.getUserObject(value);
         // Object parentObject = getParentObject(value);
 
-        NodeManagerModel nmModel = controller.getUIController()
+        NodeManagerModel nmModel = controller.getUIController().getApplicationModel()
             .getNodeManagerModel();
         FolderRepositoryModel folderRepoModel = controller.getUIController()
             .getFolderRepositoryModel();

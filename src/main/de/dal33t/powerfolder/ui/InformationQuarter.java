@@ -219,12 +219,12 @@ public class InformationQuarter extends PFUIComponent {
             displayDebugPanel();
         } else if (selection == RootNode.DIALOG_TESTING_NODE_LABEL) {
             displayDialogTestingPanel();
-        } else if (selection == getUIController().getNodeManagerModel()
+        } else if (selection == getApplicationModel().getNodeManagerModel()
             .getFriendsTreeNode())
         {
             displayFriendsPanel();
         } else if (getController().isVerbose()
-            && selection == getUIController().getNodeManagerModel()
+            && selection == getApplicationModel().getNodeManagerModel()
                 .getConnectedTreeNode())
         {
             displayStats();

@@ -109,16 +109,16 @@ public class RootNode extends TreeNodeList {
             .getDownloadsTreeNode());
         addChild(controller.getUIController().getTransferManagerModel()
             .getUploadsTreeNode());
-        addChild(controller.getUIController().getNodeManagerModel()
-            .getFriendsTreeNode());
+        addChild(controller.getUIController().getApplicationModel()
+                .getNodeManagerModel().getFriendsTreeNode());
 
         // Only add if verbose mode.
         if (controller.isVerbose()) {
 
             // Only show the connected user node if debug reports is true.
             if (ConfigurationEntry.DEBUG_REPORTS.getValueBoolean(controller)) {
-                addChild(controller.getUIController().getNodeManagerModel()
-                    .getConnectedTreeNode());
+                addChild(controller.getUIController().getApplicationModel()
+                        .getNodeManagerModel().getConnectedTreeNode());
             }
 
             // Add debug node
