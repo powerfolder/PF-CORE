@@ -184,8 +184,7 @@ public class ExpandableFolderView extends PFUIComponent {
     private void initComponent() {
         expanded = new AtomicBoolean();
 
-        ActionModel actionModel = getController()
-                .getUIController().getActionModel();
+        ActionModel actionModel = getApplicationModel().getActionModel();
         
         openSettingsInformationButton = new JButtonMini(actionModel
                 .getOpenSettingsInformationAction());
@@ -399,8 +398,8 @@ public class ExpandableFolderView extends PFUIComponent {
         public void actionPerformed(ActionEvent e) {
             ActionEvent ae = new ActionEvent(ExpandableFolderView.this,
                     (int) e.getWhen(), e.getActionCommand(), e.getModifiers());
-            getController().getUIController().getActionModel().
-                    getOpenSettingsInformationAction().actionPerformed(ae);
+            getApplicationModel().getActionModel()
+                    .getOpenSettingsInformationAction().actionPerformed(ae);
         }
     }
 
@@ -408,8 +407,8 @@ public class ExpandableFolderView extends PFUIComponent {
         public void actionPerformed(ActionEvent e) {
             ActionEvent ae = new ActionEvent(ExpandableFolderView.this,
                     (int) e.getWhen(), e.getActionCommand(), e.getModifiers());
-            getController().getUIController().getActionModel().
-                    getOpenFilesInformationAction().actionPerformed(ae);
+            getApplicationModel().getActionModel()
+                    .getOpenFilesInformationAction().actionPerformed(ae);
         }
     }
 
@@ -417,8 +416,8 @@ public class ExpandableFolderView extends PFUIComponent {
         public void actionPerformed(ActionEvent e) {
             ActionEvent ae = new ActionEvent(ExpandableFolderView.this,
                     (int) e.getWhen(), e.getActionCommand(), e.getModifiers());
-            getController().getUIController().getActionModel().
-                    getOpenMembersInformationAction().actionPerformed(ae);
+            getApplicationModel().getActionModel()
+                    .getOpenMembersInformationAction().actionPerformed(ae);
         }
     }
 }

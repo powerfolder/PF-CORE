@@ -103,7 +103,7 @@ public class FoldersTab extends PFUIComponent {
      * @return the toolbar
      */
     private JPanel createToolBar() {
-        JButton newFolderButton = new JButton(getUIController().getActionModel()
+        JButton newFolderButton = new JButton(getApplicationModel().getActionModel()
                 .getNewFolderAction());
 
         FormLayout layout = new FormLayout("pref, pref:grow, pref",

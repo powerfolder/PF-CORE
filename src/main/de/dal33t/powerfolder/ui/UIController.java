@@ -26,16 +26,16 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
-import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
-import de.dal33t.powerfolder.ui.action.ActionModel;
+import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.actionold.SyncAllFoldersAction;
 import de.dal33t.powerfolder.ui.chat.ChatModel;
 import de.dal33t.powerfolder.ui.folder.FileNameProblemHandlerDefaultImpl;
 import de.dal33t.powerfolder.ui.friends.AskForFriendshipHandlerDefaultImpl;
+import de.dal33t.powerfolder.ui.information.InformationFrame;
 import de.dal33t.powerfolder.ui.model.ApplicationModel;
 import de.dal33t.powerfolder.ui.model.FolderRepositoryModel;
 import de.dal33t.powerfolder.ui.model.NodeManagerModel;
@@ -46,7 +46,6 @@ import de.dal33t.powerfolder.ui.recyclebin.RecycleBinConfirmationHandlerDefaultI
 import de.dal33t.powerfolder.ui.render.BlinkManager;
 import de.dal33t.powerfolder.ui.webservice.ServerClientModel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
-import de.dal33t.powerfolder.ui.information.InformationFrame;
 import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
@@ -127,7 +126,7 @@ public class UIController extends PFComponent {
     private TransferManagerModel transferManagerModel;
     private ServerClientModel serverClientModel;
     private boolean seenOome;
-    private ActionModel actionModel;
+
     InformationFrame informationFrame;
 
     /**
@@ -142,7 +141,6 @@ public class UIController extends PFComponent {
 
         pendingJobs = Collections.synchronizedList(new LinkedList<Runnable>());
 
-        actionModel = new ActionModel(controller);
         boolean defaultLFsupported = !(OSUtil.isWindowsMEorOlder() ||
                 OSUtil.isMacOS());
         if (defaultLFsupported) {
@@ -870,10 +868,6 @@ public class UIController extends PFComponent {
     }
 
     // Actions ****************************************************************
-
-    public ActionModel getActionModel() {
-        return actionModel;
-    }
 
     // TODO Remove these actions and place them into the approriate model (ActionModel).
     public Action getOpenWizardAction() {

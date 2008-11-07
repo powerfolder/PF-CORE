@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.ui.model;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.ui.action.ActionModel;
 
 /**
  * Contains all core models for the application.
@@ -29,6 +30,8 @@ import de.dal33t.powerfolder.PFUIComponent;
  * @version $Revision: 1.5 $
  */
 public class ApplicationModel extends PFUIComponent {
+
+    private ActionModel actionModel;
 
     /**
      * Constructs a non-initialized application model. Before the model can used
@@ -39,13 +42,19 @@ public class ApplicationModel extends PFUIComponent {
      */
     public ApplicationModel(Controller controller) {
         super(controller);
+
     }
 
     /**
      * Initializes this and all submodels
      */
     public void initialize() {
+        actionModel = new ActionModel(getController());
     }
 
     // Exposing ***************************************************************
+
+    public ActionModel getActionModel() {
+        return actionModel;
+    }
 }

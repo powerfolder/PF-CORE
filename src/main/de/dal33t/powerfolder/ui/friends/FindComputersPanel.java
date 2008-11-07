@@ -149,8 +149,8 @@ public class FindComputersPanel extends PFUIPanel {
             }
         });
 
-        JButton connectButton = new JButton(getController().getUIController().
-                getActionModel().getConnectAction());
+        JButton connectButton = new JButton(getApplicationModel()
+                .getActionModel().getConnectAction());
 
         FormLayout layout = new FormLayout("pref, 4dlu, pref, fill:pref:grow, 105dlu",
             "pref");

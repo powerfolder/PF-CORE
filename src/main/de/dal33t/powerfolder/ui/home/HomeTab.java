@@ -288,9 +288,9 @@ public class HomeTab extends PFUIComponent {
      * @return the toolbar
      */
     private JPanel createToolBar() {
-        JButton newFolderButton = new JButton(getUIController().getActionModel()
+        JButton newFolderButton = new JButton(getApplicationModel().getActionModel()
                 .getNewFolderAction());
-        JButton searchComputerButton = new JButton(getUIController().getActionModel()
+        JButton searchComputerButton = new JButton(getApplicationModel().getActionModel()
                 .getFindComputersAction());
 
         ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();

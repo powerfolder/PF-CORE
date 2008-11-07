@@ -19,24 +19,9 @@
  */
 package de.dal33t.powerfolder.ui;
 
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.EventQueue;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JSeparator;
-import javax.swing.SwingConstants;
-
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
@@ -48,6 +33,19 @@ import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.ui.ComplexComponentFactory;
 import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker;
 import de.dal33t.powerfolder.util.ui.UIPanel;
+
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JSeparator;
+import javax.swing.SwingConstants;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.EventQueue;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * The status bar on the lower side of the main window.
@@ -168,7 +166,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             public void mouseClicked(MouseEvent e) {
                 // open connect dialog
                 if (getController().getNodeManager().isStarted()) {
-                    getUIController().getActionModel().getConnectAction()
+                    getApplicationModel().getActionModel().getConnectAction()
                         .actionPerformed(null);
                 } else if (!Util.isRunningProVersion()) {
                     // Smells like hack(tm).
@@ -225,9 +223,9 @@ public class StatusBar extends PFUIComponent implements UIPanel {
         portLabel
             .setToolTipText(Translation.getTranslation("status.port.text"));
 
-        openPreferencesButton = new JButton(getController().getUIController()
+        openPreferencesButton = new JButton(getApplicationModel()
             .getActionModel().getOpenPreferencesAction());
-        openAboutBoxButton = new JButton(getController().getUIController()
+        openAboutBoxButton = new JButton(getApplicationModel()
             .getActionModel().getOpenAboutBoxAction());
         spacerLabel = new JLabel() {
 
