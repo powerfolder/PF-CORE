@@ -84,7 +84,7 @@ public class ExpandableComputerView extends PFUIComponent {
         initComponent();
 
         // Build ui
-                                             //  icon        name   space            ex/co
+                                             //  icon        name  space            ex/co
         FormLayout upperLayout = new FormLayout("pref, 3dlu, pref, pref:grow, 3dlu, pref",
             "pref");
         PanelBuilder upperBuilder = new PanelBuilder(upperLayout);
@@ -235,7 +235,11 @@ public class ExpandableComputerView extends PFUIComponent {
      * @param e
      */
     private void updateDetailsIfRequired(NodeManagerEvent e) {
-        if (e.getNode().equals(member)) {
+        Member node = e.getNode();
+        if (node == null) {
+            return;
+        }
+        if (node.equals(member)) {
             updateDetails();
         }
     }
