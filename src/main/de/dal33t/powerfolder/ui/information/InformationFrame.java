@@ -108,7 +108,9 @@ public class InformationFrame extends PFUIComponent {
      */
     public void storeValues() {
         Preferences prefs = getController().getPreferences();
-
+        if (uiComponent == null) {
+            return;
+        }
         if ((uiComponent.getExtendedState() &
                 Frame.MAXIMIZED_BOTH) == Frame.MAXIMIZED_BOTH) {
             prefs.putBoolean("infoframe4.maximized", true);

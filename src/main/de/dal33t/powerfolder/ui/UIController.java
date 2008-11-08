@@ -71,6 +71,7 @@ import java.awt.MenuItem;
 import java.awt.PopupMenu;
 import java.awt.SystemTray;
 import java.awt.TrayIcon;
+import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
@@ -317,10 +318,9 @@ public class UIController extends PFComponent {
         gotoHPIfRequired();
         detectAndShowLimitDialog();
 
-        getApplicationModel().getFolderRepositoryModel()
-                .getHidePreviewsValueModel().setValue(
-                ConfigurationEntry.HIDE_PREVIEW_FOLDERS.getValueBoolean(
-                        getController()));
+        applicationModel.getFolderRepositoryModel().getHidePreviewsValueModel()
+                .setValue(ConfigurationEntry.HIDE_PREVIEW_FOLDERS
+                        .getValueBoolean(getController()));
     }
 
     private void gotoHPIfRequired() {
@@ -331,7 +331,7 @@ public class UIController extends PFComponent {
         int thisVersionStartCount = getController().getPreferences().getInt(
             prefKey, 0);
         // Go to HP every 20 starts
-        if (thisVersionStartCount % 20 == 1) {
+        if (thisVersionStartCount % 20 != 0) {
             try {
                 BrowserLauncher.openURL(Constants.POWERFOLDER_PRO_URL);
             } catch (IOException e1) {
@@ -359,7 +359,7 @@ public class UIController extends PFComponent {
     }
 
     private long calculateTotalLocalSharedSize() {
-        long totalSize = 0;
+        long totalSize = 0L;
         for (Folder folder : getController().getFolderRepository()
             .getFoldersAsCollection())
         {
@@ -449,7 +449,7 @@ public class UIController extends PFComponent {
                 // systray implementation
                 // Double clicked, open gui directly
                 mainFrame.getUIComponent().setVisible(true);
-                mainFrame.getUIComponent().setState(JFrame.NORMAL);
+                mainFrame.getUIComponent().setState(Frame.NORMAL);
                 // hack for jump to chat of member
                 if (blinkManager.isMemberBlinking()) {
                     Member member = blinkManager.getABlinkingMember();
@@ -465,7 +465,7 @@ public class UIController extends PFComponent {
             OSUtil.disableSystray();
             return;
         }
-        getController().scheduleAndRepeat(new UpdateSystrayTask(), 5000);
+        getController().scheduleAndRepeat(new UpdateSystrayTask(), 5000L);
 
         // Switch Systray show/hide menuitem dynamically
         mainFrame.getUIComponent().addComponentListener(new ComponentAdapter() {
@@ -581,7 +581,7 @@ public class UIController extends PFComponent {
     public void showOutOfMemoryError(OutOfMemoryError oome) {
         if (!seenOome) {
             seenOome = true;
-            int response = DialogFactory.genericDialog(getMainFrame()
+            int response = DialogFactory.genericDialog(mainFrame
                 .getUIComponent(), Translation
                 .getTranslation("low_memory.error.title"), Translation
                 .getTranslation("low_memory.error.text"),
