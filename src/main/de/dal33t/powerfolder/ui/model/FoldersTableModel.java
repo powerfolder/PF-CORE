@@ -205,7 +205,7 @@ public class FoldersTableModel extends PFUIComponent implements TableModel {
             fireFullModelChanged();
         }
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return true;
         }
     }
@@ -222,7 +222,7 @@ public class FoldersTableModel extends PFUIComponent implements TableModel {
             fireFullModelChanged();
         }
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return true;
         }
     }
@@ -265,7 +265,7 @@ public class FoldersTableModel extends PFUIComponent implements TableModel {
         public void maintenanceFinished(FolderRepositoryEvent e) {
         }
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return true;
         }
     }

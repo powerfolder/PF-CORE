@@ -277,7 +277,7 @@ public class NetworkStatisticsPanel extends PFUIComponent implements UIPanel {
         public void startStop(NodeManagerEvent e) {
         }
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return true;
         }
     }
@@ -302,7 +302,7 @@ public class NetworkStatisticsPanel extends PFUIComponent implements UIPanel {
             update();
         }
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return true;
         }
     }

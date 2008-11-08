@@ -112,7 +112,7 @@ public class FoldersList extends PFUIComponent {
         public void maintenanceFinished(FolderRepositoryEvent e) {
         }
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return true;
         }
     }

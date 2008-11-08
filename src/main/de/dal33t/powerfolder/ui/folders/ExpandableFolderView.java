@@ -349,7 +349,7 @@ public class ExpandableFolderView extends PFUIComponent {
         public void syncProfileChanged(FolderEvent folderEvent) {
         }
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return true;
         }
     }
@@ -367,7 +367,7 @@ public class ExpandableFolderView extends PFUIComponent {
             updateFolderMembershipDetails();
         }
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return true;
         }
     }

@@ -204,7 +204,7 @@ public class NodeSearcher extends PFComponent {
         public void startStop(NodeManagerEvent e) {
         }
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return false;
         }
     }

@@ -155,7 +155,7 @@ public class OnlineStorageQuickInfoPanel extends QuickInfoPanel {
 
     private class MyServerClientListener implements ServerClientListener {
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return true;
         }
 

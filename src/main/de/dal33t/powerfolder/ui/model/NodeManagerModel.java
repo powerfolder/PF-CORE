@@ -446,7 +446,7 @@ public class NodeManagerModel extends PFUIComponent {
         public void startStop(NodeManagerEvent e) {
         }
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return true;
         }
     }
@@ -461,7 +461,7 @@ public class NodeManagerModel extends PFUIComponent {
             }
         }
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return true;
         }
     }

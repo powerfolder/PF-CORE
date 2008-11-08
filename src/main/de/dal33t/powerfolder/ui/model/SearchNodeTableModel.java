@@ -330,7 +330,7 @@ public class SearchNodeTableModel extends PFUIComponent implements TableModel,
         public void startStop(NodeManagerEvent e) {
         }
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return false;
         }
     }

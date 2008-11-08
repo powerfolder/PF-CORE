@@ -19,6 +19,11 @@
  */
 package de.dal33t.powerfolder.event;
 
+import de.dal33t.powerfolder.util.Profiling;
+import de.dal33t.powerfolder.util.ProfilingEntry;
+import de.dal33t.powerfolder.util.ui.UIUtil;
+
+import javax.swing.SwingUtilities;
 import java.awt.EventQueue;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
@@ -28,12 +33,6 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.swing.SwingUtilities;
-
-import de.dal33t.powerfolder.util.Profiling;
-import de.dal33t.powerfolder.util.ProfilingEntry;
-import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * Factory used to created event/listener support upon eventlistner interfaces.
@@ -245,7 +244,7 @@ public class ListenerSupportFactory {
         public void addListener(CoreListener listener) {
             if (checkListener(listener)) {
                 // Okay, add listener
-                if (listener.fireInEventDispathThread()) {
+                if (listener.fireInEventDispatchThread()) {
                     listenersInDispatchThread.add(listener);
                 } else {
                     listenersNotInDispatchThread.add(listener);
@@ -261,7 +260,7 @@ public class ListenerSupportFactory {
         public void removeListener(CoreListener listener) {
             if (checkListener(listener)) {
                 // Okay, remove listener
-                if (listener.fireInEventDispathThread()) {
+                if (listener.fireInEventDispatchThread()) {
                     listenersInDispatchThread.remove(listener);
                 } else {
                     listenersNotInDispatchThread.remove(listener);

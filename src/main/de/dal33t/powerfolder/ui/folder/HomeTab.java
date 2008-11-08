@@ -526,7 +526,7 @@ public class HomeTab extends PFUIComponent implements FolderTab {
             update();
         }
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return true;
         }
     }

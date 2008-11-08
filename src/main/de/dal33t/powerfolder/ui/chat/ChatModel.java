@@ -348,7 +348,7 @@ public class ChatModel implements MessageListener {
         public void maintenanceStarted(FolderRepositoryEvent e) {
         }
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return false;
         }
     }
@@ -382,7 +382,7 @@ public class ChatModel implements MessageListener {
             addStatusChatLine(folder, node, statusMessage);
         }
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return false;
         }
 
@@ -442,7 +442,7 @@ public class ChatModel implements MessageListener {
         public void startStop(NodeManagerEvent e) {
         }
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return false;
         }
     }

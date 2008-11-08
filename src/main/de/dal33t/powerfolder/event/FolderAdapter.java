@@ -51,5 +51,5 @@ public abstract class FolderAdapter implements FolderListener {
         // Do nothing by default
     }
 
-    public abstract boolean fireInEventDispathThread();
+    public abstract boolean fireInEventDispatchThread();
 }

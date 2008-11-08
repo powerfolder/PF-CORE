@@ -229,7 +229,7 @@ public class RecycleBinTableModel extends PFComponent implements TableModel,
             fireModelChanged();
         }
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return true;
         }
     }

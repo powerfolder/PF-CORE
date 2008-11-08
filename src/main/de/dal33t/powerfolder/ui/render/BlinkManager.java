@@ -352,7 +352,7 @@ public class BlinkManager extends PFUIComponent {
             }
         }
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return true;
         }
     }

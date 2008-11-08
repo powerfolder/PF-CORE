@@ -734,7 +734,7 @@ public class ServerClient extends PFComponent {
             // NOP
         }
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return false;
         }
     }

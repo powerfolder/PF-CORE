@@ -223,7 +223,7 @@ public class RootQuickInfoPanel extends QuickInfoPanel {
         public void startStop(NodeManagerEvent e) {
         }
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return true;
         }
     }
@@ -282,7 +282,7 @@ public class RootQuickInfoPanel extends QuickInfoPanel {
             updateSyncText();
         }
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return true;
         }
 

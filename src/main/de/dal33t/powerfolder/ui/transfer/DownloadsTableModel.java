@@ -348,7 +348,7 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
             return -1;
         }
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return true;
         }
     }

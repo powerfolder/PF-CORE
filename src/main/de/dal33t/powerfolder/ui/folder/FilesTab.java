@@ -1071,7 +1071,7 @@ public class FilesTab extends PFUIComponent implements FolderTab,
             updateFolder(folderEvent.getFolder());
         }
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return true;
         }
 
@@ -1160,7 +1160,7 @@ public class FilesTab extends PFUIComponent implements FolderTab,
             update();
         }
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return true;
         }
     }
@@ -1200,7 +1200,7 @@ public class FilesTab extends PFUIComponent implements FolderTab,
             update(event);
         }
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return false;
         }
 
@@ -1517,7 +1517,7 @@ public class FilesTab extends PFUIComponent implements FolderTab,
         public void startStop(NodeManagerEvent e) {
         }
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return true;
         }
     }

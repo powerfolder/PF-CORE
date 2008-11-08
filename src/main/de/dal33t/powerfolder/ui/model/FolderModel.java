@@ -175,7 +175,7 @@ public class FolderModel extends PFUIComponent {
         FolderMembershipListener
     {
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return false;
         }
 

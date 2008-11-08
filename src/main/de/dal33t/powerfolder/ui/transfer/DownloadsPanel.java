@@ -623,7 +623,7 @@ public class DownloadsPanel extends PFUIPanel implements HasDetailsPanel {
             updateActions();
         }
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return true;
         }
     }

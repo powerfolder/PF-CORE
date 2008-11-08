@@ -104,7 +104,7 @@ public class SyncButtonComponent extends PFUIComponent {
             updateSyncLabel();
         }
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return true;
         }
 
@@ -167,7 +167,7 @@ public class SyncButtonComponent extends PFUIComponent {
             updateSyncLabel();
         }
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return true;
         }
 

@@ -134,7 +134,7 @@ public class SendMessageTask extends PersistentTask {
         public void startStop(NodeManagerEvent e) {
         }
 
-		public boolean fireInEventDispathThread() { 
+		public boolean fireInEventDispatchThread() {
 			return false;
 		}
 	}

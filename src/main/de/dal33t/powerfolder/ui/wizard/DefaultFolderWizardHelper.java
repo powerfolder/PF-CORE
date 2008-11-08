@@ -189,7 +189,7 @@ public class DefaultFolderWizardHelper extends PFUIPanel {
         public void serverDisconnected(ServerClientEvent event) {
         }
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return true;
         }
     }

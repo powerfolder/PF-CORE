@@ -1022,7 +1022,7 @@ public class UIController extends PFComponent {
             }
         }
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return true;
         }
     }
@@ -1051,7 +1051,7 @@ public class UIController extends PFComponent {
             checkStatus();
         }
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return true;
         }
 

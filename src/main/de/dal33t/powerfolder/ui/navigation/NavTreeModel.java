@@ -74,7 +74,7 @@ public class NavTreeModel extends PFUIComponent implements TreeModel {
         public void fileUpdated(RecycleBinEvent e) {
         }
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return true;
         }
     }

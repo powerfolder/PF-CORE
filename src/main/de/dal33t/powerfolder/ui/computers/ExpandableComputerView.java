@@ -260,7 +260,7 @@ public class ExpandableComputerView extends PFUIComponent {
      */
     private class MyNodeManagerListener implements NodeManagerListener {
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return true;
         }
 

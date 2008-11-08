@@ -184,7 +184,7 @@ public class NodeQuickInfoPanel extends QuickInfoPanel {
         public void startStop(NodeManagerEvent e) {
         }
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return true;
         }
 

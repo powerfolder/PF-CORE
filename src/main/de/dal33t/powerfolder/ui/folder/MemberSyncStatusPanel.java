@@ -301,7 +301,7 @@ public class MemberSyncStatusPanel extends PFUIComponent {
             }
         }
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return true;
         }
     }

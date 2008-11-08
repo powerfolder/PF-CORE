@@ -203,7 +203,7 @@ public class MemberChatPanel extends ChatPanel implements UIPanel {
             }
         }
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return true;
         }
     }
@@ -284,7 +284,7 @@ public class MemberChatPanel extends ChatPanel implements UIPanel {
         public void startStop(NodeManagerEvent e) {
         }
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return true;
         }
     }

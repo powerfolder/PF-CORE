@@ -425,7 +425,7 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
                 .getNewSyncProfile(), false);
         }
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return true;
         }
     }

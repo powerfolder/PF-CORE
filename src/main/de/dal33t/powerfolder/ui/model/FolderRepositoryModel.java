@@ -282,7 +282,7 @@ public class FolderRepositoryModel extends PFUIComponent {
             updateFolderTreeNode(e);
         }
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return true;
         }
 

@@ -182,7 +182,7 @@ public class OnlineStoragePanel extends PFUIPanel {
             updateChangeAccountLabel();
         }
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return true;
         }
     }

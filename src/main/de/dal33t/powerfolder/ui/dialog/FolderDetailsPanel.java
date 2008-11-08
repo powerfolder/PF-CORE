@@ -195,7 +195,7 @@ public class FolderDetailsPanel extends PFUIComponent {
             setFolder(foInfo);
         }
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return true;
         }
     }

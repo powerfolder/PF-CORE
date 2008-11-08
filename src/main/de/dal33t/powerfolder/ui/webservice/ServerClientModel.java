@@ -207,7 +207,7 @@ public class ServerClientModel extends PFUIComponent {
         public void maintenanceStarted(FolderRepositoryEvent e) {
         }
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return false;
         }
 
@@ -228,7 +228,7 @@ public class ServerClientModel extends PFUIComponent {
             }
         }
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return true;
         }
 
@@ -236,7 +236,7 @@ public class ServerClientModel extends PFUIComponent {
 
     private class MyServerClientListener implements ServerClientListener {
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return true;
         }
 

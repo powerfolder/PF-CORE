@@ -297,7 +297,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                 updateOnlineStateLabel(label, controller);
             }
 
-            public boolean fireInEventDispathThread() {
+            public boolean fireInEventDispatchThread() {
                 return true;
             }
         };

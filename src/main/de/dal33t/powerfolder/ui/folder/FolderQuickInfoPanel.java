@@ -257,7 +257,7 @@ public class FolderQuickInfoPanel extends QuickInfoPanel {
             updateText();
         }
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return true;
         }
     }
@@ -278,7 +278,7 @@ public class FolderQuickInfoPanel extends QuickInfoPanel {
         }
 
         @Override
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return true;
         }
     }
@@ -341,7 +341,7 @@ public class FolderQuickInfoPanel extends QuickInfoPanel {
             updateText();
         }
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return true;
         }
     }

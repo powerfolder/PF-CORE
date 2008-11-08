@@ -330,7 +330,7 @@ public class MembersTab extends PFUIComponent implements FolderTab,
         memberListModel.remove(folderEvent.getMember());
     }
 
-    public boolean fireInEventDispathThread() {
+    public boolean fireInEventDispatchThread() {
         return true;
     }
 

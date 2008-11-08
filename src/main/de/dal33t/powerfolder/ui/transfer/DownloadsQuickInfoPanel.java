@@ -186,7 +186,7 @@ public class DownloadsQuickInfoPanel extends QuickInfoPanel {
         public void pendingDownloadEnqueud(TransferManagerEvent event) {
             updateText();
         }
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return true;
         }     
     }

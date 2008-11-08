@@ -283,7 +283,7 @@ public class FriendsPanel extends PFUIPanel {
         public void startStop(NodeManagerEvent e) {
         }
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return true;
         }
 

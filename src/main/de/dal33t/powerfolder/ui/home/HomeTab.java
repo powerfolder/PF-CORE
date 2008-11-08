@@ -400,7 +400,7 @@ public class HomeTab extends PFUIComponent {
         public void syncProfileChanged(FolderEvent folderEvent) {
         }
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return true;
         }
 
@@ -411,7 +411,7 @@ public class HomeTab extends PFUIComponent {
      */
     private class MyFolderRepositoryListener
             implements FolderRepositoryListener {
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return true;
         }
 
@@ -493,7 +493,7 @@ public class HomeTab extends PFUIComponent {
             updateTransferText();
         }
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return true;
         }
 
@@ -531,7 +531,7 @@ public class HomeTab extends PFUIComponent {
         public void startStop(NodeManagerEvent e) {
         }
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return true;
         }
     }
@@ -542,7 +542,7 @@ public class HomeTab extends PFUIComponent {
             updateOnlineStorageDetails();
         }
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return true;
         }
 

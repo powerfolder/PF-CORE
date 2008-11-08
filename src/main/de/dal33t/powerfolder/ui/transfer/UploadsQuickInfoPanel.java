@@ -177,7 +177,7 @@ public class UploadsQuickInfoPanel extends QuickInfoPanel {
             updateText();
         }
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return true;
         }
     }

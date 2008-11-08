@@ -100,7 +100,7 @@ public class FolderStatistic extends PFComponent {
             scheduleCalculate();
         }
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return false;
         }
 
@@ -139,7 +139,7 @@ public class FolderStatistic extends PFComponent {
             // do not implement may cause loop!
         }
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return false;
         }
     }
@@ -157,7 +157,7 @@ public class FolderStatistic extends PFComponent {
             }
         }
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return false;
         }
     }
@@ -200,7 +200,7 @@ public class FolderStatistic extends PFComponent {
             // Do nothing
         }
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return false;
         }
 

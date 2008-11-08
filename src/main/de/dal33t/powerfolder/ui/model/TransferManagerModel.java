@@ -379,7 +379,7 @@ public class TransferManagerModel extends PFUIComponent {
             updateFolderTreeNode(event);
         }
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return true;
         }
 

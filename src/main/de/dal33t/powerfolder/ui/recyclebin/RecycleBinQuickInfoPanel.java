@@ -124,7 +124,7 @@ public class RecycleBinQuickInfoPanel extends QuickInfoPanel {
             updateText();
         }
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return true;
         }
 

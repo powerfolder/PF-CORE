@@ -441,7 +441,7 @@ public class FileFilterModel extends FilterModel {
             scheduleFiltering();
         }
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return true;
         }
     }

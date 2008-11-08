@@ -193,7 +193,7 @@ public class NodesSelectTableModel implements TableModel {
         public void startStop(NodeManagerEvent e) {
         }
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return true;
         }
 

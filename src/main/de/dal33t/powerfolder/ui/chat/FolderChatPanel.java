@@ -150,7 +150,7 @@ public class FolderChatPanel extends ChatPanel implements FolderTab {
             }
         }
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return true;
         }
     }

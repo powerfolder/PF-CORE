@@ -225,7 +225,7 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
             updateOnlineStatus();
         }
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return true;
         }
     }

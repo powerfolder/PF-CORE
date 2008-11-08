@@ -284,7 +284,7 @@ public class MainFrame extends PFUIComponent {
     }
 
     private class RepositoryListener implements FolderRepositoryListener {
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return false;
         }
 

@@ -180,7 +180,7 @@ public class RootTableModel extends PFUIComponent implements TableModel {
         public void maintenanceFinished(FolderRepositoryEvent e) {
         }
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return true;
         }
     }
@@ -214,7 +214,7 @@ public class RootTableModel extends PFUIComponent implements TableModel {
         public void startStop(NodeManagerEvent e) {
         }
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return true;
         }
     }
@@ -277,7 +277,7 @@ public class RootTableModel extends PFUIComponent implements TableModel {
             update();
         }
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return true;
         }
     }

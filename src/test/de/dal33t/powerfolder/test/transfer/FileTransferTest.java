@@ -1447,7 +1447,7 @@ public class FileTransferTest extends TwoControllerTestCase {
             uploadCompleted++;
         }
 
-        public boolean fireInEventDispathThread() {
+        public boolean fireInEventDispatchThread() {
             return false;
         }
 
