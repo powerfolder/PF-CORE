@@ -25,9 +25,12 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.event.NodeManagerEvent;
+import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Format;
 
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
@@ -35,6 +38,7 @@ import javax.swing.JPanel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.Date;
 
 /**
  * Class to render expandable view of a folder.
@@ -46,6 +50,9 @@ public class ExpandableComputerView extends PFUIComponent {
     private JPanel uiComponent;
     private JPanel lowerOuterPanel;
     private AtomicBoolean expanded;
+
+    private JLabel lastSeenLabel;
+    private MyNodeManagerListener nodeManagerListener;
 
     /**
      * Constructor
@@ -113,10 +120,14 @@ public class ExpandableComputerView extends PFUIComponent {
 
         // Build lower detials with line border.
         FormLayout lowerLayout = new FormLayout("3dlu, pref:grow, 3dlu",
-            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
+            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
+          // sep,        last        sep         add
         PanelBuilder lowerBuilder = new PanelBuilder(lowerLayout);
 
         lowerBuilder.addSeparator(null, cc.xy(2, 1));
+
+        lowerBuilder.add(lastSeenLabel, cc.xy(2, 3));
+        lowerBuilder.addSeparator(null, cc.xy(2, 5));
 
         JPanel lowerPanel = lowerBuilder.getPanel();
 
@@ -156,6 +167,8 @@ public class ExpandableComputerView extends PFUIComponent {
         expandCollapseButton = new JButtonMini(Icons.EXPAND,
                 Translation.getTranslation("exp_computer_view.expand"));
         expandCollapseButton.addActionListener(new MyActionListener());
+        lastSeenLabel = new JLabel();
+        updateDetails();
         registerListeners();
     }
 
@@ -173,12 +186,17 @@ public class ExpandableComputerView extends PFUIComponent {
      * Register listeners of the folder.
      */
     private void registerListeners() {
+        nodeManagerListener = new MyNodeManagerListener();
+        getController().getNodeManager().addNodeManagerListener(
+                nodeManagerListener);
     }
 
     /**
      * Unregister listeners of the folder.
      */
     private void unregisterListeners() {
+        getController().getNodeManager().removeNodeManagerListener(
+                nodeManagerListener);
     }
 
     /**
@@ -208,6 +226,74 @@ public class ExpandableComputerView extends PFUIComponent {
                         Translation.getTranslation("exp_computer_view.collapse"));
                 lowerOuterPanel.setVisible(true);
             }
+        }
+    }
+
+    /**
+     * Updates the displayed details if for this member.
+     *
+     * @param e
+     */
+    private void updateDetailsIfRequired(NodeManagerEvent e) {
+        if (e.getNode().equals(member)) {
+            updateDetails();
+        }
+    }
+
+    /**
+     * Updates the displayed details of the member.
+     */
+    private void updateDetails() {
+        Date time = member.getLastConnectTime();
+        String lastConnectedTime;
+        if (time == null) {
+            lastConnectedTime = "";
+        } else {
+            lastConnectedTime = Format.formatDate(time);
+        }
+        lastSeenLabel.setText(Translation.getTranslation(
+                "exp_computer_view.last_seen_text", lastConnectedTime));
+    }
+
+    /**
+     * Listener of node events.
+     */
+    private class MyNodeManagerListener implements NodeManagerListener {
+
+        public boolean fireInEventDispathThread() {
+            return true;
+        }
+
+        public void friendAdded(NodeManagerEvent e) {
+            updateDetailsIfRequired(e);
+        }
+
+        public void friendRemoved(NodeManagerEvent e) {
+            updateDetailsIfRequired(e);
+        }
+
+        public void nodeAdded(NodeManagerEvent e) {
+            updateDetailsIfRequired(e);
+        }
+
+        public void nodeConnected(NodeManagerEvent e) {
+            updateDetailsIfRequired(e);
+        }
+
+        public void nodeDisconnected(NodeManagerEvent e) {
+            updateDetailsIfRequired(e);
+        }
+
+        public void nodeRemoved(NodeManagerEvent e) {
+            updateDetailsIfRequired(e);
+        }
+
+        public void settingsChanged(NodeManagerEvent e) {
+            updateDetailsIfRequired(e);
+        }
+
+        public void startStop(NodeManagerEvent e) {
+            updateDetailsIfRequired(e);
         }
     }
 }
