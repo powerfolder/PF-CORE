@@ -100,12 +100,18 @@ public class AboutDialog extends PFUIComponent {
     private static final int HEADER_FONT_SIZE = 16;
     private JDialog dialog;
     private JButton checkForUpdatesButton;
+    private JButton systemMonitorButton;
+    private JButton bugReportButton;
     private JButton okButton;
     private ActionListener closeAction;
     /** when enter is pressed the button/action with focus is called * */
     private ActionListener generalAction;
     private ActionListener updateAction;
+    private ActionListener systemMonitorAction;
+    private ActionListener bugReportAction;
     private PacmanPanel pacmanPanel;
+
+    private SystemMonitorDialog systemMonitorDialog;
 
     public AboutDialog(Controller controller) {
         super(controller);
@@ -164,6 +170,8 @@ public class AboutDialog extends PFUIComponent {
         closeAction = new CloseAction();
         generalAction = new GeneralAction();
         updateAction = new UpdateAction();
+        systemMonitorAction = new SystemMonitorAction();
+        bugReportAction = new BugReportAction();
 
         pacmanPanel = new PacmanPanel();
 
@@ -224,6 +232,8 @@ public class AboutDialog extends PFUIComponent {
             .getTranslation("about.dialog.translators"), "Bayan El Ameen\n"
             + "Cecilia Saltori\n" + "Javier Isassi\n" + "Keblo\n"
             + "Olle Wikstrom\n" + "Zhang Jia\n ");
+
+        systemMonitorDialog = new SystemMonitorDialog(getController());
     }
 
     /**
@@ -278,12 +288,14 @@ public class AboutDialog extends PFUIComponent {
         // builder.setBorder(Borders.DLU2_BORDER);
         CellConstraints cc = new CellConstraints();
 
-        JButton bugReport = createBugReportButton();
-        JButton update = createCheckForUpdatesButton();
-        JButton ok = createOKButton();
-        focusList = new Component[]{ok, update};
-        JPanel buttons = ButtonBarFactory.buildRightAlignedBar(bugReport,
-            update, ok);
+        createBugReportButton();
+        createCheckForUpdatesButton();
+        createSystemMonitorButton();
+        createOKButton();
+        focusList = new Component[]{okButton, bugReportButton,
+                checkForUpdatesButton, systemMonitorButton};
+        JPanel buttons = ButtonBarFactory.buildRightAlignedBar(
+                checkForUpdatesButton, systemMonitorButton, bugReportButton, okButton);
         buttons.setOpaque(false);
 
         builder.add(pacmanPanel, cc.xy(1, 1));
@@ -324,13 +336,12 @@ public class AboutDialog extends PFUIComponent {
      * 
      * @return the ok Button
      */
-    private JButton createOKButton() {
+    private void createOKButton() {
         okButton = new JButton(Translation.getTranslation("general.ok"));
         okButton.setMnemonic(Translation.getTranslation("general.ok.key")
             .trim().charAt(0));
         okButton.addActionListener(closeAction);
         okButton.setBackground(Color.WHITE);
-        return okButton;
     }
 
     /** performed if the enter key is pressed */
@@ -340,6 +351,10 @@ public class AboutDialog extends PFUIComponent {
                 closeAction.actionPerformed(e);
             } else if (checkForUpdatesButton.hasFocus()) {
                 updateAction.actionPerformed(e);
+            } else if (bugReportButton.hasFocus()) {
+                bugReportAction.actionPerformed(e);
+            } else if (systemMonitorButton.hasFocus()) {
+                systemMonitorAction.actionPerformed(e);
             }
         }
     }
@@ -362,6 +377,12 @@ public class AboutDialog extends PFUIComponent {
         }
     }
 
+    private class SystemMonitorAction implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            systemMonitorDialog.getUIComponent().setVisible(true);
+        }
+    }
+
     private class BugReportAction implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             try {
@@ -376,32 +397,53 @@ public class AboutDialog extends PFUIComponent {
     /**
      * Creates an internationlaized check for updates button. This button will
      * invoke the manual updatechecker.
-     * 
+     *
      * @return The Button
      */
-    private JButton createCheckForUpdatesButton() {
+    private JButton createSystemMonitorButton() {
+        systemMonitorButton = new JButton(Translation
+            .getTranslation("about_dialog.system_monitor.text"));
+        systemMonitorButton.setToolTipText(Translation.getTranslation(
+            "about_dialog.system_monitor.tips"));
+        systemMonitorButton.setMnemonic(Translation.getTranslation(
+            "about_dialog.system_monitor.key").trim().charAt(0));
+        systemMonitorButton.setIcon(Icons.SYSTEM_MONITOR);
+        systemMonitorButton.addActionListener(systemMonitorAction);
+        systemMonitorButton.setBackground(Color.WHITE);
+        return systemMonitorButton;
+    }
+
+    /**
+     * Creates an internationlaized check for updates button. This button will
+     * invoke the manual updatechecker.
+     *
+     * @return The Button
+     */
+    private void createCheckForUpdatesButton() {
         checkForUpdatesButton = new JButton(Translation
-            .getTranslation("about.dialog.check_for_updates"));
+            .getTranslation("about_dialog.check_for_updates.text"));
+        checkForUpdatesButton.setToolTipText(Translation.getTranslation(
+            "about_dialog.check_for_updates.tips"));
         checkForUpdatesButton.setMnemonic(Translation.getTranslation(
-            "about.dialog.check_for_updates.key").trim().charAt(0));
+            "about_dialog.check_for_updates.key").trim().charAt(0));
         checkForUpdatesButton.setIcon(Icons.UPDATES);
         checkForUpdatesButton.addActionListener(updateAction);
         checkForUpdatesButton.setBackground(Color.WHITE);
-        return checkForUpdatesButton;
     }
 
     /**
      * @return a button that opens the bug report url
      */
-    private JButton createBugReportButton() {
-        JButton bugReportButton = new JButton(Translation
-            .getTranslation("about.dialog.send_bug_report"));
+    private void createBugReportButton() {
+        bugReportButton = new JButton(Translation
+            .getTranslation("about_dialog.send_bug_report.text"));
         bugReportButton.setIcon(Icons.DEBUG);
+        bugReportButton.setToolTipText(Translation.getTranslation(
+            "about_dialog.send_bug_report.tips"));
         bugReportButton.setMnemonic(Translation.getTranslation(
-            "about.dialog.send_bug_report.key").trim().charAt(0));
-        bugReportButton.addActionListener(new BugReportAction());
+            "about_dialog.send_bug_report.key").trim().charAt(0));
+        bugReportButton.addActionListener(bugReportAction);
         bugReportButton.setBackground(Color.WHITE);
-        return bugReportButton;
     }
 
     private static JPanel createTextBox(String title, String contents) {
