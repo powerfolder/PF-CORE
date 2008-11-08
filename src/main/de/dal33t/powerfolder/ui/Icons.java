@@ -307,6 +307,7 @@ public class Icons {
     public static final Image MEMBERS_IMAGE = getImage("icons/Node_Friend_Connected.gif");
     public static final Image FILES_IMAGE = getImage("icons/Folders.png");
     public static final Image SETTINGS_IMAGE = getImage("icons/Settings.png");
+    public static final Image SYSTEM_MONITOR_IMAGE = getImage("icons/SystemMonitor.png");
 
     // About stuff
     public static final Icon ABOUT_ANIMATION = getIcon("icons/about/AboutAnimation.gif");

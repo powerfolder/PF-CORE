@@ -111,8 +111,6 @@ public class AboutDialog extends PFUIComponent {
     private ActionListener bugReportAction;
     private PacmanPanel pacmanPanel;
 
-    private SystemMonitorDialog systemMonitorDialog;
-
     public AboutDialog(Controller controller) {
         super(controller);
     }
@@ -232,8 +230,6 @@ public class AboutDialog extends PFUIComponent {
             .getTranslation("about.dialog.translators"), "Bayan El Ameen\n"
             + "Cecilia Saltori\n" + "Javier Isassi\n" + "Keblo\n"
             + "Olle Wikstrom\n" + "Zhang Jia\n ");
-
-        systemMonitorDialog = new SystemMonitorDialog(getController());
     }
 
     /**
@@ -295,7 +291,7 @@ public class AboutDialog extends PFUIComponent {
         focusList = new Component[]{okButton, bugReportButton,
                 checkForUpdatesButton, systemMonitorButton};
         JPanel buttons = ButtonBarFactory.buildRightAlignedBar(
-                checkForUpdatesButton, systemMonitorButton, bugReportButton, okButton);
+                checkForUpdatesButton, bugReportButton, systemMonitorButton, okButton);
         buttons.setOpaque(false);
 
         builder.add(pacmanPanel, cc.xy(1, 1));
@@ -363,7 +359,6 @@ public class AboutDialog extends PFUIComponent {
         public void actionPerformed(ActionEvent e) {
             dialog.setVisible(false);
             dialog.dispose();
-            dialog = null;
         }
     }
 
@@ -379,7 +374,8 @@ public class AboutDialog extends PFUIComponent {
 
     private class SystemMonitorAction implements ActionListener {
         public void actionPerformed(ActionEvent e) {
-            systemMonitorDialog.getUIComponent().setVisible(true);
+            getUIController().displaySystemMonitorWindow();
+            closeAction.actionPerformed(e);
         }
     }
 

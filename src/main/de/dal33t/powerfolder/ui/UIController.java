@@ -33,6 +33,7 @@ import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.actionold.SyncAllFoldersAction;
 import de.dal33t.powerfolder.ui.chat.ChatModel;
+import de.dal33t.powerfolder.ui.dialog.SystemMonitorDialog;
 import de.dal33t.powerfolder.ui.folder.FileNameProblemHandlerDefaultImpl;
 import de.dal33t.powerfolder.ui.friends.AskForFriendshipHandlerDefaultImpl;
 import de.dal33t.powerfolder.ui.information.InformationFrame;
@@ -65,13 +66,13 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import java.awt.AWTException;
 import java.awt.EventQueue;
+import java.awt.Frame;
 import java.awt.Image;
 import java.awt.Menu;
 import java.awt.MenuItem;
 import java.awt.PopupMenu;
 import java.awt.SystemTray;
 import java.awt.TrayIcon;
-import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
@@ -106,7 +107,11 @@ public class UIController extends PFComponent {
     private SplashScreen splash;
     private Image defaultIcon;
     private TrayIcon sysTrayMenu;
+
     private MainFrame mainFrame;
+    private SystemMonitorDialog systemMonitorFrame;
+    private InformationFrame informationFrame;
+
     private BlinkManager blinkManager;
 
     // List of pending jobs, execute when ui is opend
@@ -118,7 +123,6 @@ public class UIController extends PFComponent {
 
     private boolean seenOome;
 
-    private InformationFrame informationFrame;
 
     /**
      * Initializes a new UI controller. open UI with #start
@@ -190,7 +194,7 @@ public class UIController extends PFComponent {
         }
 
         informationFrame = new InformationFrame(getController());
-
+        systemMonitorFrame = new SystemMonitorDialog(getController());
         started = false;
 
     }
@@ -599,6 +603,13 @@ public class UIController extends PFComponent {
     /**
      * Displays the information window if not already displayed.
      */
+    public void displaySystemMonitorWindow() {
+        systemMonitorFrame.getUIComponent().setVisible(true);
+    }
+
+    /**
+     * Displays the information window if not already displayed.
+     */
     private void displayInformationWindow() {
         informationFrame.getUIComponent().setVisible(true);
     }
@@ -689,6 +700,10 @@ public class UIController extends PFComponent {
             informationFrame.storeValues();
             informationFrame.getUIComponent().setVisible(false);
             informationFrame.getUIComponent().dispose();
+
+            systemMonitorFrame.storeValues();
+            systemMonitorFrame.getUIComponent().setVisible(false);
+            systemMonitorFrame.getUIComponent().dispose();
 
             mainFrame.storeValues();
             mainFrame.getUIComponent().setVisible(false);
