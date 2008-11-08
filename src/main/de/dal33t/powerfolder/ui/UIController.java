@@ -33,7 +33,7 @@ import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.actionold.SyncAllFoldersAction;
 import de.dal33t.powerfolder.ui.chat.ChatModel;
-import de.dal33t.powerfolder.ui.dialog.SystemMonitorDialog;
+import de.dal33t.powerfolder.ui.SystemMonitorFrame;
 import de.dal33t.powerfolder.ui.folder.FileNameProblemHandlerDefaultImpl;
 import de.dal33t.powerfolder.ui.friends.AskForFriendshipHandlerDefaultImpl;
 import de.dal33t.powerfolder.ui.information.InformationFrame;
@@ -109,7 +109,7 @@ public class UIController extends PFComponent {
     private TrayIcon sysTrayMenu;
 
     private MainFrame mainFrame;
-    private SystemMonitorDialog systemMonitorFrame;
+    private SystemMonitorFrame systemMonitorFrame;
     private InformationFrame informationFrame;
 
     private BlinkManager blinkManager;
@@ -194,7 +194,7 @@ public class UIController extends PFComponent {
         }
 
         informationFrame = new InformationFrame(getController());
-        systemMonitorFrame = new SystemMonitorDialog(getController());
+        systemMonitorFrame = new SystemMonitorFrame(getController());
         started = false;
 
     }

@@ -1,11 +1,10 @@
-package de.dal33t.powerfolder.ui.dialog;
+package de.dal33t.powerfolder.ui;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.ui.Icons;
+import de.javasoft.plaf.synthetica.SyntheticaRootPaneUI;
 import de.javasoft.synthetica.addons.SystemMonitor;
 import de.javasoft.synthetica.addons.systemmonitor.CollectorFactory;
-import de.javasoft.plaf.synthetica.SyntheticaRootPaneUI;
 
 import javax.swing.JFrame;
 import javax.swing.plaf.RootPaneUI;
@@ -13,12 +12,12 @@ import java.awt.BorderLayout;
 import java.awt.Frame;
 import java.util.prefs.Preferences;
 
-public class SystemMonitorDialog extends PFUIComponent {
+public class SystemMonitorFrame extends PFUIComponent {
 
     private JFrame frame;
     private SystemMonitor systemMonitor;
 
-    public SystemMonitorDialog(Controller controller) {
+    public SystemMonitorFrame(Controller controller) {
         super(controller);
     }
 
