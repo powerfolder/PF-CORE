@@ -2,6 +2,7 @@ package de.dal33t.powerfolder.ui;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.util.Translation;
 import de.javasoft.plaf.synthetica.SyntheticaRootPaneUI;
 import de.javasoft.synthetica.addons.SystemMonitor;
 import de.javasoft.synthetica.addons.systemmonitor.CollectorFactory;
@@ -30,7 +31,7 @@ public class SystemMonitorFrame extends PFUIComponent {
     }
 
     private void buildUI() {
-        frame = new JFrame();
+        frame = new JFrame(Translation.getTranslation("system_monitor.title"));
         frame.setIconImage(Icons.SYSTEM_MONITOR_IMAGE);
         frame.getContentPane().setLayout(new BorderLayout());
         frame.getContentPane().add(systemMonitor, BorderLayout.CENTER);
@@ -97,10 +98,10 @@ public class SystemMonitorFrame extends PFUIComponent {
                 .createCollector(CollectorFactory.CollectorID.HEAP_MEMORY_USAGE.id));
 
         systemMonitor.addCaption(CollectorFactory.CollectorID.CPU_USAGE.id,
-                "CPU Usage:", "%{percentValue}.0f%%", false);
+                Translation.getTranslation("system_monitor.cpu_usage"), "%{percentValue}.0f%%", false);
         systemMonitor.addCaption(CollectorFactory.CollectorID.THREADS.id,
-                "Threads:", "%{value},.0f / %{maxValue},.0f (peak)", false);
+                Translation.getTranslation("system_monitor.threads"), "%{value},.0f / %{maxValue},.0f (peak)", false);
         systemMonitor.addCaption(CollectorFactory.CollectorID.HEAP_MEMORY_USAGE.id,
-                "Heap Usage:", "%{value},.2fMB / %{maxValue},.2fMB / %{percentValue}.0f%%", false);
+                Translation.getTranslation("system_monitor.heap_usage"), "%{value},.2fMB / %{maxValue},.2fMB / %{percentValue}.0f%%", false);
     }
 }
