@@ -117,7 +117,7 @@ public class AboutDialog extends PFUIComponent {
 
     public void open() {
         dialog = new JDialog(getUIController().getMainFrame().getUIComponent());
-        dialog.setTitle(Translation.getTranslation("about.dialog.title"));
+        dialog.setTitle(Translation.getTranslation("about_dialog.title"));
         dialog.setModal(true);
         dialog.setContentPane(getUIComponent());
         dialog.setFocusTraversalPolicy(new MyFocusTraversalPolicy());
@@ -176,58 +176,58 @@ public class AboutDialog extends PFUIComponent {
         logoLabel = buildAboutAnimation();
 
         docLink = new LinkLabel(Translation
-            .getTranslation("about.dialog.documentation"),
+            .getTranslation("about_dialog.documentation"),
             Constants.POWERFOLDER_WIKI_URL);
         SimpleComponentFactory.setFontSize(docLink,
             SimpleComponentFactory.BIG_FONT_SIZE);
         homeLink = new LinkLabel(Translation
-            .getTranslation("about.dialog.home_page"), Constants.POWERFOLDER_URL);
+            .getTranslation("about_dialog.home_page"), Constants.POWERFOLDER_URL);
         SimpleComponentFactory.setFontSize(homeLink,
             SimpleComponentFactory.BIG_FONT_SIZE);
         supportLink = new LinkLabel(Translation
-            .getTranslation("about.dialog.support"),
+            .getTranslation("about_dialog.support"),
             Constants.POWERFOLDER_SUPPORT_URL);
         SimpleComponentFactory.setFontSize(supportLink,
             SimpleComponentFactory.BIG_FONT_SIZE);
 
         powerFolder = createTextBox(Translation
             .getTranslation("general.powerfolder"), Translation.getTranslation(
-            "about.dialog.power_folder.text", Controller.PROGRAM_VERSION)
+                "about_dialog.power_folder.text", Controller.PROGRAM_VERSION)
             + '\n'
-            + Translation.getTranslation("about.dialog.power_folder.build_date",
+            + Translation.getTranslation("about_dialog.power_folder.build_date",
                 buildDate)
             + '\n'
-            + Translation.getTranslation("about.dialog.power_folder.build_time",
+            + Translation.getTranslation("about_dialog.power_folder.build_time",
                 buildTime)
             + '\n'
-            + Translation.getTranslation("about.dialog.power_folder.max",
+            + Translation.getTranslation("about_dialog.power_folder.max",
                 Runtime.getRuntime().maxMemory() / 1024 / 1024)
             + '\n'
-            + Translation.getTranslation("about.dialog.power_folder.used",
+            + Translation.getTranslation("about_dialog.power_folder.used",
                 Runtime.getRuntime().totalMemory() / 1024 / 1024));
 
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
         system = createTextBox(Translation
-            .getTranslation("about.dialog.your_system.title"), Translation
-            .getTranslation("about.dialog.your_system.java_version", System
+            .getTranslation("about_dialog.your_system.title"), Translation
+            .getTranslation("about_dialog.your_system.java_version", System
                 .getProperty("java.version"))
             + '\n'
-            + Translation.getTranslation("about.dialog.your_system.os", System
+            + Translation.getTranslation("about_dialog.your_system.os", System
                 .getProperty("os.name"))
             + '\n'
-            + Translation.getTranslation("about.dialog.your_system.screen",
+            + Translation.getTranslation("about_dialog.your_system.screen",
                 dim.width, dim.height));
 
         team = createTextBox(
-            Translation.getTranslation("about.dialog.team"),
+            Translation.getTranslation("about_dialog.team"),
             "Bernhard Rutkowsky\nCecilia Saltori\nChristian Sprajc\nDennis Waldherr\nFlorian Lahr\nHarry Glasgow\n");
 
         contributers = createTextBox(
-            Translation.getTranslation("about.dialog.contributers"),
+            Translation.getTranslation("about_dialog.contributers"),
             "Anas Hnidi\nDaniel Harabor\nDane Smith\nJan van Oosterom\nMichael Petrovic-Brings\nNick Khazov\nThorsten Lenze\nPavel Tenenbaum\nPeter H&uuml;ren\nOliver H&auml;usler");
 
         translators = createTextBox(Translation
-            .getTranslation("about.dialog.translators"), "Bayan El Ameen\n"
+            .getTranslation("about_dialog.translators"), "Bayan El Ameen\n"
             + "Cecilia Saltori\n" + "Javier Isassi\n" + "Keblo\n"
             + "Olle Wikstrom\n" + "Zhang Jia\n ");
     }
@@ -309,14 +309,14 @@ public class AboutDialog extends PFUIComponent {
         CellConstraints cc = new CellConstraints();
 
         builder.add(TextLinesPanelBuilder.createTextPanel(Translation
-            .getTranslation("about.dialog.sync_your_world"), HEADER_FONT_SIZE),
+            .getTranslation("about_dialog.sync_your_world"), HEADER_FONT_SIZE),
             cc.xy(1, 1));
         builder.add(homeLink, cc.xy(1, 3));
         builder.add(docLink, cc.xy(1, 5));
         builder.add(supportLink, cc.xy(1, 7));
 
         TitledBorder titledBorder = new TitledBorder(Translation
-            .getTranslation("about.dialog.general_information"));
+            .getTranslation("about_dialog.general_information"));
         titledBorder.setTitleColor(Color.BLACK);
         builder.setBorder(new CompoundBorder(titledBorder, new EmptyBorder(2,
             2, 2, 2)));
