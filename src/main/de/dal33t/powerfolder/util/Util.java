@@ -249,7 +249,9 @@ public class Util {
         if (a == null) {
             // a == null here
             return b == null;
-
+        }
+        if (a == b) {
+            return true;
         }
         return a.equals(b);
     }
