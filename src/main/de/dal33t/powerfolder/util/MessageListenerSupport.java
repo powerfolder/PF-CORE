@@ -185,7 +185,8 @@ public class MessageListenerSupport {
     private synchronized Map<Class<?>, CopyOnWriteArrayList<MessageListener>> getListenersMap()
     {
         if (messageListener == null) {
-            messageListener = new ConcurrentHashMap<Class<?>, CopyOnWriteArrayList<MessageListener>>();
+            messageListener = new ConcurrentHashMap<Class<?>, CopyOnWriteArrayList<MessageListener>>(
+                2, 0.75f, 8);
         }
         return messageListener;
     }
