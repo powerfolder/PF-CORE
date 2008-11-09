@@ -178,9 +178,9 @@ public class NodeManager extends PFComponent {
         acceptors = Collections.synchronizedList(new ArrayList<Acceptor>());
 
         // Value message/event listner support
-        valveMessageListenerSupport = new MessageListenerSupport();
+        valveMessageListenerSupport = new MessageListenerSupport(this);
 
-        this.listenerSupport = (NodeManagerListener) ListenerSupportFactory
+        this.listenerSupport = ListenerSupportFactory
             .createListenerSupport(NodeManagerListener.class);
 
         nodeFilters = new ArrayList<NodeFilter>();
