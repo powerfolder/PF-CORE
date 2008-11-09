@@ -215,7 +215,7 @@ public class ReconnectManager extends PFComponent {
             Collections.sort(reconnectionQueue,
                 MemberComparator.BY_RECONNECTION_PRIORITY);
 
-            if (log.isLoggable(Level.FINE)) {
+            if (isFine()) {
                 logFine("Freshly filled reconnection queue with "
                     + reconnectionQueue.size() + " nodes, " + nBefore
                     + " were in queue before");
