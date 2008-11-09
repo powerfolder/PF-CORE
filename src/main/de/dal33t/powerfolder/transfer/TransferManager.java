@@ -31,12 +31,10 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -49,6 +47,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.commons.lang.Validate;
+
+import com.sun.org.apache.xalan.internal.xsltc.compiler.sym;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
@@ -104,6 +104,11 @@ public class TransferManager extends PFComponent {
     private List<Upload> completedUploads;
     /** currenly downloading */
     private ConcurrentMap<FileInfo, DownloadManager> dlManagers;
+    /**
+     * The # of active and queued downloads of this node. Cached value. Only
+     * used for performance optimization
+     */
+    private ConcurrentMap<Member, Integer> downloadsCount;
     /** A set of pending files, which should be downloaded */
     private List<Download> pendingDownloads;
     /** The list of completed download */
@@ -167,6 +172,7 @@ public class TransferManager extends PFComponent {
         this.activeUploads = new CopyOnWriteArrayList<Upload>();
         this.completedUploads = new CopyOnWriteArrayList<Upload>();
         this.dlManagers = new ConcurrentHashMap<FileInfo, DownloadManager>();
+        this.downloadsCount = new ConcurrentHashMap<Member, Integer>();
         this.pendingDownloads = new CopyOnWriteArrayList<Download>();
         this.completedDownloads = new CopyOnWriteArrayList<DownloadManager>();
         this.uploadCounter = new TransferCounter();
@@ -175,7 +181,7 @@ public class TransferManager extends PFComponent {
         totalDownloadTrafficCounter = new TransferCounter();
 
         // Create listener support
-        this.listenerSupport = (TransferManagerListener) ListenerSupportFactory
+        this.listenerSupport = ListenerSupportFactory
             .createListenerSupport(TransferManagerListener.class);
 
         // maximum concurrent uploads
@@ -395,7 +401,6 @@ public class TransferManager extends PFComponent {
      * Returns the MultiSourceDownload, that's managing the given info.
      * 
      * @param loaddownload
-     * @return
      * @return
      */
     private DownloadManager getDownloadManagerFor(FileInfo info) {
@@ -648,6 +653,7 @@ public class TransferManager extends PFComponent {
             fireDownloadCompleted(new TransferManagerEvent(this,
                 (Download) transfer));
 
+            downloadsCount.remove(transfer.getPartner());
             int nDlFromNode = countActiveAndQueuedDownloads(transfer
                 .getPartner());
             boolean requestMoreFiles = nDlFromNode == 0;
@@ -1187,6 +1193,7 @@ public class TransferManager extends PFComponent {
         final DownloadManager man = download.getDownloadManager();
         synchronized (man) {
             if (man.hasSource(download)) {
+                downloadsCount.remove(download.getPartner());
                 man.removeSource(download);
                 if (!man.hasSources()) {
                     log
@@ -1334,8 +1341,9 @@ public class TransferManager extends PFComponent {
         }
 
         List<Member> sources = getSourcesWithFreeUploadCapacity(fInfo);
-        // log().verbose("Got " + sources.length + " sources for " + fInfo);
 
+        // TODO Move into ONE method getSources....
+        
         // Now walk through all sources and get the best one
         // Member bestSource = null;
         FileInfo newestVersionFile = fInfo.getNewestVersion(getController()
@@ -1346,35 +1354,23 @@ public class TransferManager extends PFComponent {
         // Map<Member, Integer> downloadCountList =
         // countNodesActiveAndQueuedDownloads();
 
-        Collection<Member> bestSources = new LinkedList<Member>();
+        Collection<Member> bestSources = null;
         for (Member source : sources) {
             FileInfo remoteFile = source.getFile(fInfo);
             if (remoteFile == null) {
                 continue;
             }
-
             // Skip "wrong" sources
             if (!newestVersionFile.isCompletelyIdentical(remoteFile)) {
                 continue;
             }
-
-            // int nDownloadFrom = countActiveAndQueuedDownloads(source);
-            // // if (downloadCountList.containsKey(source)) {
-            // // nDownloadFrom = downloadCountList.get(source).intValue();
-            // // }
-            // int maxAllowedDls = source.isOnLAN()
-            // ? Constants.MAX_DLS_FROM_LAN_MEMBER
-            // : Constants.MAX_DLS_FROM_INET_MEMBER;
-            // if (nDownloadFrom >= maxAllowedDls) {
-            // // No more dl from this node allowed, skip
-            // // log().warn("No more download allowed from " + source);
-            // continue;
-            // }
-
+            if (bestSources == null) {
+                bestSources = new LinkedList<Member>();
+            }
             bestSources.add(source);
         }
 
-        if (newestVersionFile != null) {
+        if (newestVersionFile != null && bestSources != null) {
             // Check if the FileInfo is valid.
             // (This wouldn't be necessary, if the info had already checked
             // itself.)
@@ -1384,7 +1380,6 @@ public class TransferManager extends PFComponent {
                 logWarning(e.getMessage() + ". " + fInfo.toDetailString(), e);
                 return null;
             }
-
             for (Member bestSource : bestSources) {
                 Download download;
                 download = new Download(this, newestVersionFile, automatic);
@@ -1411,7 +1406,7 @@ public class TransferManager extends PFComponent {
             }
         }
 
-        if (bestSources.isEmpty() && !automatic) {
+        if (bestSources == null && !automatic) {
             // Okay enque as pending download if was manually requested
             enquePendingDownload(new Download(this, fInfo, automatic));
             return null;
@@ -1495,7 +1490,7 @@ public class TransferManager extends PFComponent {
                 synchronized (pendingDownloads) {
                     pendingDownloads.remove(download);
                 }
-
+                downloadsCount.remove(from);
                 download.setPartner(from);
                 download.setDownloadManager(man);
                 man.addSource(download);
@@ -1546,17 +1541,15 @@ public class TransferManager extends PFComponent {
     {
         Reject.ifNull(fInfo, "File is null");
         Folder folder = fInfo.getFolder(getController().getFolderRepository());
-        Reject.ifNull(folder, "Folder not joined of file: " + fInfo);
-
-        // List<Member> nodes = getController().getNodeManager()
-        // .getNodeWithFileListFrom(fInfo.getFolderInfo());
-        List<Member> sources = new ArrayList<Member>();
-        // List<Member> sources = new ArrayList<Member>(nodes.size());
+        if (folder == null) {
+            throw new NullPointerException("Folder not joined of file: "
+                + fInfo);
+        }
+        List<Member> sources = null;
         for (Member node : folder.getMembersAsCollection()) {
             if (node.isCompleteyConnected() && !node.isMySelf()
                 && node.hasFile(fInfo))
             {
-
                 if (withUploadCapacityOnly) {
                     int nDownloadFrom = countActiveAndQueuedDownloads(node);
                     int maxAllowedDls = node.isOnLAN()
@@ -1567,13 +1560,15 @@ public class TransferManager extends PFComponent {
                         continue;
                     }
                 }
-
+                if (sources == null) {
+                    sources = new LinkedList<Member>();
+                }
                 // node is connected and has file
                 sources.add(node);
             }
         }
-        if (sources.isEmpty()) {
-            return sources;
+        if (sources == null) {
+            return Collections.emptyList();
         }
         // Sort by the best upload availibility
         Collections.shuffle(sources);
@@ -1909,42 +1904,15 @@ public class TransferManager extends PFComponent {
     }
 
     /**
-     * Counts the number of downloads grouped by Node.
-     * <p>
-     * contains:
-     * <p>
-     * Member -> Number of active or enqued downloads to that node
-     * 
-     * @return Member -> Number of active or enqued downloads to that node
-     */
-    private Map<Member, Integer> countNodesActiveAndQueuedDownloads() {
-        Map<Member, Integer> countList = new HashMap<Member, Integer>();
-
-        for (DownloadManager man : dlManagers.values()) {
-            for (Download download : man.getSources()) {
-                int nDownloadsFrom = 0;
-                if (countList.containsKey(download.getPartner())
-                    && !download.isCompleted() && !download.isBroken())
-                {
-                    nDownloadsFrom = countList.get(download.getPartner())
-                        .intValue();
-                }
-
-                nDownloadsFrom++;
-                countList.put(download.getPartner(), Integer
-                    .valueOf(nDownloadsFrom));
-            }
-        }
-
-        return countList;
-    }
-
-    /**
      * Counts the number of downloads from this node.
      * 
      * @return Number of active or enqued downloads to that node
      */
     private int countActiveAndQueuedDownloads(Member node) {
+        Integer cached = downloadsCount.get(node);
+        if (cached != null) {
+            return cached;
+        }
         int nDownloadsFrom = 0;
         for (DownloadManager man : dlManagers.values()) {
             for (Download download : man.getSources()) {
@@ -1955,6 +1923,7 @@ public class TransferManager extends PFComponent {
                 }
             }
         }
+        downloadsCount.put(node, nDownloadsFrom);
         return nDownloadsFrom;
     }
 
