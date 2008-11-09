@@ -643,7 +643,9 @@ public abstract class AbstractDownloadManager extends PFComponent implements
 
         setStarted();
         setState(InternalState.ACTIVE_DOWNLOAD);
-        log.fine("Requesting parts");
+        if (isFiner()) {
+            logFiner("Requesting parts");
+        }
         sendPartRequests();
     }
 
@@ -1006,12 +1008,13 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                         setFilePartsState(new FilePartsState(fileInfo.getSize()));
                     }
                     if (filePartsState.isCompleted()) {
-                        log
-                            .fine("Not requesting anything, seems to be a zero file: "
-                                + fileInfo);
+                        logFine("Not requesting anything, seems to be a zero file: "
+                            + fileInfo);
                         checkFileValidity();
                     } else {
-                        log.fine("Not requesting record for this download.");
+                        if (isFiner()) {
+                            logFiner("Not requesting record for this download.");
+                        }
                         startActiveDownload();
                     }
                 }

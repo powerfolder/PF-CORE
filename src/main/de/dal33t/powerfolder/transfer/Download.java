@@ -373,7 +373,7 @@ public class Download extends Transfer {
      * @return if this download is broken. timed out or has no connection
      *         anymore or (on blacklist in folder and isRequestedAutomatic)
      */
-    public synchronized boolean isBroken() {
+    public boolean isBroken() {
         if (super.isBroken() || broken) {
             return true;
         }
@@ -409,8 +409,8 @@ public class Download extends Transfer {
              * newerFileAvailable = getFile().isNewerAvailable(
              * getController().getFolderRepository()); if (newerFileAvailable) {
              * Loggable.logWarningStatic(Download.class, "Abort cause: Newer
-             * version available. " + getFile().toDetailString()); return true;
-             * // throw new RuntimeException("ABORT: " + this); }
+             * version available. " + getFile().toDetailString()); return true; //
+             * throw new RuntimeException("ABORT: " + this); }
              */
         }
 
