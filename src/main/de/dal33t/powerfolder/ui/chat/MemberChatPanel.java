@@ -75,7 +75,7 @@ public class MemberChatPanel extends ChatPanel implements UIPanel {
         memberSelectionModel = new SelectionModel();
         changeFriendStatusAction = new ChangeFriendStatusAction(controller,
             memberSelectionModel);
-        reconnectAction = new ReconnectAction(controller, memberSelectionModel);
+        reconnectAction = new ReconnectAction(controller);
     }
 
     public JComponent getUIComponent() {

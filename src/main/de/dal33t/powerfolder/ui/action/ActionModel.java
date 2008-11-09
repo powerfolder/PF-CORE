@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.ui.action;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.ui.actionold.ReconnectAction;
 
 /**
  * Holder of all singleton actions.
@@ -42,6 +43,7 @@ public class ActionModel extends PFComponent {
     private OpenSettingsInformationAction openSettingsInformationAction;
     private OpenFilesInformationAction openFilesInformationAction;
     private OpenMembersInformationAction openMembersInformationAction;
+    private ReconnectAction reconnectAction;
 
     public NewFolderAction getNewFolderAction() {
         if (newFolderAction == null) {
@@ -97,5 +99,12 @@ public class ActionModel extends PFComponent {
             openMembersInformationAction = new OpenMembersInformationAction(getController());
         }
         return openMembersInformationAction;
+    }
+
+    public ReconnectAction getReconnectAction() {
+        if (reconnectAction == null) {
+            reconnectAction = new ReconnectAction(getController());
+        }
+        return reconnectAction;
     }
 }

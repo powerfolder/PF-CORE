@@ -101,6 +101,11 @@ public class SystemMonitorFrame extends PFUIComponent {
      * Stores all current window valus.
      */
     public void storeValues() {
+
+        if (uiComponent == null) {
+            return;
+        }
+        
         // Store main window preferences
         Preferences prefs = getController().getPreferences();
 

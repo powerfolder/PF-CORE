@@ -50,6 +50,7 @@ public class ExpandableComputerView extends PFUIComponent {
     private JPanel uiComponent;
     private JPanel lowerOuterPanel;
     private AtomicBoolean expanded;
+    private JButtonMini reconnectButton;
 
     private JLabel lastSeenLabel;
     private MyNodeManagerListener nodeManagerListener;
@@ -119,15 +120,16 @@ public class ExpandableComputerView extends PFUIComponent {
         JPanel upperPanel = upperBuilder.getPanel();
 
         // Build lower detials with line border.
-        FormLayout lowerLayout = new FormLayout("3dlu, pref:grow, 3dlu",
+        FormLayout lowerLayout = new FormLayout("3dlu, pref, pref:grow, 3dlu, pref, 3dlu",
             "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
           // sep,        last        sep         add
         PanelBuilder lowerBuilder = new PanelBuilder(lowerLayout);
 
-        lowerBuilder.addSeparator(null, cc.xy(2, 1));
+        lowerBuilder.addSeparator(null, cc.xywh(2, 1, 4, 1));
 
         lowerBuilder.add(lastSeenLabel, cc.xy(2, 3));
-        lowerBuilder.addSeparator(null, cc.xy(2, 5));
+        lowerBuilder.add(reconnectButton, cc.xy(5, 3));
+        lowerBuilder.addSeparator(null, cc.xywh(2, 5, 4, 1));
 
         JPanel lowerPanel = lowerBuilder.getPanel();
 
@@ -166,8 +168,11 @@ public class ExpandableComputerView extends PFUIComponent {
 
         expandCollapseButton = new JButtonMini(Icons.EXPAND,
                 Translation.getTranslation("exp_computer_view.expand"));
-        expandCollapseButton.addActionListener(new MyActionListener());
+        expandCollapseButton.addActionListener(new MyCollapseActionListener());
         lastSeenLabel = new JLabel();
+        reconnectButton = new JButtonMini(getApplicationModel()
+                .getActionModel().getReconnectAction());
+        reconnectButton.addActionListener(new MyReconnectActionListener());
         updateDetails();
         registerListeners();
     }
@@ -208,28 +213,6 @@ public class ExpandableComputerView extends PFUIComponent {
     }
 
     /**
-     * Class to respond to expand / collapse events.
-     */
-    private class MyActionListener implements ActionListener {
-        public void actionPerformed(ActionEvent e) {
-            boolean exp = expanded.get();
-            if (exp) {
-                expanded.set(false);
-                expandCollapseButton.setIcon(Icons.EXPAND);
-                expandCollapseButton.setToolTipText(
-                        Translation.getTranslation("exp_computer_view.expand"));
-                lowerOuterPanel.setVisible(false);
-            } else {
-                expanded.set(true);
-                expandCollapseButton.setIcon(Icons.COLLAPSE);
-                expandCollapseButton.setToolTipText(
-                        Translation.getTranslation("exp_computer_view.collapse"));
-                lowerOuterPanel.setVisible(true);
-            }
-        }
-    }
-
-    /**
      * Updates the displayed details if for this member.
      *
      * @param e
@@ -257,6 +240,28 @@ public class ExpandableComputerView extends PFUIComponent {
         }
         lastSeenLabel.setText(Translation.getTranslation(
                 "exp_computer_view.last_seen_text", lastConnectedTime));
+    }
+
+    /**
+     * Class to respond to expand / collapse events.
+     */
+    private class MyCollapseActionListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            boolean exp = expanded.get();
+            if (exp) {
+                expanded.set(false);
+                expandCollapseButton.setIcon(Icons.EXPAND);
+                expandCollapseButton.setToolTipText(
+                        Translation.getTranslation("exp_computer_view.expand"));
+                lowerOuterPanel.setVisible(false);
+            } else {
+                expanded.set(true);
+                expandCollapseButton.setIcon(Icons.COLLAPSE);
+                expandCollapseButton.setToolTipText(
+                        Translation.getTranslation("exp_computer_view.collapse"));
+                lowerOuterPanel.setVisible(true);
+            }
+        }
     }
 
     /**
@@ -298,6 +303,19 @@ public class ExpandableComputerView extends PFUIComponent {
 
         public void startStop(NodeManagerEvent e) {
             updateDetailsIfRequired(e);
+        }
+    }
+
+    /**
+     * Class to listen for reconnect requests.
+     */
+    private class MyReconnectActionListener implements ActionListener {
+
+        public void actionPerformed(ActionEvent e) {
+            ActionEvent ae = new ActionEvent(member, e.getID(),
+                    e.getActionCommand(), e.getWhen(), e.getModifiers());
+            getApplicationModel().getActionModel().getReconnectAction()
+                    .actionPerformed(ae);
         }
     }
 }

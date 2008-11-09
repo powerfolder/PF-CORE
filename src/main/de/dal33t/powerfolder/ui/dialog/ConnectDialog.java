@@ -49,7 +49,6 @@ public class ConnectDialog extends PFUIComponent {
 
     private JDialog uiComponent;
     private JLabel infoText;
-    private JProgressBar bar;
     private boolean open;
     private boolean canceled;
 
@@ -74,8 +73,8 @@ public class ConnectDialog extends PFUIComponent {
         });
 
         uiComponent.setResizable(false);
-        
-        bar = new JProgressBar();
+
+        JProgressBar bar = new JProgressBar();
         bar.setIndeterminate(true);
         infoText = new JLabel(Translation
             .getTranslation("dialog.connect.connecting"));
@@ -146,10 +145,6 @@ public class ConnectDialog extends PFUIComponent {
         getUIComponent().setVisible(true);
         infoText.setText(Translation.getTranslation(
             "dialog.connect.connecting_to", connectStr));
-
-        // Run bar updater
-        startBarUpdater();
-
         open = true;
     }
 
@@ -160,29 +155,6 @@ public class ConnectDialog extends PFUIComponent {
         open = false;
         getUIComponent().setVisible(false);
         getUIComponent().dispose();
-    }
-
-    /**
-     * Starts the updater thread on the progress bar
-     */
-    private void startBarUpdater() {
-        // Run bar updater
-        Runnable barUpdater = new Runnable() {
-            public void run() {
-                int i = 0;
-                while (open) {
-                    i++;
-                    bar.setValue(i % 101);
-                    try {
-                        Thread.sleep(50);
-                    } catch (InterruptedException e) {
-                        break;
-                    }
-                }
-                logFiner("Connectionbar runner stopped");
-            }
-        };
-        new Thread(barUpdater, "Connectionbar runner").start();
     }
 
     public boolean isCanceled() {
