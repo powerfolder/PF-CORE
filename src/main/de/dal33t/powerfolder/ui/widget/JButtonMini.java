@@ -20,9 +20,12 @@
 package de.dal33t.powerfolder.ui.widget;
 
 import com.jgoodies.forms.factories.Borders;
+import de.dal33t.powerfolder.ui.action.BaseAction;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.Action;
+import javax.swing.Icon;
+import javax.swing.JButton;
+import java.awt.Insets;
 
 /**
  * Class showing image button with no border, except when hover or pressed.
@@ -49,6 +52,19 @@ public class JButtonMini extends JButton {
         setBorderPainted(false);
         if (toolTipText != null && toolTipText.trim().length() > 0) {
             setToolTipText(toolTipText);
+        }
+    }
+
+    public void configureFromAction(BaseAction action) {
+        Object value = action.getValue(Action.SMALL_ICON);
+        if (value != null && value instanceof Icon) {
+            Icon icon = (Icon) value;
+            setIcon(icon);
+        }
+        value = action.getValue(Action.SHORT_DESCRIPTION);
+        if (value != null && value instanceof String) {
+            String text = (String) value;
+            setToolTipText(text);
         }
     }
 }

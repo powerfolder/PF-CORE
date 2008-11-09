@@ -51,6 +51,8 @@ public class ExpandableComputerView extends PFUIComponent {
     private JPanel lowerOuterPanel;
     private AtomicBoolean expanded;
     private JButtonMini reconnectButton;
+    private JButtonMini addRemoveButton;
+    private JLabel pictoLabel;
 
     private JLabel lastSeenLabel;
     private MyNodeManagerListener nodeManagerListener;
@@ -91,29 +93,7 @@ public class ExpandableComputerView extends PFUIComponent {
         PanelBuilder upperBuilder = new PanelBuilder(upperLayout);
         CellConstraints cc = new CellConstraints();
 
-        JLabel jLabel;
-        if (member.isConnected()) {
-            if (member.isFriend()) {
-                jLabel = new JLabel(Icons.NODE_FRIEND_CONNECTED);
-                jLabel.setToolTipText(Translation.getTranslation(
-                        "exp_computer_view.node_friend_connected_text"));
-            } else {
-                jLabel = new JLabel(Icons.NODE_NON_FRIEND_CONNECTED);
-                jLabel.setToolTipText(Translation.getTranslation(
-                        "exp_computer_view.node_non_friend_connected_text"));
-            }
-        } else {
-            if (member.isFriend()) {
-                jLabel = new JLabel(Icons.NODE_FRIEND_DISCONNECTED);
-                jLabel.setToolTipText(Translation.getTranslation(
-                        "exp_computer_view.node_friend_disconnected_text"));
-            } else {
-                jLabel = new JLabel(Icons.NODE_NON_FRIEND_DISCONNECTED);
-                jLabel.setToolTipText(Translation.getTranslation(
-                        "exp_computer_view.node_non_friend_disconnected_text"));
-            }
-        }
-        upperBuilder.add(jLabel, cc.xy(1, 1));
+        upperBuilder.add(pictoLabel, cc.xy(1, 1));
         upperBuilder.add(new JLabel(member.getNick()), cc.xy(3, 1));
         upperBuilder.add(reconnectButton, cc.xy(6, 1));
         upperBuilder.add(expandCollapseButton, cc.xy(8, 1));
@@ -129,6 +109,7 @@ public class ExpandableComputerView extends PFUIComponent {
         lowerBuilder.addSeparator(null, cc.xywh(2, 1, 4, 1));
 
         lowerBuilder.add(lastSeenLabel, cc.xy(2, 3));
+        lowerBuilder.add(addRemoveButton, cc.xy(5, 3));
 
         JPanel lowerPanel = lowerBuilder.getPanel();
 
@@ -172,7 +153,12 @@ public class ExpandableComputerView extends PFUIComponent {
         reconnectButton = new JButtonMini(getApplicationModel()
                 .getActionModel().getReconnectAction());
         reconnectButton.addActionListener(new MyReconnectActionListener());
+        addRemoveButton = new JButtonMini(getApplicationModel().getActionModel()
+                .getAddFriendAction());
+        addRemoveButton.addActionListener(new MyAddRemoveActionListener());
+        pictoLabel = new JLabel();
         updateDetails();
+        configureAddRemoveButton();
         registerListeners();
     }
 
@@ -223,6 +209,15 @@ public class ExpandableComputerView extends PFUIComponent {
         }
         if (node.equals(member)) {
             updateDetails();
+            configureAddRemoveButton();
+        }
+    }
+
+    private void configureAddRemoveButton() {
+        if (member.isFriend()) {
+            addRemoveButton.configureFromAction(getApplicationModel().getActionModel().getRemoveFriendAction());
+        } else {
+            addRemoveButton.configureFromAction(getApplicationModel().getActionModel().getAddFriendAction());
         }
     }
 
@@ -239,6 +234,29 @@ public class ExpandableComputerView extends PFUIComponent {
         }
         lastSeenLabel.setText(Translation.getTranslation(
                 "exp_computer_view.last_seen_text", lastConnectedTime));
+
+        if (member.isConnected()) {
+            if (member.isFriend()) {
+                pictoLabel.setIcon(Icons.NODE_FRIEND_CONNECTED);
+                pictoLabel.setToolTipText(Translation.getTranslation(
+                        "exp_computer_view.node_friend_connected_text"));
+            } else {
+                pictoLabel.setIcon(Icons.NODE_NON_FRIEND_CONNECTED);
+                pictoLabel.setToolTipText(Translation.getTranslation(
+                        "exp_computer_view.node_non_friend_connected_text"));
+            }
+        } else {
+            if (member.isFriend()) {
+                pictoLabel.setIcon(Icons.NODE_FRIEND_DISCONNECTED);
+                pictoLabel.setToolTipText(Translation.getTranslation(
+                        "exp_computer_view.node_friend_disconnected_text"));
+            } else {
+                pictoLabel.setIcon(Icons.NODE_NON_FRIEND_DISCONNECTED);
+                pictoLabel.setToolTipText(Translation.getTranslation(
+                        "exp_computer_view.node_non_friend_disconnected_text"));
+            }
+        }
+
     }
 
     /**
@@ -315,6 +333,24 @@ public class ExpandableComputerView extends PFUIComponent {
                     e.getID(), e.getActionCommand(), e.getWhen(), e.getModifiers());
             getApplicationModel().getActionModel().getReconnectAction()
                     .actionPerformed(ae);
+        }
+    }
+
+    /**
+     * Class to listen for add / remove friendship requests.
+     */
+    private class MyAddRemoveActionListener implements ActionListener {
+
+        public void actionPerformed(ActionEvent e) {
+            ActionEvent ae = new ActionEvent(ExpandableComputerView.this,
+                    e.getID(), e.getActionCommand(), e.getWhen(), e.getModifiers());
+            if (member.isFriend()) {
+                getApplicationModel().getActionModel().getRemoveFriendAction()
+                        .actionPerformed(ae);
+            } else {
+                getApplicationModel().getActionModel().getAddFriendAction()
+                        .actionPerformed(ae);
+            }            
         }
     }
 }

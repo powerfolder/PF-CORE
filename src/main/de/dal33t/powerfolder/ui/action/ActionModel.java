@@ -44,6 +44,8 @@ public class ActionModel extends PFComponent {
     private OpenFilesInformationAction openFilesInformationAction;
     private OpenMembersInformationAction openMembersInformationAction;
     private ReconnectAction reconnectAction;
+    private AddFriendAction addFriendAction;
+    private RemoveFriendAction removeFriendAction;
 
     public NewFolderAction getNewFolderAction() {
         if (newFolderAction == null) {
@@ -106,5 +108,19 @@ public class ActionModel extends PFComponent {
             reconnectAction = new ReconnectAction(getController());
         }
         return reconnectAction;
+    }
+
+    public AddFriendAction getAddFriendAction() {
+        if (addFriendAction == null) {
+            addFriendAction = new AddFriendAction(getController());
+        }
+        return addFriendAction;
+    }
+
+    public RemoveFriendAction getRemoveFriendAction() {
+        if (removeFriendAction == null) {
+            removeFriendAction = new RemoveFriendAction(getController());
+        }
+        return removeFriendAction;
     }
 }
