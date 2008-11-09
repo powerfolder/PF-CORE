@@ -23,6 +23,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.ui.action.BaseAction;
+import de.dal33t.powerfolder.ui.computers.ExpandableComputerView;
 import de.dal33t.powerfolder.ui.dialog.ConnectDialog;
 import de.dal33t.powerfolder.util.Translation;
 
@@ -50,14 +51,14 @@ public class ReconnectAction extends BaseAction {
             log.severe("Attempt to reconnect to null member");
             return;
         }
-        if (!(item instanceof Member)) {
+        if (!(item instanceof ExpandableComputerView)) {
             log.severe("Attempt to reconnect to class " + item.getClass().getName());
             return;
         }
 
         // Build new connect dialog
         final ConnectDialog connectDialog = new ConnectDialog(getController());
-        final Member member = (Member) item;
+        final Member member = ((ExpandableComputerView) item).getMember();
 
         Runnable connector = new Runnable() {
             public void run() {

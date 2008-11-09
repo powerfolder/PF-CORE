@@ -85,8 +85,8 @@ public class ExpandableComputerView extends PFUIComponent {
         initComponent();
 
         // Build ui
-                                             //  icon        name  space            ex/co
-        FormLayout upperLayout = new FormLayout("pref, 3dlu, pref, pref:grow, 3dlu, pref",
+                                             //  icon        name  space            recon       ex/co
+        FormLayout upperLayout = new FormLayout("pref, 3dlu, pref, pref:grow, 3dlu, pref, 3dlu, pref",
             "pref");
         PanelBuilder upperBuilder = new PanelBuilder(upperLayout);
         CellConstraints cc = new CellConstraints();
@@ -115,21 +115,20 @@ public class ExpandableComputerView extends PFUIComponent {
         }
         upperBuilder.add(jLabel, cc.xy(1, 1));
         upperBuilder.add(new JLabel(member.getNick()), cc.xy(3, 1));
-        upperBuilder.add(expandCollapseButton, cc.xy(6, 1));
+        upperBuilder.add(reconnectButton, cc.xy(6, 1));
+        upperBuilder.add(expandCollapseButton, cc.xy(8, 1));
 
         JPanel upperPanel = upperBuilder.getPanel();
 
         // Build lower detials with line border.
         FormLayout lowerLayout = new FormLayout("3dlu, pref, pref:grow, 3dlu, pref, 3dlu",
-            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
-          // sep,        last        sep         add
+            "pref, 3dlu, pref");
+          // sep,        last
         PanelBuilder lowerBuilder = new PanelBuilder(lowerLayout);
 
         lowerBuilder.addSeparator(null, cc.xywh(2, 1, 4, 1));
 
         lowerBuilder.add(lastSeenLabel, cc.xy(2, 3));
-        lowerBuilder.add(reconnectButton, cc.xy(5, 3));
-        lowerBuilder.addSeparator(null, cc.xywh(2, 5, 4, 1));
 
         JPanel lowerPanel = lowerBuilder.getPanel();
 
@@ -208,8 +207,8 @@ public class ExpandableComputerView extends PFUIComponent {
      * Gets the name of the associated folder.
      * @return
      */
-    public String getComputerName() {
-        return member.getNick();
+    public Member getMember() {
+        return member;
     }
 
     /**
@@ -312,8 +311,8 @@ public class ExpandableComputerView extends PFUIComponent {
     private class MyReconnectActionListener implements ActionListener {
 
         public void actionPerformed(ActionEvent e) {
-            ActionEvent ae = new ActionEvent(member, e.getID(),
-                    e.getActionCommand(), e.getWhen(), e.getModifiers());
+            ActionEvent ae = new ActionEvent(ExpandableComputerView.this,
+                    e.getID(), e.getActionCommand(), e.getWhen(), e.getModifiers());
             getApplicationModel().getActionModel().getReconnectAction()
                     .actionPerformed(ae);
         }
