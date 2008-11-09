@@ -1636,7 +1636,7 @@ public class Member extends PFComponent {
 
     private synchronized MessageListenerSupport getMessageListenerSupport() {
         if (messageListenerSupport == null) {
-            messageListenerSupport = new MessageListenerSupport();
+            messageListenerSupport = new MessageListenerSupport(this);
         }
         return messageListenerSupport;
     }
