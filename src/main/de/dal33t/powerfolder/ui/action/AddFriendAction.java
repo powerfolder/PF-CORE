@@ -19,10 +19,23 @@
 */
 package de.dal33t.powerfolder.ui.action;
 
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.light.MemberInfo;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.ui.GenericDialogType;
+import de.dal33t.powerfolder.util.ui.NeverAskAgainResponse;
 
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 
 /**
@@ -42,7 +55,48 @@ public class AddFriendAction extends BaseAction {
         if (source != null && source instanceof MemberInfo) {
             MemberInfo memberInfo = (MemberInfo) source;
             Member member = getController().getNodeManager().getNode(memberInfo);
-            member.setFriend(true, null);
+
+            boolean askForFriendshipMessage = PreferencesEntry.
+                    ASK_FOR_FRIENDSHIP_MESSAGE.getValueBoolean(getController());
+            if (askForFriendshipMessage) {
+
+                // Prompt for personal message.
+                String[] options = {
+                        Translation.getTranslation("general.ok"),
+                        Translation.getTranslation("general.cancel")};
+
+                FormLayout layout = new FormLayout("pref", "pref, 5dlu, pref, pref");
+                PanelBuilder builder = new PanelBuilder(layout);
+                CellConstraints cc = new CellConstraints();
+                String nick = member.getNick();
+                String text = Translation.getTranslation(
+                        "friend.search.personal.message.text2", nick);
+                builder.add(new JLabel(text), cc.xy(1, 1));
+                JTextArea textArea = new JTextArea();
+                JScrollPane scrollPane = new JScrollPane(textArea);
+                scrollPane.setPreferredSize(new Dimension(400, 200));
+                builder.add(scrollPane, cc.xy(1, 3));
+                JPanel innerPanel = builder.getPanel();
+
+                NeverAskAgainResponse response = DialogFactory.genericDialog(
+                        getController().getUIController().
+                        getMainFrame().getUIComponent(),
+                        Translation.getTranslation("friend.search.personal.message.title"),
+                        innerPanel, options, 0, GenericDialogType.INFO,
+                        Translation.getTranslation("general.neverAskAgain"));
+                if (response.getButtonIndex() == 0) { // == OK
+                    String personalMessage = textArea.getText();
+                    member.setFriend(true, personalMessage);
+                }
+                if (response.isNeverAskAgain()) {
+                    // don't ask me again
+                    PreferencesEntry.ASK_FOR_FRIENDSHIP_MESSAGE.setValue(
+                            getController(), false);
+                }
+            } else {
+                // Send with no personal messages
+                member.setFriend(true, null);
+            }
         }
     }
 }
