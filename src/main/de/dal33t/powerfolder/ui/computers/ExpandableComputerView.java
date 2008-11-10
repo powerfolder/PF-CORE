@@ -87,7 +87,7 @@ public class ExpandableComputerView extends PFUIComponent {
         initComponent();
 
         // Build ui
-                                             //  icon        name  space            recon       ex/co
+                                             //  icon        name  space            chat       ex/co
         FormLayout upperLayout = new FormLayout("pref, 3dlu, pref, pref:grow, 3dlu, pref, 3dlu, pref",
             "pref");
         PanelBuilder upperBuilder = new PanelBuilder(upperLayout);
@@ -95,21 +95,22 @@ public class ExpandableComputerView extends PFUIComponent {
 
         upperBuilder.add(pictoLabel, cc.xy(1, 1));
         upperBuilder.add(new JLabel(member.getNick()), cc.xy(3, 1));
-        upperBuilder.add(addRemoveButton, cc.xy(6, 1));
+        upperBuilder.add(new JLabel(Icons.CHAT), cc.xy(6, 1));   // temporary :-)
         upperBuilder.add(expandCollapseButton, cc.xy(8, 1));
 
         JPanel upperPanel = upperBuilder.getPanel();
 
         // Build lower detials with line border.
-        FormLayout lowerLayout = new FormLayout("3dlu, pref, pref:grow, 3dlu, pref, 3dlu",
+        FormLayout lowerLayout = new FormLayout("3dlu, pref, pref:grow, 3dlu, pref, 3dlu, pref, 3dlu",
             "pref, 3dlu, pref");
           // sep,        last
         PanelBuilder lowerBuilder = new PanelBuilder(lowerLayout);
 
-        lowerBuilder.addSeparator(null, cc.xywh(2, 1, 4, 1));
+        lowerBuilder.addSeparator(null, cc.xywh(2, 1, 6, 1));
 
         lowerBuilder.add(lastSeenLabel, cc.xy(2, 3));
-        lowerBuilder.add(reconnectButton, cc.xy(5, 3));
+        lowerBuilder.add(addRemoveButton, cc.xy(5, 3));
+        lowerBuilder.add(reconnectButton, cc.xy(7, 3));
 
         JPanel lowerPanel = lowerBuilder.getPanel();
 
