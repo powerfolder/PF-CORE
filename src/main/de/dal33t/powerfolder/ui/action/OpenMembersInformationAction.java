@@ -21,7 +21,6 @@ package de.dal33t.powerfolder.ui.action;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.ui.folders.ExpandableFolderView;
 
 import java.awt.event.ActionEvent;
 
@@ -38,8 +37,8 @@ public class OpenMembersInformationAction extends BaseAction {
 
     public void actionPerformed(ActionEvent e) {
         Object source = e.getSource();
-        if (source instanceof ExpandableFolderView) {
-            FolderInfo folderInfo = ((ExpandableFolderView) source).getFolderInfo();
+        if (source instanceof FolderInfo) {
+            FolderInfo folderInfo = (FolderInfo) source;
             getController().getUIController().openMembersInformation(folderInfo);
         }
     }

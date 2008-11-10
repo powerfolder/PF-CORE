@@ -95,7 +95,7 @@ public class ExpandableComputerView extends PFUIComponent {
 
         upperBuilder.add(pictoLabel, cc.xy(1, 1));
         upperBuilder.add(new JLabel(member.getNick()), cc.xy(3, 1));
-        upperBuilder.add(reconnectButton, cc.xy(6, 1));
+        upperBuilder.add(addRemoveButton, cc.xy(6, 1));
         upperBuilder.add(expandCollapseButton, cc.xy(8, 1));
 
         JPanel upperPanel = upperBuilder.getPanel();
@@ -109,7 +109,7 @@ public class ExpandableComputerView extends PFUIComponent {
         lowerBuilder.addSeparator(null, cc.xywh(2, 1, 4, 1));
 
         lowerBuilder.add(lastSeenLabel, cc.xy(2, 3));
-        lowerBuilder.add(addRemoveButton, cc.xy(5, 3));
+        lowerBuilder.add(reconnectButton, cc.xy(5, 3));
 
         JPanel lowerPanel = lowerBuilder.getPanel();
 
@@ -329,7 +329,7 @@ public class ExpandableComputerView extends PFUIComponent {
     private class MyReconnectActionListener implements ActionListener {
 
         public void actionPerformed(ActionEvent e) {
-            ActionEvent ae = new ActionEvent(ExpandableComputerView.this,
+            ActionEvent ae = new ActionEvent(getMember().getInfo(),
                     e.getID(), e.getActionCommand(), e.getWhen(), e.getModifiers());
             getApplicationModel().getActionModel().getReconnectAction()
                     .actionPerformed(ae);
@@ -342,7 +342,7 @@ public class ExpandableComputerView extends PFUIComponent {
     private class MyAddRemoveActionListener implements ActionListener {
 
         public void actionPerformed(ActionEvent e) {
-            ActionEvent ae = new ActionEvent(ExpandableComputerView.this,
+            ActionEvent ae = new ActionEvent(getMember().getInfo(),
                     e.getID(), e.getActionCommand(), e.getWhen(), e.getModifiers());
             if (member.isFriend()) {
                 getApplicationModel().getActionModel().getRemoveFriendAction()

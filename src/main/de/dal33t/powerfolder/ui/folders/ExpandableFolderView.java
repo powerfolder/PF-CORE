@@ -396,7 +396,7 @@ public class ExpandableFolderView extends PFUIComponent {
 
     private class MyOpenSettingsInformationActionListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
-            ActionEvent ae = new ActionEvent(ExpandableFolderView.this,
+            ActionEvent ae = new ActionEvent(getFolderInfo(),
                     e.getID(), e.getActionCommand(), e.getWhen(), e.getModifiers());
             getApplicationModel().getActionModel()
                     .getOpenSettingsInformationAction().actionPerformed(ae);
@@ -405,7 +405,7 @@ public class ExpandableFolderView extends PFUIComponent {
 
     private class MyOpenFilesInformationActionListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
-            ActionEvent ae = new ActionEvent(ExpandableFolderView.this,
+            ActionEvent ae = new ActionEvent(getFolderInfo(),
                     e.getID(), e.getActionCommand(), e.getWhen(), e.getModifiers());
             getApplicationModel().getActionModel()
                     .getOpenFilesInformationAction().actionPerformed(ae);
@@ -414,7 +414,7 @@ public class ExpandableFolderView extends PFUIComponent {
 
     private class MyOpenMembersInformationActionListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
-            ActionEvent ae = new ActionEvent(ExpandableFolderView.this,
+            ActionEvent ae = new ActionEvent(getFolderInfo(),
                     e.getID(), e.getActionCommand(), e.getWhen(), e.getModifiers());
             getApplicationModel().getActionModel()
                     .getOpenMembersInformationAction().actionPerformed(ae);

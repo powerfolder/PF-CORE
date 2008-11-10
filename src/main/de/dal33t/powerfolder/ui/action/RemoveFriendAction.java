@@ -20,6 +20,8 @@
 package de.dal33t.powerfolder.ui.action;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.light.MemberInfo;
 
 import java.awt.event.ActionEvent;
 
@@ -36,5 +38,11 @@ public class RemoveFriendAction extends BaseAction {
     }
 
     public void actionPerformed(ActionEvent e) {
+        Object source = e.getSource();
+        if (source != null && source instanceof MemberInfo) {
+            MemberInfo memberInfo = (MemberInfo) source;
+            Member member = getController().getNodeManager().getNode(memberInfo);
+            member.setFriend(false, null);
+        }
     }
 }
