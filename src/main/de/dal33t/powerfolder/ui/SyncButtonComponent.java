@@ -98,6 +98,7 @@ public class SyncButtonComponent extends PFUIComponent {
         }
 
         public void maintenanceFinished(FolderRepositoryEvent e) {
+            updateSyncLabel();
         }
 
         public void maintenanceStarted(FolderRepositoryEvent e) {
