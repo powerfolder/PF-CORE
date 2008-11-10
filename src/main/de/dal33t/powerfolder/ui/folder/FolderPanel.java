@@ -23,7 +23,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.ui.chat.FolderChatPanel;
+import de.dal33t.powerfolder.ui.chatold.FolderChatPanel;
 import de.dal33t.powerfolder.util.PFUIPanel;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.UIUtil;

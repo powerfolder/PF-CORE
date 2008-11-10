@@ -17,7 +17,7 @@
 *
 * $Id$
 */
-package de.dal33t.powerfolder.ui.chat;
+package de.dal33t.powerfolder.ui.chatold;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;

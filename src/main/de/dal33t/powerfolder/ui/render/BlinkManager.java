@@ -27,8 +27,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.swing.Icon;
 import javax.swing.SwingUtilities;
-import javax.swing.event.TreeModelEvent;
-import javax.swing.tree.TreeNode;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
@@ -36,15 +34,12 @@ import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.UIController;
-import de.dal33t.powerfolder.ui.model.FolderModel;
-import de.dal33t.powerfolder.ui.chat.ChatModel;
-import de.dal33t.powerfolder.ui.chat.MemberChatPanel;
-import de.dal33t.powerfolder.ui.chat.ChatModel.ChatModelEvent;
-import de.dal33t.powerfolder.ui.chat.ChatModel.ChatModelListener;
+import de.dal33t.powerfolder.ui.chatold.ChatModel;
+import de.dal33t.powerfolder.ui.chatold.MemberChatPanel;
+import de.dal33t.powerfolder.ui.chatold.ChatModel.ChatModelEvent;
+import de.dal33t.powerfolder.ui.chatold.ChatModel.ChatModelListener;
 import de.dal33t.powerfolder.ui.navigation.ControlQuarter;
 //import de.dal33t.powerfolder.ui.navigation.NavTreeModel;
-import de.dal33t.powerfolder.util.ui.TreeNodeList;
-import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * Manages the Blinking icon in the tree and in the Systray. First add a member

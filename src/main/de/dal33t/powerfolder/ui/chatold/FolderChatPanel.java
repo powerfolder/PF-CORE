@@ -17,7 +17,7 @@
 *
 * $Id$
 */
-package de.dal33t.powerfolder.ui.chat;
+package de.dal33t.powerfolder.ui.chatold;
 
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;

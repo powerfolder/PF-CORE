@@ -22,7 +22,7 @@ package de.dal33t.powerfolder.ui.model;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.ui.action.ActionModel;
-import de.dal33t.powerfolder.ui.chat.ChatModel;
+import de.dal33t.powerfolder.ui.chatold.ChatModel;
 import de.dal33t.powerfolder.ui.webservice.ServerClientModel;
 
 /**

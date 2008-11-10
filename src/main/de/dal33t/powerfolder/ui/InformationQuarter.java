@@ -28,7 +28,7 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.ui.chat.MemberChatPanel;
+import de.dal33t.powerfolder.ui.chatold.MemberChatPanel;
 import de.dal33t.powerfolder.ui.folder.FolderPanel;
 import de.dal33t.powerfolder.ui.friends.FriendsPanel;
 import de.dal33t.powerfolder.ui.homeold.RootPanel;
