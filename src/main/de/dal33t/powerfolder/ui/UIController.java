@@ -31,9 +31,11 @@ import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.ui.actionold.SyncAllFoldersAction;
 import de.dal33t.powerfolder.ui.chatold.ChatModel;
 import de.dal33t.powerfolder.ui.SystemMonitorFrame;
+import de.dal33t.powerfolder.ui.chat.ChatFrame;
 import de.dal33t.powerfolder.ui.folder.FileNameProblemHandlerDefaultImpl;
 import de.dal33t.powerfolder.ui.friends.AskForFriendshipHandlerDefaultImpl;
 import de.dal33t.powerfolder.ui.information.InformationFrame;
@@ -111,6 +113,7 @@ public class UIController extends PFComponent {
     private MainFrame mainFrame;
     private SystemMonitorFrame systemMonitorFrame;
     private InformationFrame informationFrame;
+    private ChatFrame chatFrame;
 
     private BlinkManager blinkManager;
 
@@ -194,6 +197,7 @@ public class UIController extends PFComponent {
         }
 
         informationFrame = new InformationFrame(getController());
+        chatFrame = new ChatFrame(getController());
         systemMonitorFrame = new SystemMonitorFrame(getController());
         started = false;
 
@@ -646,6 +650,16 @@ public class UIController extends PFComponent {
         displayInformationWindow();
     }
 
+    /**
+     * Opens the Files information for a folder.
+     *
+     * @param folderInfo info of the folder to display files information for.
+     */
+    public void openChat(MemberInfo memberInfo) {
+        chatFrame.displayChat(memberInfo);
+        chatFrame.getUIComponent().setVisible(true);
+    }
+
     private class UpdateSystrayTask extends TimerTask {
         public void run() {
             StringBuilder tooltip = new StringBuilder();
@@ -700,6 +714,10 @@ public class UIController extends PFComponent {
             informationFrame.storeValues();
             informationFrame.getUIComponent().setVisible(false);
             informationFrame.getUIComponent().dispose();
+
+            chatFrame.storeValues();
+            chatFrame.getUIComponent().setVisible(false);
+            chatFrame.getUIComponent().dispose();
 
             systemMonitorFrame.storeValues();
             systemMonitorFrame.getUIComponent().setVisible(false);

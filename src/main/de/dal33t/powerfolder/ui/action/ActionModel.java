@@ -40,6 +40,7 @@ public class ActionModel extends PFComponent {
     private OpenPreferencesAction openPreferencesAction;
     private OpenAboutBoxAction openAboutBoxAction;
     private ConnectAction connectAction;
+    private OpenChatAction openChatAction;
     private OpenSettingsInformationAction openSettingsInformationAction;
     private OpenFilesInformationAction openFilesInformationAction;
     private OpenMembersInformationAction openMembersInformationAction;
@@ -101,6 +102,13 @@ public class ActionModel extends PFComponent {
             openMembersInformationAction = new OpenMembersInformationAction(getController());
         }
         return openMembersInformationAction;
+    }
+
+    public OpenChatAction getOpenChatAction() {
+        if (openChatAction == null) {
+            openChatAction = new OpenChatAction(getController());
+        }
+        return openChatAction;
     }
 
     public ReconnectAction getReconnectAction() {

@@ -53,6 +53,7 @@ public class ExpandableComputerView extends PFUIComponent {
     private JButtonMini reconnectButton;
     private JButtonMini addRemoveButton;
     private JLabel pictoLabel;
+    private JButtonMini chatButton;
 
     private JLabel lastSeenLabel;
     private MyNodeManagerListener nodeManagerListener;
@@ -95,7 +96,7 @@ public class ExpandableComputerView extends PFUIComponent {
 
         upperBuilder.add(pictoLabel, cc.xy(1, 1));
         upperBuilder.add(new JLabel(member.getNick()), cc.xy(3, 1));
-        upperBuilder.add(new JLabel(Icons.CHAT), cc.xy(6, 1));   // temporary :-)
+        upperBuilder.add(chatButton, cc.xy(6, 1));   // temporary :-)
         upperBuilder.add(expandCollapseButton, cc.xy(8, 1));
 
         JPanel upperPanel = upperBuilder.getPanel();
@@ -157,6 +158,9 @@ public class ExpandableComputerView extends PFUIComponent {
         addRemoveButton = new JButtonMini(getApplicationModel().getActionModel()
                 .getAddFriendAction());
         addRemoveButton.addActionListener(new MyAddRemoveActionListener());
+        chatButton = new JButtonMini(getApplicationModel().getActionModel()
+                .getOpenChatAction());
+        chatButton.addActionListener(new MyChatActionListener());
         pictoLabel = new JLabel();
         updateDetails();
         configureAddRemoveButton();
@@ -352,6 +356,19 @@ public class ExpandableComputerView extends PFUIComponent {
                 getApplicationModel().getActionModel().getAddFriendAction()
                         .actionPerformed(ae);
             }            
+        }
+    }
+
+    /**
+     * Class  to listen for chat requests.
+     */
+    private class MyChatActionListener implements ActionListener {
+
+        public void actionPerformed(ActionEvent e) {
+            ActionEvent ae = new ActionEvent(getMember().getInfo(),
+                    e.getID(), e.getActionCommand(), e.getWhen(), e.getModifiers());
+            getApplicationModel().getActionModel().getOpenChatAction()
+                    .actionPerformed(ae);
         }
     }
 }
