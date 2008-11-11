@@ -197,7 +197,7 @@ public class NavTreeCellRenderer extends DefaultTreeCellRenderer {
             icon = Icons.DEBUG;
         } else if (userObject == RootNode.DIALOG_TESTING_NODE_LABEL) {
             text = "Dialog Testing";
-            icon = Icons.DIALOG_TESTING;
+            icon = Icons.DIALOG;
         } else if (value == nmModel.getFriendsTreeNode()) {
             text = Translation.getTranslation("root_panel.friends") + " ("
                 + nmModel.getFriendsTreeNode().getChildCount() + ')';

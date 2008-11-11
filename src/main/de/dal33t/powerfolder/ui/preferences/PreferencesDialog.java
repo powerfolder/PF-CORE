@@ -79,7 +79,7 @@ public class PreferencesDialog extends BaseDialog {
     }
 
     protected Icon getIcon() {
-        return Icons.PREFERENCES;
+        return Icons.PREFERENCES_PICTO;
     }
 
     public ValueModel getDyndnsModel() {
@@ -94,7 +94,7 @@ public class PreferencesDialog extends BaseDialog {
         tabbedPane.setSelectedIndex(index);
     }
 
-    private void showTab(boolean enable, PreferenceTab tab, int tabindex) {
+    private void showTab(boolean enable, PreferenceTab tab, int tabindex, Icon icon) {
         Reject.ifNull(tab, "Unable to show/hide tab. Tab is null");
         Reject.ifTrue(tabindex < 0, "Unable to show/hide tab. Invalid index: "
             + tabindex);
@@ -105,7 +105,7 @@ public class PreferencesDialog extends BaseDialog {
             // calculate a valid insert index before inserting
             int currentNumberOfTabs = tabbedPane.getTabCount();
             int newTabindex = Math.min(tabindex, currentNumberOfTabs);
-            tabbedPane.insertTab(tab.getTabName(), null, tab.getUIPanel(),
+            tabbedPane.insertTab(tab.getTabName(), icon, tab.getUIPanel(),
                 null, newTabindex);
         } else {
             preferenceTabs.remove(tab);
@@ -115,7 +115,7 @@ public class PreferencesDialog extends BaseDialog {
     }
 
     private void showAdvancedTab(boolean enable) {
-        showTab(enable, advancedSettingsTab, ADVANCED_TAB_INDEX);
+        showTab(enable, advancedSettingsTab, ADVANCED_TAB_INDEX, Icons.ADVANCED);
     }
 
     void showDynDNSTab(boolean enable) {
@@ -124,7 +124,7 @@ public class PreferencesDialog extends BaseDialog {
             dynDnsSettingsTab = new DynDnsSettingsTab(getController(),
                 mydnsndsModel);
         }
-        showTab(enable, dynDnsSettingsTab, DYNDNS_TAB_INDEX);
+        showTab(enable, dynDnsSettingsTab, DYNDNS_TAB_INDEX, Icons.DYN_DNS);
     }
 
     public Component getContent() {
@@ -149,24 +149,24 @@ public class PreferencesDialog extends BaseDialog {
             getController());
         preferenceTabs.add(generalSettingsTab);
         tabbedPane.addTab(generalSettingsTab.getTabName(),
-            null, generalSettingsTab.getUIPanel(), null);
+            Icons.PREFERENCES, generalSettingsTab.getUIPanel(), null);
 
         NetworkSettingsTab networkSettingsTab = new NetworkSettingsTab(
             getController());
         preferenceTabs.add(networkSettingsTab);
-        tabbedPane.addTab(networkSettingsTab.getTabName(), null,
+        tabbedPane.addTab(networkSettingsTab.getTabName(), Icons.WEBSERVICE,
             networkSettingsTab.getUIPanel(), null);
 
         dynDnsSettingsTab = new DynDnsSettingsTab(getController(),
             mydnsndsModel);
         preferenceTabs.add(dynDnsSettingsTab);
-        tabbedPane.addTab(dynDnsSettingsTab.getTabName(), null,
+        tabbedPane.addTab(dynDnsSettingsTab.getTabName(), Icons.DYN_DNS,
             dynDnsSettingsTab.getUIPanel(), null);
 
         DialogsSettingsTab dialogsSettingsTab = new DialogsSettingsTab(
             getController());
         preferenceTabs.add(dialogsSettingsTab);
-        tabbedPane.addTab(dialogsSettingsTab.getTabName(), null,
+        tabbedPane.addTab(dialogsSettingsTab.getTabName(), Icons.DIALOG,
             dialogsSettingsTab.getUIPanel(), null);
 
         PluginSettingsTab pluginSettingsTab = new PluginSettingsTab(
@@ -195,7 +195,7 @@ public class PreferencesDialog extends BaseDialog {
             .getValueBoolean(getController()))
         {
             preferenceTabs.add(advancedSettingsTab);
-            tabbedPane.addTab(advancedSettingsTab.getTabName(), null,
+            tabbedPane.addTab(advancedSettingsTab.getTabName(), Icons.ADVANCED,
                 advancedSettingsTab.getUIPanel(), null);
         }
 

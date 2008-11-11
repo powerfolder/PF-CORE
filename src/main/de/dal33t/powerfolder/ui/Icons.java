@@ -84,7 +84,7 @@ public class Icons {
     public static final Icon DEBUG = getIcon("icons/LadyBug.gif");
     public static final Icon UPDATES = getIcon("icons/Updates.gif");
     public static final Icon SYSTEM_MONITOR = getIcon("icons/SystemMonitor.png");
-    public static final Icon DIALOG_TESTING = getIconById("dialog.icon");
+    public static final Icon DIALOG = getIcon("icons/Dialog.gif");
     public static final Icon STOP = getIcon("icons/Abort.gif");
     public static final Icon RUN = getIcon("icons/Play.gif");
     public static final Icon SUSPEND = getIcon("icons/Suspend.gif");
@@ -101,6 +101,7 @@ public class Icons {
 
     public static final Icon CHAT = getIcon("icons/Chat.gif");
     public static final Icon SETTINGS = getIcon("icons/Settings.png");
+    public static final Icon ADVANCED = getIcon("icons/Settings.png");
     public static final Icon STAR = getIcon("icons/Star.gif");
     public static final Icon INFORMATION = getIcon("icons/information.png");
     public static final Icon COMPUTER = getIcon("icons/Computer.png");
@@ -119,7 +120,8 @@ public class Icons {
     public static final Icon NEW_FOLDER = getIconById("new_folder.icon");
     public static final Icon JOIN_FOLDER = getIconById("join_folder.icon");
     public static final Icon REMOVE_FOLDER = getIconById("remove_folder.icon");
-    public static final Icon PREFERENCES = getIcon("icons/pictos/Preferences.png");
+    public static final Icon PREFERENCES = getIcon("icons/Preferences.png");
+    public static final Icon PREFERENCES_PICTO = getIcon("icons/pictos/Preferences.png");
     public static final Icon ABOUT = getIconById("about.icon");
     public static final Icon SLEEP = getIconById("sleep.icon");
     public static final Icon WAKE_UP = getIconById("wake_up.icon");
@@ -132,6 +134,7 @@ public class Icons {
     public static final Icon SORT_UP = getIconById("sort_up.icon");
     public static final Icon SORT_DOWN = getIconById("sort_down.icon");
     public static final Icon SORT_BLANK = getIconById("sort_blank.icon");
+    public static final Icon DYN_DNS = getIcon("icons/DynDns.gif");
 
     public static final Icon EXPAND = getIcon("icons/Expand.gif");
     public static final Icon COLLAPSE = getIcon("icons/Collapse.gif");

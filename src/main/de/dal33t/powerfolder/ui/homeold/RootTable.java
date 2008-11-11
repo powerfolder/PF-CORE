@@ -124,7 +124,7 @@ public class RootTable extends JTable {
                     setIcon(Icons.WEBSERVICE);
                 } else if (userObject == RootNode.DIALOG_TESTING_NODE_LABEL) {
                     newValue = "Dialog Testing";
-                    setIcon(Icons.DIALOG_TESTING);
+                    setIcon(Icons.DIALOG);
                 } else if (userObject == RootNode.DEBUG_NODE_LABEL) {
                     newValue = "Debug";
                     setIcon(Icons.DEBUG);
