@@ -22,13 +22,8 @@ package de.dal33t.powerfolder.ui.chat;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.ui.information.InformationFilesCard;
-import de.dal33t.powerfolder.ui.information.InformationSettingsCard;
-import de.dal33t.powerfolder.ui.information.InformationMembersCard;
-import de.dal33t.powerfolder.ui.information.InformationCard;
 import de.javasoft.plaf.synthetica.SyntheticaRootPaneUI;
 
 import javax.swing.*;

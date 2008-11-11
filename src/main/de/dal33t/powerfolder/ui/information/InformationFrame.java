@@ -127,24 +127,32 @@ public class InformationFrame extends PFUIComponent {
         }
     }
 
-    public void displayFiles(FolderInfo folderinfo) {
-        InformationFilesCard card = new InformationFilesCard(getController(), folderinfo);
+    public void displayFolderFiles(FolderInfo folderinfo) {
+        FolderInformationCard card = new FolderInformationCard(getController(),
+                folderinfo);
+        card.showFiles();
         displayCard(card);
     }
 
-    public void displaySettings(FolderInfo folderinfo) {
-        InformationSettingsCard card = new InformationSettingsCard(getController(), folderinfo);
+    public void displayFolderSettings(FolderInfo folderinfo) {
+        FolderInformationCard card = new FolderInformationCard(getController(),
+                folderinfo);
+        card.showSettings();
         displayCard(card);
     }
 
-    public void displayMembers(FolderInfo folderinfo) {
-        InformationMembersCard card = new InformationMembersCard(getController(), folderinfo);
+    public void displayFolderMembers(FolderInfo folderinfo) {
+        FolderInformationCard card = new FolderInformationCard(getController(),
+                folderinfo);
+        card.showMembers();
         displayCard(card);
     }
 
     private void displayCard(InformationCard card) {
         getUIComponent().setIconImage(card.getCardImage());
         getUIComponent().setTitle(card.getCardTitle());
+        getUIComponent().getContentPane().removeAll();
+        getUIComponent().getContentPane().add(card.getUIComponent());
     }
 
 }

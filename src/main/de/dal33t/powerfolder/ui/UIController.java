@@ -624,7 +624,7 @@ public class UIController extends PFComponent {
      * @param folderInfo info of the folder to display files information for.
      */
     public void openFilesInformation(FolderInfo folderInfo) {
-        informationFrame.displayFiles(folderInfo);
+        informationFrame.displayFolderFiles(folderInfo);
         displayInformationWindow();
     }
 
@@ -635,7 +635,7 @@ public class UIController extends PFComponent {
      * information for.
      */
     public void openSettingsInformation(FolderInfo folderInfo) {
-        informationFrame.displaySettings(folderInfo);
+        informationFrame.displayFolderSettings(folderInfo);
         displayInformationWindow();
     }
 
@@ -646,7 +646,7 @@ public class UIController extends PFComponent {
      * information for.
      */
     public void openMembersInformation(FolderInfo folderInfo) {
-        informationFrame.displayMembers(folderInfo);
+        informationFrame.displayFolderMembers(folderInfo);
         displayInformationWindow();
     }
 

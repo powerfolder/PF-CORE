@@ -213,7 +213,8 @@ public class Icons {
     public static final Icon FOLDERS = getIcon("icons/Folders.png");
     public static final Icon FOLDER_INVALID = getIconById("folder_invalid.icon");
 
-    public static final Icon FOLDER = getIcon("icons/Folder.gif");
+    public static final Icon FOLDER = getIcon("icons/Folders.png");
+    public static final Icon FILES = getIcon("icons/Folders.png");
     public static final Icon FOLDER_PREVIEW = getIcon("icons/Folder_disconnected.gif");
     public static final Icon FOLDER_ROTATION_1 = getIcon("icons/Folder_rotation_1.gif");
     public static final Icon FOLDER_ROTATION_2 = getIcon("icons/Folder_rotation_2.gif");
@@ -307,9 +308,7 @@ public class Icons {
 
     // Images icons
     public static final Image POWERFOLDER_IMAGE = getImage("icons/PowerFolder_32x32.gif");
-    public static final Image MEMBERS_IMAGE = getImage("icons/Node_Friend_Connected.gif");
-    public static final Image FILES_IMAGE = getImage("icons/Folders.png");
-    public static final Image SETTINGS_IMAGE = getImage("icons/Settings.png");
+    public static final Image FOLDER_IMAGE = getImage("icons/Folders.png");
     public static final Image SYSTEM_MONITOR_IMAGE = getImage("icons/SystemMonitor.png");
     public static final Image CHAT_IMAGE = getImage("icons/Chat.gif");
 

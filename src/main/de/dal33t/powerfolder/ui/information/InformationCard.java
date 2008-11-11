@@ -50,6 +50,6 @@ public abstract class InformationCard extends PFUIComponent {
      * This is the JComponent that is displayed in the InformationFrame.
      * @return
      */
-    public abstract JPanel getUIComponent();
+    public abstract JComponent getUIComponent();
 
 }
