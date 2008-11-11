@@ -97,7 +97,7 @@ public class RootTable extends JTable {
                 if (value == controller.getUIController().getApplicationModel()
                     .getFolderRepositoryModel().getMyFoldersTreeNode())
                 {
-                    setIcon(Icons.FOLDERS);
+                    setIcon(Icons.FOLDER);
                     newValue = Translation.getTranslation("title.my.folders");
                 } else if (userObject == RootNode.DOWNLOADS_NODE_LABEL) {
                     newValue = Translation.getTranslation("general.downloads");

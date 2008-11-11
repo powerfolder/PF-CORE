@@ -153,7 +153,7 @@ public class NavTreeCellRenderer extends DefaultTreeCellRenderer {
             text = foInfo.name;
         } else if (value == folderRepoModel.getMyFoldersTreeNode()) {
             TreeNode node = (TreeNode) value;
-            icon = Icons.FOLDERS;
+            icon = Icons.FOLDER;
             text = Translation.getTranslation("title.my.folders") + " ("
                 + node.getChildCount() + ')';
         } else if (userObject == RootNode.DOWNLOADS_NODE_LABEL) {
