@@ -37,6 +37,8 @@ public class InformationFrame extends PFUIComponent {
 
     private JFrame uiComponent;
 
+    private FolderInformationCard folderInformationCard;
+
     /**
      * Constructor
      *
@@ -127,27 +129,56 @@ public class InformationFrame extends PFUIComponent {
         }
     }
 
-    public void displayFolderFiles(FolderInfo folderinfo) {
-        FolderInformationCard card = new FolderInformationCard(getController(),
-                folderinfo);
-        card.showFiles();
-        displayCard(card);
+    /**
+     * Displays file info for a folder.
+     *
+     * @param folderInfo
+     */
+    public void displayFolderFiles(FolderInfo folderInfo) {
+        buildFolderInformationCard();
+        folderInformationCard.setFolderInfo(folderInfo);
+        folderInformationCard.showFiles();
+        displayCard(folderInformationCard);
     }
 
-    public void displayFolderSettings(FolderInfo folderinfo) {
-        FolderInformationCard card = new FolderInformationCard(getController(),
-                folderinfo);
-        card.showSettings();
-        displayCard(card);
+    /**
+     * Displays settings info for a folder
+     *
+     * @param folderInfo
+     */
+    public void displayFolderSettings(FolderInfo folderInfo) {
+        buildFolderInformationCard();
+        folderInformationCard.setFolderInfo(folderInfo);
+        folderInformationCard.showSettings();
+        displayCard(folderInformationCard);
     }
 
-    public void displayFolderMembers(FolderInfo folderinfo) {
-        FolderInformationCard card = new FolderInformationCard(getController(),
-                folderinfo);
-        card.showMembers();
-        displayCard(card);
+    /**
+     * Displays folder member info
+     *
+     * @param folderInfo
+     */
+    public void displayFolderMembers(FolderInfo folderInfo) {
+        buildFolderInformationCard();
+        folderInformationCard.setFolderInfo(folderInfo);
+        folderInformationCard.showMembers();
+        displayCard(folderInformationCard);
     }
 
+    /**
+     * Builds the local FolderInformationCard if required.
+     */
+    private void buildFolderInformationCard() {
+        if (folderInformationCard == null) {
+            folderInformationCard = new FolderInformationCard(getController());
+        }
+    }
+
+    /**
+     * Displays a card with tile and icon.
+     * 
+     * @param card
+     */
     private void displayCard(InformationCard card) {
         getUIComponent().setIconImage(card.getCardImage());
         getUIComponent().setTitle(card.getCardTitle());

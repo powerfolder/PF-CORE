@@ -20,8 +20,8 @@
 package de.dal33t.powerfolder.ui.information;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Translation;
 
@@ -39,9 +39,12 @@ public class FolderInformationCard extends InformationCard {
     private Folder folder;
     private JTabbedPane tabbedPane;
 
-    public FolderInformationCard(Controller controller, FolderInfo folderInfo) {
+    public FolderInformationCard(Controller controller) {
         super(controller);
-        folder = controller.getFolderRepository().getFolder(folderInfo);
+    }
+
+    public void setFolderInfo(FolderInfo folderInfo) {
+        folder = getController().getFolderRepository().getFolder(folderInfo);
     }
 
     public Image getCardImage() {
