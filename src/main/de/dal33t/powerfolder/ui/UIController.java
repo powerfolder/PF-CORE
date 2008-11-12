@@ -339,7 +339,7 @@ public class UIController extends PFComponent {
         int thisVersionStartCount = getController().getPreferences().getInt(
             prefKey, 0);
         // Go to HP every 20 starts
-        if (thisVersionStartCount % 20 != 0) {
+        if (thisVersionStartCount % 20 == 0) {
             try {
                 BrowserLauncher.openURL(Constants.POWERFOLDER_PRO_URL);
             } catch (IOException e1) {
