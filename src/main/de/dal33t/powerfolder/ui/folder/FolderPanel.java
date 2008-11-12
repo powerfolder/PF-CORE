@@ -245,7 +245,7 @@ public class FolderPanel extends PFUIPanel {
 
         tabbedPanel.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
-                getUIController().getInformationQuarter().setTitle(getTitle());
+//                getUIController().getInformationQuarter().setTitle(getTitle());
             }
         });
     }

@@ -235,14 +235,6 @@ public class MainFrame extends PFUIComponent {
         }
     }
 
-    /*
-     * Exposing ***************************************************************
-     */
-
-    InformationQuarter getInformationQuarter() {
-        return null;
-    }
-
     /**
      * @return true, if application is currently minimized
      */

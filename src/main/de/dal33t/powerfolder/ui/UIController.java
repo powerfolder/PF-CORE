@@ -774,10 +774,6 @@ public class UIController extends PFComponent {
         return mainFrame;
     }
 
-    public InformationQuarter getInformationQuarter() {
-        return mainFrame == null ? null : mainFrame.getInformationQuarter();
-    }
-
     /**
      * For a more convenience way you can also use
      * PFUIComponent.getApplicationModel()
@@ -997,9 +993,9 @@ public class UIController extends PFComponent {
                                             // Found folder, use as path.
 
 
-                                            // Also select chat tab.
-                                            getInformationQuarter()
-                                                .displayChat(folder);
+//                                            // Also select chat tab.
+//                                            getInformationQuarter()
+//                                                .displayChat(folder);
                                             return;
                                         }
                                     }

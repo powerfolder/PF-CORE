@@ -110,17 +110,17 @@ public class RemoveFileAction extends SelectionBaseAction {
     }
 
     public void actionPerformed(ActionEvent e) {
-        Object target = getUIController().getInformationQuarter()
-            .getDisplayTarget();
+//        Object target = getUIController().getInformationQuarter()
+//            .getDisplayTarget();
         final Folder folder;
-        if (target instanceof Directory) {
-            folder = ((Directory) target).getRootFolder();
-        } else if (target instanceof Folder) {
-            folder = (Folder) target;
-        } else {
-            log.warning("Unable to remove files on target: " + target);
-            return;
-        }
+//        if (target instanceof Directory) {
+//            folder = ((Directory) target).getRootFolder();
+//        } else if (target instanceof Folder) {
+//            folder = (Folder) target;
+//        } else {
+//            log.warning("Unable to remove files on target: " + target);
+//            return;
+//        }
         Object[] selections = getSelectionModel().getSelections();
         if (selections != null && selections.length > 0) {
             final List<Object> toRemove = new ArrayList<Object>(
@@ -153,23 +153,23 @@ public class RemoveFileAction extends SelectionBaseAction {
                 }
             }
 
-            String warningText;
+            String warningText = "";
             if (containsDirectory) {
-                if (folder.isUseRecycleBin()) {
-                    warningText = Translation
-                        .getTranslation("delete_confimation.text_move_to_recycle_bin_directory");
-                } else {
-                    warningText = Translation
-                        .getTranslation("delete_confimation.text_delete_directory");
-                }
+//                if (folder.isUseRecycleBin()) {
+//                    warningText = Translation
+//                        .getTranslation("delete_confimation.text_move_to_recycle_bin_directory");
+//                } else {
+//                    warningText = Translation
+//                        .getTranslation("delete_confimation.text_delete_directory");
+//                }
             } else {
-                if (folder.isUseRecycleBin()) {
-                    warningText = Translation
-                        .getTranslation("delete_confimation.text_move_to_recycle_bin");
-                } else {
-                    warningText = Translation
-                        .getTranslation("delete_confimation.text_delete");
-                }
+//                if (folder.isUseRecycleBin()) {
+//                    warningText = Translation
+//                        .getTranslation("delete_confimation.text_move_to_recycle_bin");
+//                } else {
+//                    warningText = Translation
+//                        .getTranslation("delete_confimation.text_delete");
+//                }
             }
 
             int choice = DialogFactory.showScrollableOkCancelDialog(
@@ -220,7 +220,7 @@ public class RemoveFileAction extends SelectionBaseAction {
                         filesToRemoveArray = filesToRemove
                             .toArray(filesToRemoveArray);
                         if (filesToRemoveArray.length > 0) {
-                            folder.removeFilesLocal(filesToRemoveArray);
+//                            folder.removeFilesLocal(filesToRemoveArray);
                         }
                         // if (dirRemoved) {
                         // TODO Schaatser please check this

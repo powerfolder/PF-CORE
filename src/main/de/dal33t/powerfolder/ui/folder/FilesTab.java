@@ -609,8 +609,8 @@ public class FilesTab extends PFUIComponent implements FolderTab,
                 Object item = selectionModel.getSelection();
                 // double click is now open subfolder
                 if (item instanceof Directory) {
-                    getUIController().getInformationQuarter().displayDirectory(
-                        (Directory) item);
+//                    getUIController().getInformationQuarter().displayDirectory(
+//                        (Directory) item);
                 } else { // get the doubleclicked
                     if (item instanceof FileInfo) {
                         FileInfo fInfo = (FileInfo) item;
@@ -1219,35 +1219,35 @@ public class FilesTab extends PFUIComponent implements FolderTab,
             Object[] selections = getSelectionModel().getSelections();
             if (selections != null) {
                 Folder folder = null;
-                Object displayTarget = getUIController()
-                    .getInformationQuarter().getDisplayTarget();
-                // Different for files and directories.
-                if (displayTarget instanceof Directory) {
-                    folder = ((Directory) displayTarget).getRootFolder();
-                } else if (displayTarget instanceof Folder) {
-                    folder = (Folder) displayTarget;
-                }
-                if (folder != null) {
-                    StringBuilder sb = new StringBuilder();
-                    for (int i = 0; i < selections.length; i++) {
-                        Object selection = selections[i];
-                        String pattern = null;
-                        if (selection instanceof FileInfo) {
-                            FileInfo fileInfo = (FileInfo) selection;
-                            pattern = fileInfo.getName();
-                        } else if (selection instanceof Directory) {
-                            Directory dir = (Directory) selection;
-                            pattern = dir.getPath() + "/*";
-                        }
-                        if (pattern != null) {
-                            sb.append(pattern);
-                            if (i != selections.length - 1) {
-                                sb.append('\n');
-                            }
-                        }
-                    }
-                    folderPanel.addPatterns(sb.toString());
-                }
+//                Object displayTarget = getUIController()
+//                    .getInformationQuarter().getDisplayTarget();
+//                // Different for files and directories.
+//                if (displayTarget instanceof Directory) {
+//                    folder = ((Directory) displayTarget).getRootFolder();
+//                } else if (displayTarget instanceof Folder) {
+//                    folder = (Folder) displayTarget;
+//                }
+//                if (folder != null) {
+//                    StringBuilder sb = new StringBuilder();
+//                    for (int i = 0; i < selections.length; i++) {
+//                        Object selection = selections[i];
+//                        String pattern = null;
+//                        if (selection instanceof FileInfo) {
+//                            FileInfo fileInfo = (FileInfo) selection;
+//                            pattern = fileInfo.getName();
+//                        } else if (selection instanceof Directory) {
+//                            Directory dir = (Directory) selection;
+//                            pattern = dir.getPath() + "/*";
+//                        }
+//                        if (pattern != null) {
+//                            sb.append(pattern);
+//                            if (i != selections.length - 1) {
+//                                sb.append('\n');
+//                            }
+//                        }
+//                    }
+//                    folderPanel.addPatterns(sb.toString());
+//                }
             }
         }
 
@@ -1273,35 +1273,35 @@ public class FilesTab extends PFUIComponent implements FolderTab,
             Object[] selections = getSelectionModel().getSelections();
             if (selections != null) {
                 Folder folder = null;
-                Object displayTarget = getUIController()
-                    .getInformationQuarter().getDisplayTarget();
-                // Different for files and directories.
-                if (displayTarget instanceof Directory) {
-                    folder = ((Directory) displayTarget).getRootFolder();
-                } else if (displayTarget instanceof Folder) {
-                    folder = (Folder) displayTarget;
-                }
-                if (folder != null) {
-                    StringBuilder sb = new StringBuilder();
-                    for (int i = 0; i < selections.length; i++) {
-                        Object selection = selections[i];
-                        String pattern = null;
-                        if (selection instanceof FileInfo) {
-                            FileInfo fileInfo = (FileInfo) selection;
-                            pattern = fileInfo.getName();
-                        } else if (selection instanceof Directory) {
-                            Directory dir = (Directory) selection;
-                            pattern = dir.getPath() + "/*";
-                        }
-                        if (pattern != null) {
-                            sb.append(pattern);
-                            if (i != selections.length - 1) {
-                                sb.append('\n');
-                            }
-                        }
-                    }
-                    folderPanel.removePatterns(sb.toString());
-                }
+//                Object displayTarget = getUIController()
+//                    .getInformationQuarter().getDisplayTarget();
+//                // Different for files and directories.
+//                if (displayTarget instanceof Directory) {
+//                    folder = ((Directory) displayTarget).getRootFolder();
+//                } else if (displayTarget instanceof Folder) {
+//                    folder = (Folder) displayTarget;
+//                }
+//                if (folder != null) {
+//                    StringBuilder sb = new StringBuilder();
+//                    for (int i = 0; i < selections.length; i++) {
+//                        Object selection = selections[i];
+//                        String pattern = null;
+//                        if (selection instanceof FileInfo) {
+//                            FileInfo fileInfo = (FileInfo) selection;
+//                            pattern = fileInfo.getName();
+//                        } else if (selection instanceof Directory) {
+//                            Directory dir = (Directory) selection;
+//                            pattern = dir.getPath() + "/*";
+//                        }
+//                        if (pattern != null) {
+//                            sb.append(pattern);
+//                            if (i != selections.length - 1) {
+//                                sb.append('\n');
+//                            }
+//                        }
+//                    }
+//                    folderPanel.removePatterns(sb.toString());
+//                }
             }
         }
 
@@ -1401,44 +1401,44 @@ public class FilesTab extends PFUIComponent implements FolderTab,
         }
 
         Folder folder = null;
-        Object displayTarget = getUIController().getInformationQuarter()
-            .getDisplayTarget();
+//        Object displayTarget = getUIController().getInformationQuarter()
+//            .getDisplayTarget();
+//
+//        // Different for files and directories.
+//        if (displayTarget instanceof Directory) {
+//            folder = ((Directory) displayTarget).getRootFolder();
+//        } else if (displayTarget instanceof Folder) {
+//            folder = (Folder) displayTarget;
+//        }
+//
+//        boolean enableIgnore = true;
+//        boolean enableUnignore = true;
+//        if (folder != null) {
+//            for (Object selection : selections) {
+//                if (selection instanceof FileInfo) {
+//                    // Only enable if not already ignored.
+//                    FileInfo fileInfo = (FileInfo) selection;
+//                    enableIgnore &= folder.getDiskItemFilter().isRetained(
+//                        fileInfo)
+//                        ^ folder.isWhitelist();
+//                    enableUnignore &= folder.getDiskItemFilter().isRetained(
+//                        fileInfo)
+//                        ^ !folder.isWhitelist();
+//                } else if (selection instanceof Directory) {
+//
+//                    // Only enable if subs not ignored.
+//                    Directory dir = (Directory) selection;
+//                    enableIgnore &= folder.getDiskItemFilter().isRetained(dir)
+//                        ^ folder.isWhitelist();
+//                    enableUnignore &= folder.getDiskItemFilter()
+//                        .isRetained(dir)
+//                        ^ !folder.isWhitelist();
+//                }
+//            }
+        //}
 
-        // Different for files and directories.
-        if (displayTarget instanceof Directory) {
-            folder = ((Directory) displayTarget).getRootFolder();
-        } else if (displayTarget instanceof Folder) {
-            folder = (Folder) displayTarget;
-        }
-
-        boolean enableIgnore = true;
-        boolean enableUnignore = true;
-        if (folder != null) {
-            for (Object selection : selections) {
-                if (selection instanceof FileInfo) {
-                    // Only enable if not already ignored.
-                    FileInfo fileInfo = (FileInfo) selection;
-                    enableIgnore &= folder.getDiskItemFilter().isRetained(
-                        fileInfo)
-                        ^ folder.isWhitelist();
-                    enableUnignore &= folder.getDiskItemFilter().isRetained(
-                        fileInfo)
-                        ^ !folder.isWhitelist();
-                } else if (selection instanceof Directory) {
-
-                    // Only enable if subs not ignored.
-                    Directory dir = (Directory) selection;
-                    enableIgnore &= folder.getDiskItemFilter().isRetained(dir)
-                        ^ folder.isWhitelist();
-                    enableUnignore &= folder.getDiskItemFilter()
-                        .isRetained(dir)
-                        ^ !folder.isWhitelist();
-                }
-            }
-        }
-
-        blackWhitelistAction.setEnabled(enableIgnore);
-        unBlackWhitelistAction.setEnabled(enableUnignore);
+//        blackWhitelistAction.setEnabled(enableIgnore);
+//        unBlackWhitelistAction.setEnabled(enableUnignore);
 
     }
 

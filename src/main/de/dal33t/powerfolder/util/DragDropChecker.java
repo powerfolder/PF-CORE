@@ -119,19 +119,19 @@ public class DragDropChecker {
             DropTarget dt = (DropTarget) dtde.getSource();
             Object whereDidEventOccur = dt.getComponent();
             DirectoryTable directoryTable = null;
-            if (whereDidEventOccur == controller.getUIController()
-                    .getInformationQuarter().getMyFolderPanel().getFilesTab()
-                    .getDirectoryTable()) {
-                directoryTable = controller.getUIController()
-                        .getInformationQuarter().getMyFolderPanel().getFilesTab()
-                        .getDirectoryTable();
-            } else if (whereDidEventOccur == controller.getUIController()
-                    .getInformationQuarter().getPreviewFolderPanel().getFilesTab()
-                    .getDirectoryTable()) {
-                directoryTable = controller.getUIController()
-                        .getInformationQuarter().getMyFolderPanel().getFilesTab()
-                        .getDirectoryTable();
-            }
+//            if (whereDidEventOccur == controller.getUIController()
+//                    .getInformationQuarter().getMyFolderPanel().getFilesTab()
+//                    .getDirectoryTable()) {
+//                directoryTable = controller.getUIController()
+//                        .getInformationQuarter().getMyFolderPanel().getFilesTab()
+//                        .getDirectoryTable();
+//            } else if (whereDidEventOccur == controller.getUIController()
+//                    .getInformationQuarter().getPreviewFolderPanel().getFilesTab()
+//                    .getDirectoryTable()) {
+//                directoryTable = controller.getUIController()
+//                        .getInformationQuarter().getMyFolderPanel().getFilesTab()
+//                        .getDirectoryTable();
+//            }
             // event on the file list:
             if (whereDidEventOccur instanceof DirectoryTable) {
                 if (directoryTable != null) {

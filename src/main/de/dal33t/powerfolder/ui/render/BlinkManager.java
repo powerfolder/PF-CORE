@@ -28,7 +28,6 @@ import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.ui.chatold.ChatModel;
 import de.dal33t.powerfolder.ui.chatold.ChatModel.ChatModelEvent;
 import de.dal33t.powerfolder.ui.chatold.ChatModel.ChatModelListener;
-import de.dal33t.powerfolder.ui.chatold.MemberChatPanel;
 
 import javax.swing.Icon;
 import javax.swing.SwingUtilities;
@@ -301,13 +300,13 @@ public class BlinkManager extends PFUIComponent {
             if (event.getSource() instanceof Member) {
                 Member chatMessageMember = (Member) event.getSource();
                 Member currentChatPartner = null;
-                if (getUIController().getInformationQuarter()
-                    .getDisplayTarget() instanceof MemberChatPanel)
-                {
-                    currentChatPartner = getUIController()
-                        .getInformationQuarter().getMemberChatPanel()
-                        .getChatPartner();
-                }
+//                if (getUIController().getInformationQuarter()
+//                    .getDisplayTarget() instanceof MemberChatPanel)
+//                {
+//                    currentChatPartner = getUIController()
+//                        .getInformationQuarter().getMemberChatPanel()
+//                        .getChatPartner();
+//                }
                 if (!chatMessageMember.equals(currentChatPartner)
                     && !chatMessageMember.isMySelf())
                 {
@@ -316,18 +315,18 @@ public class BlinkManager extends PFUIComponent {
             } else if (event.getSource() instanceof Folder) {
                 Folder chatFolder = (Folder) event.getSource();
                 Folder currentChatFolder = null;
-                if (getUIController().getInformationQuarter()
-                    .getDisplayTarget() instanceof Folder) {
-                    if (chatFolder.isPreviewOnly()) {
-                        currentChatFolder = getUIController()
-                            .getInformationQuarter().getPreviewFolderPanel()
-                            .getChatPanel().getChatFolder();
-                    } else {
-                        currentChatFolder = getUIController()
-                            .getInformationQuarter().getMyFolderPanel()
-                            .getChatPanel().getChatFolder();
-                    }
-                }
+//                if (getUIController().getInformationQuarter()
+//                    .getDisplayTarget() instanceof Folder) {
+//                    if (chatFolder.isPreviewOnly()) {
+//                        currentChatFolder = getUIController()
+//                            .getInformationQuarter().getPreviewFolderPanel()
+//                            .getChatPanel().getChatFolder();
+//                    } else {
+//                        currentChatFolder = getUIController()
+//                            .getInformationQuarter().getMyFolderPanel()
+//                            .getChatPanel().getChatFolder();
+//                    }
+//                }
                 if (!chatFolder.equals(currentChatFolder)) {
                     getUIController().getBlinkManager().addBlinking(chatFolder,
                         Icons.CHAT);
