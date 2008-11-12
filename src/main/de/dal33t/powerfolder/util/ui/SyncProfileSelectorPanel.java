@@ -19,33 +19,35 @@
  */
 package de.dal33t.powerfolder.util.ui;
 
-import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.util.List;
-import java.util.ArrayList;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
-
-import javax.swing.*;
-
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
+import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.forms.builder.ButtonBarBuilder;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.dialog.CreateEditSyncProfileDialog;
 import de.dal33t.powerfolder.ui.dialog.DeleteSyncProfileDialog;
-import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.util.Help;
 import de.dal33t.powerfolder.util.PFUIPanel;
 import de.dal33t.powerfolder.util.Translation;
+
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Panel for displaying selected sync profile and opening the
@@ -422,7 +424,7 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
     private class EditAction extends BaseAction {
 
         private EditAction(Controller controller) {
-            super("dialog.create_edit_profile.edit_button", controller);
+            super("action_edit_transfer_mode", controller);
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -433,7 +435,7 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
     private class DeleteAction extends BaseAction {
 
         private DeleteAction(Controller controller) {
-            super("dialog.create_edit_profile.delete_button", controller);
+            super("action_delete_transfer_mode", controller);
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -444,7 +446,7 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
     private class CreateAction extends BaseAction {
 
         private CreateAction(Controller controller) {
-            super("dialog.create_edit_profile.create_button", controller);
+            super("action_create_transfer_mode", controller);
         }
 
         public void actionPerformed(ActionEvent e) {
