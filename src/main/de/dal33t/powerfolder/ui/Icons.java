@@ -101,7 +101,7 @@ public class Icons {
 
     public static final Icon CHAT = getIcon("icons/Chat.gif");
     public static final Icon SETTINGS = getIcon("icons/Settings.png");
-    public static final Icon ADVANCED = getIcon("icons/Settings.png");
+    public static final Icon ADVANCED = getIcon("icons/Advanced.png");
     public static final Icon STAR = getIcon("icons/Star.gif");
     public static final Icon INFORMATION = getIcon("icons/information.png");
     public static final Icon COMPUTER = getIcon("icons/Computer.png");
@@ -213,7 +213,7 @@ public class Icons {
     public static final Icon FOLDER_INVALID = getIconById("folder_invalid.icon");
 
     public static final Icon FOLDER = getIcon("icons/Folders.png");
-    public static final Icon FILES = getIcon("icons/Folders.png");
+    public static final Icon FILES = getIcon("icons/Files.png");
     public static final Icon FOLDER_PREVIEW = getIcon("icons/Folder_disconnected.gif");
     public static final Icon FOLDER_ROTATION_1 = getIcon("icons/Folder_rotation_1.gif");
     public static final Icon FOLDER_ROTATION_2 = getIcon("icons/Folder_rotation_2.gif");
