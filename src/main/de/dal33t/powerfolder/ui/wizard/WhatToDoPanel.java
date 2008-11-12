@@ -262,7 +262,7 @@ public class WhatToDoPanel extends PFWizardPanel {
         } else if (option == inviteOption) {
 
             getWizardContext().setAttribute(PFWizard.PICTO_ICON,
-                Icons.FILESHARING_PICTO);
+                Icons.FILE_SHARING_PICTO);
 
             // Reset folderinfo for disk location
             getWizardContext().setAttribute(FOLDERINFO_ATTRIBUTE, null);
@@ -331,7 +331,7 @@ public class WhatToDoPanel extends PFWizardPanel {
     }
 
     protected JComponent getPictoComponent() {
-        return new JLabel(Icons.FILESHARING_PICTO);
+        return new JLabel(Icons.FILE_SHARING_PICTO);
     }
 
     protected String getTitle() {

@@ -195,7 +195,7 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
     }
 
     protected JComponent getPictoComponent() {
-        return new JLabel(Icons.WEBSERVICE_PICTO);
+        return new JLabel(Icons.WEB_SERVICE_PICTO);
     }
 
     protected String getTitle() {

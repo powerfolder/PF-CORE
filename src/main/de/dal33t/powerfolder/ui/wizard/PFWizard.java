@@ -174,7 +174,7 @@ public class PFWizard extends PFUIComponent {
     {
         PFWizard wizard = new PFWizard(controller);
         wizard.getWizardContext().setAttribute(PICTO_ICON,
-            Icons.WEBSERVICE_PICTO);
+            Icons.WEB_SERVICE_PICTO);
         WizardPanel nextFinishPanel;
         if (folderSetupAfterwards) {
             nextFinishPanel = new FolderOnlineStoragePanel(controller);
@@ -197,7 +197,7 @@ public class PFWizard extends PFUIComponent {
     public static void openMirrorFolderWizard(Controller controller) {
         PFWizard wizard = new PFWizard(controller);
         wizard.getWizardContext().setAttribute(PICTO_ICON,
-            Icons.WEBSERVICE_PICTO);
+            Icons.WEB_SERVICE_PICTO);
         // TextPanelPanel successPanel = new TextPanelPanel(controller,
         // Translation.getTranslation("wizard.send_invitations.send_success"),
         // Translation

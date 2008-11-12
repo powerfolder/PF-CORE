@@ -75,10 +75,10 @@ public class Icons {
 
     private static final String DISABLED_EXTENSION_ADDITION = "_disabled";
 
-    public static final Icon FILTER_TEXTFIELD_CLEARBUTTON_NORMAL = getIcon("icons/filter_textfield_clearbutton_normal.png");
-    public static final Icon FILTER_TEXTFIELD_CLEARBUTTON_HOVER = getIcon("icons/filter_textfield_clearbutton_hover.png");
-    public static final Icon FILTER_TEXTFIELD_CLEARBUTTON_PUSH = getIcon("icons/filter_textfield_clearbutton_push.png");
-    public static final Icon FILTER_TEXTFIELD_GLASS = getIcon("icons/filter_textfield_glass.png");
+    public static final Icon FILTER_TEXT_FIELD_CLEAR_BUTTON_NORMAL = getIcon("icons/FilterTextFieldClearButtonNormal.png");
+    public static final Icon FILTER_TEXT_FIELD_CLEAR_BUTTON_HOVER = getIcon("icons/FilterTextFieldClearButtonHover.png");
+    public static final Icon FILTER_TEXT_FIELD_CLEAR_BUTTON_PUSH = getIcon("icons/FilterTextFieldClearButtonPush.png");
+    public static final Icon FILTER_TEXT_FIELD_GLASS = getIcon("icons/FilterTextFieldGlass.png");
 
     public static final Icon WARNING = getIcon("icons/Warning.png");
     public static final Icon DEBUG = getIcon("icons/LadyBug.gif");
@@ -204,10 +204,10 @@ public class Icons {
     public static final Icon DIRECTORY_NEW = getIconById("directory_new.icon");
 
     // Node icons
-    public static final Icon NODE_FRIEND_CONNECTED = getIcon("icons/Node_Friend_Connected.gif");
-    public static final Icon NODE_FRIEND_DISCONNECTED = getIcon("icons/Node_Friend_Disconnected.gif");
-    public static final Icon NODE_NON_FRIEND_CONNECTED = getIcon("icons/Node_NonFriend_Connected.gif");
-    public static final Icon NODE_NON_FRIEND_DISCONNECTED = getIcon("icons/Node_NonFriend_Disconnected.gif");
+    public static final Icon NODE_FRIEND_CONNECTED = getIcon("icons/NodeFriendConnected.gif");
+    public static final Icon NODE_FRIEND_DISCONNECTED = getIcon("icons/NodeFriendDisconnected.gif");
+    public static final Icon NODE_NON_FRIEND_CONNECTED = getIcon("icons/NodeNonFriendConnected.gif");
+    public static final Icon NODE_NON_FRIEND_DISCONNECTED = getIcon("icons/NodeNonFriendDisconnected.gif");
 
     // Folder icons
     public static final Icon FOLDER_INVALID = getIconById("folder_invalid.icon");
@@ -263,16 +263,13 @@ public class Icons {
 
     // Wizard pico icons
     public static final Icon SYNC_PCS_PICTO = getIcon("icons/pictos/SyncPC.gif");
-    public static final Icon SYNC_PCS_PICTO_GRAY = getIcon("icons/pictos/SyncPC_gray.gif");
     public static final Icon PROJECT_WORK_PICTO = getIcon("icons/pictos/ProjectWork.gif");
-    public static final Icon PROJECT_WORK_PICTO_GRAY = getIcon("icons/pictos/ProjectWork_gray.gif");
-    public static final Icon FILESHARING_PICTO = getIcon("icons/pictos/Fileshare.gif");
-    public static final Icon FILESHARING_PICTO_GRAY = getIcon("icons/pictos/Fileshare_gray.gif");
-    public static final Icon WEBSERVICE_PICTO = getIcon("icons/pictos/WebService.png");
+    public static final Icon FILE_SHARING_PICTO = getIcon("icons/pictos/FileShare.gif");
+    public static final Icon WEB_SERVICE_PICTO = getIcon("icons/pictos/WebService.png");
 
     // Wizard pictos from the quick info panels
     public static final Icon LOGO96X96 = getIcon("icons/pictos/PowerFolderLogo96x96.png");
-    public static final Icon LOGO400UI = getIcon("icons/pictos/PowerFolder_logo_400_UI.png");
+    public static final Icon LOGO400UI = getIcon("icons/pictos/PowerFolderLogo400UI.png");
     public static final Icon FRIENDS_PICTO = getIcon("icons/pictos/Friends.png");
     public static final Icon USER_PICTO = getIcon("icons/pictos/User.png");
     public static final Icon UPLOAD_PICTO = getIcon("icons/pictos/Upload.png");
@@ -306,7 +303,7 @@ public class Icons {
     public static final Icon SPLASH = getIcon("icons/Splash.png");
 
     // Images icons
-    public static final Image POWERFOLDER_IMAGE = getImage("icons/PowerFolder_32x32.gif");
+    public static final Image POWERFOLDER_IMAGE = getImage("icons/PowerFolder32x32.gif");
     public static final Image FOLDER_IMAGE = getImage("icons/Folders.png");
     public static final Image SYSTEM_MONITOR_IMAGE = getImage("icons/SystemMonitor.png");
     public static final Image CHAT_IMAGE = getImage("icons/Chat.gif");
@@ -315,9 +312,9 @@ public class Icons {
     public static final Icon ABOUT_ANIMATION = getIcon("icons/about/AboutAnimation.gif");
 
     // Systray icon file names
-    public static final String ST_POWERFOLDER = "PowerFolder_32x32.gif";
+    public static final String ST_POWERFOLDER = "PowerFolder32x32.gif";
     public static final String ST_CHAT = "Chat.gif";
-    public static final String ST_NODE = "Node_Friend_Connected.gif";
+    public static final String ST_NODE = "NodeFriendConnected.gif";
 
     private static final Map<String, Icon> KNOWN_ICONS = new HashMap<String, Icon>();
 

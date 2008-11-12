@@ -374,7 +374,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
                 getController(), folder, setupPanel);
             PFWizard wizard = new PFWizard(getController());
             wizard.getWizardContext().setAttribute(PFWizard.PICTO_ICON,
-                Icons.FILESHARING_PICTO);
+                Icons.FILE_SHARING_PICTO);
             wizard.getWizardContext().setAttribute(WizardContextAttributes
                     .INITIAL_FOLDER_NAME, name);
             wizard.open(panel);

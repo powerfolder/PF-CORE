@@ -112,9 +112,9 @@ public class FilterTextField {
             jTextField.setToolTipText(tooltip);
         }
         cancelTextJButton = new JButton3Icons(
-                Icons.FILTER_TEXTFIELD_CLEARBUTTON_NORMAL,
-                Icons.FILTER_TEXTFIELD_CLEARBUTTON_HOVER,
-                Icons.FILTER_TEXTFIELD_CLEARBUTTON_PUSH);
+                Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_NORMAL,
+                Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_HOVER,
+                Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_PUSH);
         cancelTextJButton.setVisible(false);
         // make sure the background is never drawn
         cancelTextJButton.setContentAreaFilled(false);
@@ -126,7 +126,7 @@ public class FilterTextField {
             }
         });
         glassIcon = SimpleComponentFactory
-                .createLabel(Icons.FILTER_TEXTFIELD_GLASS);
+                .createLabel(Icons.FILTER_TEXT_FIELD_GLASS);
 
         localValueModel.addValueChangeListener(new MyPropertyChangeListener());
 

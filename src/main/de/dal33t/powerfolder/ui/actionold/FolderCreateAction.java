@@ -45,7 +45,7 @@ public class FolderCreateAction extends BaseAction {
             getController(), null, setupPanel);
         PFWizard wizard = new PFWizard(getController());
         wizard.getWizardContext().setAttribute(PFWizard.PICTO_ICON,
-            Icons.FILESHARING_PICTO);
+            Icons.FILE_SHARING_PICTO);
         wizard.open(panel);
     }
 }
