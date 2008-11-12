@@ -132,22 +132,22 @@ public class ExpandableFolderView extends PFUIComponent {
                 folder.getSyncProfile().getProfileName());
         lowerBuilder.addSeparator(null, cc.xywh(2, 1, 4, 1));
         
-        lowerBuilder.add(new JLabel(transferMode), cc.xy(2, 3));
-        lowerBuilder.add(openSettingsInformationButton, cc.xy(5, 3));
+        lowerBuilder.add(syncPercentLabel, cc.xy(2, 3));
+        lowerBuilder.add(openFilesInformationButton, cc.xy(5, 3));
 
-        lowerBuilder.addSeparator(null, cc.xywh(2, 5, 4, 1));
+        lowerBuilder.add(filesLabel, cc.xy(2, 5));
 
-        lowerBuilder.add(syncPercentLabel, cc.xy(2, 7));
-        lowerBuilder.add(openFilesInformationButton, cc.xy(5, 7));
+        lowerBuilder.add(totalSizeLabel, cc.xy(2, 7));
 
-        lowerBuilder.add(filesLabel, cc.xy(2, 9));
+        lowerBuilder.addSeparator(null, cc.xywh(2, 9, 4, 1));
 
-        lowerBuilder.add(totalSizeLabel, cc.xy(2, 11));
+        lowerBuilder.add(membersLabel, cc.xy(2, 11));
+        lowerBuilder.add(openComputersInformationButton, cc.xy(5, 11));
 
         lowerBuilder.addSeparator(null, cc.xywh(2, 13, 4, 1));
 
-        lowerBuilder.add(membersLabel, cc.xy(2, 15));
-        lowerBuilder.add(openComputersInformationButton, cc.xy(5, 15));
+        lowerBuilder.add(new JLabel(transferMode), cc.xy(2, 15));
+        lowerBuilder.add(openSettingsInformationButton, cc.xy(5, 15));
 
         JPanel lowerPanel = lowerBuilder.getPanel();
 
