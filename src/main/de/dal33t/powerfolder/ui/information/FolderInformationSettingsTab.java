@@ -19,18 +19,24 @@
 */
 package de.dal33t.powerfolder.ui.information;
 
-import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.SyncProfileSelectorPanel;
-import de.dal33t.powerfolder.light.FolderInfo;
-
-import javax.swing.*;
-
+import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.forms.builder.DefaultFormBuilder;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.disk.Folder;
+import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX;
+import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_DONT_RECYCLE;
+import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.SyncProfileSelectorPanel;
+
+import javax.swing.JCheckBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
+import java.util.Properties;
 
 /**
  * UI component for the information settings tab
@@ -41,6 +47,7 @@ public class FolderInformationSettingsTab extends PFUIComponent
     private JPanel uiComponent;
     private Folder folder;
     private SyncProfileSelectorPanel transferModeSelectorPanel;
+    private JCheckBox useRecycleBinBox;
 
     /**
      * Constructor
@@ -50,6 +57,9 @@ public class FolderInformationSettingsTab extends PFUIComponent
     public FolderInformationSettingsTab(Controller controller) {
         super(controller);
         transferModeSelectorPanel = new SyncProfileSelectorPanel(getController());
+        useRecycleBinBox = new JCheckBox(Translation.getTranslation(
+                "folder_information_settings_tab.use_recycle_bin"));
+        useRecycleBinBox.addActionListener(new MyActionListener());
     }
 
     /**
@@ -60,6 +70,7 @@ public class FolderInformationSettingsTab extends PFUIComponent
     public void setFolderInfo(FolderInfo folderInfo) {
         folder = getController().getFolderRepository().getFolder(folderInfo);
         transferModeSelectorPanel.setUpdateableFolder(folder);
+        useRecycleBinBox.setSelected(folder.isUseRecycleBin());
     }
 
     /**
@@ -88,16 +99,29 @@ public class FolderInformationSettingsTab extends PFUIComponent
 
         FormLayout layout = new FormLayout(
             "3dlu, right:pref, 3dlu, pref, 3dlu, pref:grow",
-                "3dlu, pref, 3dlu");
+                "3dlu, pref, 3dlu, pref, 3dlu");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
         builder.add(new JLabel(Translation.getTranslation(
                 "folder_information_settings_tab.transfer_mode")),
                 cc.xy(2, 2));
-
         builder.add(transferModeSelectorPanel.getUIComponent(), cc.xy(4, 2));
 
+        builder.add(useRecycleBinBox, cc.xy(4, 4));
+
         uiComponent = builder.getPanel();
+    }
+
+    private class MyActionListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            folder.setUseRecycleBin(useRecycleBinBox.isSelected());
+            Properties config = getController().getConfig();
+            // Inverse logic for backward compatability.
+            config.setProperty(FOLDER_SETTINGS_PREFIX + folder.getName()
+                + FOLDER_SETTINGS_DONT_RECYCLE, String
+                .valueOf(!useRecycleBinBox.isSelected()));
+            getController().saveConfig();            
+        }
     }
 }
