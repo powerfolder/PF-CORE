@@ -60,15 +60,15 @@ public class SendInvitationAction extends SelectionBaseAction {
     }
 
     public void actionPerformed(ActionEvent e) {
-        Object target = getUIController().getControlQuarter().getSelectedItem();
-        if (target instanceof Member) {
-            Member member = (Member) target;
-            inviteMember(member);
-        } else if (target instanceof Folder) {
-            Folder folder = (Folder) target;
-            PFWizard
-                .openSendInvitationWizard(getController(), folder.getInfo());
-        }
+//        Object target = getUIController().getControlQuarter().getSelectedItem();
+//        if (target instanceof Member) {
+//            Member member = (Member) target;
+//            inviteMember(member);
+//        } else if (target instanceof Folder) {
+//            Folder folder = (Folder) target;
+//            PFWizard
+//                .openSendInvitationWizard(getController(), folder.getInfo());
+//        }
     }
 
     /**

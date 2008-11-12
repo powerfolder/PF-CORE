@@ -34,8 +34,6 @@ import de.dal33t.powerfolder.ui.friends.FriendsPanel;
 import de.dal33t.powerfolder.ui.homeold.RootPanel;
 import de.dal33t.powerfolder.ui.model.DirectoryModel;
 import de.dal33t.powerfolder.ui.myfolders.MyFoldersPanel;
-import de.dal33t.powerfolder.ui.navigation.ControlQuarter;
-import de.dal33t.powerfolder.ui.navigation.NavigationToolBar;
 import de.dal33t.powerfolder.ui.navigation.RootNode;
 import de.dal33t.powerfolder.ui.recyclebin.RecycleBinPanel;
 import de.dal33t.powerfolder.ui.transfer.DownloadsPanel;
@@ -92,9 +90,6 @@ public class InformationQuarter extends PFUIComponent {
     // The frame around the panel
     private SimpleInternalFrame uiFrame;
 
-    // The control quarter to act on
-    private ControlQuarter controlQuarter;
-
     private CardLayout cardLayout;
     private JPanel cardPanel;
 
@@ -141,16 +136,12 @@ public class InformationQuarter extends PFUIComponent {
     /* The currently displayed item */
     private Object displayTarget;
 
-    public InformationQuarter(ControlQuarter controlQuarter,
-        Controller controller)
+    public InformationQuarter(Controller controller)
     {
         super(controller);
-        this.controlQuarter = controlQuarter;
         this.uninitializedPanels = new HashMap<String, UIPanel>();
 
-        // Add selection behavior
-        controlQuarter.getSelectionModel().addSelectionChangeListener(
-            new ControlQuarterSelectionListener());
+
     }
 
     // Selection code *********************************************************
@@ -254,9 +245,7 @@ public class InformationQuarter extends PFUIComponent {
             uiFrame = new SimpleInternalFrame(Translation
                 .getTranslation("info_side.title"));
             uiFrame.add(builder.getPanel());
-            uiFrame.setToolBar(new NavigationToolBar(getController(),
-                getUIController().getControlQuarter().getNavigationModel())
-                .getUIComponent());
+            //uiFrame.setToolBar(new NavigationToolBar(getController());
             uiPanel = uiFrame;
         }
 
@@ -422,13 +411,11 @@ public class InformationQuarter extends PFUIComponent {
         Folder rootFolder = directory.getRootFolder();
         if (rootFolder.isPreviewOnly()) {
             showCard(PREVIEW_FOLDER_PANEL);
-            controlQuarter.setSelected(directory);
             setDisplayTarget(directory);
             previewFolderPanel.setDirectory(directory);
             setTitle(previewFolderPanel.getTitle());
         } else {
             showCard(MY_FOLDER_PANEL);
-            controlQuarter.setSelected(directory);
             setDisplayTarget(directory);
             myFolderPanel.setDirectory(directory);
             setTitle(myFolderPanel.getTitle());

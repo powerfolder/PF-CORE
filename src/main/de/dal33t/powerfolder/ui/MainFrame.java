@@ -28,7 +28,6 @@ import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
-import de.dal33t.powerfolder.ui.navigation.ControlQuarter;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.javasoft.plaf.synthetica.SyntheticaRootPaneUI;
 
@@ -239,10 +238,6 @@ public class MainFrame extends PFUIComponent {
     /*
      * Exposing ***************************************************************
      */
-
-    ControlQuarter getControlQuarter() {
-        return null;
-    }
 
     InformationQuarter getInformationQuarter() {
         return null;

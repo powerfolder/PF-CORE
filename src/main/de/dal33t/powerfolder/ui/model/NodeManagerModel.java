@@ -30,7 +30,6 @@ import de.dal33t.powerfolder.net.NodeManager;
 import de.dal33t.powerfolder.ui.chatold.ChatModel;
 import de.dal33t.powerfolder.ui.chatold.ChatModel.ChatModelEvent;
 import de.dal33t.powerfolder.ui.chatold.ChatModel.ChatModelListener;
-import de.dal33t.powerfolder.ui.navigation.ControlQuarter;
 import de.dal33t.powerfolder.util.ui.TreeNodeList;
 
 import javax.swing.event.TreeModelEvent;
@@ -259,16 +258,7 @@ public class NodeManagerModel extends PFUIComponent {
         if (treeNode == null) {
             return;
         }
-        // Update connected nodes
-        ControlQuarter controlQuarter = getController().getUIController()
-            .getControlQuarter();
-        //JTree tree = controlQuarter.getTree();
 
-        //TreePath selectionPath = tree.getSelectionPath();
-        //Object selected = null;
-        //if (selectionPath != null) {
-        //    selected = selectionPath.getLastPathComponent();
-        //}
 
         treeNode.sort();
         TreeModelEvent treeNodeEvent = new TreeModelEvent(this, treeNode

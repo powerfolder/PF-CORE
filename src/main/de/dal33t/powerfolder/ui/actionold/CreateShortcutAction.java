@@ -19,12 +19,11 @@
 */
 package de.dal33t.powerfolder.ui.actionold;
 
-import java.awt.event.ActionEvent;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.action.BaseAction;
-import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.util.os.OSUtil;
+
+import java.awt.event.ActionEvent;
 
 @SuppressWarnings("serial")
 public class CreateShortcutAction extends BaseAction {
@@ -36,11 +35,11 @@ public class CreateShortcutAction extends BaseAction {
     }
 
     public void actionPerformed(ActionEvent evt) {
-        Object selectedItem = getUIController().getControlQuarter()
-        .getSelectedItem();
-        if (selectedItem instanceof Folder) {
-            Folder folder = (Folder) selectedItem;
-            folder.setDesktopShortcut(true);
-        }
+//        Object selectedItem = getUIController().getControlQuarter()
+//        .getSelectedItem();
+//        if (selectedItem instanceof Folder) {
+//            Folder folder = (Folder) selectedItem;
+//            folder.setDesktopShortcut(true);
+//        }
     }
 }

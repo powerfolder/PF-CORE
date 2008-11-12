@@ -19,6 +19,12 @@
 */
 package de.dal33t.powerfolder.util;
 
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.disk.Directory;
+import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.ui.folder.DirectoryTable;
+
+import javax.swing.JTree;
 import java.awt.Point;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.UnsupportedFlavorException;
@@ -28,16 +34,6 @@ import java.awt.dnd.DropTargetDragEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-
-import javax.swing.JTree;
-import javax.swing.tree.TreePath;
-
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.disk.Directory;
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.ui.folder.DirectoryTable;
-import de.dal33t.powerfolder.util.ui.UIUtil;
 
 public class DragDropChecker {
 
@@ -168,27 +164,28 @@ public class DragDropChecker {
                 // event on the tree:
             } else if (whereDidEventOccur instanceof JTree) {
                 Point location = dtde.getLocation();
-                JTree uiTree = controller.getUIController().getControlQuarter()
-                    .getTree();
-                TreePath path = uiTree.getPathForLocation(location.x,
-                    location.y);
-                if (path == null) {
-                    return false;
-                }
-                Object selection = UIUtil.getUserObject(path
-                    .getLastPathComponent());
-                if (!(selection instanceof Folder ||
-                        selection instanceof Directory))
-                {
-                    return false;
-                }
-                Directory targetLocation;
-                if (selection instanceof Folder) {
-                    targetLocation = ((Folder) selection).getDirectory();
-                } else {
-                    targetLocation = (Directory) selection;
-                }
-                return allowDrop(dtde, targetLocation.getFile());
+//                JTree uiTree = controller.getUIController().getControlQuarter()
+//                    .getTree();
+////////                TreePath path = uiTree.getPathForLocation(location.x,
+////////                    location.y);
+//////                if (path == null) {
+//////                    return false;
+//////                }
+//////                Object selection = UIUtil.getUserObject(path
+//////                    .getLastPathComponent());
+////                if (!(selection instanceof Folder ||
+////                        selection instanceof Directory))
+////                {
+////                    return false;
+////                }
+////                Directory targetLocation;
+////                if (selection instanceof Folder) {
+////                    targetLocation = ((Folder) selection).getDirectory();
+////                } else {
+////                    targetLocation = (Directory) selection;
+////                }
+//                return allowDrop(dtde, targetLocation.getFile());
+                return false;
 
             } else {
                 if (directoryTable != null) {

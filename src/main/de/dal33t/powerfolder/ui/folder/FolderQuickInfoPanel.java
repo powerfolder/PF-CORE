@@ -19,12 +19,8 @@
  */
 package de.dal33t.powerfolder.ui.folder;
 
-import javax.swing.ImageIcon;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-
-import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Constants;
+import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderStatistic;
@@ -39,7 +35,17 @@ import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.QuickInfoPanel;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.*;
+import de.dal33t.powerfolder.util.ui.EstimatedTime;
+import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
+import de.dal33t.powerfolder.util.ui.SelectionChangeListener;
+import de.dal33t.powerfolder.util.ui.SelectionModel;
+import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
+import de.dal33t.powerfolder.util.ui.SyncProfileUtil;
+import de.dal33t.powerfolder.util.ui.TimeEstimator;
+
+import javax.swing.ImageIcon;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
 
 /**
  * Show concentrated information about the whole folder repository
@@ -87,8 +93,8 @@ public class FolderQuickInfoPanel extends QuickInfoPanel {
      * Registeres the listeners into the core components
      */
     private void registerListeners() {
-        getUIController().getControlQuarter().getSelectionModel()
-            .addSelectionChangeListener(new MySelectionChangeListener());
+//        getUIController().getControlQuarter().getSelectionModel()
+//            .addSelectionChangeListener(new MySelectionChangeListener());
         getController().getTransferManager().addListener(
             new MyTransferManagerListener());
         getController().getNodeManager().addNodeManagerListener(

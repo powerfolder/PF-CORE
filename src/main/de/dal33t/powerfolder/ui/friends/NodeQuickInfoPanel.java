@@ -67,8 +67,6 @@ public class NodeQuickInfoPanel extends QuickInfoPanel {
      * Registeres the listeners into the core components
      */
     private void registerListeners() {
-        getUIController().getControlQuarter().getSelectionModel()
-            .addSelectionChangeListener(new MySelectionChangeListener());
         getController().getNodeManager().addNodeManagerListener(
             new MyNodeManagerListener());
     }

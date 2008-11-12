@@ -47,7 +47,7 @@ public class SyncFolderAction extends BaseAction {
     }
 
     public void actionPerformed(ActionEvent e) {
-        getController().getUIController().getApplicationModel()
-                .getFolderRepositoryModel().scanSelectedFolder();
+//        getController().getUIController().getApplicationModel()
+//                .getFolderRepositoryModel().scanSelectedFolder();
     }
 }

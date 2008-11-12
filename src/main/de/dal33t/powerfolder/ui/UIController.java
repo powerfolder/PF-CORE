@@ -33,14 +33,12 @@ import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.ui.actionold.SyncAllFoldersAction;
-import de.dal33t.powerfolder.ui.chatold.ChatModel;
-import de.dal33t.powerfolder.ui.SystemMonitorFrame;
 import de.dal33t.powerfolder.ui.chat.ChatFrame;
+import de.dal33t.powerfolder.ui.chatold.ChatModel;
 import de.dal33t.powerfolder.ui.folder.FileNameProblemHandlerDefaultImpl;
 import de.dal33t.powerfolder.ui.friends.AskForFriendshipHandlerDefaultImpl;
 import de.dal33t.powerfolder.ui.information.InformationFrame;
 import de.dal33t.powerfolder.ui.model.ApplicationModel;
-import de.dal33t.powerfolder.ui.navigation.ControlQuarter;
 import de.dal33t.powerfolder.ui.notification.NotificationHandler;
 import de.dal33t.powerfolder.ui.recyclebin.RecycleBinConfirmationHandlerDefaultImpl;
 import de.dal33t.powerfolder.ui.render.BlinkManager;
@@ -65,7 +63,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
-import javax.swing.tree.TreePath;
 import java.awt.AWTException;
 import java.awt.EventQueue;
 import java.awt.Frame;
@@ -458,11 +455,6 @@ public class UIController extends PFComponent {
                 // Double clicked, open gui directly
                 mainFrame.getUIComponent().setVisible(true);
                 mainFrame.getUIComponent().setState(Frame.NORMAL);
-                // hack for jump to chat of member
-                if (blinkManager.isMemberBlinking()) {
-                    Member member = blinkManager.getABlinkingMember();
-                    getControlQuarter().setSelected(member);
-                }
             }
         });
 
@@ -782,10 +774,6 @@ public class UIController extends PFComponent {
         return mainFrame;
     }
 
-    public ControlQuarter getControlQuarter() {
-        return mainFrame.getControlQuarter();
-    }
-
     public InformationQuarter getInformationQuarter() {
         return mainFrame == null ? null : mainFrame.getInformationQuarter();
     }
@@ -964,16 +952,10 @@ public class UIController extends PFComponent {
                                         Member member = (Member) userObject;
                                         if (m.equals(member)) {
                                             // Found member, use as path.
-                                            TreePath to = treeNodeList
-                                                .getPathTo();
-                                            Object[] path = new Object[3];
-                                            path[0] = to.getPath()[0];
-                                            path[1] = to.getPath()[1];
-                                            path[2] = dmtn;
-                                            TreePath tp = new TreePath(path);
-                                            getControlQuarter()
-                                                .getNavigationModel().setPath(
-                                                    tp);
+
+
+
+
                                             return;
                                         }
                                     }
@@ -981,10 +963,7 @@ public class UIController extends PFComponent {
                             }
                         }
 
-                        // If member not found for some reason, navigate to
-                        // friend node.
-                        getControlQuarter().getNavigationModel().setPath(
-                            treeNodeList.getPathTo());
+
 
                     }
                 };
@@ -1016,16 +995,7 @@ public class UIController extends PFComponent {
                                         Folder folder = (Folder) userObject;
                                         if (f.equals(folder)) {
                                             // Found folder, use as path.
-                                            TreePath to = treeNodeList
-                                                .getPathTo();
-                                            Object[] path = new Object[3];
-                                            path[0] = to.getPath()[0];
-                                            path[1] = to.getPath()[1];
-                                            path[2] = tnl;
-                                            TreePath tp = new TreePath(path);
-                                            getControlQuarter()
-                                                .getNavigationModel().setPath(
-                                                    tp);
+
 
                                             // Also select chat tab.
                                             getInformationQuarter()
@@ -1037,10 +1007,6 @@ public class UIController extends PFComponent {
                             }
                         }
 
-                        // If folder not found for some reason, navigate to
-                        // folders node.
-                        getControlQuarter().getNavigationModel().setPath(
-                            treeNodeList.getPathTo());
 
                     }
                 };

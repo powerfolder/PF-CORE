@@ -229,10 +229,6 @@ public class FriendsPanel extends PFUIPanel {
             {
                 getApplicationModel().getNodeManagerModel().addChatMember(member);
             }
-            if (member.isCompleteyConnected()) {
-                getController().getUIController().getControlQuarter()
-                    .setSelected(member);
-            }
         }
 
         updateActions();

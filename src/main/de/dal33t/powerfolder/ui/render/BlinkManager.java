@@ -19,15 +19,6 @@
 */
 package de.dal33t.powerfolder.ui.render;
 
-import java.util.Calendar;
-import java.util.GregorianCalendar;
-import java.util.Map;
-import java.util.TimerTask;
-import java.util.concurrent.ConcurrentHashMap;
-
-import javax.swing.Icon;
-import javax.swing.SwingUtilities;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFUIComponent;
@@ -35,10 +26,17 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.ui.chatold.ChatModel;
-import de.dal33t.powerfolder.ui.chatold.MemberChatPanel;
 import de.dal33t.powerfolder.ui.chatold.ChatModel.ChatModelEvent;
 import de.dal33t.powerfolder.ui.chatold.ChatModel.ChatModelListener;
-import de.dal33t.powerfolder.ui.navigation.ControlQuarter;
+import de.dal33t.powerfolder.ui.chatold.MemberChatPanel;
+
+import javax.swing.Icon;
+import javax.swing.SwingUtilities;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.Map;
+import java.util.TimerTask;
+import java.util.concurrent.ConcurrentHashMap;
 //import de.dal33t.powerfolder.ui.navigation.NavTreeModel;
 
 /**
@@ -217,24 +215,14 @@ public class BlinkManager extends PFUIComponent {
      */
     private void update() {
         UIController uiController = getController().getUIController();
-        ControlQuarter controlQuarter = uiController.getControlQuarter();
-        if (controlQuarter == null) {
-            return;
-        }
-//        NavTreeModel treeModel = getApplicationModel().getNavTreeModel();
-//        if (treeModel == null) {
-//            return;
-//        }
 
-        boolean blink = ((System.currentTimeMillis() / 1000) % 2) == 1;
+        boolean blink = (System.currentTimeMillis() / 1000) % 2 != 0;
         if (blink && !blinkingMembers.isEmpty()) {
             uiController.setTrayIcon(trayBlinkIcon);
         } else {
             uiController.setTrayIcon(null); // means the default
         }
 
-//        updateNodeBlinking(treeModel);
-//        updateFolderBlinking(treeModel);
     }
 
     /**

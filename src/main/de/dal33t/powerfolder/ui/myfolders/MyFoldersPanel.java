@@ -366,7 +366,7 @@ public class MyFoldersPanel extends PFUIPanel {
             if (selectedRow >= 0) {
                 Folder folder = (Folder) customTableModel.getValueAt(
                     selectedRow, 0);
-                getUIController().getControlQuarter().setSelected(folder);
+               // getUIController().getControlQuarter().setSelected(folder);
             }
         }
     }

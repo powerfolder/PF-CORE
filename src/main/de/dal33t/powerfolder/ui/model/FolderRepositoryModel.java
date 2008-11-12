@@ -19,29 +19,23 @@
  */
 package de.dal33t.powerfolder.ui.model;
 
+import com.jgoodies.binding.value.ValueHolder;
+import com.jgoodies.binding.value.ValueModel;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.ui.dialog.SyncFolderPanel;
 import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.compare.FolderComparator;
 import de.dal33t.powerfolder.util.ui.TreeNodeList;
 
-import javax.swing.event.TreeModelEvent;
-import javax.swing.tree.TreeNode;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
-
-import com.jgoodies.binding.value.ValueModel;
-import com.jgoodies.binding.value.ValueHolder;
 
 /**
  * Prepares core data as (swing) ui models. e.g. <code>TreeModel</code>
@@ -166,40 +160,6 @@ public class FolderRepositoryModel extends PFUIComponent {
 //            // .expandPath(myFoldersTreeNode.getPathTo());
 //            expandedMyFolders = true;
 //        }
-    }
-
-    /**
-     * Synchronizes the currently selected folder in the nav tree.
-     */
-    public void scanSelectedFolder() {
-        Object selectedItem = getController().getUIController()
-            .getControlQuarter().getSelectionModel().getSelection();
-        if (!(selectedItem instanceof Folder)) {
-            return;
-        }
-        Folder folder = (Folder) selectedItem;
-
-        // Let other nodes scan now!
-        folder.broadcastScanCommand();
-
-        // Ask for more sync options on that folder if on project sync
-        if (SyncProfile.MANUAL_SYNCHRONIZATION.equals(folder.getSyncProfile()))
-        {
-            new SyncFolderPanel(getController(), folder).open();
-        } else {
-            // Recommend scan on this
-            folder.recommendScanOnNextMaintenance();
-        }
-
-        logFine("Disable silent mode");
-        getController().setSilentMode(false);
-
-        // Now trigger the scan
-        getController().getFolderRepository().triggerMaintenance();
-
-        // Trigger file requesting (trigger all folders, doesn't matter)
-        getController().getFolderRepository().getFileRequestor()
-            .triggerFileRequesting(folder.getInfo());
     }
 
     /**
@@ -349,7 +309,7 @@ public class FolderRepositoryModel extends PFUIComponent {
 //
         if (select) {
             // Select folder
-            getUIController().getControlQuarter().setSelected(folder);
+
         }
     }
 
