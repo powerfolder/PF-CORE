@@ -47,7 +47,7 @@ public class JButtonMini extends JButton {
 
         setOpaque(false);
         setBorder(null);
-        setBorder(Borders.EMPTY_BORDER);
+        setBorder(Borders.DLU2_BORDER);
         setMargin(new Insets(0, 0, 0, 0));
         setBorderPainted(false);
         if (toolTipText != null && toolTipText.trim().length() > 0) {

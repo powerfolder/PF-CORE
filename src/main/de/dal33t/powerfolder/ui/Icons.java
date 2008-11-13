@@ -212,7 +212,7 @@ public class Icons {
     // Folder icons
     public static final Icon FOLDER_INVALID = getIconById("folder_invalid.icon");
 
-    public static final Icon FOLDER = getIcon("icons/Folders.png");
+    public static final Icon FOLDER = getIcon("icons/Folder.png");
     public static final Icon FILES = getIcon("icons/Files.png");
     public static final Icon FOLDER_PREVIEW = getIcon("icons/Folder_disconnected.gif");
     public static final Icon FOLDER_ROTATION_1 = getIcon("icons/Folder_rotation_1.gif");
@@ -304,7 +304,7 @@ public class Icons {
 
     // Images icons
     public static final Image POWERFOLDER_IMAGE = getImage("icons/PowerFolder32x32.gif");
-    public static final Image FOLDER_IMAGE = getImage("icons/Folders.png");
+    public static final Image FOLDER_IMAGE = getImage("icons/Folder.png");
     public static final Image SYSTEM_MONITOR_IMAGE = getImage("icons/SystemMonitor.png");
     public static final Image CHAT_IMAGE = getImage("icons/Chat.gif");
 
@@ -328,7 +328,7 @@ public class Icons {
      * @param name
      * @return
      */
-    protected static final Icon getIcon(String name) {
+    protected static Icon getIcon(String name) {
         if (name == null) {
             log.severe("Icon name is null");
             return null;
@@ -401,7 +401,7 @@ public class Icons {
      *            the icon id
      * @return the icon
      */
-    public static final Icon getIconById(String id) {
+    public static Icon getIconById(String id) {
         Properties prop = getIconProperties();
         String iconId = prop.getProperty(id);
         if (iconId == null) {
@@ -419,7 +419,7 @@ public class Icons {
      * @param node
      * @return
      */
-    public static final Icon getSimpleIconFor(Member node) {
+    public static Icon getSimpleIconFor(Member node) {
         if (node == null) {
             // Unknown
             return NODE_NON_FRIEND_CONNECTED;
@@ -443,7 +443,7 @@ public class Icons {
      * @param node
      * @return the icon
      */
-    public static final Icon getIconFor(Member node) {
+    public static Icon getIconFor(Member node) {
         if (node == null) {
             // Unknown
             return NODE_NON_FRIEND_CONNECTED;
@@ -476,7 +476,7 @@ public class Icons {
      *            the fileinfo to return a icon for
      * @return the icon
      */
-    public static final Icon getIconFor(FileInfo fileInfo, Controller controller)
+    public static Icon getIconFor(FileInfo fileInfo, Controller controller)
     {
         Icon icon = null;
         String extension = fileInfo.getExtension();
@@ -538,7 +538,7 @@ public class Icons {
      * @param transfer
      * @return
      */
-    public static final Icon getIconFor(Transfer transfer) {
+    public static Icon getIconFor(Transfer transfer) {
         if (transfer instanceof Upload) {
             return transfer.isStarted() ? UPLOAD_ACTIVE : UPLOAD;
         }
@@ -552,7 +552,7 @@ public class Icons {
      *            the fileinfo to return a icon for
      * @return the icon
      */
-    public static final Icon getEnabledIconFor(FileInfo fileInfo,
+    public static Icon getEnabledIconFor(FileInfo fileInfo,
         Controller controller)
     {
         Icon icon = null;
@@ -598,7 +598,7 @@ public class Icons {
     /**
      * @return a icon from cache.
      */
-    private static final Icon getCachedIcon(String extension, boolean disabled)
+    private static Icon getCachedIcon(String extension, boolean disabled)
     {
         if (disabled) {
             if (KNOWN_ICONS.containsKey(extension)) { // getIcon from cache
@@ -618,7 +618,7 @@ public class Icons {
     /**
      * @return the unknown icon, normal grey or red based on state of fileinfo
      */
-    private static final Icon getUnknownIcon(FileInfo fileInfo,
+    private static Icon getUnknownIcon(FileInfo fileInfo,
         Controller controller)
     {
         if (fileInfo.diskFileExists(controller)) {
@@ -639,7 +639,7 @@ public class Icons {
      *            the extension to get a Icon for
      * @return the icon
      */
-    public static final Icon getIconExtension(String extension) {
+    public static Icon getIconExtension(String extension) {
         File tempFile = new File(Controller.getTempFilesLocation(), "temp."
             + extension);
         try {
@@ -697,7 +697,7 @@ public class Icons {
      * @return the icon for the folder depending on its status, e.g.
      *         disconnected, connected, sync, new files, etc.
      */
-    public static final Icon getIconFor(Folder folder) {
+    public static Icon getIconFor(Folder folder) {
         Reject.ifNull(folder, "Folder is null");
 
         if (folder.isPreviewOnly()) {
@@ -763,7 +763,7 @@ public class Icons {
      *            if it is opend
      * @return the icons
      */
-    public static final Icon getIconFor(Directory dir, boolean isOpen,
+    public static Icon getIconFor(Directory dir, boolean isOpen,
         Controller controller)
     {
         if (dir.isDeleted()) {
@@ -783,7 +783,7 @@ public class Icons {
      *            the file
      * @return
      */
-    public static final Icon getIconFor(Controller controller, FileInfo fInfo) {
+    public static Icon getIconFor(Controller controller, FileInfo fInfo) {
         Icon icon;
 
         if (fInfo.isDownloading(controller)) {
@@ -814,7 +814,7 @@ public class Icons {
      *            the icon to convert to gray icon
      * @return icon grayed out for use as disabled icon
      */
-    public static final Icon getGrayIcon(Icon icon) {
+    public static Icon getGrayIcon(Icon icon) {
         ColorSpace colorSpace = ColorSpace.getInstance(ColorSpace.CS_GRAY);
         ColorConvertOp colorConvertOp = new ColorConvertOp(colorSpace, null);
 
@@ -932,7 +932,7 @@ public class Icons {
     }
 
     // This method returns true if the specified image has transparent pixels
-    private static final boolean hasAlpha(Image image) {
+    private static boolean hasAlpha(Image image) {
         // If buffered image, the color model is readily available
         if (image instanceof BufferedImage) {
             BufferedImage bimage = (BufferedImage) image;
