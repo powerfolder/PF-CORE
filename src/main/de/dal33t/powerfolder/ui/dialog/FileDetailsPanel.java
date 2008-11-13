@@ -146,7 +146,7 @@ public class FileDetailsPanel extends PFUIComponent implements
         } else {
             sources = Collections.EMPTY_LIST;
         }
-        int nSources = (sources == null ? 0 : sources.size());
+        int nSources = sources == null ? 0 : sources.size();
         String sourcesText = nSources + " Source" + (nSources != 1 ? "s" : "");
 
         // Member[] sources =

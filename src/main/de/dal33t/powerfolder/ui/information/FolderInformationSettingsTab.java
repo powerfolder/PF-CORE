@@ -27,12 +27,18 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.FolderRepository;
+import de.dal33t.powerfolder.disk.FolderSettings;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_DONT_RECYCLE;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.actionold.SelectionBaseAction;
 import de.dal33t.powerfolder.ui.model.DiskItemFilterPatternsListModel;
+import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
+import de.dal33t.powerfolder.ui.widget.JButtonMini;
+import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.PatternMatch;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
@@ -41,21 +47,25 @@ import de.dal33t.powerfolder.util.ui.GenericDialogType;
 import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
 import de.dal33t.powerfolder.util.ui.SyncProfileSelectorPanel;
+import de.javasoft.synthetica.addons.DirectoryChooser;
 import org.apache.commons.lang.StringUtils;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTextField;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Iterator;
+import java.io.File;
+import java.io.IOException;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
@@ -72,6 +82,8 @@ public class FolderInformationSettingsTab extends PFUIComponent
     private DiskItemFilterPatternsListModel patternsListModel;
     private JList patternsList;
     private SelectionModel selectionModel;
+    private JTextField localFolderField;
+    private JButton localFolderButton;
 
     /**
      * Constructor
@@ -83,9 +95,17 @@ public class FolderInformationSettingsTab extends PFUIComponent
         transferModeSelectorPanel = new SyncProfileSelectorPanel(getController());
         useRecycleBinBox = new JCheckBox(Translation.getTranslation(
                 "folder_information_settings_tab.use_recycle_bin"));
-        useRecycleBinBox.addActionListener(new MyActionListener());
+        MyActionListener myActionListener = new MyActionListener();
+        useRecycleBinBox.addActionListener(myActionListener);
         selectionModel = new SelectionModel();
         patternsListModel = new DiskItemFilterPatternsListModel(null);
+        localFolderField = new JTextField();
+        localFolderField.setEditable(false);
+        localFolderButton = new JButtonMini(Icons.DIRECTORY,
+                Translation.getTranslation(
+                        "folder_information_settings_tab.select_directory.text"));
+        localFolderButton.setEnabled(false);
+        localFolderButton.addActionListener(myActionListener);
     }
 
     /**
@@ -117,24 +137,30 @@ public class FolderInformationSettingsTab extends PFUIComponent
      * Bulds the ui component.
      */
     private void buildUIComponent() {
-
+                  // label           folder       butn   other
         FormLayout layout = new FormLayout(
-            "3dlu, right:pref, 3dlu, pref, 3dlu, pref:grow",
-                "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
+            "3dlu, right:pref, 3dlu, 120dlu, 3dlu, pref, pref:grow, 3dlu",
+                "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
         builder.add(new JLabel(Translation.getTranslation(
                 "folder_information_settings_tab.transfer_mode")),
                 cc.xy(2, 2));
-        builder.add(transferModeSelectorPanel.getUIComponent(), cc.xy(4, 2));
+        builder.add(transferModeSelectorPanel.getUIComponent(), cc.xyw(4, 2, 4));
 
-        builder.add(useRecycleBinBox, cc.xy(4, 4));
+        builder.add(useRecycleBinBox, cc.xyw(4, 4, 4));
 
         builder.add(new JLabel(Translation.getTranslation(
                 "folder_information_settings_tab.ignore_patterns")),
                 cc.xy(2, 6));
-        builder.add(createPatternsPanel(), cc.xy(4, 6));
+        builder.add(createPatternsPanel(), cc.xyw(4, 6, 4));
+        
+        builder.add(new JLabel(Translation.getTranslation(
+                "folder_information_settings_tab.local_folder_location")),
+                cc.xy(2, 8));
+        builder.add(localFolderField, cc.xy(4, 8));
+        builder.add(localFolderButton, cc.xy(6, 8));
 
         uiComponent = builder.getPanel();
     }
@@ -169,6 +195,8 @@ public class FolderInformationSettingsTab extends PFUIComponent
         if (patternsList != null) {
             patternsListModel.fireUpdate();
         }
+        localFolderField.setText(folder.getLocalBase().getAbsolutePath());
+        localFolderButton.setEnabled(!folder.isPreviewOnly());
     }
 
     private JPanel createButtonBar() {
@@ -228,22 +256,19 @@ public class FolderInformationSettingsTab extends PFUIComponent
             String pattern = st.nextToken();
 
             // Match any patterns for this file.
-            for (Iterator<String> iter = folder.getDiskItemFilter().getPatterns()
-                .iterator(); iter.hasNext();)
-            {
-                String blackListPattern = iter.next();
+            for (String blackListPattern :
+                    folder.getDiskItemFilter().getPatterns()) {
                 if (PatternMatch.isMatch(pattern.toLowerCase(),
-                    blackListPattern))
-                {
+                        blackListPattern)) {
 
                     // Confirm that the user wants to remove this.
                     int result = DialogFactory.genericDialog(getController()
-                        .getUIController().getMainFrame().getUIComponent(),
-                        Translation.getTranslation("remove_pattern.title"),
-                        Translation.getTranslation("remove_pattern.prompt",
-                            pattern), options, 0, GenericDialogType.INFO); // Default
-                                                                            // is
-                                                                            // remove.
+                            .getUIController().getMainFrame().getUIComponent(),
+                            Translation.getTranslation("remove_pattern.title"),
+                            Translation.getTranslation("remove_pattern.prompt",
+                                    pattern), options, 0, GenericDialogType.INFO); // Default
+                    // is
+                    // remove.
                     if (result == 0) { // Remove
                         // Remove pattern and update.
                         folder.getDiskItemFilter().removePattern(blackListPattern);
@@ -362,15 +387,265 @@ public class FolderInformationSettingsTab extends PFUIComponent
         patternsList.getSelectionModel().clearSelection();
     }
 
-    private class MyActionListener implements ActionListener {
-        public void actionPerformed(ActionEvent e) {
-            folder.setUseRecycleBin(useRecycleBinBox.isSelected());
-            Properties config = getController().getConfig();
-            // Inverse logic for backward compatability.
-            config.setProperty(FOLDER_SETTINGS_PREFIX + folder.getName()
-                + FOLDER_SETTINGS_DONT_RECYCLE, String
-                .valueOf(!useRecycleBinBox.isSelected()));
-            getController().saveConfig();            
+    /**
+     * Controls the movement of a folder directory.
+     */
+    private void moveLocalFolder() {
+
+        // Find out if the user wants to move the content of the current folder
+        // to the new one.
+        int moveContent = shouldMoveContent();
+
+        if (moveContent == 2) {
+            // Cancel
+            return;
+        }
+
+        File originalDirectory = folder.getLocalBase();
+
+        // Select the new folder.
+        DirectoryChooser dc = new DirectoryChooser();
+        if (originalDirectory != null) {
+            dc.setCurrentDirectory(originalDirectory);
+        }
+        int i = dc.showOpenDialog(getController().getUIController()
+            .getMainFrame().getUIComponent());
+        if (i == JFileChooser.APPROVE_OPTION) {
+            File selectedFile = dc.getSelectedFile();
+            moveDirectory(originalDirectory, selectedFile, moveContent == 0);
         }
     }
+
+    /**
+     * Should the content of the existing folder be moved to the new location?
+     *
+     * @return true if should move.
+     */
+    private int shouldMoveContent() {
+        return DialogFactory.genericDialog(getController()
+            .getUIController().getMainFrame().getUIComponent(), Translation
+            .getTranslation("folder_information_settings_tab.move_content.title"),
+            Translation.getTranslation("folder_information_settings_tab.move_content"),
+            new String[]{
+                Translation
+                    .getTranslation("folder_information_settings_tab.move_content.move"),
+                Translation
+                    .getTranslation("folder_information_settings_tab.move_content.dont"),
+                Translation.getTranslation("general.cancel"),}, 0,
+            GenericDialogType.INFO);
+    }
+
+    /**
+     * Move the directory.
+     */
+    public void moveDirectory(File originalDirectory, File newDirectory,
+        boolean moveContent)
+    {
+        if (!newDirectory.equals(originalDirectory)) {
+
+            // Check for any problems with the new folder.
+            if (checkNewLocalFolder(newDirectory)) {
+
+                // Confirm move.
+                if (shouldMoveLocal(newDirectory)) {
+                    try {
+                        // Move contentes selected
+                        ActivityVisualizationWorker worker = new
+                                MyActivityVisualizationWorker(moveContent,
+                                originalDirectory, newDirectory);
+                        worker.start();
+                    } catch (Exception e) {
+                        // Probably failed to create temp directory.
+                        DialogFactory
+                            .genericDialog(
+                                getController().getUIController()
+                                    .getMainFrame().getUIComponent(),
+                                Translation.getTranslation(
+                                        "folder_information_settings_tab.move_error.title"),
+                                Translation.getTranslation(
+                                        "folder_information_settings_tab.move_error.temp"),
+                                getController().isVerbose(), e);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Confirm that the user really does want to go ahead with the move.
+     *
+     * @param newDirectory
+     * @return true if the user wishes to move.
+     */
+    private boolean shouldMoveLocal(File newDirectory) {
+        String title = Translation
+            .getTranslation("folder_information_settings_tab.confirm_local_folder_move.title");
+        String message = Translation.getTranslation(
+            "folder_information_settings_tab.confirm_local_folder_move.text", folder
+                .getLocalBase().getAbsolutePath(), newDirectory
+                .getAbsolutePath());
+
+        return DialogFactory.genericDialog(getController().getUIController()
+            .getMainFrame().getUIComponent(), title, message, new String[]{
+            Translation.getTranslation("general.continue"),
+            Translation.getTranslation("general.cancel")}, 0,
+            GenericDialogType.INFO) == 0;
+    }
+
+    /**
+     * Do some basic validation. Warn if moving to a folder that has files /
+     * directories in it.
+     *
+     * @param newDirectory
+     * @return
+     */
+    private boolean checkNewLocalFolder(File newDirectory) {
+
+        // Warn if target directory is not empty.
+        if (newDirectory != null && newDirectory.exists()
+            && newDirectory.listFiles().length > 0)
+        {
+            int result = DialogFactory
+                .genericDialog(
+                    getController().getUIController().getMainFrame()
+                        .getUIComponent(),
+                    Translation
+                        .getTranslation("folder_information_settings_tab.folder_not_empty.title"),
+                    Translation.getTranslation(
+                        "folder_information_settings_tab.folder_not_empty", newDirectory
+                            .getAbsolutePath()), new String[]{
+                        Translation.getTranslation("general.continue"),
+                        Translation.getTranslation("general.cancel")}, 1,
+                    GenericDialogType.WARN); // Default is cancel.
+            if (result != 0) {
+                // User does not want to move to new folder.
+                return false;
+            }
+        }
+
+        // All good.
+        return true;
+    }
+
+    /**
+     * Moves the contents of a folder to another via a temporary directory.
+     *
+     * @param moveContent
+     * @param originalDirectory
+     * @param newDirectory
+     * @return
+     */
+    private Object transferFolder(boolean moveContent, File originalDirectory,
+        File newDirectory)
+    {
+        try {
+
+            // Copy the files to the new local base
+            if (!newDirectory.exists()) {
+                if (!newDirectory.mkdirs()) {
+                    throw new IOException("Failed to create directory: "
+                        + newDirectory);
+                }
+            }
+
+            // Remove the old folder from the repository.
+            FolderRepository repository = getController().getFolderRepository();
+            repository.removeFolder(folder, false);
+
+            // Move it.
+            if (moveContent) {
+                FileUtils.recursiveMove(originalDirectory, newDirectory);
+            }
+
+            // Create the new Folder in the repository.
+            FolderInfo fi = new FolderInfo(folder);
+            FolderSettings fs = new FolderSettings(newDirectory, folder
+                .getSyncProfile(), false, folder.isUseRecycleBin(), false,
+                false);
+            folder = repository.createFolder(fi, fs);
+
+            // Update with new folder info.
+            update();
+
+        } catch (Exception e) {
+            return e;
+        }
+        return null;
+    }
+
+    /**
+     * Displays an error if the folder move failed.
+     *
+     * @param e
+     *            the error
+     */
+    private void displayError(Exception e) {
+        DialogFactory.genericDialog(getController().getUIController()
+            .getMainFrame().getUIComponent(), Translation
+            .getTranslation("folder_information_settings_tab.move_error.title"),
+            Translation.getTranslation(
+                "folder_information_settings_tab.move_error.other", e.getMessage()),
+            GenericDialogType.WARN);
+    }
+
+    /**
+     * Local class to handel action events.
+     */
+    private class MyActionListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            if (e.getSource().equals(localFolderButton)) {
+                moveLocalFolder();
+            } else if (e.getSource().equals(useRecycleBinBox)) {
+                folder.setUseRecycleBin(useRecycleBinBox.isSelected());
+                Properties config = getController().getConfig();
+                // Inverse logic for backward compatability.
+                config.setProperty(FOLDER_SETTINGS_PREFIX + folder.getName()
+                    + FOLDER_SETTINGS_DONT_RECYCLE, String
+                    .valueOf(!useRecycleBinBox.isSelected()));
+                getController().saveConfig();
+            }
+        }
+    }
+
+    /**
+     * Visualisation worker for folder move.
+     */
+    private class MyActivityVisualizationWorker extends
+        ActivityVisualizationWorker
+    {
+
+        private final boolean moveContent;
+        private final File originalDirectory;
+        private final File newDirectory;
+
+        MyActivityVisualizationWorker(boolean moveContent,
+            File originalDirectory, File newDirectory) {
+            super(getUIController());
+            this.moveContent = moveContent;
+            this.originalDirectory = originalDirectory;
+            this.newDirectory = newDirectory;
+        }
+
+        public Object construct() {
+            return transferFolder(moveContent, originalDirectory, newDirectory);
+        }
+
+        protected String getTitle() {
+            return Translation
+                .getTranslation("folder_information_settings_tab.working.title");
+        }
+
+        protected String getWorkingText() {
+            return Translation
+                .getTranslation("folder_information_settings_tab.working.description");
+        }
+
+        public void finished() {
+            if (get() != null) {
+                displayError((Exception) get());
+            }
+        }
+    }
+
+
 }

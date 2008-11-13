@@ -208,7 +208,8 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
      * Builds the visible panel.
      */
     private void buildPanel() {
-        FormLayout layout = new FormLayout("p:g, $lcg, p", "p, $rg, p");
+        FormLayout layout = new FormLayout("pref:grow, 3dlu, pref",
+                "pref, 3dlu, pref");
         panel = new JPanel(layout);
 
         CellConstraints cc = new CellConstraints();
