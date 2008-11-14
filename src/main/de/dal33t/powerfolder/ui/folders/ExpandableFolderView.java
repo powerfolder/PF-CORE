@@ -99,8 +99,8 @@ public class ExpandableFolderView extends PFUIComponent {
         initComponent();
 
         // Build ui
-                                            //  icon        name   space            # files     sync        ex/co
-        FormLayout upperLayout = new FormLayout("pref, 3dlu, pref, pref:grow, 3dlu, pref, 3dlu, pref, 3dlu, pref",
+                                            //  icon        name   space            # files     sync  ex/co
+        FormLayout upperLayout = new FormLayout("pref, 3dlu, pref, pref:grow, 3dlu, pref, 3dlu, pref, pref",
             "pref");
         PanelBuilder upperBuilder = new PanelBuilder(upperLayout);
         CellConstraints cc = new CellConstraints();
@@ -119,7 +119,7 @@ public class ExpandableFolderView extends PFUIComponent {
         upperBuilder.add(new JLabel(folder.getName()), cc.xy(3, 1));
         upperBuilder.add(filesAvailableLabel, cc.xy(6, 1));
         upperBuilder.add(syncFolderButton, cc.xy(8, 1));
-        upperBuilder.add(expandCollapseButton, cc.xy(10, 1));
+        upperBuilder.add(expandCollapseButton, cc.xy(9, 1));
 
         JPanel upperPanel = upperBuilder.getPanel();
 
