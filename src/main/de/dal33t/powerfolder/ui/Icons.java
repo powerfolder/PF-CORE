@@ -140,58 +140,7 @@ public class Icons {
     public static final Icon COLLAPSE = getIcon("icons/Collapse.gif");
 
     // Sync icons for FolderQuickInfoPanel
-    public static final Icon[] SYNC_ICONS = new Icon[]{
-        getIconById("sync_0.icon"), getIconById("sync_1.icon"),
-        getIconById("sync_2.icon"), getIconById("sync_3.icon"),
-        getIconById("sync_4.icon"), getIconById("sync_5.icon"),
-        getIconById("sync_6.icon"), getIconById("sync_7.icon"),
-        getIconById("sync_8.icon"), getIconById("sync_9.icon"),
-        getIconById("sync_10.icon"), getIconById("sync_11.icon"),
-        getIconById("sync_12.icon"), getIconById("sync_13.icon"),
-        getIconById("sync_14.icon"), getIconById("sync_15.icon"),
-        getIconById("sync_16.icon"), getIconById("sync_17.icon"),
-        getIconById("sync_18.icon"), getIconById("sync_19.icon"),
-        getIconById("sync_20.icon"), getIconById("sync_21.icon"),
-        getIconById("sync_22.icon"), getIconById("sync_23.icon"),
-        getIconById("sync_24.icon"), getIconById("sync_25.icon"),
-        getIconById("sync_26.icon"), getIconById("sync_27.icon"),
-        getIconById("sync_28.icon"), getIconById("sync_29.icon"),
-        getIconById("sync_30.icon"), getIconById("sync_31.icon"),
-        getIconById("sync_32.icon"), getIconById("sync_33.icon"),
-        getIconById("sync_34.icon"), getIconById("sync_35.icon"),
-        getIconById("sync_36.icon"), getIconById("sync_37.icon"),
-        getIconById("sync_38.icon"), getIconById("sync_39.icon"),
-        getIconById("sync_40.icon"), getIconById("sync_41.icon"),
-        getIconById("sync_42.icon"), getIconById("sync_43.icon"),
-        getIconById("sync_44.icon"), getIconById("sync_45.icon"),
-        getIconById("sync_46.icon"), getIconById("sync_47.icon"),
-        getIconById("sync_48.icon"), getIconById("sync_49.icon"),
-        getIconById("sync_50.icon"), getIconById("sync_51.icon"),
-        getIconById("sync_52.icon"), getIconById("sync_53.icon"),
-        getIconById("sync_54.icon"), getIconById("sync_55.icon"),
-        getIconById("sync_56.icon"), getIconById("sync_57.icon"),
-        getIconById("sync_58.icon"), getIconById("sync_59.icon"),
-        getIconById("sync_60.icon"), getIconById("sync_61.icon"),
-        getIconById("sync_62.icon"), getIconById("sync_63.icon"),
-        getIconById("sync_64.icon"), getIconById("sync_65.icon"),
-        getIconById("sync_66.icon"), getIconById("sync_67.icon"),
-        getIconById("sync_68.icon"), getIconById("sync_69.icon"),
-        getIconById("sync_70.icon"), getIconById("sync_71.icon"),
-        getIconById("sync_72.icon"), getIconById("sync_73.icon"),
-        getIconById("sync_74.icon"), getIconById("sync_75.icon"),
-        getIconById("sync_76.icon"), getIconById("sync_77.icon"),
-        getIconById("sync_78.icon"), getIconById("sync_79.icon"),
-        getIconById("sync_80.icon"), getIconById("sync_81.icon"),
-        getIconById("sync_82.icon"), getIconById("sync_83.icon"),
-        getIconById("sync_84.icon"), getIconById("sync_85.icon"),
-        getIconById("sync_86.icon"), getIconById("sync_87.icon"),
-        getIconById("sync_88.icon"), getIconById("sync_89.icon"),
-        getIconById("sync_90.icon"), getIconById("sync_91.icon"),
-        getIconById("sync_92.icon"), getIconById("sync_93.icon"),
-        getIconById("sync_94.icon"), getIconById("sync_95.icon"),
-        getIconById("sync_96.icon"), getIconById("sync_97.icon"),
-        getIconById("sync_98.icon"), getIconById("sync_99.icon"),
-        getIconById("sync_100.icon")};
+    public static final Icon[] SYNC_ICONS = new Icon[]{};
     public static final Icon SYNC_UNKNOWN = getIconById("sync_unknown.icon");
 
     // Directories in navigation tree
@@ -318,8 +267,7 @@ public class Icons {
 
     private static final Map<String, Icon> KNOWN_ICONS = new HashMap<String, Icon>();
 
-    protected Icons() {
-    }
+    private Icons() {}
 
     /**
      * Protected because only this class, subclasses and Translation.properties
@@ -386,7 +334,7 @@ public class Icons {
                     try {
                         buffered.close();
                     } catch (Exception e) {
-
+                        log.log(Level.SEVERE, "Exception", e);
                     }
                 }
             }
@@ -399,6 +347,9 @@ public class Icons {
      * 
      * @param id
      *            the icon id
+     * @deprecated This should only be used for getting action icons, using
+     * Icons.properties. Everything else, use getIcon(). Keeps icon - file
+     * relationship more simple and direct.
      * @return the icon
      */
     public static Icon getIconById(String id) {
@@ -407,7 +358,7 @@ public class Icons {
         if (iconId == null) {
             return null;
         }
-        return getIcon((String) prop.get(id));
+        return getIcon(prop.getProperty(id));
     }
 
     // Open helper
@@ -478,7 +429,6 @@ public class Icons {
      */
     public static Icon getIconFor(FileInfo fileInfo, Controller controller)
     {
-        Icon icon = null;
         String extension = fileInfo.getExtension();
         if (extension == null) { // no file extension
             return getUnknownIcon(fileInfo, controller);
@@ -487,7 +437,7 @@ public class Icons {
         File file = fileInfo.getDiskFile(controller.getFolderRepository());
 
         boolean exists = file != null && file.exists();
-        icon = getCachedIcon(extension, exists);
+        Icon icon = getCachedIcon(extension, exists);
 
         if (icon == null) {// no icon found in cache
             if (exists) { // create one if local file is there
@@ -555,7 +505,6 @@ public class Icons {
     public static Icon getEnabledIconFor(FileInfo fileInfo,
         Controller controller)
     {
-        Icon icon = null;
         String extension = fileInfo.getExtension();
         if (extension == null) { // no file extension
             return UNKNOWN_FILE;
@@ -567,6 +516,7 @@ public class Icons {
         File file = fileInfo.getDiskFile(controller.getFolderRepository());
         boolean exists = file != null && file.exists();
 
+        Icon icon;
         if (exists) {
             icon = FileSystemView.getFileSystemView().getSystemIcon(file);
             if (!hasUniqueIcon(extension)) { // do not cache executables
@@ -642,6 +592,7 @@ public class Icons {
     public static Icon getIconExtension(String extension) {
         File tempFile = new File(Controller.getTempFilesLocation(), "temp."
             + extension);
+
         try {
             synchronized (KNOWN_ICONS) { // synchronized otherwise we may try
                 // to create the same file twice at once
@@ -659,7 +610,7 @@ public class Icons {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            log.log(Level.SEVERE, "Exception", e);
         }
         return null;
     }
@@ -741,12 +692,6 @@ public class Icons {
                 default :
                     break;
             }
-            // if (time % 8 == 0) {
-            //               
-            // fIcon = Icons.FOLDER_NEW_FILE_COMPLETED;
-            // } else {
-            // fIcon = Icons.FOLDER_SYNC;
-            // }
         } else {
             fIcon = FOLDER;
         }
@@ -908,7 +853,7 @@ public class Icons {
             bimage = gc.createCompatibleImage(image.getWidth(null), image
                 .getHeight(null), transparency);
         } catch (HeadlessException e) {
-            // The system does not have a screen
+            log.log(Level.SEVERE, "HeadlessException", e);
         }
 
         if (bimage == null) {
@@ -945,6 +890,7 @@ public class Icons {
         try {
             pg.grabPixels();
         } catch (InterruptedException e) {
+            log.log(Level.INFO, "InterruptedException", e);
         }
 
         // Get the image's color model
