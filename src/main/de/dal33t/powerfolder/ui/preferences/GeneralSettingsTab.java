@@ -259,7 +259,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     public JPanel getUIPanel() {
         if (panel == null) {
             FormLayout layout = new FormLayout(
-                "right:100dlu, 3dlu, 100dlu, 3dlu, pref:grow",
+                "right:100dlu, 3dlu, 150dlu, 3dlu, pref:grow",
                 "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, top:pref, 3dlu, top:pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
 
             PanelBuilder builder = new PanelBuilder(layout);
@@ -336,7 +336,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                     builder.add(usePowerFolderIconBox, cc.xywh(3, row, 3, 1));
                 }
             } else {
-                builder.appendRow("7dlu");
+                builder.appendRow("3dlu");
                 builder.appendRow("pref");
 
                 row += 2;
@@ -365,7 +365,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
      * @return
      */
     private JComponent createLocationField() {
-        FormLayout layout = new FormLayout("85dlu, 3dlu, pref", "pref");
+        FormLayout layout = new FormLayout("132dlu, 3dlu, pref", "pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
