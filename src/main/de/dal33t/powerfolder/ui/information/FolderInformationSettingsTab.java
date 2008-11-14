@@ -137,9 +137,9 @@ public class FolderInformationSettingsTab extends PFUIComponent
      * Bulds the ui component.
      */
     private void buildUIComponent() {
-                  // label           folder       butn   other
+                  // label           folder       butn
         FormLayout layout = new FormLayout(
-            "3dlu, right:pref, 3dlu, 120dlu, 3dlu, pref, pref:grow, 3dlu",
+            "3dlu, right:pref, 3dlu, 178dlu, 3dlu, pref",
                 "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
@@ -147,14 +147,14 @@ public class FolderInformationSettingsTab extends PFUIComponent
         builder.add(new JLabel(Translation.getTranslation(
                 "folder_information_settings_tab.transfer_mode")),
                 cc.xy(2, 2));
-        builder.add(transferModeSelectorPanel.getUIComponent(), cc.xyw(4, 2, 4));
+        builder.add(transferModeSelectorPanel.getUIComponent(), cc.xyw(4, 2, 3));
 
-        builder.add(useRecycleBinBox, cc.xyw(4, 4, 4));
+        builder.add(useRecycleBinBox, cc.xyw(4, 4, 3));
 
         builder.add(new JLabel(Translation.getTranslation(
                 "folder_information_settings_tab.ignore_patterns")),
                 cc.xy(2, 6));
-        builder.add(createPatternsPanel(), cc.xyw(4, 6, 4));
+        builder.add(createPatternsPanel(), cc.xyw(4, 6, 3));
         
         builder.add(new JLabel(Translation.getTranslation(
                 "folder_information_settings_tab.local_folder_location")),

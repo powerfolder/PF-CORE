@@ -118,27 +118,27 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
      */
     public void save() {
         String theDyndnsHost = (String) mydnsndsModel.getValue();
-        if (!StringUtils.isBlank(theDyndnsHost)) {
-            ConfigurationEntry.DYNDNS_HOSTNAME.setValue(getController(),
-                theDyndnsHost);
-        } else {
+        if (StringUtils.isBlank(theDyndnsHost)) {
             ConfigurationEntry.DYNDNS_HOSTNAME.removeValue(getController());
+        } else {
+            ConfigurationEntry.DYNDNS_HOSTNAME.setValue(getController(),
+                    theDyndnsHost);
         }
 
         if (!StringUtils.isBlank(theDyndnsHost)) {
-            if (!StringUtils.isBlank(dyndnsUserField.getText())) {
-                ConfigurationEntry.DYNDNS_USERNAME.setValue(getController(),
-                    dyndnsUserField.getText());
-            } else {
+            if (StringUtils.isBlank(dyndnsUserField.getText())) {
                 ConfigurationEntry.DYNDNS_USERNAME.removeValue(getController());
+            } else {
+                ConfigurationEntry.DYNDNS_USERNAME.setValue(getController(),
+                        dyndnsUserField.getText());
             }
 
             String thePassword = new String(dyndnsPasswordField.getPassword());
-            if (!StringUtils.isBlank(thePassword)) {
-                ConfigurationEntry.DYNDNS_PASSWORD.setValue(getController(),
-                    thePassword);
-            } else {
+            if (StringUtils.isBlank(thePassword)) {
                 ConfigurationEntry.DYNDNS_PASSWORD.removeValue(getController());
+            } else {
+                ConfigurationEntry.DYNDNS_PASSWORD.setValue(getController(),
+                        thePassword);
             }
         }
 
@@ -156,7 +156,7 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
     public JPanel getUIPanel() {
         if (panel == null) {
             FormLayout layout = new FormLayout(
-                "right:100dlu, 3dlu, 90dlu, 3dlu, left:40dlu",
+                "right:100dlu, 3dlu, 90dlu, 3dlu, pref",
                 "pref, 3dlu, pref, 7dlu, pref, 4dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, "
                     + "3dlu, pref, 7dlu, pref, 7dlu");
 
@@ -168,7 +168,7 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
             builder.add(myDnsLabel, cc.xy(1, row));
             builder.add(myDnsField, cc.xywh(3, row, 1, 1));
             // FIXME correct URL
-            builder.add(Help.createWikiLinkLabel("DYN-Dns"),
+            builder.add(Help.createWikiLinkButton("DYN-Dns"),
                 cc.xy(5, row));
 
             row += 2;
@@ -305,7 +305,7 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
 
     private boolean isUpdateSelected() {
         return ConfigurationEntry.DYNDNS_AUTO_UPDATE.getValueBoolean(
-            getController()).booleanValue();
+                getController());
     }
 
     private JButton createUpdateButton(ActionListener listener) {
@@ -325,7 +325,7 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
         dyndnsPasswordField.setEditable(enable);
     }
 
-    private final class UpdateDynDnsAction implements ActionListener {
+    private class UpdateDynDnsAction implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             new Thread() {
                 public void run() {

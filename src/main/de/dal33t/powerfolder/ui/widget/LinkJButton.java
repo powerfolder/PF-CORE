@@ -15,38 +15,29 @@
 * You should have received a copy of the GNU General Public License
 * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
 *
-* $Id$
+* $Id: LinkJButton.java 4746 2008-07-28 11:34:36Z tot $
 */
 package de.dal33t.powerfolder.ui.widget;
-
-import java.awt.Cursor;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.util.BrowserLauncher;
 
 import javax.swing.*;
-
-import com.jgoodies.forms.factories.Borders;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.IOException;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 /**
- * A Label which opens a given link by click it
- * 
- * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
- * @version $Revision: 1.4 $
+ * A JButton that links to a URL.
  */
-public class LinkLabel extends AntialiasedLabel {
+public class LinkJButton extends JButtonMini {
 
-    private static final Logger log = Logger.getLogger(LinkLabel.class.getName());
-    private String url;
+    private static final Logger log = Logger.getLogger(LinkJButton.class.getName());
 
-    public LinkLabel(String aText, String aUrl) {
-        super("<html><font color=\"#00000\"><a href=\"" + aUrl + "\">" + aText
-            + "</a></font></html>");
-        url = aUrl;
+    public LinkJButton(Icon icon, String toolTipText, final String url) {
+        super(icon, toolTipText);
+
         addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
                 try {
@@ -56,14 +47,5 @@ public class LinkLabel extends AntialiasedLabel {
                 }
             }
         });
-        setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        // FIXME This is a hack because of "Fusch!"
-        setBorder(Borders.createEmptyBorder("0, 1px, 0, 0"));
-    }
-
-    public void setTextAndURL(String text, String url) {
-        this.url = url;
-        setText("<html><font color=\"#00000\"><a href=\"" + url + "\">" + text
-            + "</a></font></html>");
     }
 }

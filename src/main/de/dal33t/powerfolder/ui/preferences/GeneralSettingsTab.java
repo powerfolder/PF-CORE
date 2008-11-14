@@ -336,7 +336,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                     builder.add(usePowerFolderIconBox, cc.xywh(3, row, 3, 1));
                 }
             } else {
-                builder.appendRow("3dlu");
+                builder.appendRow("7dlu");
                 builder.appendRow("pref");
 
                 row += 2;

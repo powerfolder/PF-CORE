@@ -37,7 +37,6 @@ import de.dal33t.powerfolder.util.Translation;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import java.awt.Component;
@@ -63,7 +62,7 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
     private ValueModel valueModel;
     private Folder updateableFolder;
     private boolean ignoreChanges;
-    private JLabel helpLabel;
+    private JButton helpButton;
     private CreateAction createAction;
     private EditAction editAction;
     private DeleteAction deleteAction;
@@ -127,7 +126,7 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
         valueModel = new ValueHolder();
         valueModel.setValue(syncProfile);
 
-        helpLabel = Help.createWikiLinkLabel("Sync_Profiles");
+        helpButton = Help.createWikiLinkButton("Sync_Profiles");
 
         // Warn if changing to delete type profiles
         addModelValueChangeListener(new PropertyChangeListener() {
@@ -215,7 +214,7 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
         CellConstraints cc = new CellConstraints();
 
         panel.add(syncProfilesCombo, cc.xy(1, 1));
-        panel.add(helpLabel, cc.xy(3, 1));
+        panel.add(helpButton, cc.xy(3, 1));
         panel.add(createButtonBar(), cc.xyw(1, 3, 3));
     }
 
@@ -320,7 +319,7 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
         enabled = enable;
         enableButtons();
         syncProfilesCombo.setEnabled(enable);
-        helpLabel.setVisible(enable);
+        helpButton.setVisible(enable);
     }
 
     /**

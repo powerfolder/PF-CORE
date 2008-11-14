@@ -22,6 +22,7 @@ package de.dal33t.powerfolder.util;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
+import de.dal33t.powerfolder.ui.widget.LinkJButton;
 
 import java.io.IOException;
 import java.util.logging.Level;
@@ -83,9 +84,9 @@ public class Help {
      *            http://wiki.powerfolder.com/wiki/LAN-IP-List
      * @return a lable that is clickable
      */
-    public static LinkLabel createWikiLinkLabel(String article) {
+    public static LinkJButton createWikiLinkButton(String article) {
         String toolTips = Translation.getTranslation("general.what_is_this");
-        return new LinkLabel(Icons.QUESTION, toolTips,
+        return new LinkJButton(Icons.QUESTION, toolTips,
             Constants.POWERFOLDER_WIKI_URL + '/' + article);
     }
 }
