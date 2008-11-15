@@ -17,7 +17,7 @@
 *
 * $Id: FolderInformationSettingsTab.java 5457 2008-10-17 14:25:41Z harry $
 */
-package de.dal33t.powerfolder.ui.information.folder;
+package de.dal33t.powerfolder.ui.information.folder.settings;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.DefaultFormBuilder;
