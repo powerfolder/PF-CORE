@@ -15,38 +15,39 @@
 * You should have received a copy of the GNU General Public License
 * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
 *
-* $Id: FolderInformationMembersTab.java 5457 2008-10-17 14:25:41Z harry $
+* $Id: MembersTab.java 5457 2008-10-17 14:25:41Z harry $
 */
 package de.dal33t.powerfolder.ui.information.folder.members;
 
-import com.jgoodies.forms.builder.DefaultFormBuilder;
+import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.information.folder.FolderInformationTab;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
-import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 
 /**
  * UI component for the members information tab
  */
-public class FolderInformationMembersTab extends PFUIComponent
-        implements FolderInformationTab {
+public class MembersTab extends PFUIComponent implements FolderInformationTab {
 
     private JPanel uiComponent;
-    private Folder folder;
+    private MembersTableModel model;
+    private JScrollPane scrollPane;
 
     /**
      * Constructor
      *
      * @param controller
      */
-    public FolderInformationMembersTab(Controller controller) {
+    public MembersTab(Controller controller) {
         super(controller);
+        model = new MembersTableModel(getController());
     }
 
     /**
@@ -55,8 +56,7 @@ public class FolderInformationMembersTab extends PFUIComponent
      * @param folderInfo
      */
     public void setFolderInfo(FolderInfo folderInfo) {
-        folder = getController().getFolderRepository().getFolder(folderInfo);
-        update();
+        model.setFolderInfo(folderInfo);
     }
 
     /**
@@ -66,29 +66,31 @@ public class FolderInformationMembersTab extends PFUIComponent
      */
     public JPanel getUIComponent() {
         if (uiComponent == null) {
+            initialize();
             buildUIComponent();
         }
         return uiComponent;
+    }
+
+    public void initialize() {
+        MemberTable table = new MemberTable(model);
+        scrollPane = new JScrollPane(table);
+
+        // Whitestrip
+        UIUtil.whiteStripTable(table);
+        UIUtil.removeBorder(scrollPane);
+        UIUtil.setZeroHeight(scrollPane);
     }
 
     /**
      * Bulds the ui component.
      */
     private void buildUIComponent() {
-                  // label           folder       butn
-        FormLayout layout = new FormLayout(
-            "3dlu, right:pref, 3dlu, 178dlu, 3dlu, pref",
-                "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
-        DefaultFormBuilder builder = new DefaultFormBuilder(layout);
+        FormLayout layout = new FormLayout("fill:pref:grow",
+            "fill:0:grow");
+        PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
-
-        builder.add(new JLabel("Members tab..."), cc.xy(2, 2));
-
+        builder.add(scrollPane, cc.xy(1, 1));
         uiComponent = builder.getPanel();
     }
-
-    /** refreshes the UI elements with the current data */
-    private void update() {
-    }
-
 }

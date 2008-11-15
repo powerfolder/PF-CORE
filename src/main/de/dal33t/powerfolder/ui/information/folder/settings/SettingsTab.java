@@ -15,7 +15,7 @@
 * You should have received a copy of the GNU General Public License
 * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
 *
-* $Id: FolderInformationSettingsTab.java 5457 2008-10-17 14:25:41Z harry $
+* $Id: SettingsTab.java 5457 2008-10-17 14:25:41Z harry $
 */
 package de.dal33t.powerfolder.ui.information.folder.settings;
 
@@ -73,7 +73,7 @@ import java.util.StringTokenizer;
 /**
  * UI component for the information settings tab
  */
-public class FolderInformationSettingsTab extends PFUIComponent
+public class SettingsTab extends PFUIComponent
         implements FolderInformationTab {
 
     private JPanel uiComponent;
@@ -91,7 +91,7 @@ public class FolderInformationSettingsTab extends PFUIComponent
      *
      * @param controller
      */
-    public FolderInformationSettingsTab(Controller controller) {
+    public SettingsTab(Controller controller) {
         super(controller);
         transferModeSelectorPanel = new SyncProfileSelectorPanel(getController());
         useRecycleBinBox = new JCheckBox(Translation.getTranslation(

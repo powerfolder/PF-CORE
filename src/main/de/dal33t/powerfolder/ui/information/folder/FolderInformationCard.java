@@ -23,8 +23,8 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.information.InformationCard;
-import de.dal33t.powerfolder.ui.information.folder.members.FolderInformationMembersTab;
-import de.dal33t.powerfolder.ui.information.folder.settings.FolderInformationSettingsTab;
+import de.dal33t.powerfolder.ui.information.folder.members.MembersTab;
+import de.dal33t.powerfolder.ui.information.folder.settings.SettingsTab;
 import de.dal33t.powerfolder.util.Translation;
 
 import javax.swing.JComponent;
@@ -43,8 +43,8 @@ public class FolderInformationCard extends InformationCard {
 
     private FolderInfo folderInfo;
     private JTabbedPane tabbedPane;
-    private FolderInformationSettingsTab settingsTab;
-    private FolderInformationMembersTab membersTab;
+    private SettingsTab settingsTab;
+    private MembersTab membersTab;
 
     /**
      * Constructor
@@ -53,8 +53,8 @@ public class FolderInformationCard extends InformationCard {
      */
     public FolderInformationCard(Controller controller) {
         super(controller);
-        settingsTab = new FolderInformationSettingsTab(getController());
-        membersTab = new FolderInformationMembersTab(getController());
+        settingsTab = new SettingsTab(getController());
+        membersTab = new MembersTab(getController());
     }
 
     /**

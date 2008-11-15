@@ -131,9 +131,9 @@ public class Icons {
     public static final Icon BUY_PRO = getIconById("buy_pro.icon");
     public static final Icon QUESTION = getIcon("icons/Question.gif");
 
-    public static final Icon SORT_UP = getIconById("sort_up.icon");
-    public static final Icon SORT_DOWN = getIconById("sort_down.icon");
-    public static final Icon SORT_BLANK = getIconById("sort_blank.icon");
+    public static final Icon SORT_UP = getIcon("icons/SortUp.gif");
+    public static final Icon SORT_DOWN = getIcon("icons/SortDown.gif");
+    public static final Icon SORT_BLANK = getIcon("icons/SortBlank.gif");
     public static final Icon DYN_DNS = getIcon("icons/DynDns.gif");
 
     public static final Icon EXPAND = getIcon("icons/Expand.gif");
