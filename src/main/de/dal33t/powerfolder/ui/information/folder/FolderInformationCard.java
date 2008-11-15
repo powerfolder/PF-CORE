@@ -17,11 +17,13 @@
 *
 * $Id: InformationFilesCard.java 5457 2008-10-17 14:25:41Z harry $
 */
-package de.dal33t.powerfolder.ui.information;
+package de.dal33t.powerfolder.ui.information.folder;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.information.InformationCard;
+import de.dal33t.powerfolder.ui.information.folder.FolderInformationSettingsTab;
 import de.dal33t.powerfolder.util.Translation;
 
 import javax.swing.JComponent;

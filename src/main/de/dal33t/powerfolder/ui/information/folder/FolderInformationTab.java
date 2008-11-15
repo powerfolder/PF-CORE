@@ -17,7 +17,7 @@
 *
 * $Id: FolderInformationTab.java 5457 2008-10-17 14:25:41Z harry $
 */
-package de.dal33t.powerfolder.ui.information;
+package de.dal33t.powerfolder.ui.information.folder;
 
 import de.dal33t.powerfolder.light.FolderInfo;
 
