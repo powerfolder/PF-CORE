@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.util.compare;
 
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.FolderStatistic;
 
 import java.util.Comparator;
 
@@ -34,7 +35,7 @@ public class FolderMemberComparator implements Comparator {
 
     private Folder folder;
 
-    /** Sorts members by connected / disconnected friend / non-friend. */
+    /** Sorts members by connected / disconnected and friend / non-friend. */
     public static final FolderMemberComparator BY_TYPE =
             new FolderMemberComparator(0);
 
@@ -85,8 +86,16 @@ public class FolderMemberComparator implements Comparator {
                 return member1.getNick().compareTo(member2.getNick());
             } else if (type == 2) {
                 // Sort by sync status
+                FolderStatistic statistic = folder.getStatistic();
+                Long size1 = statistic.getSizeInSync(member1);
+                Long size2 = statistic.getSizeInSync(member2);
+                return size1.compareTo(size2);
             } else if (type == 3) {
                 // Sort by local size
+                FolderStatistic statistic = folder.getStatistic();
+                Double syncPerc1 = statistic.getSyncPercentage(member1);
+                Double syncPerc2 = statistic.getSyncPercentage(member2);
+                return syncPerc1.compareTo(syncPerc2);
             }
         }
         return 0;

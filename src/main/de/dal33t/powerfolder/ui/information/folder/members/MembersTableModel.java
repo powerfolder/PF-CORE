@@ -376,6 +376,8 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
             sortAscending = !sortAscending;
         }
 
+        comparator.setFolder(folder);
+
         if (sortAscending) {
             Collections.sort(members, comparator);
         } else {
