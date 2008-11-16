@@ -31,16 +31,20 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.net.NodeManager;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.model.SortedTableModel;
-import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Format;
-import de.dal33t.powerfolder.util.ui.UIUtil;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.compare.FolderMemberComparator;
+import de.dal33t.powerfolder.util.compare.ReverseComparator;
 import de.dal33t.powerfolder.util.ui.SyncProfileUtil;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 import javax.swing.Icon;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -51,17 +55,25 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class MembersTableModel extends PFUIComponent implements TableModel,
         SortedTableModel {
 
+    private static final int COL_TYPE = 0;
+    private static final int COL_NICK = 1;
+    private static final int COL_SYNC_STATUS = 2;
+    private static final int COL_LOCAL_SIZE = 3;
+
+
     private final List<Member> members;
     private final List<TableModelListener> listeners;
     private Folder folder;
     private final FolderRepository folderRepository;
-    
+
+    private int sortColumn = -1;
+    private boolean sortAscending = true;
+
     private String[] columnHeaders = new String[] {
         Translation.getTranslation("folder_member_table_model.icon"), // 0
         Translation.getTranslation("folder_member_table_model.name"), // 1
         Translation.getTranslation("folder_member_table_model.sync_status"), // 2
-        Translation.getTranslation("folder_member_table_model.folder_size"), // 3
-        Translation.getTranslation("folder_member_table_model.local_size")}; // 4
+        Translation.getTranslation("folder_member_table_model.local_size")}; // 3
 
     /**
      * Constructor
@@ -72,7 +84,7 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
         super(controller);
 
         folderRepository = controller.getFolderRepository();
-        members = new CopyOnWriteArrayList<Member>();
+        members = new ArrayList<Member>();
         listeners = new CopyOnWriteArrayList<TableModelListener>();
 
         // Node changes
@@ -125,7 +137,6 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
             case 1:
             case 2:
             case 3:
-            case 4:
                 return String.class;
             default:
                 throw new IllegalArgumentException("columnIndex too big: "
@@ -181,12 +192,6 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
             double sync = stats.getSyncPercentage(member);
             return SyncProfileUtil.renderSyncPercentage(sync);
         } else if (columnIndex == 3) {
-            int filesTotal = stats.getTotalFilesCount();
-            long bytesTotal = stats.getTotalSize();
-            return filesTotal + " "
-                    + Translation.getTranslation("general.files") + " ("
-                    + Format.formatBytes(bytesTotal) + ')';
-        } else if (columnIndex == 4) {
             int filesRcvd = stats.getFilesCountInSync(member);
             long bytesRcvd = stats.getSizeInSync(member);
             return filesRcvd + " "
@@ -326,8 +331,7 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
      * @return
      */
     public int getSortColumn() {
-        // @todo hghg implement
-        return 1;
+        return sortColumn;
     }
 
     /**
@@ -336,19 +340,49 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
      * @return
      */
     public boolean isSortAscending() {
-        // @todo hghg implement
-        return false;
+        return sortAscending;
     }
 
     /**
-     * Answers if sorting by this column.
+     * Sorts by this column.
      * 
      * @param columnIndex
      * @return
      */
     public boolean sortBy(int columnIndex) {
-        // @todo hghg implement
-        return false;
+        boolean newSortColumn = sortColumn != columnIndex;
+        sortColumn = columnIndex;
+        switch (columnIndex) {
+            case COL_TYPE :
+                sortMe(FolderMemberComparator.BY_TYPE, newSortColumn);
+                break;
+            case COL_NICK :
+                sortMe(FolderMemberComparator.BY_NICK, newSortColumn);
+                break;
+            case COL_SYNC_STATUS :
+                sortMe(FolderMemberComparator.BY_SYNC_STATUS, newSortColumn);
+                break;
+            case COL_LOCAL_SIZE :
+                sortMe(FolderMemberComparator.BY_LOCAL_SIZE, newSortColumn);
+                break;
+        }
+        return true;
+    }
+
+    private void sortMe(FolderMemberComparator comparator, boolean newSortColumn) {
+
+        if (!newSortColumn) {
+            // Reverse list.
+            sortAscending = !sortAscending;
+        }
+
+        if (sortAscending) {
+            Collections.sort(members, comparator);
+        } else {
+            Collections.sort(members, new ReverseComparator(comparator));
+        }
+
+        modelChanged(new TableModelEvent(this, 0, members.size() - 1));
     }
 
     /**

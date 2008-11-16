@@ -23,8 +23,13 @@ import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.render.SortedTableHeaderRenderer;
 
 import javax.swing.JTable;
+import javax.swing.SwingUtilities;
+import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
+import javax.swing.table.TableModel;
 import java.awt.Dimension;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 /**
  * Table to display members of a folder.
@@ -44,6 +49,8 @@ public class MemberTable extends JTable {
         setShowGrid(false);
 
         setupColumns();
+
+        getTableHeader().addMouseListener(new TableHeaderMouseListener());
 
         // Associate a header renderer with all columns.
         SortedTableHeaderRenderer.associateHeaderRenderer(
@@ -69,8 +76,30 @@ public class MemberTable extends JTable {
         column.setPreferredWidth(20);
         column = getColumn(getColumnName(3));
         column.setPreferredWidth(80);
-        column = getColumn(getColumnName(4));
-        column.setPreferredWidth(80);
     }
+
+
+    /**
+     * Listener on table header, takes care about the sorting of table
+     *
+     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
+     */
+    private class TableHeaderMouseListener extends MouseAdapter {
+        public void mouseClicked(MouseEvent e) {
+            if (SwingUtilities.isLeftMouseButton(e)) {
+                JTableHeader tableHeader = (JTableHeader) e.getSource();
+                int columnNo = tableHeader.columnAtPoint(e.getPoint());
+                TableColumn column = tableHeader.getColumnModel().getColumn(
+                    columnNo);
+                int modelColumnNo = column.getModelIndex();
+                TableModel model = tableHeader.getTable().getModel();
+                if (model instanceof MembersTableModel) {
+                    MembersTableModel membersTableModel = (MembersTableModel) model;
+                    membersTableModel.sortBy(modelColumnNo);
+                }
+            }
+        }
+    }
+
 
 }
