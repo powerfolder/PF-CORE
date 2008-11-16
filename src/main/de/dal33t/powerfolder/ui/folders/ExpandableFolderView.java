@@ -220,13 +220,10 @@ public class ExpandableFolderView extends PFUIComponent {
     }
 
     /**
-     * Class finalization. Required to unregister listeners.
-     *
-     * @throws Throwable
+     * Call this to unregister listeners if folder is being removed.
      */
-    protected void finalize() throws Throwable {
+    public void removeListeners() {
         unregisterListeners();
-        super.finalize();
     }
 
     /**
