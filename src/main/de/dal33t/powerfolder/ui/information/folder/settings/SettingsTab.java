@@ -181,7 +181,7 @@ public class SettingsTab extends PFUIComponent
         JScrollPane scroller = new JScrollPane(patternsList);
         scroller.setPreferredSize(size);
 
-        FormLayout layout = new FormLayout("pref", "pref, 4dlu, pref");
+        FormLayout layout = new FormLayout("pref", "pref, 3dlu, pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();

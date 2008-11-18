@@ -23,12 +23,12 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.information.InformationCard;
+import de.dal33t.powerfolder.ui.information.folder.files.FilesTab;
 import de.dal33t.powerfolder.ui.information.folder.members.MembersTab;
 import de.dal33t.powerfolder.ui.information.folder.settings.SettingsTab;
 import de.dal33t.powerfolder.util.Translation;
 
 import javax.swing.JComponent;
-import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import java.awt.Image;
 
@@ -45,6 +45,7 @@ public class FolderInformationCard extends InformationCard {
     private JTabbedPane tabbedPane;
     private SettingsTab settingsTab;
     private MembersTab membersTab;
+    private FilesTab filesTab;
 
     /**
      * Constructor
@@ -55,6 +56,7 @@ public class FolderInformationCard extends InformationCard {
         super(controller);
         settingsTab = new SettingsTab(getController());
         membersTab = new MembersTab(getController());
+        filesTab = new FilesTab(getController());
     }
 
     /**
@@ -66,6 +68,7 @@ public class FolderInformationCard extends InformationCard {
         this.folderInfo = folderInfo;
         settingsTab.setFolderInfo(folderInfo);
         membersTab.setFolderInfo(folderInfo);
+        filesTab.setFolderInfo(folderInfo);
     }
 
     /**
@@ -111,7 +114,8 @@ public class FolderInformationCard extends InformationCard {
      */
     private void buildUIComponent() {
         tabbedPane.addTab(Translation.getTranslation(
-                "folder_information_card.files.title"), new JPanel());
+                "folder_information_card.files.title"),
+                filesTab.getUIComponent());
         tabbedPane.setIconAt(TAB_FILES, Icons.FILES);
         tabbedPane.setToolTipTextAt(TAB_FILES, Translation.getTranslation(
                 "folder_information_card.files.tips"));
