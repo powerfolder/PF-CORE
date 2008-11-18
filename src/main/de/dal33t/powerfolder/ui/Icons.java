@@ -74,6 +74,7 @@ public class Icons {
     private static final String ICON_PROPERTIES_FILENAME = "Icons.properties";
 
     private static final String DISABLED_EXTENSION_ADDITION = "_disabled";
+    private static final Object FILE_LOCK = new Object();
 
     public static final Icon FILTER_TEXT_FIELD_CLEAR_BUTTON_NORMAL = getIcon("icons/FilterTextFieldClearButtonNormal.png");
     public static final Icon FILTER_TEXT_FIELD_CLEAR_BUTTON_HOVER = getIcon("icons/FilterTextFieldClearButtonHover.png");
@@ -594,7 +595,7 @@ public class Icons {
             + extension);
 
         try {
-            synchronized (KNOWN_ICONS) { // synchronized otherwise we may try
+            synchronized (FILE_LOCK) { // synchronized otherwise we may try
                 // to create the same file twice at once
                 if (tempFile.createNewFile()) {
                     Icon icon = FileSystemView.getFileSystemView()
