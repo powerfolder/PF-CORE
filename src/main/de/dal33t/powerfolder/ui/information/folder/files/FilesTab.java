@@ -28,13 +28,11 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.information.folder.FolderInformationTab;
 
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import javax.swing.JToggleButton;
-import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
@@ -110,23 +108,12 @@ public class FilesTab extends PFUIComponent
      */
     private JPanel createToolBar() {
         ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
-        bar.addGridded(new JToggleButton(new DetailsAction(getController())));
+        bar.addGridded(new JToggleButton("temp"));
         return bar.getPanel();
     }
 
     /** refreshes the UI elements with the current data */
     private void update() {
-    }
-
-    private class DetailsAction extends BaseAction {
-
-        DetailsAction(Controller controller) {
-            super("action_details", controller);
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            tablePanel.toggleDetails();
-        }
     }
 
     /**

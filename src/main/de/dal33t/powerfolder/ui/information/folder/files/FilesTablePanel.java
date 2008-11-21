@@ -20,14 +20,18 @@
 package de.dal33t.powerfolder.ui.information.folder.files;
 
 import com.jgoodies.forms.builder.DefaultFormBuilder;
+import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.ui.actionold.HasDetailsPanel;
+import de.dal33t.powerfolder.ui.action.BaseAction;
 
 import javax.swing.JPanel;
 import javax.swing.JTable;
+import javax.swing.JToggleButton;
+import java.awt.event.ActionEvent;
 
 public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel {
 
@@ -55,14 +59,24 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel {
      * Bulds the ui component.
      */
     private void buildUIComponent() {
-        FormLayout layout = new FormLayout("3dlu, fill:pref:grow, 3dlu",
-                "3dlu, fill:0:grow, 3dlu, pref, 3dlu");
+        FormLayout layout = new FormLayout("fill:pref:grow",
+                "pref, 3dlu, fill:0:grow, 3dlu, pref");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
-        builder.add(new JTable(), cc.xy(2, 2));
-        builder.add(fileDetailsPanel.getUiComponent(), cc.xy(2, 4));
+        builder.add(createToolBar(), cc.xy(1, 1));
+        builder.add(new JTable(), cc.xy(1, 3));
+        builder.add(fileDetailsPanel.getUiComponent(), cc.xy(1, 5));
         uiComponent = builder.getPanel();
+    }
+
+    /**
+     * @return the toolbar
+     */
+    private JPanel createToolBar() {
+        ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
+        bar.addGridded(new JToggleButton(new DetailsAction(getController())));
+        return bar.getPanel();
     }
 
     /**
@@ -72,4 +86,17 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel {
         fileDetailsPanel.getUiComponent().setVisible(
                 !fileDetailsPanel.getUiComponent().isVisible());
     }
+
+    private class DetailsAction extends BaseAction {
+
+        DetailsAction(Controller controller) {
+            super("action_details", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            toggleDetails();
+        }
+    }
+
+
 }

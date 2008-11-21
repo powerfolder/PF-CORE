@@ -51,11 +51,11 @@ public class FilesTreePanel extends PFUIComponent {
     }
 
     /**
-     * Bulds the ui component.
+     * Builds the ui component.
      */
     private void buildUIComponent() {
-        FormLayout layout = new FormLayout("3dlu, fill:30:grow, 3dlu",
-                "3dlu, fill:pref:grow, 3dlu");
+        FormLayout layout = new FormLayout("fill:30:grow",
+                "fill:pref:grow");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
         JTree tree = new JTree();
@@ -63,7 +63,7 @@ public class FilesTreePanel extends PFUIComponent {
         // Whitestrip
         UIUtil.removeBorder(scrollPane);
         UIUtil.setZeroHeight(scrollPane);
-        builder.add(scrollPane, cc.xy(2, 2));
+        builder.add(scrollPane, cc.xy(1, 1));
 
 
         uiComponent = builder.getPanel();
