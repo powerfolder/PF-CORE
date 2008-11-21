@@ -68,7 +68,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel {
     /**
      * Toggle the details panel visibility.
      */
-    public void toggeDetails() {
+    public void toggleDetails() {
         fileDetailsPanel.getUiComponent().setVisible(
                 !fileDetailsPanel.getUiComponent().isVisible());
     }

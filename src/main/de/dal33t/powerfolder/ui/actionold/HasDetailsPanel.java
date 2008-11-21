@@ -28,5 +28,5 @@ public interface HasDetailsPanel {
      * Show / hide the details panel
      * (invert its visible state).
      */
-    void toggeDetails();
+    void toggleDetails();
 }

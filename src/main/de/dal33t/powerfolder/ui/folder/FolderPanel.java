@@ -281,7 +281,7 @@ public class FolderPanel extends PFUIPanel {
      */
     public void toggleDetails() {
         if (getCurrentTab().equals(filesTab)) {
-            filesTab.toggeDetails();
+            filesTab.toggleDetails();
         }
     }
 }

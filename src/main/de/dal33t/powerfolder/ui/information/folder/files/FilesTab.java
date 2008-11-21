@@ -125,7 +125,7 @@ public class FilesTab extends PFUIComponent
         }
 
         public void actionPerformed(ActionEvent e) {
-            tablePanel.toggeDetails();
+            tablePanel.toggleDetails();
         }
     }
 

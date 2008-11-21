@@ -237,7 +237,7 @@ public class UploadsPanel extends PFUIPanel implements HasDetailsPanel {
         return barPanel;
     }
 
-    public void toggeDetails() {
+    public void toggleDetails() {
         // Ensure the component is created.
         JComponent comp = getFileDetailsPanelComp();
         comp.setVisible(!comp.isVisible());

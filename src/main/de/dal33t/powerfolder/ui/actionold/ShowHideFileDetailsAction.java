@@ -47,6 +47,6 @@ public class ShowHideFileDetailsAction extends BaseAction {
 
     public void actionPerformed(ActionEvent e) {
         // Toggle visibility
-        hasDetailsPanel.toggeDetails();
+        hasDetailsPanel.toggleDetails();
     }
 }

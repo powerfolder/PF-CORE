@@ -1522,7 +1522,7 @@ public class FilesTab extends PFUIComponent implements FolderTab,
         }
     }
 
-    public void toggeDetails() {
+    public void toggleDetails() {
         fileDetailsPanelComp.setVisible(!fileDetailsPanelComp.isVisible());
         showHideFileDetailsButton.setSelected(fileDetailsPanelComp.isVisible());
     }
