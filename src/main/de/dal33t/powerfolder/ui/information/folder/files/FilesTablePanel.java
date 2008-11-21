@@ -32,9 +32,11 @@ import javax.swing.JTable;
 public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel {
 
     private JPanel uiComponent;
+    private FileDetailsPanel fileDetailsPanel;
 
     public FilesTablePanel(Controller controller) {
         super(controller);
+        fileDetailsPanel = new FileDetailsPanel(getController());
     }
 
     /**
@@ -54,15 +56,20 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel {
      */
     private void buildUIComponent() {
         FormLayout layout = new FormLayout("3dlu, fill:pref:grow, 3dlu",
-                "3dlu, fill:0:grow, 3dlu");
+                "3dlu, fill:0:grow, 3dlu, pref, 3dlu");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
         builder.add(new JTable(), cc.xy(2, 2));
+        builder.add(fileDetailsPanel.getUiComponent(), cc.xy(2, 4));
         uiComponent = builder.getPanel();
     }
 
-
+    /**
+     * Toggle the details panel visibility.
+     */
     public void toggeDetails() {
+        fileDetailsPanel.getUiComponent().setVisible(
+                !fileDetailsPanel.getUiComponent().isVisible());
     }
 }
