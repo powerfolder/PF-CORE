@@ -60,13 +60,14 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel {
      */
     private void buildUIComponent() {
         FormLayout layout = new FormLayout("fill:pref:grow",
-                "pref, 3dlu, fill:0:grow, 3dlu, pref");
+                "pref, 3dlu, pref, 3dlu, fill:0:grow, 3dlu, pref");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
         builder.add(createToolBar(), cc.xy(1, 1));
-        builder.add(new JTable(), cc.xy(1, 3));
-        builder.add(fileDetailsPanel.getUiComponent(), cc.xy(1, 5));
+        builder.addSeparator(null, cc.xy(1, 3));
+        builder.add(new JTable(), cc.xy(1, 5));
+        builder.add(fileDetailsPanel.getUiComponent(), cc.xy(1, 7));
         uiComponent = builder.getPanel();
     }
 
