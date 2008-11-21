@@ -35,6 +35,8 @@ import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import javax.swing.JToggleButton;
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 /**
  * UI component for the folder files tab
@@ -55,6 +57,13 @@ public class FilesTab extends PFUIComponent
      */
     public FilesTab(Controller controller) {
         super(controller);
+        treePanel = new FilesTreePanel(controller);
+        tablePanel = new FilesTablePanel(controller);
+        splitPane = new UIFSplitPane(JSplitPane.HORIZONTAL_SPLIT,
+                treePanel.getUIComponent(), tablePanel.getUIComponent());
+        int dividerLocation = getController().getPreferences().getInt("files.tab.location", 50);
+        splitPane.setDividerLocation(dividerLocation);
+        splitPane.addPropertyChangeListener(new MyPropertyChangeListner());
     }
 
     /**
@@ -91,7 +100,6 @@ public class FilesTab extends PFUIComponent
         builder.add(createToolBar(), cc.xy(2, 2));
         builder.addSeparator(null, cc.xy(2, 4));
 
-        splitPane = new UIFSplitPane(JSplitPane.HORIZONTAL_SPLIT, new JPanel(), new JPanel());
         splitPane.setOneTouchExpandable(false);
         builder.add(splitPane, cc.xy(2, 6));
         uiComponent = builder.getPanel();
@@ -120,4 +128,18 @@ public class FilesTab extends PFUIComponent
         }
     }
 
+    /**
+     * Detect changes to the split pane location.
+     */
+    private class MyPropertyChangeListner implements PropertyChangeListener {
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (evt.getSource().equals(splitPane)
+                    && evt.getPropertyName().equals("dividerLocation")) {
+               getController().getPreferences().putInt("files.tab.location",
+                       splitPane.getDividerLocation()); 
+            }
+
+        }
+    }
 }

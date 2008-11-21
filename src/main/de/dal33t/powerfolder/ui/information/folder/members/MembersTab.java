@@ -86,11 +86,11 @@ public class MembersTab extends PFUIComponent implements FolderInformationTab {
      * Bulds the ui component.
      */
     private void buildUIComponent() {
-        FormLayout layout = new FormLayout("fill:pref:grow",
-            "fill:0:grow");
+        FormLayout layout = new FormLayout("3dlu, fill:pref:grow, 3dlu",
+            "3dlu, fill:0:grow, 3dlu");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
-        builder.add(scrollPane, cc.xy(1, 1));
+        builder.add(scrollPane, cc.xy(2, 2));
         uiComponent = builder.getPanel();
     }
 }
