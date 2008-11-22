@@ -19,7 +19,6 @@
 */
 package de.dal33t.powerfolder.ui.information.folder.files;
 
-import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
@@ -28,11 +27,16 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.ui.folder.FileFilterModel;
 import de.dal33t.powerfolder.ui.information.folder.FolderInformationTab;
+import de.dal33t.powerfolder.ui.widget.FilterTextField;
+import de.dal33t.powerfolder.util.Translation;
 
+import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
-import javax.swing.JToggleButton;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
@@ -47,6 +51,9 @@ public class FilesTab extends PFUIComponent
     private JSplitPane splitPane;
     private FilesTreePanel treePanel;
     private FilesTablePanel tablePanel;
+    private FileFilterModel fileFilterModel;
+    private FilterTextField filterTextField;
+    private JComboBox filterSelectionComboBox;
 
     /**
      * Constructor
@@ -59,9 +66,30 @@ public class FilesTab extends PFUIComponent
         tablePanel = new FilesTablePanel(controller);
         splitPane = new UIFSplitPane(JSplitPane.HORIZONTAL_SPLIT,
                 treePanel.getUIComponent(), tablePanel.getUIComponent());
-        int dividerLocation = getController().getPreferences().getInt("files.tab.location", 50);
+        int dividerLocation = getController().getPreferences().getInt(
+                "files.tab.location", 50);
         splitPane.setDividerLocation(dividerLocation);
         splitPane.addPropertyChangeListener(new MyPropertyChangeListner());
+        fileFilterModel = new FileFilterModel(controller);
+        filterTextField = new FilterTextField(12,
+                Translation.getTranslation("files_tab.filter_by_file_name.hint"),
+                Translation.getTranslation("files_tab.filter_by_file_name.tool_tip"));
+        fileFilterModel.setSearchField(filterTextField.getValueModel());
+        filterSelectionComboBox = new JComboBox();
+        filterSelectionComboBox.setToolTipText(Translation
+                .getTranslation("files_tab.combo.tool_tip"));
+        filterSelectionComboBox.addItem(Translation
+                .getTranslation("files_tab.combo.local_and_incoming"));
+        filterSelectionComboBox.addItem(Translation
+                .getTranslation("files_tab.combo.local_files_only"));
+        filterSelectionComboBox.addItem(Translation
+                .getTranslation("files_tab.combo.incoming_files_only"));
+        filterSelectionComboBox.addItem(Translation
+                .getTranslation("files_tab.combo.new_files_only"));
+        filterSelectionComboBox.addItem(Translation
+                .getTranslation("files_tab.combo.deleted_and_previous_files"));
+        filterSelectionComboBox.addActionListener(new MyActionListener());
+
     }
 
     /**
@@ -107,12 +135,18 @@ public class FilesTab extends PFUIComponent
      * @return the toolbar
      */
     private JPanel createToolBar() {
-        ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
-        bar.addGridded(new JToggleButton("temp"));
-        return bar.getPanel();
+        FormLayout layout = new FormLayout("pref, fill:pref:grow, pref",
+                "pref");
+        DefaultFormBuilder builder = new DefaultFormBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+        builder.add(filterTextField.getUIComponent(), cc.xy(3, 1));
+        builder.add(filterSelectionComboBox, cc.xy(1, 1));
+        return builder.getPanel();
     }
 
-    /** refreshes the UI elements with the current data */
+    /**
+     * refreshes the UI elements with the current data
+     */
     private void update() {
     }
 
@@ -124,10 +158,24 @@ public class FilesTab extends PFUIComponent
         public void propertyChange(PropertyChangeEvent evt) {
             if (evt.getSource().equals(splitPane)
                     && evt.getPropertyName().equals("dividerLocation")) {
-               getController().getPreferences().putInt("files.tab.location",
-                       splitPane.getDividerLocation()); 
+                getController().getPreferences().putInt("files.tab.location",
+                        splitPane.getDividerLocation());
             }
 
+        }
+    }
+
+    /**
+     * Fire filter event for changes to dropdown selection.
+     */
+    private class MyActionListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            if (e.getSource().equals(filterSelectionComboBox)) {
+                fileFilterModel.setMode(filterSelectionComboBox
+                        .getSelectedIndex());
+                fileFilterModel.scheduleFiltering();
+
+            }
         }
     }
 }
