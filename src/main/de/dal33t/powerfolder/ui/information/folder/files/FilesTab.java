@@ -27,7 +27,6 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.ui.folder.FileFilterModel;
 import de.dal33t.powerfolder.ui.information.folder.FolderInformationTab;
 import de.dal33t.powerfolder.ui.widget.FilterTextField;
 import de.dal33t.powerfolder.util.Translation;
@@ -45,13 +44,12 @@ import java.beans.PropertyChangeListener;
  */
 public class FilesTab extends PFUIComponent
         implements FolderInformationTab {
-
     private JPanel uiComponent;
     private Folder folder;
     private JSplitPane splitPane;
     private FilesTreePanel treePanel;
     private FilesTablePanel tablePanel;
-    private FileFilterModel fileFilterModel;
+    private DirectoryFilter directoryFilter;
     private FilterTextField filterTextField;
     private JComboBox filterSelectionComboBox;
 
@@ -70,11 +68,11 @@ public class FilesTab extends PFUIComponent
                 "files.tab.location", 50);
         splitPane.setDividerLocation(dividerLocation);
         splitPane.addPropertyChangeListener(new MyPropertyChangeListner());
-        fileFilterModel = new FileFilterModel(controller);
+        directoryFilter = new DirectoryFilter(controller);
         filterTextField = new FilterTextField(12,
                 Translation.getTranslation("files_tab.filter_by_file_name.hint"),
                 Translation.getTranslation("files_tab.filter_by_file_name.tool_tip"));
-        fileFilterModel.setSearchField(filterTextField.getValueModel());
+        directoryFilter.setSearchField(filterTextField.getValueModel());
         filterSelectionComboBox = new JComboBox();
         filterSelectionComboBox.setToolTipText(Translation
                 .getTranslation("files_tab.combo.tool_tip"));
@@ -99,6 +97,7 @@ public class FilesTab extends PFUIComponent
      */
     public void setFolderInfo(FolderInfo folderInfo) {
         folder = getController().getFolderRepository().getFolder(folderInfo);
+        directoryFilter.setFolder(folder);
         update();
     }
 
@@ -171,10 +170,9 @@ public class FilesTab extends PFUIComponent
     private class MyActionListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             if (e.getSource().equals(filterSelectionComboBox)) {
-                fileFilterModel.setMode(filterSelectionComboBox
+                directoryFilter.setFilterMode(filterSelectionComboBox
                         .getSelectedIndex());
-                fileFilterModel.scheduleFiltering();
-
+                directoryFilter.scheduleFiltering();
             }
         }
     }
