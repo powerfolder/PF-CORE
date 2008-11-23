@@ -44,14 +44,6 @@ public class FilteredDirectoryModel {
     }
 
     /**
-     * Clears files and subdirs.
-     */
-    public void clear() {
-        files.clear();
-        subdirectories.clear();
-    }
-
-    /**
      * Gets a readonly copy of the directories files.
      * @return
      */

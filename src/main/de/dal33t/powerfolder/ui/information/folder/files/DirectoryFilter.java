@@ -22,15 +22,20 @@ package de.dal33t.powerfolder.ui.information.folder.files;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.RecycleBin;
 import de.dal33t.powerfolder.event.FolderEvent;
 import de.dal33t.powerfolder.event.FolderListener;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.FilterModel;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
+/**
+ * Class to filter a directory.
+ */
 public class DirectoryFilter extends FilterModel {
 
     public static final int MODE_LOCAL_AND_INCOMING = 0;
@@ -44,7 +49,15 @@ public class DirectoryFilter extends FilterModel {
     private final MyFolderListener folderListener;
     private final AtomicBoolean running;
     private final AtomicBoolean pending;
-    private final FilteredDirectoryModel model;
+
+    private final TransferManager transferManager;
+    private final RecycleBin recycleBin;
+
+    private FilteredDirectoryModel model;
+    private long deletedFiles;
+    private long recycledFiles;
+    private long incomingFiles;
+    private long localFiles;
 
     /**
      * Filter of a folder directory.
@@ -57,6 +70,8 @@ public class DirectoryFilter extends FilterModel {
         running = new AtomicBoolean();
         pending = new AtomicBoolean();
         model = new FilteredDirectoryModel();
+        transferManager = getController().getTransferManager();
+        recycleBin = getController().getRecycleBin();
     }
 
     /**
@@ -90,6 +105,51 @@ public class DirectoryFilter extends FilterModel {
     public void reset() {
         getSearchField().setValue("");
         queueFilterEvent();
+    }
+
+    /**
+     * Get count of deleted files.
+     *
+     * @return
+     */
+    public long getDeletedFiles() {
+        return deletedFiles;
+    }
+
+    /**
+     * Get count of incoming files.
+     *
+     * @return
+     */
+    public long getIncomingFiles() {
+        return incomingFiles;
+    }
+
+    /**
+     * Get count of locl files.
+     *
+     * @return
+     */
+    public long getLocalFiles() {
+        return localFiles;
+    }
+
+    /**
+     * Get count of recycled files.
+     *
+     * @return
+     */
+    public long getRecycledFiles() {
+        return recycledFiles;
+    }
+
+    /**
+     * Get the filtered file model.
+     * 
+     * @return
+     */
+    public FilteredDirectoryModel getModel() {
+        return model;
     }
 
     /**
@@ -161,28 +221,58 @@ public class DirectoryFilter extends FilterModel {
             keywords = textFilter.toLowerCase().split("\\s+");
         }
 
-        AtomicLong originalFileCount = new AtomicLong();
         AtomicLong filteredFileCount = new AtomicLong();
+        AtomicLong originalFileCount = new AtomicLong();
+        AtomicLong deletedCount = new AtomicLong();
+        AtomicLong recycledCount = new AtomicLong();
+        AtomicLong incomingCount = new AtomicLong();
+        AtomicLong localCount = new AtomicLong();
+        FilteredDirectoryModel filteredDirectoryModel
+                = new FilteredDirectoryModel();
 
-        model.clear();
+        filterDirectory(originalDirectory, filteredDirectoryModel, keywords,
+                originalFileCount, filteredFileCount, deletedCount,
+                recycledCount, incomingCount, localCount);
 
-        filterDirectory(originalDirectory, model, keywords, originalFileCount,
-                filteredFileCount);
+        model = filteredDirectoryModel;
+        deletedFiles = deletedCount.get();
+        recycledFiles = recycledCount.get();
+        incomingFiles = incomingCount.get();
+        localFiles = localCount.get();
 
         logFine("Filtered directory " + originalDirectory.getName() +
                 ", original count " + originalFileCount.get() +
                 ", filtered count " + filteredFileCount.get());
     }
 
+    /**
+     * Recursive filter call.
+     *
+     * @param directory
+     * @param filteredDirectoryModel
+     * @param keywords
+     * @param originalCount
+     * @param filteredCount
+     * @param deletedCount
+     * @param recycledCount
+     * @param incomingCount
+     * @param localCount
+     */
     private void filterDirectory(Directory directory,
-                                 FilteredDirectoryModel model,
-                                 String[] keywords, AtomicLong originalFileCount,
-                                 AtomicLong filteredFileCount) {
+                                 FilteredDirectoryModel filteredDirectoryModel,
+                                 String[] keywords,
+                                 AtomicLong originalCount,
+                                 AtomicLong filteredCount,
+                                 AtomicLong deletedCount,
+                                 AtomicLong recycledCount,
+                                 AtomicLong incomingCount,
+                                 AtomicLong localCount) {
+
         for (FileInfo fileInfo : directory.getFiles()) {
 
-            originalFileCount.incrementAndGet();
+            originalCount.incrementAndGet();
 
-            // text filter
+            // Text filter
             boolean showFile = true;
             if (keywords != null) {
 
@@ -190,17 +280,71 @@ public class DirectoryFilter extends FilterModel {
                 showFile = matches(fileInfo, keywords);
             }
 
-            // @todo filter by mode - too tired now :-)
-
             if (showFile) {
-                filteredFileCount.incrementAndGet();
-                model.getFiles().add(fileInfo);
+                boolean isNew = transferManager.isCompletedDownload(fileInfo);
+                boolean isDeleted = fileInfo.isDeleted();
+                FileInfo newestVersion = null;
+                if (fileInfo.getFolder(getController().getFolderRepository())
+                        != null) {
+                    newestVersion = fileInfo.getNewestNotDeletedVersion(
+                            getController().getFolderRepository());
+                }
+
+                boolean isIncoming = fileInfo.isDownloading(getController())
+                    || fileInfo.isExpected(getController().getFolderRepository())
+                    || newestVersion != null
+                    && newestVersion.isNewerThan(fileInfo);
+                switch (filterMode) {
+                    case MODE_LOCAL_ONLY :
+                        showFile = !isIncoming && !isDeleted;
+                        break;
+                    case MODE_INCOMING_ONLY :
+                        showFile = isIncoming;
+                        break;
+                    case MODE_NEW_ONLY :
+                        showFile = isNew;
+                        break;
+                    case MODE_DELETED_PREVIOUS :
+                        showFile = isDeleted;
+                        break;
+                    case MODE_LOCAL_AND_INCOMING :
+                    default :
+                        showFile = !isDeleted;
+                        break;
+                }
+
+                if (showFile) {
+
+                    if (isDeleted) {
+                        deletedCount.incrementAndGet();
+                        if (recycleBin.isInRecycleBin(fileInfo)) {
+                            recycledCount.incrementAndGet();
+                        }
+                    } else if (isIncoming) {
+                        incomingCount.incrementAndGet();
+                    } else {
+                        localCount.incrementAndGet();
+                    }
+
+                    filteredCount.incrementAndGet();
+                    filteredDirectoryModel.getFiles().add(fileInfo);
+                }
             }
         }
 
-        for (Directory subDirectory : directory.getSubDirectoriesAsCollection()) {
+        for (Directory subDirectory : directory.getSubDirectoriesAsCollection())
+        {
             FilteredDirectoryModel subModel = new FilteredDirectoryModel();
-            model.getSubdirectories().put(subDirectory.getName(), subModel);
+            filterDirectory(subDirectory, subModel, keywords, originalCount,
+                    filteredCount,  deletedCount, recycledCount,
+                    incomingCount, localCount);
+
+            // Only keep if files lower in tree.
+            if (!subModel.getFiles().isEmpty()
+                    || !subModel.getSubdirectories().isEmpty()) {
+                filteredDirectoryModel.getSubdirectories().put(
+                        subDirectory.getName(), subModel);
+            }
         }
     }
 
@@ -215,6 +359,7 @@ public class DirectoryFilter extends FilterModel {
      * @return the file matches the keywords
      */
     private static boolean matches(FileInfo file, String[] keywords) {
+
         if (keywords == null || keywords.length == 0) {
             return true;
         }
@@ -226,41 +371,33 @@ public class DirectoryFilter extends FilterModel {
             }
 
             if (keyword.startsWith("-")) {
-                // negative search:
+
+                // Negative search:
                 keyword = keyword.substring(1);
                 if (keyword.length() != 0) {
+
                     // Match for filename
                     String filename = file.getFilenameOnly().toLowerCase();
                     if (filename.contains(keyword)) {
-                        // if negative keyword match we don't want to see this
+                        // If negative keyword match we don't want to see this
                         // file
                         return false;
                     }
-                    // OR for nick
-                    String modifierNick = file.getModifiedBy().nick
-                        .toLowerCase();
-                    if (modifierNick.contains(keyword)) {
-                        // if negative keyword match we don't want to see this
-                        // file
-                        return false;
-                    }
-                    // does not match the negative keyword
+
+                    // Does not match the negative keyword
                     continue;
                 }
-                // only a minus sign in the keyword ignore
+
+                // Only a minus sign in the keyword ignore
                 continue;
-            } // normal search
+            }
+
+            // Normal search
 
             // Match for filename
             String filename = file.getFilenameOnly().toLowerCase();
             if (filename.contains(keyword)) {
-                // Match by name. Ok, continue
-                continue;
-            }
 
-            // OR for nick
-            String modifierNick = file.getModifiedBy().nick.toLowerCase();
-            if (modifierNick.contains(keyword)) {
                 // Match by name. Ok, continue
                 continue;
             }
@@ -269,11 +406,9 @@ public class DirectoryFilter extends FilterModel {
             return false;
         }
 
-        // All keywords matched !
+        // All keywords matched!
         return true;
     }
-
-
 
     /**
      * Listener to respond to folder events. Queue filter event if our folder.
