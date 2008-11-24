@@ -493,7 +493,7 @@ public class FileInfo extends Loggable implements Serializable, DiskItem,
                 "Unable to determine newest version. Folder not joined "
                     + getFolderInfo());
         }
-        FileInfo newestVersion = this;
+        FileInfo newestVersion = null;
         for (Member member : folder.getMembersAsCollection()) {
             if (member.isCompleteyConnected() || member.isMySelf()) {
                 // Get remote file
@@ -502,8 +502,10 @@ public class FileInfo extends Loggable implements Serializable, DiskItem,
                     continue;
                 }
                 // Check if remote file in newer
-                if (remoteFile.isNewerThan(newestVersion)) {
-                    // logFiner("Newer version found at " + member);
+                if (newestVersion == null
+                    || remoteFile.isNewerThan(newestVersion))
+                {
+                    // log.finer("Newer version found at " + member);
                     newestVersion = remoteFile;
                 }
             }
@@ -522,24 +524,23 @@ public class FileInfo extends Loggable implements Serializable, DiskItem,
         }
         Folder folder = getFolder(repo);
         if (folder == null) {
-            throw new IllegalStateException(
-                "Unable to determine newest version. Folder not joined "
-                    + getFolderInfo());
+            logWarning("Unable to determine newest version. Folder not joined "
+                + getFolderInfo());
+            return null;
         }
-        FileInfo newestVersion = this;
+        FileInfo newestVersion = null;
         for (Member member : folder.getMembersAsCollection()) {
             if (member.isCompleteyConnected() || member.isMySelf()) {
                 // Get remote file
                 FileInfo remoteFile = member.getFile(this);
-                if (remoteFile == null) {
-                    continue;
-                }
-                if (remoteFile.isDeleted()) {
+                if (remoteFile == null || remoteFile.isDeleted()) {
                     continue;
                 }
                 // Check if remote file is newer
-                if (remoteFile.isNewerThan(newestVersion)) {
-                    // logFiner("Newer version found at " + member);
+                if (newestVersion == null
+                    || remoteFile.isNewerThan(newestVersion))
+                {
+                    // log.finer("Newer version found at " + member);
                     newestVersion = remoteFile;
                 }
             }
@@ -714,8 +715,10 @@ public class FileInfo extends Loggable implements Serializable, DiskItem,
         Reject.ifNull(size, "Size is null");
         Reject.ifFalse(size >= 0, "Negative file size");
         Reject.ifNull(lastModifiedDate, "Modification date is null");
-        Reject.ifFalse(lastModifiedDate.getTime() >= 0,
-            "Modification date is invalid: " + lastModifiedDate);
+        if (lastModifiedDate.getTime() < 0) {
+            throw new IllegalStateException("Modification date is invalid: "
+                + lastModifiedDate);
+        }
         Reject.ifNull(folderInfo, "FolderInfo is null");
     }
 
