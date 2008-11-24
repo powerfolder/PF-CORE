@@ -19,9 +19,12 @@
  */
 package de.dal33t.powerfolder.ui.render;
 
-import java.awt.*;
+import static de.dal33t.powerfolder.disk.SyncProfile.MANUAL_SYNCHRONIZATION;
+
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Font;
 import java.io.File;
-import java.util.List;
 
 import javax.swing.Icon;
 import javax.swing.JTable;
@@ -31,9 +34,9 @@ import javax.swing.table.DefaultTableCellRenderer;
 import org.apache.commons.lang.StringUtils;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.disk.*;
-import static de.dal33t.powerfolder.disk.SyncProfile.MANUAL_SYNCHRONIZATION;
+import de.dal33t.powerfolder.disk.Directory;
+import de.dal33t.powerfolder.disk.FileInfoHolder;
+import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.ImageFileInfo;
 import de.dal33t.powerfolder.light.MP3FileInfo;
@@ -188,20 +191,20 @@ public class DirectoryTableCellRenderer extends DefaultTableCellRenderer {
                         newValue = "0";
                     } else {
                         newValue = String.valueOf(holder.getAvailability());
-                        List<Member> members = holder.getSources();
-                        String toolTipValue = "<HTML><BODY>";
-                        String separetor = "";
-                        for (int i = 0; i < members.size(); i++) {
-                            toolTipValue += separetor
-                                + members.get(i).getNick();
-                            separetor = "<BR>";
-                        }
-                        // insert filename to force redraw of tooltip on new
-                        // file
-                        // with same members
-                        toolTipValue += "<!-- " + fileInfo.getFilenameOnly()
-                            + "--></BODY></HTML>";
-                        setToolTipText(toolTipValue);
+                        // List<Member> members = holder.getSources();
+                        // String toolTipValue = "<HTML><BODY>";
+                        // String separetor = "";
+                        // for (int i = 0; i < members.size(); i++) {
+                        // toolTipValue += separetor
+                        // + members.get(i).getNick();
+                        // separetor = "<BR>";
+                        // }
+                        // // insert filename to force redraw of tooltip on new
+                        // // file
+                        //                        // with same members
+                        //                        toolTipValue += "<!-- " + fileInfo.getFilenameOnly()
+                        //                            + "--></BODY></HTML>";
+                        //                        setToolTipText(toolTipValue);
                     }
                 }
             }
