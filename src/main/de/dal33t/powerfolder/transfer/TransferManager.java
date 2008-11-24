@@ -1192,12 +1192,11 @@ public class TransferManager extends PFComponent {
     private void removeDownload(final Download download) {
         final DownloadManager man = download.getDownloadManager();
         synchronized (man) {
+            downloadsCount.remove(download.getPartner());
             if (man.hasSource(download)) {
-                downloadsCount.remove(download.getPartner());
                 man.removeSource(download);
                 if (!man.hasSources()) {
-                    log
-                        .fine("No further sources in that manager, removing it!");
+                    logFine("No further sources in that manager, removing it!");
                     if (!man.isDone()) {
                         man.setBroken("Out of sources for download");
                     }
@@ -1343,7 +1342,7 @@ public class TransferManager extends PFComponent {
         List<Member> sources = getSourcesWithFreeUploadCapacity(fInfo);
 
         // TODO Move into ONE method getSources....
-        
+
         // Now walk through all sources and get the best one
         // Member bestSource = null;
         FileInfo newestVersionFile = fInfo.getNewestVersion(getController()
@@ -1545,25 +1544,23 @@ public class TransferManager extends PFComponent {
             throw new NullPointerException("Folder not joined of file: "
                 + fInfo);
         }
+
+        // List<Member> nodes = getController().getNodeManager()
+        // .getNodeWithFileListFrom(fInfo.getFolderInfo());
         List<Member> sources = null;
+        // List<Member> sources = new ArrayList<Member>(nodes.size());
         for (Member node : folder.getMembersAsCollection()) {
             if (node.isCompleteyConnected() && !node.isMySelf()
                 && node.hasFile(fInfo))
             {
-                if (withUploadCapacityOnly) {
-                    int nDownloadFrom = countActiveAndQueuedDownloads(node);
-                    int maxAllowedDls = node.isOnLAN()
-                        ? Constants.MAX_DLS_FROM_LAN_MEMBER
-                        : Constants.MAX_DLS_FROM_INET_MEMBER;
-                    if (nDownloadFrom >= maxAllowedDls) {
-                        // Skip source
-                        continue;
-                    }
+                if (withUploadCapacityOnly && !hasUploadCapacity(node)) {
+                    continue;
                 }
-                if (sources == null) {
-                    sources = new LinkedList<Member>();
-                }
+
                 // node is connected and has file
+                if (sources == null) {
+                    sources = new ArrayList<Member>();
+                }
                 sources.add(node);
             }
         }
@@ -1901,6 +1898,18 @@ public class TransferManager extends PFComponent {
     public int countTotalDownloads() {
         return countActiveDownloads() + pendingDownloads.size()
             + completedDownloads.size();
+    }
+
+    /**
+     * @param node
+     * @return true if the remote node has free upload capacity.
+     */
+    public boolean hasUploadCapacity(Member node) {
+        int nDownloadFrom = countActiveAndQueuedDownloads(node);
+        int maxAllowedDls = node.isOnLAN()
+            ? Constants.MAX_DLS_FROM_LAN_MEMBER
+            : Constants.MAX_DLS_FROM_INET_MEMBER;
+        return nDownloadFrom < maxAllowedDls;
     }
 
     /**
