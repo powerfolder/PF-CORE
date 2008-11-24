@@ -19,35 +19,37 @@
  */
 package de.dal33t.powerfolder.ui.preferences;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.factories.Borders;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.NetworkingMode;
-import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.transfer.TransferManager;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.net.UDTSocket;
-import de.dal33t.powerfolder.util.ui.LineSpeedSelectionPanel;
-import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Dictionary;
+import java.util.Hashtable;
 
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.Dictionary;
-import java.util.Hashtable;
+import javax.swing.JTextField;
+
+import org.apache.commons.lang.StringUtils;
+
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.factories.Borders;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
+
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.NetworkingMode;
+import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.transfer.TransferManager;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.net.UDTSocket;
+import de.dal33t.powerfolder.util.ui.LineSpeedSelectionPanel;
+import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 
 public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
-
-    private static final int PRIVATE_MODE_INDEX = 0;
-    private static final int LANONLY_MODE_INDEX = 1;
-
     private JPanel panel;
     private JComboBox networkingMode;
     private JCheckBox relayedConnectionBox;
@@ -57,6 +59,7 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
     private JSlider silentModeThrottle;
     private boolean needsRestart = false;
     private JLabel silentThrottleLabel;
+    private JTextField serverField;
 
     public NetworkSettingsTab(Controller controller) {
         super(controller);
@@ -80,42 +83,27 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
     }
 
     private void initComponents() {
-        String[] options = new String[2];
-        options[PRIVATE_MODE_INDEX] = Translation
-            .getTranslation("preferences.dialog.network_mode.private");
-        options[LANONLY_MODE_INDEX] = Translation
-            .getTranslation("preferences.dialog.network_mode.lan_only");
+        String[] options = new String[NetworkingMode.values().length];
+        options[NetworkingMode.PRIVATEMODE.ordinal()] = Translation
+            .getTranslation("preferences.dialog.networkmode.private");
+        options[NetworkingMode.LANONLYMODE.ordinal()] = Translation
+            .getTranslation("preferences.dialog.networkmode.lanonly");
+        options[NetworkingMode.SERVERONLYMODE.ordinal()] = Translation
+            .getTranslation("preferences.dialog.networkmode.serveronly");
         networkingMode = new JComboBox(options);
-        if (getController().isLanOnly()) {
-            networkingMode.setSelectedIndex(LANONLY_MODE_INDEX);
-            networkingMode
-                .setToolTipText(Translation
-                    .getTranslation("preferences.dialog.network_mode.lan_only.tooltip"));
-        } else { // private
-            networkingMode.setSelectedIndex(PRIVATE_MODE_INDEX);
-            networkingMode
-                .setToolTipText(Translation
-                    .getTranslation("preferences.dialog.network_mode.private.tooltip"));
-        }
 
+        NetworkingMode currentNetworkingMode = getController()
+            .getNetworkingMode();
+        String tooltip = getTooltip(currentNetworkingMode);
+        networkingMode.setSelectedIndex(currentNetworkingMode.ordinal());
+        networkingMode.setToolTipText(tooltip);
         networkingMode.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                String tooltip = null;
-                switch (networkingMode.getSelectedIndex()) {
-                    case PRIVATE_MODE_INDEX : {
-                        enableDisableComponents(false);
-                        tooltip = Translation
-                            .getTranslation("preferences.dialog.network_mode.private.tooltip");
-                        break;
-                    }
-                    case LANONLY_MODE_INDEX : {
-                        enableDisableComponents(true);
-                        tooltip = Translation
-                            .getTranslation("preferences.dialog.network_mode.lan_only.tooltip");
-                        break;
-                    }
-                }
-                networkingMode.setToolTipText(tooltip);
+                NetworkingMode selNm = NetworkingMode.values()[networkingMode
+                    .getSelectedIndex()];
+                networkingMode.setToolTipText(getTooltip(selNm));
+                enableDisableComponents(NetworkingMode.LANONLYMODE
+                    .equals(selNm));
             }
         });
 
@@ -143,9 +131,9 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
             .getAllowedDownloadCPSForLAN() / 1024);
 
         silentThrottleLabel = new JLabel(Translation
-            .getTranslation("preferences.dialog.silent_throttle"));
+            .getTranslation("preferences.dialog.silentthrottle"));
         silentThrottleLabel.setToolTipText(Translation
-            .getTranslation("preferences.dialog.silent_throttle.tooltip"));
+            .getTranslation("preferences.dialog.silentthrottle.tooltip"));
 
         silentModeThrottle = new JSlider();
         silentModeThrottle.setMinimum(10);
@@ -177,6 +165,10 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         }
         silentModeThrottle.setValue(smt);
 
+        serverField = SimpleComponentFactory.createTextField(true);
+        serverField.setText(ConfigurationEntry.SERVER_HOST
+            .getValue(getController()));
+
         enableDisableComponents(getController().isLanOnly());
     }
 
@@ -196,7 +188,7 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         if (panel == null) {
             FormLayout layout = new FormLayout(
                 "right:100dlu, 3dlu, 30dlu, 3dlu, 15dlu, 10dlu, 30dlu, 30dlu, pref, 0:grow",
-                "pref, 3dlu, pref, 3dlu, pref, 7dlu, top:pref, 7dlu, top:pref, 7dlu, top:pref, 7dlu, top:pref, 3dlu, top:pref:grow");
+                "pref, 3dlu, pref, 3dlu, pref, 7dlu, top:pref, 7dlu, top:pref, 7dlu, pref, 7dlu, pref, 3dlu, pref:grow, 7dlu, pref, 3dlu, pref");
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
                 .createEmptyBorder("3dlu, 0dlu, 0dlu, 0dlu"));
@@ -204,7 +196,7 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
 
             int row = 1;
             builder.addLabel(Translation
-                .getTranslation("preferences.dialog.network_mode.name"), cc.xy(
+                .getTranslation("preferences.dialog.networkmode.name"), cc.xy(
                 1, row));
             builder.add(networkingMode, cc.xywh(3, row, 7, 1));
 
@@ -216,19 +208,24 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
 
             row += 2;
             builder.addLabel(Translation
-                .getTranslation("preferences.dialog.line_settings"), cc.xy(1,
+                .getTranslation("preferences.dialog.linesettings"), cc.xy(1,
                 row));
             builder.add(wanSpeed, cc.xywh(3, row, 7, 1));
 
             row += 2;
             builder.addLabel(Translation
-                .getTranslation("preferences.dialog.lan_line_settings"), cc.xy(1,
+                .getTranslation("preferences.dialog.lanlinesettings"), cc.xy(1,
                 row));
             builder.add(lanSpeed, cc.xywh(3, row, 7, 1));
 
             row += 2;
             builder.add(silentThrottleLabel, cc.xy(1, row));
             builder.add(silentModeThrottle, cc.xywh(3, row, 7, 1));
+
+            row += 2;
+            builder.addLabel(Translation
+                .getTranslation("preferences.dialog.server"), cc.xy(1, row));
+            builder.add(serverField, cc.xywh(3, row, 7, 1));
             panel = builder.getPanel();
         }
         return panel;
@@ -238,33 +235,40 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
      * Saves the network settings.
      */
     public void save() {
-        NetworkingMode netMode;
-        switch (networkingMode.getSelectedIndex()) {
-            case PRIVATE_MODE_INDEX : {
-                netMode = NetworkingMode.PRIVATEMODE;
-                break;
-            }
-            case LANONLY_MODE_INDEX : {
-                netMode = NetworkingMode.LANONLYMODE;
-                break;
-            }
-            default :
-                throw new IllegalStateException("invalid index");
-        }
+        NetworkingMode netMode = NetworkingMode.values()[networkingMode
+            .getSelectedIndex()];
         getController().setNetworkingMode(netMode);
         TransferManager tm = getController().getTransferManager();
         tm.setAllowedUploadCPSForWAN(wanSpeed.getUploadSpeedKBPS());
         tm.setAllowedDownloadCPSForWAN(wanSpeed.getDownloadSpeedKBPS());
         tm.setAllowedUploadCPSForLAN(lanSpeed.getUploadSpeedKBPS());
         tm.setAllowedDownloadCPSForLAN(lanSpeed.getDownloadSpeedKBPS());
-
         ConfigurationEntry.UPLOADLIMIT_SILENTMODE_THROTTLE.setValue(
             getController(), Integer.toString(silentModeThrottle.getValue()));
-
         ConfigurationEntry.RELAYED_CONNECTIONS_ENABLED.setValue(
             getController(), "" + relayedConnectionBox.isSelected());
-
         ConfigurationEntry.UDT_CONNECTIONS_ENABLED.setValue(getController(), ""
             + udtConnectionBox.isSelected());
+        String oldServer = ConfigurationEntry.SERVER_HOST
+            .getValue(getController());
+        String newServer = serverField.getText();
+        ConfigurationEntry.SERVER_HOST.setValue(getController(), newServer);
+        boolean bothBlank = StringUtils.isBlank(oldServer)
+            && StringUtils.isBlank(newServer);
+        needsRestart = !bothBlank && !Util.equals(newServer, oldServer);
+    }
+
+    private String getTooltip(NetworkingMode nm) {
+        if (nm.equals(NetworkingMode.LANONLYMODE)) {
+            return Translation
+                .getTranslation("preferences.dialog.networkmode.lanonly.tooltip");
+        } else if (nm.equals(NetworkingMode.PRIVATEMODE)) {
+            return Translation
+                .getTranslation("preferences.dialog.networkmode.private.tooltip");
+        } else if (nm.equals(NetworkingMode.SERVERONLYMODE)) {
+            return Translation
+                .getTranslation("preferences.dialog.networkmode.serveronly.tooltip");
+        }
+        return null;
     }
 }
