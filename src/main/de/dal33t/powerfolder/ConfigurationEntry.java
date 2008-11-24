@@ -312,13 +312,13 @@ public enum ConfigurationEntry {
      * The number of seconds between db maintenance scans (10 minutes).
      */
     DB_MAINTENANCE_SECONDS("filedb.maintenance.seconds", String.valueOf(600)),
-    
+
     /**
      * The age of a deleted file until it gets removed by the folder db
      * maintenance. In Seconds! default: 1 year
      */
-    MAX_FILEINFO_DELETED_AGE_SECONDS("filedb.deleted.maxage", "" + 60L * 60 * 24
-        * 365),
+    MAX_FILEINFO_DELETED_AGE_SECONDS("filedb.deleted.maxage", "" + 60L * 60
+        * 24 * 365),
 
     /**
      * The optional server hostname to connect to. Example:
@@ -340,7 +340,8 @@ public enum ConfigurationEntry {
 
     private String configKey;
     protected String defaultValue;
-    private static final Logger log = Logger.getLogger(ConfigurationEntry.class.getName());
+    private static final Logger log = Logger.getLogger(ConfigurationEntry.class
+        .getName());
 
     ConfigurationEntry(String aConfigKey) {
         this(aConfigKey, null);
@@ -354,6 +355,13 @@ public enum ConfigurationEntry {
         if (theDefaultValue == null) {
             setDefaults();
         }
+    }
+
+    /**
+     * @return the key string of this configuration entry.
+     */
+    public String getConfigKey() {
+        return configKey;
     }
 
     /**
@@ -386,9 +394,8 @@ public enum ConfigurationEntry {
         try {
             return new Integer(value);
         } catch (NumberFormatException e) {
-            log.log(Level.WARNING,
-                    "Unable to parse configuration entry '" + configKey
-                    + "' into a int. Value: " + value, e);
+            log.log(Level.WARNING, "Unable to parse configuration entry '"
+                + configKey + "' into a int. Value: " + value, e);
             return new Integer(defaultValue);
         }
     }
@@ -409,9 +416,8 @@ public enum ConfigurationEntry {
         try {
             return value.equalsIgnoreCase("true");
         } catch (NumberFormatException e) {
-            log.log(Level.WARNING,
-                    "Unable to parse configuration entry '" + configKey
-                    + "' into a boolean. Value: " + value, e);
+            log.log(Level.WARNING, "Unable to parse configuration entry '"
+                + configKey + "' into a boolean. Value: " + value, e);
             return defaultValue.equalsIgnoreCase("true");
         }
     }
