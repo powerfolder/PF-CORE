@@ -30,7 +30,7 @@ import java.util.logging.Level;
 public abstract class Loggable {
 
     /** The class logger. */
-    private Logger log;
+    private transient Logger log;
 
     /**
      * Answers whether the logger level for this class is severe.
