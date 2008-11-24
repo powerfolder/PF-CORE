@@ -19,17 +19,6 @@
  */
 package de.dal33t.powerfolder.net;
 
-import de.dal33t.powerfolder.Constants;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.clientserver.ServerClient;
-import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.message.Identity;
-import de.dal33t.powerfolder.util.Debug;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.compare.MemberComparator;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -40,6 +29,18 @@ import java.util.List;
 import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import de.dal33t.powerfolder.Constants;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.NetworkingMode;
+import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.clientserver.ServerClient;
+import de.dal33t.powerfolder.light.MemberInfo;
+import de.dal33t.powerfolder.message.Identity;
+import de.dal33t.powerfolder.util.Debug;
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.compare.MemberComparator;
 
 /**
  * Responsible for reconnecting to remote nodes.
@@ -269,6 +270,12 @@ public class ReconnectManager extends PFComponent {
             .isRelay(node))
         {
             // Relay nodes get reconnected by own thread
+            return false;
+        }
+        if (getController().getNetworkingMode().equals(
+            NetworkingMode.SERVERONLYMODE))
+        {
+            // Never connect this way to the server, only thru ServerClient.
             return false;
         }
         // Always add friends

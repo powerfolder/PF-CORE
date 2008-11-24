@@ -52,7 +52,8 @@ import java.util.logging.Logger;
  */
 public class BroadcastMananger extends PFComponent implements Runnable {
 
-    private static final Logger log = Logger.getLogger(BroadcastMananger.class.getName());
+    private static final Logger log = Logger.getLogger(BroadcastMananger.class
+        .getName());
     private static final int DEFAULT_BROADCAST_PORT = 1337;
     private static final int IN_BUFFER_SIZE = 128;
 
@@ -288,8 +289,8 @@ public class BroadcastMananger extends PFComponent implements Runnable {
         String message = new String(content);
 
         if (isFiner()) {
-            logFiner(
-                "Received broadcast: " + message + ", " + packet.getAddress());
+            logFiner("Received broadcast: " + message + ", "
+                + packet.getAddress());
         }
 
         int port;
@@ -323,20 +324,18 @@ public class BroadcastMananger extends PFComponent implements Runnable {
         Member node = getController().getNodeManager().getNode(id);
         if (node == null || (!node.isMySelf() && !node.isConnected())) {
             receivedBroadcastsFrom.add(packet.getAddress());
-            logInfo(
-                "Found user on local network: " + address
-                    + ((node != null) ? ", " + node : ""));
+            logInfo("Found user on local network: " + address
+                + ((node != null) ? ", " + node : ""));
             try {
                 if (getController().isStarted()) {
                     // found another new node!!!
-                    getController().connect(address);
+                    node = getController().connect(address);
+                    node.setOnLAN(true);
                     return true;
                 }
 
             } catch (ConnectionException e) {
-                logWarning("Unable to connect to node on subnet: " + address
-                    + ": " + e);
-                logFiner("ConnectionException", e);
+                logWarning("Unable to connect to node on subnet: " + address, e);
             }
         } else {
             if (isFiner()) {
@@ -417,16 +416,14 @@ public class BroadcastMananger extends PFComponent implements Runnable {
                 try {
                     senderSockets[i] = new DatagramSocket(0, inet[i]);
                     if (isFiner()) {
-                        logFiner(
-                            "Successfully opened broadcast sender for "
-                                + inet[i]);
+                        logFiner("Successfully opened broadcast sender for "
+                            + inet[i]);
                     }
 
                 } catch (IOException e) {
                     if (isFiner()) {
-                        logFiner(
-                            "Unable to open broadcast sender for " + inet[i]
-                                + ": " + e.getMessage());
+                        logFiner("Unable to open broadcast sender for "
+                            + inet[i] + ": " + e.getMessage());
                     }
                     senderSockets[i] = null;
                 }
