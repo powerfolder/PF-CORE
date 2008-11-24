@@ -19,6 +19,33 @@
  */
 package de.dal33t.powerfolder.transfer;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Constants;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.FolderRepository;
+import de.dal33t.powerfolder.event.ListenerSupportFactory;
+import de.dal33t.powerfolder.event.TransferManagerEvent;
+import de.dal33t.powerfolder.event.TransferManagerListener;
+import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.message.AbortUpload;
+import de.dal33t.powerfolder.message.DownloadQueued;
+import de.dal33t.powerfolder.message.FileChunk;
+import de.dal33t.powerfolder.message.RequestDownload;
+import de.dal33t.powerfolder.message.TransferStatus;
+import de.dal33t.powerfolder.net.ConnectionHandler;
+import de.dal33t.powerfolder.transfer.swarm.FileRecordProvider;
+import de.dal33t.powerfolder.transfer.swarm.VolatileFileRecordProvider;
+import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.TransferCounter;
+import de.dal33t.powerfolder.util.compare.MemberComparator;
+import de.dal33t.powerfolder.util.compare.ReverseComparator;
+import de.dal33t.powerfolder.util.delta.FilePartsRecord;
+import org.apache.commons.lang.Validate;
+
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -45,36 +72,6 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import org.apache.commons.lang.Validate;
-
-import com.sun.org.apache.xalan.internal.xsltc.compiler.sym;
-
-import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Constants;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.event.ListenerSupportFactory;
-import de.dal33t.powerfolder.event.TransferManagerEvent;
-import de.dal33t.powerfolder.event.TransferManagerListener;
-import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.message.AbortUpload;
-import de.dal33t.powerfolder.message.DownloadQueued;
-import de.dal33t.powerfolder.message.FileChunk;
-import de.dal33t.powerfolder.message.RequestDownload;
-import de.dal33t.powerfolder.message.TransferStatus;
-import de.dal33t.powerfolder.net.ConnectionHandler;
-import de.dal33t.powerfolder.transfer.swarm.FileRecordProvider;
-import de.dal33t.powerfolder.transfer.swarm.VolatileFileRecordProvider;
-import de.dal33t.powerfolder.util.Format;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.TransferCounter;
-import de.dal33t.powerfolder.util.compare.MemberComparator;
-import de.dal33t.powerfolder.util.compare.ReverseComparator;
-import de.dal33t.powerfolder.util.delta.FilePartsRecord;
 
 /**
  * Transfer manager for downloading/uploading files
@@ -615,7 +612,7 @@ public class TransferManager extends PFComponent {
                 abortedUL = true;
             }
         }
-        for (Upload u : queuedUploads.toArray(new Upload[0])) {
+        for (Upload u : queuedUploads.toArray(new Upload[queuedUploads.size()])) {
             if (u.getFile().equals(fInfo)) {
                 abortUpload(fInfo, u.getPartner());
                 abortedUL = true;

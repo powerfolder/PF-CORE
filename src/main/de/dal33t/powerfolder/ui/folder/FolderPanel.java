@@ -57,7 +57,6 @@ public class FolderPanel extends PFUIPanel {
 
     private JTabbedPane tabbedPanel;
     private Folder folder;
-    private HomeTab homeTab;
     private FilesTab filesTab;
     private MembersTab membersTab;
     private FolderChatPanel folderChatPanel;
@@ -89,7 +88,6 @@ public class FolderPanel extends PFUIPanel {
         this.folder = folder;
         membersTab.setFolder(folder);
         folderChatPanel.setFolder(folder);
-        homeTab.setFolder(folder);
         tabbedPanel.setIconAt(homeTabId, Icons.FOLDER);
 
         // Do not show settings tab in preview
@@ -180,8 +178,6 @@ public class FolderPanel extends PFUIPanel {
         int tab = tabbedPanel.getSelectedIndex();
         if (tab == filesTabId) {
             return filesTab;
-        } else if (tab == homeTabId) {
-            return homeTab;
         } else if (tab == membersTabId) {
             return membersTab;
         } else if (tab == chatTabId) {
@@ -214,11 +210,7 @@ public class FolderPanel extends PFUIPanel {
         membersTab = new MembersTab(getController());
         folderChatPanel = new FolderChatPanel(getController(),
             getApplicationModel().getChatModel());
-        homeTab = new HomeTab(getController(), previewMode);
         settingsTab = new SettingsTab(getController(), previewMode, this);
-
-        tabbedPanel.add(' ' + homeTab.getTitle() + ' ', homeTab
-            .getUIComponent());
 
         tabbedPanel.setMnemonicAt(homeTabId, Translation.getTranslation(
             "folder_panel.home.key").charAt(0));
