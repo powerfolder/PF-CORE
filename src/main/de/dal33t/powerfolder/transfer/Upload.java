@@ -40,7 +40,7 @@ import de.dal33t.powerfolder.util.delta.FilePartsRecord;
 
 /**
  * Simple class for a scheduled Upload
- *
+ * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.13 $
  */
@@ -59,7 +59,7 @@ public class Upload extends Transfer {
     /**
      * Constructs a new uploads, package protected, can only be called by
      * transfermanager
-     *
+     * 
      * @param manager
      * @param member
      * @param dl
@@ -189,7 +189,9 @@ public class Upload extends Transfer {
                     }
                     debugState = "Waiting for requests";
                     if (waitForRequests()) {
-                        logInfo("Checking for parts request.");
+                        if (isFiner()) {
+                            logFiner("Checking for parts request.");
+                        }
 
                         debugState = "Checking for FPR request.";
 
@@ -290,7 +292,7 @@ public class Upload extends Transfer {
 
     /**
      * Sends one requested part.
-     *
+     * 
      * @return false if the upload should stop, true otherwise
      * @throws TransferException
      */
@@ -441,26 +443,23 @@ public class Upload extends Transfer {
 
         if (!stillQueuedAtPartner()) {
             logWarning("Upload broken because not enqued @ partner: queedAtPartner: "
-                    + stillQueuedAtPartner()
-                    + ", folder: "
-                    + getFile()
-                        .getFolder(getController().getFolderRepository())
-                    + ", diskfile: "
-                    + getFile().getDiskFile(
-                        getController().getFolderRepository())
-                    + ", last contime: " + getPartner().getLastConnectTime());
+                + stillQueuedAtPartner()
+                + ", folder: "
+                + getFile().getFolder(getController().getFolderRepository())
+                + ", diskfile: "
+                + getFile().getDiskFile(getController().getFolderRepository())
+                + ", last contime: " + getPartner().getLastConnectTime());
         }
 
         File diskFile = getFile().getDiskFile(
             getController().getFolderRepository());
         if (diskFile == null || !diskFile.exists()) {
             logWarning("Upload broken because diskfile is not available, folder: "
-                    + getFile()
-                        .getFolder(getController().getFolderRepository())
-                    + ", diskfile: "
-                    + diskFile
-                    + ", last contime: "
-                    + getPartner().getLastConnectTime());
+                + getFile().getFolder(getController().getFolderRepository())
+                + ", diskfile: "
+                + diskFile
+                + ", last contime: "
+                + getPartner().getLastConnectTime());
             return true;
         }
 
