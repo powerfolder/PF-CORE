@@ -268,7 +268,7 @@ public class Icons {
 
     private static final Map<String, Icon> KNOWN_ICONS = new HashMap<String, Icon>();
 
-    private Icons() {}
+    protected Icons() {}
 
     /**
      * Protected because only this class, subclasses and Translation.properties
