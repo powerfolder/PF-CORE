@@ -143,6 +143,6 @@ public class LookAndFeelSupport {
     public static void setLookAndFeel(LookAndFeel laf)
             throws UnsupportedLookAndFeelException {
         UIManager.setLookAndFeel(laf);
-        SyntheticaLookAndFeel.setFont("Dialog", 12);
+        SyntheticaLookAndFeel.setFont("Dialog", 11);
     }
 }
