@@ -1060,9 +1060,12 @@ public class Controller extends PFComponent {
         if (networkingMode == null) {
             // default = private
             String value = ConfigurationEntry.NETWORKING_MODE.getValue(this);
-            if (value.equalsIgnoreCase(NetworkingMode.LANONLYMODE.name())) {
-                networkingMode = NetworkingMode.LANONLYMODE;
-            } else {
+            try {
+                networkingMode = NetworkingMode.valueOf(value);
+            } catch (Exception e) {
+                logSevere(
+                    "Unable to read networking mode, reverting to PRIVATEMODE: "
+                        + e.toString(), e);
                 networkingMode = NetworkingMode.PRIVATEMODE;
             }
         }
