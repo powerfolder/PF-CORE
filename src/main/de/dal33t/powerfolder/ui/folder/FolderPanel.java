@@ -198,7 +198,7 @@ public class FolderPanel extends PFUIPanel {
      */
     public String getTitle() {
         if (folder != null) {
-            return Translation.getTranslation("title.my.folders") + " > "
+            return Translation.getTranslation("my.folders.title") + " > "
                 + folder.getName() + " > " + getCurrentTab().getTitle();
         }
         return "";

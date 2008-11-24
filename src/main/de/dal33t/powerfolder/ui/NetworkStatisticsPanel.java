@@ -90,7 +90,7 @@ public class NetworkStatisticsPanel extends PFUIComponent implements UIPanel {
     }
 
     public String getTitle() {
-        return Translation.getTranslation("title.network.statistics");
+        return Translation.getTranslation("network.statistics.title");
     }
 
     private void initComponents() {

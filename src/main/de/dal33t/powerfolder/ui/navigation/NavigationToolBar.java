@@ -182,7 +182,7 @@ public class NavigationToolBar extends PFUIComponent implements
                 .getFolderRepositoryModel().getMyFoldersTreeNode())
         {
             TreeNode node = (TreeNode) navObject;
-            return Translation.getTranslation("title.my.folders") + " ("
+            return Translation.getTranslation("my.folders.title") + " ("
                 + node.getChildCount() + ')';
         } else if (userObject == RootNode.DOWNLOADS_NODE_LABEL) {
             Object value = getApplicationModel()
