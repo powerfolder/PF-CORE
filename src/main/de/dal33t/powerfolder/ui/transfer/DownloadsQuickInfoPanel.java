@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.ui.transfer;
 
 import com.jgoodies.binding.value.ValueModel;
@@ -52,24 +52,27 @@ public class DownloadsQuickInfoPanel extends QuickInfoPanel {
     protected DownloadsQuickInfoPanel(Controller controller) {
         super(controller);
 
-        // Begin listening for changes to uploads from the transfer manager model.
+        // Begin listening for changes to uploads from the transfer manager
+        // model.
         completedDownloadsCountVM = getApplicationModel()
-                .getTransferManagerModel().getCompletedDownloadsCountVM();
-        completedDownloadsCountVM.addValueChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                // Ensure the parent table updates on changes.
-                updateText();
-            }
-        });
+            .getTransferManagerModel().getCompletedDownloadsCountVM();
+        completedDownloadsCountVM
+            .addValueChangeListener(new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    // Ensure the parent table updates on changes.
+                    updateText();
+                }
+            });
 
         activeDownloadsCountVM = getApplicationModel()
-                .getTransferManagerModel().getActiveDownloadsCountVM();
-        activeDownloadsCountVM.addValueChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                // Ensure the parent table updates on changes.
-                updateText();
-            }
-        });
+            .getTransferManagerModel().getActiveDownloadsCountVM();
+        activeDownloadsCountVM
+            .addValueChangeListener(new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    // Ensure the parent table updates on changes.
+                    updateText();
+                }
+            });
 
     }
 
@@ -79,8 +82,7 @@ public class DownloadsQuickInfoPanel extends QuickInfoPanel {
      * @return
      */
     @Override
-    protected void initComponents()
-    {
+    protected void initComponents() {
         headerText = SimpleComponentFactory.createBiggerTextLabel(Translation
             .getTranslation("quickinfo.download.title"));
 
@@ -105,6 +107,9 @@ public class DownloadsQuickInfoPanel extends QuickInfoPanel {
      * Updates the info fields
      */
     private void updateText() {
+        if (picto == null) {
+            initComponents();
+        }
         Object value = completedDownloadsCountVM.getValue();
         int nCompletedDls = value == null ? 0 : (Integer) value;
 
@@ -123,26 +128,22 @@ public class DownloadsQuickInfoPanel extends QuickInfoPanel {
     // Overridden stuff *******************************************************
 
     @Override
-    protected JComponent getPicto()
-    {
+    protected JComponent getPicto() {
         return picto;
     }
 
     @Override
-    protected JComponent getHeaderText()
-    {
+    protected JComponent getHeaderText() {
         return headerText;
     }
 
     @Override
-    protected JComponent getInfoText1()
-    {
+    protected JComponent getInfoText1() {
         return infoText1;
     }
 
     @Override
-    protected JComponent getInfoText2()
-    {
+    protected JComponent getInfoText2() {
         return infoText2;
     }
 
@@ -153,7 +154,7 @@ public class DownloadsQuickInfoPanel extends QuickInfoPanel {
      * 
      * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
      */
-    private class MyTransferManagerListener extends TransferAdapter{
+    private class MyTransferManagerListener extends TransferAdapter {
 
         public void downloadRequested(TransferManagerEvent event) {
             updateText();
@@ -186,8 +187,9 @@ public class DownloadsQuickInfoPanel extends QuickInfoPanel {
         public void pendingDownloadEnqueud(TransferManagerEvent event) {
             updateText();
         }
+
         public boolean fireInEventDispatchThread() {
             return true;
-        }     
+        }
     }
 }

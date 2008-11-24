@@ -1,23 +1,37 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.ui.transfer;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.TimerTask;
+
+import javax.swing.SwingUtilities;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
+import javax.swing.table.TableModel;
 
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.event.TransferAdapter;
@@ -34,19 +48,6 @@ import de.dal33t.powerfolder.util.compare.ReverseComparator;
 import de.dal33t.powerfolder.util.compare.TransferComparator;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
-import javax.swing.SwingUtilities;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
-import javax.swing.table.TableModel;
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.TimerTask;
-
 /**
  * A Tablemodel adapter which acts upon a transfermanager.
  * 
@@ -54,8 +55,8 @@ import java.util.TimerTask;
  * @version $Revision: 1.11.2.1 $
  */
 public class DownloadsTableModel extends PFComponent implements TableModel,
-        SortedTableModel {
-
+    SortedTableModel
+{
     private static final int COLTYPE = 0;
     private static final int COLFILE = 1;
     private static final int COLPROGRESS = 2;
@@ -79,7 +80,7 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
         Reject.ifNull(model, "Model is null");
         listeners = Collections
             .synchronizedCollection(new LinkedList<TableModelListener>());
-        downloads = Collections.synchronizedList(new LinkedList<Download>());
+        downloads = Collections.synchronizedList(new ArrayList<Download>());
         // Add listener
         model.getTransferManager().addListener(new MyTransferManagerListener());
 
@@ -89,13 +90,15 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
 
     /**
      * Initalizes the model upon a transfer manager
+     * 
+     * @param tm
      */
     public void initialize() {
         TransferManager tm = model.getTransferManager();
-        for (DownloadManager man: tm.getCompletedDownloadsCollection()) {
+        for (DownloadManager man : tm.getCompletedDownloadsCollection()) {
             addAll(man.getSources());
         }
-        for (DownloadManager man: tm.getActiveDownloads()) {
+        for (DownloadManager man : tm.getActiveDownloads()) {
             addAll(man.getSources());
         }
         addAll(tm.getPendingDownloads());
@@ -162,7 +165,7 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
      * Re-sorts the file list with the new comparator only if comparator differs
      * from old one
      * 
-     * @param newComparatorType
+     * @param newComparator
      * @return if the table was freshly sorted
      */
     public boolean sortMe(int newComparatorType) {
@@ -211,13 +214,7 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
     public void reverseList() {
         sortAscending = !sortAscending;
         synchronized (downloads) {
-            int size = downloads.size();
-            List<Download> tmpDisplayList = new ArrayList<Download>(size);
-            for (int i = 0; i < size; i++) {
-                tmpDisplayList.add(downloads.get(size - 1 - i));
-            }
-            downloads.clear();
-            downloads.addAll(tmpDisplayList);
+            Collections.reverse(downloads);
         }
         fireModelChanged();
     }
@@ -279,8 +276,9 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
                 // single complete download. This is a temporary fix; should
                 // really coalesce downloads into one line for each completely
                 // identical fileinfo.
-                for (Iterator<Download> iter = downloads.iterator();
-                     iter.hasNext();) {
+                for (Iterator<Download> iter = downloads.iterator(); iter
+                    .hasNext();)
+                {
                     Download download = iter.next();
                     if (dl.getFile().isCompletelyIdentical(download.getFile()))
                     {
@@ -337,7 +335,7 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
                 for (int i = 0; i < downloads.size(); i++) {
                     Download download = downloads.get(i);
                     if (download.getFile().isCompletelyIdentical(dl.getFile())
-                            && download.getPartner().equals(dl.getPartner()))
+                        && download.getPartner().equals(dl.getPartner()))
                     {
                         return i;
                     }
@@ -407,7 +405,8 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
         public void run() {
             Runnable wrapper = new Runnable() {
                 public void run() {
-                    if (fileInfoComparatorType == TransferComparator.BY_PROGRESS) {
+                    if (fileInfoComparatorType == TransferComparator.BY_PROGRESS)
+                    {
                         // Always sort on a PROGRESS change, so that the table
                         // reorders correctly.
                         sort();
@@ -421,9 +420,10 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
                 logFiner("Interrupteed while updating downloadstable", e);
 
             } catch (InvocationTargetException e) {
-                logFiner("Unable to update downloadstable", e);
+                logSevere("Unable to update downloadstable", e);
 
             }
+            // }
         }
     }
 
@@ -533,7 +533,7 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
      * Fires an modelevent to all listeners, that model has changed
      */
     private void modelChanged(final TableModelEvent e) {
-        // logFiner("Download tablemodel changed");
+        // log().verbose("Download tablemodel changed");
         Runnable runner = new Runnable() {
             public void run() {
                 synchronized (listeners) {
