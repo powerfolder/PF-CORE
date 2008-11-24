@@ -358,13 +358,6 @@ public enum ConfigurationEntry {
     }
 
     /**
-     * @return the key string of this configuration entry.
-     */
-    public String getConfigKey() {
-        return configKey;
-    }
-
-    /**
      * @param controller
      *            the controller to read the config from
      * @return The current value from the configuration for this entry. or
