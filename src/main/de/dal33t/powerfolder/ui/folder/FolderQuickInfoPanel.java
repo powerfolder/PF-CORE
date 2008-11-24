@@ -19,6 +19,13 @@
  */
 package de.dal33t.powerfolder.ui.folder;
 
+import java.util.TimerTask;
+
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Directory;
@@ -42,10 +49,7 @@ import de.dal33t.powerfolder.util.ui.SelectionModel;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.ui.SyncProfileUtil;
 import de.dal33t.powerfolder.util.ui.TimeEstimator;
-
-import javax.swing.ImageIcon;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * Show concentrated information about the whole folder repository
@@ -55,6 +59,8 @@ import javax.swing.JLabel;
  * @version $Revision: 1.3 $
  */
 public class FolderQuickInfoPanel extends QuickInfoPanel {
+
+    private static final int DELAY = 500;
 
     /** Reduce sync perc to be the same size as the folder picto. */
     private static final double SCALE_FACTOR = 0.8;
@@ -70,9 +76,12 @@ public class FolderQuickInfoPanel extends QuickInfoPanel {
 
     private TimeEstimator syncETAEstimator;
 
+    private TimerTask updater;
+
     protected FolderQuickInfoPanel(Controller controller) {
         super(controller);
         myFolderListener = new MyFolderListener();
+        updater = null;
     }
 
     /**
@@ -99,6 +108,25 @@ public class FolderQuickInfoPanel extends QuickInfoPanel {
             new MyTransferManagerListener());
         getController().getNodeManager().addNodeManagerListener(
             new MyNodeManagerListener());
+    }
+
+    private void scheduleUpdate() {
+        if (updater != null) {
+            // Already scheduled
+            return;
+        }
+        updater = new TimerTask() {
+            @Override
+            public void run() {
+                UIUtil.invokeLaterInEDT(new Runnable() {
+                    public void run() {
+                        updateText();
+                        updater = null;
+                    }
+                });
+            }
+        };
+        getController().schedule(updater, DELAY);
     }
 
     /**
@@ -180,13 +208,16 @@ public class FolderQuickInfoPanel extends QuickInfoPanel {
      * @param percentage
      */
     private void setSyncPercentage(double percentage) {
+        Icon syncIcon = null;
+        // TODO Cache
         if (percentage < 0.0 || (int) percentage > 100) {
-            syncStatusPicto.setIcon(Icons.scaleIcon(
-                (ImageIcon) Icons.SYNC_UNKNOWN, SCALE_FACTOR));
+            syncIcon = Icons.scaleIcon((ImageIcon) Icons.SYNC_UNKNOWN,
+                SCALE_FACTOR);
         } else {
-            syncStatusPicto.setIcon(Icons.scaleIcon(
-                (ImageIcon) Icons.SYNC_ICONS[(int) percentage], SCALE_FACTOR));
+            syncIcon = Icons.scaleIcon(
+                (ImageIcon) Icons.SYNC_ICONS[(int) percentage], SCALE_FACTOR);
         }
+        syncStatusPicto.setIcon(syncIcon);
         syncStatusPicto.setVisible(true);
         syncStatusPicto.setToolTipText(SyncProfileUtil
             .renderSyncPercentage(percentage));
@@ -222,6 +253,8 @@ public class FolderQuickInfoPanel extends QuickInfoPanel {
         if (currentFolder != null) {
             currentFolder.addFolderListener(myFolderListener);
             updateText();
+            
+            // scheduleUpdate();
         }
     }
 
@@ -260,7 +293,7 @@ public class FolderQuickInfoPanel extends QuickInfoPanel {
     private class MyFolderListener extends FolderAdapter {
 
         public void statisticsCalculated(FolderEvent folderEvent) {
-            updateText();
+            scheduleUpdate();
         }
 
         public boolean fireInEventDispatchThread() {
@@ -272,14 +305,14 @@ public class FolderQuickInfoPanel extends QuickInfoPanel {
         @Override
         public void nodeConnected(NodeManagerEvent e) {
             if (currentFolder.hasMember(e.getNode())) {
-                updateText();
+                scheduleUpdate();
             }
         }
 
         @Override
         public void nodeDisconnected(NodeManagerEvent e) {
             if (currentFolder.hasMember(e.getNode())) {
-                updateText();
+                scheduleUpdate();
             }
         }
 
@@ -292,59 +325,59 @@ public class FolderQuickInfoPanel extends QuickInfoPanel {
     private class MyTransferManagerListener implements TransferManagerListener {
 
         public void downloadRequested(TransferManagerEvent event) {
-            updateText();
+            scheduleUpdate();
         }
 
         public void downloadQueued(TransferManagerEvent event) {
-            updateText();
+            scheduleUpdate();
         }
 
         public void downloadStarted(TransferManagerEvent event) {
-            updateText();
+            scheduleUpdate();
         }
 
         public void downloadAborted(TransferManagerEvent event) {
-            updateText();
+            scheduleUpdate();
         }
 
         public void downloadBroken(TransferManagerEvent event) {
-            updateText();
+            scheduleUpdate();
         }
 
         public void downloadCompleted(TransferManagerEvent event) {
-            updateText();
+            scheduleUpdate();
         }
 
         public void completedDownloadRemoved(TransferManagerEvent event) {
-            updateText();
+            scheduleUpdate();
         }
 
         public void pendingDownloadEnqueud(TransferManagerEvent event) {
-            updateText();
+            scheduleUpdate();
         }
 
         public void uploadRequested(TransferManagerEvent event) {
-            updateText();
+            scheduleUpdate();
         }
 
         public void uploadStarted(TransferManagerEvent event) {
-            updateText();
+            scheduleUpdate();
         }
 
         public void uploadAborted(TransferManagerEvent event) {
-            updateText();
+            scheduleUpdate();
         }
 
         public void uploadBroken(TransferManagerEvent event) {
-            updateText();
+            scheduleUpdate();
         }
 
         public void uploadCompleted(TransferManagerEvent event) {
-            updateText();
+            scheduleUpdate();
         }
 
         public void completedUploadRemoved(TransferManagerEvent event) {
-            updateText();
+            scheduleUpdate();
         }
 
         public boolean fireInEventDispatchThread() {
