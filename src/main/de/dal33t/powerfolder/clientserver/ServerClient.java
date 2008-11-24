@@ -42,6 +42,7 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.light.ServerInfo;
 import de.dal33t.powerfolder.message.clientserver.AccountDetails;
+import de.dal33t.powerfolder.net.ConnectionListener;
 import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.security.AnonymousAccount;
 import de.dal33t.powerfolder.util.Base64;
@@ -185,10 +186,24 @@ public class ServerClient extends PFComponent {
      * @return true if the node is the server.
      */
     public boolean isServer(Member node) {
-        return server.equals(node)
-        // Compare by address, ID might be empty at start.
-            || (isTempServerNode() && server.getReconnectAddress().equals(
-                node.getReconnectAddress()));
+        if (server.equals(node)) {
+            return true;
+        }
+        // if (isTempServerNode()
+        // && (node.getId().contains("WEBSER") || node.getId().contains(
+        // "RELAY")))
+        // {
+        // logWarning(
+        // "isServer: node: "
+        // + node.getReconnectAddress()
+        // + ". have: "
+        // + server.getReconnectAddress()
+        // + ". equals? "
+        // + server.getReconnectAddress().equals(
+        // node.getReconnectAddress()));
+        // }
+        return isTempServerNode()
+            && server.getReconnectAddress().equals(node.getReconnectAddress());
     }
 
     /**
@@ -342,8 +357,8 @@ public class ServerClient extends PFComponent {
             return accountDetails.getAccount();
         }
         AccountDetails newAccountDetails = userService.getAccountDetails();
-        logInfo("Login to server " + server.getReconnectAddress() + " (user "
-            + theUsername + ") result: " + accountDetails);
+        logWarning("Login to server " + server.getReconnectAddress()
+            + " (user " + theUsername + ") result: " + accountDetails);
         if (newAccountDetails != null) {
             accountDetails = newAccountDetails;
 
@@ -504,7 +519,7 @@ public class ServerClient extends PFComponent {
         Runnable retriever = new Runnable() {
             public void run() {
                 FolderInfo[] folders = getController().getFolderRepository()
-                    .getJoinedFolderInfos();
+                    .getJoinedFolderInfos().toArray(new FolderInfo[0]);
                 Collection<MemberInfo> servers = getFolderService()
                     .getHostingServers(folders);
                 logWarning("Got " + servers.size() + " servers for our "
@@ -557,7 +572,7 @@ public class ServerClient extends PFComponent {
     }
 
     private void setAnonAccount() {
-        accountDetails = new AccountDetails(new AnonymousAccount(), 0, 0);
+        accountDetails = new AccountDetails(new AnonymousAccount(), 0, 0, 0);
         fireLogin(accountDetails);
     }
 
@@ -565,6 +580,9 @@ public class ServerClient extends PFComponent {
         if (!StringUtils.isBlank(username)) {
             getController().getPreferences().put(
                 PREFS_PREFIX + "." + server.getIP() + ".username", username);
+        } else {
+            getController().getPreferences().remove(
+                PREFS_PREFIX + "." + server.getIP() + ".username");
         }
 
         if (isRemindPassword() && !StringUtils.isBlank(password)) {
@@ -621,7 +639,7 @@ public class ServerClient extends PFComponent {
     }
 
     private void changeToServer(ServerInfo targetServer) {
-        logWarning("Changeing server to " + targetServer.getNode());
+        logWarning("Changing server to " + targetServer.getNode());
 
         // Add key of new server to keystore.
         if (Util.getPublicKey(getController(), targetServer.getNode()) == null)
@@ -638,16 +656,23 @@ public class ServerClient extends PFComponent {
 
         // Remind new server for next connect.
         if (targetServer.getNode().getConnectAddress() != null) {
-            ConfigurationEntry.SERVER_HOST.setValue(getController(),
-                targetServer.getNode().getConnectAddress().getHostName() + ':'
-                    + targetServer.getNode().getConnectAddress().getPort());
+            String serverHost = targetServer.getNode().getConnectAddress()
+                .getHostName();
+            if (targetServer.getNode().getConnectAddress().getPort() != ConnectionListener.DEFAULT_PORT)
+            {
+                serverHost += ':';
+                serverHost += targetServer.getNode().getConnectAddress()
+                    .getPort();
+            }
+            ConfigurationEntry.SERVER_HOST
+                .setValue(getController(), serverHost);
             getController().saveConfig();
         }
 
         // Now actually switch to new server.
         setNewServerNode(targetServer.getNode().getNode(getController(), true));
-        // Attempt to login. At least remind login for real connect.
         login(username, password);
+        // Attempt to login. At least remind login for real connect.
         if (!isConnected()) {
             // Mark new server for connect
             server.markForImmediateConnect();
@@ -689,9 +714,8 @@ public class ServerClient extends PFComponent {
                     setNewServerNode(e.getNode());
                     // Remove old temporary server entry without ID.
                     getController().getNodeManager().removeNode(oldServer);
-                    logFine("Got connect to server: " + server);
+                    logWarning("Got connect to server: " + server);
                 }
-
                 if (username != null) {
                     login(username, password);
                 }
