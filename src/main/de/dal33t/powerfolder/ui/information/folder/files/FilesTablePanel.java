@@ -19,28 +19,34 @@
 */
 package de.dal33t.powerfolder.ui.information.folder.files;
 
-import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.builder.ButtonBarBuilder;
+import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.ui.actionold.HasDetailsPanel;
 import de.dal33t.powerfolder.ui.action.BaseAction;
+import de.dal33t.powerfolder.ui.actionold.HasDetailsPanel;
 
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.JToggleButton;
 import java.awt.event.ActionEvent;
 
-public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel {
+public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
+        DirectoryFilterListener {
 
     private JPanel uiComponent;
     private FileDetailsPanel fileDetailsPanel;
+    private FilesStatsPanel statsPanel;
+    private DirectoryFilter directoryFilter;
 
-    public FilesTablePanel(Controller controller) {
+    public FilesTablePanel(Controller controller, DirectoryFilter directoryFilter) {
         super(controller);
         fileDetailsPanel = new FileDetailsPanel(getController());
+        statsPanel = new FilesStatsPanel(getController());
+        this.directoryFilter = directoryFilter;
+        directoryFilter.addListener(this);
     }
 
     /**
@@ -60,7 +66,8 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel {
      */
     private void buildUIComponent() {
         FormLayout layout = new FormLayout("fill:pref:grow",
-                "pref, 3dlu, pref, 3dlu, fill:0:grow, 3dlu, pref");
+                "pref, 3dlu, pref, 3dlu, fill:0:grow, 3dlu, pref, 3dlu, pref, pref");
+            //   tools       sep,        table,             details,    sep   stats
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
@@ -68,6 +75,8 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel {
         builder.addSeparator(null, cc.xy(1, 3));
         builder.add(new JTable(), cc.xy(1, 5));
         builder.add(fileDetailsPanel.getUiComponent(), cc.xy(1, 7));
+        builder.addSeparator(null, cc.xy(1, 9));
+        builder.add(statsPanel.getUiComponent(), cc.xy(1, 10));
         uiComponent = builder.getPanel();
     }
 
@@ -99,5 +108,10 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel {
         }
     }
 
-
+    public void adviseOfChange() {
+        statsPanel.setStats(directoryFilter.getLocalFiles(), 
+                directoryFilter.getIncomingFiles(),
+                directoryFilter.getDeletedFiles(),
+                directoryFilter.getRecycledFiles());
+    }
 }

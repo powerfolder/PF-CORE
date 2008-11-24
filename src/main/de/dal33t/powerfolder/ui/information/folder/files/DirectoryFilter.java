@@ -30,6 +30,8 @@ import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.FilterModel;
 import org.apache.commons.lang.StringUtils;
 
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -59,6 +61,8 @@ public class DirectoryFilter extends FilterModel {
     private long incomingFiles;
     private long localFiles;
 
+    private final List<DirectoryFilterListener> listeners;
+
     /**
      * Filter of a folder directory.
      *
@@ -72,6 +76,25 @@ public class DirectoryFilter extends FilterModel {
         model = new FilteredDirectoryModel();
         transferManager = getController().getTransferManager();
         recycleBin = getController().getRecycleBin();
+        listeners = new CopyOnWriteArrayList<DirectoryFilterListener>();
+    }
+
+    /**
+     * Add a DirectoryFilterListener to list of listeners.
+     *
+     * @param listener
+     */
+    public void addListener(DirectoryFilterListener listener) {
+        listeners.add(listener);
+    }
+
+    /**
+     * Remove a DirectoryFilterListener from list of listeners.
+     *
+     * @param listener
+     */
+    public void removeListener(DirectoryFilterListener listener) {
+        listeners.remove(listener);
     }
 
     /**
@@ -230,6 +253,7 @@ public class DirectoryFilter extends FilterModel {
         FilteredDirectoryModel filteredDirectoryModel
                 = new FilteredDirectoryModel();
 
+        // Recursive filter.
         filterDirectory(originalDirectory, filteredDirectoryModel, keywords,
                 originalFileCount, filteredFileCount, deletedCount,
                 recycledCount, incomingCount, localCount);
@@ -239,6 +263,10 @@ public class DirectoryFilter extends FilterModel {
         recycledFiles = recycledCount.get();
         incomingFiles = incomingCount.get();
         localFiles = localCount.get();
+
+        for (DirectoryFilterListener listener : listeners) {
+            listener.adviseOfChange();
+        }
 
         logFine("Filtered directory " + originalDirectory.getName() +
                 ", original count " + originalFileCount.get() +
@@ -280,20 +308,21 @@ public class DirectoryFilter extends FilterModel {
                 showFile = matches(fileInfo, keywords);
             }
 
+            boolean isDeleted = fileInfo.isDeleted();
+            FileInfo newestVersion = null;
+            if (fileInfo.getFolder(getController().getFolderRepository())
+                    != null) {
+                newestVersion = fileInfo.getNewestNotDeletedVersion(
+                        getController().getFolderRepository());
+            }
+            boolean isIncoming = fileInfo.isDownloading(getController())
+                || fileInfo.isExpected(getController().getFolderRepository())
+                || newestVersion != null
+                && newestVersion.isNewerThan(fileInfo);
+
             if (showFile) {
                 boolean isNew = transferManager.isCompletedDownload(fileInfo);
-                boolean isDeleted = fileInfo.isDeleted();
-                FileInfo newestVersion = null;
-                if (fileInfo.getFolder(getController().getFolderRepository())
-                        != null) {
-                    newestVersion = fileInfo.getNewestNotDeletedVersion(
-                            getController().getFolderRepository());
-                }
 
-                boolean isIncoming = fileInfo.isDownloading(getController())
-                    || fileInfo.isExpected(getController().getFolderRepository())
-                    || newestVersion != null
-                    && newestVersion.isNewerThan(fileInfo);
                 switch (filterMode) {
                     case MODE_LOCAL_ONLY :
                         showFile = !isIncoming && !isDeleted;
@@ -314,21 +343,20 @@ public class DirectoryFilter extends FilterModel {
                 }
 
                 if (showFile) {
-
-                    if (isDeleted) {
-                        deletedCount.incrementAndGet();
-                        if (recycleBin.isInRecycleBin(fileInfo)) {
-                            recycledCount.incrementAndGet();
-                        }
-                    } else if (isIncoming) {
-                        incomingCount.incrementAndGet();
-                    } else {
-                        localCount.incrementAndGet();
-                    }
-
                     filteredCount.incrementAndGet();
                     filteredDirectoryModel.getFiles().add(fileInfo);
                 }
+            }
+
+            if (isDeleted) {
+                deletedCount.incrementAndGet();
+                if (recycleBin.isInRecycleBin(fileInfo)) {
+                    recycledCount.incrementAndGet();
+                }
+            } else if (isIncoming) {
+                incomingCount.incrementAndGet();
+            } else {
+                localCount.incrementAndGet();
             }
         }
 

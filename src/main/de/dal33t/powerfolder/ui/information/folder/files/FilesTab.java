@@ -60,15 +60,15 @@ public class FilesTab extends PFUIComponent
      */
     public FilesTab(Controller controller) {
         super(controller);
+        directoryFilter = new DirectoryFilter(controller);
         treePanel = new FilesTreePanel(controller);
-        tablePanel = new FilesTablePanel(controller);
+        tablePanel = new FilesTablePanel(controller, directoryFilter);
         splitPane = new UIFSplitPane(JSplitPane.HORIZONTAL_SPLIT,
                 treePanel.getUIComponent(), tablePanel.getUIComponent());
         int dividerLocation = getController().getPreferences().getInt(
                 "files.tab.location", 50);
         splitPane.setDividerLocation(dividerLocation);
         splitPane.addPropertyChangeListener(new MyPropertyChangeListner());
-        directoryFilter = new DirectoryFilter(controller);
         filterTextField = new FilterTextField(12,
                 Translation.getTranslation("files_tab.filter_by_file_name.hint"),
                 Translation.getTranslation("files_tab.filter_by_file_name.tool_tip"));
