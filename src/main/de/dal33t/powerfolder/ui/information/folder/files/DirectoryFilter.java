@@ -85,6 +85,7 @@ public class DirectoryFilter extends FilterModel {
      * @param listener
      */
     public void addListener(DirectoryFilterListener listener) {
+        System.out.println("added " + listener);
         listeners.add(listener);
     }
 

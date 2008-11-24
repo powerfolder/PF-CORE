@@ -33,20 +33,14 @@ import javax.swing.JTable;
 import javax.swing.JToggleButton;
 import java.awt.event.ActionEvent;
 
-public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
-        DirectoryFilterListener {
+public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel {
 
     private JPanel uiComponent;
     private FileDetailsPanel fileDetailsPanel;
-    private FilesStatsPanel statsPanel;
-    private DirectoryFilter directoryFilter;
 
-    public FilesTablePanel(Controller controller, DirectoryFilter directoryFilter) {
+    public FilesTablePanel(Controller controller) {
         super(controller);
         fileDetailsPanel = new FileDetailsPanel(getController());
-        statsPanel = new FilesStatsPanel(getController());
-        this.directoryFilter = directoryFilter;
-        directoryFilter.addListener(this);
     }
 
     /**
@@ -66,8 +60,8 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
      */
     private void buildUIComponent() {
         FormLayout layout = new FormLayout("fill:pref:grow",
-                "pref, 3dlu, pref, 3dlu, fill:0:grow, 3dlu, pref, 3dlu, pref, pref");
-            //   tools       sep,        table,             details,    sep   stats
+                "pref, 3dlu, pref, 3dlu, fill:0:grow, 3dlu, pref");
+            //   tools       sep,        table,             details
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
@@ -75,8 +69,6 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         builder.addSeparator(null, cc.xy(1, 3));
         builder.add(new JTable(), cc.xy(1, 5));
         builder.add(fileDetailsPanel.getUiComponent(), cc.xy(1, 7));
-        builder.addSeparator(null, cc.xy(1, 9));
-        builder.add(statsPanel.getUiComponent(), cc.xy(1, 10));
         uiComponent = builder.getPanel();
     }
 
@@ -106,12 +98,5 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         public void actionPerformed(ActionEvent e) {
             toggleDetails();
         }
-    }
-
-    public void adviseOfChange() {
-        statsPanel.setStats(directoryFilter.getLocalFiles(), 
-                directoryFilter.getIncomingFiles(),
-                directoryFilter.getDeletedFiles(),
-                directoryFilter.getRecycledFiles());
     }
 }

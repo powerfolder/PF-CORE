@@ -43,11 +43,14 @@ public class FilesStatsPanel extends PFUIComponent {
 
     public FilesStatsPanel(Controller controller) {
         super(controller);
+        localLabel = new JLabel(Translation.getTranslation("files_stats_panel.local_label", ""));
+        incomingLabel = new JLabel(Translation.getTranslation("files_stats_panel.incoming_label", ""));
+        deletedLabel = new JLabel(Translation.getTranslation("files_stats_panel.deleted_label", ""));
+        recycledLabel = new JLabel(Translation.getTranslation("files_stats_panel.recycled_label", ""));
     }
 
     public JPanel getUiComponent() {
         if (uiComponent == null) {
-            initialize();
             buildUiComponent();
         }
         return uiComponent;
@@ -89,12 +92,5 @@ public class FilesStatsPanel extends PFUIComponent {
         builder.add(recycledLabel, cc.xy(14, 1));
 
         uiComponent = builder.getPanel();        
-    }
-
-    private void initialize() {
-        localLabel = new JLabel(Translation.getTranslation("files_stats_panel.local_label", ""));
-        incomingLabel = new JLabel(Translation.getTranslation("files_stats_panel.incoming_label", ""));
-        deletedLabel = new JLabel(Translation.getTranslation("files_stats_panel.deleted_label", ""));
-        recycledLabel = new JLabel(Translation.getTranslation("files_stats_panel.recycled_label", ""));
     }
 }

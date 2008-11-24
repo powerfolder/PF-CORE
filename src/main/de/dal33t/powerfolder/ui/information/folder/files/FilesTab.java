@@ -43,15 +43,16 @@ import java.beans.PropertyChangeListener;
  * UI component for the folder files tab
  */
 public class FilesTab extends PFUIComponent
-        implements FolderInformationTab {
+        implements FolderInformationTab, DirectoryFilterListener {
     private JPanel uiComponent;
     private Folder folder;
     private JSplitPane splitPane;
     private FilesTreePanel treePanel;
     private FilesTablePanel tablePanel;
-    private DirectoryFilter directoryFilter;
     private FilterTextField filterTextField;
     private JComboBox filterSelectionComboBox;
+    private FilesStatsPanel statsPanel;
+    private DirectoryFilter directoryFilter;
 
     /**
      * Constructor
@@ -60,9 +61,11 @@ public class FilesTab extends PFUIComponent
      */
     public FilesTab(Controller controller) {
         super(controller);
+        statsPanel = new FilesStatsPanel(getController());
         directoryFilter = new DirectoryFilter(controller);
+        directoryFilter.addListener(this);
         treePanel = new FilesTreePanel(controller);
-        tablePanel = new FilesTablePanel(controller, directoryFilter);
+        tablePanel = new FilesTablePanel(controller);
         splitPane = new UIFSplitPane(JSplitPane.HORIZONTAL_SPLIT,
                 treePanel.getUIComponent(), tablePanel.getUIComponent());
         int dividerLocation = getController().getPreferences().getInt(
@@ -118,7 +121,7 @@ public class FilesTab extends PFUIComponent
      */
     private void buildUIComponent() {
         FormLayout layout = new FormLayout("3dlu, pref:grow, 3dlu",
-                "3dlu, pref, 3dlu, pref, 3dlu, fill:pref:grow, 3dlu");
+                "3dlu, pref, 3dlu, pref, 3dlu, fill:pref:grow, 3dlu, pref, pref");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
@@ -127,6 +130,8 @@ public class FilesTab extends PFUIComponent
 
         splitPane.setOneTouchExpandable(false);
         builder.add(splitPane, cc.xy(2, 6));
+        builder.addSeparator(null, cc.xy(2, 8));
+        builder.add(statsPanel.getUiComponent(), cc.xy(2, 9));
         uiComponent = builder.getPanel();
     }
 
@@ -147,6 +152,14 @@ public class FilesTab extends PFUIComponent
      * refreshes the UI elements with the current data
      */
     private void update() {
+    }
+
+
+    public void adviseOfChange() {
+        statsPanel.setStats(directoryFilter.getLocalFiles(),
+                directoryFilter.getIncomingFiles(),
+                directoryFilter.getDeletedFiles(),
+                directoryFilter.getRecycledFiles());
     }
 
     /**
