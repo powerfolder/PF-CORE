@@ -19,17 +19,6 @@
  */
 package de.dal33t.powerfolder.security;
 
-import com.jgoodies.binding.beans.Model;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.SyncProfile;
-import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.light.ServerInfo;
-import de.dal33t.powerfolder.os.OnlineStorageSubscriptionType;
-import de.dal33t.powerfolder.util.IdGenerator;
-import de.dal33t.powerfolder.util.Reject;
-
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Arrays;
@@ -38,6 +27,19 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Logger;
+
+import com.jgoodies.binding.beans.Model;
+
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.light.MemberInfo;
+import de.dal33t.powerfolder.light.ServerInfo;
+import de.dal33t.powerfolder.os.OnlineStorageSubscriptionType;
+import de.dal33t.powerfolder.util.IdGenerator;
+import de.dal33t.powerfolder.util.Reject;
 
 /**
  * A access to the system indentified by username & password.
@@ -108,8 +110,8 @@ public class Account extends Model implements Serializable {
 
     public void grant(Permission... newPermissions) {
         Reject.ifNull(newPermissions, "Permission is null");
-        log.fine("Granted permission to "
-            + this + ": " + Arrays.asList(newPermissions));
+        log.fine("Granted permission to " + this + ": "
+            + Arrays.asList(newPermissions));
         for (Permission p : newPermissions) {
             if (hasPermission(p)) {
                 // Skip
@@ -121,8 +123,8 @@ public class Account extends Model implements Serializable {
 
     public void revoke(Permission... revokePermissions) {
         Reject.ifNull(revokePermissions, "Permission is null");
-        log.fine("Revoked permission from "
-            + this + ": " + Arrays.asList(revokePermissions));
+        log.fine("Revoked permission from " + this + ": "
+            + Arrays.asList(revokePermissions));
         for (Permission p : revokePermissions) {
             permissions.remove(p);
         }
@@ -135,8 +137,7 @@ public class Account extends Model implements Serializable {
     public boolean hasPermission(Permission permission) {
         Reject.ifNull(permission, "Permission is null");
         if (permissions == null) {
-            log.severe("Illegal account "
-                + username + ", permissions is null");
+            log.severe("Illegal account " + username + ", permissions is null");
             return false;
         }
 
@@ -322,6 +323,31 @@ public class Account extends Model implements Serializable {
             }
         }
         return totalSize;
+    }
+
+    /**
+     * @param controller
+     * @return the total size of recycle bin
+     */
+    public long calulateTotalRecycleBinSize(Controller controller) {
+        long recycleSize = 0;
+        for (Permission p : getPermissions()) {
+            if (p instanceof FolderAdminPermission) {
+                FolderAdminPermission fp = (FolderAdminPermission) p;
+                Folder f = fp.getFolder().getFolder(controller);
+                if (f == null) {
+                    continue;
+                }
+                for (FileInfo fInfo : controller.getRecycleBin()
+                    .getAllRecycledFiles())
+                {
+                    if (fInfo.getFolderInfo().equals(f.getInfo())) {
+                        recycleSize += fInfo.getSize();
+                    }
+                }
+            }
+        }
+        return recycleSize;
     }
 
     /**
