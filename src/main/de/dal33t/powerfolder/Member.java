@@ -34,8 +34,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -106,8 +104,6 @@ import de.dal33t.powerfolder.util.logging.LoggingManager;
  * @version $Revision: 1.115 $
  */
 public class Member extends PFComponent {
-
-    private static final Logger log = Logger.getLogger(Member.class.getName());
 
     /** Listener support for incoming messages */
     private MessageListenerSupport messageListenerSupport;
@@ -323,22 +319,32 @@ public class Member extends PFComponent {
         // logFine("getController().isLanOnly():" +
         // getController().isLanOnly());
 
+        boolean isServer = isServer()
+            || getController().getOSClient().isServer(this);
+
+        if (getController().getNetworkingMode().equals(
+            NetworkingMode.SERVERONLYMODE)
+            && !isServer)
+        {
+            return false;
+        }
+
         if (getController().isLanOnly() && !isOnLAN()) {
             return false;
         }
 
         // FIXME Does not work with temporary server nodes.
-        if (isServer() || getController().getOSClient().isServer(this)) {
+        if (isServer) {
             // Always interesting is the server!
             return true;
         }
 
         Identity id = getIdentity();
         if (id != null) {
-            // logFiner("Got ID: " + id + ". pending msgs? "
-            // + id.isPendingMessages());
+            // logFine(
+            // "Got ID: " + id + ". pending msgs? " + id.isPendingMessages());
             if (Util.compareVersions("2.0.0", id.getProgramVersion())) {
-                logFine("Rejecting connection to old program client: " + id
+                logWarning("Rejecting connection to old program client: " + id
                     + " v" + id.getProgramVersion());
                 return false;
             }
@@ -623,9 +629,9 @@ public class Member extends PFComponent {
         if (info.getConnectAddress() == null) {
             return false;
         }
-        if (log.isLoggable(Level.FINE)) {
-            log.fine("Reconnecting (tried " + connectionRetries
-                + " time(s) to " + this + ")");
+        if (isFine()) {
+            logFine("Reconnecting (tried " + connectionRetries + " time(s) to "
+                + this + ")");
         }
 
         connectionRetries++;
@@ -662,7 +668,7 @@ public class Member extends PFComponent {
                 .getConnectionHandlerFactory().tryToConnect(this.getInfo());
             successful = setPeer(handler);
         } catch (InvalidIdentityException e) {
-            logFiner("InvalidIdentityException", e);
+            logFiner(e);
             // Shut down reconnect handler
             if (handler != null) {
                 handler.shutdown();
@@ -670,7 +676,7 @@ public class Member extends PFComponent {
             throw e;
         } catch (ConnectionException e) {
             logFine(e.getMessage());
-            logFiner("ConnectionException", e);
+            logFiner(e);
             // Shut down reconnect handler
             if (handler != null) {
                 handler.shutdown();
@@ -733,8 +739,7 @@ public class Member extends PFComponent {
             }
             if (!receivedFolderList) {
                 if (isConnected()) {
-                    log
-                        .fine("Did not receive a folder list after 60s, disconnecting");
+                    logFine("Did not receive a folder list after 60s, disconnecting");
                     return false;
                 }
                 shutdown();
@@ -793,14 +798,13 @@ public class Member extends PFComponent {
         }
 
         List<Folder> joinedFolders = getJoinedFolders();
-        if (log.isLoggable(Level.FINE) && !joinedFolders.isEmpty()) {
+        if (isFine() && !joinedFolders.isEmpty()) {
             logFine("Joined " + joinedFolders.size() + " folders: "
                 + joinedFolders);
         } else if (isFiner()) {
             logFiner("Joined " + joinedFolders.size() + " folders: "
                 + joinedFolders);
         }
-
         for (Folder folder : joinedFolders) {
             // FIX for #924
             waitForScan(folder);
@@ -831,14 +835,12 @@ public class Member extends PFComponent {
                 long took = System.currentTimeMillis() - start;
                 if (peer == null || !peer.isConnected()) {
                     if (lastProblem == null) {
-                        log
-                            .warning("Peer disconnected while waiting for handshake acknownledge (or problem)");
+                        logWarning("Peer disconnected while waiting for handshake acknownledge (or problem)");
                     }
                 } else {
                     if (lastProblem == null) {
-                        log
-                            .warning("Did not receive a handshake not acknownledged (or problem) by remote side after "
-                                + (int) (took / 1000) + 's');
+                        logWarning("Did not receive a handshake not acknownledged (or problem) by remote side after "
+                            + (int) (took / 1000) + 's');
                     }
                 }
                 shutdown();
@@ -862,7 +864,7 @@ public class Member extends PFComponent {
         // Inform nodemanger about it
         getController().getNodeManager().onlineStateChanged(this);
 
-        if (log.isLoggable(Level.INFO)) {
+        if (isInfo()) {
             logInfo("Connected ("
                 + getController().getNodeManager().countConnectedNodes()
                 + " total)");
@@ -979,7 +981,7 @@ public class Member extends PFComponent {
                     }
                     folderListWaiter.wait(60000);
                 } catch (InterruptedException e) {
-                    logFiner("InterruptedException", e);
+                    logFiner(e);
                 }
             }
         }
@@ -1001,7 +1003,7 @@ public class Member extends PFComponent {
                     handshakeCompletedWaiter
                         .wait(Constants.INCOMING_CONNECTION_TIMEOUT * 1000);
                 } catch (InterruptedException e) {
-                    logFiner("InterruptedException", e);
+                    logFiner(e);
                 }
             }
         }
@@ -1023,6 +1025,7 @@ public class Member extends PFComponent {
         }
 
         shutdownPeer();
+
         lastFiles = null;
         lastFolderList = null;
         // Disco, assume completely
@@ -1033,12 +1036,11 @@ public class Member extends PFComponent {
         expectedListMessages = null;
         account = null;
         messageListenerSupport = null;
-
         if (wasHandshaked) {
             // Inform nodemanger about it
             getController().getNodeManager().onlineStateChanged(this);
 
-            if (log.isLoggable(Level.INFO)) {
+            if (isInfo()) {
                 logInfo("Disconnected ("
                     + getController().getNodeManager().countConnectedNodes()
                     + " still connected)");
@@ -1193,9 +1195,7 @@ public class Member extends PFComponent {
                 if (targetFolder != null
                     && targetFolder.getSyncProfile().isAutoDetectLocalChanges())
                 {
-                    log
-                        .finer("Remote sync command received on "
-                            + targetFolder);
+                    logFiner("Remote sync command received on " + targetFolder);
                     getController().setSilentMode(false);
                     // Now trigger the scan
                     targetFolder.recommendScanOnNextMaintenance();
@@ -1316,7 +1316,7 @@ public class Member extends PFComponent {
             } else if (message instanceof FileList) {
                 FileList remoteFileList = (FileList) message;
                 Convert.cleanFileList(getController(), remoteFileList.files);
-                if (log.isLoggable(Level.FINE)) {
+                if (isFine()) {
                     logFine("Received new filelist. Expecting "
                         + remoteFileList.nFollowingDeltas + " more deltas. "
                         + message);
@@ -1367,7 +1367,7 @@ public class Member extends PFComponent {
                         + ", but not received the full filelist");
                     return;
                 }
-                nExpected = Integer.valueOf(nExpected.intValue() - 1);
+                nExpected -= 1;
                 expectedListMessages.put(changes.folder, nExpected);
                 TransferManager tm = getController().getTransferManager();
                 if (changes.added != null) {
@@ -1404,7 +1404,7 @@ public class Member extends PFComponent {
                     targetFolder.fileListChanged(this, changes);
                 }
 
-                if (log.isLoggable(Level.FINE)) {
+                if (isFine()) {
                     int msgs = expectedListMessages.get(targetedFolderInfo);
                     if (msgs >= 0) {
                         logFine("Received folder change. Expecting " + msgs
@@ -1438,8 +1438,7 @@ public class Member extends PFComponent {
                     isConnectedToNetwork = true;
                 } else if (lastProblem.problemCode == Problem.DUPLICATE_CONNECTION)
                 {
-                    log
-                        .warning("Problem received: Node thinks we have a dupe connection to him");
+                    logWarning("Problem received: Node thinks we have a dupe connection to him");
                 } else {
                     logWarning("Problem received: " + lastProblem);
                 }
@@ -1613,9 +1612,7 @@ public class Member extends PFComponent {
     }
 
     /**
-     * Overriden, removes message listeners also
-     * 
-     * @see de.dal33t.powerfolder.PFComponent#removeAllListeners()
+     * Overridden, removes message listeners.
      */
     public void removeAllListeners() {
         logFiner("Removing all listeners from member. " + this);
@@ -1651,7 +1648,9 @@ public class Member extends PFComponent {
      * @param joinedFolders
      *            the currently joined folders of ourself
      */
-    public void synchronizeFolderMemberships(FolderInfo[] joinedFolders) {
+    public void synchronizeFolderMemberships(
+        Collection<FolderInfo> joinedFolders)
+    {
         Reject.ifNull(joinedFolders, "Joined folders is null");
         if (isMySelf()) {
             return;
@@ -1694,14 +1693,12 @@ public class Member extends PFComponent {
 
             String myMagicId = peer != null ? peer.getMyMagicId() : null;
             if (peer == null) {
-                log
-                    .finer("Unable to join to local folders. peer is null/disconnected");
+                logFiner("Unable to join to local folders. peer is null/disconnected");
                 return;
             }
             if (StringUtils.isBlank(myMagicId)) {
-                log
-                    .severe("Unable to join to local folders. Own magic id of peer is blank: "
-                        + peer);
+                logSevere("Unable to join to local folders. Own magic id of peer is blank: "
+                    + peer);
                 return;
             }
 
@@ -1745,7 +1742,7 @@ public class Member extends PFComponent {
                 }
             }
 
-            if (!joinedFolder.isEmpty()) {
+            if (joinedFolder.size() > 0) {
                 logInfo(getNick() + " joined " + joinedFolder.size()
                     + " folder(s)");
                 if (!isFriend()) {
@@ -1809,6 +1806,51 @@ public class Member extends PFComponent {
     }
 
     /**
+     * Answers the last filelist of a member/folder. Returns null if no filelist
+     * has been received yet. But may return empty collection.
+     * <p>
+     * Avoids temporary list creation by returning an (unmodifiable) reference
+     * to the keyset of the cached filelist.
+     * 
+     * @param foInfo
+     *            The folder to get the listlist for
+     * @return an collection unmodifieable containing the fileinfos.
+     */
+    public Collection<FileInfo> getLastFileListAsCollection(FolderInfo foInfo) {
+        Map<FileInfo, FileInfo> list = getLastFileList0(foInfo);
+        if (list == null) {
+            return null;
+        }
+        return Collections.unmodifiableCollection(list.keySet());
+    }
+
+    /**
+     * Removes the fileinfo from the cached filelist.
+     * 
+     * @param fInfo
+     * @return true if the fileinfo was removed
+     */
+    public boolean removeFileInfo(FileInfo fInfo) {
+        Reject.ifNull(fInfo, "FileInfo is null");
+        Map<FileInfo, FileInfo> list = getLastFileList0(fInfo.getFolderInfo());
+        if (list != null) {
+            return list.remove(fInfo) != null;
+        }
+        return false;
+    }
+
+    /**
+     * Removes the list from the cached filelist.
+     * 
+     * @param foInfo
+     * @return true if the list was removed
+     */
+    public boolean removeFileList(FolderInfo foInfo) {
+        Reject.ifNull(foInfo, "FolderInfo is null");
+        return lastFiles != null && lastFiles.remove(foInfo) != null;
+    }
+
+    /**
      * Answers the last filelist of a member/folder May return null.
      * 
      * @param foInfo
@@ -1830,46 +1872,6 @@ public class Member extends PFComponent {
     }
 
     /**
-     * Answers the last filelist of a member/folder. Returns null if no filelist
-     * has been received yet. But may return empty collection
-     * 
-     * @param foInfo
-     *            The folder to get the listlist for
-     * @return A Array containing the FileInfo s
-     * @deprecated Use {@link #getLastFileListAsCollection(FolderInfo)}
-     */
-    public FileInfo[] getLastFileList(FolderInfo foInfo) {
-        Map<FileInfo, FileInfo> list = getLastFileList0(foInfo);
-        if (list == null) {
-            return null;
-        }
-        synchronized (list) {
-            FileInfo[] tempList = new FileInfo[list.size()];
-            list.keySet().toArray(tempList);
-            return tempList;
-        }
-    }
-
-    /**
-     * Answers the last filelist of a member/folder. Returns null if no filelist
-     * has been received yet. But may return empty collection.
-     * <p>
-     * Avoids temporary list creation by returning an (unmodifiable) reference
-     * to the keyset of the cached filelist.
-     * 
-     * @param foInfo
-     *            The folder to get the listlist for
-     * @return an collection unmodifieable containing the fileinfos.
-     */
-    public Collection<FileInfo> getLastFileListAsCollection(FolderInfo foInfo) {
-        Map<FileInfo, FileInfo> list = getLastFileList0(foInfo);
-        if (list == null) {
-            return null;
-        }
-        return Collections.unmodifiableCollection(list.keySet());
-    }
-
-    /**
      * Returns the last transfer status of this node
      * 
      * @return the last transfer status of this node
@@ -1882,10 +1884,6 @@ public class Member extends PFComponent {
     }
 
     /**
-     * Answers if user joined any folder.
-     * <p>
-     * TODO: Add if the user is on any folder based on network folder list.
-     * 
      * @return true if user joined any folder
      */
     public boolean hasJoinedAnyFolder() {
