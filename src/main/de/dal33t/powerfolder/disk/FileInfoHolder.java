@@ -22,10 +22,8 @@ package de.dal33t.powerfolder.disk;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.FileInfo;
 
-import java.util.*;
-
 /**
- * Holds a FileInfo for each Member of the Folder
+ * Helper to better access fileinfos across members.
  * 
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  */
@@ -33,9 +31,6 @@ public class FileInfoHolder {
     private FileInfo fileInfo;
     private Folder folder;
     boolean fileInfoIsMyOwn;
-    /** For each member the fileInfo. key = member, value = FileInfo */
-    private Map<Member, FileInfo> memberHasFileInfoMap;
-
     /**
      * the availability of this file (number of users that have the highest not
      * deleted version of this file
@@ -43,9 +38,7 @@ public class FileInfoHolder {
     private int availability;
 
     /**
-     * creates a FileInfoHolder and reads the fileData from the FileInfo and
-     * addes the first relationship between Member and FileInfo (member has
-     * file)
+     * creates a FileInfoHolder and reads the fileData from the FileInfo.
      * 
      * @param folder
      * @param member
@@ -55,25 +48,7 @@ public class FileInfoHolder {
         this.fileInfo = fileInfo;
         this.folder = folder;
         fileInfoIsMyOwn = member.isMySelf();
-
-        // TODO The next line is very memory consuming.
-        memberHasFileInfoMap = new HashMap<Member, FileInfo>(1);
-        memberHasFileInfoMap.put(member, fileInfo);
         availability = 1;
-    }
-
-    /**
-     * returns the FileInfo-mation about the file at this member
-     * 
-     * @param member
-     * @return the fileinfo
-     */
-    public FileInfo getFileInfo(Member member) {
-        FileInfo fInfo = memberHasFileInfoMap.get(member);
-        if (fInfo == null) {
-            throw new IllegalArgumentException("not has file " + member);
-        }
-        return fInfo;
     }
 
     /**
@@ -82,24 +57,23 @@ public class FileInfoHolder {
      * @param member
      * @return true if empty as result of removal
      */
-    public synchronized boolean removeFileOfMember(Member member) {
-        memberHasFileInfoMap.remove(member);
-        return memberHasFileInfoMap.isEmpty();
+    public boolean removeFileOfMember(Member member) {
+        // memberHasFileInfoMap.remove(member);
+        // return memberHasFileInfoMap.isEmpty();
+        // TODO Implement
+        return false;
     }
 
     /**
-     * returns true it this members has this file and the file is not remotely
-     * deleted.
-     * 
-     * @param member
-     * @return true if this member has the file
+     * @return true if any version of this file is still available.
      */
-    public boolean hasFile(Member member) {
-        FileInfo fInfo = memberHasFileInfoMap.get(member);
-        if (fInfo == null) {
-            return false;
+    public boolean isAnyVersionAvailable() {
+        for (Member member : folder.getMembersAsCollection()) {
+            if (member.hasFile(fileInfo)) {
+                return true;
+            }
         }
-        return !fInfo.isDeleted();
+        return false;
     }
 
     /** used to replace in converted to meta FileInfo (Mp3/Image) */
@@ -108,8 +82,8 @@ public class FileInfoHolder {
     }
 
     public synchronized void put(Member member, FileInfo newFileInfo) {
-        memberHasFileInfoMap.put(member, newFileInfo);
-        if (fileInfoIsMyOwn) { // do not overwite myself
+        // memberHasFileInfoMap.put(member, newFileInfo);
+        if (fileInfoIsMyOwn) { // do not overwrite myself
             calcAvailability();
             return;
         }
@@ -120,6 +94,8 @@ public class FileInfoHolder {
             return;
         }
         if (newFileInfo.isNewerThan(this.fileInfo)) {
+            // TODO What's this!?
+
             if (newFileInfo.getVersion() > this.fileInfo.getVersion()) {
                 this.fileInfo = newFileInfo;
             } else {
@@ -141,91 +117,12 @@ public class FileInfoHolder {
     }
 
     /**
-     * @return Returns the filename.
-     */
-    public String getFilename() {
-        return fileInfo.getFilenameOnly();
-    }
-
-    /**
-     * @return Returns the folder.
-     */
-    public Folder getFolder() {
-        return folder;
-    }
-
-    /**
-     * @return Returns the path (== LocationInFolder).
-     */
-    public String getPath() {
-        return fileInfo.getLocationInFolder();
-    }
-
-    private synchronized void calcAvailability() {
-        Iterator<FileInfo> fileInfos = memberHasFileInfoMap.values().iterator();
-        int tmpAvailability = 0;
-        int newestVersion = getNewestAvailableVersion();
-        while (fileInfos.hasNext()) {
-            FileInfo fInfo = fileInfos.next();
-            if (newestVersion == fInfo.getVersion() && !fInfo.isDeleted())
-            {
-                tmpAvailability++;
-            }
-        }
-        availability = tmpAvailability;
-    }
-
-    private synchronized int getNewestAvailableVersion() {
-        Iterator<FileInfo> fileInfos = memberHasFileInfoMap.values().iterator();
-        int tmpHighestVersion = -1;
-        while (fileInfos.hasNext()) {
-            FileInfo fInfo = fileInfos.next();
-            // TODO SCHAATSER Check: Is this correct? maybe the newest version
-            // IS the deleted one? Scenario:
-            // initalfile(ver:0)->modified(ver:1)->deleted by
-            // user(ver:2). The latest, deleted version of the file is the
-            // newest version of the file.
-
-            // Schaatser: Maybe the name of the method is wrong. It is used to
-            // calcAvailability() of the file. And since deleted files are not
-            // available the result of this method is what we want. So
-            // the name should be "getNewestAvailableVersion" ?
-            if (fInfo.isDeleted()) {
-                continue;
-            }
-            tmpHighestVersion = Math.max(tmpHighestVersion, fInfo
-                .getVersion());
-        }
-        return tmpHighestVersion;
-    }
-
-    /**
      * returns the number of complete files of the latest version in the network
      * 
      * @return the # of members this file is available
      */
     public int getAvailability() {
         return availability;
-    }
-
-    /**
-     * returns a list of Members that have the file
-     * 
-     * @return the sources
-     */
-    public synchronized List<Member> getSources() {
-        int newestVersion = getNewestAvailableVersion();
-        Iterator<Member> members = memberHasFileInfoMap.keySet().iterator();
-        List<Member> sources = new ArrayList<Member>();
-        while (members.hasNext()) {
-            Member member = members.next();
-            FileInfo fInfo = memberHasFileInfoMap.get(member);
-            if (fInfo.getVersion() == newestVersion && !fInfo.isDeleted())
-            {
-                sources.add(member);
-            }
-        }
-        return sources;
     }
 
     public FileInfo getFileInfo() {
@@ -238,12 +135,13 @@ public class FileInfoHolder {
      * 
      * @return true if the file is valid
      */
-    public synchronized boolean isValid() {
-        Iterator<Member> members = memberHasFileInfoMap.keySet().iterator();
-        while (members.hasNext()) {
-            Member member = members.next();
+    public boolean isValid() {
+        for (Member member : folder.getMembersAsCollection()) {
             if (member.isConnected() || member.isMySelf()) {
-                FileInfo fInfo = memberHasFileInfoMap.get(member);
+                FileInfo fInfo = member.getFile(fileInfo);
+                if (fInfo == null) {
+                    continue;
+                }
                 if (fInfo.isDeleted()) {
                     if (member.isMySelf()) {
                         return true;
@@ -254,5 +152,26 @@ public class FileInfoHolder {
             }
         }
         return false;
+    }
+
+    private void calcAvailability() {
+        FileInfo newestNotDeleted = fileInfo.getNewestNotDeletedVersion(folder
+            .getController().getFolderRepository());
+        int tmpAvailability = 0;
+        int newestVersion = newestNotDeleted != null ? newestNotDeleted
+            .getVersion() : 0;
+        for (Member member : folder.getMembersAsCollection()) {
+            if (!member.isCompleteyConnected() && !member.isMySelf()) {
+                continue;
+            }
+            FileInfo memberFileInfo = member.getFile(fileInfo);
+            if (memberFileInfo == null || memberFileInfo.isDeleted()) {
+                continue;
+            }
+            if (memberFileInfo.getVersion() == newestVersion) {
+                tmpAvailability++;
+            }
+        }
+        availability = tmpAvailability;
     }
 }

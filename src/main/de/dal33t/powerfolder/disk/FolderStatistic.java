@@ -43,7 +43,7 @@ public class FolderStatistic extends PFComponent {
      * to a maximum, one update every 20 seconds
      */
     private static final int MAX_ITEMS = 5000;
-    private static final long DELAY = DateUtils.MILLIS_PER_SECOND * 10;
+    private final static long DELAY_10S = DateUtils.MILLIS_PER_SECOND * 10;
 
     private final Folder folder;
 
@@ -228,10 +228,10 @@ public class FolderStatistic extends PFComponent {
         if (task != null) {
             return;
         }
-        if (millisPast > DELAY || current.totalFilesCount < MAX_ITEMS) {
-            setCalculateIn(0);
+        if (millisPast > DELAY_10S || current.totalFilesCount < MAX_ITEMS) {
+            setCalculateIn(50);
         } else {
-            setCalculateIn(DELAY);
+            setCalculateIn(DELAY_10S);
         }
     }
 
@@ -292,7 +292,9 @@ public class FolderStatistic extends PFComponent {
         Date date = null;
         for (FileInfo fileInfo : folder.getKnownFiles()) {
             if (fileInfo.getModifiedDate() != null) {
-                if (date == null || date.compareTo(fileInfo.getModifiedDate()) < 0) {
+                if (date == null
+                    || date.compareTo(fileInfo.getModifiedDate()) < 0)
+                {
                     date = fileInfo.getModifiedDate();
                 }
             }
@@ -302,9 +304,8 @@ public class FolderStatistic extends PFComponent {
         }
 
         if (isFiner()) {
-            logFiner(
-                "---------calc stats  " + folder.getName() + " done @: "
-                    + (System.currentTimeMillis() - startTime));
+            logFiner("---------calc stats  " + folder.getName() + " done @: "
+                + (System.currentTimeMillis() - startTime));
         }
 
         // Fire event
@@ -313,7 +314,7 @@ public class FolderStatistic extends PFComponent {
 
     /**
      * Gets the date that one of the files in the folder changed.
-     *
+     * 
      * @return
      */
     public Date getLastFileChangeDate() {
@@ -333,8 +334,8 @@ public class FolderStatistic extends PFComponent {
         Collection<FileInfo> files;
         files = folder.getFilesAsCollection(member);
         if (files == null) {
-            logFiner(
-                "Unable to calc stats on member, no filelist yet: " + member);
+            logFiner("Unable to calc stats on member, no filelist yet: "
+                + member);
             return;
         }
 
@@ -451,17 +452,16 @@ public class FolderStatistic extends PFComponent {
             }
             double sync = ((double) sizeInSync) / calculating.totalSize * 100;
             if (sync > 100) {
-                logWarning(
-                    "Over 100% sync: "
-                        + sync
-                        + "% sync: "
-                        + member.getNick()
-                        + ", size(in sync): "
-                        + Format.formatBytesShort(sizeInSync)
-                        + ", size: "
-                        + Format.formatBytesShort(calculating.sizesInSync
-                            .get(member)) + ", totalsize: "
-                        + Format.formatBytesShort(calculating.totalSize));
+                logWarning("Over 100% sync: "
+                    + sync
+                    + "% sync: "
+                    + member.getNick()
+                    + ", size(in sync): "
+                    + Format.formatBytesShort(sizeInSync)
+                    + ", size: "
+                    + Format.formatBytesShort(calculating.sizesInSync
+                        .get(member)) + ", totalsize: "
+                    + Format.formatBytesShort(calculating.totalSize));
             }
             if (calculating.totalSize == 0) {
                 logFiner("Got total size 0");
@@ -472,10 +472,9 @@ public class FolderStatistic extends PFComponent {
             considered++;
 
             if (isFiner()) {
-                logFiner(
-                    member.getNick() + ": size: "
-                        + calculating.sizes.get(member) + ", size(insync): "
-                        + sizeInSync + ": " + sync + "%");
+                logFiner(member.getNick() + ": size: "
+                    + calculating.sizes.get(member) + ", size(insync): "
+                    + sizeInSync + ": " + sync + "%");
             }
         }
         calculating.totalSyncPercentage = totalSync / considered;

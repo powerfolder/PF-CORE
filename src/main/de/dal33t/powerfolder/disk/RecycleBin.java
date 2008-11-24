@@ -19,19 +19,25 @@
  */
 package de.dal33t.powerfolder.disk;
 
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.event.*;
-import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.util.FileUtils;
-import de.dal33t.powerfolder.util.ProgressListener;
-import de.dal33t.powerfolder.util.os.RecycleDelete;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.event.ListenerSupportFactory;
+import de.dal33t.powerfolder.event.RecycleBinConfirmEvent;
+import de.dal33t.powerfolder.event.RecycleBinConfirmationHandler;
+import de.dal33t.powerfolder.event.RecycleBinEvent;
+import de.dal33t.powerfolder.event.RecycleBinListener;
+import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.ProgressListener;
+import de.dal33t.powerfolder.util.os.RecycleDelete;
 
 /**
  * Recycle Bin, implements a restorable delete on all platforms, by moving files
@@ -41,24 +47,25 @@ import java.util.List;
  * @version $Revision: 1.12 $
  */
 public class RecycleBin extends PFComponent {
-
     /** The recycle bin folder name */
     private static final String RECYCLE_BIN_FOLDER = ".recycle";
     /** all recycled files */
-    // TODO: Check if this can be removed. Large datastructure. uses loza mem.
-    private List<FileInfo> allRecycledFiles = new ArrayList<FileInfo>();
+    private CopyOnWriteArrayList<FileInfo> allRecycledFiles = new CopyOnWriteArrayList<FileInfo>();
     /** all listeners to this recycle bin */
-    private RecycleBinListener listeners = (RecycleBinListener) ListenerSupportFactory
+    private RecycleBinListener listeners = ListenerSupportFactory
         .createListenerSupport(RecycleBinListener.class);
 
     private RecycleBinConfirmationHandler recycleBinConfirmationHandler;
 
-    /** create a recycle bin with its associated controller */
+    /**
+     * create a recycle bin with its associated controller
+     * 
+     * @param controller
+     */
     public RecycleBin(Controller controller) {
         super(controller);
         moveFolders();
         allRecycledFiles.addAll(readRecyledFiles());
-        logInfo("Recycle bin initialized, " + allRecycledFiles.size());
         logFine(allRecycledFiles.size() + " files in recycle bin");
     }
 
@@ -103,6 +110,8 @@ public class RecycleBin extends PFComponent {
     /**
      * permanently delete file from Recycle Bin (if possible will move to OS
      * Recycle Bin)
+     * 
+     * @param fileInfo
      */
     public void delete(FileInfo fileInfo) {
         File recycleDir = getRecycleBinDirectory(fileInfo);
@@ -199,9 +208,12 @@ public class RecycleBin extends PFComponent {
         return target.exists();
     }
 
-    /** @return a copy of the list of all files in the powerfolder recycle bin */
+    /**
+     * @return a unmodifieable collection of the internal list of all files in
+     *         recycle bin.
+     */
     public List<FileInfo> getAllRecycledFiles() {
-        return new ArrayList<FileInfo>(allRecycledFiles);
+        return Collections.unmodifiableList(allRecycledFiles);
     }
 
     /** @return the number of files in the powerfolder recycle bin */
@@ -211,14 +223,14 @@ public class RecycleBin extends PFComponent {
 
     /**
      * adds a file to the list of recycled files and fires fileAdded event, if
-     * file with that name is alredy tere it will fire a fileUpdate event.
+     * file with that name is alredy there it will fire a fileUpdate event.
      */
     private void addFile(FileInfo file) {
-        if (allRecycledFiles.contains(file)) {
-            fileUpdated(file);
-        } else {
-            allRecycledFiles.add(file);
+        boolean newAdded = allRecycledFiles.addIfAbsent(file);
+        if (newAdded) {
             fireFileAdded(file);
+        } else {
+            fileUpdated(file);
         }
     }
 

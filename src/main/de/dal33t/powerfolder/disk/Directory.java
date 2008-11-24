@@ -30,7 +30,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.DiskItem;
@@ -55,7 +54,8 @@ public class Directory implements Comparable<Directory>, DiskItem {
      * The files (FileInfoHolder s) in this Directory key = fileInfo value =
      * FileInfoHolder
      */
-    private ConcurrentMap<FileInfo, FileInfoHolder> fileInfoHolderMap = new ConcurrentHashMap<FileInfo, FileInfoHolder>(
+    // TODO This map comsumes a LOT memory.
+    private Map<FileInfo, FileInfoHolder> fileInfoHolderMap = new ConcurrentHashMap<FileInfo, FileInfoHolder>(
         2, 0.75f, 4);
     /** key = dir name, value = Directory* */
     private Map<String, Directory> subDirectoriesMap = new ConcurrentHashMap<String, Directory>(
@@ -71,7 +71,7 @@ public class Directory implements Comparable<Directory>, DiskItem {
     private Folder rootFolder;
     /** The parent Directory (may be null, if no parent!) */
     private Directory parent;
-    private Logger log = Logger.getLogger(Directory.class.getName());
+    private Logger log = Logger.getLogger(this.getClass().getName());
 
     /** The TreeNode that displayes this Directory in the Tree */
     // private DefaultMutableTreeNode treeNode;
@@ -247,56 +247,38 @@ public class Directory implements Comparable<Directory>, DiskItem {
     }
 
     /**
-     * Removes a fileinfo from this directory or subdirectories.
+     * Removes a fileinfo from this directory or subdirectories. Also erases
+     * directory objects if the got empty.
      * 
      * @param fInfo
-     * @return if the fileinfo has been removed.
      */
-    public boolean removeFileInfo(FileInfo fInfo) {
-        for (FileInfoHolder holder : fileInfoHolderMap.values()) {
-            if (holder.getFileInfo().equals(fInfo)) {
-                synchronized (fileInfoHolderMap) {
-                    fileInfoHolderMap.remove(fInfo);
-                }
-                return true;
-            }
+    public void removeFileInfo(FileInfo fInfo) {
+        if (fileInfoHolderMap.remove(fInfo) != null) {
+            return;
         }
         for (Directory dir : subDirectoriesMap.values()) {
-            if (dir.removeFileInfo(fInfo)) {
-                if (dir.fileInfoHolderMap.isEmpty()) {
-                    synchronized (subDirectoriesMap) {
-                        subDirectoriesMap.remove(dir);
-                    }
-                }
-                return true;
+            dir.removeFileInfo(fInfo);
+            if (dir.fileInfoHolderMap.isEmpty()) {
+                subDirectoriesMap.remove(dir);
             }
         }
-        // Not found!
-        return false;
     }
 
     public boolean removeFilesOfMember(Member member) {
         boolean removed = false;
         for (FileInfoHolder holder : fileInfoHolderMap.values()) {
-            boolean empty = holder.removeFileOfMember(member);
-            if (empty) {
+            if (!holder.isAnyVersionAvailable()) {
                 removed = true;
-                synchronized (fileInfoHolderMap) {
-                    fileInfoHolderMap.remove(holder.getFileInfo());
-                }
+                fileInfoHolderMap.remove(holder.getFileInfo());
             }
         }
-
         for (Directory dir : subDirectoriesMap.values()) {
             boolean dirRemoved = dir.removeFilesOfMember(member);
             if (dir.fileInfoHolderMap.isEmpty()) {
-                synchronized (subDirectoriesMap) {
-                    subDirectoriesMap.remove(dir);
-                }
+                subDirectoriesMap.remove(dir);
             }
             removed = removed || dirRemoved;
         }
-
         return removed;
     }
 
@@ -313,7 +295,7 @@ public class Directory implements Comparable<Directory>, DiskItem {
         String path = fileInfo.getLocationInFolder();
         String dirName;
         String rest;
-        int index = path.indexOf("/");
+        int index = path.indexOf('/');
         if (index == -1) {
             dirName = path;
             rest = "";
@@ -324,17 +306,18 @@ public class Directory implements Comparable<Directory>, DiskItem {
         if (dirName.length() == 0) {
             return null;
         }
-        if (subDirectoriesMap.containsKey(dirName)) {
-            Directory dir = subDirectoriesMap.get(dirName);
-            if (rest.equals("")) {
-                return dir.getFileInfoHolder(fileInfo);
-            }
-            return dir.getFileInfoHolder(fileInfo, rest);
+        Directory dir = subDirectoriesMap.get(dirName);
+        if (dir == null) {
+            // should not happen but this saves a crash (white screen)
+            // throw new IllegalStateException("dir not found: " + dirName + " |
+            // "
+            // + fileInfo.getName());
+            return null;
         }
-        return null; // should not happen but this saves a crash (white
-        // screen)
-        // throw new IllegalStateException("dir not found: " + dirName + " | "
-        // + fileInfo.getName());
+        if (rest.equals("")) {
+            return dir.getFileInfoHolder(fileInfo);
+        }
+        return dir.getFileInfoHolder(fileInfo, rest);
     }
 
     private FileInfoHolder getFileInfoHolder(FileInfo fileInfo, String restPath)
@@ -349,18 +332,17 @@ public class Directory implements Comparable<Directory>, DiskItem {
             dirName = restPath.substring(0, index);
             rest = restPath.substring(index + 1, restPath.length());
         }
-        if (subDirectoriesMap.containsKey(dirName)) {
-            Directory dir = subDirectoriesMap.get(dirName);
-            if (rest.equals("")) {
-                return dir.getFileInfoHolder(fileInfo);
-            }
-            return dir.getFileInfoHolder(fileInfo, rest);
+        Directory dir = subDirectoriesMap.get(dirName);
+        if (dir == null) {
+            throw new IllegalStateException("dir not found: " + dirName + " | "
+                + fileInfo.getName());
         }
-        throw new IllegalStateException("dir not found: " + dirName + " | "
-            + fileInfo.getName());
+        if (rest.equals("")) {
+            return dir.getFileInfoHolder(fileInfo);
+        }
+        return dir.getFileInfoHolder(fileInfo, rest);
     }
 
-    /** */
     public Directory getSubDirectory(String dirName) {
         String tmpDirName;
         String rest;
@@ -372,14 +354,14 @@ public class Directory implements Comparable<Directory>, DiskItem {
             tmpDirName = dirName.substring(0, index);
             rest = dirName.substring(index + 1, dirName.length());
         }
-        if (subDirectoriesMap.containsKey(tmpDirName)) {
-            Directory dir = subDirectoriesMap.get(tmpDirName);
-            if (rest.equals("")) {
-                return dir;
-            }
-            return dir.getSubDirectory(rest);
+        Directory dir = subDirectoriesMap.get(tmpDirName);
+        if (dir == null) {
+            throw new IllegalStateException("dir '" + dirName + "' not found");
         }
-        throw new IllegalStateException("dir '" + dirName + "' not found");
+        if (rest.equals("")) {
+            return dir;
+        }
+        return dir.getSubDirectory(rest);
     }
 
     /**

@@ -120,7 +120,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         this.folderScanner = new FolderScanner(getController());
 
         // Create listener support
-        this.listenerSupport = (FolderRepositoryListener) ListenerSupportFactory
+        this.listenerSupport = ListenerSupportFactory
             .createListenerSupport(FolderRepositoryListener.class);
     }
 
@@ -426,11 +426,11 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
-     * @return a fresh list of all joined folders
+     * @return an unmodifiable, but thread safe collection of all joined
+     *         folders.
      */
-    public FolderInfo[] getJoinedFolderInfos() {
-        return folders.keySet()
-            .toArray(new FolderInfo[folders.keySet().size()]);
+    public Collection<FolderInfo> getJoinedFolderInfos() {
+        return Collections.unmodifiableCollection(folders.keySet());
     }
 
     /**
@@ -708,7 +708,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
         Collection<Member> connectedNodes = getController().getNodeManager()
             .getConnectedNodes();
-        FolderInfo[] myJoinedFolders = getJoinedFolderInfos();
+        Collection<FolderInfo> myJoinedFolders = getJoinedFolderInfos();
         for (Member node : connectedNodes) {
             node.synchronizeFolderMemberships(myJoinedFolders);
         }
@@ -754,7 +754,7 @@ public class FolderRepository extends PFComponent implements Runnable {
     public void run() {
 
         // 500 ms wait
-        long waitTime = getController().getWaitTime() / 10;
+        long waitTime = Controller.getWaitTime() / 10;
 
         if (getController().isUIEnabled()) {
             // Wait to build up ui
