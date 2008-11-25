@@ -26,6 +26,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
+import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
@@ -67,6 +68,7 @@ public class FilesTreePanel extends PFUIComponent {
 
 
         uiComponent = builder.getPanel();
+        uiComponent.setBorder(BorderFactory.createEtchedBorder());
     }
     
 }
