@@ -21,10 +21,9 @@ package de.dal33t.powerfolder.ui.information.folder.files;
 
 import de.dal33t.powerfolder.light.FileInfo;
 
+import java.io.File;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Lightwight model of a filtered directory. Use in reference to the original
@@ -32,15 +31,36 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class FilteredDirectoryModel {
 
+    private String displayName;
+    private File file;
     private List<FileInfo> files;
-    private Map<String, FilteredDirectoryModel> subdirectories;
+    private List<FilteredDirectoryModel> subdirectories;
 
     /**
      * Constructor
      */
-    public FilteredDirectoryModel() {
+    public FilteredDirectoryModel(String displayName, File file) {
+        this.displayName = displayName;
+        this.file = file;
         files = new CopyOnWriteArrayList<FileInfo>();
-        subdirectories = new ConcurrentHashMap<String, FilteredDirectoryModel>();
+        subdirectories = new CopyOnWriteArrayList<FilteredDirectoryModel>();
+    }
+
+    /**
+     * Returns the display name for the node.
+     * @return
+     */
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    /**
+     * Returns the file.
+     * 
+     * @return
+     */
+    public File getFile() {
+        return file;
     }
 
     /**
@@ -52,9 +72,9 @@ public class FilteredDirectoryModel {
     }
 
     /**
-     * Returns a map of subdirectory names and sub-FilteredDirectoryModels 
+     * Returns a list of subdirectory names and sub-FilteredDirectoryModels
      */
-    public Map<String, FilteredDirectoryModel> getSubdirectories() {
+    public List<FilteredDirectoryModel> getSubdirectories() {
         return subdirectories;
     }
 }

@@ -73,7 +73,7 @@ public class DirectoryFilter extends FilterModel {
         folderListener = new MyFolderListener();
         running = new AtomicBoolean();
         pending = new AtomicBoolean();
-        model = new FilteredDirectoryModel();
+        model = new FilteredDirectoryModel("", null);
         transferManager = getController().getTransferManager();
         recycleBin = getController().getRecycleBin();
         listeners = new CopyOnWriteArrayList<DirectoryFilterListener>();
@@ -85,7 +85,6 @@ public class DirectoryFilter extends FilterModel {
      * @param listener
      */
     public void addListener(DirectoryFilterListener listener) {
-        System.out.println("added " + listener);
         listeners.add(listener);
     }
 
@@ -252,7 +251,8 @@ public class DirectoryFilter extends FilterModel {
         AtomicLong incomingCount = new AtomicLong();
         AtomicLong localCount = new AtomicLong();
         FilteredDirectoryModel filteredDirectoryModel
-                = new FilteredDirectoryModel();
+                = new FilteredDirectoryModel(folder.getName(),
+                originalDirectory.getFile());
 
         // Recursive filter.
         filterDirectory(originalDirectory, filteredDirectoryModel, keywords,
@@ -363,7 +363,9 @@ public class DirectoryFilter extends FilterModel {
 
         for (Directory subDirectory : directory.getSubDirectoriesAsCollection())
         {
-            FilteredDirectoryModel subModel = new FilteredDirectoryModel();
+            FilteredDirectoryModel subModel = new FilteredDirectoryModel(
+                    subDirectory.getFile().getName(),
+                    subDirectory.getFile());
             filterDirectory(subDirectory, subModel, keywords, originalCount,
                     filteredCount,  deletedCount, recycledCount,
                     incomingCount, localCount);
@@ -371,8 +373,7 @@ public class DirectoryFilter extends FilterModel {
             // Only keep if files lower in tree.
             if (!subModel.getFiles().isEmpty()
                     || !subModel.getSubdirectories().isEmpty()) {
-                filteredDirectoryModel.getSubdirectories().put(
-                        subDirectory.getName(), subModel);
+                filteredDirectoryModel.getSubdirectories().add(subModel);
             }
         }
     }

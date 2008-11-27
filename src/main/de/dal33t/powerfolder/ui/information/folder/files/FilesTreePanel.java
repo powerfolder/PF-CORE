@@ -24,19 +24,27 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
+import javax.swing.tree.DefaultTreeCellRenderer;
+import java.awt.Component;
 
-public class FilesTreePanel extends PFUIComponent {
+public class FilesTreePanel extends PFUIComponent implements DirectoryFilterListener {
 
     private JPanel uiComponent;
+    private DirectoryTreeModel directoryTreeModel;
+    private DirectoryFilter directoryFilter;
 
-    public FilesTreePanel(Controller controller) {
+    public FilesTreePanel(Controller controller, DirectoryFilter directoryFilter) {
         super(controller);
+        directoryTreeModel = new DirectoryTreeModel(controller);
+        this.directoryFilter = directoryFilter;
+        directoryFilter.addListener(this);
     }
 
     /**
@@ -59,7 +67,8 @@ public class FilesTreePanel extends PFUIComponent {
                 "fill:pref:grow");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
-        JTree tree = new JTree();
+        JTree tree = new JTree(directoryTreeModel);
+        tree.setCellRenderer(new MyTreeCellRenderer());
         JScrollPane scrollPane = new JScrollPane(tree);
         // Whitestrip
         UIUtil.removeBorder(scrollPane);
@@ -70,5 +79,27 @@ public class FilesTreePanel extends PFUIComponent {
         uiComponent = builder.getPanel();
         uiComponent.setBorder(BorderFactory.createEtchedBorder());
     }
-    
+
+    public void adviseOfChange() {
+        directoryTreeModel.setTree(directoryFilter.getModel());
+    }
+
+    private class MyTreeCellRenderer extends DefaultTreeCellRenderer {
+        public Component getTreeCellRendererComponent(JTree tree, Object value,
+                                                      boolean selected,
+                                                      boolean expanded,
+                                                      boolean leaf, int row,
+                                                      boolean hasFocus) {
+            super.getTreeCellRendererComponent(tree, value, selected, expanded,
+                    leaf, row, hasFocus);
+            Object userObject = UIUtil.getUserObject(value);
+            if (userObject instanceof DirectoryTreeNodeUserObject) {
+                DirectoryTreeNodeUserObject dtnuo =
+                        (DirectoryTreeNodeUserObject) userObject;
+                setText(dtnuo.getDisplayName());
+                setIcon(Icons.FOLDER);
+            }
+            return this;
+        }
+    }
 }

@@ -64,7 +64,7 @@ public class FilesTab extends PFUIComponent
         statsPanel = new FilesStatsPanel(getController());
         directoryFilter = new DirectoryFilter(controller);
         directoryFilter.addListener(this);
-        treePanel = new FilesTreePanel(controller);
+        treePanel = new FilesTreePanel(controller, directoryFilter);
         tablePanel = new FilesTablePanel(controller);
         splitPane = new UIFSplitPane(JSplitPane.HORIZONTAL_SPLIT,
                 treePanel.getUIComponent(), tablePanel.getUIComponent());
