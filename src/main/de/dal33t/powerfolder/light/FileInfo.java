@@ -19,6 +19,15 @@
  */
 package de.dal33t.powerfolder.light;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.Serializable;
+import java.lang.ref.SoftReference;
+import java.util.Date;
+
+import org.apache.commons.lang.StringUtils;
+
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.DiskItem;
 import de.dal33t.powerfolder.Feature;
@@ -28,14 +37,6 @@ import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.logging.Loggable;
-import org.apache.commons.lang.StringUtils;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.Serializable;
-import java.lang.ref.SoftReference;
-import java.util.Date;
 
 /**
  * File information of a local or remote file
@@ -122,6 +123,8 @@ public class FileInfo extends Loggable implements Serializable, DiskItem,
             fileName = parent.getName() + "/" + fileName;
             parent = parent.getParentFile();
         }
+
+        validate();
     }
 
     /**
@@ -209,6 +212,7 @@ public class FileInfo extends Loggable implements Serializable, DiskItem,
      * @param size
      */
     public void setSize(long size) {
+        validateSize(size);
         this.size = new Long(size);
     }
 
@@ -405,6 +409,7 @@ public class FileInfo extends Loggable implements Serializable, DiskItem,
     }
 
     public void setVersion(int version) {
+        validateVersion(version);
         this.version = version;
     }
 
@@ -415,6 +420,8 @@ public class FileInfo extends Loggable implements Serializable, DiskItem,
      * @param when
      */
     public void setModifiedInfo(MemberInfo by, Date when) {
+        validateModifiedBy(by);
+        validateLastModifiedDate(when);
         modifiedBy = by;
         lastModifiedDate = when;
     }
@@ -710,16 +717,33 @@ public class FileInfo extends Loggable implements Serializable, DiskItem,
      * @throws IllegalArgumentException
      *             if the state is corrupt
      */
-    public void validate() {
+    private void validate() {
         Reject.ifTrue(StringUtils.isEmpty(fileName), "Filename is empty");
         Reject.ifNull(size, "Size is null");
-        Reject.ifFalse(size >= 0, "Negative file size");
+        validateSize(size);
+        validateLastModifiedDate(lastModifiedDate);
+        Reject.ifNull(folderInfo, "FolderInfo is null");
+        validateVersion(version);
+    }
+
+    private void validateModifiedBy(MemberInfo modifiedBy) {
+        Reject.ifNull(modifiedBy, "ModifiedBy is null");
+    }
+
+    private void validateVersion(int version) {
+        Reject.ifTrue(version < 0, "Invalid version: " + version);
+    }
+
+    private void validateLastModifiedDate(Date lastModifiedDate) {
         Reject.ifNull(lastModifiedDate, "Modification date is null");
         if (lastModifiedDate.getTime() < 0) {
             throw new IllegalStateException("Modification date is invalid: "
                 + lastModifiedDate);
         }
-        Reject.ifNull(folderInfo, "FolderInfo is null");
+    }
+
+    private void validateSize(long size) {
+        Reject.ifFalse(size >= 0, "Negative file size");
     }
 
     // Serialization optimization *********************************************

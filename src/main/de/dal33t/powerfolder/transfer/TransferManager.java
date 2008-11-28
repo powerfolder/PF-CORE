@@ -19,33 +19,6 @@
  */
 package de.dal33t.powerfolder.transfer;
 
-import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Constants;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.event.ListenerSupportFactory;
-import de.dal33t.powerfolder.event.TransferManagerEvent;
-import de.dal33t.powerfolder.event.TransferManagerListener;
-import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.message.AbortUpload;
-import de.dal33t.powerfolder.message.DownloadQueued;
-import de.dal33t.powerfolder.message.FileChunk;
-import de.dal33t.powerfolder.message.RequestDownload;
-import de.dal33t.powerfolder.message.TransferStatus;
-import de.dal33t.powerfolder.net.ConnectionHandler;
-import de.dal33t.powerfolder.transfer.swarm.FileRecordProvider;
-import de.dal33t.powerfolder.transfer.swarm.VolatileFileRecordProvider;
-import de.dal33t.powerfolder.util.Format;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.TransferCounter;
-import de.dal33t.powerfolder.util.compare.MemberComparator;
-import de.dal33t.powerfolder.util.compare.ReverseComparator;
-import de.dal33t.powerfolder.util.delta.FilePartsRecord;
-import org.apache.commons.lang.Validate;
-
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -72,6 +45,34 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.apache.commons.lang.Validate;
+
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Constants;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.FolderRepository;
+import de.dal33t.powerfolder.event.ListenerSupportFactory;
+import de.dal33t.powerfolder.event.TransferManagerEvent;
+import de.dal33t.powerfolder.event.TransferManagerListener;
+import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.message.AbortUpload;
+import de.dal33t.powerfolder.message.DownloadQueued;
+import de.dal33t.powerfolder.message.FileChunk;
+import de.dal33t.powerfolder.message.RequestDownload;
+import de.dal33t.powerfolder.message.TransferStatus;
+import de.dal33t.powerfolder.net.ConnectionHandler;
+import de.dal33t.powerfolder.transfer.swarm.FileRecordProvider;
+import de.dal33t.powerfolder.transfer.swarm.VolatileFileRecordProvider;
+import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.TransferCounter;
+import de.dal33t.powerfolder.util.compare.MemberComparator;
+import de.dal33t.powerfolder.util.compare.ReverseComparator;
+import de.dal33t.powerfolder.util.delta.FilePartsRecord;
 
 /**
  * Transfer manager for downloading/uploading files
@@ -612,7 +613,8 @@ public class TransferManager extends PFComponent {
                 abortedUL = true;
             }
         }
-        for (Upload u : queuedUploads.toArray(new Upload[queuedUploads.size()])) {
+        for (Upload u : queuedUploads.toArray(new Upload[queuedUploads.size()]))
+        {
             if (u.getFile().equals(fInfo)) {
                 abortUpload(fInfo, u.getPartner());
                 abortedUL = true;
@@ -1183,9 +1185,6 @@ public class TransferManager extends PFComponent {
 
     // Download management ***************************************************
 
-    /**
-     * Be sure to hold downloadsLock when calling this method!
-     */
     private void removeDownload(final Download download) {
         final DownloadManager man = download.getDownloadManager();
         synchronized (man) {
@@ -1311,15 +1310,6 @@ public class TransferManager extends PFComponent {
             return null;
         }
 
-        // Check if the FileInfo is valid.
-        // (This wouldn't be necessary, if the info had already checked itself.)
-        try {
-            fInfo.validate();
-        } catch (Exception e) {
-            logSevere(e.getMessage() + ". " + fInfo.toDetailString(), e);
-            return null;
-        }
-
         FileInfo localFile = null;
         if (automatic) {
             // return null if in blacklist on automatic download
@@ -1367,15 +1357,6 @@ public class TransferManager extends PFComponent {
         }
 
         if (newestVersionFile != null && bestSources != null) {
-            // Check if the FileInfo is valid.
-            // (This wouldn't be necessary, if the info had already checked
-            // itself.)
-            try {
-                newestVersionFile.validate();
-            } catch (Exception e) {
-                logWarning(e.getMessage() + ". " + fInfo.toDetailString(), e);
-                return null;
-            }
             for (Member bestSource : bestSources) {
                 Download download;
                 download = new Download(this, newestVersionFile, automatic);
@@ -1943,8 +1924,8 @@ public class TransferManager extends PFComponent {
      * private boolean hasActiveDownloadsFrom(Member from) { synchronized
      * (downloads) { for (Iterator it = downloads.values().iterator();
      * it.hasNext();) { Download download = (Download) it.next(); if
-     * (download.isStarted() && download.getFrom().equals(from)) { return true; } } }
-     * return false; }
+     * (download.isStarted() && download.getFrom().equals(from)) { return true;
+     * } } } return false; }
      */
 
     /**
