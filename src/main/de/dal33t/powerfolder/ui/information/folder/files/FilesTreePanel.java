@@ -31,6 +31,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
+import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import java.awt.Component;
 
@@ -41,7 +42,8 @@ public class FilesTreePanel extends PFUIComponent implements DirectoryFilterList
 
     public FilesTreePanel(Controller controller, DirectoryFilter directoryFilter) {
         super(controller);
-        directoryTreeModel = new DirectoryTreeModel(controller);
+        DefaultMutableTreeNode root = new DefaultMutableTreeNode();
+        directoryTreeModel = new DirectoryTreeModel(controller, root);
         directoryFilter.addListener(this);
     }
 
@@ -66,6 +68,7 @@ public class FilesTreePanel extends PFUIComponent implements DirectoryFilterList
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
         JTree tree = new JTree(directoryTreeModel);
+        tree.setShowsRootHandles(true);
         tree.setCellRenderer(new MyTreeCellRenderer());
         JScrollPane scrollPane = new JScrollPane(tree);
         // Whitestrip
@@ -73,15 +76,11 @@ public class FilesTreePanel extends PFUIComponent implements DirectoryFilterList
         UIUtil.setZeroHeight(scrollPane);
         builder.add(scrollPane, cc.xy(1, 1));
 
-
         uiComponent = builder.getPanel();
         uiComponent.setBorder(BorderFactory.createEtchedBorder());
     }
 
     public void adviseOfChange(FilteredDirectoryEvent e) {
-        if (e.isFolderChanged()) {
-            // @todo reconstruct the whole tree.
-        }
         directoryTreeModel.setTree(e.getModel());
     }
 

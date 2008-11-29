@@ -20,69 +20,60 @@
 package de.dal33t.powerfolder.ui.information.folder.files;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PFUIComponent;
 
-import javax.swing.event.TreeModelEvent;
-import javax.swing.event.TreeModelListener;
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
-import javax.swing.tree.TreeModel;
-import javax.swing.tree.TreePath;
-import java.util.ArrayList;
-import java.util.List;
+import javax.swing.tree.TreeNode;
+import java.io.File;
 
 /**
  * Tree model to hold tree structure of the directory files.
  */
-public class DirectoryTreeModel extends PFUIComponent implements TreeModel {
+public class DirectoryTreeModel extends DefaultTreeModel {
 
-    private List<TreeModelListener> listeners;
-    private MutableTreeNode rootNode;
-
-    public DirectoryTreeModel(Controller controller) {
-        super(controller);
-        listeners = new ArrayList<TreeModelListener>();
-        rootNode = new DefaultMutableTreeNode();
-    }
-
-    public void addTreeModelListener(TreeModelListener l) {
-        listeners.add(l);
-    }
-
-    public Object getChild(Object parent, int index) {
-        return null;
-    }
-
-    public int getChildCount(Object parent) {
-        return 0;
-    }
-
-    public int getIndexOfChild(Object parent, Object child) {
-        return 0;
-    }
-
-    public Object getRoot() {
-        return rootNode;
-    }
-
-    public boolean isLeaf(Object node) {
-        return true;
-    }
-
-    public void removeTreeModelListener(TreeModelListener l) {
-        listeners.remove(l);
-    }
-
-    public void valueForPathChanged(TreePath path, Object newValue) {
+    public DirectoryTreeModel(Controller controller, TreeNode root) {
+        super(root);
     }
 
     public void setTree(FilteredDirectoryModel model) {
-        DirectoryTreeNodeUserObject uo = new DirectoryTreeNodeUserObject(
+        DirectoryTreeNodeUserObject currentUserObject = (DirectoryTreeNodeUserObject)
+                ((DefaultMutableTreeNode) getRoot()).getUserObject();
+        DirectoryTreeNodeUserObject newUserObject = new DirectoryTreeNodeUserObject(
                 model.getDisplayName(), model.getFile());
-        rootNode.setUserObject(uo);
-        for (TreeModelListener listener : listeners) {
-            listener.treeStructureChanged(new TreeModelEvent(this,
-                    new Object[]{uo}));
+
+        if (currentUserObject != null &&
+                currentUserObject.getFile().equals(newUserObject.getFile())) {
+            updateTree(model, currentUserObject, newUserObject);
+        } else {
+            // New tree.
+            ((MutableTreeNode) getRoot()).setUserObject(newUserObject);
+            DirectoryTreeNodeUserObject rootUO =
+                    new DirectoryTreeNodeUserObject(model.getDisplayName(),
+                            model.getFile());
+            DefaultMutableTreeNode newRoot = new DefaultMutableTreeNode(rootUO);
+            setRoot(newRoot);
+            buildTree((DefaultMutableTreeNode) getRoot(), model);
         }
+    }
+
+    private void buildTree(DefaultMutableTreeNode node,
+                           FilteredDirectoryModel model) {
+        for (FilteredDirectoryModel subModel : model.getSubdirectories()) {
+            File subFile = subModel.getFile();
+            String subDisplayName = subModel.getDisplayName();
+            DirectoryTreeNodeUserObject subUserObject =
+                    new DirectoryTreeNodeUserObject(subDisplayName, subFile);
+            DefaultMutableTreeNode subNode =
+                    new DefaultMutableTreeNode(subUserObject);
+            insertNodeInto(subNode, node, node.getChildCount());
+            buildTree(subNode, subModel);
+        }
+    }
+
+    private void updateTree(FilteredDirectoryModel model,
+                            DirectoryTreeNodeUserObject currentUserObject,
+                            DirectoryTreeNodeUserObject newUserObject) {
+        // @todo
     }
 }
