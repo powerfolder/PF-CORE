@@ -57,6 +57,8 @@ public class DirectoryFilter extends FilterModel {
 
     private final List<DirectoryFilterListener> listeners;
 
+    private final AtomicBoolean folderChanged = new AtomicBoolean();
+
     /**
      * Filter of a folder directory.
      *
@@ -101,6 +103,7 @@ public class DirectoryFilter extends FilterModel {
         }
         this.folder = folder;
         folder.addFolderListener(folderListener);
+        folderChanged.set(true);
         queueFilterEvent();
     }
 
@@ -212,8 +215,10 @@ public class DirectoryFilter extends FilterModel {
         long incomingFiles = incomingCount.get();
         long localFiles = localCount.get();
 
+        boolean changed = folderChanged.getAndSet(false);
         FilteredDirectoryEvent event = new FilteredDirectoryEvent(deletedFiles,
-                incomingFiles, localFiles, filteredDirectoryModel, recycledFiles);
+                incomingFiles, localFiles, filteredDirectoryModel, recycledFiles,
+                changed);
         for (DirectoryFilterListener listener : listeners) {
             listener.adviseOfChange(event);
         }

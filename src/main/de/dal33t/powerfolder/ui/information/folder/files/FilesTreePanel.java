@@ -79,6 +79,9 @@ public class FilesTreePanel extends PFUIComponent implements DirectoryFilterList
     }
 
     public void adviseOfChange(FilteredDirectoryEvent e) {
+        if (e.isFolderChanged()) {
+            // @todo reconstruct the whole tree.
+        }
         directoryTreeModel.setTree(e.getModel());
     }
 

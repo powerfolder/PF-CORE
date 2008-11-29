@@ -29,15 +29,17 @@ public class FilteredDirectoryEvent {
     private long recycledFiles;
     private long incomingFiles;
     private long localFiles;
+    private boolean folderChanged;
 
     public FilteredDirectoryEvent(long deletedFiles, long incomingFiles,
                                   long localFiles, FilteredDirectoryModel model,
-                                  long recycledFiles) {
+                                  long recycledFiles, boolean folderChanged) {
         this.deletedFiles = deletedFiles;
         this.incomingFiles = incomingFiles;
         this.localFiles = localFiles;
         this.model = model;
         this.recycledFiles = recycledFiles;
+        this.folderChanged = folderChanged;
     }
 
     public long getDeletedFiles() {
@@ -58,5 +60,9 @@ public class FilteredDirectoryEvent {
 
     public long getRecycledFiles() {
         return recycledFiles;
+    }
+
+    public boolean isFolderChanged() {
+        return folderChanged;
     }
 }
