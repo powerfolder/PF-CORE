@@ -35,6 +35,7 @@ public class FilteredDirectoryModel {
     private File file;
     private List<FileInfo> files;
     private List<FilteredDirectoryModel> subdirectories;
+    private boolean newFiles;
 
     /**
      * Constructor
@@ -48,6 +49,7 @@ public class FilteredDirectoryModel {
 
     /**
      * Returns the display name for the node.
+     *
      * @return
      */
     public String getDisplayName() {
@@ -56,7 +58,7 @@ public class FilteredDirectoryModel {
 
     /**
      * Returns the file.
-     * 
+     *
      * @return
      */
     public File getFile() {
@@ -65,6 +67,7 @@ public class FilteredDirectoryModel {
 
     /**
      * Gets a readonly copy of the directories files.
+     *
      * @return
      */
     public List<FileInfo> getFiles() {
@@ -79,8 +82,9 @@ public class FilteredDirectoryModel {
     }
 
     /**
-     * Answers if this or any of its children(or any of its children's
-     * children...) have and files.
+     * Answers if this or any of its children (or any of its children's
+     * children...) have any files.
+     *
      * @return
      */
     public boolean hasDescendantFiles() {
@@ -92,6 +96,35 @@ public class FilteredDirectoryModel {
                 return true;
             }
         }
+        return false;
+    }
+
+    /**
+     * Set true if this directory has ne files.
+     * 
+     * @param newFiles
+     */
+    public void setNewFiles(boolean newFiles) {
+        this.newFiles = newFiles;
+    }
+
+    /**
+     * Answers if this or any of its children (or any of its children's
+     * children...) have any new files.
+     *
+     * @return
+     */
+    public boolean hasDescendantNewFiles() {
+        if (newFiles) {
+            return true;
+        }
+
+        for (FilteredDirectoryModel subdirectory : subdirectories) {
+            if (subdirectory.hasDescendantNewFiles()) {
+                return true;
+            }
+        }
+
         return false;
     }
 }

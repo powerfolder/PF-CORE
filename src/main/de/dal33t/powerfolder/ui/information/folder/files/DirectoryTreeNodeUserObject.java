@@ -28,10 +28,13 @@ public class DirectoryTreeNodeUserObject {
 
     private String displayName;
     private File file;
+    private boolean newFiles;
 
-    public DirectoryTreeNodeUserObject(String displayName, File file) {
+    public DirectoryTreeNodeUserObject(String displayName, File file,
+                                       boolean newFiles) {
         this.displayName = displayName;
         this.file = file;
+        this.newFiles = newFiles;
     }
 
     public String getDisplayName() {
@@ -40,5 +43,9 @@ public class DirectoryTreeNodeUserObject {
 
     public File getFile() {
         return file;
+    }
+
+    public boolean hasNewFiles() {
+        return newFiles;
     }
 }

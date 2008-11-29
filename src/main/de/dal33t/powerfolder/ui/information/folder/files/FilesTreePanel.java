@@ -34,6 +34,7 @@ import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import java.awt.Component;
+import java.awt.Font;
 
 public class FilesTreePanel extends PFUIComponent implements DirectoryFilterListener {
 
@@ -96,6 +97,10 @@ public class FilesTreePanel extends PFUIComponent implements DirectoryFilterList
                 DirectoryTreeNodeUserObject dtnuo =
                         (DirectoryTreeNodeUserObject) userObject;
                 setText(dtnuo.getDisplayName());
+                if (dtnuo.hasNewFiles()) {
+                    setFont(new Font(getFont().getName(), Font.BOLD,
+                            getFont().getSize()));
+                }
                 setIcon(Icons.FOLDER);
             }
             return this;

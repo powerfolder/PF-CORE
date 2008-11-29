@@ -300,6 +300,9 @@ public class DirectoryFilter extends FilterModel {
                 if (showFile) {
                     filteredCount.incrementAndGet();
                     filteredDirectoryModel.getFiles().add(fileInfo);
+                    if (isNew) {
+                        filteredDirectoryModel.setNewFiles(true);
+                    }
                 }
             }
 

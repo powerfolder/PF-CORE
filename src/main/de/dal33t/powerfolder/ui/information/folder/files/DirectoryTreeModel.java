@@ -48,7 +48,7 @@ public class DirectoryTreeModel extends DefaultTreeModel {
             // New tree.
             DirectoryTreeNodeUserObject newRootUO =
                     new DirectoryTreeNodeUserObject(model.getDisplayName(),
-                            model.getFile());
+                            model.getFile(), model.hasDescendantNewFiles());
             DefaultMutableTreeNode newRoot = new DefaultMutableTreeNode(newRootUO);
             setRoot(newRoot);
             buildTree(model, (DefaultMutableTreeNode) getRoot());
@@ -67,8 +67,10 @@ public class DirectoryTreeModel extends DefaultTreeModel {
             if (subModel.hasDescendantFiles()) {
                 File subFile = subModel.getFile();
                 String subDisplayName = subModel.getDisplayName();
+                boolean subNewFiles = subModel.hasDescendantNewFiles();
                 DirectoryTreeNodeUserObject newSubUO =
-                        new DirectoryTreeNodeUserObject(subDisplayName, subFile);
+                        new DirectoryTreeNodeUserObject(subDisplayName, subFile,
+                                subNewFiles);
                 DefaultMutableTreeNode newSubNode =
                         new DefaultMutableTreeNode(newSubUO);
                 insertNodeInto(newSubNode, node, node.getChildCount());
@@ -109,8 +111,10 @@ public class DirectoryTreeModel extends DefaultTreeModel {
                 if (!found) {
                     File subFile = subModel.getFile();
                     String subDisplayName = subModel.getDisplayName();
+                    boolean subNewFiles = subModel.hasDescendantNewFiles();
                     DirectoryTreeNodeUserObject newSubUO =
-                            new DirectoryTreeNodeUserObject(subDisplayName, subFile);
+                            new DirectoryTreeNodeUserObject(subDisplayName,
+                                    subFile, subNewFiles);
                     DefaultMutableTreeNode newSubNode =
                             new DefaultMutableTreeNode(newSubUO);
                     insertNodeInto(newSubNode, node, node.getChildCount());
