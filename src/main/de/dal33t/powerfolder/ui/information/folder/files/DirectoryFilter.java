@@ -55,12 +55,6 @@ public class DirectoryFilter extends FilterModel {
     private final TransferManager transferManager;
     private final RecycleBin recycleBin;
 
-    private FilteredDirectoryModel model;
-    private long deletedFiles;
-    private long recycledFiles;
-    private long incomingFiles;
-    private long localFiles;
-
     private final List<DirectoryFilterListener> listeners;
 
     /**
@@ -73,7 +67,6 @@ public class DirectoryFilter extends FilterModel {
         folderListener = new MyFolderListener();
         running = new AtomicBoolean();
         pending = new AtomicBoolean();
-        model = new FilteredDirectoryModel("", null);
         transferManager = getController().getTransferManager();
         recycleBin = getController().getRecycleBin();
         listeners = new CopyOnWriteArrayList<DirectoryFilterListener>();
@@ -128,51 +121,6 @@ public class DirectoryFilter extends FilterModel {
     public void reset() {
         getSearchField().setValue("");
         queueFilterEvent();
-    }
-
-    /**
-     * Get count of deleted files.
-     *
-     * @return
-     */
-    public long getDeletedFiles() {
-        return deletedFiles;
-    }
-
-    /**
-     * Get count of incoming files.
-     *
-     * @return
-     */
-    public long getIncomingFiles() {
-        return incomingFiles;
-    }
-
-    /**
-     * Get count of locl files.
-     *
-     * @return
-     */
-    public long getLocalFiles() {
-        return localFiles;
-    }
-
-    /**
-     * Get count of recycled files.
-     *
-     * @return
-     */
-    public long getRecycledFiles() {
-        return recycledFiles;
-    }
-
-    /**
-     * Get the filtered file model.
-     * 
-     * @return
-     */
-    public FilteredDirectoryModel getModel() {
-        return model;
     }
 
     /**
@@ -259,14 +207,15 @@ public class DirectoryFilter extends FilterModel {
                 originalFileCount, filteredFileCount, deletedCount,
                 recycledCount, incomingCount, localCount);
 
-        model = filteredDirectoryModel;
-        deletedFiles = deletedCount.get();
-        recycledFiles = recycledCount.get();
-        incomingFiles = incomingCount.get();
-        localFiles = localCount.get();
+        long deletedFiles = deletedCount.get();
+        long recycledFiles = recycledCount.get();
+        long incomingFiles = incomingCount.get();
+        long localFiles = localCount.get();
 
+        FilteredDirectoryEvent event = new FilteredDirectoryEvent(deletedFiles,
+                incomingFiles, localFiles, filteredDirectoryModel, recycledFiles);
         for (DirectoryFilterListener listener : listeners) {
-            listener.adviseOfChange();
+            listener.adviseOfChange(event);
         }
 
         logFine("Filtered directory " + originalDirectory.getName() +

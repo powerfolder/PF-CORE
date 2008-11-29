@@ -38,12 +38,10 @@ public class FilesTreePanel extends PFUIComponent implements DirectoryFilterList
 
     private JPanel uiComponent;
     private DirectoryTreeModel directoryTreeModel;
-    private DirectoryFilter directoryFilter;
 
     public FilesTreePanel(Controller controller, DirectoryFilter directoryFilter) {
         super(controller);
         directoryTreeModel = new DirectoryTreeModel(controller);
-        this.directoryFilter = directoryFilter;
         directoryFilter.addListener(this);
     }
 
@@ -80,8 +78,8 @@ public class FilesTreePanel extends PFUIComponent implements DirectoryFilterList
         uiComponent.setBorder(BorderFactory.createEtchedBorder());
     }
 
-    public void adviseOfChange() {
-        directoryTreeModel.setTree(directoryFilter.getModel());
+    public void adviseOfChange(FilteredDirectoryEvent e) {
+        directoryTreeModel.setTree(e.getModel());
     }
 
     private class MyTreeCellRenderer extends DefaultTreeCellRenderer {

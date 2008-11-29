@@ -24,5 +24,5 @@ package de.dal33t.powerfolder.ui.information.folder.files;
  */
 public interface DirectoryFilterListener {
 
-    void adviseOfChange();
+    void adviseOfChange(FilteredDirectoryEvent event);
 }

@@ -154,12 +154,9 @@ public class FilesTab extends PFUIComponent
     private void update() {
     }
 
-
-    public void adviseOfChange() {
-        statsPanel.setStats(directoryFilter.getLocalFiles(),
-                directoryFilter.getIncomingFiles(),
-                directoryFilter.getDeletedFiles(),
-                directoryFilter.getRecycledFiles());
+    public void adviseOfChange(FilteredDirectoryEvent e) {
+        statsPanel.setStats(e.getLocalFiles(), e.getIncomingFiles(),
+                e.getDeletedFiles(), e.getRecycledFiles());
     }
 
     /**
