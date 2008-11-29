@@ -43,7 +43,7 @@ public class FilesTreePanel extends PFUIComponent implements DirectoryFilterList
     public FilesTreePanel(Controller controller, DirectoryFilter directoryFilter) {
         super(controller);
         DefaultMutableTreeNode root = new DefaultMutableTreeNode();
-        directoryTreeModel = new DirectoryTreeModel(controller, root);
+        directoryTreeModel = new DirectoryTreeModel(root);
         directoryFilter.addListener(this);
     }
 
@@ -68,7 +68,6 @@ public class FilesTreePanel extends PFUIComponent implements DirectoryFilterList
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
         JTree tree = new JTree(directoryTreeModel);
-        tree.setShowsRootHandles(true);
         tree.setCellRenderer(new MyTreeCellRenderer());
         JScrollPane scrollPane = new JScrollPane(tree);
         // Whitestrip

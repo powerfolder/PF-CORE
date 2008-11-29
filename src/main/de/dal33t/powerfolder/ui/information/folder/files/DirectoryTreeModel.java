@@ -19,11 +19,8 @@
 */
 package de.dal33t.powerfolder.ui.information.folder.files;
 
-import de.dal33t.powerfolder.Controller;
-
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
 import java.io.File;
 
@@ -32,48 +29,116 @@ import java.io.File;
  */
 public class DirectoryTreeModel extends DefaultTreeModel {
 
-    public DirectoryTreeModel(Controller controller, TreeNode root) {
+    public DirectoryTreeModel(TreeNode root) {
         super(root);
     }
 
+    /**
+     * Sets the model of the directory structure. Tree model is updated.
+     * @param model
+     */
     public void setTree(FilteredDirectoryModel model) {
-        DirectoryTreeNodeUserObject currentUserObject = (DirectoryTreeNodeUserObject)
-                ((DefaultMutableTreeNode) getRoot()).getUserObject();
-        DirectoryTreeNodeUserObject newUserObject = new DirectoryTreeNodeUserObject(
-                model.getDisplayName(), model.getFile());
+        DirectoryTreeNodeUserObject rootUO =
+                (DirectoryTreeNodeUserObject) ((DefaultMutableTreeNode) getRoot())
+                        .getUserObject();
 
-        if (currentUserObject != null &&
-                currentUserObject.getFile().equals(newUserObject.getFile())) {
-            updateTree(model, currentUserObject, newUserObject);
+        if (rootUO != null && rootUO.getFile().equals(model.getFile())) {
+            updateTree(model, (DefaultMutableTreeNode) getRoot());
         } else {
             // New tree.
-            ((MutableTreeNode) getRoot()).setUserObject(newUserObject);
-            DirectoryTreeNodeUserObject rootUO =
+            DirectoryTreeNodeUserObject newRootUO =
                     new DirectoryTreeNodeUserObject(model.getDisplayName(),
                             model.getFile());
-            DefaultMutableTreeNode newRoot = new DefaultMutableTreeNode(rootUO);
+            DefaultMutableTreeNode newRoot = new DefaultMutableTreeNode(newRootUO);
             setRoot(newRoot);
-            buildTree((DefaultMutableTreeNode) getRoot(), model);
+            buildTree(model, (DefaultMutableTreeNode) getRoot());
         }
     }
 
-    private void buildTree(DefaultMutableTreeNode node,
-                           FilteredDirectoryModel model) {
+    /**
+     * Builds a tree structure for a node from a directory model.
+     *
+     * @param model
+     * @param node
+     */
+    private void buildTree(FilteredDirectoryModel model,
+                           DefaultMutableTreeNode node) {
         for (FilteredDirectoryModel subModel : model.getSubdirectories()) {
-            File subFile = subModel.getFile();
-            String subDisplayName = subModel.getDisplayName();
-            DirectoryTreeNodeUserObject subUserObject =
-                    new DirectoryTreeNodeUserObject(subDisplayName, subFile);
-            DefaultMutableTreeNode subNode =
-                    new DefaultMutableTreeNode(subUserObject);
-            insertNodeInto(subNode, node, node.getChildCount());
-            buildTree(subNode, subModel);
+            if (subModel.hasDescendantFiles()) {
+                File subFile = subModel.getFile();
+                String subDisplayName = subModel.getDisplayName();
+                DirectoryTreeNodeUserObject newSubUO =
+                        new DirectoryTreeNodeUserObject(subDisplayName, subFile);
+                DefaultMutableTreeNode newSubNode =
+                        new DefaultMutableTreeNode(newSubUO);
+                insertNodeInto(newSubNode, node, node.getChildCount());
+                buildTree(subModel, newSubNode);
+            }
         }
     }
 
+    /**
+     * Updated a tree structure for a node from a directory model.
+     *
+     * @param model
+     * @param node
+     */
     private void updateTree(FilteredDirectoryModel model,
-                            DirectoryTreeNodeUserObject currentUserObject,
-                            DirectoryTreeNodeUserObject newUserObject) {
-        // @todo
+                            DefaultMutableTreeNode node) {
+
+        // Search for missing nodes to insert.
+        for (FilteredDirectoryModel subModel : model.getSubdirectories()) {
+
+            if (subModel.hasDescendantFiles()) {
+                boolean found = false;
+                int childCount = node.getChildCount();
+                for (int i = 0; i < childCount; i++) {
+                    DefaultMutableTreeNode subNode = (DefaultMutableTreeNode)
+                            node.getChildAt(i);
+                    DirectoryTreeNodeUserObject subUO = (DirectoryTreeNodeUserObject)
+                            subNode.getUserObject();
+                    if (subModel.getFile().equals(subUO.getFile())) {
+                        found = true;
+
+                        // Side effect - this matching node needs to be updated.
+                        updateTree(subModel, subNode);
+                        break;
+                    }
+                }
+                // Insert missing nodes.
+                if (!found) {
+                    File subFile = subModel.getFile();
+                    String subDisplayName = subModel.getDisplayName();
+                    DirectoryTreeNodeUserObject newSubUO =
+                            new DirectoryTreeNodeUserObject(subDisplayName, subFile);
+                    DefaultMutableTreeNode newSubNode =
+                            new DefaultMutableTreeNode(newSubUO);
+                    insertNodeInto(newSubNode, node, node.getChildCount());
+                    buildTree(subModel, newSubNode);
+                }
+            }
+        }
+
+        // Search for extra nodes to remove.
+        for (int i = 0; i < node.getChildCount(); i++) {
+            DefaultMutableTreeNode subNode = (DefaultMutableTreeNode)
+                    node.getChildAt(i);
+            DirectoryTreeNodeUserObject subUO = (DirectoryTreeNodeUserObject)
+                    subNode.getUserObject();
+            boolean found = false;
+            for (FilteredDirectoryModel subModel : model.getSubdirectories()) {
+                if (subModel.getFile().equals(subUO.getFile())) {
+                    if (subModel.hasDescendantFiles()) {
+                        found = true;
+                        break;
+                    }
+                }
+            }
+
+            // Remove extra nodes.
+            if (!found) {
+                removeNodeFromParent(subNode);
+            }
+        }
     }
 }

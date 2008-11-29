@@ -77,4 +77,21 @@ public class FilteredDirectoryModel {
     public List<FilteredDirectoryModel> getSubdirectories() {
         return subdirectories;
     }
+
+    /**
+     * Answers if this or any of its children(or any of its children's
+     * children...) have and files.
+     * @return
+     */
+    public boolean hasDescendantFiles() {
+        if (!files.isEmpty()) {
+            return true;
+        }
+        for (FilteredDirectoryModel subdirectory : subdirectories) {
+            if (subdirectory.hasDescendantFiles()) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
