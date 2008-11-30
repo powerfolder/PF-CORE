@@ -25,6 +25,8 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.actionold.HasDetailsPanel;
 import de.dal33t.powerfolder.ui.information.folder.files.FileDetailsPanel;
@@ -43,6 +45,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel, T
 
     private JPanel uiComponent;
     private FileDetailsPanel fileDetailsPanel;
+    private Folder folder;
 
     public FilesTablePanel(Controller controller) {
         super(controller);
@@ -76,6 +79,15 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel, T
         builder.add(new JTable(), cc.xy(1, 5));
         builder.add(fileDetailsPanel.getUiComponent(), cc.xy(1, 7));
         uiComponent = builder.getPanel();
+    }
+
+    /**
+     * Set the panel with the selected folder.
+     *
+     * @param folder
+     */
+    public void setFolder(Folder folder) {
+        this.folder = folder;
     }
 
     /**
@@ -142,7 +154,9 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel, T
      * this table panel.
      */
     private void makeSelection(File file) {
+        if (folder == null) {
+            return;
+        }
+        Directory directory = folder.getDirectory();
     }
-
-
 }

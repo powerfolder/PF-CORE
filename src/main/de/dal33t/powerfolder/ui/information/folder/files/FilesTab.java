@@ -47,9 +47,7 @@ import java.beans.PropertyChangeListener;
 public class FilesTab extends PFUIComponent
         implements FolderInformationTab, DirectoryFilterListener {
     private JPanel uiComponent;
-    private Folder folder;
     private JSplitPane splitPane;
-    private FilesTreePanel treePanel;
     private FilesTablePanel tablePanel;
     private FilterTextField filterTextField;
     private JComboBox filterSelectionComboBox;
@@ -66,7 +64,8 @@ public class FilesTab extends PFUIComponent
         statsPanel = new FilesStatsPanel(getController());
         directoryFilter = new DirectoryFilter(controller);
         directoryFilter.addListener(this);
-        treePanel = new FilesTreePanel(controller, directoryFilter);
+        FilesTreePanel treePanel = new FilesTreePanel(controller,
+                directoryFilter);
         tablePanel = new FilesTablePanel(controller);
         treePanel.addTreeSelectionListener(tablePanel);
         splitPane = new UIFSplitPane(JSplitPane.HORIZONTAL_SPLIT,
@@ -102,9 +101,9 @@ public class FilesTab extends PFUIComponent
      * @param folderInfo
      */
     public void setFolderInfo(FolderInfo folderInfo) {
-        folder = getController().getFolderRepository().getFolder(folderInfo);
+        Folder folder = getController().getFolderRepository().getFolder(folderInfo);
+        tablePanel.setFolder(folder);
         directoryFilter.setFolder(folder);
-        update();
     }
 
     /**
@@ -149,12 +148,6 @@ public class FilesTab extends PFUIComponent
         builder.add(filterTextField.getUIComponent(), cc.xy(3, 1));
         builder.add(filterSelectionComboBox, cc.xy(1, 1));
         return builder.getPanel();
-    }
-
-    /**
-     * refreshes the UI elements with the current data
-     */
-    private void update() {
     }
 
     public void adviseOfChange(FilteredDirectoryEvent e) {
