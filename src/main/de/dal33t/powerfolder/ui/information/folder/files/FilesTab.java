@@ -109,6 +109,7 @@ public class FilesTab extends PFUIComponent
     public void setFolderInfo(FolderInfo folderInfo) {
         Folder folder = getController().getFolderRepository().getFolder(folderInfo);
         directoryFilter.setFolder(folder);
+        tablePanel.setFolder(folder);
     }
 
     /**

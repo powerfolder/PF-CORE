@@ -25,6 +25,7 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.actionold.HasDetailsPanel;
 import de.dal33t.powerfolder.ui.information.folder.files.DirectoryFilterListener;
@@ -46,10 +47,12 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
 
     private JPanel uiComponent;
     private FileDetailsPanel fileDetailsPanel;
+    private FilesTableModel tableModel;
 
     public FilesTablePanel(Controller controller) {
         super(controller);
-        fileDetailsPanel = new FileDetailsPanel(getController());
+        fileDetailsPanel = new FileDetailsPanel(controller);
+        tableModel = new FilesTableModel(controller);
     }
 
     /**
@@ -106,8 +109,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         // Try to find the correct FilteredDirectoryModel for the selected
         // directory.
         FilteredDirectoryModel filteredDirectoryModel = event.getModel();
-        System.out.println("hghg set model " + filteredDirectoryModel);
-        // @todo tableModel.setFilteredDirectoryModel(filteredDirectoryModel);
+        tableModel.setFilteredDirectoryModel(filteredDirectoryModel);
     }
 
     /**
@@ -126,16 +128,18 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
                 if (userObject instanceof DirectoryTreeNodeUserObject) {
                     DirectoryTreeNodeUserObject dtnuo =
                             (DirectoryTreeNodeUserObject) userObject;
-                    // @todo tableModel.setSelectedDirectory(dtnuo.getFile());
-                    System.out.println("hghg set dir " + dtnuo.getFile());
+                    tableModel.setSelectedDirectory(dtnuo.getFile());
                     return;
                 }
             }
         }
 
         // Failed to set file - clear selection.
-        System.out.println("hghg set dir " + null);
-        // @todo tableModel.setSelectedDirectory(null);
+        tableModel.setSelectedDirectory(null);
+    }
+
+    public void setFolder(Folder folder) {
+        tableModel.setFolder(folder);
     }
 
     private class DetailsAction extends BaseAction {
