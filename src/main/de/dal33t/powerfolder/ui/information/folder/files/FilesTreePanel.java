@@ -100,6 +100,9 @@ public class FilesTreePanel extends PFUIComponent implements DirectoryFilterList
                 if (dtnuo.hasNewFiles()) {
                     setFont(new Font(getFont().getName(), Font.BOLD,
                             getFont().getSize()));
+                } else {
+                    setFont(new Font(getFont().getName(), Font.PLAIN, 
+                            getFont().getSize()));
                 }
                 setIcon(Icons.FOLDER);
             }
