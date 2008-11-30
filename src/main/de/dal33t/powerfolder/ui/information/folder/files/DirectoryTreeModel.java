@@ -88,6 +88,17 @@ public class DirectoryTreeModel extends DefaultTreeModel {
     private void updateTree(FilteredDirectoryModel model,
                             DefaultMutableTreeNode node) {
 
+        // Has the node changed? Like newFiles changed perhaps.
+        DirectoryTreeNodeUserObject candidateNode =
+                new DirectoryTreeNodeUserObject(model.getDisplayName(),
+                        model.getFile(), model.hasDescendantNewFiles());
+        DirectoryTreeNodeUserObject existingNode =
+                (DirectoryTreeNodeUserObject) node.getUserObject();
+        if (!candidateNode.equals(existingNode)) {
+            node.setUserObject(candidateNode);
+            nodeChanged(node);
+        }
+
         // Search for missing nodes to insert.
         for (FilteredDirectoryModel subModel : model.getSubdirectories()) {
 
@@ -97,8 +108,8 @@ public class DirectoryTreeModel extends DefaultTreeModel {
                 for (int i = 0; i < childCount; i++) {
                     DefaultMutableTreeNode subNode = (DefaultMutableTreeNode)
                             node.getChildAt(i);
-                    DirectoryTreeNodeUserObject subUO = (DirectoryTreeNodeUserObject)
-                            subNode.getUserObject();
+                    DirectoryTreeNodeUserObject subUO =
+                            (DirectoryTreeNodeUserObject) subNode.getUserObject();
                     if (subModel.getFile().equals(subUO.getFile())) {
                         found = true;
 
@@ -107,7 +118,8 @@ public class DirectoryTreeModel extends DefaultTreeModel {
                         break;
                     }
                 }
-                // Insert missing nodes.
+
+                // Insert missing node.
                 if (!found) {
                     File subFile = subModel.getFile();
                     String subDisplayName = subModel.getDisplayName();
@@ -139,7 +151,7 @@ public class DirectoryTreeModel extends DefaultTreeModel {
                 }
             }
 
-            // Remove extra nodes.
+            // Remove extra node.
             if (!found) {
                 removeNodeFromParent(subNode);
             }

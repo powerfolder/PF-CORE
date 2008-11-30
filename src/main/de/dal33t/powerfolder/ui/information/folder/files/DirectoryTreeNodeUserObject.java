@@ -26,9 +26,9 @@ import java.io.File;
  */
 public class DirectoryTreeNodeUserObject {
 
-    private String displayName;
-    private File file;
-    private boolean newFiles;
+    private final String displayName;
+    private final File file;
+    private final boolean newFiles;
 
     public DirectoryTreeNodeUserObject(String displayName, File file,
                                        boolean newFiles) {
@@ -47,5 +47,35 @@ public class DirectoryTreeNodeUserObject {
 
     public boolean hasNewFiles() {
         return newFiles;
+    }
+
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        DirectoryTreeNodeUserObject that = (DirectoryTreeNodeUserObject) o;
+
+        if (newFiles != that.newFiles) {
+            return false;
+        }
+        if (!displayName.equals(that.displayName)) {
+            return false;
+        }
+        if (!file.equals(that.file)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public int hashCode() {
+        int result = displayName.hashCode();
+        result = 31 * result + file.hashCode();
+        result = 31 * result + (newFiles ? 1 : 0);
+        return result;
     }
 }
