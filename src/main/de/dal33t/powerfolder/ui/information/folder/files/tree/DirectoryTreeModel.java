@@ -17,7 +17,9 @@
 *
 * $Id: DirectoryTreeModel.java 5816 2008-11-12 13:13:43Z harry $
 */
-package de.dal33t.powerfolder.ui.information.folder.files;
+package de.dal33t.powerfolder.ui.information.folder.files.tree;
+
+import de.dal33t.powerfolder.ui.information.folder.files.FilteredDirectoryModel;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;

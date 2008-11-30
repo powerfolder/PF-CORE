@@ -17,7 +17,7 @@
 *
 * $Id: DirectoryTreeNodeUserObject.java 5766 2008-11-07 22:52:58Z harry $
 */
-package de.dal33t.powerfolder.ui.information.folder.files;
+package de.dal33t.powerfolder.ui.information.folder.files.tree;
 
 import java.io.File;
 

@@ -17,7 +17,7 @@
 *
 * $Id: FilesTablePanel.java 5457 2008-10-17 14:25:41Z harry $
 */
-package de.dal33t.powerfolder.ui.information.folder.files;
+package de.dal33t.powerfolder.ui.information.folder.files.table;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.DefaultFormBuilder;
@@ -27,6 +27,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.actionold.HasDetailsPanel;
+import de.dal33t.powerfolder.ui.information.folder.files.FileDetailsPanel;
 
 import javax.swing.JPanel;
 import javax.swing.JTable;

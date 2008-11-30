@@ -28,6 +28,8 @@ import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.information.folder.FolderInformationTab;
+import de.dal33t.powerfolder.ui.information.folder.files.tree.FilesTreePanel;
+import de.dal33t.powerfolder.ui.information.folder.files.table.FilesTablePanel;
 import de.dal33t.powerfolder.ui.widget.FilterTextField;
 import de.dal33t.powerfolder.util.Translation;
 

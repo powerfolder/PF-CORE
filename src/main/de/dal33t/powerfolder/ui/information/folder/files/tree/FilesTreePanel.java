@@ -17,7 +17,7 @@
 *
 * $Id: FilesTreePanel.java 5457 2008-10-17 14:25:41Z harry $
 */
-package de.dal33t.powerfolder.ui.information.folder.files;
+package de.dal33t.powerfolder.ui.information.folder.files.tree;
 
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -25,6 +25,11 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.information.folder.files.tree.DirectoryTreeModel;
+import de.dal33t.powerfolder.ui.information.folder.files.tree.DirectoryTreeNodeUserObject;
+import de.dal33t.powerfolder.ui.information.folder.files.DirectoryFilterListener;
+import de.dal33t.powerfolder.ui.information.folder.files.DirectoryFilter;
+import de.dal33t.powerfolder.ui.information.folder.files.FilteredDirectoryEvent;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 import javax.swing.BorderFactory;
