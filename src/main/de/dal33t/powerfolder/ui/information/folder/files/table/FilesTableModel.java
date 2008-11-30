@@ -20,18 +20,21 @@
 package de.dal33t.powerfolder.ui.information.folder.files.table;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.DiskItem;
 import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.ui.information.folder.files.FilteredDirectoryModel;
 
 import javax.swing.event.TableModelListener;
+import javax.swing.event.TableModelEvent;
 import javax.swing.table.TableModel;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Class to model files selected from the tree.
@@ -40,7 +43,9 @@ public class FilesTableModel extends PFComponent implements TableModel {
 
     private Folder folder;
     private File selectedDirectory;
-    private final Map<File, List<FileInfo>> directories;
+    private final Map<File, List<DiskItem>> directories;
+    private final List<DiskItem> diskItems;
+    private final List<TableModelListener> listeners;
 
     /**
      * Constructor
@@ -49,7 +54,9 @@ public class FilesTableModel extends PFComponent implements TableModel {
      */
     public FilesTableModel(Controller controller) {
         super(controller);
-        directories = new ConcurrentHashMap<File, List<FileInfo>>();
+        directories = new ConcurrentHashMap<File, List<DiskItem>>();
+        diskItems = new CopyOnWriteArrayList<DiskItem>();
+        listeners = new CopyOnWriteArrayList<TableModelListener>();
     }
 
     /**
@@ -90,16 +97,16 @@ public class FilesTableModel extends PFComponent implements TableModel {
      */
     private void walkFilteredDirectoryModel(FilteredDirectoryModel model) {
         File file = model.getFile();
-        List<FileInfo> fileInfoList = new ArrayList<FileInfo>();
-        fileInfoList.addAll(model.getFiles());
-        directories.put(file, fileInfoList);
+        List<DiskItem> diskItemList = new ArrayList<DiskItem>();
+        diskItemList.addAll(model.getFiles());
+        directories.put(file, diskItemList);
         for (FilteredDirectoryModel subModel : model.getSubdirectories()) {
             walkFilteredDirectoryModel(subModel);
         }
     }
 
     /**
-     * Update the model in response to a chage.
+     * Update the model in response to a change.
      */
     private void update() {
 
@@ -115,35 +122,98 @@ public class FilesTableModel extends PFComponent implements TableModel {
             return;
         }
 
+        boolean found = false;
         for (File file : directories.keySet()) {
             if (selectedDirectory.equals(file)) {
-                logInfo("Found " + file + " in directories");
-                // @todo - brain dead - I need a break.
+                logInfo("Found " + selectedDirectory + " in directories");
+                found = true;
+                break;
             }
+        }
+
+        if (!found) {
+            return;
+        }
+
+        List<DiskItem> tempList = new ArrayList<DiskItem>(diskItems.size());
+        tempList.addAll(diskItems);
+
+        // Look for extra items in the selectedDiskItems list to insert.
+        List<DiskItem> selectedDiskItems = directories.get(selectedDirectory);
+        for (DiskItem selectedDiskItem : selectedDiskItems) {
+            found = false;
+            int foundRow = -1;
+            int rowCount = 0;
+            for (DiskItem diskItem : tempList) {
+                if (diskItem.equals(selectedDiskItem)) {
+                    found = true;
+                    foundRow = rowCount;
+                    break;
+                }
+                rowCount++;
+            }
+            if (!found) {
+                diskItems.add(selectedDiskItem);
+                modelChanged(foundRow, true);
+            }
+        }
+
+        // Look for extra items in the diskItem list to remove.
+        int rowCount = 0;
+        for (DiskItem diskItem : tempList) {
+            found = false;
+            for (DiskItem selectedDiskItem : selectedDiskItems) {
+                if (diskItem.equals(selectedDiskItem)) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                diskItems.remove(diskItem);
+                modelChanged(rowCount, false);
+            }
+            rowCount++;
         }
     }
 
+    private void modelChanged(int row, boolean insert) {
+        final TableModelEvent e = new TableModelEvent(this, row, row,
+                TableModelEvent.ALL_COLUMNS,
+                insert ? TableModelEvent.INSERT : TableModelEvent.DELETE);
+        Runnable runner = new Runnable() {
+            public void run() {
+                synchronized (listeners) {
+                    for (TableModelListener listener : listeners) {
+                        listener.tableChanged(e);
+                    }
+                }
+            }
+        };
+        UIUtil.invokeLaterInEDT(runner);
+    }
+
     public void addTableModelListener(TableModelListener l) {
+        listeners.add(l);
     }
 
     public Class<?> getColumnClass(int columnIndex) {
-        return null;
+        return DiskItem.class;
     }
 
     public int getColumnCount() {
-        return 0;
+        return 1;
     }
 
     public String getColumnName(int columnIndex) {
-        return null;
+        return "Test";
     }
 
     public int getRowCount() {
-        return 0;
+        return diskItems.size();
     }
 
     public Object getValueAt(int rowIndex, int columnIndex) {
-        return null;
+        return diskItems.get(rowIndex);
     }
 
     public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -151,8 +221,10 @@ public class FilesTableModel extends PFComponent implements TableModel {
     }
 
     public void removeTableModelListener(TableModelListener l) {
+        listeners.remove(l);
     }
 
     public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+        throw new UnsupportedOperationException("Cannot modify FilesTableModel");
     }
 }

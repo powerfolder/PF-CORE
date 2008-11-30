@@ -24,6 +24,7 @@ import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.DiskItem;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.ui.action.BaseAction;
@@ -39,8 +40,10 @@ import javax.swing.JTable;
 import javax.swing.JToggleButton;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.awt.event.ActionEvent;
+import java.awt.Component;
 
 public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         TreeSelectionListener, DirectoryFilterListener {
@@ -77,9 +80,12 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
+        JTable table = new JTable(tableModel);
+        table.setDefaultRenderer(DiskItem.class, new MyDefaultTreeCellRenderer());
+
         builder.add(createToolBar(), cc.xy(1, 1));
         builder.addSeparator(null, cc.xy(1, 3));
-        builder.add(new JTable(), cc.xy(1, 5));
+        builder.add(table, cc.xy(1, 5));
         builder.add(fileDetailsPanel.getUiComponent(), cc.xy(1, 7));
         uiComponent = builder.getPanel();
     }
@@ -153,4 +159,17 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         }
     }
 
+    private class MyDefaultTreeCellRenderer extends DefaultTableCellRenderer {
+
+            public Component getTableCellRendererComponent(JTable table, Object value,
+                boolean isSelected, boolean hasFocus, int row, int column) {
+                if (value instanceof DiskItem) {
+                    DiskItem diskItem = (DiskItem) value;
+                    setText(diskItem.getName());
+                } else {
+                    setText("");
+                }
+                return this;
+            }
+    }
 }
