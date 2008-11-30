@@ -25,7 +25,6 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.ui.information.folder.files.DirectoryFilter;
 import de.dal33t.powerfolder.ui.information.folder.files.DirectoryFilterListener;
 import de.dal33t.powerfolder.ui.information.folder.files.FilteredDirectoryEvent;
 import de.dal33t.powerfolder.util.ui.UIUtil;
@@ -47,14 +46,13 @@ public class FilesTreePanel extends PFUIComponent implements DirectoryFilterList
     private DirectoryTreeModel directoryTreeModel;
     private JTree tree;
 
-    public FilesTreePanel(Controller controller, DirectoryFilter directoryFilter) {
+    public FilesTreePanel(Controller controller) {
         super(controller);
         DefaultMutableTreeNode root = new DefaultMutableTreeNode();
         directoryTreeModel = new DirectoryTreeModel(root);
         tree = new JTree(directoryTreeModel);
         tree.setCellRenderer(new MyTreeCellRenderer());
         tree.getSelectionModel().setSelectionMode(SINGLE_TREE_SELECTION);
-        directoryFilter.addListener(this);
     }
 
     /**

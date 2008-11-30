@@ -25,11 +25,12 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.actionold.HasDetailsPanel;
+import de.dal33t.powerfolder.ui.information.folder.files.DirectoryFilterListener;
 import de.dal33t.powerfolder.ui.information.folder.files.FileDetailsPanel;
+import de.dal33t.powerfolder.ui.information.folder.files.FilteredDirectoryEvent;
+import de.dal33t.powerfolder.ui.information.folder.files.FilteredDirectoryModel;
 import de.dal33t.powerfolder.ui.information.folder.files.tree.DirectoryTreeNodeUserObject;
 
 import javax.swing.JPanel;
@@ -39,13 +40,12 @@ import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.awt.event.ActionEvent;
-import java.io.File;
 
-public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel, TreeSelectionListener {
+public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
+        TreeSelectionListener, DirectoryFilterListener {
 
     private JPanel uiComponent;
     private FileDetailsPanel fileDetailsPanel;
-    private Folder folder;
 
     public FilesTablePanel(Controller controller) {
         super(controller);
@@ -82,15 +82,6 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel, T
     }
 
     /**
-     * Set the panel with the selected folder.
-     *
-     * @param folder
-     */
-    public void setFolder(Folder folder) {
-        this.folder = folder;
-    }
-
-    /**
      * @return the toolbar
      */
     private JPanel createToolBar() {
@@ -107,15 +98,16 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel, T
                 !fileDetailsPanel.getUiComponent().isVisible());
     }
 
-    private class DetailsAction extends BaseAction {
-
-        DetailsAction(Controller controller) {
-            super("action_details", controller);
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            toggleDetails();
-        }
+    /**
+     * Find the correct model in the tree to display when a change occurs.
+     * @param event
+     */
+    public void adviseOfChange(FilteredDirectoryEvent event) {
+        // Try to find the correct FilteredDirectoryModel for the selected
+        // directory.
+        FilteredDirectoryModel filteredDirectoryModel = event.getModel();
+        System.out.println("hghg set model " + filteredDirectoryModel);
+        // @todo tableModel.setFilteredDirectoryModel(filteredDirectoryModel);
     }
 
     /**
@@ -134,29 +126,27 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel, T
                 if (userObject instanceof DirectoryTreeNodeUserObject) {
                     DirectoryTreeNodeUserObject dtnuo =
                             (DirectoryTreeNodeUserObject) userObject;
-                    makeSelection(dtnuo.getFile());
+                    // @todo tableModel.setSelectedDirectory(dtnuo.getFile());
+                    System.out.println("hghg set dir " + dtnuo.getFile());
+                    return;
                 }
             }
-        } else {
-            clearSelection();
+        }
+
+        // Failed to set file - clear selection.
+        System.out.println("hghg set dir " + null);
+        // @todo tableModel.setSelectedDirectory(null);
+    }
+
+    private class DetailsAction extends BaseAction {
+
+        DetailsAction(Controller controller) {
+            super("action_details", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            toggleDetails();
         }
     }
 
-    /**
-     * Controlling selection from tree has been lost, so clear selection in
-     * this table panel.
-     */
-    private void clearSelection() {
-    }
-
-    /**
-     * Controlling selection from tree has been made, so set selection in 
-     * this table panel.
-     */
-    private void makeSelection(File file) {
-        if (folder == null) {
-            return;
-        }
-        Directory directory = folder.getDirectory();
-    }
 }

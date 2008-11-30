@@ -61,13 +61,19 @@ public class FilesTab extends PFUIComponent
      */
     public FilesTab(Controller controller) {
         super(controller);
+
         statsPanel = new FilesStatsPanel(getController());
+
         directoryFilter = new DirectoryFilter(controller);
         directoryFilter.addListener(this);
-        FilesTreePanel treePanel = new FilesTreePanel(controller,
-                directoryFilter);
+
+        FilesTreePanel treePanel = new FilesTreePanel(controller);
+        directoryFilter.addListener(treePanel);
+
         tablePanel = new FilesTablePanel(controller);
+        directoryFilter.addListener(tablePanel);
         treePanel.addTreeSelectionListener(tablePanel);
+
         splitPane = new UIFSplitPane(JSplitPane.HORIZONTAL_SPLIT,
                 treePanel.getUIComponent(), tablePanel.getUIComponent());
         int dividerLocation = getController().getPreferences().getInt(
@@ -102,7 +108,6 @@ public class FilesTab extends PFUIComponent
      */
     public void setFolderInfo(FolderInfo folderInfo) {
         Folder folder = getController().getFolderRepository().getFolder(folderInfo);
-        tablePanel.setFolder(folder);
         directoryFilter.setFolder(folder);
     }
 
