@@ -22,39 +22,105 @@ package de.dal33t.powerfolder.ui.information.folder.files.table;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.ui.information.folder.files.FilteredDirectoryModel;
 
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 import java.io.File;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * Class to model files selected from the tree.
+ */
 public class FilesTableModel extends PFComponent implements TableModel {
 
     private Folder folder;
     private File selectedDirectory;
-    private final Map<File, List<FolderInfo>> directories;
+    private final Map<File, List<FileInfo>> directories;
 
+    /**
+     * Constructor
+     *
+     * @param controller
+     */
     public FilesTableModel(Controller controller) {
         super(controller);
-        directories = new HashMap<File, List<FolderInfo>>();
+        directories = new ConcurrentHashMap<File, List<FileInfo>>();
     }
 
+    /**
+     * Set the folder for the model to get details from.
+     *
+     * @param folder
+     */
     public void setFolder(Folder folder) {
         this.folder = folder;
-        System.out.println("hghg set folder");
+        update();
     }
 
+    /**
+     * Set the directory selected in the tree.
+     *
+     * @param selectedDirectory
+     */
     public void setSelectedDirectory(File selectedDirectory) {
         this.selectedDirectory = selectedDirectory;
-        System.out.println("hghg set dir");
+        update();
     }
 
+    /**
+     * Pass the filtered directory model to get the file infos from.
+     *
+     * @param model
+     */
     public void setFilteredDirectoryModel(FilteredDirectoryModel model) {
-        System.out.println("hghg set model");
+        directories.clear();
+        walkFilteredDirectoryModel(model);
+        update();
+    }
+
+    /**
+     * Walk the FilteredDirectoryModel to get map of directory / FileInfos.
+     *
+     * @param model
+     */
+    private void walkFilteredDirectoryModel(FilteredDirectoryModel model) {
+        File file = model.getFile();
+        List<FileInfo> fileInfoList = new ArrayList<FileInfo>();
+        fileInfoList.addAll(model.getFiles());
+        directories.put(file, fileInfoList);
+        for (FilteredDirectoryModel subModel : model.getSubdirectories()) {
+            walkFilteredDirectoryModel(subModel);
+        }
+    }
+
+    /**
+     * Update the model in response to a chage.
+     */
+    private void update() {
+
+        if (folder == null) {
+            return;
+        }
+
+        if (selectedDirectory == null) {
+            return;
+        }
+
+        if (directories.isEmpty()) {
+            return;
+        }
+
+        for (File file : directories.keySet()) {
+            if (selectedDirectory.equals(file)) {
+                logInfo("Found " + file + " in directories");
+                // @todo - brain dead - I need a break.
+            }
+        }
     }
 
     public void addTableModelListener(TableModelListener l) {
