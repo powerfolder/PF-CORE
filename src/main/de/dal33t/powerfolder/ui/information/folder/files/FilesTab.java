@@ -68,6 +68,7 @@ public class FilesTab extends PFUIComponent
         directoryFilter.addListener(this);
         treePanel = new FilesTreePanel(controller, directoryFilter);
         tablePanel = new FilesTablePanel(controller);
+        treePanel.addTreeSelectionListener(tablePanel);
         splitPane = new UIFSplitPane(JSplitPane.HORIZONTAL_SPLIT,
                 treePanel.getUIComponent(), tablePanel.getUIComponent());
         int dividerLocation = getController().getPreferences().getInt(

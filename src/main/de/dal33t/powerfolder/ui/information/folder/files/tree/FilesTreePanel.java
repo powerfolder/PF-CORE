@@ -25,10 +25,8 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.ui.information.folder.files.tree.DirectoryTreeModel;
-import de.dal33t.powerfolder.ui.information.folder.files.tree.DirectoryTreeNodeUserObject;
-import de.dal33t.powerfolder.ui.information.folder.files.DirectoryFilterListener;
 import de.dal33t.powerfolder.ui.information.folder.files.DirectoryFilter;
+import de.dal33t.powerfolder.ui.information.folder.files.DirectoryFilterListener;
 import de.dal33t.powerfolder.ui.information.folder.files.FilteredDirectoryEvent;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
@@ -36,8 +34,10 @@ import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
+import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
+import static javax.swing.tree.TreeSelectionModel.SINGLE_TREE_SELECTION;
 import java.awt.Component;
 import java.awt.Font;
 
@@ -45,11 +45,15 @@ public class FilesTreePanel extends PFUIComponent implements DirectoryFilterList
 
     private JPanel uiComponent;
     private DirectoryTreeModel directoryTreeModel;
+    private JTree tree;
 
     public FilesTreePanel(Controller controller, DirectoryFilter directoryFilter) {
         super(controller);
         DefaultMutableTreeNode root = new DefaultMutableTreeNode();
         directoryTreeModel = new DirectoryTreeModel(root);
+        tree = new JTree(directoryTreeModel);
+        tree.setCellRenderer(new MyTreeCellRenderer());
+        tree.getSelectionModel().setSelectionMode(SINGLE_TREE_SELECTION);
         directoryFilter.addListener(this);
     }
 
@@ -65,6 +69,14 @@ public class FilesTreePanel extends PFUIComponent implements DirectoryFilterList
         return uiComponent;
     }
 
+    public void addTreeSelectionListener(TreeSelectionListener l) {
+        tree.addTreeSelectionListener(l);
+    }
+
+    public void removeTreeSelectionListener(TreeSelectionListener l) {
+        tree.removeTreeSelectionListener(l);
+    }
+
     /**
      * Builds the ui component.
      */
@@ -73,8 +85,6 @@ public class FilesTreePanel extends PFUIComponent implements DirectoryFilterList
                 "fill:pref:grow");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
-        JTree tree = new JTree(directoryTreeModel);
-        tree.setCellRenderer(new MyTreeCellRenderer());
         JScrollPane scrollPane = new JScrollPane(tree);
         // Whitestrip
         UIUtil.removeBorder(scrollPane);

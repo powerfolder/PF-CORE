@@ -28,13 +28,18 @@ import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.actionold.HasDetailsPanel;
 import de.dal33t.powerfolder.ui.information.folder.files.FileDetailsPanel;
+import de.dal33t.powerfolder.ui.information.folder.files.tree.DirectoryTreeNodeUserObject;
 
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.JToggleButton;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
+import javax.swing.tree.DefaultMutableTreeNode;
 import java.awt.event.ActionEvent;
+import java.io.File;
 
-public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel {
+public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel, TreeSelectionListener {
 
     private JPanel uiComponent;
     private FileDetailsPanel fileDetailsPanel;
@@ -62,7 +67,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel {
     private void buildUIComponent() {
         FormLayout layout = new FormLayout("fill:pref:grow",
                 "pref, 3dlu, pref, 3dlu, fill:0:grow, 3dlu, pref");
-            //   tools       sep,        table,             details
+        //   tools       sep,        table,             details
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
@@ -100,4 +105,44 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel {
             toggleDetails();
         }
     }
+
+    /**
+     * Handle tree selection changes, which determine the table entries to
+     * display.
+     *
+     * @param e
+     */
+    public void valueChanged(TreeSelectionEvent e) {
+        if (e.isAddedPath()) {
+            Object[] path = e.getPath().getPath();
+            Object lastItem = path[path.length - 1];
+            if (lastItem instanceof DefaultMutableTreeNode) {
+                DefaultMutableTreeNode node = (DefaultMutableTreeNode) lastItem;
+                Object userObject = node.getUserObject();
+                if (userObject instanceof DirectoryTreeNodeUserObject) {
+                    DirectoryTreeNodeUserObject dtnuo =
+                            (DirectoryTreeNodeUserObject) userObject;
+                    makeSelection(dtnuo.getFile());
+                }
+            }
+        } else {
+            clearSelection();
+        }
+    }
+
+    /**
+     * Controlling selection from tree has been lost, so clear selection in
+     * this table panel.
+     */
+    private void clearSelection() {
+    }
+
+    /**
+     * Controlling selection from tree has been made, so set selection in 
+     * this table panel.
+     */
+    private void makeSelection(File file) {
+    }
+
+
 }
