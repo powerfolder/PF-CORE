@@ -73,7 +73,7 @@ public class MembersTab extends PFUIComponent implements FolderInformationTab {
     }
 
     public void initialize() {
-        MemberTable table = new MemberTable(model);
+        MembersTable table = new MembersTable(model);
         scrollPane = new JScrollPane(table);
 
         // Whitestrip

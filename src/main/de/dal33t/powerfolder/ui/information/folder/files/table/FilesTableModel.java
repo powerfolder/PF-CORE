@@ -23,8 +23,10 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.DiskItem;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.util.ui.UIUtil;
+import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.ui.information.folder.files.FilteredDirectoryModel;
+import de.dal33t.powerfolder.ui.model.SortedTableModel;
 
 import javax.swing.event.TableModelListener;
 import javax.swing.event.TableModelEvent;
@@ -39,7 +41,15 @@ import java.util.concurrent.CopyOnWriteArrayList;
 /**
  * Class to model files selected from the tree.
  */
-public class FilesTableModel extends PFComponent implements TableModel {
+public class FilesTableModel extends PFComponent implements TableModel,
+        SortedTableModel {
+
+    private String[] columns = new String[]{"",
+        Translation.getTranslation("files_table_model.name"),
+        Translation.getTranslation("files_table_model.size"),
+        Translation.getTranslation("files_table_model.modified_by"),
+        Translation.getTranslation("files_table_model.date"),
+        Translation.getTranslation("files_table_model.availability")};
 
     private Folder folder;
     private File selectedDirectory;
@@ -201,11 +211,11 @@ public class FilesTableModel extends PFComponent implements TableModel {
     }
 
     public int getColumnCount() {
-        return 1;
+        return columns.length;
     }
 
     public String getColumnName(int columnIndex) {
-        return "Test";
+        return columns[columnIndex];
     }
 
     public int getRowCount() {
@@ -226,5 +236,17 @@ public class FilesTableModel extends PFComponent implements TableModel {
 
     public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
         throw new UnsupportedOperationException("Cannot modify FilesTableModel");
+    }
+
+    public int getSortColumn() {
+        return 0;    // @todo
+    }
+
+    public boolean isSortAscending() {
+        return false;  // @todo
+    }
+
+    public boolean sortBy(int columnIndex) {
+        return false;          // @todo
     }
 }

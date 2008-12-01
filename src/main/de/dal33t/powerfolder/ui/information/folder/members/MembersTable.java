@@ -34,14 +34,14 @@ import java.awt.event.MouseEvent;
 /**
  * Table to display members of a folder.
  */
-public class MemberTable extends JTable {
+public class MembersTable extends JTable {
 
     /**
      * Constructor
      *
      * @param model
      */
-    public MemberTable(MembersTableModel model) {
+    public MembersTable(MembersTableModel model) {
         super(model);
 
         setRowHeight(Icons.NODE_FRIEND_CONNECTED.getIconHeight() + 3);

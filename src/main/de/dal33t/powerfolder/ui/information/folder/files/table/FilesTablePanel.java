@@ -26,6 +26,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.DiskItem;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.actionold.HasDetailsPanel;
@@ -38,6 +39,7 @@ import de.dal33t.powerfolder.ui.information.folder.files.tree.DirectoryTreeNodeU
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.JToggleButton;
+import javax.swing.JScrollPane;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -80,12 +82,18 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
-        JTable table = new JTable(tableModel);
+        FilesTable table = new FilesTable(tableModel);
         table.setDefaultRenderer(DiskItem.class, new MyDefaultTreeCellRenderer());
+
+        JScrollPane tableScroller = new JScrollPane(table);
+
+        UIUtil.whiteStripTable(table);
+        UIUtil.removeBorder(tableScroller);
+        UIUtil.setZeroHeight(tableScroller);
 
         builder.add(createToolBar(), cc.xy(1, 1));
         builder.addSeparator(null, cc.xy(1, 3));
-        builder.add(table, cc.xy(1, 5));
+        builder.add(tableScroller, cc.xy(1, 5));
         builder.add(fileDetailsPanel.getUiComponent(), cc.xy(1, 7));
         uiComponent = builder.getPanel();
     }
