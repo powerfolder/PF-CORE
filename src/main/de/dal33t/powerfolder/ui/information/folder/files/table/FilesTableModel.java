@@ -251,9 +251,9 @@ public class FilesTableModel extends PFComponent implements TableModel,
         } else if (columnIndex == 1) {
             return diskItem.getName();
         } else if (columnIndex == 2) {
-            return String.valueOf(diskItem.getSize());
+            return Format.formatBytesShort(diskItem.getSize());
         } else if (columnIndex == 3) {
-            return String.valueOf(diskItem.getModifiedBy());
+            return diskItem.getModifiedBy().nick;
         } else if (columnIndex == 4) {
             return String.valueOf(diskItem.getModifiedDate() != null ?
                     Format.formatDate(diskItem.getModifiedDate()) : "-");
