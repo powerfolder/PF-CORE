@@ -22,14 +22,20 @@ package de.dal33t.powerfolder.ui.information.folder.files.table;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.DiskItem;
 import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.util.ui.UIUtil;
-import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.disk.Directory;
+import de.dal33t.powerfolder.disk.FileInfoHolder;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.information.folder.files.FilteredDirectoryModel;
 import de.dal33t.powerfolder.ui.model.SortedTableModel;
+import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
-import javax.swing.event.TableModelListener;
+import javax.swing.Icon;
 import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 import java.io.File;
 import java.util.ArrayList;
@@ -207,9 +213,21 @@ public class FilesTableModel extends PFComponent implements TableModel,
     }
 
     public Class<?> getColumnClass(int columnIndex) {
-        return DiskItem.class;
-    }
+        switch (columnIndex) {
+            case 0:
+                return Icon.class;
+            case 1:
+            case 2:
+            case 3:
+            case 4:
+            case 5:
+                return String.class;
+            default:
+                throw new IllegalArgumentException("columnIndex too big: "
+                        + columnIndex);
 
+        }
+    }
     public int getColumnCount() {
         return columns.length;
     }
@@ -223,7 +241,41 @@ public class FilesTableModel extends PFComponent implements TableModel,
     }
 
     public Object getValueAt(int rowIndex, int columnIndex) {
-        return diskItems.get(rowIndex);
+        DiskItem diskItem = diskItems.get(rowIndex);
+        if (columnIndex == 0) {
+            if (diskItem instanceof FileInfo) {
+            return Icons.getIconFor((FileInfo) diskItem, getController());
+            } else {
+                return Icons.getIconFor((Directory) diskItem, false, getController());
+            }
+        } else if (columnIndex == 1) {
+            return diskItem.getName();
+        } else if (columnIndex == 2) {
+            return String.valueOf(diskItem.getSize());
+        } else if (columnIndex == 3) {
+            return String.valueOf(diskItem.getModifiedBy());
+        } else if (columnIndex == 4) {
+            return String.valueOf(diskItem.getModifiedDate() != null ?
+                    Format.formatDate(diskItem.getModifiedDate()) : "-");
+        } else if (columnIndex == 5) {
+            if (diskItem instanceof FileInfo) {
+                FileInfo fileInfo = (FileInfo) diskItem;
+                if (fileInfo.isDeleted()
+                    && getController().getRecycleBin().isInRecycleBin(fileInfo))
+                {
+                    return Translation.getTranslation("fileinfo.in_recycle_bin");
+                } else {
+                    FileInfoHolder holder = folder.getDirectory()
+                        .getFileInfoHolder(fileInfo);
+                    if (holder == null) {
+                        return "0";
+                    } else {
+                        return String.valueOf(holder.getAvailability());
+                    }
+                }
+            }
+        }
+        return "";
     }
 
     public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -239,7 +291,7 @@ public class FilesTableModel extends PFComponent implements TableModel,
     }
 
     public int getSortColumn() {
-        return 0;    // @todo
+        return 1;    // @todo
     }
 
     public boolean isSortAscending() {
@@ -247,6 +299,6 @@ public class FilesTableModel extends PFComponent implements TableModel,
     }
 
     public boolean sortBy(int columnIndex) {
-        return false;          // @todo
+        return true;          // @todo
     }
 }

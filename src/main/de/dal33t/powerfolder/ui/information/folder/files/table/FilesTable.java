@@ -79,7 +79,6 @@ public class FilesTable extends JTable {
         column.setPreferredWidth(80);
     }
 
-
     /**
      * Listener on table header, takes care about the sorting of table
      *
