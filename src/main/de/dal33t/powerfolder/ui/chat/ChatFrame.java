@@ -19,17 +19,25 @@
 */
 package de.dal33t.powerfolder.ui.chat;
 
-import de.dal33t.powerfolder.PFUIComponent;
+import com.jgoodies.forms.builder.DefaultFormBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.util.Translation;
 import de.javasoft.plaf.synthetica.SyntheticaRootPaneUI;
 
-import javax.swing.*;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
+import javax.swing.WindowConstants;
 import javax.swing.plaf.RootPaneUI;
+import java.awt.Frame;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.prefs.Preferences;
-import java.awt.*;
 
 /**
  * The information window.
@@ -38,6 +46,8 @@ public class ChatFrame extends PFUIComponent {
 
     private JFrame uiComponent;
 
+    private JTabbedPane tabbedPane;
+
     /**
      * Constructor
      *
@@ -45,6 +55,7 @@ public class ChatFrame extends PFUIComponent {
      */
     public ChatFrame(Controller controller) {
         super(controller);
+        tabbedPane = new JTabbedPane();
     }
 
     /**
@@ -103,6 +114,22 @@ public class ChatFrame extends PFUIComponent {
         uiComponent = new JFrame();
         uiComponent.setIconImage(Icons.CHAT_IMAGE);
         uiComponent.setTitle(Translation.getTranslation("chat_frame.title"));
+        uiComponent.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+        uiComponent.addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent e) {
+                uiComponent.setVisible(false);
+            }
+        });
+
+        FormLayout layout = new FormLayout("3dlu, fill:pref:grow, 3dlu",
+                "3dlu, fill:pref:grow, 3dlu");
+        DefaultFormBuilder builder = new DefaultFormBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+
+        JPanel panel = builder.getPanel();
+        panel.add(tabbedPane, cc.xy(2, 2));
+
+        uiComponent.setContentPane(panel);
     }
 
     /**
@@ -130,6 +157,13 @@ public class ChatFrame extends PFUIComponent {
     }
 
     public void displayChat(MemberInfo memberInfo) {
-
+        for (int i = 0; i < tabbedPane.getComponentCount(); i++) {
+            if (tabbedPane.getTitleAt(i).equals(memberInfo.nick)) {
+                tabbedPane.setSelectedIndex(i);
+                return;
+            }
+        }
+        ChatPanel chatPanel = new ChatPanel(getController());
+        tabbedPane.addTab(memberInfo.nick, chatPanel.getUiComponent());
     }
 }

@@ -244,7 +244,7 @@ public class FilesTableModel extends PFComponent implements TableModel,
         DiskItem diskItem = diskItems.get(rowIndex);
         if (columnIndex == 0) {
             if (diskItem instanceof FileInfo) {
-            return Icons.getIconFor((FileInfo) diskItem, getController());
+                return Icons.getIconFor((FileInfo) diskItem, getController());
             } else {
                 return Icons.getIconFor((Directory) diskItem, false, getController());
             }
