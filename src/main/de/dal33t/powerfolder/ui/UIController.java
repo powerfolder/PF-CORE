@@ -34,7 +34,9 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.ui.actionold.SyncAllFoldersAction;
 import de.dal33t.powerfolder.ui.chat.ChatFrame;
-import de.dal33t.powerfolder.ui.chatold.ChatModel;
+import de.dal33t.powerfolder.ui.chat.ChatModel;
+import de.dal33t.powerfolder.ui.chat.ChatModelEvent;
+import de.dal33t.powerfolder.ui.chat.ChatModelListener;
 import de.dal33t.powerfolder.ui.folder.FileNameProblemHandlerDefaultImpl;
 import de.dal33t.powerfolder.ui.friends.AskForFriendshipHandlerDefaultImpl;
 import de.dal33t.powerfolder.ui.information.InformationFrame;
@@ -911,15 +913,14 @@ public class UIController extends PFComponent {
         return null;
     }
 
-    private class ChatNotificationManager implements
-        ChatModel.ChatModelListener
+    private class ChatNotificationManager implements ChatModelListener
     {
 
         private ChatNotificationManager(ChatModel chatModel) {
             chatModel.addChatModelListener(this);
         }
 
-        public void chatChanged(ChatModel.ChatModelEvent event) {
+        public void chatChanged(ChatModelEvent event) {
             if (event.isStatus()) {
                 // Ignore status updates
                 return;

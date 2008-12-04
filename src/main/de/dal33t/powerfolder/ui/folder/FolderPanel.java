@@ -23,7 +23,6 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.ui.chatold.FolderChatPanel;
 import de.dal33t.powerfolder.util.PFUIPanel;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.UIUtil;
@@ -59,7 +58,6 @@ public class FolderPanel extends PFUIPanel {
     private Folder folder;
     private FilesTab filesTab;
     private MembersTab membersTab;
-    private FolderChatPanel folderChatPanel;
     private SettingsTab settingsTab;
     private final AtomicBoolean settingsTabSet = new AtomicBoolean();
 
@@ -87,7 +85,6 @@ public class FolderPanel extends PFUIPanel {
     private void setFolder0(Folder folder) {
         this.folder = folder;
         membersTab.setFolder(folder);
-        folderChatPanel.setFolder(folder);
         tabbedPanel.setIconAt(homeTabId, Icons.FOLDER);
 
         // Do not show settings tab in preview
@@ -124,13 +121,6 @@ public class FolderPanel extends PFUIPanel {
         setFolder0(directory.getRootFolder());
         filesTab.setDirectory(directory);
         tabbedPanel.setSelectedIndex(filesTabId);
-    }
-
-    /**
-     * @return the folder chat panel
-     */
-    public FolderChatPanel getChatPanel() {
-        return folderChatPanel;
     }
 
     public JComponent getUIComponent() {
@@ -180,8 +170,6 @@ public class FolderPanel extends PFUIPanel {
             return filesTab;
         } else if (tab == membersTabId) {
             return membersTab;
-        } else if (tab == chatTabId) {
-            return folderChatPanel;
         } else if (tab == settingsTabId) {
             return settingsTab;
         } else {
@@ -208,8 +196,6 @@ public class FolderPanel extends PFUIPanel {
         tabbedPanel = new JTabbedPane();
         filesTab = new FilesTab(getController(), this);
         membersTab = new MembersTab(getController());
-        folderChatPanel = new FolderChatPanel(getController(),
-            getApplicationModel().getChatModel());
         settingsTab = new SettingsTab(getController(), previewMode, this);
 
         tabbedPanel.setMnemonicAt(homeTabId, Translation.getTranslation(
@@ -227,8 +213,6 @@ public class FolderPanel extends PFUIPanel {
             "folder_panel.members.key").charAt(0));
         tabbedPanel.setIconAt(membersTabId, Icons.NODE_FRIEND_CONNECTED);
 
-        tabbedPanel.add(' ' + folderChatPanel.getTitle() + ' ', folderChatPanel
-            .getUIComponent());
         tabbedPanel.setMnemonicAt(chatTabId, Translation.getTranslation(
             "folder_panel.chat.key").charAt(0));
         tabbedPanel.setIconAt(chatTabId, Icons.CHAT);

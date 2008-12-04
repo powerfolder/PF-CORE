@@ -25,9 +25,9 @@ import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.UIController;
-import de.dal33t.powerfolder.ui.chatold.ChatModel;
-import de.dal33t.powerfolder.ui.chatold.ChatModel.ChatModelEvent;
-import de.dal33t.powerfolder.ui.chatold.ChatModel.ChatModelListener;
+import de.dal33t.powerfolder.ui.chat.ChatModel;
+import de.dal33t.powerfolder.ui.chat.ChatModelEvent;
+import de.dal33t.powerfolder.ui.chat.ChatModelListener;
 
 import javax.swing.Icon;
 import javax.swing.SwingUtilities;

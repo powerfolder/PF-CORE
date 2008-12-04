@@ -27,9 +27,9 @@ import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.net.NodeManager;
-import de.dal33t.powerfolder.ui.chatold.ChatModel;
-import de.dal33t.powerfolder.ui.chatold.ChatModel.ChatModelEvent;
-import de.dal33t.powerfolder.ui.chatold.ChatModel.ChatModelListener;
+import de.dal33t.powerfolder.ui.chat.ChatModel;
+import de.dal33t.powerfolder.ui.chat.ChatModelEvent;
+import de.dal33t.powerfolder.ui.chat.ChatModelListener;
 import de.dal33t.powerfolder.util.ui.TreeNodeList;
 
 import javax.swing.event.TreeModelEvent;
