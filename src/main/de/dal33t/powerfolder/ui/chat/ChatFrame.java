@@ -45,11 +45,10 @@ import java.util.prefs.Preferences;
 public class ChatFrame extends PFUIComponent {
 
     private JFrame uiComponent;
-
     private JTabbedPane tabbedPane;
 
     /**
-     * Constructor
+     * Constructor.
      *
      * @param controller
      */
@@ -77,7 +76,7 @@ public class ChatFrame extends PFUIComponent {
     private void buildUIComponent() {
         Preferences prefs = getController().getPreferences();
         uiComponent.setLocation(prefs.getInt("chatframe4.x", 50), prefs.getInt(
-            "chatframe4.y", 50));
+                "chatframe4.y", 50));
 
         // Pack elements
         uiComponent.pack();
@@ -101,10 +100,6 @@ public class ChatFrame extends PFUIComponent {
             }
             uiComponent.setExtendedState(Frame.MAXIMIZED_BOTH);
         }
-
-        // everything is decided in window listener
-        uiComponent.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-
     }
 
     /**
@@ -156,14 +151,24 @@ public class ChatFrame extends PFUIComponent {
         }
     }
 
+    /**
+     * Display a chat session, creats new one if needed.
+     *
+     * @param memberInfo
+     */
     public void displayChat(MemberInfo memberInfo) {
+
+        // Find existing session.
         for (int i = 0; i < tabbedPane.getComponentCount(); i++) {
             if (tabbedPane.getTitleAt(i).equals(memberInfo.nick)) {
                 tabbedPane.setSelectedIndex(i);
                 return;
             }
         }
+
+        // New session.
         ChatPanel chatPanel = new ChatPanel(getController());
         tabbedPane.addTab(memberInfo.nick, chatPanel.getUiComponent());
+        tabbedPane.setSelectedIndex(tabbedPane.getComponentCount() - 1);
     }
 }

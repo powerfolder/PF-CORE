@@ -15,56 +15,49 @@
 * You should have received a copy of the GNU General Public License
 * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
 *
-* $Id: ChatPanel.java 5457 2008-10-17 14:25:41Z harry $
+* $Id: ChatModelEvent.java 5457 2008-10-17 14:25:41Z harry $
 */
 package de.dal33t.powerfolder.ui.chat;
 
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PFComponent;
-
-import javax.swing.JPanel;
+import java.util.EventObject;
 
 /**
- * Class to show a chat session with a member.
+ * Event that indicates a chat event occurred.
  */
-public class ChatPanel extends PFComponent {
+public class ChatModelEvent extends EventObject {
 
-    private JPanel uiComponent;
+    private static final long serialVersionUID = 1L;
+    private boolean isStatus;
+    private String message = "";
 
     /**
-     * Constructor
+     * Constructor, creating the event.
      *
-     * @param controller
+     * @param source
+     * @param message
+     * @param flag
      */
-    public ChatPanel(Controller controller) {
-        super(controller);
+    ChatModelEvent(Object source, String message, boolean flag) {
+        super(source);
+        this.message = message;
+        isStatus = flag;
     }
 
     /**
-     * Create the ui if required and return.
+     * Answers whether the event is a status type.
      *
      * @return
      */
-    public JPanel getUiComponent() {
-        if (uiComponent == null) {
-            initialize();
-            buildUiComponent();
-        }
-        return uiComponent;
+    public boolean isStatus() {
+        return isStatus;
     }
 
     /**
-     * Build the ui.
+     * Returns the event message.
+     *
+     * @return
      */
-    private void buildUiComponent() {
-        uiComponent = new JPanel();
+    public String getMessage() {
+        return message;
     }
-
-    /**
-     * Initialize the ui.
-     */
-    private void initialize() {
-    }
-
-
 }
