@@ -71,18 +71,18 @@ public class ChatPanel extends PFComponent {
      */
     private void buildUiComponent() {
 
-        FormLayout layout = new FormLayout("fill:0:grow",
+        FormLayout layout = new FormLayout("3dlu, fill:0:grow, 3dlu",
             "3dlu, pref, 3dlu, pref, 3dlu, fill:0:grow, 3dlu, pref, 3dlu, pref, 3dlu");
         //         tools       sep         me                 sep         you
 
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
-        builder.add(toolBar, cc.xy(1, 2));
-        builder.addSeparator(null, cc.xy(1, 4));
-        builder.add(outputScrollPane, cc.xy(1, 6));
-        builder.addSeparator(null, cc.xy(1, 8));
-        builder.add(inputScrollPane, cc.xy(1, 10));
+        builder.add(toolBar, cc.xy(2, 2));
+        builder.addSeparator(null, cc.xy(2, 4));
+        builder.add(outputScrollPane, cc.xy(2, 6));
+        builder.addSeparator(null, cc.xy(2, 8));
+        builder.add(inputScrollPane, cc.xy(2, 10));
         uiComponent = builder.getPanel();
     }
 

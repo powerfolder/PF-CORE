@@ -168,7 +168,9 @@ public class ChatFrame extends PFUIComponent {
 
         // New session.
         ChatPanel chatPanel = new ChatPanel(getController());
-        tabbedPane.addTab(memberInfo.nick, chatPanel.getUiComponent());
+        // @todo hghg make image the friend status icon, with status listener.
+        // @todo add tip
+        tabbedPane.addTab(memberInfo.nick, Icons.CHAT, chatPanel.getUiComponent());
         tabbedPane.setSelectedIndex(tabbedPane.getComponentCount() - 1);
     }
 }
