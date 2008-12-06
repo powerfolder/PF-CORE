@@ -19,41 +19,6 @@
  */
 package de.dal33t.powerfolder;
 
-import java.awt.Component;
-import java.awt.GraphicsEnvironment;
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.security.Security;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-import java.util.ResourceBundle;
-import java.util.StringTokenizer;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.prefs.Preferences;
-
-import javax.swing.JOptionPane;
-
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.lang.StringUtils;
-
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.RecycleBin;
@@ -88,6 +53,39 @@ import de.dal33t.powerfolder.util.task.PersistentTaskManager;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
 import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.lang.StringUtils;
+
+import javax.swing.JOptionPane;
+import java.awt.Component;
+import java.awt.GraphicsEnvironment;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.security.Security;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
+import java.util.ResourceBundle;
+import java.util.StringTokenizer;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 
 /**
  * Central class gives access to all core components in PowerFolder. Make sure
@@ -372,6 +370,9 @@ public class Controller extends PFComponent {
         }
         silentMode = getPreferences().getBoolean("silentMode", false);
 
+        // start node manager
+        nodeManager = new NodeManager(this);
+
         if (isUIEnabled()) {
             uiController = new UIController(this);
         }
@@ -411,9 +412,6 @@ public class Controller extends PFComponent {
         }
 
         setLoadingCompletion(10, 20);
-
-        // start node manager
-        nodeManager = new NodeManager(this);
 
         // Folder repository
         folderRepository = new FolderRepository(this);

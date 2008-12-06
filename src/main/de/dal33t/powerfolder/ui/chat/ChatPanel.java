@@ -23,7 +23,12 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.event.NodeManagerListener;
+import de.dal33t.powerfolder.event.NodeManagerEvent;
+import de.dal33t.powerfolder.message.MemberChatMessage;
+import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 import javax.swing.JPanel;
@@ -31,6 +36,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextPane;
 import java.awt.Color;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 
 /**
  * Class to show a chat session with a member.
@@ -43,14 +50,18 @@ public class ChatPanel extends PFComponent {
     private JScrollPane outputScrollPane;
     private JScrollPane inputScrollPane;
     private JPanel toolBar;
+    private Member member;
 
     /**
      * Constructor
      *
      * @param controller
      */
-    public ChatPanel(Controller controller) {
+    public ChatPanel(Controller controller, Member member) {
         super(controller);
+        this.member = member;
+        controller.getNodeManager().addNodeManagerListener(
+            new MyNodeManagerListener());        
     }
 
     /**
@@ -119,7 +130,104 @@ public class ChatPanel extends PFComponent {
     private void createInputComponents() {
         chatInput = new JTextArea(5, 30);
         chatInput.setEditable(true);
+        chatInput.addKeyListener(new MyKeyListener());
         inputScrollPane = new JScrollPane(chatInput);
         UIUtil.removeBorder(inputScrollPane);
+        updateInputField();
     }
+
+    /**
+     * Updates the input field state (enabled/disabled) accoriding the the chat
+     * partner
+     */
+    public void updateInputField() {
+        boolean connected = member.isCompleteyConnected();
+        if (connected) {
+            chatInput.setBackground(Color.WHITE);
+        } else {
+            chatInput.setBackground(Color.LIGHT_GRAY);
+        }
+        chatInput.setEnabled(connected);
+    }
+
+    /**
+     * Key listener to send messages on entere key.
+     */
+    private class MyKeyListener  extends KeyAdapter {
+        public void keyTyped(KeyEvent e) {
+            char keyTyped = e.getKeyChar();
+            if (keyTyped == '\n') { // enter key = send message
+                String message = chatInput.getText();
+                if (message.trim().length() > 0) { // no SPAM on "enter"
+                    Controller controller = getController();
+                    ChatModel chatModel = controller.getUIController()
+                            .getChatModel();
+                    if (member.isCompleteyConnected()) {
+                        chatModel.addChatLine(
+                            member, controller.getMySelf(), message);
+                        chatInput.setText("");
+                        MemberChatMessage chatMessage = new MemberChatMessage(
+                            message);
+                        member.sendMessageAsynchron(chatMessage,
+                                "chat line not sent");
+                    } else {
+                        chatModel.addStatusChatLine(member,
+                            Translation.getTranslation("chat_panel.cannot_deliver",
+                                    member.getNick()));
+                    }
+
+                } else { // Enter key without text - clear.
+                    chatInput.setText("");
+                    chatInput.requestFocusInWindow();
+                }
+            }
+            // Update input field
+            updateInputField();
+
+        }
+    }
+
+    /**
+     * Listener to NodeManager. Listens on changes in the online state and
+     * update the ui components according to that
+     *
+     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
+     */
+    private class MyNodeManagerListener implements NodeManagerListener {
+
+        public void nodeRemoved(NodeManagerEvent e) {
+        }
+
+        public void nodeAdded(NodeManagerEvent e) {
+        }
+
+        public void nodeConnected(NodeManagerEvent e) {
+            if (e.getNode().equals(member)) {
+                updateInputField();
+            }
+        }
+
+        public void nodeDisconnected(NodeManagerEvent e) {
+            if (e.getNode().equals(member)) {
+                updateInputField();
+            }
+        }
+
+        public void friendAdded(NodeManagerEvent e) {
+        }
+
+        public void friendRemoved(NodeManagerEvent e) {
+        }
+
+        public void settingsChanged(NodeManagerEvent e) {
+        }
+
+        public void startStop(NodeManagerEvent e) {
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return true;
+        }
+    }
+
 }

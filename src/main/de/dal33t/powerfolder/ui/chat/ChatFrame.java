@@ -23,20 +23,27 @@ import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.event.NodeManagerEvent;
+import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Translation;
 import de.javasoft.plaf.synthetica.SyntheticaRootPaneUI;
 
+import javax.swing.Icon;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.WindowConstants;
 import javax.swing.plaf.RootPaneUI;
+import java.awt.Component;
 import java.awt.Frame;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.prefs.Preferences;
 
 /**
@@ -46,6 +53,7 @@ public class ChatFrame extends PFUIComponent {
 
     private JFrame uiComponent;
     private JTabbedPane tabbedPane;
+    private final Map<MemberInfo, ChatPanel> memberPanels;
 
     /**
      * Constructor.
@@ -55,6 +63,9 @@ public class ChatFrame extends PFUIComponent {
     public ChatFrame(Controller controller) {
         super(controller);
         tabbedPane = new JTabbedPane();
+        controller.getNodeManager().addNodeManagerListener(
+            new MyNodeManagerListener());
+        memberPanels = new HashMap<MemberInfo, ChatPanel>();
     }
 
     /**
@@ -167,10 +178,69 @@ public class ChatFrame extends PFUIComponent {
         }
 
         // New session.
-        ChatPanel chatPanel = new ChatPanel(getController());
-        // @todo hghg make image the friend status icon, with status listener.
+        Member member = getController().getNodeManager().getNode(memberInfo);
+        ChatPanel chatPanel = new ChatPanel(getController(), member);
+        memberPanels.put(memberInfo, chatPanel);
         // @todo add tip
-        tabbedPane.addTab(memberInfo.nick, Icons.CHAT, chatPanel.getUiComponent());
+        tabbedPane.addTab(memberInfo.nick, Icons.getIconFor(member),
+                chatPanel.getUiComponent());
         tabbedPane.setSelectedIndex(tabbedPane.getComponentCount() - 1);
     }
+
+    /**
+     * Update the icons on the tabs as members come and go.
+     *
+     * @param member
+     */
+    private void updateTabIcons(Member member) {
+        for (MemberInfo mapMemberInfo : memberPanels.keySet()) {
+            if (member.getInfo().equals(mapMemberInfo)) {
+                Icon icon = Icons.getIconFor(member);
+                Component component = memberPanels.get(mapMemberInfo).getUiComponent();
+                int count = tabbedPane.getComponentCount();
+                for (int i = 0; i < count; i++) {
+                    if (tabbedPane.getComponentAt(i).equals(component)) {
+                        tabbedPane.setIconAt(i, icon);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Listens on changes in the online state and update the ui components
+     */
+    private class MyNodeManagerListener implements NodeManagerListener {
+
+        public void nodeRemoved(NodeManagerEvent e) {
+        }
+
+        public void nodeAdded(NodeManagerEvent e) {
+        }
+
+        public void nodeConnected(NodeManagerEvent e) {
+            updateTabIcons(e.getNode());
+        }
+
+        public void nodeDisconnected(NodeManagerEvent e) {
+            updateTabIcons(e.getNode());
+        }
+
+        public void friendAdded(NodeManagerEvent e) {
+        }
+
+        public void friendRemoved(NodeManagerEvent e) {
+        }
+
+        public void settingsChanged(NodeManagerEvent e) {
+        }
+
+        public void startStop(NodeManagerEvent e) {
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return true;
+        }
+    }
+
 }

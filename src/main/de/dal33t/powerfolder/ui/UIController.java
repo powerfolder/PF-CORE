@@ -110,6 +110,7 @@ public class UIController extends PFComponent {
     private TrayIcon sysTrayMenu;
 
     private MainFrame mainFrame;
+    private ChatModel chatModel;
     private SystemMonitorFrame systemMonitorFrame;
     private InformationFrame informationFrame;
     private ChatFrame chatFrame;
@@ -246,7 +247,7 @@ public class UIController extends PFComponent {
         mainFrame = new MainFrame(getController());
 
         // create the models
-        ChatModel chatModel = applicationModel.getChatModel();
+        chatModel = applicationModel.getChatModel();
         blinkManager = new BlinkManager(getController(), chatModel);
         new ChatNotificationManager(chatModel);
         getController().getFolderRepository().addFolderRepositoryListener(
@@ -573,6 +574,13 @@ public class UIController extends PFComponent {
         if (splash != null) {
             splash.shutdown();
         }
+    }
+
+    /**
+     * @return the model holding all chat data
+     */
+    public ChatModel getChatModel() {
+        return chatModel;
     }
 
     /**
