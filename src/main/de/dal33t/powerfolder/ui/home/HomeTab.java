@@ -183,7 +183,7 @@ public class HomeTab extends PFUIComponent {
         builder.add(synchronizationStatusLabel, cc.xywh(2, row, 3, 1));
         row += 2;
 
-        builder.addSeparator(null, cc.xywh(2, row, 3, 1));
+        builder.addSeparator(null, cc.xywh(2, row, 2, 1));
         row +=2;
 
         JLabel youHaveLabel = new JLabel(Translation.getTranslation("home_tab.you_have"));
