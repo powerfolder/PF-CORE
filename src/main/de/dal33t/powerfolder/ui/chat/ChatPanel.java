@@ -25,26 +25,31 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
+import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.message.MemberChatMessage;
+import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.widget.JButton3Icons;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
+import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextPane;
-import javax.swing.text.StyledDocument;
-import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.Style;
-import javax.swing.text.StyleContext;
 import javax.swing.text.StyleConstants;
+import javax.swing.text.StyleContext;
+import javax.swing.text.StyledDocument;
 import java.awt.Color;
 import java.awt.Rectangle;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 
 /**
  * Class to show a chat session with a member.
@@ -64,15 +69,17 @@ public class ChatPanel extends PFComponent {
     private JScrollPane inputScrollPane;
     private JPanel toolBar;
     private Member chatPartner;
+    private ChatFrame chatFrame;
 
     /**
      * Constructor
      *
      * @param controller
      */
-    public ChatPanel(Controller controller, Member chatPartner) {
+    public ChatPanel(Controller controller, ChatFrame chatFrame, Member chatPartner) {
         super(controller);
         this.chatPartner = chatPartner;
+        this.chatFrame = chatFrame;
         controller.getNodeManager().addNodeManagerListener(
             new MyNodeManagerListener());
         controller.getUIController().getChatModel().addChatModelListener(
@@ -125,7 +132,33 @@ public class ChatPanel extends PFComponent {
      * Create the tool bar.
      */
     private void createToolBar() {
-        toolBar = new JPanel();
+        //                                        ???          close
+        FormLayout layout = new FormLayout("3dlu, fill:0:grow, pref, 3dlu",
+            "pref");
+
+        PanelBuilder builder = new PanelBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+
+        JButton closeButton = new JButton3Icons(
+                Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_NORMAL,
+                Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_HOVER,
+                Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_PUSH);
+        closeButton.setToolTipText(Translation.getTranslation(
+                "chat_panel.close_button.tool_tip", chatPartner.getNick()));
+        closeButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                closeSession();
+            }
+        });
+        builder.add(closeButton, cc.xy(3, 1));        
+        toolBar = builder.getPanel();
+    }
+
+    /**
+     * Close this tab in the parent frame.
+     */
+    private void closeSession() {
+        chatFrame.closeSession(chatPartner);
     }
 
     /**

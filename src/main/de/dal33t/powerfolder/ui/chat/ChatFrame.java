@@ -43,6 +43,7 @@ import java.awt.Frame;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.prefs.Preferences;
 
@@ -179,7 +180,7 @@ public class ChatFrame extends PFUIComponent {
 
         // New session.
         Member member = getController().getNodeManager().getNode(memberInfo);
-        ChatPanel chatPanel = new ChatPanel(getController(), member);
+        ChatPanel chatPanel = new ChatPanel(getController(), this, member);
         memberPanels.put(memberInfo, chatPanel);
         tabbedPane.addTab(memberInfo.nick, Icons.getIconFor(member),
                 chatPanel.getUiComponent(), Translation.getTranslation(
@@ -193,10 +194,10 @@ public class ChatFrame extends PFUIComponent {
      * @param member
      */
     private void updateTabIcons(Member member) {
-        for (MemberInfo mapMemberInfo : memberPanels.keySet()) {
-            if (member.getInfo().equals(mapMemberInfo)) {
+        for (MemberInfo memberInfo : memberPanels.keySet()) {
+            if (member.getInfo().equals(memberInfo)) {
                 Icon icon = Icons.getIconFor(member);
-                Component component = memberPanels.get(mapMemberInfo).getUiComponent();
+                Component component = memberPanels.get(memberInfo).getUiComponent();
                 int count = tabbedPane.getComponentCount();
                 for (int i = 0; i < count; i++) {
                     if (tabbedPane.getComponentAt(i).equals(component)) {
@@ -206,6 +207,37 @@ public class ChatFrame extends PFUIComponent {
             }
         }
     }
+
+    /**
+     * Close a chat session tab.
+     * 
+     * @param chatPartner
+     */
+    public void closeSession(Member chatPartner) {
+        for (Iterator<MemberInfo> iter = memberPanels.keySet().iterator(); iter.hasNext();) {
+            MemberInfo memberInfo = iter.next();
+            if (memberInfo.equals(chatPartner.getInfo())) {
+                Component component = memberPanels.get(memberInfo).getUiComponent();
+                int count = tabbedPane.getComponentCount();
+                for (int i = 0; i < count; i++) {
+                    if (tabbedPane.getComponentAt(i).equals(component)) {
+                        tabbedPane.remove(i);
+                        iter.remove();
+                        break;
+                    }
+                }
+            }
+        }
+
+        // No tabs? - so hide
+        if (tabbedPane.getComponentCount() == 0) {
+            getUIComponent().setVisible(false);
+        }
+    }
+
+    ///////////////////
+    // INNER CLASSES //
+    ///////////////////
 
     /**
      * Listens on changes in the online state and update the ui components
