@@ -49,10 +49,12 @@ public class ChatBox {
      * @return
      */
     public ChatLine[] getChatText() {
-        ChatLine[] lines = (ChatLine[]) chatLines.toArray();
-        ChatLine[] linesReturnValue = new ChatLine[chatLines.size()];
-        System.arraycopy(lines, 0, linesReturnValue, 0, chatLines.size());
-        return linesReturnValue;
+        ChatLine[] lines = new ChatLine[chatLines.size()];
+        int i = 0;
+        for (ChatLine chatLine : chatLines) {
+            lines[i++] = chatLine;
+        }
+        return lines;
     }
 
 }

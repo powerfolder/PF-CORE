@@ -35,7 +35,14 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextPane;
+import javax.swing.text.StyledDocument;
+import javax.swing.text.DefaultStyledDocument;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Style;
+import javax.swing.text.StyleContext;
+import javax.swing.text.StyleConstants;
 import java.awt.Color;
+import java.awt.Rectangle;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
@@ -44,24 +51,32 @@ import java.awt.event.KeyEvent;
  */
 public class ChatPanel extends PFComponent {
 
+    // styles used in StyledDocument
+    private static final String NORMAL = "normal";
+    private static final String BOLD = "bold";
+    private static final String BOLD_BLUE = "bold-blue";
+    private static final String BOLD_GREEN = "bold-green";
+
     private JPanel uiComponent;
     private JTextArea chatInput;
     private JTextPane chatOutput;
     private JScrollPane outputScrollPane;
     private JScrollPane inputScrollPane;
     private JPanel toolBar;
-    private Member member;
+    private Member chatPartner;
 
     /**
      * Constructor
      *
      * @param controller
      */
-    public ChatPanel(Controller controller, Member member) {
+    public ChatPanel(Controller controller, Member chatPartner) {
         super(controller);
-        this.member = member;
+        this.chatPartner = chatPartner;
         controller.getNodeManager().addNodeManagerListener(
-            new MyNodeManagerListener());        
+            new MyNodeManagerListener());
+        controller.getUIController().getChatModel().addChatModelListener(
+            new MyChatModelListener());
     }
 
     /**
@@ -141,7 +156,7 @@ public class ChatPanel extends PFComponent {
      * partner
      */
     public void updateInputField() {
-        boolean connected = member.isCompleteyConnected();
+        boolean connected = chatPartner.isCompleteyConnected();
         if (connected) {
             chatInput.setBackground(Color.WHITE);
         } else {
@@ -149,6 +164,99 @@ public class ChatPanel extends PFComponent {
         }
         chatInput.setEnabled(connected);
     }
+
+    private void updateChat() {
+        ChatLine[] lines = getController().getUIController().getChatModel().getChatText(chatPartner);
+        if (lines != null) {
+            updateChat(lines);
+        }
+    }
+
+    /**
+     * called if a chatline is recieved, completely replaces the text in the
+     * output field.
+     */
+    void updateChat(ChatLine[] lines) {
+        final StyledDocument doc = new DefaultStyledDocument();
+        createStyles(doc);
+        try {
+            for (int i = 0; i < lines.length; i++) {
+                ChatLine line = lines[i];
+                if (line.isStatus()) {
+                    doc.insertString(doc.getLength(), "* " + line.getText(),
+                            doc.getStyle(BOLD_GREEN));
+
+                } else {
+                    Member otherMember = line.getFromMember();
+                    String text = line.getText();
+                    if (otherMember.isMySelf()) {
+                        doc.insertString(doc.getLength(),
+                            otherMember.getNick(), doc.getStyle(BOLD_BLUE));
+                        doc.insertString(doc.getLength(), ": " + text, doc
+                            .getStyle(NORMAL));
+                    } else {
+                        doc.insertString(doc.getLength(),
+                            otherMember.getNick(), doc.getStyle(BOLD));
+                        doc.insertString(doc.getLength(), ": " + text, doc
+                            .getStyle(NORMAL));
+                    }
+                }
+            }
+        } catch (BadLocationException ble) {
+            logWarning("Could not set chat text", ble);
+        }
+
+        Runnable runner = new Runnable() {
+            public void run() {
+                chatOutput.setStyledDocument(doc);
+
+                // Make sure first text is at bottom
+                while (chatOutput.getPreferredSize().height <
+                        chatOutput.getSize().height) {
+                    try {
+                        doc.insertString(0, "\n", null);
+                    } catch (BadLocationException ble) {
+                        logWarning("Could not set chat text", ble);
+                    }
+                }
+
+                Rectangle r = new Rectangle(1,
+                        chatOutput.getPreferredSize().height, 1, 1);
+
+                // Make sure the last line of text is visible
+                outputScrollPane.getViewport().scrollRectToVisible(r);
+
+                // Make sure we can always type text in the input
+                chatInput.requestFocusInWindow();
+
+                updateInputField();
+            }
+        };
+        UIUtil.invokeLaterInEDT(runner);
+    }
+
+    private static void createStyles(StyledDocument doc) {
+        Style def = StyleContext.getDefaultStyleContext().getStyle(
+            StyleContext.DEFAULT_STYLE);
+
+        doc.addStyle(NORMAL, def);
+
+        Style s = doc.addStyle(BOLD, def);
+        StyleConstants.setBold(s, true);
+
+        s = doc.addStyle(BOLD_BLUE, def);
+        StyleConstants.setForeground(s, Color.BLUE);
+        StyleConstants.setBold(s, true);
+
+        s = doc.addStyle(BOLD_GREEN, def);
+        StyleConstants.setForeground(s, Color.GREEN.darker().darker());
+        StyleConstants.setBold(s, true);
+    }
+
+
+    ///////////////////
+    // INNER CLASSES //
+    ///////////////////
 
     /**
      * Key listener to send messages on entere key.
@@ -162,18 +270,18 @@ public class ChatPanel extends PFComponent {
                     Controller controller = getController();
                     ChatModel chatModel = controller.getUIController()
                             .getChatModel();
-                    if (member.isCompleteyConnected()) {
+                    if (chatPartner.isCompleteyConnected()) {
                         chatModel.addChatLine(
-                            member, controller.getMySelf(), message);
+                                chatPartner, controller.getMySelf(), message);
                         chatInput.setText("");
                         MemberChatMessage chatMessage = new MemberChatMessage(
                             message);
-                        member.sendMessageAsynchron(chatMessage,
+                        chatPartner.sendMessageAsynchron(chatMessage,
                                 "chat line not sent");
                     } else {
-                        chatModel.addStatusChatLine(member,
+                        chatModel.addStatusChatLine(chatPartner,
                             Translation.getTranslation("chat_panel.cannot_deliver",
-                                    member.getNick()));
+                                    chatPartner.getNick()));
                     }
 
                 } else { // Enter key without text - clear.
@@ -202,13 +310,13 @@ public class ChatPanel extends PFComponent {
         }
 
         public void nodeConnected(NodeManagerEvent e) {
-            if (e.getNode().equals(member)) {
+            if (e.getNode().equals(chatPartner)) {
                 updateInputField();
             }
         }
 
         public void nodeDisconnected(NodeManagerEvent e) {
-            if (e.getNode().equals(member)) {
+            if (e.getNode().equals(chatPartner)) {
                 updateInputField();
             }
         }
@@ -223,6 +331,27 @@ public class ChatPanel extends PFComponent {
         }
 
         public void startStop(NodeManagerEvent e) {
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return true;
+        }
+    }
+
+    /** Updates the chat if the current chat is changed */
+    private class MyChatModelListener implements ChatModelListener {
+        /**
+         * Called from the model if a message (about a Member) is
+         * received from other member or typed by this member (myself)
+         */
+        public void chatChanged(ChatModelEvent event) {
+            Object source = event.getSource();
+            if (source instanceof Member) {
+                Member eventMember = (Member) source;
+                if (chatPartner != null && chatPartner.equals(eventMember)) {
+                    updateChat();
+                }
+            }
         }
 
         public boolean fireInEventDispatchThread() {

@@ -181,9 +181,9 @@ public class ChatFrame extends PFUIComponent {
         Member member = getController().getNodeManager().getNode(memberInfo);
         ChatPanel chatPanel = new ChatPanel(getController(), member);
         memberPanels.put(memberInfo, chatPanel);
-        // @todo add tip
         tabbedPane.addTab(memberInfo.nick, Icons.getIconFor(member),
-                chatPanel.getUiComponent());
+                chatPanel.getUiComponent(), Translation.getTranslation(
+                "chat_frame.tool_tip", member.getNick()));
         tabbedPane.setSelectedIndex(tabbedPane.getComponentCount() - 1);
     }
 
