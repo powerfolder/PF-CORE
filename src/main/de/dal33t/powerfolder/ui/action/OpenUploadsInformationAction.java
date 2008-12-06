@@ -20,7 +20,6 @@
 package de.dal33t.powerfolder.ui.action;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.light.FolderInfo;
 
 import java.awt.event.ActionEvent;
 
@@ -36,10 +35,6 @@ public class OpenUploadsInformationAction extends BaseAction {
     }
 
     public void actionPerformed(ActionEvent e) {
-        Object source = e.getSource();
-        if (source instanceof FolderInfo) {
-            FolderInfo folderInfo = (FolderInfo) source;
-            getController().getUIController().openUploadsInformation(folderInfo);
-        }
+        getController().getUIController().openUploadsInformation();
     }
 }

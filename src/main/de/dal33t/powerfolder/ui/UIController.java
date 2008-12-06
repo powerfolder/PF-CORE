@@ -662,10 +662,14 @@ public class UIController extends PFComponent {
         chatFrame.getUIComponent().setVisible(true);
     }
 
-    public void openDownloadsInformation(FolderInfo folderInfo) {
+    public void openDownloadsInformation() {
+        informationFrame.displayDownloads();
+        displayInformationWindow();
     }
 
-    public void openUploadsInformation(FolderInfo folderInfo) {
+    public void openUploadsInformation() {
+        informationFrame.displayUploads();
+        displayInformationWindow();
     }
 
     private class UpdateSystrayTask extends TimerTask {

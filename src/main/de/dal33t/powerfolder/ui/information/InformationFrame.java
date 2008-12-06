@@ -19,17 +19,20 @@
 */
 package de.dal33t.powerfolder.ui.information;
 
-import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.information.downloads.DownloadsInformationCard;
 import de.dal33t.powerfolder.ui.information.folder.FolderInformationCard;
+import de.dal33t.powerfolder.ui.information.uploads.UploadsInformationCard;
 import de.javasoft.plaf.synthetica.SyntheticaRootPaneUI;
 
-import javax.swing.*;
+import javax.swing.JFrame;
+import javax.swing.WindowConstants;
 import javax.swing.plaf.RootPaneUI;
+import java.awt.Frame;
 import java.util.prefs.Preferences;
-import java.awt.*;
 
 /**
  * The information window.
@@ -39,6 +42,8 @@ public class InformationFrame extends PFUIComponent {
     private JFrame uiComponent;
 
     private FolderInformationCard folderInformationCard;
+    private DownloadsInformationCard downloadsInformationCard;
+    private UploadsInformationCard uploadsInformationCard;
 
     /**
      * Constructor
@@ -166,12 +171,40 @@ public class InformationFrame extends PFUIComponent {
         displayCard(folderInformationCard);
     }
 
+    public void displayDownloads() {
+        buildDownloadsInformationCard();
+        displayCard(downloadsInformationCard);
+    }
+
+    public void displayUploads() {
+        buildUploadsInformationCard();
+        displayCard(uploadsInformationCard);
+    }
+
     /**
      * Builds the local FolderInformationCard if required.
      */
     private void buildFolderInformationCard() {
         if (folderInformationCard == null) {
             folderInformationCard = new FolderInformationCard(getController());
+        }
+    }
+
+    /**
+     * Builds the local FolderInformationCard if required.
+     */
+    private void buildDownloadsInformationCard() {
+        if (downloadsInformationCard == null) {
+            downloadsInformationCard = new DownloadsInformationCard(getController());
+        }
+    }
+
+    /**
+     * Builds the local FolderInformationCard if required.
+     */
+    private void buildUploadsInformationCard() {
+        if (uploadsInformationCard == null) {
+            uploadsInformationCard = new UploadsInformationCard(getController());
         }
     }
 
@@ -186,5 +219,4 @@ public class InformationFrame extends PFUIComponent {
         getUIComponent().getContentPane().removeAll();
         getUIComponent().getContentPane().add(card.getUIComponent());
     }
-
 }
