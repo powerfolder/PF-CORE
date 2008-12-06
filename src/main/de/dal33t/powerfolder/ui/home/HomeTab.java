@@ -54,6 +54,10 @@ import java.awt.Font;
  */
 public class HomeTab extends PFUIComponent {
 
+    private static final int ONE_K = 1024;
+    private static final int ONE_M = 1024 * ONE_K;
+    private static final int ONE_G = 1024 * ONE_M;
+
     private JPanel uiComponent;
 
     private JLabel synchronizationStatusLabel;
@@ -142,7 +146,7 @@ public class HomeTab extends PFUIComponent {
         uploadsLine = new HomeTabLine(getController(),
                 Translation.getTranslation("home_tab.files_uploaded"), null,
                 false, true, getApplicationModel().getActionModel()
-                .getOpenDownloadsInformationAction());
+                .getOpenUploadsInformationAction());
         computersLine = new HomeTabLine(getController(),
                 Translation.getTranslation("home_tab.computers"),
                 Translation.getTranslation("home_tab.no_computers"),
@@ -239,24 +243,18 @@ public class HomeTab extends PFUIComponent {
             totalSize += folder.getStatistic().getTotalSize();
         }
         String descriptionKey = "home_tab.total_bytes";
-        long divisor = 1;
-        if (totalSize >= 1024) {
-            divisor *= 1024;
-            descriptionKey = "home_tab.total_kilobytes";
-        }
-        if (totalSize / divisor >= 1024) {
-            divisor *= 1024;
-            descriptionKey = "home_tab.total_megabytes";
-        }
-        if (totalSize / divisor >= 1024) {
-            divisor *= 1024;
-            descriptionKey = "home_tab.total_gigabytes";
-        }
         double num;
-        if (divisor == 1) {
-            num = totalSize;
+        if (totalSize >= ONE_G) {
+            descriptionKey = "home_tab.total_gigabytes";
+            num = (double) totalSize / (double) ONE_G;
+        } else if (totalSize >= ONE_M) {
+            descriptionKey = "home_tab.total_megabytes";
+            num = (double) totalSize / (double) ONE_M;
+        } else if (totalSize >= ONE_K) {
+            descriptionKey = "home_tab.total_kilobytes";
+            num = (double) totalSize / (double) ONE_K;
         } else {
-            num = (double) totalSize / (double) divisor;
+            num = totalSize;
         }
 
         sizeOfFoldersLine.setValue(num);
