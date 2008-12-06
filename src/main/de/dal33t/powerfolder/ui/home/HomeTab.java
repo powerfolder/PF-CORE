@@ -242,7 +242,7 @@ public class HomeTab extends PFUIComponent {
         for (Folder folder : folders) {
             totalSize += folder.getStatistic().getTotalSize();
         }
-        String descriptionKey = "home_tab.total_bytes";
+        String descriptionKey;
         double num;
         if (totalSize >= ONE_G) {
             descriptionKey = "home_tab.total_gigabytes";
@@ -254,6 +254,7 @@ public class HomeTab extends PFUIComponent {
             descriptionKey = "home_tab.total_kilobytes";
             num = (double) totalSize / (double) ONE_K;
         } else {
+            descriptionKey = "home_tab.total_bytes";
             num = totalSize;
         }
 
