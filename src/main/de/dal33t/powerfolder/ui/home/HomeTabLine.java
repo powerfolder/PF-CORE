@@ -24,8 +24,10 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.util.Format;
 
+import javax.swing.Action;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import java.awt.CardLayout;
@@ -35,10 +37,13 @@ import java.text.DecimalFormat;
  * Class to render a value - label line in the HomeTab.
  * It can be configured
  * a) to just show a value and description,
- * b) show a value and description only is non-zero, or
+ * b) show a value and description only if non-zero, or
  * c) show alternate line for zero value.
  *
- * Includes a 3dlu space under the detil (if displayed). 
+ * Also, an action may be specified. If not null, the normal text is an
+ * ActionLabel and fires the action if clicked.
+ *
+ * Includes a 3dlu space under the detail (if displayed).
  *
  */
 public class HomeTabLine extends PFUIComponent {
@@ -57,7 +62,9 @@ public class HomeTabLine extends PFUIComponent {
 
     private JLabel valueLabel;
     private JLabel normalLabel;
+    private ActionLabel normalActionLabel;
     private JLabel zeroLabel;
+    private Action normalAction;
 
     /**
      * Constructor - shows zeroLabelText if value is zero.
@@ -74,13 +81,38 @@ public class HomeTabLine extends PFUIComponent {
      *                  cast value to int for display
      */
     public HomeTabLine(Controller controller, String normalLabelText,
-                       String zeroLabelText, boolean hideOnZero, boolean castInt)
+                       String zeroLabelText, boolean hideOnZero,
+                       boolean castInt) {
+        this(controller, normalLabelText, zeroLabelText, hideOnZero, castInt, null);
+    }
+
+    /**
+     * Constructor - shows zeroLabelText if value is zero.
+     *
+     * @param controller
+     * @param normalLabelText
+     *                  the text to show to the right of the value
+     * @param zeroLabelText
+     *                  text to replace line if zero. If null, normal line
+     *                  still displays for zero.
+     * @param hideOnZero
+     *                  hides entire uiComponent if true if value zero
+     * @param castInt
+     *                  cast value to int for display
+     * @param normalAction
+     *                  optional action that the normal label should do if
+     *                  clicked.
+     */
+    public HomeTabLine(Controller controller, String normalLabelText,
+                       String zeroLabelText, boolean hideOnZero, boolean castInt,
+                       Action normalAction)
     {
         super(controller);
         this.normalLabelText = normalLabelText;
         this.zeroLabelText = zeroLabelText;
         this.hideOnZero = hideOnZero;
         this.castInt = castInt;
+        this.normalAction = normalAction;
     }
 
     /**
@@ -119,7 +151,11 @@ public class HomeTabLine extends PFUIComponent {
      * @param normalLabelText
      */
     public void setNormalLabelText(String normalLabelText) {
-        normalLabel.setText(normalLabelText);
+        if (normalAction == null) {
+            normalLabel.setText(normalLabelText);
+        } else {
+            normalActionLabel.setText(normalLabelText);
+        }
     }
 
     /**
@@ -187,7 +223,11 @@ public class HomeTabLine extends PFUIComponent {
         CellConstraints cc = new CellConstraints();
 
         nzBuilder.add(valueLabel, cc.xy(1, 1));
-        nzBuilder.add(normalLabel, cc.xy(3, 1));
+        if (normalAction == null) {
+            nzBuilder.add(normalLabel, cc.xy(3, 1));
+        } else {
+            nzBuilder.add(normalActionLabel, cc.xy(3, 1));
+        }
 
         cardPanel.add(nzBuilder.getPanel(), NORMAL_CARD);
 
@@ -209,7 +249,12 @@ public class HomeTabLine extends PFUIComponent {
         cardLayout = (CardLayout) cardPanel.getLayout();
 
         valueLabel = new JLabel();
-        normalLabel = new JLabel(normalLabelText);
+        if (normalAction == null) {
+            normalLabel = new JLabel(normalLabelText);
+        } else {
+            normalActionLabel = new ActionLabel(normalAction);
+            normalActionLabel.setText(normalLabelText);
+        }
         if (zeroLabelText == null) {
             zeroLabel = new JLabel("?");
         }  else {

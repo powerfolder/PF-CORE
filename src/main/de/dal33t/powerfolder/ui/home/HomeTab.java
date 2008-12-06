@@ -137,10 +137,12 @@ public class HomeTab extends PFUIComponent {
                 true, true);
         downloadsLine = new HomeTabLine(getController(),
                 Translation.getTranslation("home_tab.files_downloaded"), null,
-                false, true);
+                false, true, getApplicationModel().getActionModel()
+                .getOpenDownloadsInformationAction());
         uploadsLine = new HomeTabLine(getController(),
                 Translation.getTranslation("home_tab.files_uploaded"), null,
-                false, true);
+                false, true, getApplicationModel().getActionModel()
+                .getOpenDownloadsInformationAction());
         computersLine = new HomeTabLine(getController(),
                 Translation.getTranslation("home_tab.computers"),
                 Translation.getTranslation("home_tab.no_computers"),

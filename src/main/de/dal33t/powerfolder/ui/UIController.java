@@ -662,6 +662,12 @@ public class UIController extends PFComponent {
         chatFrame.getUIComponent().setVisible(true);
     }
 
+    public void openDownloadsInformation(FolderInfo folderInfo) {
+    }
+
+    public void openUploadsInformation(FolderInfo folderInfo) {
+    }
+
     private class UpdateSystrayTask extends TimerTask {
         public void run() {
             StringBuilder tooltip = new StringBuilder();

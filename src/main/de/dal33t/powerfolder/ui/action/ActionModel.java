@@ -41,9 +41,11 @@ public class ActionModel extends PFComponent {
     private OpenAboutBoxAction openAboutBoxAction;
     private ConnectAction connectAction;
     private OpenChatAction openChatAction;
+    private OpenDownloadsInformationAction openDownloadsInformationAction;
     private OpenSettingsInformationAction openSettingsInformationAction;
     private OpenFilesInformationAction openFilesInformationAction;
     private OpenMembersInformationAction openMembersInformationAction;
+    private OpenUploadsInformationAction openUploadsInformationAction;
     private ReconnectAction reconnectAction;
     private AddFriendAction addFriendAction;
     private RemoveFriendAction removeFriendAction;
@@ -67,6 +69,20 @@ public class ActionModel extends PFComponent {
             openPreferencesAction = new OpenPreferencesAction(getController());
         }
         return openPreferencesAction;
+    }
+
+    public OpenDownloadsInformationAction getOpenDownloadsInformationAction() {
+        if (openDownloadsInformationAction == null) {
+            openDownloadsInformationAction = new OpenDownloadsInformationAction(getController());
+        }
+        return openDownloadsInformationAction;
+    }
+
+    public OpenUploadsInformationAction getOpenUploadsInformationAction() {
+        if (openUploadsInformationAction == null) {
+            openUploadsInformationAction = new OpenUploadsInformationAction(getController());
+        }
+        return openUploadsInformationAction;
     }
 
     public OpenAboutBoxAction getOpenAboutBoxAction() {

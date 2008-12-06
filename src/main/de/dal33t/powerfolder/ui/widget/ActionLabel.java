@@ -19,14 +19,13 @@
 */
 package de.dal33t.powerfolder.ui.widget;
 
+import de.dal33t.powerfolder.util.Reject;
+
+import javax.swing.Action;
 import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-
-import javax.swing.Action;
-
-import de.dal33t.powerfolder.util.Reject;
 
 /**
  * A Label which executes the action when clicked.
@@ -39,6 +38,10 @@ public class ActionLabel extends AntialiasedLabel {
     public ActionLabel(final Action action) {
         super("<html><font color=\"#00000\"><a href=\"#\">"
             + action.getValue(Action.NAME) + "</a></font></html>");
+        String toolTips = (String) action.getValue(Action.SHORT_DESCRIPTION);
+        if (toolTips != null && toolTips.length() > 0) {
+            setToolTipText(toolTips);
+        }
         Reject.ifNull(action, "Action listener is null");
         addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
@@ -49,7 +52,6 @@ public class ActionLabel extends AntialiasedLabel {
         setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
     }
 
-    @Override
     public void setText(String text) {
         super.setText("<html><font color=\"#00000\"><a href=\"#\">" + text
             + "</a></font></html>");
