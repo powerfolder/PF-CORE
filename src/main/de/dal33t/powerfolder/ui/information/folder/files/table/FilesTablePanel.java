@@ -78,7 +78,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
     private void buildUIComponent() {
         FormLayout layout = new FormLayout("fill:pref:grow",
                 "pref, 3dlu, pref, 3dlu, fill:0:grow, 3dlu, pref");
-        //   tools       sep,        table,             details
+        //       tools       sep,        table,             details
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
