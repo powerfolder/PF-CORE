@@ -215,6 +215,7 @@ public class ChatModel implements MessageListener {
             Member node = folderEvent.getMember();
             String statusMessage = Translation.getTranslation(
                     "chat_panel.member_joined_folder_at_time", node.getNick(),
+                    folderEvent.getFolder().getName(),
                     Format.getTimeOnlyDateFormat().format(new Date()))
                     + '\n';
             addStatusChatLine(node, statusMessage);
@@ -224,6 +225,7 @@ public class ChatModel implements MessageListener {
             Member node = folderEvent.getMember();
             String statusMessage = Translation.getTranslation(
                     "chat_panel.member_left_folder_at_time", node.getNick(),
+                    folderEvent.getFolder().getName(),
                     Format.getTimeOnlyDateFormat().format(new Date())) + '\n';
             addStatusChatLine(node, statusMessage);
         }

@@ -245,9 +245,11 @@ public class ChatFrame extends PFUIComponent {
     private class MyNodeManagerListener implements NodeManagerListener {
 
         public void nodeRemoved(NodeManagerEvent e) {
+            updateTabIcons(e.getNode());
         }
 
         public void nodeAdded(NodeManagerEvent e) {
+            updateTabIcons(e.getNode());
         }
 
         public void nodeConnected(NodeManagerEvent e) {
@@ -259,12 +261,15 @@ public class ChatFrame extends PFUIComponent {
         }
 
         public void friendAdded(NodeManagerEvent e) {
+            updateTabIcons(e.getNode());
         }
 
         public void friendRemoved(NodeManagerEvent e) {
+            updateTabIcons(e.getNode());
         }
 
         public void settingsChanged(NodeManagerEvent e) {
+            updateTabIcons(e.getNode());
         }
 
         public void startStop(NodeManagerEvent e) {

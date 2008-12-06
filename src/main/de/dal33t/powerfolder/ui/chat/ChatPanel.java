@@ -24,7 +24,7 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.message.MemberChatMessage;
@@ -46,15 +46,15 @@ import javax.swing.text.StyleContext;
 import javax.swing.text.StyledDocument;
 import java.awt.Color;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
 
 /**
  * Class to show a chat session with a member.
  */
-public class ChatPanel extends PFComponent {
+public class ChatPanel extends PFUIComponent {
 
     // styles used in StyledDocument
     private static final String NORMAL = "normal";
@@ -71,12 +71,15 @@ public class ChatPanel extends PFComponent {
     private Member chatPartner;
     private ChatFrame chatFrame;
 
+    private JButton addRemoveButton;
+
     /**
      * Constructor
      *
      * @param controller
      */
-    public ChatPanel(Controller controller, ChatFrame chatFrame, Member chatPartner) {
+    public ChatPanel(Controller controller, ChatFrame chatFrame,
+                     Member chatPartner) {
         super(controller);
         this.chatPartner = chatPartner;
         this.chatFrame = chatFrame;
@@ -132,12 +135,23 @@ public class ChatPanel extends PFComponent {
      * Create the tool bar.
      */
     private void createToolBar() {
-        //                                        ???          close
-        FormLayout layout = new FormLayout("3dlu, fill:0:grow, pref, 3dlu",
+                              //            add         recon              close
+        FormLayout layout = new FormLayout("pref, 3dlu, pref, fill:0:grow, pref",
             "pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
+
+        addRemoveButton = new JButton(getApplicationModel().getActionModel()
+                .getAddFriendAction());
+        addRemoveButton.addActionListener(new MyAddRemoveActionListener());
+        configureAddRemoveButton();
+        builder.add(addRemoveButton, cc.xy(1, 1));
+
+        JButton reconnectButton = new JButton(getUIController()
+                .getApplicationModel().getActionModel().getReconnectAction());
+        reconnectButton.addActionListener(new MyReconnectActionListener());
+        builder.add(reconnectButton, cc.xy(3, 1));
 
         JButton closeButton = new JButton3Icons(
                 Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_NORMAL,
@@ -150,7 +164,8 @@ public class ChatPanel extends PFComponent {
                 closeSession();
             }
         });
-        builder.add(closeButton, cc.xy(3, 1));        
+        builder.add(closeButton, cc.xy(5, 1));
+
         toolBar = builder.getPanel();
     }
 
@@ -198,23 +213,25 @@ public class ChatPanel extends PFComponent {
         chatInput.setEnabled(connected);
     }
 
+    /**
+     * Update the chat lines if for me.
+     */
     private void updateChat() {
-        ChatLine[] lines = getController().getUIController().getChatModel().getChatText(chatPartner);
+        ChatLine[] lines = getUIController().getChatModel().getChatText(chatPartner);
         if (lines != null) {
             updateChat(lines);
         }
     }
 
     /**
-     * called if a chatline is recieved, completely replaces the text in the
+     * Called if a chatline is recieved, completely replaces the text in the
      * output field.
      */
     void updateChat(ChatLine[] lines) {
         final StyledDocument doc = new DefaultStyledDocument();
         createStyles(doc);
         try {
-            for (int i = 0; i < lines.length; i++) {
-                ChatLine line = lines[i];
+            for (ChatLine line : lines) {
                 if (line.isStatus()) {
                     doc.insertString(doc.getLength(), "* " + line.getText(),
                             doc.getStyle(BOLD_GREEN));
@@ -268,6 +285,11 @@ public class ChatPanel extends PFComponent {
         UIUtil.invokeLaterInEDT(runner);
     }
 
+    /**
+     * Creates the document styles.
+     *
+     * @param doc
+     */
     private static void createStyles(StyledDocument doc) {
         Style def = StyleContext.getDefaultStyleContext().getStyle(
             StyleContext.DEFAULT_STYLE);
@@ -286,6 +308,18 @@ public class ChatPanel extends PFComponent {
         StyleConstants.setBold(s, true);
     }
 
+    /**
+     * Configure the buttone to be add or remove.
+     */
+    private void configureAddRemoveButton() {
+        if (chatPartner.isFriend()) {
+            addRemoveButton.setAction(getApplicationModel().getActionModel()
+                    .getRemoveFriendAction());
+        } else {
+            addRemoveButton.setAction(getApplicationModel().getActionModel()
+                    .getAddFriendAction());
+        }
+    }
 
     ///////////////////
     // INNER CLASSES //
@@ -300,12 +334,11 @@ public class ChatPanel extends PFComponent {
             if (keyTyped == '\n') { // enter key = send message
                 String message = chatInput.getText();
                 if (message.trim().length() > 0) { // no SPAM on "enter"
-                    Controller controller = getController();
-                    ChatModel chatModel = controller.getUIController()
+                    ChatModel chatModel = getUIController()
                             .getChatModel();
                     if (chatPartner.isCompleteyConnected()) {
                         chatModel.addChatLine(
-                                chatPartner, controller.getMySelf(), message);
+                                chatPartner, getController().getMySelf(), message);
                         chatInput.setText("");
                         MemberChatMessage chatMessage = new MemberChatMessage(
                             message);
@@ -337,33 +370,41 @@ public class ChatPanel extends PFComponent {
     private class MyNodeManagerListener implements NodeManagerListener {
 
         public void nodeRemoved(NodeManagerEvent e) {
+            updateOnNodeChange(e);
         }
 
         public void nodeAdded(NodeManagerEvent e) {
+            updateOnNodeChange(e);
         }
 
         public void nodeConnected(NodeManagerEvent e) {
-            if (e.getNode().equals(chatPartner)) {
-                updateInputField();
-            }
+            updateOnNodeChange(e);
         }
 
         public void nodeDisconnected(NodeManagerEvent e) {
-            if (e.getNode().equals(chatPartner)) {
-                updateInputField();
-            }
+            updateOnNodeChange(e);
         }
 
         public void friendAdded(NodeManagerEvent e) {
+            updateOnNodeChange(e);
         }
 
         public void friendRemoved(NodeManagerEvent e) {
+            updateOnNodeChange(e);
         }
 
         public void settingsChanged(NodeManagerEvent e) {
+            updateOnNodeChange(e);
         }
 
         public void startStop(NodeManagerEvent e) {
+        }
+
+        private void updateOnNodeChange(NodeManagerEvent e) {
+            if (e.getNode().equals(chatPartner)) {
+                updateInputField();
+                configureAddRemoveButton();
+            }
         }
 
         public boolean fireInEventDispatchThread() {
@@ -391,5 +432,38 @@ public class ChatPanel extends PFComponent {
             return true;
         }
     }
+
+    /**
+     * Class to listen for reconnect requests.
+     */
+    private class MyReconnectActionListener implements ActionListener {
+
+        public void actionPerformed(ActionEvent e) {
+            ActionEvent ae = new ActionEvent(chatPartner.getInfo(),
+                    e.getID(), e.getActionCommand(), e.getWhen(), e.getModifiers());
+            getApplicationModel().getActionModel().getReconnectAction()
+                    .actionPerformed(ae);
+        }
+    }
+
+    /**
+     * Class to listen for add / remove friendship requests.
+     */
+    private class MyAddRemoveActionListener implements ActionListener {
+
+        public void actionPerformed(ActionEvent e) {
+            ActionEvent ae = new ActionEvent(chatPartner.getInfo(),
+                    e.getID(), e.getActionCommand(), e.getWhen(), e.getModifiers());
+            if (chatPartner.isFriend()) {
+                getApplicationModel().getActionModel().getRemoveFriendAction()
+                        .actionPerformed(ae);
+            } else {
+                getApplicationModel().getActionModel().getAddFriendAction()
+                        .actionPerformed(ae);
+            }
+        }
+    }
+
+
 
 }

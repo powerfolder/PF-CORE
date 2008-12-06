@@ -19,12 +19,13 @@
 */
 package de.dal33t.powerfolder.event;
 
-import java.util.EventObject;
-
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
 
+import java.util.EventObject;
+
 public class FolderMembershipEvent extends EventObject {
+
     private Member member;
     
     public FolderMembershipEvent(Folder source, Member member) {
@@ -34,6 +35,10 @@ public class FolderMembershipEvent extends EventObject {
     
     public Member getMember() {
         return member;
+    }
+
+    public Folder getFolder() {
+        return (Folder) getSource();
     }
 
 }
