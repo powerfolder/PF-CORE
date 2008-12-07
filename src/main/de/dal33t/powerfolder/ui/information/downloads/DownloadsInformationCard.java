@@ -25,6 +25,8 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.event.TransferAdapter;
+import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.actionold.HasDetailsPanel;
@@ -35,6 +37,8 @@ import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
+import javax.swing.Action;
+import javax.swing.JButton;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -50,6 +54,7 @@ public class DownloadsInformationCard extends InformationCard
     private DownloadsTablePanel tablePanel;
     private DownloadsDetailsPanel detailsPanel;
     private JCheckBox autoCleanupCB;
+    private Action clearCompletedDownloadsAction;
 
     /**
      * Constructor
@@ -98,9 +103,17 @@ public class DownloadsInformationCard extends InformationCard
         buildToolbar();
         tablePanel = new DownloadsTablePanel(getController());
         detailsPanel = new DownloadsDetailsPanel(getController());
+        getController().getTransferManager().addListener(
+            new MyTransferManagerListener());
+        updateActions();
     }
 
+    /**
+     * Build the toolbar component.
+     */
     private void buildToolbar() {
+
+        clearCompletedDownloadsAction = new ClearCompletedDownloadsAction(getController());
 
         autoCleanupCB = new JCheckBox(Translation
             .getTranslation("downloads_information_card.auto_cleanup.name"));
@@ -122,6 +135,8 @@ public class DownloadsInformationCard extends InformationCard
         
         ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
         bar.addGridded(new JToggleButton(new DetailsAction(getController())));
+        bar.addRelatedGap();
+        bar.addGridded(new JButton(clearCompletedDownloadsAction));
         bar.addRelatedGap();
         bar.addGridded(autoCleanupCB);
         
@@ -145,11 +160,26 @@ public class DownloadsInformationCard extends InformationCard
         uiComponent = builder.getPanel();
     }
 
+    /**
+     * Toggle the details panel visibility.
+     */
     public void toggleDetails() {
         detailsPanel.getUiComponent().setVisible(
                 !detailsPanel.getUiComponent().isVisible());
     }
 
+    /**
+     * Update the clear action enable.
+     */
+    public void updateActions() {
+        clearCompletedDownloadsAction.setEnabled(getUIController()
+                .getTransferManagerModel().getDownloadsTableModel()
+                .getRowCount() > 0);
+    }
+
+    /**
+     * Action to toggle the details panel.
+     */
     private class DetailsAction extends BaseAction {
 
         DetailsAction(Controller controller) {
@@ -158,6 +188,62 @@ public class DownloadsInformationCard extends InformationCard
 
         public void actionPerformed(ActionEvent e) {
             toggleDetails();
+        }
+    }
+
+    /**
+     * Clears completed uploads. See MainFrame.MyCleanupAction for accelerator
+     * functionality
+     */
+    private class ClearCompletedDownloadsAction extends BaseAction {
+        ClearCompletedDownloadsAction(Controller controller) {
+            super("action_clear_completed_downloads", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            tablePanel.clearDownloads();
+        }
+    }
+
+    /**
+     * TransferManagerListener to respond to download changes.
+     */
+    private class MyTransferManagerListener extends TransferAdapter {
+
+        public void downloadRequested(TransferManagerEvent event) {
+            updateActions();
+        }
+
+        public void downloadQueued(TransferManagerEvent event) {
+            updateActions();
+        }
+
+        public void downloadStarted(TransferManagerEvent event) {
+            updateActions();
+        }
+
+        public void downloadAborted(TransferManagerEvent event) {
+            updateActions();
+        }
+
+        public void downloadBroken(TransferManagerEvent event) {
+            updateActions();
+        }
+
+        public void downloadCompleted(TransferManagerEvent event) {
+            updateActions();
+        }
+
+        public void completedDownloadRemoved(TransferManagerEvent event) {
+            updateActions();
+        }
+
+        public void pendingDownloadEnqueud(TransferManagerEvent event) {
+            updateActions();
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return true;
         }
     }
 }

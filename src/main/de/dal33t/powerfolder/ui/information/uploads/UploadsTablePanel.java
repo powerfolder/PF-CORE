@@ -24,8 +24,10 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.transfer.Upload;
 import de.dal33t.powerfolder.ui.model.TransferManagerModel;
 import de.dal33t.powerfolder.util.ui.UIUtil;
+import de.dal33t.powerfolder.util.ui.SwingWorker;
 
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -37,17 +39,30 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.List;
+import java.util.ArrayList;
 
 public class UploadsTablePanel extends PFUIComponent {
 
     private JPanel uiComponent;
     private JScrollPane tablePane;
+    private UploadsTable table;
+    private UploadsTableModel tableModel;
 
-
+    /**
+     * Constructor.
+     *
+     * @param controller
+     */
     public UploadsTablePanel(Controller controller) {
         super(controller);
     }
 
+    /**
+     * Returns the ui component.
+     *
+     * @return
+     */
     public JComponent getUIComponent() {
         if (uiComponent == null) {
             initialize();
@@ -66,14 +81,61 @@ public class UploadsTablePanel extends PFUIComponent {
         TransferManagerModel transferManagerModel =
                 getUIController().getTransferManagerModel();
 
-        UploadsTable table = new UploadsTable(transferManagerModel);
+        table = new UploadsTable(transferManagerModel);
         table.getTableHeader().addMouseListener(new TableHeaderMouseListener());
         tablePane = new JScrollPane(table);
+        tableModel = (UploadsTableModel) table.getModel();
 
         // Whitestrip & set sizes
         UIUtil.whiteStripTable(table);
         UIUtil.setZeroHeight(tablePane);
         UIUtil.removeBorder(tablePane);
+    }
+
+    /**
+     * Clears old uploads.
+     */
+    public void clearUploads() {
+
+        // Clear completed uploads
+        SwingWorker worker = new SwingWorker() {
+
+            public Object construct() {
+                int rowCount = table.getRowCount();
+                if (rowCount == 0) {
+                    return null;
+                }
+
+                // If no rows are selected,
+                // arrange for all uploads to be cleared.
+                boolean noneSelected = true;
+                for (int i = 0; i < table.getRowCount(); i++) {
+                    if (table.isRowSelected(i)) {
+                        noneSelected = false;
+                        break;
+                    }
+                }
+
+                // Do in two passes so changes to the model do not affect
+                // the process.
+                List<Upload> uploadsToClear = new ArrayList<Upload>();
+
+                for (int i = 0; i < table.getRowCount(); i++) {
+                    if (noneSelected || table.isRowSelected(i)) {
+                        Upload ul = tableModel.getUploadAtRow(i);
+                        if (ul.isCompleted()) {
+                            uploadsToClear.add(ul);
+                        }
+                    }
+                }
+                for (Upload ul : uploadsToClear) {
+                    getController().getTransferManager()
+                        .clearCompletedUpload(ul);
+                }
+                return null;
+            }
+        };
+        worker.start();
     }
 
     /**
@@ -87,7 +149,6 @@ public class UploadsTablePanel extends PFUIComponent {
         builder.add(tablePane, cc.xy(1, 1));
         uiComponent = builder.getPanel();
     }
-
 
     /**
      * Listener on table header, takes care about the sorting of table
@@ -115,6 +176,4 @@ public class UploadsTablePanel extends PFUIComponent {
             }
         }
     }
-
-
 }

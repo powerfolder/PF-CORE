@@ -19,22 +19,26 @@
 */
 package de.dal33t.powerfolder.ui.information.uploads;
 
-import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.builder.ButtonBarBuilder;
+import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.event.TransferAdapter;
+import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.actionold.HasDetailsPanel;
 import de.dal33t.powerfolder.ui.information.InformationCard;
 import de.dal33t.powerfolder.util.Translation;
 
+import javax.swing.Action;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
-import javax.swing.JCheckBox;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -50,6 +54,7 @@ public class UploadsInformationCard extends InformationCard
     private UploadsTablePanel tablePanel;
     private UploadsDetailsPanel detailsPanel;
     private JCheckBox autoCleanupCB;
+    private Action clearCompletedUploadsAction;
 
     /**
      * Constructor
@@ -98,9 +103,17 @@ public class UploadsInformationCard extends InformationCard
         buildToolbar();
         tablePanel = new UploadsTablePanel(getController());
         detailsPanel = new UploadsDetailsPanel(getController());
+        getController().getTransferManager().addListener(
+            new MyTransferManagerListener());
+        updateActions();
     }
 
+    /**
+     * Build the toolbar component.
+     */
     private void buildToolbar() {
+
+        clearCompletedUploadsAction = new ClearCompletedUploadsAction(getController());
 
         autoCleanupCB = new JCheckBox(Translation
             .getTranslation("uploads_information_card.auto_cleanup.name"));
@@ -123,6 +136,8 @@ public class UploadsInformationCard extends InformationCard
         ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
         bar.addGridded(new JToggleButton(new DetailsAction(getController())));
         bar.addRelatedGap();
+        bar.addGridded(new JButton(clearCompletedUploadsAction));
+        bar.addRelatedGap();
         bar.addGridded(autoCleanupCB);
         toolBar = bar.getPanel();
     }
@@ -144,11 +159,26 @@ public class UploadsInformationCard extends InformationCard
         uiComponent = builder.getPanel();
     }
 
+    /**
+     * Toggle the details panel.
+     */
     public void toggleDetails() {
         detailsPanel.getUiComponent().setVisible(
                 !detailsPanel.getUiComponent().isVisible());
     }
 
+    /**
+     * Update the clear action.
+     */
+    public void updateActions() {
+        clearCompletedUploadsAction.setEnabled(getUIController()
+                .getTransferManagerModel().getUploadsTableModel()
+                .getRowCount() > 0);
+    }
+
+    /**
+     * Action to display the details panel.
+     */
     private class DetailsAction extends BaseAction {
 
         DetailsAction(Controller controller) {
@@ -159,4 +189,53 @@ public class UploadsInformationCard extends InformationCard
             toggleDetails();
         }
     }
+
+    /**
+     * Clears completed uploads. See MainFrame.MyCleanupAction for accelerator
+     * functionality
+     */
+    private class ClearCompletedUploadsAction extends BaseAction {
+        ClearCompletedUploadsAction(Controller controller) {
+            super("action_clear_completed_uploads", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            tablePanel.clearUploads();
+        }
+    }
+
+    /**
+     * TransferManagerListener to respond to download changes.
+     */
+    private class MyTransferManagerListener extends TransferAdapter {
+
+        public void uploadRequested(TransferManagerEvent event) {
+            updateActions();
+        }
+
+        public void uploadStarted(TransferManagerEvent event) {
+            updateActions();
+        }
+
+        public void uploadAborted(TransferManagerEvent event) {
+            updateActions();
+        }
+
+        public void uploadBroken(TransferManagerEvent event) {
+            updateActions();
+        }
+
+        public void uploadCompleted(TransferManagerEvent event) {
+            updateActions();
+        }
+
+        public void completedUploadRemoved(TransferManagerEvent event) {
+            updateActions();
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return true;
+        }
+    }
+
 }

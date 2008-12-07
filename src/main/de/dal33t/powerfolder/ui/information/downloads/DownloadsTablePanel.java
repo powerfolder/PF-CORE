@@ -24,8 +24,11 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.ui.model.TransferManagerModel;
+import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.util.ui.UIUtil;
+import de.dal33t.powerfolder.util.Translation;
 
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -37,16 +40,30 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.List;
+import java.util.ArrayList;
 
 public class DownloadsTablePanel extends PFUIComponent {
 
     private JPanel uiComponent;
     private JScrollPane tablePane;
+    private DownloadsTable table;
+    private DownloadsTableModel tableModel;
 
+    /**
+     * Constructor
+     *
+     * @param controller
+     */
     public DownloadsTablePanel(Controller controller) {
         super(controller);
     }
 
+    /**
+     * Returns the ui component.
+     *
+     * @return
+     */
     public JComponent getUIComponent() {
         if (uiComponent == null) {
             initialize();
@@ -65,9 +82,10 @@ public class DownloadsTablePanel extends PFUIComponent {
         TransferManagerModel transferManagerModel =
                 getUIController().getTransferManagerModel();
 
-        DownloadsTable table = new DownloadsTable(transferManagerModel);
+        table = new DownloadsTable(transferManagerModel);
         table.getTableHeader().addMouseListener(new TableHeaderMouseListener());
         tablePane = new JScrollPane(table);
+        tableModel = (DownloadsTableModel) table.getModel();
 
         // Whitestrip & set sizes
         UIUtil.whiteStripTable(table);
@@ -85,6 +103,62 @@ public class DownloadsTablePanel extends PFUIComponent {
         CellConstraints cc = new CellConstraints();
         builder.add(tablePane, cc.xy(1, 1));
         uiComponent = builder.getPanel();
+    }
+
+    /**
+     * Clears old downloads.
+     */
+    public void clearDownloads() {
+
+        ActivityVisualizationWorker avw =
+                new ActivityVisualizationWorker(getUIController()) {
+
+                    protected String getTitle() {
+                        return Translation.getTranslation("downloads_panel.cleanup_activity.title");
+                    }
+
+                    protected String getWorkingText() {
+                        return Translation.getTranslation("downloads_panel.cleanup_activity.description");
+                    }
+
+                    public Object construct() {
+                        int rowCount = table.getRowCount();
+                        if (rowCount == 0) {
+                            return null;
+                        }
+
+                        // If no rows are selected,
+                        // arrange for all downloads to be cleared.
+                        boolean noneSelected = true;
+                        for (int i = 0; i < table.getRowCount(); i++) {
+                            if (table.isRowSelected(i)) {
+                                noneSelected = false;
+                                break;
+                            }
+                        }
+
+                        // Do in two passes so changes to the model do not affect
+                        // the process.
+                        List<Download> downloadsToClear = new ArrayList<Download>();
+
+                        for (int i = 0; i < table.getRowCount(); i++) {
+                            if (noneSelected || table.isRowSelected(i)) {
+                                Download dl = tableModel.getDownloadAtRow(i);
+                                if (dl.isCompleted()) {
+                                    downloadsToClear.add(dl);
+                                }
+                            }
+                        }
+                        for (Download dl : downloadsToClear) {
+                            getController().getTransferManager()
+                                    .clearCompletedDownload(dl.getDownloadManager());
+                        }
+                        return null;
+                    }
+                };
+
+        // Clear completed downloads
+        avw.start();
     }
 
     /**
