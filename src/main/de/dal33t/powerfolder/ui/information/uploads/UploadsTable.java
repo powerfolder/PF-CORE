@@ -17,7 +17,7 @@
 *
 * $Id$
 */
-package de.dal33t.powerfolder.ui.transfer;
+package de.dal33t.powerfolder.ui.information.uploads;
 
 import java.awt.Dimension;
 import java.util.Enumeration;

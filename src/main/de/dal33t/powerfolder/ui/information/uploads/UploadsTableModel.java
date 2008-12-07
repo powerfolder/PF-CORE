@@ -17,7 +17,7 @@
  *
  * $Id$
  */
-package de.dal33t.powerfolder.ui.transfer;
+package de.dal33t.powerfolder.ui.information.uploads;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;

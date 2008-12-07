@@ -19,41 +19,27 @@
  */
 package de.dal33t.powerfolder.ui.model;
 
-import javax.swing.event.TreeModelEvent;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.TreeNode;
-
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
-
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
-import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.transfer.Download;
+import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.transfer.Upload;
 import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.ui.navigation.NavTreeModel;
-import de.dal33t.powerfolder.ui.navigation.RootNode;
-import de.dal33t.powerfolder.ui.transfer.DownloadsTableModel;
-import de.dal33t.powerfolder.ui.transfer.UploadsTableModel;
-import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.ui.information.downloads.DownloadsTableModel;
+import de.dal33t.powerfolder.ui.information.uploads.UploadsTableModel;
 
 public class TransferManagerModel extends PFUIComponent {
     private TransferManager transferManager;
     private DownloadsTableModel downloadsTableModel;
+    private UploadsTableModel uploadsTableModel;
     private ValueModel downloadsAutoCleanupModel;
     private ValueModel uploadsAutoCleanupModel;
-    private UploadsTableModel uploadsTableModel;
-
-//    private NavTreeModel navTree;
-    private final DefaultMutableTreeNode DOWNLOADS_NODE = new DefaultMutableTreeNode(
-        RootNode.DOWNLOADS_NODE_LABEL);
-    private final DefaultMutableTreeNode UPLOADS_NODE = new DefaultMutableTreeNode(
-        RootNode.UPLOADS_NODE_LABEL);
 
     /** Value model with integer number of all displayed downloads. */
     private final ValueModel allDownloadsCountVM = new ValueHolder();
@@ -75,8 +61,6 @@ public class TransferManagerModel extends PFUIComponent {
 
     public TransferManagerModel(TransferManager transferManager) {
         super(transferManager.getController());
-//        Reject.ifNull(theNavTreeModel, "Nav tree model is null");
-//        navTree = theNavTreeModel;
         this.transferManager = transferManager;
         downloadsAutoCleanupModel = new ValueHolder();
         downloadsAutoCleanupModel
@@ -122,14 +106,6 @@ public class TransferManagerModel extends PFUIComponent {
 
     public UploadsTableModel getUploadsTableModel() {
         return uploadsTableModel;
-    }
-
-    public TreeNode getUploadsTreeNode() {
-        return UPLOADS_NODE;
-    }
-
-    public TreeNode getDownloadsTreeNode() {
-        return DOWNLOADS_NODE;
     }
 
     /**
@@ -254,9 +230,6 @@ public class TransferManagerModel extends PFUIComponent {
     }
 
     private void updateDownloadsTreeNode() {
-//        TreeModelEvent te = new TreeModelEvent(this, new Object[]{
-//            navTree.getRoot(), DOWNLOADS_NODE});
-//        navTree.fireTreeNodesChangedEvent(te);
 
         // Recalculate totals for downloads.
         int downloadCount = downloadsTableModel.getRowCount();
@@ -280,9 +253,6 @@ public class TransferManagerModel extends PFUIComponent {
     }
 
     private void updateUploadsTreeNode() {
-//        TreeModelEvent te = new TreeModelEvent(this, new Object[]{
-//            navTree.getRoot(), UPLOADS_NODE});
-//        navTree.fireTreeNodesChangedEvent(te);
 
         // Recalculate total and active uploads.
         int uploadCount = uploadsTableModel.getRowCount();

@@ -106,10 +106,6 @@ public class RootNode extends TreeNodeList {
         addChild(WEBSERVICE_NODE);
         addChild(RECYCLEBIN_NODE);
         addChild(controller.getUIController().getApplicationModel()
-                .getTransferManagerModel().getDownloadsTreeNode());
-        addChild(controller.getUIController().getApplicationModel()
-                .getTransferManagerModel().getUploadsTreeNode());
-        addChild(controller.getUIController().getApplicationModel()
                 .getNodeManagerModel().getFriendsTreeNode());
 
         // Only add if verbose mode.

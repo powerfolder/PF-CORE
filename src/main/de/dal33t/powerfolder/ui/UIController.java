@@ -41,6 +41,7 @@ import de.dal33t.powerfolder.ui.folder.FileNameProblemHandlerDefaultImpl;
 import de.dal33t.powerfolder.ui.friends.AskForFriendshipHandlerDefaultImpl;
 import de.dal33t.powerfolder.ui.information.InformationFrame;
 import de.dal33t.powerfolder.ui.model.ApplicationModel;
+import de.dal33t.powerfolder.ui.model.TransferManagerModel;
 import de.dal33t.powerfolder.ui.notification.NotificationHandler;
 import de.dal33t.powerfolder.ui.recyclebin.RecycleBinConfirmationHandlerDefaultImpl;
 import de.dal33t.powerfolder.ui.render.BlinkManager;
@@ -103,6 +104,7 @@ import java.util.logging.Logger;
 public class UIController extends PFComponent {
 
     private static final Logger log = Logger.getLogger(UIController.class.getName());
+    private static final long TEN_GIG = 10L << 30;
 
     private boolean started;
     private SplashScreen splash;
@@ -118,7 +120,7 @@ public class UIController extends PFComponent {
     private BlinkManager blinkManager;
 
     // List of pending jobs, execute when ui is opend
-    private List<Runnable> pendingJobs;
+    private final List<Runnable> pendingJobs;
     private Menu sysTrayFoldersMenu;
 
     // The root of all models
@@ -126,6 +128,7 @@ public class UIController extends PFComponent {
 
     private boolean seenOome;
 
+    private TransferManagerModel transferManagerModel;
 
     /**
      * Initializes a new UI controller. open UI with #start
@@ -253,6 +256,10 @@ public class UIController extends PFComponent {
         getController().getFolderRepository().addFolderRepositoryListener(
             new MyFolderRepositoryListener());
 
+        transferManagerModel = new TransferManagerModel(getController()
+            .getTransferManager());
+        transferManagerModel.initialize();
+
         // now load
         try {
             EventQueue.invokeAndWait(new Runnable() {
@@ -357,7 +364,7 @@ public class UIController extends PFComponent {
         long totalFolderSize = calculateTotalLocalSharedSize();
         logFine("Local shared folder size: "
             + Format.formatBytes(totalFolderSize));
-        boolean limitHit = totalFolderSize > 10L * 1024L * 1024L * 1024L
+        boolean limitHit = totalFolderSize > TEN_GIG
             || getController().getFolderRepository().getFoldersCount() > 3;
         if (limitHit) {
             getController().getNodeManager().shutdown();
@@ -583,6 +590,10 @@ public class UIController extends PFComponent {
         return chatModel;
     }
 
+    public TransferManagerModel getTransferManagerModel() {
+        return transferManagerModel;
+    }
+
     /**
      * Shows an OutOfMemoryError to the user.
      * 
@@ -655,7 +666,7 @@ public class UIController extends PFComponent {
     /**
      * Opens the Files information for a folder.
      *
-     * @param folderInfo info of the folder to display files information for.
+     * @param memberInfo info of the folder to display files information for.
      */
     public void openChat(MemberInfo memberInfo) {
         chatFrame.displayChat(memberInfo);
@@ -866,26 +877,6 @@ public class UIController extends PFComponent {
         return null;
     }
 
-    public Action getFolderLeaveAction() {
-        // @todo remove - use ActionModel
-        return null;
-    }
-
-    public Action getPreviewFolderRemoveAction() {
-        // @todo remove - use ActionModel
-        return null;
-    }
-
-    public Action getPreviewJoinAction() {
-        // @todo remove - use ActionModel
-        return null;
-    }
-
-    public Action getFolderCreateAction() {
-        // @todo remove - use ActionModel
-        return null;
-    }
-
     public Action getOpenAboutAction() {
         // @todo remove - use ActionModel
         return null;
@@ -896,37 +887,12 @@ public class UIController extends PFComponent {
         return null;
     }
 
-    public Action getHidePreviewsAction() {
-        // @todo remove - use ActionModel
-        return null;
-    }
-
     public Action getFindFriendAction() {
         // @todo remove - use ActionModel
         return null;
     }
 
-    public Action getFolderCreateShortcutAction() {
-        // @todo remove - use ActionModel
-        return null;
-    }
-
     public Action getSyncAllFoldersAction() {
-        // @todo remove - use ActionModel
-        return null;
-    }
-
-    public Action getRequestReportAction() {
-        // @todo remove - use ActionModel
-        return null;
-    }
-
-    public Action getReconnectAction() {
-        // @todo remove - use ActionModel
-        return null;
-    }
-
-    public Action getInviteUserAction() {
         // @todo remove - use ActionModel
         return null;
     }
