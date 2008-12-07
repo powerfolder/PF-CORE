@@ -25,8 +25,6 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.ui.model.TransferManagerModel;
-import de.dal33t.powerfolder.ui.information.uploads.UploadsTable;
-import de.dal33t.powerfolder.ui.information.uploads.UploadsTableModel;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 import javax.swing.JComponent;
@@ -43,8 +41,6 @@ import java.awt.event.MouseEvent;
 public class UploadsTablePanel extends PFUIComponent {
 
     private JPanel uiComponent;
-    private UploadsTable table;
-    private UploadsTableModel tableModel;
     private JScrollPane tablePane;
 
 
@@ -70,9 +66,8 @@ public class UploadsTablePanel extends PFUIComponent {
         TransferManagerModel transferManagerModel =
                 getUIController().getTransferManagerModel();
 
-        table = new UploadsTable(transferManagerModel);
+        UploadsTable table = new UploadsTable(transferManagerModel);
         table.getTableHeader().addMouseListener(new TableHeaderMouseListener());
-        tableModel = (UploadsTableModel) table.getModel();
         tablePane = new JScrollPane(table);
 
         // Whitestrip & set sizes
@@ -99,7 +94,7 @@ public class UploadsTablePanel extends PFUIComponent {
      *
      * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      */
-    private class TableHeaderMouseListener extends MouseAdapter {
+    private static class TableHeaderMouseListener extends MouseAdapter {
         public void mouseClicked(MouseEvent e) {
             if (SwingUtilities.isLeftMouseButton(e)) {
                 JTableHeader tableHeader = (JTableHeader) e.getSource();

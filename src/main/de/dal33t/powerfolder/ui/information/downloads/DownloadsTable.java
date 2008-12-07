@@ -41,21 +41,19 @@ public class DownloadsTable extends JTable {
     /**
      * Initalizes
      * 
-     * @param controller
-     * @param autoCleanupModel
+     * @param transferManagerModel
      */
-    public DownloadsTable(TransferManagerModel model) {
-        super(model.getDownloadsTableModel());
+    public DownloadsTable(TransferManagerModel transferManagerModel) {
+        super(transferManagerModel.getDownloadsTableModel());
 
         // Table setup
         setRowHeight(Icons.NODE_FRIEND_CONNECTED.getIconHeight() + 3);
         setColumnSelectionAllowed(false);
         setShowGrid(false);
-        // setFocusable(false);
 
         // Setup renderer
         TableCellRenderer transferTableCellRenderer = new TransferTableCellRenderer(
-            model.getController());
+            transferManagerModel.getController());
         setDefaultRenderer(Download.class, transferTableCellRenderer);
 
         // Set table columns
@@ -63,7 +61,7 @@ public class DownloadsTable extends JTable {
 
         // Associate a header renderer with all columns.
         SortedTableHeaderRenderer.associateHeaderRenderer(
-                model.getDownloadsTableModel(), getColumnModel(), 1);
+                transferManagerModel.getDownloadsTableModel(), getColumnModel(), 1);
 
     }
 

@@ -19,21 +19,19 @@
 */
 package de.dal33t.powerfolder.ui.information.uploads;
 
-import java.awt.Dimension;
-import java.util.Enumeration;
-
-import javax.swing.JTable;
-import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumn;
-
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.transfer.Transfer;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.model.TransferManagerModel;
-import de.dal33t.powerfolder.ui.render.TransferTableCellRenderer;
 import de.dal33t.powerfolder.ui.render.SortedTableHeaderRenderer;
+import de.dal33t.powerfolder.ui.render.TransferTableCellRenderer;
+
+import javax.swing.JTable;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
+import java.awt.Dimension;
 
 /**
  * A Table for displaying the uploads.
@@ -45,21 +43,19 @@ public class UploadsTable extends JTable {
     /**
      * Initalizes the table.
      * 
-     * @param transferManager
-     *            the transfermanager
+     * @param transferManagerModel
      */
-    public UploadsTable(TransferManagerModel model) {
-        super(model.getUploadsTableModel());
+    public UploadsTable(TransferManagerModel transferManagerModel) {
+        super(transferManagerModel.getUploadsTableModel());
 
         // Table setup
         setRowHeight(Icons.NODE_FRIEND_CONNECTED.getIconHeight() + 3);
         setColumnSelectionAllowed(false);
         setShowGrid(false);
-        // setFocusable(false);
 
         // Setup renderer
         TableCellRenderer transferTableCellRenderer = new TransferTableCellRenderer(
-            model.getController());
+            transferManagerModel.getController());
         setDefaultRenderer(FileInfo.class, transferTableCellRenderer);
         setDefaultRenderer(FolderInfo.class, transferTableCellRenderer);
         setDefaultRenderer(Transfer.class, transferTableCellRenderer);
@@ -72,7 +68,7 @@ public class UploadsTable extends JTable {
 
         // Associate a header renderer with all columns.
         SortedTableHeaderRenderer.associateHeaderRenderer(
-                model.getUploadsTableModel(), getColumnModel(), 1);
+                transferManagerModel.getUploadsTableModel(), getColumnModel(), 1);
     }
 
     // Helper methods *********************************************************
