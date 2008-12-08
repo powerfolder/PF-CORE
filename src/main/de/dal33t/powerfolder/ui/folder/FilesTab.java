@@ -54,7 +54,6 @@ import de.dal33t.powerfolder.ui.actionold.SelectionBaseAction;
 import de.dal33t.powerfolder.ui.actionold.ShowHideFileDetailsAction;
 import de.dal33t.powerfolder.ui.actionold.StartFileAction;
 import de.dal33t.powerfolder.ui.builder.ContentPanelBuilder;
-import de.dal33t.powerfolder.ui.dialog.FileDetailsPanel;
 import de.dal33t.powerfolder.util.DragDropChecker;
 import de.dal33t.powerfolder.util.FileCopier;
 import de.dal33t.powerfolder.util.FileUtils;
@@ -394,8 +393,6 @@ public class FilesTab extends PFUIComponent implements FolderTab,
      * @return the file details panel and sets it to the internal variable
      */
     private JComponent createFileDetailsPanel() {
-        FileDetailsPanel fileDetailsPanel = new FileDetailsPanel(
-            getController(), selectionModel);
         // check property to enable preview
         // preview of images is memory hungry
         // may cause OutOfMemoryErrors
@@ -411,7 +408,6 @@ public class FilesTab extends PFUIComponent implements FolderTab,
             CellConstraints cc = new CellConstraints();
             builder.addSeparator(null, cc.xy(1, 1));
             builder.addSeparator(null, cc.xy(1, 3));
-            builder.add(fileDetailsPanel.getEmbeddedPanel(), cc.xy(1, 4));
             builder.add(previewPanel.getUIComponent(), cc.xy(2, 4));
             return builder.getPanel();
         }
@@ -421,7 +417,6 @@ public class FilesTab extends PFUIComponent implements FolderTab,
         CellConstraints cc = new CellConstraints();
         builder.addSeparator(null, cc.xy(1, 1));
         builder.addSeparator(null, cc.xy(1, 3));
-        builder.add(fileDetailsPanel.getEmbeddedPanel(), cc.xy(1, 4));
         return builder.getPanel();
     }
 

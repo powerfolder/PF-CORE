@@ -94,7 +94,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         builder.add(createToolBar(), cc.xy(1, 1));
         builder.addSeparator(null, cc.xy(1, 3));
         builder.add(tableScroller, cc.xy(1, 5));
-        builder.add(fileDetailsPanel.getUiComponent(), cc.xy(1, 7));
+        builder.add(fileDetailsPanel.getPanel(), cc.xy(1, 7));
         uiComponent = builder.getPanel();
     }
 
@@ -111,8 +111,8 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
      * Toggle the details panel visibility.
      */
     public void toggleDetails() {
-        fileDetailsPanel.getUiComponent().setVisible(
-                !fileDetailsPanel.getUiComponent().isVisible());
+        fileDetailsPanel.getPanel().setVisible(
+                !fileDetailsPanel.getPanel().isVisible());
     }
 
     /**

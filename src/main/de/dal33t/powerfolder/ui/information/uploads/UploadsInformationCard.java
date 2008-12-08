@@ -31,6 +31,7 @@ import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.actionold.HasDetailsPanel;
 import de.dal33t.powerfolder.ui.information.InformationCard;
+import de.dal33t.powerfolder.ui.information.folder.files.FileDetailsPanel;
 import de.dal33t.powerfolder.util.Translation;
 
 import javax.swing.Action;
@@ -52,7 +53,7 @@ public class UploadsInformationCard extends InformationCard
     private JPanel uiComponent;
     private JPanel toolBar;
     private UploadsTablePanel tablePanel;
-    private UploadsDetailsPanel detailsPanel;
+    private FileDetailsPanel detailsPanel;
     private JCheckBox autoCleanupCB;
     private Action clearCompletedUploadsAction;
 
@@ -102,7 +103,7 @@ public class UploadsInformationCard extends InformationCard
     private void initialize() {
         buildToolbar();
         tablePanel = new UploadsTablePanel(getController());
-        detailsPanel = new UploadsDetailsPanel(getController());
+        detailsPanel = new FileDetailsPanel(getController());
         getController().getTransferManager().addListener(
             new MyTransferManagerListener());
         updateActions();
@@ -155,7 +156,7 @@ public class UploadsInformationCard extends InformationCard
         builder.add(toolBar, cc.xy(2, 2));
         builder.addSeparator(null, cc.xy(2, 4));
         builder.add(tablePanel.getUIComponent(), cc.xy(2, 6));
-        builder.add(detailsPanel.getUiComponent(), cc.xy(2, 8));
+        builder.add(detailsPanel.getPanel(), cc.xy(2, 8));
         uiComponent = builder.getPanel();
     }
 
@@ -163,8 +164,8 @@ public class UploadsInformationCard extends InformationCard
      * Toggle the details panel.
      */
     public void toggleDetails() {
-        detailsPanel.getUiComponent().setVisible(
-                !detailsPanel.getUiComponent().isVisible());
+        detailsPanel.getPanel().setVisible(
+                !detailsPanel.getPanel().isVisible());
     }
 
     /**

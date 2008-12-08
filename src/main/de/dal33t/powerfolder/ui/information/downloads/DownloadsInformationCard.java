@@ -23,22 +23,23 @@ import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.event.TransferAdapter;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.actionold.HasDetailsPanel;
 import de.dal33t.powerfolder.ui.information.InformationCard;
+import de.dal33t.powerfolder.ui.information.folder.files.FileDetailsPanel;
 import de.dal33t.powerfolder.util.Translation;
 
+import javax.swing.Action;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
-import javax.swing.Action;
-import javax.swing.JButton;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -52,7 +53,7 @@ public class DownloadsInformationCard extends InformationCard
     private JPanel uiComponent;
     private JPanel toolBar;
     private DownloadsTablePanel tablePanel;
-    private DownloadsDetailsPanel detailsPanel;
+    private FileDetailsPanel detailsPanel;
     private JCheckBox autoCleanupCB;
     private Action clearCompletedDownloadsAction;
 
@@ -102,7 +103,7 @@ public class DownloadsInformationCard extends InformationCard
     private void initialize() {
         buildToolbar();
         tablePanel = new DownloadsTablePanel(getController());
-        detailsPanel = new DownloadsDetailsPanel(getController());
+        detailsPanel = new FileDetailsPanel(getController());
         getController().getTransferManager().addListener(
             new MyTransferManagerListener());
         updateActions();
@@ -156,7 +157,7 @@ public class DownloadsInformationCard extends InformationCard
         builder.add(toolBar, cc.xy(2, 2));
         builder.addSeparator(null, cc.xy(2, 4));
         builder.add(tablePanel.getUIComponent(), cc.xy(2, 6));
-        builder.add(detailsPanel.getUiComponent(), cc.xy(2, 8));
+        builder.add(detailsPanel.getPanel(), cc.xy(2, 8));
         uiComponent = builder.getPanel();
     }
 
@@ -164,8 +165,8 @@ public class DownloadsInformationCard extends InformationCard
      * Toggle the details panel visibility.
      */
     public void toggleDetails() {
-        detailsPanel.getUiComponent().setVisible(
-                !detailsPanel.getUiComponent().isVisible());
+        detailsPanel.getPanel().setVisible(
+                !detailsPanel.getPanel().isVisible());
     }
 
     /**

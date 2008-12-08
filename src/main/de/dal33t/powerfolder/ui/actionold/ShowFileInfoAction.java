@@ -21,13 +21,13 @@ package de.dal33t.powerfolder.ui.actionold;
 
 import com.jgoodies.forms.factories.ButtonBarFactory;
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.ui.dialog.FileDetailsPanel;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.util.ui.BaseDialog;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
 
 import javax.swing.Icon;
 import javax.swing.JButton;
+import javax.swing.JPanel;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -40,7 +40,6 @@ import java.awt.event.ActionListener;
  */
 public class ShowFileInfoAction extends BaseAction {
     private BaseDialog dialog;
-    private FileDetailsPanel panel;
 
     /**
      * Initalizes a new showfileinfo action. displays a dialog with information
@@ -52,7 +51,6 @@ public class ShowFileInfoAction extends BaseAction {
     public ShowFileInfoAction(Controller controller, SelectionModel selectionModel)
     {
         super("show_file_info", controller);
-        panel = new FileDetailsPanel(controller, selectionModel);
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -87,7 +85,7 @@ public class ShowFileInfoAction extends BaseAction {
             }
 
             protected Component getContent() {
-                return panel.getPanel();
+                return new JPanel();
             }
 
             protected Component getButtonBar() {
