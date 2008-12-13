@@ -683,6 +683,14 @@ public class UIController extends PFComponent {
         displayInformationWindow();
     }
 
+    /**
+     * Call when non-quitOnX close called. Hides child frames.
+     */
+    public void hideChildPanels() {
+        informationFrame.getUIComponent().setVisible(false);
+        chatFrame.getUIComponent().setVisible(false);
+    }
+
     private class UpdateSystrayTask extends TimerTask {
         public void run() {
             StringBuilder tooltip = new StringBuilder();
