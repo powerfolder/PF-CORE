@@ -136,7 +136,7 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
         CellConstraints cc = new CellConstraints();
 
         builder.addLabel(Translation
-            .getTranslation("wizard.webservice.enteraccount"), cc.xyw(1, 1, 4));
+            .getTranslation("wizard.webservice.enter_account"), cc.xyw(1, 1, 4));
 
         builder.addLabel(Translation
             .getTranslation("wizard.webservice.username"), cc.xy(1, 3));
@@ -154,7 +154,7 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
             .getRegisterURL()), cc.xy(3, 9));
 
         LinkLabel link = new LinkLabel(Translation
-            .getTranslation("wizard.webservice.learnmore"),
+            .getTranslation("wizard.webservice.learn_more"),
             "http://www.powerfolder.com/online_storage_features.html");
         builder.add(link, cc.xyw(1, 11, 4));
 
