@@ -17,11 +17,12 @@
 *
 * $Id$
 */
-package de.dal33t.powerfolder.ui.folder;
+package de.dal33t.powerfolder.ui;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.ui.dialog.FileNameProblemDialog;
 import de.dal33t.powerfolder.event.FileNameProblemEvent;
 import de.dal33t.powerfolder.event.FileNameProblemHandler;
 
@@ -58,11 +59,11 @@ public class FileNameProblemHandlerDefaultImpl extends PFUIComponent implements
 
         if (PreferencesEntry.FILE_NAME_CHECK.getValueBoolean(getController())) {
             dialogOpenLock.lock();
-            FilenameProblemDialog dialog = new FilenameProblemDialog(
+            FileNameProblemDialog dialog = new FileNameProblemDialog(
                 getController(), fileNameProblemEvent);
             // Modal dialog causes wait here
             dialog.open();
-            if (dialog.getOption() == FilenameProblemDialog.OK
+            if (dialog.getOption() == FileNameProblemDialog.OK
                 && !dialog.askAgain())
             {
                 PreferencesEntry.FILE_NAME_CHECK.setValue(getController(),

@@ -26,7 +26,7 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.event.FileNameProblemEvent;
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.ui.folder.FilenameProblemDialog;
+import de.dal33t.powerfolder.ui.dialog.FileNameProblemDialog;
 import de.dal33t.powerfolder.util.ui.UIPanel;
 
 import javax.swing.*;
@@ -79,10 +79,10 @@ public class DialogTestingPanel extends PFUIComponent implements UIPanel {
         final FolderRepository folderRepository = getController().getFolderRepository();
         JButton button;
         if (folderRepository.getFolders().length == 0) {
-            button = new JButton("Need some folders to display FilenameProblemDialog");
+            button = new JButton("Need some folders to display FileNameProblemDialog");
             button.setEnabled(false);
         } else {
-            button = new JButton("FilenameProblemDialog");
+            button = new JButton("FileNameProblemDialog");
             button.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     Folder folder = folderRepository.getFolders()[0];
@@ -92,7 +92,7 @@ public class DialogTestingPanel extends PFUIComponent implements UIPanel {
                     List<FilenameProblem> filenameProblems = new ArrayList<FilenameProblem>();
                     filenameProblems.add(new FilenameProblem(fileInfo, fileInfo));
                     map.put(fileInfo, filenameProblems);
-                    FilenameProblemDialog dialog = new FilenameProblemDialog(getController(),
+                    FileNameProblemDialog dialog = new FileNameProblemDialog(getController(),
                             new FileNameProblemEvent(folder, map));
                     dialog.openDialog();
                 }
