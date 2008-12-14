@@ -15,9 +15,9 @@
 * You should have received a copy of the GNU General Public License
 * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
 *
-* $Id$
+* $Id: FileNameProblemDialog.java 5483 2008-10-21 06:29:05Z harry $
 */
-package de.dal33t.powerfolder.ui.folder;
+package de.dal33t.powerfolder.ui.dialog;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
@@ -69,7 +69,7 @@ import java.util.Map;
  * Displays a dialog if filename problems are found. This mainly happens on
  * linux, since those file systems allow almost all characters
  */
-public class FilenameProblemDialog extends PFUIComponent {
+public class FileNameProblemDialog extends PFUIComponent {
 
     private String[] columns = new String[]{
         Translation.getTranslation("filelist.name"),
@@ -107,7 +107,7 @@ public class FilenameProblemDialog extends PFUIComponent {
 
     private JTable table;
 
-    public FilenameProblemDialog(Controller controller,
+    public FileNameProblemDialog(Controller controller,
         FileNameProblemEvent problemEvent)
     {
         super(controller);
