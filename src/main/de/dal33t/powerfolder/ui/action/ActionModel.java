@@ -23,6 +23,8 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.ui.actionold.ReconnectAction;
 
+import java.awt.event.ActionListener;
+
 /**
  * Holder of all singleton actions.
  */
@@ -49,6 +51,7 @@ public class ActionModel extends PFComponent {
     private ReconnectAction reconnectAction;
     private AddFriendAction addFriendAction;
     private RemoveFriendAction removeFriendAction;
+    private SyncFolderAction syncFolderAction;
 
     public NewFolderAction getNewFolderAction() {
         if (newFolderAction == null) {
@@ -146,5 +149,12 @@ public class ActionModel extends PFComponent {
             removeFriendAction = new RemoveFriendAction(getController());
         }
         return removeFriendAction;
+    }
+
+    public ActionListener getSyncFolderAction() {
+        if (syncFolderAction == null) {
+            syncFolderAction = new SyncFolderAction(getController());
+        }
+        return syncFolderAction;
     }
 }

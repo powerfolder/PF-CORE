@@ -101,7 +101,7 @@ public class FileNameProblemLinuxTest extends ControllerTestCase {
             }
 
             scanFolder(getFolder());
-            // ScanResult result = folderScanner.scanFolder(getFolder());
+            // ScanResult result = folderScanner.syncFolder(getFolder());
             // assertEquals(12, result.getNewFiles().size());
 
             assertEquals(1, handlerCalledCount);

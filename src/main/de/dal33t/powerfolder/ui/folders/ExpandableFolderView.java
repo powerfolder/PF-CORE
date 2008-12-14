@@ -206,6 +206,7 @@ public class ExpandableFolderView extends PFUIComponent {
         expandCollapseButton.addActionListener(new MyExpColActionListener());
         syncFolderButton = new JButtonMini(Icons.SYNC,
                 Translation.getTranslation("exp_folder_view.synchronize_folder"));
+        syncFolderButton.addActionListener(new MySyncActionListener());
         filesLabel = new JLabel();
         syncPercentLabel = new JLabel();
         totalSizeLabel = new JLabel();
@@ -322,6 +323,10 @@ public class ExpandableFolderView extends PFUIComponent {
                 "exp_folder_view.members", count));
     }
 
+    ///////////////////
+    // Inner Classes //
+    ///////////////////
+
     /**
      * Class to respond to folder events.
      */
@@ -415,6 +420,15 @@ public class ExpandableFolderView extends PFUIComponent {
                     e.getID(), e.getActionCommand(), e.getWhen(), e.getModifiers());
             getApplicationModel().getActionModel()
                     .getOpenMembersInformationAction().actionPerformed(ae);
+        }
+    }
+
+    private class MySyncActionListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            ActionEvent ae = new ActionEvent(getFolderInfo(),
+                    e.getID(), e.getActionCommand(), e.getWhen(), e.getModifiers());
+            getApplicationModel().getActionModel().getSyncFolderAction()
+                    .actionPerformed(ae);
         }
     }
 }

@@ -17,9 +17,10 @@
 *
 * $Id$
 */
-package de.dal33t.powerfolder.ui.actionold;
+package de.dal33t.powerfolder.ui.action;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 
 import javax.swing.KeyStroke;
@@ -28,26 +29,21 @@ import java.awt.event.KeyEvent;
 
 /**
  * Action to manually sync a folder.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.11 $
  */
 public class SyncFolderAction extends BaseAction {
 
     public SyncFolderAction(Controller controller) {
-        super("scan_folder", controller);
-        // Override icon
-        putValue(SMALL_ICON, null);
-
-        // Note: the accelerator is not actually used here;
-        // It just puts the Alt-1 text on the Nav tree pop-up item.
-        // See MainFrame.MySyncFolderAction.
-        putValue(ACCELERATOR_KEY,
-                KeyStroke.getKeyStroke(KeyEvent.VK_1, ActionEvent.ALT_MASK));
+        super("action_sync_folder", controller);
     }
 
     public void actionPerformed(ActionEvent e) {
-//        getController().getUIController().getApplicationModel()
-//                .getFolderRepositoryModel().scanSelectedFolder();
+        Object source = e.getSource();
+        if (source instanceof FolderInfo) {
+            FolderInfo folderInfo = (FolderInfo) source;
+            getController().getUIController().syncFolder(folderInfo);
+        }
     }
 }

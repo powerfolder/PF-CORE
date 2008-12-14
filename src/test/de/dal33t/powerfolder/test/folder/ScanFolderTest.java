@@ -365,7 +365,7 @@ public class ScanFolderTest extends ControllerTestCase {
         for (int i = 0; i < 100; i++) {
             getController().setSilentMode(false);
             assertTrue(getFolder().scanLocalFiles());
-            // scanFolder(getFolder());
+            // syncFolder(getFolder());
 
             // Test
             assertEquals(nFiles, getFolder().getKnownFilesCount());

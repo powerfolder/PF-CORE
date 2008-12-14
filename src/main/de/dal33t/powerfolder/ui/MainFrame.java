@@ -143,8 +143,8 @@ public class MainFrame extends PFUIComponent {
                         }
                     }.start();
                 } else {
-                    uiComponent.setVisible(false);
                     getUIController().hideChildPanels();
+                    uiComponent.setVisible(false);
                 }
             }
         });
