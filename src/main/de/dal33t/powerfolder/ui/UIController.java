@@ -60,7 +60,6 @@ import de.javasoft.plaf.synthetica.SyntheticaSilverMoonLookAndFeel;
 import org.apache.commons.lang.StringUtils;
 
 import javax.imageio.ImageIO;
-import javax.swing.Action;
 import javax.swing.JFrame;
 import javax.swing.LookAndFeel;
 import javax.swing.SwingUtilities;
@@ -881,41 +880,7 @@ public class UIController extends PFComponent {
         }
     }
 
-    // Actions ****************************************************************
-
-    // TODO Remove these actions and place them into the approriate model (ActionModel).
-    public Action getOpenWizardAction() {
-        // @todo remove - use ActionModel
-        return null;
-    }
-
-    Action getOpenPreferencesAction() {
-        // @todo remove - use ActionModel
-        return null;
-    }
-
-    public Action getOpenAboutAction() {
-        // @todo remove - use ActionModel
-        return null;
-    }
-
-    public Action getToggleSilentModeAction() {
-        // @todo remove - use ActionModel
-        return null;
-    }
-
-    public Action getFindFriendAction() {
-        // @todo remove - use ActionModel
-        return null;
-    }
-
-    public Action getSyncAllFoldersAction() {
-        // @todo remove - use ActionModel
-        return null;
-    }
-
-    private class ChatNotificationManager implements ChatModelListener
-    {
+    private class ChatNotificationManager implements ChatModelListener {
 
         private ChatNotificationManager(ChatModel chatModel) {
             chatModel.addChatModelListener(this);
@@ -969,49 +934,6 @@ public class UIController extends PFComponent {
                     .getTranslation("chat.notification.title"), Translation
                     .getTranslation("chat.notification.member_message", m
                         .getNick()), task, false);
-            } else if (event.getSource() instanceof Folder) {
-                final Folder f = (Folder) event.getSource();
-                TimerTask task = new TimerTask() {
-                    public void run() {
-
-                        // Find path to the chatting folder.
-                        TreeNodeList treeNodeList = getApplicationModel()
-                                .getFolderRepositoryModel()
-                                .getMyFoldersTreeNode();
-                        int childCount = treeNodeList.getChildCount();
-                        if (f != null) {
-                            for (int i = 0; i < childCount; i++) {
-                                TreeNode child = treeNodeList.getChildAt(i);
-                                if (child != null
-                                    && child instanceof TreeNodeList)
-                                {
-                                    TreeNodeList tnl = (TreeNodeList) child;
-                                    Object userObject = tnl.getUserObject();
-                                    if (userObject != null
-                                        && userObject instanceof Folder)
-                                    {
-                                        Folder folder = (Folder) userObject;
-                                        if (f.equals(folder)) {
-                                            // Found folder, use as path.
-
-
-//                                            // Also select chat tab.
-//                                            getInformationQuarter()
-//                                                .displayChat(folder);
-                                            return;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-
-                    }
-                };
-
-                notifyMessage(Translation
-                    .getTranslation("chat.notification.title"), Translation
-                    .getTranslation("chat.notification.message"), task, false);
             } else {
                 notifyMessage(Translation
                     .getTranslation("chat.notification.title"), Translation

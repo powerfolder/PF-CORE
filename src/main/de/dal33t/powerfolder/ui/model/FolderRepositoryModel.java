@@ -117,7 +117,7 @@ public class FolderRepositoryModel extends PFUIComponent {
     public boolean isHidePreviews() {
         return (Boolean) hidePreviewsVM.getValue();
     }
-    
+
     public TreeNodeList getMyFoldersTreeNode() {
 //        return myFoldersTreeNode;
         return null;

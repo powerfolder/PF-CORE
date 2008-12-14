@@ -21,11 +21,7 @@ package de.dal33t.powerfolder.ui.action;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.ui.action.BaseAction;
-
-import javax.swing.KeyStroke;
 import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
 
 /**
  * Action to manually sync a folder.

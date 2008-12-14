@@ -20,13 +20,10 @@
 package de.dal33t.powerfolder.ui.actionold;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.ui.Toolbar;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 
 import javax.swing.Action;
-import javax.swing.ImageIcon;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -42,11 +39,8 @@ public class ToggleSilentModeAction extends BaseAction {
 
     private static final Logger log = Logger.getLogger(ToggleSilentModeAction.class.getName());
 
-    private boolean smallToolbar;
-
     public ToggleSilentModeAction(Controller controller) {
         super(null, null, controller);
-        smallToolbar = PreferencesEntry.SMALL_TOOLBAR.getValueBoolean(getController());
         // Setup
         adaptForScanSetting(getController().isSilentMode());
         // Bind to property
@@ -63,30 +57,11 @@ public class ToggleSilentModeAction extends BaseAction {
         // Workaround for toolbar (for toolbar)
         if (silentMode) {
             configureFromActionId("disable_silent_mode");
-            if (smallToolbar) {
-                ImageIcon scaledImage =
-                        Icons.scaleIcon((ImageIcon) Icons.SLEEP,
-                        Toolbar.SMALL_ICON_SCALE_FACTOR);
-                putValue(Action.SMALL_ICON, scaledImage);
-            } else {
-                putValue(Action.SMALL_ICON, Icons.SLEEP);
-            }
+            putValue(Action.SMALL_ICON, Icons.SLEEP);
         } else {
             configureFromActionId("enable_silent_mode");
-            if (smallToolbar) {
-                ImageIcon scaledImage =
-                        Icons.scaleIcon((ImageIcon) Icons.WAKE_UP,
-                        Toolbar.SMALL_ICON_SCALE_FACTOR);
-                putValue(Action.SMALL_ICON, scaledImage);
-            } else {
                 putValue(Action.SMALL_ICON, Icons.WAKE_UP);
-            }
         }
-
-        if (smallToolbar) {
-            putValue(Action.NAME, null);
-        }
-       
     }
 
     public void actionPerformed(ActionEvent e) {
