@@ -45,7 +45,7 @@ import java.util.Date;
  */
 public class ExpandableComputerView extends PFUIComponent {
 
-    private final Member member;
+    private final Member node;
     private JButtonMini expandCollapseButton;
     private JPanel uiComponent;
     private JPanel lowerOuterPanel;
@@ -64,9 +64,9 @@ public class ExpandableComputerView extends PFUIComponent {
      * @param controller
      * @param member
      */
-    public ExpandableComputerView(Controller controller, Member member) {
+    public ExpandableComputerView(Controller controller, Member node) {
         super(controller);
-        this.member = member;
+        this.node = node;
     }
 
     /**
@@ -95,7 +95,7 @@ public class ExpandableComputerView extends PFUIComponent {
         CellConstraints cc = new CellConstraints();
 
         upperBuilder.add(pictoLabel, cc.xy(1, 1));
-        upperBuilder.add(new JLabel(member.getNick()), cc.xy(3, 1));
+        upperBuilder.add(new JLabel(node.getNick()), cc.xy(3, 1));
         upperBuilder.add(chatButton, cc.xy(6, 1));   // temporary :-)
         upperBuilder.add(expandCollapseButton, cc.xy(7, 1));
 
@@ -195,8 +195,8 @@ public class ExpandableComputerView extends PFUIComponent {
      * Gets the name of the associated folder.
      * @return
      */
-    public Member getMember() {
-        return member;
+    public Member getNode() {
+        return node;
     }
 
     /**
@@ -205,18 +205,21 @@ public class ExpandableComputerView extends PFUIComponent {
      * @param e
      */
     private void updateDetailsIfRequired(NodeManagerEvent e) {
-        Member node = e.getNode();
-        if (node == null) {
+        Member eventNode = e.getNode();
+        if (eventNode == null) {
             return;
         }
-        if (node.equals(member)) {
+        if (node.equals(eventNode)) {
             updateDetails();
             configureAddRemoveButton();
         }
     }
 
+    /**
+     * Configure the add / remove button on node change.
+     */
     private void configureAddRemoveButton() {
-        if (member.isFriend()) {
+        if (node.isFriend()) {
             addRemoveButton.configureFromAction(getApplicationModel().getActionModel().getRemoveFriendAction());
         } else {
             addRemoveButton.configureFromAction(getApplicationModel().getActionModel().getAddFriendAction());
@@ -227,7 +230,7 @@ public class ExpandableComputerView extends PFUIComponent {
      * Updates the displayed details of the member.
      */
     private void updateDetails() {
-        Date time = member.getLastConnectTime();
+        Date time = node.getLastConnectTime();
         String lastConnectedTime;
         if (time == null) {
             lastConnectedTime = "";
@@ -237,8 +240,8 @@ public class ExpandableComputerView extends PFUIComponent {
         lastSeenLabel.setText(Translation.getTranslation(
                 "exp_computer_view.last_seen_text", lastConnectedTime));
 
-        if (member.isConnected()) {
-            if (member.isFriend()) {
+        if (node.isConnected()) {
+            if (node.isFriend()) {
                 pictoLabel.setIcon(Icons.NODE_FRIEND_CONNECTED);
                 pictoLabel.setToolTipText(Translation.getTranslation(
                         "exp_computer_view.node_friend_connected_text"));
@@ -248,7 +251,7 @@ public class ExpandableComputerView extends PFUIComponent {
                         "exp_computer_view.node_non_friend_connected_text"));
             }
         } else {
-            if (member.isFriend()) {
+            if (node.isFriend()) {
                 pictoLabel.setIcon(Icons.NODE_FRIEND_DISCONNECTED);
                 pictoLabel.setToolTipText(Translation.getTranslation(
                         "exp_computer_view.node_friend_disconnected_text"));
@@ -260,6 +263,31 @@ public class ExpandableComputerView extends PFUIComponent {
         }
 
     }
+
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
+
+        ExpandableComputerView that = (ExpandableComputerView) obj;
+
+        if (!node.equals(that.node)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public int hashCode() {
+        return node.hashCode();
+    }
+
+    ///////////////////
+    // Inner Classes //
+    ///////////////////
 
     /**
      * Class to respond to expand / collapse events.
@@ -331,7 +359,7 @@ public class ExpandableComputerView extends PFUIComponent {
     private class MyReconnectActionListener implements ActionListener {
 
         public void actionPerformed(ActionEvent e) {
-            ActionEvent ae = new ActionEvent(getMember().getInfo(),
+            ActionEvent ae = new ActionEvent(getNode().getInfo(),
                     e.getID(), e.getActionCommand(), e.getWhen(), e.getModifiers());
             getApplicationModel().getActionModel().getReconnectAction()
                     .actionPerformed(ae);
@@ -344,9 +372,9 @@ public class ExpandableComputerView extends PFUIComponent {
     private class MyAddRemoveActionListener implements ActionListener {
 
         public void actionPerformed(ActionEvent e) {
-            ActionEvent ae = new ActionEvent(getMember().getInfo(),
+            ActionEvent ae = new ActionEvent(getNode().getInfo(),
                     e.getID(), e.getActionCommand(), e.getWhen(), e.getModifiers());
-            if (member.isFriend()) {
+            if (node.isFriend()) {
                 getApplicationModel().getActionModel().getRemoveFriendAction()
                         .actionPerformed(ae);
             } else {
@@ -362,7 +390,7 @@ public class ExpandableComputerView extends PFUIComponent {
     private class MyChatActionListener implements ActionListener {
 
         public void actionPerformed(ActionEvent e) {
-            ActionEvent ae = new ActionEvent(getMember().getInfo(),
+            ActionEvent ae = new ActionEvent(getNode().getInfo(),
                     e.getID(), e.getActionCommand(), e.getWhen(), e.getModifiers());
             getApplicationModel().getActionModel().getOpenChatAction()
                     .actionPerformed(ae);

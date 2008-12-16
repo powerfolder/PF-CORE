@@ -23,7 +23,6 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.ui.action.ActionModel;
 import de.dal33t.powerfolder.ui.chat.ChatModel;
-import de.dal33t.powerfolder.ui.chat.ChatModel;
 import de.dal33t.powerfolder.ui.webservice.ServerClientModel;
 
 /**
@@ -58,7 +57,7 @@ public class ApplicationModel extends PFUIComponent {
     public void initialize() {
         actionModel = new ActionModel(getController());
         chatModel = new ChatModel(getController());
-        nodeManagerModel = new NodeManagerModel(getController(), chatModel);
+        nodeManagerModel = new NodeManagerModel(getController());
         folderRepositoryModel = new FolderRepositoryModel(getController());
         folderRepositoryModel.initalize();
         transferManagerModel = new TransferManagerModel(getController()

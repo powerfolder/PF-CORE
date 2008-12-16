@@ -25,6 +25,7 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.ui.model.NodeManagerModel;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
@@ -32,17 +33,32 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 
+/**
+ * Class to display a list of computers.
+ */
 public class ComputersTab extends PFUIComponent {
 
     private JPanel uiComponent;
     private ComputersList computersList;
     private JComboBox computerTypeList;
 
+    /**
+     * Constructor
+     *
+     * @param controller
+     */
     public ComputersTab(Controller controller) {
         super(controller);
     }
 
+    /**
+     * Gets the UI component
+     *
+     * @return
+     */
     public JPanel getUIComponent() {
         if (uiComponent == null) {
             buildUI();
@@ -50,6 +66,9 @@ public class ComputersTab extends PFUIComponent {
         return uiComponent;
     }
 
+    /**
+     * Builds the UI component
+     */
     private void buildUI() {
         initComponents();
 
@@ -68,6 +87,9 @@ public class ComputersTab extends PFUIComponent {
         uiComponent = builder.getPanel();
     }
 
+    /**
+     * Initializes components
+     */
     private void initComponents() {
         
         computersList = new ComputersList(getController());
@@ -75,9 +97,14 @@ public class ComputersTab extends PFUIComponent {
         computerTypeList = new JComboBox();
         computerTypeList.setToolTipText(Translation.getTranslation(
                 "computers_tab.computer_type_list.text"));
-        computerTypeList.addItem(Translation.getTranslation("computers_tab.all_computers"));
-        computerTypeList.addItem(Translation.getTranslation("computers_tab.only_online_friends"));
-        computerTypeList.addItem(Translation.getTranslation("computers_tab.all_online"));
+        computerTypeList.addItem(Translation.getTranslation(
+                "computers_tab.all_friends_online_lan"));
+        computerTypeList.addItem(Translation.getTranslation(
+                "computers_tab.online_friends"));
+        computerTypeList.addItem(Translation.getTranslation(
+                "computers_tab.online_friends_online_lan"));
+        computerTypeList.addActionListener(new MyActionListener());
+        configureNodeManagerModel();
     }
 
     /**
@@ -98,5 +125,41 @@ public class ComputersTab extends PFUIComponent {
         barPanel.setBorder(Borders.DLU4_BORDER);
 
         return barPanel;
+    }
+
+    /**
+     * Configure the node manager model with hide and include settings.
+     */
+    private void configureNodeManagerModel() {
+        NodeManagerModel nodeManagerModel = getUIController()
+                .getApplicationModel().getNodeManagerModel();
+        int index = computerTypeList.getSelectedIndex();
+        if (index == 0) { // All friends / online lan
+            nodeManagerModel.getHideOfflineFriendsModel().setValue(false);
+            nodeManagerModel.getIncludeOnlineLanModel().setValue(true);
+        } else if (index == 1) { // Online friends
+            nodeManagerModel.getHideOfflineFriendsModel().setValue(true);
+            nodeManagerModel.getIncludeOnlineLanModel().setValue(false);
+        } else if (index == 2) { // Online friends / online lan
+            nodeManagerModel.getHideOfflineFriendsModel().setValue(true);
+            nodeManagerModel.getIncludeOnlineLanModel().setValue(true);
+        } else {
+            logSevere("Bad computerTypeList index " + index);
+        }
+    }
+
+    ///////////////////
+    // Inner Classes //
+    ///////////////////
+
+    /**
+     * Action listener for type list.
+     */
+    private class MyActionListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            if (e.getSource().equals(computerTypeList)) {
+                configureNodeManagerModel();
+            }
+        }
     }
 }

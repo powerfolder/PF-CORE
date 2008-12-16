@@ -31,14 +31,7 @@ import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.event.FolderEvent;
-import de.dal33t.powerfolder.event.FolderListener;
-import de.dal33t.powerfolder.event.FolderRepositoryEvent;
-import de.dal33t.powerfolder.event.FolderRepositoryListener;
-import de.dal33t.powerfolder.event.NodeManagerEvent;
-import de.dal33t.powerfolder.event.NodeManagerListener;
-import de.dal33t.powerfolder.event.TransferManagerEvent;
-import de.dal33t.powerfolder.event.TransferManagerListener;
+import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.os.OnlineStorageSubscriptionType;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.UIUtil;
@@ -169,8 +162,8 @@ public class HomeTab extends PFUIComponent {
             new MyTransferManagerListener());
         getController().getFolderRepository().addFolderRepositoryListener(
             new MyFolderRepositoryListener());
-        getController().getNodeManager().addNodeManagerListener(
-            new MyNodeManagerListener());
+        getUIController().getApplicationModel().getNodeManagerModel()
+                .addNodeManagerModelListener(new MyNodeManagerModelListener());
         client.addListener(new MyServerClientListener());
     }
 
@@ -321,10 +314,11 @@ public class HomeTab extends PFUIComponent {
 
     /**
      * Updates the information about the number of computers.
+     * This is affected by the type selection in the computers tab.
      */
     private void updateComputers() {
-        int nodeCount = getController().getNodeManager().getNodesAsCollection()
-                .size();
+        int nodeCount = getUIController().getApplicationModel()
+                .getNodeManagerModel().getNodes().size();
         computersLine.setValue(nodeCount);
     }
 
@@ -504,36 +498,18 @@ public class HomeTab extends PFUIComponent {
 
     }
 
-    private class MyNodeManagerListener implements NodeManagerListener {
+    private class MyNodeManagerModelListener implements NodeManagerModelListener {
 
-        public void nodeRemoved(NodeManagerEvent e) {
-        }
-
-        public void nodeAdded(NodeManagerEvent e) {
-        }
-
-        public void nodeConnected(NodeManagerEvent e) {
+        public void nodeRemoved(NodeManagerModelEvent e) {
             updateComputers();
         }
 
-        public void nodeDisconnected(NodeManagerEvent e) {
+        public void nodeAdded(NodeManagerModelEvent e) {
             updateComputers();
         }
 
-        public void friendAdded(NodeManagerEvent e) {
-        }
-
-        public void friendRemoved(NodeManagerEvent e) {
-        }
-
-        public void settingsChanged(NodeManagerEvent e) {
-        }
-
-        public void startStop(NodeManagerEvent e) {
-        }
-
-        public boolean fireInEventDispatchThread() {
-            return true;
+        public void rebuilt(NodeManagerModelEvent e) {
+            updateComputers();
         }
     }
 

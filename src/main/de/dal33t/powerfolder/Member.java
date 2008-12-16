@@ -103,7 +103,7 @@ import de.dal33t.powerfolder.util.logging.LoggingManager;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.115 $
  */
-public class Member extends PFComponent {
+public class Member extends PFComponent implements Comparable {
 
     /** Listener support for incoming messages */
     private MessageListenerSupport messageListenerSupport;
@@ -2218,5 +2218,13 @@ public class Member extends PFComponent {
 
     public int hashCode() {
         return (info.id == null) ? 0 : info.id.hashCode();
+    }
+
+    public int compareTo(Object o) {
+        if (o instanceof Member) {
+            Member m = (Member) o;
+            return info.id.compareTo(m.info.id);
+        }
+        return -1;
     }
 }

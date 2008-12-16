@@ -37,7 +37,6 @@ import de.dal33t.powerfolder.ui.chat.ChatFrame;
 import de.dal33t.powerfolder.ui.chat.ChatModel;
 import de.dal33t.powerfolder.ui.chat.ChatModelEvent;
 import de.dal33t.powerfolder.ui.chat.ChatModelListener;
-import de.dal33t.powerfolder.ui.FileNameProblemHandlerDefaultImpl;
 import de.dal33t.powerfolder.ui.friends.AskForFriendshipHandlerDefaultImpl;
 import de.dal33t.powerfolder.ui.information.InformationFrame;
 import de.dal33t.powerfolder.ui.model.ApplicationModel;
@@ -55,7 +54,6 @@ import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
-import de.dal33t.powerfolder.util.ui.TreeNodeList;
 import de.javasoft.plaf.synthetica.SyntheticaSilverMoonLookAndFeel;
 import org.apache.commons.lang.StringUtils;
 
@@ -95,8 +93,6 @@ import java.util.logging.Logger;
 
 /**
  * The ui controller.
- * <P>
- * TODO Remove all Actions and put them into Models.
  * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.86 $
@@ -892,39 +888,39 @@ public class UIController extends PFComponent {
                 return;
             }
             if (event.getSource() instanceof Member) {
-                final Member m = (Member) event.getSource();
+                Member m = (Member) event.getSource();
 
                 TimerTask task = new TimerTask() {
                     public void run() {
 
-                        // Find path to the chatting member.
-                        TreeNodeList treeNodeList = getApplicationModel()
-                                .getNodeManagerModel().getFriendsTreeNode();
-                        int childCount = treeNodeList.getChildCount();
-                        if (m != null) {
-                            for (int i = 0; i < childCount; i++) {
-                                TreeNode child = treeNodeList.getChildAt(i);
-                                if (child != null
-                                    && child instanceof DefaultMutableTreeNode)
-                                {
-                                    DefaultMutableTreeNode dmtn = (DefaultMutableTreeNode) child;
-                                    Object userObject = dmtn.getUserObject();
-                                    if (userObject != null
-                                        && userObject instanceof Member)
-                                    {
-                                        Member member = (Member) userObject;
-                                        if (m.equals(member)) {
-                                            // Found member, use as path.
-
-
-
-
-                                            return;
-                                        }
-                                    }
-                                }
-                            }
-                        }
+//                        // Find path to the chatting member.
+//                        TreeNodeList treeNodeList = getApplicationModel()
+//                                .getNodeManagerModel().getFriendsTreeNode();
+//                        int childCount = treeNodeList.getChildCount();
+//                        if (m != null) {
+//                            for (int i = 0; i < childCount; i++) {
+//                                TreeNode child = treeNodeList.getChildAt(i);
+//                                if (child != null
+//                                    && child instanceof DefaultMutableTreeNode)
+//                                {
+//                                    DefaultMutableTreeNode dmtn = (DefaultMutableTreeNode) child;
+//                                    Object userObject = dmtn.getUserObject();
+//                                    if (userObject != null
+//                                        && userObject instanceof Member)
+//                                    {
+//                                        Member member = (Member) userObject;
+//                                        if (m.equals(member)) {
+//                                            // Found member, use as path.
+//
+//
+//
+//
+//                                            return;
+//                                        }
+//                                    }
+//                                }
+//                            }
+//                        }
 
 
 

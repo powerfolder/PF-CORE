@@ -33,12 +33,12 @@ public enum PreferencesEntry {
     /**
      * Hide offline friends
      */
-    NODEMANAGERMODEL_HIDEOFFLINEFRIENDS("NodeManagerModel_HideOfflineFriends",
+    NODE_MANAGER_MODEL_HIDE_OFFLINE_FRIENDS("NodeManagerModel_HideOfflineFriends",
         false),
     /**
      * Include all LAN users
      */
-    NODE_MANAGER_MODEL_INCLUDE_LAN_USERS("NodeManagerModel_IncludeLanUsers",
+    NODE_MANAGER_MODEL_INCLUDE_ONLINE_LAN_USERS("NodeManagerModel_IncludeLanUsers",
         true),
 
     /** find offline users */
