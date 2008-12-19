@@ -29,11 +29,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
-public class OpenWebServiceInBrowserAction extends BaseAction {
+public class OpenServerWebUrlInBrowserAction extends BaseAction {
 
-    private static final Logger log = Logger.getLogger(OpenWebServiceInBrowserAction.class.getName());
+    private static final Logger log = Logger.getLogger(OpenServerWebUrlInBrowserAction.class.getName());
 
-    protected OpenWebServiceInBrowserAction(Controller controller) {
+    protected OpenServerWebUrlInBrowserAction(Controller controller) {
         super("open_web_service", controller);
     }
 

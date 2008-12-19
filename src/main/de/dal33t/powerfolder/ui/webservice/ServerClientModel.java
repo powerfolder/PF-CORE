@@ -122,7 +122,7 @@ public class ServerClientModel extends PFUIComponent {
 
             @Override
             public void finished() {
-                if (!(Boolean) get()) {
+                if (get() == null || !(Boolean) get()) {
                     PFWizard.openLoginWebServiceWizard(getController(), client,
                         folderSetupAfterwards);
                 }
