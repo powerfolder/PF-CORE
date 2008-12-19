@@ -35,6 +35,7 @@ import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.message.MessageListener;
 import de.dal33t.powerfolder.net.NodeManager;
 import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 
 import java.util.Date;
@@ -53,6 +54,7 @@ public class ChatModel implements MessageListener {
 
     private Map<Member, ChatBox> chatBoxMap = new HashMap<Member, ChatBox>();
     private ChatModelListener chatModelListeners;
+    private Controller controller;
     private FolderRepository repository;
     private FolderMembershipListener folderMembershipListener;
 
@@ -62,6 +64,8 @@ public class ChatModel implements MessageListener {
      * @param controller
      */
     public ChatModel(Controller controller) {
+        Reject.ifNull(controller, "Controller is null");
+        this.controller = controller;
         repository = controller.getFolderRepository();
         NodeManager nodeManager = controller.getNodeManager();
         nodeManager.addMessageListenerToAllNodes(this);
@@ -242,27 +246,31 @@ public class ChatModel implements MessageListener {
     private class MyNodeManagerListener implements NodeManagerListener {
 
         public void nodeConnected(NodeManagerEvent e) {
-            Member node = e.getNode();
-            String statusMessage = Translation.getTranslation(
+            if (controller.isVerbose()) {
+                Member node = e.getNode();
+                String statusMessage = Translation.getTranslation(
                     "chat_panel.member_connected_at_time", node.getNick(),
                     Format.getTimeOnlyDateFormat().format(new Date())) + '\n';
-            addStatusChatLine(node, statusMessage);
-            for (Folder folder : repository.getFoldersAsCollection()) {
-                if (folder.hasMember(node)) {
-                    addStatusChatLine(node, statusMessage);
+                addStatusChatLine(node, statusMessage);
+                for (Folder folder : repository.getFoldersAsCollection()) {
+                    if (folder.hasMember(node)) {
+                        addStatusChatLine(node, statusMessage);
+                    }
                 }
             }
         }
 
         public void nodeDisconnected(NodeManagerEvent e) {
-            Member node = e.getNode();
-            String statusMessage = Translation.getTranslation(
+            if (controller.isVerbose()) {
+                Member node = e.getNode();
+                String statusMessage = Translation.getTranslation(
                     "chat_panel.member_disconnected_at_time", node.getNick(),
                     Format.getTimeOnlyDateFormat().format(new Date())) + '\n';
-            addStatusChatLine(node, statusMessage);
-            for (Folder folder : repository.getFoldersAsCollection()) {
-                if (folder.hasMember(node)) {
-                    addStatusChatLine(node, statusMessage);
+                addStatusChatLine(node, statusMessage);
+                for (Folder folder : repository.getFoldersAsCollection()) {
+                    if (folder.hasMember(node)) {
+                        addStatusChatLine(node, statusMessage);
+                    }
                 }
             }
         }
