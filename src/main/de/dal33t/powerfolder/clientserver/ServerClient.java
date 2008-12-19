@@ -69,11 +69,23 @@ public class ServerClient extends PFComponent {
     private String password;
 
     private Member server;
+    private String webURL;
+
     /**
      * If this client should connect to the server where his folders are hosted
      * on.
      */
     private boolean allowServerChange;
+    /**
+     * Update the config with new HOST/ID infos if retrieved from server.
+     */
+    private boolean updateConfig;
+
+    /**
+     * Log that is kept to synchronize calls to login
+     */
+    private Object loginLock = new Object();
+
     private AccountDetails accountDetails;
     private AccountService userService;
     private FolderService folderService;
@@ -81,36 +93,72 @@ public class ServerClient extends PFComponent {
 
     private ServerClientListener listenerSupport;
 
-    /**
-     * For test
-     */
-    private String webURL;
-
     // Construction ***********************************************************
 
     /**
-     * Constructs a server client with a given member info.
+     * Constructs a server client with the defaults from the config. allows
+     * server change.
      * 
      * @param controller
-     * @param serverNode
      */
-    public ServerClient(Controller controller, Member serverNode) {
-        super(controller);
-        init(serverNode, true);
+    public ServerClient(Controller controller) {
+        this(controller, ConfigurationEntry.SERVER_NAME.getValue(controller),
+            ConfigurationEntry.SERVER_HOST.getValue(controller),
+            ConfigurationEntry.SERVER_NODEID.getValue(controller),
+            ConfigurationEntry.SERVER_WEB_URL.getValue(controller), true, true);
     }
 
     /**
-     * Constructs a server client to a given host.
+     * Constructs a server client with the defaults from the config.
      * 
      * @param controller
-     * @param host
+     * @param server
      * @param allowServerChange
      */
-    public ServerClient(Controller controller, String host,
-        boolean allowServerChange)
+    public ServerClient(Controller controller, String name, String host,
+        String nodeId, String webURL, boolean allowServerChange,
+        boolean updateConfig)
     {
         super(controller);
-        init(createTempServerNode(host), allowServerChange);
+
+        this.allowServerChange = allowServerChange;
+        this.updateConfig = updateConfig;
+
+        if (StringUtils.isBlank(host) && StringUtils.isBlank(nodeId)) {
+            // Nothing set, initialize with defaults
+            webURL = Constants.ONLINE_STORAGE_URL;
+            MemberInfo osInfo = new MemberInfo("Online Storage",
+                Constants.ONLINE_STORAGE_NODE_ID);
+            osInfo.setConnectAddress(Constants.ONLINE_STORAGE_ADDRESS);
+            logFine("Using default server: " + osInfo);
+            init(osInfo.getNode(getController(), true), allowServerChange);
+            return;
+        }
+
+        // Custom server
+        this.webURL = !StringUtils.isBlank(webURL) ? webURL : null;
+        String theName = !StringUtils.isBlank(name) ? name : Translation
+            .getTranslation("online_storage.connecting");
+        boolean temporaryNode = StringUtils.isBlank(nodeId);
+        String theNodeId = !temporaryNode ? nodeId : MEMBER_ID_TEMP_PREFIX
+            + "|" + IdGenerator.makeId();
+        Member theNode = getController().getNodeManager().getNode(theNodeId);
+        if (theNode == null) {
+            MemberInfo serverInfo = new MemberInfo(theName, theNodeId);
+            // Add only to nodemanager if not temporary
+            theNode = serverInfo.getNode(getController(), !temporaryNode);
+        }
+        if (!StringUtils.isBlank(host)) {
+            theNode.getInfo().setConnectAddress(
+                Util.parseConnectionString(host));
+        }
+
+        if (theNode.getReconnectAddress() == null) {
+            logSevere("Got server without reconnect address: " + theNode);
+        }
+        logInfo(
+            "Using server from config: " + theNode + ", ID: " + theNodeId);
+        init(theNode, allowServerChange);
     }
 
     private void init(Member serverNode, boolean serverChange) {
@@ -125,20 +173,8 @@ public class ServerClient extends PFComponent {
             new MyNodeManagerListener());
     }
 
-    private Member createTempServerNode(String host) {
-        MemberInfo serverInfo = new MemberInfo(Translation
-            .getTranslation("online_storage.connecting"), MEMBER_ID_TEMP_PREFIX
-            + "|" + IdGenerator.makeId());
-        serverInfo.setConnectAddress(Util.parseConnectionString(host));
-        logInfo("Using server from config: " + serverInfo + ", ID: "
-            + serverInfo.id);
-        // Avoid adding temporary nodes to nodemanager
-        return new Member(getController(), serverInfo);
-        // return serverInfo.getNode(getController(), true);
-    }
-
-    private boolean isTempServerNode() {
-        return server.getId().startsWith(MEMBER_ID_TEMP_PREFIX);
+    private static boolean isTempServerNode(Member node) {
+        return node.getId().startsWith(MEMBER_ID_TEMP_PREFIX);
     }
 
     private boolean isRemindPassword() {
@@ -150,8 +186,9 @@ public class ServerClient extends PFComponent {
 
     public void start() {
         if (getController().isLanOnly() && !server.isOnLAN()) {
-            logFine("Not connecting to server: " + server
-                + ". Reason: Server not on LAN");
+            logFine(
+                "Not connecting to server: " + server
+                    + ". Reason: Server not on LAN");
         }
         getController().scheduleAndRepeat(new OnlineStorageConnectTask(),
             3L * 1000L, 1000L * 20);
@@ -202,7 +239,7 @@ public class ServerClient extends PFComponent {
         // + server.getReconnectAddress().equals(
         // node.getReconnectAddress()));
         // }
-        return isTempServerNode()
+        return isTempServerNode(server)
             && server.getReconnectAddress().equals(node.getReconnectAddress());
     }
 
@@ -217,7 +254,7 @@ public class ServerClient extends PFComponent {
      * @return the URL of the web access to the server (cluster).
      */
     public String getWebURL() {
-        if (webURL != null) {
+        if (!StringUtils.isBlank(webURL)) {
             return webURL;
         }
         if (accountDetails != null
@@ -229,28 +266,15 @@ public class ServerClient extends PFComponent {
             return accountDetails.getAccount().getServer().getWebUrl();
         }
 
-        // FIXME: Does not work, http port does not get considered!
-        // Fallback
-        // String host =
-        // ConfigurationEntry.SERVER_HOST.getValue(getController());
-        // if (!StringUtils.isBlank(host)) {
-        // int i = host.indexOf(":");
-        // if (i > 0) {
-        // host = host.substring(0, i);
-        // }
-        // return "http://" + host;
-        // }
-
-        // Default fallback
-        return Constants.ONLINE_STORAGE_URL;
+        // No web url.
+        return null;
     }
 
     /**
-     * @param webURL
-     *            the WEB URL to use for basic web services
+     * @return true if the connected server offers a web interface.
      */
-    public void setWebURL(String webURL) {
-        this.webURL = webURL;
+    public boolean hasWebURL() {
+        return getWebURL() != null;
     }
 
     /**
@@ -259,6 +283,9 @@ public class ServerClient extends PFComponent {
      * @return the registration URL for this server.
      */
     public String getRegisterURL() {
+        if (!hasWebURL()) {
+            return null;
+        }
         return getWebURL() + "/register";
     }
 
@@ -268,6 +295,9 @@ public class ServerClient extends PFComponent {
      * @return the activation URL for this server.
      */
     public String getActivationURL() {
+        if (!hasWebURL()) {
+            return null;
+        }
         return getWebURL() + "/activate";
     }
 
@@ -291,8 +321,8 @@ public class ServerClient extends PFComponent {
      * Tries to logs in with the last know username/password combination for
      * this server.uses default account setting as fallback
      * 
-     * @return the identity with this username or <code>InvalidAccount</code>
-     *         if login failed. NEVER returns <code>null</code>
+     * @return the identity with this username or <code>InvalidAccount</code> if
+     *         login failed. NEVER returns <code>null</code>
      */
     public Account loginWithLastKnown() {
         String un = getController().getPreferences().get(
@@ -330,55 +360,64 @@ public class ServerClient extends PFComponent {
      * 
      * @param theUsername
      * @param thePassword
-     * @return the identity with this username or <code>InvalidAccount</code>
-     *         if login failed. NEVER returns <code>null</code>
+     * @return the identity with this username or <code>InvalidAccount</code> if
+     *         login failed. NEVER returns <code>null</code>
      */
     public Account login(String theUsername, String thePassword) {
-        username = theUsername;
-        password = thePassword;
-        saveLastKnowLogin();
-        if (!isConnected()) {
-            setAnonAccount();
-            return accountDetails.getAccount();
-        }
-        String salt = IdGenerator.makeId() + IdGenerator.makeId();
-        String mix = salt + thePassword + salt;
-        String passwordMD5;
-        try {
-            passwordMD5 = new String(Util.md5(mix.getBytes("UTF-8")), "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException("UTF-8 not found", e);
-        }
-        boolean loginOk = userService.login(theUsername, passwordMD5, salt);
-        if (!loginOk) {
-            logWarning("Login to server server " + server.getReconnectAddress()
-                + " (user " + theUsername + ") failed!");
-            setAnonAccount();
-            return accountDetails.getAccount();
-        }
-        AccountDetails newAccountDetails = userService.getAccountDetails();
-        logWarning("Login to server " + server.getReconnectAddress()
-            + " (user " + theUsername + ") result: " + accountDetails);
-        if (newAccountDetails != null) {
-            accountDetails = newAccountDetails;
-
-            // Fire login success
-            fireLogin(accountDetails);
-
-            // Possible switch to new server
-            ServerInfo targetServer = accountDetails.getAccount().getServer();
-            if (targetServer != null && allowServerChange) {
-                // Not hosted on the server we just have logged into.
-                boolean changeServer = !server.getInfo().equals(
-                    targetServer.getNode());
-                if (changeServer) {
-                    changeToServer(targetServer);
-                }
+        synchronized (loginLock) {
+            username = theUsername;
+            password = thePassword;
+            saveLastKnowLogin();
+            if (!isConnected()) {
+                setAnonAccount();
+                fireLogin(accountDetails);
+                return accountDetails.getAccount();
             }
-        } else {
-            setAnonAccount();
+            String salt = IdGenerator.makeId() + IdGenerator.makeId();
+            String mix = salt + thePassword + salt;
+            String passwordMD5;
+            try {
+                passwordMD5 = new String(Util.md5(mix.getBytes("UTF-8")),
+                    "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                throw new RuntimeException("UTF-8 not found", e);
+            }
+            boolean loginOk = userService.login(theUsername, passwordMD5, salt);
+            if (!loginOk) {
+                logWarning(
+                    "Login to server server " + server.getReconnectAddress()
+                        + " (user " + theUsername + ") failed!");
+                setAnonAccount();
+                fireLogin(accountDetails);
+                return accountDetails.getAccount();
+            }
+            AccountDetails newAccountDetails = userService.getAccountDetails();
+            logFine(
+                "Login to server " + server.getReconnectAddress() + " (user "
+                    + theUsername + ") result: " + accountDetails);
+            if (newAccountDetails != null) {
+                accountDetails = newAccountDetails;
+
+                // Fire login success
+                fireLogin(accountDetails);
+
+                // Possible switch to new server
+                ServerInfo targetServer = accountDetails.getAccount()
+                    .getServer();
+                if (targetServer != null && allowServerChange) {
+                    // Not hosted on the server we just have logged into.
+                    boolean changeServer = !server.getInfo().equals(
+                        targetServer.getNode());
+                    if (changeServer) {
+                        changeToServer(targetServer);
+                    }
+                }
+            } else {
+                setAnonAccount();
+                fireLogin(accountDetails);
+            }
+            return accountDetails.getAccount();
         }
-        return accountDetails.getAccount();
     }
 
     /**
@@ -427,6 +466,7 @@ public class ServerClient extends PFComponent {
             fireAccountUpdates(accountDetails);
         } else {
             setAnonAccount();
+            fireLogin(accountDetails);
         }
         return accountDetails;
     }
@@ -522,8 +562,9 @@ public class ServerClient extends PFComponent {
                     .getJoinedFolderInfos().toArray(new FolderInfo[0]);
                 Collection<MemberInfo> servers = getFolderService()
                     .getHostingServers(folders);
-                logWarning("Got " + servers.size() + " servers for our "
-                    + folders.length + " folders: " + servers);
+                logWarning(
+                    "Got " + servers.size() + " servers for our "
+                        + folders.length + " folders: " + servers);
                 for (MemberInfo serverMInfo : servers) {
                     Member hostingServer = serverMInfo.getNode(getController(),
                         true);
@@ -543,6 +584,40 @@ public class ServerClient extends PFComponent {
         getController().getIOProvider().startIO(retriever);
     }
 
+    /**
+     * Saves the infos of the server into the config properties. Does not save
+     * the config file.
+     * 
+     * @param newServer
+     * @param webUrl
+     */
+    public void setServerInConfig(MemberInfo newServer, String webUrl) {
+        Reject.ifNull(newServer, "Server is null");
+
+        ConfigurationEntry.SERVER_NAME
+            .setValue(getController(), newServer.nick);
+        // This probably causes a reverse lookup of the IP.
+        String serverHost = newServer.getConnectAddress().getHostName();
+        if (newServer.getConnectAddress().getPort() != ConnectionListener.DEFAULT_PORT)
+        {
+            serverHost += ':';
+            serverHost += newServer.getConnectAddress().getPort();
+        }
+        ConfigurationEntry.SERVER_HOST.setValue(getController(), serverHost);
+        if (!isTempServerNode(newServer)) {
+            ConfigurationEntry.SERVER_NODEID.setValue(getController(),
+                newServer.id);
+        } else {
+            ConfigurationEntry.SERVER_NODEID.removeValue(getController());
+        }
+        // Currently not supported from config
+        if (StringUtils.isBlank(webUrl)) {
+            ConfigurationEntry.SERVER_WEB_URL.removeValue(getController());
+        } else {
+            ConfigurationEntry.SERVER_WEB_URL.setValue(getController(), webUrl);
+        }
+    }
+
     // Event handling ********************************************************
 
     public void addListener(ServerClientListener listener) {
@@ -558,6 +633,10 @@ public class ServerClient extends PFComponent {
     private void setNewServerNode(Member newServerNode) {
         server = newServerNode;
         server.setServer(true);
+        // Put on friendslist
+        if (!isTempServerNode(server)) {
+            server.setFriend(true, null);
+        }
         // Re-initalize the service stubs on new server node.
         initializeServiceStubs();
     }
@@ -573,7 +652,6 @@ public class ServerClient extends PFComponent {
 
     private void setAnonAccount() {
         accountDetails = new AccountDetails(new AnonymousAccount(), 0, 0, 0);
-        fireLogin(accountDetails);
     }
 
     private void saveLastKnowLogin() {
@@ -623,8 +701,8 @@ public class ServerClient extends PFComponent {
      * If the server is not connected and invalid account is returned and the
      * login data saved for auto-login on reconnect.
      * 
-     * @return the identity with this username or <code>InvalidAccount</code>
-     *         if login failed. NEVER returns <code>null</code>
+     * @return the identity with this username or <code>InvalidAccount</code> if
+     *         login failed. NEVER returns <code>null</code>
      */
     private Account loginWithDefault() {
         Account a = login(ConfigurationEntry.WEBSERVICE_USERNAME
@@ -638,39 +716,42 @@ public class ServerClient extends PFComponent {
         return a;
     }
 
-    private void changeToServer(ServerInfo targetServer) {
-        logWarning("Changing server to " + targetServer.getNode());
+    private void changeToServer(ServerInfo newServerInfo) {
+        logFine("Changing server to " + newServerInfo.getNode());
 
         // Add key of new server to keystore.
-        if (Util.getPublicKey(getController(), targetServer.getNode()) == null)
+        if (Util.getPublicKey(getController(), newServerInfo.getNode()) == null)
         {
-            PublicKey serverKey = publicKeyService.getPublicKey(targetServer
+            PublicKey serverKey = publicKeyService.getPublicKey(newServerInfo
                 .getNode());
             if (serverKey != null) {
-                logWarning("Retrieved new key for server "
-                    + targetServer.getNode() + ". " + serverKey);
-                Util.addNodeToKeyStore(getController(), targetServer.getNode(),
-                    serverKey);
+                logFine(
+                    "Retrieved new key for server " + newServerInfo.getNode()
+                        + ". " + serverKey);
+                Util.addNodeToKeyStore(getController(),
+                    newServerInfo.getNode(), serverKey);
             }
         }
 
+        // Get new server node from local p2p nodemanager database
+        Member newServerNode = newServerInfo.getNode().getNode(getController(),
+            true);
+
         // Remind new server for next connect.
-        if (targetServer.getNode().getConnectAddress() != null) {
-            String serverHost = targetServer.getNode().getConnectAddress()
-                .getHostName();
-            if (targetServer.getNode().getConnectAddress().getPort() != ConnectionListener.DEFAULT_PORT)
-            {
-                serverHost += ':';
-                serverHost += targetServer.getNode().getConnectAddress()
-                    .getPort();
+        if (updateConfig) {
+            if (newServerInfo.getNode().getConnectAddress() != null) {
+                setServerInConfig(newServerInfo.getNode(), newServerInfo
+                    .getWebUrl());
+            } else {
+                // Fallback, use node INFO from P2P database.
+                setServerInConfig(newServerNode.getInfo(), newServerInfo
+                    .getWebUrl());
             }
-            ConfigurationEntry.SERVER_HOST
-                .setValue(getController(), serverHost);
             getController().saveConfig();
         }
 
         // Now actually switch to new server.
-        setNewServerNode(targetServer.getNode().getNode(getController(), true));
+        setNewServerNode(newServerNode);
         login(username, password);
         // Attempt to login. At least remind login for real connect.
         if (!isConnected()) {
@@ -708,19 +789,25 @@ public class ServerClient extends PFComponent {
             // isServer(e.getNode()));
             if (isServer(e.getNode())) {
                 // Our server member instance is a temporary one. Lets get real.
-                if (isTempServerNode()) {
+                if (isTempServerNode(server)) {
                     // Got connect to server! Take his ID and name.
                     Member oldServer = server;
                     setNewServerNode(e.getNode());
                     // Remove old temporary server entry without ID.
                     getController().getNodeManager().removeNode(oldServer);
-                    logWarning("Got connect to server: " + server);
+                    if (updateConfig) {
+                        setServerInConfig(server.getInfo(), webURL);
+                        getController().saveConfig();
+                    }
+                    logFine("Got connect to server: " + server);
                 }
+
+                listenerSupport.serverConnected(new ServerClientEvent(
+                    ServerClient.this, e.getNode()));
+
                 if (username != null) {
                     login(username, password);
                 }
-                listenerSupport.serverConnected(new ServerClientEvent(
-                    ServerClient.this));
             }
         }
 
@@ -730,7 +817,7 @@ public class ServerClient extends PFComponent {
                 // TODO: Why no cache until reconnect?
                 // myAccount = null;
                 listenerSupport.serverDisconnected(new ServerClientEvent(
-                    ServerClient.this));
+                    ServerClient.this, e.getNode()));
             }
         }
 
@@ -774,8 +861,9 @@ public class ServerClient extends PFComponent {
                 return;
             }
             if (getController().isLanOnly() && !server.isOnLAN()) {
-                logFiner("NOT connecting to server: " + server
-                    + ". Reason: Not on LAN");
+                logFiner(
+                    "NOT connecting to server: " + server
+                        + ". Reason: Not on LAN");
                 return;
             }
             if (!getController().getNodeManager().isStarted()) {

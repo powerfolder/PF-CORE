@@ -21,9 +21,11 @@ package de.dal33t.powerfolder.clientserver;
 
 import java.util.EventObject;
 
+import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.message.clientserver.AccountDetails;
 
 public class ServerClientEvent extends EventObject {
+    private Member node;
     private AccountDetails accountDetails;
 
     public ServerClientEvent(ServerClient source) {
@@ -35,11 +37,16 @@ public class ServerClientEvent extends EventObject {
         accountDetails = details;
     }
     
-    public ServerClient getClient() {
-        return (ServerClient) getSource();
+    public ServerClientEvent(ServerClient source, Member node) {
+        super(source);
+        this.node= node;
     }
 
     public AccountDetails getAccountDetails() {
         return accountDetails;
+    }
+    
+    public Member getServerNode() {
+        return node;
     }
 }
