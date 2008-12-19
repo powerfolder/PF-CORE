@@ -19,44 +19,6 @@
  */
 package de.dal33t.powerfolder;
 
-import de.dal33t.powerfolder.clientserver.ServerClient;
-import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.disk.RecycleBin;
-import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.message.SettingsChange;
-import de.dal33t.powerfolder.net.BroadcastMananger;
-import de.dal33t.powerfolder.net.ConnectionException;
-import de.dal33t.powerfolder.net.ConnectionHandler;
-import de.dal33t.powerfolder.net.ConnectionListener;
-import de.dal33t.powerfolder.net.DynDnsManager;
-import de.dal33t.powerfolder.net.IOProvider;
-import de.dal33t.powerfolder.net.NodeManager;
-import de.dal33t.powerfolder.net.ReconnectManager;
-import de.dal33t.powerfolder.plugin.PluginManager;
-import de.dal33t.powerfolder.security.SecurityManager;
-import de.dal33t.powerfolder.transfer.TransferManager;
-import de.dal33t.powerfolder.ui.UIController;
-import de.dal33t.powerfolder.util.Debug;
-import de.dal33t.powerfolder.util.FileUtils;
-import de.dal33t.powerfolder.util.ForcedLanguageFileResourceBundle;
-import de.dal33t.powerfolder.util.Profiling;
-import de.dal33t.powerfolder.util.PropertiesUtil;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Updater;
-import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.util.WrappingTimer;
-import de.dal33t.powerfolder.util.logging.LoggingManager;
-import de.dal33t.powerfolder.util.os.OSUtil;
-import de.dal33t.powerfolder.util.os.Win32.FirewallUtil;
-import de.dal33t.powerfolder.util.task.PersistentTaskManager;
-import de.dal33t.powerfolder.util.ui.DialogFactory;
-import de.dal33t.powerfolder.util.ui.GenericDialogType;
-import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker;
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.lang.StringUtils;
-
-import javax.swing.JOptionPane;
 import java.awt.Component;
 import java.awt.GraphicsEnvironment;
 import java.io.BufferedInputStream;
@@ -86,6 +48,46 @@ import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+
+import javax.swing.JOptionPane;
+
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.lang.StringUtils;
+
+import de.dal33t.powerfolder.clientserver.ServerClient;
+import de.dal33t.powerfolder.disk.FolderRepository;
+import de.dal33t.powerfolder.disk.RecycleBin;
+import de.dal33t.powerfolder.message.SettingsChange;
+import de.dal33t.powerfolder.net.BroadcastMananger;
+import de.dal33t.powerfolder.net.ConnectionException;
+import de.dal33t.powerfolder.net.ConnectionHandler;
+import de.dal33t.powerfolder.net.ConnectionListener;
+import de.dal33t.powerfolder.net.DynDnsManager;
+import de.dal33t.powerfolder.net.HTTPProxySettings;
+import de.dal33t.powerfolder.net.IOProvider;
+import de.dal33t.powerfolder.net.NodeManager;
+import de.dal33t.powerfolder.net.ReconnectManager;
+import de.dal33t.powerfolder.plugin.PluginManager;
+import de.dal33t.powerfolder.security.SecurityManager;
+import de.dal33t.powerfolder.transfer.TransferManager;
+import de.dal33t.powerfolder.ui.UIController;
+import de.dal33t.powerfolder.util.Debug;
+import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.ForcedLanguageFileResourceBundle;
+import de.dal33t.powerfolder.util.Profiling;
+import de.dal33t.powerfolder.util.PropertiesUtil;
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Updater;
+import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.WrappingTimer;
+import de.dal33t.powerfolder.util.logging.LoggingManager;
+import de.dal33t.powerfolder.util.os.OSUtil;
+import de.dal33t.powerfolder.util.os.Win32.FirewallUtil;
+import de.dal33t.powerfolder.util.task.PersistentTaskManager;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.ui.GenericDialogType;
+import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker;
 
 /**
  * Central class gives access to all core components in PowerFolder. Make sure
@@ -388,6 +390,9 @@ public class Controller extends PFComponent {
             + System.getProperty("java.runtime.version") + ", "
             + System.getProperty("java.vendor") + ')');
         logFine("Current time: " + new Date());
+        
+        // Load and set http proxy settings
+        HTTPProxySettings.loadFromConfig(this);
         Debug.writeSystemProperties();
 
         // The task brothers
@@ -436,7 +441,7 @@ public class Controller extends PFComponent {
         }
 
         // Initialize client
-        initOnlineStorageClient();
+        osClient = new ServerClient(this);
         setLoadingCompletion(35, 60);
 
         // init repo (read folders)
@@ -521,22 +526,6 @@ public class Controller extends PFComponent {
 
         // Setup our background working tasks
         setupPeriodicalTasks();
-    }
-
-    private void initOnlineStorageClient() {
-        Member server = null;
-        String host = ConfigurationEntry.SERVER_HOST.getValue(this);
-        if (!StringUtils.isBlank(host)) {
-            // Server host overridden
-            osClient = new ServerClient(this, host, true);
-        } else {
-            // Default: Online Storage
-            MemberInfo osInfo = new MemberInfo("Online Storage",
-                Constants.ONLINE_STORAGE_NODE_ID);
-            osInfo.setConnectAddress(Constants.ONLINE_STORAGE_ADDRESS);
-            server = osInfo.getNode(this, true);
-            osClient = new ServerClient(this, server);
-        }
     }
 
     private void setupProPlugins() {
