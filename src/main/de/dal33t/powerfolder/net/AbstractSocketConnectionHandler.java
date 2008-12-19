@@ -224,6 +224,9 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
             if (isFiner()) {
                 logFiner("Got streams");
             }
+            
+            // Analyse connection
+            analyseConnection();
 
             // Generate magic id, 16 byte * 8 * 8 bit = 1024 bit key
             myMagicId = IdGenerator.makeId() + IdGenerator.makeId()
@@ -273,9 +276,6 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                 + ((getTimeDeltaMS() / 1000) / 60) + " min, remote ident: "
                 + getIdentity());
         }
-
-        // Analyse connection
-        analyseConnection();
 
         // Check this connection for keep-alive
         getController().getIOProvider().startKeepAliveCheck(this);
