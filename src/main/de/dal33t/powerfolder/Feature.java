@@ -49,6 +49,16 @@ public enum Feature {
      * CORRECT_LAN_DETECTION to be ENABLED!
      */
     CORRECT_INTERNET_DETECTION,
+    
+    /**
+     * If file movements should be checked after scan.
+     */
+    CORRECT_MOVEMENT_DETECTION,
+
+    /**
+     * If typical strings of FileInfo should be cached with a softreference.
+     */
+    CACHE_FILEINFO_STRINGS,
 
     /**
      * If file updates get detected newer using the version counter. Otherwise
@@ -103,5 +113,6 @@ public enum Feature {
             feature.disable();
         }
         Feature.DETECT_UPDATE_BY_VERSION.enable();
+        Feature.CORRECT_MOVEMENT_DETECTION.enable();
     }
 }
