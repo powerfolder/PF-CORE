@@ -237,7 +237,7 @@ public class Upload extends Transfer {
             }
 
             public String toString() {
-                return "Upload " + getFile().getFilenameOnly() + " to "
+                return "Upload " + getFile().toDetailString() + " to "
                     + getPartner().getNick();
             }
         };

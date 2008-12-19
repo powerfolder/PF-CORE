@@ -393,27 +393,24 @@ public class Download extends Transfer {
             return true;
         }
         // check blacklist
-        if (automatic) {
-            Folder folder = getFile().getFolder(
-                getController().getFolderRepository());
-            boolean onBlacklist = folder.getDiskItemFilter().isExcluded(
-                getFile());
-            if (onBlacklist) {
-                logWarning("Abort cause: On blacklist.");
-                return true;
-            }
-
-            /*
-             * Wrong place to check, since we could actually want to load an old
-             * version! // Check if newer file is available. boolean
-             * newerFileAvailable = getFile().isNewerAvailable(
-             * getController().getFolderRepository()); if (newerFileAvailable) {
-             * Loggable.logWarningStatic(Download.class, "Abort cause: Newer
-             * version available. " + getFile().toDetailString()); return true; //
-             * throw new RuntimeException("ABORT: " + this); }
-             */
+        Folder folder = getFile().getFolder(
+            getController().getFolderRepository());
+        boolean onBlacklist = folder.getDiskItemFilter().isExcluded(getFile());
+        if (onBlacklist) {
+            logWarning("Abort cause: On blacklist.");
+            return true;
         }
 
+        /*
+         * Wrong place to check, since we could actually want to load an old
+         * version! // Check if newer file is available. boolean
+         * newerFileAvailable = getFile().isNewerAvailable(
+         * getController().getFolderRepository()); if (newerFileAvailable) {
+         * Loggable.logWarningStatic(Download.class, "Abort cause: Newer version
+         * available. " + getFile().toDetailString()); return true; // throw new
+         * RuntimeException("ABORT: " + this); }
+         */
+        
         return false;
     }
 
