@@ -194,6 +194,9 @@ public class FileUtils {
                     + to.getAbsolutePath());
             }
         }
+        if (to.getParentFile() != null && !to.getParentFile().exists()) {
+            to.getParentFile().mkdirs();
+        }
         if (!to.createNewFile()) {
             throw new IOException("Unable to create file "
                 + to.getAbsolutePath());
@@ -389,7 +392,7 @@ public class FileUtils {
                 }
             }
 
-            if (!file.delete()) {
+            if (file.exists() && !file.delete()) {
                 throw new IOException("Could not delete file "
                     + file.getAbsolutePath());
             }

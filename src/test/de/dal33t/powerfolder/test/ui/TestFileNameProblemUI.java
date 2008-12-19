@@ -1,26 +1,28 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id: AddLicenseHeader.java 4282 2008-06-16 03:25:09Z tot $
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id: AddLicenseHeader.java 4282 2008-06-16 03:25:09Z tot $
+ */
 package de.dal33t.powerfolder.test.ui;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -30,10 +32,9 @@ import org.apache.commons.io.FileUtils;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.FilenameProblem;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.FolderScanner;
+import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.ScanResult;
 import de.dal33t.powerfolder.disk.SyncProfile;
-import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.event.FileNameProblemEvent;
 import de.dal33t.powerfolder.event.FileNameProblemHandler;
 import de.dal33t.powerfolder.light.FileInfo;
@@ -74,7 +75,7 @@ public class TestFileNameProblemUI {
         if (handler == null) {
             throw new NullPointerException();
         }
-        ScanResult scanResult = new ScanResult();
+        ScanResult scanResult = new ScanResult(ScanResult.ResultState.SCANNED);
         FolderInfo folderInfo = folder.getInfo();
 
         List<FileInfo> fileInfoList = new ArrayList<FileInfo>();
@@ -83,12 +84,21 @@ public class TestFileNameProblemUI {
         fileInfoList.add(new FileInfo(folderInfo, "?hhh."));
         fileInfoList.add(new FileInfo(folderInfo, "lowercase"));
         fileInfoList.add(new FileInfo(folderInfo, "LOWERCASE"));
-        Map<FileInfo, List<FilenameProblem>> problemFiles = FolderScanner
-            .tryFindProblems(fileInfoList);
+        Map<FileInfo, List<FilenameProblem>> problemFiles = getProblems(fileInfoList);
         scanResult.setProblemFiles(problemFiles);
         handler.fileNameProblemsDetected(new FileNameProblemEvent(folder,
             scanResult));
         // controller.shutdown();
+    }
+
+    private Map<FileInfo, List<FilenameProblem>> getProblems(
+        Collection<FileInfo> files)
+    {
+        Map<FileInfo, List<FilenameProblem>> p = new HashMap<FileInfo, List<FilenameProblem>>();
+        for (FileInfo fileInfo : files) {
+            p.put(fileInfo, FilenameProblem.getProblems(fileInfo));
+        }
+        return p;
     }
 
     /**
@@ -136,10 +146,10 @@ public class TestFileNameProblemUI {
         SyncProfile profile)
     {
         final Folder aFolder;
-            FolderSettings folderSettings = new FolderSettings(baseDir,
-                profile, false, true);
-            aFolder = controller.getFolderRepository().createFolder(foInfo,
-                folderSettings);
+        FolderSettings folderSettings = new FolderSettings(baseDir, profile,
+            false, true);
+        aFolder = controller.getFolderRepository().createFolder(foInfo,
+            folderSettings);
         if (aFolder.isDeviceDisconnected()) {
             System.out.println("Unable to join controller to " + foInfo + '.');
         }

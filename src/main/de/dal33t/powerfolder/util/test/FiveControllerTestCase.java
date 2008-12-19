@@ -23,13 +23,12 @@ import java.io.File;
 import java.io.IOException;
 import java.util.UUID;
 
-import org.apache.commons.io.FileUtils;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.transfer.DownloadManager;
+import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Reject;
 
 /**
@@ -96,6 +95,9 @@ public abstract class FiveControllerTestCase extends MultipleControllerTestCase
         FileUtils.copyFile(new File("src/test-resources/Controller" + id
             + ".config"), new File("build/test/Controller" + id
             + "/PowerFolder.config"));
+        File miscDic = new File(Controller.getMiscFilesLocation(),
+            "build/test/Controller" + id);
+        FileUtils.recursiveDelete(miscDic);
         startController(id, "build/test/Controller" + id + "/PowerFolder");
     }
 
@@ -204,7 +206,8 @@ public abstract class FiveControllerTestCase extends MultipleControllerTestCase
     protected void joinTestFolder(SyncProfile profile, boolean checkMemberships)
     {
         Reject.ifTrue(testFolder != null, "Reject already setup a testfolder!");
-        // FIXME Waiting between join only because of race condition making join fail.
+        // FIXME Waiting between join only because of race condition making join
+        // fail.
         testFolder = new FolderInfo("testFolder", UUID.randomUUID().toString());
         joinFolder(testFolder, TESTFOLDER_BASEDIR_BART, getContollerBart(),
             profile);

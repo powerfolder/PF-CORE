@@ -20,7 +20,7 @@
 package de.dal33t.powerfolder.test.folder;
 
 import java.io.File;
-import java.util.List;
+import java.util.Collection;
 
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderScanner;
@@ -82,7 +82,7 @@ public class FolderScannerTest extends ControllerTestCase {
         ScanResult result = folderScanner.scanFolderWaitIfBusy(getFolder());
         assertEquals(ScanResult.ResultState.SCANNED, result.getResultState());
 
-        List<FileInfo> newFiles = result.getNewFiles();
+        Collection<FileInfo> newFiles = result.getNewFiles();
         System.out.println("Scan result: " + result);
         // new Scan should find 4
         assertEquals(result.toString(), 4, newFiles.size());
