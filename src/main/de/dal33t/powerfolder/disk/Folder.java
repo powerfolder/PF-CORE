@@ -339,7 +339,11 @@ public class Folder extends PFComponent {
         // FIXME: There is no way to remove the persister on shutdown.
         // Only on controller shutdown
         this.persister = new Persister();
-        getController().scheduleAndRepeat(persister, 5000);
+        getController().scheduleAndRepeat(
+            persister,
+            1000L * ConfigurationEntry.FOLDER_DB_PERSIST_TIME
+                .getValueInt(getController()));
+
 
         // Create invitation
         if (folderSettings.isCreateInvitationFile()) {
@@ -353,9 +357,6 @@ public class Folder extends PFComponent {
 
         // Initialized lazyliy
         rootDirectory = null;
-
-        Directory.buildDirsRecursive(getController().getNodeManager()
-            .getMySelf(), knownFiles.values(), this);
     }
 
     /**
@@ -1386,8 +1387,7 @@ public class Folder extends PFComponent {
         try {
             FileInfo[] files;
             synchronized (scanLock) {
-                files = knownFiles.keySet().toArray(
-                    new FileInfo[knownFiles.size()]);
+                files = knownFiles.keySet().toArray(new FileInfo[0]);
             }
             if (dbFile.exists()) {
                 if (!dbFile.delete()) {
@@ -1501,8 +1501,7 @@ public class Folder extends PFComponent {
                 for (Member member : members.values()) {
                     member.removeFileInfo(file);
                 }
-                logFine(file.getFilenameOnly() + " has expired: "
-                    + file.toDetailString());
+                logFine("FileInfo expired: " + file.toDetailString());
             }
         }
         logInfo("Maintained folder db, " + nFilesBefore + " known files, "
