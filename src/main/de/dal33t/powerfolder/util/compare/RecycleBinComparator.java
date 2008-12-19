@@ -19,12 +19,12 @@
 */
 package de.dal33t.powerfolder.util.compare;
 
-import java.util.Comparator;
 import java.io.File;
+import java.util.Comparator;
 
 import de.dal33t.powerfolder.disk.RecycleBin;
 import de.dal33t.powerfolder.light.FileInfo;
-
+import de.dal33t.powerfolder.util.logging.Loggable;
 
 /**
  * Comparator for FileInfo
@@ -32,7 +32,7 @@ import de.dal33t.powerfolder.light.FileInfo;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.15 $
  */
-public class RecycleBinComparator implements Comparator<FileInfo> {
+public class RecycleBinComparator extends Loggable implements Comparator<FileInfo> {
 
     // All the available file comparators
     public static final int BY_FILETYPE = 0;
@@ -75,19 +75,18 @@ public class RecycleBinComparator implements Comparator<FileInfo> {
     public int compare(FileInfo o1, FileInfo o2) {
 
             switch (sortBy) {
-                case BY_FILETYPE :
-                    String ext1 = o1.getExtension();
-                    String ext2 = o2.getExtension();
-                    if (ext1 == null || ext2 == null) {
-                        return EQUAL;
-                    }
-                    return ext1.compareTo(ext2);
-                case BY_NAME :
-                    return o1.getLowerCaseName().compareTo(
-                        o2.getLowerCaseName());
-                case BY_SIZE :
-                    File file1 = recycleBin.getDiskFile(o1);
-                    File file2 = recycleBin.getDiskFile(o2);
+            case BY_FILETYPE :
+                String ext1 = o1.getExtension();
+                String ext2 = o2.getExtension();
+                if (ext1 == null || ext2 == null) {
+                    return EQUAL;
+                }
+                return ext1.compareTo(ext2);
+            case BY_NAME :
+                return o1.getName().compareToIgnoreCase(o2.getName());
+            case BY_SIZE :
+                File file1 = recycleBin.getDiskFile(o1);
+                File file2 = recycleBin.getDiskFile(o2);
                     if (file1.length() < file2.length()) {
                         return BEFORE;
                     } else if (file1.length() > file2.length()) {
