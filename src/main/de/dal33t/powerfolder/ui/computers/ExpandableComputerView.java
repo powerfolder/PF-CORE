@@ -28,6 +28,7 @@ import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Format;
@@ -158,9 +159,7 @@ public class ExpandableComputerView extends PFUIComponent {
         addRemoveButton = new JButtonMini(getApplicationModel().getActionModel()
                 .getAddFriendAction());
         addRemoveButton.addActionListener(new MyAddRemoveActionListener());
-        chatButton = new JButtonMini(getApplicationModel().getActionModel()
-                .getOpenChatAction());
-        chatButton.addActionListener(new MyChatActionListener());
+        chatButton = new JButtonMini(new MyOpenChatAction(getController()), true);
         pictoLabel = new JLabel();
         updateDetails();
         configureAddRemoveButton();
@@ -384,16 +383,15 @@ public class ExpandableComputerView extends PFUIComponent {
         }
     }
 
-    /**
-     * Class  to listen for chat requests.
-     */
-    private class MyChatActionListener implements ActionListener {
+    private class MyOpenChatAction extends BaseAction {
+
+        private MyOpenChatAction(Controller controller) {
+            super("action_open_chat", controller);
+        }
 
         public void actionPerformed(ActionEvent e) {
-            ActionEvent ae = new ActionEvent(getNode().getInfo(),
-                    e.getID(), e.getActionCommand(), e.getWhen(), e.getModifiers());
-            getApplicationModel().getActionModel().getOpenChatAction()
-                    .actionPerformed(ae);
+            getController().getUIController().openChat(getNode().getInfo());
         }
     }
+
 }

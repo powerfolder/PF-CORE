@@ -26,6 +26,8 @@ import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import java.awt.Insets;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 
 /**
  * Class showing image button with no border, except when hover or pressed.
@@ -33,9 +35,31 @@ import java.awt.Insets;
  */
 public class JButtonMini extends JButton {
 
+    /**
+     * Mini button that is configured from action but does not act on it
+     *
+     * @param action
+     */
     public JButtonMini(Action action) {
+        this(action, false);
+    }
+
+    /**
+     * Mini button that is configured from action and also can act on it
+     *
+     * @param action
+     * @param act
+     */
+    public JButtonMini(final Action action, boolean act) {
         this((Icon) action.getValue(Action.SMALL_ICON),
                 (String) action.getValue(Action.SHORT_DESCRIPTION));
+        if (act) {
+            addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    action.actionPerformed(e);
+                }
+            });
+        }
     }
 
     public JButtonMini(Icon icon, String toolTipText) {
