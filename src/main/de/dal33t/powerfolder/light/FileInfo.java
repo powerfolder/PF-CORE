@@ -23,8 +23,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
-import java.lang.ref.SoftReference;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.Date;
+import java.util.logging.Logger;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -36,7 +38,6 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.util.logging.Loggable;
 
 /**
  * File information of a local or remote file
@@ -44,10 +45,9 @@ import de.dal33t.powerfolder.util.logging.Loggable;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.33 $
  */
-public class FileInfo extends Loggable implements Serializable, DiskItem,
-    Cloneable
-{
+public class FileInfo implements Serializable, DiskItem, Cloneable {
 
+    private static final Logger log = Logger.getLogger(FileInfo.class.getName());
     private static final long serialVersionUID = 100L;
 
     /** The filename (including the path from the base of the folder) */
@@ -73,7 +73,7 @@ public class FileInfo extends Loggable implements Serializable, DiskItem,
     /**
      * Contains some cached string.
      */
-    private transient SoftReference<FileInfoStrings> cachedStrings;
+    private transient Reference<FileInfoStrings> cachedStrings;
 
     protected FileInfo() {
         // ONLY for backward compatibility to MP3FileInfo
@@ -123,8 +123,6 @@ public class FileInfo extends Loggable implements Serializable, DiskItem,
             fileName = parent.getName() + "/" + fileName;
             parent = parent.getParentFile();
         }
-
-        validate();
     }
 
     /**
@@ -170,7 +168,7 @@ public class FileInfo extends Loggable implements Serializable, DiskItem,
         }
 
         // if (!diskFile.exists()) {
-        // logWarning("File does not exsists on disk: " + toDetailString());
+        // log.warning("File does not exsists on disk: " + toDetailString());
         // }
 
         boolean filesDiffered = !inSyncWithDisk(diskFile);
@@ -186,7 +184,7 @@ public class FileInfo extends Loggable implements Serializable, DiskItem,
                 setModifiedInfo(controller.getMySelf().getInfo(), new Date());
                 setSize(0);
             }
-            // logWarning("File updated to: " + this.toDetailString());
+            // log.warning("File updated to: " + this.toDetailString());
         }
 
         return filesDiffered;
@@ -212,7 +210,6 @@ public class FileInfo extends Loggable implements Serializable, DiskItem,
      * @param size
      */
     public void setSize(long size) {
-        validateSize(size);
         this.size = new Long(size);
     }
 
@@ -236,6 +233,9 @@ public class FileInfo extends Loggable implements Serializable, DiskItem,
      *         converted to lowercase
      */
     public String getLowerCaseName() {
+        if (Feature.CACHE_FILEINFO_STRINGS.isDisabled()) {
+            return fileName.toLowerCase();
+        }
         FileInfoStrings strings = getStringsCache();
         if (strings.getLowerCaseName() == null) {
             strings.setLowerCaseName(fileName.toLowerCase());
@@ -249,8 +249,7 @@ public class FileInfo extends Loggable implements Serializable, DiskItem,
         if (stringsRef == null) {
             // Cache miss. create new entry
             stringsRef = new FileInfoStrings();
-            cachedStrings = new SoftReference<FileInfoStrings>(stringsRef);
-
+            cachedStrings = new WeakReference<FileInfoStrings>(stringsRef);
         }
         return stringsRef;
     }
@@ -273,6 +272,9 @@ public class FileInfo extends Loggable implements Serializable, DiskItem,
      * @return the filename only of this file.
      */
     public String getFilenameOnly() {
+        if (Feature.CACHE_FILEINFO_STRINGS.isDisabled()) {
+            return getFilenameOnly0();
+        }
         FileInfoStrings strings = getStringsCache();
         if (strings.getFileNameOnly() == null) {
             strings.setFileNameOnly(getFilenameOnly0());
@@ -297,6 +299,9 @@ public class FileInfo extends Loggable implements Serializable, DiskItem,
      * @return the location in folder
      */
     public String getLocationInFolder() {
+        if (Feature.CACHE_FILEINFO_STRINGS.isDisabled()) {
+            return getLocationInFolder0();
+        }
         FileInfoStrings strings = getStringsCache();
         if (strings.getLocationInFolder() == null) {
             strings.setLocationInFolder(getLocationInFolder0());
@@ -409,7 +414,6 @@ public class FileInfo extends Loggable implements Serializable, DiskItem,
     }
 
     public void setVersion(int version) {
-        validateVersion(version);
         this.version = version;
     }
 
@@ -420,8 +424,6 @@ public class FileInfo extends Loggable implements Serializable, DiskItem,
      * @param when
      */
     public void setModifiedInfo(MemberInfo by, Date when) {
-        validateModifiedBy(by);
-        validateLastModifiedDate(when);
         modifiedBy = by;
         lastModifiedDate = when;
     }
@@ -531,8 +533,9 @@ public class FileInfo extends Loggable implements Serializable, DiskItem,
         }
         Folder folder = getFolder(repo);
         if (folder == null) {
-            logWarning("Unable to determine newest version. Folder not joined "
-                + getFolderInfo());
+            log
+                .warning("Unable to determine newest version. Folder not joined "
+                    + getFolderInfo());
             return null;
         }
         FileInfo newestVersion = null;
@@ -630,7 +633,7 @@ public class FileInfo extends Loggable implements Serializable, DiskItem,
             && this.getModifiedDate().equals(otherFile.getModifiedDate())
             && !this.getModifiedBy().equals(otherFile.getModifiedBy()))
         {
-            logSevere("Found identical files, but diffrent modifier:"
+            log.severe("Found identical files, but diffrent modifier:"
                 + toDetailString() + " other: " + otherFile.toDetailString());
         }
         return identical;
@@ -717,33 +720,16 @@ public class FileInfo extends Loggable implements Serializable, DiskItem,
      * @throws IllegalArgumentException
      *             if the state is corrupt
      */
-    private void validate() {
+    public void validate() {
         Reject.ifTrue(StringUtils.isEmpty(fileName), "Filename is empty");
         Reject.ifNull(size, "Size is null");
-        validateSize(size);
-        validateLastModifiedDate(lastModifiedDate);
-        Reject.ifNull(folderInfo, "FolderInfo is null");
-        validateVersion(version);
-    }
-
-    private void validateModifiedBy(MemberInfo modifiedBy) {
-        Reject.ifNull(modifiedBy, "ModifiedBy is null");
-    }
-
-    private void validateVersion(int version) {
-        Reject.ifTrue(version < 0, "Invalid version: " + version);
-    }
-
-    private void validateLastModifiedDate(Date lastModifiedDate) {
+        Reject.ifFalse(size >= 0, "Negative file size");
         Reject.ifNull(lastModifiedDate, "Modification date is null");
         if (lastModifiedDate.getTime() < 0) {
             throw new IllegalStateException("Modification date is invalid: "
                 + lastModifiedDate);
         }
-    }
-
-    private void validateSize(long size) {
-        Reject.ifFalse(size >= 0, "Negative file size");
+        Reject.ifNull(folderInfo, "FolderInfo is null");
     }
 
     // Serialization optimization *********************************************
