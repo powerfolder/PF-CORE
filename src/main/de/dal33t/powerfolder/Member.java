@@ -319,12 +319,15 @@ public class Member extends PFComponent implements Comparable {
         // logFine("getController().isLanOnly():" +
         // getController().isLanOnly());
 
+        boolean isRelay = getController().getIOProvider()
+            .getRelayedConnectionManager().isRelay(getInfo());
         boolean isServer = isServer()
             || getController().getOSClient().isServer(this);
+        boolean isRelayOrServer = isServer || isRelay;
 
         if (getController().getNetworkingMode().equals(
             NetworkingMode.SERVERONLYMODE)
-            && !isServer)
+            && !isRelayOrServer)
         {
             return false;
         }
@@ -334,14 +337,15 @@ public class Member extends PFComponent implements Comparable {
         }
 
         // FIXME Does not work with temporary server nodes.
-        if (isServer) {
+        if (isServer || isRelay) {
             // Always interesting is the server!
+            // Always interesting a relay is!
             return true;
         }
 
         Identity id = getIdentity();
         if (id != null) {
-            // logFine(
+            // log().debug(
             // "Got ID: " + id + ". pending msgs? " + id.isPendingMessages());
             if (Util.compareVersions("2.0.0", id.getProgramVersion())) {
                 logWarning("Rejecting connection to old program client: " + id
@@ -352,13 +356,6 @@ public class Member extends PFComponent implements Comparable {
             if (id.isPendingMessages()) {
                 return true;
             }
-        }
-
-        if (getController().getIOProvider().getRelayedConnectionManager()
-            .isRelay(getInfo()))
-        {
-            // Always interesting a relay is!
-            return true;
         }
 
         // logFine("isFriend(): " + isFriend());
@@ -974,7 +971,7 @@ public class Member extends PFComponent implements Comparable {
      */
     private boolean waitForFolderList() {
         synchronized (folderListWaiter) {
-            if (getLastFolderList() == null) {
+            if (lastFolderList == null) {
                 try {
                     if (isFiner()) {
                         logFiner("Waiting for folderlist");
@@ -985,7 +982,7 @@ public class Member extends PFComponent implements Comparable {
                 }
             }
         }
-        return getLastFolderList() != null;
+        return lastFolderList != null;
     }
 
     /**
