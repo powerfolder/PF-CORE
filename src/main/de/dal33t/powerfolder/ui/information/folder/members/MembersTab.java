@@ -25,13 +25,19 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.information.folder.FolderInformationTab;
 import de.dal33t.powerfolder.ui.action.BaseAction;
+import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 import javax.swing.*;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.event.ListSelectionEvent;
 import java.awt.event.ActionEvent;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * UI component for the members information tab
@@ -41,7 +47,10 @@ public class MembersTab extends PFUIComponent implements FolderInformationTab {
     private JPanel uiComponent;
     private MembersTableModel model;
     private JScrollPane scrollPane;
-
+    private MyInviteAction inviteAction;
+    private MembersTable membersTable;
+    private FolderInfo folderInfo;
+    private Member selectedMember;
     /**
      * Constructor
      *
@@ -58,6 +67,7 @@ public class MembersTab extends PFUIComponent implements FolderInformationTab {
      * @param folderInfo
      */
     public void setFolderInfo(FolderInfo folderInfo) {
+        this.folderInfo = folderInfo;
         model.setFolderInfo(folderInfo);
     }
 
@@ -75,13 +85,20 @@ public class MembersTab extends PFUIComponent implements FolderInformationTab {
     }
 
     public void initialize() {
-        MembersTable table = new MembersTable(model);
-        scrollPane = new JScrollPane(table);
+        inviteAction = new MyInviteAction(getController());
+        membersTable = new MembersTable(model);
+        membersTable.getSelectionModel().setSelectionMode(
+                ListSelectionModel.SINGLE_SELECTION);
+        membersTable.getSelectionModel().addListSelectionListener(
+                new MySelectionListener());
+        scrollPane = new JScrollPane(membersTable);
 
         // Whitestrip
-        UIUtil.whiteStripTable(table);
+        UIUtil.whiteStripTable(membersTable);
         UIUtil.removeBorder(scrollPane);
         UIUtil.setZeroHeight(scrollPane);
+
+        enableOnSelection();
     }
 
     /**
@@ -106,9 +123,28 @@ public class MembersTab extends PFUIComponent implements FolderInformationTab {
                 "pref");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
-        builder.add(new JButton(new MyInviteAction(getController())), cc.xy(1, 1));
+        builder.add(new JButton(inviteAction), cc.xy(1, 1));
         return builder.getPanel();
     }
+
+    /**
+     * Enable the invite action on the table selection.
+     */
+    private void enableOnSelection() {
+        int selectedRow = membersTable.getSelectedRow();
+        if (selectedRow >= 0) {
+            selectedMember = (Member) model.getValueAt(
+                    membersTable.getSelectedRow(), 0);
+            inviteAction.setEnabled(true);
+        } else {
+            selectedMember = null;
+            inviteAction.setEnabled(false);
+        }
+    }
+
+    ///////////////////
+    // Inner Classes //
+    ///////////////////
 
     // Action to invite friend.
     private class MyInviteAction extends BaseAction {
@@ -118,8 +154,19 @@ public class MembersTab extends PFUIComponent implements FolderInformationTab {
         }
 
         public void actionPerformed(ActionEvent e) {
-            // @todo
+            List<FolderInfo> possibleInvitations = new ArrayList<FolderInfo>();
+            possibleInvitations.add(folderInfo);
+            PFWizard.openSelectInvitationWizard(getController(), selectedMember,
+                    possibleInvitations);
         }
     }
 
+    /**
+     * Class to detect table selection changes.
+     */
+    private class MySelectionListener implements ListSelectionListener {
+        public void valueChanged(ListSelectionEvent e) {
+            enableOnSelection();
+        }
+    }
 }

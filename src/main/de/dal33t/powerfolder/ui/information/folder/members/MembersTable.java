@@ -21,13 +21,14 @@ package de.dal33t.powerfolder.ui.information.folder.members;
 
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.render.SortedTableHeaderRenderer;
+import de.dal33t.powerfolder.Member;
 
-import javax.swing.JTable;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
-import java.awt.Dimension;
+import javax.swing.table.DefaultTableCellRenderer;
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
@@ -51,6 +52,11 @@ public class MembersTable extends JTable {
         setupColumns();
 
         getTableHeader().addMouseListener(new TableHeaderMouseListener());
+
+        // Setup renderer
+        MemberTableCellRenderer memberCellRenderer =
+                new MemberTableCellRenderer();
+        setDefaultRenderer(Member.class, memberCellRenderer);
 
         // Associate a header renderer with all columns.
         SortedTableHeaderRenderer.associateHeaderRenderer(
@@ -100,5 +106,23 @@ public class MembersTable extends JTable {
         }
     }
 
+    private static class MemberTableCellRenderer extends DefaultTableCellRenderer {
 
+        public Component getTableCellRendererComponent(JTable table, Object value,
+                                                       boolean isSelected,
+                                                       boolean hasFocus,
+                                                       int row, int column) {
+
+            Component defaultComp = super.getTableCellRendererComponent(table,
+                    value, isSelected, hasFocus, row, column);
+
+            if (value instanceof Member) {
+                Member node = (Member) value;
+                Icon icon = Icons.getIconFor(node);
+                setIcon(icon);
+            }
+
+            return defaultComp;
+        }
+    }
 }

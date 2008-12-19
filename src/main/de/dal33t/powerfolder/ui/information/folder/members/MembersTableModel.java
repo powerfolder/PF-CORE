@@ -60,7 +60,6 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
     private static final int COL_SYNC_STATUS = 2;
     private static final int COL_LOCAL_SIZE = 3;
 
-
     private final List<Member> members;
     private final List<TableModelListener> listeners;
     private Folder folder;
@@ -133,7 +132,7 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
     public Class<?> getColumnClass(int columnIndex) {
         switch (columnIndex) {
             case 0:
-                return Icon.class;
+                return Member.class;
             case 1:
             case 2:
             case 3:
@@ -185,7 +184,7 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
         FolderStatistic stats = folder.getStatistic();
 
         if (columnIndex == 0) {
-            return Icons.getIconFor(member);
+            return member;
         } else if (columnIndex == 1) {
             return member.getNick();
         } else if (columnIndex == 2) {
