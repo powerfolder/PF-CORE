@@ -35,6 +35,8 @@ import de.dal33t.powerfolder.util.Reject;
  * Performs a basic request - response message cycle.
  * <p>
  * Rationale: Executes a request on a remote node.
+ * <p>
+ * Is thread safe. Can execute only one request.
  * 
  * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
@@ -57,7 +59,7 @@ public class RequestExecutor extends PFComponent {
         this.messageListener = new ResponseMessageListener();
     }
 
-    public Response execute(Request request) throws ConnectionException {
+    public synchronized Response execute(Request request) throws ConnectionException {
         if (!node.isCompleteyConnected()) {
             throw new ConnectionException("Not connected to " + node.getNick());
         }
@@ -102,6 +104,10 @@ public class RequestExecutor extends PFComponent {
 
     private void waitForResponse(long seconds) {
         synchronized (waitForResponseLock) {
+            if (response != null) {
+                // Already got response
+                return;
+            }
             try {
                 waitForResponseLock.wait(seconds * 1000);
             } catch (InterruptedException e) {
