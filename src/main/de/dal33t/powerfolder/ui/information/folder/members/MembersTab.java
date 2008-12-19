@@ -20,16 +20,18 @@
 package de.dal33t.powerfolder.ui.information.folder.members;
 
 import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.information.folder.FolderInformationTab;
+import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
+import javax.swing.*;
+import java.awt.event.ActionEvent;
 
 /**
  * UI component for the members information tab
@@ -87,10 +89,37 @@ public class MembersTab extends PFUIComponent implements FolderInformationTab {
      */
     private void buildUIComponent() {
         FormLayout layout = new FormLayout("3dlu, fill:pref:grow, 3dlu",
-            "3dlu, fill:0:grow, 3dlu");
+            "3dlu, pref, 3dlu, pref , 3dlu, fill:0:grow, 3dlu");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
-        builder.add(scrollPane, cc.xy(2, 2));
+        builder.add(createToolBar(), cc.xy(2, 2));
+        builder.addSeparator(null, cc.xyw(1, 4, 3));
+        builder.add(scrollPane, cc.xy(2, 6));
         uiComponent = builder.getPanel();
     }
+
+    /**
+     * @return the toolbar
+     */
+    private JPanel createToolBar() {
+        FormLayout layout = new FormLayout("pref, fill:pref:grow",
+                "pref");
+        DefaultFormBuilder builder = new DefaultFormBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+        builder.add(new JButton(new MyInviteAction(getController())), cc.xy(1, 1));
+        return builder.getPanel();
+    }
+
+    // Action to invite friend.
+    private class MyInviteAction extends BaseAction {
+
+        private MyInviteAction(Controller controller) {
+            super("action_invite_friend", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            // @todo
+        }
+    }
+
 }

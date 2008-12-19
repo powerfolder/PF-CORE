@@ -20,9 +20,7 @@
 package de.dal33t.powerfolder.ui.home;
 
 import com.jgoodies.binding.value.ValueModel;
-import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
@@ -100,20 +98,20 @@ public class HomeTab extends PFUIComponent {
         initComponents();
 
         FormLayout layout = new FormLayout("pref:grow",
-            "pref, pref, 3dlu, fill:0:grow");
+            "3dlu, pref, 3dlu, pref, 3dlu, fill:0:grow");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
         // Toolbar
         JPanel toolbar = createToolBar();
-        builder.add(toolbar, cc.xy(1, 1));
-        builder.addSeparator(null, cc.xy(1, 2));
+        builder.add(toolbar, cc.xy(1, 2));
+        builder.addSeparator(null, cc.xy(1, 4));
 
         // Main panel in scroll pane
         JPanel mainPanel = buildMainPanel();
         JScrollPane scrollPane = new JScrollPane(mainPanel);
         UIUtil.removeBorder(scrollPane);
-        builder.add(scrollPane, cc.xy(1, 4));
+        builder.add(scrollPane, cc.xy(1, 6));
         uiComponent = builder.getPanel();
     }
 
@@ -287,15 +285,14 @@ public class HomeTab extends PFUIComponent {
         JButton searchComputerButton = new JButton(getApplicationModel().getActionModel()
                 .getFindComputersAction());
 
-        ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
-        bar.addGridded(newFolderButton);
-        bar.addRelatedGap();
-        bar.addGridded(searchComputerButton);
+        FormLayout layout = new FormLayout("3dlu, pref, 3dlu, pref, pref:grow",
+            "pref");
+        PanelBuilder builder = new PanelBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+        builder.add(newFolderButton, cc.xy(2, 1));
+        builder.add(searchComputerButton, cc.xy(4, 1));
 
-        JPanel barPanel = bar.getPanel();
-        barPanel.setBorder(Borders.DLU4_BORDER);
-
-        return barPanel;
+        return builder.getPanel();
     }
 
     /**

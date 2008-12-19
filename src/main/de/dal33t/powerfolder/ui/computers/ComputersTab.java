@@ -20,19 +20,16 @@
 package de.dal33t.powerfolder.ui.computers;
 
 import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.ui.model.NodeManagerModel;
+import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
+import javax.swing.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
@@ -74,16 +71,16 @@ public class ComputersTab extends PFUIComponent {
 
         // Build ui
         FormLayout layout = new FormLayout("pref:grow",
-            "pref, pref, 3dlu, fill:0:grow");
+            "3dlu, pref, 3dlu, pref, 3dlu, fill:0:grow");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
         JPanel toolbar = createToolBar();
-        builder.add(toolbar, cc.xy(1, 1));
-        builder.addSeparator(null, cc.xy(1, 2));
+        builder.add(toolbar, cc.xy(1, 2));
+        builder.addSeparator(null, cc.xy(1, 4));
         JScrollPane scrollPane = new JScrollPane(computersList.getUIComponent());
         UIUtil.removeBorder(scrollPane);
-        builder.add(scrollPane, cc.xy(1, 4));
+        builder.add(scrollPane, cc.xy(1, 6));
         uiComponent = builder.getPanel();
     }
 
@@ -114,17 +111,15 @@ public class ComputersTab extends PFUIComponent {
         JButton searchComputerButton = new JButton(getApplicationModel()
                 .getActionModel().getFindComputersAction());
 
-        FormLayout layout = new FormLayout("pref, pref:grow, pref",
+        FormLayout layout = new FormLayout("3dlu, pref, pref:grow, pref, 3dlu",
             "pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
-        builder.add(searchComputerButton, cc.xy(1, 1));
-        builder.add(computerTypeList, cc.xy(3, 1));
-        JPanel barPanel = builder.getPanel();
-        barPanel.setBorder(Borders.DLU4_BORDER);
+        builder.add(searchComputerButton, cc.xy(2, 1));
+        builder.add(computerTypeList, cc.xy(4, 1));
 
-        return barPanel;
+        return builder.getPanel();
     }
 
     /**

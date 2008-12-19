@@ -134,7 +134,7 @@ public class FilesTab extends PFUIComponent
         CellConstraints cc = new CellConstraints();
 
         builder.add(createToolBar(), cc.xy(2, 2));
-        builder.addSeparator(null, cc.xy(2, 4));
+        builder.addSeparator(null, cc.xyw(1, 4, 3));
 
         splitPane.setOneTouchExpandable(false);
         builder.add(splitPane, cc.xy(2, 6));
