@@ -19,17 +19,19 @@
  */
 package de.dal33t.powerfolder;
 
-import com.jgoodies.binding.value.ValueHolder;
-import com.jgoodies.binding.value.ValueModel;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.os.OSUtil;
-import de.dal33t.powerfolder.util.os.Win32.WinUtils;
-import org.apache.commons.lang.StringUtils;
-
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.apache.commons.lang.StringUtils;
+
+import com.jgoodies.binding.value.ValueHolder;
+import com.jgoodies.binding.value.ValueModel;
+
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.os.OSUtil;
+import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 
 /**
  * Refelects a entry setting in the configuration file. Provides basic method
@@ -309,20 +311,43 @@ public enum ConfigurationEntry {
     HIDE_PREVIEW_FOLDERS("show.preview.folders", Boolean.FALSE.toString()),
 
     /**
-     * The number of seconds between db maintenance scans (10 minutes).
+     * The maximum time powerfolder keeps the folder database dirty in memory
+     * before writing it to disk in seconds.
      */
-    DB_MAINTENANCE_SECONDS("filedb.maintenance.seconds", String.valueOf(600)),
+    FOLDER_DB_PERSIST_TIME("filedb.persist.seconds", String.valueOf(5)),
+
+    /**
+     * The number of seconds between db maintenance scans (30 minutes).
+     */
+    DB_MAINTENANCE_SECONDS("filedb.maintenance.seconds", String.valueOf(1800)),
 
     /**
      * The age of a deleted file until it gets removed by the folder db
-     * maintenance. In Seconds! default: 1 year
+     * maintenance. In Seconds! Default: 1 year
      */
     MAX_FILEINFO_DELETED_AGE_SECONDS("filedb.deleted.maxage", "" + 60L * 60
         * 24 * 365),
 
     /**
+     * The optional name of the sever to connect to.
+     */
+    SERVER_NAME("server.name"),
+
+    /**
+     * The optional url of the server.
+     */
+    SERVER_WEB_URL("server.url"),
+
+    /**
+     * The node id of the server to connect to. Not mandatory but at
+     * recommended. At leat host or ID of a server has to be set to connect to a
+     * server.
+     */
+    SERVER_NODEID("server.nodeid"),
+
+    /**
      * The optional server hostname to connect to. Example:
-     * server.powerfolder.com
+     * server.powerfolder.com:1234
      */
     SERVER_HOST("server.host") {
         @Override
@@ -334,14 +359,35 @@ public enum ConfigurationEntry {
             }
             return host;
         }
-    };
+    },
+
+    /**
+     * The http proxy to use for HTTP tunneled connections
+     */
+    HTTP_PROXY_HOST("http.proxy.host"),
+
+    /**
+     * The http proxy port to use for HTTP tunneled connections
+     */
+    HTTP_PROXY_PORT("http.proxy.port", "" + 80),
+
+    /**
+     * The http proxy username to use for HTTP tunneled connections
+     */
+    HTTP_PROXY_USERNAME("http.proxy.username"),
+
+    /**
+     * The http password proxy to use for HTTP tunneled connections
+     */
+    HTTP_PROXY_PASSWORD("http.proxy.password");
 
     // Methods/Constructors ***************************************************
 
+    private static final Logger LOG = Logger.getLogger(ConfigurationEntry.class
+        .getName());
+
     private String configKey;
     protected String defaultValue;
-    private static final Logger log = Logger.getLogger(ConfigurationEntry.class
-        .getName());
 
     ConfigurationEntry(String aConfigKey) {
         this(aConfigKey, null);
@@ -387,7 +433,7 @@ public enum ConfigurationEntry {
         try {
             return new Integer(value);
         } catch (NumberFormatException e) {
-            log.log(Level.WARNING, "Unable to parse configuration entry '"
+            LOG.log(Level.WARNING, "Unable to parse configuration entry '"
                 + configKey + "' into a int. Value: " + value, e);
             return new Integer(defaultValue);
         }
@@ -409,7 +455,7 @@ public enum ConfigurationEntry {
         try {
             return value.equalsIgnoreCase("true");
         } catch (NumberFormatException e) {
-            log.log(Level.WARNING, "Unable to parse configuration entry '"
+            LOG.log(Level.WARNING, "Unable to parse configuration entry '"
                 + configKey + "' into a boolean. Value: " + value, e);
             return defaultValue.equalsIgnoreCase("true");
         }
