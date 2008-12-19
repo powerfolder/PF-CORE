@@ -301,7 +301,9 @@ public class PluginSettingsTab extends PFUIComponent implements PreferenceTab,
             // HACK(tm) do not be able to disable the ProLoader!
             if (plugin == null
                 || plugin.getClass().getName().equals(
-                    Constants.PRO_LOADER_PLUGIN_CLASS))
+                    Constants.PRO_LOADER_PLUGIN_CLASS)
+                || plugin.getClass().getName().equals(
+                    Constants.ENCRYPTION_PLUGIN_CLASS))
             {
                 setEnabled(false);
             } else {
