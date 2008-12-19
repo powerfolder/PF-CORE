@@ -149,14 +149,16 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
 
         builder.add(remindPasswordBox, cc.xy(3, 7));
 
-        builder.add(new LinkLabel(Translation
-            .getTranslation("pro.wizard.activation.register_now"), client
-            .getRegisterURL()), cc.xy(3, 9));
+        if (client.getRegisterURL() != null) {
+            builder.add(new LinkLabel(Translation
+                .getTranslation("pro.wizard.activation.register_now"), client
+                .getRegisterURL()), cc.xy(3, 9));
 
-        LinkLabel link = new LinkLabel(Translation
-            .getTranslation("wizard.webservice.learn_more"),
-            "http://www.powerfolder.com/online_storage_features.html");
-        builder.add(link, cc.xyw(1, 11, 4));
+            LinkLabel link = new LinkLabel(Translation
+                .getTranslation("wizard.webservice.learn_more"),
+                "http://www.powerfolder.com/online_storage_features.html");
+            builder.add(link, cc.xyw(1, 11, 4));
+        }
 
         // Default setup
         builder.add(defaultFolderHelper.getUIComponent(), cc.xyw(1, 13, 4));
