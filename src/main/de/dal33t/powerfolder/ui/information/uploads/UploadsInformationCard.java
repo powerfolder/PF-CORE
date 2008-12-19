@@ -154,7 +154,7 @@ public class UploadsInformationCard extends InformationCard
         CellConstraints cc = new CellConstraints();
 
         builder.add(toolBar, cc.xy(2, 2));
-        builder.addSeparator(null, cc.xy(2, 4));
+        builder.addSeparator(null, cc.xyw(1, 4, 3));
         builder.add(tablePanel.getUIComponent(), cc.xy(2, 6));
         builder.add(detailsPanel.getPanel(), cc.xy(2, 8));
         uiComponent = builder.getPanel();
