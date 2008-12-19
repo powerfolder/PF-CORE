@@ -19,23 +19,30 @@
 */
 package de.dal33t.powerfolder.ui.model;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.concurrent.CopyOnWriteArraySet;
+
+import javax.swing.ListModel;
+
+import com.jgoodies.binding.list.ArrayListModel;
 import com.jgoodies.binding.value.ValueModel;
+
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
-import de.dal33t.powerfolder.event.NodeManagerModelListener;
 import de.dal33t.powerfolder.event.NodeManagerModelEvent;
+import de.dal33t.powerfolder.event.NodeManagerModelListener;
 import de.dal33t.powerfolder.net.NodeManager;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.Set;
-import java.util.Collection;
-import java.util.TreeSet;
-import java.util.Collections;
-import java.util.concurrent.CopyOnWriteArraySet;
+import de.dal33t.powerfolder.util.compare.MemberComparator;
 
 /**
  * Model for the node manager. Create filtered list of nodes based on
@@ -50,6 +57,7 @@ public class NodeManagerModel extends PFUIComponent {
 
     private ValueModel hideOfflineFriendsModel;
     private ValueModel includeOnlineLanModel;
+    private ArrayListModel<Member> friendsListModel;
     private final Set<Member> nodes;
     private final NodeManager nodeManager;
     private final Set<NodeManagerModelListener> listeners;
@@ -97,6 +105,8 @@ public class NodeManagerModel extends PFUIComponent {
                 rebuildSet();
             }
         };
+        
+        friendsListModel = new ArrayListModel<Member>();
 
         hideOfflineFriendsModel = PreferencesEntry
                 .NODE_MANAGER_MODEL_HIDE_OFFLINE_FRIENDS.getModel(getController());
@@ -128,6 +138,11 @@ public class NodeManagerModel extends PFUIComponent {
         for (NodeManagerModelListener listener : listeners) {
             listener.rebuilt(new NodeManagerModelEvent(this, null));
         }
+        
+        Member[] friends = getController().getNodeManager().getFriends();
+        friendsListModel.clear();
+        friendsListModel.addAll(Arrays.asList(friends));
+        Collections.sort(friendsListModel, MemberComparator.IN_GUI);
     }
 
     /**
@@ -182,6 +197,13 @@ public class NodeManagerModel extends PFUIComponent {
     }
 
     /**
+     * @return a listmodel that contains the friendslist.
+     */
+    public ListModel getFriendsListModel() {
+        return friendsListModel;
+    }
+
+    /**
      * Update method responding to addition or removal of nodes.
      *
      * @param node
@@ -211,10 +233,16 @@ public class NodeManagerModel extends PFUIComponent {
     private class MyNodeManagerListener implements NodeManagerListener {
 
         public void friendAdded(NodeManagerEvent e) {
+            if (!friendsListModel.contains(e.getNode())) {
+                friendsListModel.add(e.getNode());
+                Collections.sort(friendsListModel, MemberComparator.IN_GUI);
+            }
             updateNode(e.getNode());
         }
 
         public void friendRemoved(NodeManagerEvent e) {
+            friendsListModel.remove(e.getNode());
+            Collections.sort(friendsListModel, MemberComparator.IN_GUI);
             updateNode(e.getNode());
         }
 
