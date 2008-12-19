@@ -32,7 +32,9 @@ import de.dal33t.powerfolder.event.FolderListener;
 import de.dal33t.powerfolder.event.FolderMembershipEvent;
 import de.dal33t.powerfolder.event.FolderMembershipListener;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.ui.action.ActionModel;
+import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
@@ -51,6 +53,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class ExpandableFolderView extends PFUIComponent {
 
     private final Folder folder;
+    private JButtonMini inviteButton;
     private JButtonMini expandCollapseButton;
     private JButtonMini syncFolderButton;
     private JPanel uiComponent;
@@ -99,8 +102,8 @@ public class ExpandableFolderView extends PFUIComponent {
         initComponent();
 
         // Build ui
-                                            //  icon        name   space            # files     sync  ex/co
-        FormLayout upperLayout = new FormLayout("pref, 3dlu, pref, pref:grow, 3dlu, pref, 3dlu, pref, pref",
+                                            //  icon        name   space            # files     inv   sync  ex/co
+        FormLayout upperLayout = new FormLayout("pref, 3dlu, pref, pref:grow, 3dlu, pref, 3dlu, pref, pref, pref",
             "pref");
         PanelBuilder upperBuilder = new PanelBuilder(upperLayout);
         CellConstraints cc = new CellConstraints();
@@ -118,8 +121,9 @@ public class ExpandableFolderView extends PFUIComponent {
         upperBuilder.add(jLabel, cc.xy(1, 1));
         upperBuilder.add(new JLabel(folder.getName()), cc.xy(3, 1));
         upperBuilder.add(filesAvailableLabel, cc.xy(6, 1));
-        upperBuilder.add(syncFolderButton, cc.xy(8, 1));
-        upperBuilder.add(expandCollapseButton, cc.xy(9, 1));
+        upperBuilder.add(inviteButton, cc.xy(8, 1));
+        upperBuilder.add(syncFolderButton, cc.xy(9, 1));
+        upperBuilder.add(expandCollapseButton, cc.xy(10, 1));
 
         JPanel upperPanel = upperBuilder.getPanel();
 
@@ -204,6 +208,8 @@ public class ExpandableFolderView extends PFUIComponent {
         expandCollapseButton = new JButtonMini(Icons.EXPAND,
                 Translation.getTranslation("exp_folder_view.expand"));
         expandCollapseButton.addActionListener(new MyExpColActionListener());
+        MyInviteAction inviteAction = new MyInviteAction(getController());
+        inviteButton = new JButtonMini(inviteAction, true);
         syncFolderButton = new JButtonMini(Icons.SYNC,
                 Translation.getTranslation("exp_folder_view.synchronize_folder"));
         syncFolderButton.addActionListener(new MySyncActionListener());
@@ -429,6 +435,18 @@ public class ExpandableFolderView extends PFUIComponent {
                     e.getID(), e.getActionCommand(), e.getWhen(), e.getModifiers());
             getApplicationModel().getActionModel().getSyncFolderAction()
                     .actionPerformed(ae);
+        }
+    }
+
+    // Action to invite friend.
+    private class MyInviteAction extends BaseAction {
+
+        private MyInviteAction(Controller controller) {
+            super("action_invite_friend", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            PFWizard.openSendInvitationWizard(getController(), folder.getInfo());
         }
     }
 }

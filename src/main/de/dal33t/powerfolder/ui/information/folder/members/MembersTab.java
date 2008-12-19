@@ -29,7 +29,6 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.information.folder.FolderInformationTab;
 import de.dal33t.powerfolder.ui.action.BaseAction;
-import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 import javax.swing.*;
@@ -45,10 +44,8 @@ public class MembersTab extends PFUIComponent implements FolderInformationTab {
     private JPanel uiComponent;
     private MembersTableModel model;
     private JScrollPane scrollPane;
-    private MyInviteAction inviteAction;
     private MyOpenChatAction openChatAction;
     private MembersTable membersTable;
-    private FolderInfo folderInfo;
     private Member selectedMember;
     /**
      * Constructor
@@ -66,7 +63,6 @@ public class MembersTab extends PFUIComponent implements FolderInformationTab {
      * @param folderInfo
      */
     public void setFolderInfo(FolderInfo folderInfo) {
-        this.folderInfo = folderInfo;
         model.setFolderInfo(folderInfo);
     }
 
@@ -84,7 +80,6 @@ public class MembersTab extends PFUIComponent implements FolderInformationTab {
     }
 
     public void initialize() {
-        inviteAction = new MyInviteAction(getController());
         openChatAction = new MyOpenChatAction(getController());
         membersTable = new MembersTable(model);
         membersTable.getSelectionModel().setSelectionMode(
@@ -119,12 +114,11 @@ public class MembersTab extends PFUIComponent implements FolderInformationTab {
      * @return the toolbar
      */
     private JPanel createToolBar() {
-        FormLayout layout = new FormLayout("pref, 3dlu, pref, fill:pref:grow",
+        FormLayout layout = new FormLayout("pref, fill:pref:grow",
                 "pref");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
-        builder.add(new JButton(inviteAction), cc.xy(1, 1));
-        builder.add(new JButton(openChatAction), cc.xy(3, 1));
+        builder.add(new JButton(openChatAction), cc.xy(1, 1));
         return builder.getPanel();
     }
 
@@ -146,19 +140,6 @@ public class MembersTab extends PFUIComponent implements FolderInformationTab {
     ///////////////////
     // Inner Classes //
     ///////////////////
-
-    // Action to invite friend.
-    private class MyInviteAction extends BaseAction {
-
-        private MyInviteAction(Controller controller) {
-            super("action_invite_friend", controller);
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            PFWizard.openSendInvitationWizard(getController(), folderInfo);
-        }
-    }
-
 
     private class MyOpenChatAction extends BaseAction {
 
