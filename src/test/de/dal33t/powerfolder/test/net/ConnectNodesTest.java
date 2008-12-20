@@ -234,10 +234,11 @@ public class ConnectNodesTest extends FiveControllerTestCase {
             }
         });
 
-        // Again fail, no mutual friends yet.
+        // Should connect, because friendship message is pending.
         margeAtLisa.shutdown();
-        assertFalse(margeAtLisa.reconnect());
-        assertFalse(margeAtLisa.isCompleteyConnected());
+        assertTrue(margeAtLisa.reconnect());
+        assertTrue(margeAtLisa.isCompleteyConnected());
+        margeAtLisa.shutdown();
 
         final Member lisaAtMarge = getContollerLisa().getMySelf().getInfo()
             .getNode(getContollerMarge(), true);
