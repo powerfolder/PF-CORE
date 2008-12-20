@@ -23,6 +23,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.ui.actionold.ReconnectAction;
 
+import javax.swing.*;
 import java.awt.event.ActionListener;
 
 /**
@@ -51,6 +52,7 @@ public class ActionModel extends PFComponent {
     private AddFriendAction addFriendAction;
     private RemoveFriendAction removeFriendAction;
     private SyncFolderAction syncFolderAction;
+    private OpenInvitationReceivedWizardAction openInvitationReceivedWizardAction;
 
     public NewFolderAction getNewFolderAction() {
         if (newFolderAction == null) {
@@ -141,6 +143,16 @@ public class ActionModel extends PFComponent {
             removeFriendAction = new RemoveFriendAction(getController());
         }
         return removeFriendAction;
+    }
+
+    public OpenInvitationReceivedWizardAction
+    getOpenInvitationReceivedWizardAction() {
+
+        if (openInvitationReceivedWizardAction == null) {
+            openInvitationReceivedWizardAction =
+                    new OpenInvitationReceivedWizardAction(getController());
+        }
+        return openInvitationReceivedWizardAction;
     }
 
     public ActionListener getSyncFolderAction() {

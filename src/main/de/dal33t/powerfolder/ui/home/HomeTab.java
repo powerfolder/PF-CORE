@@ -138,7 +138,8 @@ public class HomeTab extends PFUIComponent {
                 true, true);
         receivedInvitationsLine = new HomeTabLine(getController(),
                 Translation.getTranslation("home_tab.new_invitations"), null,
-                true, true);
+                true, true, getApplicationModel().getActionModel()
+                .getOpenInvitationReceivedWizardAction());
         downloadsLine = new HomeTabLine(getController(),
                 Translation.getTranslation("home_tab.files_downloaded"), null,
                 false, true, getApplicationModel().getActionModel()

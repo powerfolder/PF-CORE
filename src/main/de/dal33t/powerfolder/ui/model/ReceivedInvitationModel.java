@@ -73,13 +73,13 @@ public class ReceivedInvitationModel {
     }
 
     /**
-     * Remove an invitation fromm the model for display, etc.
+     * Remove an invitation from the model for display, etc.
      *
      * @return
      */
     public Invitation popInvitation() {
         if (!invitations.isEmpty()) {
-            Invitation invitation = invitations.get(0);
+            Invitation invitation = invitations.remove(0);
             receivedInvitationsCountVM.setValue(invitations.size());
             for (InvitationReceivedListener invitationReceivedListener
                     : invitationReceivedListeners) {
