@@ -1184,6 +1184,29 @@ public class Controller extends PFComponent {
         started = false;
         startTime = null;
 
+        if (taskManager != null) {
+            logFine("Shutting down task manager");
+            taskManager.shutdown();
+        }
+
+        if (timer != null) {
+            logFine("Cancel global timer");
+            timer.cancel();
+            timer.purge();
+        }
+        if (threadPool != null) {
+            logFine("Shutting down global threadpool");
+            threadPool.shutdown();
+        }
+
+        // shut down current connection try
+        closeCurrentConnectionTry();
+
+        if (isUIOpen()) {
+            logFine("Shutting down UI");
+            uiController.shutdown();
+        }
+        
         if ((portWasOpened || ConfigurationEntry.NET_FIREWALL_OPENPORT
             .getValueBoolean(this))
             && connectionListener != null)
@@ -1209,29 +1232,6 @@ public class Controller extends PFComponent {
                     logSevere("Closing of listener port failed: " + e);
                 }
             }
-        }
-
-        if (taskManager != null) {
-            logFine("Shutting down task manager");
-            taskManager.shutdown();
-        }
-
-        if (timer != null) {
-            logFine("Cancel global timer");
-            timer.cancel();
-            timer.purge();
-        }
-        if (threadPool != null) {
-            logFine("Shutting down global threadpool");
-            threadPool.shutdown();
-        }
-
-        // shut down current connection try
-        closeCurrentConnectionTry();
-
-        if (isUIOpen()) {
-            logFine("Shutting down UI");
-            uiController.shutdown();
         }
 
         if (rconManager != null) {
