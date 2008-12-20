@@ -25,21 +25,13 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.clientserver.ServerClient;
-import de.dal33t.powerfolder.event.AskForFriendshipEvent;
-import de.dal33t.powerfolder.event.AskForFriendshipHandler;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.message.Identity;
-import de.dal33t.powerfolder.message.KnownNodes;
-import de.dal33t.powerfolder.message.Message;
-import de.dal33t.powerfolder.message.MessageListener;
-import de.dal33t.powerfolder.message.Notification;
-import de.dal33t.powerfolder.message.Problem;
-import de.dal33t.powerfolder.message.RequestNodeList;
-import de.dal33t.powerfolder.message.TransferStatus;
+import de.dal33t.powerfolder.message.AddFriendNotification;
+import de.dal33t.powerfolder.message.*;
 import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.IdGenerator;
@@ -128,9 +120,6 @@ public class NodeManager extends PFComponent {
     private boolean nodefileLoaded;
 
     private NodeManagerListener listenerSupport;
-
-    /** The handler that is called to ask for friendship if folders are joined */
-    private AskForFriendshipHandler askForFriendshipHandler;
 
     /** Filter for the internal node database */
     private List<NodeFilter> nodeFilters;
@@ -328,54 +317,6 @@ public class NodeManager extends PFComponent {
         }
         listenerSupport.startStop(new NodeManagerEvent(this, null));
         logFine("Stopped");
-    }
-
-    /**
-     * Set the handler that should be called when a member joins a folder. The
-     * handler will generely ask if that member should become a friend
-     * 
-     * @param newAskForFriendshipHandler
-     */
-    public void setAskForFriendshipHandler(
-        AskForFriendshipHandler newAskForFriendshipHandler)
-    {
-        askForFriendshipHandler = newAskForFriendshipHandler;
-    }
-
-    /**
-     * Asks the user, if this member should be added to friendlist if not
-     * already done. Won't ask if user has disabled this in
-     * CONFIG_ASKFORFRIENDSHIP. displays in the userinterface the list of
-     * folders that that member has joined.
-     * 
-     * @param member
-     *            the node which joined the folders
-     * @param joinedFolders
-     *            the folders the member joined.
-     */
-    public void askForFriendship(Member member,
-        Set<FolderInfo> joinedFolders, String personalMessage)
-    {
-        if (askForFriendshipHandler != null) {
-            askForFriendshipHandler.askForFriendship(new AskForFriendshipEvent(
-                member, joinedFolders, personalMessage));
-        }
-    }
-
-    /**
-     * Asks the user, if this member should be added to friendlist if not
-     * already done. Won't ask if user has disabled this in
-     * CONFIG_ASKFORFRIENDSHIP. displays in the userinterface the list of
-     * folders that that member has joined.
-     * 
-     * @param member
-     *            the node which joined the folders
-     */
-    public void askForFriendship(Member member, String personalMessage) {
-        if (askForFriendshipHandler != null) {
-            askForFriendshipHandler.askForFriendship(new AskForFriendshipEvent(
-                member, personalMessage));
-        }
     }
 
     /**
@@ -720,9 +661,8 @@ public class NodeManager extends PFComponent {
             node.markForImmediateConnect();
             // Send a "you were added"
             getController().getTaskManager().scheduleTask(
-                new SendMessageTask(new Notification(
-                    Notification.Event.ADDED_TO_FRIENDS, personalMessage), node
-                    .getId()));
+                new SendMessageTask(new AddFriendNotification(personalMessage),
+                        node.getId()));
         } else if (wasFriend) {
             friends.remove(node);
             nodesChanged = true;

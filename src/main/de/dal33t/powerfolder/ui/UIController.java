@@ -27,6 +27,7 @@ import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.message.Invitation;
+import de.dal33t.powerfolder.message.AddFriendNotification;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
@@ -38,7 +39,6 @@ import de.dal33t.powerfolder.ui.chat.ChatFrame;
 import de.dal33t.powerfolder.ui.chat.ChatModel;
 import de.dal33t.powerfolder.ui.chat.ChatModelEvent;
 import de.dal33t.powerfolder.ui.chat.ChatModelListener;
-import de.dal33t.powerfolder.ui.friends.AskForFriendshipHandlerDefaultImpl;
 import de.dal33t.powerfolder.ui.information.InformationFrame;
 import de.dal33t.powerfolder.ui.model.ApplicationModel;
 import de.dal33t.powerfolder.ui.model.TransferManagerModel;
@@ -505,9 +505,6 @@ public class UIController extends PFComponent {
         FolderRepository repo = getController().getFolderRepository();
         repo.setFileNameProblemHandler(new FileNameProblemHandlerDefaultImpl(
             getController()));
-        getController().getNodeManager().setAskForFriendshipHandler(
-            new AskForFriendshipHandlerDefaultImpl(getController()));
-
     }
 
     /**
@@ -732,6 +729,11 @@ public class UIController extends PFComponent {
             applicationModel.getReceivedInvitationModel()
                     .addInvitation(invitation);
         }
+    }
+
+    public void addNotificationReceived(AddFriendNotification not) {
+            applicationModel.getReceivedAddFriendNotificationsModel()
+                    .addNotification(not);
     }
 
     private class UpdateSystrayTask extends TimerTask {

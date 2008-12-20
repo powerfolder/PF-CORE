@@ -55,7 +55,8 @@ public class HomeTab extends PFUIComponent {
     private HomeTabLine numberOfFoldersLine;
     private HomeTabLine sizeOfFoldersLine;
     private HomeTabLine filesAvailableLine;
-    private HomeTabLine receivedInvitationsLine;
+    private HomeTabLine newInvitationsLine;
+    private HomeTabLine newComputersLine;
     private HomeTabLine computersLine;
     private HomeTabLine downloadsLine;
     private HomeTabLine uploadsLine;
@@ -65,7 +66,8 @@ public class HomeTab extends PFUIComponent {
     private ServerClient client;
     private JLabel onlineStorageAccountLabel;
     private OnlineStorageSection onlineStorageSection;
-    private final ValueModel receivedInvitationsCountVM;
+    private final ValueModel newComputersCountVM;
+    private final ValueModel newInvitationsCountVM;
 
     /**
      * Constructor
@@ -80,9 +82,13 @@ public class HomeTab extends PFUIComponent {
                 .getTransferManagerModel().getCompletedUploadsCountVM();
         folderListener = new MyFolderListener();
         client = getApplicationModel().getServerClientModel().getClient();
+        getUIController().getApplicationModel().getReceivedAddFriendNotificationsModel()
+                .addNotificationReceivedListener(new MyAddFriendNotificationReceivedListener());
         getUIController().getApplicationModel().getReceivedInvitationModel()
                 .addInvitationReceivedListener(new MyInvitationReceivedListener());
-        receivedInvitationsCountVM = getUIController().getApplicationModel()
+        newComputersCountVM = getUIController().getApplicationModel()
+                .getReceivedAddFriendNotificationsModel().getReceivedAddFriendNotificationsCountVM();
+        newInvitationsCountVM = getUIController().getApplicationModel()
                 .getReceivedInvitationModel().getReceivedInvitationsCountVM();
     }
 
@@ -136,10 +142,13 @@ public class HomeTab extends PFUIComponent {
         filesAvailableLine = new HomeTabLine(getController(),
                 Translation.getTranslation("home_tab.files_available"), null,
                 true, true);
-        receivedInvitationsLine = new HomeTabLine(getController(),
+        newInvitationsLine = new HomeTabLine(getController(),
                 Translation.getTranslation("home_tab.new_invitations"), null,
                 true, true, getApplicationModel().getActionModel()
                 .getOpenInvitationReceivedWizardAction());
+        newComputersLine = new HomeTabLine(getController(),
+                Translation.getTranslation("home_tab.new_computers"), null,
+                true, true);
         downloadsLine = new HomeTabLine(getController(),
                 Translation.getTranslation("home_tab.files_downloaded"), null,
                 false, true, getApplicationModel().getActionModel()
@@ -159,7 +168,8 @@ public class HomeTab extends PFUIComponent {
         recalculateFilesAvailable();
         updateComputers();
         updateOnlineStorageDetails();
-        updateReceivedInvitationsText();
+        updateNewInvitationsText();
+        updateNewComputersText();
         registerListeners();
     }
 
@@ -182,8 +192,8 @@ public class HomeTab extends PFUIComponent {
      */
     private JPanel buildMainPanel() {
         FormLayout layout = new FormLayout("3dlu, 100dlu, pref:grow, 3dlu",
-            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, pref, pref, pref, pref, 3dlu, pref, pref, pref, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref:grow");
-        //   sync        sep         you-have    files invs  down  upl   sep         #fol  szfo  comp  sep         os-acc      osSec
+            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, pref, pref, pref, pref, pref, 3dlu, pref, pref, pref, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref:grow");
+        //   sync        sep         you-have    files comps invs  down  upl   sep         #fol  szfo  comp  sep         os-acc      osSec
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
@@ -203,7 +213,10 @@ public class HomeTab extends PFUIComponent {
         builder.add(filesAvailableLine.getUIComponent(), cc.xywh(2, row, 2, 1));
         row++;
 
-        builder.add(receivedInvitationsLine.getUIComponent(), cc.xywh(2, row, 2, 1));
+        builder.add(newComputersLine.getUIComponent(), cc.xywh(2, row, 2, 1));
+        row++;
+
+        builder.add(newInvitationsLine.getUIComponent(), cc.xywh(2, row, 2, 1));
         row++;
 
         builder.add(downloadsLine.getUIComponent(), cc.xywh(2, row, 2, 1));
@@ -277,9 +290,14 @@ public class HomeTab extends PFUIComponent {
         uploadsLine.setValue((Integer) uploadsCountVM.getValue());
     }
 
-    private void updateReceivedInvitationsText() {
-        Integer integer = (Integer) receivedInvitationsCountVM.getValue();
-        receivedInvitationsLine.setValue(integer);
+    private void updateNewInvitationsText() {
+        Integer integer = (Integer) newInvitationsCountVM.getValue();
+        newInvitationsLine.setValue(integer);
+    }
+
+    private void updateNewComputersText() {
+        Integer integer = (Integer) newComputersCountVM.getValue();
+        newComputersLine.setValue(integer);
     }
 
     /**
@@ -552,12 +570,21 @@ public class HomeTab extends PFUIComponent {
         }
     }
 
+    private class MyAddFriendNotificationReceivedListener
+            implements AddFriendNotificationReceivedListener {
+
+        public void notificationReceived(AddFriendNotificationReceivedEvent
+                addFriendNotificationReceivedEvent) {
+            updateNewComputersText();
+        }
+    }
+
     private class MyInvitationReceivedListener
             implements InvitationReceivedListener {
 
         public void invitationReceived(InvitationReceivedEvent
                 invitationReceivedEvent) {
-            updateReceivedInvitationsText();
+            updateNewInvitationsText();
         }
     }
 }

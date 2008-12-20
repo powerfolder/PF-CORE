@@ -21,7 +21,7 @@ package de.dal33t.powerfolder.ui.action;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
-import de.dal33t.powerfolder.ui.model.ReceivedInvitationModel;
+import de.dal33t.powerfolder.ui.model.ReceivedInvitationsModel;
 import de.dal33t.powerfolder.message.Invitation;
 
 import javax.swing.*;
@@ -40,16 +40,16 @@ public class OpenInvitationReceivedWizardAction extends BaseAction {
             return;
         }
 
-        ReceivedInvitationModel invitationModel = getController()
+        ReceivedInvitationsModel invitationsModel = getController()
                 .getUIController().getApplicationModel()
                 .getReceivedInvitationModel();
 
-        if ((Integer) invitationModel.getReceivedInvitationsCountVM().getValue()
+        if ((Integer) invitationsModel.getReceivedInvitationsCountVM().getValue()
                 == 0) {
             return;
         }
 
-        final Invitation invitation = invitationModel.popInvitation();
+        final Invitation invitation = invitationsModel.popInvitation();
         Runnable worker = new Runnable() {
             public void run() {
                 TimerTask task = new TimerTask() {

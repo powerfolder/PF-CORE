@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id: ReceivedInvitationModel.java 5975 2008-12-14 05:23:32Z harry $
+ * $Id: ReceivedInvitationsModel.java 5975 2008-12-14 05:23:32Z harry $
  */
 package de.dal33t.powerfolder.ui.model;
 
@@ -35,26 +35,26 @@ import com.jgoodies.binding.value.ValueHolder;
  * Listeners can be added to be notified of changes to the number of invites
  * in the model.
  */
-public class ReceivedInvitationModel {
+public class ReceivedInvitationsModel {
 
     private final ValueModel receivedInvitationsCountVM = new ValueHolder();
-    private List<InvitationReceivedListener> invitationReceivedListeners;
+    private List<InvitationReceivedListener> listeners;
 
     private List<Invitation> invitations =
             new CopyOnWriteArrayList<Invitation>();
 
-    public ReceivedInvitationModel() {
+    public ReceivedInvitationsModel() {
         receivedInvitationsCountVM.setValue(0);
-        invitationReceivedListeners =
+        listeners =
                 new CopyOnWriteArrayList<InvitationReceivedListener>();
     }
 
     public void addInvitationReceivedListener(InvitationReceivedListener l) {
-        invitationReceivedListeners.add(l);
+        listeners.add(l);
     }
 
     public void removeInvitationReceivedListener(InvitationReceivedListener l) {
-        invitationReceivedListeners.remove(l);
+        listeners.remove(l);
     }
 
     /**
@@ -66,7 +66,7 @@ public class ReceivedInvitationModel {
         invitations.add(invitation);
         receivedInvitationsCountVM.setValue(invitations.size());
         for (InvitationReceivedListener invitationReceivedListener
-                : invitationReceivedListeners) {
+                : listeners) {
             invitationReceivedListener.invitationReceived(
                     new InvitationReceivedEvent(this));
         }
@@ -82,7 +82,7 @@ public class ReceivedInvitationModel {
             Invitation invitation = invitations.remove(0);
             receivedInvitationsCountVM.setValue(invitations.size());
             for (InvitationReceivedListener invitationReceivedListener
-                    : invitationReceivedListeners) {
+                    : listeners) {
                 invitationReceivedListener.invitationReceived(
                         new InvitationReceivedEvent(this));
             }

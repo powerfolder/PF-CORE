@@ -19,27 +19,26 @@
 */
 package de.dal33t.powerfolder.event;
 
-import de.dal33t.powerfolder.ui.model.ReceivedInvitationsModel;
+import de.dal33t.powerfolder.ui.model.ReceivedAddFriendNotificationsModel;
 
 import java.util.EventObject;
 
 /**
- * Event which gets fired to <code>InvitationReceivedHandler</code> that is
- * listening to the <code>FolderRepository</code>.
+ * Event which gets fired to <code>NotificationReceivedListener</code> .
  *
- * @see InvitationReceivedListener
+ * @see de.dal33t.powerfolder.event.InvitationReceivedListener
  * @see de.dal33t.powerfolder.disk.FolderRepository
  * @see de.dal33t.powerfolder.ui.InvitationReceivedHandlerDefaultImpl
  * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
-public class InvitationReceivedEvent extends EventObject {
+public class AddFriendNotificationReceivedEvent extends EventObject {
 
     /**
      * @param source
      *            the source folder repo
      */
-    public InvitationReceivedEvent(ReceivedInvitationsModel source) {
+    public AddFriendNotificationReceivedEvent(ReceivedAddFriendNotificationsModel source) {
         super(source);
     }
 }

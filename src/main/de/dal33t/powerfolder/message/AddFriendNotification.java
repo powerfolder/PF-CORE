@@ -21,39 +21,25 @@ package de.dal33t.powerfolder.message;
 
 
 /**
- * This message represents a small event that another peer might be interested in.
+ * This message represents a notification of addition as a friend.
  * 
  * @author Dennis "Bytekeeper" Waldherr </a>
  * @version $Revision:$
  */
-public class Notification extends Message {
+public class AddFriendNotification extends Message {
 	private static final long serialVersionUID = 100L;
 
-	public enum Event {
-		ADDED_TO_FRIENDS;
-	}
-	
-	private Event event;
     private String personalMessage;
 
-    public Notification(Event event, String personalMessage) {
-		this.event = event;
+    public AddFriendNotification(String personalMessage) {
         this.personalMessage = personalMessage;
     }
 	
-	/**
-	 * Returns the event that occured on the remote client.
-	 * @return an Notification.Event
-	 */
-	public Event getEvent() {
-		return event;
-	}
-
     public String getPersonalMessage() {
         return personalMessage;
     }
 
     public String toString() {
-        return "Notification (" + event + "): '" + personalMessage + "'";
+        return "AddFriendNotification: '" + personalMessage + '\'';
     }
 }
