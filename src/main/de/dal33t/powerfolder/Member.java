@@ -1414,8 +1414,15 @@ public class Member extends PFComponent implements Comparable<Member> {
                 expectedTime = 250;
 
             } else if (message instanceof Invitation) {
+
+                // Do not care if no UI.
+                if (!getController().isUIEnabled()) {
+                    return;
+                }
+
                 // Invitation to folder
                 Invitation invitation = (Invitation) message;
+
                 // To ensure invitor is correct
                 invitation.setInvitor(getInfo());
 

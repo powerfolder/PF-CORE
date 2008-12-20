@@ -691,29 +691,39 @@ public class UIController extends PFComponent {
         folderRepositoryModel.syncFolder(folderInfo);
     }
 
+    /**
+     * Process a received invitation.
+     *
+     * @param invitation
+     * @param sendIfJoined
+     *                  send invite if joined. Also do NOW, not via home model.
+     */
     public void invitationReceived(final Invitation invitation,
                                    boolean sendIfJoined) {
 
-        FolderRepository repository = getController().getFolderRepository();
+        final FolderRepository repository = getController().getFolderRepository();
 
         if (sendIfJoined) {
 
-            if (repository.hasJoinedFolder(invitation.folder)) {
+            if (!getController().isUIOpen()) {
+                return;
+            }
 
-                if (!getController().isUIOpen()) {
-                    return;
-                }
-
-                Runnable worker = new Runnable() {
-                    public void run() {
+            Runnable worker = new Runnable() {
+                public void run() {
+                    if (repository.hasJoinedFolder(invitation.folder)) {
                         PFWizard.openSendInvitationWizard(getController(),
                                 invitation.folder);
+                    } else {
+                        PFWizard.openInvitationReceivedWizard(getController(),
+                                invitation);
                     }
-                };
+                }
+            };
 
-                // Invoke later
-                SwingUtilities.invokeLater(worker);
-            }
+            // Invoke later
+            SwingUtilities.invokeLater(worker);
+
             return;
         }
 
