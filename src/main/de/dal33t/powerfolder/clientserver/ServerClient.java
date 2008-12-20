@@ -126,7 +126,7 @@ public class ServerClient extends PFComponent {
 
         if (StringUtils.isBlank(host) && StringUtils.isBlank(nodeId)) {
             // Nothing set, initialize with defaults
-            webURL = Constants.ONLINE_STORAGE_URL;
+            this.webURL = Constants.ONLINE_STORAGE_URL;
             MemberInfo osInfo = new MemberInfo("Online Storage",
                 Constants.ONLINE_STORAGE_NODE_ID);
             osInfo.setConnectAddress(Constants.ONLINE_STORAGE_ADDRESS);
