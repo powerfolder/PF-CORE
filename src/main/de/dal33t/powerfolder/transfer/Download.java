@@ -403,14 +403,18 @@ public class Download extends Transfer {
 
         /*
          * Wrong place to check, since we could actually want to load an old
-         * version! // Check if newer file is available. boolean
-         * newerFileAvailable = getFile().isNewerAvailable(
-         * getController().getFolderRepository()); if (newerFileAvailable) {
-         * Loggable.logWarningStatic(Download.class, "Abort cause: Newer version
-         * available. " + getFile().toDetailString()); return true; // throw new
-         * RuntimeException("ABORT: " + this); }
+         * version!
          */
-        
+        // True, but re-added check because of #1326
+        // Check if newer file is available. boolean
+        boolean newerFileAvailable = getFile().isNewerAvailable(
+            getController().getFolderRepository());
+        if (newerFileAvailable) {
+            logWarning("Abort cause: Newer version available. "
+                + getFile().toDetailString());
+            return true;
+        }
+
         return false;
     }
 
