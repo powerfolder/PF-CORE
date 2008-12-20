@@ -102,8 +102,8 @@ public class ExpandableFolderView extends PFUIComponent {
         initComponent();
 
         // Build ui
-                                            //  icon        name   space            # files     inv   sync  ex/co
-        FormLayout upperLayout = new FormLayout("pref, 3dlu, pref, pref:grow, 3dlu, pref, 3dlu, pref, pref, pref",
+                                            //  icon        name   space            # files     sync  ex/co
+        FormLayout upperLayout = new FormLayout("pref, 3dlu, pref, pref:grow, 3dlu, pref, 3dlu, pref, pref",
             "pref");
         PanelBuilder upperBuilder = new PanelBuilder(upperLayout);
         CellConstraints cc = new CellConstraints();
@@ -121,37 +121,37 @@ public class ExpandableFolderView extends PFUIComponent {
         upperBuilder.add(jLabel, cc.xy(1, 1));
         upperBuilder.add(new JLabel(folder.getName()), cc.xy(3, 1));
         upperBuilder.add(filesAvailableLabel, cc.xy(6, 1));
-        upperBuilder.add(inviteButton, cc.xy(8, 1));
-        upperBuilder.add(syncFolderButton, cc.xy(9, 1));
-        upperBuilder.add(expandCollapseButton, cc.xy(10, 1));
+        upperBuilder.add(syncFolderButton, cc.xy(8, 1));
+        upperBuilder.add(expandCollapseButton, cc.xy(9, 1));
 
         JPanel upperPanel = upperBuilder.getPanel();
 
         // Build lower detials with line border.
-        FormLayout lowerLayout = new FormLayout("3dlu, pref, pref:grow, 3dlu, pref, 3dlu",
+        FormLayout lowerLayout = new FormLayout("3dlu, pref, pref:grow, 3dlu, pref, pref, 3dlu",
             "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
         PanelBuilder lowerBuilder = new PanelBuilder(lowerLayout);
 
         String transferMode = Translation.getTranslation("exp_folder_view.transfer_mode",
                 folder.getSyncProfile().getProfileName());
-        lowerBuilder.addSeparator(null, cc.xywh(2, 1, 4, 1));
+        lowerBuilder.addSeparator(null, cc.xywh(2, 1, 5, 1));
         
         lowerBuilder.add(syncPercentLabel, cc.xy(2, 3));
-        lowerBuilder.add(openFilesInformationButton, cc.xy(5, 3));
+        lowerBuilder.add(openFilesInformationButton, cc.xy(6, 3));
 
         lowerBuilder.add(filesLabel, cc.xy(2, 5));
 
         lowerBuilder.add(totalSizeLabel, cc.xy(2, 7));
 
-        lowerBuilder.addSeparator(null, cc.xywh(2, 9, 4, 1));
+        lowerBuilder.addSeparator(null, cc.xywh(2, 9, 5, 1));
 
         lowerBuilder.add(membersLabel, cc.xy(2, 11));
-        lowerBuilder.add(openComputersInformationButton, cc.xy(5, 11));
+        lowerBuilder.add(inviteButton, cc.xy(5, 11));
+        lowerBuilder.add(openComputersInformationButton, cc.xy(6, 11));
 
-        lowerBuilder.addSeparator(null, cc.xywh(2, 13, 4, 1));
+        lowerBuilder.addSeparator(null, cc.xywh(2, 13, 5, 1));
 
         lowerBuilder.add(new JLabel(transferMode), cc.xy(2, 15));
-        lowerBuilder.add(openSettingsInformationButton, cc.xy(5, 15));
+        lowerBuilder.add(openSettingsInformationButton, cc.xy(6, 15));
 
         JPanel lowerPanel = lowerBuilder.getPanel();
 
