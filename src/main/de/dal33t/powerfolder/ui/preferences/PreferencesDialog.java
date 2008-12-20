@@ -140,6 +140,8 @@ public class PreferencesDialog extends BaseDialog {
     }
 
     public void initComponents() {
+        preferenceTabs.clear();
+        
         mydnsndsModel = new ValueHolder(ConfigurationEntry.DYNDNS_HOSTNAME
             .getValue(getController()));
 
