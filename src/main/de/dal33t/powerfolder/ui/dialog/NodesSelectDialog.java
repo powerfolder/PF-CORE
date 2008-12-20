@@ -124,7 +124,7 @@ public class NodesSelectDialog extends PFUIComponent {
                 cc.xy(1, 1));
 
         hideOffline = new JCheckBox(Translation
-            .getTranslation("hide_offline.name"));
+            .getTranslation("dialog.node_select.hide_offline.name"));
         builder.add(hideOffline, cc.xy(1, 3));
         hideOffline.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {

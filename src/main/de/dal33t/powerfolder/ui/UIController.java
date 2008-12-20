@@ -26,6 +26,7 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
@@ -62,8 +63,6 @@ import javax.swing.JFrame;
 import javax.swing.LookAndFeel;
 import javax.swing.SwingUtilities;
 import javax.swing.UnsupportedLookAndFeelException;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.TreeNode;
 import java.awt.AWTException;
 import java.awt.EventQueue;
 import java.awt.Frame;
@@ -504,9 +503,6 @@ public class UIController extends PFComponent {
         getController().getRecycleBin().setRecycleBinConfirmationHandler(
             new RecycleBinConfirmationHandlerDefaultImpl(getController()));
         FolderRepository repo = getController().getFolderRepository();
-        repo
-            .setInvitationReceivedHandler(new InvitationReceivedHandlerDefaultImpl(
-                getController()));
         repo.setFileNameProblemHandler(new FileNameProblemHandlerDefaultImpl(
             getController()));
         getController().getNodeManager().setAskForFriendshipHandler(
@@ -693,6 +689,39 @@ public class UIController extends PFComponent {
 
     public void syncFolder(FolderInfo folderInfo) {
         folderRepositoryModel.syncFolder(folderInfo);
+    }
+
+    public void invitationReceived(final Invitation invitation,
+                                   boolean sendIfJoined) {
+
+        FolderRepository repository = getController().getFolderRepository();
+
+        if (sendIfJoined) {
+
+            if (repository.hasJoinedFolder(invitation.folder)) {
+
+                if (!getController().isUIOpen()) {
+                    return;
+                }
+
+                Runnable worker = new Runnable() {
+                    public void run() {
+                        PFWizard.openSendInvitationWizard(getController(),
+                                invitation.folder);
+                    }
+                };
+
+                // Invoke later
+                SwingUtilities.invokeLater(worker);
+            }
+            return;
+        }
+
+        // Normal - add to invitation model and distribute notification.
+        if (!repository.hasJoinedFolder(invitation.folder)) {
+            applicationModel.getReceivedInvitationModel()
+                    .addInvitation(invitation);
+        }
     }
 
     private class UpdateSystrayTask extends TimerTask {
@@ -1077,5 +1106,4 @@ public class UIController extends PFComponent {
             }
         }
     }
-
 }

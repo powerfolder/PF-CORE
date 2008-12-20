@@ -39,6 +39,7 @@ public class ApplicationModel extends PFUIComponent {
     private FolderRepositoryModel folderRepositoryModel;
     private TransferManagerModel transferManagerModel;
     private ServerClientModel serverClientModel;
+    ReceivedInvitationModel receivedInvitationModel;
 
     /**
      * Constructs a non-initialized application model. Before the model can used
@@ -65,6 +66,7 @@ public class ApplicationModel extends PFUIComponent {
         transferManagerModel.initialize();
         serverClientModel = new ServerClientModel(getController(),
             getController().getOSClient());
+        receivedInvitationModel = new ReceivedInvitationModel();
     }
 
     // Exposing ***************************************************************
@@ -91,5 +93,9 @@ public class ApplicationModel extends PFUIComponent {
 
     public ServerClientModel getServerClientModel() {
         return serverClientModel;
+    }
+
+    public ReceivedInvitationModel getReceivedInvitationModel() {
+        return receivedInvitationModel;
     }
 }

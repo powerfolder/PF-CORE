@@ -26,7 +26,7 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.event.InvitationReceivedEvent;
-import de.dal33t.powerfolder.event.InvitationReceivedHandler;
+import de.dal33t.powerfolder.event.InvitationReceivedListener;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.util.IdGenerator;
@@ -45,7 +45,7 @@ public class PowerFolderInvitationTest extends TwoControllerTestCase {
         connectBartAndLisa();
         // implement a replacement for the UI
         getContollerBart().getFolderRepository().setInvitationReceivedHandler(
-            new InvitationReceivedHandler() {
+            new InvitationReceivedListener() {
 
                 public void invitationReceived(
                     InvitationReceivedEvent invitationRecievedEvent)

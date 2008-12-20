@@ -103,7 +103,7 @@ import de.dal33t.powerfolder.util.logging.LoggingManager;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.115 $
  */
-public class Member extends PFComponent implements Comparable {
+public class Member extends PFComponent implements Comparable<Member> {
 
     /** Listener support for incoming messages */
     private MessageListenerSupport messageListenerSupport;
@@ -1419,7 +1419,7 @@ public class Member extends PFComponent implements Comparable {
                 // To ensure invitor is correct
                 invitation.setInvitor(getInfo());
 
-                getController().getFolderRepository().invitationReceived(
+                getController().getUIController().invitationReceived(
                     invitation, false);
                 expectedTime = 100;
 
@@ -2217,11 +2217,7 @@ public class Member extends PFComponent implements Comparable {
         return (info.id == null) ? 0 : info.id.hashCode();
     }
 
-    public int compareTo(Object o) {
-        if (o instanceof Member) {
-            Member m = (Member) o;
-            return info.id.compareTo(m.info.id);
-        }
-        return -1;
+    public int compareTo(Member m) {
+        return info.id.compareTo(m.info.id);
     }
 }

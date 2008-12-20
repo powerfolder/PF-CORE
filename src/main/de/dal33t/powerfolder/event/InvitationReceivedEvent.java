@@ -20,8 +20,8 @@
 package de.dal33t.powerfolder.event;
 
 import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.message.Invitation;
-import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.ui.UIController;
+import de.dal33t.powerfolder.ui.model.ReceivedInvitationModel;
 
 import java.util.EventObject;
 
@@ -29,16 +29,13 @@ import java.util.EventObject;
  * Event which gets fired to <code>InvitationReceivedHandler</code> that is
  * listening to the <code>FolderRepository</code>.
  *
- * @see de.dal33t.powerfolder.event.InvitationReceivedHandler
+ * @see InvitationReceivedListener
  * @see de.dal33t.powerfolder.disk.FolderRepository
  * @see de.dal33t.powerfolder.ui.InvitationReceivedHandlerDefaultImpl
  * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
 public class InvitationReceivedEvent extends EventObject {
-
-    private Invitation invitation;
-    private boolean sendInvitationIfJoined;
 
     /**
      * @param source
@@ -47,24 +44,7 @@ public class InvitationReceivedEvent extends EventObject {
      * @param sendInvitationIfJoined
      *            If folder joined, offer to send invitation
      */
-    public InvitationReceivedEvent(FolderRepository source,
-        Invitation invitation, boolean sendInvitationIfJoined)
-    {
+    public InvitationReceivedEvent(ReceivedInvitationModel source) {
         super(source);
-        Reject.ifNull(source, "Folder Repository is null");
-        this.invitation = invitation;
-        this.sendInvitationIfJoined = sendInvitationIfJoined;
-    }
-
-    public FolderRepository getFolderRepository() {
-        return (FolderRepository) getSource();
-    }
-
-    public Invitation getInvitation() {
-        return invitation;
-    }
-
-    public boolean isSendInvitationIfJoined() {
-        return sendInvitationIfJoined;
     }
 }

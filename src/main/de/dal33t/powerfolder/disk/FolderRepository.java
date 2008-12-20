@@ -53,11 +53,8 @@ import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.event.FileNameProblemHandler;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
-import de.dal33t.powerfolder.event.InvitationReceivedEvent;
-import de.dal33t.powerfolder.event.InvitationReceivedHandler;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.transfer.FileRequestor;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Reject;
@@ -91,9 +88,6 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     /** folder repo listners */
     private FolderRepositoryListener listenerSupport;
-
-    /** handler for incomming Invitations */
-    private InvitationReceivedHandler invitationReceivedHandler;
 
     /** handler if files with posible filename problems are found */
     private FileNameProblemHandler fileNameProblemHandler;
@@ -835,28 +829,6 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
     }
 
-    /**
-     * Processes a invitation to a folder TODO: Autojoin invitation, make this
-     * configurable in pref screen.
-     * <P>
-     * 
-     * @param invitation
-     * @param sendInviteIfJoined
-     *            if already joined folder, offer to send invite to others.
-     */
-    public void invitationReceived(Invitation invitation,
-        boolean sendInviteIfJoined)
-    {
-        if (invitationReceivedHandler == null) {
-            // No invitation handler? do nothing.
-            return;
-        }
-        Reject.ifNull(invitation, "Invitation is null");
-        InvitationReceivedEvent event = new InvitationReceivedEvent(this,
-            invitation, sendInviteIfJoined);
-        invitationReceivedHandler.invitationReceived(event);
-    }
-
     /*
      * General ****************************************************************
      */
@@ -892,12 +864,6 @@ public class FolderRepository extends PFComponent implements Runnable {
     public void removeFolderRepositoryListener(FolderRepositoryListener listener)
     {
         ListenerSupportFactory.removeListener(listenerSupport, listener);
-    }
-
-    public void setInvitationReceivedHandler(
-        InvitationReceivedHandler invitationReceivedHandler)
-    {
-        this.invitationReceivedHandler = invitationReceivedHandler;
     }
 
     /**

@@ -19,21 +19,11 @@
 */
 package de.dal33t.powerfolder.event;
 
-
-public interface InvitationReceivedHandler {
-    /**
-     * Processes a invitation to a folder TODO: Autojoin invitation, make this
-     * configurable in pref screen.
-     * <P>
-     * 
-     * @param invitationReceivedEvent containing: 
-     * invitation,
-     * processSilently: 
-     *            if the invitation should be processed silently if already on
-     *            folder (no error)
-     * forcePopup: 
-     *            popup application (even when minimized)
-     */
+/**
+ * Class to indicate that an invitation has been received.
+ * The UIController has handeld the invite and it is available from the
+ * ReceivedInvitationModel in the ApplicationModel.
+ */
+public interface InvitationReceivedListener {
     void invitationReceived(InvitationReceivedEvent invitationReceivedEvent);
-    
 }

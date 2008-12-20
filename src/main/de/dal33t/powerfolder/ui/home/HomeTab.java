@@ -55,6 +55,7 @@ public class HomeTab extends PFUIComponent {
     private HomeTabLine numberOfFoldersLine;
     private HomeTabLine sizeOfFoldersLine;
     private HomeTabLine filesAvailableLine;
+    private HomeTabLine receivedInvitationsLine;
     private HomeTabLine computersLine;
     private HomeTabLine downloadsLine;
     private HomeTabLine uploadsLine;
@@ -64,6 +65,7 @@ public class HomeTab extends PFUIComponent {
     private ServerClient client;
     private JLabel onlineStorageAccountLabel;
     private OnlineStorageSection onlineStorageSection;
+    private final ValueModel receivedInvitationsCountVM;
 
     /**
      * Constructor
@@ -78,6 +80,10 @@ public class HomeTab extends PFUIComponent {
                 .getTransferManagerModel().getCompletedUploadsCountVM();
         folderListener = new MyFolderListener();
         client = getApplicationModel().getServerClientModel().getClient();
+        getUIController().getApplicationModel().getReceivedInvitationModel()
+                .addInvitationReceivedListener(new MyInvitationReceivedListener());
+        receivedInvitationsCountVM = getUIController().getApplicationModel()
+                .getReceivedInvitationModel().getReceivedInvitationsCountVM();
     }
 
     /**
@@ -130,6 +136,9 @@ public class HomeTab extends PFUIComponent {
         filesAvailableLine = new HomeTabLine(getController(),
                 Translation.getTranslation("home_tab.files_available"), null,
                 true, true);
+        receivedInvitationsLine = new HomeTabLine(getController(),
+                Translation.getTranslation("home_tab.new_invitations"), null,
+                true, true);
         downloadsLine = new HomeTabLine(getController(),
                 Translation.getTranslation("home_tab.files_downloaded"), null,
                 false, true, getApplicationModel().getActionModel()
@@ -149,6 +158,7 @@ public class HomeTab extends PFUIComponent {
         recalculateFilesAvailable();
         updateComputers();
         updateOnlineStorageDetails();
+        updateReceivedInvitationsText();
         registerListeners();
     }
 
@@ -171,8 +181,8 @@ public class HomeTab extends PFUIComponent {
      */
     private JPanel buildMainPanel() {
         FormLayout layout = new FormLayout("3dlu, 100dlu, pref:grow, 3dlu",
-            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, pref, pref, pref, 3dlu, pref, pref, pref, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref:grow");
-        //   sync        sep         you-have    files down  upl   sep         #fol  szfo  comp  sep         os-acc      osSec
+            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, pref, pref, pref, pref, 3dlu, pref, pref, pref, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref:grow");
+        //   sync        sep         you-have    files invs  down  upl   sep         #fol  szfo  comp  sep         os-acc      osSec
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
@@ -190,6 +200,9 @@ public class HomeTab extends PFUIComponent {
         row +=2;
 
         builder.add(filesAvailableLine.getUIComponent(), cc.xywh(2, row, 2, 1));
+        row++;
+
+        builder.add(receivedInvitationsLine.getUIComponent(), cc.xywh(2, row, 2, 1));
         row++;
 
         builder.add(downloadsLine.getUIComponent(), cc.xywh(2, row, 2, 1));
@@ -261,6 +274,11 @@ public class HomeTab extends PFUIComponent {
         synchronizationStatusLabel.setText(getSyncText());
         downloadsLine.setValue((Integer) downloadsCountVM.getValue());
         uploadsLine.setValue((Integer) uploadsCountVM.getValue());
+    }
+
+    private void updateReceivedInvitationsText() {
+        Integer integer = (Integer) receivedInvitationsCountVM.getValue();
+        receivedInvitationsLine.setValue(integer);
     }
 
     /**
@@ -530,6 +548,15 @@ public class HomeTab extends PFUIComponent {
 
         public void serverDisconnected(ServerClientEvent event) {
             updateOnlineStorageDetails();
+        }
+    }
+
+    private class MyInvitationReceivedListener
+            implements InvitationReceivedListener {
+
+        public void invitationReceived(InvitationReceivedEvent
+                invitationReceivedEvent) {
+            updateReceivedInvitationsText();
         }
     }
 }

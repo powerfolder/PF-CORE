@@ -121,7 +121,6 @@ public class HomeTabLine extends PFUIComponent {
      * @param value
      */
     public void setValue(double value) {
-
         logFiner("Setting value:" + value);
 
         // Check that component is built.
