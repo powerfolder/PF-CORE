@@ -19,46 +19,13 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
-import com.jgoodies.binding.value.ValueHolder;
-import com.jgoodies.binding.value.ValueModel;
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.forms.layout.Sizes;
-import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.SyncProfile;
 import static de.dal33t.powerfolder.disk.SyncProfile.AUTOMATIC_SYNCHRONIZATION;
-import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.INITIAL_FOLDER_NAME;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.PROMPT_TEXT_ATTRIBUTE;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SEND_INVIATION_AFTER_ATTRIBUTE;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SYNC_PROFILE_ATTRIBUTE;
-import de.dal33t.powerfolder.util.FileUtils;
-import de.dal33t.powerfolder.util.Format;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.os.OSUtil;
-import de.dal33t.powerfolder.util.os.Win32.WinUtils;
-import de.dal33t.powerfolder.util.ui.DialogFactory;
-import de.dal33t.powerfolder.util.ui.GenericDialogType;
-import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
-import de.dal33t.powerfolder.util.ui.SwingWorker;
-import jwf.WizardPanel;
-import org.apache.commons.lang.StringUtils;
 
-import javax.swing.ButtonGroup;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JTextField;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.SystemColor;
@@ -69,11 +36,52 @@ import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.swing.ButtonGroup;
+import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JTextField;
+
+import jwf.WizardPanel;
+
+import org.apache.commons.lang.StringUtils;
+
+import com.jgoodies.binding.value.ValueHolder;
+import com.jgoodies.binding.value.ValueModel;
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
+import com.jgoodies.forms.layout.Sizes;
+
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.IdGenerator;
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.os.OSUtil;
+import de.dal33t.powerfolder.util.os.Win32.WinUtils;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.ui.GenericDialogType;
+import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
+import de.dal33t.powerfolder.util.ui.SwingWorker;
 
 /**
  * A generally used wizard panel for choosing a disk location for a folder.
@@ -82,8 +90,6 @@ import java.util.logging.Logger;
  * @version $Revision: 1.9 $
  */
 public class ChooseDiskLocationPanel extends PFWizardPanel {
-
-    private static final Logger log = Logger.getLogger(ChooseDiskLocationPanel.class.getName());
 
     // Some standard user directory names from various OS.
     private static final String USER_DIR_CONTACTS = "Contacts";
@@ -375,14 +381,13 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
             && Boolean.TRUE.equals(getWizardContext().getAttribute(
                 WizardContextAttributes.BACKUP_ONLINE_STOARGE));
         backupByOnlineStorageBox = new JCheckBox(Translation
-            .getTranslation("folder_create.dialog.backup_by_online_storage"));
+            .getTranslation("foldercreate.dialog.backupbyonlinestorage"));
         backupByOnlineStorageBox.setSelected(backupByOS);
         backupByOnlineStorageBox.getModel().addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
                 if (backupByOnlineStorageBox.isSelected()) {
                     getController().getUIController().getApplicationModel()
-                            .getServerClientModel()
-                        .checkAndSetupAccount();
+                        .getServerClientModel().checkAndSetupAccount();
                 }
             }
         });
@@ -390,13 +395,13 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
 
         // Create desktop shortcut
         createDesktopShortcutBox = new JCheckBox(Translation
-            .getTranslation("folder_create.dialog.create_desktop_shortcut"));
+            .getTranslation("foldercreate.dialog.create_desktop_shortcut"));
 
         createDesktopShortcutBox.setOpaque(false);
 
         // Create manual sync cb
         manualSyncCheckBox = new JCheckBox(Translation
-            .getTranslation("folder_create.dialog.maual_sync"));
+            .getTranslation("foldercreate.dialog.maual_sync"));
 
         manualSyncCheckBox.setOpaque(false);
 
@@ -404,7 +409,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         boolean sendInvite = Boolean.TRUE.equals(getWizardContext()
             .getAttribute(SEND_INVIATION_AFTER_ATTRIBUTE));
         sendInviteAfterCB = SimpleComponentFactory.createCheckBox(Translation
-            .getTranslation("wizard.setup_folder.send_invitation"));
+            .getTranslation("wizard.setup_folder.sendinvitation"));
         sendInviteAfterCB.setOpaque(false);
         sendInviteAfterCB.setSelected(sendInvite);
 
@@ -415,12 +420,12 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         worker.start();
     }
 
-    protected JComponent getPictoComponent() {
-        return new JLabel(getContextPicto());
+    protected Icon getPicto() {
+        return getContextPicto();
     }
 
     protected String getTitle() {
-        return Translation.getTranslation("wizard.choose_disk_location.select");
+        return Translation.getTranslation("wizard.choosedisklocation.select");
     }
 
     /**
@@ -449,16 +454,16 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
                     if (!f.exists()) {
                         ok = false;
                         messageKey = "choose_disk_location_panel.dir_no_exist.text";
-                    } else if(!f.canWrite()) {
+                    } else if (!f.canWrite()) {
                         ok = false;
                         messageKey = "choose_disk_location_panel.dir_no_write.text";
                     }
                     if (!ok) {
                         String baseDir = getController().getFolderRepository()
-                                .getFoldersBasedir();
+                            .getFoldersBasedir();
                         String name = f.getName();
                         if (name.length() == 0) { // Like f == 'E:/'
-                            name="new";
+                            name = "new";
                         }
                         File alternate = new File(baseDir, name);
 
@@ -469,18 +474,20 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
                         }
 
                         // Ask user.
-                        int i = DialogFactory.genericDialog(getController()
-                                .getUIController().getMainFrame().getUIComponent(),
-                                Translation.getTranslation(
-                                        "choose_disk_location_panel.dir.title"),
-                                Translation.getTranslation(messageKey,
-                                        f.getAbsolutePath(),
-                                        alternate.getAbsolutePath()),
-                                new String[]{Translation.getTranslation(
-                                        "general.accept"),
-                                        Translation.getTranslation(
-                                                "general.cancel")},
-                                0, GenericDialogType.QUESTION);
+                        int i = DialogFactory
+                            .genericDialog(
+                                getController().getUIController()
+                                    .getMainFrame().getUIComponent(),
+                                Translation
+                                    .getTranslation("choose_disk_location_panel.dir.title"),
+                                Translation.getTranslation(messageKey, f
+                                    .getAbsolutePath(), alternate
+                                    .getAbsolutePath()), new String[]{
+                                    Translation
+                                        .getTranslation("general.accept"),
+                                    Translation
+                                        .getTranslation("general.cancel")}, 0,
+                                GenericDialogType.QUESTION);
                         if (i == 0) { // Accept
                             locationModel.setValue(alternate.getAbsolutePath());
                             if (!alternate.exists()) {
@@ -491,7 +498,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
                         }
                     }
                 } catch (Exception e) {
-                    log.log(Level.WARNING, "Exception", e);
+                    // Ignore
                 }
             }
         }
@@ -507,7 +514,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
             value = transientDirectory;
         }
         locationTF.setText(value);
-        locationButton.setEnabled(customRB.isSelected());
+        // locationButton.setEnabled(customRB.isSelected());
     }
 
     /**
@@ -527,8 +534,9 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         locationTF.setText((String) locationModel.getValue());
         builder.add(locationTF, cc.xy(1, 1));
 
-        locationButton = new JButtonMini(Icons.DIRECTORY, Translation
-            .getTranslation("folder_create.dialog.select_file.text"));
+        locationButton = new JButton(Icons.DIRECTORY);
+        locationButton.setToolTipText(Translation
+            .getTranslation("foldercreate.dialog.select_file.text"));
         locationButton.addActionListener(new MyActionListener());
         builder.add(locationButton, cc.xy(3, 1));
         return builder.getPanel();
@@ -670,7 +678,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
      */
     private class MyActionListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
-            displayChooseDirectory();
+            customRB.setSelected(true);
         }
     }
 
@@ -687,29 +695,9 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         }
 
         protected void beforeConstruct() {
-
-            // Stupid Vista shows these dirs as no-write but it lies!
-            try {
-                if (OSUtil.isWindowsVistaSystem()) {
-                    File f = new File(initial);
-                    File userHome = new File(System.getProperty("user.home"));
-                    if (f.equals(joinFile(userHome, USER_DIR_CONTACTS)) ||
-                            f.equals(joinFile(userHome, USER_DIR_DESKTOP)) ||
-                            f.equals(joinFile(userHome, USER_DIR_FAVORITES)) ||
-                            f.equals(joinFile(userHome, USER_DIR_LINKS)) ||
-                            f.equals(joinFile(userHome, USER_DIR_MUSIC)) ||
-                            f.equals(joinFile(userHome, USER_DIR_PICTURES)) ||
-                            f.equals(joinFile(userHome, USER_DIR_VIDEOS))) {
-                        checkNoWrite = false;
-                    }
-                }
-            } catch (Exception e) {
-                log.log(Level.WARNING, "Exception", e);
-            }
-
             folderSizeLabel
                 .setText(Translation
-                    .getTranslation("wizard.choose_disk_location.calculating_directory_size"));
+                    .getTranslation("wizard.choosedisklocation.calculating_directory_size"));
             folderSizeLabel.setForeground(SystemColor.textText);
         }
 
@@ -719,44 +707,62 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
                 File f = new File(initial);
                 if (!f.exists()) {
                     nonExistent = true;
-                } else if (checkNoWrite && !f.canWrite()) {
+                } else if (checkNoWrite && !canWriteDirectory(f)) {
                     noWrite = true;
                 } else {
                     directorySize = FileUtils.calculateDirectorySize(f, 0);
                 }
             } catch (Exception e) {
-                log.log(Level.WARNING, "Exception", e);
+                Logger.getAnonymousLogger().log(Level.WARNING, e.toString(), e);
             }
             return null;
+        }
+
+        private boolean canWriteDirectory(File dir) {
+            File testFile;
+            do {
+                testFile = new File(dir, Util
+                    .removeInvalidFilenameChars(IdGenerator.makeId()));
+            } while (testFile.exists());
+            try {
+                testFile.createNewFile();
+                boolean canWrite = testFile.canWrite();
+                canWrite = canWrite && testFile.delete();
+                return canWrite;
+            } catch (IOException e) {
+                return false;
+            }
         }
 
         public void finished() {
             try {
                 if (initial.equals(locationModel.getValue())) {
                     if (nonExistent) {
-                        folderSizeLabel.setText(Translation.getTranslation(
-                            "wizard.choose_disk_location.directory_non_existent"));
+                        folderSizeLabel
+                            .setText(Translation
+                                .getTranslation("wizard.choosedisklocation.directory_non_existent"));
                         folderSizeLabel.setForeground(Color.red);
                     } else if (noWrite) {
-                        folderSizeLabel.setText(Translation.getTranslation(
-                            "wizard.choose_disk_location.directory_no_write"));
+                        folderSizeLabel
+                            .setText(Translation
+                                .getTranslation("wizard.choosedisklocation.directory_no_write"));
                         folderSizeLabel.setForeground(Color.red);
                     } else {
                         folderSizeLabel.setText(Translation.getTranslation(
-                            "wizard.choose_disk_location.directory_size", Format
+                            "wizard.choosedisklocation.directory_size", Format
                                 .formatBytes(directorySize)));
                         folderSizeLabel.setForeground(SystemColor.textText);
                     }
                 }
             } catch (Exception e) {
-                log.log(Level.WARNING, "Exception", e);
+                Logger.getAnonymousLogger().log(Level.WARNING, e.toString(), e);
             }
         }
     }
 
     private class MyItemListener implements ItemListener {
         public void itemStateChanged(ItemEvent e) {
-            locationButton.setEnabled(customRB.isSelected());
+            // locationButton.setEnabled(customRB.isSelected());
             if (customRB.isSelected()) {
                 if (initialLocation != null
                     && new File(initialLocation).exists())
