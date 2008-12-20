@@ -421,7 +421,7 @@ public class Download extends Transfer {
     /**
      * @return if this download is queued
      */
-    public synchronized boolean isQueued() {
+    public boolean isQueued() {
         return queued && !isBroken();
     }
 
