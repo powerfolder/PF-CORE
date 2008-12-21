@@ -78,7 +78,9 @@ public enum PreferencesEntry {
     /**
      * If the last password of login should be reminded.
      */
-    SERVER_REMEMBER_PASSWORD("server_remind_password", true);
+    SERVER_REMEMBER_PASSWORD("server_remind_password", true),
+
+    COMPUTER_TYPE_SELECTION("computer_type_selection", 0);
 
     /** String, Boolean, Integer */
     private Class type;

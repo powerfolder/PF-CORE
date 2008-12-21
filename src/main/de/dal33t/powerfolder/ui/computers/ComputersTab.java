@@ -24,8 +24,8 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.ui.model.NodeManagerModel;
-import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
@@ -101,6 +101,9 @@ public class ComputersTab extends PFUIComponent {
         computerTypeList.addItem(Translation.getTranslation(
                 "computers_tab.online_friends_online_lan"));
         computerTypeList.addActionListener(new MyActionListener());
+        Integer initialSelection = PreferencesEntry.COMPUTER_TYPE_SELECTION
+                .getValueInt(getController());
+        computerTypeList.setSelectedIndex(initialSelection);
         configureNodeManagerModel();
     }
 
@@ -129,6 +132,8 @@ public class ComputersTab extends PFUIComponent {
         NodeManagerModel nodeManagerModel = getUIController()
                 .getApplicationModel().getNodeManagerModel();
         int index = computerTypeList.getSelectedIndex();
+        PreferencesEntry.COMPUTER_TYPE_SELECTION.setValue(
+                getController(), index);
         if (index == 0) { // All friends / online lan
             nodeManagerModel.getHideOfflineFriendsModel().setValue(false);
             nodeManagerModel.getIncludeOnlineLanModel().setValue(true);
