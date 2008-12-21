@@ -80,7 +80,9 @@ public enum PreferencesEntry {
      */
     SERVER_REMEMBER_PASSWORD("server_remind_password", true),
 
-    COMPUTER_TYPE_SELECTION("computer_type_selection", 0);
+    COMPUTER_TYPE_SELECTION("computer_type_selection", 0),
+
+    FOLDER_TYPE_SELECTION("folder_type_selection", 0);
 
     /** String, Boolean, Integer */
     private Class type;

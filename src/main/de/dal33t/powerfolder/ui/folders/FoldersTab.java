@@ -24,6 +24,7 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
@@ -31,6 +32,8 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 
 /**
  * Class to display the forders tab.
@@ -96,6 +99,10 @@ public class FoldersTab extends PFUIComponent {
         folderTypeList.addItem(Translation.getTranslation("folders_tab.all_folders"));
         folderTypeList.addItem(Translation.getTranslation("folders_tab.only_local_folders"));
         folderTypeList.addItem(Translation.getTranslation("folders_tab.only_online_folders"));
+        Integer initialSelection = PreferencesEntry.FOLDER_TYPE_SELECTION
+                .getValueInt(getController());
+        folderTypeList.setSelectedIndex(initialSelection);
+        folderTypeList.addActionListener(new MyActionListener());
     }
 
     /**
@@ -114,5 +121,14 @@ public class FoldersTab extends PFUIComponent {
         builder.add(folderTypeList, cc.xy(4, 1));
 
         return builder.getPanel();
+    }
+
+    private class MyActionListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            if (e.getSource().equals(folderTypeList)) {
+                PreferencesEntry.FOLDER_TYPE_SELECTION.setValue(getController(),
+                        folderTypeList.getSelectedIndex());
+            }
+        }
     }
 }
