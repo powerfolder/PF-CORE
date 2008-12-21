@@ -58,7 +58,7 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
     private JTextField usernameField;
     private JPasswordField passwordField;
     private JLabel connectingLabel;
-    private JCheckBox remindPasswordBox;
+    private JCheckBox rememberPasswordBox;
     private WizardPanel nextPanel;
     private DefaultFolderWizardHelper defaultFolderHelper;
 
@@ -147,7 +147,7 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
             .getTranslation("wizard.webservice.password"), cc.xy(1, 5));
         builder.add(passwordField, cc.xy(3, 5));
 
-        builder.add(remindPasswordBox, cc.xy(3, 7));
+        builder.add(rememberPasswordBox, cc.xy(3, 7));
 
         if (client.getRegisterURL() != null) {
             builder.add(new LinkLabel(Translation
@@ -182,11 +182,11 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
                 updateButtons();
             }
         });
-        remindPasswordBox = BasicComponentFactory.createCheckBox(
-            PreferencesEntry.SERVER_REMIND_PASSWORD.getModel(getController()),
+        rememberPasswordBox = BasicComponentFactory.createCheckBox(
+            PreferencesEntry.SERVER_REMEMBER_PASSWORD.getModel(getController()),
             Translation
-                .getTranslation("wizard.login_online_storage.remind_password"));
-        remindPasswordBox.setOpaque(false);
+                .getTranslation("wizard.login_online_storage.remember_password"));
+        rememberPasswordBox.setOpaque(false);
         connectingLabel = SimpleComponentFactory.createLabel(Translation
             .getTranslation("wizard.login_online_storage.connecting"));
         updateOnlineStatus();

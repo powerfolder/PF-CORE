@@ -177,8 +177,8 @@ public class ServerClient extends PFComponent {
         return node.getId().startsWith(MEMBER_ID_TEMP_PREFIX);
     }
 
-    private boolean isRemindPassword() {
-        return PreferencesEntry.SERVER_REMIND_PASSWORD
+    private boolean isRememberPassword() {
+        return PreferencesEntry.SERVER_REMEMBER_PASSWORD
             .getValueBoolean(getController());
     }
 
@@ -663,7 +663,7 @@ public class ServerClient extends PFComponent {
                 PREFS_PREFIX + "." + server.getIP() + ".username");
         }
 
-        if (isRemindPassword() && !StringUtils.isBlank(password)) {
+        if (isRememberPassword() && !StringUtils.isBlank(password)) {
             try {
                 getController().getPreferences().put(
                     PREFS_PREFIX + "." + server.getIP() + ".info2",

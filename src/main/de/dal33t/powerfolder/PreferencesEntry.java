@@ -78,7 +78,7 @@ public enum PreferencesEntry {
     /**
      * If the last password of login should be reminded.
      */
-    SERVER_REMIND_PASSWORD("server_remind_password", true);
+    SERVER_REMEMBER_PASSWORD("server_remind_password", true);
 
     /** String, Boolean, Integer */
     private Class type;
