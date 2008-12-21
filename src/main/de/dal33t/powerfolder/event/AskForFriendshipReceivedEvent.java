@@ -19,11 +19,26 @@
 */
 package de.dal33t.powerfolder.event;
 
+import de.dal33t.powerfolder.ui.model.ReceivedAskedForFriendshipModel;
+
+import java.util.EventObject;
+
 /**
- * Class to indicate that a notification has been received.
- * The UIController has handeld the notification and it is available from the
- * ReceivedNotificationModel in the ApplicationModel.
+ * Event which gets fired to <code>NotificationReceivedListener</code> .
+ *
+ * @see de.dal33t.powerfolder.event.InvitationReceivedListener
+ * @see de.dal33t.powerfolder.disk.FolderRepository
+ * @see de.dal33t.powerfolder.ui.InvitationReceivedHandlerDefaultImpl
+ * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
+ * @version $Revision: 1.5 $
  */
-public interface AddFriendNotificationReceivedListener {
-    void notificationReceived(AddFriendNotificationReceivedEvent addFriendNotificationReceivedEvent);
+public class AskForFriendshipReceivedEvent extends EventObject {
+
+    /**
+     * @param source
+     *            the source folder repo
+     */
+    public AskForFriendshipReceivedEvent(ReceivedAskedForFriendshipModel source) {
+        super(source);
+    }
 }

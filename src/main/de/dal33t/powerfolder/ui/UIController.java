@@ -27,11 +27,11 @@ import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.message.Invitation;
-import de.dal33t.powerfolder.message.AddFriendNotification;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
+import de.dal33t.powerfolder.event.AskForFriendshipEvent;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.ui.actionold.SyncAllFoldersAction;
@@ -731,9 +731,9 @@ public class UIController extends PFComponent {
         }
     }
 
-    public void addNotificationReceived(AddFriendNotification not) {
-            applicationModel.getReceivedAddFriendNotificationsModel()
-                    .addNotification(not);
+    public void addAskForFriendship(AskForFriendshipEvent event) {
+        applicationModel.getReceivedAddFriendNotificationsModel()
+                    .addAskForFriendshipEvent(event);
     }
 
     private class UpdateSystrayTask extends TimerTask {

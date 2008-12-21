@@ -26,7 +26,7 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.NetworkingMode;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.event.AskForFriendshipEvent;
-import de.dal33t.powerfolder.event.AskForFriendshipHandler;
+import de.dal33t.powerfolder.event.AskForFriendshipListener;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.net.InvalidIdentityException;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
@@ -193,7 +193,7 @@ public class ConnectNodesTest extends FiveControllerTestCase {
     public void testFriendAutoConnect() throws InvalidIdentityException {
         getContollerLisa().setNetworkingMode(NetworkingMode.PRIVATEMODE);
         getContollerMarge().setNetworkingMode(NetworkingMode.PRIVATEMODE);
-        final MyAskForFriendshipHandler handlerAtMarge = new MyAskForFriendshipHandler();
+        final MyAskForFriendshipListener handlerAtMarge = new MyAskForFriendshipListener();
         getContollerMarge().getNodeManager().setAskForFriendshipHandler(
             handlerAtMarge);
         assertFalse(handlerAtMarge.hasBeenAsked);
@@ -390,7 +390,7 @@ public class ConnectNodesTest extends FiveControllerTestCase {
 
     }
 
-    private class MyAskForFriendshipHandler implements AskForFriendshipHandler {
+    private class MyAskForFriendshipListener implements AskForFriendshipListener {
         boolean hasBeenAsked = false;
 
         public void askForFriendship(

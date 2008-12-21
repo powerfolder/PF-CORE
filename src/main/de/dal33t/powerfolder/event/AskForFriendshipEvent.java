@@ -24,6 +24,7 @@ import java.util.Set;
 
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.light.MemberInfo;
 
 /** The event that tells which user joined which folders, used from NodeManager. */
 public class AskForFriendshipEvent extends EventObject {
@@ -37,17 +38,14 @@ public class AskForFriendshipEvent extends EventObject {
      * @param joinedFolders
      *            set of folders that the member joined
      */
-    public AskForFriendshipEvent(Member source,
-        Set<FolderInfo> joinedFolders,
-        String personalMessage)
+    public AskForFriendshipEvent(MemberInfo source,
+        Set<FolderInfo> joinedFolders)
     {
         super(source);
-
         this.joinedFolders = joinedFolders;
-        this.personalMessage = personalMessage;
     }
 
-    public AskForFriendshipEvent(Member member,
+    public AskForFriendshipEvent(MemberInfo member,
                                  String personalMessage) {
     	super(member);
         this.personalMessage = personalMessage;
@@ -57,8 +55,8 @@ public class AskForFriendshipEvent extends EventObject {
         return joinedFolders;
     }
 
-    public Member getMember() {
-        return (Member) getSource();
+    public MemberInfo getMemberInfo() {
+        return (MemberInfo) getSource();
     }
 
     public String getPersonalMessage() {

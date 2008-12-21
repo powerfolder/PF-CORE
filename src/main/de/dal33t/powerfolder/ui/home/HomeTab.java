@@ -83,11 +83,11 @@ public class HomeTab extends PFUIComponent {
         folderListener = new MyFolderListener();
         client = getApplicationModel().getServerClientModel().getClient();
         getUIController().getApplicationModel().getReceivedAddFriendNotificationsModel()
-                .addNotificationReceivedListener(new MyAddFriendNotificationReceivedListener());
+                .addListener(new MyAskForFriendshipReceivedListener());
         getUIController().getApplicationModel().getReceivedInvitationModel()
                 .addInvitationReceivedListener(new MyInvitationReceivedListener());
         newComputersCountVM = getUIController().getApplicationModel()
-                .getReceivedAddFriendNotificationsModel().getReceivedAddFriendNotificationsCountVM();
+                .getReceivedAddFriendNotificationsModel().getReceivedAskForFriendshipCountVM();
         newInvitationsCountVM = getUIController().getApplicationModel()
                 .getReceivedInvitationModel().getReceivedInvitationsCountVM();
     }
@@ -570,11 +570,11 @@ public class HomeTab extends PFUIComponent {
         }
     }
 
-    private class MyAddFriendNotificationReceivedListener
-            implements AddFriendNotificationReceivedListener {
+    private class MyAskForFriendshipReceivedListener
+            implements AskForFriendshipReceivedListener {
 
-        public void notificationReceived(AddFriendNotificationReceivedEvent
-                addFriendNotificationReceivedEvent) {
+        public void notificationReceived(AskForFriendshipReceivedEvent
+                askForFriendshipReceivedEvent) {
             updateNewComputersText();
         }
     }

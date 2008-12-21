@@ -20,13 +20,10 @@
 package de.dal33t.powerfolder.event;
 
 /**
- * The interface that should be implemented when writing a handler for
- * NodeManager called when a member joins a folder. The handler will generely
- * ask if that member should become a friend
- * 
- * @version $Revision: 1.5 $
+ * Class to indicate that a notification has been received.
+ * The UIController has handeld the notification and it is available from the
+ * ReceivedNotificationModel in the ApplicationModel.
  */
-public interface AskForFriendshipHandler {
-    public void askForFriendship(
-        AskForFriendshipEvent askForFriendshipHandlerEvent);
+public interface AskForFriendshipReceivedListener {
+    void notificationReceived(AskForFriendshipReceivedEvent askForFriendshipReceivedEvent);
 }

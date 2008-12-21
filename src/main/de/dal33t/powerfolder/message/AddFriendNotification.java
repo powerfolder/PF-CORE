@@ -19,6 +19,8 @@
 */
 package de.dal33t.powerfolder.message;
 
+import de.dal33t.powerfolder.light.MemberInfo;
+
 
 /**
  * This message represents a notification of addition as a friend.
@@ -29,17 +31,24 @@ package de.dal33t.powerfolder.message;
 public class AddFriendNotification extends Message {
 	private static final long serialVersionUID = 100L;
 
+    private MemberInfo memberInfo;
     private String personalMessage;
 
-    public AddFriendNotification(String personalMessage) {
+    public AddFriendNotification(MemberInfo memberInfo, String personalMessage) {
+        this.memberInfo = memberInfo;
         this.personalMessage = personalMessage;
     }
-	
+
+    public MemberInfo getMemberInfo() {
+        return memberInfo;
+    }
+
     public String getPersonalMessage() {
         return personalMessage;
     }
 
     public String toString() {
-        return "AddFriendNotification: '" + personalMessage + '\'';
+        return "AddFriendNotification for '" + memberInfo.nick + ": '"
+                + personalMessage + '\'';
     }
 }

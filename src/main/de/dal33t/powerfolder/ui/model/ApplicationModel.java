@@ -40,7 +40,7 @@ public class ApplicationModel extends PFUIComponent {
     private TransferManagerModel transferManagerModel;
     private ServerClientModel serverClientModel;
     private ReceivedInvitationsModel receivedInvitationsModel;
-    private ReceivedAddFriendNotificationsModel receivedAddFriendNotificationsModel;
+    private ReceivedAskedForFriendshipModel receivedAskedForFriendshipModel;
 
     /**
      * Constructs a non-initialized application model. Before the model can used
@@ -68,7 +68,7 @@ public class ApplicationModel extends PFUIComponent {
         serverClientModel = new ServerClientModel(getController(),
             getController().getOSClient());
         receivedInvitationsModel = new ReceivedInvitationsModel();
-        receivedAddFriendNotificationsModel = new ReceivedAddFriendNotificationsModel();
+        receivedAskedForFriendshipModel = new ReceivedAskedForFriendshipModel();
     }
 
     // Exposing ***************************************************************
@@ -101,7 +101,7 @@ public class ApplicationModel extends PFUIComponent {
         return receivedInvitationsModel;
     }
 
-    public ReceivedAddFriendNotificationsModel getReceivedAddFriendNotificationsModel() {
-        return receivedAddFriendNotificationsModel;
+    public ReceivedAskedForFriendshipModel getReceivedAddFriendNotificationsModel() {
+        return receivedAskedForFriendshipModel;
     }
 }

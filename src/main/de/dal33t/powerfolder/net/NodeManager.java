@@ -30,7 +30,6 @@ import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.message.AddFriendNotification;
 import de.dal33t.powerfolder.message.*;
 import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.Debug;
@@ -661,8 +660,8 @@ public class NodeManager extends PFComponent {
             node.markForImmediateConnect();
             // Send a "you were added"
             getController().getTaskManager().scheduleTask(
-                new SendMessageTask(new AddFriendNotification(personalMessage),
-                        node.getId()));
+                new SendMessageTask(new AddFriendNotification(node.getInfo(),
+                        personalMessage), node.getId()));
         } else if (wasFriend) {
             friends.remove(node);
             nodesChanged = true;

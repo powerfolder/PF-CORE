@@ -62,6 +62,7 @@ import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.Waiter;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
+import de.dal33t.powerfolder.event.AskForFriendshipEvent;
 
 /**
  * A full quailfied member, can have a connection to interact with remote
@@ -1447,8 +1448,12 @@ public class Member extends PFComponent implements Comparable<Member> {
                 expectedTime = 50;
 
             } else if (message instanceof AddFriendNotification) {
-                AddFriendNotification not = (AddFriendNotification) message;
-                getController().getUIController().addNotificationReceived(not);
+                AddFriendNotification notification = (AddFriendNotification)
+                        message;
+                AskForFriendshipEvent event = new AskForFriendshipEvent(
+                        notification.getMemberInfo(),
+                        notification.getPersonalMessage());
+                getController().getUIController().addAskForFriendship(event);
                 expectedTime = 50;
 
             } else if (message instanceof RequestPart) {
@@ -1648,7 +1653,7 @@ public class Member extends PFComponent implements Comparable<Member> {
         folderJoinLock.lock();
         try {
             FolderRepository repo = getController().getFolderRepository();
-            Set<FolderInfo> joinedFolder = new HashSet<FolderInfo>();
+            Set<FolderInfo> joinedFolders = new HashSet<FolderInfo>();
             Collection<Folder> localFolders = repo.getFoldersAsCollection();
 
             String myMagicId = peer != null ? peer.getMyMagicId() : null;
@@ -1686,7 +1691,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                         logFiner("Also has secret folder: " + secretFolder);
                         Folder folder = localSecretFolders.get(secretFolder);
                         // Okay, join him into folder
-                        joinedFolder.add(folder.getInfo());
+                        joinedFolders.add(folder.getInfo());
                         // Join him into our folder
                         folder.join(this);
                     }
@@ -1695,18 +1700,20 @@ public class Member extends PFComponent implements Comparable<Member> {
 
             // ok now remove member from not longer joined folders
             for (Folder folder : localFolders) {
-                if (folder != null && !joinedFolder.contains(folder.getInfo()))
+                if (folder != null && !joinedFolders.contains(folder.getInfo()))
                 {
                     // remove this member from folder, if not on new folder
                     folder.remove(this);
                 }
             }
 
-            if (!joinedFolder.isEmpty()) {
-                logInfo(getNick() + " joined " + joinedFolder.size()
+            if (!joinedFolders.isEmpty()) {
+                logInfo(getNick() + " joined " + joinedFolders.size()
                     + " folder(s)");
                 if (!isFriend()) {
-                    // @todo hghg
+                    AskForFriendshipEvent event = new AskForFriendshipEvent(
+                            getInfo(), joinedFolders);
+                    getController().getUIController().addAskForFriendship(event);
                 }
             }
         } finally {

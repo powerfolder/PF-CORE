@@ -19,26 +19,14 @@
 */
 package de.dal33t.powerfolder.event;
 
-import de.dal33t.powerfolder.ui.model.ReceivedAddFriendNotificationsModel;
-
-import java.util.EventObject;
-
 /**
- * Event which gets fired to <code>NotificationReceivedListener</code> .
- *
- * @see de.dal33t.powerfolder.event.InvitationReceivedListener
- * @see de.dal33t.powerfolder.disk.FolderRepository
- * @see de.dal33t.powerfolder.ui.InvitationReceivedHandlerDefaultImpl
- * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
+ * The interface that should be implemented when writing a handler for
+ * NodeManager called when a member joins a folder. The handler will generely
+ * ask if that member should become a friend
+ * 
  * @version $Revision: 1.5 $
  */
-public class AddFriendNotificationReceivedEvent extends EventObject {
-
-    /**
-     * @param source
-     *            the source folder repo
-     */
-    public AddFriendNotificationReceivedEvent(ReceivedAddFriendNotificationsModel source) {
-        super(source);
-    }
+public interface AskForFriendshipListener {
+    public void askForFriendship(
+        AskForFriendshipEvent askForFriendshipHandlerEvent);
 }
