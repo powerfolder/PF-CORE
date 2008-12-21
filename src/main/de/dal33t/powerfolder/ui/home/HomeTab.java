@@ -82,12 +82,12 @@ public class HomeTab extends PFUIComponent {
                 .getTransferManagerModel().getCompletedUploadsCountVM();
         folderListener = new MyFolderListener();
         client = getApplicationModel().getServerClientModel().getClient();
-        getUIController().getApplicationModel().getReceivedAddFriendNotificationsModel()
+        getUIController().getApplicationModel().getReceivedAskedForFriendshipModel()
                 .addListener(new MyAskForFriendshipReceivedListener());
         getUIController().getApplicationModel().getReceivedInvitationModel()
                 .addInvitationReceivedListener(new MyInvitationReceivedListener());
         newComputersCountVM = getUIController().getApplicationModel()
-                .getReceivedAddFriendNotificationsModel().getReceivedAskForFriendshipCountVM();
+                .getReceivedAskedForFriendshipModel().getReceivedAskForFriendshipCountVM();
         newInvitationsCountVM = getUIController().getApplicationModel()
                 .getReceivedInvitationModel().getReceivedInvitationsCountVM();
     }
@@ -148,7 +148,8 @@ public class HomeTab extends PFUIComponent {
                 .getOpenInvitationReceivedWizardAction());
         newComputersLine = new HomeTabLine(getController(),
                 Translation.getTranslation("home_tab.new_computers"), null,
-                true, true);
+                true, true, getApplicationModel().getActionModel()
+                .getAskForFriendshipAction());
         downloadsLine = new HomeTabLine(getController(),
                 Translation.getTranslation("home_tab.files_downloaded"), null,
                 false, true, getApplicationModel().getActionModel()

@@ -732,7 +732,7 @@ public class UIController extends PFComponent {
     }
 
     public void addAskForFriendship(AskForFriendshipEvent event) {
-        applicationModel.getReceivedAddFriendNotificationsModel()
+        applicationModel.getReceivedAskedForFriendshipModel()
                     .addAskForFriendshipEvent(event);
     }
 

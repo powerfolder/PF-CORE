@@ -22,6 +22,10 @@ package de.dal33t.powerfolder.ui.model;
 import de.dal33t.powerfolder.event.AskForFriendshipReceivedListener;
 import de.dal33t.powerfolder.event.AskForFriendshipReceivedEvent;
 import de.dal33t.powerfolder.event.AskForFriendshipEvent;
+import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PreferencesEntry;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -35,7 +39,7 @@ import com.jgoodies.binding.value.ValueHolder;
  * Listeners can be added to be notified of changes to the number of notifications
  * in the model.
  */
-public class ReceivedAskedForFriendshipModel {
+public class ReceivedAskedForFriendshipModel extends PFComponent {
 
     private final ValueModel receivedAskForFriendshipCountVM = new ValueHolder();
     private List<AskForFriendshipReceivedListener> listeners;
@@ -43,7 +47,8 @@ public class ReceivedAskedForFriendshipModel {
     private List<AskForFriendshipEvent> addAskForFriendshipEvents =
             new CopyOnWriteArrayList<AskForFriendshipEvent>();
 
-    public ReceivedAskedForFriendshipModel() {
+    public ReceivedAskedForFriendshipModel(Controller controller) {
+        super(controller);
         receivedAskForFriendshipCountVM.setValue(0);
         listeners = new CopyOnWriteArrayList<AskForFriendshipReceivedListener>();
     }
@@ -61,11 +66,37 @@ public class ReceivedAskedForFriendshipModel {
      *
      * @param addFriendNotification
      */
-    public void addAskForFriendshipEvent(AskForFriendshipEvent askForFriendshipEvent) {
-        addAskForFriendshipEvents.add(askForFriendshipEvent);
-        receivedAskForFriendshipCountVM.setValue(addAskForFriendshipEvents.size());
-        for (AskForFriendshipReceivedListener listener : listeners) {
-            listener.notificationReceived(new AskForFriendshipReceivedEvent(this));
+    public void addAskForFriendshipEvent(AskForFriendshipEvent event) {
+
+        Member node = getController().getNodeManager().getNode(event.getMemberInfo());
+        if (node == null) {
+            // Ignore friendship request from unknown node.
+            return;
+        }
+
+        // FIXME Does not work with temporary server nodes.
+        if (node.isServer() || getController().getOSClient().isServer(node))
+        {
+            // TRAC #1190
+            node.setFriend(true, null);
+            return;
+        }
+
+        boolean askForFriendship =
+                PreferencesEntry.ASK_FOR_FRIENDSHIP_ON_PRIVATE_FOLDER_JOIN
+            .getValueBoolean(getController());
+
+        if (getController().isUIOpen() && !node.isFriend()
+            && askForFriendship && !node.askedForFriendship()) {
+
+            // Okay node is asking for friendship now.
+            node.setAskedForFriendship(true);
+
+            addAskForFriendshipEvents.add(event);
+            receivedAskForFriendshipCountVM.setValue(addAskForFriendshipEvents.size());
+            for (AskForFriendshipReceivedListener listener : listeners) {
+                listener.notificationReceived(new AskForFriendshipReceivedEvent(this));
+            }
         }
     }
 
@@ -74,7 +105,7 @@ public class ReceivedAskedForFriendshipModel {
      *
      * @return
      */
-    public AskForFriendshipEvent popNotification() {
+    public AskForFriendshipEvent popEvent() {
         if (!addAskForFriendshipEvents.isEmpty()) {
             AskForFriendshipEvent askForFriendshipEvent =
                     addAskForFriendshipEvents.remove(0);

@@ -660,7 +660,7 @@ public class NodeManager extends PFComponent {
             node.markForImmediateConnect();
             // Send a "you were added"
             getController().getTaskManager().scheduleTask(
-                new SendMessageTask(new AddFriendNotification(node.getInfo(),
+                new SendMessageTask(new AddFriendNotification(mySelf.getInfo(),
                         personalMessage), node.getId()));
         } else if (wasFriend) {
             friends.remove(node);

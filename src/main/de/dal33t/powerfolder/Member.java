@@ -1078,6 +1078,7 @@ public class Member extends PFComponent implements Comparable<Member> {
      *            The message to handle
      */
     public void handleMessage(Message message) {
+
         if (message == null) {
             throw new NullPointerException(
                 "Unable to handle message, message is null");

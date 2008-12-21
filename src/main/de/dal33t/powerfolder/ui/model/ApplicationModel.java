@@ -68,7 +68,8 @@ public class ApplicationModel extends PFUIComponent {
         serverClientModel = new ServerClientModel(getController(),
             getController().getOSClient());
         receivedInvitationsModel = new ReceivedInvitationsModel();
-        receivedAskedForFriendshipModel = new ReceivedAskedForFriendshipModel();
+        receivedAskedForFriendshipModel =
+                new ReceivedAskedForFriendshipModel(getController());
     }
 
     // Exposing ***************************************************************
@@ -101,7 +102,7 @@ public class ApplicationModel extends PFUIComponent {
         return receivedInvitationsModel;
     }
 
-    public ReceivedAskedForFriendshipModel getReceivedAddFriendNotificationsModel() {
+    public ReceivedAskedForFriendshipModel getReceivedAskedForFriendshipModel() {
         return receivedAskedForFriendshipModel;
     }
 }

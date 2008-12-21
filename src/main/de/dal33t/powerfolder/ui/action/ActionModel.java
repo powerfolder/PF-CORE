@@ -53,6 +53,7 @@ public class ActionModel extends PFComponent {
     private RemoveFriendAction removeFriendAction;
     private SyncFolderAction syncFolderAction;
     private OpenInvitationReceivedWizardAction openInvitationReceivedWizardAction;
+    private AskForFriendshipAction askForFriendshipAction;
 
     public NewFolderAction getNewFolderAction() {
         if (newFolderAction == null) {
@@ -155,10 +156,17 @@ public class ActionModel extends PFComponent {
         return openInvitationReceivedWizardAction;
     }
 
-    public ActionListener getSyncFolderAction() {
+    public SyncFolderAction getSyncFolderAction() {
         if (syncFolderAction == null) {
             syncFolderAction = new SyncFolderAction(getController());
         }
         return syncFolderAction;
+    }
+
+    public AskForFriendshipAction getAskForFriendshipAction() {
+        if (askForFriendshipAction == null) {
+            askForFriendshipAction = new AskForFriendshipAction(getController());
+        }
+        return askForFriendshipAction;
     }
 }
