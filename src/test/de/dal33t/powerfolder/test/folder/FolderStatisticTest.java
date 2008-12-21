@@ -593,12 +593,20 @@ public class FolderStatisticTest extends FiveControllerTestCase {
             Collection<FileInfo> filesOnMaggie;
 
             public String message() {
+                Collection<FileInfo> filesLocal = folder.getKnownFiles();
                 return "Not identical! Filelist of "
                     + folder.getController().getMySelf().getNick()
                     + " was not received by all members. Homer: "
-                    + filesOnHomer.size() + ", Bart: " + filesOnBart.size()
-                    + ", Marge: " + filesOnMarge.size() + ", Lisa: "
-                    + filesOnLisa.size() + ", Maggie: " + filesOnMaggie.size();
+                    + filesOnHomer.size() + " (same:"
+                    + identicalFileList(filesLocal, filesOnHomer) + "), Bart: "
+                    + filesOnBart.size() + " (same:"
+                    + identicalFileList(filesLocal, filesOnBart)
+                    + "), Marge: " + filesOnMarge.size() + " (same:"
+                    + identicalFileList(filesLocal, filesOnMarge) + "), Lisa: "
+                    + filesOnLisa.size() + " (same:"
+                    + identicalFileList(filesLocal, filesOnLisa)
+                    + "), Maggie: " + filesOnMaggie.size() + "(same:"
+                    + identicalFileList(filesLocal, filesOnMaggie) + ")";
             }
 
             public boolean reached() {
