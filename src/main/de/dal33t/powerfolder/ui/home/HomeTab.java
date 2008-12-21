@@ -56,7 +56,7 @@ public class HomeTab extends PFUIComponent {
     private HomeTabLine sizeOfFoldersLine;
     private HomeTabLine filesAvailableLine;
     private HomeTabLine newInvitationsLine;
-    private HomeTabLine newComputersLine;
+    private HomeTabLine newFriendRequestLine;
     private HomeTabLine computersLine;
     private HomeTabLine downloadsLine;
     private HomeTabLine uploadsLine;
@@ -66,7 +66,7 @@ public class HomeTab extends PFUIComponent {
     private ServerClient client;
     private JLabel onlineStorageAccountLabel;
     private OnlineStorageSection onlineStorageSection;
-    private final ValueModel newComputersCountVM;
+    private final ValueModel newFriendRequestCountVM;
     private final ValueModel newInvitationsCountVM;
 
     /**
@@ -86,7 +86,7 @@ public class HomeTab extends PFUIComponent {
                 .addListener(new MyAskForFriendshipReceivedListener());
         getUIController().getApplicationModel().getReceivedInvitationModel()
                 .addInvitationReceivedListener(new MyInvitationReceivedListener());
-        newComputersCountVM = getUIController().getApplicationModel()
+        newFriendRequestCountVM = getUIController().getApplicationModel()
                 .getReceivedAskedForFriendshipModel().getReceivedAskForFriendshipCountVM();
         newInvitationsCountVM = getUIController().getApplicationModel()
                 .getReceivedInvitationModel().getReceivedInvitationsCountVM();
@@ -146,8 +146,8 @@ public class HomeTab extends PFUIComponent {
                 Translation.getTranslation("home_tab.new_invitations"), null,
                 true, true, getApplicationModel().getActionModel()
                 .getOpenInvitationReceivedWizardAction());
-        newComputersLine = new HomeTabLine(getController(),
-                Translation.getTranslation("home_tab.new_computers"), null,
+        newFriendRequestLine = new HomeTabLine(getController(),
+                Translation.getTranslation("home_tab.new_friend_requests"), null,
                 true, true, getApplicationModel().getActionModel()
                 .getAskForFriendshipAction());
         downloadsLine = new HomeTabLine(getController(),
@@ -214,10 +214,10 @@ public class HomeTab extends PFUIComponent {
         builder.add(filesAvailableLine.getUIComponent(), cc.xywh(2, row, 2, 1));
         row++;
 
-        builder.add(newComputersLine.getUIComponent(), cc.xywh(2, row, 2, 1));
+        builder.add(newInvitationsLine.getUIComponent(), cc.xywh(2, row, 2, 1));
         row++;
 
-        builder.add(newInvitationsLine.getUIComponent(), cc.xywh(2, row, 2, 1));
+        builder.add(newFriendRequestLine.getUIComponent(), cc.xywh(2, row, 2, 1));
         row++;
 
         builder.add(downloadsLine.getUIComponent(), cc.xywh(2, row, 2, 1));
@@ -297,8 +297,8 @@ public class HomeTab extends PFUIComponent {
     }
 
     private void updateNewComputersText() {
-        Integer integer = (Integer) newComputersCountVM.getValue();
-        newComputersLine.setValue(integer);
+        Integer integer = (Integer) newFriendRequestCountVM.getValue();
+        newFriendRequestLine.setValue(integer);
     }
 
     /**
