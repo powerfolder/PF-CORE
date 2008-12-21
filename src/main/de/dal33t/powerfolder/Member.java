@@ -507,6 +507,10 @@ public class Member extends PFComponent implements Comparable<Member> {
         }
 
         // Complete low-level handshake
+        // FIXME: Problematic situation: Now we probably accept the new peer.
+        // Messages received from this new peer can be delivered to the
+        // Member which not get the correct peer since "peer" field is set
+        // later...
         boolean accepted = newPeer.acceptIdentity(this);
 
         if (!accepted) {
@@ -517,12 +521,14 @@ public class Member extends PFComponent implements Comparable<Member> {
         }
 
         synchronized (peerInitalizeLock) {
-            // ok, we accepted, kill old peer and shutdown.
-            // shutdown old peer
-            shutdownPeer();
-
+            ConnectionHandler oldPeer = peer;
             // Set the new peer
             peer = newPeer;
+
+            // ok, we accepted, kill old peer and shutdown.
+            if (oldPeer != null) {
+                oldPeer.shutdown();
+            }
         }
 
         // Update infos!
@@ -1077,7 +1083,7 @@ public class Member extends PFComponent implements Comparable<Member> {
      * @param message
      *            The message to handle
      */
-    public void handleMessage(Message message) {
+    public void handleMessage(Message message, ConnectionHandler fromPeer) {
 
         if (message == null) {
             throw new NullPointerException(
@@ -1133,11 +1139,11 @@ public class Member extends PFComponent implements Comparable<Member> {
                 expectedTime = 100;
             } else if (message instanceof FolderList) {
                 FolderList fList = (FolderList) message;
-                joinToLocalFolders(fList);
-                lastFolderList = fList;
-
+                joinToLocalFolders(fList, fromPeer);
+              
                 // Notify waiting ppl
                 synchronized (folderListWaiter) {
+                    lastFolderList = fList;
                     folderListWaiter.notifyAll();
                 }
                 expectedTime = 300;
@@ -1629,7 +1635,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             FolderList folderList = getLastFolderList();
             if (folderList != null) {
                 // Rejoin to local folders
-                joinToLocalFolders(folderList);
+                joinToLocalFolders(folderList, peer);
             } else {
                 // Hopefully we receive this later.
                 logSevere("Unable to synchronize memberships, "
@@ -1650,16 +1656,20 @@ public class Member extends PFComponent implements Comparable<Member> {
      * 
      * @throws ConnectionException
      */
-    private void joinToLocalFolders(FolderList folderList) {
+    private void joinToLocalFolders(FolderList folderList,
+        ConnectionHandler fromPeer)
+    {
         folderJoinLock.lock();
         try {
             FolderRepository repo = getController().getFolderRepository();
             Set<FolderInfo> joinedFolders = new HashSet<FolderInfo>();
             Collection<Folder> localFolders = repo.getFoldersAsCollection();
 
-            String myMagicId = peer != null ? peer.getMyMagicId() : null;
-            if (peer == null) {
-                logFiner("Unable to join to local folders. peer is null/disconnected");
+            String myMagicId = fromPeer != null
+                ? fromPeer.getMyMagicId()
+                : null;
+            if (fromPeer == null) {
+                logWarning("Unable to join to local folders. peer is null/disconnected");
                 return;
             }
             if (StringUtils.isBlank(myMagicId)) {

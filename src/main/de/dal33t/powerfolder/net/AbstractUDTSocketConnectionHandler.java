@@ -961,7 +961,8 @@ public abstract class AbstractUDTSocketConnectionHandler extends PFComponent
                     } else if (obj instanceof Problem) {
                         Problem problem = (Problem) obj;
                         if (member != null) {
-                            member.handleMessage(problem);
+                            member.handleMessage(problem,
+                                AbstractUDTSocketConnectionHandler.this);
                         } else {
                             logWarning("("
                                 + (identity != null
@@ -980,7 +981,8 @@ public abstract class AbstractUDTSocketConnectionHandler extends PFComponent
                     } else if (obj instanceof Message) {
 
                         if (member != null) {
-                            member.handleMessage((Message) obj);
+                            member.handleMessage((Message) obj,
+                                AbstractUDTSocketConnectionHandler.this);
                         } else if (!isConnected()) {
                             // Simply break. Already disconnected
                             break;

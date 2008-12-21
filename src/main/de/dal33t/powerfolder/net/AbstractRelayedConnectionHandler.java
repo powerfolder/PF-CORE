@@ -765,7 +765,7 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
             } else if (obj instanceof Problem) {
                 Problem problem = (Problem) obj;
                 if (member != null) {
-                    member.handleMessage(problem);
+                    member.handleMessage(problem, this);
                 } else {
                     logWarning(
                         "("
@@ -785,7 +785,7 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
             } else if (obj instanceof Message) {
 
                 if (member != null) {
-                    member.handleMessage((Message) obj);
+                    member.handleMessage((Message) obj, this);
                 } else if (!isConnected()) {
                     // Simply break. Already disconnected
                     shutdownWithMember();
