@@ -405,11 +405,12 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         }
         File testFile = TestHelper.createRandomFile(getFolderAtBart()
             .getLocalBase());
+        scanFolder(getFolderAtBart());
+        
         getFolderAtMarge()
             .setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         getFolderAtMaggie().setSyncProfile(
             SyncProfile.AUTOMATIC_SYNCHRONIZATION);
-        scanFolder(getFolderAtBart());
         TestHelper.waitMilliSeconds(5000);
         waitForFileListOnTestFolder();
         forceStatsCals();
