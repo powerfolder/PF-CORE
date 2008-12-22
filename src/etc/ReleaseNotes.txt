@@ -11,6 +11,7 @@ Enhancements:
  * Disconnect/Connect messages not longer shown in chat unless running in debug mode. 
 
 Bugfixes:
+ * Downloads of old file versions now get prevented 
  * Wrong warning about non-writable directories in setup are now gone
  * Removed a small memory leak
  * Dyndns now get validated only once when OK is clicked in preferences
