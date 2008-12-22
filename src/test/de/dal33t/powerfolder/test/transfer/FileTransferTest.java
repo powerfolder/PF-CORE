@@ -861,14 +861,15 @@ public class FileTransferTest extends TwoControllerTestCase {
         connectBartAndLisa();
 
         // Wait untill download is started
-        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+        TestHelper.waitForCondition(20, new ConditionWithMessage() {
             public boolean reached() {
                 return lisasListener.downloadStarted >= 2;
             }
 
             public String message() {
                 return "Lisa download started: "
-                    + lisasListener.downloadStarted;
+                    + lisasListener.downloadStarted + ", broken: "
+                    + lisasListener.downloadBroken;
             }
         });
 
@@ -1042,6 +1043,7 @@ public class FileTransferTest extends TwoControllerTestCase {
             public String message() {
                 return "lisa: completed dl= " + lisaListener.downloadCompleted
                     + ", req dl= " + lisaListener.downloadRequested
+                    + ", brkn dl= " + lisaListener.downloadBroken
                     + "; bart: completed ul= " + bartListener.uploadCompleted;
             }
         });
