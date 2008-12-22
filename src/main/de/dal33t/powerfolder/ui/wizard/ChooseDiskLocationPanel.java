@@ -678,6 +678,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
     private class MyActionListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             customRB.setSelected(true);
+            displayChooseDirectory();
         }
     }
 
@@ -761,11 +762,8 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
 
     private class MyItemListener implements ItemListener {
         public void itemStateChanged(ItemEvent e) {
-            // locationButton.setEnabled(customRB.isSelected());
             if (customRB.isSelected()) {
-                if (initialLocation != null
-                    && new File(initialLocation).exists())
-                {
+                if (initialLocation != null && new File(initialLocation).exists()) {
                     doRadio(initialLocation);
                 }
                 displayChooseDirectory();
