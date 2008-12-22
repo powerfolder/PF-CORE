@@ -179,7 +179,6 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         Member server = getController().getOSClient().getServer();
         serverModel = new ValueHolder(server, true);
         severSelector = new ServerSelectorPanel(getController(), serverModel);
-        System.out.println("Server: " + server);
 
         enableDisableComponents(getController().isLanOnly());
     }
