@@ -275,7 +275,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
 
         assertTrue(tryToConnect(getContoller("1"), getContoller("5")));
 
-        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+        TestHelper.waitForCondition(20, new ConditionWithMessage() {
             public boolean reached() {
                 return getFolderOf("5").getKnownFilesCount() == 1
                     && getFolderOf("5").getKnownFiles().iterator().next()
