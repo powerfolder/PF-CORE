@@ -31,10 +31,11 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
 import de.dal33t.powerfolder.util.Translation;
 
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
+import javax.swing.event.TableModelListener;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
@@ -76,9 +77,6 @@ public class DownloadsTablePanel extends PFUIComponent {
      * Initialize components
      */
     private void initialize() {
-        uiComponent = new JPanel();
-        uiComponent.add(new JLabel("Downloads table panel"));
-
         TransferManagerModel transferManagerModel =
                 getUIController().getTransferManagerModel();
 
@@ -91,6 +89,25 @@ public class DownloadsTablePanel extends PFUIComponent {
         UIUtil.whiteStripTable(table);
         UIUtil.setZeroHeight(tablePane);
         UIUtil.removeBorder(tablePane);
+    }
+
+    /**
+     * Add a selection listener to the table.
+     *
+     * @param l
+     */
+    public void addListSelectionListener(ListSelectionListener l) {
+        table.getSelectionModel().addListSelectionListener(l);
+    }
+
+    /**
+     * Add a table model listener to the model.
+     * 
+     * @param l
+     */
+    public void addTableModelListener(TableModelListener l) {
+        initialize();
+        tableModel.addTableModelListener(l);
     }
 
     /**
@@ -159,6 +176,41 @@ public class DownloadsTablePanel extends PFUIComponent {
 
         // Clear completed downloads
         avw.start();
+    }
+
+    /**
+     * Returns true if the table has any rows.
+     *
+     * @return
+     */
+    public boolean isRowsExist() {
+        return table != null && table.getRowCount() > 0;
+    }
+
+    /**
+     * Returns true if the table has any selected incomplete downloads.
+     * 
+     * @return
+     */
+    public boolean isIncompleteSelected() {
+        if (table == null || tableModel == null) {
+            return false;
+        }
+        int[] rows = table.getSelectedRows();
+        boolean rowsSelected = rows.length > 0;
+        if (rowsSelected) {
+            for (int row : rows) {
+                Download download = tableModel.getDownloadAtRow(row);
+                if (download == null) {
+                    continue;
+                }
+                if (!download.isCompleted()) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /**

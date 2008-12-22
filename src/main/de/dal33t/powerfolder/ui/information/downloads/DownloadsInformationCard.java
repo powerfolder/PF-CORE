@@ -19,14 +19,12 @@
 */
 package de.dal33t.powerfolder.ui.information.downloads;
 
-import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.DefaultFormBuilder;
+import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.event.TransferAdapter;
-import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.actionold.HasDetailsPanel;
@@ -40,6 +38,10 @@ import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
+import javax.swing.event.TableModelListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.event.ListSelectionEvent;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -53,6 +55,7 @@ public class DownloadsInformationCard extends InformationCard
     private JPanel uiComponent;
     private JPanel toolBar;
     private DownloadsTablePanel tablePanel;
+    private Action abortDownloadsAction;
     private FileDetailsPanel detailsPanel;
     private JCheckBox autoCleanupCB;
     private Action clearCompletedDownloadsAction;
@@ -103,9 +106,9 @@ public class DownloadsInformationCard extends InformationCard
     private void initialize() {
         buildToolbar();
         tablePanel = new DownloadsTablePanel(getController());
+        tablePanel.addTableModelListener(new MyTableModelListener());
+        tablePanel.addListSelectionListener(new MyListSelectionListener());
         detailsPanel = new FileDetailsPanel(getController());
-        getController().getTransferManager().addListener(
-            new MyTransferManagerListener());
         updateActions();
     }
 
@@ -113,6 +116,8 @@ public class DownloadsInformationCard extends InformationCard
      * Build the toolbar component.
      */
     private void buildToolbar() {
+
+        abortDownloadsAction = new AbortDownloadAction();
 
         clearCompletedDownloadsAction = new ClearCompletedDownloadsAction(getController());
 
@@ -134,14 +139,18 @@ public class DownloadsInformationCard extends InformationCard
             }
         });
         
-        ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
-        bar.addGridded(new JToggleButton(new DetailsAction(getController())));
-        bar.addRelatedGap();
-        bar.addGridded(new JButton(clearCompletedDownloadsAction));
-        bar.addRelatedGap();
-        bar.addGridded(autoCleanupCB);
+        FormLayout layout = new FormLayout("3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, pref:grow",
+            "pref");
+        PanelBuilder builder = new PanelBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+
+        builder.add(new JButton(abortDownloadsAction), cc.xy(2, 1));
+        builder.add(new JToggleButton(new DetailsAction(getController())),
+                cc.xy(4, 1));
+        builder.add(new JButton(clearCompletedDownloadsAction), cc.xy(6, 1));
+        builder.add(autoCleanupCB, cc.xy(8, 1));
         
-        toolBar = bar.getPanel();
+        toolBar = builder.getPanel();
     }
 
     /**
@@ -173,9 +182,33 @@ public class DownloadsInformationCard extends InformationCard
      * Update the clear action enable.
      */
     public void updateActions() {
-        clearCompletedDownloadsAction.setEnabled(getUIController()
-                .getTransferManagerModel().getDownloadsTableModel()
-                .getRowCount() > 0);
+
+        boolean rowsExist = tablePanel.isRowsExist();
+        boolean incompleteSelected = tablePanel.isIncompleteSelected();
+
+        abortDownloadsAction.setEnabled(incompleteSelected);
+        clearCompletedDownloadsAction.setEnabled(rowsExist);
+    }
+
+    ///////////////////
+    // Inner Classes //
+    ///////////////////
+
+    /**
+     * Aborts the selected downloads
+     *
+     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
+     * @version $Revision: 1.3 $
+     */
+    private class AbortDownloadAction extends BaseAction {
+
+        AbortDownloadAction() {
+            super("action_abort_download", 
+                    DownloadsInformationCard.this.getController());
+        }
+
+        public void actionPerformed(ActionEvent e) {
+        }
     }
 
     /**
@@ -207,44 +240,22 @@ public class DownloadsInformationCard extends InformationCard
     }
 
     /**
-     * TransferManagerListener to respond to download changes.
+     * Listener to the underlying table model.
+     * Detects changes to row details and updates actions.
      */
-    private class MyTransferManagerListener extends TransferAdapter {
-
-        public void downloadRequested(TransferManagerEvent event) {
+    private class MyTableModelListener implements TableModelListener {
+        public void tableChanged(TableModelEvent e) {
             updateActions();
         }
+    }
 
-        public void downloadQueued(TransferManagerEvent event) {
+    /**
+     * Listener to the underlying table.
+     * Detects changes to row selections and updates actions.
+     */
+    private class MyListSelectionListener implements ListSelectionListener {
+        public void valueChanged(ListSelectionEvent e) {
             updateActions();
-        }
-
-        public void downloadStarted(TransferManagerEvent event) {
-            updateActions();
-        }
-
-        public void downloadAborted(TransferManagerEvent event) {
-            updateActions();
-        }
-
-        public void downloadBroken(TransferManagerEvent event) {
-            updateActions();
-        }
-
-        public void downloadCompleted(TransferManagerEvent event) {
-            updateActions();
-        }
-
-        public void completedDownloadRemoved(TransferManagerEvent event) {
-            updateActions();
-        }
-
-        public void pendingDownloadEnqueud(TransferManagerEvent event) {
-            updateActions();
-        }
-
-        public boolean fireInEventDispatchThread() {
-            return true;
         }
     }
 }

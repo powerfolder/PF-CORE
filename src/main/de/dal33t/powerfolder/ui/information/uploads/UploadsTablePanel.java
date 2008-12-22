@@ -30,7 +30,6 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
 import de.dal33t.powerfolder.util.ui.SwingWorker;
 
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
@@ -75,9 +74,6 @@ public class UploadsTablePanel extends PFUIComponent {
      * Initialize components
      */
     private void initialize() {
-        uiComponent = new JPanel();
-        uiComponent.add(new JLabel("Uploads table panel"));
-
         TransferManagerModel transferManagerModel =
                 getUIController().getTransferManagerModel();
 
