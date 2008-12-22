@@ -214,6 +214,26 @@ public class DownloadsTablePanel extends PFUIComponent {
     }
 
     /**
+     * Returns true if a slingle completed download is selected.
+     * 
+     * @return
+     */
+    public boolean isSingleCompleteSelected() {
+        if (table == null || tableModel == null) {
+            return false;
+        }
+        int[] rows = table.getSelectedRows();
+        boolean singleRowSelected = rows.length == 1;
+        if (singleRowSelected) {
+            Download download = tableModel.getDownloadAtRow(rows[0]);
+            if (download.isCompleted()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Listener on table header, takes care about the sorting of table
      *
      * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>

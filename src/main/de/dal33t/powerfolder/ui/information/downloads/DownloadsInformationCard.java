@@ -56,6 +56,7 @@ public class DownloadsInformationCard extends InformationCard
     private JPanel toolBar;
     private DownloadsTablePanel tablePanel;
     private Action abortDownloadsAction;
+    private Action openDownloadAction;
     private FileDetailsPanel detailsPanel;
     private JCheckBox autoCleanupCB;
     private Action clearCompletedDownloadsAction;
@@ -118,6 +119,7 @@ public class DownloadsInformationCard extends InformationCard
     private void buildToolbar() {
 
         abortDownloadsAction = new AbortDownloadAction();
+        openDownloadAction = new OpenDownloadAction();
 
         clearCompletedDownloadsAction = new ClearCompletedDownloadsAction(getController());
 
@@ -139,16 +141,17 @@ public class DownloadsInformationCard extends InformationCard
             }
         });
         
-        FormLayout layout = new FormLayout("3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, pref:grow",
+        FormLayout layout = new FormLayout("3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, pref:grow",
             "pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
-        builder.add(new JButton(abortDownloadsAction), cc.xy(2, 1));
+        builder.add(new JButton(openDownloadAction), cc.xy(2, 1));
+        builder.add(new JButton(abortDownloadsAction), cc.xy(4, 1));
         builder.add(new JToggleButton(new DetailsAction(getController())),
-                cc.xy(4, 1));
-        builder.add(new JButton(clearCompletedDownloadsAction), cc.xy(6, 1));
-        builder.add(autoCleanupCB, cc.xy(8, 1));
+                cc.xy(6, 1));
+        builder.add(new JButton(clearCompletedDownloadsAction), cc.xy(8, 1));
+        builder.add(autoCleanupCB, cc.xy(10, 1));
         
         toolBar = builder.getPanel();
     }
@@ -174,8 +177,7 @@ public class DownloadsInformationCard extends InformationCard
      * Toggle the details panel visibility.
      */
     public void toggleDetails() {
-        detailsPanel.getPanel().setVisible(
-                !detailsPanel.getPanel().isVisible());
+        detailsPanel.getPanel().setVisible(!detailsPanel.getPanel().isVisible());
     }
 
     /**
@@ -183,9 +185,11 @@ public class DownloadsInformationCard extends InformationCard
      */
     public void updateActions() {
 
+        boolean singleCompleteSelected = tablePanel.isSingleCompleteSelected();
         boolean rowsExist = tablePanel.isRowsExist();
         boolean incompleteSelected = tablePanel.isIncompleteSelected();
 
+        openDownloadAction.setEnabled(singleCompleteSelected);
         abortDownloadsAction.setEnabled(incompleteSelected);
         clearCompletedDownloadsAction.setEnabled(rowsExist);
     }
@@ -193,6 +197,16 @@ public class DownloadsInformationCard extends InformationCard
     ///////////////////
     // Inner Classes //
     ///////////////////
+
+    private class OpenDownloadAction extends BaseAction {
+        OpenDownloadAction() {
+            super("action_open_download", 
+                    DownloadsInformationCard.this.getController());
+        }
+
+        public void actionPerformed(ActionEvent e) {
+        }
+    }
 
     /**
      * Aborts the selected downloads
