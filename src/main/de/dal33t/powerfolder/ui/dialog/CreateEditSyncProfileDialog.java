@@ -244,7 +244,7 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
         scanTimeModel = new SpinnerNumberModel(0, 0, 9999, 1);
         scanTimeSpinner = new JSpinner(scanTimeModel);
         scanInfoLabel = new JLabel(Translation
-            .getTranslation("dialog.create_edit_profile.change_detection_disabled"));
+            .getTranslation("dialog.create_edit_profile.change_detection_manual"));
         scanTimeModel.addChangeListener(new ChangeListener() {
 
             public void stateChanged(ChangeEvent e) {
