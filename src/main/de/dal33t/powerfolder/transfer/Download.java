@@ -71,7 +71,7 @@ public class Download extends Transfer {
     /**
      * Indicates that this download is broken.
      */
-    private boolean broken;
+    private boolean markedBroken;
 
     /** for serialisation */
     public Download() {
@@ -352,10 +352,10 @@ public class Download extends Transfer {
     {
         // Prevent setBroken from being called more than once on a single
         // download
-        if (broken) {
+        if (markedBroken) {
             return;
         }
-        broken = true;
+        markedBroken = true;
         Member p = getPartner();
         if (p != null && p.isCompleteyConnected()) {
             p.sendMessageAsynchron(new AbortDownload(getFile()), null);
@@ -374,7 +374,7 @@ public class Download extends Transfer {
      *         anymore or (on blacklist in folder and isRequestedAutomatic)
      */
     public boolean isBroken() {
-        if (super.isBroken() || broken) {
+        if (super.isBroken() || markedBroken) {
             return true;
         }
         // timeout is, when dl is not enqued at remote side,
