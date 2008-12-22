@@ -677,7 +677,12 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
      */
     private class MyActionListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
-            customRB.setSelected(true);
+            if (customRB.isSelected()) {
+                displayChooseDirectory();
+            } else {
+                // Selecting the radiobutton displays the dir chooser.
+                customRB.setSelected(true);
+            }
             displayChooseDirectory();
         }
     }
