@@ -22,6 +22,11 @@ package de.dal33t.powerfolder.ui.model;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.event.InvitationReceivedListener;
 import de.dal33t.powerfolder.event.InvitationReceivedEvent;
+import de.dal33t.powerfolder.event.InvitationHandler;
+import de.dal33t.powerfolder.disk.FolderRepository;
+import de.dal33t.powerfolder.ui.wizard.PFWizard;
+import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.Controller;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -29,13 +34,15 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.binding.value.ValueHolder;
 
+import javax.swing.*;
+
 /**
  * Class to manage received invitations. Invitations can be added and removed.
  * Also a value model is available to count invites.
  * Listeners can be added to be notified of changes to the number of invites
  * in the model.
  */
-public class ReceivedInvitationsModel {
+public class ReceivedInvitationsModel extends PFComponent implements InvitationHandler {
 
     private final ValueModel receivedInvitationsCountVM = new ValueHolder();
     private List<InvitationReceivedListener> listeners;
@@ -43,32 +50,81 @@ public class ReceivedInvitationsModel {
     private List<Invitation> invitations =
             new CopyOnWriteArrayList<Invitation>();
 
-    public ReceivedInvitationsModel() {
+    /**
+     * Constructor
+     *
+     * @param controller
+     */
+    public ReceivedInvitationsModel(Controller controller) {
+        super(controller);
         receivedInvitationsCountVM.setValue(0);
         listeners =
                 new CopyOnWriteArrayList<InvitationReceivedListener>();
+        getController().addInvitationHandler(this);
     }
 
+    /**
+     * Add listener.
+     *
+     * @param l
+     */
     public void addInvitationReceivedListener(InvitationReceivedListener l) {
         listeners.add(l);
     }
 
+    /**
+     * Remove listener.
+     *
+     * @param l
+     */
     public void removeInvitationReceivedListener(InvitationReceivedListener l) {
         listeners.remove(l);
     }
 
     /**
-     * Add an invitation to the model.
+     * Received invitation in the context of an InvitationHandler. Ask user if
+     * the invitation should be added.
      *
      * @param invitation
+     * @param sendIfJoined
      */
-    public void addInvitation(Invitation invitation) {
-        invitations.add(invitation);
-        receivedInvitationsCountVM.setValue(invitations.size());
-        for (InvitationReceivedListener invitationReceivedListener
-                : listeners) {
-            invitationReceivedListener.invitationReceived(
-                    new InvitationReceivedEvent(this));
+    public void gotInvitation(final Invitation invitation, boolean sendIfJoined) {
+
+        final FolderRepository repository = getController().getFolderRepository();
+
+        if (sendIfJoined) {
+
+            if (!getController().isUIOpen()) {
+                return;
+            }
+
+            Runnable worker = new Runnable() {
+                public void run() {
+                    if (repository.hasJoinedFolder(invitation.folder)) {
+                        PFWizard.openSendInvitationWizard(getController(),
+                                invitation.folder);
+                    } else {
+                        PFWizard.openInvitationReceivedWizard(getController(),
+                                invitation);
+                    }
+                }
+            };
+
+            // Invoke later
+            SwingUtilities.invokeLater(worker);
+
+            return;
+        }
+
+        // Normal - add to invitation model and distribute notification.
+        if (!repository.hasJoinedFolder(invitation.folder)) {
+            invitations.add(invitation);
+            receivedInvitationsCountVM.setValue(invitations.size());
+            for (InvitationReceivedListener invitationReceivedListener
+                    : listeners) {
+                invitationReceivedListener.invitationReceived(
+                        new InvitationReceivedEvent(this));
+            }
         }
     }
 
@@ -91,6 +147,11 @@ public class ReceivedInvitationsModel {
         return null;
     }
 
+    /**
+     * Value model with integer count of received invitations.
+     *
+     * @return
+     */
     public ValueModel getReceivedInvitationsCountVM() {
         return receivedInvitationsCountVM;
     }

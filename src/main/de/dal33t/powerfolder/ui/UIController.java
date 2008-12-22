@@ -688,54 +688,6 @@ public class UIController extends PFComponent {
         folderRepositoryModel.syncFolder(folderInfo);
     }
 
-    /**
-     * Process a received invitation.
-     *
-     * @param invitation
-     * @param sendIfJoined
-     *                  send invite if joined. Also do NOW, not via home model.
-     */
-    public void invitationReceived(final Invitation invitation,
-                                   boolean sendIfJoined) {
-
-        final FolderRepository repository = getController().getFolderRepository();
-
-        if (sendIfJoined) {
-
-            if (!getController().isUIOpen()) {
-                return;
-            }
-
-            Runnable worker = new Runnable() {
-                public void run() {
-                    if (repository.hasJoinedFolder(invitation.folder)) {
-                        PFWizard.openSendInvitationWizard(getController(),
-                                invitation.folder);
-                    } else {
-                        PFWizard.openInvitationReceivedWizard(getController(),
-                                invitation);
-                    }
-                }
-            };
-
-            // Invoke later
-            SwingUtilities.invokeLater(worker);
-
-            return;
-        }
-
-        // Normal - add to invitation model and distribute notification.
-        if (!repository.hasJoinedFolder(invitation.folder)) {
-            applicationModel.getReceivedInvitationModel()
-                    .addInvitation(invitation);
-        }
-    }
-
-    public void addAskForFriendship(AskForFriendshipEvent event) {
-        applicationModel.getReceivedAskedForFriendshipModel()
-                    .addAskForFriendshipEvent(event);
-    }
-
     private class UpdateSystrayTask extends TimerTask {
         public void run() {
             StringBuilder tooltip = new StringBuilder();

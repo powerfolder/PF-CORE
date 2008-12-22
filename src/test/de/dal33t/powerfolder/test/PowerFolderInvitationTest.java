@@ -25,8 +25,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.disk.FolderSettings;
-import de.dal33t.powerfolder.event.InvitationReceivedEvent;
-import de.dal33t.powerfolder.event.InvitationReceivedListener;
+import de.dal33t.powerfolder.event.InvitationHandler;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.util.IdGenerator;
@@ -44,25 +43,21 @@ public class PowerFolderInvitationTest extends TwoControllerTestCase {
         super.setUp();
         connectBartAndLisa();
         // implement a replacement for the UI
-        getContollerBart().getFolderRepository().setInvitationReceivedHandler(
-            new InvitationReceivedListener() {
+        getContollerBart().addInvitationHandler(
+            new InvitationHandler() {
 
-                public void invitationReceived(
-                    InvitationReceivedEvent invitationRecievedEvent)
-                {
-                    File dir = new File(invitationRecievedEvent
-                        .getFolderRepository().getFoldersBasedir()
+                public void gotInvitation(Invitation invitation,
+                                          boolean sendIfJoined) {
+                    File dir = new File(getContollerBart().getFolderRepository()
+                            .getFoldersBasedir()
                         + System.getProperty("file.separator")
                         + Util
-                            .removeInvalidFilenameChars(invitationRecievedEvent
-                                .getInvitation().folder.name));
+                            .removeInvalidFilenameChars(invitation.folder.name));
                     try {
                         FolderSettings folderSettings = new FolderSettings(dir,
                             SyncProfile.HOST_FILES, false, true);
-                        invitationRecievedEvent.getFolderRepository()
-                            .createFolder(
-                                invitationRecievedEvent.getInvitation().folder,
-                                folderSettings);
+                        getContollerBart().getFolderRepository()
+                            .createFolder(invitation.folder, folderSettings);
                     } catch (Exception e) {
                         e.printStackTrace();
                         fail("-----------test failed ------------"
@@ -90,8 +85,7 @@ public class PowerFolderInvitationTest extends TwoControllerTestCase {
         InvitationUtil.save(invitation, inviteFile);
 
         Invitation inviteAtBart = InvitationUtil.load(inviteFile);
-        getContollerBart().getFolderRepository().invitationReceived(
-            inviteAtBart, true);
+        getContollerBart().invitationReceived(inviteAtBart, true);
         Thread.sleep(1000);
 
         // controller bart should now have one folder

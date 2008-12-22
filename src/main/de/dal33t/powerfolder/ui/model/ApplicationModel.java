@@ -67,7 +67,7 @@ public class ApplicationModel extends PFUIComponent {
         transferManagerModel.initialize();
         serverClientModel = new ServerClientModel(getController(),
             getController().getOSClient());
-        receivedInvitationsModel = new ReceivedInvitationsModel();
+        receivedInvitationsModel = new ReceivedInvitationsModel(getController());
         receivedAskedForFriendshipModel =
                 new ReceivedAskedForFriendshipModel(getController());
     }

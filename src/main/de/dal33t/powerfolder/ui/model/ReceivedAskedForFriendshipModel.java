@@ -22,6 +22,7 @@ package de.dal33t.powerfolder.ui.model;
 import de.dal33t.powerfolder.event.AskForFriendshipReceivedListener;
 import de.dal33t.powerfolder.event.AskForFriendshipReceivedEvent;
 import de.dal33t.powerfolder.event.AskForFriendshipEvent;
+import de.dal33t.powerfolder.event.AskForFriendshipListener;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.Controller;
@@ -39,7 +40,7 @@ import com.jgoodies.binding.value.ValueHolder;
  * Listeners can be added to be notified of changes to the number of notifications
  * in the model.
  */
-public class ReceivedAskedForFriendshipModel extends PFComponent {
+public class ReceivedAskedForFriendshipModel extends PFComponent implements AskForFriendshipListener {
 
     private final ValueModel receivedAskForFriendshipCountVM = new ValueHolder();
     private List<AskForFriendshipReceivedListener> listeners;
@@ -47,28 +48,45 @@ public class ReceivedAskedForFriendshipModel extends PFComponent {
     private List<AskForFriendshipEvent> addAskForFriendshipEvents =
             new CopyOnWriteArrayList<AskForFriendshipEvent>();
 
+    /**
+     * Constructor
+     *
+     * @param controller
+     */
     public ReceivedAskedForFriendshipModel(Controller controller) {
         super(controller);
         receivedAskForFriendshipCountVM.setValue(0);
         listeners = new CopyOnWriteArrayList<AskForFriendshipReceivedListener>();
+        controller.addAskForFriendshipListener(this);
     }
 
+    /**
+     * Add a listener
+     *
+     * @param l
+     */
     public void addListener(AskForFriendshipReceivedListener l) {
         listeners.add(l);
     }
 
+    /**
+     * Remove a listener
+     *
+     * @param l
+     */
     public void removeListener(AskForFriendshipReceivedListener l) {
         listeners.remove(l);
     }
 
     /**
-     * Add an notification to the model.
+     * Ask for friendship event.
      *
-     * @param addFriendNotification
+     * @param event
      */
-    public void addAskForFriendshipEvent(AskForFriendshipEvent event) {
+    public void askForFriendship(AskForFriendshipEvent event) {
 
-        Member node = getController().getNodeManager().getNode(event.getMemberInfo());
+        Member node = getController().getNodeManager()
+                .getNode(event.getMemberInfo());
         if (node == null) {
             // Ignore friendship request from unknown node.
             return;
@@ -120,6 +138,11 @@ public class ReceivedAskedForFriendshipModel extends PFComponent {
         return null;
     }
 
+    /**
+     * Value model with integer count of received friendship requests.
+     *
+     * @return
+     */
     public ValueModel getReceivedAskForFriendshipCountVM() {
         return receivedAskForFriendshipCountVM;
     }

@@ -503,7 +503,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             }
             throw new InvalidIdentityException(this
                 + " Remote peer has wrong identity. remote ID: " + identityId
-                + ", our ID: " + this.getId(), newPeer);
+                + ", our ID: " + getId(), newPeer);
         }
 
         // Complete low-level handshake
@@ -761,7 +761,7 @@ public class Member extends PFComponent implements Comparable<Member> {
         if (!thisHandshakeCompleted) {
             if (isFiner()) {
                 logFiner("not handshaked: connected? " + isConnected()
-                    + ", acceptByCH? " + acceptByConnectionHandler
+                    + ", acceptByCH?a " + acceptByConnectionHandler
                     + ", interesting? " + isInteresting() + ", peer " + peer);
             }
             shutdown();
@@ -1401,8 +1401,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                 // To ensure invitor is correct
                 invitation.setInvitor(getInfo());
 
-                getController().getUIController().invitationReceived(
-                    invitation, false);
+                getController().invitationReceived(invitation, false);
                 expectedTime = 100;
 
             } else if (message instanceof Problem) {
@@ -1460,7 +1459,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                 AskForFriendshipEvent event = new AskForFriendshipEvent(
                         notification.getMemberInfo(),
                         notification.getPersonalMessage());
-                getController().getUIController().addAskForFriendship(event);
+                getController().addAskForFriendship(event);
                 expectedTime = 50;
 
             } else if (message instanceof RequestPart) {
@@ -1724,7 +1723,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                 if (!isFriend()) {
                     AskForFriendshipEvent event = new AskForFriendshipEvent(
                             getInfo(), joinedFolders);
-                    getController().getUIController().addAskForFriendship(event);
+                    getController().addAskForFriendship(event);
                 }
             }
         } finally {

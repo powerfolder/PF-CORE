@@ -194,7 +194,7 @@ public class ConnectNodesTest extends FiveControllerTestCase {
         getContollerLisa().setNetworkingMode(NetworkingMode.PRIVATEMODE);
         getContollerMarge().setNetworkingMode(NetworkingMode.PRIVATEMODE);
         final MyAskForFriendshipListener handlerAtMarge = new MyAskForFriendshipListener();
-        getContollerMarge().getNodeManager().setAskForFriendshipHandler(
+        getContollerMarge().addAskForFriendshipListener(
             handlerAtMarge);
         assertFalse(handlerAtMarge.hasBeenAsked);
 

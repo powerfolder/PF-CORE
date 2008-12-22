@@ -146,12 +146,12 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
      */
     public static boolean sendCommand(String command) {
         try {
-            log.log(Level.SEVERE, "Sending remote command '" + command + "'") ;
+            log.log(Level.SEVERE, "Sending remote command '" + command + '\'') ;
             Socket socket = new Socket("127.0.0.1", 1338);
             PrintWriter writer = new PrintWriter(new OutputStreamWriter(socket
                 .getOutputStream(), ENCODING));
 
-            writer.println(REMOTECOMMAND_PREFIX + ";" + command);
+            writer.println(REMOTECOMMAND_PREFIX + ';' + command);
             writer.flush();
             writer.close();
             socket.close();
@@ -247,7 +247,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
             log.severe("Received a empty remote command");
             return;
         }
-        log.fine("Received remote command: '" + command + "'");
+        log.fine("Received remote command: '" + command + '\'');
         if (QUIT.equalsIgnoreCase(command)) {
             getController().exit(0);
         } else if (command.startsWith(OPEN)) {
@@ -348,8 +348,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
             // Load invitation file
             Invitation invitation = InvitationUtil.load(file);
             if (invitation != null) {
-                getController().getUIController().invitationReceived(
-                    invitation, true);
+                getController().invitationReceived(invitation, true);
             }
         } else if (file.getName().endsWith(".nodes")) {
             // Load nodes file

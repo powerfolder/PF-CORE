@@ -24,8 +24,7 @@ import org.jmock.Mockery;
 
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.SyncProfile;
-import de.dal33t.powerfolder.event.InvitationReceivedEvent;
-import de.dal33t.powerfolder.event.InvitationReceivedListener;
+import de.dal33t.powerfolder.event.InvitationHandler;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.util.InvitationUtil;
@@ -92,16 +91,16 @@ public class PersistentTaskManagerTestCase extends TwoControllerTestCase {
         assertEquals(1, getContollerBart().getTaskManager().activeTaskCount());
 
         Mockery mock = new Mockery();
-        final InvitationReceivedListener listener = mock
-            .mock(InvitationReceivedListener.class);
+        final InvitationHandler handler = mock
+            .mock(InvitationHandler.class);
         mock.checking(new Expectations() {
             {
-                one(listener).invitationReceived(
-                    with(any(InvitationReceivedEvent.class)));
+                one(handler).gotInvitation(
+                    with(any(Invitation.class)),
+                    with(any(Boolean.class)));
             }
         });
-        getContollerLisa().getFolderRepository().setInvitationReceivedHandler(
-                listener);
+        getContollerLisa().addInvitationHandler(handler);
         connectBartAndLisa();
         TestHelper.waitForCondition(30, new Condition() {
             public boolean reached() {

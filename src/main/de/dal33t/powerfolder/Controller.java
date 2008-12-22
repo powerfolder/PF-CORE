@@ -45,6 +45,7 @@ import java.util.TimerTask;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -58,6 +59,7 @@ import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.RecycleBin;
 import de.dal33t.powerfolder.message.SettingsChange;
+import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.net.BroadcastMananger;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.net.ConnectionHandler;
@@ -88,6 +90,9 @@ import de.dal33t.powerfolder.util.task.PersistentTaskManager;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
 import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker;
+import de.dal33t.powerfolder.event.AskForFriendshipEvent;
+import de.dal33t.powerfolder.event.AskForFriendshipListener;
+import de.dal33t.powerfolder.event.InvitationHandler;
 
 /**
  * Central class gives access to all core components in PowerFolder. Make sure
@@ -195,6 +200,9 @@ public class Controller extends PFComponent {
      */
     private List<ConnectionListener> additionalConnectionListeners;
 
+    private final List<AskForFriendshipListener> askForFriendshipListeners;
+    private final List<InvitationHandler> invitationHandlers;
+
     /** The BroadcastManager send "broadcasts" on the LAN so we can */
     private BroadcastMananger broadcastManager;
 
@@ -272,6 +280,8 @@ public class Controller extends PFComponent {
         System.setProperty("sun.net.inetaddr.ttl", "0");
         System.setProperty("com.apple.mrj.application.apple.menu.about.name",
             "PowerFolder");
+        askForFriendshipListeners = new CopyOnWriteArrayList<AskForFriendshipListener>();
+        invitationHandlers = new CopyOnWriteArrayList<InvitationHandler>();
     }
 
     /**
@@ -526,6 +536,42 @@ public class Controller extends PFComponent {
 
         // Setup our background working tasks
         setupPeriodicalTasks();
+    }
+
+    /**
+     * Add ask for friend listener.
+     *
+     * @param l
+     */
+    public void addAskForFriendshipListener(AskForFriendshipListener l) {
+        askForFriendshipListeners.add(l);
+    }
+
+    /**
+     * Remove ask for friend listener.
+     *
+     * @param l
+     */
+    public void removeAskForFriendshipListener(AskForFriendshipListener l) {
+        askForFriendshipListeners.remove(l);
+    }
+
+    /**
+     * Add invitation listener.
+     *
+     * @param l
+     */
+    public void addInvitationHandler(InvitationHandler l) {
+        invitationHandlers.add(l);
+    }
+
+    /**
+     * Remove invitation listener.
+     *
+     * @param l
+     */
+    public void removeInvitationHandler(InvitationHandler l) {
+        invitationHandlers.remove(l);
     }
 
     private void setupProPlugins() {
@@ -1875,5 +1921,28 @@ public class Controller extends PFComponent {
 
     public String toString() {
         return "Controller '" + getMySelf() + '\'';
+    }
+
+    /**
+     * Distribute ask for friendship events.
+     *
+     * @param event
+     */
+    public void addAskForFriendship(AskForFriendshipEvent event) {
+        for (AskForFriendshipListener listener : askForFriendshipListeners) {
+            listener.askForFriendship(event);
+        }
+    }
+
+    /**
+     * Distribute invitations.
+     *
+     * @param invitation
+     * @param sendIfJoined
+     */
+    public void invitationReceived(Invitation invitation, boolean sendIfJoined) {
+        for (InvitationHandler handler : invitationHandlers) {
+            handler.gotInvitation(invitation, sendIfJoined);
+        }
     }
 }
