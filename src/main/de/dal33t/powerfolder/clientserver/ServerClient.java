@@ -123,6 +123,11 @@ public class ServerClient extends PFComponent {
 
         this.allowServerChange = allowServerChange;
         this.updateConfig = updateConfig;
+        this.webURL = !StringUtils.isBlank(webURL) ? webURL : null;
+        if (this.webURL == null) {
+            // Fallback to default
+            this.webURL = Constants.ONLINE_STORAGE_URL;
+        }
 
         if (StringUtils.isBlank(host) && StringUtils.isBlank(nodeId)) {
             // Nothing set, initialize with defaults
@@ -136,7 +141,6 @@ public class ServerClient extends PFComponent {
         }
 
         // Custom server
-        this.webURL = !StringUtils.isBlank(webURL) ? webURL : null;
         String theName = !StringUtils.isBlank(name) ? name : Translation
             .getTranslation("online_storage.connecting");
         boolean temporaryNode = StringUtils.isBlank(nodeId);
