@@ -68,18 +68,23 @@ public class ConnectionHandlerFactory extends PFComponent {
     public ConnectionHandler tryToConnect(MemberInfo remoteNode)
         throws ConnectionException
     {
-        try {
-            return tryToConnectSocket(remoteNode.getConnectAddress());
-        } catch (ConnectionException e) {
-            logFiner("ConnectionException", e);
-        }
+        boolean nullIP = remoteNode.getConnectAddress() == null
+            || NetworkUtil
+                .isNullIP(remoteNode.getConnectAddress().getAddress());
 
+        if (!nullIP) {
+            try {
+                return tryToConnectSocket(remoteNode.getConnectAddress());
+            } catch (ConnectionException e) {
+                logFiner(e);
+            }
+        }
         try {
-            if (useUDTConnections() && !isOnLAN(remoteNode)) {
+            if (useUDTConnections() && !isOnLAN(remoteNode) && !nullIP) {
                 return tryToConnectUDTSocket(remoteNode);
             }
         } catch (ConnectionException e) {
-            logFiner("ConnectionException", e);
+            logFiner(e);
         }
 
         try {
@@ -87,7 +92,7 @@ public class ConnectionHandlerFactory extends PFComponent {
                 return tryToConnectRelayed(remoteNode);
             }
         } catch (ConnectionException e) {
-            logFiner("ConnectionException", e);
+            logFiner(e);
         }
         throw new ConnectionException("No further connection alternatives.");
     }

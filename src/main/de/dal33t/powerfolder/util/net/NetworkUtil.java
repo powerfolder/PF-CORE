@@ -19,8 +19,6 @@
 */
 package de.dal33t.powerfolder.util.net;
 
-import de.dal33t.powerfolder.util.Reject;
-
 import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.InetAddress;
@@ -28,10 +26,13 @@ import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
 import java.net.Socket;
 import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
+
+import de.dal33t.powerfolder.util.Reject;
 
 
 /**
@@ -52,6 +53,17 @@ public class NetworkUtil {
 
     private static long LAST_CHACHE_UPDATE = 0;
     private static Map<InetAddress, NetworkInterface> LOCAL_NETWORK_ADDRESSES_CACHE;
+    
+    private static InetAddress NULL_IP;
+    static {
+        try {
+            NULL_IP = InetAddress.getByAddress("0.0.0.0",
+                new byte[]{0, 0, 0, 0});
+        } catch (UnknownHostException e) {
+            NULL_IP = null;
+            e.printStackTrace();
+        }
+    }
 
     private NetworkUtil() {
         // No instance allowed
@@ -185,5 +197,24 @@ public class NetworkUtil {
     public static final boolean isUDTSupported() {
         return UDTSocket.isSupported();
     }
-
+    
+    /**
+     * @param address
+     * @return true if the address is 0.0.0.0
+     */
+    public static final boolean isNullIP(InetAddress address) {
+        Reject.ifNull(address, "Address is null");
+        boolean nullIP = false;
+        if (NULL_IP != null) {
+            // Using advanced check
+            nullIP = Boolean.valueOf(NULL_IP.equals(address));
+        } else {
+            // Fallback, this works
+            byte[] addr = address.getAddress();
+            nullIP = Boolean.valueOf((addr[0] & 0xff) == 0
+                && (addr[1] & 0xff) == 0 && (addr[2] & 0xff) == 0
+                && (addr[3] & 0xff) == 0);
+        }
+        return nullIP;
+    }
 }

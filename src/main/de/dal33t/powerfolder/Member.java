@@ -597,9 +597,10 @@ public class Member extends PFComponent implements Comparable<Member> {
         if (isConnected()) {
             return true;
         }
-        if (info.getConnectAddress() == null) {
-            return false;
-        }
+        // #1334
+        // if (info.getConnectAddress() == null) {
+        // return false;
+        // }
         if (isFine()) {
             logFine("Reconnecting (tried " + connectionRetries + " time(s) to "
                 + this + ")");
@@ -609,11 +610,12 @@ public class Member extends PFComponent implements Comparable<Member> {
         boolean successful = false;
         ConnectionHandler handler = null;
         try {
-            if (info.getConnectAddress().getPort() <= 0) {
-                logWarning(this + " has illegal connect port "
-                    + info.getConnectAddress().getPort());
-                return false;
-            }
+            // #1334
+            // if (info.getConnectAddress().getPort() <= 0) {
+            // logWarning(this + " has illegal connect port "
+            // + info.getConnectAddress().getPort());
+            // return false;
+            // }
 
             // Set reconnecting state
             currentReconTries++;

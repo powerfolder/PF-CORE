@@ -22,15 +22,14 @@ package de.dal33t.powerfolder.light;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
 import java.util.Date;
 
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.net.NetworkUtil;
 
 /**
  * Member information class. contains all important informations about a member
@@ -40,18 +39,6 @@ import de.dal33t.powerfolder.util.Util;
  */
 public class MemberInfo implements Serializable {
     private static final long serialVersionUID = 100L;
-    // The IP only build from 0s
-    // private static final String NULL_IP = "0.0.0.0";
-    private static InetAddress NULL_IP;
-    static {
-        try {
-            NULL_IP = InetAddress.getByAddress("0.0.0.0",
-                new byte[]{0, 0, 0, 0});
-        } catch (UnknownHostException e) {
-            NULL_IP = null;
-            e.printStackTrace();
-        }
-    }
     
     public static final String PROPERTYNAME_NICK = "nick";
     public static final String PROPERTYNAME_ID = "id";
@@ -150,9 +137,10 @@ public class MemberInfo implements Serializable {
             return false;
         }
         // Check for valid address
-        if (connectAddress == null || connectAddress.getAddress() == null) {
-            return true;
-        }
+        // #1334
+        // if (connectAddress == null || connectAddress.getAddress() == null) {
+        // return true;
+        // }
         // Check for timeout
         if (lastConnectTime == null) {
             return true;
@@ -169,18 +157,27 @@ public class MemberInfo implements Serializable {
             return true;
         }
 
+        return false;
+        // #1334
+//        if (hasNullIP == null) {
+//            if (NULL_IP != null) {
+//                // Using advanced check
+//                hasNullIP = Boolean.valueOf(NULL_IP.equals(connectAddress
+//                    .getAddress()));
+//            } else {
+//                // Fallback, this works
+//                byte[] addr = connectAddress.getAddress().getAddress();
+//                hasNullIP = Boolean.valueOf((addr[0] & 0xff) == 0
+//                    && (addr[1] & 0xff) == 0 && (addr[2] & 0xff) == 0
+//                    && (addr[3] & 0xff) == 0);
+//            }
+//        }
+//        return hasNullIP.booleanValue();
+    }
+    
+    public boolean hasNullIP() {
         if (hasNullIP == null) {
-            if (NULL_IP != null) {
-                // Using advanced check
-                hasNullIP = Boolean.valueOf(NULL_IP.equals(connectAddress
-                    .getAddress()));
-            } else {
-                // Fallback, this works
-                byte[] addr = connectAddress.getAddress().getAddress();
-                hasNullIP = Boolean.valueOf((addr[0] & 0xff) == 0
-                    && (addr[1] & 0xff) == 0 && (addr[2] & 0xff) == 0
-                    && (addr[3] & 0xff) == 0);
-            }
+            hasNullIP = NetworkUtil.isNullIP(connectAddress.getAddress());
         }
         return hasNullIP.booleanValue();
     }
