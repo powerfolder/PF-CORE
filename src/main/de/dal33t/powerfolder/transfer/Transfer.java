@@ -52,6 +52,11 @@ public abstract class Transfer extends Loggable implements Serializable {
     private Date initTime;
     private long startOffset;
     private TransferCounter counter;
+    
+    /**
+     * Lock to set the started time.
+     */
+    private Object startLock = new Object();
 
     // Details of the latest transfer problem.
     private TransferProblem transferProblem;
@@ -229,13 +234,21 @@ public abstract class Transfer extends Loggable implements Serializable {
      * Sets this transfer as started
      */
     protected void setStarted() {
-        if (startTime != null) {
-            throw new IllegalStateException("Transfer already started");
+        boolean wasStarted;
+        synchronized (startLock) {
+            wasStarted = isStarted();
+            if (!wasStarted) {
+                // Start now
+                startTime = new Date();
+            } else {
+                logWarning("Got already started transfer",
+                    new RuntimeException("from here"));
+            }
         }
-        startTime = new Date();
-
-        // Inform transfer manager
-        getTransferManager().setStarted(this);
+        // Inform transfer manager only ONCE
+        if (!wasStarted) {
+            getTransferManager().setStarted(this);
+        }
     }
 
     protected TransferManager getTransferManager() {
