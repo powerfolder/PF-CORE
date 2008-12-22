@@ -1,25 +1,20 @@
-PowerFolder Version 3.1.3 - http://www.powerfolder.com
+PowerFolder Version 3.1.5 - http://www.powerfolder.com
 
 Enhancements:
- * Passwords get now encrypted stored if "Remind password" is checked.
- * The Activation wizard not longer pops up every 5 seconds.
- * Several other minor improvements.
+ * Less memory use. Better user interface responsiveness
+ * Possibility to setup of HTTP-Proxy for all HTTP based contact
+   (e.g. activation or check for program updates)
+ * Several preparation for the PowerFolder server beta release:
+ * Setup of the server connection
+ * New networking mode: Server only
+ * Disallow removal of encrypted transfers plugin
+ * Disconnect/Connect messages not longer shown in chat unless running in debug mode. 
 
 Bugfixes:
- * Fixes incomplete sync/transfer errors in some rare cases.
- * Fixed Webinterface folder join functionality.
- * Mac/Linux: Unmounted devices not get correctly detected.
- * Several other minor bugfixs.
- 
-Other changes:
- * Added check for fair use policy during trial period:
+ * Wrong warning about non-writable directories in setup are now gone
+ * Removed a small memory leak
+ * Dyndns now get validated only once when OK is clicked in preferences
 
-During the 30 days trial period PowerFolder Pro limits the total amount of
-managed data to a fair use of 10 GB and 3 managed PowerFolders
-(The number sub-directories is not limited).
-
-The full version of PowerFolder Pro does not limit the total amount of managed
-data or the number of managed PowerFolders.
 
 Please give us feedback and request improvements at our forum:
 http://forums.powerfolder.com
@@ -54,6 +49,31 @@ External libraries used:
 
 
 History:
+
+Version 3.1.3
+-------------
+
+Enhancements:
+ * Passwords get now encrypted stored if "Remind password" is checked.
+ * The Activation wizard not longer pops up every 5 seconds.
+ * Several other minor improvements.
+
+Bugfixes:
+ * Fixes incomplete sync/transfer errors in some rare cases.
+ * Fixed Webinterface folder join functionality.
+ * Mac/Linux: Unmounted devices not get correctly detected.
+ * Several other minor bugfixs.
+ 
+Other changes:
+ * Added check for fair use policy during trial period:
+
+During the 30 days trial period PowerFolder Pro limits the total amount of
+managed data to a fair use of 10 GB and 3 managed PowerFolders
+(The number sub-directories is not limited).
+
+The full version of PowerFolder Pro does not limit the total amount of managed
+data or the number of managed PowerFolders.
+
 
 Version 3.1.2
 -------------
