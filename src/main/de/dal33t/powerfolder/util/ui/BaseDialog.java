@@ -19,17 +19,12 @@
  */
 package de.dal33t.powerfolder.util.ui;
 
-import java.awt.Component;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 
-import javax.swing.Icon;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.KeyStroke;
+import javax.swing.*;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
@@ -178,7 +173,14 @@ public abstract class BaseDialog extends PFUIComponent {
      * Shows (and builds) the dialog
      */
     public final void open() {
-        getUIComponent().setVisible(true);
+        JFrame frame = getUIController().getMainFrame().getUIComponent();
+        Cursor c = frame.getCursor();
+        try {
+            frame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            getUIComponent().setVisible(true);
+        } finally {
+            frame.setCursor(c);
+        }
     }
 
     /**

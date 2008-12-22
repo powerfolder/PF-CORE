@@ -63,8 +63,6 @@ public enum PreferencesEntry {
 
     CHECK_UPDATE("updatechecker.askfornewreleaseversion", true),
 
-    START_PANEL("start.panel", StartPanel.OVERVIEW.name()),
-
     /**
      * the pref that holds a boolean value if the connection should be tested
      * and a warning displayed if limited connectivty is given.

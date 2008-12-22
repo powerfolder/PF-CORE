@@ -58,7 +58,7 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
     private LineSpeedSelectionPanel wanSpeed;
     private LineSpeedSelectionPanel lanSpeed;
     private JSlider silentModeThrottle;
-    private boolean needsRestart = false;
+    private boolean needsRestart;
     private JLabel silentThrottleLabel;
     private JButton httpProxyButton;
     private ServerSelectorPanel severSelector;
@@ -88,9 +88,9 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
     private void initComponents() {
         String[] options = new String[NetworkingMode.values().length];
         options[NetworkingMode.PRIVATEMODE.ordinal()] = Translation
-            .getTranslation("preferences.dialog.networkmode.private");
+            .getTranslation("preferences.dialog.network_mode.private");
         options[NetworkingMode.LANONLYMODE.ordinal()] = Translation
-            .getTranslation("preferences.dialog.networkmode.lanonly");
+            .getTranslation("preferences.dialog.network_mode.lanonly");
         options[NetworkingMode.SERVERONLYMODE.ordinal()] = Translation
             .getTranslation("preferences.dialog.networkmode.serveronly");
         networkingMode = new JComboBox(options);
@@ -134,9 +134,9 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
             .getAllowedDownloadCPSForLAN() / 1024);
 
         silentThrottleLabel = new JLabel(Translation
-            .getTranslation("preferences.dialog.silentthrottle"));
+            .getTranslation("preferences.dialog.silent_throttle"));
         silentThrottleLabel.setToolTipText(Translation
-            .getTranslation("preferences.dialog.silentthrottle.tooltip"));
+            .getTranslation("preferences.dialog.silent_throttle.tooltip"));
 
         silentModeThrottle = new JSlider();
         silentModeThrottle.setMinimum(10);
@@ -148,7 +148,7 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         Dictionary<Integer, JLabel> smtT = new Hashtable<Integer, JLabel>();
         for (int i = 0; i <= 100; i += silentModeThrottle.getMajorTickSpacing())
         {
-            smtT.put(i, new JLabel(Integer.toString(i) + "%"));
+            smtT.put(i, new JLabel(Integer.toString(i) + '%'));
         }
         smtT.put(silentModeThrottle.getMinimum(), new JLabel(silentModeThrottle
             .getMinimum()
@@ -208,7 +208,7 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
 
             int row = 1;
             builder.addLabel(Translation
-                .getTranslation("preferences.dialog.networkmode.name"), cc.xy(
+                .getTranslation("preferences.dialog.network_mode.name"), cc.xy(
                 1, row));
             builder.add(networkingMode, cc.xywh(3, row, 7, 1));
 
@@ -223,7 +223,7 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
 
             row += 2;
             builder.addLabel(Translation
-                .getTranslation("preferences.dialog.linesettings"), cc.xy(1,
+                .getTranslation("preferences.dialog.line_settings"), cc.xy(1,
                 row));
             builder.add(wanSpeed, cc.xywh(3, row, 7, 1));
 
@@ -278,13 +278,13 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         needsRestart = !Util.equals(oldServer, newServer);
     }
 
-    private String getTooltip(NetworkingMode nm) {
+    private static String getTooltip(NetworkingMode nm) {
         if (nm.equals(NetworkingMode.LANONLYMODE)) {
             return Translation
-                .getTranslation("preferences.dialog.networkmode.lanonly.tooltip");
+                .getTranslation("preferences.dialog.network_mode.lanonly.tooltip");
         } else if (nm.equals(NetworkingMode.PRIVATEMODE)) {
             return Translation
-                .getTranslation("preferences.dialog.networkmode.private.tooltip");
+                .getTranslation("preferences.dialog.network_mode.private.tooltip");
         } else if (nm.equals(NetworkingMode.SERVERONLYMODE)) {
             return Translation
                 .getTranslation("preferences.dialog.networkmode.serveronly.tooltip");
