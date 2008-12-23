@@ -19,8 +19,8 @@
 */
 package de.dal33t.powerfolder.ui.information.folder.files.table;
 
-import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.DefaultFormBuilder;
+import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
@@ -28,6 +28,7 @@ import de.dal33t.powerfolder.DiskItem;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.ui.UIUtil;
+import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.information.HasDetailsPanel;
@@ -49,6 +50,8 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.File;
+import java.io.IOException;
 
 public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         TreeSelectionListener, DirectoryFilterListener {
@@ -57,6 +60,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
     private FileDetailsPanel fileDetailsPanel;
     private FilesTableModel tableModel;
     private FilesTable table;
+    private OpenFileAction openFileAction;
 
     public FilesTablePanel(Controller controller) {
         super(controller);
@@ -106,9 +110,15 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
      * @return the toolbar
      */
     private JPanel createToolBar() {
-        ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
-        bar.addGridded(new JToggleButton(new DetailsAction(getController())));
-        return bar.getPanel();
+        FormLayout layout = new FormLayout("pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, pref:grow",
+            "pref");
+        PanelBuilder builder = new PanelBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+        openFileAction = new OpenFileAction();
+        openFileAction.setEnabled(false);
+        builder.add(new JButton(openFileAction), cc.xy(1, 1));
+        builder.add(new JToggleButton(new DetailsAction(getController())), cc.xy(3, 1));
+        return builder.getPanel();
     }
 
     /**
@@ -160,9 +170,40 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         tableModel.setFolder(folder);
     }
 
+    public void openSelectedFile() {
+        if (table == null || tableModel == null) {
+            return;
+        }
+        int[] rows = table.getSelectedRows();
+        boolean singleRowSelected = rows.length == 1;
+        if (singleRowSelected) {
+            FileInfo download = tableModel.getFileInfoAtRow(rows[0]);
+            File file = download.getDiskFile(
+                    getController().getFolderRepository());
+            if (file != null && file.exists()) {
+                try {
+                    FileUtils.openFile(file);
+                } catch (IOException ex) {
+                    logSevere(ex);
+                }
+            }
+        }
+    }
+
     ///////////////////
     // Inner Classes //
     ///////////////////
+
+    private class OpenFileAction extends BaseAction {
+        OpenFileAction() {
+            super("action_open_file",
+                    FilesTablePanel.this.getController());
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            openSelectedFile();
+        }
+    }
 
     private class DetailsAction extends BaseAction {
 
@@ -184,9 +225,11 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
                 if (diskItem instanceof FileInfo) {
                     FileInfo fi = (FileInfo) diskItem;
                     fileDetailsPanel.setFileInfo(fi);
+                    openFileAction.setEnabled(true);
                     return;
                 }
             }
+            openFileAction.setEnabled(false);
             fileDetailsPanel.setFileInfo(null);
         }
     }
@@ -216,5 +259,4 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
             }
         }
     }
-
 }

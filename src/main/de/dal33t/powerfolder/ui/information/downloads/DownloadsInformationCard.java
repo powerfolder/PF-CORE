@@ -119,7 +119,7 @@ public class DownloadsInformationCard extends InformationCard
     private void buildToolbar() {
 
         abortDownloadsAction = new AbortDownloadAction();
-        openDownloadAction = new OpenDownloadAction();
+        openDownloadAction = new OpenFileAction();
 
         clearCompletedDownloadsAction = new ClearCompletedDownloadsAction(getController());
 
@@ -200,9 +200,9 @@ public class DownloadsInformationCard extends InformationCard
     // Inner Classes //
     ///////////////////
 
-    private class OpenDownloadAction extends BaseAction {
-        OpenDownloadAction() {
-            super("action_open_download", 
+    private class OpenFileAction extends BaseAction {
+        OpenFileAction() {
+            super("action_open_file",
                     DownloadsInformationCard.this.getController());
         }
 

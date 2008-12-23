@@ -216,13 +216,13 @@ public class FilesTableModel extends PFComponent implements TableModel,
 
     public Class<?> getColumnClass(int columnIndex) {
         switch (columnIndex) {
-            case 0:
+            case COL_FILE_TYPE:
                 return DiskItem.class;
-            case 1:
-            case 2:
-            case 3:
-            case 4:
-            case 5:
+            case COL_NAME:
+            case COL_SIZE:
+            case COL_MEMBER:
+            case COL_MODIFIED_DATE:
+            case COL_AVAILABILITY:
                 return String.class;
             default:
                 throw new IllegalArgumentException("columnIndex too big: "
@@ -244,18 +244,18 @@ public class FilesTableModel extends PFComponent implements TableModel,
 
     public Object getValueAt(int rowIndex, int columnIndex) {
         DiskItem diskItem = diskItems.get(rowIndex);
-        if (columnIndex == 0) {
+        if (columnIndex == COL_FILE_TYPE) {
             return diskItem;
-        } else if (columnIndex == 1) {
+        } else if (columnIndex == COL_NAME) {
             return diskItem.getName();
-        } else if (columnIndex == 2) {
+        } else if (columnIndex == COL_SIZE) {
             return Format.formatBytesShort(diskItem.getSize());
-        } else if (columnIndex == 3) {
+        } else if (columnIndex == COL_MEMBER) {
             return diskItem.getModifiedBy().nick;
-        } else if (columnIndex == 4) {
+        } else if (columnIndex == COL_MODIFIED_DATE) {
             return String.valueOf(diskItem.getModifiedDate() != null ?
                     Format.formatDate(diskItem.getModifiedDate()) : "-");
-        } else if (columnIndex == 5) {
+        } else if (columnIndex == COL_AVAILABILITY) {
             if (diskItem instanceof FileInfo) {
                 FileInfo fileInfo = (FileInfo) diskItem;
                 if (fileInfo.isDeleted()
@@ -274,6 +274,14 @@ public class FilesTableModel extends PFComponent implements TableModel,
             }
         }
         return "";
+    }
+
+    public FileInfo getFileInfoAtRow(int row) {
+        Object at = getValueAt(row, COL_FILE_TYPE);
+        if (at instanceof FileInfo) {
+            return (FileInfo) at;
+        }
+        return null;
     }
 
     public boolean isCellEditable(int rowIndex, int columnIndex) {
