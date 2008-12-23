@@ -24,6 +24,7 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.ui.model.TransferManagerModel;
 import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
@@ -282,6 +283,22 @@ public class DownloadsTablePanel extends PFUIComponent {
             }
         }
     }
+
+    public FileInfo getSelectdFile() {
+        if (table == null || tableModel == null) {
+            return null;
+        }
+        int[] rows = table.getSelectedRows();
+        if (rows.length == 1) {
+            return ((Download) tableModel.getValueAt(rows[0],
+                    DownloadsTableModel.COLPROGRESS)).getFile();
+        }
+        return null;
+    }
+
+    ///////////////////
+    // Inner Classes //
+    ///////////////////
 
     /**
      * Listener on table header, takes care about the sorting of table

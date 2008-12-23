@@ -59,7 +59,7 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
 {
     private static final int COLTYPE = 0;
     private static final int COLFILE = 1;
-    private static final int COLPROGRESS = 2;
+    public static final int COLPROGRESS = 2;
     private static final int COLSIZE = 3;
     private static final int COLFOLDER = 4;
     private static final int COLFROM = 5;
@@ -219,9 +219,172 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
         fireModelChanged();
     }
 
-    // Application logic ******************************************************
+    public int getColumnCount() {
+        return 6;
+    }
 
-    // Listener on TransferManager ********************************************
+    public int getRowCount() {
+        return downloads.size();
+    }
+
+    public String getColumnName(int columnIndex) {
+        switch (columnIndex) {
+            case COLTYPE :
+                return "";
+            case COLFILE :
+                return Translation.getTranslation("general.file");
+            case COLPROGRESS :
+                return Translation.getTranslation("transfers.progress");
+            case COLSIZE :
+                return Translation.getTranslation("general.size");
+            case COLFOLDER :
+                return Translation.getTranslation("general.folder");
+            case COLFROM :
+                return Translation.getTranslation("transfers.from");
+        }
+        return null;
+    }
+
+    public Class<Download> getColumnClass(int columnIndex) {
+        return Download.class;
+    }
+
+    public Object getValueAt(int rowIndex, int columnIndex) {
+        if (rowIndex >= downloads.size()) {
+            logSevere(
+                "Illegal rowIndex requested. rowIndex " + rowIndex
+                    + ", downloads " + downloads.size());
+            return null;
+        }
+        Download download = downloads.get(rowIndex);
+        switch (columnIndex) {
+            case COLTYPE :
+            case COLFILE :
+                return download.getFile();
+            case COLPROGRESS :
+                return download;
+            case COLSIZE :
+                return download.getFile().getSize();
+            case COLFOLDER :
+                return download.getFile().getFolderInfo();
+            case COLFROM :
+                return download.getPartner();
+        }
+        return null;
+    }
+
+    public boolean isCellEditable(int rowIndex, int columnIndex) {
+        return false;
+    }
+
+    public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+        throw new IllegalStateException(
+            "Unable to set value in DownloadTableModel, not editable");
+    }
+
+    public void addTableModelListener(TableModelListener l) {
+        listeners.add(l);
+    }
+
+    public void removeTableModelListener(TableModelListener l) {
+        listeners.remove(l);
+    }
+
+    /**
+     * Tells listeners, that a new row at the end of the table has been added
+     */
+    private void rowAdded() {
+        TableModelEvent e = new TableModelEvent(this, getRowCount(),
+            getRowCount(), TableModelEvent.ALL_COLUMNS, TableModelEvent.INSERT);
+        modelChanged(e);
+    }
+
+    private void rowRemoved(int row) {
+        TableModelEvent e = new TableModelEvent(this, row, row,
+            TableModelEvent.ALL_COLUMNS, TableModelEvent.DELETE);
+        modelChanged(e);
+    }
+
+    private void rowsUpdated(int start, int end) {
+        TableModelEvent e = new TableModelEvent(this, start, end);
+        modelChanged(e);
+    }
+
+    /**
+     * fire change on whole model
+     */
+    private void rowsUpdatedAll() {
+        rowsUpdated(0, downloads.size());
+    }
+
+    /**
+     * Fires an modelevent to all listeners, that model has changed
+     */
+    private void modelChanged(final TableModelEvent e) {
+        // log().verbose("Download tablemodel changed");
+        Runnable runner = new Runnable() {
+            public void run() {
+                synchronized (listeners) {
+                    for (TableModelListener listener : listeners) {
+                        listener.tableChanged(e);
+                    }
+                }
+            }
+        };
+        UIUtil.invokeLaterInEDT(runner);
+    }
+
+    public int getSortColumn() {
+        return sortColumn;
+    }
+
+    public boolean isSortAscending() {
+        return sortAscending;
+    }
+
+    /**
+     * Only some types of problem are relevant for display.
+     * <p>
+     * TODO COPIED to TransferTableCellRenderer
+     *
+     * @param problem
+     *            the transfer problem
+     * @return true if it should be displayed.
+     */
+    private static boolean shouldShowProblem(TransferProblem problem) {
+        return TransferProblem.FILE_NOT_FOUND_EXCEPTION.equals(problem)
+            || TransferProblem.IO_EXCEPTION.equals(problem)
+            || TransferProblem.TEMP_FILE_DELETE.equals(problem)
+            || TransferProblem.TEMP_FILE_OPEN.equals(problem)
+            || TransferProblem.TEMP_FILE_WRITE.equals(problem)
+            || TransferProblem.MD5_ERROR.equals(problem);
+    }
+
+    /**
+     * Removes one download from the model and fires the tablemode event
+     *
+     * @param download
+     */
+    private void removeDownload(Download download) {
+        int index;
+        synchronized (downloads) {
+            index = downloads.indexOf(download);
+            if (index >= 0) {
+                downloads.remove(index);
+            } else {
+                logSevere(
+                    "Unable to remove download from tablemodel, not found: "
+                        + download);
+            }
+        }
+        if (index >= 0) {
+            rowRemoved(index);
+        }
+    }
+
+    ///////////////////
+    // Inner Classes //
+    ///////////////////
 
     /**
      * Listener on Transfer manager with new event system
@@ -351,50 +514,6 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
         }
     }
 
-    // Model helper methods ***************************************************
-
-    /**
-     * Removes one download from the model and fires the tablemode event
-     * 
-     * @param download
-     */
-    private void removeDownload(Download download) {
-        int index;
-        synchronized (downloads) {
-            index = downloads.indexOf(download);
-            if (index >= 0) {
-                downloads.remove(index);
-            } else {
-                logSevere(
-                    "Unable to remove download from tablemodel, not found: "
-                        + download);
-            }
-        }
-        if (index >= 0) {
-            rowRemoved(index);
-        }
-    }
-
-    /**
-     * Only some types of problem are relevant for display.
-     * <p>
-     * TODO COPIED to TransferTableCellRenderer
-     * 
-     * @param problem
-     *            the transfer problem
-     * @return true if it should be displayed.
-     */
-    private static boolean shouldShowProblem(TransferProblem problem) {
-        return TransferProblem.FILE_NOT_FOUND_EXCEPTION.equals(problem)
-            || TransferProblem.IO_EXCEPTION.equals(problem)
-            || TransferProblem.TEMP_FILE_DELETE.equals(problem)
-            || TransferProblem.TEMP_FILE_OPEN.equals(problem)
-            || TransferProblem.TEMP_FILE_WRITE.equals(problem)
-            || TransferProblem.MD5_ERROR.equals(problem);
-    }
-
-    // Permanent updater ******************************************************
-
     /**
      * Continously updates the UI
      * 
@@ -423,134 +542,7 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
                 logSevere("Unable to update downloadstable", e);
 
             }
-            // }
         }
     }
 
-    // TableModel interface ***************************************************
-
-    public int getColumnCount() {
-        return 6;
-    }
-
-    public int getRowCount() {
-        return downloads.size();
-    }
-
-    public String getColumnName(int columnIndex) {
-        switch (columnIndex) {
-            case COLTYPE :
-                return "";
-            case COLFILE :
-                return Translation.getTranslation("general.file");
-            case COLPROGRESS :
-                return Translation.getTranslation("transfers.progress");
-            case COLSIZE :
-                return Translation.getTranslation("general.size");
-            case COLFOLDER :
-                return Translation.getTranslation("general.folder");
-            case COLFROM :
-                return Translation.getTranslation("transfers.from");
-        }
-        return null;
-    }
-
-    public Class<Download> getColumnClass(int columnIndex) {
-        return Download.class;
-    }
-
-    public Object getValueAt(int rowIndex, int columnIndex) {
-        if (rowIndex >= downloads.size()) {
-            logSevere(
-                "Illegal rowIndex requested. rowIndex " + rowIndex
-                    + ", downloads " + downloads.size());
-            return null;
-        }
-        Download download = downloads.get(rowIndex);
-        switch (columnIndex) {
-            case COLTYPE :
-            case COLFILE :
-                return download.getFile();
-            case COLPROGRESS :
-                return download;
-            case COLSIZE :
-                return download.getFile().getSize();
-            case COLFOLDER :
-                return download.getFile().getFolderInfo();
-            case COLFROM :
-                return download.getPartner();
-        }
-        return null;
-    }
-
-    public boolean isCellEditable(int rowIndex, int columnIndex) {
-        return false;
-    }
-
-    public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-        throw new IllegalStateException(
-            "Unable to set value in DownloadTableModel, not editable");
-    }
-
-    public void addTableModelListener(TableModelListener l) {
-        listeners.add(l);
-    }
-
-    public void removeTableModelListener(TableModelListener l) {
-        listeners.remove(l);
-    }
-
-    // Helper method **********************************************************
-
-    /**
-     * Tells listeners, that a new row at the end of the table has been added
-     */
-    private void rowAdded() {
-        TableModelEvent e = new TableModelEvent(this, getRowCount(),
-            getRowCount(), TableModelEvent.ALL_COLUMNS, TableModelEvent.INSERT);
-        modelChanged(e);
-    }
-
-    private void rowRemoved(int row) {
-        TableModelEvent e = new TableModelEvent(this, row, row,
-            TableModelEvent.ALL_COLUMNS, TableModelEvent.DELETE);
-        modelChanged(e);
-    }
-
-    private void rowsUpdated(int start, int end) {
-        TableModelEvent e = new TableModelEvent(this, start, end);
-        modelChanged(e);
-    }
-
-    /**
-     * fire change on whole model
-     */
-    private void rowsUpdatedAll() {
-        rowsUpdated(0, downloads.size());
-    }
-
-    /**
-     * Fires an modelevent to all listeners, that model has changed
-     */
-    private void modelChanged(final TableModelEvent e) {
-        // log().verbose("Download tablemodel changed");
-        Runnable runner = new Runnable() {
-            public void run() {
-                synchronized (listeners) {
-                    for (TableModelListener listener : listeners) {
-                        listener.tableChanged(e);
-                    }
-                }
-            }
-        };
-        UIUtil.invokeLaterInEDT(runner);
-    }
-
-    public int getSortColumn() {
-        return sortColumn;
-    }
-
-    public boolean isSortAscending() {
-        return sortAscending;
-    }
 }

@@ -110,7 +110,7 @@ public class DownloadsInformationCard extends InformationCard
         tablePanel.addTableModelListener(new MyTableModelListener());
         tablePanel.addListSelectionListener(new MyListSelectionListener());
         detailsPanel = new FileDetailsPanel(getController());
-        updateActions();
+        update();
     }
 
     /**
@@ -181,9 +181,9 @@ public class DownloadsInformationCard extends InformationCard
     }
 
     /**
-     * Update the clear action enable.
+     * Update actions and details.
      */
-    public void updateActions() {
+    public void update() {
 
         boolean singleCompleteSelected = tablePanel.isSingleCompleteSelected();
         boolean rowsExist = tablePanel.isRowsExist();
@@ -192,6 +192,8 @@ public class DownloadsInformationCard extends InformationCard
         openDownloadAction.setEnabled(singleCompleteSelected);
         abortDownloadsAction.setEnabled(incompleteSelected);
         clearCompletedDownloadsAction.setEnabled(rowsExist);
+
+        detailsPanel.setFileInfo(tablePanel.getSelectdFile());
     }
 
     ///////////////////
@@ -261,7 +263,7 @@ public class DownloadsInformationCard extends InformationCard
      */
     private class MyTableModelListener implements TableModelListener {
         public void tableChanged(TableModelEvent e) {
-            updateActions();
+            update();
         }
     }
 
@@ -271,7 +273,7 @@ public class DownloadsInformationCard extends InformationCard
      */
     private class MyListSelectionListener implements ListSelectionListener {
         public void valueChanged(ListSelectionEvent e) {
-            updateActions();
+            update();
         }
     }
 }
