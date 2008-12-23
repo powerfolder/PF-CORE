@@ -29,7 +29,7 @@ import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.ui.action.BaseAction;
-import de.dal33t.powerfolder.ui.actionold.HasDetailsPanel;
+import de.dal33t.powerfolder.ui.information.HasDetailsPanel;
 import de.dal33t.powerfolder.ui.information.folder.files.DirectoryFilterListener;
 import de.dal33t.powerfolder.ui.information.folder.files.FileDetailsPanel;
 import de.dal33t.powerfolder.ui.information.folder.files.FilteredDirectoryEvent;

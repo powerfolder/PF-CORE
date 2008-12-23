@@ -17,7 +17,7 @@
 *
 * $Id$
 */
-package de.dal33t.powerfolder.ui.actionold;
+package de.dal33t.powerfolder.ui.information;
 
 /**
  * Standard interface for panels that can show/hide a details panel.

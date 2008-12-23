@@ -29,7 +29,7 @@ import de.dal33t.powerfolder.event.TransferAdapter;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.action.BaseAction;
-import de.dal33t.powerfolder.ui.actionold.HasDetailsPanel;
+import de.dal33t.powerfolder.ui.information.HasDetailsPanel;
 import de.dal33t.powerfolder.ui.information.InformationCard;
 import de.dal33t.powerfolder.ui.information.folder.files.FileDetailsPanel;
 import de.dal33t.powerfolder.util.Translation;
