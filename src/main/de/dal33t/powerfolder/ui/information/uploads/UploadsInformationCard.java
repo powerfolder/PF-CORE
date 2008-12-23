@@ -25,8 +25,6 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.event.TransferAdapter;
-import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.information.HasDetailsPanel;
@@ -40,6 +38,10 @@ import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
+import javax.swing.event.TableModelListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.event.ListSelectionEvent;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -104,9 +106,9 @@ public class UploadsInformationCard extends InformationCard
         buildToolbar();
         tablePanel = new UploadsTablePanel(getController());
         detailsPanel = new FileDetailsPanel(getController());
-        getController().getTransferManager().addListener(
-            new MyTransferManagerListener());
-        updateActions();
+        tablePanel.addTableModelListener(new MyTableModelListener());
+        tablePanel.addListSelectionListener(new MyListSelectionListener());
+        update();
     }
 
     /**
@@ -169,12 +171,14 @@ public class UploadsInformationCard extends InformationCard
     }
 
     /**
-     * Update the clear action.
+     * Update the actions and details.
      */
-    public void updateActions() {
+    public void update() {
         clearCompletedUploadsAction.setEnabled(getUIController()
                 .getTransferManagerModel().getUploadsTableModel()
                 .getRowCount() > 0);
+
+        detailsPanel.setFileInfo(tablePanel.getSelectdFile());
     }
 
     /**
@@ -205,37 +209,24 @@ public class UploadsInformationCard extends InformationCard
         }
     }
 
+
     /**
-     * TransferManagerListener to respond to download changes.
+     * Listener to the underlying table model.
+     * Detects changes to row details and updates actions.
      */
-    private class MyTransferManagerListener extends TransferAdapter {
-
-        public void uploadRequested(TransferManagerEvent event) {
-            updateActions();
+    private class MyTableModelListener implements TableModelListener {
+        public void tableChanged(TableModelEvent e) {
+            update();
         }
+    }
 
-        public void uploadStarted(TransferManagerEvent event) {
-            updateActions();
-        }
-
-        public void uploadAborted(TransferManagerEvent event) {
-            updateActions();
-        }
-
-        public void uploadBroken(TransferManagerEvent event) {
-            updateActions();
-        }
-
-        public void uploadCompleted(TransferManagerEvent event) {
-            updateActions();
-        }
-
-        public void completedUploadRemoved(TransferManagerEvent event) {
-            updateActions();
-        }
-
-        public boolean fireInEventDispatchThread() {
-            return true;
+    /**
+     * Listener to the underlying table.
+     * Detects changes to row selections and updates actions.
+     */
+    private class MyListSelectionListener implements ListSelectionListener {
+        public void valueChanged(ListSelectionEvent e) {
+            update();
         }
     }
 

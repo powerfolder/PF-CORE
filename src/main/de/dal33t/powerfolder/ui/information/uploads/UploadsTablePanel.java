@@ -24,6 +24,7 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.transfer.Upload;
 import de.dal33t.powerfolder.ui.model.TransferManagerModel;
 import de.dal33t.powerfolder.util.ui.UIUtil;
@@ -33,6 +34,8 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
@@ -86,6 +89,25 @@ public class UploadsTablePanel extends PFUIComponent {
         UIUtil.whiteStripTable(table);
         UIUtil.setZeroHeight(tablePane);
         UIUtil.removeBorder(tablePane);
+    }
+
+    /**
+     * Add a selection listener to the table.
+     *
+     * @param l
+     */
+    public void addListSelectionListener(ListSelectionListener l) {
+        table.getSelectionModel().addListSelectionListener(l);
+    }
+
+    /**
+     * Add a table model listener to the model.
+     *
+     * @param l
+     */
+    public void addTableModelListener(TableModelListener l) {
+        initialize();
+        tableModel.addTableModelListener(l);
     }
 
     /**
@@ -144,6 +166,18 @@ public class UploadsTablePanel extends PFUIComponent {
         CellConstraints cc = new CellConstraints();
         builder.add(tablePane, cc.xy(1, 1));
         uiComponent = builder.getPanel();
+    }
+
+    public FileInfo getSelectdFile() {
+        if (table == null || tableModel == null) {
+            return null;
+        }
+        int[] rows = table.getSelectedRows();
+        if (rows.length == 1) {
+            return ((Upload) tableModel.getValueAt(rows[0],
+                    UploadsTableModel.COLPROGRESS)).getFile();
+        }
+        return null;
     }
 
     /**
