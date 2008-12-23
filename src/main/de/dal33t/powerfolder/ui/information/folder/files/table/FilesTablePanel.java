@@ -20,7 +20,6 @@
 package de.dal33t.powerfolder.ui.information.folder.files.table;
 
 import com.jgoodies.forms.builder.DefaultFormBuilder;
-import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;

@@ -21,7 +21,7 @@ package de.dal33t.powerfolder.ui.action;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.ui.actionold.ReconnectAction;
+import de.dal33t.powerfolder.ui.action.ReconnectAction;
 
 /**
  * Holder of all simple singleton actions.
