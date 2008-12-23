@@ -22,12 +22,10 @@ package de.dal33t.powerfolder.ui;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Directory;
-import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.transfer.Transfer;
 import de.dal33t.powerfolder.transfer.Upload;
-import de.dal33t.powerfolder.util.Reject;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -108,28 +106,17 @@ public class Icons {
     public static final Icon COMPUTER = getIcon("icons/Computer.png");
 
     // Arrows
-    public static final Icon ARROW_UP = getIcon("icons/ArrowUp.gif");
     public static final Icon ARROW_LEFT = getIcon("icons/ArrowLeft.gif");
     public static final Icon ARROW_RIGHT = getIcon("icons/ArrowRight.gif");
-    public static final Icon ARROW_UP_GRAY = getIcon("icons/ArrowUp_gray.gif");
-    public static final Icon ARROW_LEFT_GRAY = getIcon("icons/ArrowLeft_gray.gif");
-    public static final Icon ARROW_RIGHT_GRAY = getIcon("icons/ArrowRight_gray.gif");
 
     // Toolbar
-    public static final Icon WIZARD_OPEN = getIconById("wizard.icon");
     public static final Icon SEARCH_NODES = getIconById("search_user.icon");
     public static final Icon NEW_FOLDER = getIconById("new_folder.icon");
     public static final Icon JOIN_FOLDER = getIconById("join_folder.icon");
     public static final Icon REMOVE_FOLDER = getIconById("remove_folder.icon");
     public static final Icon PREFERENCES = getIcon("icons/Preferences.png");
     public static final Icon PREFERENCES_PICTO = getIcon("icons/pictos/Preferences.png");
-    public static final Icon ABOUT = getIconById("about.icon");
-    public static final Icon SLEEP = getIconById("sleep.icon");
-    public static final Icon WAKE_UP = getIconById("wake_up.icon");
     public static final Icon SYNC = getIcon("icons/Sync.png");
-    public static final Icon SYNC_NOW = getIconById("sync_now.icon");
-    public static final Icon SYNC_NOW_ACTIVE = getIconById("sync_now_active.icon");
-    public static final Icon BUY_PRO = getIconById("buy_pro.icon");
     public static final Icon QUESTION = getIcon("icons/Question.gif");
 
     public static final Icon SORT_UP = getIcon("icons/SortUp.gif");
@@ -140,10 +127,6 @@ public class Icons {
     public static final Icon EXPAND = getIcon("icons/Expand.gif");
     public static final Icon COLLAPSE = getIcon("icons/Collapse.gif");
 
-    // Sync icons for FolderQuickInfoPanel
-    public static final Icon[] SYNC_ICONS = new Icon[]{};
-    public static final Icon SYNC_UNKNOWN = getIconById("sync_unknown.icon");
-
     // Directories in navigation tree
     public static final Icon DIRECTORY = getIcon("icons/Directory.gif");
     public static final Icon DIRECTORY_OPEN = getIcon("icons/Directory_open.gif");
@@ -151,7 +134,6 @@ public class Icons {
     public static final Icon DIRECTORY_OPEN_GRAY = getIcon("icons/Directory_open_gray.gif");
     public static final Icon DIRECTORY_RED = getIcon("icons/Directory_red.gif");
     public static final Icon DIRECTORY_OPEN_RED = getIcon("icons/Directory_open_red.gif");
-    public static final Icon DIRECTORY_NEW = getIconById("directory_new.icon");
 
     // Node icons
     public static final Icon NODE_FRIEND_CONNECTED = getIcon("icons/NodeFriendConnected.gif");
@@ -164,25 +146,11 @@ public class Icons {
 
     public static final Icon FOLDER = getIcon("icons/Folder.png");
     public static final Icon FILES = getIcon("icons/Files.png");
-    public static final Icon FOLDER_PREVIEW = getIcon("icons/Folder_disconnected.gif");
-    public static final Icon FOLDER_ROTATION_1 = getIcon("icons/Folder_rotation_1.gif");
-    public static final Icon FOLDER_ROTATION_2 = getIcon("icons/Folder_rotation_2.gif");
-    public static final Icon FOLDER_ROTATION_3 = getIcon("icons/Folder_rotation_3.gif");
-    public static final Icon FOLDER_ROTATION_4 = getIcon("icons/Folder_rotation_4.gif");
-    public static final Icon FOLDER_ROTATION_5 = getIcon("icons/Folder_rotation_5.gif");
-    public static final Icon FOLDER_ROTATION_6 = getIcon("icons/Folder_rotation_6.gif");
-    public static final Icon FOLDER_ROTATION_7 = getIcon("icons/Folder_rotation_7.gif");
-    public static final Icon FOLDER_ROTATION_8 = getIcon("icons/Folder_rotation_8.gif");
 
     public static final Icon PF_LOCAL = getIcon("icons/PFLocal.png");
     public static final Icon PF_LOCAL_AND_ONLINE = getIcon("icons/PFLocalAndOnline.png");
     public static final Icon PF_ONLINE = getIcon("icons/PFOnline.png");
     public static final Icon PF_PREVIEW = getIcon("icons/PFPreview.png");
-
-    // Navitree & toolbar
-    public static final Icon ROOT = getIcon("icons/Root.gif");
-    public static final Icon KNOWN_NODES = getIcon("icons/KnownNodes.gif");
-    public static final Icon RECYCLE_BIN = getIcon("icons/KnownNodes.gif");
 
     public static final Icon BLACK_LIST = getIconById("black_list.icon");
     public static final Icon WHITE_LIST = getIconById("white_list.icon");
@@ -193,7 +161,6 @@ public class Icons {
     public static final Icon IN_ACTIVE = getIcon("icons/In_active.gif");
     public static final Icon EXPECTED = getIcon("icons/Expected.gif");
     public static final Icon DELETE = getIcon("icons/Delete.gif");
-    public static final Icon PATTERN = getIconById("pattern");
 
     // Folder syncs
     public static final Icon FOLDER_SYNC_UNKNOWN = getIcon("icons/FolderSync_unknown.gif");
@@ -353,6 +320,7 @@ public class Icons {
      * relationship more simple and direct.
      * @return the icon
      */
+    @Deprecated
     public static Icon getIconById(String id) {
         Properties prop = getIconProperties();
         String iconId = prop.getProperty(id);
@@ -641,63 +609,6 @@ public class Icons {
             }
         }
         return new ImageIcon(dst);
-    }
-
-    /**
-     * @param folder
-     *            the folder to get the icon for.
-     * @return the icon for the folder depending on its status, e.g.
-     *         disconnected, connected, sync, new files, etc.
-     */
-    public static Icon getIconFor(Folder folder) {
-        Reject.ifNull(folder, "Folder is null");
-
-        if (folder.isPreviewOnly()) {
-            return FOLDER_PREVIEW;
-        } else if (folder.isDeviceDisconnected()) {
-            return FOLDER_INVALID;
-        }
-
-        boolean isSyncing = folder.isTransferring() || folder.isScanning();
-
-        Icon fIcon = FOLDER;
-
-        if (isSyncing) {
-            long time = System.currentTimeMillis() / 400;
-            int iconNum = (int) (time % 8);
-            switch (iconNum) {
-                case 0 :
-                    fIcon = FOLDER_ROTATION_1;
-                    break;
-                case 1 :
-                    fIcon = FOLDER_ROTATION_2;
-                    break;
-                case 2 :
-                    fIcon = FOLDER_ROTATION_3;
-                    break;
-                case 3 :
-                    fIcon = FOLDER_ROTATION_4;
-                    break;
-                case 4 :
-                    fIcon = FOLDER_ROTATION_5;
-                    break;
-                case 5 :
-                    fIcon = FOLDER_ROTATION_6;
-                    break;
-                case 6 :
-                    fIcon = FOLDER_ROTATION_7;
-                    break;
-                case 7 :
-                    fIcon = FOLDER_ROTATION_8;
-                    break;
-                default :
-                    break;
-            }
-        } else {
-            fIcon = FOLDER;
-        }
-
-        return fIcon;
     }
 
     /**
