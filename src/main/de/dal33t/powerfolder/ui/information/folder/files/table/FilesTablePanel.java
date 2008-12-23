@@ -29,7 +29,6 @@ import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.information.HasDetailsPanel;
 import de.dal33t.powerfolder.ui.information.folder.files.DirectoryFilterListener;
@@ -37,20 +36,16 @@ import de.dal33t.powerfolder.ui.information.folder.files.FileDetailsPanel;
 import de.dal33t.powerfolder.ui.information.folder.files.FilteredDirectoryEvent;
 import de.dal33t.powerfolder.ui.information.folder.files.FilteredDirectoryModel;
 import de.dal33t.powerfolder.ui.information.folder.files.tree.DirectoryTreeNodeUserObject;
-import de.dal33t.powerfolder.ui.Icons;
 
 import javax.swing.JPanel;
-import javax.swing.JTable;
 import javax.swing.JToggleButton;
 import javax.swing.JScrollPane;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.ListSelectionEvent;
-import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.awt.event.ActionEvent;
-import java.awt.Component;
 
 public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         TreeSelectionListener, DirectoryFilterListener {
@@ -81,7 +76,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
     }
 
     /**
-     * Bulds the ui component.
+     * Builds the ui component.
      */
     private void buildUIComponent() {
         FormLayout layout = new FormLayout("fill:pref:grow",
@@ -90,13 +85,11 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
-        table.setDefaultRenderer(DiskItem.class, new MyDefaultTreeCellRenderer());
-
         JScrollPane tableScroller = new JScrollPane(table);
 
         UIUtil.whiteStripTable(table);
-        UIUtil.removeBorder(tableScroller);
         UIUtil.setZeroHeight(tableScroller);
+        UIUtil.removeBorder(tableScroller);
 
         builder.add(createToolBar(), cc.xy(1, 1));
         builder.addSeparator(null, cc.xy(1, 3));
@@ -176,26 +169,6 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         public void actionPerformed(ActionEvent e) {
             toggleDetails();
         }
-    }
-
-    private class MyDefaultTreeCellRenderer extends DefaultTableCellRenderer {
-
-            public Component getTableCellRendererComponent(JTable table, Object value,
-                boolean isSelected, boolean hasFocus, int row, int column) {
-                if (value instanceof FileInfo) {
-                    FileInfo fileInfo = (FileInfo) value;
-                    setText("");
-                    setIcon(Icons.getIconFor(fileInfo, getController()));
-                } else if (value instanceof Directory) {
-                    Directory directory = (Directory) value;
-                    setText("");
-                    setIcon(Icons.getIconFor(directory, false, getController()));
-                } else {
-                    setText("???");
-                    setIcon(null);
-                }
-                return this;
-            }
     }
 
     private class MyListSelectionListener implements ListSelectionListener {

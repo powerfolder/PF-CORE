@@ -22,13 +22,18 @@ package de.dal33t.powerfolder.ui.information.folder.files.table;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.information.folder.members.MembersTableModel;
 import de.dal33t.powerfolder.ui.render.SortedTableHeaderRenderer;
+import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.disk.Directory;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.DiskItem;
 
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
-import java.awt.Dimension;
+import javax.swing.table.DefaultTableCellRenderer;
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
@@ -50,6 +55,9 @@ public class FilesTable extends JTable {
         setShowGrid(false);
 
         setupColumns();
+
+        setDefaultRenderer(DiskItem.class, new MyDefaultTreeCellRenderer(
+                model.getController()));
 
         getTableHeader().addMouseListener(new TableHeaderMouseListener());
 
@@ -105,5 +113,29 @@ public class FilesTable extends JTable {
         }
     }
 
+    private class MyDefaultTreeCellRenderer extends DefaultTableCellRenderer {
 
+        private Controller controller;
+
+        private MyDefaultTreeCellRenderer(Controller controller) {
+            this.controller = controller;
+        }
+
+        public Component getTableCellRendererComponent(JTable table, Object value,
+                boolean isSelected, boolean hasFocus, int row, int column) {
+                if (value instanceof FileInfo) {
+                    FileInfo fileInfo = (FileInfo) value;
+                    setText("");
+                    setIcon(Icons.getIconFor(fileInfo, controller));
+                } else if (value instanceof Directory) {
+                    Directory directory = (Directory) value;
+                    setText("");
+                    setIcon(Icons.getIconFor(directory, false, controller));
+                } else {
+                    setText("???");
+                    setIcon(null);
+                }
+                return this;
+            }
+    }
 }

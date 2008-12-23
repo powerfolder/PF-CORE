@@ -148,61 +148,53 @@ public class FilesTableModel extends PFComponent implements TableModel,
             return;
         }
 
-        List<DiskItem> tempList = new ArrayList<DiskItem>(diskItems.size());
-        tempList.addAll(diskItems);
-
-        // Look for extra items in the selectedDiskItems list to insert.
-        List<DiskItem> selectedDiskItems = directories.get(selectedDirectory);
-        for (DiskItem selectedDiskItem : selectedDiskItems) {
-            found = false;
-            int foundRow = -1;
-            int rowCount = 0;
-            for (DiskItem diskItem : tempList) {
-                if (diskItem.equals(selectedDiskItem)) {
-                    found = true;
-                    foundRow = rowCount;
-                    break;
-                }
-                rowCount++;
-            }
-            if (!found) {
-                diskItems.add(selectedDiskItem);
-                modelChanged(foundRow, true);
-            }
-        }
-
-        // Look for extra items in the diskItem list to remove.
-        int rowCount = 0;
-        for (DiskItem diskItem : tempList) {
-            found = false;
-            for (DiskItem selectedDiskItem : selectedDiskItems) {
-                if (diskItem.equals(selectedDiskItem)) {
-                    found = true;
-                    break;
-                }
-            }
-            if (!found) {
-                diskItems.remove(diskItem);
-                modelChanged(rowCount, false);
-            }
-            rowCount++;
-        }
-    }
-
-    private void modelChanged(int row, boolean insert) {
-        final TableModelEvent e = new TableModelEvent(this, row, row,
-                TableModelEvent.ALL_COLUMNS,
-                insert ? TableModelEvent.INSERT : TableModelEvent.DELETE);
-        Runnable runner = new Runnable() {
+        Runnable runnable = new Runnable() {
             public void run() {
-                synchronized (listeners) {
+
+                List<DiskItem> tempList = new ArrayList<DiskItem>(diskItems.size());
+                tempList.addAll(diskItems);
+
+                // Look for extra items in the selectedDiskItems list to insert.
+                List<DiskItem> selectedDiskItems = directories.get(selectedDirectory);
+                boolean changed = false;
+                for (DiskItem selectedDiskItem : selectedDiskItems) {
+                    boolean b = false;
+                    for (DiskItem diskItem : tempList) {
+                        if (diskItem.equals(selectedDiskItem)) {
+                            b = true;
+                            break;
+                        }
+                    }
+                    if (!b) {
+                        diskItems.add(selectedDiskItem);
+                        changed = true;
+                    }
+                }
+
+                // Look for extra items in the diskItem list to remove.
+                for (DiskItem diskItem : tempList) {
+                    boolean b = false;
+                    for (DiskItem selectedDiskItem : selectedDiskItems) {
+                        if (diskItem.equals(selectedDiskItem)) {
+                            b = true;
+                            break;
+                        }
+                    }
+                    if (!b) {
+                        diskItems.remove(diskItem);
+                        changed = true;
+                    }
+                }
+
+                if (changed) {
+                    TableModelEvent e = new TableModelEvent(FilesTableModel.this);
                     for (TableModelListener listener : listeners) {
                         listener.tableChanged(e);
                     }
                 }
             }
         };
-        UIUtil.invokeLaterInEDT(runner);
+        UIUtil.invokeLaterInEDT(runnable);
     }
 
     public void addTableModelListener(TableModelListener l) {
@@ -284,14 +276,14 @@ public class FilesTableModel extends PFComponent implements TableModel,
     }
 
     public int getSortColumn() {
-        return 1;    // @todo
+        return 1;    // @todo hghg
     }
 
     public boolean isSortAscending() {
-        return false;  // @todo
+        return false;  // @todo hghg
     }
 
     public boolean sortBy(int columnIndex) {
-        return true;          // @todo
+        return columnIndex == 1;          // @todo hghg
     }
 }

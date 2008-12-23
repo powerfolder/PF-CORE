@@ -156,9 +156,9 @@ public class FilesTab extends PFUIComponent
         return builder.getPanel();
     }
 
-    public void adviseOfChange(FilteredDirectoryEvent e) {
-        statsPanel.setStats(e.getLocalFiles(), e.getIncomingFiles(),
-                e.getDeletedFiles(), e.getRecycledFiles());
+    public void adviseOfChange(FilteredDirectoryEvent event) {
+        statsPanel.setStats(event.getLocalFiles(), event.getIncomingFiles(),
+                event.getDeletedFiles(), event.getRecycledFiles());
     }
 
     /**
