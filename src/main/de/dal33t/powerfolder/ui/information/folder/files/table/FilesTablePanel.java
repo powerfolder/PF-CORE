@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.ui.information.folder.files.table;
 
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
@@ -110,15 +111,13 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
      * @return the toolbar
      */
     private JPanel createToolBar() {
-        FormLayout layout = new FormLayout("pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, pref:grow",
-            "pref");
-        PanelBuilder builder = new PanelBuilder(layout);
-        CellConstraints cc = new CellConstraints();
+        ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
         openFileAction = new OpenFileAction();
         openFileAction.setEnabled(false);
-        builder.add(new JButton(openFileAction), cc.xy(1, 1));
-        builder.add(new JToggleButton(new DetailsAction(getController())), cc.xy(3, 1));
-        return builder.getPanel();
+        bar.addGridded(new JButton(openFileAction));
+        bar.addRelatedGap();
+        bar.addGridded(new JToggleButton(new DetailsAction(getController())));
+        return bar.getPanel();
     }
 
     /**

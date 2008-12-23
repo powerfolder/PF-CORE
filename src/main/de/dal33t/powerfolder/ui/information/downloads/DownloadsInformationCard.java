@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.ui.information.downloads;
 
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.ConfigurationEntry;
@@ -141,19 +142,17 @@ public class DownloadsInformationCard extends InformationCard
             }
         });
         
-        FormLayout layout = new FormLayout("3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, pref:grow",
-            "pref");
-        PanelBuilder builder = new PanelBuilder(layout);
-        CellConstraints cc = new CellConstraints();
-
-        builder.add(new JButton(openDownloadAction), cc.xy(2, 1));
-        builder.add(new JButton(abortDownloadsAction), cc.xy(4, 1));
-        builder.add(new JToggleButton(new DetailsAction(getController())),
-                cc.xy(6, 1));
-        builder.add(new JButton(clearCompletedDownloadsAction), cc.xy(8, 1));
-        builder.add(autoCleanupCB, cc.xy(10, 1));
-        
-        toolBar = builder.getPanel();
+        ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
+        bar.addGridded(new JButton(openDownloadAction));
+        bar.addRelatedGap();
+        bar.addGridded(new JButton(abortDownloadsAction));
+        bar.addRelatedGap();
+        bar.addGridded(new JToggleButton(new DetailsAction(getController())));
+        bar.addRelatedGap();
+        bar.addGridded(new JButton(clearCompletedDownloadsAction));
+        bar.addRelatedGap();
+        bar.addGridded(autoCleanupCB);
+        toolBar = bar.getPanel();
     }
 
     /**

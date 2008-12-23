@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.ui.home;
 
 import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
@@ -109,21 +110,21 @@ public class HomeTab extends PFUIComponent {
     private void buildUI() {
         initComponents();
 
-        FormLayout layout = new FormLayout("pref:grow",
+        FormLayout layout = new FormLayout("3dlu, pref:grow",
             "3dlu, pref, 3dlu, pref, 3dlu, fill:0:grow");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
         // Toolbar
         JPanel toolbar = createToolBar();
-        builder.add(toolbar, cc.xy(1, 2));
-        builder.addSeparator(null, cc.xy(1, 4));
+        builder.add(toolbar, cc.xy(2, 2));
+        builder.addSeparator(null, cc.xyw(1, 4, 2));
 
         // Main panel in scroll pane
         JPanel mainPanel = buildMainPanel();
         JScrollPane scrollPane = new JScrollPane(mainPanel);
         UIUtil.removeBorder(scrollPane);
-        builder.add(scrollPane, cc.xy(1, 6));
+        builder.add(scrollPane, cc.xyw(1, 6, 2));
         uiComponent = builder.getPanel();
     }
 
@@ -323,14 +324,11 @@ public class HomeTab extends PFUIComponent {
         JButton searchComputerButton = new JButton(getApplicationModel().getActionModel()
                 .getFindComputersAction());
 
-        FormLayout layout = new FormLayout("3dlu, pref, 3dlu, pref, pref:grow",
-            "pref");
-        PanelBuilder builder = new PanelBuilder(layout);
-        CellConstraints cc = new CellConstraints();
-        builder.add(newFolderButton, cc.xy(2, 1));
-        builder.add(searchComputerButton, cc.xy(4, 1));
-
-        return builder.getPanel();
+        ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
+        bar.addGridded(newFolderButton);
+        bar.addRelatedGap();
+        bar.addGridded(searchComputerButton);
+        return bar.getPanel();
     }
 
     /**
