@@ -23,11 +23,8 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.ui.actionold.ReconnectAction;
 
-import javax.swing.*;
-import java.awt.event.ActionListener;
-
 /**
- * Holder of all singleton actions.
+ * Holder of all simple singleton actions.
  */
 public class ActionModel extends PFComponent {
 
@@ -44,9 +41,6 @@ public class ActionModel extends PFComponent {
     private OpenAboutBoxAction openAboutBoxAction;
     private ConnectAction connectAction;
     private OpenDownloadsInformationAction openDownloadsInformationAction;
-    private OpenSettingsInformationAction openSettingsInformationAction;
-    private OpenFilesInformationAction openFilesInformationAction;
-    private OpenMembersInformationAction openMembersInformationAction;
     private OpenUploadsInformationAction openUploadsInformationAction;
     private ReconnectAction reconnectAction;
     private AddFriendAction addFriendAction;
@@ -102,27 +96,6 @@ public class ActionModel extends PFComponent {
             connectAction = new ConnectAction(getController());
         }
         return connectAction;
-    }
-
-    public OpenSettingsInformationAction getOpenSettingsInformationAction() {
-        if (openSettingsInformationAction == null) {
-            openSettingsInformationAction = new OpenSettingsInformationAction(getController());
-        }
-        return openSettingsInformationAction;
-    }
-
-    public OpenFilesInformationAction getOpenFilesInformationAction() {
-        if (openFilesInformationAction == null) {
-            openFilesInformationAction = new OpenFilesInformationAction(getController());
-        }
-        return openFilesInformationAction;
-    }
-
-    public OpenMembersInformationAction getOpenMembersInformationAction() {
-        if (openMembersInformationAction == null) {
-            openMembersInformationAction = new OpenMembersInformationAction(getController());
-        }
-        return openMembersInformationAction;
     }
 
     public ReconnectAction getReconnectAction() {

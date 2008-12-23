@@ -266,17 +266,19 @@ public class FileDetailsPanel extends PFUIComponent {
     }
 
     /**
-     * Clears all needed components
+     * Clears all component details
      */
     private void clearComponents() {
         nameField.setText("");
         locationField.setText("");
         folderField.setText("");
+        folderField.setIcon(null);
         sizeField.setText("");
         localCopyAtField.setText("");
         statusField.setText("");
         sourcesField.setText("");
         modifiedByField.setText("");
+        modifiedByField.setIcon(null);
         modifiedDateField.setText("");
         versionField.setText("");
     }

@@ -26,7 +26,6 @@ import de.dal33t.powerfolder.util.Translation;
 import org.apache.commons.lang.StringUtils;
 
 import javax.swing.AbstractAction;
-import javax.swing.Action;
 import javax.swing.Icon;
 
 /**
@@ -36,6 +35,7 @@ import javax.swing.Icon;
  * @version $Revision: 1.6 $
  */
 public abstract class BaseAction extends AbstractAction {
+
     private Controller controller;
 
     /**
@@ -72,15 +72,15 @@ public abstract class BaseAction extends AbstractAction {
      * @param actionId
      *            the action id
      */
+    @SuppressWarnings("deprecation")
     protected void configureFromActionId(String actionId) {
-        // logFiner("Configuring from id: " + actionId);
-        putValue(Action.NAME, Translation.getTranslation(actionId + ".name"));
+        putValue(NAME, Translation.getTranslation(actionId + ".name"));
         setMnemonicKey(Translation.getTranslation(actionId + ".key"));
-        putValue(Action.SHORT_DESCRIPTION, Translation.getTranslation(actionId
+        putValue(SHORT_DESCRIPTION, Translation.getTranslation(actionId
             + ".description"));
         Icon icon = Icons.getIconById(actionId + ".icon");
         if (icon != null && icon.getIconHeight() != -1) { // check if valid
-            putValue(Action.SMALL_ICON, icon);
+            putValue(SMALL_ICON, icon);
         }
     }
 
@@ -90,7 +90,7 @@ public abstract class BaseAction extends AbstractAction {
      * @return the name of this action
      */
     public String getName() {
-        return (String) getValue(Action.NAME);
+        return (String) getValue(NAME);
     }
 
     /**
@@ -99,11 +99,11 @@ public abstract class BaseAction extends AbstractAction {
      * @param key
      */
     protected void setMnemonicKey(String key) {
-        if (!StringUtils.isBlank(key)) {
-            putValue(Action.MNEMONIC_KEY, Integer.valueOf(Character.toUpperCase(key
-                    .charAt(0))));
+        if (StringUtils.isBlank(key)) {
+            putValue(MNEMONIC_KEY, null);
         } else {
-            putValue(Action.MNEMONIC_KEY, null);
+            putValue(MNEMONIC_KEY, Integer.valueOf(Character.toUpperCase(key
+                    .charAt(0))));
         }
     }
 

@@ -26,8 +26,10 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.DiskItem;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.information.HasDetailsPanel;
 import de.dal33t.powerfolder.ui.information.folder.files.DirectoryFilterListener;
@@ -35,6 +37,7 @@ import de.dal33t.powerfolder.ui.information.folder.files.FileDetailsPanel;
 import de.dal33t.powerfolder.ui.information.folder.files.FilteredDirectoryEvent;
 import de.dal33t.powerfolder.ui.information.folder.files.FilteredDirectoryModel;
 import de.dal33t.powerfolder.ui.information.folder.files.tree.DirectoryTreeNodeUserObject;
+import de.dal33t.powerfolder.ui.Icons;
 
 import javax.swing.JPanel;
 import javax.swing.JTable;
@@ -42,6 +45,8 @@ import javax.swing.JToggleButton;
 import javax.swing.JScrollPane;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.event.ListSelectionEvent;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.awt.event.ActionEvent;
@@ -53,11 +58,14 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
     private JPanel uiComponent;
     private FileDetailsPanel fileDetailsPanel;
     private FilesTableModel tableModel;
+    private FilesTable table;
 
     public FilesTablePanel(Controller controller) {
         super(controller);
         fileDetailsPanel = new FileDetailsPanel(controller);
         tableModel = new FilesTableModel(controller);
+        table = new FilesTable(tableModel);
+        table.getSelectionModel().addListSelectionListener(new MyListSelectionListener());
     }
 
     /**
@@ -82,7 +90,6 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
-        FilesTable table = new FilesTable(tableModel);
         table.setDefaultRenderer(DiskItem.class, new MyDefaultTreeCellRenderer());
 
         JScrollPane tableScroller = new JScrollPane(table);
@@ -156,6 +163,10 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         tableModel.setFolder(folder);
     }
 
+    ///////////////////
+    // Inner Classes //
+    ///////////////////
+
     private class DetailsAction extends BaseAction {
 
         DetailsAction(Controller controller) {
@@ -171,13 +182,35 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
 
             public Component getTableCellRendererComponent(JTable table, Object value,
                 boolean isSelected, boolean hasFocus, int row, int column) {
-                if (value instanceof DiskItem) {
-                    DiskItem diskItem = (DiskItem) value;
-                    setText(diskItem.getName());
-                } else {
+                if (value instanceof FileInfo) {
+                    FileInfo fileInfo = (FileInfo) value;
                     setText("");
+                    setIcon(Icons.getIconFor(fileInfo, getController()));
+                } else if (value instanceof Directory) {
+                    Directory directory = (Directory) value;
+                    setText("");
+                    setIcon(Icons.getIconFor(directory, false, getController()));
+                } else {
+                    setText("???");
+                    setIcon(null);
                 }
                 return this;
             }
+    }
+
+    private class MyListSelectionListener implements ListSelectionListener {
+        public void valueChanged(ListSelectionEvent e) {
+            int min = table.getSelectionModel().getMinSelectionIndex();
+            int max = table.getSelectionModel().getMaxSelectionIndex();
+            if (min == max && min >= 0) {
+                DiskItem diskItem = (DiskItem) tableModel.getValueAt(min, 0);
+                if (diskItem instanceof FileInfo) {
+                    FileInfo fi = (FileInfo) diskItem;
+                    fileDetailsPanel.setFileInfo(fi);
+                    return;
+                }
+            }
+            fileDetailsPanel.setFileInfo(null);
+        }
     }
 }

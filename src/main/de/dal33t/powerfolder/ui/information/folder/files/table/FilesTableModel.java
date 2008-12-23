@@ -22,18 +22,15 @@ package de.dal33t.powerfolder.ui.information.folder.files.table;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.DiskItem;
 import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.disk.FileInfoHolder;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.information.folder.files.FilteredDirectoryModel;
 import de.dal33t.powerfolder.ui.model.SortedTableModel;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
-import javax.swing.Icon;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
@@ -215,7 +212,7 @@ public class FilesTableModel extends PFComponent implements TableModel,
     public Class<?> getColumnClass(int columnIndex) {
         switch (columnIndex) {
             case 0:
-                return Icon.class;
+                return DiskItem.class;
             case 1:
             case 2:
             case 3:
@@ -243,11 +240,7 @@ public class FilesTableModel extends PFComponent implements TableModel,
     public Object getValueAt(int rowIndex, int columnIndex) {
         DiskItem diskItem = diskItems.get(rowIndex);
         if (columnIndex == 0) {
-            if (diskItem instanceof FileInfo) {
-                return Icons.getIconFor((FileInfo) diskItem, getController());
-            } else {
-                return Icons.getIconFor((Directory) diskItem, false, getController());
-            }
+            return diskItem;
         } else if (columnIndex == 1) {
             return diskItem.getName();
         } else if (columnIndex == 2) {

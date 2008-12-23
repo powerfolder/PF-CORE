@@ -33,15 +33,12 @@ import de.dal33t.powerfolder.event.FolderMembershipEvent;
 import de.dal33t.powerfolder.event.FolderMembershipListener;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
-import de.dal33t.powerfolder.ui.action.ActionModel;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
 
-import javax.swing.BorderFactory;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
+import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.DecimalFormat;
@@ -51,6 +48,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Class to render expandable view of a folder.
  */
 public class ExpandableFolderView extends PFUIComponent {
+
+    private static final int ONE_K = 1024;
+    private static final int ONE_M = 1024 * ONE_K;
+    private static final int ONE_G = 1024 * ONE_M;
 
     private final Folder folder;
     private JButtonMini inviteButton;
@@ -63,7 +64,7 @@ public class ExpandableFolderView extends PFUIComponent {
     private JLabel filesLabel;
     private JButtonMini openSettingsInformationButton;
     private JButtonMini openFilesInformationButton;
-    private JButtonMini openComputersInformationButton;
+    private JButtonMini openMembersInformationButton;
     private JLabel syncPercentLabel;
     private JLabel totalSizeLabel;
     private JLabel membersLabel;
@@ -146,7 +147,7 @@ public class ExpandableFolderView extends PFUIComponent {
 
         lowerBuilder.add(membersLabel, cc.xy(2, 11));
         lowerBuilder.add(inviteButton, cc.xy(5, 11));
-        lowerBuilder.add(openComputersInformationButton, cc.xy(6, 11));
+        lowerBuilder.add(openMembersInformationButton, cc.xy(6, 11));
 
         lowerBuilder.addSeparator(null, cc.xywh(2, 13, 5, 1));
 
@@ -188,22 +189,14 @@ public class ExpandableFolderView extends PFUIComponent {
     private void initComponent() {
         expanded = new AtomicBoolean();
 
-        ActionModel actionModel = getApplicationModel().getActionModel();
-        
-        openSettingsInformationButton = new JButtonMini(actionModel
-                .getOpenSettingsInformationAction());
-        openSettingsInformationButton.addActionListener(
-                new MyOpenSettingsInformationActionListener());
+        openSettingsInformationButton = new JButtonMini(
+                new MyOpenSettingsInformationAction(getController()), true);
 
-        openFilesInformationButton = new JButtonMini(actionModel
-                .getOpenFilesInformationAction());
-        openFilesInformationButton.addActionListener(
-                new MyOpenFilesInformationActionListener());
+        openFilesInformationButton = new JButtonMini(
+                new MyOpenFilesInformationAction(getController()), true);
 
-        openComputersInformationButton = new JButtonMini(actionModel
-                .getOpenMembersInformationAction());
-        openComputersInformationButton.addActionListener(
-                new MyOpenMembersInformationActionListener());
+        openMembersInformationButton = new JButtonMini(
+                new MyOpenMembersInformationAction(getController()), true);
 
         expandCollapseButton = new JButtonMini(Icons.EXPAND,
                 Translation.getTranslation("exp_folder_view.expand"));
@@ -276,25 +269,20 @@ public class ExpandableFolderView extends PFUIComponent {
         syncPercentLabel.setText(syncText);
 
         long totalSize = statistic.getTotalSize();
-        String descriptionKey = "exp_folder_view.total_bytes";
-        long divisor = 1;
-        if (totalSize >= 1024) {
-            divisor *= 1024;
-            descriptionKey = "exp_folder_view.total_kilobytes";
-        }
-        if (totalSize / divisor >= 1024) {
-            divisor *= 1024;
-            descriptionKey = "exp_folder_view.total_megabytes";
-        }
-        if (totalSize / divisor >= 1024) {
-            divisor *= 1024;
-            descriptionKey = "exp_folder_view.total_gigabytes";
-        }
+        String descriptionKey;
         double num;
-        if (divisor == 1) {
-            num = totalSize;
+        if (totalSize >= ONE_G) {
+            descriptionKey = "exp_folder_view.total_gigabytes";
+            num = (double) totalSize / (double) ONE_G;
+        } else if (totalSize >= ONE_M) {
+            descriptionKey = "exp_folder_view.total_megabytes";
+            num = (double) totalSize / (double) ONE_M;
+        } else if (totalSize >= ONE_K) {
+            descriptionKey = "exp_folder_view.total_kilobytes";
+            num = (double) totalSize / (double) ONE_K;
         } else {
-            num = (double) totalSize / (double) divisor;
+            descriptionKey = "exp_folder_view.total_bytes";
+            num = totalSize;
         }
 
         DecimalFormat numberFormat = Format.getNumberFormat();
@@ -402,33 +390,6 @@ public class ExpandableFolderView extends PFUIComponent {
         }
     }
 
-    private class MyOpenSettingsInformationActionListener implements ActionListener {
-        public void actionPerformed(ActionEvent e) {
-            ActionEvent ae = new ActionEvent(getFolderInfo(),
-                    e.getID(), e.getActionCommand(), e.getWhen(), e.getModifiers());
-            getApplicationModel().getActionModel()
-                    .getOpenSettingsInformationAction().actionPerformed(ae);
-        }
-    }
-
-    private class MyOpenFilesInformationActionListener implements ActionListener {
-        public void actionPerformed(ActionEvent e) {
-            ActionEvent ae = new ActionEvent(getFolderInfo(),
-                    e.getID(), e.getActionCommand(), e.getWhen(), e.getModifiers());
-            getApplicationModel().getActionModel()
-                    .getOpenFilesInformationAction().actionPerformed(ae);
-        }
-    }
-
-    private class MyOpenMembersInformationActionListener implements ActionListener {
-        public void actionPerformed(ActionEvent e) {
-            ActionEvent ae = new ActionEvent(getFolderInfo(),
-                    e.getID(), e.getActionCommand(), e.getWhen(), e.getModifiers());
-            getApplicationModel().getActionModel()
-                    .getOpenMembersInformationAction().actionPerformed(ae);
-        }
-    }
-
     private class MySyncActionListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             ActionEvent ae = new ActionEvent(getFolderInfo(),
@@ -447,6 +408,41 @@ public class ExpandableFolderView extends PFUIComponent {
 
         public void actionPerformed(ActionEvent e) {
             PFWizard.openSendInvitationWizard(getController(), folder.getInfo());
+        }
+    }
+
+    private class MyOpenSettingsInformationAction extends BaseAction {
+        private MyOpenSettingsInformationAction(Controller controller) {
+            super("action_open_settings_information", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            FolderInfo folderInfo = folder.getInfo();
+            getController().getUIController().openSettingsInformation(folderInfo);
+        }
+    }
+
+    private class MyOpenFilesInformationAction extends BaseAction {
+
+        MyOpenFilesInformationAction(Controller controller) {
+            super("action_open_files_information", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            FolderInfo folderInfo = folder.getInfo();
+            getController().getUIController().openFilesInformation(folderInfo);
+        }
+    }
+
+    private class MyOpenMembersInformationAction extends BaseAction {
+
+        MyOpenMembersInformationAction(Controller controller) {
+            super("action_open_members_information", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            FolderInfo folderInfo = folder.getInfo();
+            getController().getUIController().openMembersInformation(folderInfo);
         }
     }
 }

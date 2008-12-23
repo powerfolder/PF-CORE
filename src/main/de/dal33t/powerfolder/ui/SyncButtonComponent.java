@@ -75,7 +75,7 @@ public class SyncButtonComponent extends PFUIComponent {
 
     private void initComponents() {
         syncAllLabel = new JLabel(Icons
-            .getIconById("icons/sync/normal/sync_00.png"));
+            .getIcon("icons/sync/normal/sync_00.png"));
         syncAllLabel.setToolTipText(Translation
             .getTranslation("scan_all_folders.description"));
         syncAllLabel.addMouseListener(new MyMouseAdapter());
