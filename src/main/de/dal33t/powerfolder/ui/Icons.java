@@ -110,7 +110,7 @@ public class Icons {
     public static final Icon ARROW_RIGHT = getIcon("icons/ArrowRight.gif");
 
     // Toolbar
-    public static final Icon SEARCH_NODES = getIconById("search_user.icon");
+    public static final Icon SEARCH_NODES = getIcon("icons/pictos/Friends.png");
     public static final Icon NEW_FOLDER = getIconById("new_folder.icon");
     public static final Icon JOIN_FOLDER = getIconById("join_folder.icon");
     public static final Icon REMOVE_FOLDER = getIconById("remove_folder.icon");
@@ -140,9 +140,6 @@ public class Icons {
     public static final Icon NODE_FRIEND_DISCONNECTED = getIcon("icons/NodeFriendDisconnected.gif");
     public static final Icon NODE_NON_FRIEND_CONNECTED = getIcon("icons/NodeNonFriendConnected.gif");
     public static final Icon NODE_NON_FRIEND_DISCONNECTED = getIcon("icons/NodeNonFriendDisconnected.gif");
-
-    // Folder icons
-    public static final Icon FOLDER_INVALID = getIconById("folder_invalid.icon");
 
     public static final Icon FOLDER = getIcon("icons/Folder.png");
     public static final Icon FILES = getIcon("icons/Files.png");
