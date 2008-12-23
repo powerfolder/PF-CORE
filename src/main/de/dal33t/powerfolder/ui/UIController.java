@@ -26,12 +26,10 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
-import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
-import de.dal33t.powerfolder.event.AskForFriendshipEvent;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.ui.actionold.SyncAllFoldersAction;
@@ -44,7 +42,6 @@ import de.dal33t.powerfolder.ui.model.ApplicationModel;
 import de.dal33t.powerfolder.ui.model.TransferManagerModel;
 import de.dal33t.powerfolder.ui.model.FolderRepositoryModel;
 import de.dal33t.powerfolder.ui.notification.NotificationHandler;
-import de.dal33t.powerfolder.ui.recyclebin.RecycleBinConfirmationHandlerDefaultImpl;
 import de.dal33t.powerfolder.ui.render.BlinkManager;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.BrowserLauncher;
@@ -500,8 +497,6 @@ public class UIController extends PFComponent {
      * Registeres handlers/listeners for core callbacks
      */
     private void registerCoreHandlers() {
-        getController().getRecycleBin().setRecycleBinConfirmationHandler(
-            new RecycleBinConfirmationHandlerDefaultImpl(getController()));
         FolderRepository repo = getController().getFolderRepository();
         repo.setFileNameProblemHandler(new FileNameProblemHandlerDefaultImpl(
             getController()));
