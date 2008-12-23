@@ -29,6 +29,8 @@ import de.dal33t.powerfolder.ui.information.folder.files.FilteredDirectoryModel;
 import de.dal33t.powerfolder.ui.model.SortedTableModel;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.compare.ReverseComparator;
+import de.dal33t.powerfolder.util.compare.DiskItemComparator;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 import javax.swing.event.TableModelEvent;
@@ -38,6 +40,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -54,11 +57,22 @@ public class FilesTableModel extends PFComponent implements TableModel,
         Translation.getTranslation("files_table_model.date"),
         Translation.getTranslation("files_table_model.availability")};
 
+    private static final int COL_FILE_TYPE = 0;
+    private static final int COL_NAME = 1;
+    public static final int COL_SIZE = 2;
+    private static final int COL_MEMBER = 3;
+    private static final int COL_MODIFIED_DATE = 4;
+    private static final int COL_AVAILABILITY = 5;
+
+
     private Folder folder;
     private File selectedDirectory;
     private final Map<File, List<DiskItem>> directories;
     private final List<DiskItem> diskItems;
     private final List<TableModelListener> listeners;
+    private int fileInfoComparatorType = -1;
+    private boolean sortAscending = true;
+    private int sortColumn;
 
     /**
      * Constructor
@@ -68,7 +82,7 @@ public class FilesTableModel extends PFComponent implements TableModel,
     public FilesTableModel(Controller controller) {
         super(controller);
         directories = new ConcurrentHashMap<File, List<DiskItem>>();
-        diskItems = new CopyOnWriteArrayList<DiskItem>();
+        diskItems = new ArrayList<DiskItem>();
         listeners = new CopyOnWriteArrayList<TableModelListener>();
     }
 
@@ -150,6 +164,7 @@ public class FilesTableModel extends PFComponent implements TableModel,
 
         Runnable runnable = new Runnable() {
             public void run() {
+                synchronized (diskItems) {
 
                 List<DiskItem> tempList = new ArrayList<DiskItem>(diskItems.size());
                 tempList.addAll(diskItems);
@@ -187,10 +202,8 @@ public class FilesTableModel extends PFComponent implements TableModel,
                 }
 
                 if (changed) {
-                    TableModelEvent e = new TableModelEvent(FilesTableModel.this);
-                    for (TableModelListener listener : listeners) {
-                        listener.tableChanged(e);
-                    }
+                    fireModelChanged();
+                }
                 }
             }
         };
@@ -276,14 +289,83 @@ public class FilesTableModel extends PFComponent implements TableModel,
     }
 
     public int getSortColumn() {
-        return 1;    // @todo hghg
+        return sortColumn;
     }
 
     public boolean isSortAscending() {
-        return false;  // @todo hghg
+        return sortAscending;
     }
 
     public boolean sortBy(int columnIndex) {
-        return columnIndex == 1;          // @todo hghg
+        sortColumn = columnIndex;
+        switch (columnIndex) {
+            case COL_FILE_TYPE:
+                return sortMe(DiskItemComparator.BY_FILE_TYPE);
+            case COL_NAME :
+                return sortMe(DiskItemComparator.BY_NAME);
+            case COL_SIZE:
+                return sortMe(DiskItemComparator.BY_SIZE);
+            case COL_MEMBER:
+                return sortMe(DiskItemComparator.BY_MEMBER);
+            case COL_MODIFIED_DATE:
+                return sortMe(DiskItemComparator.BY_MODIFIED_DATE);
+            case COL_AVAILABILITY :
+                return sortMe(DiskItemComparator.BY_AVAILABILITY);
+        }
+
+        sortColumn = -1;
+        return false;
+    }
+
+    /**
+     * Re-sorts the file list with the new comparator only if comparator differs
+     * from old one
+     *
+     * @param newComparator
+     * @return if the table was freshly sorted
+     */
+    public boolean sortMe(int newComparatorType) {
+        int oldComparatorType = fileInfoComparatorType;
+
+        fileInfoComparatorType = newComparatorType;
+        if (oldComparatorType != newComparatorType) {
+            boolean sorted = sort();
+            if (sorted) {
+                fireModelChanged();
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void fireModelChanged() {
+        TableModelEvent e = new TableModelEvent(this);
+        for (TableModelListener listener : listeners) {
+            listener.tableChanged(e);
+        }
+    }
+
+    private boolean sort() {
+        if (fileInfoComparatorType != -1) {
+            DiskItemComparator comparator = new DiskItemComparator(
+                fileInfoComparatorType);
+            synchronized (diskItems) {
+                if (sortAscending) {
+                    Collections.sort(diskItems, comparator);
+                } else {
+                    Collections.sort(diskItems, new ReverseComparator(comparator));
+                }
+            }
+            return true;
+        }
+        return false;
+    }
+
+    public void reverseList() {
+        sortAscending = !sortAscending;
+        synchronized (diskItems) {
+            Collections.reverse(diskItems);
+        }
+        fireModelChanged();
     }
 }

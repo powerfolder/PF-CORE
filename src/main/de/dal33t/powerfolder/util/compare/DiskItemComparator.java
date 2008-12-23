@@ -38,7 +38,7 @@ public class DiskItemComparator extends Loggable implements
 {
 
     // All the available file comparators
-    public static final int BY_FILETYPE = 0;
+    public static final int BY_FILE_TYPE = 0;
     public static final int BY_NAME = 1;
     public static final int BY_SIZE = 2;
     public static final int BY_MEMBER = 3;
@@ -51,11 +51,11 @@ public class DiskItemComparator extends Loggable implements
 
     private Directory directory;
     private int sortBy;
-    private static DiskItemComparator[] comparators;
+    private static final DiskItemComparator[] comparators;
 
     static {
         comparators = new DiskItemComparator[7];
-        comparators[BY_FILETYPE] = new DiskItemComparator(BY_FILETYPE);
+        comparators[BY_FILE_TYPE] = new DiskItemComparator(BY_FILE_TYPE);
         comparators[BY_NAME] = new DiskItemComparator(BY_NAME);
         comparators[BY_SIZE] = new DiskItemComparator(BY_SIZE);
         comparators[BY_MEMBER] = new DiskItemComparator(BY_MEMBER);
@@ -88,7 +88,7 @@ public class DiskItemComparator extends Loggable implements
     public int compare(DiskItem o1, DiskItem o2) {
 
         switch (sortBy) {
-            case BY_FILETYPE :
+            case BY_FILE_TYPE:
                 String ext1 = o1.getExtension();
                 String ext2 = o2.getExtension();
                 if (ext1 == null || ext2 == null) {
@@ -192,25 +192,29 @@ public class DiskItemComparator extends Loggable implements
     // General ****************************************************************
 
     public String toString() {
-        String text = "FileInfo comparator, sorting by ";
+        String stub = "FileInfo comparator, sorting by ";
+        String text;
         switch (sortBy) {
-            case BY_FILETYPE :
-                text += "file type";
+            case BY_FILE_TYPE:
+                text = stub + "file type";
                 break;
             case BY_NAME :
-                text += "name";
+                text = stub + "name";
                 break;
             case BY_SIZE :
-                text += "size";
+                text = stub +  "size";
                 break;
             case BY_MEMBER :
-                text += "member";
+                text = stub +  "member";
                 break;
             case BY_MODIFIED_DATE :
-                text += "modified date";
+                text = stub +  "modified date";
                 break;
             case BY_AVAILABILITY :
-                text += "availability";
+                text = stub +  "availability";
+                break;
+            default:
+                text = "???";
         }
         return text;
     }
