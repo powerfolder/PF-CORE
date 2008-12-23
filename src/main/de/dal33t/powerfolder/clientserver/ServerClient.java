@@ -150,7 +150,11 @@ public class ServerClient extends PFComponent {
         if (theNode == null) {
             MemberInfo serverInfo = new MemberInfo(theName, theNodeId);
             // Add only to nodemanager if not temporary
-            theNode = serverInfo.getNode(getController(), !temporaryNode);
+            if (!temporaryNode) {
+                theNode = serverInfo.getNode(getController(), true);
+            } else {
+                theNode = new Member(getController(), serverInfo);
+            }
         }
         if (!StringUtils.isBlank(host)) {
             theNode.getInfo().setConnectAddress(
