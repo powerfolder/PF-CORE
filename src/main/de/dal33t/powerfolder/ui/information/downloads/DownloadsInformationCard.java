@@ -205,6 +205,7 @@ public class DownloadsInformationCard extends InformationCard
         }
 
         public void actionPerformed(ActionEvent e) {
+            tablePanel.openSelectedDownload();
         }
     }
 
@@ -222,6 +223,7 @@ public class DownloadsInformationCard extends InformationCard
         }
 
         public void actionPerformed(ActionEvent e) {
+            tablePanel.abortSelectedDownloads();
         }
     }
 

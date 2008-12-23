@@ -29,6 +29,7 @@ import de.dal33t.powerfolder.ui.model.TransferManagerModel;
 import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.FileUtils;
 
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -43,6 +44,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
 import java.util.ArrayList;
+import java.io.File;
+import java.io.IOException;
 
 public class DownloadsTablePanel extends PFUIComponent {
 
@@ -214,7 +217,7 @@ public class DownloadsTablePanel extends PFUIComponent {
     }
 
     /**
-     * Returns true if a slingle completed download is selected.
+     * Returns true if a single completed download is selected.
      * 
      * @return
      */
@@ -231,6 +234,53 @@ public class DownloadsTablePanel extends PFUIComponent {
             }
         }
         return false;
+    }
+
+    /**
+     * Opens the selected, complete download in its native executor
+     */
+    public void openSelectedDownload() {
+        if (table == null || tableModel == null) {
+            return;
+        }
+        int[] rows = table.getSelectedRows();
+        boolean singleRowSelected = rows.length == 1;
+        if (singleRowSelected) {
+            Download download = tableModel.getDownloadAtRow(rows[0]);
+            if (download.isCompleted()) {
+                File file = download.getFile().getDiskFile(
+                        getController().getFolderRepository());
+                if (file != null && file.exists()) {
+                    try {
+                        FileUtils.openFile(file);
+                    } catch (IOException ex) {
+                        logSevere(ex);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Aborts selected incomplete downloads.
+     */
+    public void abortSelectedDownloads() {
+        if (table == null || tableModel == null) {
+            return;
+        }
+        int[] rows = table.getSelectedRows();
+        boolean rowsSelected = rows.length > 0;
+        if (rowsSelected) {
+            for (int row : rows) {
+                Download download = tableModel.getDownloadAtRow(row);
+                if (download == null) {
+                    continue;
+                }
+                if (!download.isCompleted()) {
+                    download.abort();
+                }
+            }
+        }
     }
 
     /**
