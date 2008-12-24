@@ -30,8 +30,10 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.ui.*;
 import de.dal33t.powerfolder.util.ui.SwingWorker;
 import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
+import de.dal33t.powerfolder.disk.RecycleBin;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.information.HasDetailsPanel;
 import de.dal33t.powerfolder.ui.information.folder.files.DirectoryFilterListener;
@@ -39,6 +41,7 @@ import de.dal33t.powerfolder.ui.information.folder.files.FileDetailsPanel;
 import de.dal33t.powerfolder.ui.information.folder.files.FilteredDirectoryEvent;
 import de.dal33t.powerfolder.ui.information.folder.files.FilteredDirectoryModel;
 import de.dal33t.powerfolder.ui.information.folder.files.tree.DirectoryTreeNodeUserObject;
+import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 
 import javax.swing.*;
 import javax.swing.table.JTableHeader;
@@ -193,8 +196,8 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         int[] rows = table.getSelectedRows();
         boolean singleRowSelected = rows.length == 1;
         if (singleRowSelected) {
-            FileInfo download = tableModel.getFileInfoAtRow(rows[0]);
-            File file = download.getDiskFile(
+            FileInfo fileInfo = tableModel.getFileInfoAtRow(rows[0]);
+            File file = fileInfo.getDiskFile(
                     getController().getFolderRepository());
             if (file != null && file.exists()) {
                 try {
@@ -203,6 +206,73 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
                     logSevere(ex);
                 }
             }
+        }
+    }
+
+    private void restoreSelectedFile() {
+        if (table == null || tableModel == null) {
+            return;
+        }
+        int[] rows = table.getSelectedRows();
+        boolean singleRowSelected = rows.length == 1;
+        if (singleRowSelected) {
+            final FileInfo fileInfo = tableModel.getFileInfoAtRow(rows[0]);
+
+            SwingWorker worker = new ActivityVisualizationWorker(
+                    getController().getUIController().getMainFrame().getUIComponent()) {
+
+                @Override
+                protected String getTitle() {
+                    return Translation.getTranslation("restore.busy.title");
+                }
+
+                @Override
+                protected String getWorkingText() {
+                    return Translation.getTranslation("restore.busy.description");
+                }
+
+                public Object construct() {
+                    boolean succes = true;
+                    RecycleBin recycleBin = getController().getRecycleBin();
+                    if (recycleBin.isInRecycleBin(fileInfo)) {
+                        if (!recycleBin.restoreFromRecycleBin(fileInfo)) {
+                            succes = false;
+                        }
+                    }
+                    return succes;
+                }
+            };
+
+            // do in different thread
+            worker.start();
+        }
+    }
+
+    private void deleteSelectedFile() {
+        if (table == null || tableModel == null) {
+            return;
+        }
+        int[] rows = table.getSelectedRows();
+        boolean singleRowSelected = rows.length == 1;
+        final FileInfo fileInfo = tableModel.getFileInfoAtRow(rows[0]);
+        if (singleRowSelected) {
+            SwingWorker worker = new ActivityVisualizationWorker(getUIController()) {
+                public Object construct() {
+                    FolderRepository repo = getController().getFolderRepository();
+                    Folder folder = fileInfo.getFolder(repo);
+                    folder.removeFilesLocal(fileInfo);
+                    return null;
+                }
+
+                protected String getTitle() {
+                    return Translation.getTranslation("delete.busy.title");
+                }
+
+                protected String getWorkingText() {
+                    return Translation.getTranslation("delete.busy.title");
+                }
+            };
+            worker.start();
         }
     }
 
@@ -217,7 +287,37 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         }
 
         public void actionPerformed(ActionEvent e) {
-            DownloadWorker worker = new DownloadWorker(tableModel.getFileInfoAtRow(table.getSelectionModel().getMinSelectionIndex()));
+            SwingWorker worker = new ActivityVisualizationWorker(getUIController()) {
+
+                @Override
+                public Object construct() {
+                    FileInfo fileInfo = tableModel.getFileInfoAtRow(table.getSelectionModel().getMinSelectionIndex());
+                    if (fileInfo != null) {
+                        FolderRepository repo = getController().getFolderRepository();
+                        Folder folder = fileInfo.getFolder(repo);
+                        if (folder == null) {
+                            return null;
+                        }
+                        if (fileInfo.isDownloading(getController())) {
+                            return null;
+                        }
+                        getController().getTransferManager().downloadNewestVersion(fileInfo);
+                    }
+                    return null;
+                }
+
+                @Override
+                protected String getTitle() {
+                    return Translation.getTranslation("download.busy.title");
+                }
+
+                @Override
+                protected String getWorkingText() {
+                    return Translation.getTranslation("download.busy.description");
+                }
+
+            };
+
             worker.start();
         }
     }
@@ -229,6 +329,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         }
 
         public void actionPerformed(ActionEvent e) {
+            deleteSelectedFile();
         }
     }
 
@@ -239,36 +340,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         }
 
         public void actionPerformed(ActionEvent e) {
-        }
-    }
-
-    /**
-     * Starts to download upon the targets
-     *
-     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
-     */
-    private class DownloadWorker extends SwingWorker {
-
-        private FileInfo fileInfo;
-
-        private DownloadWorker(FileInfo fileInfo) {
-            this.fileInfo = fileInfo;
-        }
-
-        @Override
-        public Object construct() {
-            if (fileInfo != null) {
-                FolderRepository repo = getController().getFolderRepository();
-                Folder folder = fileInfo.getFolder(repo);
-                if (folder == null) {
-                    return null;
-                }
-                if (fileInfo.isDownloading(getController())) {
-                    return null;
-                }
-                getController().getTransferManager().downloadNewestVersion(fileInfo);
-            }
-            return null;
+            restoreSelectedFile();
         }
     }
 
