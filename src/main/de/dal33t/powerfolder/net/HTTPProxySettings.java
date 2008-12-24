@@ -79,7 +79,7 @@ public class HTTPProxySettings {
         String proxyHost = ConfigurationEntry.HTTP_PROXY_HOST
             .getValue(controller);
         if (StringUtils.isBlank(proxyHost)) {
-            LOG.warning("No proxy");
+            LOG.finer("No proxy");
             return;
         }
         int proxyPort = ConfigurationEntry.HTTP_PROXY_PORT
@@ -96,7 +96,7 @@ public class HTTPProxySettings {
         if (LOG.isLoggable(Level.WARNING)) {
             String auth = StringUtils.isBlank(proxyUsername) ? "" : "("
                 + proxyUsername + "/" + proxyPassword.length() + " chars)";
-            LOG.warning("Loaded HTTP proxy settings: " + proxyHost + ":"
+            LOG.fine("Loaded HTTP proxy settings: " + proxyHost + ":"
                 + proxyPort + " " + auth);
         }
     }
@@ -132,11 +132,11 @@ public class HTTPProxySettings {
         setCredentials(proxyUsername, proxyPassword);
 
         if (StringUtils.isBlank(proxyHost)) {
-            LOG.warning("Removed proxy settings");
+            LOG.fine("Removed proxy settings");
         } else {
             String auth = StringUtils.isBlank(proxyUsername) ? "" : "("
                 + proxyUsername + "/" + proxyPassword.length() + " chars)";
-            LOG.warning("Saved HTTP proxy settings: " + proxyHost + ":"
+            LOG.fine("Saved HTTP proxy settings: " + proxyHost + ":"
                 + proxyPort + " " + auth);
         }
     }

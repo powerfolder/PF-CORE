@@ -19,13 +19,32 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.swing.JCheckBox;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
+
+import jwf.WizardPanel;
+
+import org.apache.commons.lang.StringUtils;
+
 import com.jgoodies.binding.adapter.BasicComponentFactory;
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
@@ -35,15 +54,6 @@ import de.dal33t.powerfolder.ui.widget.LinkLabel;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
-import jwf.WizardPanel;
-import org.apache.commons.lang.StringUtils;
-
-import javax.swing.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class LoginOnlineStoragePanel extends PFWizardPanel {
     private static final Logger LOG = Logger
@@ -145,7 +155,9 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
 
         builder.add(rememberPasswordBox, cc.xy(3, 7));
 
-        if (client.getRegisterURL() != null) {
+        if (Feature.SERVER_INTERNAL_FUNCTIONS.isEnabled()
+            && client.getRegisterURL() != null)
+        {
             builder.add(new LinkLabel(Translation
                 .getTranslation("pro.wizard.activation.register_now"), client
                 .getRegisterURL()), cc.xy(3, 9));

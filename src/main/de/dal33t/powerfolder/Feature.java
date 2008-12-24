@@ -67,7 +67,12 @@ public enum Feature {
      * #658
      * <P>
      */
-    DETECT_UPDATE_BY_VERSION;
+    DETECT_UPDATE_BY_VERSION,
+
+    /**
+     * If the server/console should offer PowerFolder internal functions.
+     */
+    SERVER_INTERNAL_FUNCTIONS;
 
     private static final Logger log = Logger.getLogger(Feature.class.getName());
 

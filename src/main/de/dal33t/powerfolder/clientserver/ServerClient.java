@@ -406,6 +406,17 @@ public class ServerClient extends PFComponent {
             if (newAccountDetails != null) {
                 accountDetails = newAccountDetails;
 
+                boolean configChanged = false;
+                if (accountDetails.getAccount().getServer() != null) {
+                    configChanged = setServerWebURLInConfig(accountDetails
+                        .getAccount().getServer().getWebUrl());
+                } else {
+                    configChanged = setServerWebURLInConfig(null);
+                }
+                if (configChanged) {
+                    getController().saveConfig();
+                }
+
                 // Fire login success
                 fireLogin(accountDetails);
 
@@ -597,9 +608,8 @@ public class ServerClient extends PFComponent {
      * the config file.
      * 
      * @param newServer
-     * @param webUrl
      */
-    public void setServerInConfig(MemberInfo newServer, String webUrl) {
+    public void setServerInConfig(MemberInfo newServer) {
         Reject.ifNull(newServer, "Server is null");
 
         ConfigurationEntry.SERVER_NAME
@@ -618,12 +628,23 @@ public class ServerClient extends PFComponent {
         } else {
             ConfigurationEntry.SERVER_NODEID.removeValue(getController());
         }
+    }
+
+    private boolean setServerWebURLInConfig(String newWebUrl) {
+        this.webURL = newWebUrl;
+        String oldWebUrl = ConfigurationEntry.SERVER_WEB_URL
+            .getValue(getController());
+        if (Util.equals(oldWebUrl, newWebUrl)) {
+            return false;
+        }
         // Currently not supported from config
-        if (StringUtils.isBlank(webUrl)) {
+        if (StringUtils.isBlank(newWebUrl)) {
             ConfigurationEntry.SERVER_WEB_URL.removeValue(getController());
         } else {
-            ConfigurationEntry.SERVER_WEB_URL.setValue(getController(), webUrl);
+            ConfigurationEntry.SERVER_WEB_URL.setValue(getController(),
+                newWebUrl);
         }
+        return true;
     }
 
     // Event handling ********************************************************
@@ -748,13 +769,12 @@ public class ServerClient extends PFComponent {
         // Remind new server for next connect.
         if (updateConfig) {
             if (newServerInfo.getNode().getConnectAddress() != null) {
-                setServerInConfig(newServerInfo.getNode(), newServerInfo
-                    .getWebUrl());
+                setServerInConfig(newServerInfo.getNode());
             } else {
                 // Fallback, use node INFO from P2P database.
-                setServerInConfig(newServerNode.getInfo(), newServerInfo
-                    .getWebUrl());
+                setServerInConfig(newServerNode.getInfo());
             }
+            setServerWebURLInConfig(newServerInfo.getWebUrl());
             getController().saveConfig();
         }
 
@@ -804,7 +824,7 @@ public class ServerClient extends PFComponent {
                     // Remove old temporary server entry without ID.
                     getController().getNodeManager().removeNode(oldServer);
                     if (updateConfig) {
-                        setServerInConfig(server.getInfo(), webURL);
+                        setServerInConfig(server.getInfo());
                         getController().saveConfig();
                     }
                     logFine("Got connect to server: " + server);
@@ -874,7 +894,9 @@ public class ServerClient extends PFComponent {
                         + ". Reason: Not on LAN");
                 return;
             }
-            if (!getController().getNodeManager().isStarted()) {
+            if (!getController().getNodeManager().isStarted()
+                || !getController().getReconnectManager().isStarted())
+            {
                 return;
             }
             if (server.isReconnecting() || server.isConnected()) {

@@ -103,6 +103,10 @@ public class ReconnectManager extends PFComponent {
             reconnectionQueue.notifyAll();
         }
     }
+    
+    public boolean isStarted() {
+        return started;
+    }
 
     /**
      * @return the size of the reconnection queue
