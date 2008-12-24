@@ -24,12 +24,14 @@ import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.DiskItem;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.util.ui.UIUtil;
+import de.dal33t.powerfolder.util.ui.*;
+import de.dal33t.powerfolder.util.ui.SwingWorker;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.information.HasDetailsPanel;
 import de.dal33t.powerfolder.ui.information.folder.files.DirectoryFilterListener;
@@ -61,6 +63,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
     private FilesTableModel tableModel;
     private FilesTable table;
     private OpenFileAction openFileAction;
+    private DownloadFileAction downloadFileAction;
 
     public FilesTablePanel(Controller controller) {
         super(controller);
@@ -113,6 +116,10 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
         openFileAction = new OpenFileAction();
         openFileAction.setEnabled(false);
+        downloadFileAction = new DownloadFileAction();
+        downloadFileAction.setEnabled(false);
+        bar.addGridded(new JButton(downloadFileAction));
+        bar.addRelatedGap();
         bar.addGridded(new JButton(openFileAction));
         bar.addRelatedGap();
         bar.addGridded(new JToggleButton(new DetailsAction(getController())));
@@ -192,6 +199,48 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
     // Inner Classes //
     ///////////////////
 
+    private class DownloadFileAction extends BaseAction {
+        DownloadFileAction() {
+            super("action_download_file",
+                    FilesTablePanel.this.getController());
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            DownloadWorker worker = new DownloadWorker(tableModel.getFileInfoAtRow(table.getSelectionModel().getMinSelectionIndex()));
+            worker.start();
+        }
+    }
+
+    /**
+     * Starts to download upon the targets
+     *
+     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
+     */
+    private class DownloadWorker extends SwingWorker {
+
+        private FileInfo fileInfo;
+
+        private DownloadWorker(FileInfo fileInfo) {
+            this.fileInfo = fileInfo;
+        }
+
+        @Override
+        public Object construct() {
+            if (fileInfo != null) {
+                FolderRepository repo = getController().getFolderRepository();
+                Folder folder = fileInfo.getFolder(repo);
+                if (folder == null) {
+                    return null;
+                }
+                if (fileInfo.isDownloading(getController())) {
+                    return null;
+                }
+                getController().getTransferManager().downloadNewestVersion(fileInfo);
+            }
+            return null;
+        }
+    }
+
     private class OpenFileAction extends BaseAction {
         OpenFileAction() {
             super("action_open_file",
@@ -219,16 +268,35 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
             int min = table.getSelectionModel().getMinSelectionIndex();
             int max = table.getSelectionModel().getMaxSelectionIndex();
             if (min == max && min >= 0) {
-                DiskItem diskItem = (DiskItem) tableModel.getValueAt(min, 0);
-                if (diskItem instanceof FileInfo) {
-                    FileInfo fi = (FileInfo) diskItem;
-                    fileDetailsPanel.setFileInfo(fi);
+                FileInfo fileInfo = tableModel.getFileInfoAtRow(min);
+                if (fileInfo != null) {
+                    fileDetailsPanel.setFileInfo(fileInfo);
                     openFileAction.setEnabled(true);
+
+                    FolderRepository repo = getController()
+                            .getFolderRepository();
+                    boolean state = true;
+                    if (fileInfo.diskFileExists(getController())
+                            && !fileInfo.isNewerAvailable(repo)) {
+                        state = false;
+                    } else if (!(fileInfo.isDeleted()
+                            || fileInfo.isExpected(repo)
+                            || fileInfo.isNewerAvailable(repo))) {
+                        state = false;
+                    } else {
+                        TransferManager tm = getController().getTransferManager();
+                        if (tm.getActiveDownload(fileInfo) != null) {
+                            return;
+                        }
+                    }
+                    downloadFileAction.setEnabled(state);
                     return;
                 }
             }
+
             openFileAction.setEnabled(false);
             fileDetailsPanel.setFileInfo(null);
+            openFileAction.setEnabled(false);
         }
     }
 

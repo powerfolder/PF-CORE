@@ -102,7 +102,7 @@ public class FolderSetupPanel extends PFWizardPanel {
         CellConstraints cc = new CellConstraints();
 
         // Folder Name
-        builder.add(new JLabel(Translation.getTranslation("fileinfo.name")), cc
+        builder.add(new JLabel(Translation.getTranslation("file_info.name")), cc
             .xy(1, 1));
         builder.add(folderNameTextField, cc.xy(3, 1));
 

@@ -50,7 +50,7 @@ public class RootTableModel extends PFUIComponent implements TableModel {
     private Set<TableModelListener> tableListeners = new HashSet<TableModelListener>();
 //    private NavTreeModel navTreeModel;
     private String[] columns = new String[]{
-        Translation.getTranslation("filelist.name"),
+        Translation.getTranslation("file_list.name"),
         Translation.getTranslation("general.size")};
 
     RootTableModel(Controller controller) {

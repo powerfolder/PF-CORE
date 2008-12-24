@@ -72,7 +72,7 @@ import java.util.Map;
 public class FileNameProblemDialog extends PFUIComponent {
 
     private String[] columns = new String[]{
-        Translation.getTranslation("filelist.name"),
+        Translation.getTranslation("file_list.name"),
         Translation.getTranslation("general.description"),
         Translation.getTranslation("filename_problem.dialog.solution")};
 

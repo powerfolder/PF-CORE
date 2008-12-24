@@ -24,7 +24,7 @@ import java.util.List;
 
 /**
  * Class to keep track of selected objects. Call setSelection() to set a new
- * selection. Supportes single and multiple selection. Register listeners using
+ * selection. Supports single and multiple selection. Register listeners using
  * the addSelectionChangeListener method to recieve events if the selection has
  * changed.
  * 
