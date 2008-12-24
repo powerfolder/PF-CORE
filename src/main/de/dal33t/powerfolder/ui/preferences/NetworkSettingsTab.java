@@ -273,6 +273,8 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         } else if (!newServer.equals(oldServer)) {
             getController().getOSClient()
                 .setServerInConfig(newServer.getInfo());
+            // TODO: Unknown.
+            getController().getOSClient().setServerWebURLInConfig(null);
         }
         needsRestart = !Util.equals(oldServer, newServer);
     }
