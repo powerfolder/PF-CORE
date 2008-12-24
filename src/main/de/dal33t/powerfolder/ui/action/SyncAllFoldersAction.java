@@ -17,19 +17,16 @@
 *
 * $Id$
 */
-package de.dal33t.powerfolder.ui.actionold;
+package de.dal33t.powerfolder.ui.action;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.ui.dialog.SyncFolderPanel;
-import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.util.Reject;
 
-import javax.swing.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
 
 /**
  * Action to sync all folders.
@@ -39,9 +36,7 @@ import java.awt.event.KeyEvent;
 public class SyncAllFoldersAction extends BaseAction {
 
     public SyncAllFoldersAction(Controller controller) {
-        super("scan_all_folders", controller);
-        putValue(ACCELERATOR_KEY,
-                KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0));
+        super("action_sync_all_folders", controller);
     }
 
     public void actionPerformed(ActionEvent e) {
