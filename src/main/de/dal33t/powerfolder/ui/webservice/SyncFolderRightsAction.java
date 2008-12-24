@@ -19,10 +19,10 @@
 */
 package de.dal33t.powerfolder.ui.webservice;
 
-import java.awt.event.ActionEvent;
-
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.ui.action.BaseAction;
+
+import java.awt.event.ActionEvent;
 
 /**
  * Sync the folder membership with the rights on the server

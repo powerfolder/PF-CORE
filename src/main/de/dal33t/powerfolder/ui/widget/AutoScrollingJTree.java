@@ -19,11 +19,10 @@
 */
 package de.dal33t.powerfolder.ui.widget;
 
+import javax.swing.*;
+import javax.swing.tree.TreeModel;
 import java.awt.*;
 import java.awt.dnd.Autoscroll;
-
-import javax.swing.JTree;
-import javax.swing.tree.TreeModel;
 
 /**
  * Autoscrolling JTree for drag and drop.

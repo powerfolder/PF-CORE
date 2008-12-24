@@ -19,20 +19,19 @@
  */
 package de.dal33t.powerfolder.ui.model;
 
-import de.dal33t.powerfolder.event.AskForFriendshipReceivedListener;
-import de.dal33t.powerfolder.event.AskForFriendshipReceivedEvent;
-import de.dal33t.powerfolder.event.AskForFriendshipEvent;
-import de.dal33t.powerfolder.event.AskForFriendshipListener;
+import com.jgoodies.binding.value.ValueHolder;
+import com.jgoodies.binding.value.ValueModel;
+import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.event.AskForFriendshipEvent;
+import de.dal33t.powerfolder.event.AskForFriendshipListener;
+import de.dal33t.powerfolder.event.AskForFriendshipReceivedEvent;
+import de.dal33t.powerfolder.event.AskForFriendshipReceivedListener;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-
-import com.jgoodies.binding.value.ValueModel;
-import com.jgoodies.binding.value.ValueHolder;
 
 /**
  * Class to manage received notifications. Notifications can be added and removed.

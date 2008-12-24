@@ -19,22 +19,20 @@
  */
 package de.dal33t.powerfolder.ui.model;
 
-import de.dal33t.powerfolder.message.Invitation;
-import de.dal33t.powerfolder.event.InvitationReceivedListener;
-import de.dal33t.powerfolder.event.InvitationReceivedEvent;
-import de.dal33t.powerfolder.event.InvitationHandler;
-import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.ui.wizard.PFWizard;
-import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.Controller;
-
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
-
-import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.binding.value.ValueHolder;
+import com.jgoodies.binding.value.ValueModel;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.disk.FolderRepository;
+import de.dal33t.powerfolder.event.InvitationHandler;
+import de.dal33t.powerfolder.event.InvitationReceivedEvent;
+import de.dal33t.powerfolder.event.InvitationReceivedListener;
+import de.dal33t.powerfolder.message.Invitation;
+import de.dal33t.powerfolder.ui.wizard.PFWizard;
 
 import javax.swing.*;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Class to manage received invitations. Invitations can be added and removed.

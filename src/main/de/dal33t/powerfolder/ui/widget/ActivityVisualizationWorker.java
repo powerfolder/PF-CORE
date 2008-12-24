@@ -19,21 +19,17 @@
  */
 package de.dal33t.powerfolder.ui.widget;
 
-import java.awt.Component;
-import java.awt.EventQueue;
-import java.awt.Frame;
-import java.util.concurrent.Semaphore;
-
-import javax.swing.*;
-
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-
 import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.util.ProgressListener;
 import de.dal33t.powerfolder.util.ui.SwingWorker;
+
+import javax.swing.*;
+import java.awt.*;
+import java.util.concurrent.Semaphore;
 
 /**
  * Basically a SwingWorker, which shows some activity visualisation after some

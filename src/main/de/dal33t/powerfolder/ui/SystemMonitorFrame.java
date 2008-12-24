@@ -26,10 +26,9 @@ import de.javasoft.plaf.synthetica.SyntheticaRootPaneUI;
 import de.javasoft.synthetica.addons.SystemMonitor;
 import de.javasoft.synthetica.addons.systemmonitor.CollectorFactory;
 
-import javax.swing.JFrame;
+import javax.swing.*;
 import javax.swing.plaf.RootPaneUI;
-import java.awt.BorderLayout;
-import java.awt.Frame;
+import java.awt.*;
 import java.util.prefs.Preferences;
 
 /**

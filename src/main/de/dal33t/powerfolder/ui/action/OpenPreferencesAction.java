@@ -22,9 +22,7 @@ package de.dal33t.powerfolder.ui.action;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.preferences.PreferencesDialog;
 
-import javax.swing.*;
 import java.awt.event.ActionEvent;
-import java.awt.*;
 
 /**
  * Actions which is executed to open the preferences

@@ -27,9 +27,7 @@ import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
 
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JProgressBar;
+import javax.swing.*;
 
 /**
  * Class to render the online storage info on the home tab.

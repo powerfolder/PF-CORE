@@ -19,19 +19,6 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
-
-import java.awt.Component;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.swing.JDialog;
-
-import jwf.Wizard;
-import jwf.WizardContext;
-import jwf.WizardListener;
-import jwf.WizardPanel;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFUIComponent;
@@ -39,8 +26,19 @@ import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.ui.Icons;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
+import jwf.Wizard;
+import jwf.WizardContext;
+import jwf.WizardListener;
+import jwf.WizardPanel;
+
+import javax.swing.*;
+import java.awt.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * The main wizard class

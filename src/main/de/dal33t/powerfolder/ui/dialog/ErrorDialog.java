@@ -29,15 +29,9 @@ import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.net.ErrorManager;
 import de.dal33t.powerfolder.util.Translation;
 
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextArea;
+import javax.swing.*;
 import javax.swing.border.TitledBorder;
-import java.awt.Component;
-import java.awt.Dimension;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 

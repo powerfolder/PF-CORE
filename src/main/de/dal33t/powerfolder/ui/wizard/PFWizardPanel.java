@@ -19,26 +19,21 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
-import java.awt.Color;
-import java.util.List;
-
-import javax.swing.Icon;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-
-import jwf.WizardPanel;
-
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.LayoutMap;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.widget.AntialiasedLabel;
 import de.dal33t.powerfolder.util.Help;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
+import jwf.WizardPanel;
+
+import javax.swing.*;
+import java.awt.*;
+import java.util.List;
 
 /**
  * Base class for wizard panels All subclasses have a title, optional picto and

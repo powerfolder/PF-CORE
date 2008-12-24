@@ -26,7 +26,7 @@ import de.dal33t.powerfolder.ui.folders.FoldersTab;
 import de.dal33t.powerfolder.ui.home.HomeTab;
 import de.dal33t.powerfolder.util.Translation;
 
-import javax.swing.JTabbedPane;
+import javax.swing.*;
 
 /**
  * This is the main tabbed pain component in the PowerFolder GUI.

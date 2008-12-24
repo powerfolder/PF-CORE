@@ -27,10 +27,8 @@ import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.util.Format;
 
-import javax.swing.Action;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import java.awt.CardLayout;
+import javax.swing.*;
+import java.awt.*;
 import java.text.DecimalFormat;
 
 /**

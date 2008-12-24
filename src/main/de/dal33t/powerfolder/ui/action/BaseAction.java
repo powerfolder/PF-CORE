@@ -25,8 +25,7 @@ import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.util.Translation;
 import org.apache.commons.lang.StringUtils;
 
-import javax.swing.AbstractAction;
-import javax.swing.Icon;
+import javax.swing.*;
 
 /**
  * Superclass for all actions used in pf

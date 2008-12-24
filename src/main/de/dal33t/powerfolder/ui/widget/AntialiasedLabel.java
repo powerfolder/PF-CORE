@@ -19,13 +19,8 @@
 */
 package de.dal33t.powerfolder.ui.widget;
 
-import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
-
-import javax.swing.Icon;
-import javax.swing.JLabel;
+import javax.swing.*;
+import java.awt.*;
 
 /**
  * A Label which supported antialiasing.

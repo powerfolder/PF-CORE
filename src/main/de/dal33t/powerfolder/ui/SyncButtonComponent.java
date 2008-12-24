@@ -29,9 +29,8 @@ import de.dal33t.powerfolder.ui.action.SyncAllFoldersAction;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
-import javax.swing.JLabel;
-import javax.swing.Icon;
-import java.awt.Component;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -77,7 +76,7 @@ public class SyncButtonComponent extends PFUIComponent {
         syncAllLabel = new JLabel(Icons
             .getIcon("icons/sync/normal/sync_00.png"));
         syncAllLabel.setToolTipText(Translation
-            .getTranslation("scan_all_folders.description"));
+            .getTranslation("action_sync_all_folders.description"));
         syncAllLabel.addMouseListener(new MyMouseAdapter());
     }
 

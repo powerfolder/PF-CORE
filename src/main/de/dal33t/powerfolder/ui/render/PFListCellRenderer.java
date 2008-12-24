@@ -19,15 +19,13 @@
 */
 package de.dal33t.powerfolder.ui.render;
 
-import java.awt.Component;
-
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.JList;
-
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Translation;
+
+import javax.swing.*;
+import java.awt.*;
 
 /**
  * A Default list cell renderer for several powerfolder elements

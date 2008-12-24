@@ -29,16 +29,12 @@ import de.dal33t.powerfolder.ui.information.folder.files.DirectoryFilterListener
 import de.dal33t.powerfolder.ui.information.folder.files.FilteredDirectoryEvent;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
-import javax.swing.BorderFactory;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTree;
+import javax.swing.*;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import static javax.swing.tree.TreeSelectionModel.SINGLE_TREE_SELECTION;
-import java.awt.Component;
-import java.awt.Font;
+import java.awt.*;
 
 public class FilesTreePanel extends PFUIComponent implements DirectoryFilterListener {
 

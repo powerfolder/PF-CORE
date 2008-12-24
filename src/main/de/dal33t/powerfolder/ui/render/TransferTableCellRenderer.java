@@ -19,17 +19,7 @@
 */
 package de.dal33t.powerfolder.ui.render;
 
-import java.awt.Color;
-import java.awt.Component;
-
-import javax.swing.JProgressBar;
-import javax.swing.JTable;
-import javax.swing.SwingConstants;
-import javax.swing.UIManager;
-import javax.swing.table.DefaultTableCellRenderer;
-
 import com.jgoodies.forms.factories.Borders;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
@@ -46,6 +36,10 @@ import de.dal33t.powerfolder.util.TransferCounter;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.EstimatedTime;
 import de.dal33t.powerfolder.util.ui.UIUtil;
+
+import javax.swing.*;
+import javax.swing.table.DefaultTableCellRenderer;
+import java.awt.*;
 
 /**
  * Renderer for any transfer table

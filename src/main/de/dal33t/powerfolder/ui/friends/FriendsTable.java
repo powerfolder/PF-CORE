@@ -19,18 +19,18 @@
 */
 package de.dal33t.powerfolder.ui.friends;
 
-import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.ui.render.SortedTableHeaderRenderer;
-import de.dal33t.powerfolder.ui.model.FriendsNodeTableModel;
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.model.FriendsNodeTableModel;
+import de.dal33t.powerfolder.ui.render.SortedTableHeaderRenderer;
 
 import javax.swing.*;
-import javax.swing.table.TableModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
+import javax.swing.table.TableModel;
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.*;
 
 public class FriendsTable extends JTable {
 

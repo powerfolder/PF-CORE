@@ -28,9 +28,8 @@ import de.dal33t.powerfolder.ui.information.folder.members.MembersTab;
 import de.dal33t.powerfolder.ui.information.folder.settings.SettingsTab;
 import de.dal33t.powerfolder.util.Translation;
 
-import javax.swing.JComponent;
-import javax.swing.JTabbedPane;
-import java.awt.Image;
+import javax.swing.*;
+import java.awt.*;
 
 /**
  * Information card for a folder. Includes files, members and settings tabs.

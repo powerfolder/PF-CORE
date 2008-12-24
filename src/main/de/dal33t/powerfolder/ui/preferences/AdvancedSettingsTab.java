@@ -34,11 +34,7 @@ import de.dal33t.powerfolder.util.ui.LANList;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 import org.apache.commons.lang.StringUtils;
 
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JPanel;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
+import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;

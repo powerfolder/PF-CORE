@@ -19,8 +19,8 @@
 */
 package de.dal33t.powerfolder.ui;
 
-import de.javasoft.plaf.synthetica.*;
 import de.dal33t.powerfolder.util.Translation;
+import de.javasoft.plaf.synthetica.*;
 
 import javax.swing.*;
 import java.util.logging.Level;

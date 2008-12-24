@@ -25,14 +25,14 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.ui.model.NodeManagerModel;
-import de.dal33t.powerfolder.event.NodeManagerModelListener;
 import de.dal33t.powerfolder.event.NodeManagerModelEvent;
+import de.dal33t.powerfolder.event.NodeManagerModelListener;
+import de.dal33t.powerfolder.ui.model.NodeManagerModel;
 
 import javax.swing.*;
+import java.awt.*;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
-import java.awt.*;
 
 public class ComputersList extends PFUIComponent {
 

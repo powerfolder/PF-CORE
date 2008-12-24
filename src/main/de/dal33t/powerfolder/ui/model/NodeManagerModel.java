@@ -19,20 +19,8 @@
 */
 package de.dal33t.powerfolder.ui.model;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.concurrent.CopyOnWriteArraySet;
-
-import javax.swing.ListModel;
-
 import com.jgoodies.binding.list.ArrayListModel;
 import com.jgoodies.binding.value.ValueModel;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFUIComponent;
@@ -43,6 +31,12 @@ import de.dal33t.powerfolder.event.NodeManagerModelEvent;
 import de.dal33t.powerfolder.event.NodeManagerModelListener;
 import de.dal33t.powerfolder.net.NodeManager;
 import de.dal33t.powerfolder.util.compare.MemberComparator;
+
+import javax.swing.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.*;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
  * Model for the node manager. Create filtered list of nodes based on

@@ -33,7 +33,7 @@ import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.ui.TreeNodeList;
 
 import javax.swing.tree.MutableTreeNode;
-import java.awt.EventQueue;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;

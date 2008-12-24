@@ -19,13 +19,10 @@
 */
 package de.dal33t.powerfolder.ui.widget;
 
-import java.awt.Color;
-import java.awt.Insets;
-
-import javax.swing.Icon;
-import javax.swing.JButton;
-
 import com.jgoodies.forms.factories.Borders;
+
+import javax.swing.*;
+import java.awt.*;
 
     
 public class JButton3Icons extends JButton {

@@ -19,17 +19,8 @@
  */
 package de.dal33t.powerfolder.ui.webservice;
 
-import java.awt.event.ActionEvent;
-import java.util.Collections;
-import java.util.List;
-
-import javax.swing.Action;
-import javax.swing.ListModel;
-import javax.swing.event.TreeModelEvent;
-
 import com.jgoodies.binding.PresentationModel;
 import com.jgoodies.binding.list.ArrayListModel;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.clientserver.ServerClient;
@@ -46,6 +37,11 @@ import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.compare.FolderComparator;
 import de.dal33t.powerfolder.util.ui.SwingWorker;
+
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * UI Model for the Online Storage client.

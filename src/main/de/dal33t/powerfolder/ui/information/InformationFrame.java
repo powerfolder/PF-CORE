@@ -28,10 +28,9 @@ import de.dal33t.powerfolder.ui.information.folder.FolderInformationCard;
 import de.dal33t.powerfolder.ui.information.uploads.UploadsInformationCard;
 import de.javasoft.plaf.synthetica.SyntheticaRootPaneUI;
 
-import javax.swing.JFrame;
-import javax.swing.WindowConstants;
+import javax.swing.*;
 import javax.swing.plaf.RootPaneUI;
-import java.awt.Frame;
+import java.awt.*;
 import java.util.prefs.Preferences;
 
 /**

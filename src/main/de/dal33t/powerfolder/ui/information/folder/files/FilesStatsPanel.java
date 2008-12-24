@@ -26,11 +26,8 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.util.Translation;
 
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JSeparator;
-import javax.swing.SwingConstants;
-import java.awt.Dimension;
+import javax.swing.*;
+import java.awt.*;
 
 public class FilesStatsPanel extends PFUIComponent {
 

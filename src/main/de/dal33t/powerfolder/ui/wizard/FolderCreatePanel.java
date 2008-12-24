@@ -40,17 +40,8 @@ import de.dal33t.powerfolder.util.ui.SwingWorker;
 import jwf.Wizard;
 import jwf.WizardPanel;
 
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JProgressBar;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
+import javax.swing.*;
+import java.io.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 

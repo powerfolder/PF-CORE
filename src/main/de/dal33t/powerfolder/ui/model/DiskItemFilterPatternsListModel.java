@@ -21,7 +21,7 @@ package de.dal33t.powerfolder.ui.model;
 
 import de.dal33t.powerfolder.disk.DiskItemFilter;
 
-import javax.swing.AbstractListModel;
+import javax.swing.*;
 
 /**
  * maps the current FileInfoFilter to a ListModel.

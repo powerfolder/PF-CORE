@@ -20,9 +20,9 @@
 package de.dal33t.powerfolder.ui.action;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.ui.wizard.PFWizard;
-import de.dal33t.powerfolder.ui.model.ReceivedInvitationsModel;
 import de.dal33t.powerfolder.message.Invitation;
+import de.dal33t.powerfolder.ui.model.ReceivedInvitationsModel;
+import de.dal33t.powerfolder.ui.wizard.PFWizard;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;

@@ -29,8 +29,7 @@ import de.dal33t.powerfolder.ui.chat.ChatModel;
 import de.dal33t.powerfolder.ui.chat.ChatModelEvent;
 import de.dal33t.powerfolder.ui.chat.ChatModelListener;
 
-import javax.swing.Icon;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Map;

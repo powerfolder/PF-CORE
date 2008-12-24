@@ -22,7 +22,7 @@ package de.dal33t.powerfolder.ui.widget;
 import com.jgoodies.forms.factories.Borders;
 import de.dal33t.powerfolder.util.BrowserLauncher;
 
-import java.awt.Cursor;
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;

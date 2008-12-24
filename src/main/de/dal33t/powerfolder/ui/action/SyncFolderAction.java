@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.ui.action;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.light.FolderInfo;
+
 import java.awt.event.ActionEvent;
 
 /**

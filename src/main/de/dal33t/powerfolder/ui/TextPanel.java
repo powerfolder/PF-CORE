@@ -19,15 +19,14 @@
 */
 package de.dal33t.powerfolder.ui;
 
-import java.awt.Dimension;
+import de.dal33t.powerfolder.util.ui.UIPanel;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.StyledDocument;
-
-import de.dal33t.powerfolder.util.ui.UIPanel;
-import de.dal33t.powerfolder.util.ui.UIUtil;
+import java.awt.*;
 
 /**
  * Displays text
