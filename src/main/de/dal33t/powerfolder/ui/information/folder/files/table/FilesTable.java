@@ -187,7 +187,6 @@ public class FilesTable extends JTable {
                         DownloadManager dl = controller.getTransferManager()
                                 .getActiveDownload(fileInfo);
                         if (dl != null && dl.isStarted()) {
-                            // FIXME: !!
                             StringBuilder b = new StringBuilder();
                             for (Download d : dl.getSources()) {
                                 if (b.length() > 0) {
@@ -238,7 +237,7 @@ public class FilesTable extends JTable {
                         // DONE? Should be fixed with exclusion of deleted newer files
                         setForeground(NEWER_AVAILABLE);
                         if (newestVersion.isDeleted()) {
-                            if (newestVersion != newestDeletedVersion) {
+                            if (newestVersion.equals(newestDeletedVersion)) {
                                 if (MANUAL_SYNCHRONIZATION.equals(folder.getSyncProfile())) {
                                     // Show remote deletions when in project work sync
                                     setIcon(Icons.DELETE);

@@ -63,6 +63,8 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
     private FilesTableModel tableModel;
     private FilesTable table;
     private OpenFileAction openFileAction;
+    private DeleteFileAction deleteFileAction;
+    private RestoreFileAction restoreFileAction;
     private DownloadFileAction downloadFileAction;
 
     public FilesTablePanel(Controller controller) {
@@ -118,7 +120,16 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         openFileAction.setEnabled(false);
         downloadFileAction = new DownloadFileAction();
         downloadFileAction.setEnabled(false);
+        restoreFileAction = new RestoreFileAction();
+        restoreFileAction.setEnabled(false);
+        deleteFileAction = new DeleteFileAction();
+        deleteFileAction.setEnabled(false);
+
         bar.addGridded(new JButton(downloadFileAction));
+        bar.addRelatedGap();
+        bar.addGridded(new JButton(deleteFileAction));
+        bar.addRelatedGap();
+        bar.addGridded(new JButton(restoreFileAction));
         bar.addRelatedGap();
         bar.addGridded(new JButton(openFileAction));
         bar.addRelatedGap();
@@ -211,6 +222,26 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         }
     }
 
+    private class DeleteFileAction extends BaseAction {
+        DeleteFileAction() {
+            super("action_delete_file",
+                    FilesTablePanel.this.getController());
+        }
+
+        public void actionPerformed(ActionEvent e) {
+        }
+    }
+
+    private class RestoreFileAction extends BaseAction {
+        RestoreFileAction() {
+            super("action_restore_file",
+                    FilesTablePanel.this.getController());
+        }
+
+        public void actionPerformed(ActionEvent e) {
+        }
+    }
+
     /**
      * Starts to download upon the targets
      *
@@ -273,6 +304,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
                     fileDetailsPanel.setFileInfo(fileInfo);
                     openFileAction.setEnabled(true);
 
+                    // Enable download action if file is download-able.
                     FolderRepository repo = getController()
                             .getFolderRepository();
                     boolean state = true;
@@ -290,13 +322,22 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
                         }
                     }
                     downloadFileAction.setEnabled(state);
+
+                    // Enable restore / (!delete) action if file is restore-able.
+                    state = fileInfo.isDeleted() && getController()
+                            .getRecycleBin().isInRecycleBin(fileInfo);
+                    restoreFileAction.setEnabled(state);
+                    deleteFileAction.setEnabled(!state);
+
                     return;
                 }
             }
 
-            openFileAction.setEnabled(false);
             fileDetailsPanel.setFileInfo(null);
             openFileAction.setEnabled(false);
+            openFileAction.setEnabled(false);
+            restoreFileAction.setEnabled(false);
+            deleteFileAction.setEnabled(false);
         }
     }
 
