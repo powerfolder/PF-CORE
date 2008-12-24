@@ -20,7 +20,7 @@
 package de.dal33t.powerfolder.ui.information.folder.members;
 
 import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.builder.DefaultFormBuilder;
+import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
@@ -35,6 +35,7 @@ import javax.swing.*;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.ListSelectionEvent;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 /**
  * UI component for the members information tab
@@ -47,6 +48,9 @@ public class MembersTab extends PFUIComponent implements FolderInformationTab {
     private MyOpenChatAction openChatAction;
     private MembersTable membersTable;
     private Member selectedMember;
+
+    private JButton addRemoveButton;
+
     /**
      * Constructor
      *
@@ -55,6 +59,8 @@ public class MembersTab extends PFUIComponent implements FolderInformationTab {
     public MembersTab(Controller controller) {
         super(controller);
         model = new MembersTableModel(getController());
+        addRemoveButton = new JButton(getApplicationModel().getActionModel()
+                .getAddFriendAction());
     }
 
     /**
@@ -114,12 +120,21 @@ public class MembersTab extends PFUIComponent implements FolderInformationTab {
      * @return the toolbar
      */
     private JPanel createToolBar() {
-        FormLayout layout = new FormLayout("pref, fill:pref:grow",
-                "pref");
-        DefaultFormBuilder builder = new DefaultFormBuilder(layout);
-        CellConstraints cc = new CellConstraints();
-        builder.add(new JButton(openChatAction), cc.xy(1, 1));
-        return builder.getPanel();
+
+        addRemoveButton.addActionListener(new MyAddRemoveActionListener());
+        enableOnSelection();
+
+        JButton reconnectButton = new JButton(getUIController()
+                .getApplicationModel().getActionModel().getReconnectAction());
+        reconnectButton.addActionListener(new MyReconnectActionListener());
+
+        ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
+        bar.addGridded(new JButton(openChatAction));
+        bar.addRelatedGap();
+        bar.addGridded(addRemoveButton);
+        bar.addRelatedGap();
+        bar.addGridded(reconnectButton);
+        return bar.getPanel();
     }
 
     /**
@@ -131,9 +146,20 @@ public class MembersTab extends PFUIComponent implements FolderInformationTab {
             selectedMember = (Member) model.getValueAt(
                     membersTable.getSelectedRow(), 0);
             openChatAction.setEnabled(true);
+
+            addRemoveButton.setEnabled(true);
+            if (selectedMember.isFriend()) {
+                addRemoveButton.setAction(getApplicationModel().getActionModel()
+                        .getRemoveFriendAction());
+            } else {
+                addRemoveButton.setAction(getApplicationModel().getActionModel()
+                        .getAddFriendAction());
+            }
+
         } else {
             selectedMember = null;
             openChatAction.setEnabled(false);
+            addRemoveButton.setEnabled(false);
         }
     }
 
@@ -158,6 +184,39 @@ public class MembersTab extends PFUIComponent implements FolderInformationTab {
     private class MySelectionListener implements ListSelectionListener {
         public void valueChanged(ListSelectionEvent e) {
             enableOnSelection();
+        }
+    }
+
+
+    /**
+     * Class to listen for add / remove friendship requests.
+     */
+    private class MyAddRemoveActionListener implements ActionListener {
+
+        public void actionPerformed(ActionEvent e) {
+            ActionEvent ae = new ActionEvent(selectedMember.getInfo(),
+                    e.getID(), e.getActionCommand(), e.getWhen(), e.getModifiers());
+            if (selectedMember.isFriend()) {
+                getApplicationModel().getActionModel().getRemoveFriendAction()
+                        .actionPerformed(ae);
+            } else {
+                getApplicationModel().getActionModel().getAddFriendAction()
+                        .actionPerformed(ae);
+            }
+        }
+    }
+
+
+    /**
+     * Class to listen for reconnect requests.
+     */
+    private class MyReconnectActionListener implements ActionListener {
+
+        public void actionPerformed(ActionEvent e) {
+            ActionEvent ae = new ActionEvent(selectedMember.getInfo(),
+                    e.getID(), e.getActionCommand(), e.getWhen(), e.getModifiers());
+            getApplicationModel().getActionModel().getReconnectAction()
+                    .actionPerformed(ae);
         }
     }
 }

@@ -20,16 +20,17 @@
 package de.dal33t.powerfolder.ui.chat;
 
 import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.ui.widget.JButton3Icons;
+import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.message.MemberChatMessage;
-import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.ui.widget.JButton3Icons;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
@@ -135,23 +136,22 @@ public class ChatPanel extends PFUIComponent {
      * Create the tool bar.
      */
     private void createToolBar() {
-                              //            add         recon              close
-        FormLayout layout = new FormLayout("pref, 3dlu, pref, fill:0:grow, pref",
-            "pref");
-
-        PanelBuilder builder = new PanelBuilder(layout);
-        CellConstraints cc = new CellConstraints();
 
         addRemoveButton = new JButton(getApplicationModel().getActionModel()
                 .getAddFriendAction());
         addRemoveButton.addActionListener(new MyAddRemoveActionListener());
         configureAddRemoveButton();
-        builder.add(addRemoveButton, cc.xy(1, 1));
 
         JButton reconnectButton = new JButton(getUIController()
                 .getApplicationModel().getActionModel().getReconnectAction());
         reconnectButton.addActionListener(new MyReconnectActionListener());
-        builder.add(reconnectButton, cc.xy(3, 1));
+
+        ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
+        bar.addGridded(addRemoveButton);
+        bar.addRelatedGap();
+        bar.addGridded(reconnectButton);
+
+        bar.getPanel();
 
         JButton closeButton = new JButton3Icons(
                 Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_NORMAL,
@@ -164,9 +164,15 @@ public class ChatPanel extends PFUIComponent {
                 closeSession();
             }
         });
-        builder.add(closeButton, cc.xy(5, 1));
 
-        toolBar = builder.getPanel();
+        FormLayout layout = new FormLayout("fill:0:grow, pref",
+            "pref");
+        PanelBuilder builder = new PanelBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+
+        builder.add(bar.getPanel(), cc.xy(1, 1));
+        builder.add(closeButton, cc.xy(2, 1));
+        toolBar = builder.getPanel(); 
     }
 
     /**
@@ -463,7 +469,4 @@ public class ChatPanel extends PFUIComponent {
             }
         }
     }
-
-
-
 }
