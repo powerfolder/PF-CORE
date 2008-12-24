@@ -22,12 +22,10 @@ package de.dal33t.powerfolder.ui.information.folder.files.table;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.DiskItem;
 import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.disk.FileInfoHolder;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.ui.information.folder.files.FilteredDirectoryModel;
 import de.dal33t.powerfolder.ui.model.SortedTableModel;
-import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.compare.ReverseComparator;
 import de.dal33t.powerfolder.util.compare.DiskItemComparator;
@@ -215,21 +213,9 @@ public class FilesTableModel extends PFComponent implements TableModel,
     }
 
     public Class<?> getColumnClass(int columnIndex) {
-        switch (columnIndex) {
-            case COL_FILE_TYPE:
-                return DiskItem.class;
-            case COL_NAME:
-            case COL_SIZE:
-            case COL_MEMBER:
-            case COL_MODIFIED_DATE:
-            case COL_AVAILABILITY:
-                return String.class;
-            default:
-                throw new IllegalArgumentException("columnIndex too big: "
-                        + columnIndex);
-
-        }
+        return FileInfo.class;
     }
+
     public int getColumnCount() {
         return columns.length;
     }
@@ -243,41 +229,11 @@ public class FilesTableModel extends PFComponent implements TableModel,
     }
 
     public Object getValueAt(int rowIndex, int columnIndex) {
-        DiskItem diskItem = diskItems.get(rowIndex);
-        if (columnIndex == COL_FILE_TYPE) {
-            return diskItem;
-        } else if (columnIndex == COL_NAME) {
-            return diskItem.getName();
-        } else if (columnIndex == COL_SIZE) {
-            return Format.formatBytesShort(diskItem.getSize());
-        } else if (columnIndex == COL_MEMBER) {
-            return diskItem.getModifiedBy().nick;
-        } else if (columnIndex == COL_MODIFIED_DATE) {
-            return String.valueOf(diskItem.getModifiedDate() != null ?
-                    Format.formatDate(diskItem.getModifiedDate()) : "-");
-        } else if (columnIndex == COL_AVAILABILITY) {
-            if (diskItem instanceof FileInfo) {
-                FileInfo fileInfo = (FileInfo) diskItem;
-                if (fileInfo.isDeleted()
-                    && getController().getRecycleBin().isInRecycleBin(fileInfo))
-                {
-                    return Translation.getTranslation("fileinfo.in_recycle_bin");
-                } else {
-                    FileInfoHolder holder = folder.getDirectory()
-                        .getFileInfoHolder(fileInfo);
-                    if (holder == null) {
-                        return "0";
-                    } else {
-                        return String.valueOf(holder.getAvailability());
-                    }
-                }
-            }
-        }
-        return "";
+        return diskItems.get(rowIndex);
     }
 
     public FileInfo getFileInfoAtRow(int row) {
-        Object at = getValueAt(row, COL_FILE_TYPE);
+        Object at = getValueAt(row, COL_NAME);
         if (at instanceof FileInfo) {
             return (FileInfo) at;
         }
@@ -356,7 +312,7 @@ public class FilesTableModel extends PFComponent implements TableModel,
     private boolean sort() {
         if (fileInfoComparatorType != -1) {
             DiskItemComparator comparator = new DiskItemComparator(
-                fileInfoComparatorType);
+                fileInfoComparatorType, folder == null ? null : folder.getDirectory());
             synchronized (diskItems) {
                 if (sortAscending) {
                     Collections.sort(diskItems, comparator);

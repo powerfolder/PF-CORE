@@ -140,10 +140,6 @@ public class DiskItemComparator extends Loggable implements
                 }
                 return x;
             case BY_AVAILABILITY :
-                if (directory == null) {
-                    throw new IllegalStateException(
-                        "need a directoy to compare by BY_AVAILABILITY");
-                }
                 if (o1 instanceof Directory && o2 instanceof Directory) {
                     return sortByFileName(o1, o2);
                 } else if (o1 instanceof Directory) {
@@ -151,6 +147,12 @@ public class DiskItemComparator extends Loggable implements
                 } else if (o2 instanceof Directory) {
                     return AFTER;
                 }
+
+                if (directory == null) {
+                    throw new IllegalStateException(
+                        "need a directoy to compare by BY_AVAILABILITY");
+                }
+
                 FileInfoHolder holder1 = directory
                     .getFileInfoHolder((FileInfo) o1);
                 FileInfoHolder holder2 = directory

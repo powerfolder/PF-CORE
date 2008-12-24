@@ -149,13 +149,13 @@ public class Icons {
     public static final Icon PF_ONLINE = getIcon("icons/PFOnline.png");
     public static final Icon PF_PREVIEW = getIcon("icons/PFPreview.png");
 
-    public static final Icon BLACK_LIST = getIconById("black_list.icon");
-    public static final Icon WHITE_LIST = getIconById("white_list.icon");
-    public static final Icon DOWNLOAD = getIcon("icons/Down.png");
+    public static final Icon BLACK_LIST = getIcon("icons/BlackList.gif");
+    public static final Icon WHITE_LIST = getIcon("icons/WhiteList.gif");
+    public static final Icon DOWNLOAD = getIcon("icons/Download.png");
     public static final Icon DOWNLOAD_ACTIVE = getIcon("icons/Download_active.gif");
-    public static final Icon UPLOAD = getIcon("icons/Up.png");
-    public static final Icon UPLOAD_ACTIVE = getIcon("icons/Upload_active.gif");
-    public static final Icon IN_ACTIVE = getIcon("icons/In_active.gif");
+    public static final Icon UPLOAD = getIcon("icons/Upload.png");
+    public static final Icon UPLOAD_ACTIVE = getIcon("icons/UploadActive.gif");
+    public static final Icon IN_ACTIVE = getIcon("icons/Inactive.gif");
     public static final Icon EXPECTED = getIcon("icons/Expected.gif");
     public static final Icon DELETE = getIcon("icons/Delete.gif");
 
