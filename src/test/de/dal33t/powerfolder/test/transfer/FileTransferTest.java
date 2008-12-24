@@ -747,11 +747,9 @@ public class FileTransferTest extends TwoControllerTestCase {
      */
     public void testResumeTransfer() {
         getContollerBart().getTransferManager().setAllowedUploadCPSForLAN(
-            500000);
+            400000);
         getContollerBart().getTransferManager().setAllowedUploadCPSForWAN(
-            500000);
-
-        TestHelper.waitMilliSeconds(2000);
+            400000);
 
         // Register listeners
         final MyTransferManagerListener bartsListener = new MyTransferManagerListener();
@@ -761,7 +759,7 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         // testfile
         File testFile = TestHelper.createRandomFile(getFolderAtBart()
-            .getLocalBase(), 8 * 1024 * 1024);
+            .getLocalBase(), 3 * 1024 * 1024);
         testFile.setLastModified(System.currentTimeMillis() - 1000L * 60 * 60);
 
         // Let him scan the new content
