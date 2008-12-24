@@ -42,7 +42,7 @@ import de.dal33t.powerfolder.util.test.TestHelper;
 public class ConnectNodesTest extends FiveControllerTestCase {
 
     public void testConnectedNodes() {
-        for (int i = 0; i < 250; i++) {
+        for (int i = 0; i < 50; i++) {
             boolean connectOk = tryToConnectSimpsons();
 
             assertEquals("Connected nodes @Homer: "
