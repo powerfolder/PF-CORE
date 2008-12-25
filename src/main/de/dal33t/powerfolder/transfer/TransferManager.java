@@ -473,7 +473,8 @@ public class TransferManager extends PFComponent {
         removeDownload(download);
 
         // Fire event
-        fireDownloadBroken(new TransferManagerEvent(this, download));
+        fireDownloadBroken(new TransferManagerEvent(this, download, problem,
+            problemInfo));
     }
 
     /**
