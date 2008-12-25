@@ -32,7 +32,6 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.dialog.SyncFolderPanel;
 import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.ui.TreeNodeList;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -116,11 +115,6 @@ public class FolderRepositoryModel extends PFUIComponent {
 
     public boolean isHidePreviews() {
         return (Boolean) hidePreviewsVM.getValue();
-    }
-
-    public TreeNodeList getMyFoldersTreeNode() {
-//        return myFoldersTreeNode;
-        return null;
     }
 
     /**

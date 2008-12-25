@@ -21,7 +21,6 @@ package de.dal33t.powerfolder.ui.model;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.ScanResult;
 import de.dal33t.powerfolder.disk.ScanResult.ResultState;
@@ -30,34 +29,25 @@ import de.dal33t.powerfolder.event.FolderListener;
 import de.dal33t.powerfolder.event.FolderMembershipEvent;
 import de.dal33t.powerfolder.event.FolderMembershipListener;
 import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.ui.TreeNodeList;
 
-import javax.swing.tree.MutableTreeNode;
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 import java.util.TimerTask;
 
 /**
  * UI-Model for a folder. Prepare folder data in a "swing-compatible" way. E.g.
  * as <code>TreeNode</code> or <code>TableModel</code>.
  * <p>
- * TODO: rebuilt is called way too often.
  * 
  * @author <a href="mailto:hglasgow@powerfolder.com">Harry Glasgow</a>
  * @version $Revision: 3.1 $
  */
 public class FolderModel extends PFUIComponent {
-    private final static long DELAY = 500;
+    private static final long DELAY = 500;
 
     private FolderRepositoryModel repoModel;
 
     /** The folder associated with this model. */
     private Folder folder;
-
-    /** The ui node */
-    private TreeNodeList treeNode;
 
     private MyFolderListener listener;
 
@@ -88,10 +78,6 @@ public class FolderModel extends PFUIComponent {
      * Initialize the tree node and rebuild.
      */
     private void initialize() {
-        treeNode = new TreeNodeList(folder, getController().getUIController()
-                .getApplicationModel().getFolderRepositoryModel()
-                .getMyFoldersTreeNode());
-        rebuild();
         repoModel.updateFolderTreeNode(this);
     }
 
@@ -101,25 +87,9 @@ public class FolderModel extends PFUIComponent {
         return folder;
     }
 
-    /**
-     * @return the treenode representation of this object.
-     */
-    public MutableTreeNode getTreeNode() {
-        return treeNode;
-    }
-
     void dispose() {
         folder.removeFolderListener(listener);
         folder.removeMembershipListener(listener);
-    }
-
-    public List<DirectoryModel> getSubdirectories() {
-        List<DirectoryModel> list = new ArrayList<DirectoryModel>();
-        int childs = treeNode.getChildCount();
-        for (int i = 0; i < childs; i++) {
-            list.add((DirectoryModel) treeNode.getChildAt(i));
-        }
-        return list;
     }
 
     // Private stuff **********************************************************
@@ -131,44 +101,6 @@ public class FolderModel extends PFUIComponent {
         }
         task = new MyTimerTask();
         getController().schedule(task, DELAY);
-    }
-
-    /**
-     * Build up the directory tree from the folder.
-     * <p>
-     * ATTENTION: Method not thread-safe. Has to be executed in EDT.
-     */
-    private void rebuild() {
-        // Cleanup
-        treeNode.removeAllChildren();
-        Collection<Directory> folderSubdirectories = folder.getDirectory()
-            .getSubDirectoriesAsCollection();
-        for (Directory subdirectory : folderSubdirectories) {
-            if (subdirectory.isDeleted()) {
-                continue;
-            }
-            DirectoryModel directoryModel = new DirectoryModel(treeNode,
-                subdirectory);
-            buildSubDirectoryModels(directoryModel);
-            treeNode.addChild(directoryModel);
-        }
-        treeNode.sortBy(new DirectoryModel.Comparator());
-    }
-
-    private static void buildSubDirectoryModels(DirectoryModel model) {
-        Collection<Directory> subDirectories = model.getDirectory()
-            .getSubDirectoriesAsCollection();
-        for (Directory subDirectory : subDirectories) {
-            if (subDirectory.isDeleted()) {
-                // Skip
-                continue;
-            }
-            DirectoryModel subdirectoryModel = new DirectoryModel(model,
-                subDirectory);
-            model.addChild(subdirectoryModel);
-            buildSubDirectoryModels(subdirectoryModel);
-        }
-        model.sortSubDirectories();
     }
 
     private class MyFolderListener implements FolderListener,
@@ -224,7 +156,6 @@ public class FolderModel extends PFUIComponent {
             // model during update of Tree.
             EventQueue.invokeLater(new Runnable() {
                 public void run() {
-                    rebuild();
                     repoModel.updateFolderTreeNode(FolderModel.this);
                     task = null;
                 }
