@@ -35,7 +35,6 @@ import de.dal33t.powerfolder.ui.chat.ChatModelEvent;
 import de.dal33t.powerfolder.ui.chat.ChatModelListener;
 import de.dal33t.powerfolder.ui.information.InformationFrame;
 import de.dal33t.powerfolder.ui.model.ApplicationModel;
-import de.dal33t.powerfolder.ui.model.FolderRepositoryModel;
 import de.dal33t.powerfolder.ui.model.TransferManagerModel;
 import de.dal33t.powerfolder.ui.notification.NotificationHandler;
 import de.dal33t.powerfolder.ui.render.BlinkManager;
@@ -83,7 +82,6 @@ public class UIController extends PFComponent {
     private SplashScreen splash;
     private Image defaultIcon;
     private TrayIcon sysTrayMenu;
-    private FolderRepositoryModel folderRepositoryModel;
     private MainFrame mainFrame;
     private ChatModel chatModel;
     private SystemMonitorFrame systemMonitorFrame;
@@ -235,9 +233,6 @@ public class UIController extends PFComponent {
         new ChatNotificationManager(chatModel);
         getController().getFolderRepository().addFolderRepositoryListener(
             new MyFolderRepositoryListener());
-
-        folderRepositoryModel = new FolderRepositoryModel(getController());
-        folderRepositoryModel.initalize();
 
         transferManagerModel = new TransferManagerModel(getController()
             .getTransferManager());
@@ -668,7 +663,7 @@ public class UIController extends PFComponent {
     }
 
     public void syncFolder(FolderInfo folderInfo) {
-        folderRepositoryModel.syncFolder(folderInfo);
+        applicationModel.getFolderRepositoryModel().syncFolder(folderInfo);
     }
 
     /**

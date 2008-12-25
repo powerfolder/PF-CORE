@@ -33,10 +33,12 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.os.OnlineStorageSubscriptionType;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Date;
 
 /**
  * Class for the Home tab in the main tab area of the UI.
@@ -50,6 +52,7 @@ public class HomeTab extends PFUIComponent {
     private JPanel uiComponent;
 
     private JLabel synchronizationStatusLabel;
+    private JLabel synchronizationDateLabel;
     private HomeTabLine numberOfFoldersLine;
     private HomeTabLine sizeOfFoldersLine;
     private HomeTabLine filesAvailableLine;
@@ -90,6 +93,7 @@ public class HomeTab extends PFUIComponent {
                 .getReceivedInvitationModel().getReceivedInvitationsCountVM();
         controller.getFolderRepository().addSynchronizationStatsListener(
                 new MySynchronizationStatsListener());
+
     }
 
     /**
@@ -132,6 +136,7 @@ public class HomeTab extends PFUIComponent {
      */
     private void initComponents() {
         synchronizationStatusLabel = new JLabel();
+        synchronizationDateLabel = new JLabel();
         numberOfFoldersLine = new HomeTabLine(getController(),
                 Translation.getTranslation("home_tab.folders"),
                 Translation.getTranslation("home_tab.no_folders"),
@@ -171,7 +176,14 @@ public class HomeTab extends PFUIComponent {
         updateOnlineStorageDetails();
         updateNewInvitationsText();
         updateNewComputersText();
+        initialSyncStats();
         registerListeners();
+    }
+
+    private void initialSyncStats() {
+        boolean synchronizing = getController().getFolderRepository().isSynchronizing();
+        Date syncDate = getController().getFolderRepository().getSynchronizationDate();
+        displaySyncStats(syncDate, synchronizing);
     }
 
     /**
@@ -193,13 +205,16 @@ public class HomeTab extends PFUIComponent {
      */
     private JPanel buildMainPanel() {
         FormLayout layout = new FormLayout("3dlu, 100dlu, pref:grow, 3dlu",
-            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, pref, pref, pref, pref, pref, 3dlu, pref, pref, pref, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref:grow");
-        //   sync        sep         you-have    files comps invs  down  upl   sep         #fol  szfo  comp  sep         os-acc      osSec
+            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, pref, pref, pref, pref, pref, 3dlu, pref, pref, pref, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref:grow");
+        //   sync-stat   sync-date   sep         you-have    files comps invs  down  upl   sep         #fol  szfo  comp  sep         os-acc      osSec
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
         int row = 1;
         builder.add(synchronizationStatusLabel, cc.xywh(2, row, 3, 1));
+        row += 2;
+
+        builder.add(synchronizationDateLabel, cc.xywh(2, row, 3, 1));
         row += 2;
 
         builder.addSeparator(null, cc.xywh(2, row, 2, 1));
@@ -391,6 +406,20 @@ public class HomeTab extends PFUIComponent {
         }
     }
 
+    private void displaySyncStats(Date syncDate, boolean syncing) {
+
+        String syncStatsText = syncing
+                ? Translation.getTranslation("home_tab.synchronizing")
+                : Translation.getTranslation("home_tab.in_sync");
+        synchronizationStatusLabel.setText(syncStatsText);
+
+        String date = Format.formatDate(syncDate);
+        String syncDateText = syncing
+                ? Translation.getTranslation("home_tab.sync_eta", date)
+                : Translation.getTranslation("home_tab.last_synced", date);
+        synchronizationDateLabel.setText(syncDateText);
+    }
+
     /**
      * Listener for folder events.
      */
@@ -580,10 +609,8 @@ public class HomeTab extends PFUIComponent {
     private class MySynchronizationStatsListener implements
             SynchronizationStatsListener {
         public void synchronizationStatsChanged(SynchronizationStatsEvent event) {
-            String syncText = event.isSynchronizing()
-                    ? Translation.getTranslation("home_tab.synchronizing")
-                    : Translation.getTranslation("home_tab.in_sync");
-            synchronizationStatusLabel.setText(syncText);
+            displaySyncStats(event.getSynchronizationDate(),
+                    event.isSynchronizing());
         }
 
         public boolean fireInEventDispatchThread() {

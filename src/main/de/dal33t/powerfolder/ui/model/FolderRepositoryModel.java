@@ -75,6 +75,11 @@ public class FolderRepositoryModel extends PFUIComponent {
                 getMyFoldersTableModel().folderStructureChanged();
             }
         });
+
+        // Register listener
+        getController().getFolderRepository().addFolderRepositoryListener(
+            new MyFolderRepositoryListener());
+
     }
 
     // Inizalization **********************************************************
@@ -84,10 +89,6 @@ public class FolderRepositoryModel extends PFUIComponent {
      * of the repo model. Adds all folder models as childs
      */
     public void initalize() {
-        // Register listener
-        getController().getFolderRepository().addFolderRepositoryListener(
-            new MyFolderRepositoryListener());
-
         // Add inital model state
         Folder[] folders = getController().getFolderRepository().getFolders();
         for (Folder folder : folders) {

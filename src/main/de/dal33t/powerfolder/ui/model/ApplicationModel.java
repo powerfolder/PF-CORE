@@ -51,25 +51,25 @@ public class ApplicationModel extends PFUIComponent {
      */
     public ApplicationModel(Controller controller) {
         super(controller);
+        actionModel = new ActionModel(getController());
+        chatModel = new ChatModel(getController());
+        nodeManagerModel = new NodeManagerModel(getController());
+        folderRepositoryModel = new FolderRepositoryModel(getController());
+        transferManagerModel = new TransferManagerModel(getController()
+            .getTransferManager());
+        serverClientModel = new ServerClientModel(getController(),
+            getController().getOSClient());
+        receivedInvitationsModel = new ReceivedInvitationsModel(getController());
+        receivedAskedForFriendshipModel =
+                new ReceivedAskedForFriendshipModel(getController());
     }
 
     /**
      * Initializes this and all submodels
      */
     public void initialize() {
-        actionModel = new ActionModel(getController());
-        chatModel = new ChatModel(getController());
-        nodeManagerModel = new NodeManagerModel(getController());
-        folderRepositoryModel = new FolderRepositoryModel(getController());
         folderRepositoryModel.initalize();
-        transferManagerModel = new TransferManagerModel(getController()
-            .getTransferManager());
         transferManagerModel.initialize();
-        serverClientModel = new ServerClientModel(getController(),
-            getController().getOSClient());
-        receivedInvitationsModel = new ReceivedInvitationsModel(getController());
-        receivedAskedForFriendshipModel =
-                new ReceivedAskedForFriendshipModel(getController());
     }
 
     // Exposing ***************************************************************

@@ -380,14 +380,31 @@ public class Controller extends PFComponent {
             preferences = Preferences.userNodeForPackage(PowerFolder.class)
                 .node(getConfigName());
         }
-        silentMode = getPreferences().getBoolean("silentMode", false);
+        silentMode = preferences.getBoolean("silentMode", false);
 
-        // start node manager
+        // create node manager
         nodeManager = new NodeManager(this);
+
+        // The task brothers
+        timer = new WrappingTimer("Controller schedule timer", true);
+        taskManager = new PersistentTaskManager(this);
 
         // Folder repository
         folderRepository = new FolderRepository(this);
         setLoadingCompletion(0, 10);
+
+        // Create transfer manager
+        // If this is a unit test it might have been set before.
+        try {
+            transferManager = transferManagerFactory.call();
+        } catch (Exception e) {
+            logSevere("Exception", e);
+        }
+
+        reconnectManager = new ReconnectManager(this);
+
+        // Create os client
+        osClient = new ServerClient(this);
 
         if (isUIEnabled()) {
             uiController = new UIController(this);
@@ -409,26 +426,12 @@ public class Controller extends PFComponent {
         HTTPProxySettings.loadFromConfig(this);
         Debug.writeSystemProperties();
 
-        // The task brothers
-        timer = new WrappingTimer("Controller schedule timer", true);
-
-        reconnectManager = new ReconnectManager(this);
-        taskManager = new PersistentTaskManager(this);
-
         // The io provider.
         ioProvider = new IOProvider(this);
         ioProvider.start();
 
         // initialize dyndns manager
         dyndnsManager = new DynDnsManager(this);
-
-        // initialize transfer manager
-        // If this is a unit test it might have been set before.
-        try {
-            transferManager = transferManagerFactory.call();
-        } catch (Exception e) {
-            logSevere("Exception", e);
-        }
 
         setLoadingCompletion(20, 30);
 
@@ -440,7 +443,7 @@ public class Controller extends PFComponent {
             // Disable silent mode
             setSilentMode(false);
         }
-        getTaskManager().start();
+        taskManager.start();
 
         setLoadingCompletion(30, 35);
 
@@ -450,8 +453,6 @@ public class Controller extends PFComponent {
             nodeManager.start();
         }
 
-        // Initialize client
-        osClient = new ServerClient(this);
         setLoadingCompletion(35, 60);
 
         // init repo (read folders)
@@ -496,7 +497,7 @@ public class Controller extends PFComponent {
          * .getValueBoolean(this).booleanValue(); if (onStartUpdate) {
          * getDynDnsManager().onStartUpdate(); }
          */
-        getDynDnsManager().updateIfNessesary();
+        dyndnsManager.updateIfNessesary();
 
         setLoadingCompletion(90, 100);
 

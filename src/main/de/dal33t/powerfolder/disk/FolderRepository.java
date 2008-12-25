@@ -822,6 +822,30 @@ public class FolderRepository extends PFComponent implements Runnable {
         return "Folders of " + getController().getMySelf().getNick();
     }
 
+    /**
+     * Returns true if any folders are synchronizing.
+     * Only use to initialize values - register a SynchronizationStatsListener
+     * for on-going updates.
+     *
+     * @return
+     */
+    public boolean isSynchronizing() {
+        // @todo harry to implement
+        return false;
+    }
+
+    /**
+     * Returns sync date.
+     * Only use to initialize values - register a SynchronizationStatsListener
+     * for on-going updates.
+     *
+     * @return
+     */
+    public Date getSynchronizationDate() {
+        // @todo harry to implement
+        return new Date();
+    }
+
     // Event support **********************************************************
 
     private void fireFolderCreated(Folder folder) {
