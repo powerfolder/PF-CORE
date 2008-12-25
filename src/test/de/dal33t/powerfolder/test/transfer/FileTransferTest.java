@@ -866,8 +866,11 @@ public class FileTransferTest extends TwoControllerTestCase {
 
             public String message() {
                 return "Lisa download started: "
+                    + lisasListener.downloadRequested + " requested, "
                     + lisasListener.downloadStarted + ", broken: "
-                    + lisasListener.downloadBroken;
+                    + lisasListener.downloadBroken + ", last problem: "
+                    + lisasListener.lastEvent.getTransferProblem() + ": "
+                    + lisasListener.lastEvent.getProblemInformation();
             }
         });
 
@@ -1360,7 +1363,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         public int uploadAborted;
         public int uploadCompleted;
 
-        private int transferProblems;
+        private TransferManagerEvent lastEvent;
 
         public List<FileInfo> uploadsRequested = new ArrayList<FileInfo>();
         public List<FileInfo> downloadsRequested = new ArrayList<FileInfo>();
@@ -1390,10 +1393,12 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         public synchronized void downloadQueued(TransferManagerEvent event) {
             downloadQueued++;
+            lastEvent = event;
         }
 
         public synchronized void downloadStarted(TransferManagerEvent event) {
             downloadStarted++;
+            lastEvent = event;
         }
 
         public synchronized void downloadAborted(TransferManagerEvent event) {
@@ -1402,26 +1407,31 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         public synchronized void downloadBroken(TransferManagerEvent event) {
             downloadBroken++;
+            lastEvent = event;
         }
 
         public synchronized void downloadCompleted(TransferManagerEvent event) {
             downloadCompleted++;
+            lastEvent = event;
         }
 
         public synchronized void completedDownloadRemoved(
             TransferManagerEvent event)
         {
             downloadsCompletedRemoved++;
+            lastEvent = event;
         }
 
         public synchronized void pendingDownloadEnqueud(
             TransferManagerEvent event)
         {
             pendingDownloadEnqued++;
+            lastEvent = event;
         }
 
         public synchronized void uploadRequested(TransferManagerEvent event) {
             uploadRequested++;
+            lastEvent = event;
 
             if (uploadsRequested.contains(event.getFile())) {
                 System.err.println("Second upload request for "
@@ -1432,19 +1442,22 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         public synchronized void uploadStarted(TransferManagerEvent event) {
             uploadStarted++;
-
+            lastEvent = event;
         }
 
         public synchronized void uploadAborted(TransferManagerEvent event) {
             uploadAborted++;
+            lastEvent = event;
         }
 
         public synchronized void uploadBroken(TransferManagerEvent event) {
             uploadAborted++;
+            lastEvent = event;
         }
 
         public synchronized void uploadCompleted(TransferManagerEvent event) {
             uploadCompleted++;
+            lastEvent = event;
         }
 
         public boolean fireInEventDispatchThread() {
@@ -1455,7 +1468,7 @@ public class FileTransferTest extends TwoControllerTestCase {
             TransferManagerEvent event)
         {
             uploadsCompletedRemoved++;
+            lastEvent = event;
         }
-
     }
 }
