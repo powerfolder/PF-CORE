@@ -88,11 +88,11 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
     private void initComponents() {
         String[] options = new String[NetworkingMode.values().length];
         options[NetworkingMode.PRIVATEMODE.ordinal()] = Translation
-            .getTranslation("preferences.dialog.networkmode.private");
+            .getTranslation("preferences.dialog.network_mode.private");
         options[NetworkingMode.LANONLYMODE.ordinal()] = Translation
-            .getTranslation("preferences.dialog.networkmode.lanonly");
+            .getTranslation("preferences.dialog.network_mode.lan_only");
         options[NetworkingMode.SERVERONLYMODE.ordinal()] = Translation
-            .getTranslation("preferences.dialog.networkmode.serveronly");
+            .getTranslation("preferences.dialog.network_mode.server_only");
         networkingMode = new JComboBox(options);
 
         NetworkingMode currentNetworkingMode = getController()
@@ -134,9 +134,9 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
             .getAllowedDownloadCPSForLAN() / 1024);
 
         silentThrottleLabel = new JLabel(Translation
-            .getTranslation("preferences.dialog.silentthrottle"));
+            .getTranslation("preferences.dialog.silent_throttle"));
         silentThrottleLabel.setToolTipText(Translation
-            .getTranslation("preferences.dialog.silentthrottle.tooltip"));
+            .getTranslation("preferences.dialog.silent_throttle.tooltip"));
 
         silentModeThrottle = new JSlider();
         silentModeThrottle.setMinimum(10);
@@ -207,7 +207,7 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
 
             int row = 1;
             builder.addLabel(Translation
-                .getTranslation("preferences.dialog.networkmode.name"), cc.xy(
+                .getTranslation("preferences.dialog.network_mode.name"), cc.xy(
                 1, row));
             builder.add(networkingMode, cc.xywh(3, row, 7, 1));
 
@@ -222,13 +222,13 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
 
             row += 2;
             builder.addLabel(Translation
-                .getTranslation("preferences.dialog.linesettings"), cc.xy(1,
+                .getTranslation("preferences.dialog.line_settings"), cc.xy(1,
                 row));
             builder.add(wanSpeed, cc.xywh(3, row, 7, 1));
 
             row += 2;
             builder.addLabel(Translation
-                .getTranslation("preferences.dialog.lanlinesettings"), cc.xy(1,
+                .getTranslation("preferences.dialog.lan_line_settings"), cc.xy(1,
                 row));
             builder.add(lanSpeed, cc.xywh(3, row, 7, 1));
 
@@ -282,13 +282,13 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
     private String getTooltip(NetworkingMode nm) {
         if (nm.equals(NetworkingMode.LANONLYMODE)) {
             return Translation
-                .getTranslation("preferences.dialog.networkmode.lanonly.tooltip");
+                .getTranslation("preferences.dialog.network_mode.lan_only.tooltip");
         } else if (nm.equals(NetworkingMode.PRIVATEMODE)) {
             return Translation
-                .getTranslation("preferences.dialog.networkmode.private.tooltip");
+                .getTranslation("preferences.dialog.network_mode.private.tooltip");
         } else if (nm.equals(NetworkingMode.SERVERONLYMODE)) {
             return Translation
-                .getTranslation("preferences.dialog.networkmode.serveronly.tooltip");
+                .getTranslation("preferences.dialog.network_mode.server_only.tooltip");
         }
         return null;
     }
