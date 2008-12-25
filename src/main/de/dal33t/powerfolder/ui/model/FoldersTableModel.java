@@ -33,6 +33,7 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Maps all joined Folders to a table model
@@ -64,12 +65,14 @@ public class FoldersTableModel extends PFUIComponent implements TableModel {
     private FolderRepository repository;
     private FolderListener folderListener;
     private FolderMembershipListener folderMembershipListener;
+    private final AtomicBoolean folderRepositorySynchronizing;
 
     public FoldersTableModel(FolderRepository repository, Controller controller)
     {
         super(controller);
-        this.listeners = Collections
+        listeners = Collections
             .synchronizedList(new LinkedList<TableModelListener>());
+        folderRepositorySynchronizing = new AtomicBoolean();
         this.repository = repository;
         folders = filterPreviews();
         repository
@@ -82,19 +85,22 @@ public class FoldersTableModel extends PFUIComponent implements TableModel {
             new MyNodeManagerListner());
         repository.getController().scheduleAndRepeat(new UpdateTask(),
             UPDATE_TIME_MS);
+
+        controller.getFolderRepository().addSynchronizationStatsListener(
+                new MySynchronizationStatsListener());
     }
 
     private List<Folder> filterPreviews() {
-        List<Folder> folders = new ArrayList<Folder>();
+        List<Folder> folderList = new ArrayList<Folder>();
         for (Folder folder : getController().getFolderRepository()
             .getFoldersAsCollection())
         {
             if (!hideFolder(folder)) {
-                folders.add(folder);
+                folderList.add(folder);
             }
         }
-        Collections.sort(folders, FolderComparator.INSTANCE);
-        return folders;
+        Collections.sort(folderList, FolderComparator.INSTANCE);
+        return folderList;
     }
 
     private void addListeners(List<Folder> somefolders) {
@@ -282,9 +288,7 @@ public class FoldersTableModel extends PFUIComponent implements TableModel {
     private class UpdateTask extends TimerTask {
         @Override
         public void run() {
-            if (repository.isAnyFolderTransferring()
-                || repository.getFolderScanner().getCurrentScanningFolder() != null)
-            {
+            if (folderRepositorySynchronizing.get()) {
                 fireFullModelChanged();
             }
         }
@@ -315,6 +319,21 @@ public class FoldersTableModel extends PFUIComponent implements TableModel {
         folder.removeFolderListener(folderListener);
         folder.removeMembershipListener(folderMembershipListener);
         modelChanged(new TableModelEvent(this));
+    }
+
+    /**
+     * Class to listen for SynchronizationStatsEvents, affects the label text.
+     */
+    private class MySynchronizationStatsListener implements
+            SynchronizationStatsListener {
+        public void synchronizationStatsChanged(SynchronizationStatsEvent event) {
+            folderRepositorySynchronizing.set(event.isSynchronizing());
+        }
+
+        public boolean fireInEventDispatchThread() {
+            // simple implementation - so do it now.
+            return false;
+        }
     }
 
 }

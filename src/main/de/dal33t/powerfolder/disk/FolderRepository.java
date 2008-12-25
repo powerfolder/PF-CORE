@@ -28,20 +28,10 @@ import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_SYNC_PRO
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_WHITELIST;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.swing.JFrame;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -50,21 +40,20 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
-import de.dal33t.powerfolder.event.FileNameProblemHandler;
-import de.dal33t.powerfolder.event.FolderRepositoryEvent;
-import de.dal33t.powerfolder.event.FolderRepositoryListener;
-import de.dal33t.powerfolder.event.ListenerSupportFactory;
+import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.transfer.FileRequestor;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Waiter;
-import de.dal33t.powerfolder.util.compare.FolderComparator;
-import de.dal33t.powerfolder.util.ui.DialogFactory;
-import de.dal33t.powerfolder.util.ui.GenericDialogType;
-import de.dal33t.powerfolder.util.ui.NeverAskAgainResponse;
+import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.UIUtil;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.ui.NeverAskAgainResponse;
+import de.dal33t.powerfolder.util.ui.GenericDialogType;
+import de.dal33t.powerfolder.util.compare.FolderComparator;
+
+import javax.swing.*;
 
 /**
  * Repository of all known power folders. Local and unjoined.
@@ -86,8 +75,11 @@ public class FolderRepository extends PFComponent implements Runnable {
     private Object scanTrigger = new Object();
     private boolean triggered;
 
-    /** folder repo listners */
-    private FolderRepositoryListener listenerSupport;
+    /** folder repository listeners */
+    private FolderRepositoryListener folderRepositoryListenerSupport;
+
+    /** synchronization stats listeners */
+    private SynchronizationStatsListener synchronizationStatsListenerSupport;
 
     /** handler if files with posible filename problems are found */
     private FileNameProblemHandler fileNameProblemHandler;
@@ -101,21 +93,27 @@ public class FolderRepository extends PFComponent implements Runnable {
      */
     private static final String PRE_777_BACKUP_TARGET_FIELD_LIST = "true,true,true,true,0,false,12,0,m";
 
+    /**
+     * Constructor
+     *
+     * @param controller
+     */
     public FolderRepository(Controller controller) {
         super(controller);
 
-        this.triggered = false;
+        triggered = false;
         // Rest
-        this.folders = new ConcurrentHashMap<FolderInfo, Folder>();
-        this.fileRequestor = new FileRequestor(controller);
-        // this.netListProcessor = new NetworkFolderListProcessor();
-        this.started = false;
+        folders = new ConcurrentHashMap<FolderInfo, Folder>();
+        fileRequestor = new FileRequestor(controller);
+        started = false;
 
-        this.folderScanner = new FolderScanner(getController());
+        folderScanner = new FolderScanner(getController());
 
         // Create listener support
-        this.listenerSupport = ListenerSupportFactory
+        folderRepositoryListenerSupport = ListenerSupportFactory
             .createListenerSupport(FolderRepositoryListener.class);
+        synchronizationStatsListenerSupport = ListenerSupportFactory
+            .createListenerSupport(SynchronizationStatsListener.class);
     }
 
     /** @return the handler that takes care of filename problems */
@@ -139,20 +137,8 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     public void setSuspendFireEvents(boolean suspended) {
-        ListenerSupportFactory.setSuspended(listenerSupport, suspended);
+        ListenerSupportFactory.setSuspended(folderRepositoryListenerSupport, suspended);
         logFine("setSuspendFireEvents: " + suspended);
-    }
-
-    /**
-     * @return true if any folder is currently synching
-     */
-    public boolean isAnyFolderTransferring() {
-        for (Folder folder : folders.values()) {
-            if (folder.isTransferring()) {
-                return true;
-            }
-        }
-        return false;
     }
 
     public boolean isShutdownAllowed() {
@@ -240,7 +226,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
 
         // Scan config for all found folder names.
-        for (final String folderName : allFolderNames) {
+        for (String folderName : allFolderNames) {
 
             String folderId = config.getProperty(FOLDER_SETTINGS_PREFIX
                 + folderName + FOLDER_SETTINGS_ID);
@@ -524,8 +510,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         getController().getFolderRepository().triggerMaintenance();
 
         // Trigger file requestor
-        getController().getFolderRepository().fileRequestor
-            .triggerFileRequesting(folder.getInfo());
+        fileRequestor.triggerFileRequesting(folder.getInfo());
 
         // Trigger server connect
         getController().getOSClient().connectHostingServers();
@@ -627,10 +612,10 @@ public class FolderRepository extends PFComponent implements Runnable {
         synchronizeAllFolderMemberships();
 
         // Abort scanning
-        boolean folderCurrentlyScannng = folder.equals(getFolderScanner()
+        boolean folderCurrentlyScannng = folder.equals(folderScanner
             .getCurrentScanningFolder());
         if (folderCurrentlyScannng) {
-            getFolderScanner().abortScan();
+            folderScanner.abortScan();
         }
 
         // Delete the .PowerFolder dir and contents
@@ -840,30 +825,44 @@ public class FolderRepository extends PFComponent implements Runnable {
     // Event support **********************************************************
 
     private void fireFolderCreated(Folder folder) {
-        listenerSupport.folderCreated(new FolderRepositoryEvent(this, folder));
+        folderRepositoryListenerSupport.folderCreated(new FolderRepositoryEvent(this, folder));
     }
 
     private void fireFolderRemoved(Folder folder) {
-        listenerSupport.folderRemoved(new FolderRepositoryEvent(this, folder));
+        folderRepositoryListenerSupport.folderRemoved(new FolderRepositoryEvent(this, folder));
     }
 
     private void fireMaintanceStarted(Folder folder) {
-        listenerSupport.maintenanceStarted(new FolderRepositoryEvent(this,
+        folderRepositoryListenerSupport.maintenanceStarted(new FolderRepositoryEvent(this,
             folder));
+        // @todo harry to implement real event
+        synchronizationStatsListenerSupport.synchronizationStatsChanged(
+                new SynchronizationStatsEvent(this, new Date(), true));
     }
 
     private void fireMaintenanceFinished(Folder folder) {
-        listenerSupport.maintenanceFinished(new FolderRepositoryEvent(this,
+        folderRepositoryListenerSupport.maintenanceFinished(new FolderRepositoryEvent(this,
             folder));
+        // @todo harry to implement real event
+        synchronizationStatsListenerSupport.synchronizationStatsChanged(
+                new SynchronizationStatsEvent(this, new Date(), false));
+    }
+
+    public void addSynchronizationStatsListener(SynchronizationStatsListener l) {
+        ListenerSupportFactory.addListener(synchronizationStatsListenerSupport, l);
+    }
+
+    public void removeSynchronizationStatsListener(SynchronizationStatsListener l) {
+        ListenerSupportFactory.removeListener(synchronizationStatsListenerSupport, l);
     }
 
     public void addFolderRepositoryListener(FolderRepositoryListener listener) {
-        ListenerSupportFactory.addListener(listenerSupport, listener);
+        ListenerSupportFactory.addListener(folderRepositoryListenerSupport, listener);
     }
 
     public void removeFolderRepositoryListener(FolderRepositoryListener listener)
     {
-        ListenerSupportFactory.removeListener(listenerSupport, listener);
+        ListenerSupportFactory.removeListener(folderRepositoryListenerSupport, listener);
     }
 
     /**

@@ -385,11 +385,15 @@ public class Controller extends PFComponent {
         // start node manager
         nodeManager = new NodeManager(this);
 
+        // Folder repository
+        folderRepository = new FolderRepository(this);
+        setLoadingCompletion(0, 10);
+
         if (isUIEnabled()) {
             uiController = new UIController(this);
         }
 
-        setLoadingCompletion(0, 10);
+        setLoadingCompletion(10, 20);
 
         // initialize logger
         initLogger();
@@ -426,10 +430,6 @@ public class Controller extends PFComponent {
             logSevere("Exception", e);
         }
 
-        setLoadingCompletion(10, 20);
-
-        // Folder repository
-        folderRepository = new FolderRepository(this);
         setLoadingCompletion(20, 30);
 
         // initialize listener on local port

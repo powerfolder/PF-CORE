@@ -21,10 +21,7 @@ package de.dal33t.powerfolder.ui;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.event.FolderRepositoryEvent;
-import de.dal33t.powerfolder.event.FolderRepositoryListener;
-import de.dal33t.powerfolder.event.TransferManagerEvent;
-import de.dal33t.powerfolder.event.TransferManagerListener;
+import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.ui.action.SyncAllFoldersAction;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.UIUtil;
@@ -42,7 +39,7 @@ public class SyncButtonComponent extends PFUIComponent {
 
     private JLabel syncAllLabel;
     private final AtomicBoolean mouseOver;
-    private final AtomicBoolean anyFolderSyncing;
+    private final AtomicBoolean folderRepositorySyncing;
     private final AtomicBoolean mousePressed;
 
     /**
@@ -53,12 +50,12 @@ public class SyncButtonComponent extends PFUIComponent {
     public SyncButtonComponent(Controller controller) {
         super(controller);
         mouseOver = new AtomicBoolean();
-        anyFolderSyncing = new AtomicBoolean();
+        folderRepositorySyncing = new AtomicBoolean();
         mousePressed = new AtomicBoolean();
-        getController().getTransferManager().addListener(
-            new MyTransferManagerListener());
-        getController().getFolderRepository().addFolderRepositoryListener(
-            new MyFolderRepositoryListener());
+
+        // Start listening for synchronizatoin stats.
+        controller.getFolderRepository().addSynchronizationStatsListener(
+                new MySynchronizationStatsListener());
         controller.getThreadPool().submit(new MyRunnable());
     }
 
@@ -80,97 +77,15 @@ public class SyncButtonComponent extends PFUIComponent {
         syncAllLabel.addMouseListener(new MyMouseAdapter());
     }
 
-    private void updateSyncLabel() {
-        anyFolderSyncing.set(getController().getFolderRepository()
-            .isAnyFolderTransferring()
-            || getController().getFolderRepository()
-                .getCurrentlyMaintainingFolder() != null);
-    }
-
-    private class MyFolderRepositoryListener implements
-        FolderRepositoryListener
-    {
-        public void folderCreated(FolderRepositoryEvent e) {
-        }
-
-        public void folderRemoved(FolderRepositoryEvent e) {
-        }
-
-        public void maintenanceFinished(FolderRepositoryEvent e) {
-            updateSyncLabel();
-        }
-
-        public void maintenanceStarted(FolderRepositoryEvent e) {
-            updateSyncLabel();
+    private class MySynchronizationStatsListener implements SynchronizationStatsListener {
+        public void synchronizationStatsChanged(SynchronizationStatsEvent event) {
+            folderRepositorySyncing.set(event.isSynchronizing());
         }
 
         public boolean fireInEventDispatchThread() {
-            return true;
+            // simple implementation - so do it now
+            return false;
         }
-
-    }
-
-    private class MyTransferManagerListener implements TransferManagerListener {
-
-        public void completedDownloadRemoved(TransferManagerEvent event) {
-        }
-
-        public void downloadAborted(TransferManagerEvent event) {
-            updateSyncLabel();
-        }
-
-        public void downloadBroken(TransferManagerEvent event) {
-            updateSyncLabel();
-        }
-
-        public void downloadCompleted(TransferManagerEvent event) {
-            updateSyncLabel();
-        }
-
-        public void downloadQueued(TransferManagerEvent event) {
-            updateSyncLabel();
-        }
-
-        public void downloadRequested(TransferManagerEvent event) {
-            updateSyncLabel();
-        }
-
-        public void downloadStarted(TransferManagerEvent event) {
-            updateSyncLabel();
-        }
-
-        public void pendingDownloadEnqueud(TransferManagerEvent event) {
-            updateSyncLabel();
-        }
-
-        public void uploadAborted(TransferManagerEvent event) {
-            updateSyncLabel();
-        }
-
-        public void uploadBroken(TransferManagerEvent event) {
-            updateSyncLabel();
-        }
-
-        public void uploadCompleted(TransferManagerEvent event) {
-            updateSyncLabel();
-        }
-
-        public void uploadRequested(TransferManagerEvent event) {
-            updateSyncLabel();
-        }
-
-        public void uploadStarted(TransferManagerEvent event) {
-            updateSyncLabel();
-        }
-
-        public void completedUploadRemoved(TransferManagerEvent event) {
-            updateSyncLabel();
-        }
-
-        public boolean fireInEventDispatchThread() {
-            return true;
-        }
-
     }
 
     /**
@@ -203,7 +118,7 @@ public class SyncButtonComponent extends PFUIComponent {
             while (!getController().getThreadPool().isShutdown()) {
                 try {
                     Thread.sleep(40);
-                    if (anyFolderSyncing.get()) {
+                    if (folderRepositorySyncing.get()) {
                         index++;
                         if (index > 17) {
                             index = 0;

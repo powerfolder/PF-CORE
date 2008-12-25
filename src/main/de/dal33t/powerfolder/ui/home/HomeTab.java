@@ -88,6 +88,8 @@ public class HomeTab extends PFUIComponent {
                 .getReceivedAskedForFriendshipModel().getReceivedAskForFriendshipCountVM();
         newInvitationsCountVM = getUIController().getApplicationModel()
                 .getReceivedInvitationModel().getReceivedInvitationsCountVM();
+        controller.getFolderRepository().addSynchronizationStatsListener(
+                new MySynchronizationStatsListener());
     }
 
     /**
@@ -284,7 +286,6 @@ public class HomeTab extends PFUIComponent {
      * Updates the upload / download text.
      */
     private void updateTransferText() {
-        synchronizationStatusLabel.setText(getSyncText());
         downloadsLine.setValue((Integer) downloadsCountVM.getValue());
         uploadsLine.setValue((Integer) uploadsCountVM.getValue());
     }
@@ -297,17 +298,6 @@ public class HomeTab extends PFUIComponent {
     private void updateNewComputersText() {
         Integer integer = (Integer) newFriendRequestCountVM.getValue();
         newFriendRequestLine.setValue(integer);
-    }
-
-    /**
-     * Updates the synchronization text.
-     * @return
-     */
-    private String getSyncText() {
-        return getController().getFolderRepository()
-                .isAnyFolderTransferring() ?
-                Translation.getTranslation("home_tab.synchronizing") :
-                Translation.getTranslation("home_tab.in_sync");
     }
 
     /**
@@ -581,6 +571,23 @@ public class HomeTab extends PFUIComponent {
         public void invitationReceived(InvitationReceivedEvent
                 invitationReceivedEvent) {
             updateNewInvitationsText();
+        }
+    }
+
+    /**
+     * Class to listen for SynchronizationStatsEvents, affects the label text. 
+     */
+    private class MySynchronizationStatsListener implements
+            SynchronizationStatsListener {
+        public void synchronizationStatsChanged(SynchronizationStatsEvent event) {
+            String syncText = event.isSynchronizing()
+                    ? Translation.getTranslation("home_tab.synchronizing")
+                    : Translation.getTranslation("home_tab.in_sync");
+            synchronizationStatusLabel.setText(syncText);
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return true;
         }
     }
 }

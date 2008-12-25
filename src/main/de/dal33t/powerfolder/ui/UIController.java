@@ -24,6 +24,8 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
+import de.dal33t.powerfolder.event.SynchronizationStatsListener;
+import de.dal33t.powerfolder.event.SynchronizationStatsEvent;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.ui.action.SyncAllFoldersAction;
@@ -101,6 +103,8 @@ public class UIController extends PFComponent {
 
     private TransferManagerModel transferManagerModel;
 
+    private final AtomicBoolean folderRepositorySynchronizing;
+
     /**
      * Initializes a new UI controller. open UI with #start
      * 
@@ -108,6 +112,8 @@ public class UIController extends PFComponent {
      */
     public UIController(Controller controller) {
         super(controller);
+
+        folderRepositorySynchronizing = new AtomicBoolean();
 
         configureOomeHandler();
 
@@ -175,6 +181,9 @@ public class UIController extends PFComponent {
         systemMonitorFrame = new SystemMonitorFrame(getController());
         started = false;
 
+        // Start listening for synchronization stats events.
+        controller.getFolderRepository().addSynchronizationStatsListener(
+                new MySynchronizationStatsListener());
     }
 
     /**
@@ -662,14 +671,29 @@ public class UIController extends PFComponent {
         folderRepositoryModel.syncFolder(folderInfo);
     }
 
+    /**
+     * Class to listen for SynchronizationStatsEvents, affect the tooltip text.
+     */
+    private class MySynchronizationStatsListener implements
+            SynchronizationStatsListener {
+
+        public void synchronizationStatsChanged(SynchronizationStatsEvent event) {
+            folderRepositorySynchronizing.set(event.isSynchronizing());
+        }
+
+        public boolean fireInEventDispatchThread() {
+            // simple implementation, so do it now.
+            return false;
+        }
+    }
+
     private class UpdateSystrayTask extends TimerTask {
         public void run() {
             StringBuilder tooltip = new StringBuilder();
 
             tooltip.append(Translation.getTranslation("general.powerfolder"));
             tooltip.append(' ');
-            if (getController().getFolderRepository().isAnyFolderTransferring())
-            {
+            if (folderRepositorySynchronizing.get()) {
                 tooltip.append(Translation
                     .getTranslation("systray.tooltip.syncing"));
             } else {
