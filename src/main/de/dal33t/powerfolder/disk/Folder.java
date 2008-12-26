@@ -181,7 +181,7 @@ public class Folder extends PFComponent {
      * Flag indicating that the setting (e.g. folder db) have changed but not
      * been persisted.
      */
-    private boolean dirty;
+    private volatile boolean dirty;
 
     /**
      * Persister task, persists settings from time to time.
@@ -456,11 +456,10 @@ public class Folder extends PFComponent {
         // Fire scan result
         fireScanResultCommited(scanResult);
 
-        if (scanResult.getNewFiles().size() > 0
-            || scanResult.getChangedFiles().size() > 0
-            || scanResult.getDeletedFiles().size() > 0
-            || scanResult.getRestoredFiles().size() > 0)
-        {
+        if (scanResult.isChangeDetected()) {
+            // Check for identical files
+            findSameFilesOnRemote();
+            // Set dirty
             setDBDirty();
             // broadcast changes on folder
             broadcastFolderChanges(scanResult);
@@ -786,8 +785,6 @@ public class Folder extends PFComponent {
                 }
                 commitScanResult(result);
                 lastScan = new Date();
-                dirty = true;
-                findSameFilesOnRemote();
                 return true;
             }
             // scan aborted or hardware broken?
