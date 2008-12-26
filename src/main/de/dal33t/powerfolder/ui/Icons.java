@@ -102,9 +102,9 @@ public class Icons {
 
     // Toolbar
     public static final Icon SEARCH_NODES = getIcon("icons/pictos/Friends.png");
-    public static final Icon NEW_FOLDER = getIconById("new_folder.icon");
-    public static final Icon JOIN_FOLDER = getIconById("join_folder.icon");
-    public static final Icon REMOVE_FOLDER = getIconById("remove_folder.icon");
+    public static final Icon NEW_FOLDER = getIcon("icons/pictos/NewFolder-48.png");
+    public static final Icon JOIN_FOLDER = getIcon("icons/pictos/JoinFolder-48.png");
+    public static final Icon REMOVE_FOLDER = getIcon("icons/pictos/LeaveFolder-48.png");
     public static final Icon PREFERENCES = getIcon("icons/Preferences.png");
     public static final Icon PREFERENCES_PICTO = getIcon("icons/pictos/Preferences.png");
     public static final Icon SYNC = getIcon("icons/Sync.png");
@@ -200,7 +200,7 @@ public class Icons {
     public static final Image PACMAN_DOT = getImage("icons/pac/pacDot.gif");
 
     public static final Icon PRO_LOGO = getIcon("icons/ProLogo.png");
-    public static final Icon SMALL_LOGO = getIconById("small_logo.icon");
+    public static final Icon SMALL_LOGO = getIcon("icons/PowerFolder32x32.gif");
 
     public static final Icon SPLASH = getIcon("icons/Splash.png");
 
