@@ -47,6 +47,8 @@ public class ActionModel extends PFComponent {
     private SyncFolderAction syncFolderAction;
     private OpenInvitationReceivedWizardAction openInvitationReceivedWizardAction;
     private AskForFriendshipAction askForFriendshipAction;
+    private OnlineStorageLogInAction onlineStorageLogInAction;
+    private OnlineStorageLogOutAction onlineStorageLogOutAction;
 
     public NewFolderAction getNewFolderAction() {
         if (newFolderAction == null) {
@@ -140,5 +142,19 @@ public class ActionModel extends PFComponent {
             askForFriendshipAction = new AskForFriendshipAction(getController());
         }
         return askForFriendshipAction;
+    }
+
+    public OnlineStorageLogInAction getOnlineStorageLogInAction() {
+        if (onlineStorageLogInAction == null) {
+            onlineStorageLogInAction = new OnlineStorageLogInAction(getController());
+        }
+        return onlineStorageLogInAction;
+    }
+
+    public OnlineStorageLogOutAction getOnlineStorageLogOutAction() {
+        if (onlineStorageLogOutAction == null) {
+            onlineStorageLogOutAction = new OnlineStorageLogOutAction(getController());
+        }
+        return onlineStorageLogOutAction;
     }
 }

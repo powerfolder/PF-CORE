@@ -27,8 +27,6 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
-import de.dal33t.powerfolder.ui.action.OnlineStorageLogInAction;
-import de.dal33t.powerfolder.ui.action.OnlineStorageLogOutAction;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
@@ -173,7 +171,9 @@ public class HomeTab extends PFUIComponent {
                 false, true);
         onlineStorageAccountLabel = new JLabel();
         onlineStorageSection = new OnlineStorageSection(getController());
-        onlineStorageLogLabel = new ActionLabel(new OnlineStorageLogInAction(getController()));
+        onlineStorageLogLabel = new ActionLabel(getUIController()
+                    .getApplicationModel().getActionModel()
+                    .getOnlineStorageLogInAction());
         updateTransferText();
         updateFoldersText();
         recalculateFilesAvailable();
@@ -374,8 +374,9 @@ public class HomeTab extends PFUIComponent {
                 client.getUsername().trim().length() == 0) {
             onlineStorageAccountLabel.setText(Translation.getTranslation(
                     "home_tab.online_storage.not_setup"));
-            onlineStorageLogLabel.configureFromAction(
-                    new OnlineStorageLogInAction(getController()));
+            onlineStorageLogLabel.configureFromAction(getUIController()
+                    .getApplicationModel().getActionModel()
+                    .getOnlineStorageLogInAction());
         } else if (client.isConnected()) {
             if (client.getAccount().getOSSubscription().isDisabled()) {
                 onlineStorageAccountLabel.setText(Translation.getTranslation(
@@ -386,14 +387,16 @@ public class HomeTab extends PFUIComponent {
                         "home_tab.online_storage.account", client.getUsername()));
                 active = true;
             }
-            onlineStorageLogLabel.configureFromAction(
-                    new OnlineStorageLogOutAction(getController()));
+            onlineStorageLogLabel.configureFromAction(getUIController()
+                    .getApplicationModel().getActionModel()
+                    .getOnlineStorageLogOutAction());
         } else {
             onlineStorageAccountLabel.setText(Translation.getTranslation(
                     "home_tab.online_storage.account_connecting",
                     client.getUsername()));
-            onlineStorageLogLabel.configureFromAction(
-                    new OnlineStorageLogOutAction(getController()));
+            onlineStorageLogLabel.configureFromAction(getUIController()
+                    .getApplicationModel().getActionModel()
+                    .getOnlineStorageLogOutAction());
         }
         if (active) {
             OnlineStorageSubscriptionType storageSubscriptionType =

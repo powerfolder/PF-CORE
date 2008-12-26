@@ -29,7 +29,7 @@ import java.awt.event.ActionEvent;
 public class OnlineStorageLogOutAction extends BaseAction {
 
     public OnlineStorageLogOutAction(Controller controller) {
-        super("action_online_storage_logout", controller);
+        super("action_online_storage_log_out", controller);
     }
 
     public void actionPerformed(ActionEvent e) {
