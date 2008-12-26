@@ -205,7 +205,7 @@ public class PFWizard extends PFUIComponent {
      *            amount to shift the wizard when called by another wizard
      */
     public void open(PFWizardPanel wizardPanel) {
-        Reject.ifNull(wizardPanel, "Wizardpanel is null");
+        Reject.ifNull(wizardPanel, "Wizard panel is null");
         if (dialog == null) {
             buildUI();
         }

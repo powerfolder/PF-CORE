@@ -63,6 +63,7 @@ public class ExpandableFolderView extends PFUIComponent {
     private AtomicBoolean expanded;
 
     private JLabel filesLabel;
+    private JLabel transferModeLabel;
     private JButtonMini openSettingsInformationButton;
     private JButtonMini openFilesInformationButton;
     private JButtonMini openMembersInformationButton;
@@ -136,8 +137,6 @@ public class ExpandableFolderView extends PFUIComponent {
             "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
         PanelBuilder lowerBuilder = new PanelBuilder(lowerLayout);
 
-        String transferMode = Translation.getTranslation("exp_folder_view.transfer_mode",
-                folder.getSyncProfile().getProfileName());
         lowerBuilder.addSeparator(null, cc.xywh(2, 1, 5, 1));
         
         lowerBuilder.add(syncPercentLabel, cc.xy(2, 3));
@@ -155,7 +154,7 @@ public class ExpandableFolderView extends PFUIComponent {
 
         lowerBuilder.addSeparator(null, cc.xywh(2, 13, 5, 1));
 
-        lowerBuilder.add(new JLabel(transferMode), cc.xy(2, 15));
+        lowerBuilder.add(transferModeLabel, cc.xy(2, 15));
         lowerBuilder.add(openSettingsInformationButton, cc.xy(6, 15));
 
         JPanel lowerPanel = lowerBuilder.getPanel();
@@ -208,6 +207,7 @@ public class ExpandableFolderView extends PFUIComponent {
                 Translation.getTranslation("exp_folder_view.synchronize_folder"));
         syncFolderButton.addActionListener(new MySyncActionListener());
         filesLabel = new JLabel();
+        transferModeLabel = new JLabel();
         syncPercentLabel = new JLabel();
         totalSizeLabel = new JLabel();
         membersLabel = new JLabel();
@@ -216,6 +216,7 @@ public class ExpandableFolderView extends PFUIComponent {
         updateNumberOfFiles();
         updateStatsDetails();
         updateFolderMembershipDetails();
+        updateTransferMode();
 
         registerListeners();
     }
@@ -310,6 +311,15 @@ public class ExpandableFolderView extends PFUIComponent {
     }
 
     /**
+     * Updates transfer mode of the folder.
+     */
+    private void updateTransferMode() {
+        String transferMode = Translation.getTranslation("exp_folder_view.transfer_mode",
+                folder.getSyncProfile().getProfileName());
+        transferModeLabel.setText(transferMode);
+    }
+
+    /**
      * Updates the folder member details.
      */
     private void updateFolderMembershipDetails() {
@@ -344,6 +354,7 @@ public class ExpandableFolderView extends PFUIComponent {
         }
 
         public void syncProfileChanged(FolderEvent folderEvent) {
+            updateTransferMode();
         }
 
         public boolean fireInEventDispatchThread() {
