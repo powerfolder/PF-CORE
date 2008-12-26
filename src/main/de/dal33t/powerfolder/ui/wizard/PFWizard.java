@@ -83,7 +83,7 @@ public class PFWizard extends PFUIComponent {
     }
 
     /**
-     * Opens the what todo wizard. Qizard to create / join folders.
+     * Opens the what to do wizard. Wizard to create / join folders.
      * 
      * @param controller
      */
