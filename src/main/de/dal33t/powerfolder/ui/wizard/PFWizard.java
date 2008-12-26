@@ -177,11 +177,9 @@ public class PFWizard extends PFUIComponent {
         if (folderSetupAfterwards) {
             nextFinishPanel = new FolderOnlineStoragePanel(controller);
         } else {
-            // TODO i18n
             nextFinishPanel = new TextPanelPanel(controller,
-                "Online Storage Login Successful",
-                "The Online Storage is now correctly setup.\n"
-                    + "You may now start to backup Folders to it.");
+                    Translation.getTranslation("wizard.finish_panel.os_login_title"),
+                    Translation.getTranslation("wizard.finish_panel.os_login_text"));
         }
         wizard.open(new LoginOnlineStoragePanel(controller, client,
             nextFinishPanel, true));
@@ -196,12 +194,6 @@ public class PFWizard extends PFUIComponent {
         PFWizard wizard = new PFWizard(controller);
         wizard.getWizardContext().setAttribute(PICTO_ICON,
             Icons.WEB_SERVICE_PICTO);
-        // TextPanelPanel successPanel = new TextPanelPanel(controller,
-        // Translation.getTranslation("wizard.send_invitations.send_success"),
-        // Translation
-        // .getTranslation("wizard.send_invitations.send_success_info"));
-        // wizard.getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL,
-        // successPanel);
         wizard.open(new FolderOnlineStoragePanel(controller));
     }
 
