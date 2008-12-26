@@ -115,9 +115,6 @@ public class Icons {
     public static final Icon SORT_BLANK = getIcon("icons/SortBlank.gif");
     public static final Icon DYN_DNS = getIcon("icons/DynDns.gif");
 
-    public static final Icon EXPAND = getIcon("icons/Expand.gif");
-    public static final Icon COLLAPSE = getIcon("icons/Collapse.gif");
-
     // Directories in navigation tree
     public static final Icon DIRECTORY = getIcon("icons/Directory.gif");
     public static final Icon DIRECTORY_OPEN = getIcon("icons/Directory_open.gif");

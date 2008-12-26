@@ -41,6 +41,8 @@ import de.dal33t.powerfolder.util.Translation;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.text.DecimalFormat;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -55,7 +57,6 @@ public class ExpandableFolderView extends PFUIComponent {
 
     private final Folder folder;
     private JButtonMini inviteButton;
-    private JButtonMini expandCollapseButton;
     private JButtonMini syncFolderButton;
     private JPanel uiComponent;
     private JPanel lowerOuterPanel;
@@ -69,6 +70,7 @@ public class ExpandableFolderView extends PFUIComponent {
     private JLabel totalSizeLabel;
     private JLabel membersLabel;
     private JLabel filesAvailableLabel;
+    private JPanel upperPanel;
 
     private MyFolderListener myFolderListener;
     private MyFolderMembershipListener myFolderMembershipListener;
@@ -103,8 +105,8 @@ public class ExpandableFolderView extends PFUIComponent {
         initComponent();
 
         // Build ui
-                                            //  icon        name   space            # files     sync  ex/co
-        FormLayout upperLayout = new FormLayout("pref, 3dlu, pref, pref:grow, 3dlu, pref, 3dlu, pref, pref",
+                                            //  icon        name   space            # files     sync
+        FormLayout upperLayout = new FormLayout("pref, 3dlu, pref, pref:grow, 3dlu, pref, 3dlu, pref",
             "pref");
         PanelBuilder upperBuilder = new PanelBuilder(upperLayout);
         CellConstraints cc = new CellConstraints();
@@ -123,9 +125,11 @@ public class ExpandableFolderView extends PFUIComponent {
         upperBuilder.add(new JLabel(folder.getName()), cc.xy(3, 1));
         upperBuilder.add(filesAvailableLabel, cc.xy(6, 1));
         upperBuilder.add(syncFolderButton, cc.xy(8, 1));
-        upperBuilder.add(expandCollapseButton, cc.xy(9, 1));
 
-        JPanel upperPanel = upperBuilder.getPanel();
+        upperPanel = upperBuilder.getPanel();
+        upperPanel.setToolTipText(
+                Translation.getTranslation("exp_folder_view.expand"));
+        upperPanel.addMouseListener(new MyMouseAdapter());
 
         // Build lower detials with line border.
         FormLayout lowerLayout = new FormLayout("3dlu, pref, pref:grow, 3dlu, pref, pref, 3dlu",
@@ -198,9 +202,6 @@ public class ExpandableFolderView extends PFUIComponent {
         openMembersInformationButton = new JButtonMini(
                 new MyOpenMembersInformationAction(getController()), true);
 
-        expandCollapseButton = new JButtonMini(Icons.EXPAND,
-                Translation.getTranslation("exp_folder_view.expand"));
-        expandCollapseButton.addActionListener(new MyExpColActionListener());
         MyInviteAction inviteAction = new MyInviteAction(getController());
         inviteButton = new JButtonMini(inviteAction, true);
         syncFolderButton = new JButtonMini(Icons.SYNC,
@@ -371,19 +372,18 @@ public class ExpandableFolderView extends PFUIComponent {
     /**
      * Class to respond to expand / collapse events.
      */
-    private class MyExpColActionListener implements ActionListener {
-        public void actionPerformed(ActionEvent e) {
+    private class MyMouseAdapter extends MouseAdapter {
+
+        public void mouseClicked(MouseEvent e) {
             boolean exp = expanded.get();
             if (exp) {
                 expanded.set(false);
-                expandCollapseButton.setIcon(Icons.EXPAND);
-                expandCollapseButton.setToolTipText(
+                upperPanel.setToolTipText(
                         Translation.getTranslation("exp_folder_view.expand"));
                 lowerOuterPanel.setVisible(false);
             } else {
                 expanded.set(true);
-                expandCollapseButton.setIcon(Icons.COLLAPSE);
-                expandCollapseButton.setToolTipText(
+                upperPanel.setToolTipText(
                         Translation.getTranslation("exp_folder_view.collapse"));
                 lowerOuterPanel.setVisible(true);
             }

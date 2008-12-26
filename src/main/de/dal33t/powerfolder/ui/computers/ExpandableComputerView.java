@@ -36,6 +36,8 @@ import de.dal33t.powerfolder.util.Translation;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -45,7 +47,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class ExpandableComputerView extends PFUIComponent {
 
     private final Member node;
-    private JButtonMini expandCollapseButton;
     private JPanel uiComponent;
     private JPanel lowerOuterPanel;
     private AtomicBoolean expanded;
@@ -53,6 +54,7 @@ public class ExpandableComputerView extends PFUIComponent {
     private JButtonMini addRemoveButton;
     private JLabel pictoLabel;
     private JButtonMini chatButton;
+    private JPanel upperPanel;
 
     private JLabel lastSeenLabel;
     private MyNodeManagerListener nodeManagerListener;
@@ -87,18 +89,20 @@ public class ExpandableComputerView extends PFUIComponent {
         initComponent();
 
         // Build ui
-                                             //  icon        name  space            chat  ex/co
-        FormLayout upperLayout = new FormLayout("pref, 3dlu, pref, pref:grow, 3dlu, pref, pref",
+                                             //  icon        name  space            chat
+        FormLayout upperLayout = new FormLayout("pref, 3dlu, pref, pref:grow, 3dlu, pref",
             "pref");
         PanelBuilder upperBuilder = new PanelBuilder(upperLayout);
         CellConstraints cc = new CellConstraints();
 
         upperBuilder.add(pictoLabel, cc.xy(1, 1));
         upperBuilder.add(new JLabel(node.getNick()), cc.xy(3, 1));
-        upperBuilder.add(chatButton, cc.xy(6, 1));   // temporary :-)
-        upperBuilder.add(expandCollapseButton, cc.xy(7, 1));
+        upperBuilder.add(chatButton, cc.xy(6, 1));
 
-        JPanel upperPanel = upperBuilder.getPanel();
+        upperPanel = upperBuilder.getPanel();
+        upperPanel.setToolTipText(
+                Translation.getTranslation("exp_computer_view.expand"));
+        upperPanel.addMouseListener(new MyMouseAdapter());
 
         // Build lower detials with line border.
         FormLayout lowerLayout = new FormLayout("3dlu, pref, pref:grow, 3dlu, pref, pref, 3dlu",
@@ -147,9 +151,6 @@ public class ExpandableComputerView extends PFUIComponent {
     private void initComponent() {
         expanded = new AtomicBoolean();
 
-        expandCollapseButton = new JButtonMini(Icons.EXPAND,
-                Translation.getTranslation("exp_computer_view.expand"));
-        expandCollapseButton.addActionListener(new MyCollapseActionListener());
         lastSeenLabel = new JLabel();
         reconnectButton = new JButtonMini(getApplicationModel()
                 .getActionModel().getReconnectAction());
@@ -286,28 +287,27 @@ public class ExpandableComputerView extends PFUIComponent {
     // Inner Classes //
     ///////////////////
 
+
     /**
      * Class to respond to expand / collapse events.
      */
-    private class MyCollapseActionListener implements ActionListener {
-        public void actionPerformed(ActionEvent e) {
+    private class MyMouseAdapter extends MouseAdapter {
+
+        public void mouseClicked(MouseEvent e) {
             boolean exp = expanded.get();
             if (exp) {
                 expanded.set(false);
-                expandCollapseButton.setIcon(Icons.EXPAND);
-                expandCollapseButton.setToolTipText(
+                upperPanel.setToolTipText(
                         Translation.getTranslation("exp_computer_view.expand"));
                 lowerOuterPanel.setVisible(false);
             } else {
                 expanded.set(true);
-                expandCollapseButton.setIcon(Icons.COLLAPSE);
-                expandCollapseButton.setToolTipText(
+                upperPanel.setToolTipText(
                         Translation.getTranslation("exp_computer_view.collapse"));
                 lowerOuterPanel.setVisible(true);
             }
         }
     }
-
     /**
      * Listener of node events.
      */
