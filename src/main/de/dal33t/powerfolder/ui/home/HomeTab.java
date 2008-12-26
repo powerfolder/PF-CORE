@@ -26,6 +26,9 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.ui.widget.ActionLabel;
+import de.dal33t.powerfolder.ui.action.OnlineStorageLogInAction;
+import de.dal33t.powerfolder.ui.action.OnlineStorageLogOutAction;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
@@ -67,6 +70,7 @@ public class HomeTab extends PFUIComponent {
     private ServerClient client;
     private JLabel onlineStorageAccountLabel;
     private OnlineStorageSection onlineStorageSection;
+    private ActionLabel onlineStorageLogLabel;
     private final ValueModel newFriendRequestCountVM;
     private final ValueModel newInvitationsCountVM;
 
@@ -169,6 +173,7 @@ public class HomeTab extends PFUIComponent {
                 false, true);
         onlineStorageAccountLabel = new JLabel();
         onlineStorageSection = new OnlineStorageSection(getController());
+        onlineStorageLogLabel = new ActionLabel(new OnlineStorageLogInAction(getController()));
         updateTransferText();
         updateFoldersText();
         recalculateFilesAvailable();
@@ -205,8 +210,8 @@ public class HomeTab extends PFUIComponent {
      */
     private JPanel buildMainPanel() {
         FormLayout layout = new FormLayout("3dlu, 100dlu, pref:grow, 3dlu",
-            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, pref, pref, pref, pref, pref, 3dlu, pref, pref, pref, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref:grow");
-        //   sync-stat   sync-date   sep         you-have    files comps invs  down  upl   sep         #fol  szfo  comp  sep         os-acc      osSec
+            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, pref, pref, pref, pref, pref, 3dlu, pref, pref, pref, pref, 3dlu, pref, 3dlu, pref, pref, 3dlu, pref:grow");
+        //   sync-stat   sync-date   sep         you-have    files comps invs  down  upl   sep         #fol  szfo  comp  sep         os-acc      osSec osLog
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
@@ -260,6 +265,9 @@ public class HomeTab extends PFUIComponent {
         row += 2;
 
         builder.add(onlineStorageSection.getUIComponent(), cc.xywh(2, row, 2, 1));
+        row++;
+
+        builder.add(onlineStorageLogLabel, cc.xywh(2, row, 2, 1));
         row += 2;
 
         return builder.getPanel();
@@ -366,6 +374,8 @@ public class HomeTab extends PFUIComponent {
                 client.getUsername().trim().length() == 0) {
             onlineStorageAccountLabel.setText(Translation.getTranslation(
                     "home_tab.online_storage.not_setup"));
+            onlineStorageLogLabel.configureFromAction(
+                    new OnlineStorageLogInAction(getController()));
         } else if (client.isConnected()) {
             if (client.getAccount().getOSSubscription().isDisabled()) {
                 onlineStorageAccountLabel.setText(Translation.getTranslation(
@@ -376,10 +386,14 @@ public class HomeTab extends PFUIComponent {
                         "home_tab.online_storage.account", client.getUsername()));
                 active = true;
             }
+            onlineStorageLogLabel.configureFromAction(
+                    new OnlineStorageLogOutAction(getController()));
         } else {
             onlineStorageAccountLabel.setText(Translation.getTranslation(
                     "home_tab.online_storage.account_connecting",
                     client.getUsername()));
+            onlineStorageLogLabel.configureFromAction(
+                    new OnlineStorageLogOutAction(getController()));
         }
         if (active) {
             OnlineStorageSubscriptionType storageSubscriptionType =

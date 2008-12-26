@@ -23,9 +23,7 @@ import de.dal33t.powerfolder.util.Reject;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 
 /**
  * A Label which executes the action when clicked.
@@ -50,6 +48,25 @@ public class ActionLabel extends AntialiasedLabel {
             }
         });
         setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+    }
+
+    public void configureFromAction(final Action action) {
+        setText("<html><font color=\"#00000\"><a href=\"#\">"
+            + action.getValue(Action.NAME) + "</a></font></html>");
+        String toolTips = (String) action.getValue(Action.SHORT_DESCRIPTION);
+        if (toolTips != null && toolTips.length() > 0) {
+            setToolTipText(toolTips);
+        }
+        Reject.ifNull(action, "Action listener is null");
+        for (MouseListener mouseListener : getMouseListeners()) {
+            removeMouseListener(mouseListener);
+        }
+        addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                action.actionPerformed(new ActionEvent(e.getSource(), 0,
+                    "clicked"));
+            }
+        });
     }
 
     public void setText(String text) {
