@@ -34,6 +34,7 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
+import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
@@ -66,10 +67,9 @@ public class ExpandableFolderView extends PFUIComponent {
     private JLabel transferModeLabel;
     private JButtonMini openSettingsInformationButton;
     private JButtonMini openFilesInformationButton;
-    private JButtonMini openMembersInformationButton;
     private JLabel syncPercentLabel;
     private JLabel totalSizeLabel;
-    private JLabel membersLabel;
+    private ActionLabel membersLabel;
     private JLabel filesAvailableLabel;
     private JPanel upperPanel;
 
@@ -133,14 +133,14 @@ public class ExpandableFolderView extends PFUIComponent {
         upperPanel.addMouseListener(new MyMouseAdapter());
 
         // Build lower detials with line border.
-        FormLayout lowerLayout = new FormLayout("3dlu, pref, pref:grow, 3dlu, pref, pref, 3dlu",
+        FormLayout lowerLayout = new FormLayout("3dlu, pref, pref:grow, 3dlu, pref, 3dlu",
             "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
         PanelBuilder lowerBuilder = new PanelBuilder(lowerLayout);
 
         lowerBuilder.addSeparator(null, cc.xywh(2, 1, 5, 1));
         
         lowerBuilder.add(syncPercentLabel, cc.xy(2, 3));
-        lowerBuilder.add(openFilesInformationButton, cc.xy(6, 3));
+        lowerBuilder.add(openFilesInformationButton, cc.xy(5, 3));
 
         lowerBuilder.add(filesLabel, cc.xy(2, 5));
 
@@ -150,12 +150,11 @@ public class ExpandableFolderView extends PFUIComponent {
 
         lowerBuilder.add(membersLabel, cc.xy(2, 11));
         lowerBuilder.add(inviteButton, cc.xy(5, 11));
-        lowerBuilder.add(openMembersInformationButton, cc.xy(6, 11));
 
         lowerBuilder.addSeparator(null, cc.xywh(2, 13, 5, 1));
 
         lowerBuilder.add(transferModeLabel, cc.xy(2, 15));
-        lowerBuilder.add(openSettingsInformationButton, cc.xy(6, 15));
+        lowerBuilder.add(openSettingsInformationButton, cc.xy(5, 15));
 
         JPanel lowerPanel = lowerBuilder.getPanel();
 
@@ -198,9 +197,6 @@ public class ExpandableFolderView extends PFUIComponent {
         openFilesInformationButton = new JButtonMini(
                 new MyOpenFilesInformationAction(getController()), true);
 
-        openMembersInformationButton = new JButtonMini(
-                new MyOpenMembersInformationAction(getController()), true);
-
         MyInviteAction inviteAction = new MyInviteAction(getController());
         inviteButton = new JButtonMini(inviteAction, true);
         syncFolderButton = new JButtonMini(Icons.SYNC,
@@ -210,7 +206,7 @@ public class ExpandableFolderView extends PFUIComponent {
         transferModeLabel = new JLabel();
         syncPercentLabel = new JLabel();
         totalSizeLabel = new JLabel();
-        membersLabel = new JLabel();
+        membersLabel = new ActionLabel(new MyOpenMembersInformationAction(getController()));
         filesAvailableLabel = new JLabel();
 
         updateNumberOfFiles();
