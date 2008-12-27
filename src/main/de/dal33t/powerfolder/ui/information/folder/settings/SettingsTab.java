@@ -128,8 +128,8 @@ public class SettingsTab extends PFUIComponent
     private void buildUIComponent() {
                   // label           folder       butn
         FormLayout layout = new FormLayout(
-            "3dlu, right:pref, 3dlu, 178dlu, 3dlu, pref",
-                "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
+            "3dlu, right:pref, 3dlu, 210dlu, 3dlu, pref",
+                "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
@@ -151,7 +151,19 @@ public class SettingsTab extends PFUIComponent
         builder.add(localFolderField, cc.xy(4, 8));
         builder.add(localFolderButton, cc.xy(6, 8));
 
+        builder.add(new JLabel("Online Storage"), cc.xy(2, 10));
+        builder.add(createConfigurePanel(), cc.xy(4, 10));
+
         uiComponent = builder.getPanel();
+    }
+
+    private JPanel createConfigurePanel() {
+        FormLayout layout = new FormLayout("pref", "pref");
+        PanelBuilder builder = new PanelBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+        builder.add(new JButton(new ConfigureFolderOnlineStorageAction(
+                getController())), cc.xy(1, 1));
+        return builder.getPanel();
     }
 
     private JPanel createPatternsPanel() {
@@ -633,6 +645,15 @@ public class SettingsTab extends PFUIComponent
             if (get() != null) {
                 displayError((Exception) get());
             }
+        }
+    }
+
+    private class ConfigureFolderOnlineStorageAction extends BaseAction {
+        private ConfigureFolderOnlineStorageAction(Controller controller) {
+            super("action_configure_folder_online_storage", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
         }
     }
 
