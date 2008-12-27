@@ -403,8 +403,11 @@ public class HomeTab extends PFUIComponent {
                     client.getAccount().getOSSubscription().getType();
             long totalStorage = storageSubscriptionType.getStorageSize();
             long spaceUsed = client.getAccountDetails().getSpaceUsed();
-            double spacedUsedPercentage = 100.0d * (double) spaceUsed /
-                    (double) totalStorage;
+            double spacedUsedPercentage = 0;
+            if (totalStorage > 0) {
+                spacedUsedPercentage = 100.0d * (double) spaceUsed /
+                        (double) totalStorage;
+            }
             if (spacedUsedPercentage < 0.0d) {
                 spacedUsedPercentage = 0.0d;
             }
@@ -416,8 +419,7 @@ public class HomeTab extends PFUIComponent {
             boolean trial = storageSubscriptionType.isTrial();
             int daysLeft = client.getAccount().getOSSubscription().getDaysLeft();
             onlineStorageSection.setInfo(spacedUsedPercentage,
-                    trial,
-                    daysLeft);
+                    trial, daysLeft);
         } else {
             onlineStorageSection.getUIComponent().setVisible(false);
         }
