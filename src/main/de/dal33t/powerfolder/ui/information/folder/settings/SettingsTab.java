@@ -33,6 +33,7 @@ import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_DONT_REC
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.actionold.SelectionBaseAction;
 import de.dal33t.powerfolder.ui.information.folder.FolderInformationTab;

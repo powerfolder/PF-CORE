@@ -98,17 +98,15 @@ public class FolderOnlineStoragePanel extends PFWizardPanel {
 
             // Choose location...
             return new TextPanelPanel(getController(),
-                "Online Storage Setup Successful",
-                "You successfully setup the Online Storage\nto mirror folder "
-                    + folder.getName() + ".\n \n"
-                    + "Please keep in mind that the inital backup\n"
-                    + "may take some time on big folders.");
+                    Translation.getTranslation("wizard.folder_online_storage_panel.success_title"),
+                    Translation.getTranslation("wizard.folder_online_storage_panel.success_message",
+                    folder.getName()));
         } catch (FolderException e) {
             log.log(Level.SEVERE, "", e);
             return new TextPanelPanel(getController(),
-                "Online Storage Setup Error",
-                "PowerFolder was unable\nto setup folder " + folder.getName()
-                    + ".\n \n" + "Cause:\n" + e.getMessage());
+                    Translation.getTranslation("wizard.folder_online_storage_panel.failure_title"),
+                    Translation.getTranslation("wizard.folder_online_storage_panel.failure_message",
+                    folder.getName(), e.getMessage()));
         }
 
     }
