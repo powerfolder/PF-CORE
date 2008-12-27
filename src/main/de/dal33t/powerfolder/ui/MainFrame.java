@@ -19,26 +19,41 @@
  */
 package de.dal33t.powerfolder.ui;
 
-import com.jgoodies.forms.builder.DefaultFormBuilder;
-import com.jgoodies.forms.factories.Borders;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.PreferencesEntry;
-import de.dal33t.powerfolder.event.FolderRepositoryEvent;
-import de.dal33t.powerfolder.event.FolderRepositoryListener;
-import de.dal33t.powerfolder.util.os.OSUtil;
-import de.javasoft.plaf.synthetica.SyntheticaRootPaneUI;
-
-import javax.swing.*;
-import javax.swing.plaf.RootPaneUI;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Frame;
+import java.awt.HeadlessException;
+import java.awt.Toolkit;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.prefs.Preferences;
+
+import javax.swing.JCheckBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.SwingConstants;
+import javax.swing.WindowConstants;
+import javax.swing.plaf.RootPaneUI;
+
+import com.jgoodies.forms.builder.DefaultFormBuilder;
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.factories.Borders;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
+
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.event.FolderRepositoryEvent;
+import de.dal33t.powerfolder.event.FolderRepositoryListener;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.os.OSUtil;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.ui.GenericDialogType;
+import de.dal33t.powerfolder.util.ui.NeverAskAgainResponse;
+import de.javasoft.plaf.synthetica.SyntheticaRootPaneUI;
 
 /**
  * Powerfoldes gui mainframe
@@ -121,25 +136,36 @@ public class MainFrame extends PFUIComponent {
             .setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
         // add window listener, checks if exit is needed on pressing X
-        uiComponent.addWindowListener(new WindowAdapter() {
-            public void windowClosing(WindowEvent e) {
-                boolean quitOnX = PreferencesEntry.QUIT_ON_X
-                    .getValueBoolean(getController());
-                if (quitOnX || !OSUtil.isSystraySupported()) {
-                    // Quit if quit onx is active or not running with system
-                    // tray
-                    uiComponent.setVisible(false);
-                    uiComponent.dispose();
-                    new Thread("Close PowerFolder Thread") {
-                        @Override
-                        public void run() {
-                            getController().tryToExit(0);
-                        }
-                    }.start();
-                } else {
-                    getUIController().hideChildPanels();
-                    uiComponent.setVisible(false);
-                }
+		uiComponent.addWindowListener(new WindowAdapter() {
+			public void windowClosing(WindowEvent e) {
+				if (!OSUtil.isSystraySupported()) {
+					// Quit if systray is not Supported by OS.
+					exitProgram();
+				} else {
+					handleExitFirstRequest();
+					boolean quitOnX = PreferencesEntry.QUIT_ON_X
+							.getValueBoolean(getController());
+					if (quitOnX) {
+						exitProgram();
+					} else {
+						getUIController().hideChildPanels();
+						uiComponent.setVisible(false);
+					}
+				}
+			}
+            
+            /**
+             * Shuts down the program
+             */
+            private void exitProgram() {
+                uiComponent.setVisible(false);
+                uiComponent.dispose();
+                new Thread("Close PowerFolder Thread") {
+                    @Override
+                    public void run() {
+                        getController().tryToExit(0);
+                    }
+                }.start();
             }
         });
 
@@ -150,6 +176,50 @@ public class MainFrame extends PFUIComponent {
         configureSyncNowAction();
 
     }
+    
+    /**
+     * Asks user about exit behaviour of the program
+     * when the program is used for the first time
+     */
+    private void handleExitFirstRequest() {
+		boolean askForQuitOnX = PreferencesEntry.ASK_FOR_QUIT_ON_X
+				.getValueBoolean(getController());
+		if (askForQuitOnX) {
+			// Prompt for personal message.
+			String[] options = { Translation.getTranslation("general.ok"),
+					Translation.getTranslation("general.cancel") };
+			FormLayout layout = new FormLayout("pref", "pref, pref, pref, pref");
+			PanelBuilder builder = new PanelBuilder(layout);
+			CellConstraints cc = new CellConstraints();
+			JCheckBox checkbox = new JCheckBox(Translation
+					.getTranslation("dialog.ask_for_quit_on_x.text"));
+			checkbox.setSelected(!PreferencesEntry.QUIT_ON_X.getValueBoolean(getController()));
+			builder.add(checkbox, cc.xy(1, 1));
+
+			JPanel innerPanel = builder.getPanel();
+			NeverAskAgainResponse response = DialogFactory.genericDialog(
+					getController().getUIController().getMainFrame()
+							.getUIComponent(), Translation
+							.getTranslation("dialog.ask_for_quit_on_x.title"),
+					innerPanel, options, 0, GenericDialogType.QUESTION,
+					Translation.getTranslation("general.neverAskAgain"));
+
+			if (response.getButtonIndex() == 0) { // == OK
+				boolean checked = checkbox.isSelected();
+				if (checked) {
+					// minimize to systray
+					PreferencesEntry.QUIT_ON_X.setValue(getController(), false);
+				}else{
+					PreferencesEntry.QUIT_ON_X.setValue(getController(), true);
+				}
+			}
+			if (response.isNeverAskAgain()) {
+				// don't ask me again
+				PreferencesEntry.ASK_FOR_QUIT_ON_X.setValue(getController(),
+						false);
+			}
+		}
+	}
 
     /**
      * Initalizes all ui components

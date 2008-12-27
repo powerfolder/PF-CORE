@@ -45,6 +45,8 @@ public enum PreferencesEntry {
     FRIEND_SEARCH_HIDE_OFFLINE("FriendsSearch_HideOfflineUsers", false),
 
     QUIT_ON_X("quitonx", false),
+    
+    ASK_FOR_QUIT_ON_X("AskForQuitOnX", true),
 
     WARN_ON_CLOSE("WarnOnClose", true),
 
