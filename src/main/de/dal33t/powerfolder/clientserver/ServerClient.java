@@ -84,7 +84,7 @@ public class ServerClient extends PFComponent {
     /**
      * Log that is kept to synchronize calls to login
      */
-    private Object loginLock = new Object();
+    private final Object loginLock = new Object();
 
     private AccountDetails accountDetails;
     private AccountService userService;
@@ -145,7 +145,7 @@ public class ServerClient extends PFComponent {
             .getTranslation("online_storage.connecting");
         boolean temporaryNode = StringUtils.isBlank(nodeId);
         String theNodeId = !temporaryNode ? nodeId : MEMBER_ID_TEMP_PREFIX
-            + "|" + IdGenerator.makeId();
+            + '|' + IdGenerator.makeId();
         Member theNode = getController().getNodeManager().getNode(theNodeId);
         if (theNode == null) {
             MemberInfo serverInfo = new MemberInfo(theName, theNodeId);
@@ -321,7 +321,7 @@ public class ServerClient extends PFComponent {
      */
     public boolean isLastLoginKnown() {
         return getController().getPreferences().get(
-            PREFS_PREFIX + "." + server.getIP() + ".username", null) != null
+            PREFS_PREFIX + '.' + server.getIP() + ".username", null) != null
             || isDefaultAccountSet();
     }
 
@@ -334,9 +334,9 @@ public class ServerClient extends PFComponent {
      */
     public Account loginWithLastKnown() {
         String un = getController().getPreferences().get(
-            PREFS_PREFIX + "." + server.getIP() + ".username", null);
+            PREFS_PREFIX + '.' + server.getIP() + ".username", null);
         String pw = getController().getPreferences().get(
-            PREFS_PREFIX + "." + server.getIP() + ".info2", null);
+            PREFS_PREFIX + '.' + server.getIP() + ".info2", null);
         if (!StringUtils.isBlank(pw)) {
             try {
                 pw = new String(Base64.decode(pw), "UTF-8");
@@ -346,7 +346,7 @@ public class ServerClient extends PFComponent {
         } else {
             // Fallback (TRAC #1291)
             pw = getController().getPreferences().get(
-                PREFS_PREFIX + "." + server.getIP() + ".info", null);
+                PREFS_PREFIX + '.' + server.getIP() + ".info", null);
         }
 
         if (!StringUtils.isBlank(un)) {
@@ -358,6 +358,17 @@ public class ServerClient extends PFComponent {
         }
         // Failed!
         return null;
+    }
+
+    /**
+     * Log out of online storage.
+     */
+    public void logoff() {
+        username = null;
+        password = null;
+        saveLastKnowLogin();
+        setAnonAccount();
+        fireLogin(accountDetails);
     }
 
     /**
@@ -406,7 +417,7 @@ public class ServerClient extends PFComponent {
             if (newAccountDetails != null) {
                 accountDetails = newAccountDetails;
 
-                boolean configChanged = false;
+                boolean configChanged;
                 if (accountDetails.getAccount().getServer() != null) {
                     configChanged = setServerWebURLInConfig(accountDetails
                         .getAccount().getServer().getWebUrl());
@@ -577,8 +588,9 @@ public class ServerClient extends PFComponent {
         }
         Runnable retriever = new Runnable() {
             public void run() {
-                FolderInfo[] folders = getController().getFolderRepository()
-                    .getJoinedFolderInfos().toArray(new FolderInfo[0]);
+                Collection<FolderInfo> infos = getController()
+                        .getFolderRepository().getJoinedFolderInfos();
+                FolderInfo[] folders = infos.toArray(new FolderInfo[infos.size()]);
                 Collection<MemberInfo> servers = getFolderService()
                     .getHostingServers(folders);
                 logWarning(
@@ -684,30 +696,30 @@ public class ServerClient extends PFComponent {
     }
 
     private void saveLastKnowLogin() {
-        if (!StringUtils.isBlank(username)) {
-            getController().getPreferences().put(
-                PREFS_PREFIX + "." + server.getIP() + ".username", username);
-        } else {
+        if (StringUtils.isBlank(username)) {
             getController().getPreferences().remove(
-                PREFS_PREFIX + "." + server.getIP() + ".username");
+                    PREFS_PREFIX + '.' + server.getIP() + ".username");
+        } else {
+            getController().getPreferences().put(
+                    PREFS_PREFIX + '.' + server.getIP() + ".username", username);
         }
 
         if (isRememberPassword() && !StringUtils.isBlank(password)) {
             try {
                 getController().getPreferences().put(
-                    PREFS_PREFIX + "." + server.getIP() + ".info2",
+                    PREFS_PREFIX + '.' + server.getIP() + ".info2",
                     Base64.encodeBytes(password.getBytes("UTF-8")));
             } catch (UnsupportedEncodingException e) {
                 throw new RuntimeException("UTF-8 not found", e);
             }
         } else {
             getController().getPreferences().remove(
-                PREFS_PREFIX + "." + server.getIP() + ".info2");
+                PREFS_PREFIX + '.' + server.getIP() + ".info2");
         }
 
         // Clear plain text password (TRAC #1291)
         getController().getPreferences().remove(
-            PREFS_PREFIX + "." + server.getIP() + ".info");
+            PREFS_PREFIX + '.' + server.getIP() + ".info");
     }
 
     /**

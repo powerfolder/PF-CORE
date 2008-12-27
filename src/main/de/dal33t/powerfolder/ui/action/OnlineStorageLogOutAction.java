@@ -20,6 +20,9 @@
 package de.dal33t.powerfolder.ui.action;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.ui.GenericDialogType;
+import de.dal33t.powerfolder.util.Translation;
 
 import java.awt.event.ActionEvent;
 
@@ -33,5 +36,15 @@ public class OnlineStorageLogOutAction extends BaseAction {
     }
 
     public void actionPerformed(ActionEvent e) {
+        int i = DialogFactory.genericDialog(getController().getUIController()
+                .getMainFrame().getUIComponent(),
+                Translation.getTranslation("online_storage_log_out_action.title"), 
+                Translation.getTranslation("online_storage_log_out_action.message"),
+                new String[]{Translation.getTranslation("online_storage_log_out_action.log_out"),
+                        Translation.getTranslation("general.cancel")}, 0,
+                GenericDialogType.QUESTION);
+        if (i == 0) {
+            getController().getOSClient().logoff();
+        }
     }
 }
