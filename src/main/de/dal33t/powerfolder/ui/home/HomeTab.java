@@ -46,10 +46,6 @@ import java.util.Date;
  */
 public class HomeTab extends PFUIComponent {
 
-    private static final int ONE_K = 1024;
-    private static final int ONE_M = 1024 * ONE_K;
-    private static final int ONE_G = 1024 * ONE_M;
-
     private JPanel uiComponent;
 
     private JLabel synchronizationStatusLabel;
@@ -145,7 +141,7 @@ public class HomeTab extends PFUIComponent {
                 false, true);
         sizeOfFoldersLine = new HomeTabLine(getController(),
                 Translation.getTranslation("home_tab.total_bytes"),
-                null, true, true);
+                null, true, false);
         filesAvailableLine = new HomeTabLine(getController(),
                 Translation.getTranslation("home_tab.files_available"), null,
                 true, true);
@@ -284,25 +280,11 @@ public class HomeTab extends PFUIComponent {
         for (Folder folder : folders) {
             totalSize += folder.getStatistic().getTotalSize();
         }
-        String descriptionKey;
-        double num;
-        if (totalSize >= ONE_G) {
-            descriptionKey = "home_tab.total_gigabytes";
-            num = (double) totalSize / (double) ONE_G;
-        } else if (totalSize >= ONE_M) {
-            descriptionKey = "home_tab.total_megabytes";
-            num = (double) totalSize / (double) ONE_M;
-        } else if (totalSize >= ONE_K) {
-            descriptionKey = "home_tab.total_kilobytes";
-            num = (double) totalSize / (double) ONE_K;
-        } else {
-            descriptionKey = "home_tab.total_bytes";
-            num = totalSize;
-        }
+        String s = Format.formatBytesShort(totalSize);
+        String[] strings = s.split("\\s");
 
-        sizeOfFoldersLine.setValue(num);
-        sizeOfFoldersLine.setNormalLabelText(
-                Translation.getTranslation(descriptionKey));
+        sizeOfFoldersLine.setValue(Double.valueOf(strings[0]));
+        sizeOfFoldersLine.setNormalLabelText(strings[1]);
     }
 
     /**
@@ -403,22 +385,11 @@ public class HomeTab extends PFUIComponent {
                     client.getAccount().getOSSubscription().getType();
             long totalStorage = storageSubscriptionType.getStorageSize();
             long spaceUsed = client.getAccountDetails().getSpaceUsed();
-            double spacedUsedPercentage = 0;
-            if (totalStorage > 0) {
-                spacedUsedPercentage = 100.0d * (double) spaceUsed /
-                        (double) totalStorage;
-            }
-            if (spacedUsedPercentage < 0.0d) {
-                spacedUsedPercentage = 0.0d;
-            }
-            if (spacedUsedPercentage > 100.0d) {
-                spacedUsedPercentage = 100.0d;
-            }
 
             onlineStorageSection.getUIComponent().setVisible(true);
             boolean trial = storageSubscriptionType.isTrial();
             int daysLeft = client.getAccount().getOSSubscription().getDaysLeft();
-            onlineStorageSection.setInfo(spacedUsedPercentage,
+            onlineStorageSection.setInfo(totalStorage, spaceUsed,
                     trial, daysLeft);
         } else {
             onlineStorageSection.getUIComponent().setVisible(false);

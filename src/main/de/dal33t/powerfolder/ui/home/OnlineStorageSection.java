@@ -52,21 +52,41 @@ public class OnlineStorageSection extends PFUIComponent {
     /**
      * Sets the trial info details, hiding if necessary.
      *
-     * @param percentageUse
+     * @param totalStorage
+     * @param spaceUsed
      * @param trial
      * @param daysLeft
      */
-    public void setInfo(double percentageUse, boolean trial, int daysLeft) {
+    public void setInfo(long totalStorage, long spaceUsed, boolean trial, int daysLeft) {
+
+        double percentageUsed = 0;
+        if (totalStorage > 0) {
+            percentageUsed = 100.0d * (double) spaceUsed /
+                    (double) totalStorage;
+        }
+        if (percentageUsed < 0.0d) {
+            percentageUsed = 0.0d;
+        }
+        if (percentageUsed > 100.0d) {
+            percentageUsed = 100.0d;
+        }
+
         if (trial) {
             trialInfoSection.getUIComponent().setVisible(true);
             trialInfoSection.setTrialPeriod(daysLeft);
         } else {
             trialInfoSection.getUIComponent().setVisible(false);
         }
-        usagePB.setValue((int) percentageUse);
+
+        usagePB.setValue((int) percentageUsed);
+        usagePB.setToolTipText(Format.formatBytesShort(spaceUsed) + " / " +
+        Format.formatBytesShort(totalStorage));
+
         usageLabel.setText(Translation.getTranslation(
                 "home_tab.online_storage.usage",
-                Format.formatNumber(percentageUse)));
+                Format.formatNumber(percentageUsed)));
+        usageLabel.setToolTipText(Format.formatBytesShort(spaceUsed) + " / " +
+        Format.formatBytesShort(totalStorage));
     }
 
     /**

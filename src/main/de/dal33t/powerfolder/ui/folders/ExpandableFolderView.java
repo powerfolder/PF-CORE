@@ -44,17 +44,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.text.DecimalFormat;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Class to render expandable view of a folder.
  */
 public class ExpandableFolderView extends PFUIComponent {
-
-    private static final int ONE_K = 1024;
-    private static final int ONE_M = 1024 * ONE_K;
-    private static final int ONE_G = 1024 * ONE_M;
 
     private final Folder folder;
     private JButtonMini inviteButton;
@@ -267,27 +262,10 @@ public class ExpandableFolderView extends PFUIComponent {
         syncPercentLabel.setText(syncText);
 
         long totalSize = statistic.getTotalSize();
-        String descriptionKey;
-        double num;
-        if (totalSize >= ONE_G) {
-            descriptionKey = "exp_folder_view.total_gigabytes";
-            num = (double) totalSize / (double) ONE_G;
-        } else if (totalSize >= ONE_M) {
-            descriptionKey = "exp_folder_view.total_megabytes";
-            num = (double) totalSize / (double) ONE_M;
-        } else if (totalSize >= ONE_K) {
-            descriptionKey = "exp_folder_view.total_kilobytes";
-            num = (double) totalSize / (double) ONE_K;
-        } else {
-            descriptionKey = "exp_folder_view.total_bytes";
-            num = totalSize;
-        }
 
-        DecimalFormat numberFormat = Format.getNumberFormat();
-        String formattedNum = numberFormat.format(num);
+        String s = Format.formatBytesShort(totalSize);
 
-        totalSizeLabel.setText(Translation.getTranslation(
-                descriptionKey, formattedNum));
+        totalSizeLabel.setText(s);
         int count = statistic.getIncomingFilesCount();
         if (count == 0) {
             filesAvailableLabel.setText("");
