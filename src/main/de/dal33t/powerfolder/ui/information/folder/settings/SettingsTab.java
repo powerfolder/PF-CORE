@@ -655,8 +655,8 @@ public class SettingsTab extends PFUIComponent
         }
 
         public void actionPerformed(ActionEvent e) {
+            PFWizard.openMirrorFolderWizard(getController(), folder);
         }
     }
-
 
 }

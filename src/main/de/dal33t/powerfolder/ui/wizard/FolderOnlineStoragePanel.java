@@ -19,7 +19,6 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
-import com.jgoodies.binding.list.SelectionInList;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -30,14 +29,11 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderException;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.ui.widget.FolderComboBox;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
 import de.dal33t.powerfolder.util.Translation;
 import jwf.WizardPanel;
 
 import javax.swing.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -45,19 +41,23 @@ import java.util.logging.Logger;
 
 public class FolderOnlineStoragePanel extends PFWizardPanel {
 
-    private static final Logger log = Logger.getLogger(FolderOnlineStoragePanel.class.getName());
+    private static final Logger log =
+            Logger.getLogger(FolderOnlineStoragePanel.class.getName());
 
-    private SelectionInList<Folder> foldersModel;
-    private FolderComboBox folderList;
+    private Folder folder;
+    private JLabel folderLabel;
+    private boolean hasJoined;
 
-    public FolderOnlineStoragePanel(Controller controller) {
+    public FolderOnlineStoragePanel(Controller controller, Folder folder) {
         super(controller);
+        this.folder = folder;
+        hasJoined = controller.getOSClient().hasJoined(folder);
     }
 
     // From WizardPanel *******************************************************
 
     public boolean hasNext() {
-        return foldersModel.getSelection() != null;
+        return true;
     }
 
     public boolean validateNext(List list) {
@@ -70,13 +70,19 @@ public class FolderOnlineStoragePanel extends PFWizardPanel {
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
-        builder.addLabel(Translation
-            .getTranslation("wizard.webservice.mirror_choose_folder"), cc.xyw(1,
-            1, 4));
+        if (hasJoined) {
+            builder.addLabel(Translation
+                .getTranslation("wizard.webservice.unmirror_folder"),
+                    cc.xyw(1, 1, 4));
+        } else {
+            builder.addLabel(Translation
+                .getTranslation("wizard.webservice.mirror_folder"),
+                    cc.xyw(1, 1, 4));
+        }
 
-        builder.addLabel(Translation.getTranslation("general.folder"), cc.xy(1,
-            3));
-        builder.add(folderList.getUIComponent(), cc.xy(3, 3));
+        builder.addLabel(Translation.getTranslation("general.folder"),
+                cc.xy(1, 3));
+        builder.add(folderLabel, cc.xy(3, 3));
 
         LinkLabel link = new LinkLabel(Translation
             .getTranslation("wizard.webservice.learn_more"),
@@ -88,25 +94,41 @@ public class FolderOnlineStoragePanel extends PFWizardPanel {
     }
 
     public WizardPanel next() {
-        Folder folder = foldersModel.getSelection();
-
         // Actually setup mirror
         try {
-            getController().getOSClient().getFolderService().createFolder(
-                folder.getInfo(), SyncProfile.BACKUP_TARGET_NO_CHANGE_DETECT);
-            getController().getOSClient().refreshAccountDetails();
 
-            // Choose location...
-            return new TextPanelPanel(getController(),
-                    Translation.getTranslation("wizard.folder_online_storage_panel.success_title"),
-                    Translation.getTranslation("wizard.folder_online_storage_panel.success_message",
-                    folder.getName()));
-        } catch (FolderException e) {
+            if (hasJoined) {
+                getController().getOSClient().getFolderService().removeFolder(
+                    folder.getInfo(), true);
+                getController().getOSClient().refreshAccountDetails();
+                return new TextPanelPanel(getController(),
+                        Translation.getTranslation("wizard.folder_online_storage_panel.remove_success_title"),
+                        Translation.getTranslation("wizard.folder_online_storage_panel.remove_success_message",
+                        folder.getName()));
+            } else {
+                getController().getOSClient().getFolderService().createFolder(
+                    folder.getInfo(), SyncProfile.BACKUP_TARGET_NO_CHANGE_DETECT);
+                getController().getOSClient().refreshAccountDetails();
+                return new TextPanelPanel(getController(),
+                        Translation.getTranslation("wizard.folder_online_storage_panel.backup_success_title"),
+                        Translation.getTranslation("wizard.folder_online_storage_panel.backup_success_message",
+                        folder.getName()));
+            }
+        } catch (Exception e) {
             log.log(Level.SEVERE, "", e);
+
+            // Split long error message into multiple lines on ':'.
+            String message = e.getMessage();
+            String[] strings = message.split(":");
+            StringBuilder sb = new StringBuilder();
+            for (String string : strings) {
+                sb.append(string.trim()).append('\n');
+            }
+
             return new TextPanelPanel(getController(),
                     Translation.getTranslation("wizard.folder_online_storage_panel.failure_title"),
                     Translation.getTranslation("wizard.folder_online_storage_panel.failure_message",
-                    folder.getName(), e.getMessage()));
+                    folder.getName(), sb.toString().trim()));
         }
 
     }
@@ -119,14 +141,7 @@ public class FolderOnlineStoragePanel extends PFWizardPanel {
         List<Folder> folders = new ArrayList<Folder>(getController()
             .getFolderRepository().getFoldersAsCollection());
         folders.removeAll(ws.getJoinedFolders());
-        foldersModel = new SelectionInList<Folder>(folders);
-        folderList = new FolderComboBox(foldersModel);
-        foldersModel.getSelectionHolder().addValueChangeListener(
-            new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    updateButtons();
-                }
-            });
+        folderLabel = new JLabel(folder.getInfo().name);
         updateButtons();
     }
 

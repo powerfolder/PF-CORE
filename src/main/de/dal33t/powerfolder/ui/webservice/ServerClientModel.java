@@ -32,14 +32,12 @@ import de.dal33t.powerfolder.event.FolderMembershipListener;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.security.Account;
-import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.compare.FolderComparator;
 import de.dal33t.powerfolder.util.ui.SwingWorker;
 
 import javax.swing.*;
-import java.awt.event.ActionEvent;
 import java.util.Collections;
 import java.util.List;
 
@@ -83,17 +81,6 @@ public class ServerClientModel extends PFUIComponent {
      * problem occour.
      */
     public void checkAndSetupAccount() {
-        checkAndSetupAccount(false);
-    }
-
-    /**
-     * Checks the current webservice account and opens the login wizard if
-     * problem occour.
-     * 
-     * @param folderSetupAfterwards
-     *            true if folder setup should shown after correct login
-     */
-    public void checkAndSetupAccount(final boolean folderSetupAfterwards) {
 
         // Don't do account if lan only mode.
         if (getController().isLanOnly()) {
@@ -105,8 +92,7 @@ public class ServerClientModel extends PFUIComponent {
         }
 
         if (!client.isLastLoginKnown()) {
-            PFWizard.openLoginWebServiceWizard(getController(), client,
-                folderSetupAfterwards);
+            PFWizard.openLoginWebServiceWizard(getController(), client);
             return;
         }
 
@@ -119,16 +105,11 @@ public class ServerClientModel extends PFUIComponent {
             @Override
             public void finished() {
                 if (get() == null || !(Boolean) get()) {
-                    PFWizard.openLoginWebServiceWizard(getController(), client,
-                        folderSetupAfterwards);
+                    PFWizard.openLoginWebServiceWizard(getController(), client);
                 }
             }
         };
         worker.start();
-    }
-
-    public Action getMirrorFolderAction() {
-        return new MirrorFolderAction(getController());
     }
 
     // Internal methods *******************************************************
@@ -163,24 +144,6 @@ public class ServerClientModel extends PFUIComponent {
 //        getUIController().getApplicationModel().getNavTreeModel()
 //            .fireTreeNodesChangedEvent(te);
 //    }
-
-    // Actions ****************************************************************
-
-    private class MirrorFolderAction extends BaseAction {
-
-        protected MirrorFolderAction(Controller controller) {
-            super("mirror_folder", controller);
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            if (client.isConnected() && client.isLastLoginOK()) {
-                PFWizard.openMirrorFolderWizard(getController());
-            } else {
-                PFWizard.openLoginWebServiceWizard(getController(), client,
-                    true);
-            }
-        }
-    }
 
     // Core listener **********************************************************
 

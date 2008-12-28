@@ -35,6 +35,6 @@ public class OnlineStorageLogInAction extends BaseAction {
 
     public void actionPerformed(ActionEvent e) {
         PFWizard.openLoginWebServiceWizard(getController(),
-                getController().getOSClient(), false);
+                getController().getOSClient());
     }
 }

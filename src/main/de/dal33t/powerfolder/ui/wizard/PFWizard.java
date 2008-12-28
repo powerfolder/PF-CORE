@@ -22,6 +22,7 @@ package de.dal33t.powerfolder.ui.wizard;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
@@ -144,7 +145,7 @@ public class PFWizard extends PFUIComponent {
 
     /**
      * Handles/Accepts and invitation that has been received.
-     * 
+     *
      * @param controller
      * @param invitation
      */
@@ -157,6 +158,11 @@ public class PFWizard extends PFUIComponent {
         wizard.open(panel);
     }
 
+    public static void openLoginWebServiceWizard(Controller controller,
+        ServerClient client) {
+       openLoginWebServiceWizard(controller, client, null); 
+    }
+
     /**
      * Opens the wizard to login to the given server.
      * 
@@ -166,16 +172,18 @@ public class PFWizard extends PFUIComponent {
      * @param folderSetupAfterwards
      *            true if the folder backup setup dialog should be shown after
      *            successfully login.
+     * @param folderToSetup
+     *            folder to configure for O/S (optional)
      */
     public static void openLoginWebServiceWizard(Controller controller,
-        ServerClient client, boolean folderSetupAfterwards)
+        ServerClient client, Folder folderToSetup)
     {
         PFWizard wizard = new PFWizard(controller);
         wizard.getWizardContext().setAttribute(PICTO_ICON,
             Icons.WEB_SERVICE_PICTO);
         WizardPanel nextFinishPanel;
-        if (folderSetupAfterwards) {
-            nextFinishPanel = new FolderOnlineStoragePanel(controller);
+        if (folderToSetup != null) {
+            nextFinishPanel = new FolderOnlineStoragePanel(controller, folderToSetup);
         } else {
             nextFinishPanel = new TextPanelPanel(controller,
                     Translation.getTranslation("wizard.finish_panel.os_login_title"),
@@ -189,12 +197,15 @@ public class PFWizard extends PFUIComponent {
      * Opens the wizard to setup a new webservice mirror.
      * 
      * @param controller
+     * @param folderToSetup
+     *            folder to configure for O/S
      */
-    public static void openMirrorFolderWizard(Controller controller) {
+    public static void openMirrorFolderWizard(Controller controller,
+                                              Folder folderToSetup) {
         PFWizard wizard = new PFWizard(controller);
         wizard.getWizardContext().setAttribute(PICTO_ICON,
             Icons.WEB_SERVICE_PICTO);
-        wizard.open(new FolderOnlineStoragePanel(controller));
+        wizard.open(new FolderOnlineStoragePanel(controller, folderToSetup));
     }
 
     /**
