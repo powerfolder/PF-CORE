@@ -153,7 +153,7 @@ public abstract class PFWizardPanel extends WizardPanel {
 
     /** Always open online docu */
     public void help() {
-        Help.openQuickstartGuides();
+        Help.openQuickstartGuides(controller);
     }
 
     // Helper code ************************************************************

@@ -19,12 +19,45 @@
  */
 package de.dal33t.powerfolder.ui.dialog;
 
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.FocusTraversalPolicy;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.jar.Attributes;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
+
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.KeyStroke;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.TitledBorder;
+
+import org.apache.commons.lang.StringUtils;
+
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.factories.ButtonBarFactory;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-import de.dal33t.powerfolder.Constants;
+
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
@@ -35,21 +68,6 @@ import de.dal33t.powerfolder.util.ManuallyInvokedUpdater;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.ui.TextLinesPanelBuilder;
-import org.apache.commons.lang.StringUtils;
-
-import javax.swing.*;
-import javax.swing.border.CompoundBorder;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.TitledBorder;
-import java.awt.*;
-import java.awt.event.*;
-import java.io.File;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.jar.Attributes;
-import java.util.jar.JarFile;
-import java.util.jar.Manifest;
 
 /**
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
@@ -162,16 +180,17 @@ public class AboutDialog extends PFUIComponent {
 
         docLink = new LinkLabel(Translation
             .getTranslation("about_dialog.documentation"),
-            Constants.POWERFOLDER_WIKI_URL);
+            ConfigurationEntry.PROVIDER_WIKI_URL.getValue(getController()));
         SimpleComponentFactory.setFontSize(docLink,
             SimpleComponentFactory.BIG_FONT_SIZE);
         homeLink = new LinkLabel(Translation
-            .getTranslation("about_dialog.home_page"), Constants.POWERFOLDER_URL);
+            .getTranslation("about_dialog.home_page"),
+            ConfigurationEntry.PROVIDER_WIKI_URL.getValue(getController()));
         SimpleComponentFactory.setFontSize(homeLink,
             SimpleComponentFactory.BIG_FONT_SIZE);
         supportLink = new LinkLabel(Translation
             .getTranslation("about_dialog.support"),
-            Constants.POWERFOLDER_SUPPORT_URL);
+            ConfigurationEntry.PROVIDER_WIKI_URL.getValue(getController()));
         SimpleComponentFactory.setFontSize(supportLink,
             SimpleComponentFactory.BIG_FONT_SIZE);
 
@@ -367,7 +386,9 @@ public class AboutDialog extends PFUIComponent {
     private class BugReportAction implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             try {
-                BrowserLauncher.openURL(Constants.BUG_REPORT_URL);
+                BrowserLauncher
+                    .openURL(ConfigurationEntry.PROVIDER_SUPPORT_FILE_TICKET_URL
+                        .getValue(getController()));
             } catch (IOException e1) {
                 logSevere("IOException", e1);
             }

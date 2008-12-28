@@ -43,6 +43,7 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.lang.reflect.InvocationTargetException;
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -63,6 +64,9 @@ public class TestHelper {
      * FIXME: Change to "server.powerfolder.com" after successfully migration.
      */
     public static final String INFRASTRUCTURE_CONNECT_STRING = "213.239.202.143";
+
+    public static final InetSocketAddress ONLINE_STORAGE_ADDRESS = new InetSocketAddress(
+        "access.powerfolder.com", 1337);
 
     private static File testFile;
 

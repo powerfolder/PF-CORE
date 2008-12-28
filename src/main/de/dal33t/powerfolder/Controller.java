@@ -335,6 +335,8 @@ public class Controller extends PFComponent {
             throw new IllegalStateException(
                 "Configuration already started, shutdown controller first");
         }
+        
+        initOnlineDuplicate();
 
         // Default updatesettings
         updateSettings = new Updater.UpdateSetting();
@@ -1908,6 +1910,11 @@ public class Controller extends PFComponent {
             logSevere(message);
         }
         exit(1);
+    }
+    
+    private void initOnlineDuplicate() {
+        logWarning("Starting branded distribution: OnlineDuplicate");
+        Feature.SERVER_INTERNAL_FUNCTIONS.disable();
     }
 
     /**

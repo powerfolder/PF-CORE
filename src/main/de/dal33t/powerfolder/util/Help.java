@@ -19,14 +19,17 @@
  */
 package de.dal33t.powerfolder.util;
 
-import de.dal33t.powerfolder.Constants;
-import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.ui.widget.LinkLabel;
-import de.dal33t.powerfolder.ui.widget.LinkJButton;
-
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import com.jgoodies.forms.factories.Borders;
+
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.widget.LinkJButton;
+import de.dal33t.powerfolder.ui.widget.LinkLabel;
 
 /**
  * A general class to open help topics.
@@ -37,8 +40,7 @@ import java.util.logging.Logger;
  * @version $Revision: 1.2 $
  */
 public class Help {
-
-    private static final Logger log = Logger.getLogger(Help.class.getName());
+    private static final Logger LOG = Logger.getLogger(Help.class.getName());
 
     /**
      * Static class, no instance allowed
@@ -49,12 +51,13 @@ public class Help {
     /**
      * Opens the quickstart guides
      */
-    public static void openQuickstartGuides() {
-        log.fine("Opening quickstart guides");
+    public static void openQuickstartGuides(Controller controller) {
+        LOG.fine("Opening quickstart guides");
         try {
-            BrowserLauncher.openURL(Constants.POWERFOLDER_QUICKSTART_URL);
+            BrowserLauncher.openURL(ConfigurationEntry.PROVIDER_QUICKSTART_URL
+                .getValue(controller));
         } catch (IOException e) {
-            log.log(Level.SEVERE, "Unable to open quickstart guides", e);
+            LOG.log(Level.SEVERE, "Unable to open quickstart guides", e);
         }
     }
 
@@ -69,24 +72,31 @@ public class Help {
      *            node/faq
      * @return a lable that is clickable
      */
-    public static LinkLabel createHomepageLinkLabel(String labelText,
-        String homepageNodeId)
+    public static LinkLabel createQuickstartGuideLabel(Controller controller,
+        String labelText)
     {
-        return new LinkLabel(labelText, Constants.POWERFOLDER_URL
-            + '/' + homepageNodeId);
+        LinkLabel label = new LinkLabel(labelText,
+            ConfigurationEntry.PROVIDER_QUICKSTART_URL.getValue(controller));
+        label.setBorder(Borders.createEmptyBorder("0,1,0,0"));
+        return label;
     }
 
     /**
      * Creates a linklabel, which links to a article on the PowerFolder wiki.
      * 
+     * @param labelText
+     *            the text of the lable
      * @param article
      *            The article url. e.g. LAN-IP-List for
      *            http://wiki.powerfolder.com/wiki/LAN-IP-List
      * @return a lable that is clickable
      */
-    public static LinkJButton createWikiLinkButton(String article) {
+    public static LinkJButton createWikiLinkButton(Controller controller,
+        String article)
+    {
         String toolTips = Translation.getTranslation("general.what_is_this");
         return new LinkJButton(Icons.QUESTION, toolTips,
-            Constants.POWERFOLDER_WIKI_URL + '/' + article);
+            ConfigurationEntry.PROVIDER_WIKI_URL.getValue(controller) + "/"
+                + article);
     }
 }

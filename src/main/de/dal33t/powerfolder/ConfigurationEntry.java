@@ -24,8 +24,6 @@ import java.beans.PropertyChangeListener;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.apache.commons.lang.StringUtils;
-
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
 
@@ -53,6 +51,82 @@ public enum ConfigurationEntry {
      * stored in preferences.
      */
     NODE_ID("nodeid"),
+    
+    // URL Settings ***********************************************************
+
+    /**
+     * URL of the PowerFolder homepage
+     */
+    PROVIDER_URL("provider.url.main", "http://www.powerfolder.com"),
+
+    /**
+     * Quickstart guides to PowerFolder
+     */
+    PROVIDER_QUICKSTART_URL("provider.url.quickstart",
+        "http://www.powerfolder.com/quickstart.html"),
+
+    /**
+     * URL of the PowerFolder Wiki
+     */
+    PROVIDER_WIKI_URL("provider.url.wiki", "http://wiki.powerfolder.com/wiki"),
+
+    /**
+     * URL of the PowerFolder Support
+     */
+    PROVIDER_SUPPORT_URL("provider.url.support",
+        "http://www.powerfolder.com/support.html"),
+
+    /**
+     * URL where bugs or tickets can be filed.
+     */
+    PROVIDER_SUPPORT_FILE_TICKET_URL(
+        "provider.url.ticket",
+        "http://www.powerfolder.com/support/index.php?_m=tickets&_a=submit&step=1&departmentid=4"),
+
+    /**
+     * URL of the PowerFolder Pro page
+     */
+    PROVIDER_BUY_URL("provider.url.buy",
+        "http://www.powerfolder.com/buynow.html"),
+
+    /**
+     * URL where the contact form resides
+     */
+    PROVIDER_CONTACT_URL("provider.url.contact",
+        "http://www.powerfolder.com/contact.html"),
+
+    /**
+     * HTTP RPC URL for
+     */
+    PROVIDER_HTTP_TUNNEL_RPC_URL("provider.url.httptunnel",
+        "http://access.powerfolder.com/rpc"),
+
+    // Server settings ********************************************************
+
+    /**
+     * The optional name of the sever to connect to.
+     */
+    SERVER_NAME("server.name", "Online Storage"),
+    
+    /**
+     * The optional url of the server.
+     */
+    SERVER_WEB_URL("server.url", "https://access.powerfolder.com"),
+
+    /**
+     * The node id of the server to connect to. Not mandatory but at
+     * recommended. At leat host or ID of a server has to be set to connect to a
+     * server.
+     */
+    SERVER_NODEID("server.nodeid", "WEBSERVICE03"),
+
+    /**
+     * The optional server hostname to connect to. Example:
+     * server.powerfolder.com:1234
+     */
+    SERVER_HOST("server.host", "access.powerfolder.com:1337"),
+    
+    // General settings *******************************************************
 
     /**
      * The networking mode. See class <code>NetworkingMode</code> for more
@@ -327,39 +401,6 @@ public enum ConfigurationEntry {
      */
     MAX_FILEINFO_DELETED_AGE_SECONDS("filedb.deleted.maxage", "" + 60L * 60
         * 24 * 365),
-
-    /**
-     * The optional name of the sever to connect to.
-     */
-    SERVER_NAME("server.name"),
-
-    /**
-     * The optional url of the server.
-     */
-    SERVER_WEB_URL("server.url"),
-
-    /**
-     * The node id of the server to connect to. Not mandatory but at
-     * recommended. At leat host or ID of a server has to be set to connect to a
-     * server.
-     */
-    SERVER_NODEID("server.nodeid"),
-
-    /**
-     * The optional server hostname to connect to. Example:
-     * server.powerfolder.com:1234
-     */
-    SERVER_HOST("server.host") {
-        @Override
-        public String getValue(Controller controller) {
-            String host = super.getValue(controller);
-            if (StringUtils.isBlank(host)) {
-                // Try to get from system property
-                host = System.getProperty("powerfolder.server.host", null);
-            }
-            return host;
-        }
-    },
 
     /**
      * The http proxy to use for HTTP tunneled connections

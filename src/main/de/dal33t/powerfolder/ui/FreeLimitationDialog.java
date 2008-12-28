@@ -19,23 +19,26 @@
 */
 package de.dal33t.powerfolder.ui;
 
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.IOException;
+
+import javax.swing.Icon;
+import javax.swing.JButton;
+
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.factories.ButtonBarFactory;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-import de.dal33t.powerfolder.Constants;
+
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
 import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.BaseDialog;
-
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.IOException;
 
 /**
  * A dialog that gets displayed when the free version hits its limits.
@@ -95,11 +98,12 @@ public class FreeLimitationDialog extends BaseDialog {
         row += 2;
         builder.addLabel(Translation
             .getTranslation("free_limit_dialog.buy_recommendation3"), cc
-            .xy(1, row));
+            .xy(1,
+            row));
         row += 2;
         LinkLabel linkLabel = new LinkLabel(Translation
             .getTranslation("free_limit_dialog.whatispro"),
-            Constants.POWERFOLDER_PRO_URL);
+            ConfigurationEntry.PROVIDER_BUY_URL.getValue(getController()));
         builder.add(linkLabel, cc.xy(1, row));
 
         return builder.getPanel();
@@ -111,7 +115,8 @@ public class FreeLimitationDialog extends BaseDialog {
         buyProButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 try {
-                    BrowserLauncher.openURL(Constants.POWERFOLDER_PRO_URL);
+                    BrowserLauncher.openURL(ConfigurationEntry.PROVIDER_BUY_URL
+                            .getValue(getController()));
                 } catch (IOException e1) {
                     logSevere("IOException", e1);
                 }

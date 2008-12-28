@@ -126,7 +126,7 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
         valueModel = new ValueHolder();
         valueModel.setValue(syncProfile);
 
-        helpButton = Help.createWikiLinkButton("Sync_Profiles");
+        helpButton = Help.createWikiLinkButton(getController(), "Sync_Profiles");
 
         // Warn if changing to delete type profiles
         addModelValueChangeListener(new PropertyChangeListener() {

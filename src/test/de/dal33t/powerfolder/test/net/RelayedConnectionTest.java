@@ -143,7 +143,7 @@ public class RelayedConnectionTest extends FiveControllerTestCase {
             .isCompleteyConnected());
 
         Member os = getContollerLisa()
-            .connect(Constants.ONLINE_STORAGE_ADDRESS);
+            .connect(TestHelper.ONLINE_STORAGE_ADDRESS);
         os.shutdown();
 
         ConnectionHandler conHan = getContollerLisa().getIOProvider()

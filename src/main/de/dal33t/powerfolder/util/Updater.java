@@ -19,18 +19,6 @@
  */
 package de.dal33t.powerfolder.util;
 
-import de.dal33t.powerfolder.Constants;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PreferencesEntry;
-import de.dal33t.powerfolder.ui.dialog.DownloadUpdateDialog;
-import de.dal33t.powerfolder.util.os.OSUtil;
-import de.dal33t.powerfolder.util.ui.DialogFactory;
-import de.dal33t.powerfolder.util.ui.GenericDialogType;
-import de.dal33t.powerfolder.util.ui.UIUtil;
-import org.apache.commons.lang.StringUtils;
-
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -41,6 +29,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+
+import org.apache.commons.lang.StringUtils;
+
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.ui.dialog.DownloadUpdateDialog;
+import de.dal33t.powerfolder.util.os.OSUtil;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.ui.GenericDialogType;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * A Thread that checks for updates on powerfolder
@@ -163,7 +165,8 @@ public class Updater extends Thread {
                 if (!Util.isRunningProVersion()) {
                     try {
                         // Open explorer
-                        BrowserLauncher.openURL(Constants.POWERFOLDER_URL);
+                        BrowserLauncher.openURL(ConfigurationEntry.PROVIDER_URL
+                            .getValue(controller));
                     } catch (IOException e) {
                         log.log(Level.FINER, "IOException", e);
                     }
@@ -171,7 +174,8 @@ public class Updater extends Thread {
             } else if (option == gotoHomepage) {
                 try {
                     // Open explorer
-                    BrowserLauncher.openURL(Constants.POWERFOLDER_URL);
+                    BrowserLauncher.openURL(ConfigurationEntry.PROVIDER_URL
+                        .getValue(controller));
                 } catch (IOException e) {
                     log.log(Level.FINER, "IOException", e);
                 }

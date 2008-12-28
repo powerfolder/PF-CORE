@@ -326,7 +326,8 @@ public class UIController extends PFComponent {
         // Go to HP every 20 starts
         if (thisVersionStartCount % 20 == 0) {
             try {
-                BrowserLauncher.openURL(Constants.POWERFOLDER_PRO_URL);
+                BrowserLauncher.openURL(ConfigurationEntry.PROVIDER_BUY_URL
+                    .getValue(getController()));
             } catch (IOException e1) {
                 log.log(Level.WARNING, "Unable to goto PowerFolder homepage", e1);
             }
@@ -398,7 +399,8 @@ public class UIController extends PFComponent {
                     });
                 } else if ("gotohp".equals(e.getActionCommand())) {
                     try {
-                        BrowserLauncher.openURL(Constants.POWERFOLDER_URL);
+                        BrowserLauncher.openURL(ConfigurationEntry.PROVIDER_URL
+                            .getValue(getController()));
                     } catch (IOException e1) {
                         log.log(Level.WARNING, "Unable to goto PowerFolder homepage", e1);
                     }

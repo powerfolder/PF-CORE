@@ -124,21 +124,6 @@ public class ServerClient extends PFComponent {
         this.allowServerChange = allowServerChange;
         this.updateConfig = updateConfig;
         this.webURL = !StringUtils.isBlank(webURL) ? webURL : null;
-        if (this.webURL == null) {
-            // Fallback to default
-            this.webURL = Constants.ONLINE_STORAGE_URL;
-        }
-
-        if (StringUtils.isBlank(host) && StringUtils.isBlank(nodeId)) {
-            // Nothing set, initialize with defaults
-            this.webURL = Constants.ONLINE_STORAGE_URL;
-            MemberInfo osInfo = new MemberInfo("Online Storage",
-                Constants.ONLINE_STORAGE_NODE_ID);
-            osInfo.setConnectAddress(Constants.ONLINE_STORAGE_ADDRESS);
-            logFine("Using default server: " + osInfo);
-            init(osInfo.getNode(getController(), true), allowServerChange);
-            return;
-        }
 
         // Custom server
         String theName = !StringUtils.isBlank(name) ? name : Translation

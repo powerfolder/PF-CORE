@@ -163,7 +163,7 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
             builder.add(myDnsLabel, cc.xy(1, row));
             builder.add(myDnsField, cc.xywh(3, row, 1, 1));
             // FIXME correct URL
-            builder.add(Help.createWikiLinkButton("DYN-Dns"),
+            builder.add(Help.createWikiLinkButton(getController(), "DYN-Dns"),
                 cc.xy(5, row));
 
             row += 2;

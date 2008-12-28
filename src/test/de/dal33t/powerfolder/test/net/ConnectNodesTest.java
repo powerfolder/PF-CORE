@@ -370,7 +370,7 @@ public class ConnectNodesTest extends FiveControllerTestCase {
                 battlestar.shutdown();
 
                 final Member onlineStorage = getContollerBart().connect(
-                    Constants.ONLINE_STORAGE_ADDRESS);
+                    TestHelper.ONLINE_STORAGE_ADDRESS);
                 TestHelper.waitForCondition(10, new ConditionWithMessage() {
                     public String message() {
                         return "Unable to connect to OnlineStorage";

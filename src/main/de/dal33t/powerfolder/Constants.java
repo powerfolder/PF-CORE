@@ -19,7 +19,6 @@
  */
 package de.dal33t.powerfolder;
 
-import java.net.InetSocketAddress;
 
 /**
  * Central constants holder for all important constants in PowerFolder.
@@ -28,69 +27,8 @@ import java.net.InetSocketAddress;
  * @version $Revision: 1.29 $
  */
 public class Constants {
+    
     // General settings *******************************************************
-
-    /**
-     * URL of the PowerFolder homepage
-     */
-    public static final String POWERFOLDER_URL = "http://www.powerfolder.com";
-
-    /**
-     * Quickstart guides to PowerFolder
-     */
-    public static final String POWERFOLDER_QUICKSTART_URL = "http://www.powerfolder.com/quickstart.html";
-
-    /**
-     * URL of the PowerFolder Wiki
-     */
-    public static final String POWERFOLDER_WIKI_URL = "http://wiki.powerfolder.com/wiki";
-
-    /**
-     * URL of the PowerFolder Support
-     */
-    public static final String POWERFOLDER_SUPPORT_URL = "http://www.powerfolder.com/support.html";
-
-    /**
-     * URL where bugs or tickets can be filed.
-     */
-    public static final String POWERFOLDER_SUPPORT_FILE_TICKET_URL = "http://www.powerfolder.com/support/index.php?_m=tickets&_a=submit&step=1&departmentid=4";
-
-    /**
-     * URL of the PowerFolder Pro page
-     */
-    public static final String POWERFOLDER_PRO_URL = "http://www.powerfolder.com/buynow.html";
-
-    /**
-     * URL where the contact form resides
-     */
-    public static final String POWERFOLDER_CONTACT_URL = "http://www.powerfolder.com/contact.html";
-
-    /**
-     * URL of the page to report bugs.
-     */
-    public static final String BUG_REPORT_URL = "http://forums.powerfolder.com/forumdisplay.php?f=18";
-
-    /**
-     * HTTP RPC URL for
-     */
-    public static final String HTTP_TUNNEL_RPC_URL = "http://access.powerfolder.com/rpc";
-    
-    /**
-     * URL of the Online Storage.
-     */
-    public static final String ONLINE_STORAGE_URL = "https://access.powerfolder.com";
-    
-    /**
-     * The official ID of the online storage.
-     */
-    public static final String ONLINE_STORAGE_NODE_ID = "WEBSERVICE03";
-   // public static final String ONLINE_STORAGE_NODE_ID = "INFRASTRUCTURE02";
-    
-    /**
-     * The Address of the online storage.
-     */
-    public static final InetSocketAddress ONLINE_STORAGE_ADDRESS = new InetSocketAddress(
-        "access.powerfolder.com", 1337);
 
     /**
      * The name of the subdirectory in every folder to store powerfolder
