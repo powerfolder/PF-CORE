@@ -490,9 +490,12 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         if (getTempFile() != null && getTempFile().exists()
             && getTempFile().length() == 0)
         {
-            logInfo("Deleting tempfile with size 0.");
+            if (isFiner()) {
+                logFiner("Deletin tempfile with size 0.");
+            }
             if (!getTempFile().delete()) {
-                logWarning("Failed to delete temp file!");
+                logWarning("Failed to delete temp file: "
+                    + getTempFile().getAbsolutePath());
             }
         }
         for (Download d : getSources()) {
