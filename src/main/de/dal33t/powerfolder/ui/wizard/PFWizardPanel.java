@@ -90,7 +90,7 @@ public abstract class PFWizardPanel extends WizardPanel {
      * @param list
      * @return
      */
-    public boolean validateNext(List list) {
+    public boolean validateNext(List<WizardPanel> list) {
         return true;
     }
 
@@ -100,7 +100,7 @@ public abstract class PFWizardPanel extends WizardPanel {
      * @param list
      * @return
      */
-    public boolean validateFinish(List list) {
+    public boolean validateFinish(List<WizardPanel> list) {
         return true;
     }
 

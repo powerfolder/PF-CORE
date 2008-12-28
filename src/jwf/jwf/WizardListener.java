@@ -10,15 +10,15 @@ public interface WizardListener {
     /** Called when the wizard finishes.
      * @param wizard the wizard that finished.
      */
-    public void wizardFinished(Wizard wizard);
+    void wizardFinished(Wizard wizard);
 
     /** Called when the wizard is cancelled.
      * @param wizard the wizard that was cancelled.
      */
-    public void wizardCancelled(Wizard wizard);
+    void wizardCancelled(Wizard wizard);
 
     /** Called when a new panel has been displayed in the wizard.
      * @param wizard the wizard that was updated
      */
-    public void wizardPanelChanged(Wizard wizard);
+    void wizardPanelChanged(Wizard wizard);
 }

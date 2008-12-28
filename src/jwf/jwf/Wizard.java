@@ -5,6 +5,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.util.*;
+import java.util.List;
 
 import javax.swing.*;
 
@@ -50,18 +51,11 @@ public class Wizard extends JPanel implements ActionListener {
     private final JButton cancelButton = new JButton("Cancel");
     private final JButton helpButton = new JButton("Help");
 
-    private final HashMap listeners = new HashMap();
+    private final Set<WizardListener> listeners = new TreeSet<WizardListener>();
 
-    private Stack previous = null;
-    private WizardPanel current = null;
-    private WizardContext ctx = null;
-    private Map i18n = null;
-
-    public Wizard(Map i18n) {
-        this.i18n = i18n;
-        init();
-        this.applyI18N(this.i18n);
-    }
+    private Stack<WizardPanel> previous;
+    private WizardPanel current;
+    private WizardContext ctx;
 
     /** Creates a new wizard. */
     public Wizard() {
@@ -125,28 +119,15 @@ public class Wizard extends JPanel implements ActionListener {
      * keys are the I18N constants of the Wizard class @param map A Map object
      * containing 5 key-value elements
      */
-    public void setI18NMap(Map map) {
-        i18n = map;
-        applyI18N(i18n);
-    }
-
-    private void applyI18N(Map map) {
+    public void setI18NMap(Map<String, String> map) {
         if (!map.isEmpty()) {
-            nextButton.setText((String) map.get(NEXT_I18N));
-            backButton.setText((String) map.get(BACK_I18N));
-            finishButton.setText((String) map.get(FINISH_I18N));
-            cancelButton.setText((String) map.get(CANCEL_I18N));
-            helpButton.setText((String) map.get(HELP_I18N));
-            helpButton.setIcon(Icons.QUESTION);
-            nextButton.setToolTipText((String) map.get(NEXT_I18N_DESCRIPTION));
+            nextButton.setText(map.get(NEXT_I18N));
+            nextButton.setToolTipText(map.get(NEXT_I18N_DESCRIPTION));
             nextButton.setIcon(Icons.ARROW_RIGHT);
-            backButton.setToolTipText((String) map.get(BACK_I18N_DESCRIPTION));
+
+            backButton.setText(map.get(BACK_I18N));
+            backButton.setToolTipText(map.get(BACK_I18N_DESCRIPTION));
             backButton.setIcon(Icons.ARROW_LEFT);
-            finishButton.setToolTipText((String) map
-                .get(FINISH_I18N_DESCRIPTION));
-            cancelButton.setToolTipText((String) map
-                .get(CANCEL_I18N_DESCRIPTION));
-            helpButton.setToolTipText((String) map.get(HELP_I18N_DESCRIPTION));
 
             backButton.setActionCommand("< Back");
             nextButton.setActionCommand("Next >");
@@ -154,6 +135,12 @@ public class Wizard extends JPanel implements ActionListener {
             cancelButton.setActionCommand("Cancel");
             helpButton.setActionCommand("Help");
 
+            cancelButton.setText(map.get(CANCEL_I18N));
+            cancelButton.setToolTipText(map.get(CANCEL_I18N_DESCRIPTION));
+
+            helpButton.setText(map.get(HELP_I18N));
+            helpButton.setToolTipText(map.get(HELP_I18N_DESCRIPTION));
+            helpButton.setIcon(Icons.QUESTION);
         }
     }
 
@@ -164,7 +151,7 @@ public class Wizard extends JPanel implements ActionListener {
      *            a WizardListener object
      */
     public void addWizardListener(WizardListener listener) {
-        listeners.put(listener, listener);
+        listeners.add(listener);
     }
 
     /**
@@ -179,7 +166,7 @@ public class Wizard extends JPanel implements ActionListener {
 
     /** Start this wizard with this panel. */
     public void start(WizardPanel wp, boolean resetContext) {
-        previous = new Stack();
+        previous = new Stack<WizardPanel>();
         if (resetContext) {
             ctx = new WizardContext();
         }
@@ -215,9 +202,9 @@ public class Wizard extends JPanel implements ActionListener {
     /**
      * Handle's button presses. param ae an ActionEvent object
      */
-    public void actionPerformed(ActionEvent ae) {
+    public void actionPerformed(ActionEvent e) {
 
-        String ac = ae.getActionCommand();
+        String ac = e.getActionCommand();
         if ("< Back".equals(ac)) {
             back();
         } else if ("Next >".equals(ac)) {
@@ -243,9 +230,7 @@ public class Wizard extends JPanel implements ActionListener {
         }
         add(current, BorderLayout.CENTER);
 
-        Iterator iter = listeners.values().iterator();
-        while (iter.hasNext()) {
-            WizardListener listener = (WizardListener) iter.next();
+        for (WizardListener listener : listeners) {
             listener.wizardPanelChanged(this);
         }
         setVisible(true);
@@ -257,7 +242,7 @@ public class Wizard extends JPanel implements ActionListener {
     void updateButtons() {
         cancelButton.setEnabled(true);
         helpButton.setEnabled(current.hasHelp());
-        backButton.setEnabled(previous.size() > 0);
+        backButton.setEnabled(!previous.isEmpty());
         nextButton.setEnabled(current.hasNext());
         finishButton.setEnabled(current.canFinish());
     }
@@ -268,7 +253,7 @@ public class Wizard extends JPanel implements ActionListener {
      * Basically does the same link pressing "< Back"
      */
     public void back() {
-        WizardPanel wp = (WizardPanel) previous.pop();
+        WizardPanel wp = previous.pop();
         setPanel(wp);
         updateButtons();
 
@@ -280,7 +265,7 @@ public class Wizard extends JPanel implements ActionListener {
      * Basically does the same link pressing "Next >"
      */
     public void next() {
-        ArrayList list = new ArrayList();
+        List<WizardPanel> list = new ArrayList<WizardPanel>();
         if (current.validateNext(list)) {
             previous.push(current);
             WizardPanel wp = current.next();
@@ -303,12 +288,10 @@ public class Wizard extends JPanel implements ActionListener {
     
     private void finish() {
 
-        ArrayList list = new ArrayList();
+        List<WizardPanel> list = new ArrayList<WizardPanel>();
         if (current.validateFinish(list)) {
             current.finish();
-            Iterator iter = listeners.values().iterator();
-            while (iter.hasNext()) {
-                WizardListener listener = (WizardListener) iter.next();
+            for (WizardListener listener : listeners) {
                 listener.wizardFinished(this);
             }
         } else {
@@ -318,9 +301,7 @@ public class Wizard extends JPanel implements ActionListener {
 
     private void cancel() {
 
-        Iterator iter = listeners.values().iterator();
-        while (iter.hasNext()) {
-            WizardListener listener = (WizardListener) iter.next();
+        for (WizardListener listener : listeners) {
             listener.wizardCancelled(this);
         }
     }
@@ -329,9 +310,9 @@ public class Wizard extends JPanel implements ActionListener {
         current.help();
     }
 
-    private void showErrorMessages(ArrayList list) {
+    private void showErrorMessages(List<WizardPanel> list) {
         Window w = SwingUtilities.windowForComponent(this);
-        ErrorMessageBox errorMsgBox = null;
+        ErrorMessageBox errorMsgBox;
 
         if (w instanceof Frame) {
             errorMsgBox = new ErrorMessageBox((Frame) w);

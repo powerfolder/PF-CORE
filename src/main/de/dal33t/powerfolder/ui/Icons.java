@@ -96,7 +96,7 @@ public class Icons {
     public static final Icon INFORMATION = getIcon("icons/information.png");
     public static final Icon COMPUTER = getIcon("icons/Computer.png");
 
-    // Arrows
+    // Wizard Arrows
     public static final Icon ARROW_LEFT = getIcon("icons/ArrowLeft.gif");
     public static final Icon ARROW_RIGHT = getIcon("icons/ArrowRight.gif");
 

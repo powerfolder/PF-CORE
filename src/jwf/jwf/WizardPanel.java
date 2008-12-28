@@ -10,15 +10,12 @@ import javax.swing.JPanel;
  * @author Christopher Brind
  */
 public abstract class WizardPanel extends JPanel {
-    /** A default constructor. */
-    public WizardPanel() {
-    }
 
     /** The context of the wizard process. */
-    protected WizardContext wizardContext;
+    private WizardContext wizardContext;
 
     /** Sets the context this wizard should use. */
-    protected final void setWizardContext(WizardContext wizardContext) {
+    protected void setWizardContext(WizardContext wizardContext) {
         this.wizardContext = wizardContext;
     }
 
@@ -39,7 +36,7 @@ public abstract class WizardPanel extends JPanel {
      *            a List of error messages to be displayed.
      * @return true if the panel is valid,
      */
-    public abstract boolean validateNext(List list);
+    public abstract boolean validateNext(List<WizardPanel> list);
 
     /** Get the next panel to go to. */
     public abstract WizardPanel next();
@@ -59,7 +56,7 @@ public abstract class WizardPanel extends JPanel {
      *            a List of error messages to be displayed.
      * @return true if it is valid for this wizard to finish.
      */
-    public abstract boolean validateFinish(List list);
+    public abstract boolean validateFinish(List<WizardPanel> list);
 
     /** Handle finishing the wizard. */
     public abstract void finish();
@@ -82,14 +79,14 @@ public abstract class WizardPanel extends JPanel {
      * 
      * @return a WizardContext object
      */
-    public final WizardContext getWizardContext() {
+    public WizardContext getWizardContext() {
         return wizardContext;
     }
 
     /**
      * Method for updating the buttons
      */
-    protected final void updateButtons() {
+    protected void updateButtons() {
         if (wizardContext == null) {
             return;
         }

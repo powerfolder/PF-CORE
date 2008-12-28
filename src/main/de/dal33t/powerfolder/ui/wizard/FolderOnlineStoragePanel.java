@@ -26,7 +26,6 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.FolderException;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
@@ -60,7 +59,7 @@ public class FolderOnlineStoragePanel extends PFWizardPanel {
         return true;
     }
 
-    public boolean validateNext(List list) {
+    public boolean validateNext(List<WizardPanel> list) {
         return true;
     }
 
