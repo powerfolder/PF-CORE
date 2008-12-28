@@ -43,7 +43,7 @@ public class FolderStatistic extends PFComponent {
      * to a maximum, one update every 20 seconds
      */
     private static final int MAX_ITEMS = 5000;
-    private final static long DELAY_10S = DateUtils.MILLIS_PER_SECOND * 10;
+    private static final long DELAY_10S = DateUtils.MILLIS_PER_SECOND * 10;
 
     private final Folder folder;
 
@@ -498,7 +498,7 @@ public class FolderStatistic extends PFComponent {
      */
     public int getFilesCount(Member member) {
         Integer count = current.filesCount.get(member);
-        return count != null ? count.intValue() : 0;
+        return count != null ? count : 0;
     }
 
     /**
@@ -507,7 +507,7 @@ public class FolderStatistic extends PFComponent {
      */
     public int getFilesCountInSync(Member member) {
         Integer count = current.filesCountInSync.get(member);
-        return count != null ? count.intValue() : 0;
+        return count != null ? count : 0;
     }
 
     /**
@@ -516,7 +516,7 @@ public class FolderStatistic extends PFComponent {
      */
     public long getSize(Member member) {
         Long size = current.sizes.get(member);
-        return size != null ? size.longValue() : 0;
+        return size != null ? size : 0;
     }
 
     /**
@@ -526,7 +526,7 @@ public class FolderStatistic extends PFComponent {
      */
     public long getSizeInSync(Member member) {
         Long size = current.sizesInSync.get(member);
-        return size != null ? size.longValue() : 0;
+        return size != null ? size : 0;
     }
 
     /**
@@ -534,7 +534,7 @@ public class FolderStatistic extends PFComponent {
      */
     public int getLocalFilesCount() {
         Integer l = current.filesCount.get(getController().getMySelf());
-        return l != null ? l.intValue() : 0;
+        return l != null ? l : 0;
     }
 
     /**
@@ -545,7 +545,7 @@ public class FolderStatistic extends PFComponent {
      */
     public double getSyncPercentage(Member member) {
         Double sync = current.syncPercentages.get(member);
-        return sync != null ? sync.doubleValue() : -1;
+        return sync != null ? sync : -1;
     }
 
     /**
@@ -553,7 +553,7 @@ public class FolderStatistic extends PFComponent {
      */
     public double getLocalSyncPercentage() {
         Double d = current.syncPercentages.get(getController().getMySelf());
-        return d != null ? d.doubleValue() : -1;
+        return d != null ? d : -1;
     }
 
     /**
@@ -561,6 +561,15 @@ public class FolderStatistic extends PFComponent {
      */
     public double getTotalSyncPercentage() {
         return current.totalSyncPercentage;
+    }
+
+
+    /**
+     * @return my ACTUAL size of this folder.
+     */
+    public long getLocalSize() {
+        Long size = current.sizes.get(getController().getMySelf());
+        return size != null ? size : 0;
     }
 
     /**

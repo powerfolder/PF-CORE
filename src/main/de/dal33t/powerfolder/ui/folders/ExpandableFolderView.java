@@ -63,6 +63,7 @@ public class ExpandableFolderView extends PFUIComponent {
     private JButtonMini openSettingsInformationButton;
     private JButtonMini openFilesInformationButton;
     private JLabel syncPercentLabel;
+    private JLabel localSizeLabel;
     private JLabel totalSizeLabel;
     private ActionLabel membersLabel;
     private JLabel filesAvailableLabel;
@@ -129,7 +130,7 @@ public class ExpandableFolderView extends PFUIComponent {
 
         // Build lower detials with line border.
         FormLayout lowerLayout = new FormLayout("3dlu, pref, pref:grow, 3dlu, pref, 3dlu",
-            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
+            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
         PanelBuilder lowerBuilder = new PanelBuilder(lowerLayout);
 
         lowerBuilder.addSeparator(null, cc.xywh(2, 1, 5, 1));
@@ -139,17 +140,19 @@ public class ExpandableFolderView extends PFUIComponent {
 
         lowerBuilder.add(filesLabel, cc.xy(2, 5));
 
-        lowerBuilder.add(totalSizeLabel, cc.xy(2, 7));
+        lowerBuilder.add(localSizeLabel, cc.xy(2, 7));
 
-        lowerBuilder.addSeparator(null, cc.xywh(2, 9, 5, 1));
+        lowerBuilder.add(totalSizeLabel, cc.xy(2, 9));
 
-        lowerBuilder.add(membersLabel, cc.xy(2, 11));
-        lowerBuilder.add(inviteButton, cc.xy(5, 11));
+        lowerBuilder.addSeparator(null, cc.xywh(2, 11, 5, 1));
 
-        lowerBuilder.addSeparator(null, cc.xywh(2, 13, 5, 1));
+        lowerBuilder.add(membersLabel, cc.xy(2, 13));
+        lowerBuilder.add(inviteButton, cc.xy(5, 13));
 
-        lowerBuilder.add(transferModeLabel, cc.xy(2, 15));
-        lowerBuilder.add(openSettingsInformationButton, cc.xy(5, 15));
+        lowerBuilder.addSeparator(null, cc.xywh(2, 15, 5, 1));
+
+        lowerBuilder.add(transferModeLabel, cc.xy(2, 17));
+        lowerBuilder.add(openSettingsInformationButton, cc.xy(5, 17));
 
         JPanel lowerPanel = lowerBuilder.getPanel();
 
@@ -200,6 +203,7 @@ public class ExpandableFolderView extends PFUIComponent {
         filesLabel = new JLabel();
         transferModeLabel = new JLabel();
         syncPercentLabel = new JLabel();
+        localSizeLabel = new JLabel();
         totalSizeLabel = new JLabel();
         membersLabel = new ActionLabel(new MyOpenMembersInformationAction(getController()));
         filesAvailableLabel = new JLabel();
@@ -261,11 +265,14 @@ public class ExpandableFolderView extends PFUIComponent {
                 "exp_folder_view.synchronized", sync);
         syncPercentLabel.setText(syncText);
 
+        long localSize = statistic.getLocalSize();
+        String localSizeString = Format.formatBytesShort(localSize);
+        localSizeLabel.setText(Translation.getTranslation("exp_folder_view.local", localSizeString));
+
         long totalSize = statistic.getTotalSize();
+        String totalSizeString = Format.formatBytesShort(totalSize);
+        totalSizeLabel.setText(Translation.getTranslation("exp_folder_view.total", totalSizeString));
 
-        String s = Format.formatBytesShort(totalSize);
-
-        totalSizeLabel.setText(s);
         int count = statistic.getIncomingFilesCount();
         if (count == 0) {
             filesAvailableLabel.setText("");
