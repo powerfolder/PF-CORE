@@ -26,6 +26,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderStatistic;
+import de.dal33t.powerfolder.disk.RecycleBin;
 import de.dal33t.powerfolder.event.FolderEvent;
 import de.dal33t.powerfolder.event.FolderListener;
 import de.dal33t.powerfolder.event.FolderMembershipEvent;
@@ -65,6 +66,7 @@ public class ExpandableFolderView extends PFUIComponent {
     private JLabel syncPercentLabel;
     private JLabel localSizeLabel;
     private JLabel totalSizeLabel;
+    private JLabel recycleLabel;
     private ActionLabel membersLabel;
     private JLabel filesAvailableLabel;
     private JPanel upperPanel;
@@ -130,7 +132,7 @@ public class ExpandableFolderView extends PFUIComponent {
 
         // Build lower detials with line border.
         FormLayout lowerLayout = new FormLayout("3dlu, pref, pref:grow, 3dlu, pref, 3dlu",
-            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
+            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
         PanelBuilder lowerBuilder = new PanelBuilder(lowerLayout);
 
         lowerBuilder.addSeparator(null, cc.xywh(2, 1, 5, 1));
@@ -144,15 +146,17 @@ public class ExpandableFolderView extends PFUIComponent {
 
         lowerBuilder.add(totalSizeLabel, cc.xy(2, 9));
 
-        lowerBuilder.addSeparator(null, cc.xywh(2, 11, 5, 1));
+        lowerBuilder.add(recycleLabel, cc.xy(2, 11));
 
-        lowerBuilder.add(membersLabel, cc.xy(2, 13));
-        lowerBuilder.add(inviteButton, cc.xy(5, 13));
+        lowerBuilder.addSeparator(null, cc.xywh(2, 13, 5, 1));
 
-        lowerBuilder.addSeparator(null, cc.xywh(2, 15, 5, 1));
+        lowerBuilder.add(membersLabel, cc.xy(2, 15));
+        lowerBuilder.add(inviteButton, cc.xy(5, 15));
 
-        lowerBuilder.add(transferModeLabel, cc.xy(2, 17));
-        lowerBuilder.add(openSettingsInformationButton, cc.xy(5, 17));
+        lowerBuilder.addSeparator(null, cc.xywh(2, 17, 5, 1));
+
+        lowerBuilder.add(transferModeLabel, cc.xy(2, 19));
+        lowerBuilder.add(openSettingsInformationButton, cc.xy(5, 19));
 
         JPanel lowerPanel = lowerBuilder.getPanel();
 
@@ -205,6 +209,7 @@ public class ExpandableFolderView extends PFUIComponent {
         syncPercentLabel = new JLabel();
         localSizeLabel = new JLabel();
         totalSizeLabel = new JLabel();
+        recycleLabel = new JLabel();
         membersLabel = new ActionLabel(new MyOpenMembersInformationAction(getController()));
         filesAvailableLabel = new JLabel();
 
@@ -267,11 +272,24 @@ public class ExpandableFolderView extends PFUIComponent {
 
         long localSize = statistic.getLocalSize();
         String localSizeString = Format.formatBytesShort(localSize);
-        localSizeLabel.setText(Translation.getTranslation("exp_folder_view.local", localSizeString));
+        localSizeLabel.setText(Translation.getTranslation("exp_folder_view.local",
+                localSizeString));
 
         long totalSize = statistic.getTotalSize();
         String totalSizeString = Format.formatBytesShort(totalSize);
-        totalSizeLabel.setText(Translation.getTranslation("exp_folder_view.total", totalSizeString));
+        totalSizeLabel.setText(Translation.getTranslation("exp_folder_view.total", 
+                totalSizeString));
+
+        if (folder.isUseRecycleBin()) {
+            RecycleBin recycleBin = getController().getRecycleBin();
+            int recycledCount = recycleBin.countRecycledFiles(folder.getInfo());
+            long recycledSize = recycleBin.recycledFilesSize(folder.getInfo());
+            String recycledSizeString = Format.formatBytesShort(recycledSize);
+            recycleLabel.setText(Translation.getTranslation("exp_folder_view.recycled",
+                    recycledCount, recycledSizeString));
+        } else {
+            recycleLabel.setText(Translation.getTranslation("exp_folder_view.no_recycled"));
+        }
 
         int count = statistic.getIncomingFilesCount();
         if (count == 0) {

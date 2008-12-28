@@ -35,6 +35,7 @@ import de.dal33t.powerfolder.event.RecycleBinConfirmationHandler;
 import de.dal33t.powerfolder.event.RecycleBinEvent;
 import de.dal33t.powerfolder.event.RecycleBinListener;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.ProgressListener;
 import de.dal33t.powerfolder.util.os.RecycleDelete;
@@ -108,7 +109,40 @@ public class RecycleBin extends PFComponent {
     }
 
     /**
-     * permanently delete file from Recycle Bin (if possible will move to OS
+     * Counts the number of files in the recycle bin for a specific folder.
+     *
+     * @param folderInfo
+     * @return
+     */
+    public int countRecycledFiles(FolderInfo folderInfo) {
+        int count = 0;
+        for (FileInfo fileInfo : allRecycledFiles) {
+            if (fileInfo.getFolderInfo().equals(folderInfo)) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+
+    /**
+     * Accumulates the size of files in the recycle bin for a specific folder.
+     *
+     * @param folderInfo
+     * @return
+     */
+    public long recycledFilesSize(FolderInfo folderInfo) {
+        long size = 0;
+        for (FileInfo fileInfo : allRecycledFiles) {
+            if (fileInfo.getFolderInfo().equals(folderInfo)) {
+                size += fileInfo.getSize();
+            }
+        }
+        return size;
+    }
+
+    /**
+     * Permanently delete file from Recycle Bin (if possible will move to OS
      * Recycle Bin)
      * 
      * @param fileInfo
