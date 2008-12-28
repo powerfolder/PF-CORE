@@ -106,8 +106,6 @@ public class PowerFolder {
      * @param args
      */
     public static void startPowerFolder(String[] args) {
-        // Feature.DETECT_UPDATE_BY_VERSION.disable();
-        // Feature.SYNC_PROFILE_CONTROLLER_FOLDER_SCAN_TIMING.disable();
 
         // Touch Logger immediately to initialize handlers.
         LoggingManager.isLogToFile();
