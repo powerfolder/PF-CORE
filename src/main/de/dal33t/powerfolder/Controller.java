@@ -336,7 +336,7 @@ public class Controller extends PFComponent {
                 "Configuration already started, shutdown controller first");
         }
         
-        initOnlineDuplicate();
+        //initOnlineDuplicate();
 
         // Default updatesettings
         updateSettings = new Updater.UpdateSetting();
