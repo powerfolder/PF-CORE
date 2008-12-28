@@ -71,6 +71,8 @@ public enum Feature {
 
     /**
      * If the server/console should offer PowerFolder internal functions.
+     * <p>
+     * TODO Find abstraction for separated parts.
      */
     SERVER_INTERNAL_FUNCTIONS;
 
