@@ -43,10 +43,18 @@ public abstract class WizardPanel extends JPanel {
 
     /**
      * Can this panel finish the wizard?
-     * 
+     *
      * @return true if this panel can finish the wizard.
      */
     public abstract boolean canFinish();
+
+    /**
+     * Can this panel cancel the wizard? Terminating panels, where Finish is
+     * the only logical option, should set this to false.
+     *
+     * @return true if this panel can cancel the wizard.
+     */
+    public abstract boolean canCancel();
 
     /**
      * Called to validate the panel before finishing the wizard. Should return

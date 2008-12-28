@@ -240,7 +240,7 @@ public class Wizard extends JPanel implements ActionListener {
     }
 
     void updateButtons() {
-        cancelButton.setEnabled(true);
+        cancelButton.setEnabled(current.canCancel());
         helpButton.setEnabled(current.hasHelp());
         backButton.setEnabled(!previous.isEmpty());
         nextButton.setEnabled(current.hasNext());
@@ -256,7 +256,6 @@ public class Wizard extends JPanel implements ActionListener {
         WizardPanel wp = previous.pop();
         setPanel(wp);
         updateButtons();
-
     }
 
     /**

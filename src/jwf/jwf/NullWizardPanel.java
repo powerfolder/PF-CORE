@@ -3,7 +3,6 @@ package jwf;
 
 import java.util.List;
 import javax.swing.border.TitledBorder;
-import jwf.WizardPanel;
 
 /** An implementation of the base class used for implementing a panel that is
  * displayed in a Wizard.  Used if a null panel is set.
@@ -22,7 +21,6 @@ public class NullWizardPanel extends WizardPanel {
     public void display() {
     }
 
-
     /** Is there be a next panel?
      * @return true if there is a panel to move to next
      */
@@ -34,7 +32,7 @@ public class NullWizardPanel extends WizardPanel {
      * @param list a List of error messages to be displayed.
      * @return true if the panel is valid,
      */
-    public boolean validateNext(List list) {
+    public boolean validateNext(List<WizardPanel> list) {
         return false;
     }
 
@@ -50,12 +48,19 @@ public class NullWizardPanel extends WizardPanel {
         return false;
     }
 
+    /** Can this panel cancel the wizard?
+     * @return true if this panel can cancel the wizard.
+     */
+    public boolean canCancel() {
+        return true;
+    }
+
     /** Called to validate the panel before finishing the wizard. Should
      * return false if canFinish returns false.
      * @param list a List of error messages to be displayed.
      * @return true if it is valid for this wizard to finish.
      */
-    public boolean validateFinish(List list) {
+    public boolean validateFinish(List<WizardPanel> list) {
         return false;
     }
 

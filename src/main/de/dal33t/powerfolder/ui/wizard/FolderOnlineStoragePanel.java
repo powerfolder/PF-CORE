@@ -65,17 +65,17 @@ public class FolderOnlineStoragePanel extends PFWizardPanel {
 
     protected JPanel buildContent() {
         FormLayout layout = new FormLayout("$wlabel, $lcg, $wfield, 0:g",
-            "pref, 10dlu, pref, 10dlu, pref");
+                "pref, 10dlu, pref, 10dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
         if (hasJoined) {
             builder.addLabel(Translation
-                .getTranslation("wizard.webservice.unmirror_folder"),
+                    .getTranslation("wizard.webservice.unmirror_folder"),
                     cc.xyw(1, 1, 4));
         } else {
             builder.addLabel(Translation
-                .getTranslation("wizard.webservice.mirror_folder"),
+                    .getTranslation("wizard.webservice.mirror_folder"),
                     cc.xyw(1, 1, 4));
         }
 
@@ -84,8 +84,8 @@ public class FolderOnlineStoragePanel extends PFWizardPanel {
         builder.add(folderLabel, cc.xy(3, 3));
 
         LinkLabel link = new LinkLabel(Translation
-            .getTranslation("wizard.webservice.learn_more"),
-            "http://www.powerfolder.com/online_storage_features.html");
+                .getTranslation("wizard.webservice.learn_more"),
+                "http://www.powerfolder.com/online_storage_features.html");
         // FIXME This is a hack because of "Fusch!"
         link.setBorder(Borders.createEmptyBorder("0, 1px, 0, 0"));
         builder.add(link, cc.xyw(1, 5, 3));
@@ -98,20 +98,20 @@ public class FolderOnlineStoragePanel extends PFWizardPanel {
 
             if (hasJoined) {
                 getController().getOSClient().getFolderService().removeFolder(
-                    folder.getInfo(), true);
+                        folder.getInfo(), true);
                 getController().getOSClient().refreshAccountDetails();
                 return new TextPanelPanel(getController(),
                         Translation.getTranslation("wizard.folder_online_storage_panel.remove_success_title"),
                         Translation.getTranslation("wizard.folder_online_storage_panel.remove_success_message",
-                        folder.getName()));
+                                folder.getName()));
             } else {
                 getController().getOSClient().getFolderService().createFolder(
-                    folder.getInfo(), SyncProfile.BACKUP_TARGET_NO_CHANGE_DETECT);
+                        folder.getInfo(), SyncProfile.BACKUP_TARGET_NO_CHANGE_DETECT);
                 getController().getOSClient().refreshAccountDetails();
                 return new TextPanelPanel(getController(),
                         Translation.getTranslation("wizard.folder_online_storage_panel.backup_success_title"),
                         Translation.getTranslation("wizard.folder_online_storage_panel.backup_success_message",
-                        folder.getName()));
+                                folder.getName()));
             }
         } catch (Exception e) {
             log.log(Level.SEVERE, "", e);
@@ -127,7 +127,7 @@ public class FolderOnlineStoragePanel extends PFWizardPanel {
             return new TextPanelPanel(getController(),
                     Translation.getTranslation("wizard.folder_online_storage_panel.failure_title"),
                     Translation.getTranslation("wizard.folder_online_storage_panel.failure_message",
-                    folder.getName(), sb.toString().trim()));
+                            folder.getName(), sb.toString().trim()));
         }
 
     }
@@ -138,7 +138,7 @@ public class FolderOnlineStoragePanel extends PFWizardPanel {
     protected void initComponents() {
         ServerClient ws = getController().getOSClient();
         List<Folder> folders = new ArrayList<Folder>(getController()
-            .getFolderRepository().getFoldersAsCollection());
+                .getFolderRepository().getFoldersAsCollection());
         folders.removeAll(ws.getJoinedFolders());
         folderLabel = new JLabel(folder.getInfo().name);
         updateButtons();
@@ -149,6 +149,10 @@ public class FolderOnlineStoragePanel extends PFWizardPanel {
     }
 
     protected String getTitle() {
-        return Translation.getTranslation("wizard.webservice.mirror_setup");
+        if (hasJoined) {
+            return Translation.getTranslation("wizard.webservice.unmirror_setup");
+        } else {
+            return Translation.getTranslation("wizard.webservice.mirror_setup");
+        }
     }
 }

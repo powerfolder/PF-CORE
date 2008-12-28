@@ -58,6 +58,10 @@ public class TextPanelPanel extends PFWizardPanel {
         return true;
     }
 
+    public boolean canCancel() {
+        return false;
+    }
+
     protected JPanel buildContent() {
 
         FormLayout layout = new FormLayout("pref",

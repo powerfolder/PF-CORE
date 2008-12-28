@@ -77,11 +77,20 @@ public abstract class PFWizardPanel extends WizardPanel {
 
     /**
      * Override if this panel can finish
-     * 
+     *
      * @return
      */
     public boolean canFinish() {
         return false;
+    }
+
+    /**
+     * Override if this panel can cancel
+     *
+     * @return
+     */
+    public boolean canCancel() {
+        return true;
     }
 
     /**
