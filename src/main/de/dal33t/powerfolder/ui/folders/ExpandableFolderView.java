@@ -113,20 +113,9 @@ public class ExpandableFolderView extends PFUIComponent {
             "pref");
         PanelBuilder upperBuilder = new PanelBuilder(upperLayout);
         CellConstraints cc = new CellConstraints();
+        jLabel = new JLabel();
+        updateIcon();
 
-        if (folder.isPreviewOnly()) {
-            jLabel = new JLabel(Icons.PF_PREVIEW);
-            jLabel.setToolTipText(Translation.getTranslation(
-                    "exp_folder_view.folder_preview_text"));
-        } else if (getController().getOSClient().hasJoined(folder)) {
-            jLabel = new JLabel(Icons.PF_ONLINE);
-            jLabel.setToolTipText(Translation.getTranslation(
-                    "exp_folder_view.folder_online_text"));
-        } else {
-            jLabel = new JLabel(Icons.PF_LOCAL);
-            jLabel.setToolTipText(Translation.getTranslation(
-                    "exp_folder_view.folder_local_text"));
-        }
         upperBuilder.add(jLabel, cc.xy(1, 1));
         upperBuilder.add(new JLabel(folder.getName()), cc.xy(3, 1));
         upperBuilder.add(filesAvailableLabel, cc.xy(6, 1));
@@ -338,11 +327,21 @@ public class ExpandableFolderView extends PFUIComponent {
     }
 
     private void updateIcon() {
-        if (folder.isPreviewOnly()) {
+
+        boolean preview = folder.isPreviewOnly();
+        boolean local = getController().getFolderRepository()
+                .getFolder(folder.getInfo()) != null;
+        boolean online = getController().getOSClient().hasJoined(folder);
+
+        if (preview) {
             jLabel.setIcon(Icons.PF_PREVIEW);
             jLabel.setToolTipText(Translation.getTranslation(
                     "exp_folder_view.folder_preview_text"));
-        } else if (getController().getOSClient().hasJoined(folder)) {
+        } else if (local && online) {
+            jLabel.setIcon(Icons.PF_LOCAL_AND_ONLINE);
+            jLabel.setToolTipText(Translation.getTranslation(
+                    "exp_folder_view.folder_local_online_text"));
+        } else if (online) {
             jLabel.setIcon(Icons.PF_ONLINE);
             jLabel.setToolTipText(Translation.getTranslation(
                     "exp_folder_view.folder_online_text"));
