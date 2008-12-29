@@ -49,6 +49,7 @@ public class ActionModel extends PFComponent {
     private AskForFriendshipAction askForFriendshipAction;
     private OnlineStorageLogInAction onlineStorageLogInAction;
     private OnlineStorageLogOutAction onlineStorageLogOutAction;
+    private OpenDebugInformationAction openDebugInformationAction;
 
     public NewFolderAction getNewFolderAction() {
         if (newFolderAction == null) {
@@ -156,5 +157,12 @@ public class ActionModel extends PFComponent {
             onlineStorageLogOutAction = new OnlineStorageLogOutAction(getController());
         }
         return onlineStorageLogOutAction;
+    }
+    
+    public OpenDebugInformationAction getOpenDebugInformationAction() {
+        if (openDebugInformationAction == null) {
+        	openDebugInformationAction = new OpenDebugInformationAction(getController());
+        }
+        return openDebugInformationAction;
     }
 }

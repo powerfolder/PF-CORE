@@ -209,6 +209,7 @@ public class Icons {
     public static final Image FOLDER_IMAGE = getImage("icons/Folder.png");
     public static final Image SYSTEM_MONITOR_IMAGE = getImage("icons/SystemMonitor.png");
     public static final Image CHAT_IMAGE = getImage("icons/Chat.gif");
+    public static final Image DEBUG_IMAGE = getImage("icons/bug.png");
 
     // About stuff
     public static final Icon ABOUT_ANIMATION = getIcon("icons/about/AboutAnimation.gif");

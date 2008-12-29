@@ -654,6 +654,11 @@ public class UIController extends PFComponent {
         informationFrame.displayUploads();
         displayInformationWindow();
     }
+    
+    public void openDebugInformation() {
+        informationFrame.displayDebug();
+        displayInformationWindow();
+    }
 
     /**
      * Call when non-quitOnX close called. Hides child frames.

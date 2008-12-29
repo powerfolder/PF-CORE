@@ -19,19 +19,22 @@
 */
 package de.dal33t.powerfolder.ui.information;
 
+import java.awt.Frame;
+import java.util.prefs.Preferences;
+
+import javax.swing.JFrame;
+import javax.swing.WindowConstants;
+import javax.swing.plaf.RootPaneUI;
+
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.information.debug.DebugInformationCard;
 import de.dal33t.powerfolder.ui.information.downloads.DownloadsInformationCard;
 import de.dal33t.powerfolder.ui.information.folder.FolderInformationCard;
 import de.dal33t.powerfolder.ui.information.uploads.UploadsInformationCard;
 import de.javasoft.plaf.synthetica.SyntheticaRootPaneUI;
-
-import javax.swing.*;
-import javax.swing.plaf.RootPaneUI;
-import java.awt.*;
-import java.util.prefs.Preferences;
 
 /**
  * The information window.
@@ -43,6 +46,7 @@ public class InformationFrame extends PFUIComponent {
     private FolderInformationCard folderInformationCard;
     private DownloadsInformationCard downloadsInformationCard;
     private UploadsInformationCard uploadsInformationCard;
+    private DebugInformationCard debugInformationCard;
 
     /**
      * Constructor
@@ -179,6 +183,11 @@ public class InformationFrame extends PFUIComponent {
         buildUploadsInformationCard();
         displayCard(uploadsInformationCard);
     }
+    
+    public void displayDebug() {
+    	buildDebugInformationCard();
+        displayCard(debugInformationCard);
+    }
 
     /**
      * Builds the local FolderInformationCard if required.
@@ -204,6 +213,15 @@ public class InformationFrame extends PFUIComponent {
     private void buildUploadsInformationCard() {
         if (uploadsInformationCard == null) {
             uploadsInformationCard = new UploadsInformationCard(getController());
+        }
+    }
+    
+    /**
+     * Builds the local DebugInformationCard if required.
+     */
+    private void buildDebugInformationCard() {
+        if (debugInformationCard == null) {
+        	debugInformationCard = new DebugInformationCard(getController());
         }
     }
 
