@@ -24,6 +24,8 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.clientserver.ServerClientListener;
+import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderStatistic;
 import de.dal33t.powerfolder.disk.RecycleBin;
@@ -70,9 +72,11 @@ public class ExpandableFolderView extends PFUIComponent {
     private ActionLabel membersLabel;
     private JLabel filesAvailableLabel;
     private JPanel upperPanel;
+    private JLabel jLabel;
 
     private MyFolderListener myFolderListener;
     private MyFolderMembershipListener myFolderMembershipListener;
+    private MyServerClientListener myServerClientListener;
 
     /**
      * Constructor
@@ -110,11 +114,14 @@ public class ExpandableFolderView extends PFUIComponent {
         PanelBuilder upperBuilder = new PanelBuilder(upperLayout);
         CellConstraints cc = new CellConstraints();
 
-        JLabel jLabel;
         if (folder.isPreviewOnly()) {
             jLabel = new JLabel(Icons.PF_PREVIEW);
             jLabel.setToolTipText(Translation.getTranslation(
                     "exp_folder_view.folder_preview_text"));
+        } else if (getController().getOSClient().hasJoined(folder)) {
+            jLabel = new JLabel(Icons.PF_ONLINE);
+            jLabel.setToolTipText(Translation.getTranslation(
+                    "exp_folder_view.folder_online_text"));
         } else {
             jLabel = new JLabel(Icons.PF_LOCAL);
             jLabel.setToolTipText(Translation.getTranslation(
@@ -236,6 +243,8 @@ public class ExpandableFolderView extends PFUIComponent {
         folder.addFolderListener(myFolderListener);
         myFolderMembershipListener = new MyFolderMembershipListener();
         folder.addMembershipListener(myFolderMembershipListener);
+        myServerClientListener = new MyServerClientListener();
+        getController().getOSClient().addListener(myServerClientListener);
     }
 
     /**
@@ -244,6 +253,7 @@ public class ExpandableFolderView extends PFUIComponent {
     private void unregisterListeners() {
         folder.removeFolderListener(myFolderListener);
         folder.removeMembershipListener(myFolderMembershipListener);
+        getController().getOSClient().removeListener(myServerClientListener);
     }
 
     /**
@@ -325,6 +335,22 @@ public class ExpandableFolderView extends PFUIComponent {
         int count = folder.getMembersCount();
         membersLabel.setText(Translation.getTranslation(
                 "exp_folder_view.members", count));
+    }
+
+    private void updateIcon() {
+        if (folder.isPreviewOnly()) {
+            jLabel.setIcon(Icons.PF_PREVIEW);
+            jLabel.setToolTipText(Translation.getTranslation(
+                    "exp_folder_view.folder_preview_text"));
+        } else if (getController().getOSClient().hasJoined(folder)) {
+            jLabel.setIcon(Icons.PF_ONLINE);
+            jLabel.setToolTipText(Translation.getTranslation(
+                    "exp_folder_view.folder_online_text"));
+        } else {
+            jLabel.setIcon(Icons.PF_LOCAL);
+            jLabel.setToolTipText(Translation.getTranslation(
+                    "exp_folder_view.folder_local_text"));
+        }
     }
 
     ///////////////////
@@ -453,6 +479,29 @@ public class ExpandableFolderView extends PFUIComponent {
         public void actionPerformed(ActionEvent e) {
             FolderInfo folderInfo = folder.getInfo();
             getController().getUIController().openMembersInformation(folderInfo);
+        }
+    }
+
+    private class MyServerClientListener implements ServerClientListener {
+
+        public void login(ServerClientEvent event) {
+            updateIcon();
+        }
+
+        public void accountUpdated(ServerClientEvent event) {
+            updateIcon();
+        }
+
+        public void serverConnected(ServerClientEvent event) {
+            updateIcon();
+        }
+
+        public void serverDisconnected(ServerClientEvent event) {
+            updateIcon();
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return true;
         }
     }
 }
