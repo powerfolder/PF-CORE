@@ -44,7 +44,6 @@ public class ServerSelectorPanel extends PFUIComponent implements UIPanel {
     private JPanel panel;
     private JComboBox selectBox;
     private JButton searchButton;
-    private SelectionInList<Member> selectModel;
     private ValueModel serverModel;
 
     ServerSelectorPanel(Controller controller, ValueModel serverModel) {
@@ -57,12 +56,12 @@ public class ServerSelectorPanel extends PFUIComponent implements UIPanel {
         if (panel == null) {
             initComponent();
 
-            FormLayout layout = new FormLayout("0:grow, 3dlu, pref", "pref");
+            FormLayout layout = new FormLayout("0:grow", "pref, 3dlu, pref");
             PanelBuilder builder = new PanelBuilder(layout);
             CellConstraints cc = new CellConstraints();
 
             builder.add(selectBox, cc.xy(1, 1));
-            builder.add(searchButton, cc.xy(3, 1));
+            builder.add(searchButton, cc.xy(1, 3));
 
             panel = builder.getPanel();
         }
@@ -70,9 +69,9 @@ public class ServerSelectorPanel extends PFUIComponent implements UIPanel {
     }
 
     private void initComponent() {
-        selectModel = new SelectionInList<Member>(getUIController()
-            .getApplicationModel().getNodeManagerModel().getFriendsListModel(),
-            serverModel);
+        SelectionInList<Member> selectModel = new SelectionInList<Member>(getUIController()
+                .getApplicationModel().getNodeManagerModel().getFriendsListModel(),
+                serverModel);
         selectBox = BasicComponentFactory.createComboBox(selectModel);
         selectBox.setRenderer(new MemberListCellRenderer());
 
@@ -86,7 +85,7 @@ public class ServerSelectorPanel extends PFUIComponent implements UIPanel {
         });
     }
 
-    private class MemberListCellRenderer extends DefaultListCellRenderer {
+    private static class MemberListCellRenderer extends DefaultListCellRenderer {
 
         public Component getListCellRendererComponent(JList list, Object value,
             int index, boolean isSelected, boolean cellHasFocus)
@@ -99,8 +98,8 @@ public class ServerSelectorPanel extends PFUIComponent implements UIPanel {
             }
             String newValue = member.getNick();
             if (member.isMySelf()) {
-                newValue += " (" + Translation.getTranslation("navtree.me")
-                    + ")";
+                newValue += " (" + Translation.getTranslation("member.me")
+                    + ')';
             }
             super.getListCellRendererComponent(list, newValue, index,
                 isSelected, cellHasFocus);
@@ -108,7 +107,7 @@ public class ServerSelectorPanel extends PFUIComponent implements UIPanel {
             String tooltipText = "";
 
             if (member.isMySelf()) {
-                tooltipText += Translation.getTranslation("navtree.me");
+                tooltipText += Translation.getTranslation("member.me");
             } else if (member.isFriend()) {
                 tooltipText += Translation
                     .getTranslation("member.non_mutual_friend");
@@ -116,11 +115,11 @@ public class ServerSelectorPanel extends PFUIComponent implements UIPanel {
 
             if (member.isSupernode()) {
                 tooltipText += " ("
-                    + Translation.getTranslation("member.supernode") + ")";
+                    + Translation.getTranslation("member.supernode") + ')';
             }
             if (member.isOnLAN()) {
                 tooltipText += " ("
-                    + Translation.getTranslation("member.onlan") + ")";
+                    + Translation.getTranslation("member.onlan") + ')';
             }
             setToolTipText(tooltipText);
             return this;
