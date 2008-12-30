@@ -48,14 +48,14 @@ import java.beans.PropertyChangeEvent;
  */
 public class FoldersList extends PFUIComponent {
 
+    private final List<ExpandableFolderView> views;
+
     private JPanel uiComponent;
     private JPanel folderListPanel;
-    private List<ExpandableFolderView> views;
     private FolderRepository repo;
     private ServerClient client;
     private JScrollPane scrollPane;
     private Integer folderSelectionType;
-
 
     /**
      * Constructor
@@ -67,7 +67,8 @@ public class FoldersList extends PFUIComponent {
 
         folderSelectionTypeVM.addValueChangeListener(new MyPropertyChangeListener());
         folderSelectionType = (Integer) folderSelectionTypeVM.getValue();
-        System.out.println("hghg " + folderSelectionType);
+
+        views = new CopyOnWriteArrayList<ExpandableFolderView>();
 
         buildUI();
     }
@@ -85,7 +86,6 @@ public class FoldersList extends PFUIComponent {
      */
     private void buildUI() {
 
-        views = new CopyOnWriteArrayList<ExpandableFolderView>();
         repo = getController().getFolderRepository();
         client = getController().getOSClient();
 
@@ -215,6 +215,11 @@ public class FoldersList extends PFUIComponent {
         }
     }
 
+    /**
+     * Requird to make scroller repaint correctly.
+     *
+     * @param scrollPane
+     */
     public void setScroller(JScrollPane scrollPane) {
         this.scrollPane = scrollPane;
     }
