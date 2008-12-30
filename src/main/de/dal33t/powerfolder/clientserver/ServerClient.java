@@ -43,8 +43,7 @@ import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.light.ServerInfo;
 import de.dal33t.powerfolder.message.clientserver.AccountDetails;
 import de.dal33t.powerfolder.net.ConnectionListener;
-import de.dal33t.powerfolder.security.Account;
-import de.dal33t.powerfolder.security.AnonymousAccount;
+import de.dal33t.powerfolder.security.*;
 import de.dal33t.powerfolder.util.Base64;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Reject;
@@ -511,6 +510,25 @@ public class ServerClient extends PFComponent {
             }
         }
         return mirroredFolders;
+    }
+
+    /**
+     * Method to get a list of folder infos that are available online.
+     * 
+     * @return
+     */
+    public List<FolderInfo> getOnlineFolders() {
+        List<FolderInfo> folderInfos = new ArrayList<FolderInfo>();
+        for (Permission permission : getAccount().getPermissions()) {
+            if (permission instanceof FolderAdminPermission) {
+                FolderAdminPermission folderAdminPermission =
+                        (FolderAdminPermission) permission;
+                FolderInfo folderInfo = folderAdminPermission.getFolder();
+                
+                folderInfos.add(folderInfo);
+            }
+        }
+        return folderInfos;
     }
 
     /**

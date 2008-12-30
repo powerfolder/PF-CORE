@@ -24,7 +24,10 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.clientserver.ServerClient;
+import de.dal33t.powerfolder.clientserver.ServerClientListener;
+import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
@@ -32,18 +35,15 @@ import de.dal33t.powerfolder.event.FolderRepositoryListener;
 
 import javax.swing.*;
 import java.util.List;
-import java.util.TimerTask;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * This class creates a list combining folder repository and server client
- * folders. Folder repo events are triggered by a listener. Server client
- * changes are detected by a thread that polls the client on a regular basis.
+ * folders.
  */
 public class FoldersList extends PFUIComponent {
-
-    private static final long DELAY = 10000; // Ten seconds
-    private static final long PERIOD = 10000; // Ten seconds
 
     private JPanel uiComponent;
     private JPanel folderListPanel;
@@ -99,14 +99,6 @@ public class FoldersList extends PFUIComponent {
         folderListPanel.setLayout(new BoxLayout(folderListPanel, BoxLayout.PAGE_AXIS));
         updateFolders();
         registerListeners();
-        startServerClientTask();
-    }
-
-    /**
-     * Starts a thread to poll the server clinet for folder changes.
-     */
-    private void startServerClientTask() {
-        getController().scheduleAndRepeat(new ServerClientTask(), DELAY, PERIOD);
     }
 
     /**
@@ -115,6 +107,7 @@ public class FoldersList extends PFUIComponent {
     private void registerListeners() {
         getController().getFolderRepository().addFolderRepositoryListener(
                 new MyFolderRepositoryListener());
+        getController().getOSClient().addListener(new MyServerClientListener());
     }
 
     /**
@@ -123,41 +116,60 @@ public class FoldersList extends PFUIComponent {
      */
     private void updateFolders() {
 
-        // Get combined list of repo and client folders.
-        List<Folder> folders = client.getJoinedFolders();
-        folders.addAll(repo.getFoldersAsCollection());
+        synchronized(views) {
 
-        // Add new folder views if required.
-        for (Folder folder : folders) {
-            boolean exists = false;
-            for (ExpandableFolderView view : views) {
-                if (view.getFolderInfo().equals(folder.getInfo())) {
-                    exists = true;
-                    break;
+            // Get combined list of repo and client folders.
+            Map<FolderInfo, Folder> foldersMap = new HashMap<FolderInfo, Folder>();
+            for (Folder folder : repo.getFoldersAsCollection()) {
+                FolderInfo folderInfo = folder.getInfo();
+                foldersMap.put(folderInfo, folder);
+            }
+
+            for (FolderInfo folderInfo : client.getOnlineFolders()) {
+                if (foldersMap.get(folderInfo) == null) {
+                    // Not in repo, add from client, but no actual Folder.
+                    foldersMap.put(folderInfo, null);
                 }
             }
-            if (!exists) {
-                // No view for this folder, so create a new one.
-                ExpandableFolderView newView = new ExpandableFolderView(getController(), folder);
-                folderListPanel.add(newView.getUIComponent());
-                views.add(newView);
-            }
-        }
 
-        // Remove old folder views if required.
-        ExpandableFolderView[] list = views.toArray(new ExpandableFolderView[views.size()]);
-        for (ExpandableFolderView view : list) {
-            boolean exists = false;
-            for (Folder folder : folders) {
-                if (folder.getInfo().equals(view.getFolderInfo())) {
-                    exists = true;
-                    break;
+
+            // Add new folder views if required.
+            for (FolderInfo folderInfo : foldersMap.keySet()) {
+                boolean exists = false;
+                for (ExpandableFolderView view : views) {
+                    if (view.getFolderInfo().equals(folderInfo)) {
+                        exists = true;
+                        break;
+                    }
+                }
+                if (!exists) {
+                    // No view for this folder, so create a new one.
+                    ExpandableFolderView newView = new ExpandableFolderView(getController(), folderInfo);
+                    folderListPanel.add(newView.getUIComponent());
+                    views.add(newView);
                 }
             }
-            if (!exists) {
-                // No folder for this view, so remove it.
-                views.remove(view);
-                folderListPanel.remove(view.getUIComponent());
+
+            // Remove old folder views if required.
+            // Update remaining views with the current folder, which may be null if
+            // online only.
+            ExpandableFolderView[] list = views.toArray(new ExpandableFolderView[views.size()]);
+            for (ExpandableFolderView view : list) {
+                boolean exists = false;
+                for (FolderInfo folderInfo : foldersMap.keySet()) {
+                    if (folderInfo.equals(view.getFolderInfo())) {
+                        exists = true;
+                        Folder folder = foldersMap.get(folderInfo);
+                        view.setFolder(folder);
+                        break;
+                    }
+                }
+                if (!exists) {
+                    // No folder for this view, so remove it.
+                    views.remove(view);
+                    view.unregisterListeners();
+                    folderListPanel.remove(view.getUIComponent());
+                }
             }
         }
     }
@@ -187,12 +199,28 @@ public class FoldersList extends PFUIComponent {
     }
 
     /**
-     * Timer task to poll the server client for changes.
+     * Listener for changes to server client folder set.
      */
-    private class ServerClientTask extends TimerTask {
+    private class MyServerClientListener implements ServerClientListener {
 
-        public void run() {
+        public void login(ServerClientEvent event) {
             updateFolders();
+        }
+
+        public void accountUpdated(ServerClientEvent event) {
+            updateFolders();
+        }
+
+        public void serverConnected(ServerClientEvent event) {
+            updateFolders();
+        }
+
+        public void serverDisconnected(ServerClientEvent event) {
+            updateFolders();
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return true;
         }
     }
 }

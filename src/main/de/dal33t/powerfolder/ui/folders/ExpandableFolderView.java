@@ -44,7 +44,6 @@ import de.dal33t.powerfolder.util.Translation;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -54,22 +53,25 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class ExpandableFolderView extends PFUIComponent {
 
-    private final Folder folder;
+    private final FolderInfo folderInfo;
+    private Folder folder;
+
+    private JButtonMini openSettingsInformationButton;
+    private JButtonMini openFilesInformationButton;
     private JButtonMini inviteButton;
     private JButtonMini syncFolderButton;
+    private ActionLabel membersLabel;
+
     private JPanel uiComponent;
     private JPanel lowerOuterPanel;
     private AtomicBoolean expanded;
 
     private JLabel filesLabel;
     private JLabel transferModeLabel;
-    private JButtonMini openSettingsInformationButton;
-    private JButtonMini openFilesInformationButton;
     private JLabel syncPercentLabel;
     private JLabel localSizeLabel;
     private JLabel totalSizeLabel;
     private JLabel recycleLabel;
-    private ActionLabel membersLabel;
     private JLabel filesAvailableLabel;
     private JPanel upperPanel;
     private JLabel jLabel;
@@ -82,11 +84,45 @@ public class ExpandableFolderView extends PFUIComponent {
      * Constructor
      *
      * @param controller
+     * @param folderInfo
+     */
+    public ExpandableFolderView(Controller controller, FolderInfo folderInfo) {
+        super(controller);
+        this.folderInfo = folderInfo;
+        initComponent();
+        buildUI();
+    }
+
+    /**
+     * Set the folder for this view. May be null if online storage only, so
+     * update visual components if null --> folder or folder --> null
+     *
      * @param folder
      */
-    public ExpandableFolderView(Controller controller, Folder folder) {
-        super(controller);
+    public void setFolder(Folder folder) {
+
+        if (folder == null && this.folder == null) {
+            // No change.
+            return;
+        }
+
+        if (folder != null && this.folder != null && this.folder.equals(folder)) {
+            // Folder not changed.
+            return;
+        }
+
+        // Something changed - swap folders.
+        unregisterFolderListeners();
         this.folder = folder;
+
+        updateStatsDetails();        
+        updateNumberOfFiles();
+        updateTransferMode();
+        updateFolderMembershipDetails();
+        updateIcon();
+        updateButtons();
+
+        registerFolderListeners();
     }
 
     /**
@@ -94,9 +130,6 @@ public class ExpandableFolderView extends PFUIComponent {
      * @return
      */
     public JPanel getUIComponent() {
-        if (uiComponent == null) {
-            buildUI();
-        }
         return uiComponent;
     }
 
@@ -104,8 +137,6 @@ public class ExpandableFolderView extends PFUIComponent {
      * Builds the ui component.
      */
     private void buildUI() {
-
-        initComponent();
 
         // Build ui
                                             //  icon        name   space            # files     sync
@@ -117,7 +148,7 @@ public class ExpandableFolderView extends PFUIComponent {
         updateIcon();
 
         upperBuilder.add(jLabel, cc.xy(1, 1));
-        upperBuilder.add(new JLabel(folder.getName()), cc.xy(3, 1));
+        upperBuilder.add(new JLabel(folderInfo.name), cc.xy(3, 1));
         upperBuilder.add(filesAvailableLabel, cc.xy(6, 1));
         upperBuilder.add(syncFolderButton, cc.xy(8, 1));
 
@@ -187,62 +218,92 @@ public class ExpandableFolderView extends PFUIComponent {
      * Initializes the components.
      */
     private void initComponent() {
+
+        MyOpenFilesInformationAction myOpenFilesInformationAction =
+                new MyOpenFilesInformationAction(getController());
+        MyOpenSettingsInformationAction myOpenSettingsInformationAction =
+                new MyOpenSettingsInformationAction(getController());
+        MyInviteAction myInviteAction = new MyInviteAction(getController());
+        MyOpenMembersInformationAction myOpenMembersInformationAction =
+                new MyOpenMembersInformationAction(getController());
+        MySyncFolderAction mySyncFolderAction =
+                new MySyncFolderAction(getController());
+
         expanded = new AtomicBoolean();
 
         openSettingsInformationButton = new JButtonMini(
-                new MyOpenSettingsInformationAction(getController()), true);
+                myOpenSettingsInformationAction, true);
 
-        openFilesInformationButton = new JButtonMini(
-                new MyOpenFilesInformationAction(getController()), true);
+        openFilesInformationButton = new JButtonMini(myOpenFilesInformationAction,
+                true);
 
-        MyInviteAction inviteAction = new MyInviteAction(getController());
-        inviteButton = new JButtonMini(inviteAction, true);
-        syncFolderButton = new JButtonMini(Icons.SYNC,
-                Translation.getTranslation("exp_folder_view.synchronize_folder"));
-        syncFolderButton.addActionListener(new MySyncActionListener());
+        inviteButton = new JButtonMini(myInviteAction, true);
+        syncFolderButton = new JButtonMini(mySyncFolderAction, true);
         filesLabel = new JLabel();
         transferModeLabel = new JLabel();
         syncPercentLabel = new JLabel();
         localSizeLabel = new JLabel();
         totalSizeLabel = new JLabel();
         recycleLabel = new JLabel();
-        membersLabel = new ActionLabel(new MyOpenMembersInformationAction(getController()));
+        membersLabel = new ActionLabel(myOpenMembersInformationAction);
         filesAvailableLabel = new JLabel();
 
         updateNumberOfFiles();
         updateStatsDetails();
         updateFolderMembershipDetails();
         updateTransferMode();
+        updateButtons();
 
-        registerListeners();
+        myServerClientListener = new MyServerClientListener();
+        getController().getOSClient().addListener(myServerClientListener);
+    }
+
+    private void updateButtons() {
+        boolean enabled = folder != null;
+        openSettingsInformationButton.setEnabled(enabled);
+        openFilesInformationButton.setEnabled(enabled);
+        inviteButton.setEnabled(enabled);
+        syncFolderButton.setEnabled(enabled);
+        membersLabel.setEnabled(enabled);
     }
 
     /**
-     * Call this to unregister listeners if folder is being removed.
+     * Call if this object is being discarded, so that lesteners are not orphaned.
      */
-    public void removeListeners() {
-        unregisterListeners();
+    public void unregisterListeners() {
+        if (myServerClientListener != null) {
+            getController().getOSClient().addListener(myServerClientListener);
+            myServerClientListener = null;
+        }
+        unregisterFolderListeners();
     }
 
     /**
      * Register listeners of the folder.
      */
-    private void registerListeners() {
-        myFolderListener = new MyFolderListener();
-        folder.addFolderListener(myFolderListener);
-        myFolderMembershipListener = new MyFolderMembershipListener();
-        folder.addMembershipListener(myFolderMembershipListener);
-        myServerClientListener = new MyServerClientListener();
-        getController().getOSClient().addListener(myServerClientListener);
+    private void registerFolderListeners() {
+        if (folder != null) {
+            myFolderListener = new MyFolderListener();
+            folder.addFolderListener(myFolderListener);
+            myFolderMembershipListener = new MyFolderMembershipListener();
+            folder.addMembershipListener(myFolderMembershipListener);
+        }
     }
 
     /**
      * Unregister listeners of the folder.
      */
-    private void unregisterListeners() {
-        folder.removeFolderListener(myFolderListener);
-        folder.removeMembershipListener(myFolderMembershipListener);
-        getController().getOSClient().removeListener(myServerClientListener);
+    private void unregisterFolderListeners() {
+        if (folder != null) {
+            if (myFolderListener != null) {
+                folder.removeFolderListener(myFolderListener);
+                myFolderListener = null;
+            }
+            if (myFolderMembershipListener != null) {
+                folder.removeMembershipListener(myFolderMembershipListener);
+                myFolderMembershipListener = null;
+            }
+        }
     }
 
     /**
@@ -250,61 +311,88 @@ public class ExpandableFolderView extends PFUIComponent {
      * @return
      */
     public FolderInfo getFolderInfo() {
-        return folder.getInfo();
+        return folderInfo;
     }
 
     /**
      * Updates the statistics details of the folder.
      */
     private void updateStatsDetails() {
-        FolderStatistic statistic = folder.getStatistic();
-        double sync = statistic.getHarmonizedSyncPercentage();
-        if (sync < 0) {
-            sync = 0;
-        }
-        if (sync > 100) {
-            sync = 100;
-        }
-        String syncText = Translation.getTranslation(
-                "exp_folder_view.synchronized", sync);
-        syncPercentLabel.setText(syncText);
 
-        long localSize = statistic.getLocalSize();
-        String localSizeString = Format.formatBytesShort(localSize);
+        String syncText;
+        String localSizeString;
+        String totalSizeString;
+        String recycleLabelText;
+        String filesAvailableLabelText;
+        if (folder == null) {
+
+            syncText = Translation.getTranslation(
+                    "exp_folder_view.synchronized", "?");
+            localSizeString = "?";
+            totalSizeString = "?";
+            recycleLabelText = Translation.getTranslation("exp_folder_view.recycled",
+                    "?", "?");
+            filesAvailableLabelText = "";
+        } else {
+            FolderStatistic statistic = folder.getStatistic();
+            double sync = statistic.getHarmonizedSyncPercentage();
+            if (sync < 0) {
+                sync = 0;
+            }
+            if (sync > 100) {
+                sync = 100;
+            }
+            syncText = Translation.getTranslation(
+                    "exp_folder_view.synchronized", sync);
+
+            long localSize = statistic.getLocalSize();
+            localSizeString = Format.formatBytesShort(localSize);
+
+            long totalSize = statistic.getTotalSize();
+            totalSizeString = Format.formatBytesShort(totalSize);
+
+            if (folder.isUseRecycleBin()) {
+                RecycleBin recycleBin = getController().getRecycleBin();
+                int recycledCount = recycleBin.countRecycledFiles(folderInfo);
+                long recycledSize = recycleBin.recycledFilesSize(folderInfo);
+                String recycledSizeString = Format.formatBytesShort(recycledSize);
+                recycleLabelText = Translation.getTranslation("exp_folder_view.recycled",
+                        recycledCount, recycledSizeString);
+            } else {
+                recycleLabelText = Translation.getTranslation("exp_folder_view.no_recycled");
+            }
+
+            int count = statistic.getIncomingFilesCount();
+            if (count == 0) {
+                filesAvailableLabelText = "";
+            } else {
+                filesAvailableLabelText = Translation.getTranslation(
+                        "exp_folder_view.files_available", count);
+            }
+        }
+
+        syncPercentLabel.setText(syncText);
         localSizeLabel.setText(Translation.getTranslation("exp_folder_view.local",
                 localSizeString));
-
-        long totalSize = statistic.getTotalSize();
-        String totalSizeString = Format.formatBytesShort(totalSize);
-        totalSizeLabel.setText(Translation.getTranslation("exp_folder_view.total", 
+        totalSizeLabel.setText(Translation.getTranslation("exp_folder_view.total",
                 totalSizeString));
+        recycleLabel.setText(recycleLabelText);
+        filesAvailableLabel.setText(filesAvailableLabelText);
 
-        if (folder.isUseRecycleBin()) {
-            RecycleBin recycleBin = getController().getRecycleBin();
-            int recycledCount = recycleBin.countRecycledFiles(folder.getInfo());
-            long recycledSize = recycleBin.recycledFilesSize(folder.getInfo());
-            String recycledSizeString = Format.formatBytesShort(recycledSize);
-            recycleLabel.setText(Translation.getTranslation("exp_folder_view.recycled",
-                    recycledCount, recycledSizeString));
-        } else {
-            recycleLabel.setText(Translation.getTranslation("exp_folder_view.no_recycled"));
-        }
-
-        int count = statistic.getIncomingFilesCount();
-        if (count == 0) {
-            filesAvailableLabel.setText("");
-        } else {
-            filesAvailableLabel.setText(Translation.getTranslation(
-                    "exp_folder_view.files_available", count));
-        }
     }
 
     /**
      * Updates the number of files details of the folder.
      */
     private void updateNumberOfFiles() {
-        String filesText = Translation.getTranslation("exp_folder_view.files",
-                folder.getKnownFilesCount());
+        String filesText;
+        if (folder == null) {
+            filesText = Translation.getTranslation("exp_folder_view.files",
+                    "?");
+        } else {
+            filesText = Translation.getTranslation("exp_folder_view.files",
+                    folder.getKnownFilesCount());
+        }
         filesLabel.setText(filesText);
     }
 
@@ -312,8 +400,14 @@ public class ExpandableFolderView extends PFUIComponent {
      * Updates transfer mode of the folder.
      */
     private void updateTransferMode() {
-        String transferMode = Translation.getTranslation("exp_folder_view.transfer_mode",
-                folder.getSyncProfile().getProfileName());
+        String transferMode;
+        if (folder == null) {
+            transferMode = Translation.getTranslation("exp_folder_view.transfer_mode",
+                    "?");
+        } else {
+            transferMode = Translation.getTranslation("exp_folder_view.transfer_mode",
+                    folder.getSyncProfile().getProfileName());
+        }
         transferModeLabel.setText(transferMode);
     }
 
@@ -321,34 +415,38 @@ public class ExpandableFolderView extends PFUIComponent {
      * Updates the folder member details.
      */
     private void updateFolderMembershipDetails() {
-        int count = folder.getMembersCount();
+        String countText;
+        if (folder == null) {
+            countText = "?";
+        } else {
+            countText = String.valueOf(folder.getMembersCount());
+        }
         membersLabel.setText(Translation.getTranslation(
-                "exp_folder_view.members", count));
+                "exp_folder_view.members", countText));
     }
 
     private void updateIcon() {
 
-        boolean preview = folder.isPreviewOnly();
-        boolean local = getController().getFolderRepository()
-                .getFolder(folder.getInfo()) != null;
-        boolean online = getController().getOSClient().hasJoined(folder);
-
-        if (preview) {
-            jLabel.setIcon(Icons.PF_PREVIEW);
-            jLabel.setToolTipText(Translation.getTranslation(
-                    "exp_folder_view.folder_preview_text"));
-        } else if (local && online) {
-            jLabel.setIcon(Icons.PF_LOCAL_AND_ONLINE);
-            jLabel.setToolTipText(Translation.getTranslation(
-                    "exp_folder_view.folder_local_online_text"));
-        } else if (online) {
+        if (folder == null) {
             jLabel.setIcon(Icons.PF_ONLINE);
             jLabel.setToolTipText(Translation.getTranslation(
                     "exp_folder_view.folder_online_text"));
         } else {
-            jLabel.setIcon(Icons.PF_LOCAL);
-            jLabel.setToolTipText(Translation.getTranslation(
-                    "exp_folder_view.folder_local_text"));
+            boolean preview = folder.isPreviewOnly();
+            boolean online = getController().getOSClient().hasJoined(folder);
+            if (preview) {
+                jLabel.setIcon(Icons.PF_PREVIEW);
+                jLabel.setToolTipText(Translation.getTranslation(
+                        "exp_folder_view.folder_preview_text"));
+            } else if (online) {
+                jLabel.setIcon(Icons.PF_LOCAL_AND_ONLINE);
+                jLabel.setToolTipText(Translation.getTranslation(
+                        "exp_folder_view.folder_local_online_text"));
+            } else {
+                jLabel.setIcon(Icons.PF_LOCAL);
+                jLabel.setToolTipText(Translation.getTranslation(
+                        "exp_folder_view.folder_local_text"));
+            }
         }
     }
 
@@ -425,15 +523,6 @@ public class ExpandableFolderView extends PFUIComponent {
         }
     }
 
-    private class MySyncActionListener implements ActionListener {
-        public void actionPerformed(ActionEvent e) {
-            ActionEvent ae = new ActionEvent(getFolderInfo(),
-                    e.getID(), e.getActionCommand(), e.getWhen(), e.getModifiers());
-            getApplicationModel().getActionModel().getSyncFolderAction()
-                    .actionPerformed(ae);
-        }
-    }
-
     // Action to invite friend.
     private class MyInviteAction extends BaseAction {
 
@@ -442,7 +531,7 @@ public class ExpandableFolderView extends PFUIComponent {
         }
 
         public void actionPerformed(ActionEvent e) {
-            PFWizard.openSendInvitationWizard(getController(), folder.getInfo());
+            PFWizard.openSendInvitationWizard(getController(), folderInfo);
         }
     }
 
@@ -452,7 +541,6 @@ public class ExpandableFolderView extends PFUIComponent {
         }
 
         public void actionPerformed(ActionEvent e) {
-            FolderInfo folderInfo = folder.getInfo();
             getController().getUIController().openSettingsInformation(folderInfo);
         }
     }
@@ -464,7 +552,6 @@ public class ExpandableFolderView extends PFUIComponent {
         }
 
         public void actionPerformed(ActionEvent e) {
-            FolderInfo folderInfo = folder.getInfo();
             getController().getUIController().openFilesInformation(folderInfo);
         }
     }
@@ -476,7 +563,6 @@ public class ExpandableFolderView extends PFUIComponent {
         }
 
         public void actionPerformed(ActionEvent e) {
-            FolderInfo folderInfo = folder.getInfo();
             getController().getUIController().openMembersInformation(folderInfo);
         }
     }
@@ -503,4 +589,16 @@ public class ExpandableFolderView extends PFUIComponent {
             return true;
         }
     }
+
+    private class MySyncFolderAction extends BaseAction {
+
+        private MySyncFolderAction(Controller controller) {
+            super("action_sync_folder", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            getController().getUIController().syncFolder(folderInfo);
+        }
+    }
+
 }
