@@ -22,6 +22,8 @@ package de.dal33t.powerfolder.ui.folders;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+import com.jgoodies.binding.value.ValueHolder;
+import com.jgoodies.binding.value.ValueModel;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
@@ -37,9 +39,14 @@ import java.awt.event.ActionListener;
  */
 public class FoldersTab extends PFUIComponent {
 
+    public static final int FOLDER_TYPE_ALL = 0;
+    public static final int FOLDER_TYPE_LOCAL = 1;
+    public static final int FOLDER_TYPE_ONLINE = 2;
+
     private JPanel uiComponent;
     private FoldersList foldersList;
     private JComboBox folderTypeList;
+    private ValueModel folderSelectionTypeVM;
 
     /**
      * Constructor
@@ -84,12 +91,23 @@ public class FoldersTab extends PFUIComponent {
         uiComponent = builder.getPanel();
     }
 
+    //
+    public ValueModel getFolderSelectionTypeVM() {
+        return folderSelectionTypeVM;
+    }
+
     /**
      * Initialize the required components.
      */
     private void initComponents() {
 
-        foldersList = new FoldersList(getController());
+        Integer initialSelection = PreferencesEntry.FOLDER_TYPE_SELECTION
+                .getValueInt(getController());
+
+        folderSelectionTypeVM = new ValueHolder();
+        folderSelectionTypeVM.setValue(initialSelection);
+
+        foldersList = new FoldersList(getController(), folderSelectionTypeVM);
 
         folderTypeList = new JComboBox();
         folderTypeList.setToolTipText(Translation.getTranslation(
@@ -97,8 +115,6 @@ public class FoldersTab extends PFUIComponent {
         folderTypeList.addItem(Translation.getTranslation("folders_tab.all_folders"));
         folderTypeList.addItem(Translation.getTranslation("folders_tab.only_local_folders"));
         folderTypeList.addItem(Translation.getTranslation("folders_tab.only_online_folders"));
-        Integer initialSelection = PreferencesEntry.FOLDER_TYPE_SELECTION
-                .getValueInt(getController());
         folderTypeList.setSelectedIndex(initialSelection);
         folderTypeList.addActionListener(new MyActionListener());
     }
@@ -126,6 +142,7 @@ public class FoldersTab extends PFUIComponent {
             if (e.getSource().equals(folderTypeList)) {
                 PreferencesEntry.FOLDER_TYPE_SELECTION.setValue(getController(),
                         folderTypeList.getSelectedIndex());
+                folderSelectionTypeVM.setValue(folderTypeList.getSelectedIndex());
             }
         }
     }

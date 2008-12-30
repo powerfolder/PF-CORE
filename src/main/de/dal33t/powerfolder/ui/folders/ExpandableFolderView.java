@@ -56,6 +56,8 @@ public class ExpandableFolderView extends PFUIComponent {
 
     private final FolderInfo folderInfo;
     private Folder folder;
+    private boolean local;
+    private boolean online;
 
     private JButtonMini openSettingsInformationButton;
     private JButtonMini openFilesInformationButton;
@@ -98,23 +100,35 @@ public class ExpandableFolderView extends PFUIComponent {
      * Set the folder for this view. May be null if online storage only, so
      * update visual components if null --> folder or folder --> null
      *
-     * @param folder
+     * @param folderArg
      */
-    public void setFolder(Folder folder) {
+    public void configure(Folder folderArg, boolean localArg, boolean onlineArg)
+    {
 
-        if (folder == null && this.folder == null) {
-            // No change.
+        boolean changed = false;
+        if (folderArg != null && folder == null) {
+            changed = true;
+        } else if (folderArg == null && folder != null) {
+            changed = true;
+        } else if (folderArg != null && !folder.equals(folderArg)) {
+            changed = true;
+        } else if (local ^ localArg) {
+            changed = true;
+        } else if (online ^ onlineArg) {
+            changed = true;
+        }
+
+        if (!changed) {
             return;
         }
 
-        if (folder != null && this.folder != null && this.folder.equals(folder)) {
-            // Folder not changed.
-            return;
-        }
+        // Something changed - change details.
 
-        // Something changed - swap folders.
         unregisterFolderListeners();
-        this.folder = folder;
+
+        folder = folderArg;
+        local = localArg;
+        online = onlineArg;
 
         updateStatsDetails();        
         updateNumberOfFiles();
@@ -439,7 +453,6 @@ public class ExpandableFolderView extends PFUIComponent {
                     "exp_folder_view.folder_online_text"));
         } else {
             boolean preview = folder.isPreviewOnly();
-            boolean online = getController().getOSClient().hasJoined(folder);
             if (preview) {
                 jLabel.setIcon(Icons.PF_PREVIEW);
                 jLabel.setToolTipText(Translation.getTranslation(

@@ -22,6 +22,7 @@ package de.dal33t.powerfolder.ui.folders;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+import com.jgoodies.binding.value.ValueModel;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -35,9 +36,11 @@ import de.dal33t.powerfolder.event.FolderRepositoryListener;
 
 import javax.swing.*;
 import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
 
 /**
  * This class creates a list combining folder repository and server client
@@ -47,21 +50,25 @@ public class FoldersList extends PFUIComponent {
 
     private JPanel uiComponent;
     private JPanel folderListPanel;
-    private final List<ExpandableFolderView> views;
-    private final FolderRepository repo;
-    private final ServerClient client;
+    private List<ExpandableFolderView> views;
+    private FolderRepository repo;
+    private ServerClient client;
     private JScrollPane scrollPane;
+    private Integer folderSelectionType;
+
 
     /**
      * Constructor
      *
      * @param controller
      */
-    public FoldersList(Controller controller) {
+    public FoldersList(Controller controller, ValueModel folderSelectionTypeVM) {
         super(controller);
-        views = new CopyOnWriteArrayList<ExpandableFolderView>();
-        repo = getController().getFolderRepository();
-        client = getController().getOSClient();
+
+        folderSelectionTypeVM.addValueChangeListener(new MyPropertyChangeListener());
+        folderSelectionType = (Integer) folderSelectionTypeVM.getValue();
+        System.out.println("hghg " + folderSelectionType);
+
         buildUI();
     }
 
@@ -77,6 +84,10 @@ public class FoldersList extends PFUIComponent {
      * Inits the components then builds UI.
      */
     private void buildUI() {
+
+        views = new CopyOnWriteArrayList<ExpandableFolderView>();
+        repo = getController().getFolderRepository();
+        client = getController().getOSClient();
 
         folderListPanel = new JPanel();
         folderListPanel.setLayout(new BoxLayout(folderListPanel, BoxLayout.PAGE_AXIS));
@@ -110,32 +121,57 @@ public class FoldersList extends PFUIComponent {
         synchronized(views) {
 
             // Get combined list of repo and client folders.
-            Map<FolderInfo, Folder> foldersMap = new HashMap<FolderInfo, Folder>();
+            List<FolderBean> folderBeanList = new ArrayList<FolderBean>();
+
             for (Folder folder : repo.getFoldersAsCollection()) {
                 FolderInfo folderInfo = folder.getInfo();
-                foldersMap.put(folderInfo, folder);
+                FolderBean bean = new FolderBean(folderInfo);
+                bean.setFolder(folder);
+                bean.setLocal(true);
+                folderBeanList.add(bean);
             }
 
             for (FolderInfo folderInfo : client.getOnlineFolders()) {
-                if (foldersMap.get(folderInfo) == null) {
-                    // Not in repo, add from client, but no actual Folder.
-                    foldersMap.put(folderInfo, null);
+                FolderBean bean = new FolderBean(folderInfo);
+                if (folderBeanList.contains(bean)) {
+                    for (FolderBean existingBean : folderBeanList) {
+                        if (existingBean.getFolderInfo().equals(folderInfo)) {
+                            existingBean.setOnline(true);
+                        }
+                    }
+                } else {
+                    bean.setOnline(true);
+                    folderBeanList.add(bean);
                 }
             }
 
+            // Filter on selection.
+            for (Iterator<FolderBean> iter = folderBeanList.iterator(); iter.hasNext();) {
+                FolderBean bean = iter.next();
+                if (folderSelectionType == FoldersTab.FOLDER_TYPE_LOCAL &&
+                        !bean.isLocal()) {
+                    iter.remove();
+                } else if (folderSelectionType == FoldersTab.FOLDER_TYPE_ONLINE &&
+                        !bean.isOnline()) {
+                    iter.remove();
+                }
+            }
 
             // Add new folder views if required.
-            for (FolderInfo folderInfo : foldersMap.keySet()) {
+            for (FolderBean folderBean : folderBeanList) {
                 boolean exists = false;
                 for (ExpandableFolderView view : views) {
-                    if (view.getFolderInfo().equals(folderInfo)) {
+                    if (view.getFolderInfo().equals(folderBean.getFolderInfo())) {
                         exists = true;
                         break;
                     }
                 }
                 if (!exists) {
                     // No view for this folder info, so create a new one.
-                    ExpandableFolderView newView = new ExpandableFolderView(getController(), folderInfo);
+                    ExpandableFolderView newView = new ExpandableFolderView(
+                            getController(), folderBean.getFolderInfo());
+                    newView.configure(folderBean.getFolder(),                            
+                        folderBean.isLocal(), folderBean.isOnline());
                     folderListPanel.add(newView.getUIComponent());
                     folderListPanel.invalidate();
                     if (uiComponent != null) {
@@ -154,11 +190,11 @@ public class FoldersList extends PFUIComponent {
             ExpandableFolderView[] list = views.toArray(new ExpandableFolderView[views.size()]);
             for (ExpandableFolderView view : list) {
                 boolean exists = false;
-                for (FolderInfo folderInfo : foldersMap.keySet()) {
-                    if (folderInfo.equals(view.getFolderInfo())) {
+                for (FolderBean folderBean : folderBeanList) {
+                    if (folderBean.getFolderInfo().equals(view.getFolderInfo())) {
                         exists = true;
-                        Folder folder = foldersMap.get(folderInfo);
-                        view.setFolder(folder);
+                        view.configure(folderBean.getFolder(),
+                            folderBean.isLocal(), folderBean.isOnline());
                         break;
                     }
                 }
@@ -230,6 +266,76 @@ public class FoldersList extends PFUIComponent {
 
         public boolean fireInEventDispatchThread() {
             return true;
+        }
+    }
+
+    private class MyPropertyChangeListener implements PropertyChangeListener {
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            Object object = evt.getNewValue();
+            folderSelectionType = (Integer) object;
+            updateFolders();
+        }
+    }
+
+    private class FolderBean {
+
+        private final FolderInfo folderInfo;
+        private Folder folder;
+        private boolean local;
+        private boolean online;
+
+        private FolderBean(FolderInfo folderInfo) {
+            this.folderInfo = folderInfo;
+        }
+
+        public FolderInfo getFolderInfo() {
+            return folderInfo;
+        }
+
+        public Folder getFolder() {
+            return folder;
+        }
+
+        public boolean isLocal() {
+            return local;
+        }
+
+        public boolean isOnline() {
+            return online;
+        }
+
+        public void setFolder(Folder folder) {
+            this.folder = folder;
+        }
+
+        public void setLocal(boolean local) {
+            this.local = local;
+        }
+
+        public void setOnline(boolean online) {
+            this.online = online;
+        }
+
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null || getClass() != obj.getClass()) {
+                return false;
+            }
+
+            FolderBean that = (FolderBean) obj;
+
+            if (!folderInfo.equals(that.folderInfo)) {
+                return false;
+            }
+
+            return true;
+        }
+
+        public int hashCode() {
+            return folderInfo.hashCode();
         }
     }
 }
