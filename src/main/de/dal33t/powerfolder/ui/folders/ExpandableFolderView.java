@@ -46,6 +46,7 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -153,6 +154,7 @@ public class ExpandableFolderView extends PFUIComponent {
         upperBuilder.add(syncFolderButton, cc.xy(8, 1));
 
         upperPanel = upperBuilder.getPanel();
+        upperPanel.setBackground(SystemColor.text);
         upperPanel.setToolTipText(
                 Translation.getTranslation("exp_folder_view.expand"));
         upperPanel.addMouseListener(new MyMouseAdapter());
@@ -186,12 +188,14 @@ public class ExpandableFolderView extends PFUIComponent {
         lowerBuilder.add(openSettingsInformationButton, cc.xy(5, 19));
 
         JPanel lowerPanel = lowerBuilder.getPanel();
+        lowerPanel.setBackground(SystemColor.text);
 
         // Build spacer then lower outer with lower panel
         FormLayout lowerOuterLayout = new FormLayout("pref:grow",
             "3dlu, pref");
         PanelBuilder lowerOuterBuilder = new PanelBuilder(lowerOuterLayout);
         lowerOuterPanel = lowerOuterBuilder.getPanel();
+        lowerOuterPanel.setBackground(SystemColor.text);
         lowerOuterPanel.setVisible(false);
         lowerOuterBuilder.add(lowerPanel, cc.xy(1, 2));
 
@@ -202,6 +206,7 @@ public class ExpandableFolderView extends PFUIComponent {
         borderBuilder.add(upperPanel, cc.xy(2, 2));
         borderBuilder.add(lowerOuterBuilder.getPanel(), cc.xy(2, 3));
         JPanel borderPanel = borderBuilder.getPanel();
+        borderPanel.setBackground(SystemColor.text);
         borderPanel.setBorder(BorderFactory.createEtchedBorder());
 
         // Build ui with vertical space before the next one
@@ -211,6 +216,7 @@ public class ExpandableFolderView extends PFUIComponent {
         outerBuilder.add(borderPanel, cc.xy(2, 1));
 
         uiComponent = outerBuilder.getPanel();
+        uiComponent.setBackground(SystemColor.text);
 
     }
 
