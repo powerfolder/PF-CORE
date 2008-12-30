@@ -50,6 +50,7 @@ public class FoldersList extends PFUIComponent {
     private final List<ExpandableFolderView> views;
     private final FolderRepository repo;
     private final ServerClient client;
+    private JScrollPane scrollPane;
 
     /**
      * Constructor
@@ -61,6 +62,7 @@ public class FoldersList extends PFUIComponent {
         views = new CopyOnWriteArrayList<ExpandableFolderView>();
         repo = getController().getFolderRepository();
         client = getController().getOSClient();
+        buildUI();
     }
 
     /**
@@ -68,9 +70,6 @@ public class FoldersList extends PFUIComponent {
      * @return
      */
     public JPanel getUIComponent() {
-        if (uiComponent == null) {
-            buildUI();
-        }
         return uiComponent;
     }
 
@@ -79,7 +78,9 @@ public class FoldersList extends PFUIComponent {
      */
     private void buildUI() {
 
-        initComponents();
+        folderListPanel = new JPanel();
+        folderListPanel.setLayout(new BoxLayout(folderListPanel, BoxLayout.PAGE_AXIS));
+        registerListeners();
 
         // Build ui
         FormLayout layout = new FormLayout("pref:grow",
@@ -89,16 +90,6 @@ public class FoldersList extends PFUIComponent {
 
         builder.add(folderListPanel, cc.xy(1, 1));
         uiComponent = builder.getPanel();
-    }
-
-    /**
-     * Initializes the compoonents and starts things going.
-     */
-    private void initComponents() {
-        folderListPanel = new JPanel();
-        folderListPanel.setLayout(new BoxLayout(folderListPanel, BoxLayout.PAGE_AXIS));
-        updateFolders();
-        registerListeners();
     }
 
     /**
@@ -143,9 +134,16 @@ public class FoldersList extends PFUIComponent {
                     }
                 }
                 if (!exists) {
-                    // No view for this folder, so create a new one.
+                    // No view for this folder info, so create a new one.
                     ExpandableFolderView newView = new ExpandableFolderView(getController(), folderInfo);
                     folderListPanel.add(newView.getUIComponent());
+                    folderListPanel.invalidate();
+                    if (uiComponent != null) {
+                        uiComponent.invalidate();
+                    }
+                    if (scrollPane != null) {
+                        scrollPane.repaint();
+                    }
                     views.add(newView);
                 }
             }
@@ -165,13 +163,24 @@ public class FoldersList extends PFUIComponent {
                     }
                 }
                 if (!exists) {
-                    // No folder for this view, so remove it.
+                    // No folder info for this view, so remove it.
                     views.remove(view);
                     view.unregisterListeners();
                     folderListPanel.remove(view.getUIComponent());
+                    folderListPanel.invalidate();
+                    if (uiComponent != null) {
+                        uiComponent.invalidate();
+                    }
+                    if (scrollPane != null) {
+                        scrollPane.repaint();
+                    }
                 }
             }
         }
+    }
+
+    public void setScroller(JScrollPane scrollPane) {
+        this.scrollPane = scrollPane;
     }
 
     /**
