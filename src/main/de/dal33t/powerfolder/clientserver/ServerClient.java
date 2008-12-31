@@ -48,6 +48,7 @@ import de.dal33t.powerfolder.util.Base64;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Updater;
 import de.dal33t.powerfolder.util.Util;
 
 /**
@@ -291,6 +292,27 @@ public class ServerClient extends PFComponent {
             return null;
         }
         return getWebURL() + "/activate";
+    }
+
+    /**
+     * @return update settings to check and download new program client
+     *         versions.
+     */
+    public Updater.UpdateSetting createUpdateSettings() {
+        Updater.UpdateSetting settings = new Updater.UpdateSetting();
+
+        if (!hasWebURL()) {
+            logSevere("Unable to created update settings, no web URL for server found. "
+                + getServer() + " using defaults.");
+            return settings;
+        }
+
+        settings.versionCheckURL = getWebURL()
+            + "/client_deployment/PowerFolderPro_LatestVersion.txt";
+        settings.releaseExeURL = getWebURL()
+            + "/client_deployment/PowerFolder_Latest_Win32_Installer.exe";
+
+        return settings;
     }
 
     public boolean isAllowServerChange() {
@@ -679,7 +701,9 @@ public class ServerClient extends PFComponent {
         server.setServer(true);
         // Put on friendslist
         if (!isTempServerNode(server)) {
-            server.setFriend(true, null);
+            if (!server.isFriend()) {
+                server.setFriend(true, null);
+            }
         }
         // Re-initalize the service stubs on new server node.
         initializeServiceStubs();
