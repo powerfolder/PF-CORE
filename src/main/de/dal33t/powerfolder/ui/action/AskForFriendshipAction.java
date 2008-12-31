@@ -84,7 +84,7 @@ public class AskForFriendshipAction extends BaseAction {
         Runnable friendAsker = new Runnable() {
             public void run() {
                 getController().getUIController().getBlinkManager()
-                        .setBlinkingTrayIcon(Icons.ST_NODE);
+                        .setBlinkingTrayIcon(Icons.SYSTRAY_FRIEND_ICON);
 
                 StringBuilder folderString = new StringBuilder();
                 for (FolderInfo folderInfo : joinedFolders) {
@@ -157,14 +157,14 @@ public class AskForFriendshipAction extends BaseAction {
             Runnable friendAsker = new Runnable() {
                 public void run() {
                     getController().getUIController().getBlinkManager()
-                            .setBlinkingTrayIcon(Icons.ST_NODE);
+                        .setBlinkingTrayIcon(Icons.SYSTRAY_FRIEND_ICON);
 
                     String[] options = {
-                            Translation.getTranslation(
-                                    "dialog.ask_for_friendship.button.add"),
-                            Translation.getTranslation("general.cancel")};
+                        Translation
+                            .getTranslation("dialog.ask_for_friendship.button.add"),
+                        Translation.getTranslation("general.cancel")};
                     String text = Translation.getTranslation(
-                            "dialog.ask_for_friendship.question2",
+                        "dialog.ask_for_friendship.question2",
                             node.getNick()) + "\n\n"
                             + Translation.getTranslation(
                             "dialog.ask_for_friendship.explain");
