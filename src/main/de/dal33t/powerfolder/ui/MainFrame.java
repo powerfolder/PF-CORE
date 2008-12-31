@@ -37,6 +37,8 @@ import javax.swing.SwingConstants;
 import javax.swing.WindowConstants;
 import javax.swing.plaf.RootPaneUI;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
@@ -229,7 +231,7 @@ public class MainFrame extends PFUIComponent {
             + Toolkit.getDefaultToolkit().getScreenSize());
 
         uiComponent = new JFrame();
-        uiComponent.setIconImage(Icons.POWERFOLDER_IMAGE);
+        uiComponent.setIconImage(Icons.getDefault().POWERFOLDER_IMAGE);
 
         mainTabbedPane = new MainTabbedPane(getController());
 
@@ -244,7 +246,13 @@ public class MainFrame extends PFUIComponent {
     public void updateTitle() {
 
         StringBuilder title = new StringBuilder();
-        String initial = "PowerFolder v" + Controller.PROGRAM_VERSION;
+        
+        String appName = Translation.getTranslation("general.application.name");
+        // Urg
+        if (StringUtils.isEmpty(appName) || appName.startsWith("- ")) {
+            appName = "PowerFolder";
+        }
+        String initial = appName + " v" + Controller.PROGRAM_VERSION;
         if (getController().isVerbose()) {
             // Append in front of programm name in verbose mode
             title.append(getController().getMySelf().getNick() + " | "

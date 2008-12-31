@@ -51,6 +51,8 @@ import java.util.logging.Logger;
 
 /**
  * Contains all icons for the powerfolder application
+ * <p>
+ * TODO Move all icons into Icons instance. Initialize icon fields lazily.
  * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.74 $
@@ -59,8 +61,12 @@ public class Icons {
 
     private static final Logger log = Logger.getLogger(Icons.class.getName());
 
-    private static Properties iconProperties;
-    private static final String ICON_PROPERTIES_FILENAME = "Icons.properties";
+    private static Icons DEFAULT;
+
+    private static final String DEFAULT_ICON_PROPERTIES_FILENAME = "Icons.properties";
+    private static String iconPropertiesFilename = DEFAULT_ICON_PROPERTIES_FILENAME;
+    private static String overridePropertiesFilename;
+    private Properties iconProperties;
 
     private static final String DISABLED_EXTENSION_ADDITION = "_disabled";
     private static final Object FILE_LOCK = new Object();
@@ -170,7 +176,7 @@ public class Icons {
     public static final Icon WEB_SERVICE_PICTO = getIcon("icons/pictos/WebService.png");
 
     // Wizard pictos from the quick info panels
-    public static final Icon LOGO96X96 = getIcon("icons/pictos/PowerFolderLogo96x96.png");
+    public final Icon LOGO96X96 = getIconById("picto.logo.icon");
     public static final Icon LOGO400UI = getIcon("icons/pictos/PowerFolderLogo400UI.png");
     public static final Icon FRIENDS_PICTO = getIcon("icons/pictos/Friends.png");
     public static final Icon USER_PICTO = getIcon("icons/pictos/User.png");
@@ -200,28 +206,41 @@ public class Icons {
     public static final Image PACMAN_DOT = getImage("icons/pac/pacDot.gif");
 
     public static final Icon PRO_LOGO = getIcon("icons/ProLogo.png");
-    public static final Icon SMALL_LOGO = getIcon("icons/PowerFolder32x32.gif");
+    public final Icon SMALL_LOGO = getIconById("powerfolder32x32.icon");
 
-    public static final Icon SPLASH = getIcon("icons/Splash.png");
+    public final Icon SPLASH = getIconById("splash.icon");
 
     // Images icons
-    public static final Image POWERFOLDER_IMAGE = getImage("icons/PowerFolder32x32.gif");
+    public final Image POWERFOLDER_IMAGE = getImageFromIcon(SMALL_LOGO);
     public static final Image FOLDER_IMAGE = getImage("icons/Folder.png");
     public static final Image SYSTEM_MONITOR_IMAGE = getImage("icons/SystemMonitor.png");
     public static final Image CHAT_IMAGE = getImage("icons/Chat.gif");
     public static final Image DEBUG_IMAGE = getImage("icons/bug.png");
 
     // About stuff
-    public static final Icon ABOUT_ANIMATION = getIcon("icons/about/AboutAnimation.gif");
+    public final Icon ABOUT_ANIMATION = getIconById("about.animation");
 
     // Systray icon file names
-    public static final String ST_POWERFOLDER = "PowerFolder32x32.gif";
-    public static final String ST_CHAT = "Chat.gif";
-    public static final String ST_NODE = "NodeFriendConnected.gif";
+    public final Image SYSTRAY_DEFAULT_ICON = getImageById("systray.default.icon");
+    public static final Image SYSTRAY_CHAT_ICON = getImage("icons/Chat.gif");
+    public static final Image SYSTRAY_FRIEND_ICON = getImage("icons/Node_Friend_Connected.gif");
 
     private static final Map<String, Icon> KNOWN_ICONS = new HashMap<String, Icon>();
 
     protected Icons() {}
+    
+    public static void loadOverrideFile(String iconSetFile) {
+        overridePropertiesFilename = iconSetFile;
+        // Re load icons
+        DEFAULT = new Icons();
+    }
+
+    public static Icons getDefault() {
+        if (DEFAULT == null) {
+            DEFAULT = new Icons();
+        }
+        return DEFAULT;
+    }
 
     /**
      * Protected because only this class, subclasses and Translation.properties
@@ -271,24 +290,79 @@ public class Icons {
         return Toolkit.getDefaultToolkit().getImage(imageURL);
     }
 
-    private static synchronized Properties getIconProperties() {
+    private synchronized Properties getIconProperties() {
         if (iconProperties == null) {
             iconProperties = new Properties();
+
             InputStream in = Thread.currentThread().getContextClassLoader()
-                .getResourceAsStream(ICON_PROPERTIES_FILENAME);
+                .getResourceAsStream(iconPropertiesFilename);
             BufferedInputStream buffered = null;
+            if (in == null) {
+                throw new IllegalArgumentException(
+                    "Icon properties file not found: " + iconPropertiesFilename);
+            }
 
             try {
                 buffered = new BufferedInputStream(in);
                 iconProperties.load(buffered);
             } catch (IOException ioe) {
-                log.log(Level.SEVERE, "Cannot read: " + ICON_PROPERTIES_FILENAME, ioe);
+                log.log(Level.SEVERE, "Cannot read: " + iconPropertiesFilename, ioe);
             } finally {
                 if (buffered != null) {
                     try {
                         buffered.close();
                     } catch (Exception e) {
-                        log.log(Level.SEVERE, "Exception", e);
+
+                    }
+                }
+            }
+            
+            if (overridePropertiesFilename != null) {
+                in = Thread.currentThread().getContextClassLoader()
+                    .getResourceAsStream(overridePropertiesFilename);
+                buffered = null;
+                if (in == null) {
+                    throw new IllegalArgumentException(
+                        "Icon override properties file not found: " + overridePropertiesFilename);
+                }
+
+                try {
+                    buffered = new BufferedInputStream(in);
+                    iconProperties.load(buffered);
+                } catch (IOException ioe) {
+                    log.log(Level.SEVERE, "Cannot read: " + overridePropertiesFilename, ioe);
+                } finally {
+                    if (buffered != null) {
+                        try {
+                            buffered.close();
+                        } catch (Exception e) {
+
+                        }
+                    }
+                }
+            }
+            
+            if (overridePropertiesFilename != null) {
+                in = Thread.currentThread().getContextClassLoader()
+                    .getResourceAsStream(overridePropertiesFilename);
+                buffered = null;
+                if (in == null) {
+                    throw new IllegalArgumentException(
+                        "Icon override properties file not found: " + overridePropertiesFilename);
+                }
+
+                try {
+                    buffered = new BufferedInputStream(in);
+                    iconProperties.load(buffered);
+                } catch (IOException ioe) {
+                    log.log(Level.SEVERE, "Cannot read: " + overridePropertiesFilename, ioe);
+                } finally {
+                    if (buffered != null) {
+                        try {
+                            buffered.close();
+                        } catch (Exception e) {
+
+                        }
                     }
                 }
             }
@@ -306,14 +380,30 @@ public class Icons {
      * relationship more simple and direct.
      * @return the icon
      */
-    @Deprecated
-    public static Icon getIconById(String id) {
+
+    public Icon getIconById(String id) {
         Properties prop = getIconProperties();
         String iconId = prop.getProperty(id);
         if (iconId == null) {
             return null;
         }
         return getIcon(prop.getProperty(id));
+    }
+
+    /**
+     * Returns the image for the specified id
+     * 
+     * @param id
+     *            the image id
+     * @return the image
+     */
+    public final Image getImageById(String id) {
+        Properties prop = getIconProperties();
+        String iconId = prop.getProperty(id);
+        if (iconId == null) {
+            return null;
+        }
+        return getImage((String) prop.get(id));
     }
 
     // Open helper

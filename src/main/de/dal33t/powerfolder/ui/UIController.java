@@ -364,11 +364,10 @@ public class UIController extends PFComponent {
     }
 
     private void initalizeSystray() {
-        try {
-            defaultIcon = ImageIO.read(Util.getResource(Icons.ST_POWERFOLDER,
-                "icons"));
-        } catch (IOException e) {
-            logSevere("IOException", e);
+        defaultIcon = Icons.getDefault().SYSTRAY_DEFAULT_ICON;
+        if (defaultIcon == null) {
+            logSevere("Unable to retrieve default system tray icon. "
+                + "System tray disabled");
             OSUtil.disableSystray();
             return;
         }
@@ -828,26 +827,17 @@ public class UIController extends PFComponent {
      * 
      * @param iconName
      */
-    public synchronized void setTrayIcon(String iconName) {
+    public synchronized void setTrayIcon(Image icon) {
         if (!OSUtil.isSystraySupported()) {
             return;
         }
-        if (StringUtils.isBlank(iconName)) {
-            if (sysTrayMenu != null) {
-                sysTrayMenu.setImage(defaultIcon);
-            }
+        if (sysTrayMenu == null) {
+            return;
+        }
+        if (icon == null) {
+            sysTrayMenu.setImage(defaultIcon);
         } else {
-            // Install Icon if nessesary from jar
-            Image currentIcon;
-            try {
-                currentIcon = ImageIO.read(Util.getResource(iconName, "icons"));
-            } catch (IOException e) {
-                logSevere("IOException", e);
-                return;
-            }
-            if (sysTrayMenu != null) {
-                sysTrayMenu.setImage(currentIcon);
-            }
+            sysTrayMenu.setImage(icon);
         }
     }
 
