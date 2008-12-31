@@ -19,6 +19,16 @@
  */
 package de.dal33t.powerfolder.ui.home;
 
+import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.util.Date;
+
+import javax.swing.AbstractAction;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+
 import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -28,20 +38,30 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.event.*;
+import de.dal33t.powerfolder.event.AskForFriendshipReceivedEvent;
+import de.dal33t.powerfolder.event.AskForFriendshipReceivedListener;
+import de.dal33t.powerfolder.event.FolderEvent;
+import de.dal33t.powerfolder.event.FolderListener;
+import de.dal33t.powerfolder.event.FolderRepositoryEvent;
+import de.dal33t.powerfolder.event.FolderRepositoryListener;
+import de.dal33t.powerfolder.event.InvitationReceivedEvent;
+import de.dal33t.powerfolder.event.InvitationReceivedListener;
+import de.dal33t.powerfolder.event.NodeManagerModelEvent;
+import de.dal33t.powerfolder.event.NodeManagerModelListener;
+import de.dal33t.powerfolder.event.SynchronizationStatsEvent;
+import de.dal33t.powerfolder.event.SynchronizationStatsListener;
+import de.dal33t.powerfolder.event.TransferManagerEvent;
+import de.dal33t.powerfolder.event.TransferManagerListener;
 import de.dal33t.powerfolder.os.OnlineStorageSubscriptionType;
-import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.ui.widget.ActionLabel;
+import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.UIUtil;
-
-import javax.swing.*;
-import java.awt.*;
-import java.util.Date;
 
 /**
  * Class for the Home tab in the main tab area of the UI.
@@ -163,11 +183,15 @@ public class HomeTab extends PFUIComponent {
                 Translation.getTranslation("home_tab.files_uploaded"), null,
                 false, true, getApplicationModel().getActionModel()
                 .getOpenUploadsInformationAction());
-        computersLine = new HomeTabLine(getController(),
-                Translation.getTranslation("home_tab.computers"),
-                Translation.getTranslation("home_tab.no_computers"),
-                false, true);
-        onlineStorageAccountLabel = new JLabel();
+        computersLine = new HomeTabLine(getController(), Translation
+            .getTranslation("home_tab.computers"), Translation
+            .getTranslation("home_tab.no_computers"), false, true);
+        onlineStorageAccountLabel = new ActionLabel(new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                PFWizard.openLoginWebServiceWizard(getController(),
+                    getController().getOSClient());
+            }
+        });
         onlineStorageSection = new OnlineStorageSection(getController());
         onlineStorageLogLabel = new ActionLabel(getUIController()
                     .getApplicationModel().getActionModel()
@@ -360,21 +384,26 @@ public class HomeTab extends PFUIComponent {
      */
     private void updateOnlineStorageDetails() {
         boolean active = false;
-        if (client == null || client.getUsername() == null ||
-                client.getUsername().trim().length() == 0) {
-            onlineStorageAccountLabel.setText(Translation.getTranslation(
-                    "home_tab.online_storage.not_setup"));
+        if (client == null || client.getUsername() == null
+            || client.getUsername().trim().length() == 0)
+        {
+            onlineStorageAccountLabel.setText(Translation
+                .getTranslation("home_tab.online_storage.not_setup"));
             onlineStorageLogLabel.configureFromAction(getUIController()
                     .getApplicationModel().getActionModel()
                     .getOnlineStorageLogInAction());
         } else if (client.isConnected()) {
-            if (client.getAccount().getOSSubscription().isDisabled()) {
+            if (!client.isLastLoginOK()) {
                 onlineStorageAccountLabel.setText(Translation.getTranslation(
-                        "home_tab.online_storage.account_disabled",
-                        client.getUsername()));
+                    "home_tab.online_storage.account_not_logged_in", client
+                        .getUsername()));
+            } else if (client.getAccount().getOSSubscription().isDisabled()) {
+                onlineStorageAccountLabel.setText(Translation.getTranslation(
+                    "home_tab.online_storage.account_disabled", client
+                        .getUsername()));
             } else {
                 onlineStorageAccountLabel.setText(Translation.getTranslation(
-                        "home_tab.online_storage.account", client.getUsername()));
+                    "home_tab.online_storage.account", client.getUsername()));
                 active = true;
             }
             onlineStorageLogLabel.configureFromAction(getUIController()
@@ -382,15 +411,14 @@ public class HomeTab extends PFUIComponent {
                     .getOnlineStorageLogOutAction());
         } else {
             onlineStorageAccountLabel.setText(Translation.getTranslation(
-                    "home_tab.online_storage.account_connecting",
-                    client.getUsername()));
+                "home_tab.online_storage.account_connecting", client
+                    .getUsername()));
             onlineStorageLogLabel.configureFromAction(getUIController()
                     .getApplicationModel().getActionModel()
                     .getOnlineStorageLogOutAction());
         }
         if (active) {
-            OnlineStorageSubscriptionType storageSubscriptionType =
-                    client.getAccount().getOSSubscription().getType();
+            OnlineStorageSubscriptionType storageSubscriptionType = client.getAccount().getOSSubscription().getType();
             long totalStorage = storageSubscriptionType.getStorageSize();
             long spaceUsed = client.getAccountDetails().getSpaceUsed();
 
