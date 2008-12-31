@@ -223,8 +223,9 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
             }
         });
         myDnsLabel = new LinkLabel(Translation
-            .getTranslation("preferences.dialog.dyn_dns"),
-            "http://www.powerfolder.com/node/guide_supernode");
+            .getTranslation("preferences.dialog.dyndns"),
+            ConfigurationEntry.PROVIDER_WIKI_URL.getValue(getController())
+                + "/DynDNS");
 
         if (ConfigurationEntry.DYNDNS_USERNAME.getValue(getController()) == null)
         {

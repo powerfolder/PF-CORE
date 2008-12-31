@@ -404,8 +404,10 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         for (Locale locale1 : locales) {
             chooser.addItem(locale1);
         }
-        // Set current locale as selected
-        chooser.setSelectedItem(Translation.getResourceBundle().getLocale());
+        if (Translation.isCustomLocale()) {
+            chooser.addItem(Translation.getActiveLocale());
+            chooser.setEnabled(false);
+        }
 
         // Add renderer
         chooser.setRenderer(new DefaultListCellRenderer() {
@@ -427,6 +429,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
         // Initialize chooser with the active locale.
         chooser.setSelectedItem(Translation.getActiveLocale());
+
         return chooser;
     }
 
