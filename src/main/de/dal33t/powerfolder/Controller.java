@@ -27,6 +27,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.security.Security;
@@ -37,6 +38,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
@@ -72,6 +74,7 @@ import de.dal33t.powerfolder.net.ReconnectManager;
 import de.dal33t.powerfolder.plugin.PluginManager;
 import de.dal33t.powerfolder.security.SecurityManager;
 import de.dal33t.powerfolder.transfer.TransferManager;
+import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.FileUtils;
@@ -142,6 +145,11 @@ public class Controller extends PFComponent {
      * The preferences
      */
     private Preferences preferences;
+    
+    /**
+     * The branding setup id. or null if using default
+     */
+    private String brandingId;
 
     /** Program start time */
     private Date startTime;
@@ -407,6 +415,9 @@ public class Controller extends PFComponent {
 
         // Create os client
         osClient = new ServerClient(this);
+
+        // Initialize branding/preconfiguration of the client
+        //initClientBranding("online_duplicate");
 
         if (isUIEnabled()) {
             uiController = new UIController(this);
@@ -1255,7 +1266,7 @@ public class Controller extends PFComponent {
             logFine("Shutting down UI");
             uiController.shutdown();
         }
-        
+
         if ((portWasOpened || ConfigurationEntry.NET_FIREWALL_OPENPORT
             .getValueBoolean(this))
             && connectionListener != null)
@@ -1425,6 +1436,13 @@ public class Controller extends PFComponent {
      */
     public Preferences getPreferences() {
         return preferences;
+    }
+    
+    /**
+     * @return the branding id of this client. or null if default
+     */
+    public String getBrandingId() {
+        return brandingId;
     }
 
     /**
@@ -1912,9 +1930,48 @@ public class Controller extends PFComponent {
         exit(1);
     }
     
-    private void initOnlineDuplicate() {
-        logWarning("Starting branded distribution: OnlineDuplicate");
+    private void initClientBranding(String brandingId) {
+        this.brandingId = brandingId;
+
+        logInfo("Starting branded distribution: " + brandingId);
         Feature.SERVER_INTERNAL_FUNCTIONS.disable();
+
+        // Use icons
+        Icons.loadOverrideFile("branding/" + brandingId + "/Icons.properties");
+
+        // Load texts
+        Locale l = new Locale("en", brandingId);
+        Translation.saveLocalSetting(l);
+        Translation.resetResourceBundle();
+
+        InputStream in = Thread.currentThread().getContextClassLoader()
+            .getResourceAsStream("branding/" + brandingId + "/Client.config");
+        if (in == null) {
+            logSevere("Branding/Preconfiguration file not found for "
+                + brandingId);
+            return;
+        }
+        try {
+            Properties preConfig = new Properties();
+            preConfig.load(in);
+            for (Object obj : preConfig.keySet()) {
+                String key = (String) obj;
+                String value = preConfig.getProperty(key);
+                if (!config.containsKey(key)) {
+                    config.setProperty(key, value);
+                    logFine("Preconfigured " + key + "=" + value);
+                }
+            }
+            logFine("Preconfigs found " + preConfig.size());
+        } catch (Exception e) {
+            logSevere("Unable to load Branding/Preconfiguration file "
+                + brandingId, e);
+        } finally {
+            try {
+                in.close();
+            } catch (IOException e) {
+            }
+        }
     }
 
     /**

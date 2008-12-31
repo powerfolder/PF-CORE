@@ -60,6 +60,12 @@ public enum ConfigurationEntry {
     PROVIDER_URL("provider.url.main", "http://www.powerfolder.com"),
 
     /**
+     * URL of the Online Storage features
+     */
+    PROVIDER_ABOUT_URL("provider.url.about",
+        "http://www.powerfolder.com/online_storage_features.html"),
+
+    /**
      * Quickstart guides to PowerFolder
      */
     PROVIDER_QUICKSTART_URL("provider.url.quickstart",
