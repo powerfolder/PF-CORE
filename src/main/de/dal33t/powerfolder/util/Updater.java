@@ -283,6 +283,12 @@ public class Updater extends Thread {
             }
 
             if (latestVersion != null) {
+                if (latestVersion.length() > 50) {
+                    log
+                        .severe("Received illegal response while checking latest available version from "
+                            + settings.versionCheckURL);
+                    return null;
+                }
                 log.info("Latest available version: " + latestVersion);
 
                 if (Util.compareVersions(latestVersion,
@@ -295,6 +301,8 @@ public class Updater extends Thread {
             }
 
         } catch (IOException e) {
+            log.warning("Unable to retrieve latest available version for: "
+                + settings.versionCheckURL);
             log.log(Level.FINER, "IOException", e);
         }
         return null;
@@ -308,6 +316,7 @@ public class Updater extends Thread {
     protected URL getReleaseExeURL() {
         URL releaseExeURL = null;
         try {
+            if (settings.downloadLinkInfoURL != null) {
             URL url = new URL(settings.downloadLinkInfoURL);
             InputStream in = (InputStream) url.getContent();
             StringBuilder b = new StringBuilder();
@@ -319,6 +328,7 @@ public class Updater extends Thread {
             releaseExeURL = new URL(b.toString());
             log.info("Latest available version download: "
                 + releaseExeURL.toExternalForm());
+            }
         } catch (MalformedURLException e) {
             log.log(Level.FINER, "MalformedURLException", e);
         } catch (IOException e) {

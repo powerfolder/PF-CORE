@@ -563,16 +563,26 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         addTargetDirectory(userHome, USER_DIR_VIDEOS, Translation
             .getTranslation("user.dir.videos"), false);
         if (OSUtil.isWindowsSystem()) {
-            File appData = new File(System.getenv("APPDATA"));
-            addTargetDirectory(appData, APPS_DIR_FIREFOX, Translation
-                .getTranslation("apps.dir.firefox"), false);
-            addTargetDirectory(appData, APPS_DIR_SUNBIRD, Translation
-                .getTranslation("apps.dir.sunbird"), false);
-            addTargetDirectory(appData, APPS_DIR_THUNDERBIRD, Translation
-                .getTranslation("apps.dir.thunderbird"), false);
-            if (appsDirOutlook != null) {
-                addTargetDirectory(appData, appsDirOutlook, Translation
-                    .getTranslation("apps.dir.outlook"), false);
+            String appDataname = System.getenv("APPDATA");
+            if (appDataname == null && WinUtils.getInstance() != null) {
+                appDataname = WinUtils.getInstance().getSystemFolderPath(
+                    WinUtils.CSIDL_APP_DATA, false);
+            }
+            if (appDataname != null) {
+                File appData = new File(appDataname);
+                addTargetDirectory(appData, APPS_DIR_FIREFOX, Translation
+                    .getTranslation("apps.dir.firefox"), false);
+                addTargetDirectory(appData, APPS_DIR_SUNBIRD, Translation
+                    .getTranslation("apps.dir.sunbird"), false);
+                addTargetDirectory(appData, APPS_DIR_THUNDERBIRD, Translation
+                    .getTranslation("apps.dir.thunderbird"), false);
+                if (appsDirOutlook != null) {
+                    addTargetDirectory(appData, appsDirOutlook, Translation
+                        .getTranslation("apps.dir.outlook"), false);
+                }
+            } else {
+                Logger.getAnonymousLogger().severe(
+                    "Application data directory not found.");
             }
         } else if (OSUtil.isLinux()) {
             File appData = new File("/etc");

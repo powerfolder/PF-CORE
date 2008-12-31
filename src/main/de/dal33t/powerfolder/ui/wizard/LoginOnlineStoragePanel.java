@@ -43,6 +43,7 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.PreferencesEntry;
@@ -164,7 +165,7 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
 
             LinkLabel link = new LinkLabel(Translation
                 .getTranslation("wizard.webservice.learn_more"),
-                "http://www.powerfolder.com/online_storage_features.html");
+                ConfigurationEntry.PROVIDER_ABOUT_URL.getValue(getController()));
             builder.add(link, cc.xyw(1, 11, 4));
         }
 

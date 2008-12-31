@@ -19,6 +19,7 @@
  */
 package de.dal33t.powerfolder.ui.webservice;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.util.BrowserLauncher;
@@ -39,8 +40,8 @@ public class AboutWebServiceAction extends BaseAction {
 
     public void actionPerformed(ActionEvent e) {
         try {
-            BrowserLauncher
-                .openURL("http://www.powerfolder.com/online_storage_features.html");
+            BrowserLauncher.openURL(ConfigurationEntry.PROVIDER_ABOUT_URL
+                .getValue(getController()));
         } catch (IOException e1) {
             log.log(Level.SEVERE, "IOException", e1);
         }

@@ -103,6 +103,13 @@ public class Translation {
     }
 
     /**
+     * @return true if a custom (non-standard) locale is currently active.
+     */
+    public static boolean isCustomLocale() {
+        return !Arrays.asList(getSupportedLocales()).contains(getActiveLocale());
+    }
+
+    /**
      * Saves/Overrides the locale setting. Next time the resource bundle is
      * initalized, it tries to gain bundle with that locale. Otherwise fallback
      * to default locale
@@ -156,7 +163,7 @@ public class Translation {
                 if (confLangStr != null) {
                     if (confLangStr.equals("en_GB")) {
                         confLang = Locale.UK;
-                    } else if (confLangStr.startsWith("en")) {
+                    } else if (confLangStr.equals("en")) {
                         // Normal (USA) English
                         confLang = new Locale("");
                     }

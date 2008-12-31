@@ -19,6 +19,16 @@
 */
 package de.dal33t.powerfolder.ui.render;
 
+import java.awt.Image;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.Map;
+import java.util.TimerTask;
+import java.util.concurrent.ConcurrentHashMap;
+
+import javax.swing.Icon;
+import javax.swing.SwingUtilities;
+
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFUIComponent;
@@ -28,14 +38,6 @@ import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.ui.chat.ChatModel;
 import de.dal33t.powerfolder.ui.chat.ChatModelEvent;
 import de.dal33t.powerfolder.ui.chat.ChatModelListener;
-
-import javax.swing.*;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
-import java.util.Map;
-import java.util.TimerTask;
-import java.util.concurrent.ConcurrentHashMap;
-//import de.dal33t.powerfolder.ui.navigation.NavTreeModel;
 
 /**
  * Manages the Blinking icon in the tree and in the Systray. First add a member
@@ -50,7 +52,7 @@ public class BlinkManager extends PFUIComponent {
     /** one second blink time * */
     private static final long ICON_BLINK_TIME = 300;
 
-    private String trayBlinkIcon;
+    private Image trayBlinkIcon;
 
     /** key = member, value = icon */
     private Map<Member, Icon> blinkingMembers = new ConcurrentHashMap<Member, Icon>();
@@ -94,10 +96,10 @@ public class BlinkManager extends PFUIComponent {
      * @param icon
      *            The icon to use (in combination with the default icon)
      */
-    public void addBlinking(Member member, Icon icon) {
+    public void addChatBlinking(Member member, Icon icon) {
         if (!member.isMySelf()) {
             blinkingMembers.put(member, icon);
-            updateTrayBlinkingIcon();
+            trayBlinkIcon = Icons.SYSTRAY_CHAT_ICON;
         }
     }
 
@@ -107,10 +109,13 @@ public class BlinkManager extends PFUIComponent {
      * @param member
      *            The member that should not blink anymore
      */
-    public void removeBlinkMember(Member member) {
+    public void removeBlinking(Member member) {
         update();
         if (blinkingMembers.containsKey(member)) {
             blinkingMembers.remove(member);
+            if (blinkingFolders.isEmpty() && blinkingMembers.isEmpty()) {
+                trayBlinkIcon = null;
+            }
             update();
         }
     }
@@ -140,9 +145,9 @@ public class BlinkManager extends PFUIComponent {
      * @param icon
      *            The icon to use (in combination with the default icon)
      */
-    public void addBlinking(Folder folder, Icon icon) {
+    public void addChatBlinking(Folder folder, Icon icon) {
         blinkingFolders.put(folder, icon);
-        updateTrayBlinkingIcon();
+        trayBlinkIcon = Icons.SYSTRAY_CHAT_ICON;
     }
 
     /**
@@ -155,6 +160,9 @@ public class BlinkManager extends PFUIComponent {
         update();
         if (blinkingFolders.containsKey(folder)) {
             blinkingFolders.remove(folder);
+            if (blinkingFolders.isEmpty() && blinkingMembers.isEmpty()) {
+                trayBlinkIcon = null;
+            }
             update();
         }
     }
@@ -191,20 +199,8 @@ public class BlinkManager extends PFUIComponent {
      * 
      * @param icon
      */
-    public void setBlinkingTrayIcon(String icon) {
+    public void setBlinkingTrayIcon(Image icon) {
         this.trayBlinkIcon = icon;
-    }
-
-    /**
-     * Updates the tray blink icon by checking the number of blinking folder and
-     * nodes.
-     */
-    private void updateTrayBlinkingIcon() {
-        if (blinkingMembers.isEmpty() && blinkingFolders.isEmpty()) {
-            trayBlinkIcon = null;
-        } else {
-            trayBlinkIcon = Icons.ST_CHAT;
-        }
     }
 
     /**
@@ -309,7 +305,7 @@ public class BlinkManager extends PFUIComponent {
                 if (!chatMessageMember.equals(currentChatPartner)
                     && !chatMessageMember.isMySelf())
                 {
-                    addBlinking(chatMessageMember, Icons.CHAT);
+                    addChatBlinking(chatMessageMember, Icons.CHAT);
                 }
             } else if (event.getSource() instanceof Folder) {
                 Folder chatFolder = (Folder) event.getSource();
@@ -327,7 +323,7 @@ public class BlinkManager extends PFUIComponent {
 //                    }
 //                }
                 if (!chatFolder.equals(currentChatFolder)) {
-                    getUIController().getBlinkManager().addBlinking(chatFolder,
+                    getUIController().getBlinkManager().addChatBlinking(chatFolder,
                         Icons.CHAT);
                 }
             }

@@ -23,6 +23,8 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
@@ -79,13 +81,13 @@ public class FolderOnlineStoragePanel extends PFWizardPanel {
                     cc.xyw(1, 1, 4));
         }
 
-        builder.addLabel(Translation.getTranslation("general.folder"),
-                cc.xy(1, 3));
+        builder.addLabel(Translation.getTranslation("general.folder"), cc.xy(1,
+            3));
         builder.add(folderLabel, cc.xy(3, 3));
 
         LinkLabel link = new LinkLabel(Translation
-                .getTranslation("wizard.webservice.learn_more"),
-                "http://www.powerfolder.com/online_storage_features.html");
+            .getTranslation("wizard.webservice.learn_more"),
+            ConfigurationEntry.PROVIDER_ABOUT_URL.getValue(getController()));
         // FIXME This is a hack because of "Fusch!"
         link.setBorder(Borders.createEmptyBorder("0, 1px, 0, 0"));
         builder.add(link, cc.xyw(1, 5, 3));

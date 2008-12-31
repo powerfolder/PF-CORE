@@ -19,30 +19,61 @@
  */
 package de.dal33t.powerfolder.ui.webservice;
 
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.ui.action.BaseAction;
-import de.dal33t.powerfolder.util.BrowserLauncher;
-
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Feature;
+import de.dal33t.powerfolder.clientserver.ServerClientEvent;
+import de.dal33t.powerfolder.clientserver.ServerClientListener;
+import de.dal33t.powerfolder.ui.action.BaseAction;
+import de.dal33t.powerfolder.util.BrowserLauncher;
+
 
 public class OpenServerWebUrlInBrowserAction extends BaseAction {
 
-    private static final Logger log = Logger.getLogger(OpenServerWebUrlInBrowserAction.class.getName());
-
     protected OpenServerWebUrlInBrowserAction(Controller controller) {
-        super("open_web_service", controller);
+        super("openwebservice", controller);
+        updateState();
+        getController().getOSClient().addListener(new MyServerClientListener());
     }
 
     public void actionPerformed(ActionEvent e) {
         try {
             BrowserLauncher.openURL(getController().getOSClient().getWebURL());
         } catch (IOException e1) {
-            log.log(Level.SEVERE, "IOException", e1);
+            Logger.getAnonymousLogger().log(Level.SEVERE, e.toString(), e);
         }
     }
 
+    private void updateState() {
+        setEnabled(getController().getOSClient().hasWebURL()
+            && Feature.SERVER_INTERNAL_FUNCTIONS.isEnabled());
+    }
+
+    private class MyServerClientListener implements ServerClientListener {
+
+        public boolean fireInEventDispatchThread() {
+            return true;
+        }
+
+        public void accountUpdated(ServerClientEvent event) {
+            updateState();
+        }
+
+        public void login(ServerClientEvent event) {
+            updateState();
+        }
+
+        public void serverConnected(ServerClientEvent event) {
+            updateState();
+        }
+
+        public void serverDisconnected(ServerClientEvent event) {
+            updateState();
+        }
+
+    }
 }
