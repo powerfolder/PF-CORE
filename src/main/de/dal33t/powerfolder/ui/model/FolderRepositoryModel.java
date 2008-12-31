@@ -274,7 +274,7 @@ public class FolderRepositoryModel extends PFUIComponent {
             boolean maintenance = folder.equals(getController()
                 .getFolderRepository().getCurrentlyMaintainingFolder());
             if (folder.isTransferring() || folder.isScanning() || maintenance) {
-                getUIController().getBlinkManager().addBlinking(folder,
+                getUIController().getBlinkManager().addChatBlinking(folder,
                     Icons.FOLDER);
             } else {
                 getUIController().getBlinkManager().removeBlinking(folder);

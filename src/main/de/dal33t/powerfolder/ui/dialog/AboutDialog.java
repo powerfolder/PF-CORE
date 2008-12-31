@@ -242,15 +242,15 @@ public class AboutDialog extends PFUIComponent {
      * @return the link to the
      */
     private JLabel buildAboutAnimation() {
-        if (Icons.ABOUT_ANIMATION instanceof ImageIcon) {
-            ((ImageIcon) Icons.ABOUT_ANIMATION).getImage().flush();
-            ((ImageIcon) Icons.ABOUT_ANIMATION).getImage()
+        if (Icons.getDefault().ABOUT_ANIMATION instanceof ImageIcon) {
+            ((ImageIcon) Icons.getDefault().ABOUT_ANIMATION).getImage().flush();
+            ((ImageIcon) Icons.getDefault().ABOUT_ANIMATION).getImage()
                 .setAccelerationPriority(0.2F);
 
         }
-        JLabel logo = new JLabel(Icons.ABOUT_ANIMATION);
-        logo.setSize(new Dimension(Icons.ABOUT_ANIMATION.getIconWidth(),
-            Icons.ABOUT_ANIMATION.getIconHeight()));
+        JLabel logo = new JLabel(Icons.getDefault().ABOUT_ANIMATION);
+        logo.setSize(new Dimension(Icons.getDefault().ABOUT_ANIMATION.getIconWidth(),
+            Icons.getDefault().ABOUT_ANIMATION.getIconHeight()));
         logo.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() >= 3) {

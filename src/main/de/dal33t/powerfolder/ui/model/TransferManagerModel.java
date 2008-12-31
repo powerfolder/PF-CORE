@@ -365,7 +365,7 @@ public class TransferManagerModel extends PFUIComponent {
                 return;
             }
             if (folder.isTransferring()) {
-                getUIController().getBlinkManager().addBlinking(folder,
+                getUIController().getBlinkManager().addChatBlinking(folder,
                     Icons.FOLDER);
             } else {
                 getUIController().getBlinkManager().removeBlinking(folder);

@@ -111,7 +111,7 @@ public class InformationFrame extends PFUIComponent {
      */
     private void initialize() {
         uiComponent = new JFrame();
-        uiComponent.setIconImage(Icons.POWERFOLDER_IMAGE);
+        uiComponent.setIconImage(Icons.getDefault().POWERFOLDER_IMAGE);
     }
 
     /**
