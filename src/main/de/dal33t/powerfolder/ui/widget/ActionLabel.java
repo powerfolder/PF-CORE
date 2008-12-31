@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.ui.widget;
 
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.ui.ColorUtil;
 
 import javax.swing.*;
 import java.awt.*;
@@ -31,11 +32,14 @@ import java.awt.event.*;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.4 $
  */
-public class ActionLabel extends AntialiasedLabel {
+public class ActionLabel extends JLabel {
+
+    private volatile boolean enabled = true;
+    private String text;
 
     public ActionLabel(final Action action) {
-        super("<html><font color=\"#00000\"><a href=\"#\">"
-            + action.getValue(Action.NAME) + "</a></font></html>");
+        text = (String) action.getValue(Action.NAME);
+        displayText();
         String toolTips = (String) action.getValue(Action.SHORT_DESCRIPTION);
         if (toolTips != null && toolTips.length() > 0) {
             setToolTipText(toolTips);
@@ -43,16 +47,18 @@ public class ActionLabel extends AntialiasedLabel {
         Reject.ifNull(action, "Action listener is null");
         addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
-                action.actionPerformed(new ActionEvent(e.getSource(), 0,
-                    "clicked"));
+                if (enabled) {
+                    action.actionPerformed(new ActionEvent(e.getSource(), 0,
+                        "clicked"));
+                }
             }
         });
         setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
     }
 
     public void configureFromAction(final Action action) {
-        setText("<html><font color=\"#00000\"><a href=\"#\">"
-            + action.getValue(Action.NAME) + "</a></font></html>");
+        text = (String) action.getValue(Action.NAME);
+        displayText();
         String toolTips = (String) action.getValue(Action.SHORT_DESCRIPTION);
         if (toolTips != null && toolTips.length() > 0) {
             setToolTipText(toolTips);
@@ -63,14 +69,45 @@ public class ActionLabel extends AntialiasedLabel {
         }
         addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
-                action.actionPerformed(new ActionEvent(e.getSource(), 0,
-                    "clicked"));
+                if (enabled) {
+                    action.actionPerformed(new ActionEvent(e.getSource(), 0,
+                        "clicked"));
+                }
             }
         });
     }
 
     public void setText(String text) {
-        super.setText("<html><font color=\"#00000\"><a href=\"#\">" + text
-            + "</a></font></html>");
+        this.text = text;
+        displayText();
     }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+        displayText();
+    }
+
+    public void displayText() {
+        if (enabled) {
+            // @todo not picking up Synthetica colors...?
+            setForeground(SystemColor.textText);
+            updateUI();
+            Object object = getClientProperty("Synthetica.menu.toplevel.textColor");
+            Color color;
+            if (object != null && object instanceof Color) {
+                color = (Color) object;
+            } else { 
+                color = getForeground();
+            }
+            String rgb = ColorUtil.getRgbForColor(color);
+            setForeground(SystemColor.textText);
+            super.setText("<html><font color=\"" + rgb + "\"><a href=\"#\">" + text
+                + "</a></font></html>");
+        } else {
+            setForeground(SystemColor.textInactiveText);
+            super.setText(text);
+        }
+    }
+
+
 }
