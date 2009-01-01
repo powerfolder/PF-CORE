@@ -121,26 +121,28 @@ public class Wizard extends JPanel implements ActionListener {
      */
     public void setI18NMap(Map<String, String> map) {
         if (!map.isEmpty()) {
+
             nextButton.setText(map.get(NEXT_I18N));
             nextButton.setToolTipText(map.get(NEXT_I18N_DESCRIPTION));
             nextButton.setIcon(Icons.ARROW_RIGHT);
+            nextButton.setActionCommand("Next >");
 
             backButton.setText(map.get(BACK_I18N));
             backButton.setToolTipText(map.get(BACK_I18N_DESCRIPTION));
             backButton.setIcon(Icons.ARROW_LEFT);
-
             backButton.setActionCommand("< Back");
-            nextButton.setActionCommand("Next >");
+
             finishButton.setActionCommand("Finish");
-            cancelButton.setActionCommand("Cancel");
-            helpButton.setActionCommand("Help");
+            finishButton.setToolTipText(map.get(FINISH_I18N_DESCRIPTION));
 
             cancelButton.setText(map.get(CANCEL_I18N));
             cancelButton.setToolTipText(map.get(CANCEL_I18N_DESCRIPTION));
+            cancelButton.setActionCommand("Cancel");
 
             helpButton.setText(map.get(HELP_I18N));
             helpButton.setToolTipText(map.get(HELP_I18N_DESCRIPTION));
             helpButton.setIcon(Icons.QUESTION);
+            helpButton.setActionCommand("Help");
         }
     }
 
