@@ -31,13 +31,9 @@ import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.dialog.SyncFolderPanel;
-import de.dal33t.powerfolder.util.Reject;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Prepares core data as (swing) ui models. e.g. <code>TreeModel</code>
@@ -52,9 +48,6 @@ public class FolderRepositoryModel extends PFUIComponent {
     private FoldersTableModel myFoldersTableModel;
 
     private final ValueModel hidePreviewsVM;
-
-    private Map<Folder, FolderModel> folderModelMap = Collections
-        .synchronizedMap(new HashMap<Folder, FolderModel>());
 
     public FolderRepositoryModel(Controller controller) {
         super(controller);
@@ -71,7 +64,6 @@ public class FolderRepositoryModel extends PFUIComponent {
                     getController(), Boolean.valueOf(
                         (Boolean) evt.getNewValue()).toString());
                 getController().saveConfig();
-                folderStructureChanged();
                 getMyFoldersTableModel().folderStructureChanged();
             }
         });
@@ -89,15 +81,6 @@ public class FolderRepositoryModel extends PFUIComponent {
      * of the repo model. Adds all folder models as childs
      */
     public void initalize() {
-        // Add inital model state
-        Folder[] folders = getController().getFolderRepository().getFolders();
-        for (Folder folder : folders) {
-            if (!hideFolder(folder)) {
-                FolderModel folderModel = new FolderModel(getController(),
-                    this, folder);
-                folderModelMap.put(folder, folderModel);
-            }
-        }
 
         Runnable runner = new Runnable() {
             public void run() {
@@ -125,15 +108,6 @@ public class FolderRepositoryModel extends PFUIComponent {
     }
 
     // Helper methods *********************************************************
-
-    /**
-     * @param folder
-     * @return a folder model
-     */
-    public FolderModel locateFolderModel(Folder folder) {
-        Reject.ifNull(folder, "Folder is required");
-        return folderModelMap.get(folder);
-    }
 
     /**
      * Expands the folder repository, only done once
@@ -168,27 +142,6 @@ public class FolderRepositoryModel extends PFUIComponent {
         }
     }
 
-    /**
-     * Add or remove folder models from the tree depending on the folder preview
-     * state.
-     */
-    public void folderStructureChanged() {
-        Folder[] folders = getController().getFolderRepository().getFolders();
-        for (Folder folder : folders) {
-            FolderModel folderModel = locateFolderModel(folder);
-            if (folderModel != null) {
-            }
-        }
-    }
-
-    /** update Folder treenode for a folder */
-    void updateFolderTreeNode(FolderModel folderModel) {
-        // Update tree on that folder
-        if (isFiner()) {
-            logFiner("Updating files of folder " + folderModel.getFolder());
-        }
-    }
-
     // Internal code **********************************************************
 
     /**
@@ -205,18 +158,18 @@ public class FolderRepositoryModel extends PFUIComponent {
         }
 
         public void maintenanceStarted(FolderRepositoryEvent e) {
-            updateFolderTreeNode(e);
+            updateBlinker(e);
         }
 
         public void maintenanceFinished(FolderRepositoryEvent e) {
-            updateFolderTreeNode(e);
+            updateBlinker(e);
         }
 
         public boolean fireInEventDispatchThread() {
             return true;
         }
 
-        private void updateFolderTreeNode(FolderRepositoryEvent event) {
+        private void updateBlinker(FolderRepositoryEvent event) {
             Folder folder = event.getFolder();
             if (folder == null) {
                 return;
@@ -231,17 +184,4 @@ public class FolderRepositoryModel extends PFUIComponent {
             }
         }
     }
-
-    /**
-     * Only show folders if not preview or show preview config is true.
-     * 
-     * @param folder
-     * @return
-     */
-    private boolean hideFolder(Folder folder) {
-        return folder.isPreviewOnly()
-            && ConfigurationEntry.HIDE_PREVIEW_FOLDERS
-                .getValueBoolean(getController());
-    }
-
 }
