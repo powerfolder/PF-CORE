@@ -33,6 +33,7 @@ import javax.swing.*;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
+import javax.swing.tree.TreePath;
 import static javax.swing.tree.TreeSelectionModel.SINGLE_TREE_SELECTION;
 import java.awt.*;
 
@@ -91,9 +92,13 @@ public class FilesTreePanel extends PFUIComponent implements DirectoryFilterList
 
     public void adviseOfChange(FilteredDirectoryEvent e) {
         directoryTreeModel.setTree(e.getModel());
+        if (e.isFolderChanged()) {
+            // New folder - select root so table has something to display
+            tree.getSelectionModel().setSelectionPath(new TreePath(directoryTreeModel.getRoot()));
+        }
     }
 
-    private class MyTreeCellRenderer extends DefaultTreeCellRenderer {
+    private static class MyTreeCellRenderer extends DefaultTreeCellRenderer {
         public Component getTreeCellRendererComponent(JTree tree, Object value,
                                                       boolean selected,
                                                       boolean expanded,
