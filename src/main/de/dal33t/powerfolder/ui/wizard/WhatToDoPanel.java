@@ -74,7 +74,7 @@ public class WhatToDoPanel extends PFWizardPanel {
         return decision.getValue() != null;
     }
 
-    public boolean validateNext(List list) {
+    public boolean validateNext(List<WizardPanel> list) {
         return true;
     }
 
@@ -325,7 +325,7 @@ public class WhatToDoPanel extends PFWizardPanel {
 
         documentationLink = Help.createQuickstartGuideLabel(getController(),
             Translation
-                .getTranslation("wizard.whattodo.openonlinedocumentation"));
+                .getTranslation("wizard.what_to_do.open_online_documentation"));
         SimpleComponentFactory.setFontSize(documentationLink,
             PFWizard.MED_FONT_SIZE);
     }
