@@ -38,6 +38,7 @@ import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
+import de.dal33t.powerfolder.ui.widget.LinkLabel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
@@ -78,6 +79,7 @@ public class ExpandableFolderView extends PFUIComponent {
     private JLabel filesAvailableLabel;
     private JPanel upperPanel;
     private JLabel jLabel;
+    private LinkLabel nameActionLabel;
 
     private MyFolderListener myFolderListener;
     private MyFolderMembershipListener myFolderMembershipListener;
@@ -163,7 +165,7 @@ public class ExpandableFolderView extends PFUIComponent {
         updateIcon();
 
         upperBuilder.add(jLabel, cc.xy(1, 1));
-        upperBuilder.add(new JLabel(folderInfo.name), cc.xy(3, 1));
+        upperBuilder.add(nameActionLabel, cc.xy(3, 1));
         upperBuilder.add(filesAvailableLabel, cc.xy(6, 1));
         upperBuilder.add(syncFolderButton, cc.xy(8, 1));
 
@@ -250,6 +252,11 @@ public class ExpandableFolderView extends PFUIComponent {
                 new MySyncFolderAction(getController());
 
         expanded = new AtomicBoolean();
+
+        nameActionLabel = new LinkLabel(folderInfo.name, "#");
+        nameActionLabel.addMouseListener(new MyMouseAdapter());
+        nameActionLabel.setToolTipText(
+                Translation.getTranslation("exp_folder_view.expand"));
 
         openSettingsInformationButton = new JButtonMini(
                 myOpenSettingsInformationAction, true);
@@ -532,10 +539,14 @@ public class ExpandableFolderView extends PFUIComponent {
                 expanded.set(false);
                 upperPanel.setToolTipText(
                         Translation.getTranslation("exp_folder_view.expand"));
+                nameActionLabel.setToolTipText(
+                        Translation.getTranslation("exp_folder_view.expand"));
                 lowerOuterPanel.setVisible(false);
             } else {
                 expanded.set(true);
                 upperPanel.setToolTipText(
+                        Translation.getTranslation("exp_folder_view.collapse"));
+                nameActionLabel.setToolTipText(
                         Translation.getTranslation("exp_folder_view.collapse"));
                 lowerOuterPanel.setVisible(true);
             }
