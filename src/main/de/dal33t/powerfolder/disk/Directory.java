@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
+import java.util.logging.Level;
 
 import de.dal33t.powerfolder.DiskItem;
 import de.dal33t.powerfolder.Member;
@@ -71,7 +72,7 @@ public class Directory implements Comparable<Directory>, DiskItem {
     private Folder rootFolder;
     /** The parent Directory (may be null, if no parent!) */
     private Directory parent;
-    private Logger log = Logger.getLogger(this.getClass().getName());
+    private final Logger log = Logger.getLogger(getClass().getName());
 
     /** The TreeNode that displayes this Directory in the Tree */
     // private DefaultMutableTreeNode treeNode;
@@ -81,11 +82,11 @@ public class Directory implements Comparable<Directory>, DiskItem {
      * @param path
      *            The path to this folder
      */
-    public Directory(Directory parent, String name, String path, Folder root) {
+    public Directory(Directory parent, String name, String path, Folder rootFolder) {
         this.parent = parent;
         this.name = name;
         this.path = path;
-        this.rootFolder = root;
+        this.rootFolder = rootFolder;
     }
 
     private static DataFlavor dataFlavor;
@@ -130,7 +131,7 @@ public class Directory implements Comparable<Directory>, DiskItem {
         Directory sub = new Directory(this, nameArg, path + '/' + nameArg,
             rootFolder);
 
-        final File newFileName = new File(getFile(), nameArg);
+        File newFileName = new File(getFile(), nameArg);
         if (!newFileName.exists()) {
             if (!newFileName.mkdir()) {
                 log.info("Failed to create " + newFileName.getAbsolutePath());
@@ -176,7 +177,7 @@ public class Directory implements Comparable<Directory>, DiskItem {
                 throw new IllegalStateException("cannot copy onto itself");
             }
         } catch (IOException e) {
-            System.out.println(e);
+            log.log(Level.SEVERE, "IOException", e);
             return false;
         }
         File tmpFile = null;
@@ -188,19 +189,19 @@ public class Directory implements Comparable<Directory>, DiskItem {
                     + " to " + tmpFile.getAbsolutePath());
             }
         }
-        if (!file.renameTo(newFile)) {
-            // rename failed restore if possible
-            if (tmpFile != null) {
-                if (!tmpFile.renameTo(newFile)) {
-                    log.severe("Couldn't rename " + newFile.getAbsolutePath()
-                        + " to " + tmpFile.getAbsolutePath());
-                }
-            }
-        } else {
+        if (file.renameTo(newFile)) {
             // success!
             if (tmpFile != null) {
                 if (!tmpFile.delete()) {
                     log.severe("Couldn't delete " + tmpFile.getAbsolutePath());
+                }
+            }
+        } else {
+            // rename failed restore if possible
+            if (tmpFile != null) {
+                if (!tmpFile.renameTo(newFile)) {
+                    log.severe("Couldn't rename " + newFile.getAbsolutePath()
+                            + " to " + tmpFile.getAbsolutePath());
                 }
             }
         }
@@ -208,9 +209,9 @@ public class Directory implements Comparable<Directory>, DiskItem {
     }
 
     /** copy a file from this source to this Directory */
-    public boolean copyFileFrom(final File file, final FileCopier fileCopier) {
+    public boolean copyFileFrom(File file, final FileCopier fileCopier) {
         if (file.exists() && file.canRead()) {
-            final File newFile = new File(getFile(), file.getName());
+            File newFile = new File(getFile(), file.getName());
             try {
                 if (file.getCanonicalPath().equals(newFile.getCanonicalPath()))
                 {
@@ -292,16 +293,16 @@ public class Directory implements Comparable<Directory>, DiskItem {
         if (holder != null) {
             return holder;
         }
-        String path = fileInfo.getLocationInFolder();
+        String thePath = fileInfo.getLocationInFolder();
         String dirName;
         String rest;
-        int index = path.indexOf('/');
+        int index = thePath.indexOf('/');
         if (index == -1) {
-            dirName = path;
+            dirName = thePath;
             rest = "";
         } else {
-            dirName = path.substring(0, index);
-            rest = path.substring(index + 1, path.length());
+            dirName = thePath.substring(0, index);
+            rest = thePath.substring(index + 1, thePath.length());
         }
         if (dirName.length() == 0) {
             return null;
@@ -314,7 +315,7 @@ public class Directory implements Comparable<Directory>, DiskItem {
             // + fileInfo.getName());
             return null;
         }
-        if (rest.equals("")) {
+        if (rest.length() == 0) {
             return dir.getFileInfoHolder(fileInfo);
         }
         return dir.getFileInfoHolder(fileInfo, rest);
@@ -337,7 +338,7 @@ public class Directory implements Comparable<Directory>, DiskItem {
             throw new IllegalStateException("dir not found: " + dirName + " | "
                 + fileInfo.getName());
         }
-        if (rest.equals("")) {
+        if (rest.length() == 0) {
             return dir.getFileInfoHolder(fileInfo);
         }
         return dir.getFileInfoHolder(fileInfo, rest);
@@ -358,7 +359,7 @@ public class Directory implements Comparable<Directory>, DiskItem {
         if (dir == null) {
             throw new IllegalStateException("dir '" + dirName + "' not found");
         }
-        if (rest.equals("")) {
+        if (rest.length() == 0) {
             return dir;
         }
         return dir.getSubDirectory(rest);
@@ -373,9 +374,7 @@ public class Directory implements Comparable<Directory>, DiskItem {
     public List<FileInfo> getFiles() {
         List<FileInfo> files = new ArrayList<FileInfo>();
         for (FileInfo fileInfo : fileInfoHolderMap.keySet()) {
-            if (fileInfo.diskFileExists(rootFolder.getController())) {
-                files.add(fileInfo);
-            }
+            files.add(fileInfo);
         }
         return files;
     }
@@ -429,15 +428,15 @@ public class Directory implements Comparable<Directory>, DiskItem {
      * @return true if this is the same object or the paths are equal
      * @see java.lang.Object#equals(java.lang.Object)
      */
-    public boolean equals(Object other) {
-        if (other == null) {
+    public boolean equals(Object obj) {
+        if (obj == null) {
             return false;
         }
-        if (this == other) {
+        if (this == obj) {
             return true;
         }
-        if (other instanceof Directory) {
-            Directory otherDirectory = (Directory) other;
+        if (obj instanceof Directory) {
+            Directory otherDirectory = (Directory) obj;
             if (rootFolder != null) {
                 if (rootFolder != otherDirectory.rootFolder) {
                     return false;
@@ -500,8 +499,8 @@ public class Directory implements Comparable<Directory>, DiskItem {
     }
 
     public void addAll(Member member, FileInfo[] fileInfos) {
-        for (int i = 0; i < fileInfos.length; i++) {
-            add(member, fileInfos[i]);
+        for (FileInfo fileInfo : fileInfos) {
+            add(member, fileInfo);
         }
     }
 
@@ -738,7 +737,7 @@ public class Directory implements Comparable<Directory>, DiskItem {
     /** add a file recursive to this or correct sub Directory */
     void add(Member member, FileInfo file) {
         String thePath = file.getLocationInFolder();
-        if (thePath.equals("")) {
+        if (thePath.length() == 0) {
             addFile(member, file);
         } else {
             String dirName;
@@ -769,7 +768,7 @@ public class Directory implements Comparable<Directory>, DiskItem {
     }
 
     private void add(Member member, FileInfo file, String restPath) {
-        if (restPath.equals("")) {
+        if (restPath.length() == 0) {
             addFile(member, file);
         } else {
             String dirName;
@@ -801,7 +800,7 @@ public class Directory implements Comparable<Directory>, DiskItem {
     public String toAscii() {
         StringBuilder str = new StringBuilder();
         str.append(rootFolder.getName());
-        str.append("\n");
+        str.append('\n');
         return toAscii(str, 0).toString();
     }
 
@@ -812,7 +811,7 @@ public class Directory implements Comparable<Directory>, DiskItem {
             str.append(tabs);
             str.append("<DIR>");
             str.append(dir.name);
-            str.append("\n");
+            str.append('\n');
             dir.toAscii(str, newdepth);
         }
         tabs = getTabs(newdepth);
@@ -821,7 +820,7 @@ public class Directory implements Comparable<Directory>, DiskItem {
             str.append("<FILE>");
             FileInfo file = holder.getFileInfo();
             str.append(file.getFilenameOnly());
-            str.append("\n");
+            str.append('\n');
         }
 
         return str;
