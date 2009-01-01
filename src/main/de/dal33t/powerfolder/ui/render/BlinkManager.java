@@ -60,8 +60,6 @@ public class BlinkManager extends PFUIComponent {
     /** key = folder, value = icon */
     private Map<Folder, Icon> blinkingFolders = new ConcurrentHashMap<Folder, Icon>();
 
-    private MyTimerTask task;
-
     /**
      * create a BlinkManager
      * 
@@ -72,7 +70,7 @@ public class BlinkManager extends PFUIComponent {
      */
     public BlinkManager(Controller controller, ChatModel chatModel) {
         super(controller);
-        task = new MyTimerTask();
+        MyTimerTask task = new MyTimerTask();
         getController().scheduleAndRepeat(task, ICON_BLINK_TIME);
         chatModel.addChatModelListener(new MyChatModelListener());
     }
@@ -121,7 +119,7 @@ public class BlinkManager extends PFUIComponent {
     }
 
     public boolean isMemberBlinking() {
-        return blinkingMembers.size() > 0;
+        return !blinkingMembers.isEmpty();
     }
 
     public Member getABlinkingMember() {
@@ -185,7 +183,7 @@ public class BlinkManager extends PFUIComponent {
      *         blinking state the default Icon is returned.
      */
     public Icon getIconFor(Member member, Icon defaultIcon) {
-        boolean blink = ((new GregorianCalendar()).get(Calendar.SECOND) % 2) == 1;
+        boolean blink = new GregorianCalendar().get(Calendar.SECOND) % 2 != 0;
         Icon blinkIcon = blinkingMembers.get(member);
         if (blink && blinkIcon != null) {
             return blinkIcon;
@@ -200,7 +198,7 @@ public class BlinkManager extends PFUIComponent {
      * @param icon
      */
     public void setBlinkingTrayIcon(Image icon) {
-        this.trayBlinkIcon = icon;
+        trayBlinkIcon = icon;
     }
 
     /**
@@ -219,70 +217,6 @@ public class BlinkManager extends PFUIComponent {
 
     }
 
-    /**
-     * @param treeModel
-     *            the model where the blinking occours
-     */
-//    private void updateNodeBlinking(NavTreeModel treeModel) {
-//        if (blinkingMembers.isEmpty()) {
-//            return;
-//        }
-//        for (Member member : blinkingMembers.keySet()) {
-//            if (member.isCompleteyConnected()) {
-//                fireUpdate(treeModel, member);
-//            } else {
-//                blinkingMembers.remove(member);
-//            }
-//        }
-//    }
-
-    /**
-     * @param treeModel
-     *            the model where the blinking occours
-     */
-//    private void updateFolderBlinking(NavTreeModel treeModel) {
-//        if (blinkingFolders.isEmpty()) {
-//            return;
-//        }
-//        for (Folder folder : blinkingFolders.keySet()) {
-//            if (getController().getFolderRepository().hasJoinedFolder(
-//                folder.getInfo()))
-//            {
-//                fireUpdate(treeModel, folder);
-//            } else {
-//                blinkingFolders.remove(folder);
-//            }
-//        }
-//    }
-
-//    private void fireUpdate(NavTreeModel treeModel, Member member) {
-//        TreeNodeList nodeList = getController().getUIController()
-//            .getNodeManagerModel().getFriendsTreeNode();
-//        TreeNode nodeTreeNode = nodeList.getChildTreeNode(member);
-//        if (nodeTreeNode != null) {
-//            TreeModelEvent te = new TreeModelEvent(this, UIUtil
-//                .getPathTo(nodeTreeNode));
-//            treeModel.fireTreeNodesChangedEvent(te);
-//        }
-//
-//        nodeList = getController().getUIController().getNodeManagerModel()
-//            .getNotInFriendsTreeNodes();
-//        nodeTreeNode = nodeList.getChildTreeNode(member);
-//        if (nodeTreeNode != null) {
-//            TreeModelEvent te = new TreeModelEvent(this, UIUtil
-//                .getPathTo(nodeTreeNode));
-//            treeModel.fireTreeNodesChangedEvent(te);
-//        }
-//    }
-
-//    private void fireUpdate(NavTreeModel treeModel, Folder folder) {
-//        FolderModel folderModel = getController().getUIController()
-//                .getFolderRepositoryModel().locateFolderModel(folder);
-//        TreeModelEvent te = new TreeModelEvent(this, UIUtil.getPathTo(folderModel
-//            .getTreeNode()));
-//        treeModel.fireTreeNodesChangedEvent(te);
-//    }
-
     // Internal classes ********************************************************
 
     private class MyChatModelListener implements ChatModelListener {
@@ -295,13 +229,6 @@ public class BlinkManager extends PFUIComponent {
             if (event.getSource() instanceof Member) {
                 Member chatMessageMember = (Member) event.getSource();
                 Member currentChatPartner = null;
-//                if (getUIController().getInformationQuarter()
-//                    .getDisplayTarget() instanceof MemberChatPanel)
-//                {
-//                    currentChatPartner = getUIController()
-//                        .getInformationQuarter().getMemberChatPanel()
-//                        .getChatPartner();
-//                }
                 if (!chatMessageMember.equals(currentChatPartner)
                     && !chatMessageMember.isMySelf())
                 {
@@ -310,18 +237,6 @@ public class BlinkManager extends PFUIComponent {
             } else if (event.getSource() instanceof Folder) {
                 Folder chatFolder = (Folder) event.getSource();
                 Folder currentChatFolder = null;
-//                if (getUIController().getInformationQuarter()
-//                    .getDisplayTarget() instanceof Folder) {
-//                    if (chatFolder.isPreviewOnly()) {
-//                        currentChatFolder = getUIController()
-//                            .getInformationQuarter().getPreviewFolderPanel()
-//                            .getChatPanel().getChatFolder();
-//                    } else {
-//                        currentChatFolder = getUIController()
-//                            .getInformationQuarter().getMyFolderPanel()
-//                            .getChatPanel().getChatFolder();
-//                    }
-//                }
                 if (!chatFolder.equals(currentChatFolder)) {
                     getUIController().getBlinkManager().addChatBlinking(chatFolder,
                         Icons.CHAT);

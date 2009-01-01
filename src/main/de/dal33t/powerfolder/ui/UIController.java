@@ -44,9 +44,7 @@ import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
 import de.javasoft.plaf.synthetica.SyntheticaSilverMoonLookAndFeel;
-import org.apache.commons.lang.StringUtils;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -870,54 +868,9 @@ public class UIController extends PFComponent {
                 // Ignore status updates
                 return;
             }
-            if (event.getSource() instanceof Member) {
-                Member m = (Member) event.getSource();
-
-                TimerTask task = new TimerTask() {
-                    public void run() {
-
-//                        // Find path to the chatting member.
-//                        TreeNodeList treeNodeList = getApplicationModel()
-//                                .getNodeManagerModel().getFriendsTreeNode();
-//                        int childCount = treeNodeList.getChildCount();
-//                        if (m != null) {
-//                            for (int i = 0; i < childCount; i++) {
-//                                TreeNode child = treeNodeList.getChildAt(i);
-//                                if (child != null
-//                                    && child instanceof DefaultMutableTreeNode)
-//                                {
-//                                    DefaultMutableTreeNode dmtn = (DefaultMutableTreeNode) child;
-//                                    Object userObject = dmtn.getUserObject();
-//                                    if (userObject != null
-//                                        && userObject instanceof Member)
-//                                    {
-//                                        Member member = (Member) userObject;
-//                                        if (m.equals(member)) {
-//                                            // Found member, use as path.
-//
-//
-//
-//
-//                                            return;
-//                                        }
-//                                    }
-//                                }
-//                            }
-//                        }
-
-
-
-                    }
-                };
-                notifyMessage(Translation
-                    .getTranslation("chat.notification.title"), Translation
-                    .getTranslation("chat.notification.member_message", m
-                        .getNick()), task, false);
-            } else {
-                notifyMessage(Translation
-                    .getTranslation("chat.notification.title"), Translation
-                    .getTranslation("chat.notification.message"));
-            }
+            notifyMessage(Translation
+                .getTranslation("chat.notification.title"), Translation
+                .getTranslation("chat.notification.message"));
         }
 
         public boolean fireInEventDispatchThread() {
