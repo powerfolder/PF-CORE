@@ -30,7 +30,7 @@ import de.dal33t.powerfolder.plugin.Plugin;
 import de.dal33t.powerfolder.plugin.PluginEvent;
 import de.dal33t.powerfolder.plugin.PluginManager;
 import de.dal33t.powerfolder.plugin.PluginManagerListener;
-import de.dal33t.powerfolder.ui.actionold.SelectionBaseAction;
+import de.dal33t.powerfolder.ui.action.SelectionBaseAction;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
 import de.dal33t.powerfolder.util.ui.SelectionModel;

@@ -17,7 +17,7 @@
 *
 * $Id$
 */
-package de.dal33t.powerfolder.ui.actionold;
+package de.dal33t.powerfolder.ui.action;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.action.BaseAction;

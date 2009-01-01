@@ -17,15 +17,12 @@
  *
  * $Id$
  */
-package de.dal33t.powerfolder.ui.actionold;
+package de.dal33t.powerfolder.ui.action;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.FolderPreviewHelper;
-import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.ui.action.BaseAction;
-import de.dal33t.powerfolder.ui.dialog.FolderRemovePanel;
+import de.dal33t.powerfolder.ui.dialog.PreviewFolderRemovePanel;
 import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
 import de.dal33t.powerfolder.util.ui.SelectionChangeListener;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
@@ -33,20 +30,19 @@ import de.dal33t.powerfolder.util.ui.SelectionModel;
 import java.awt.event.ActionEvent;
 
 /**
- * Action which acts on selected folder. Leaves selected folder
+ * Action which acts on selected preview folder. Removes selected folder from PF
  * 
  * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
-public class FolderRemoveAction extends BaseAction {
+public class PreviewFolderRemoveAction extends BaseAction {
     // new selection model
     private SelectionModel actionSelectionModel;
-    private FolderRepository folderRepository;
 
-    public FolderRemoveAction(Controller controller,
+    public PreviewFolderRemoveAction(Controller controller,
         SelectionModel selectionModel)
     {
-        super("folder_remove", controller);
+        super("preview_folder_remove", controller);
         actionSelectionModel = selectionModel;
         setEnabled(actionSelectionModel.getSelection() != null);
 
@@ -67,7 +63,7 @@ public class FolderRemoveAction extends BaseAction {
         Folder folder = (Folder) actionSelectionModel.getSelection();
         if (folder != null) {
             // show a confirm dialog
-            FolderRemovePanel flp = new FolderRemovePanel(this,
+            PreviewFolderRemovePanel flp = new PreviewFolderRemovePanel(this,
                 getController(), folder);
             flp.open();
         }
@@ -76,39 +72,18 @@ public class FolderRemoveAction extends BaseAction {
     /**
      * Called from FolderLeave Panel if the folder leave is confirmed.
      * 
-     * @param removeLocal
-     *            true to stop local sync. false if to keep folder locally as it
-     *            is
      * @param deleteSystemSubFolder
-     *            whether to delete hte .PowerFolder directory
-     * @param convertToPreview
-     *            Change back to a preview
+     *            whether to delete hte .PowerFolder directory *
      * @param removeFromOS
      *            if the folder and files should be removed from the Online
      *            Storage
      */
-    public void confirmedFolderLeave(boolean removeLocal,
-        boolean deleteSystemSubFolder, boolean convertToPreview,
+    public void confirmedFolderLeave(boolean deleteSystemSubFolder,
         boolean removeFromOS)
     {
-
         Folder folder = (Folder) actionSelectionModel.getSelection();
-
-        boolean removed = false;
-        if (removeLocal) {
-            if (convertToPreview) {
-                boolean converted = FolderPreviewHelper.convertFolderToPreview(
-                    getController(), folder, deleteSystemSubFolder);
-                if (!converted) {
-                    return;
-                }
-            } else {
-                getController().getFolderRepository().removeFolder(folder,
-                    deleteSystemSubFolder);
-                removed = true;
-            }
-        }
-
+        getController().getFolderRepository().removeFolder(folder,
+            deleteSystemSubFolder);
         if (removeFromOS) {
             if (getController().getOSClient().hasJoined(folder)) {
                 getController().getOSClient().getFolderService().removeFolder(
@@ -118,14 +93,6 @@ public class FolderRemoveAction extends BaseAction {
                     folder.getInfo());
             }
             getController().getOSClient().refreshAccountDetails();
-
-            if (!removed) {
-                folderRepository = getController().getFolderRepository();
-                FolderSettings folderSettings = folderRepository
-                    .loadFolderSettings(folder.getName());
-                folderRepository.saveFolderConfig(folder.getInfo(),
-                    folderSettings, true);
-            }
         }
     }
 }
