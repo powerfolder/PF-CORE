@@ -19,6 +19,8 @@
 */
 package de.dal33t.powerfolder.util.ui;
 
+import de.dal33t.powerfolder.util.MathUtil;
+
 import java.awt.*;
 
 /**

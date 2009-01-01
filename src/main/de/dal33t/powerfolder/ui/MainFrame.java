@@ -29,12 +29,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.prefs.Preferences;
 
-import javax.swing.JCheckBox;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.SwingConstants;
-import javax.swing.WindowConstants;
+import javax.swing.*;
 import javax.swing.plaf.RootPaneUI;
 
 import org.apache.commons.lang.StringUtils;
@@ -48,6 +43,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.ui.action.SyncAllFoldersAction;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.util.Translation;
@@ -68,6 +64,12 @@ public class MainFrame extends PFUIComponent {
     private JFrame uiComponent;
 
     private MainTabbedPane mainTabbedPane;
+
+    /**
+     * The menu bar that handles F5 for sync, etc.
+     * This is not visible in the GUI.
+     */
+    private JMenuBar menuBar;
 
     /**
      * The status bar on the lower side of the screen.
@@ -93,14 +95,16 @@ public class MainFrame extends PFUIComponent {
         }
 
         FormLayout layout = new FormLayout("fill:pref:grow",
-            "pref, 1dlu, fill:0:grow, 1dlu, pref, 0dlu");
+            "0dlu, pref, 1dlu, fill:0:grow, 1dlu, pref");
+          // menu  head        body               footer
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         builder.setBorder(Borders.createEmptyBorder("4dlu, 2dlu, 2dlu, 2dlu"));
         CellConstraints cc = new CellConstraints();
 
-        builder.add(new JLabel(Icons.LOGO400UI, SwingConstants.LEFT), cc.xy(1, 1));
-        builder.add(mainTabbedPane.getUIComponent(), cc.xy(1, 3));
-        builder.add(statusBar.getUIComponent(), cc.xy(1, 5));
+        builder.add(menuBar, cc.xy(1, 1));
+        builder.add(new JLabel(Icons.LOGO400UI, SwingConstants.LEFT), cc.xy(1, 2));
+        builder.add(mainTabbedPane.getUIComponent(), cc.xy(1, 4));
+        builder.add(statusBar.getUIComponent(), cc.xy(1, 6));
 
         uiComponent.getContentPane().add(builder.getPanel());
         uiComponent.setBackground(Color.white);
@@ -140,20 +144,20 @@ public class MainFrame extends PFUIComponent {
         // add window listener, checks if exit is needed on pressing X
 		uiComponent.addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {
-				if (!OSUtil.isSystraySupported()) {
-					// Quit if systray is not Supported by OS.
-					exitProgram();
-				} else {
-					handleExitFirstRequest();
-					boolean quitOnX = PreferencesEntry.QUIT_ON_X
-							.getValueBoolean(getController());
-					if (quitOnX) {
-						exitProgram();
-					} else {
-						getUIController().hideChildPanels();
-						uiComponent.setVisible(false);
-					}
-				}
+                if (OSUtil.isSystraySupported()) {
+                    handleExitFirstRequest();
+                    boolean quitOnX = PreferencesEntry.QUIT_ON_X
+                            .getValueBoolean(getController());
+                    if (quitOnX) {
+                        exitProgram();
+                    } else {
+                        getUIController().hideChildPanels();
+                        uiComponent.setVisible(false);
+                    }
+                } else {
+                    // Quit if systray is not Supported by OS.
+                    exitProgram();
+                }
 			}
             
             /**
@@ -200,8 +204,7 @@ public class MainFrame extends PFUIComponent {
 
 			JPanel innerPanel = builder.getPanel();
 			NeverAskAgainResponse response = DialogFactory.genericDialog(
-					getController().getUIController().getMainFrame()
-							.getUIComponent(), Translation
+                    uiComponent, Translation
 							.getTranslation("dialog.ask_for_quit_on_x.title"),
 					innerPanel, options, 0, GenericDialogType.QUESTION,
 					Translation.getTranslation("general.neverAskAgain"));
@@ -233,11 +236,19 @@ public class MainFrame extends PFUIComponent {
         uiComponent = new JFrame();
         uiComponent.setIconImage(Icons.getDefault().POWERFOLDER_IMAGE);
 
+        createMenuBar();
+
         mainTabbedPane = new MainTabbedPane(getController());
 
         statusBar = new StatusBar(getController());
 
         updateTitle();
+    }
+
+    private void createMenuBar() {
+        menuBar = new JMenuBar();
+        JMenuItem syncAllMenuItem = new JMenuItem(new SyncAllFoldersAction(getController()));
+        menuBar.add(syncAllMenuItem);
     }
 
     /**

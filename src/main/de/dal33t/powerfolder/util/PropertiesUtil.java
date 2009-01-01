@@ -19,7 +19,7 @@
 */
 package de.dal33t.powerfolder.util;
 
-import de.dal33t.powerfolder.util.ui.MathUtil;
+import de.dal33t.powerfolder.util.MathUtil;
 
 import java.io.BufferedWriter;
 import java.io.File;

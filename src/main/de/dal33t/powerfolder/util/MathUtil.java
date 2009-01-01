@@ -17,7 +17,7 @@
 *
 * $Id: ColorUtil.java 6135 2008-12-24 08:04:17Z harry $
 */
-package de.dal33t.powerfolder.util.ui;
+package de.dal33t.powerfolder.util;
 
 /**
  * Class for any reusable math functions.

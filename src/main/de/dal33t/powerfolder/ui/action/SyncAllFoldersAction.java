@@ -26,7 +26,9 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.ui.dialog.SyncFolderPanel;
 import de.dal33t.powerfolder.util.Reject;
 
+import javax.swing.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 
 /**
  * Action to sync all folders.
@@ -37,6 +39,8 @@ public class SyncAllFoldersAction extends BaseAction {
 
     public SyncAllFoldersAction(Controller controller) {
         super("action_sync_all_folders", controller);
+        putValue(ACCELERATOR_KEY,
+                KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0));
     }
 
     public void actionPerformed(ActionEvent e) {
