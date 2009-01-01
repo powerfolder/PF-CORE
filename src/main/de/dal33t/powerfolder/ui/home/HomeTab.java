@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.ui.home;
 
 import java.awt.Font;
 import java.awt.event.ActionEvent;
+import java.text.ParseException;
 import java.util.Date;
 
 import javax.swing.AbstractAction;
@@ -299,11 +300,20 @@ public class HomeTab extends PFUIComponent {
         for (Folder folder : folders) {
             totalSize += folder.getStatistic().getTotalSize();
         }
-        String s = Format.formatBytesShort(totalSize);
-        String[] strings = s.split("\\s");
-
-        sizeOfFoldersLine.setValue(Double.valueOf(strings[0]));
-        sizeOfFoldersLine.setNormalLabelText(Translation.getTranslation("home_tab.total", strings[1]));
+        // Copied from Format.formatBytesShort()
+        totalSize /= 1024;
+        String suffix = "KB";
+        if (totalSize > 800) {
+            totalSize /= 1024;
+            suffix = "MB";
+        }
+        if (totalSize > 800) {
+            totalSize /= 1024;
+            suffix = "GB";
+        }
+        sizeOfFoldersLine.setValue(totalSize);
+        sizeOfFoldersLine.setNormalLabelText(Translation.getTranslation(
+            "home_tab.total", suffix));
     }
 
     /**
