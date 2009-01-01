@@ -161,7 +161,7 @@ public class HomeTab extends PFUIComponent {
                 Translation.getTranslation("home_tab.no_folders"),
                 false, true);
         sizeOfFoldersLine = new HomeTabLine(getController(),
-                Translation.getTranslation("home_tab.total_bytes"),
+                Translation.getTranslation("home_tab.total", "KB"),
                 null, true, false);
         filesAvailableLine = new HomeTabLine(getController(),
                 Translation.getTranslation("home_tab.files_available"), null,
@@ -303,7 +303,7 @@ public class HomeTab extends PFUIComponent {
         String[] strings = s.split("\\s");
 
         sizeOfFoldersLine.setValue(Double.valueOf(strings[0]));
-        sizeOfFoldersLine.setNormalLabelText(strings[1]);
+        sizeOfFoldersLine.setNormalLabelText(Translation.getTranslation("home_tab.total", strings[1]));
     }
 
     /**
