@@ -276,9 +276,10 @@ public abstract class BaseDialog extends PFUIComponent {
                 JComponent.WHEN_IN_FOCUSED_WINDOW);
 
             dialog.pack();
-            Component parent = dialog.getOwner();
-            int x = parent.getX() + (parent.getWidth() - dialog.getWidth()) / 2;
-            int y = parent.getY() + (parent.getHeight() - dialog.getHeight())
+            int x = ((int) Toolkit.getDefaultToolkit().getScreenSize().getWidth()
+                    - dialog.getWidth()) / 2;
+            int y = ((int) Toolkit.getDefaultToolkit().getScreenSize().getHeight()
+                    - dialog.getHeight())
                 / 2;
             dialog.setLocation(x, y);
 
