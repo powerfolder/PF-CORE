@@ -223,7 +223,7 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
             }
         });
         myDnsLabel = new LinkLabel(Translation
-            .getTranslation("preferences.dialog.dyndns"),
+            .getTranslation("preferences.dialog.dyn_dns"),
             ConfigurationEntry.PROVIDER_WIKI_URL.getValue(getController())
                 + "/DynDNS");
 
@@ -330,18 +330,17 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
                     username = dyndnsUserField.getText();
                     password = new String(dyndnsPasswordField.getPassword());
                     newDyndns = (String) mydnsndsModel.getValue();
-                    if (dyndnsUserField.getText().equals("")) {
+                    if (dyndnsUserField.getText().length() == 0) {
                         dyndnsUserField.grabFocus();
-                    } else if (new String(dyndnsPasswordField.getPassword())
-                        .equals(""))
+                    } else if (new String(dyndnsPasswordField.getPassword()).length()
+                            == 0)
                     {
                         dyndnsPasswordField.grabFocus();
                     }
 
                     if (!StringUtils.isEmpty(newDyndns)
-                        && !dyndnsUserField.getText().equals("")
-                        && !new String(dyndnsPasswordField.getPassword())
-                            .equals(""))
+                        && dyndnsUserField.getText().length() != 0
+                        && new String(dyndnsPasswordField.getPassword()).length() != 0)
                     {
                         // update
                         getController().getDynDnsManager().forceUpdate();
