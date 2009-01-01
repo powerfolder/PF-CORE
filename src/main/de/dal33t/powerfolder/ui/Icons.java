@@ -61,7 +61,7 @@ public class Icons {
 
     private static final Logger log = Logger.getLogger(Icons.class.getName());
 
-    private static Icons DEFAULT;
+    private static Icons INSTANCE;
 
     private static final String DEFAULT_ICON_PROPERTIES_FILENAME = "Icons.properties";
     private static String iconPropertiesFilename = DEFAULT_ICON_PROPERTIES_FILENAME;
@@ -227,19 +227,32 @@ public class Icons {
 
     private static final Map<String, Icon> KNOWN_ICONS = new HashMap<String, Icon>();
 
-    protected Icons() {}
-    
-    public static void loadOverrideFile(String iconSetFile) {
-        overridePropertiesFilename = iconSetFile;
-        // Re load icons
-        DEFAULT = new Icons();
+    protected Icons() {
     }
 
-    public static Icons getDefault() {
-        if (DEFAULT == null) {
-            DEFAULT = new Icons();
+    /**
+     * Loads the properties file containing Icons to override the default icon
+     * set. Does only work with non-static icons/images, that get retrieved by
+     * ID. If icons/image with ID is not found in this file, the default icon is
+     * used. Replaces the instance retrieved by {@link #getInstance()}.
+     * 
+     * @param iconsFile
+     *            the Icons.properties file.
+     */
+    public static void loadIconsFile(String iconsFile) {
+        overridePropertiesFilename = iconsFile;
+        // Re-load icons
+        INSTANCE = new Icons();
+    }
+
+    /**
+     * @return the central instance that provides icons.
+     */
+    public static Icons getInstance() {
+        if (INSTANCE == null) {
+            INSTANCE = new Icons();
         }
-        return DEFAULT;
+        return INSTANCE;
     }
 
     /**
@@ -371,16 +384,12 @@ public class Icons {
     }
 
     /**
-     * Returns the icons for the specified id
+     * Returns the icons for the specified id.
      * 
      * @param id
      *            the icon id
-     * @deprecated This should only be used for getting action icons, using
-     * Icons.properties. Everything else, use getIcon(). Keeps icon - file
-     * relationship more simple and direct.
      * @return the icon
      */
-
     public Icon getIconById(String id) {
         Properties prop = getIconProperties();
         String iconId = prop.getProperty(id);

@@ -1937,7 +1937,7 @@ public class Controller extends PFComponent {
         Feature.SERVER_INTERNAL_FUNCTIONS.disable();
 
         // Use icons
-        Icons.loadOverrideFile("branding/" + brandingId + "/Icons.properties");
+        Icons.loadIconsFile("branding/" + brandingId + "/Icons.properties");
 
         // Load texts
         Locale l = new Locale("en", brandingId);

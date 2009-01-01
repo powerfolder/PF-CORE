@@ -234,7 +234,7 @@ public class MainFrame extends PFUIComponent {
             + Toolkit.getDefaultToolkit().getScreenSize());
 
         uiComponent = new JFrame();
-        uiComponent.setIconImage(Icons.getDefault().POWERFOLDER_IMAGE);
+        uiComponent.setIconImage(Icons.getInstance().POWERFOLDER_IMAGE);
 
         createMenuBar();
 

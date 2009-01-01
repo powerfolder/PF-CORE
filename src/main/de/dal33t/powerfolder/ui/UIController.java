@@ -362,7 +362,7 @@ public class UIController extends PFComponent {
     }
 
     private void initalizeSystray() {
-        defaultIcon = Icons.getDefault().SYSTRAY_DEFAULT_ICON;
+        defaultIcon = Icons.getInstance().SYSTRAY_DEFAULT_ICON;
         if (defaultIcon == null) {
             logSevere("Unable to retrieve default system tray icon. "
                 + "System tray disabled");
