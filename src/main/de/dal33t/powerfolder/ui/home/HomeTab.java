@@ -86,7 +86,6 @@ public class HomeTab extends PFUIComponent {
     private ServerClient client;
     private JLabel onlineStorageAccountLabel;
     private OnlineStorageSection onlineStorageSection;
-    private ActionLabel onlineStorageLogLabel;
     private final ValueModel newFriendRequestCountVM;
     private final ValueModel newInvitationsCountVM;
 
@@ -193,9 +192,6 @@ public class HomeTab extends PFUIComponent {
             }
         });
         onlineStorageSection = new OnlineStorageSection(getController());
-        onlineStorageLogLabel = new ActionLabel(getUIController()
-                    .getApplicationModel().getActionModel()
-                    .getOnlineStorageLogInAction());
         updateTransferText();
         updateFoldersText();
         recalculateFilesAvailable();
@@ -232,8 +228,8 @@ public class HomeTab extends PFUIComponent {
      */
     private JPanel buildMainPanel() {
         FormLayout layout = new FormLayout("3dlu, 100dlu, pref:grow, 3dlu",
-            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, pref, pref, pref, pref, pref, 3dlu, pref, pref, pref, pref, 3dlu, pref, 3dlu, pref, pref, 3dlu, pref:grow");
-        //   sync-stat   sync-date   sep         you-have    files comps invs  down  upl   sep         #fol  szfo  comp  sep         os-acc      osSec osLog
+            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, pref, pref, pref, pref, pref, 3dlu, pref, pref, pref, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref:grow");
+        //   sync-stat   sync-date   sep         you-have    files comps invs  down  upl   sep         #fol  szfo  comp  sep         os-acc      osSec
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
@@ -288,9 +284,6 @@ public class HomeTab extends PFUIComponent {
 
         builder.add(onlineStorageSection.getUIComponent(), cc.xywh(2, row, 2, 1));
         row++;
-
-        builder.add(onlineStorageLogLabel, cc.xywh(2, row, 2, 1));
-        row += 2;
 
         return builder.getPanel();
     }
@@ -384,38 +377,44 @@ public class HomeTab extends PFUIComponent {
      */
     private void updateOnlineStorageDetails() {
         boolean active = false;
-        if (client == null || client.getUsername() == null
-            || client.getUsername().trim().length() == 0)
-        {
+        if (client.getUsername() == null
+            || client.getUsername().trim().length() == 0) {
+                onlineStorageAccountLabel.setText(Translation
+                    .getTranslation("home_tab.online_storage.not_setup"));
+                onlineStorageAccountLabel.setToolTipText(Translation
+                    .getTranslation("home_tab.online_storage.not_setup.tips"));
+        } else if (client.getPassword() == null ||
+                client.getPassword().trim().length() == 0) {
             onlineStorageAccountLabel.setText(Translation
-                .getTranslation("home_tab.online_storage.not_setup"));
-            onlineStorageLogLabel.configureFromAction(getUIController()
-                    .getApplicationModel().getActionModel()
-                    .getOnlineStorageLogInAction());
+                .getTranslation("home_tab.online_storage.no_password"));
+            onlineStorageAccountLabel.setToolTipText(Translation
+                .getTranslation("home_tab.online_storage.no_password.tips"));
         } else if (client.isConnected()) {
             if (!client.isLastLoginOK()) {
                 onlineStorageAccountLabel.setText(Translation.getTranslation(
                     "home_tab.online_storage.account_not_logged_in", client
                         .getUsername()));
+                onlineStorageAccountLabel.setToolTipText(Translation.getTranslation(
+                    "home_tab.online_storage.account_not_logged_in.tips"));
             } else if (client.getAccount().getOSSubscription().isDisabled()) {
                 onlineStorageAccountLabel.setText(Translation.getTranslation(
                     "home_tab.online_storage.account_disabled", client
                         .getUsername()));
+                onlineStorageAccountLabel.setToolTipText(Translation.getTranslation(
+                    "home_tab.online_storage.account_disabled.tips"));
             } else {
                 onlineStorageAccountLabel.setText(Translation.getTranslation(
                     "home_tab.online_storage.account", client.getUsername()));
+                onlineStorageAccountLabel.setToolTipText(Translation.getTranslation(
+                    "home_tab.online_storage.account.tips"));
                 active = true;
             }
-            onlineStorageLogLabel.configureFromAction(getUIController()
-                    .getApplicationModel().getActionModel()
-                    .getOnlineStorageLogOutAction());
         } else {
             onlineStorageAccountLabel.setText(Translation.getTranslation(
                 "home_tab.online_storage.account_connecting", client
                     .getUsername()));
-            onlineStorageLogLabel.configureFromAction(getUIController()
-                    .getApplicationModel().getActionModel()
-                    .getOnlineStorageLogOutAction());
+            onlineStorageAccountLabel.setToolTipText(Translation.getTranslation(
+                "home_tab.online_storage.account_connecting.tips"));
         }
         if (active) {
             OnlineStorageSubscriptionType storageSubscriptionType = client.getAccount().getOSSubscription().getType();
