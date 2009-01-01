@@ -114,7 +114,7 @@ public class ExpandableComputerView extends PFUIComponent {
           // sep,        last
         PanelBuilder lowerBuilder = new PanelBuilder(lowerLayout);
 
-        lowerBuilder.addSeparator(null, cc.xyw(2, 1, 5));
+        lowerBuilder.addSeparator(null, cc.xyw(1, 1, 7));
 
         lowerBuilder.add(lastSeenLabel, cc.xy(2, 3));
         lowerBuilder.add(addRemoveButton, cc.xy(5, 3));

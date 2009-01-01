@@ -180,7 +180,7 @@ public class ExpandableFolderView extends PFUIComponent {
             "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
         PanelBuilder lowerBuilder = new PanelBuilder(lowerLayout);
 
-        lowerBuilder.addSeparator(null, cc.xywh(2, 1, 5, 1));
+        lowerBuilder.addSeparator(null, cc.xywh(1, 1, 6, 1));
         
         lowerBuilder.add(syncPercentLabel, cc.xy(2, 3));
         lowerBuilder.add(openFilesInformationButton, cc.xy(5, 3));
@@ -193,12 +193,12 @@ public class ExpandableFolderView extends PFUIComponent {
 
         lowerBuilder.add(recycleLabel, cc.xy(2, 11));
 
-        lowerBuilder.addSeparator(null, cc.xywh(2, 13, 5, 1));
+        lowerBuilder.addSeparator(null, cc.xywh(2, 13, 4, 1));
 
         lowerBuilder.add(membersLabel, cc.xy(2, 15));
         lowerBuilder.add(inviteButton, cc.xy(5, 15));
 
-        lowerBuilder.addSeparator(null, cc.xywh(2, 17, 5, 1));
+        lowerBuilder.addSeparator(null, cc.xywh(2, 17, 4, 1));
 
         lowerBuilder.add(transferModeLabel, cc.xy(2, 19));
         lowerBuilder.add(openSettingsInformationButton, cc.xy(5, 19));
