@@ -89,18 +89,15 @@ public class ActionLabel extends JLabel {
 
     public void displayText() {
         if (enabled) {
-            // @todo not picking up Synthetica colors...?
-            setForeground(SystemColor.textText);
-            updateUI();
-            Object object = getClientProperty("Synthetica.menu.toplevel.textColor");
+            Object object = UIManager.getColor("Label.foreground");
             Color color;
             if (object != null && object instanceof Color) {
                 color = (Color) object;
-            } else { 
+            } else {
+                // Fall back, in case of UIManager problem.
                 color = getForeground();
             }
             String rgb = ColorUtil.getRgbForColor(color);
-            setForeground(SystemColor.textText);
             super.setText("<html><font color=\"" + rgb + "\"><a href=\"#\">" + text
                 + "</a></font></html>");
         } else {

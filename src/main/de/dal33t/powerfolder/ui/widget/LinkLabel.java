@@ -19,9 +19,10 @@
 */
 package de.dal33t.powerfolder.ui.widget;
 
-import com.jgoodies.forms.factories.Borders;
 import de.dal33t.powerfolder.util.BrowserLauncher;
+import de.dal33t.powerfolder.util.ui.ColorUtil;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -29,21 +30,23 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.jgoodies.forms.factories.Borders;
+
 /**
  * A Label which opens a given link by click it
  * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.4 $
  */
-public class LinkLabel extends AntialiasedLabel {
+public class LinkLabel extends JLabel {
 
     private static final Logger log = Logger.getLogger(LinkLabel.class.getName());
     private String url;
 
     public LinkLabel(String aText, String aUrl) {
-        super("<html><font color=\"#00000\"><a href=\"" + aUrl + "\">" + aText
-            + "</a></font></html>");
-        url = aUrl;
+
+        setTextAndURL(aText, aUrl);
+
         addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
                 try {
@@ -53,6 +56,7 @@ public class LinkLabel extends AntialiasedLabel {
                 }
             }
         });
+
         setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         // FIXME This is a hack because of "Fusch!"
         setBorder(Borders.createEmptyBorder("0, 1px, 0, 0"));
@@ -60,7 +64,17 @@ public class LinkLabel extends AntialiasedLabel {
 
     public void setTextAndURL(String text, String url) {
         this.url = url;
-        setText("<html><font color=\"#00000\"><a href=\"" + url + "\">" + text
+        Object object = UIManager.getColor("Label.foreground");
+        Color color;
+        if (object != null && object instanceof Color) {
+            color = (Color) object;
+        } else {
+            // Fall back, in case of UIManager problem.
+            color = getForeground();
+        }
+        String rgb = ColorUtil.getRgbForColor(color);
+
+        setText("<html><font color=\"" + rgb + "\"><a href=\"" + url + "\">" + text
             + "</a></font></html>");
     }
 }
