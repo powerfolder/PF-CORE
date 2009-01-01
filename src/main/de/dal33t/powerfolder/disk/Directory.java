@@ -72,10 +72,8 @@ public class Directory implements Comparable<Directory>, DiskItem {
     private Folder rootFolder;
     /** The parent Directory (may be null, if no parent!) */
     private Directory parent;
-    private final Logger log = Logger.getLogger(getClass().getName());
+    private static final Logger log = Logger.getLogger(Directory.class.getName());
 
-    /** The TreeNode that displayes this Directory in the Tree */
-    // private DefaultMutableTreeNode treeNode;
     /**
      * @param name
      *            The name of this folder
