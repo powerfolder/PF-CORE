@@ -907,7 +907,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(0, bartsListener.uploadBroken);
 
         // Check correct event fireing
-        assertEquals(2, lisasListener.downloadRequested);
+        assertTrue(lisasListener.downloadRequested >= 2);
         // assertEquals(2, tm2Listener.downloadQueued);
         assertEquals(2, lisasListener.downloadStarted);
         assertEquals(1, lisasListener.downloadCompleted);
