@@ -26,6 +26,8 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.event.PatternChangeListener;
+import de.dal33t.powerfolder.event.PatternChangedEvent;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.FolderSettings;
@@ -37,7 +39,6 @@ import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.action.SelectionBaseAction;
 import de.dal33t.powerfolder.ui.information.folder.FolderInformationTab;
-import de.dal33t.powerfolder.ui.model.DiskItemFilterPatternsListModel;
 import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.util.FileUtils;
@@ -56,8 +57,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
-import java.util.Properties;
-import java.util.StringTokenizer;
+import java.util.*;
+import java.util.List;
 
 /**
  * UI component for the information settings tab
@@ -69,11 +70,12 @@ public class SettingsTab extends PFUIComponent
     private Folder folder;
     private SyncProfileSelectorPanel transferModeSelectorPanel;
     private JCheckBox useRecycleBinBox;
-    private DiskItemFilterPatternsListModel patternsListModel;
+    private DefaultListModel patternsListModel = new DefaultListModel();
     private JList patternsList;
     private SelectionModel selectionModel;
     private JTextField localFolderField;
     private JButton localFolderButton;
+    private PatternChangeListener patternChangeListener;
 
     /**
      * Constructor
@@ -88,7 +90,6 @@ public class SettingsTab extends PFUIComponent
         MyActionListener myActionListener = new MyActionListener();
         useRecycleBinBox.addActionListener(myActionListener);
         selectionModel = new SelectionModel();
-        patternsListModel = new DiskItemFilterPatternsListModel(null);
         localFolderField = new JTextField();
         localFolderField.setEditable(false);
         localFolderButton = new JButtonMini(Icons.DIRECTORY,
@@ -96,6 +97,8 @@ public class SettingsTab extends PFUIComponent
                         "folder_information_settings_tab.select_directory.text"));
         localFolderButton.setEnabled(false);
         localFolderButton.addActionListener(myActionListener);
+        patternChangeListener = new MyPatternChangeListener();
+        patternsListModel = new DefaultListModel();
     }
 
     /**
@@ -104,10 +107,13 @@ public class SettingsTab extends PFUIComponent
      * @param folderInfo
      */
     public void setFolderInfo(FolderInfo folderInfo) {
+        if (folder != null) {
+            folder.getDiskItemFilter().removeListener(patternChangeListener);
+        }
         folder = getController().getFolderRepository().getFolder(folderInfo);
+        folder.getDiskItemFilter().addListener(patternChangeListener);
         transferModeSelectorPanel.setUpdateableFolder(folder);
         useRecycleBinBox.setSelected(folder.isUseRecycleBin());
-        patternsListModel.setDiskItemFilter(folder.getDiskItemFilter());
         update();
     }
 
@@ -171,7 +177,7 @@ public class SettingsTab extends PFUIComponent
         patternsList = new JList(patternsListModel);
         patternsList.addListSelectionListener(new ListSelectionListener() {
 
-            public void valueChanged(ListSelectionEvent listSelectionEvent) {
+            public void valueChanged(ListSelectionEvent e) {
                 selectionModel.setSelection(patternsList.getSelectedValue());
             }
 
@@ -194,11 +200,17 @@ public class SettingsTab extends PFUIComponent
 
     /** refreshes the UI elements with the current data */
     private void update() {
-        if (patternsList != null) {
-            patternsListModel.fireUpdate();
-        }
+        rebuildPatterns();
         localFolderField.setText(folder.getLocalBase().getAbsolutePath());
         localFolderButton.setEnabled(!folder.isPreviewOnly());
+    }
+
+    private void rebuildPatterns() {
+        patternsListModel.clear();
+        List<String> stringList = folder.getDiskItemFilter().getPatterns();
+        for (String s : stringList) {
+            patternsListModel.addElement(s);
+        }
     }
 
     private JPanel createButtonBar() {
@@ -231,7 +243,6 @@ public class SettingsTab extends PFUIComponent
                 String selection = (String) object;
                 folder.getDiskItemFilter().removePattern(selection);
             }
-            patternsListModel.fireUpdate();
             patternsList.getSelectionModel().clearSelection();
         }
 
@@ -274,7 +285,6 @@ public class SettingsTab extends PFUIComponent
                     if (result == 0) { // Remove
                         // Remove pattern and update.
                         folder.getDiskItemFilter().removePattern(blackListPattern);
-                        patternsListModel.fireUpdate();
                     } else if (result == 2) { // Cancel
                         // Abort for all other patterns.
                         break;
@@ -307,7 +317,6 @@ public class SettingsTab extends PFUIComponent
                 folder.getDiskItemFilter().removePattern(
                     (String) selectionModel.getSelection());
                 folder.getDiskItemFilter().addPattern(pattern);
-                patternsListModel.fireUpdate();
             }
             patternsList.getSelectionModel().clearSelection();
         }
@@ -349,7 +358,6 @@ public class SettingsTab extends PFUIComponent
                 JOptionPane.PLAIN_MESSAGE, null, null, pattern);
             if (!StringUtils.isBlank(patternResult)) {
                 folder.getDiskItemFilter().addPattern(patternResult);
-                patternsListModel.fireUpdate();
             }
 
         } else {
@@ -382,7 +390,6 @@ public class SettingsTab extends PFUIComponent
                 while (st2.hasMoreTokens()) {
                     folder.getDiskItemFilter().addPattern(st2.nextToken());
                 }
-                patternsListModel.fireUpdate();
             }
         }
 
@@ -659,4 +666,18 @@ public class SettingsTab extends PFUIComponent
         }
     }
 
+    private class MyPatternChangeListener implements PatternChangeListener {
+
+        public void patternAdded(PatternChangedEvent e) {
+            rebuildPatterns();
+        }
+
+        public void patternRemoved(PatternChangedEvent e) {
+            rebuildPatterns();
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return true;
+        }
+    }
 }

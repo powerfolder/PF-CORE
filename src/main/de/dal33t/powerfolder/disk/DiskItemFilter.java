@@ -20,6 +20,9 @@
 package de.dal33t.powerfolder.disk;
 
 import de.dal33t.powerfolder.DiskItem;
+import de.dal33t.powerfolder.event.PatternChangeListener;
+import de.dal33t.powerfolder.event.ListenerSupportFactory;
+import de.dal33t.powerfolder.event.PatternChangedEvent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.PatternMatch;
 import de.dal33t.powerfolder.util.Reject;
@@ -39,6 +42,8 @@ import java.util.regex.PatternSyntaxException;
  * retainByDefault - DiskItems will be retained unless they match a pattern (a black list).
  */
 public class DiskItemFilter {
+
+    private PatternChangeListener listenerSupport;
 
     private static final Logger log = Logger.getLogger(DiskItemFilter.class.getName());
 
@@ -71,6 +76,16 @@ public class DiskItemFilter {
      */
     public DiskItemFilter(boolean excludeByDefault) {
         this.excludeByDefault = excludeByDefault;
+        listenerSupport = ListenerSupportFactory
+                .createListenerSupport(PatternChangeListener.class);
+    }
+
+    public void addListener(PatternChangeListener listener) {
+        ListenerSupportFactory.addListener(listenerSupport, listener);
+    }
+
+    public void removeListener(PatternChangeListener listener) {
+        ListenerSupportFactory.removeListener(listenerSupport, listener);
     }
 
     /**
@@ -125,7 +140,7 @@ public class DiskItemFilter {
         try {
             file.createNewFile();
             writer = new FileWriter(file);
-            for (String pattern : getPatterns()) {
+            for (String pattern : patterns) {
                 writer.write(pattern + "\r\n");
             }
             dirty = false;
@@ -160,6 +175,8 @@ public class DiskItemFilter {
         }
         try {
             patterns.add(pattern.toLowerCase());
+            listenerSupport.patternAdded(
+                    new PatternChangedEvent(this, pattern, true));
         } catch (PatternSyntaxException e) {
             log.log(Level.SEVERE,
                     "Problem adding pattern " + pattern, e);
@@ -177,6 +194,8 @@ public class DiskItemFilter {
      */
     public void removePattern(String pattern) {
         patterns.remove(pattern.toLowerCase());
+        listenerSupport.patternRemoved(
+                new PatternChangedEvent(this, pattern, false));
         dirty = true;
     }
 

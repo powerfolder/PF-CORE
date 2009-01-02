@@ -22,6 +22,8 @@ package de.dal33t.powerfolder.ui.information.folder.files.table;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.DiskItem;
 import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.event.PatternChangeListener;
+import de.dal33t.powerfolder.event.PatternChangedEvent;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.ui.information.folder.files.FilteredDirectoryModel;
@@ -67,10 +69,11 @@ public class FilesTableModel extends PFComponent implements TableModel,
     private File selectedDirectory;
     private final Map<File, List<DiskItem>> directories;
     private final List<DiskItem> diskItems;
-    private final List<TableModelListener> listeners;
+    private final List<TableModelListener> tableModelListeners;
     private int fileInfoComparatorType = -1;
     private boolean sortAscending = true;
     private int sortColumn;
+    private PatternChangeListener patternChangeListener;
 
     /**
      * Constructor
@@ -81,7 +84,8 @@ public class FilesTableModel extends PFComponent implements TableModel,
         super(controller);
         directories = new ConcurrentHashMap<File, List<DiskItem>>();
         diskItems = new ArrayList<DiskItem>();
-        listeners = new CopyOnWriteArrayList<TableModelListener>();
+        tableModelListeners = new CopyOnWriteArrayList<TableModelListener>();
+        patternChangeListener = new MyPatternChangeListener();
     }
 
     /**
@@ -90,7 +94,11 @@ public class FilesTableModel extends PFComponent implements TableModel,
      * @param folder
      */
     public void setFolder(Folder folder) {
+        if (this.folder != null) {
+            this.folder.getDiskItemFilter().removeListener(patternChangeListener);
+        }
         this.folder = folder;
+        this.folder.getDiskItemFilter().addListener(patternChangeListener);
         update();
     }
 
@@ -218,7 +226,7 @@ public class FilesTableModel extends PFComponent implements TableModel,
     }
 
     public void addTableModelListener(TableModelListener l) {
-        listeners.add(l);
+        tableModelListeners.add(l);
     }
 
     public Class<?> getColumnClass(int columnIndex) {
@@ -254,7 +262,7 @@ public class FilesTableModel extends PFComponent implements TableModel,
     }
 
     public void removeTableModelListener(TableModelListener l) {
-        listeners.remove(l);
+        tableModelListeners.remove(l);
     }
 
     public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
@@ -313,7 +321,7 @@ public class FilesTableModel extends PFComponent implements TableModel,
 
     private void fireModelChanged() {
         TableModelEvent e = new TableModelEvent(this);
-        for (TableModelListener listener : listeners) {
+        for (TableModelListener listener : tableModelListeners) {
             listener.tableChanged(e);
         }
     }
@@ -341,4 +349,20 @@ public class FilesTableModel extends PFComponent implements TableModel,
         }
         fireModelChanged();
     }
+
+    private class MyPatternChangeListener implements PatternChangeListener {
+
+        public void patternAdded(PatternChangedEvent e) {
+            fireModelChanged();
+        }
+
+        public void patternRemoved(PatternChangedEvent e) {
+            fireModelChanged();
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return true;
+        }
+    }
+
 }
