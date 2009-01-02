@@ -857,6 +857,8 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         // Reconnect /Resume transfer
         connectBartAndLisa();
+        getContollerLisa().getFolderRepository().getFileRequestor()
+            .triggerFileRequesting();
 
         // Wait untill download is started
         TestHelper.waitForCondition(20, new ConditionWithMessage() {
