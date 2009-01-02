@@ -149,7 +149,9 @@ public class NodeManagerModel extends PFUIComponent {
 
         boolean hideOfflineFriends = (Boolean) hideOfflineFriendsModel.getValue();
         boolean includeOnlineLan = (Boolean) includeOnlineLanModel.getValue();
-        boolean online = node.isCompleteyConnected() || node.isConnectedToNetwork();
+        boolean connected = node.isCompleteyConnected();
+        boolean online = connected || node.isConnectedToNetwork();
+        
         if (node.isFriend()) {
             if (hideOfflineFriends) {
                 if (online) {
@@ -160,7 +162,7 @@ public class NodeManagerModel extends PFUIComponent {
             }
         }
 
-        if (includeOnlineLan && node.isOnLAN() && online) {
+        if (includeOnlineLan && node.isOnLAN() && connected) {
             return true;
         }
 
