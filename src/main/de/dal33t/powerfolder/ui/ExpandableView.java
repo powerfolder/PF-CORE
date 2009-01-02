@@ -15,11 +15,17 @@
 * You should have received a copy of the GNU General Public License
 * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
 *
-* $Id$
+* $Id: ExpandableView.java 4282 2008-06-16 03:25:09Z tot $
 */
-package de.dal33t.powerfolder.event;
+package de.dal33t.powerfolder.ui;
 
-public interface FolderMembershipListener extends CoreListener {
-    void memberJoined(FolderMembershipEvent folderEvent);
-    void memberLeft(FolderMembershipEvent folderEvent);
+/**
+ * Interface for a view that can be collapsed.
+ */
+public interface ExpandableView {
+
+    /**
+     * External call to collapse the view, if expanded.
+     */
+    void collapse();
 }

@@ -27,6 +27,8 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.event.NodeManagerModelEvent;
 import de.dal33t.powerfolder.event.NodeManagerModelListener;
+import de.dal33t.powerfolder.event.ExpansionListener;
+import de.dal33t.powerfolder.event.ExpansionEvent;
 import de.dal33t.powerfolder.ui.model.NodeManagerModel;
 
 import javax.swing.*;
@@ -40,6 +42,7 @@ public class ComputersList extends PFUIComponent {
     private JPanel computerListPanel;
     private final NodeManagerModel nodeManagerModel;
     private final Set<ExpandableComputerView> viewList;
+    private ExpansionListener expansionListener;
 
     /**
      * Constructor
@@ -48,6 +51,7 @@ public class ComputersList extends PFUIComponent {
      */
     public ComputersList(Controller controller) {
         super(controller);
+        expansionListener = new MyExpansionListener();
         nodeManagerModel = getUIController().getApplicationModel()
                 .getNodeManagerModel();
         viewList = new CopyOnWriteArraySet<ExpandableComputerView>();
@@ -109,6 +113,7 @@ public class ComputersList extends PFUIComponent {
         synchronized (viewList) {
             computerListPanel.add(view.getUIComponent());
             viewList.add(view);
+            view.addExpansionListener(expansionListener);
         }
     }
 
@@ -137,6 +142,7 @@ public class ComputersList extends PFUIComponent {
             }
             if (viewToRemove != null) {
                 viewList.remove(viewToRemove);
+                viewToRemove.removeExpansionListener(expansionListener);
             }
         }
     }
@@ -146,6 +152,9 @@ public class ComputersList extends PFUIComponent {
      */
     private void rebuild() {
         synchronized (viewList) {
+            for (ExpandableComputerView view : viewList) {
+                view.removeExpansionListener(expansionListener);
+            }
             viewList.clear();
             computerListPanel.removeAll();
             for (Member node : nodeManagerModel.getNodes()) {
@@ -153,6 +162,7 @@ public class ComputersList extends PFUIComponent {
                         getController(), node);
                 computerListPanel.add(view.getUIComponent());
                 viewList.add(view);
+                view.addExpansionListener(expansionListener);
             }
         }
     }
@@ -179,6 +189,27 @@ public class ComputersList extends PFUIComponent {
 
         public void rebuilt(NodeManagerModelEvent e) {
             rebuild();
+        }
+    }
+
+    /**
+     * Expansion listener to collapse views.
+     */
+    private class MyExpansionListener implements ExpansionListener {
+
+        public void collapseAllButSource(ExpansionEvent e) {
+            synchronized (viewList) {
+                for (ExpandableComputerView view : viewList) {
+                    if (!view.equals(e.getSource())) {
+                        // No source, so collapse.
+                        view.collapse();
+                    }
+                }
+            }
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return true;
         }
     }
 }

@@ -15,11 +15,22 @@
 * You should have received a copy of the GNU General Public License
 * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
 *
-* $Id$
+* $Id: ExpansionEvent.java 4282 2008-06-16 03:25:09Z tot $
 */
 package de.dal33t.powerfolder.event;
 
-public interface FolderMembershipListener extends CoreListener {
-    void memberJoined(FolderMembershipEvent folderEvent);
-    void memberLeft(FolderMembershipEvent folderEvent);
+import de.dal33t.powerfolder.ui.ExpandableView;
+
+import java.util.EventObject;
+
+/**
+ * Interface for ExpansionEvents.
+ * Only one view sould ever be expanded, so this interface is used to collapse
+ * any other expanded views.
+ */
+public class ExpansionEvent extends EventObject {
+
+    public ExpansionEvent(ExpandableView expandableView) {
+        super(expandableView);
+    }
 }

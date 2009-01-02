@@ -31,8 +31,7 @@ import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.event.FolderRepositoryEvent;
-import de.dal33t.powerfolder.event.FolderRepositoryListener;
+import de.dal33t.powerfolder.event.*;
 
 import javax.swing.*;
 import java.util.List;
@@ -56,6 +55,7 @@ public class FoldersList extends PFUIComponent {
     private ServerClient client;
     private JScrollPane scrollPane;
     private Integer folderSelectionType;
+    private ExpansionListener expansionListener;
 
     /**
      * Constructor
@@ -64,6 +64,8 @@ public class FoldersList extends PFUIComponent {
      */
     public FoldersList(Controller controller, ValueModel folderSelectionTypeVM) {
         super(controller);
+
+        expansionListener = new MyExpansionListener();
 
         folderSelectionTypeVM.addValueChangeListener(new MyPropertyChangeListener());
         folderSelectionType = (Integer) folderSelectionTypeVM.getValue();
@@ -181,6 +183,7 @@ public class FoldersList extends PFUIComponent {
                         scrollPane.repaint();
                     }
                     views.add(newView);
+                    newView.addExpansionListener(expansionListener);
                 }
             }
 
@@ -201,6 +204,7 @@ public class FoldersList extends PFUIComponent {
                 if (!exists) {
                     // No folder info for this view, so remove it.
                     views.remove(view);
+                    view.removeExpansionListener(expansionListener);
                     view.unregisterListeners();
                     folderListPanel.remove(view.getUIComponent());
                     folderListPanel.invalidate();
@@ -341,6 +345,27 @@ public class FoldersList extends PFUIComponent {
 
         public int hashCode() {
             return folderInfo.hashCode();
+        }
+    }
+
+    /**
+     * Expansion listener to collapse all other views.
+     */
+    private class MyExpansionListener implements ExpansionListener {
+
+        public void collapseAllButSource(ExpansionEvent e) {
+            synchronized (views) {
+                for (ExpandableFolderView view : views) {
+                    if (!view.equals(e.getSource())) {
+                        // Not source, so collapse.
+                        view.collapse();
+                    }
+                }
+            }
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return true;
         }
     }
 }

@@ -29,12 +29,10 @@ import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderStatistic;
 import de.dal33t.powerfolder.disk.RecycleBin;
-import de.dal33t.powerfolder.event.FolderEvent;
-import de.dal33t.powerfolder.event.FolderListener;
-import de.dal33t.powerfolder.event.FolderMembershipEvent;
-import de.dal33t.powerfolder.event.FolderMembershipListener;
+import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.ExpandableView;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
@@ -52,7 +50,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * Class to render expandable view of a folder.
  */
-public class ExpandableFolderView extends PFUIComponent {
+public class ExpandableFolderView extends PFUIComponent implements ExpandableView {
 
     private final FolderInfo folderInfo;
     private Folder folder;
@@ -83,6 +81,8 @@ public class ExpandableFolderView extends PFUIComponent {
     private MyFolderMembershipListener myFolderMembershipListener;
     private MyServerClientListener myServerClientListener;
 
+    private ExpansionListener listenerSupport;
+
     /**
      * Constructor
      *
@@ -92,6 +92,8 @@ public class ExpandableFolderView extends PFUIComponent {
     public ExpandableFolderView(Controller controller, FolderInfo folderInfo) {
         super(controller);
         this.folderInfo = folderInfo;
+        listenerSupport = ListenerSupportFactory
+            .createListenerSupport(ExpansionListener.class);
         initComponent();
         buildUI();
     }
@@ -138,6 +140,27 @@ public class ExpandableFolderView extends PFUIComponent {
         updateButtons();
 
         registerFolderListeners();
+    }
+
+    /**
+     * Expand this view if collapsed.
+     */
+    public void expand() {
+        expanded.set(true);
+        upperPanel.setToolTipText(
+                Translation.getTranslation("exp_folder_view.collapse"));
+        lowerOuterPanel.setVisible(true);
+        listenerSupport.collapseAllButSource(new ExpansionEvent(this));
+    }
+
+    /**
+     * Collapse this view if expanded.
+     */
+    public void collapse() {
+        expanded.set(false);
+        upperPanel.setToolTipText(
+                Translation.getTranslation("exp_folder_view.expand"));
+        lowerOuterPanel.setVisible(false);
     }
 
     /**
@@ -469,6 +492,14 @@ public class ExpandableFolderView extends PFUIComponent {
         }
     }
 
+    public void addExpansionListener(ExpansionListener listener) {
+        ListenerSupportFactory.addListener(listenerSupport, listener);
+    }
+
+    public void removeExpansionListener(ExpansionListener listener) {
+        ListenerSupportFactory.addListener(listenerSupport, listener);
+    }
+
     ///////////////////
     // Inner Classes //
     ///////////////////
@@ -529,15 +560,9 @@ public class ExpandableFolderView extends PFUIComponent {
         public void mouseClicked(MouseEvent e) {
             boolean exp = expanded.get();
             if (exp) {
-                expanded.set(false);
-                upperPanel.setToolTipText(
-                        Translation.getTranslation("exp_folder_view.expand"));
-                lowerOuterPanel.setVisible(false);
+                collapse();
             } else {
-                expanded.set(true);
-                upperPanel.setToolTipText(
-                        Translation.getTranslation("exp_folder_view.collapse"));
-                lowerOuterPanel.setVisible(true);
+                expand();
             }
         }
     }

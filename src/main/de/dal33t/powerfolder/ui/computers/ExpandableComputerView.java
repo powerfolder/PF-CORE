@@ -25,9 +25,9 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.event.NodeManagerEvent;
-import de.dal33t.powerfolder.event.NodeManagerListener;
+import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.ExpandableView;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.util.Format;
@@ -45,7 +45,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * Class to render expandable view of a folder.
  */
-public class ExpandableComputerView extends PFUIComponent {
+public class ExpandableComputerView extends PFUIComponent implements ExpandableView {
 
     private final Member node;
     private JPanel uiComponent;
@@ -60,6 +60,8 @@ public class ExpandableComputerView extends PFUIComponent {
     private JLabel lastSeenLabel;
     private MyNodeManagerListener nodeManagerListener;
 
+    private ExpansionListener listenerSupport;
+
     /**
      * Constructor
      *
@@ -68,7 +70,30 @@ public class ExpandableComputerView extends PFUIComponent {
      */
     public ExpandableComputerView(Controller controller, Member node) {
         super(controller);
+        listenerSupport = ListenerSupportFactory
+            .createListenerSupport(ExpansionListener.class);
         this.node = node;
+    }
+
+    /**
+     * Expand this view if collapsed.
+     */
+    public void expand() {
+        expanded.set(true);
+        upperPanel.setToolTipText(
+                Translation.getTranslation("exp_computer_view.collapse"));
+        lowerOuterPanel.setVisible(true);
+        listenerSupport.collapseAllButSource(new ExpansionEvent(this));
+    }
+
+    /**
+     * Collapse this view if expanded.
+     */
+    public void collapse() {
+        expanded.set(false);
+        upperPanel.setToolTipText(
+                Translation.getTranslation("exp_computer_view.expand"));
+        lowerOuterPanel.setVisible(false);
     }
 
     /**
@@ -289,10 +314,27 @@ public class ExpandableComputerView extends PFUIComponent {
         return node.hashCode();
     }
 
+    /**
+     * Add an expansion listener.
+     *
+     * @param listener
+     */
+    public void addExpansionListener(ExpansionListener listener) {
+        ListenerSupportFactory.addListener(listenerSupport, listener);
+    }
+
+    /**
+     * Remove an expansion listener.
+     *
+     * @param listener
+     */
+    public void removeExpansionListener(ExpansionListener listener) {
+        ListenerSupportFactory.addListener(listenerSupport, listener);
+    }
+
     ///////////////////
     // Inner Classes //
     ///////////////////
-
 
     /**
      * Class to respond to expand / collapse events.
@@ -302,15 +344,9 @@ public class ExpandableComputerView extends PFUIComponent {
         public void mouseClicked(MouseEvent e) {
             boolean exp = expanded.get();
             if (exp) {
-                expanded.set(false);
-                upperPanel.setToolTipText(
-                        Translation.getTranslation("exp_computer_view.expand"));
-                lowerOuterPanel.setVisible(false);
+                collapse();
             } else {
-                expanded.set(true);
-                upperPanel.setToolTipText(
-                        Translation.getTranslation("exp_computer_view.collapse"));
-                lowerOuterPanel.setVisible(true);
+                expand();
             }
         }
     }
