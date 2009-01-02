@@ -194,7 +194,10 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
         upperPanel.setBackground(SystemColor.text);
         upperPanel.setToolTipText(
                 Translation.getTranslation("exp_folder_view.expand"));
-        upperPanel.addMouseListener(new MyMouseAdapter());
+        upperPanel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        MouseAdapter ma = new MyMouseAdapter();
+        upperPanel.addMouseListener(ma);
+        jLabel.addMouseListener(ma);
 
         // Build lower detials with line border.
         FormLayout lowerLayout = new FormLayout("3dlu, pref, pref:grow, 3dlu, pref, 3dlu",

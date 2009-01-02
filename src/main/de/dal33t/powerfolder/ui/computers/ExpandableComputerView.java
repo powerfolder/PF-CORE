@@ -129,7 +129,10 @@ public class ExpandableComputerView extends PFUIComponent implements ExpandableV
         upperPanel.setBackground(SystemColor.text);
         upperPanel.setToolTipText(
                 Translation.getTranslation("exp_computer_view.expand"));
-        upperPanel.addMouseListener(new MyMouseAdapter());
+        MouseAdapter ma = new MyMouseAdapter();
+        upperPanel.addMouseListener(ma);
+        upperPanel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        pictoLabel.addMouseListener(ma);
 
         // Build lower detials with line border.
         FormLayout lowerLayout = new FormLayout("3dlu, pref, pref:grow, 3dlu, pref, pref, 3dlu",
