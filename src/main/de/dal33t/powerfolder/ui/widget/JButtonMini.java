@@ -44,13 +44,14 @@ public class JButtonMini extends JButton {
 
     /**
      * Mini button that is configured from action and also can act on it
-     *
+     * 
      * @param action
      * @param act
      */
     public JButtonMini(final Action action, boolean act) {
-        this((Icon) action.getValue(Action.SMALL_ICON),
-                (String) action.getValue(Action.SHORT_DESCRIPTION));
+        this((Icon) action.getValue(Action.SMALL_ICON), (String) action
+            .getValue(Action.SHORT_DESCRIPTION));
+        setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         if (act) {
             addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
