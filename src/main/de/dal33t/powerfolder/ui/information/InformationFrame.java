@@ -188,6 +188,18 @@ public class InformationFrame extends PFUIComponent {
     	buildDebugInformationCard();
         displayCard(debugInformationCard);
     }
+    
+    /**
+     * Displays a card with tile and icon.
+     * 
+     * @param card
+     */
+    public void displayCard(InformationCard card) {
+        getUIComponent().setIconImage(card.getCardImage());
+        getUIComponent().setTitle(card.getCardTitle());
+        getUIComponent().getContentPane().removeAll();
+        getUIComponent().getContentPane().add(card.getUIComponent());
+    }
 
     /**
      * Builds the local FolderInformationCard if required.
@@ -223,17 +235,5 @@ public class InformationFrame extends PFUIComponent {
         if (debugInformationCard == null) {
         	debugInformationCard = new DebugInformationCard(getController());
         }
-    }
-
-    /**
-     * Displays a card with tile and icon.
-     * 
-     * @param card
-     */
-    private void displayCard(InformationCard card) {
-        getUIComponent().setIconImage(card.getCardImage());
-        getUIComponent().setTitle(card.getCardTitle());
-        getUIComponent().getContentPane().removeAll();
-        getUIComponent().getContentPane().add(card.getUIComponent());
     }
 }
