@@ -25,6 +25,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.ui.Icons;
@@ -34,10 +35,12 @@ import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.NeverAskAgainResponse;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.ui.GenericDialogType;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.*;
@@ -58,6 +61,7 @@ public class ExpandableComputerView extends PFUIComponent implements ExpandableV
     private JLabel pictoLabel;
     private JButtonMini chatButton;
     private JPanel upperPanel;
+    private MyAddRemoveFriendAction addRemoveFriendAction;
 
     private JLabel lastSeenLabel;
     private MyNodeManagerListener nodeManagerListener;
@@ -189,9 +193,8 @@ public class ExpandableComputerView extends PFUIComponent implements ExpandableV
 
         lastSeenLabel = new JLabel();
         reconnectButton = new JButtonMini(new MyReconnectAction(getController()), true);
-        addRemoveButton = new JButtonMini(getApplicationModel().getActionModel()
-                .getAddFriendAction(), false);
-        addRemoveButton.addActionListener(new MyAddRemoveActionListener());
+        addRemoveFriendAction = new MyAddRemoveFriendAction(getController());
+        addRemoveButton = new JButtonMini(addRemoveFriendAction, true);
         chatButton = new JButtonMini(new MyOpenChatAction(getController()), true);
         pictoLabel = new JLabel();
         updateDetails();
@@ -251,11 +254,13 @@ public class ExpandableComputerView extends PFUIComponent implements ExpandableV
      * Configure the add / remove button on node change.
      */
     private void configureAddRemoveButton() {
+
         if (node.isFriend()) {
-            addRemoveButton.configureFromAction(getApplicationModel().getActionModel().getRemoveFriendAction());
+            addRemoveFriendAction.setAdd(false);
         } else {
-            addRemoveButton.configureFromAction(getApplicationModel().getActionModel().getAddFriendAction());
+            addRemoveFriendAction.setAdd(true);
         }
+        addRemoveButton.configureFromAction(addRemoveFriendAction);
     }
 
     /**
@@ -395,24 +400,6 @@ public class ExpandableComputerView extends PFUIComponent implements ExpandableV
         }
     }
 
-    /**
-     * Class to listen for add / remove friendship requests.
-     */
-    private class MyAddRemoveActionListener implements ActionListener {
-
-        public void actionPerformed(ActionEvent e) {
-            ActionEvent ae = new ActionEvent(getNode().getInfo(),
-                    e.getID(), e.getActionCommand(), e.getWhen(), e.getModifiers());
-            if (node.isFriend()) {
-                getApplicationModel().getActionModel().getRemoveFriendAction()
-                        .actionPerformed(ae);
-            } else {
-                getApplicationModel().getActionModel().getAddFriendAction()
-                        .actionPerformed(ae);
-            }
-        }
-    }
-
     private class MyOpenChatAction extends BaseAction {
 
         private MyOpenChatAction(Controller controller) {
@@ -468,5 +455,74 @@ public class ExpandableComputerView extends PFUIComponent implements ExpandableV
             new Thread(connector, "Reconnector to " + node.getNick()).start();
         }
     }
+
+
+    private class MyAddRemoveFriendAction extends BaseAction {
+
+        private boolean add = true;
+
+        private MyAddRemoveFriendAction(Controller controller) {
+            super("action_add_friend", controller);
+        }
+
+        public void setAdd(boolean add) {
+            this.add = add;
+            if (add) {
+                configureFromActionId("action_add_friend");
+            } else {
+                configureFromActionId("action_remove_friend");
+            }
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            if (add) {
+                boolean askForFriendshipMessage = PreferencesEntry.
+                        ASK_FOR_FRIENDSHIP_MESSAGE.getValueBoolean(getController());
+                if (askForFriendshipMessage) {
+
+                    // Prompt for personal message.
+                    String[] options = {
+                            Translation.getTranslation("general.ok"),
+                            Translation.getTranslation("general.cancel")};
+
+                    FormLayout layout = new FormLayout("pref", "pref, 5dlu, pref, pref");
+                    PanelBuilder builder = new PanelBuilder(layout);
+                    CellConstraints cc = new CellConstraints();
+                    String nick = node.getNick();
+                    String text = Translation.getTranslation(
+                            "friend.search.personal.message.text2", nick);
+                    builder.add(new JLabel(text), cc.xy(1, 1));
+                    JTextArea textArea = new JTextArea();
+                    JScrollPane scrollPane = new JScrollPane(textArea);
+                    scrollPane.setPreferredSize(new Dimension(400, 200));
+                    builder.add(scrollPane, cc.xy(1, 3));
+                    JPanel innerPanel = builder.getPanel();
+
+                    NeverAskAgainResponse response = DialogFactory.genericDialog(
+                            getController().getUIController().
+                            getMainFrame().getUIComponent(),
+                            Translation.getTranslation("friend.search.personal.message.title"),
+                            innerPanel, options, 0, GenericDialogType.INFO,
+                            Translation.getTranslation("general.neverAskAgain"));
+                    if (response.getButtonIndex() == 0) { // == OK
+                        String personalMessage = textArea.getText();
+                        node.setFriend(true, personalMessage);
+                    }
+                    if (response.isNeverAskAgain()) {
+                        // don't ask me again
+                        PreferencesEntry.ASK_FOR_FRIENDSHIP_MESSAGE.setValue(
+                                getController(), false);
+                    }
+                } else {
+                    // Send with no personal messages
+                    node.setFriend(true, null);
+                }
+            } else {
+                node.setFriend(false, null);
+            }
+        }
+    }
+
+
 
 }

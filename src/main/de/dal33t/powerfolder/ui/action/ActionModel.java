@@ -41,8 +41,6 @@ public class ActionModel extends PFComponent {
     private ConnectAction connectAction;
     private OpenDownloadsInformationAction openDownloadsInformationAction;
     private OpenUploadsInformationAction openUploadsInformationAction;
-    private AddFriendAction addFriendAction;
-    private RemoveFriendAction removeFriendAction;
     private OpenInvitationReceivedWizardAction openInvitationReceivedWizardAction;
     private AskForFriendshipAction askForFriendshipAction;
     private OpenDebugInformationAction openDebugInformationAction;
@@ -94,20 +92,6 @@ public class ActionModel extends PFComponent {
             connectAction = new ConnectAction(getController());
         }
         return connectAction;
-    }
-
-    public AddFriendAction getAddFriendAction() {
-        if (addFriendAction == null) {
-            addFriendAction = new AddFriendAction(getController());
-        }
-        return addFriendAction;
-    }
-
-    public RemoveFriendAction getRemoveFriendAction() {
-        if (removeFriendAction == null) {
-            removeFriendAction = new RemoveFriendAction(getController());
-        }
-        return removeFriendAction;
     }
 
     public OpenInvitationReceivedWizardAction

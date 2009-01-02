@@ -26,6 +26,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
@@ -36,6 +37,9 @@ import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.widget.JButton3Icons;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.UIUtil;
+import de.dal33t.powerfolder.util.ui.NeverAskAgainResponse;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.ui.GenericDialogType;
 
 import javax.swing.*;
 import javax.swing.text.*;
@@ -64,8 +68,7 @@ public class ChatPanel extends PFUIComponent {
     private JPanel toolBar;
     private Member chatPartner;
     private ChatFrame chatFrame;
-
-    private JButton addRemoveButton;
+    private MyAddRemoveFriendAction addRemoveFriendAction;
 
     /**
      * Constructor
@@ -130,17 +133,15 @@ public class ChatPanel extends PFUIComponent {
      */
     private void createToolBar() {
 
-        addRemoveButton = new JButton(getApplicationModel().getActionModel()
-                .getAddFriendAction());
-        addRemoveButton.addActionListener(new MyAddRemoveActionListener());
-        configureAddRemoveButton();
-
-        JButton reconnectButton = new JButton(new MyReconnectAction(getController()));
+        addRemoveFriendAction = new MyAddRemoveFriendAction(getController());
 
         ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
-        bar.addGridded(addRemoveButton);
+
+        configureAddRemoveAction();
+
+        bar.addGridded(new JButton(addRemoveFriendAction));
         bar.addRelatedGap();
-        bar.addGridded(reconnectButton);
+        bar.addGridded(new JButton(new MyReconnectAction(getController())));
 
         bar.getPanel();
 
@@ -306,15 +307,13 @@ public class ChatPanel extends PFUIComponent {
     }
 
     /**
-     * Configure the buttone to be add or remove.
+     * Configure the button to be add or remove.
      */
-    private void configureAddRemoveButton() {
+    private void configureAddRemoveAction() {
         if (chatPartner.isFriend()) {
-            addRemoveButton.setAction(getApplicationModel().getActionModel()
-                    .getRemoveFriendAction());
+            addRemoveFriendAction.setAdd(false);
         } else {
-            addRemoveButton.setAction(getApplicationModel().getActionModel()
-                    .getAddFriendAction());
+            addRemoveFriendAction.setAdd(true);
         }
     }
 
@@ -400,7 +399,7 @@ public class ChatPanel extends PFUIComponent {
         private void updateOnNodeChange(NodeManagerEvent e) {
             if (e.getNode().equals(chatPartner)) {
                 updateInputField();
-                configureAddRemoveButton();
+                configureAddRemoveAction();
             }
         }
 
@@ -429,25 +428,6 @@ public class ChatPanel extends PFUIComponent {
             return true;
         }
     }
-
-    /**
-     * Class to listen for add / remove friendship requests.
-     */
-    private class MyAddRemoveActionListener implements ActionListener {
-
-        public void actionPerformed(ActionEvent e) {
-            ActionEvent ae = new ActionEvent(chatPartner.getInfo(),
-                    e.getID(), e.getActionCommand(), e.getWhen(), e.getModifiers());
-            if (chatPartner.isFriend()) {
-                getApplicationModel().getActionModel().getRemoveFriendAction()
-                        .actionPerformed(ae);
-            } else {
-                getApplicationModel().getActionModel().getAddFriendAction()
-                        .actionPerformed(ae);
-            }
-        }
-    }
-
 
     private class MyReconnectAction extends BaseAction {
 
@@ -491,6 +471,72 @@ public class ChatPanel extends PFUIComponent {
 
             // Start connect in anonymous thread
             new Thread(connector, "Reconnector to " + chatPartner.getNick()).start();
+        }
+    }
+
+    private class MyAddRemoveFriendAction extends BaseAction {
+
+        private boolean add = true;
+
+        private MyAddRemoveFriendAction(Controller controller) {
+            super("action_add_friend", controller);
+        }
+
+        public void setAdd(boolean add) {
+            this.add = add;
+            if (add) {
+                configureFromActionId("action_add_friend");
+            } else {
+                configureFromActionId("action_remove_friend");
+            }
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            if (add) {
+                boolean askForFriendshipMessage = PreferencesEntry.
+                        ASK_FOR_FRIENDSHIP_MESSAGE.getValueBoolean(getController());
+                if (askForFriendshipMessage) {
+
+                    // Prompt for personal message.
+                    String[] options = {
+                            Translation.getTranslation("general.ok"),
+                            Translation.getTranslation("general.cancel")};
+
+                    FormLayout layout = new FormLayout("pref", "pref, 5dlu, pref, pref");
+                    PanelBuilder builder = new PanelBuilder(layout);
+                    CellConstraints cc = new CellConstraints();
+                    String nick = chatPartner.getNick();
+                    String text = Translation.getTranslation(
+                            "friend.search.personal.message.text2", nick);
+                    builder.add(new JLabel(text), cc.xy(1, 1));
+                    JTextArea textArea = new JTextArea();
+                    JScrollPane scrollPane = new JScrollPane(textArea);
+                    scrollPane.setPreferredSize(new Dimension(400, 200));
+                    builder.add(scrollPane, cc.xy(1, 3));
+                    JPanel innerPanel = builder.getPanel();
+
+                    NeverAskAgainResponse response = DialogFactory.genericDialog(
+                            getController().getUIController().
+                            getMainFrame().getUIComponent(),
+                            Translation.getTranslation("friend.search.personal.message.title"),
+                            innerPanel, options, 0, GenericDialogType.INFO,
+                            Translation.getTranslation("general.neverAskAgain"));
+                    if (response.getButtonIndex() == 0) { // == OK
+                        String personalMessage = textArea.getText();
+                        chatPartner.setFriend(true, personalMessage);
+                    }
+                    if (response.isNeverAskAgain()) {
+                        // don't ask me again
+                        PreferencesEntry.ASK_FOR_FRIENDSHIP_MESSAGE.setValue(
+                                getController(), false);
+                    }
+                } else {
+                    // Send with no personal messages
+                    chatPartner.setFriend(true, null);
+                }
+            } else {
+                chatPartner.setFriend(false, null);
+            }
         }
     }
 
