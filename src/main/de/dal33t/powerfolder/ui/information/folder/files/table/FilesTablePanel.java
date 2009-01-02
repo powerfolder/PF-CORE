@@ -30,6 +30,7 @@ import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.RecycleBin;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.transfer.TransferManager;
+import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.information.HasDetailsPanel;
 import de.dal33t.powerfolder.ui.information.folder.files.DirectoryFilterListener;
@@ -70,6 +71,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
     private DeleteFileAction deleteFileAction;
     private RestoreFileAction restoreFileAction;
     private DownloadFileAction downloadFileAction;
+    private AbortDownloadAction abortDownloadAction;
     private JPopupMenu fileMenu;
 
     public FilesTablePanel(Controller controller) {
@@ -131,6 +133,8 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         downloadFileAction.setEnabled(false);
         restoreFileAction = new RestoreFileAction();
         restoreFileAction.setEnabled(false);
+        abortDownloadAction = new AbortDownloadAction(getController());
+        abortDownloadAction.setEnabled(false);
         deleteFileAction = new DeleteFileAction();
         deleteFileAction.setEnabled(false);
 
@@ -151,6 +155,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         if (OSUtil.isWindowsSystem() || OSUtil.isMacOS()) {
             fileMenu.add(openFileAction);
         }
+        fileMenu.add(abortDownloadAction);
         fileMenu.add(deleteFileAction);
         fileMenu.add(restoreFileAction);
     }
@@ -382,6 +387,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
     }
 
     private class MyListSelectionListener implements ListSelectionListener {
+
         public void valueChanged(ListSelectionEvent e) {
             int min = table.getSelectionModel().getMinSelectionIndex();
             int max = table.getSelectionModel().getMaxSelectionIndex();
@@ -416,6 +422,10 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
                     restoreFileAction.setEnabled(state);
                     deleteFileAction.setEnabled(!state);
 
+                    DownloadManager dl = getController().getTransferManager()
+                            .getActiveDownload(fileInfo);
+                    abortDownloadAction.setEnabled(dl != null);
+
                     return;
                 }
             }
@@ -425,6 +435,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
             openFileAction.setEnabled(false);
             restoreFileAction.setEnabled(false);
             deleteFileAction.setEnabled(false);
+            abortDownloadAction.setEnabled(false);
         }
     }
 
@@ -455,21 +466,45 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
     }
 
     private class TableMouseListener extends MouseAdapter {
-        public void mousePressed(MouseEvent evt) {
-            if (evt.isPopupTrigger()) {
-                showContextMenu(evt);
+        public void mousePressed(MouseEvent e) {
+            if (e.isPopupTrigger()) {
+                showContextMenu(e);
             }
         }
 
-        public void mouseReleased(MouseEvent evt) {
-            if (evt.isPopupTrigger()) {
-                showContextMenu(evt);
+        public void mouseReleased(MouseEvent e) {
+            if (e.isPopupTrigger()) {
+                showContextMenu(e);
             }
         }
 
         private void showContextMenu(MouseEvent evt) {
             fileMenu.show(evt.getComponent(), evt.getX(), evt.getY());
         }
+    }
 
+    /**
+     * Action to abort the current download.
+     */
+    private class AbortDownloadAction extends BaseAction {
+
+        private AbortDownloadAction(Controller controller) {
+            super("action_abort_download", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            int min = table.getSelectionModel().getMinSelectionIndex();
+            int max = table.getSelectionModel().getMaxSelectionIndex();
+            if (min == max && min >= 0) {
+                FileInfo fileInfo = tableModel.getFileInfoAtRow(min);
+                if (fileInfo != null) {
+                    TransferManager tm =  getController().getTransferManager();
+                    DownloadManager dl = tm.getActiveDownload(fileInfo);
+                    if (dl != null) {
+                        dl.abort();
+                    }
+                }
+            }
+        }
     }
 }

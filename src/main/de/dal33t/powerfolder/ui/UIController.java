@@ -870,9 +870,8 @@ public class UIController extends PFComponent {
                 // Ignore status updates
                 return;
             }
-            notifyMessage(Translation
-                .getTranslation("chat.notification.title"), Translation
-                .getTranslation("chat.notification.message"));
+            notifyMessage(Translation.getTranslation("chat.notification.title"),
+                    Translation.getTranslation("chat.notification.message"));
         }
 
         public boolean fireInEventDispatchThread() {
