@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id: JButton3Icons.java 5009 2008-08-11 01:25:22Z tot $
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id: JButton3Icons.java 5009 2008-08-11 01:25:22Z tot $
+ */
 package de.dal33t.powerfolder.ui.widget;
 
 import com.jgoodies.forms.factories.Borders;
@@ -28,18 +28,18 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 /**
- * Class showing image button with no border, except when hover or pressed.
- * Uses Synthetica features to do border.
+ * Class showing image button with no border, except when hover or pressed. Uses
+ * Synthetica features to do border.
  */
 public class JButtonMini extends JButton {
 
     /**
-     * Mini button that is configured from action but does not act on it
-     *
+     * Mini button that is configured from action which does act on it
+     * 
      * @param action
      */
     public JButtonMini(Action action) {
-        this(action, false);
+        this(action, true);
     }
 
     /**

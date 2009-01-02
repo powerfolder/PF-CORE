@@ -28,6 +28,7 @@ import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.net.ConnectionListener;
+import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.ui.ComplexComponentFactory;
@@ -230,9 +231,9 @@ public class StatusBar extends PFUIComponent implements UIPanel {
         portLabel
             .setToolTipText(Translation.getTranslation("status.port.text"));
 
-        openPreferencesButton = new JButton(getApplicationModel()
+        openPreferencesButton = new JButtonMini(getApplicationModel()
             .getActionModel().getOpenPreferencesAction());
-        openAboutBoxButton = new JButton(getApplicationModel()
+        openAboutBoxButton = new JButtonMini(getApplicationModel()
             .getActionModel().getOpenAboutBoxAction());
         spacerLabel = new JLabel() {
 

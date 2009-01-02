@@ -187,10 +187,10 @@ public class ExpandableComputerView extends PFUIComponent implements ExpandableV
 
         lastSeenLabel = new JLabel();
         reconnectButton = new JButtonMini(getApplicationModel()
-                .getActionModel().getReconnectAction());
+                .getActionModel().getReconnectAction(), false);
         reconnectButton.addActionListener(new MyReconnectActionListener());
         addRemoveButton = new JButtonMini(getApplicationModel().getActionModel()
-                .getAddFriendAction());
+                .getAddFriendAction(), false);
         addRemoveButton.addActionListener(new MyAddRemoveActionListener());
         chatButton = new JButtonMini(new MyOpenChatAction(getController()), true);
         pictoLabel = new JLabel();
