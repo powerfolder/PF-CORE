@@ -83,7 +83,7 @@ public class Member extends PFComponent implements Comparable<Member> {
      * If this node has completely handshaked. TODO: Move this into
      * connectionHandler ?
      */
-    private boolean handshaked;
+    private volatile boolean handshaked;
 
     /** The number of connection retries to the most recent known remote address */
     private int connectionRetries;
