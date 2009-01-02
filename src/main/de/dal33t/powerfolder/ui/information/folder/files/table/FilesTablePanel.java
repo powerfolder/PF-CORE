@@ -40,6 +40,7 @@ import de.dal33t.powerfolder.ui.information.folder.files.tree.DirectoryTreeNodeU
 import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.ui.SwingWorker;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
@@ -69,6 +70,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
     private DeleteFileAction deleteFileAction;
     private RestoreFileAction restoreFileAction;
     private DownloadFileAction downloadFileAction;
+    private JPopupMenu fileMenu;
 
     public FilesTablePanel(Controller controller) {
         super(controller);
@@ -77,6 +79,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         table = new FilesTable(tableModel);
         table.getSelectionModel().addListSelectionListener(new MyListSelectionListener());
         table.getTableHeader().addMouseListener(new TableHeaderMouseListener());
+        table.addMouseListener(new TableMouseListener());
     }
 
     /**
@@ -111,6 +114,9 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         builder.addSeparator(null, cc.xy(1, 3));
         builder.add(tableScroller, cc.xy(1, 5));
         builder.add(fileDetailsPanel.getPanel(), cc.xy(1, 7));
+
+        buildPopupMenus();
+
         uiComponent = builder.getPanel();
     }
 
@@ -130,14 +136,23 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
 
         bar.addGridded(new JButton(downloadFileAction));
         bar.addRelatedGap();
-        bar.addGridded(new JButton(deleteFileAction));
-        bar.addRelatedGap();
-        bar.addGridded(new JButton(restoreFileAction));
-        bar.addRelatedGap();
         bar.addGridded(new JButton(openFileAction));
         bar.addRelatedGap();
         bar.addGridded(new JToggleButton(new DetailsAction(getController())));
         return bar.getPanel();
+    }
+
+    /**
+     * Builds the popup menus
+     */
+    private void buildPopupMenus() {
+        fileMenu = new JPopupMenu();
+        fileMenu.add(downloadFileAction);
+        if (OSUtil.isWindowsSystem() || OSUtil.isMacOS()) {
+            fileMenu.add(openFileAction);
+        }
+        fileMenu.add(deleteFileAction);
+        fileMenu.add(restoreFileAction);
     }
 
     /**
@@ -437,5 +452,24 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
                 }
             }
         }
+    }
+
+    private class TableMouseListener extends MouseAdapter {
+        public void mousePressed(MouseEvent evt) {
+            if (evt.isPopupTrigger()) {
+                showContextMenu(evt);
+            }
+        }
+
+        public void mouseReleased(MouseEvent evt) {
+            if (evt.isPopupTrigger()) {
+                showContextMenu(evt);
+            }
+        }
+
+        private void showContextMenu(MouseEvent evt) {
+            fileMenu.show(evt.getComponent(), evt.getX(), evt.getY());
+        }
+
     }
 }
