@@ -51,7 +51,7 @@ public class ConsoleHandler extends Handler {
      * @param record
      */
     public void publish(LogRecord record) {
-        if (getLevel().intValue() > record.getLevel().intValue()) {
+        if (!isLoggable(record)) {
             return;
         }
         String formattedMessage = formatterThreadLocal.get().format(record);

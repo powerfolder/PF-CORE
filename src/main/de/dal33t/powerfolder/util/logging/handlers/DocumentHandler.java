@@ -86,22 +86,24 @@ public class DocumentHandler extends Handler {
 
     /**
      * Publish a log record to the log buffer.
+     * 
      * @param record
      */
     public void publish(final LogRecord record) {
-
-        if (getLevel().intValue() > record.getLevel().intValue()) {
+        if (!isLoggable(record)) {
             return;
         }
 
         EventQueue.invokeLater(new Runnable() {
             public void run() {
                 try {
-                    MutableAttributeSet set = logColors.get(record.getLevel().getName());
-                    String formattedMessage = formatterThreadLocal.get().format(record);
+                    MutableAttributeSet set = logColors.get(record.getLevel()
+                        .getName());
+                    String formattedMessage = formatterThreadLocal.get()
+                        .format(record);
                     synchronized (logBuffer) {
                         logBuffer.insertString(logBuffer.getLength(),
-                                formattedMessage, set);
+                            formattedMessage, set);
                         if (logBuffer.getLength() > numberOfLogCharacters) {
                             logBuffer.remove(0, formattedMessage.length());
                         }
