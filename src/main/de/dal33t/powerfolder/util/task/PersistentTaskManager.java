@@ -162,6 +162,10 @@ public class PersistentTaskManager extends PFComponent {
             tasks = null;
         }
     }
+    
+    public boolean isStarted() {
+        return tasks != null;
+    }
 
     /**
      * Schedules a new task. The given task will be started as soon as possible
