@@ -432,8 +432,6 @@ public class ExpandableComputerView extends PFUIComponent implements ExpandableV
 
         public void actionPerformed(ActionEvent e) {
 
-            System.out.println("hghg");
-
             // Build new connect dialog
             final ConnectDialog connectDialog = new ConnectDialog(getController());
 
