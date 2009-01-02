@@ -19,6 +19,9 @@
  */
 package de.dal33t.powerfolder.util;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
@@ -195,7 +198,10 @@ public class Profiling {
         sb.append("Min elapsed time: " + minimumTime + "ms\n");
         sb.append("Max elapsed time: " + maximumTime + "ms\n");
         sb.append("\n");
-        for (ProfilingStat stat : stats.values()) {
+        List<String> keys = new ArrayList<String>(stats.keySet());
+        Collections.sort(keys);
+        for (String key : keys) {
+            ProfilingStat stat = stats.get(key);
             sb.append("'" + stat.getOperationName() + "' invocations "
                 + stat.getCount() + " elapsed " + stat.getElapsed()
                 + "ms average " + stat.getElapsed() / stat.getCount() + "ms\n");
