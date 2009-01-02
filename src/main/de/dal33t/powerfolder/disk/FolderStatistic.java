@@ -645,8 +645,9 @@ public class FolderStatistic extends PFComponent {
 
     // Logging interface ******************************************************
 
+    @Override
     public String getLoggerName() {
-        return "FolderStatistic '" + folder.getName() + "'";
+        return super.getLoggerName() + " '" + folder.getName() + '\'';
     }
 
     // General ****************************************************************
