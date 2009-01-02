@@ -175,12 +175,24 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                 .getTranslation("status.upload"), getController()
                 .getTransferManager().getUploadCounter(), Translation
                 .getTranslation("status.upload.text"));
+        upStats.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                getUIController().openUploadsInformation();
+            }
+        });
 
         downStats = ComplexComponentFactory.createTransferCounterLabel(
             getController(), Icons.DOWNLOAD, Translation
                 .getTranslation("status.download"), getController()
                 .getTransferManager().getDownloadCounter(), Translation
                 .getTranslation("status.download.text"));
+        downStats.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                getUIController().openDownloadsInformation();
+            }
+        });
 
         limitedConnectivityLabel = new JLabel();
         limitedConnectivityLabel.addMouseListener(new MouseAdapter() {
