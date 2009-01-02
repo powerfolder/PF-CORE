@@ -83,7 +83,9 @@ public class PlainRelayedConnectionHandler extends
 
     // Logger methods *********************************************************
 
+    @Override
     public String getLoggerName() {
-        return "RelConHandler-" + getConnectionId() + " " + getRemote().nick;
+        return super.getLoggerName() + ' ' + getConnectionId() + ' '
+            + getRemote().nick;
     }
 }
