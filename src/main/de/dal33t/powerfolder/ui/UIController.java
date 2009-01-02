@@ -33,6 +33,7 @@ import de.dal33t.powerfolder.ui.chat.ChatFrame;
 import de.dal33t.powerfolder.ui.chat.ChatModel;
 import de.dal33t.powerfolder.ui.chat.ChatModelEvent;
 import de.dal33t.powerfolder.ui.chat.ChatModelListener;
+import de.dal33t.powerfolder.ui.information.InformationCard;
 import de.dal33t.powerfolder.ui.information.InformationFrame;
 import de.dal33t.powerfolder.ui.model.ApplicationModel;
 import de.dal33t.powerfolder.ui.model.TransferManagerModel;
@@ -651,9 +652,14 @@ public class UIController extends PFComponent {
         informationFrame.displayUploads();
         displayInformationWindow();
     }
-    
+
     public void openDebugInformation() {
         informationFrame.displayDebug();
+        displayInformationWindow();
+    }
+    
+    public void openInformationCard(InformationCard card) {
+        informationFrame.displayCard(card);
         displayInformationWindow();
     }
 
