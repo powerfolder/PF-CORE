@@ -25,9 +25,11 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.ExpandableView;
+import de.dal33t.powerfolder.ui.dialog.ConnectDialog;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.util.Format;
@@ -186,9 +188,7 @@ public class ExpandableComputerView extends PFUIComponent implements ExpandableV
         expanded = new AtomicBoolean();
 
         lastSeenLabel = new JLabel();
-        reconnectButton = new JButtonMini(getApplicationModel()
-                .getActionModel().getReconnectAction(), false);
-        reconnectButton.addActionListener(new MyReconnectActionListener());
+        reconnectButton = new JButtonMini(new MyReconnectAction(getController()), true);
         addRemoveButton = new JButtonMini(getApplicationModel().getActionModel()
                 .getAddFriendAction(), false);
         addRemoveButton.addActionListener(new MyAddRemoveActionListener());
@@ -396,19 +396,6 @@ public class ExpandableComputerView extends PFUIComponent implements ExpandableV
     }
 
     /**
-     * Class to listen for reconnect requests.
-     */
-    private class MyReconnectActionListener implements ActionListener {
-
-        public void actionPerformed(ActionEvent e) {
-            ActionEvent ae = new ActionEvent(getNode().getInfo(),
-                    e.getID(), e.getActionCommand(), e.getWhen(), e.getModifiers());
-            getApplicationModel().getActionModel().getReconnectAction()
-                    .actionPerformed(ae);
-        }
-    }
-
-    /**
      * Class to listen for add / remove friendship requests.
      */
     private class MyAddRemoveActionListener implements ActionListener {
@@ -422,7 +409,7 @@ public class ExpandableComputerView extends PFUIComponent implements ExpandableV
             } else {
                 getApplicationModel().getActionModel().getAddFriendAction()
                         .actionPerformed(ae);
-            }            
+            }
         }
     }
 
@@ -434,6 +421,53 @@ public class ExpandableComputerView extends PFUIComponent implements ExpandableV
 
         public void actionPerformed(ActionEvent e) {
             getController().getUIController().openChat(getNode().getInfo());
+        }
+    }
+
+    private class MyReconnectAction extends BaseAction {
+
+        MyReconnectAction(Controller controller) {
+            super("action_reconnect", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+
+            System.out.println("hghg");
+
+            // Build new connect dialog
+            final ConnectDialog connectDialog = new ConnectDialog(getController());
+
+            Runnable connector = new Runnable() {
+                public void run() {
+
+                    // Open connect dialog if ui is open
+                    connectDialog.open(node.getNick());
+
+                    // Close connection first
+                    node.shutdown();
+
+                    // Now execute the connect
+                    try {
+                        if (!node.reconnect()) {
+                            throw new ConnectionException(Translation.getTranslation(
+                                    "dialog.unable_to_connect_to_member",
+                                node.getNick()));
+                        }
+                    } catch (ConnectionException ex) {
+                        connectDialog.close();
+                        if (!connectDialog.isCanceled() && !node.isConnected()) {
+                            // Show if user didn't cancel
+                            ex.show(getController());
+                        }
+                    }
+
+                    // Close dialog
+                    connectDialog.close();
+                }
+            };
+
+            // Start connect in anonymous thread
+            new Thread(connector, "Reconnector to " + node.getNick()).start();
         }
     }
 

@@ -26,10 +26,13 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.message.MemberChatMessage;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.dialog.ConnectDialog;
+import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.widget.JButton3Icons;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.UIUtil;
@@ -132,9 +135,7 @@ public class ChatPanel extends PFUIComponent {
         addRemoveButton.addActionListener(new MyAddRemoveActionListener());
         configureAddRemoveButton();
 
-        JButton reconnectButton = new JButton(getUIController()
-                .getApplicationModel().getActionModel().getReconnectAction());
-        reconnectButton.addActionListener(new MyReconnectActionListener());
+        JButton reconnectButton = new JButton(new MyReconnectAction(getController()));
 
         ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
         bar.addGridded(addRemoveButton);
@@ -430,19 +431,6 @@ public class ChatPanel extends PFUIComponent {
     }
 
     /**
-     * Class to listen for reconnect requests.
-     */
-    private class MyReconnectActionListener implements ActionListener {
-
-        public void actionPerformed(ActionEvent e) {
-            ActionEvent ae = new ActionEvent(chatPartner.getInfo(),
-                    e.getID(), e.getActionCommand(), e.getWhen(), e.getModifiers());
-            getApplicationModel().getActionModel().getReconnectAction()
-                    .actionPerformed(ae);
-        }
-    }
-
-    /**
      * Class to listen for add / remove friendship requests.
      */
     private class MyAddRemoveActionListener implements ActionListener {
@@ -459,4 +447,51 @@ public class ChatPanel extends PFUIComponent {
             }
         }
     }
+
+
+    private class MyReconnectAction extends BaseAction {
+
+        MyReconnectAction(Controller controller) {
+            super("action_reconnect", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+
+            // Build new connect dialog
+            final ConnectDialog connectDialog = new ConnectDialog(getController());
+
+            Runnable connector = new Runnable() {
+                public void run() {
+
+                    // Open connect dialog if ui is open
+                    connectDialog.open(chatPartner.getNick());
+
+                    // Close connection first
+                    chatPartner.shutdown();
+
+                    // Now execute the connect
+                    try {
+                        if (!chatPartner.reconnect()) {
+                            throw new ConnectionException(Translation.getTranslation(
+                                    "dialog.unable_to_connect_to_member",
+                                chatPartner.getNick()));
+                        }
+                    } catch (ConnectionException ex) {
+                        connectDialog.close();
+                        if (!connectDialog.isCanceled() && !chatPartner.isConnected()) {
+                            // Show if user didn't cancel
+                            ex.show(getController());
+                        }
+                    }
+
+                    // Close dialog
+                    connectDialog.close();
+                }
+            };
+
+            // Start connect in anonymous thread
+            new Thread(connector, "Reconnector to " + chatPartner.getNick()).start();
+        }
+    }
+
 }
