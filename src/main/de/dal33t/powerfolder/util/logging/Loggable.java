@@ -31,6 +31,13 @@ public abstract class Loggable {
 
     /** The class logger. */
     private transient Logger log;
+    
+    /**
+     * @return the name of the logger. by default uses the classname
+     */
+    protected String getLoggerName() {
+        return getClass().getName();
+    }
 
     /**
      * Answers whether the logger level for this class is severe.
@@ -230,7 +237,7 @@ public abstract class Loggable {
      */
     private boolean isLog(Level level) {
         if (log == null) {
-            log = Logger.getLogger(getClass().getName());
+            log = Logger.getLogger(getLoggerName());
         }
         return log.isLoggable(level);
     }
@@ -244,7 +251,7 @@ public abstract class Loggable {
      */
     private void logIt(Level level, String message, Throwable t) {
         if (log == null) {
-            log = Logger.getLogger(getClass().getName());
+            log = Logger.getLogger(getLoggerName());
         }
         if (t == null) {
             log.log(level, message);
