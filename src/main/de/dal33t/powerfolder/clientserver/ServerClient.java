@@ -165,7 +165,7 @@ public class ServerClient extends PFComponent {
         getController().getNodeManager().addNodeManagerListener(
             new MyNodeManagerListener());
     }
-
+    
     private static boolean isTempServerNode(Member node) {
         return node.getId().startsWith(MEMBER_ID_TEMP_PREFIX);
     }
@@ -234,6 +234,24 @@ public class ServerClient extends PFComponent {
         // }
         return isTempServerNode(server)
             && server.getReconnectAddress().equals(node.getReconnectAddress());
+    }
+
+    /**
+     * Sets/Changes the server.
+     * 
+     * @param serverNode
+     * @param serverChange
+     */
+    public void setServer(Member serverNode, boolean serverChange) {
+        Reject.ifNull(serverNode, "Server node is null");
+        setNewServerNode(serverNode);
+        this.allowServerChange = serverChange;
+        setAnonAccount();
+        if (isConnected()) {
+            loginWithLastKnown();
+        } else {
+            getServer().markForImmediateConnect();
+        }
     }
 
     /**

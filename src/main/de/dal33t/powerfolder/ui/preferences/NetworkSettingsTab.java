@@ -199,7 +199,7 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         if (panel == null) {
             FormLayout layout = new FormLayout(
                 "right:100dlu, 3dlu, 30dlu, 3dlu, 15dlu, 10dlu, 30dlu, 30dlu, pref, 0:grow",
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 7dlu, top:pref, 7dlu, top:pref, 7dlu, pref, 7dlu, pref");
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 7dlu, top:pref, 7dlu, top:pref, 7dlu, pref, 7dlu, top:pref");
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
                 .createEmptyBorder("3dlu, 0dlu, 0dlu, 0dlu"));
@@ -275,8 +275,8 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
                 .setServerInConfig(newServer.getInfo());
             // TODO: Unknown.
             getController().getOSClient().setServerWebURLInConfig(null);
+            getController().getOSClient().setServer(newServer, false);
         }
-        needsRestart = !Util.equals(oldServer, newServer);
     }
 
     private String getTooltip(NetworkingMode nm) {
