@@ -2633,8 +2633,9 @@ public class Folder extends PFComponent {
 
     // Logger methods *********************************************************
 
+    @Override
     public String getLoggerName() {
-        return "Folder '" + getName() + '\'';
+        return super.getLoggerName() + " '" + getName() + '\'';
     }
 
     /**
