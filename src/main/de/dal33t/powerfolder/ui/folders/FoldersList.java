@@ -94,6 +94,7 @@ public class FoldersList extends PFUIComponent {
         folderListPanel = new JPanel();
         folderListPanel.setLayout(new BoxLayout(folderListPanel, BoxLayout.PAGE_AXIS));
         registerListeners();
+        updateFolders();
 
         // Build ui
         FormLayout layout = new FormLayout("pref:grow",
