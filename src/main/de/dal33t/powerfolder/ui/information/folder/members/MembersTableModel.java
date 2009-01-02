@@ -170,6 +170,10 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
         return members.size();
     }
 
+    public Member getMemberAt(int rowIndex) {
+        return (Member) getValueAt(rowIndex, 0);
+    }
+
     /**
      * Gets a value at a specific row / column.
      *

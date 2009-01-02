@@ -26,16 +26,28 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.event.NodeManagerListener;
+import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.ui.action.BaseAction;
+import de.dal33t.powerfolder.ui.dialog.ConnectDialog;
 import de.dal33t.powerfolder.ui.information.folder.FolderInformationTab;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.ui.GenericDialogType;
+import de.dal33t.powerfolder.util.ui.NeverAskAgainResponse;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TableModelEvent;
+import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 /**
  * UI component for the members information tab
@@ -46,10 +58,11 @@ public class MembersTab extends PFUIComponent implements FolderInformationTab {
     private MembersTableModel model;
     private JScrollPane scrollPane;
     private MyOpenChatAction openChatAction;
+    private MyAddRemoveFriendAction addRemoveFriendAction;
+    private MyReconnectAction reconnectAction;
     private MembersTable membersTable;
     private Member selectedMember;
-
-    private JButton addRemoveButton;
+    private JPopupMenu fileMenu;
 
     /**
      * Constructor
@@ -58,9 +71,8 @@ public class MembersTab extends PFUIComponent implements FolderInformationTab {
      */
     public MembersTab(Controller controller) {
         super(controller);
+        controller.getNodeManager().addNodeManagerListener(new MyNodeManagerListener());
         model = new MembersTableModel(getController());
-        addRemoveButton = new JButton(getApplicationModel().getActionModel()
-                .getAddFriendAction());
     }
 
     /**
@@ -87,12 +99,15 @@ public class MembersTab extends PFUIComponent implements FolderInformationTab {
 
     public void initialize() {
         openChatAction = new MyOpenChatAction(getController());
+        addRemoveFriendAction = new MyAddRemoveFriendAction(getController());
+        reconnectAction = new MyReconnectAction(getController());
         membersTable = new MembersTable(model);
         membersTable.getSelectionModel().setSelectionMode(
                 ListSelectionModel.SINGLE_SELECTION);
         membersTable.getSelectionModel().addListSelectionListener(
                 new MySelectionListener());
         scrollPane = new JScrollPane(membersTable);
+        membersTable.addMouseListener(new TableMouseListener());
 
         // Whitestrip
         UIUtil.whiteStripTable(membersTable);
@@ -100,6 +115,15 @@ public class MembersTab extends PFUIComponent implements FolderInformationTab {
         UIUtil.setZeroHeight(scrollPane);
 
         enableOnSelection();
+    }
+
+    /**
+     * Builds the popup menus
+     */
+    private void buildPopupMenus() {
+        fileMenu = new JPopupMenu();
+        fileMenu.add(openChatAction);
+        fileMenu.add(addRemoveFriendAction);
     }
 
     /**
@@ -113,6 +137,9 @@ public class MembersTab extends PFUIComponent implements FolderInformationTab {
         builder.add(createToolBar(), cc.xy(2, 2));
         builder.addSeparator(null, cc.xyw(1, 4, 3));
         builder.add(scrollPane, cc.xy(2, 6));
+
+        buildPopupMenus();
+
         uiComponent = builder.getPanel();
     }
 
@@ -121,19 +148,14 @@ public class MembersTab extends PFUIComponent implements FolderInformationTab {
      */
     private JPanel createToolBar() {
 
-        addRemoveButton.addActionListener(new MyAddRemoveActionListener());
         enableOnSelection();
-
-        JButton reconnectButton = new JButton(getUIController()
-                .getApplicationModel().getActionModel().getReconnectAction());
-        reconnectButton.addActionListener(new MyReconnectActionListener());
 
         ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
         bar.addGridded(new JButton(openChatAction));
         bar.addRelatedGap();
-        bar.addGridded(addRemoveButton);
+        bar.addGridded(new JButton(addRemoveFriendAction));
         bar.addRelatedGap();
-        bar.addGridded(reconnectButton);
+        bar.addGridded(new JButton(reconnectAction));
         return bar.getPanel();
     }
 
@@ -145,21 +167,48 @@ public class MembersTab extends PFUIComponent implements FolderInformationTab {
         if (selectedRow >= 0) {
             selectedMember = (Member) model.getValueAt(
                     membersTable.getSelectedRow(), 0);
-            openChatAction.setEnabled(true);
 
-            addRemoveButton.setEnabled(true);
-            if (selectedMember.isFriend()) {
-                addRemoveButton.setAction(getApplicationModel().getActionModel()
-                        .getRemoveFriendAction());
+            if (selectedMember.equals(getController().getMySelf())) {
+                selectedMember = null;
+                openChatAction.setEnabled(false);
+                addRemoveFriendAction.setEnabled(false);
+                reconnectAction.setEnabled(false);
             } else {
-                addRemoveButton.setAction(getApplicationModel().getActionModel()
-                        .getAddFriendAction());
+                openChatAction.setEnabled(true);
+                reconnectAction.setEnabled(true);
+                addRemoveFriendAction.setEnabled(true);
+                if (selectedMember.isFriend()) {
+                    addRemoveFriendAction.setAdd(false);
+                } else {
+                    addRemoveFriendAction.setAdd(true);
+                }
             }
-
         } else {
             selectedMember = null;
             openChatAction.setEnabled(false);
-            addRemoveButton.setEnabled(false);
+            addRemoveFriendAction.setEnabled(false);
+            reconnectAction.setEnabled(false);
+        }
+    }
+
+    /**
+     * Method to redisplay the table if one of our members.
+     */
+    private void redisplay(Member node) {
+        boolean found = false;
+        if (node != null) {
+            for (int i = 0; i < model.getRowCount(); i++) {
+                Member member = model.getMemberAt(i);
+                if (member.equals(node)) {
+                    found = true;
+                    break;
+                }
+            }
+        }
+        if (found) {
+            // One of our folder members - redisplay.
+            TableModelEvent event = new TableModelEvent(model);
+            membersTable.tableChanged(event);
         }
     }
 
@@ -187,36 +236,177 @@ public class MembersTab extends PFUIComponent implements FolderInformationTab {
         }
     }
 
+    private class TableMouseListener extends MouseAdapter {
 
-    /**
-     * Class to listen for add / remove friendship requests.
-     */
-    private class MyAddRemoveActionListener implements ActionListener {
+        public void mousePressed(MouseEvent e) {
+            if (e.isPopupTrigger()) {
+                showContextMenu(e);
+            }
+        }
+
+        public void mouseReleased(MouseEvent e) {
+            if (e.isPopupTrigger()) {
+                showContextMenu(e);
+            }
+        }
+
+        private void showContextMenu(MouseEvent evt) {
+            fileMenu.show(evt.getComponent(), evt.getX(), evt.getY());
+        }
+
+    }
+
+    private class MyAddRemoveFriendAction extends BaseAction {
+
+        private boolean add = true;
+
+        private MyAddRemoveFriendAction(Controller controller) {
+            super("action_add_friend", controller);
+        }
+
+        public void setAdd(boolean add) {
+            this.add = add;
+            if (add) {
+                configureFromActionId("action_add_friend");
+            } else {
+                configureFromActionId("action_remove_friend");
+            }
+        }
 
         public void actionPerformed(ActionEvent e) {
-            ActionEvent ae = new ActionEvent(selectedMember.getInfo(),
-                    e.getID(), e.getActionCommand(), e.getWhen(), e.getModifiers());
-            if (selectedMember.isFriend()) {
-                getApplicationModel().getActionModel().getRemoveFriendAction()
-                        .actionPerformed(ae);
+            if (add) {
+                boolean askForFriendshipMessage = PreferencesEntry.
+                        ASK_FOR_FRIENDSHIP_MESSAGE.getValueBoolean(getController());
+                if (askForFriendshipMessage) {
+
+                    // Prompt for personal message.
+                    String[] options = {
+                            Translation.getTranslation("general.ok"),
+                            Translation.getTranslation("general.cancel")};
+
+                    FormLayout layout = new FormLayout("pref", "pref, 5dlu, pref, pref");
+                    PanelBuilder builder = new PanelBuilder(layout);
+                    CellConstraints cc = new CellConstraints();
+                    String nick = selectedMember.getNick();
+                    String text = Translation.getTranslation(
+                            "friend.search.personal.message.text2", nick);
+                    builder.add(new JLabel(text), cc.xy(1, 1));
+                    JTextArea textArea = new JTextArea();
+                    JScrollPane scrollPane = new JScrollPane(textArea);
+                    scrollPane.setPreferredSize(new Dimension(400, 200));
+                    builder.add(scrollPane, cc.xy(1, 3));
+                    JPanel innerPanel = builder.getPanel();
+
+                    NeverAskAgainResponse response = DialogFactory.genericDialog(
+                            getController().getUIController().
+                            getMainFrame().getUIComponent(),
+                            Translation.getTranslation("friend.search.personal.message.title"),
+                            innerPanel, options, 0, GenericDialogType.INFO,
+                            Translation.getTranslation("general.neverAskAgain"));
+                    if (response.getButtonIndex() == 0) { // == OK
+                        String personalMessage = textArea.getText();
+                        selectedMember.setFriend(true, personalMessage);
+                    }
+                    if (response.isNeverAskAgain()) {
+                        // don't ask me again
+                        PreferencesEntry.ASK_FOR_FRIENDSHIP_MESSAGE.setValue(
+                                getController(), false);
+                    }
+                } else {
+                    // Send with no personal messages
+                    selectedMember.setFriend(true, null);
+                }
             } else {
-                getApplicationModel().getActionModel().getAddFriendAction()
-                        .actionPerformed(ae);
+                selectedMember.setFriend(false, null);
             }
         }
     }
 
+    private class MyReconnectAction extends BaseAction {
 
-    /**
-     * Class to listen for reconnect requests.
-     */
-    private class MyReconnectActionListener implements ActionListener {
+        MyReconnectAction(Controller controller) {
+            super("action_reconnect", controller);
+        }
 
         public void actionPerformed(ActionEvent e) {
-            ActionEvent ae = new ActionEvent(selectedMember.getInfo(),
-                    e.getID(), e.getActionCommand(), e.getWhen(), e.getModifiers());
-            getApplicationModel().getActionModel().getReconnectAction()
-                    .actionPerformed(ae);
+
+            if (selectedMember == null) {
+                return;
+            }
+
+            // Build new connect dialog
+            final ConnectDialog connectDialog = new ConnectDialog(getController());
+
+            Runnable connector = new Runnable() {
+                public void run() {
+
+                    // Open connect dialog if ui is open
+                    connectDialog.open(selectedMember.getNick());
+
+                    // Close connection first
+                    selectedMember.shutdown();
+
+                    // Now execute the connect
+                    try {
+                        if (!selectedMember.reconnect()) {
+                            throw new ConnectionException(Translation.getTranslation(
+                                    "dialog.unable_to_connect_to_member",
+                                selectedMember.getNick()));
+                        }
+                    } catch (ConnectionException ex) {
+                        connectDialog.close();
+                        if (!connectDialog.isCanceled() && !selectedMember.isConnected()) {
+                            // Show if user didn't cancel
+                            ex.show(getController());
+                        }
+                    }
+
+                    // Close dialog
+                    connectDialog.close();
+                }
+            };
+
+            // Start connect in anonymous thread
+            new Thread(connector, "Reconnector to " + selectedMember.getNick()).start();
+        }
+    }
+
+    private class MyNodeManagerListener implements NodeManagerListener {
+
+        public void nodeRemoved(NodeManagerEvent e) {
+            redisplay(e.getNode());
+        }
+
+        public void nodeAdded(NodeManagerEvent e) {
+            redisplay(e.getNode());
+        }
+
+        public void nodeConnected(NodeManagerEvent e) {
+            redisplay(e.getNode());
+        }
+
+        public void nodeDisconnected(NodeManagerEvent e) {
+            redisplay(e.getNode());
+        }
+
+        public void friendAdded(NodeManagerEvent e) {
+            redisplay(e.getNode());
+        }
+
+        public void friendRemoved(NodeManagerEvent e) {
+            redisplay(e.getNode());
+        }
+
+        public void settingsChanged(NodeManagerEvent e) {
+            redisplay(e.getNode());
+        }
+
+        public void startStop(NodeManagerEvent e) {
+            redisplay(e.getNode());
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return true;
         }
     }
 }
