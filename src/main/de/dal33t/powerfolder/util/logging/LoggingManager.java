@@ -31,8 +31,10 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.logging.FileHandler;
+import java.util.logging.Filter;
 import java.util.logging.Handler;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
 /**
@@ -75,9 +77,18 @@ public class LoggingManager {
 
     /** The name of the file logging file */
     private static String fileLoggingFileName;
+    
+    /**
+     * The default filter for the handlers
+     */
+    private static Filter filter = new Filter() {
+        public boolean isLoggable(LogRecord record) {
+            // return false;
+            return record.getLoggerName().startsWith("de.dal33t");
+        }
+    };
 
     static {
-
         Logger rootLogger = getRootLogger();
 
         // Switch logging nearly off until one of the handlers is configured.
@@ -93,12 +104,16 @@ public class LoggingManager {
         // Create loggers, thread-safe in the static initializer.
         consoleHandler = new ConsoleHandler();
         documentHandler = new DocumentHandler();
+
+        rootLogger.setFilter(filter);
+        consoleHandler.setFilter(filter);
+        documentHandler.setFilter(filter);
     }
 
     /**
-     * Set the console handler level.
-     * Add handler to root logger if this is the first time.
-     *
+     * Set the console handler level. Add handler to root logger if this is the
+     * first time.
+     * 
      * @param level
      */
     public static void setConsoleLogging(Level level) {
@@ -156,6 +171,7 @@ public class LoggingManager {
                 if (fileHandler != null) {
                     fileLoggingLevel = level;
                     fileHandler.setLevel(level);
+                    fileHandler.setFilter(filter);
                 }
             }
         }
