@@ -394,6 +394,7 @@ public class Icons {
         Properties prop = getIconProperties();
         String iconId = prop.getProperty(id);
         if (iconId == null) {
+            log.severe("Icon not found ID: '" + id + '\'');
             return null;
         }
         return getIcon(prop.getProperty(id));
@@ -410,6 +411,7 @@ public class Icons {
         Properties prop = getIconProperties();
         String iconId = prop.getProperty(id);
         if (iconId == null) {
+            log.severe("Image not found ID: '" + id + '\'');
             return null;
         }
         return getImage((String) prop.get(id));
@@ -534,19 +536,6 @@ public class Icons {
             // does not exists
         }
         return icon;
-    }
-
-    /**
-     * Returns the default status icon for the transfer
-     * 
-     * @param transfer
-     * @return
-     */
-    public static Icon getIconFor(Transfer transfer) {
-        if (transfer instanceof Upload) {
-            return transfer.isStarted() ? UPLOAD_ACTIVE : UPLOAD;
-        }
-        return transfer.isStarted() ? DOWNLOAD_ACTIVE : DOWNLOAD;
     }
 
     /**
