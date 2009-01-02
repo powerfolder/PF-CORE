@@ -30,7 +30,6 @@ import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
-import de.dal33t.powerfolder.ui.widget.LinkLabel;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
 
@@ -60,7 +59,6 @@ public class ExpandableComputerView extends PFUIComponent {
 
     private JLabel lastSeenLabel;
     private MyNodeManagerListener nodeManagerListener;
-    private LinkLabel nameActionLabel;
 
     /**
      * Constructor
@@ -99,7 +97,7 @@ public class ExpandableComputerView extends PFUIComponent {
         CellConstraints cc = new CellConstraints();
 
         upperBuilder.add(pictoLabel, cc.xy(1, 1));
-        upperBuilder.add(nameActionLabel, cc.xy(3, 1));
+        upperBuilder.add(new JLabel(node.getNick()), cc.xy(3, 1));
         upperBuilder.add(chatButton, cc.xy(6, 1));
 
         upperPanel = upperBuilder.getPanel();
@@ -158,11 +156,6 @@ public class ExpandableComputerView extends PFUIComponent {
      */
     private void initComponent() {
         expanded = new AtomicBoolean();
-
-        nameActionLabel = new LinkLabel(node.getNick(), "#");
-        nameActionLabel.addMouseListener(new MyMouseAdapter());
-        nameActionLabel.setToolTipText(
-                Translation.getTranslation("exp_computer_view.expand"));
 
         lastSeenLabel = new JLabel();
         reconnectButton = new JButtonMini(getApplicationModel()
@@ -312,14 +305,10 @@ public class ExpandableComputerView extends PFUIComponent {
                 expanded.set(false);
                 upperPanel.setToolTipText(
                         Translation.getTranslation("exp_computer_view.expand"));
-                nameActionLabel.setToolTipText(
-                        Translation.getTranslation("exp_computer_view.expand"));
                 lowerOuterPanel.setVisible(false);
             } else {
                 expanded.set(true);
                 upperPanel.setToolTipText(
-                        Translation.getTranslation("exp_computer_view.collapse"));
-                nameActionLabel.setToolTipText(
                         Translation.getTranslation("exp_computer_view.collapse"));
                 lowerOuterPanel.setVisible(true);
             }
