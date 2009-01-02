@@ -19,27 +19,36 @@
  */
 package de.dal33t.powerfolder.ui.folders;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+
+import javax.swing.BoxLayout;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+
+import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.binding.value.ValueModel;
+
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.clientserver.ServerClient;
-import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
+import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.event.*;
-
-import javax.swing.*;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
+import de.dal33t.powerfolder.event.ExpansionEvent;
+import de.dal33t.powerfolder.event.ExpansionListener;
+import de.dal33t.powerfolder.event.FolderRepositoryEvent;
+import de.dal33t.powerfolder.event.FolderRepositoryListener;
+import de.dal33t.powerfolder.light.FolderInfo;
 
 /**
  * This class creates a list combining folder repository and server client
@@ -160,6 +169,31 @@ public class FoldersList extends PFUIComponent {
                 }
             }
 
+            // Remove old folder views if required.
+            // Update remaining views with the current folder, which may be null
+            // if
+            // online only.
+            ExpandableFolderView[] list = views
+                .toArray(new ExpandableFolderView[views.size()]);
+            for (ExpandableFolderView view : list) {
+                // No folder info for this view, so remove it.
+                views.remove(view);
+                view.removeExpansionListener(expansionListener);
+                view.unregisterListeners();
+                folderListPanel.remove(view.getUIComponent());
+                folderListPanel.invalidate();
+                if (uiComponent != null) {
+                    uiComponent.invalidate();
+                }
+                if (scrollPane != null) {
+                    scrollPane.repaint();
+                }
+            }
+
+            // Sort by name
+            Collections.sort(folderBeanList, FolderBeanComparator.INSTANCE);
+            
+            
             // Add new folder views if required.
             for (FolderBean folderBean : folderBeanList) {
                 boolean exists = false;
@@ -185,36 +219,6 @@ public class FoldersList extends PFUIComponent {
                     }
                     views.add(newView);
                     newView.addExpansionListener(expansionListener);
-                }
-            }
-
-            // Remove old folder views if required.
-            // Update remaining views with the current folder, which may be null if
-            // online only.
-            ExpandableFolderView[] list = views.toArray(new ExpandableFolderView[views.size()]);
-            for (ExpandableFolderView view : list) {
-                boolean exists = false;
-                for (FolderBean folderBean : folderBeanList) {
-                    if (folderBean.getFolderInfo().equals(view.getFolderInfo())) {
-                        exists = true;
-                        view.configure(folderBean.getFolder(),
-                            folderBean.isLocal(), folderBean.isOnline());
-                        break;
-                    }
-                }
-                if (!exists) {
-                    // No folder info for this view, so remove it.
-                    views.remove(view);
-                    view.removeExpansionListener(expansionListener);
-                    view.unregisterListeners();
-                    folderListPanel.remove(view.getUIComponent());
-                    folderListPanel.invalidate();
-                    if (uiComponent != null) {
-                        uiComponent.invalidate();
-                    }
-                    if (scrollPane != null) {
-                        scrollPane.repaint();
-                    }
                 }
             }
         }
@@ -267,7 +271,6 @@ public class FoldersList extends PFUIComponent {
         }
 
         public void serverConnected(ServerClientEvent event) {
-            updateFolders();
         }
 
         public void serverDisconnected(ServerClientEvent event) {
@@ -367,6 +370,24 @@ public class FoldersList extends PFUIComponent {
 
         public boolean fireInEventDispatchThread() {
             return true;
+        }
+    }
+    
+    private static class FolderBeanComparator implements Comparator<FolderBean> {
+
+        private static final FolderBeanComparator INSTANCE = new FolderBeanComparator();
+
+        private FolderBeanComparator() {
+        }
+
+        public int compare(Folder o1, Folder o2) {
+            return o1.getName().toLowerCase().compareTo(
+                o2.getName().toLowerCase());
+        }
+
+        public int compare(FolderBean o1, FolderBean o2) {
+            return o1.getFolderInfo().name.compareToIgnoreCase(o2
+                .getFolderInfo().name);
         }
     }
 }
