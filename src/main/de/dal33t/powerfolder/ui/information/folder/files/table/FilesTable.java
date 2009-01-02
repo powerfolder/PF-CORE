@@ -279,7 +279,7 @@ public class FilesTable extends JTable {
                     break;
                 case 2:  // file size
                     myValue = Format.formatBytesShort(fileInfo.getSize());
-                    setToolTipText(String.valueOf(fileInfo.getSize()));
+                    setToolTipText(Format.formatBytes(fileInfo.getSize()));
                     setHorizontalAlignment(RIGHT);
                     break;
                 case 3:  // member nick

@@ -176,7 +176,7 @@ public class DiskItemFilter {
      * @param pattern
      */
     public void removePattern(String pattern) {
-        patterns.remove(pattern);
+        patterns.remove(pattern.toLowerCase());
         dirty = true;
     }
 

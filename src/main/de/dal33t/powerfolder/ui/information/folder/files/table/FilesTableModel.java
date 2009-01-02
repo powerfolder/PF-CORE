@@ -131,6 +131,15 @@ public class FilesTableModel extends PFComponent implements TableModel,
     }
 
     /**
+     * Returns the set folder.
+     * 
+     * @return
+     */
+    public Folder getFolder() {
+        return folder;
+    }
+
+    /**
      * Update the model in response to a change.
      */
     private void update() {

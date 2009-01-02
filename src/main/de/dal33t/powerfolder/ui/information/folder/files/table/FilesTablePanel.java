@@ -72,6 +72,8 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
     private RestoreFileAction restoreFileAction;
     private DownloadFileAction downloadFileAction;
     private AbortDownloadAction abortDownloadAction;
+    private AddIgnoreAction addIgnoreAction;
+    private RemoveIgnoreAction removeIgnoreAction;
     private JPopupMenu fileMenu;
 
     public FilesTablePanel(Controller controller) {
@@ -137,6 +139,10 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         abortDownloadAction.setEnabled(false);
         deleteFileAction = new DeleteFileAction();
         deleteFileAction.setEnabled(false);
+        addIgnoreAction = new AddIgnoreAction(getController());
+        addIgnoreAction.setEnabled(false);
+        removeIgnoreAction = new RemoveIgnoreAction(getController());
+        removeIgnoreAction.setEnabled(false);
 
         bar.addGridded(new JButton(downloadFileAction));
         bar.addRelatedGap();
@@ -158,6 +164,8 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         fileMenu.add(abortDownloadAction);
         fileMenu.add(deleteFileAction);
         fileMenu.add(restoreFileAction);
+        fileMenu.add(addIgnoreAction);
+        fileMenu.add(removeIgnoreAction);
     }
 
     /**
@@ -296,6 +304,16 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         }
     }
 
+    private FileInfo getSelectedRow() {
+        int min = table.getSelectionModel().getMinSelectionIndex();
+        int max = table.getSelectionModel().getMaxSelectionIndex();
+        if (min == max && min >= 0) {
+            return tableModel.getFileInfoAtRow(min);
+        }
+
+        return null;
+    }
+
     ///////////////////
     // Inner Classes //
     ///////////////////
@@ -311,7 +329,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
 
                 @Override
                 public Object construct() {
-                    FileInfo fileInfo = tableModel.getFileInfoAtRow(table.getSelectionModel().getMinSelectionIndex());
+                    FileInfo fileInfo = getSelectedRow();
                     if (fileInfo != null) {
                         FolderRepository repo = getController().getFolderRepository();
                         Folder folder = fileInfo.getFolder(repo);
@@ -389,45 +407,46 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
     private class MyListSelectionListener implements ListSelectionListener {
 
         public void valueChanged(ListSelectionEvent e) {
-            int min = table.getSelectionModel().getMinSelectionIndex();
-            int max = table.getSelectionModel().getMaxSelectionIndex();
-            if (min == max && min >= 0) {
-                FileInfo fileInfo = tableModel.getFileInfoAtRow(min);
-                if (fileInfo != null) {
-                    fileDetailsPanel.setFileInfo(fileInfo);
-                    openFileAction.setEnabled(true);
+            FileInfo fileInfo = getSelectedRow();
+            if (fileInfo != null) {
+                fileDetailsPanel.setFileInfo(fileInfo);
+                openFileAction.setEnabled(true);
 
-                    // Enable download action if file is download-able.
-                    FolderRepository repo = getController()
-                            .getFolderRepository();
-                    boolean state = true;
-                    if (fileInfo.diskFileExists(getController())
-                            && !fileInfo.isNewerAvailable(repo)) {
-                        state = false;
-                    } else if (!(fileInfo.isDeleted()
-                            || fileInfo.isExpected(repo)
-                            || fileInfo.isNewerAvailable(repo))) {
-                        state = false;
-                    } else {
-                        TransferManager tm = getController().getTransferManager();
-                        if (tm.getActiveDownload(fileInfo) != null) {
-                            return;
-                        }
+                // Enable download action if file is download-able.
+                FolderRepository repo = getController()
+                        .getFolderRepository();
+                boolean state = true;
+                if (fileInfo.diskFileExists(getController())
+                        && !fileInfo.isNewerAvailable(repo)) {
+                    state = false;
+                } else if (!(fileInfo.isDeleted()
+                        || fileInfo.isExpected(repo)
+                        || fileInfo.isNewerAvailable(repo))) {
+                    state = false;
+                } else {
+                    TransferManager tm = getController().getTransferManager();
+                    if (tm.getActiveDownload(fileInfo) != null) {
+                        return;
                     }
-                    downloadFileAction.setEnabled(state);
-
-                    // Enable restore / (!delete) action if file is restore-able.
-                    state = fileInfo.isDeleted() && getController()
-                            .getRecycleBin().isInRecycleBin(fileInfo);
-                    restoreFileAction.setEnabled(state);
-                    deleteFileAction.setEnabled(!state);
-
-                    DownloadManager dl = getController().getTransferManager()
-                            .getActiveDownload(fileInfo);
-                    abortDownloadAction.setEnabled(dl != null);
-
-                    return;
                 }
+                downloadFileAction.setEnabled(state);
+
+                // Enable restore / (!delete) action if file is restore-able.
+                state = fileInfo.isDeleted() && getController()
+                        .getRecycleBin().isInRecycleBin(fileInfo);
+                restoreFileAction.setEnabled(state);
+                deleteFileAction.setEnabled(!state);
+
+                DownloadManager dl = getController().getTransferManager()
+                        .getActiveDownload(fileInfo);
+                abortDownloadAction.setEnabled(dl != null);
+
+                boolean retained = tableModel.getFolder()
+                        .getDiskItemFilter().isRetained(fileInfo);
+                addIgnoreAction.setEnabled(retained);
+                removeIgnoreAction.setEnabled(!retained);
+
+                return;
             }
 
             fileDetailsPanel.setFileInfo(null);
@@ -436,6 +455,8 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
             restoreFileAction.setEnabled(false);
             deleteFileAction.setEnabled(false);
             abortDownloadAction.setEnabled(false);
+            addIgnoreAction.setEnabled(false);
+            removeIgnoreAction.setEnabled(false);
         }
     }
 
@@ -493,17 +514,43 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         }
 
         public void actionPerformed(ActionEvent e) {
-            int min = table.getSelectionModel().getMinSelectionIndex();
-            int max = table.getSelectionModel().getMaxSelectionIndex();
-            if (min == max && min >= 0) {
-                FileInfo fileInfo = tableModel.getFileInfoAtRow(min);
-                if (fileInfo != null) {
-                    TransferManager tm =  getController().getTransferManager();
-                    DownloadManager dl = tm.getActiveDownload(fileInfo);
-                    if (dl != null) {
-                        dl.abort();
-                    }
+            FileInfo fileInfo = getSelectedRow();
+            if (fileInfo != null) {
+                TransferManager tm =  getController().getTransferManager();
+                DownloadManager dl = tm.getActiveDownload(fileInfo);
+                if (dl != null) {
+                    dl.abort();
                 }
+            }
+        }
+    }
+
+    private class AddIgnoreAction extends BaseAction {
+
+        private AddIgnoreAction(Controller controller) {
+            super("action_add_ignore", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            FileInfo fileInfo = getSelectedRow();
+            if (fileInfo != null) {
+                tableModel.getFolder().getDiskItemFilter().addPattern(
+                        fileInfo.getName());
+            }
+        }
+    }
+
+    private class RemoveIgnoreAction extends BaseAction {
+
+        private RemoveIgnoreAction(Controller controller) {
+            super("action_remove_ignore", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            FileInfo fileInfo = getSelectedRow();
+            if (fileInfo != null) {
+                tableModel.getFolder().getDiskItemFilter().removePattern(
+                        fileInfo.getName());
             }
         }
     }
