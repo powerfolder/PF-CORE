@@ -309,10 +309,6 @@ public class UIController extends PFComponent {
         // Goes to the homepage if required.
         gotoHPIfRequired();
         detectAndShowLimitDialog();
-
-        applicationModel.getFolderRepositoryModel().getHidePreviewsValueModel()
-                .setValue(ConfigurationEntry.HIDE_PREVIEW_FOLDERS
-                        .getValueBoolean(getController()));
     }
 
     private void gotoHPIfRequired() {

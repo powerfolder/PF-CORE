@@ -68,7 +68,7 @@ public class ApplicationModel extends PFUIComponent {
      * Initializes this and all submodels
      */
     public void initialize() {
-        folderRepositoryModel.initalize();
+        folderRepositoryModel.initialize();
         transferManagerModel.initialize();
     }
 
