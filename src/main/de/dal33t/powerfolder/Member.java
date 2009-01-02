@@ -1588,7 +1588,9 @@ public class Member extends PFComponent implements Comparable<Member> {
      * Overridden, removes message listeners.
      */
     public void removeAllListeners() {
-        logFiner("Removing all listeners from member. " + this);
+        if (isFiner()) {
+            logFiner("Removing all listeners from member. " + this);
+        }
         super.removeAllListeners();
         // Remove message listeners
         getMessageListenerSupport().removeAllListeners();
@@ -2154,8 +2156,11 @@ public class Member extends PFComponent implements Comparable<Member> {
     }
 
     // Logger methods *********************************************************
+
+    @Override
     public String getLoggerName() {
-        return "Node '" + getNick() + "'" + (isSupernode() ? " (s)" : "");
+        return super.getLoggerName() + " '" + getNick() + "'"
+            + (isSupernode() ? " (s)" : "");
     }
 
     /*
