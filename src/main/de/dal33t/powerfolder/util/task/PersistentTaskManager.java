@@ -269,8 +269,10 @@ public class PersistentTaskManager extends PFComponent {
         }
         for (PersistentTask task : tasks) {
             if (task instanceof SendMessageTask) {
-                logFine("Found pending message(s). total active tasks: "
-                    + tasks.size());
+                if (isFiner()) {
+                    logFiner("Found pending message(s). total active tasks: "
+                        + tasks.size());
+                }
                 return true;
             }
             // SendMessageTask sendTask = (SendMessageTask) task;
