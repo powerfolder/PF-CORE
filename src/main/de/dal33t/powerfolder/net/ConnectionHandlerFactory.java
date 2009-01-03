@@ -285,11 +285,9 @@ public class ConnectionHandlerFactory extends PFComponent {
                     + myInfo.getConnectAddress() + "!!");
             conHan.init();
         } catch (ConnectionException e) {
-            logSevere("ConnectionException", e);
             conHan.shutdown();
             throw e;
         } catch (IOException e) {
-            logSevere("IOException", e);
             conHan.shutdown();
             throw new ConnectionException(e);
         }
