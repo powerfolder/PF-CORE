@@ -74,6 +74,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
     private AbortDownloadAction abortDownloadAction;
     private AddIgnoreAction addIgnoreAction;
     private RemoveIgnoreAction removeIgnoreAction;
+    private UnmarkAction unmarkAction;
     private JPopupMenu fileMenu;
 
     public FilesTablePanel(Controller controller) {
@@ -143,6 +144,8 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         addIgnoreAction.setEnabled(false);
         removeIgnoreAction = new RemoveIgnoreAction(getController());
         removeIgnoreAction.setEnabled(false);
+        unmarkAction = new UnmarkAction(getController());
+        unmarkAction.setEnabled(false);
 
         bar.addGridded(new JToggleButton(new DetailsAction(getController())));
         bar.addRelatedGap();
@@ -166,6 +169,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         fileMenu.add(restoreFileAction);
         fileMenu.add(addIgnoreAction);
         fileMenu.add(removeIgnoreAction);
+        fileMenu.add(unmarkAction);
     }
 
     /**
@@ -408,6 +412,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
 
         public void valueChanged(ListSelectionEvent e) {
             FileInfo fileInfo = getSelectedRow();
+            TransferManager tm = getController().getTransferManager();
             if (fileInfo != null) {
                 fileDetailsPanel.setFileInfo(fileInfo);
                 openFileAction.setEnabled(true);
@@ -424,7 +429,6 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
                         || fileInfo.isNewerAvailable(repo))) {
                     state = false;
                 } else {
-                    TransferManager tm = getController().getTransferManager();
                     if (tm.getActiveDownload(fileInfo) != null) {
                         return;
                     }
@@ -446,6 +450,8 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
                 addIgnoreAction.setEnabled(retained);
                 removeIgnoreAction.setEnabled(!retained);
 
+                unmarkAction.setEnabled(tm.isCompletedDownload(fileInfo));
+
                 return;
             }
 
@@ -457,6 +463,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
             abortDownloadAction.setEnabled(false);
             addIgnoreAction.setEnabled(false);
             removeIgnoreAction.setEnabled(false);
+            unmarkAction.setEnabled(false);
         }
     }
 
@@ -551,6 +558,24 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
             if (fileInfo != null) {
                 tableModel.getFolder().getDiskItemFilter().removePattern(
                         fileInfo.getName());
+            }
+        }
+    }
+
+    private class UnmarkAction extends BaseAction {
+
+        private UnmarkAction(Controller controller) {
+            super("action_unmark", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            FileInfo fileInfo = getSelectedRow();
+            if (fileInfo != null) {
+                TransferManager transferManager = getController()
+                        .getTransferManager();
+                if (transferManager.isCompletedDownload(fileInfo)) {
+                    transferManager.clearCompletedDownload(fileInfo);
+                }
             }
         }
     }
