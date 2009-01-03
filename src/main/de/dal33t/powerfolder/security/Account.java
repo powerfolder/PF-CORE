@@ -153,18 +153,8 @@ public class Account extends Model implements Serializable {
         return Collections.unmodifiableCollection(permissions);
     }
 
-    public void repairPermissions() {
-        if (permissions == null) {
-            permissions = new CopyOnWriteArrayList<Permission>();
-        }
-    }
-
     public boolean isIllegal() {
         return permissions == null || osSubscription == null;
-    }
-
-    public Collection<Permission> getPermissionsInstance() {
-        return permissions;
     }
 
     // Accessing / API ********************************************************
