@@ -246,10 +246,11 @@ public class ServerClient extends PFComponent {
         Reject.ifNull(serverNode, "Server node is null");
         setNewServerNode(serverNode);
         this.allowServerChange = serverChange;
-        setAnonAccount();
         if (isConnected()) {
             loginWithLastKnown();
         } else {
+        	setAnonAccount();
+            fireLogin(getAccountDetails());
             getServer().markForImmediateConnect();
         }
     }
