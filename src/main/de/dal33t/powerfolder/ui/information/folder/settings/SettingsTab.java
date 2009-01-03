@@ -124,6 +124,7 @@ public class SettingsTab extends PFUIComponent
         transferModeSelectorPanel.setUpdateableFolder(folder);
         useRecycleBinBox.setSelected(folder.isUseRecycleBin());
         update();
+        enableConfigOSAction();
     }
 
     /**
@@ -609,9 +610,8 @@ public class SettingsTab extends PFUIComponent
      * Listen to changes in onlineStorage and enable the configOS button as
      * required.
      *
-     * @param event
      */
-    private void processServerClientEvent(ServerClientEvent event) {
+    private void enableConfigOSAction() {
 
         boolean enabled = false;
         if (folder != null && serverClient.isConnected()) {
@@ -714,19 +714,19 @@ public class SettingsTab extends PFUIComponent
     private class MyServerClientListener implements ServerClientListener {
 
         public void login(ServerClientEvent event) {
-            processServerClientEvent(event);
+            enableConfigOSAction();
         }
 
         public void accountUpdated(ServerClientEvent event) {
-            processServerClientEvent(event);
+            enableConfigOSAction();
         }
 
         public void serverConnected(ServerClientEvent event) {
-            processServerClientEvent(event);
+            enableConfigOSAction();
         }
 
         public void serverDisconnected(ServerClientEvent event) {
-            processServerClientEvent(event);
+            enableConfigOSAction();
         }
 
         public boolean fireInEventDispatchThread() {
