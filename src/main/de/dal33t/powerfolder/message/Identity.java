@@ -94,7 +94,7 @@ public class Identity extends Message {
         // Always true for newer versions #559
         this.acknowledgesHandshakeCompletion = true;
         // #1124: HACK ALERT. This should only be true, if we have messages for
-        // the remote side! Currently true if we hava ANY pending messages to be
+        // the remote side! Currently true if we have ANY pending messages to be
         // sent. Problem: The remote side cannot be known at the time the
         // identity is created, so we have to use this workaround.
         this.pendingMessages = controller.getTaskManager().hasSendMessageTask();
