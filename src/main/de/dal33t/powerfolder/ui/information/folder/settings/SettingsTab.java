@@ -81,6 +81,7 @@ public class SettingsTab extends PFUIComponent
     private PatternChangeListener patternChangeListener;
     private FolderOnlineStorageAction confOSAction;
     private ServerClient serverClient;
+    private PreviewFolderAction previewFolderAction;
 
     /**
      * Constructor
@@ -107,6 +108,8 @@ public class SettingsTab extends PFUIComponent
         patternsListModel = new DefaultListModel();
         confOSAction = new FolderOnlineStorageAction(getController());
         confOSAction.setEnabled(false);
+        previewFolderAction = new PreviewFolderAction(getController());
+        previewFolderAction.setEnabled(false);
         serverClient.addListener(new MyServerClientListener());
     }
 
@@ -125,6 +128,7 @@ public class SettingsTab extends PFUIComponent
         useRecycleBinBox.setSelected(folder.isUseRecycleBin());
         update();
         enableConfigOSAction();
+        enablePreviewFolderAction();
     }
 
     /**
@@ -146,7 +150,7 @@ public class SettingsTab extends PFUIComponent
                   // label           folder       butn
         FormLayout layout = new FormLayout(
             "3dlu, right:pref, 3dlu, 210dlu, 3dlu, pref",
-                "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
+                "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
@@ -168,8 +172,13 @@ public class SettingsTab extends PFUIComponent
         builder.add(localFolderField, cc.xy(4, 8));
         builder.add(localFolderButton, cc.xy(6, 8));
 
-        builder.add(new JLabel("Online Storage"), cc.xy(2, 10));
+        builder.add(new JLabel(Translation.getTranslation("settings_tab.online_storage")),
+                cc.xy(2, 10));
         builder.add(createConfigurePanel(), cc.xy(4, 10));
+
+        builder.add(new JLabel(Translation.getTranslation("settings_tab.folder_preview")),
+                cc.xy(2, 12));
+        builder.add(createPreviewPanel(), cc.xy(4, 12));
 
         uiComponent = builder.getPanel();
     }
@@ -179,6 +188,14 @@ public class SettingsTab extends PFUIComponent
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
         builder.add(new JButton(confOSAction), cc.xy(1, 1));
+        return builder.getPanel();
+    }
+
+    private JPanel createPreviewPanel() {
+        FormLayout layout = new FormLayout("pref", "pref");
+        PanelBuilder builder = new PanelBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+        builder.add(new JButton(previewFolderAction), cc.xy(1, 1));
         return builder.getPanel();
     }
 
@@ -630,6 +647,20 @@ public class SettingsTab extends PFUIComponent
         }
         confOSAction.setEnabled(enabled);
     }
+    /**
+     * Listen to changes in onlineStorage / folder and enable the configOS
+     * button as required.
+     * Also config action on whether already joined OS.
+     */
+    private void enablePreviewFolderAction() {
+
+        boolean enabled = false;
+        if (folder != null) {
+            enabled = true;
+            previewFolderAction.configure(!folder.isPreviewOnly());
+        }
+        previewFolderAction.setEnabled(enabled);
+    }
 
     ///////////////////
     // Inner Classes //
@@ -690,6 +721,32 @@ public class SettingsTab extends PFUIComponent
         public void finished() {
             if (get() != null) {
                 displayError((Exception) get());
+            }
+        }
+    }
+
+    private class PreviewFolderAction extends BaseAction {
+
+        private boolean preview;
+
+        private PreviewFolderAction(Controller controller) {
+            super("action_preview_folder", controller);
+        }
+
+        public void configure(boolean preview) {
+            this.preview = preview;
+            if (preview) {
+                configureFromActionId("action_preview_folder");
+            } else {
+                configureFromActionId("action_stop_preview_folder");
+            }
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            if (preview) {
+
+            } else {
+
             }
         }
     }
