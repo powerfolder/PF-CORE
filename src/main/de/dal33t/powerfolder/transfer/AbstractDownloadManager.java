@@ -959,6 +959,12 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             filePartsState = null;
             in.close();
             deleteMetaData();
+        } catch (IOException e) {
+            remotePartRecord = null;
+            filePartsState = null;
+            in.close();
+            deleteMetaData();
+            throw e;
         } finally {
             in.close();
         }
@@ -1023,9 +1029,12 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                 }
                 break;
             case COMPLETED :
-            case BROKEN :
             case ABORTED :
                 download.abort();
+                break;
+            case BROKEN :
+                download.setBroken(TransferProblem.GENERAL_EXCEPTION,
+                    "Broken while watiing for requests");
                 break;
             default :
                 protocolStateError(download, "readyForRequests");
@@ -1041,10 +1050,13 @@ public abstract class AbstractDownloadManager extends PFComponent implements
     {
         switch (state) {
             case ABORTED :
-            case BROKEN :
                 log.fine("Aborted download of " + fileInfo
                     + " received chunk from " + download);
                 download.abort();
+                break;
+            case BROKEN :
+                download.setBroken(TransferProblem.GENERAL_EXCEPTION,
+                    "Broken while received chunk");
                 break;
             case ACTIVE_DOWNLOAD :
                 storeFileChunk(download, chunk);
