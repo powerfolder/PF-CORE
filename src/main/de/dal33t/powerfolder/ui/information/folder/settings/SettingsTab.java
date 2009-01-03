@@ -34,20 +34,19 @@ import de.dal33t.powerfolder.event.PatternChangedEvent;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.FolderSettings;
+import de.dal33t.powerfolder.disk.FolderPreviewHelper;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_DONT_RECYCLE;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.dialog.PreviewToJoinPanel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.action.SelectionBaseAction;
 import de.dal33t.powerfolder.ui.information.folder.FolderInformationTab;
 import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
-import de.dal33t.powerfolder.util.FileUtils;
-import de.dal33t.powerfolder.util.PatternMatch;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.ui.*;
 import de.javasoft.synthetica.addons.DirectoryChooser;
 import org.apache.commons.lang.StringUtils;
@@ -93,7 +92,7 @@ public class SettingsTab extends PFUIComponent
         serverClient = controller.getOSClient();
         transferModeSelectorPanel = new SyncProfileSelectorPanel(getController());
         useRecycleBinBox = new JCheckBox(Translation.getTranslation(
-                "folder_information_settings_tab.use_recycle_bin"));
+                "settings_tab.use_recycle_bin"));
         MyActionListener myActionListener = new MyActionListener();
         useRecycleBinBox.addActionListener(myActionListener);
         selectionModel = new SelectionModel();
@@ -101,7 +100,7 @@ public class SettingsTab extends PFUIComponent
         localFolderField.setEditable(false);
         localFolderButton = new JButtonMini(Icons.DIRECTORY,
                 Translation.getTranslation(
-                        "folder_information_settings_tab.select_directory.text"));
+                        "settings_tab.select_directory.text"));
         localFolderButton.setEnabled(false);
         localFolderButton.addActionListener(myActionListener);
         patternChangeListener = new MyPatternChangeListener();
@@ -155,19 +154,19 @@ public class SettingsTab extends PFUIComponent
         CellConstraints cc = new CellConstraints();
 
         builder.add(new JLabel(Translation.getTranslation(
-                "folder_information_settings_tab.transfer_mode")),
+                "settings_tab.transfer_mode")),
                 cc.xy(2, 2));
         builder.add(transferModeSelectorPanel.getUIComponent(), cc.xyw(4, 2, 3));
 
         builder.add(useRecycleBinBox, cc.xyw(4, 4, 3));
 
         builder.add(new JLabel(Translation.getTranslation(
-                "folder_information_settings_tab.ignore_patterns")),
+                "settings_tab.ignore_patterns")),
                 cc.xy(2, 6));
         builder.add(createPatternsPanel(), cc.xyw(4, 6, 3));
         
         builder.add(new JLabel(Translation.getTranslation(
-                "folder_information_settings_tab.local_folder_location")),
+                "settings_tab.local_folder_location")),
                 cc.xy(2, 8));
         builder.add(localFolderField, cc.xy(4, 8));
         builder.add(localFolderButton, cc.xy(6, 8));
@@ -330,9 +329,9 @@ public class SettingsTab extends PFUIComponent
 
         public void actionPerformed(ActionEvent e) {
             String text = Translation
-                .getTranslation("folder_information_settings_tab.edit_a_pattern.text");
+                .getTranslation("settings_tab.edit_a_pattern.text");
             String title = Translation
-                .getTranslation("folder_information_settings_tab.edit_a_pattern.title");
+                .getTranslation("settings_tab.edit_a_pattern.title");
 
             String pattern = (String) JOptionPane.showInputDialog(
                 getUIController().getMainFrame().getUIComponent(), text, title,
@@ -364,7 +363,7 @@ public class SettingsTab extends PFUIComponent
 
         public void actionPerformed(ActionEvent e) {
             showAddPane(Translation
-                .getTranslation("folder_information_settings_tab.add_a_pattern.example"));
+                .getTranslation("settings_tab.add_a_pattern.example"));
         }
     }
 
@@ -376,9 +375,9 @@ public class SettingsTab extends PFUIComponent
         if (st.countTokens() == 1) {
             String pattern = st.nextToken();
             String title = Translation
-                .getTranslation("folder_information_settings_tab.add_a_pattern.title");
+                .getTranslation("settings_tab.add_a_pattern.title");
             String text = Translation
-                .getTranslation("folder_information_settings_tab.add_a_pattern.text");
+                .getTranslation("settings_tab.add_a_pattern.text");
             String patternResult = (String) JOptionPane.showInputDialog(
                 getUIController().getMainFrame().getUIComponent(), text, title,
                 JOptionPane.PLAIN_MESSAGE, null, null, pattern);
@@ -402,10 +401,10 @@ public class SettingsTab extends PFUIComponent
                 sb.append(pattern + '\n');
             }
             String message = Translation
-                .getTranslation("folder_information_settings_tab.add_patterns.text_1")
+                .getTranslation("settings_tab.add_patterns.text_1")
                 + "\n\n" + sb.toString();
             String title = Translation
-                .getTranslation("folder_information_settings_tab.add_patterns.title");
+                .getTranslation("settings_tab.add_patterns.title");
             int result = DialogFactory.genericDialog(getUIController()
                 .getMainFrame().getUIComponent(), title, message, new String[]{
                 Translation.getTranslation("general.ok"),
@@ -459,13 +458,13 @@ public class SettingsTab extends PFUIComponent
     private int shouldMoveContent() {
         return DialogFactory.genericDialog(getController()
             .getUIController().getMainFrame().getUIComponent(), Translation
-            .getTranslation("folder_information_settings_tab.move_content.title"),
-            Translation.getTranslation("folder_information_settings_tab.move_content"),
+            .getTranslation("settings_tab.move_content.title"),
+            Translation.getTranslation("settings_tab.move_content"),
             new String[]{
                 Translation
-                    .getTranslation("folder_information_settings_tab.move_content.move"),
+                    .getTranslation("settings_tab.move_content.move"),
                 Translation
-                    .getTranslation("folder_information_settings_tab.move_content.dont"),
+                    .getTranslation("settings_tab.move_content.dont"),
                 Translation.getTranslation("general.cancel"),}, 0,
             GenericDialogType.INFO);
     }
@@ -496,9 +495,9 @@ public class SettingsTab extends PFUIComponent
                                 getController().getUIController()
                                     .getMainFrame().getUIComponent(),
                                 Translation.getTranslation(
-                                        "folder_information_settings_tab.move_error.title"),
+                                        "settings_tab.move_error.title"),
                                 Translation.getTranslation(
-                                        "folder_information_settings_tab.move_error.temp"),
+                                        "settings_tab.move_error.temp"),
                                 getController().isVerbose(), e);
                     }
                 }
@@ -514,9 +513,9 @@ public class SettingsTab extends PFUIComponent
      */
     private boolean shouldMoveLocal(File newDirectory) {
         String title = Translation
-            .getTranslation("folder_information_settings_tab.confirm_local_folder_move.title");
+            .getTranslation("settings_tab.confirm_local_folder_move.title");
         String message = Translation.getTranslation(
-            "folder_information_settings_tab.confirm_local_folder_move.text", folder
+                "settings_tab.confirm_local_folder_move.text", folder
                 .getLocalBase().getAbsolutePath(), newDirectory
                 .getAbsolutePath());
 
@@ -545,9 +544,9 @@ public class SettingsTab extends PFUIComponent
                     getController().getUIController().getMainFrame()
                         .getUIComponent(),
                     Translation
-                        .getTranslation("folder_information_settings_tab.folder_not_empty.title"),
+                        .getTranslation("settings_tab.folder_not_empty.title"),
                     Translation.getTranslation(
-                        "folder_information_settings_tab.folder_not_empty", newDirectory
+                            "settings_tab.folder_not_empty", newDirectory
                             .getAbsolutePath()), new String[]{
                         Translation.getTranslation("general.continue"),
                         Translation.getTranslation("general.cancel")}, 1,
@@ -617,9 +616,9 @@ public class SettingsTab extends PFUIComponent
     private void displayError(Exception e) {
         DialogFactory.genericDialog(getController().getUIController()
             .getMainFrame().getUIComponent(), Translation
-            .getTranslation("folder_information_settings_tab.move_error.title"),
+            .getTranslation("settings_tab.move_error.title"),
             Translation.getTranslation(
-                "folder_information_settings_tab.move_error.other", e.getMessage()),
+                    "settings_tab.move_error.other", e.getMessage()),
             GenericDialogType.WARN);
     }
 
@@ -710,12 +709,12 @@ public class SettingsTab extends PFUIComponent
 
         protected String getTitle() {
             return Translation
-                .getTranslation("folder_information_settings_tab.working.title");
+                .getTranslation("settings_tab.working.title");
         }
 
         protected String getWorkingText() {
             return Translation
-                .getTranslation("folder_information_settings_tab.working.description");
+                .getTranslation("settings_tab.working.description");
         }
 
         public void finished() {
@@ -733,9 +732,9 @@ public class SettingsTab extends PFUIComponent
             super("action_preview_folder", controller);
         }
 
-        public void configure(boolean preview) {
-            this.preview = preview;
-            if (preview) {
+        public void configure(boolean previewArg) {
+            preview = previewArg;
+            if (previewArg) {
                 configureFromActionId("action_preview_folder");
             } else {
                 configureFromActionId("action_stop_preview_folder");
@@ -743,10 +742,34 @@ public class SettingsTab extends PFUIComponent
         }
 
         public void actionPerformed(ActionEvent e) {
+
             if (preview) {
 
+                int result = DialogFactory.genericDialog(getController()
+                        .getUIController().getMainFrame().getUIComponent(),
+                        Translation.getTranslation(
+                                "settings_tab.preview_warning_title"),
+                        Translation.getTranslation(
+                                "settings_tab.preview_warning_message"),
+                        new String[]{Translation.getTranslation(
+                                "settings_tab.preview_warning_convert"),
+                                Translation.getTranslation("general.cancel")}, 0,
+                        GenericDialogType.WARN);
+
+                if (result == 0) { // Convert to preview
+
+                    // Convert folder to preview.
+                    FolderPreviewHelper.convertFolderToPreview(getController(), folder);
+
+                    // So this folder no longer actually exists, so we need to
+                    // close the information frame.
+                    getController().getUIController().closeInformationFrame();
+                }
             } else {
 
+                // Join preview folder.
+                PreviewToJoinPanel panel = new PreviewToJoinPanel(getController(), folder);
+                panel.open();
             }
         }
     }

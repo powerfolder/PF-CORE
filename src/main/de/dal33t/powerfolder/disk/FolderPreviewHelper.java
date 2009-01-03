@@ -69,11 +69,9 @@ public class FolderPreviewHelper {
      *
      * @param controller
      * @param folder
-     * @param deleteSystemSubDir
      */
     public static boolean convertFolderToPreview(Controller controller,
-                                              Folder folder,
-                                              boolean deleteSystemSubDir) {
+                                              Folder folder) {
 
         Reject.ifTrue(folder.isPreviewOnly(),
                 "Can not convert a preview folder to preview");
@@ -100,7 +98,7 @@ public class FolderPreviewHelper {
                 true,
                 initialFolderSettings.isWhitelist());
 
-        folderRepository.removeFolder(folder, deleteSystemSubDir);
+        folderRepository.removeFolder(folder, false);
         folderRepository.createPreviewFolder(folderInfo,
                 previewFolderSettings);
         folderRepository.saveFolderConfig(folderInfo,

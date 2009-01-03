@@ -672,6 +672,14 @@ public class UIController extends PFComponent {
         applicationModel.getFolderRepositoryModel().syncFolder(folderInfo);
     }
 
+    public void closeInformationFrame() {
+        informationFrame.getUIComponent().setVisible(false);
+    }
+
+    ///////////////////
+    // Inner Classes //
+    ///////////////////
+
     /**
      * Class to listen for SynchronizationStatsEvents, affect the tooltip text.
      */
