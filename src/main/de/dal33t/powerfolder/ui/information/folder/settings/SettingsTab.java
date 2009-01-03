@@ -81,6 +81,7 @@ public class SettingsTab extends PFUIComponent
     private FolderOnlineStorageAction confOSAction;
     private ServerClient serverClient;
     private PreviewFolderAction previewFolderAction;
+    private DeleteFolderAction deleteFolderAction;
 
     /**
      * Constructor
@@ -109,6 +110,7 @@ public class SettingsTab extends PFUIComponent
         confOSAction.setEnabled(false);
         previewFolderAction = new PreviewFolderAction(getController());
         previewFolderAction.setEnabled(false);
+        deleteFolderAction = new DeleteFolderAction(getController());
         serverClient.addListener(new MyServerClientListener());
     }
 
@@ -143,13 +145,13 @@ public class SettingsTab extends PFUIComponent
     }
 
     /**
-     * Bulds the ui component.
+     * Builds the ui component.
      */
     private void buildUIComponent() {
                   // label           folder       butn
         FormLayout layout = new FormLayout(
             "3dlu, right:pref, 3dlu, 210dlu, 3dlu, pref",
-                "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
+                "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
@@ -179,7 +181,19 @@ public class SettingsTab extends PFUIComponent
                 cc.xy(2, 12));
         builder.add(createPreviewPanel(), cc.xy(4, 12));
 
+        builder.add(new JLabel(Translation.getTranslation("settings_tab.delete_folder")),
+                cc.xy(2, 14));
+        builder.add(createDeletePanel(), cc.xy(4, 14));
+
         uiComponent = builder.getPanel();
+    }
+
+    private JPanel createDeletePanel() {
+        FormLayout layout = new FormLayout("pref", "pref");
+        PanelBuilder builder = new PanelBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+        builder.add(new JButton(deleteFolderAction), cc.xy(1, 1));
+        return builder.getPanel();
     }
 
     private JPanel createConfigurePanel() {
@@ -721,6 +735,16 @@ public class SettingsTab extends PFUIComponent
             if (get() != null) {
                 displayError((Exception) get());
             }
+        }
+    }
+
+    private class DeleteFolderAction extends BaseAction {
+
+        private DeleteFolderAction(Controller controller) {
+            super("action_delete_folder", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
         }
     }
 
