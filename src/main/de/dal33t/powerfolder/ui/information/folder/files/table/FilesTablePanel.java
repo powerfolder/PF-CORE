@@ -144,11 +144,11 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         removeIgnoreAction = new RemoveIgnoreAction(getController());
         removeIgnoreAction.setEnabled(false);
 
+        bar.addGridded(new JToggleButton(new DetailsAction(getController())));
+        bar.addRelatedGap();
         bar.addGridded(new JButton(downloadFileAction));
         bar.addRelatedGap();
         bar.addGridded(new JButton(openFileAction));
-        bar.addRelatedGap();
-        bar.addGridded(new JToggleButton(new DetailsAction(getController())));
         return bar.getPanel();
     }
 

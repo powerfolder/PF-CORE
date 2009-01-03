@@ -30,6 +30,7 @@ import de.dal33t.powerfolder.ui.model.TransferManagerModel;
 import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 import javax.swing.*;
@@ -52,13 +53,24 @@ public class DownloadsTablePanel extends PFUIComponent {
     private DownloadsTable table;
     private DownloadsTableModel tableModel;
 
+    private Action openDownloadAction;
+    private Action abortDownloadsAction;
+    private Action clearCompletedDownloadsAction;
+
+    private JPopupMenu fileMenu;
+
     /**
      * Constructor
      *
      * @param controller
      */
-    public DownloadsTablePanel(Controller controller) {
+    public DownloadsTablePanel(Controller controller, Action openDownloadAction,
+                               Action abortDownloadsAction,
+                               Action clearCompletedDownloadsAction) {
         super(controller);
+        this.openDownloadAction = openDownloadAction;
+        this.abortDownloadsAction = abortDownloadsAction;
+        this.clearCompletedDownloadsAction = clearCompletedDownloadsAction;
     }
 
     /**
@@ -85,6 +97,7 @@ public class DownloadsTablePanel extends PFUIComponent {
         table.getTableHeader().addMouseListener(new TableHeaderMouseListener());
         tablePane = new JScrollPane(table);
         tableModel = (DownloadsTableModel) table.getModel();
+        table.addMouseListener(new TableMouseListener());
 
         // Whitestrip & set sizes
         UIUtil.whiteStripTable(table);
@@ -120,7 +133,22 @@ public class DownloadsTablePanel extends PFUIComponent {
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
         builder.add(tablePane, cc.xy(1, 1));
+
+        buildPopupMenus();
+
         uiComponent = builder.getPanel();
+    }
+
+    /**
+     * Builds the popup menus
+     */
+    private void buildPopupMenus() {
+        fileMenu = new JPopupMenu();
+        if (OSUtil.isWindowsSystem() || OSUtil.isMacOS()) {
+            fileMenu.add(openDownloadAction);
+        }
+        fileMenu.add(abortDownloadsAction);
+        fileMenu.add(clearCompletedDownloadsAction);
     }
 
     /**
@@ -323,4 +351,23 @@ public class DownloadsTablePanel extends PFUIComponent {
             }
         }
     }
+
+    private class TableMouseListener extends MouseAdapter {
+        public void mousePressed(MouseEvent e) {
+            if (e.isPopupTrigger()) {
+                showContextMenu(e);
+            }
+        }
+
+        public void mouseReleased(MouseEvent e) {
+            if (e.isPopupTrigger()) {
+                showContextMenu(e);
+            }
+        }
+
+        private void showContextMenu(MouseEvent evt) {
+            fileMenu.show(evt.getComponent(), evt.getX(), evt.getY());
+        }
+    }
+
 }

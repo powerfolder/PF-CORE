@@ -101,7 +101,9 @@ public class DownloadsInformationCard extends InformationCard
      */
     private void initialize() {
         buildToolbar();
-        tablePanel = new DownloadsTablePanel(getController());
+        tablePanel = new DownloadsTablePanel(getController(), 
+                openDownloadAction, abortDownloadsAction,
+                clearCompletedDownloadsAction);
         tablePanel.addTableModelListener(new MyTableModelListener());
         tablePanel.addListSelectionListener(new MyListSelectionListener());
         detailsPanel = new FileDetailsPanel(getController());
@@ -137,11 +139,11 @@ public class DownloadsInformationCard extends InformationCard
         });
         
         ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
+        bar.addGridded(new JToggleButton(new DetailsAction(getController())));
+        bar.addRelatedGap();
         bar.addGridded(new JButton(openDownloadAction));
         bar.addRelatedGap();
         bar.addGridded(new JButton(abortDownloadsAction));
-        bar.addRelatedGap();
-        bar.addGridded(new JToggleButton(new DetailsAction(getController())));
         bar.addRelatedGap();
         bar.addGridded(new JButton(clearCompletedDownloadsAction));
         bar.addRelatedGap();

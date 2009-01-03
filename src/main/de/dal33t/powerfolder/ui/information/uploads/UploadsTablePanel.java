@@ -29,6 +29,7 @@ import de.dal33t.powerfolder.transfer.Upload;
 import de.dal33t.powerfolder.ui.model.TransferManagerModel;
 import de.dal33t.powerfolder.util.ui.SwingWorker;
 import de.dal33t.powerfolder.util.ui.UIUtil;
+import de.dal33t.powerfolder.util.os.OSUtil;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionListener;
@@ -47,14 +48,18 @@ public class UploadsTablePanel extends PFUIComponent {
     private JScrollPane tablePane;
     private UploadsTable table;
     private UploadsTableModel tableModel;
+    private Action clearCompletedUploadsAction;
+    private JPopupMenu fileMenu;
 
     /**
      * Constructor.
      *
      * @param controller
      */
-    public UploadsTablePanel(Controller controller) {
+    public UploadsTablePanel(Controller controller,
+                             Action clearCompletedUploadsAction) {
         super(controller);
+        this.clearCompletedUploadsAction = clearCompletedUploadsAction;
     }
 
     /**
@@ -81,6 +86,7 @@ public class UploadsTablePanel extends PFUIComponent {
         table.getTableHeader().addMouseListener(new TableHeaderMouseListener());
         tablePane = new JScrollPane(table);
         tableModel = (UploadsTableModel) table.getModel();
+        table.addMouseListener(new TableMouseListener());
 
         // Whitestrip & set sizes
         UIUtil.whiteStripTable(table);
@@ -162,7 +168,18 @@ public class UploadsTablePanel extends PFUIComponent {
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
         builder.add(tablePane, cc.xy(1, 1));
+
+        buildPopupMenus();
+
         uiComponent = builder.getPanel();
+    }
+
+    /**
+     * Builds the popup menus
+     */
+    private void buildPopupMenus() {
+        fileMenu = new JPopupMenu();
+        fileMenu.add(clearCompletedUploadsAction);
     }
 
     public FileInfo getSelectdFile() {
@@ -203,4 +220,23 @@ public class UploadsTablePanel extends PFUIComponent {
             }
         }
     }
+
+    private class TableMouseListener extends MouseAdapter {
+        public void mousePressed(MouseEvent e) {
+            if (e.isPopupTrigger()) {
+                showContextMenu(e);
+            }
+        }
+
+        public void mouseReleased(MouseEvent e) {
+            if (e.isPopupTrigger()) {
+                showContextMenu(e);
+            }
+        }
+
+        private void showContextMenu(MouseEvent evt) {
+            fileMenu.show(evt.getComponent(), evt.getX(), evt.getY());
+        }
+    }
+
 }

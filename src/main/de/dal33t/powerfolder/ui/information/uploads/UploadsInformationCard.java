@@ -99,7 +99,7 @@ public class UploadsInformationCard extends InformationCard
      */
     private void initialize() {
         buildToolbar();
-        tablePanel = new UploadsTablePanel(getController());
+        tablePanel = new UploadsTablePanel(getController(), clearCompletedUploadsAction);
         detailsPanel = new FileDetailsPanel(getController());
         tablePanel.addTableModelListener(new MyTableModelListener());
         tablePanel.addListSelectionListener(new MyListSelectionListener());
