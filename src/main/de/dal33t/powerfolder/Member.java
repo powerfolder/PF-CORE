@@ -336,9 +336,13 @@ public class Member extends PFComponent implements Comparable<Member> {
         // Still capable of new connections?
         boolean conSlotAvail = !getController().getNodeManager()
             .maxConnectionsReached();
-        if (conSlotAvail && getController().getMySelf().isSupernode()) {
+        if (conSlotAvail
+            && (getController().getMySelf().isSupernode() || getController()
+                .getMySelf().isServer()))
+        {
             return true;
         }
+
 
         // Try to hold connection to supernode if max connections not reached
         // yet.
