@@ -222,8 +222,9 @@ public class Translation {
     public static String getTranslation(String id, Object param1) {
         String translation = getTranslation(id);
         int i;
+        String formattedParam = formatParam(param1);
         while ((i = translation.indexOf("{0}")) >= 0) {
-            translation = translation.substring(0, i) + param1
+            translation = translation.substring(0, i) + formattedParam
                 + translation.substring(i + 3, translation.length());
         }
         return translation;
@@ -246,8 +247,9 @@ public class Translation {
     {
         String translation = getTranslation(id, param1);
         int i;
+        String formattedParam = formatParam(param2);
         while ((i = translation.indexOf("{1}")) >= 0) {
-            translation = translation.substring(0, i) + param2
+            translation = translation.substring(0, i) + formattedParam
                 + translation.substring(i + 3, translation.length());
         }
         // log.warning("Translation for '" + id + "': " + translation);
@@ -274,11 +276,35 @@ public class Translation {
     {
         String translation = getTranslation(id, param1, param2);
         int i;
+        String formattedParam = formatParam(param3);
         while ((i = translation.indexOf("{2}")) >= 0) {
-            translation = translation.substring(0, i) + param3
+            translation = translation.substring(0, i) + formattedParam
                 + translation.substring(i + 3, translation.length());
         }
         // log.warning("Translation for '" + id + "': " + translation);
         return translation;
+    }
+
+    /**
+     * Convert some primitive types into nice formatted strings.
+     *
+     * @param param
+     * @return
+     */
+    private static String formatParam(Object param) {
+        if (param instanceof Integer) {
+            Integer i = (Integer) param;
+            return Format.formatLong(i.longValue());
+        } else if (param instanceof Long) {
+            Long l = (Long) param;
+            return Format.formatLong(l);
+        } else if (param instanceof Double) {
+            Double d = (Double) param;
+            return Format.formatNumber(d);
+        } else if (param instanceof Float) {
+            Float f = (Float) param;
+            return Format.formatNumber(f.doubleValue());
+        }
+        return param.toString();
     }
 }
