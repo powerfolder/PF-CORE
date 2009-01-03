@@ -19,6 +19,14 @@
 */
 package de.dal33t.powerfolder.net;
 
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeoutException;
+
+import org.apache.commons.lang.StringUtils;
+
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
@@ -31,14 +39,6 @@ import de.dal33t.powerfolder.util.Partitions;
 import de.dal33t.powerfolder.util.Range;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
 import de.dal33t.powerfolder.util.net.UDTSocket;
-import org.apache.commons.lang.StringUtils;
-
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.TimeoutException;
-import java.util.logging.Logger;
 
 /**
  * Listens for incoming UDTMessages and either 1) Processes them if the
@@ -50,7 +50,6 @@ import java.util.logging.Logger;
  */
 public class UDTSocketConnectionManager extends PFComponent {
 
-    private static final Logger log = Logger.getLogger(UDTSocketConnectionManager.class.getName());
     private Partitions<PortSlot> ports;
 
     /**
@@ -407,7 +406,11 @@ public class UDTSocketConnectionManager extends PFComponent {
                         logSevere("ConnectionException", e1);
                     }
                 }
-                logSevere("ConnectionException", e);
+                logWarning("Unable to connect (UDT) to " + msg.getSource()
+                    + ": " + e);
+                if (isFiner()) {
+                    logFiner(e);
+                }
             }
         }
     }
