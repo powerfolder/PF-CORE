@@ -716,7 +716,6 @@ public class Folder extends PFComponent {
             deviceDisconnected = false;
         } catch (FolderException e) {
             logFiner("invalid local base: " + e);
-            logFiner(e);
             deviceDisconnected = true;
             return false;
         }
