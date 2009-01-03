@@ -794,8 +794,12 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
 
             if (!isConnected()) {
                 // Client disconnected, stop
-                logFine("Peer disconnected while sender got active. Msgs in queue: "
-                    + messagesToSendQueue.size() + ": " + messagesToSendQueue);
+                if (isFiner()) {
+                    logFiner("Peer disconnected while sender got active. Msgs in queue: "
+                        + messagesToSendQueue.size()
+                        + ": "
+                        + messagesToSendQueue);
+                }
                 return;
             }
 
