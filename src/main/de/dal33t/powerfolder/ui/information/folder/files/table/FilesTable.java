@@ -310,14 +310,16 @@ public class FilesTable extends JTable {
                     }
             }
 
-            // Make new files bold.
+            Component c = super.getTableCellRendererComponent(table, myValue,
+                    isSelected, hasFocus, row, column);
+
+            // Show new files in bold.
             if (recentlyDownloaded(fileInfo)) {
-                setFont(new Font(getFont().getName(), Font.BOLD,
+                c.setFont(new Font(getFont().getName(), Font.BOLD,
                         getFont().getSize()));
             }
 
-            return super.getTableCellRendererComponent(table, myValue, isSelected,
-                    hasFocus, row, column);
+            return c;
         }
 
         /**
