@@ -21,7 +21,6 @@ package de.dal33t.powerfolder.ui.home;
 
 import java.awt.Font;
 import java.awt.event.ActionEvent;
-import java.text.ParseException;
 import java.util.Date;
 
 import javax.swing.AbstractAction;

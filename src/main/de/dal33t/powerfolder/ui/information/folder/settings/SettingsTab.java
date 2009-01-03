@@ -26,6 +26,9 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.clientserver.ServerClient;
+import de.dal33t.powerfolder.clientserver.ServerClientListener;
+import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.event.PatternChangeListener;
 import de.dal33t.powerfolder.event.PatternChangedEvent;
 import de.dal33t.powerfolder.disk.Folder;
@@ -76,6 +79,8 @@ public class SettingsTab extends PFUIComponent
     private JTextField localFolderField;
     private JButton localFolderButton;
     private PatternChangeListener patternChangeListener;
+    private ConfigureFolderOnlineStorageAction confOSAction;
+    private ServerClient serverClient;
 
     /**
      * Constructor
@@ -84,6 +89,7 @@ public class SettingsTab extends PFUIComponent
      */
     public SettingsTab(Controller controller) {
         super(controller);
+        serverClient = controller.getOSClient();
         transferModeSelectorPanel = new SyncProfileSelectorPanel(getController());
         useRecycleBinBox = new JCheckBox(Translation.getTranslation(
                 "folder_information_settings_tab.use_recycle_bin"));
@@ -99,6 +105,9 @@ public class SettingsTab extends PFUIComponent
         localFolderButton.addActionListener(myActionListener);
         patternChangeListener = new MyPatternChangeListener();
         patternsListModel = new DefaultListModel();
+        confOSAction = new ConfigureFolderOnlineStorageAction(getController());
+        confOSAction.setEnabled(false);
+        serverClient.addListener(new MyServerClientListener());
     }
 
     /**
@@ -168,8 +177,7 @@ public class SettingsTab extends PFUIComponent
         FormLayout layout = new FormLayout("pref", "pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
-        builder.add(new JButton(new ConfigureFolderOnlineStorageAction(
-                getController())), cc.xy(1, 1));
+        builder.add(new JButton(confOSAction), cc.xy(1, 1));
         return builder.getPanel();
     }
 
@@ -598,6 +606,25 @@ public class SettingsTab extends PFUIComponent
     }
 
     /**
+     * Listen to changes in onlineStorage and enable the configOS button as
+     * required.
+     *
+     * @param event
+     */
+    private void processServerClientEvent(ServerClientEvent event) {
+
+        boolean enabled = false;
+        if (folder != null && serverClient.isConnected()) {
+            enabled = true;
+        }
+        confOSAction.setEnabled(enabled);
+    }
+
+    ///////////////////
+    // Inner Classes //
+    ///////////////////
+
+    /**
      * Local class to handel action events.
      */
     private class MyActionListener implements ActionListener {
@@ -674,6 +701,32 @@ public class SettingsTab extends PFUIComponent
 
         public void patternRemoved(PatternChangedEvent e) {
             rebuildPatterns();
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return true;
+        }
+    }
+
+    /**
+     * Listener to ServerClient for connection changes.
+     */
+    private class MyServerClientListener implements ServerClientListener {
+
+        public void login(ServerClientEvent event) {
+            processServerClientEvent(event);
+        }
+
+        public void accountUpdated(ServerClientEvent event) {
+            processServerClientEvent(event);
+        }
+
+        public void serverConnected(ServerClientEvent event) {
+            processServerClientEvent(event);
+        }
+
+        public void serverDisconnected(ServerClientEvent event) {
+            processServerClientEvent(event);
         }
 
         public boolean fireInEventDispatchThread() {
