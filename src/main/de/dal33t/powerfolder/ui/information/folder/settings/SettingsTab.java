@@ -79,7 +79,7 @@ public class SettingsTab extends PFUIComponent
     private JTextField localFolderField;
     private JButton localFolderButton;
     private PatternChangeListener patternChangeListener;
-    private ConfigureFolderOnlineStorageAction confOSAction;
+    private FolderOnlineStorageAction confOSAction;
     private ServerClient serverClient;
 
     /**
@@ -105,7 +105,7 @@ public class SettingsTab extends PFUIComponent
         localFolderButton.addActionListener(myActionListener);
         patternChangeListener = new MyPatternChangeListener();
         patternsListModel = new DefaultListModel();
-        confOSAction = new ConfigureFolderOnlineStorageAction(getController());
+        confOSAction = new FolderOnlineStorageAction(getController());
         confOSAction.setEnabled(false);
         serverClient.addListener(new MyServerClientListener());
     }
@@ -607,15 +607,26 @@ public class SettingsTab extends PFUIComponent
     }
 
     /**
-     * Listen to changes in onlineStorage and enable the configOS button as
-     * required.
+     * Listen to changes in onlineStorage / folder and enable the configOS
+     * button as required.
+     * Also config action on whether already joined OS.
      *
      */
     private void enableConfigOSAction() {
 
         boolean enabled = false;
-        if (folder != null && serverClient.isConnected()) {
+        if (folder != null && serverClient.isConnected()
+                && serverClient.isLastLoginOK()) {
             enabled = true;
+
+            boolean osConfigured = false;
+            for (FolderInfo folderInfo : serverClient.getOnlineFolders()) {
+                if (folder.getInfo().equals(folderInfo)) {
+                    osConfigured = true;
+                    break;
+                }
+            }
+            confOSAction.configure(!osConfigured);
         }
         confOSAction.setEnabled(enabled);
     }
@@ -683,12 +694,22 @@ public class SettingsTab extends PFUIComponent
         }
     }
 
-    private class ConfigureFolderOnlineStorageAction extends BaseAction {
-        private ConfigureFolderOnlineStorageAction(Controller controller) {
-            super("action_configure_folder_online_storage", controller);
+    private class FolderOnlineStorageAction extends BaseAction {
+
+        private FolderOnlineStorageAction(Controller controller) {
+            super("action_backup_online_storage", controller);
+        }
+
+        public void configure(boolean backup) {
+            if (backup) {
+                configureFromActionId("action_backup_online_storage");
+            } else {
+                configureFromActionId("action_stop_online_storage");
+            }
         }
 
         public void actionPerformed(ActionEvent e) {
+            // FolderOnlineStoragePanel knows if folder already joined :-)
             PFWizard.openMirrorFolderWizard(getController(), folder);
         }
     }

@@ -24,8 +24,6 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.transfer.DownloadManager;
-import de.dal33t.powerfolder.transfer.Transfer;
-import de.dal33t.powerfolder.transfer.Upload;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileSystemView;
@@ -138,10 +136,10 @@ public class Icons {
     public static final Icon FOLDER = getIcon("icons/Folder.png");
     public static final Icon FILES = getIcon("icons/Files.png");
 
-    public static final Icon PF_LOCAL = getIcon("icons/PFLocal.png");
-    public static final Icon PF_LOCAL_AND_ONLINE = getIcon("icons/PFLocalAndOnline.png");
-    public static final Icon PF_ONLINE = getIcon("icons/PFOnline.png");
-    public static final Icon PF_PREVIEW = getIcon("icons/PFPreview.png");
+    public static final Icon LOCAL_FOLDER = getIcon("icons/LocalFolder.png");
+    public static final Icon LOCAL_AND_ONLINE_FOLDER = getIcon("icons/LocalAndOnlineFolder.png");
+    public static final Icon ONLINE_FOLDER = getIcon("icons/OnlineFolder.png");
+    public static final Icon PREVIEW_FOLDER = getIcon("icons/PreviewFolder.png");
 
     public static final Icon BLACK_LIST = getIcon("icons/BlackList.gif");
     public static final Icon WHITE_LIST = getIcon("icons/WhiteList.gif");

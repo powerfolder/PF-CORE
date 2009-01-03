@@ -474,21 +474,21 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
     private void updateIcon() {
 
         if (folder == null) {
-            jLabel.setIcon(Icons.PF_ONLINE);
+            jLabel.setIcon(Icons.ONLINE_FOLDER);
             jLabel.setToolTipText(Translation.getTranslation(
                     "exp_folder_view.folder_online_text"));
         } else {
             boolean preview = folder.isPreviewOnly();
             if (preview) {
-                jLabel.setIcon(Icons.PF_PREVIEW);
+                jLabel.setIcon(Icons.PREVIEW_FOLDER);
                 jLabel.setToolTipText(Translation.getTranslation(
                         "exp_folder_view.folder_preview_text"));
             } else if (online) {
-                jLabel.setIcon(Icons.PF_LOCAL_AND_ONLINE);
+                jLabel.setIcon(Icons.LOCAL_AND_ONLINE_FOLDER);
                 jLabel.setToolTipText(Translation.getTranslation(
                         "exp_folder_view.folder_local_online_text"));
             } else {
-                jLabel.setIcon(Icons.PF_LOCAL);
+                jLabel.setIcon(Icons.LOCAL_FOLDER);
                 jLabel.setToolTipText(Translation.getTranslation(
                         "exp_folder_view.folder_local_text"));
             }

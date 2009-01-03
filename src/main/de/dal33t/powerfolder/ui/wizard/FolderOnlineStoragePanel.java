@@ -32,6 +32,8 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.ui.GenericDialogType;
 import jwf.WizardPanel;
 
 import javax.swing.*;
@@ -61,8 +63,28 @@ public class FolderOnlineStoragePanel extends PFWizardPanel {
         return true;
     }
 
+    /**
+     * Give user warning if stopping backing up.
+     * 
+     * @param list
+     * @return
+     */
     public boolean validateNext(List<WizardPanel> list) {
-        return true;
+        if (hasJoined) {
+            int result = DialogFactory.genericDialog(getController()
+                    .getUIController().getMainFrame().getUIComponent(),
+                    Translation.getTranslation(
+                            "wizard.folder_online_storage_panel.warning_title"),
+                    Translation.getTranslation(
+                            "wizard.folder_online_storage_panel.warning_message"),
+                    new String[]{Translation.getTranslation(
+                            "wizard.folder_online_storage_panel.warning_stop_backing"),
+                            Translation.getTranslation("general.cancel")}, 0,
+                    GenericDialogType.WARN);
+            return result == 0; // Stop backing up
+        } else {
+            return true;
+        }
     }
 
     protected JPanel buildContent() {
