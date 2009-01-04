@@ -91,27 +91,9 @@ public class StatusBar extends PFUIComponent implements UIPanel {
 
             JPanel upperPanel = new JPanel(new GridLayout(1, 3, 3, 3));
 
-            final JLabel leftLabel = new JLabel();
-            JLabel rightLabel = new JLabel() {
-                public Dimension getPreferredSize() {
-                    return new Dimension(leftLabel.getPreferredSize().width, getHeight());
-                }
-            };
-
-            final JLabel topLabel = new JLabel();
-            JLabel bottomLabel = new JLabel() {
-                public Dimension getPreferredSize() {
-                    return new Dimension(getWidth(), topLabel.getPreferredSize().height);
-                }
-            };
-
-            FormLayout leftLayout = new FormLayout("pref, center:pref:grow, pref", "pref, center:pref:grow, pref");
+            FormLayout leftLayout = new FormLayout("center:pref:grow", "center:pref:grow");
             DefaultFormBuilder leftBuilder = new DefaultFormBuilder(leftLayout);
-            leftBuilder.add(topLabel, cc.xy(2, 1));
-            leftBuilder.add(leftLabel, cc.xy(1, 2));
-            leftBuilder.add(new JToggleButtonMini(new MyPauseAction(getController())), cc.xy(2, 2));
-            leftBuilder.add(rightLabel, cc.xy(3, 2));
-            leftBuilder.add(bottomLabel, cc.xy(2, 3));
+            leftBuilder.add(new JToggleButtonMini(new MyPauseAction(getController())), cc.xy(1, 1));
             upperPanel.add(leftBuilder.getPanel());
             
             upperPanel.add(syncButtonComponent.getUIComponent());
