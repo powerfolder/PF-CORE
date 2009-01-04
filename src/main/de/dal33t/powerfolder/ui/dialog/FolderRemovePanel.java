@@ -24,9 +24,11 @@ import com.jgoodies.forms.factories.ButtonBarFactory;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.FolderSettings;
+import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.ui.action.FolderRemoveAction;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.BaseDialog;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
@@ -44,7 +46,6 @@ import java.awt.event.ActionListener;
  */
 public class FolderRemovePanel extends BaseDialog {
 
-    private final FolderRemoveAction action;
     private final Folder folder;
 
     private JButton leaveButton;
@@ -53,9 +54,8 @@ public class FolderRemovePanel extends BaseDialog {
     private JLabel messageLabel;
 
     private JCheckBox removeFromLocalBox;
-    private JCheckBox convertToPreviewBox;
-    private JCheckBox deleteSystemSubFolderBox;
     private JCheckBox removeFromServerBox;
+    private JCheckBox deleteSystemSubFolderBox;
 
     /**
      * Contructor when used on choosen folder
@@ -64,11 +64,8 @@ public class FolderRemovePanel extends BaseDialog {
      * @param controller
      * @param foInfo
      */
-    public FolderRemovePanel(FolderRemoveAction action, Controller controller,
-        Folder folder)
-    {
+    public FolderRemovePanel(Controller controller, Folder folder) {
         super(controller, true);
-        this.action = action;
         this.folder = folder;
     }
 
@@ -100,10 +97,6 @@ public class FolderRemovePanel extends BaseDialog {
         removeFromLocalBox.setSelected(true);
         removeFromLocalBox.addActionListener(new ConvertActionListener());
 
-        convertToPreviewBox = SimpleComponentFactory.createCheckBox(Translation
-            .getTranslation("folder_remove.dialog.preview"));
-        convertToPreviewBox.addActionListener(new ConvertActionListener());
-
         deleteSystemSubFolderBox = SimpleComponentFactory.createCheckBox(
                 Translation.getTranslation("folder_remove.dialog.delete"));
 
@@ -121,9 +114,8 @@ public class FolderRemovePanel extends BaseDialog {
         createLeaveButton(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 leaveButton.setEnabled(false);
-                action.confirmedFolderLeave(removeFromLocalBox.isSelected(),
+                confirmedFolderLeave(removeFromLocalBox.isSelected(),
                         deleteSystemSubFolderBox.isSelected(),
-                        convertToPreviewBox.isSelected(),
                         removeFromServerBox.isSelected());
                 close();
             }
@@ -159,7 +151,7 @@ public class FolderRemovePanel extends BaseDialog {
         initComponents();
 
         FormLayout layout = new FormLayout("pref:grow, 5dlu, pref:grow",
-            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
+            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
 
         CellConstraints cc = new CellConstraints();
@@ -176,9 +168,6 @@ public class FolderRemovePanel extends BaseDialog {
             builder.add(removeFromLocalBox, cc.xyw(1, row, 3));
             row += 2;
         }
-
-        builder.add(convertToPreviewBox, cc.xyw(1, row, 3));
-        row += 2;
 
         builder.add(deleteSystemSubFolderBox, cc.xyw(1, row, 3));
         row += 2;
@@ -198,23 +187,53 @@ public class FolderRemovePanel extends BaseDialog {
     }
 
     private void configureComponents() {
-        convertToPreviewBox.setEnabled(removeFromLocalBox.isSelected());
+            deleteSystemSubFolderBox.setEnabled(removeFromLocalBox.isSelected());
+            leaveButton.setEnabled(removeFromLocalBox.isSelected());
             if (!removeFromLocalBox.isSelected()) {
-                convertToPreviewBox.setSelected(false);
-            }
-
-            deleteSystemSubFolderBox.setEnabled(!convertToPreviewBox.isSelected()
-                    && removeFromLocalBox.isSelected());
-            leaveButton.setEnabled(!convertToPreviewBox.isSelected()
-                    && removeFromLocalBox.isSelected());
-            if (convertToPreviewBox.isSelected()
-                    || !removeFromLocalBox.isSelected()) {
                 deleteSystemSubFolderBox.setSelected(false);
             }
 
             leaveButton.setEnabled(removeFromLocalBox.isSelected()
                     || removeFromServerBox.isSelected());
     }
+
+    private  void confirmedFolderLeave(boolean removeLocal, 
+                                     boolean deleteSystemSubFolder,
+                                     boolean removeFromOS) {
+
+        FolderRepository folderRepository =
+                getController().getFolderRepository();
+
+        if (removeLocal) {
+            folderRepository.removeFolder(folder, deleteSystemSubFolder);
+        }
+
+        if (removeFromOS) {
+            ServerClient client = getController().getOSClient();
+            if (client.hasJoined(folder)) {
+                client.getFolderService().removeFolder(
+                    folder.getInfo(), true);
+            } else {
+                client.getFolderService().revokeAdmin(
+                    folder.getInfo());
+            }
+            client.refreshAccountDetails();
+
+            if (!removeLocal) {
+                FolderSettings folderSettings = folderRepository
+                    .loadFolderSettings(folder.getName());
+                folderRepository.saveFolderConfig(folder.getInfo(),
+                    folderSettings, true);
+            }
+        }
+
+        // Folder is gone. Close the information frame 
+        getUIController().closeInformationFrame();
+    }
+
+    ///////////////////
+    // Inner Classes //
+    ///////////////////
 
     private class ConvertActionListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {

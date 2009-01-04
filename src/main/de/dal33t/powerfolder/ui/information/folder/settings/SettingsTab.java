@@ -40,6 +40,7 @@ import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.dialog.PreviewToJoinPanel;
+import de.dal33t.powerfolder.ui.dialog.FolderRemovePanel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.action.SelectionBaseAction;
@@ -745,6 +746,9 @@ public class SettingsTab extends PFUIComponent
         }
 
         public void actionPerformed(ActionEvent e) {
+            FolderRemovePanel panel =
+                    new FolderRemovePanel(getController(), folder);
+            panel.open();
         }
     }
 

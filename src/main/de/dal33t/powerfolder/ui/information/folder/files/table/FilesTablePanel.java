@@ -301,7 +301,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
                 }
 
                 protected String getWorkingText() {
-                    return Translation.getTranslation("delete.busy.title");
+                    return Translation.getTranslation("delete.busy.description");
                 }
             };
             worker.start();
