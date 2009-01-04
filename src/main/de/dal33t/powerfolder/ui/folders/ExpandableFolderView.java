@@ -83,6 +83,8 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
 
     private ExpansionListener listenerSupport;
 
+    private OnlineStorageComponent osComponent;
+
     /**
      * Constructor
      *
@@ -136,7 +138,7 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
         updateNumberOfFiles();
         updateTransferMode();
         updateFolderMembershipDetails();
-        updateIcon();
+        updateIconAndOS();
         updateButtons();
 
         registerFolderListeners();
@@ -183,7 +185,7 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
         PanelBuilder upperBuilder = new PanelBuilder(upperLayout);
         CellConstraints cc = new CellConstraints();
         jLabel = new JLabel();
-        updateIcon();
+        updateIconAndOS();
 
         upperBuilder.add(jLabel, cc.xy(1, 1));
         upperBuilder.add(new JLabel(folderInfo.name), cc.xy(3, 1));
@@ -201,7 +203,7 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
 
         // Build lower detials with line border.
         FormLayout lowerLayout = new FormLayout("3dlu, pref, pref:grow, 3dlu, pref, 3dlu",
-            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
+            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, pref");
         PanelBuilder lowerBuilder = new PanelBuilder(lowerLayout);
 
         lowerBuilder.addSeparator(null, cc.xywh(1, 1, 6, 1));
@@ -226,6 +228,8 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
 
         lowerBuilder.add(transferModeLabel, cc.xy(2, 19));
         lowerBuilder.add(openSettingsInformationButton, cc.xy(5, 19));
+
+        lowerBuilder.add(osComponent.getUIComponent(), cc.xywh(2, 20, 4, 1));
 
         JPanel lowerPanel = lowerBuilder.getPanel();
         lowerPanel.setBackground(SystemColor.text);
@@ -276,6 +280,8 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
                 new MySyncFolderAction(getController());
 
         expanded = new AtomicBoolean();
+
+        osComponent = new OnlineStorageComponent(getController());
 
         openSettingsInformationButton = new JButtonMini(
                 myOpenSettingsInformationAction, true);
@@ -471,26 +477,30 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
                 "exp_folder_view.members", countText));
     }
 
-    private void updateIcon() {
+    private void updateIconAndOS() {
 
         if (folder == null) {
             jLabel.setIcon(Icons.ONLINE_FOLDER);
             jLabel.setToolTipText(Translation.getTranslation(
                     "exp_folder_view.folder_online_text"));
+            osComponent.getUIComponent().setVisible(false);
         } else {
             boolean preview = folder.isPreviewOnly();
             if (preview) {
                 jLabel.setIcon(Icons.PREVIEW_FOLDER);
                 jLabel.setToolTipText(Translation.getTranslation(
                         "exp_folder_view.folder_preview_text"));
+                osComponent.getUIComponent().setVisible(false);
             } else if (online) {
                 jLabel.setIcon(Icons.LOCAL_AND_ONLINE_FOLDER);
                 jLabel.setToolTipText(Translation.getTranslation(
                         "exp_folder_view.folder_local_online_text"));
+                osComponent.getUIComponent().setVisible(true);
             } else {
                 jLabel.setIcon(Icons.LOCAL_FOLDER);
                 jLabel.setToolTipText(Translation.getTranslation(
                         "exp_folder_view.folder_local_text"));
+                osComponent.getUIComponent().setVisible(false);
             }
         }
     }
@@ -617,19 +627,19 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
     private class MyServerClientListener implements ServerClientListener {
 
         public void login(ServerClientEvent event) {
-            updateIcon();
+            updateIconAndOS();
         }
 
         public void accountUpdated(ServerClientEvent event) {
-            updateIcon();
+            updateIconAndOS();
         }
 
         public void serverConnected(ServerClientEvent event) {
-            updateIcon();
+            updateIconAndOS();
         }
 
         public void serverDisconnected(ServerClientEvent event) {
-            updateIcon();
+            updateIconAndOS();
         }
 
         public boolean fireInEventDispatchThread() {
