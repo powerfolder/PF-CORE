@@ -43,14 +43,16 @@ public class ComputersList extends PFUIComponent {
     private final NodeManagerModel nodeManagerModel;
     private final Set<ExpandableComputerView> viewList;
     private ExpansionListener expansionListener;
+    private ComputersTab computersTab;
 
     /**
      * Constructor
      *
      * @param controller
      */
-    public ComputersList(Controller controller) {
+    public ComputersList(Controller controller, ComputersTab computersTab) {
         super(controller);
+        this.computersTab = computersTab;
         expansionListener = new MyExpansionListener();
         nodeManagerModel = getUIController().getApplicationModel()
                 .getNodeManagerModel();
@@ -114,6 +116,7 @@ public class ComputersList extends PFUIComponent {
             computerListPanel.add(view.getUIComponent());
             viewList.add(view);
             view.addExpansionListener(expansionListener);
+            computersTab.updateEmptyLabel();
         }
     }
 
@@ -143,6 +146,7 @@ public class ComputersList extends PFUIComponent {
             if (viewToRemove != null) {
                 viewList.remove(viewToRemove);
                 viewToRemove.removeExpansionListener(expansionListener);
+                computersTab.updateEmptyLabel();
             }
         }
     }
@@ -164,7 +168,12 @@ public class ComputersList extends PFUIComponent {
                 viewList.add(view);
                 view.addExpansionListener(expansionListener);
             }
+            computersTab.updateEmptyLabel();
         }
+    }
+
+    public boolean isEmpty() {
+        return viewList.isEmpty();
     }
 
     //////////////////

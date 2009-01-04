@@ -41,6 +41,8 @@ public class ComputersTab extends PFUIComponent {
     private JPanel uiComponent;
     private ComputersList computersList;
     private JComboBox computerTypeList;
+    private JScrollPane scrollPane;
+    private JLabel emptyLabel;
 
     /**
      * Constructor
@@ -78,18 +80,38 @@ public class ComputersTab extends PFUIComponent {
         JPanel toolbar = createToolBar();
         builder.add(toolbar, cc.xy(1, 2));
         builder.addSeparator(null, cc.xy(1, 4));
-        JScrollPane scrollPane = new JScrollPane(computersList.getUIComponent());
+        scrollPane = new JScrollPane(computersList.getUIComponent());
         UIUtil.removeBorder(scrollPane);
+
+        // emptyLabel and scrollPane occupy the same slot.
+        builder.add(emptyLabel, cc.xy(1, 6));
         builder.add(scrollPane, cc.xy(1, 6));
+
         uiComponent = builder.getPanel();
+
+        updateEmptyLabel();
+    }
+
+    public void updateEmptyLabel() {
+        if (emptyLabel != null) {
+            emptyLabel.setVisible(computersList.isEmpty());
+        }
+        if (scrollPane != null) {
+            scrollPane.setVisible(!computersList.isEmpty());
+        }
     }
 
     /**
      * Initializes components
      */
     private void initComponents() {
+
+        emptyLabel = new JLabel(
+                Translation.getTranslation("computers_tab.no_computers_available"),
+                SwingConstants.CENTER);
+        emptyLabel.setEnabled(false);
         
-        computersList = new ComputersList(getController());
+        computersList = new ComputersList(getController(), this);
 
         computerTypeList = new JComboBox();
         computerTypeList.setToolTipText(Translation.getTranslation(
