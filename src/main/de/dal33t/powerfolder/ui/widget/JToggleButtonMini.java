@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id: JButtonMini.java 5009 2008-08-11 01:25:22Z tot $
+ * $Id: JToggleButtonMini.java 5009 2008-08-11 01:25:22Z tot $
  */
 package de.dal33t.powerfolder.ui.widget;
 
@@ -31,24 +31,24 @@ import java.awt.event.ActionListener;
  * Class showing image button with no border, except when hover or pressed. Uses
  * Synthetica features to do border.
  */
-public class JButtonMini extends JButton {
+public class JToggleButtonMini extends JToggleButton {
 
     /**
      * Mini button that is configured from action which does act on it
-     * 
+     *
      * @param action
      */
-    public JButtonMini(Action action) {
+    public JToggleButtonMini(Action action) {
         this(action, true);
     }
 
     /**
      * Mini button that is configured from action and also can act on it
-     * 
+     *
      * @param action
      * @param act
      */
-    public JButtonMini(final Action action, boolean act) {
+    public JToggleButtonMini(final Action action, boolean act) {
         this((Icon) action.getValue(Action.SMALL_ICON), (String) action
             .getValue(Action.SHORT_DESCRIPTION));
         setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -61,7 +61,7 @@ public class JButtonMini extends JButton {
         }
     }
 
-    public JButtonMini(Icon icon, String toolTipText) {
+    public JToggleButtonMini(Icon icon, String toolTipText) {
         if (icon == null) {
             setText("???");
         } else {

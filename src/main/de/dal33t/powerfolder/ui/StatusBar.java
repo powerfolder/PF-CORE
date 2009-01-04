@@ -29,6 +29,8 @@ import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.net.ConnectionListener;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
+import de.dal33t.powerfolder.ui.widget.JToggleButtonMini;
+import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.ui.ComplexComponentFactory;
@@ -39,6 +41,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -64,7 +67,6 @@ public class StatusBar extends PFUIComponent implements UIPanel {
     private JLabel portLabel;
     private JButton openAboutBoxButton;
     private JButton openPreferencesButton;
-    private JLabel spacerLabel;
     private SyncButtonComponent syncButtonComponent;
 
     /** Connection state */
@@ -87,16 +89,39 @@ public class StatusBar extends PFUIComponent implements UIPanel {
 
             // Upper section
 
-            FormLayout upperLayout = new FormLayout(
-                "pref, 3dlu, center:pref:grow, 3dlu, pref", "pref, 6dlu, pref");
-            DefaultFormBuilder upperBuilder = new DefaultFormBuilder(
-                upperLayout);
+            JPanel upperPanel = new JPanel(new GridLayout(1, 3, 3, 3));
 
-            upperBuilder.add(spacerLabel, cc.xy(1, 1));
-            upperBuilder.add(syncButtonComponent.getUIComponent(), cc.xywh(3,
-                1, 1, 3));
-            upperBuilder.add(openPreferencesButton, cc.xy(5, 1));
-            upperBuilder.add(openAboutBoxButton, cc.xy(5, 3));
+            final JLabel leftLabel = new JLabel();
+            JLabel rightLabel = new JLabel() {
+                public Dimension getPreferredSize() {
+                    return new Dimension(leftLabel.getPreferredSize().width, getHeight());
+                }
+            };
+
+            final JLabel topLabel = new JLabel();
+            JLabel bottomLabel = new JLabel() {
+                public Dimension getPreferredSize() {
+                    return new Dimension(getWidth(), topLabel.getPreferredSize().height);
+                }
+            };
+
+            FormLayout leftLayout = new FormLayout("pref, center:pref:grow, pref", "pref, center:pref:grow, pref");
+            DefaultFormBuilder leftBuilder = new DefaultFormBuilder(leftLayout);
+            leftBuilder.add(topLabel, cc.xy(2, 1));
+            leftBuilder.add(leftLabel, cc.xy(1, 2));
+            leftBuilder.add(new JToggleButtonMini(new MyPauseAction(getController())), cc.xy(2, 2));
+            leftBuilder.add(rightLabel, cc.xy(3, 2));
+            leftBuilder.add(bottomLabel, cc.xy(2, 3));
+            upperPanel.add(leftBuilder.getPanel());
+            
+            upperPanel.add(syncButtonComponent.getUIComponent());
+
+            FormLayout rightLayout = new FormLayout("fill:pref:grow, pref", "pref, 3dlu, pref");
+            DefaultFormBuilder rightBuilder = new DefaultFormBuilder(rightLayout);
+            rightBuilder.add(openPreferencesButton, cc.xy(2, 1));
+            rightBuilder.add(openAboutBoxButton, cc.xy(2, 3));
+
+            upperPanel.add(rightBuilder.getPanel());
 
             // Lower section
 
@@ -146,10 +171,9 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             FormLayout mainLayout = new FormLayout(
                 "1dlu, fill:pref:grow, 1dlu", "pref, 3dlu, pref, 1dlu");
             DefaultFormBuilder mainBuilder = new DefaultFormBuilder(mainLayout);
-            mainBuilder.add(upperBuilder.getPanel(), cc.xy(2, 1));
+            mainBuilder.add(upperPanel, cc.xy(2, 1));
             mainBuilder.add(lowerBuilder.getPanel(), cc.xy(2, 3));
             comp = mainBuilder.getPanel();
-            return mainBuilder.getPanel();
         }
         return comp;
     }
@@ -235,20 +259,6 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             .getActionModel().getOpenPreferencesAction());
         openAboutBoxButton = new JButtonMini(getApplicationModel()
             .getActionModel().getOpenAboutBoxAction());
-        spacerLabel = new JLabel() {
-
-            /**
-             * This keeps the sync button in the center of the panel.
-             * 
-             * @return the preferred size
-             */
-            public Dimension getPreferredSize() {
-                int w = Math.max((int) openPreferencesButton.getPreferredSize()
-                    .getWidth(), (int) openAboutBoxButton.getPreferredSize()
-                    .getWidth());
-                return new Dimension(w, super.getHeight());
-            }
-        };
 
         syncButtonComponent = new SyncButtonComponent(getController());
     }
@@ -376,6 +386,16 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                     // Disconnected
                 }
             }
+        }
+    }
+
+    private class MyPauseAction extends BaseAction {
+
+        private MyPauseAction(Controller controller) {
+            super("action_pause_sync", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
         }
     }
 }
