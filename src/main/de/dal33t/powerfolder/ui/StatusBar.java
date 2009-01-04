@@ -88,7 +88,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             // Upper section
 
             FormLayout upperLayout = new FormLayout(
-                "pref, 3dlu, center:pref:grow, 3dlu, pref", "pref, 3dlu, pref");
+                "pref, 3dlu, center:pref:grow, 3dlu, pref", "pref, 6dlu, pref");
             DefaultFormBuilder upperBuilder = new DefaultFormBuilder(
                 upperLayout);
 
