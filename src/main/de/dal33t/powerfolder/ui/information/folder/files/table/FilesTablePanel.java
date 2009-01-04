@@ -46,10 +46,7 @@ import de.dal33t.powerfolder.util.ui.SwingWorker;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
+import javax.swing.event.*;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
@@ -76,11 +73,14 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
     private RemoveIgnoreAction removeIgnoreAction;
     private UnmarkAction unmarkAction;
     private JPopupMenu fileMenu;
+    private JScrollPane tableScroller;
+    private JLabel emptyLabel;
 
     public FilesTablePanel(Controller controller) {
         super(controller);
         fileDetailsPanel = new FileDetailsPanel(controller);
         tableModel = new FilesTableModel(controller);
+        tableModel.addTableModelListener(new MyTableModelListener());
         table = new FilesTable(tableModel);
         table.getSelectionModel().addListSelectionListener(new MyListSelectionListener());
         table.getTableHeader().addMouseListener(new TableHeaderMouseListener());
@@ -109,7 +109,10 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
-        JScrollPane tableScroller = new JScrollPane(table);
+        tableScroller = new JScrollPane(table);
+        emptyLabel = new JLabel(Translation.getTranslation(
+                "files_table_panel.no_files_available"), SwingConstants.CENTER);
+        emptyLabel.setEnabled(false);
 
         UIUtil.whiteStripTable(table);
         UIUtil.setZeroHeight(tableScroller);
@@ -117,12 +120,17 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
 
         builder.add(createToolBar(), cc.xy(1, 1));
         builder.addSeparator(null, cc.xy(1, 3));
+
+        // tableScroller and emptyLabel occupy the same slot
         builder.add(tableScroller, cc.xy(1, 5));
+        builder.add(emptyLabel, cc.xy(1, 5));
+
         builder.add(fileDetailsPanel.getPanel(), cc.xy(1, 7));
 
         buildPopupMenus();
 
         uiComponent = builder.getPanel();
+        updateEmptyLabel();
     }
 
     /**
@@ -316,6 +324,16 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         }
 
         return null;
+    }
+
+    private void updateEmptyLabel() {
+        if (tableScroller != null) {
+            tableScroller.setVisible(tableModel.getRowCount() != 0);
+        }
+        if (emptyLabel != null) {
+            emptyLabel.setVisible(tableModel.getRowCount() == 0);
+        }
+
     }
 
     ///////////////////
@@ -577,6 +595,13 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
                     transferManager.clearCompletedDownload(fileInfo);
                 }
             }
+        }
+    }
+
+    private class MyTableModelListener implements TableModelListener {
+
+        public void tableChanged(TableModelEvent e) {
+            updateEmptyLabel();
         }
     }
 }
