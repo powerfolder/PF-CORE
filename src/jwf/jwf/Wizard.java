@@ -266,20 +266,26 @@ public class Wizard extends JPanel implements ActionListener {
      * Basically does the same link pressing "Next >"
      */
     public void next() {
-        List<WizardPanel> list = new ArrayList<WizardPanel>();
-        if (current.validateNext(list)) {
-            previous.push(current);
-            WizardPanel wp = current.next();
-            if (null != wp) {
-                wp.setWizardContext(ctx);
-            }
+        Cursor c = getCursor();
+        try {
+            setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            List<WizardPanel> list = new ArrayList<WizardPanel>();
+            if (current.validateNext(list)) {
+                previous.push(current);
+                WizardPanel wp = current.next();
+                if (null != wp) {
+                    wp.setWizardContext(ctx);
+                }
 
-            setPanel(wp);
-            updateButtons();
-        } else {
-            if (!list.isEmpty()) {
-                showErrorMessages(list);
+                setPanel(wp);
+                updateButtons();
+            } else {
+                if (!list.isEmpty()) {
+                    showErrorMessages(list);
+                }
             }
+        } finally {
+            setCursor(c);
         }
     }
     
