@@ -65,15 +65,17 @@ public class FoldersList extends PFUIComponent {
     private JScrollPane scrollPane;
     private Integer folderSelectionType;
     private ExpansionListener expansionListener;
+    private FoldersTab foldersTab;
 
     /**
      * Constructor
      *
      * @param controller
      */
-    public FoldersList(Controller controller, ValueModel folderSelectionTypeVM) {
+    public FoldersList(Controller controller, FoldersTab foldersTab,
+                       ValueModel folderSelectionTypeVM) {
         super(controller);
-
+        this.foldersTab = foldersTab;
         expansionListener = new MyExpansionListener();
 
         folderSelectionTypeVM.addValueChangeListener(new MyPropertyChangeListener());
@@ -103,7 +105,6 @@ public class FoldersList extends PFUIComponent {
         folderListPanel = new JPanel();
         folderListPanel.setLayout(new BoxLayout(folderListPanel, BoxLayout.PAGE_AXIS));
         registerListeners();
-        updateFolders();
 
         // Build ui
         FormLayout layout = new FormLayout("pref:grow",
@@ -113,6 +114,12 @@ public class FoldersList extends PFUIComponent {
 
         builder.add(folderListPanel, cc.xy(1, 1));
         uiComponent = builder.getPanel();
+
+        updateFolders();
+    }
+
+    public boolean isEmpty() {
+        return views.isEmpty();
     }
 
     /**
@@ -222,6 +229,7 @@ public class FoldersList extends PFUIComponent {
                 }
             }
         }
+        foldersTab.updateEmptyLabel();
     }
 
     /**

@@ -47,6 +47,8 @@ public class FoldersTab extends PFUIComponent {
     private FoldersList foldersList;
     private JComboBox folderTypeList;
     private ValueModel folderSelectionTypeVM;
+    private JScrollPane scrollPane;
+    private JLabel emptyLabel;
 
     /**
      * Constructor
@@ -84,14 +86,31 @@ public class FoldersTab extends PFUIComponent {
         JPanel toolbar = createToolBar();
         builder.add(toolbar, cc.xy(1, 2));
         builder.addSeparator(null, cc.xy(1, 4));
-        JScrollPane scrollPane = new JScrollPane(foldersList.getUIComponent());
+        scrollPane = new JScrollPane(foldersList.getUIComponent());
         foldersList.setScroller(scrollPane);
         UIUtil.removeBorder(scrollPane);
+
+        // emptyLabel and scrollPane occupy the same slot.
+        builder.add(emptyLabel, cc.xy(1, 6));
         builder.add(scrollPane, cc.xy(1, 6));
+
         uiComponent = builder.getPanel();
+
+        updateEmptyLabel();
+
     }
 
-    //
+    public void updateEmptyLabel() {
+        if (foldersList != null) {
+            if (emptyLabel != null) {
+                emptyLabel.setVisible(foldersList.isEmpty());
+            }
+            if (scrollPane != null) {
+                scrollPane.setVisible(!foldersList.isEmpty());
+            }
+        }
+    }
+
     public ValueModel getFolderSelectionTypeVM() {
         return folderSelectionTypeVM;
     }
@@ -101,13 +120,19 @@ public class FoldersTab extends PFUIComponent {
      */
     private void initComponents() {
 
+        emptyLabel = new JLabel(
+                Translation.getTranslation("folders_tab.no_folders_available"),
+                SwingConstants.CENTER);
+        emptyLabel.setEnabled(false);
+
         Integer initialSelection = PreferencesEntry.FOLDER_TYPE_SELECTION
                 .getValueInt(getController());
 
         folderSelectionTypeVM = new ValueHolder();
         folderSelectionTypeVM.setValue(initialSelection);
 
-        foldersList = new FoldersList(getController(), folderSelectionTypeVM);
+        foldersList = new FoldersList(getController(), this,
+                folderSelectionTypeVM);
 
         folderTypeList = new JComboBox();
         folderTypeList.setToolTipText(Translation.getTranslation(
