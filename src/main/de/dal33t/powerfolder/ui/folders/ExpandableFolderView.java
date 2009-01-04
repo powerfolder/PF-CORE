@@ -24,8 +24,10 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
+import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderStatistic;
 import de.dal33t.powerfolder.disk.RecycleBin;
@@ -84,6 +86,7 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
     private ExpansionListener listenerSupport;
 
     private OnlineStorageComponent osComponent;
+    private ServerClient serverClient;
 
     /**
      * Constructor
@@ -93,6 +96,7 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
      */
     public ExpandableFolderView(Controller controller, FolderInfo folderInfo) {
         super(controller);
+        serverClient = controller.getOSClient();
         this.folderInfo = folderInfo;
         listenerSupport = ListenerSupportFactory
             .createListenerSupport(ExpansionListener.class);
@@ -134,7 +138,7 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
         local = localArg;
         online = onlineArg;
 
-        updateStatsDetails();        
+        updateStatsDetails();
         updateNumberOfFiles();
         updateTransferMode();
         updateFolderMembershipDetails();
@@ -207,7 +211,7 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
         PanelBuilder lowerBuilder = new PanelBuilder(lowerLayout);
 
         lowerBuilder.addSeparator(null, cc.xywh(1, 1, 6, 1));
-        
+
         lowerBuilder.add(syncPercentLabel, cc.xy(2, 3));
         lowerBuilder.add(openFilesInformationButton, cc.xy(5, 3));
 
@@ -496,6 +500,9 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
                 jLabel.setToolTipText(Translation.getTranslation(
                         "exp_folder_view.folder_local_online_text"));
                 osComponent.getUIComponent().setVisible(true);
+                Member server = serverClient.getServer();
+                double sync = folder.getStatistic().getSyncPercentage(server);
+                osComponent.setSyncPercentage(sync);
             } else {
                 jLabel.setIcon(Icons.LOCAL_FOLDER);
                 jLabel.setToolTipText(Translation.getTranslation(
@@ -522,24 +529,35 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
      */
     private class MyFolderListener implements FolderListener {
 
+        private void doFolderChanges(FolderEvent folderEvent) {
+            if (folder == null || folder.equals(folderEvent.getFolder())) {
+                updateStatsDetails();
+                updateIconAndOS();
+            }
+        }
+
         public void statisticsCalculated(FolderEvent folderEvent) {
-            updateStatsDetails();
+            doFolderChanges(folderEvent);
         }
 
         public void fileChanged(FolderEvent folderEvent) {
+            doFolderChanges(folderEvent);
         }
 
         public void filesDeleted(FolderEvent folderEvent) {
+            doFolderChanges(folderEvent);
         }
 
         public void remoteContentsChanged(FolderEvent folderEvent) {
+            doFolderChanges(folderEvent);
         }
 
         public void scanResultCommited(FolderEvent folderEvent) {
+            doFolderChanges(folderEvent);
         }
 
         public void syncProfileChanged(FolderEvent folderEvent) {
-            updateTransferMode();
+            doFolderChanges(folderEvent);
         }
 
         public boolean fireInEventDispatchThread() {

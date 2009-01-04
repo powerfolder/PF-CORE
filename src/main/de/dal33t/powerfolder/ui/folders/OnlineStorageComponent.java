@@ -36,6 +36,7 @@ import com.jgoodies.forms.builder.PanelBuilder;
 public class OnlineStorageComponent extends PFUIComponent {
 
     private JPanel uiComponent;
+    private JLabel syncLabel;
 
     public OnlineStorageComponent(Controller controller) {
         super(controller);
@@ -50,6 +51,8 @@ public class OnlineStorageComponent extends PFUIComponent {
     }
 
     private void initialize() {
+        syncLabel = new JLabel(Translation.getTranslation(
+                "online_storage_component.online_storage_text", 0));
     }
 
     private void buildUI() {
@@ -59,9 +62,14 @@ public class OnlineStorageComponent extends PFUIComponent {
         CellConstraints cc = new CellConstraints();
 
         builder.addSeparator(null, cc.xyw(1, 2, 2));
-        builder.add(new JLabel(Translation.getTranslation("online_storage_component.online_storage_text", 0)), cc.xy(1, 4));
+        builder.add(syncLabel, cc.xy(1, 4));
         uiComponent = builder.getPanel();
         uiComponent.setBackground(SystemColor.text);
 
+    }
+
+    public void setSyncPercentage(double serverSync) {
+        syncLabel.setText(Translation.getTranslation(
+                "online_storage_component.online_storage_text", serverSync));
     }
 }
