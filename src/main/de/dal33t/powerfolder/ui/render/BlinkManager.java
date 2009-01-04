@@ -97,7 +97,8 @@ public class BlinkManager extends PFUIComponent {
     public void addChatBlinking(Member member, Icon icon) {
         if (!member.isMySelf()) {
             blinkingMembers.put(member, icon);
-            trayBlinkIcon = Icons.SYSTRAY_CHAT_ICON;
+            // FIXME Disabled
+            // trayBlinkIcon = Icons.SYSTRAY_CHAT_ICON;
         }
     }
 
