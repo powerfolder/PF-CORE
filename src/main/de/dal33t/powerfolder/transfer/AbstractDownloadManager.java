@@ -901,7 +901,8 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             && !getTempFile().delete())
         {
             log
-                .warning("Couldn't delete old temporary file, some other process could be using it! Trying to set it's length to 0.");
+                .warning("Couldn't delete old temporary file, some other process could be using it! Trying to set it's length to 0. "
+                    + getTempFile().getAbsolutePath());
             RandomAccessFile f = new RandomAccessFile(getTempFile(), "rw");
             try {
                 f.setLength(0);
