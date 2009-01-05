@@ -616,7 +616,8 @@ public class Controller extends PFComponent {
         verbose = ConfigurationEntry.VERBOSE.getValueBoolean(getController());
         if (verbose) {
             // Enable file logging
-            LoggingManager.setFileLogging(Level.FINER);
+            LoggingManager.setConsoleLogging(Level.FINE);
+            LoggingManager.setFileLogging(Level.FINE);
             // Switch on the document handler.
             LoggingManager.setDocumentLogging(Level.INFO);
             if (LoggingManager.isLogToFile()) {
