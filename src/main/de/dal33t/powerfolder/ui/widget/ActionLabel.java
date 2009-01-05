@@ -89,14 +89,7 @@ public class ActionLabel extends JLabel {
 
     public void displayText() {
         if (enabled) {
-            Object object = UIManager.getColor("Label.foreground");
-            Color color;
-            if (object != null && object instanceof Color) {
-                color = (Color) object;
-            } else {
-                // Fall back, in case of UIManager problem.
-                color = getForeground();
-            }
+            Color color = ColorUtil.getTextForegroundColor();
             String rgb = ColorUtil.getRgbForColor(color);
             super.setText("<html><font color=\"" + rgb + "\"><a href=\"#\">" + text
                 + "</a></font></html>");

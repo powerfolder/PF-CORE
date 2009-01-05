@@ -502,7 +502,9 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
                 osComponent.getUIComponent().setVisible(true);
                 Member server = serverClient.getServer();
                 double sync = folder.getStatistic().getSyncPercentage(server);
-                osComponent.setSyncPercentage(sync);
+                boolean warned = serverClient.getAccountDetails().getAccount()
+                        .getOSSubscription().isWarnedUsage();
+                osComponent.setSyncPercentage(sync, warned);
             } else {
                 jLabel.setIcon(Icons.LOCAL_FOLDER);
                 jLabel.setToolTipText(Translation.getTranslation(

@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.util.ui;
 
 import de.dal33t.powerfolder.util.MathUtil;
 
+import javax.swing.*;
 import java.awt.*;
 
 /**
@@ -44,5 +45,23 @@ public class ColorUtil {
         sb.append(MathUtil.toHexByte(green));
         sb.append(MathUtil.toHexByte(blue));
         return sb.toString();
+    }
+
+    /**
+     * Method to get the Synthetica text foreground color. This is not the same
+     * color as normal getForeground().
+     *
+     * @return
+     */
+    public static Color getTextForegroundColor() {
+        Object object = UIManager.getColor("Label.foreground");
+        Color color;
+        if (object != null && object instanceof Color) {
+            color = (Color) object;
+        } else {
+            // Fall back, in case of UIManager problem.
+            color = new JLabel().getForeground();
+        }
+        return color;
     }
 }

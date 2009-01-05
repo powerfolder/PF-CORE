@@ -25,6 +25,7 @@ import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.BrowserLauncher;
+import de.dal33t.powerfolder.util.ui.ColorUtil;
 
 import javax.swing.*;
 import java.awt.*;
@@ -75,9 +76,13 @@ public class OnlineStorageComponent extends PFUIComponent {
         uiComponent.setBackground(SystemColor.text);
     }
 
-    public void setSyncPercentage(double serverSync) {
+    public void setSyncPercentage(double serverSync, boolean warned) {
         syncLabel.setText(Translation.getTranslation(
                 "online_storage_component.online_storage_text", serverSync));
+        syncLabel.setForeground(warned ? Color.red :
+                ColorUtil.getTextForegroundColor());
+        syncLabel.setToolTipText(warned ? Translation.getTranslation(
+                "online_storage_component.online_storage_warning") : null);
     }
 
     private class MyOnlineStorageAction extends BaseAction {
