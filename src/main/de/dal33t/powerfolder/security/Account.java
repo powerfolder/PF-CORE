@@ -365,6 +365,8 @@ public class Account extends Model implements Serializable {
      * The Online Storage subscription
      * <P>
      * Sets all folders to SyncProfile.BACKUP_TARGET.
+     * <p>
+     * FIXME: Does only set the folders hosted on the CURRENT server to backup.
      * 
      * @param controller
      *            the controller
