@@ -33,6 +33,13 @@ public interface AccountDAO {
      * @return all accounts that have this permission.
      */
     Collection<Account> findWithPermission(Permission permission);
+    
+    /**
+     * @param folderId
+     *            the folder id the account has permission to
+     * @return all accounts that have any folder permission to that folder
+     */
+    Collection<Account> findWithFolderPermission(String folderId);
 
     /**
      * @return all accounts.

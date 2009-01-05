@@ -19,6 +19,10 @@
  */
 package de.dal33t.powerfolder.security;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.Reject;
 
@@ -28,46 +32,43 @@ import de.dal33t.powerfolder.util.Reject;
  * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
-public class FolderAdminPermission implements Permission {
+public class FolderAdminPermission extends FolderPermission {
     private static final long serialVersionUID = 100L;
 
+    @Deprecated
     private FolderInfo folder;
 
     public FolderAdminPermission(FolderInfo foInfo) {
+        super(foInfo);
         Reject.ifNull(foInfo, "Folderinfo is null");
         folder = foInfo;
     }
 
-    public FolderInfo getFolder() {
-        return folder;
-    }
-
-    @Override
-    public int hashCode() {
-        final int PRIME = 31;
-        int result = 1;
-        result = PRIME * result + ((folder == null) ? 0 : folder.hashCode());
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
+    public boolean migrate() {
+        if (super.folderInfo == null) {
+            super.folderInfo = folder;
+            folder = null;
             return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        final FolderAdminPermission other = (FolderAdminPermission) obj;
-        if (folder == null) {
-            if (other.folder != null)
-                return false;
-        } else if (!folder.equals(other.folder))
-            return false;
-        return true;
+        }
+        return false;
     }
 
-    public String toString() {
-        return "FolderAdminPermission on " + folder;
-    }
+    // Serialization compatibility ********************************************
+
+//    private void readObject(ObjectInputStream in) throws IOException,
+//        ClassNotFoundException
+//    {
+//        in.defaultReadObject();
+//        if (folder != null) {
+//            super.folderInfo = folder;
+//        }
+//    }
+//
+//    private void writeObject(ObjectOutputStream out) throws IOException {
+//
+//        if (super.folderInfo != null) {
+//            folder = super.folderInfo;
+//        }
+//        out.defaultWriteObject();
+//    }
 }
