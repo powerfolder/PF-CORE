@@ -164,6 +164,14 @@ public class FoldersList extends PFUIComponent {
                 }
             }
 
+            FolderInfo expandedFolderInfo = null;
+            for (ExpandableFolderView view : views) {
+                if (view.isExpanded()) {
+                    expandedFolderInfo = view.getFolderInfo();
+                    break; // There can only be one expanded view.
+                }
+            }
+
             // Filter on selection.
             for (Iterator<FolderBean> iter = folderBeanList.iterator(); iter.hasNext();) {
                 FolderBean bean = iter.next();
@@ -176,14 +184,12 @@ public class FoldersList extends PFUIComponent {
                 }
             }
 
-            // Remove old folder views if required.
+            // Remove old folder views.
             // Update remaining views with the current folder, which may be null
-            // if
-            // online only.
+            // if online only.
             ExpandableFolderView[] list = views
                 .toArray(new ExpandableFolderView[views.size()]);
             for (ExpandableFolderView view : list) {
-                // No folder info for this view, so remove it.
                 views.remove(view);
                 view.removeExpansionListener(expansionListener);
                 view.unregisterListeners();
@@ -199,7 +205,6 @@ public class FoldersList extends PFUIComponent {
 
             // Sort by name
             Collections.sort(folderBeanList, FolderBeanComparator.INSTANCE);
-            
             
             // Add new folder views if required.
             for (FolderBean folderBean : folderBeanList) {
@@ -225,6 +230,12 @@ public class FoldersList extends PFUIComponent {
                         scrollPane.repaint();
                     }
                     views.add(newView);
+
+                    // Was view expanded before?
+                    if (expandedFolderInfo != null && folderBean.getFolderInfo()
+                            .equals(expandedFolderInfo)) {
+                        newView.expand();
+                    }
                     newView.addExpansionListener(expansionListener);
                 }
             }

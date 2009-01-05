@@ -522,6 +522,15 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
         ListenerSupportFactory.addListener(listenerSupport, listener);
     }
 
+    /**
+     * Is the view expanded?
+     * 
+     * @return
+     */
+    public boolean isExpanded() {
+        return expanded.get();
+    }
+
     ///////////////////
     // Inner Classes //
     ///////////////////
