@@ -19,22 +19,6 @@
 */
 package de.dal33t.powerfolder.net;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.factories.Borders;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.ui.dialog.ErrorDialog;
-import de.dal33t.powerfolder.ui.preferences.DynDnsSettingsTab;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.DialogFactory;
-import de.dal33t.powerfolder.util.ui.GenericDialogType;
-import org.apache.commons.lang.StringUtils;
-
-import javax.swing.JDialog;
-import javax.swing.JLabel;
 import java.awt.Component;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -47,6 +31,24 @@ import java.util.Hashtable;
 import java.util.TimerTask;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.factories.Borders;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
+
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.ui.dialog.ErrorDialog;
+import de.dal33t.powerfolder.ui.preferences.DynDnsSettingsTab;
+import de.dal33t.powerfolder.util.StringUtils;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.ui.GenericDialogType;
 
 /**
  * The DynDnsManager class is responsible for: - to provide services to the

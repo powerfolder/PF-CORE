@@ -19,15 +19,15 @@
 */
 package de.dal33t.powerfolder.ui;
 
+import java.util.LinkedList;
+import java.util.List;
+import java.util.StringTokenizer;
+
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.event.FolderInfoChangedEvent;
 import de.dal33t.powerfolder.event.FolderInfoFilterChangeListener;
 import de.dal33t.powerfolder.light.FolderInfo;
-import org.apache.commons.lang.StringUtils;
-
-import java.util.LinkedList;
-import java.util.List;
-import java.util.StringTokenizer;
+import de.dal33t.powerfolder.util.StringUtils;
 
 /**
  * Based on the settings in this model it filters a Folder info List

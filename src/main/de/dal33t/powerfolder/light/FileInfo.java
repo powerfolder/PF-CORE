@@ -28,8 +28,6 @@ import java.lang.ref.WeakReference;
 import java.util.Date;
 import java.util.logging.Logger;
 
-import org.apache.commons.lang.StringUtils;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.DiskItem;
 import de.dal33t.powerfolder.Feature;
@@ -37,6 +35,7 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Util;
 
 /**

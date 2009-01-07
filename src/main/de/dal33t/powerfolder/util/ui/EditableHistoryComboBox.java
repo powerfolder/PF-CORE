@@ -19,14 +19,6 @@
 */
 package de.dal33t.powerfolder.util.ui;
 
-import com.jgoodies.binding.value.ValueModel;
-import org.apache.commons.lang.StringUtils;
-
-import javax.swing.ComboBoxEditor;
-import javax.swing.JComboBox;
-import javax.swing.JTextField;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import java.awt.Color;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -36,6 +28,16 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+
+import javax.swing.ComboBoxEditor;
+import javax.swing.JComboBox;
+import javax.swing.JTextField;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+
+import com.jgoodies.binding.value.ValueModel;
+
+import de.dal33t.powerfolder.util.StringUtils;
 
 
 

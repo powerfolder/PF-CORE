@@ -21,11 +21,10 @@ package de.dal33t.powerfolder.message;
 
 import java.io.IOException;
 
-import org.apache.commons.lang.Validate;
-
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.Validate;
 
 /**
  * A file chunk, part of a upload / donwload

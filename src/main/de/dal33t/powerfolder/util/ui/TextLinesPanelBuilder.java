@@ -25,11 +25,11 @@ import java.awt.Font;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import org.apache.commons.lang.StringUtils;
-
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+
+import de.dal33t.powerfolder.util.StringUtils;
 
 public class TextLinesPanelBuilder {
     public static JPanel createTextPanel(String text, int fontsize) {

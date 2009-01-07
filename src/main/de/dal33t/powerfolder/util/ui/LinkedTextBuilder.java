@@ -21,13 +21,12 @@ package de.dal33t.powerfolder.util.ui;
 
 import javax.swing.JLabel;
 
-import org.apache.commons.lang.StringUtils;
-
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
+import de.dal33t.powerfolder.util.StringUtils;
 
 /**
  * helper class to create a text with links.

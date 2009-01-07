@@ -24,9 +24,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.zip.Checksum;
 
-import org.apache.commons.lang.Validate;
-
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.Validate;
 
 /**
  * Creates arrays of PartInfos given the algorithms to use and a data set. 

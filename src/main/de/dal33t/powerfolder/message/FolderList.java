@@ -23,9 +23,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
-
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.util.StringUtils;
 
 /**
  * List of available folders

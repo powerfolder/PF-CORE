@@ -19,16 +19,17 @@
 */
 package de.dal33t.powerfolder.ui.action;
 
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.net.ConnectionException;
-import de.dal33t.powerfolder.ui.dialog.ConnectDialog;
-import de.dal33t.powerfolder.util.Translation;
-import org.apache.commons.lang.StringUtils;
-
-import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.swing.JOptionPane;
+
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.net.ConnectionException;
+import de.dal33t.powerfolder.ui.dialog.ConnectDialog;
+import de.dal33t.powerfolder.util.StringUtils;
+import de.dal33t.powerfolder.util.Translation;
 
 /**
  * Asks for ip and tries to connect

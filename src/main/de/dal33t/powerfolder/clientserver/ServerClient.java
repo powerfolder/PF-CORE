@@ -26,8 +26,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.TimerTask;
 
-import org.apache.commons.lang.StringUtils;
-
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
@@ -43,10 +41,14 @@ import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.light.ServerInfo;
 import de.dal33t.powerfolder.message.clientserver.AccountDetails;
 import de.dal33t.powerfolder.net.ConnectionListener;
-import de.dal33t.powerfolder.security.*;
+import de.dal33t.powerfolder.security.Account;
+import de.dal33t.powerfolder.security.AnonymousAccount;
+import de.dal33t.powerfolder.security.FolderAdminPermission;
+import de.dal33t.powerfolder.security.Permission;
 import de.dal33t.powerfolder.util.Base64;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Updater;
 import de.dal33t.powerfolder.util.Util;

@@ -19,11 +19,6 @@
 */
 package de.dal33t.powerfolder.net;
 
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.util.Base64;
-import org.apache.commons.lang.StringUtils;
-
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
@@ -35,6 +30,11 @@ import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.util.Base64;
+import de.dal33t.powerfolder.util.StringUtils;
 
 /*
  * The class DynDnsOrg is implemented to provide update service for those 

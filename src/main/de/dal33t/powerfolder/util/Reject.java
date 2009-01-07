@@ -19,7 +19,6 @@
 */
 package de.dal33t.powerfolder.util;
 
-import org.apache.commons.lang.Validate;
 
 /**
  * Used to easily add gurading clauses.

@@ -19,6 +19,11 @@
 */
 package de.dal33t.powerfolder.ui.information.folder.files;
 
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
+
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.disk.Folder;
@@ -28,12 +33,7 @@ import de.dal33t.powerfolder.event.FolderListener;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.FilterModel;
-import org.apache.commons.lang.StringUtils;
-
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
+import de.dal33t.powerfolder.util.StringUtils;
 
 /**
  * Class to filter a directory.

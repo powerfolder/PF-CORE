@@ -19,8 +19,6 @@
 */
 package de.dal33t.powerfolder.util;
 
-import org.apache.commons.lang.StringUtils;
-
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Locale;

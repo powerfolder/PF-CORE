@@ -19,15 +19,27 @@
  */
 package de.dal33t.powerfolder.disk;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.TimerTask;
+
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.event.*;
+import de.dal33t.powerfolder.event.FolderAdapter;
+import de.dal33t.powerfolder.event.FolderEvent;
+import de.dal33t.powerfolder.event.FolderMembershipEvent;
+import de.dal33t.powerfolder.event.FolderMembershipListener;
+import de.dal33t.powerfolder.event.NodeManagerEvent;
+import de.dal33t.powerfolder.event.NodeManagerListener;
+import de.dal33t.powerfolder.event.TransferAdapter;
+import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.TransferCounter;
-import org.apache.commons.lang.time.DateUtils;
-
-import java.util.*;
 
 /**
  * Class to hold pre-calculated static data for a folder. Only freshly
@@ -43,7 +55,7 @@ public class FolderStatistic extends PFComponent {
      * to a maximum, one update every 20 seconds
      */
     private static final int MAX_ITEMS = 5000;
-    private static final long DELAY_10S = DateUtils.MILLIS_PER_SECOND * 10;
+    private static final long DELAY_10S = Constants.MILLIS_PER_SECOND * 10;
 
     private final Folder folder;
 

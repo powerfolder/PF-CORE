@@ -231,6 +231,35 @@ public class Constants {
     public static final long ESTIMATION_WINDOW_MILLIS = 300 * 1000;
 
     public static final int ESTIMATION_MINVALUES = 5;
+    
+    // Time constants
+    
+    /**
+     * Number of milliseconds in a standard second.
+     * @since 2.1
+     */
+    public static final long MILLIS_PER_SECOND = 1000;
+    /**
+     * Number of milliseconds in a standard minute.
+     * @since 2.1
+     */
+    public static final long MILLIS_PER_MINUTE = 60 * MILLIS_PER_SECOND;
+    /**
+     * Number of milliseconds in a standard hour.
+     * @since 2.1
+     */
+    public static final long MILLIS_PER_HOUR = 60 * MILLIS_PER_MINUTE;
+    /**
+     * Number of milliseconds in a standard day.
+     * @since 2.1
+     */
+    public static final long MILLIS_PER_DAY = 24 * MILLIS_PER_HOUR;
+
+    /**
+     * This is half a month, so this represents whether a date is in the top
+     * or bottom half of the month.
+     */
+    public final static int SEMI_MONTH = 1001;
 
     // Pro related ************************************************************
 

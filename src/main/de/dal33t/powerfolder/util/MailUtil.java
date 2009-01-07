@@ -19,9 +19,6 @@
 */
 package de.dal33t.powerfolder.util;
 
-import de.dal33t.powerfolder.util.os.OSUtil;
-import org.apache.commons.lang.StringUtils;
-
 import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
@@ -30,6 +27,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
  * Utility class for sending emails.

@@ -22,13 +22,12 @@ package de.dal33t.powerfolder.clientserver;
 import java.util.Collection;
 import java.util.Iterator;
 
-import org.apache.commons.lang.StringUtils;
-
 import com.jgoodies.binding.beans.Model;
 
 import de.dal33t.powerfolder.message.clientserver.AccountDetails;
 import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.StringUtils;
 
 public class AccountFilterModel extends Model {
     private static final long serialVersionUID = 100L;
