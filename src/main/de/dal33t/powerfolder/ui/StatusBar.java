@@ -38,6 +38,7 @@ import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker;
 import de.dal33t.powerfolder.util.ui.UIPanel;
 
 import javax.swing.*;
+
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -67,6 +68,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
     private JLabel portLabel;
     private JButton openAboutBoxButton;
     private JButton openPreferencesButton;
+    private JButton openDebugButton;
     private SyncButtonComponent syncButtonComponent;
 
     /** Connection state */
@@ -91,9 +93,13 @@ public class StatusBar extends PFUIComponent implements UIPanel {
 
             JPanel upperPanel = new JPanel(new GridLayout(1, 3, 3, 3));
 
-            FormLayout leftLayout = new FormLayout("center:pref:grow", "center:pref:grow");
+            FormLayout leftLayout = new FormLayout("left:pref:grow, pref", "pref, 3dlu, pref");
             DefaultFormBuilder leftBuilder = new DefaultFormBuilder(leftLayout);
-            leftBuilder.add(new JToggleButtonMini(new MyPauseAction(getController())), cc.xy(1, 1));
+            leftBuilder.add(new JToggleButtonMini(new MyPauseAction(getController())), cc.xy(2, 1));
+            if (ConfigurationEntry.VERBOSE.getValueBoolean(getController())) {
+                leftBuilder.add(openDebugButton,cc.xy(1, 1));
+            }
+            
             upperPanel.add(leftBuilder.getPanel());
             
             upperPanel.add(syncButtonComponent.getUIComponent());
@@ -241,6 +247,8 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             .getActionModel().getOpenPreferencesAction());
         openAboutBoxButton = new JButtonMini(getApplicationModel()
             .getActionModel().getOpenAboutBoxAction());
+        openDebugButton = new JButtonMini(getApplicationModel().getActionModel()
+            .getOpenDebugInformationAction());
 
         syncButtonComponent = new SyncButtonComponent(getController());
     }

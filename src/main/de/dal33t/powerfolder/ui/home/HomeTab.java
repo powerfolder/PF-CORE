@@ -35,7 +35,6 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
-import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.clientserver.ServerClient;
@@ -343,17 +342,11 @@ public class HomeTab extends PFUIComponent {
                 .getNewFolderAction());
         JButton searchComputerButton = new JButton(getApplicationModel().getActionModel()
                 .getFindComputersAction());
-        JButton debugButton = new JButton(getApplicationModel().getActionModel()
-                .getOpenDebugInformationAction());
 
         ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
         bar.addGridded(newFolderButton);
         bar.addRelatedGap();
         bar.addGridded(searchComputerButton);
-        if (ConfigurationEntry.VERBOSE.getValueBoolean(getController())) {
-        	bar.addRelatedGap();
-            bar.addGridded(debugButton);
-        }
         return bar.getPanel();
     }
 
