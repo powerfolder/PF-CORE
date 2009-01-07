@@ -75,7 +75,7 @@ public class Icons {
     public static final Icon FILTER_TEXT_FIELD_GLASS = getIcon("icons/FilterTextFieldGlass.png");
 
     public static final Icon WARNING = getIcon("icons/Warning.png");
-    public static final Icon DEBUG = getIcon("icons/LadyBug.gif");
+    public static final Icon DEBUG = getIcon("icons/Bug.png");
     public static final Icon UPDATES = getIcon("icons/Updates.gif");
     public static final Icon SYSTEM_MONITOR = getIcon("icons/SystemMonitor.png");
     public static final Icon DIALOG = getIcon("icons/Dialog.gif");
@@ -84,9 +84,9 @@ public class Icons {
     public static final Icon SUSPEND = getIcon("icons/Suspend.gif");
     public static final Icon HOME = getIcon("icons/Home.png");
 
-    public static final Icon WORLD_ADD = getIcon("icons/WorldAdd.png");
-    public static final Icon WORLD_EDIT = getIcon("icons/WorldEdit.png");
-    public static final Icon WORLD_DELETE = getIcon("icons/WorldDelete.png");
+    public static final Icon ADD = getIcon("icons/Add.png");
+    public static final Icon EDIT = getIcon("icons/Edit.png");
+    public static final Icon DELETE = getIcon("icons/Delete.gif");
     public static final Icon FORCE_UPDATE = getIcon("icons/ForceUpdate.png");
 
     public static final Icon UNKNOWN_FILE = getIcon("icons/Unknown.gif");
@@ -149,7 +149,6 @@ public class Icons {
     public static final Icon UPLOAD_ACTIVE = getIcon("icons/UploadActive.gif");
     public static final Icon IN_ACTIVE = getIcon("icons/Inactive.gif");
     public static final Icon EXPECTED = getIcon("icons/Expected.gif");
-    public static final Icon DELETE = getIcon("icons/Delete.gif");
 
     // Folder syncs
     public static final Icon FOLDER_SYNC_UNKNOWN = getIcon("icons/FolderSync_unknown.gif");
@@ -210,10 +209,10 @@ public class Icons {
 
     // Images icons
     public final Image POWERFOLDER_IMAGE = getImageFromIcon(SMALL_LOGO);
-    public static final Image FOLDER_IMAGE = getImage("icons/Folder.png");
-    public static final Image SYSTEM_MONITOR_IMAGE = getImage("icons/SystemMonitor.png");
-    public static final Image CHAT_IMAGE = getImage("icons/Chat.gif");
-    public static final Image DEBUG_IMAGE = getImage("icons/bug.png");
+    public static final Image FOLDER_IMAGE = getImageFromIcon(FOLDER);
+    public static final Image SYSTEM_MONITOR_IMAGE = getImageFromIcon(SYSTEM_MONITOR);
+    public static final Image CHAT_IMAGE = getImageFromIcon(CHAT);
+    public static final Image DEBUG_IMAGE = getImageFromIcon(DEBUG);
 
     // About stuff
     public final Icon ABOUT_ANIMATION = getIconById("about.animation");

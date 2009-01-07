@@ -61,13 +61,13 @@ public class LANList extends PFComponent {
         networklist = new JList(new DefaultListModel());
         networklist
             .setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        addButton = new JButton(Icons.WORLD_ADD);
+        addButton = new JButton(Icons.ADD);
         addButton.setText(Translation
             .getTranslation("folder_panel.settings_tab.addbutton.name"));
-        removeButton = new JButton(Icons.WORLD_DELETE);
+        removeButton = new JButton(Icons.DELETE);
         removeButton.setText(Translation
             .getTranslation("folder_panel.settings_tab.removebutton.name"));
-        editButton = new JButton(Icons.WORLD_EDIT);
+        editButton = new JButton(Icons.EDIT);
         editButton.setText(Translation
             .getTranslation("folder_panel.settings_tab.editbutton.name"));
 
@@ -85,8 +85,9 @@ public class LANList extends PFComponent {
 
         editButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                if (networklist.isSelectionEmpty())
+                if (networklist.isSelectionEmpty()) {
                     return;
+                }
                 AddressEditor editor = new AddressEditor(getController(),
                     networklist.getSelectedValue().toString());
                 editor.open();
