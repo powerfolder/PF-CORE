@@ -29,7 +29,6 @@ import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.net.ConnectionListener;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
-import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.ui.ComplexComponentFactory;
@@ -187,20 +186,12 @@ public class StatusBar extends PFUIComponent implements UIPanel {
         });
 
         // @todo this is temporary, until decision on how this is to work (hg)
-        sleepButton = new JButtonMini(Icons.SLEEP, "Disable folder change scanning");
-        sleepButton.addActionListener(new ActionListener() {
-            private boolean selected;
-            public void actionPerformed(ActionEvent e) {
-                if (selected) {
-                    sleepButton.setIcon(Icons.SLEEP);
-                    sleepButton.setToolTipText("Disable folder change scanning");
-                } else {
-                    sleepButton.setIcon(Icons.WAKE_UP);
-                    sleepButton.setToolTipText("Enable folder change scanning");
-                }
-                selected = !selected;
-            }
-        });
+        sleepButton = new JButtonMini(Icons.SLEEP,
+                Translation.getTranslation("status_bar.sleep.tips"));
+        sleepButton.addActionListener(new MyActionListener());
+
+        getController().getSilentModeVM().addValueChangeListener(
+                new MyValueChangeListener());
 
         upStats = ComplexComponentFactory.createTransferCounterLabel(
             getController(), Icons.UPLOAD, Translation
@@ -398,13 +389,24 @@ public class StatusBar extends PFUIComponent implements UIPanel {
         }
     }
 
-    private class MyPauseAction extends BaseAction {
-
-        private MyPauseAction(Controller controller) {
-            super("action_pause_sync", controller);
-        }
-
+    private class MyActionListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
+            getController().setSilentMode(!getController().isSilentMode());
+        }
+    }
+
+    private class MyValueChangeListener implements PropertyChangeListener {
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (getController().isSilentMode()) {
+                sleepButton.setIcon(Icons.WAKE_UP);
+                sleepButton.setToolTipText(
+                        Translation.getTranslation("status_bar.no_sleep.tips"));
+            } else {
+                sleepButton.setIcon(Icons.SLEEP);
+                sleepButton.setToolTipText(
+                        Translation.getTranslation("status_bar.sleep.tips"));
+            }
         }
     }
 }

@@ -51,6 +51,8 @@ import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
 
 import javax.swing.JOptionPane;
 
@@ -96,6 +98,8 @@ import de.dal33t.powerfolder.util.task.PersistentTaskManager;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
 import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker;
+import com.jgoodies.binding.value.ValueModel;
+import com.jgoodies.binding.value.ValueHolder;
 
 /**
  * Central class gives access to all core components in PowerFolder. Make sure
@@ -172,7 +176,7 @@ public class Controller extends PFComponent {
     /**
      * If running is silent mode
      */
-    private boolean silentMode;
+    private ValueModel silentModeVM; //Boolean
 
     /**
      * Contains the configuration for the update check
@@ -290,6 +294,7 @@ public class Controller extends PFComponent {
             "PowerFolder");
         askForFriendshipListeners = new CopyOnWriteArrayList<AskForFriendshipListener>();
         invitationHandlers = new CopyOnWriteArrayList<InvitationHandler>();
+        silentModeVM = new ValueHolder(Boolean.FALSE);
     }
 
     /**
@@ -390,7 +395,8 @@ public class Controller extends PFComponent {
             preferences = Preferences.userNodeForPackage(PowerFolder.class)
                 .node(getConfigName());
         }
-        silentMode = preferences.getBoolean("silentMode", false);
+        silentModeVM.setValue(preferences.getBoolean("silentMode", false));
+        silentModeVM.addValueChangeListener(new MyPropertyChangeListener());
 
         // create node manager
         nodeManager = new NodeManager(this);
@@ -454,7 +460,7 @@ public class Controller extends PFComponent {
         }
         if (!isUIEnabled()) {
             // Disable silent mode
-            setSilentMode(false);
+            silentModeVM.setValue(false);
         }
         taskManager.start();
 
@@ -1051,33 +1057,16 @@ public class Controller extends PFComponent {
         return System.currentTimeMillis() - startTime.getTime();
     }
 
-    /**
-     * Answers if the controller is running in silentmode
-     * 
-     * @return true if the controller is running in silentmode
-     */
-    public boolean isSilentMode() {
-        return silentMode;
+    public ValueModel getSilentModeVM() {
+        return silentModeVM;
     }
 
-    /**
-     * Sets the silent mode
-     * 
-     * @param silent
-     *            true to turn on, false to turn off
-     */
-    public void setSilentMode(boolean silent) {
-        boolean oldValue = isSilentMode();
-        silentMode = silent;
-        getPreferences().putBoolean("silentMode", silent);
+    public void setSilentMode(boolean silentMode) {
+        silentModeVM.setValue(silentMode);
+    }
 
-        boolean silentModeStateChanged = oldValue != isSilentMode();
-
-        if (silentModeStateChanged && silent) {
-            getFolderRepository().getFolderScanner().abortScan();
-        }
-        getTransferManager().updateSpeedLimits();
-        firePropertyChange(PROPERTY_SILENT_MODE, oldValue, isSilentMode());
+    public boolean isSilentMode() {
+        return (Boolean) silentModeVM.getValue();
     }
 
     /**
@@ -2009,6 +1998,21 @@ public class Controller extends PFComponent {
     public void invitationReceived(Invitation invitation, boolean sendIfJoined) {
         for (InvitationHandler handler : invitationHandlers) {
             handler.gotInvitation(invitation, sendIfJoined);
+        }
+    }
+
+    /**
+     * Class to listen for changes to silentModeVM
+     */
+    private class MyPropertyChangeListener implements PropertyChangeListener {
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            boolean silent = (Boolean) silentModeVM.getValue();
+            if (silent) {
+                getFolderRepository().getFolderScanner().abortScan();
+            }
+            getTransferManager().updateSpeedLimits();
+            firePropertyChange(PROPERTY_SILENT_MODE, !silent, silent);
         }
     }
 }
