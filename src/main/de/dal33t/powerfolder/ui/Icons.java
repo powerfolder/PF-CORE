@@ -93,6 +93,9 @@ public class Icons {
     public static final Icon UNKNOWN_FILE_GRAY = getGrayIcon(UNKNOWN_FILE);
     public static final Icon UNKNOWN_FILE_RED = convertToRed(UNKNOWN_FILE_GRAY);
 
+    public static final Icon SLEEP = getIcon("icons/Sleep.png");
+    public static final Icon WAKE_UP = getIcon("icons/WakeUp.png");
+
     public static final Icon CHAT = getIcon("icons/Chat.gif");
     public static final Icon SETTINGS = getIcon("icons/Settings.png");
     public static final Icon ADVANCED = getIcon("icons/Advanced.png");

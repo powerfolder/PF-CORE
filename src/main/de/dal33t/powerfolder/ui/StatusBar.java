@@ -29,7 +29,6 @@ import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.net.ConnectionListener;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
-import de.dal33t.powerfolder.ui.widget.JToggleButtonMini;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
@@ -43,6 +42,7 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -62,6 +62,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
 
     private Component comp;
     private JLabel onlineStateInfo;
+    private JButton sleepButton;
     private JLabel limitedConnectivityLabel;
     private JLabel upStats;
     private JLabel downStats;
@@ -93,11 +94,11 @@ public class StatusBar extends PFUIComponent implements UIPanel {
 
             JPanel upperPanel = new JPanel(new GridLayout(1, 3, 3, 3));
 
-            FormLayout leftLayout = new FormLayout("left:pref:grow, pref", "pref, 3dlu, pref");
+            FormLayout leftLayout = new FormLayout("pref, fill:pref:grow", "pref, 3dlu, pref");
             DefaultFormBuilder leftBuilder = new DefaultFormBuilder(leftLayout);
-            leftBuilder.add(new JToggleButtonMini(new MyPauseAction(getController())), cc.xy(2, 1));
+            leftBuilder.add(sleepButton, cc.xy(1, 1));
             if (ConfigurationEntry.VERBOSE.getValueBoolean(getController())) {
-                leftBuilder.add(openDebugButton,cc.xy(1, 1));
+                leftBuilder.add(openDebugButton,cc.xy(1, 3));
             }
             
             upperPanel.add(leftBuilder.getPanel());
@@ -116,10 +117,12 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             FormLayout lowerLayout;
             if (showPort) {
                 lowerLayout = new FormLayout(
+                 //  online      limit                 port        sep         down        sep         up
                     "pref, 3dlu, pref, fill:pref:grow, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref",
                     "pref");
             } else {
                 lowerLayout = new FormLayout(
+                 //  online      limit                 down        sep         up
                     "pref, 3dlu, pref, fill:pref:grow, pref, 3dlu, pref, 3dlu, pref",
                     "pref");
             }
@@ -180,6 +183,22 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                     // Smells like hack(tm).
                     new FreeLimitationDialog(getController()).open();
                 }
+            }
+        });
+
+        // @todo this is temporary, until decision on how this is to work (hg)
+        sleepButton = new JButtonMini(Icons.SLEEP, "Disable folder change scanning");
+        sleepButton.addActionListener(new ActionListener() {
+            private boolean selected;
+            public void actionPerformed(ActionEvent e) {
+                if (selected) {
+                    sleepButton.setIcon(Icons.SLEEP);
+                    sleepButton.setToolTipText("Disable folder change scanning");
+                } else {
+                    sleepButton.setIcon(Icons.WAKE_UP);
+                    sleepButton.setToolTipText("Enable folder change scanning");
+                }
+                selected = !selected;
             }
         });
 
