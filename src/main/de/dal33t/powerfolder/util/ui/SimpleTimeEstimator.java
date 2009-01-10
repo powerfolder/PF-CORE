@@ -53,14 +53,15 @@ public class SimpleTimeEstimator {
         }
 
         long thisTime = now.getTime();
-        if (thisPercentage > lastPercentage && lastTime > 0) {
+        if (Double.compare(thisPercentage, 100.0) == 0 &&
+                Double.compare(lastPercentage, 100.0) != 0) {
+            // Yey! Reached 100%. Set the estimated date to NOW.
+            estimatedDate = now;
+        } else if (thisPercentage > lastPercentage && lastTime > 0) {
             if (Double.compare(thisPercentage, lastPercentage) == 0) {
                 // Duh, no percentage change from last time? Theoretically
                 // the target time would be infinity. Probably updating too
                 // fast. Ignore this estimate.
-            } else if (Double.compare(thisPercentage, 100.0) == 0) {
-                // Yey! Reached 100%. Set the estimated date to NOW.
-                estimatedDate = now;
             } else {
                 // . . . --> T I M E - L I N E --> . . .
                 // lastTime       ... thisTime       ... targetTime
