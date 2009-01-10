@@ -62,12 +62,13 @@ public class FolderInformationCard extends InformationCard {
      * Sets the folder in the tabs.
      *
      * @param folderInfo
+     * @param directoryFilterMode
      */
-    public void setFolderInfo(FolderInfo folderInfo) {
+    public void setFolderInfo(FolderInfo folderInfo, int directoryFilterMode) {
         this.folderInfo = folderInfo;
         settingsTab.setFolderInfo(folderInfo);
         membersTab.setFolderInfo(folderInfo);
-        filesTab.setFolderInfo(folderInfo);
+        filesTab.setFolderInfo(folderInfo, directoryFilterMode);
     }
 
     /**

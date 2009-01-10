@@ -27,7 +27,6 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.ui.information.folder.FolderInformationTab;
 import de.dal33t.powerfolder.ui.information.folder.files.table.FilesTablePanel;
 import de.dal33t.powerfolder.ui.information.folder.files.tree.FilesTreePanel;
 import de.dal33t.powerfolder.ui.widget.FilterTextField;
@@ -43,7 +42,7 @@ import java.beans.PropertyChangeListener;
  * UI component for the folder files tab
  */
 public class FilesTab extends PFUIComponent
-        implements FolderInformationTab, DirectoryFilterListener {
+        implements DirectoryFilterListener {
     private JPanel uiComponent;
     private JSplitPane splitPane;
     private FilesTablePanel tablePanel;
@@ -108,6 +107,19 @@ public class FilesTab extends PFUIComponent
         Folder folder = getController().getFolderRepository().getFolder(folderInfo);
         directoryFilter.setFolder(folder);
         tablePanel.setFolder(folder);
+    }
+    
+    /**
+     * Set the tab with details for a folder.
+     *
+     * @param folderInfo
+     * @param directoryFilterMode
+     */
+    public void setFolderInfo(FolderInfo folderInfo, int directoryFilterMode) {
+        setFolderInfo(folderInfo);
+        if (directoryFilterMode >= 0) {
+            directoryFilter.setFilterMode(directoryFilterMode);
+        }
     }
 
     /**

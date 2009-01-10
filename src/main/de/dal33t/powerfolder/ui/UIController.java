@@ -599,11 +599,21 @@ public class UIController extends PFComponent {
 
     /**
      * Opens the Files information for a folder.
-     * 
+     *
      * @param folderInfo info of the folder to display files information for.
      */
     public void openFilesInformation(FolderInfo folderInfo) {
-        informationFrame.displayFolderFiles(folderInfo);
+        openFilesInformation(folderInfo, Integer.MIN_VALUE);
+    }
+
+    /**
+     * Opens the Files information for a folder.
+     *
+     * @param folderInfo info of the folder to display files information for.
+     * @param directoryFilterMode the directory filter mode to be in
+     */
+    public void openFilesInformation(FolderInfo folderInfo, int directoryFilterMode) {
+        informationFrame.displayFolderFiles(folderInfo, directoryFilterMode);
         displayInformationWindow();
     }
 

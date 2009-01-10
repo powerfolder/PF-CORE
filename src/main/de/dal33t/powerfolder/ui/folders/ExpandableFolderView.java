@@ -35,6 +35,7 @@ import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.ExpandableView;
+import de.dal33t.powerfolder.ui.information.folder.files.DirectoryFilter;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
@@ -302,7 +303,7 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
         totalSizeLabel = new JLabel();
         recycleLabel = new JLabel();
         membersLabel = new ActionLabel(myOpenMembersInformationAction);
-        filesAvailableLabel = new JLabel();
+        filesAvailableLabel = new ActionLabel(new MyFilesAvailableAction());
 
         updateNumberOfFiles();
         updateStatsDetails();
@@ -434,7 +435,12 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
                 totalSizeString));
         recycleLabel.setText(recycleLabelText);
         filesAvailableLabel.setText(filesAvailableLabelText);
-
+        if (filesAvailableLabelText.length() == 0) {
+            filesAvailableLabel.setToolTipText(null);
+        } else {
+            filesAvailableLabel.setToolTipText(
+                    Translation.getTranslation("exp_folder_view.files_available_tip"));
+        }
     }
 
     /**
@@ -687,4 +693,11 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
         }
     }
 
+    private class MyFilesAvailableAction extends AbstractAction {
+
+        public void actionPerformed(ActionEvent e) {
+            getController().getUIController().openFilesInformation(folderInfo, 
+                    DirectoryFilter.MODE_INCOMING_ONLY);
+        }
+    }
 }

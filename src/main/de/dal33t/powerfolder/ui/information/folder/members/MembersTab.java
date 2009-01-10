@@ -33,7 +33,6 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.dialog.ConnectDialog;
-import de.dal33t.powerfolder.ui.information.folder.FolderInformationTab;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
@@ -52,7 +51,7 @@ import java.awt.event.MouseEvent;
 /**
  * UI component for the members information tab
  */
-public class MembersTab extends PFUIComponent implements FolderInformationTab {
+public class MembersTab extends PFUIComponent {
 
     private JPanel uiComponent;
     private MembersTableModel model;

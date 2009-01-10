@@ -142,10 +142,11 @@ public class InformationFrame extends PFUIComponent {
      * Displays file info for a folder.
      *
      * @param folderInfo
+     * @param directoryFilterMode
      */
-    public void displayFolderFiles(FolderInfo folderInfo) {
+    public void displayFolderFiles(FolderInfo folderInfo, int directoryFilterMode) {
         buildFolderInformationCard();
-        folderInformationCard.setFolderInfo(folderInfo);
+        folderInformationCard.setFolderInfo(folderInfo, directoryFilterMode);
         folderInformationCard.showFiles();
         displayCard(folderInformationCard);
     }
@@ -157,7 +158,7 @@ public class InformationFrame extends PFUIComponent {
      */
     public void displayFolderSettings(FolderInfo folderInfo) {
         buildFolderInformationCard();
-        folderInformationCard.setFolderInfo(folderInfo);
+        folderInformationCard.setFolderInfo(folderInfo, Integer.MIN_VALUE);
         folderInformationCard.showSettings();
         displayCard(folderInformationCard);
     }
@@ -169,7 +170,7 @@ public class InformationFrame extends PFUIComponent {
      */
     public void displayFolderMembers(FolderInfo folderInfo) {
         buildFolderInformationCard();
-        folderInformationCard.setFolderInfo(folderInfo);
+        folderInformationCard.setFolderInfo(folderInfo, Integer.MIN_VALUE);
         folderInformationCard.showMembers();
         displayCard(folderInformationCard);
     }

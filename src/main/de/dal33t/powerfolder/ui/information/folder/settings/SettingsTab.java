@@ -67,7 +67,6 @@ import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.action.SelectionBaseAction;
 import de.dal33t.powerfolder.ui.dialog.FolderRemovePanel;
 import de.dal33t.powerfolder.ui.dialog.PreviewToJoinPanel;
-import de.dal33t.powerfolder.ui.information.folder.FolderInformationTab;
 import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
@@ -86,8 +85,7 @@ import de.javasoft.synthetica.addons.DirectoryChooser;
 /**
  * UI component for the information settings tab
  */
-public class SettingsTab extends PFUIComponent
-        implements FolderInformationTab {
+public class SettingsTab extends PFUIComponent {
 
     private JPanel uiComponent;
     private Folder folder;
