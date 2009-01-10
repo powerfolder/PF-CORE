@@ -63,6 +63,12 @@ public class ActionLabel extends PFComponent {
         return uiComponent;
     }
 
+    /**
+     * IMPORTANT - make component text changes here, not in the uiComponent.
+     * Otherwise mouse-over activity will over-write the text.
+     *
+     * @param text
+     */
     public void setText(String text) {
         this.text = text;
         displayText(false);
