@@ -57,6 +57,7 @@ public class SimpleTimeEstimator {
                 Double.compare(lastPercentage, 100.0) != 0) {
             // Yey! Reached 100%. Set the estimated date to NOW.
             estimatedDate = now;
+            lastPercentage = thisPercentage;
         } else if (thisPercentage > lastPercentage && lastTime > 0) {
             if (Double.compare(thisPercentage, lastPercentage) == 0) {
                 // Duh, no percentage change from last time? Theoretically
