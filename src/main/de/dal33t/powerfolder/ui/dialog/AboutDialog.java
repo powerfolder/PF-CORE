@@ -178,20 +178,20 @@ public class AboutDialog extends PFUIComponent {
 
         logoLabel = buildAboutAnimation();
 
-        docLink = new LinkLabel(Translation
+        docLink = new LinkLabel(getController(), Translation
             .getTranslation("about_dialog.documentation"),
             ConfigurationEntry.PROVIDER_WIKI_URL.getValue(getController()));
-        SimpleComponentFactory.setFontSize(docLink,
+        SimpleComponentFactory.setFontSize((JLabel) docLink.getUiComponent(),
             SimpleComponentFactory.BIG_FONT_SIZE);
-        homeLink = new LinkLabel(Translation
+        homeLink = new LinkLabel(getController(), Translation
             .getTranslation("about_dialog.home_page"),
             ConfigurationEntry.PROVIDER_WIKI_URL.getValue(getController()));
-        SimpleComponentFactory.setFontSize(homeLink,
+        SimpleComponentFactory.setFontSize((JLabel) homeLink.getUiComponent(),
             SimpleComponentFactory.BIG_FONT_SIZE);
-        supportLink = new LinkLabel(Translation
+        supportLink = new LinkLabel(getController(), Translation
             .getTranslation("about_dialog.support"),
             ConfigurationEntry.PROVIDER_WIKI_URL.getValue(getController()));
-        SimpleComponentFactory.setFontSize(supportLink,
+        SimpleComponentFactory.setFontSize((JLabel) supportLink.getUiComponent(),
             SimpleComponentFactory.BIG_FONT_SIZE);
 
         powerFolder = createTextBox(Translation
@@ -315,9 +315,9 @@ public class AboutDialog extends PFUIComponent {
         builder.add(TextLinesPanelBuilder.createTextPanel(Translation
             .getTranslation("about_dialog.sync_your_world"), HEADER_FONT_SIZE),
             cc.xy(1, 1));
-        builder.add(homeLink, cc.xy(1, 3));
-        builder.add(docLink, cc.xy(1, 5));
-        builder.add(supportLink, cc.xy(1, 7));
+        builder.add(homeLink.getUiComponent(), cc.xy(1, 3));
+        builder.add(docLink.getUiComponent(), cc.xy(1, 5));
+        builder.add(supportLink.getUiComponent(), cc.xy(1, 7));
 
         TitledBorder titledBorder = new TitledBorder(Translation
             .getTranslation("about_dialog.general_information"));

@@ -112,7 +112,7 @@ public class ConnectionException extends Exception {
             EventQueue.invokeLater(new Runnable() {
                 public void run() {
                     DialogFactory.genericDialog(
-                            controller.getUIController().getMainFrame().getUIComponent(),
+                            controller,
                             Translation.getTranslation("dialog.connection_problem"),
                             message,
                             controller.isVerbose(), ConnectionException.this);

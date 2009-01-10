@@ -83,7 +83,7 @@ public class HomeTab extends PFUIComponent {
     private final ValueModel uploadsCountVM;
     private final MyFolderListener folderListener;
     private ServerClient client;
-    private JLabel onlineStorageAccountLabel;
+    private ActionLabel onlineStorageAccountLabel;
     private OnlineStorageSection onlineStorageSection;
     private final ValueModel newFriendRequestCountVM;
     private final ValueModel newInvitationsCountVM;
@@ -184,7 +184,8 @@ public class HomeTab extends PFUIComponent {
         computersLine = new HomeTabLine(getController(), Translation
             .getTranslation("home_tab.computers"), Translation
             .getTranslation("home_tab.no_computers"), false, true);
-        onlineStorageAccountLabel = new ActionLabel(new AbstractAction() {
+        onlineStorageAccountLabel = new ActionLabel(getController(),
+                new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
                 PFWizard.openLoginWebServiceWizard(getController(),
                     getController().getOSClient());
@@ -278,7 +279,7 @@ public class HomeTab extends PFUIComponent {
         builder.addSeparator(null, cc.xywh(2, row, 2, 1));
         row +=2;
 
-        builder.add(onlineStorageAccountLabel, cc.xywh(2, row, 2, 1));
+        builder.add(onlineStorageAccountLabel.getUIComponent(), cc.xywh(2, row, 2, 1));
         row += 2;
 
         builder.add(onlineStorageSection.getUIComponent(), cc.xywh(2, row, 2, 1));

@@ -142,9 +142,8 @@ public class DynDnsManager extends PFComponent {
                         String title = Translation
                             .getTranslation("preferences.dialog.dyn_dns_manager.no_match.title");
 
-                        int result = DialogFactory.genericDialog(
-                            getController().getUIController().getMainFrame()
-                                .getUIComponent(), title, message,
+                        int result = DialogFactory.genericDialog(getController(),
+                                title, message,
                             new String[]{
                                 Translation.getTranslation("general.continue"),
                                 Translation.getTranslation("general.cancel")},
@@ -204,8 +203,7 @@ public class DynDnsManager extends PFComponent {
         switch (type) {
             case ConnectionListener.VALIDATION_FAILED :
 
-                DialogFactory.genericDialog(getController().getUIController()
-                    .getMainFrame().getUIComponent(), Translation
+                DialogFactory.genericDialog(getController(), Translation
                     .getTranslation("preferences.dialog.warnningMessage"),
                     Translation.getTranslation(
                         "preferences.dialog.statusValidFailed", arg),
@@ -214,8 +212,7 @@ public class DynDnsManager extends PFComponent {
                 break;
 
             case ConnectionListener.CANNOT_RESOLVE :
-                DialogFactory.genericDialog(getController().getUIController()
-                    .getMainFrame().getUIComponent(), Translation
+                DialogFactory.genericDialog(getController(), Translation
                     .getTranslation("preferences.dialog.warnningMessage"),
                     Translation.getTranslation(
                         "preferences.dialog.statusValidFailed", arg),
@@ -234,8 +231,7 @@ public class DynDnsManager extends PFComponent {
             err = "password";
         }
 
-        DialogFactory.genericDialog(getController().getUIController()
-            .getMainFrame().getUIComponent(), Translation
+        DialogFactory.genericDialog(getController(), Translation
             .getTranslation("preferences.dialog.dyn_dnsUpdateTitle"),
             Translation.getTranslation("preferences.dialog.dyn_dnsUpdateText",
                 err), GenericDialogType.ERROR);
@@ -249,8 +245,7 @@ public class DynDnsManager extends PFComponent {
         switch (type) {
             case ErrorManager.NO_ERROR :
 
-                DialogFactory.genericDialog(getController().getUIController()
-                    .getMainFrame().getUIComponent(), Translation
+                DialogFactory.genericDialog(getController(), Translation
                     .getTranslation("preferences.dialog.dyn_dnsUpdateTitle"),
 
                 activeDynDns.getErrorText(), GenericDialogType.INFO);
@@ -264,8 +259,7 @@ public class DynDnsManager extends PFComponent {
             case ErrorManager.UNKNOWN :
                 DialogFactory
                     .genericDialog(
-                        getController().getUIController().getMainFrame()
-                            .getUIComponent(),
+                        getController(),
                         Translation
                             .getTranslation("preferences.dialog.dyn_dnsUpdateTitle"),
                         Translation

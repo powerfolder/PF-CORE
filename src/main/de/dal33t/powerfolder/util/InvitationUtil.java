@@ -342,8 +342,7 @@ public class InvitationUtil {
 
         log.info("Writing invitation to " + file);
         if (!save(invitation, file)) {
-            DialogFactory.genericDialog(controller.getUIController()
-                .getMainFrame().getUIComponent(), Translation
+            DialogFactory.genericDialog(controller, Translation
                 .getTranslation("invitation.utils.unable.write.title"),
                 Translation
                     .getTranslation("invitation.utils.unable.write.text"),

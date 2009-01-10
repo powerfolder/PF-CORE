@@ -68,7 +68,7 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
     public static String dyndnsSystem;
 
     private JTextField myDnsField;
-    private JLabel myDnsLabel;
+    private LinkLabel myDnsLabel;
 
     private JPanel panel;
     private JTextField dyndnsUserField;
@@ -167,7 +167,7 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
             CellConstraints cc = new CellConstraints();
 
             int row = 1;
-            builder.add(myDnsLabel, cc.xy(1, row));
+            builder.add(myDnsLabel.getUiComponent(), cc.xy(1, row));
             builder.add(myDnsField, cc.xywh(3, row, 1, 1));
             // FIXME correct URL
             builder.add(Help.createWikiLinkButton(getController(), "DYN-Dns"),
@@ -229,7 +229,7 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
                 updateDynDnsInfo();
             }
         });
-        myDnsLabel = new LinkLabel(Translation
+        myDnsLabel = new LinkLabel(getController(), Translation
             .getTranslation("preferences.dialog.dyn_dns"),
             ConfigurationEntry.PROVIDER_WIKI_URL.getValue(getController())
                 + "/DynDNS");

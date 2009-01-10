@@ -233,8 +233,7 @@ public class FindComputersPanel extends PFUIPanel {
                     JPanel innerPanel = builder.getPanel();
 
                     NeverAskAgainResponse response = DialogFactory.genericDialog(
-                            getController().getUIController().
-                            getMainFrame().getUIComponent(),
+                            getController(),
                             Translation.getTranslation("friend.search.personal.message.title"),
                             innerPanel, options, 0, GenericDialogType.INFO,
                             Translation.getTranslation("general.neverAskAgain"));

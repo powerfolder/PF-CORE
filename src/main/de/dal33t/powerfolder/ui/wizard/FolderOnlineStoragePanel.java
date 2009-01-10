@@ -20,7 +20,6 @@
 package de.dal33t.powerfolder.ui.wizard;
 
 import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
@@ -71,8 +70,7 @@ public class FolderOnlineStoragePanel extends PFWizardPanel {
      */
     public boolean validateNext(List<WizardPanel> list) {
         if (hasJoined) {
-            int result = DialogFactory.genericDialog(getController()
-                    .getUIController().getMainFrame().getUIComponent(),
+            int result = DialogFactory.genericDialog(getController(),
                     Translation.getTranslation(
                             "wizard.folder_online_storage_panel.warning_title"),
                     Translation.getTranslation(
@@ -107,12 +105,10 @@ public class FolderOnlineStoragePanel extends PFWizardPanel {
             3));
         builder.add(folderLabel, cc.xy(3, 3));
 
-        LinkLabel link = new LinkLabel(Translation
+        LinkLabel link = new LinkLabel(getController(), Translation
             .getTranslation("wizard.webservice.learn_more"),
             ConfigurationEntry.PROVIDER_ABOUT_URL.getValue(getController()));
-        // FIXME This is a hack because of "Fusch!"
-        link.setBorder(Borders.createEmptyBorder("0, 1px, 0, 0"));
-        builder.add(link, cc.xyw(1, 5, 3));
+        builder.add(link.getUiComponent(), cc.xyw(1, 5, 3));
         return builder.getPanel();
     }
 

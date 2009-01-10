@@ -158,14 +158,14 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
         if (Feature.SERVER_INTERNAL_FUNCTIONS.isEnabled()
             && client.getRegisterURL() != null)
         {
-            builder.add(new LinkLabel(Translation
+            builder.add(new LinkLabel(getController(), Translation
                 .getTranslation("pro.wizard.activation.register_now"), client
-                .getRegisterURL()), cc.xy(3, 9));
+                .getRegisterURL()).getUiComponent(), cc.xy(3, 9));
 
-            LinkLabel link = new LinkLabel(Translation
+            LinkLabel link = new LinkLabel(getController(), Translation
                 .getTranslation("wizard.webservice.learn_more"),
                 ConfigurationEntry.PROVIDER_ABOUT_URL.getValue(getController()));
-            builder.add(link, cc.xyw(1, 11, 4));
+            builder.add(link.getUiComponent(), cc.xyw(1, 11, 4));
         }
 
         // Default setup

@@ -112,7 +112,8 @@ public class AskForFriendshipAction extends BaseAction {
                         "pref, 5dlu, pref, pref");
                 PanelBuilder builder = new PanelBuilder(layout);
                 CellConstraints cc = new CellConstraints();
-                PanelBuilder panelBuilder = LinkedTextBuilder.build(text);
+                PanelBuilder panelBuilder = LinkedTextBuilder.build(getController(),
+                        text);
                 JPanel panel1 = panelBuilder.getPanel();
                 builder.add(panel1, cc.xy(1, 1));
                 if (!StringUtils.isEmpty(message)) {
@@ -128,8 +129,7 @@ public class AskForFriendshipAction extends BaseAction {
                 JPanel panel = builder.getPanel();
 
                 NeverAskAgainResponse response = DialogFactory
-                        .genericDialog(getController().getUIController()
-                                .getMainFrame().getUIComponent(), Translation
+                        .genericDialog(getController(), Translation
                                 .getTranslation(
                                 "dialog.ask_for_friendship.title", member
                                 .getNick()), panel, options, 0,
@@ -180,7 +180,7 @@ public class AskForFriendshipAction extends BaseAction {
                             "pref, 5dlu, pref, pref");
                     PanelBuilder builder = new PanelBuilder(layout);
                     CellConstraints cc = new CellConstraints();
-                    PanelBuilder panelBuilder = LinkedTextBuilder.build(text);
+                    PanelBuilder panelBuilder = LinkedTextBuilder.build(getController(), text);
                     JPanel panel1 = panelBuilder.getPanel();
                     builder.add(panel1, cc.xy(1, 1));
                     if (!StringUtils.isEmpty(message)) {
@@ -196,8 +196,7 @@ public class AskForFriendshipAction extends BaseAction {
                     JPanel panel = builder.getPanel();
 
                     NeverAskAgainResponse response = DialogFactory
-                            .genericDialog(getController().getUIController()
-                                    .getMainFrame().getUIComponent(),
+                            .genericDialog(getController(),
                                     Translation.getTranslation(
                                     "dialog.ask_for_friendship.title",
                                             node.getNick()), panel, options, 0,

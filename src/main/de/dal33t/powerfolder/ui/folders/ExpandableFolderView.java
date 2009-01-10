@@ -76,7 +76,7 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
     private JLabel localSizeLabel;
     private JLabel totalSizeLabel;
     private JLabel recycleLabel;
-    private JLabel filesAvailableLabel;
+    private ActionLabel filesAvailableLabel;
     private JPanel upperPanel;
     private JLabel jLabel;
 
@@ -194,7 +194,7 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
 
         upperBuilder.add(jLabel, cc.xy(1, 1));
         upperBuilder.add(new JLabel(folderInfo.name), cc.xy(3, 1));
-        upperBuilder.add(filesAvailableLabel, cc.xy(6, 1));
+        upperBuilder.add(filesAvailableLabel.getUIComponent(), cc.xy(6, 1));
         upperBuilder.add(syncFolderButton, cc.xy(8, 1));
 
         upperPanel = upperBuilder.getPanel();
@@ -226,7 +226,7 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
 
         lowerBuilder.addSeparator(null, cc.xywh(2, 13, 4, 1));
 
-        lowerBuilder.add(membersLabel, cc.xy(2, 15));
+        lowerBuilder.add(membersLabel.getUIComponent(), cc.xy(2, 15));
         lowerBuilder.add(inviteButton, cc.xy(5, 15));
 
         lowerBuilder.addSeparator(null, cc.xywh(2, 17, 4, 1));
@@ -302,8 +302,10 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
         localSizeLabel = new JLabel();
         totalSizeLabel = new JLabel();
         recycleLabel = new JLabel();
-        membersLabel = new ActionLabel(myOpenMembersInformationAction);
-        filesAvailableLabel = new ActionLabel(new MyFilesAvailableAction());
+        membersLabel = new ActionLabel(getController(),
+                myOpenMembersInformationAction);
+        filesAvailableLabel = new ActionLabel(getController(),
+                new MyFilesAvailableAction());
 
         updateNumberOfFiles();
         updateStatsDetails();

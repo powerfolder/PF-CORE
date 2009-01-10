@@ -521,8 +521,7 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
                 String message = Translation
                         .getTranslation("dialog.create_edit_profile.cannot_save_name", 
                         syncProfile.getProfileName());
-                DialogFactory.genericDialog(getController()
-                        .getUIController().getMainFrame().getUIComponent(),
+                DialogFactory.genericDialog(getController(),
                         title, message, GenericDialogType.ERROR);
                 return true;
             }
@@ -545,8 +544,7 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
                 String message = Translation
                         .getTranslation("dialog.create_edit_profile.cannot_save_profile",
                         syncProfile.getProfileName());
-                DialogFactory.genericDialog(getController()
-                        .getUIController().getMainFrame().getUIComponent(),
+                DialogFactory.genericDialog(getController(),
                         title, message, GenericDialogType.ERROR);
                 return true;
             }

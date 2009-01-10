@@ -24,7 +24,6 @@ import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
 
-import javax.swing.JFrame;
 import java.awt.EventQueue;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -79,10 +78,8 @@ public class MemoryMonitor implements Runnable {
     private void showDialog() {
         EventQueue.invokeLater(new Runnable() {
             public void run() {
-                JFrame parent = controller.getUIController().getMainFrame()
-                        .getUIComponent();
                 if (OSUtil.isWindowsSystem() && !OSUtil.isWebStart()) {
-                    int response = DialogFactory.genericDialog(parent, Translation
+                    int response = DialogFactory.genericDialog(controller, Translation
                             .getTranslation("low_memory.title"), Translation
                             .getTranslation("low_memory.text"), new String[]{
                             Translation.getTranslation("low_memory.increase"),
@@ -93,7 +90,7 @@ public class MemoryMonitor implements Runnable {
                     }
                 } else {
                     // No ini - Can only warn user.
-                    DialogFactory.genericDialog(parent, Translation
+                    DialogFactory.genericDialog(controller, Translation
                             .getTranslation("low_memory.title"), Translation
                             .getTranslation("low_memory.warn"),
                             new String[]{Translation.getTranslation("general.ok")},
@@ -154,15 +151,13 @@ public class MemoryMonitor implements Runnable {
         }
 
         // Show a response
-        JFrame parent = controller.getUIController().getMainFrame()
-            .getUIComponent();
         if (wroteNewIni) {
-            DialogFactory.genericDialog(parent, Translation
+            DialogFactory.genericDialog(controller, Translation
                 .getTranslation("low_memory.title"), Translation
                 .getTranslation("low_memory.configure_success"),
                 GenericDialogType.INFO);
         } else {
-            DialogFactory.genericDialog(parent, Translation
+            DialogFactory.genericDialog(controller, Translation
                 .getTranslation("low_memory.title"), Translation
                 .getTranslation("low_memory.configure_failure"),
                 GenericDialogType.WARN);

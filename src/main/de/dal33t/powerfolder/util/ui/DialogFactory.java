@@ -66,7 +66,7 @@ public class DialogFactory {
      * @param longText long (scrollable) text
      * @return the index of the selected option button, -1 if dialog cancelled
      */
-    public static int showScrollableOkCancelDialog(JFrame parent,
+    public static int showScrollableOkCancelDialog(Controller controller,
         String title, String message,
         String longText)
     {
@@ -83,10 +83,10 @@ public class DialogFactory {
             PanelBuilder builder = new PanelBuilder(layout);
 
             CellConstraints cc = new CellConstraints();
-            builder.add(LinkedTextBuilder.build(message).getPanel(), cc.xy(1, 1));
+            builder.add(LinkedTextBuilder.build(controller, message).getPanel(), cc.xy(1, 1));
             builder.add(scrollPane, cc.xy(1, 3));
 
-            return genericDialog(parent, title, builder.getPanel(),
+            return genericDialog(controller, title, builder.getPanel(),
                     new String[]{Translation.getTranslation("general.ok"),
                     Translation.getTranslation("general.cancel")},
                     0, GenericDialogType.QUESTION);
@@ -151,11 +151,11 @@ public class DialogFactory {
      * @param message the message to display in the dialog
      * @param type a {@link GenericDialogType}
      */
-    public static void genericDialog(JFrame parent, String title,
+    public static void genericDialog(Controller controller, String title,
         String message, GenericDialogType type)
     {
 
-        genericDialog(parent, title, message, new String[]{Translation
+        genericDialog(controller, title, message, new String[]{Translation
             .getTranslation("general.ok")}, 0, type);
     }
 
@@ -169,7 +169,7 @@ public class DialogFactory {
      * @param verbose whether the full stack trace should be displayed if in verbose mode
      * @param throwable the throwable that is to be displayed in verbose mode
      */
-    public static void genericDialog(JFrame parent, String title,
+    public static void genericDialog(Controller controller, String title,
         String message, boolean verbose, Throwable throwable)
     {
 
@@ -180,7 +180,7 @@ public class DialogFactory {
             innerText = message;
         }
 
-        genericDialog(parent, title, innerText, new String[]{Translation
+        genericDialog(controller, title, innerText, new String[]{Translation
             .getTranslation("general.ok")}, 0, GenericDialogType.ERROR);
     }
 
@@ -195,13 +195,13 @@ public class DialogFactory {
      * @param type a {@link GenericDialogType}
      * @return the index of the selected option button, -1 if dialog cancelled
      */
-    public static int genericDialog(JFrame parent, String title,
+    public static int genericDialog(Controller controller, String title,
         String message, String[] options, int defaultOption,
         GenericDialogType type)
     {
 
-        PanelBuilder panelBuilder = LinkedTextBuilder.build(message);
-        return genericDialog(parent, title, panelBuilder.getPanel(), options,
+        PanelBuilder panelBuilder = LinkedTextBuilder.build(controller, message);
+        return genericDialog(controller, title, panelBuilder.getPanel(), options,
             defaultOption, type);
     }
 
@@ -216,13 +216,14 @@ public class DialogFactory {
      * @param type a {@link GenericDialogType}
      * @return the index of the selected option button, -1 if dialog cancelled
      */
-    public static int genericDialog(JFrame parent, String title, JPanel panel,
+    public static int genericDialog(Controller controller, String title, JPanel panel,
         String[] options, int defaultOption, GenericDialogType type)
     {
 
         try {
             dialogInUse.set(true);
-            GenericDialog dialog = new GenericDialog(parent, title, panel,
+            GenericDialog dialog = new GenericDialog(controller.getUIController()
+                    .getMainFrame().getUIComponent(), title, panel,
                 type, options, defaultOption, null);
 
             return dialog.display();
@@ -243,13 +244,13 @@ public class DialogFactory {
      * @param neverAskAgainMessage the message to display in the 'never ask again' checkbox
      * @return {@link NeverAskAgainResponse} with 'never ask again' checkbox selection and selected button index (-1 if dialog cancelled)
      */
-    public static NeverAskAgainResponse genericDialog(JFrame parent,
+    public static NeverAskAgainResponse genericDialog(Controller controller,
         String title, String message, String[] options, int defaultOption,
         GenericDialogType type, String neverAskAgainMessage)
     {
 
-        PanelBuilder panelBuilder = LinkedTextBuilder.build(message);
-        return genericDialog(parent, title, panelBuilder.getPanel(), options,
+        PanelBuilder panelBuilder = LinkedTextBuilder.build(controller, message);
+        return genericDialog(controller, title, panelBuilder.getPanel(), options,
             defaultOption, type, neverAskAgainMessage);
     }
 
@@ -265,14 +266,15 @@ public class DialogFactory {
      * @param neverAskAgainMessage the message to display in the 'never ask again' checkbox
      * @return {@link NeverAskAgainResponse} with 'never ask again' checkbox selection and selected button index (-1 if dialog cancelled)
      */
-    public static NeverAskAgainResponse genericDialog(JFrame parent,
+    public static NeverAskAgainResponse genericDialog(Controller controller,
         String title, JPanel panel, String[] options, int defaultOption,
         GenericDialogType type, String neverAskAgainMessage)
     {
 
         try {
             dialogInUse.set(true);
-            GenericDialog dialog = new GenericDialog(parent, title, panel,
+            GenericDialog dialog = new GenericDialog(controller.getUIController()
+                    .getMainFrame().getUIComponent(), title, panel,
                 type, options, defaultOption, neverAskAgainMessage);
 
             return new NeverAskAgainResponse(dialog.display(), dialog

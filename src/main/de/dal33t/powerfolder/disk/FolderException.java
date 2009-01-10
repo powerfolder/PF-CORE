@@ -104,12 +104,10 @@ public class FolderException extends Exception implements Serializable {
                 public void run() {
                     JFrame parent = null;
                     if (controller.isUIOpen()) {
-                        parent = controller.getUIController().getMainFrame()
-                            .getUIComponent();
                     }
                     String addText = additonalText != null ? '\n'
                             + additonalText : "";
-                    DialogFactory.genericDialog(parent,
+                    DialogFactory.genericDialog(controller,
                             Translation.getTranslation("folder_exception.dialog.title",
                                     fInfo == null ? "null" : fInfo.name),
                             Translation.getTranslation("folder_exception.dialog.text",

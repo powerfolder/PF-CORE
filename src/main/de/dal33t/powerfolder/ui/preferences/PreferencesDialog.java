@@ -278,8 +278,7 @@ public class PreferencesDialog extends BaseDialog {
      * Asks user about restart and executes that if requested
      */
     private void handleRestartRequest() {
-        int result = DialogFactory.genericDialog(getController()
-            .getUIController().getMainFrame().getUIComponent(), Translation
+        int result = DialogFactory.genericDialog(getController(), Translation
             .getTranslation("preferences.dialog.restart.title"), Translation
             .getTranslation("preferences.dialog.restart.text"), new String[]{
             Translation.getTranslation("preferences.dialog.restart.restart"),

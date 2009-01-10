@@ -42,8 +42,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.swing.JFrame;
-
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
@@ -173,8 +171,6 @@ public class FolderRepository extends PFComponent implements Runnable {
                 }
                 if (UIUtil.isAWTAvailable() && !getController().isConsoleMode())
                 {
-                    JFrame frame = getController().getUIController()
-                        .getMainFrame().getUIComponent();
                     String title = Translation
                         .getTranslation("folder_repository.warn_on_close.title");
                     String text = Translation.getTranslation(
@@ -183,7 +179,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                     String question = Translation
                         .getTranslation("general.neverAskAgain");
                     NeverAskAgainResponse response = DialogFactory
-                        .genericDialog(frame, title, text, new String[]{
+                        .genericDialog(getController(), title, text, new String[]{
                             Translation.getTranslation("general.ok"),
                             Translation.getTranslation("general.cancel")}, 0,
                             GenericDialogType.QUESTION, question);

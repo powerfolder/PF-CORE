@@ -568,8 +568,8 @@ public class UIController extends PFComponent {
     public void showOutOfMemoryError(OutOfMemoryError oome) {
         if (!seenOome) {
             seenOome = true;
-            int response = DialogFactory.genericDialog(mainFrame
-                .getUIComponent(), Translation
+            int response = DialogFactory.genericDialog(getController(),
+                Translation
                 .getTranslation("low_memory.error.title"), Translation
                 .getTranslation("low_memory.error.text"),
                 new String[]{

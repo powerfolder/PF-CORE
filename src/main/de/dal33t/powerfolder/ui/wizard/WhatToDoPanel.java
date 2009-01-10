@@ -28,6 +28,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
+import de.dal33t.powerfolder.ui.widget.LinkLabel;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.*;
 import de.dal33t.powerfolder.util.Help;
 import de.dal33t.powerfolder.util.Translation;
@@ -57,12 +58,12 @@ public class WhatToDoPanel extends PFWizardPanel {
     private static final Object customOption = new Object();
     private static final Object inviteOption = new Object();
 
-    private JLabel synchronizedLink;
-    private JLabel backupLink;
-    private JLabel hostLink;
-    private JLabel customLink;
-    private JLabel inviteLink;
-    private JLabel documentationLink;
+    private ActionLabel synchronizedLink;
+    private ActionLabel backupLink;
+    private ActionLabel hostLink;
+    private ActionLabel customLink;
+    private ActionLabel inviteLink;
+    private LinkLabel documentationLink;
 
     private ValueModel decision;
 
@@ -87,12 +88,12 @@ public class WhatToDoPanel extends PFWizardPanel {
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
-        builder.add(synchronizedLink, cc.xy(1, 1));
-        builder.add(backupLink, cc.xy(1, 3));
-        builder.add(hostLink, cc.xy(1, 5));
-        builder.add(customLink, cc.xy(1, 7));
-        builder.add(inviteLink, cc.xy(1, 9));
-        builder.add(documentationLink, cc.xy(1, 11));
+        builder.add(synchronizedLink.getUIComponent(), cc.xy(1, 1));
+        builder.add(backupLink.getUIComponent(), cc.xy(1, 3));
+        builder.add(hostLink.getUIComponent(), cc.xy(1, 5));
+        builder.add(customLink.getUIComponent(), cc.xy(1, 7));
+        builder.add(inviteLink.getUIComponent(), cc.xy(1, 9));
+        builder.add(documentationLink.getUiComponent(), cc.xy(1, 11));
         return builder.getPanel();
     }
 
@@ -298,35 +299,38 @@ public class WhatToDoPanel extends PFWizardPanel {
             }
         });
 
-        synchronizedLink = new ActionLabel(new WhatToDoAction(Translation
+        synchronizedLink = new ActionLabel(getController(), new WhatToDoAction(Translation
             .getTranslation("wizard.what_to_do.synchronized_folder"),
             synchronizedOption, decision));
-        SimpleComponentFactory.setFontSize(synchronizedLink,
+        SimpleComponentFactory.setFontSize((JLabel) synchronizedLink.getUIComponent(),
             PFWizard.MED_FONT_SIZE);
 
-        backupLink = new ActionLabel(new WhatToDoAction(Translation
+        backupLink = new ActionLabel(getController(), new WhatToDoAction(Translation
             .getTranslation("wizard.what_to_do.backup_folder"), backupOption,
             decision));
-        SimpleComponentFactory.setFontSize(backupLink, PFWizard.MED_FONT_SIZE);
+        SimpleComponentFactory.setFontSize((JLabel) backupLink.getUIComponent(),
+                PFWizard.MED_FONT_SIZE);
 
-        hostLink = new ActionLabel(new WhatToDoAction(Translation
+        hostLink = new ActionLabel(getController(), new WhatToDoAction(Translation
             .getTranslation("wizard.what_to_do.host_work"), hostOption, decision));
-        SimpleComponentFactory.setFontSize(hostLink, PFWizard.MED_FONT_SIZE);
+        SimpleComponentFactory.setFontSize((JLabel) hostLink.getUIComponent(),
+                PFWizard.MED_FONT_SIZE);
 
-        customLink = new ActionLabel(new WhatToDoAction(Translation
+        customLink = new ActionLabel(getController(), new WhatToDoAction(Translation
             .getTranslation("wizard.what_to_do.custom_sync"), customOption,
             decision));
-        SimpleComponentFactory.setFontSize(customLink, PFWizard.MED_FONT_SIZE);
+        SimpleComponentFactory.setFontSize((JLabel) customLink.getUIComponent(),
+                PFWizard.MED_FONT_SIZE);
 
-        inviteLink = new ActionLabel(new WhatToDoAction(Translation
+        inviteLink = new ActionLabel(getController(), new WhatToDoAction(Translation
             .getTranslation("wizard.what_to_do.load_invite"), inviteOption,
             decision));
-        SimpleComponentFactory.setFontSize(inviteLink, PFWizard.MED_FONT_SIZE);
+        SimpleComponentFactory.setFontSize((JLabel) inviteLink.getUIComponent(),
+                PFWizard.MED_FONT_SIZE);
 
         documentationLink = Help.createQuickstartGuideLabel(getController(),
-            Translation
-                .getTranslation("wizard.what_to_do.open_online_documentation"));
-        SimpleComponentFactory.setFontSize(documentationLink,
+            Translation.getTranslation("wizard.what_to_do.open_online_documentation"));
+        SimpleComponentFactory.setFontSize((JLabel) documentationLink.getUiComponent(),
             PFWizard.MED_FONT_SIZE);
     }
 

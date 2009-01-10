@@ -44,7 +44,7 @@ public class ManuallyInvokedUpdater extends Updater {
     protected void notifyNoUpdateAvailable() {
         if (controller.isUIEnabled()) {
             DialogFactory.genericDialog(
-                    getParentFrame(),
+                    controller,
                     Translation.getTranslation("general.powerfolder"),
                     Translation.getTranslation("dialog.update_check.noUpdateAvailable"),
                     GenericDialogType.INFO);

@@ -474,8 +474,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
                         // Ask user.
                         int i = DialogFactory
                             .genericDialog(
-                                getController().getUIController()
-                                    .getMainFrame().getUIComponent(),
+                                getController(),
                                 Translation
                                     .getTranslation("choose_disk_location_panel.target_dir"),
                                 Translation.getTranslation(messageKey, f

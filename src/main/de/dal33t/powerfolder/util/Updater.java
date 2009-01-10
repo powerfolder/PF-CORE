@@ -145,10 +145,7 @@ public class Updater extends Thread {
                             public void run() {
                                 // Show warning.
                                 DialogFactory
-                                    .genericDialog(
-                                        controller.getUIController()
-                                            .getMainFrame().getUIComponent(),
-                                        Translation
+                                    .genericDialog(controller, Translation
                                             .getTranslation("dialog.update_check.failed.title"),
                                         Translation
                                             .getTranslation("dialog.update_check.failed.text"),

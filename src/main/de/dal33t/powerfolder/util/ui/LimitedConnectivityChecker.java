@@ -274,10 +274,8 @@ public class LimitedConnectivityChecker {
     public static void showConnectivityWarning(final Controller controllerArg) {
         Runnable showMessage = new Runnable() {
             public void run() {
-                JFrame parent = controllerArg.getUIController().getMainFrame()
-                    .getUIComponent();
                 NeverAskAgainResponse response = DialogFactory.genericDialog(
-                    parent, Translation
+                    controllerArg, Translation
                         .getTranslation("limited_connection.title"),
                     Translation.getTranslation("limited_connection.text"),
                     new String[]{Translation.getTranslation("general.ok")}, 0,

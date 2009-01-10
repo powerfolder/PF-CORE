@@ -223,7 +223,7 @@ public class HomeTabLine extends PFUIComponent {
         if (normalAction == null) {
             nzBuilder.add(normalLabel, cc.xy(3, 1));
         } else {
-            nzBuilder.add(normalActionLabel, cc.xy(3, 1));
+            nzBuilder.add(normalActionLabel.getUIComponent(), cc.xy(3, 1));
         }
 
         cardPanel.add(nzBuilder.getPanel(), NORMAL_CARD);
@@ -249,7 +249,7 @@ public class HomeTabLine extends PFUIComponent {
         if (normalAction == null) {
             normalLabel = new JLabel(normalLabelText);
         } else {
-            normalActionLabel = new ActionLabel(normalAction);
+            normalActionLabel = new ActionLabel(getController(), normalAction);
             normalActionLabel.setText(normalLabelText);
         }
         if (zeroLabelText == null) {

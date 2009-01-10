@@ -23,14 +23,7 @@ import java.awt.Font;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 
-import javax.swing.Icon;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JPasswordField;
-import javax.swing.JPopupMenu;
-import javax.swing.JTextField;
-import javax.swing.JToolBar;
+import javax.swing.*;
 
 import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.looks.HeaderStyle;

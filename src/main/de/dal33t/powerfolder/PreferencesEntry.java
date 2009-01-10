@@ -61,6 +61,8 @@ public enum PreferencesEntry {
 
     SHOW_ADVANCED_SETTINGS("ShowAdvancedSettings", false),
 
+    UNDERLINE_LINKS("UnderlineLinks", true),
+
     FILE_NAME_CHECK("folder.check_filenames", true),
 
     CHECK_UPDATE("updatechecker.askfornewreleaseversion", true),

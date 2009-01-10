@@ -333,8 +333,7 @@ public class SettingsTab extends PFUIComponent {
                         blackListPattern)) {
 
                     // Confirm that the user wants to remove this.
-                    int result = DialogFactory.genericDialog(getController()
-                            .getUIController().getMainFrame().getUIComponent(),
+                    int result = DialogFactory.genericDialog(getController(),
                             Translation.getTranslation("remove_pattern.title"),
                             Translation.getTranslation("remove_pattern.prompt",
                                     pattern), options, 0, GenericDialogType.INFO); // Default
@@ -438,8 +437,7 @@ public class SettingsTab extends PFUIComponent {
                 + "\n\n" + sb.toString();
             String title = Translation
                 .getTranslation("settings_tab.add_patterns.title");
-            int result = DialogFactory.genericDialog(getUIController()
-                .getMainFrame().getUIComponent(), title, message, new String[]{
+            int result = DialogFactory.genericDialog(getController(), title, message, new String[]{
                 Translation.getTranslation("general.ok"),
                 Translation.getTranslation("general.cancel")}, 0,
                 GenericDialogType.QUESTION);
@@ -489,8 +487,7 @@ public class SettingsTab extends PFUIComponent {
      * @return true if should move.
      */
     private int shouldMoveContent() {
-        return DialogFactory.genericDialog(getController()
-            .getUIController().getMainFrame().getUIComponent(), Translation
+        return DialogFactory.genericDialog(getController(), Translation
             .getTranslation("settings_tab.move_content.title"),
             Translation.getTranslation("settings_tab.move_content"),
             new String[]{
@@ -525,8 +522,7 @@ public class SettingsTab extends PFUIComponent {
                         // Probably failed to create temp directory.
                         DialogFactory
                             .genericDialog(
-                                getController().getUIController()
-                                    .getMainFrame().getUIComponent(),
+                                getController(),
                                 Translation.getTranslation(
                                         "settings_tab.move_error.title"),
                                 Translation.getTranslation(
@@ -552,8 +548,7 @@ public class SettingsTab extends PFUIComponent {
                 .getLocalBase().getAbsolutePath(), newDirectory
                 .getAbsolutePath());
 
-        return DialogFactory.genericDialog(getController().getUIController()
-            .getMainFrame().getUIComponent(), title, message, new String[]{
+        return DialogFactory.genericDialog(getController(), title, message, new String[]{
             Translation.getTranslation("general.continue"),
             Translation.getTranslation("general.cancel")}, 0,
             GenericDialogType.INFO) == 0;
@@ -574,8 +569,7 @@ public class SettingsTab extends PFUIComponent {
         {
             int result = DialogFactory
                 .genericDialog(
-                    getController().getUIController().getMainFrame()
-                        .getUIComponent(),
+                    getController(),
                     Translation
                         .getTranslation("settings_tab.folder_not_empty.title"),
                     Translation.getTranslation(
@@ -647,8 +641,7 @@ public class SettingsTab extends PFUIComponent {
      *            the error
      */
     private void displayError(Exception e) {
-        DialogFactory.genericDialog(getController().getUIController()
-            .getMainFrame().getUIComponent(), Translation
+        DialogFactory.genericDialog(getController(), Translation
             .getTranslation("settings_tab.move_error.title"),
             Translation.getTranslation(
                     "settings_tab.move_error.other", e.getMessage()),
@@ -791,8 +784,7 @@ public class SettingsTab extends PFUIComponent {
 
             if (preview) {
 
-                int result = DialogFactory.genericDialog(getController()
-                        .getUIController().getMainFrame().getUIComponent(),
+                int result = DialogFactory.genericDialog(getController(),
                         Translation.getTranslation(
                                 "settings_tab.preview_warning_title"),
                         Translation.getTranslation(

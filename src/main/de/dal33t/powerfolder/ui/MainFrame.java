@@ -210,7 +210,7 @@ public class MainFrame extends PFUIComponent {
 
 			JPanel innerPanel = builder.getPanel();
 			NeverAskAgainResponse response = DialogFactory.genericDialog(
-                    uiComponent, Translation
+                    getController(), Translation
 							.getTranslation("dialog.ask_for_quit_on_x.title"),
 					innerPanel, options, 0, GenericDialogType.QUESTION,
 					Translation.getTranslation("general.neverAskAgain"));

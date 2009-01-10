@@ -83,6 +83,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     private JTextField locationTF;
     private ValueModel locationModel;
     private JComponent locationField;
+    private JCheckBox underlineLinkBox;
 
     private JCheckBox showAdvancedSettingsBox;
     private ValueModel showAdvancedSettingsModel;
@@ -182,10 +183,16 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         });
 
         locationField = createLocationField();
-        
+
         showAdvancedSettingsBox = BasicComponentFactory.createCheckBox(
             showAdvancedSettingsModel, Translation
                 .getTranslation("preferences.dialog.show_advanced"));
+
+        ValueModel ulModel = new ValueHolder(
+            PreferencesEntry.UNDERLINE_LINKS.getValueBoolean(getController()));
+        underlineLinkBox = BasicComponentFactory.createCheckBox(
+            new BufferedValueModel(ulModel, writeTrigger), Translation
+                .getTranslation("preferences.dialog.underline_link"));
 
         ValueModel urbModel = new ValueHolder(
             ConfigurationEntry.USE_RECYCLE_BIN.getValueBoolean(getController()));
@@ -247,7 +254,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         if (panel == null) {
             FormLayout layout = new FormLayout(
                 "right:100dlu, 3dlu, 150dlu, 3dlu, pref:grow",
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, top:pref, 3dlu, top:pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, top:pref, 3dlu, top:pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
 
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
@@ -284,6 +291,9 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
             row += 2;
             builder.add(showAdvancedSettingsBox, cc.xywh(3, row, 3, 1));
+
+            row += 2;
+            builder.add(underlineLinkBox, cc.xywh(3, row, 3, 1));
 
             row += 2;
             builder.add(useRecycleBinBox, cc.xywh(3, row, 3, 1));
@@ -394,6 +404,10 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         // setAdvanced
         PreferencesEntry.SHOW_ADVANCED_SETTINGS.setValue(getController(),
             showAdvancedSettingsBox.isSelected());
+
+        // setAdvanced
+        PreferencesEntry.UNDERLINE_LINKS.setValue(getController(),
+            underlineLinkBox.isSelected());
 
         // UseRecycleBin
         ConfigurationEntry.USE_RECYCLE_BIN.setValue(getController(), Boolean

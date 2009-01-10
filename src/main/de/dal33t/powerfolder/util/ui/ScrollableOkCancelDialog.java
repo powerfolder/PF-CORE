@@ -93,7 +93,8 @@ public class ScrollableOkCancelDialog extends BaseDialog {
         PanelBuilder builder = new PanelBuilder(layout);
 
         CellConstraints cc = new CellConstraints();
-        builder.add(LinkedTextBuilder.build(message).getPanel(), cc.xy(1, 1));
+        builder.add(LinkedTextBuilder.build(getController(), message).getPanel(),
+                cc.xy(1, 1));
         builder.add(scrollPane, cc.xy(1, 2));
         return builder.getPanel();
     }

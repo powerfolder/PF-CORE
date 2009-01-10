@@ -398,7 +398,7 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
             + '\n'
             + Translation.getTranslation(messageKey);
         NeverAskAgainResponse response = DialogFactory.genericDialog(
-            getController().getUIController().getMainFrame().getUIComponent(),
+            getController(),
             title, message, new String[]{"OK", "Cancel"}, 0,
             GenericDialogType.WARN, Translation
                 .getTranslation("general.neverAskAgain"));

@@ -21,6 +21,9 @@ package de.dal33t.powerfolder.ui.widget;
 
 import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.ui.ColorUtil;
+import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PreferencesEntry;
 
 import javax.swing.*;
 import java.awt.*;
@@ -38,43 +41,61 @@ import com.jgoodies.forms.factories.Borders;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.4 $
  */
-public class LinkLabel extends JLabel {
+public class LinkLabel extends PFComponent {
 
     private static final Logger log = Logger.getLogger(LinkLabel.class.getName());
     private String url;
+    private JLabel uiComponent;
+    private String text;
 
-    public LinkLabel(String aText, String aUrl) {
+    public LinkLabel(Controller controller, String text, String url) {
+        super(controller);
+        this.text = text;
+        this.url = url;
+        uiComponent = new JLabel();
 
-        setTextAndURL(aText, aUrl);
+        setTextAndURL(false);
 
-        addMouseListener(new MouseAdapter() {
-            public void mouseClicked(MouseEvent e) {
-                try {
-                    BrowserLauncher.openURL(url);
-                } catch (IOException e1) {
-                    log.log(Level.SEVERE, "IOException", e1);
-                }
-            }
-        });
+        uiComponent.addMouseListener(new MyMouseAdapter());
 
-        setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        uiComponent.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         // FIXME This is a hack because of "Fusch!"
-        setBorder(Borders.createEmptyBorder("0, 1px, 0, 0"));
+        uiComponent.setBorder(Borders.createEmptyBorder("0, 1px, 0, 0"));
     }
 
-    public void setTextAndURL(String text, String url) {
-        this.url = url;
-        Object object = UIManager.getColor("Label.foreground");
-        Color color;
-        if (object != null && object instanceof Color) {
-            color = (Color) object;
-        } else {
-            // Fall back, in case of UIManager problem.
-            color = getForeground();
-        }
-        String rgb = ColorUtil.getRgbForColor(color);
+    public JComponent getUiComponent() {
+        return uiComponent;
+    }
 
-        setText("<html><font color=\"" + rgb + "\"><a href=\"" + url + "\">" + text
-            + "</a></font></html>");
+    public void setTextAndURL(boolean mouseOver) {
+
+        if (mouseOver ||
+                PreferencesEntry.UNDERLINE_LINKS.getValueBoolean(getController())) {
+            Color color = ColorUtil.getTextForegroundColor();
+            String rgb = ColorUtil.getRgbForColor(color);
+            uiComponent.setText("<html><font color=\"" + rgb + "\"><a href=\"" +
+                    url + "\">" + text + "</a></font></html>");
+        } else {
+            uiComponent.setText(text);
+        }
+    }
+
+    private class MyMouseAdapter extends MouseAdapter {
+        public void mouseClicked(MouseEvent e) {
+            try {
+                BrowserLauncher.openURL(url);
+            } catch (IOException e1) {
+                log.log(Level.SEVERE, "IOException", e1);
+            }
+        }
+
+        public void mouseEntered(MouseEvent e) {
+            setTextAndURL(true);
+        }
+
+        public void mouseExited(MouseEvent e) {
+            setTextAndURL(false);
+        }
+
     }
 }

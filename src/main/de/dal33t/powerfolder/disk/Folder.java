@@ -1047,8 +1047,7 @@ public class Folder extends PFComponent {
                 String neverShowAgainText = Translation
                     .getTranslation("general.neverAskAgain");
                 NeverAskAgainResponse response = DialogFactory.genericDialog(
-                    getController().getUIController().getMainFrame()
-                        .getUIComponent(), title, message,
+                    getController(), title, message,
                     new String[]{Translation.getTranslation("general.ok")}, 0,
                     GenericDialogType.INFO, neverShowAgainText);
                 if (response.isNeverAskAgain()) {

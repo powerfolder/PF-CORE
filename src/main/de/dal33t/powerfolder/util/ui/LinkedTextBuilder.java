@@ -27,6 +27,7 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
 import de.dal33t.powerfolder.util.StringUtils;
+import de.dal33t.powerfolder.Controller;
 
 /**
  * helper class to create a text with links.
@@ -40,30 +41,28 @@ public class LinkedTextBuilder {
      * 
      * @return PanelBuilder containing the generated JPanel
      */
-    public static PanelBuilder build(String text) {
-        int row = 1;
+    public static PanelBuilder build(Controller controller, String text) {
         CellConstraints cc = new CellConstraints();
-        String[] txtTokens;
 
         FormLayout layout = new FormLayout("pref");
         PanelBuilder builder = new PanelBuilder(layout);
         // split into tokens
-        txtTokens = text.split("\n"); // text items separated by \n
+        String[] txtTokens = text.split("\n");
 
-        for (int i = 0; i < txtTokens.length; i++) {
-            String lineText = txtTokens[i];
+        int row = 1;
+        for (String lineText : txtTokens) {
             // Make it simple stoopid. A line can be a link or a text.
             // Simplifies things much
             if (lineText.toLowerCase().startsWith("http://")) {
                 builder.appendRow("pref");
-                builder.add(new LinkLabel(txtTokens[i], txtTokens[i]), cc.xy(1,
-                    row));
+                builder.add(new LinkLabel(controller, lineText, lineText).getUiComponent(), cc.xy(1,
+                        row));
             } else if (StringUtils.isEmpty(lineText.trim())) {
                 // Add gap
                 builder.appendRow("4dlu");
             } else {
                 builder.appendRow("pref");
-                builder.add(new JLabel(txtTokens[i]), cc.xy(1, row));
+                builder.add(new JLabel(lineText), cc.xy(1, row));
             }
             row += 1;
         }

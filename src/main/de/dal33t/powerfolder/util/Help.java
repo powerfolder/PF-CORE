@@ -23,8 +23,6 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.jgoodies.forms.factories.Borders;
-
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.Icons;
@@ -75,10 +73,8 @@ public class Help {
     public static LinkLabel createQuickstartGuideLabel(Controller controller,
         String labelText)
     {
-        LinkLabel label = new LinkLabel(labelText,
-            ConfigurationEntry.PROVIDER_QUICKSTART_URL.getValue(controller));
-        label.setBorder(Borders.createEmptyBorder("0,1,0,0"));
-        return label;
+        return new LinkLabel(controller, labelText,
+           ConfigurationEntry.PROVIDER_QUICKSTART_URL.getValue(controller));
     }
 
     /**
@@ -96,7 +92,7 @@ public class Help {
     {
         String toolTips = Translation.getTranslation("general.what_is_this");
         return new LinkJButton(Icons.QUESTION, toolTips,
-            ConfigurationEntry.PROVIDER_WIKI_URL.getValue(controller) + "/"
+            ConfigurationEntry.PROVIDER_WIKI_URL.getValue(controller) + '/'
                 + article);
     }
 }

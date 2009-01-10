@@ -30,6 +30,7 @@ import static de.dal33t.powerfolder.util.ui.GenericDialogType.ERROR;
 import static de.dal33t.powerfolder.util.ui.GenericDialogType.INFO;
 import static de.dal33t.powerfolder.util.ui.GenericDialogType.QUESTION;
 import static de.dal33t.powerfolder.util.ui.GenericDialogType.WARN;
+import de.dal33t.powerfolder.Controller;
 
 import javax.swing.*;
 import java.awt.*;
