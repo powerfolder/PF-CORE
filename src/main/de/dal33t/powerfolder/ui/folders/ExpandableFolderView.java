@@ -49,6 +49,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.Date;
 
 /**
  * Class to render expandable view of a folder.
@@ -73,6 +74,7 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
     private JLabel filesLabel;
     private JLabel transferModeLabel;
     private JLabel syncPercentLabel;
+    private JLabel syncDateLabel;
     private JLabel localSizeLabel;
     private JLabel totalSizeLabel;
     private JLabel recycleLabel;
@@ -208,7 +210,7 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
 
         // Build lower detials with line border.
         FormLayout lowerLayout = new FormLayout("3dlu, pref, pref:grow, 3dlu, pref, 3dlu",
-            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, pref");
+            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, pref");
         PanelBuilder lowerBuilder = new PanelBuilder(lowerLayout);
 
         lowerBuilder.addSeparator(null, cc.xywh(1, 1, 6, 1));
@@ -216,25 +218,27 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
         lowerBuilder.add(syncPercentLabel, cc.xy(2, 3));
         lowerBuilder.add(openFilesInformationButton, cc.xy(5, 3));
 
-        lowerBuilder.add(filesLabel, cc.xy(2, 5));
+        lowerBuilder.add(syncDateLabel, cc.xy(2, 5));
 
-        lowerBuilder.add(localSizeLabel, cc.xy(2, 7));
+        lowerBuilder.add(filesLabel, cc.xy(2, 7));
 
-        lowerBuilder.add(totalSizeLabel, cc.xy(2, 9));
+        lowerBuilder.add(localSizeLabel, cc.xy(2, 9));
 
-        lowerBuilder.add(recycleLabel, cc.xy(2, 11));
+        lowerBuilder.add(totalSizeLabel, cc.xy(2, 11));
 
-        lowerBuilder.addSeparator(null, cc.xywh(2, 13, 4, 1));
+        lowerBuilder.add(recycleLabel, cc.xy(2, 13));
 
-        lowerBuilder.add(membersLabel.getUIComponent(), cc.xy(2, 15));
-        lowerBuilder.add(inviteButton, cc.xy(5, 15));
+        lowerBuilder.addSeparator(null, cc.xywh(2, 15, 4, 1));
 
-        lowerBuilder.addSeparator(null, cc.xywh(2, 17, 4, 1));
+        lowerBuilder.add(membersLabel.getUIComponent(), cc.xy(2, 17));
+        lowerBuilder.add(inviteButton, cc.xy(5, 17));
 
-        lowerBuilder.add(transferModeLabel, cc.xy(2, 19));
-        lowerBuilder.add(openSettingsInformationButton, cc.xy(5, 19));
+        lowerBuilder.addSeparator(null, cc.xywh(2, 19, 4, 1));
 
-        lowerBuilder.add(osComponent.getUIComponent(), cc.xywh(2, 20, 4, 1));
+        lowerBuilder.add(transferModeLabel, cc.xy(2, 21));
+        lowerBuilder.add(openSettingsInformationButton, cc.xy(5, 21));
+
+        lowerBuilder.add(osComponent.getUIComponent(), cc.xywh(2, 22, 4, 1));
 
         JPanel lowerPanel = lowerBuilder.getPanel();
         lowerPanel.setBackground(SystemColor.text);
@@ -299,6 +303,7 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
         filesLabel = new JLabel();
         transferModeLabel = new JLabel();
         syncPercentLabel = new JLabel();
+        syncDateLabel = new JLabel();
         localSizeLabel = new JLabel();
         totalSizeLabel = new JLabel();
         recycleLabel = new JLabel();
@@ -378,15 +383,18 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
      */
     private void updateStatsDetails() {
 
-        String syncText;
+        String syncPercentText;
+        String syncDateText;
         String localSizeString;
         String totalSizeString;
         String recycleLabelText;
         String filesAvailableLabelText;
         if (folder == null) {
 
-            syncText = Translation.getTranslation(
+            syncPercentText = Translation.getTranslation(
                     "exp_folder_view.synchronized", "?");
+            syncDateText = Translation.getTranslation(
+                    "exp_folder_view.last_synchronized", "?");
             localSizeString = "?";
             totalSizeString = "?";
             recycleLabelText = Translation.getTranslation("exp_folder_view.recycled",
@@ -401,8 +409,26 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
             if (sync > 100) {
                 sync = 100;
             }
-            syncText = Translation.getTranslation(
+            syncPercentText = Translation.getTranslation(
                     "exp_folder_view.synchronized", sync);
+
+            Date date = folder.getStatistic().getEstimatedSyncDate();
+            String formattedDate;
+            if (date == null) {
+                formattedDate = "-";
+            } else {
+                formattedDate = Format.formatDate(date);
+            }
+            folder.getStatistic().getEstimatedSyncDate();
+            if (Double.compare(sync, 100.0) == 0) {
+                syncDateText = Translation.getTranslation(
+                        "exp_folder_view.last_synchronized",
+                        formattedDate);
+            } else {
+                syncDateText = Translation.getTranslation(
+                        "exp_folder_view.estimated_synchronized",
+                        formattedDate);
+            }
 
             long localSize = statistic.getLocalSize();
             localSizeString = Format.formatBytesShort(localSize);
@@ -430,7 +456,8 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
             }
         }
 
-        syncPercentLabel.setText(syncText);
+        syncPercentLabel.setText(syncPercentText);
+        syncDateLabel.setText(syncDateText);
         localSizeLabel.setText(Translation.getTranslation("exp_folder_view.local",
                 localSizeString));
         totalSizeLabel.setText(Translation.getTranslation("exp_folder_view.total",

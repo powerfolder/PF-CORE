@@ -40,6 +40,7 @@ import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.TransferCounter;
+import de.dal33t.powerfolder.util.ui.SimpleTimeEstimator;
 
 /**
  * Class to hold pre-calculated static data for a folder. Only freshly
@@ -61,6 +62,7 @@ public class FolderStatistic extends PFComponent {
 
     private CalculationResult calculating;
     private CalculationResult current;
+    private SimpleTimeEstimator estimator;
 
     /**
      * The Date of the last change to a folder file.
@@ -75,12 +77,13 @@ public class FolderStatistic extends PFComponent {
     private long lastCalc;
     private MyTimerTask task;
 
-    FolderStatistic(final Folder folder) {
+    FolderStatistic(Folder folder) {
         super(folder.getController());
         // Empty at start
-        this.current = new CalculationResult();
+        current = new CalculationResult();
+        estimator = new SimpleTimeEstimator();
         this.folder = folder;
-        this.downloadCounter = new TransferCounter();
+        downloadCounter = new TransferCounter();
 
         folder.addFolderListener(new MyFolderListener());
         folder.addMembershipListener(new MyFolderMembershipListener());
@@ -257,7 +260,6 @@ public class FolderStatistic extends PFComponent {
     }
 
     private void setCalculateIn(long timeToWait) {
-        // log().war
         if (task != null) {
             return;
         }
@@ -333,7 +335,7 @@ public class FolderStatistic extends PFComponent {
         return lastFileChangeDate;
     }
 
-    private boolean inSync(FileInfo fInfo, FileInfo newestFileInfo) {
+    private static boolean inSync(FileInfo fInfo, FileInfo newestFileInfo) {
         if (fInfo == null) {
             return false;
         }
@@ -343,8 +345,7 @@ public class FolderStatistic extends PFComponent {
     private void calculateMemberStats(Member member,
         Collection<Member> alreadyConsidered)
     {
-        Collection<FileInfo> files;
-        files = folder.getFilesAsCollection(member);
+        Collection<FileInfo> files = folder.getFilesAsCollection(member);
         if (files == null) {
             logFiner("Unable to calc stats on member, no filelist yet: "
                 + member);
@@ -459,7 +460,7 @@ public class FolderStatistic extends PFComponent {
         for (Member member : members) {
             Long sizeInSync = calculating.sizesInSync.get(member);
             if (sizeInSync == null) {
-                calculating.syncPercentages.put(member, -1d);
+                calculating.syncPercentages.put(member, -1.0d);
                 continue;
             }
             double sync = ((double) sizeInSync) / calculating.totalSize * 100;
@@ -486,10 +487,12 @@ public class FolderStatistic extends PFComponent {
             if (isFiner()) {
                 logFiner(member.getNick() + ": size: "
                     + calculating.sizes.get(member) + ", size(insync): "
-                    + sizeInSync + ": " + sync + "%");
+                    + sizeInSync + ": " + sync + '%');
             }
         }
         calculating.totalSyncPercentage = totalSync / considered;
+        calculating.estimatedSyncDate = estimator.updateEstimate(
+                calculating.totalSyncPercentage);
     }
 
     public long getTotalSize() {
@@ -545,8 +548,8 @@ public class FolderStatistic extends PFComponent {
      * @return number of local files
      */
     public int getLocalFilesCount() {
-        Integer l = current.filesCount.get(getController().getMySelf());
-        return l != null ? l : 0;
+        Integer integer = current.filesCount.get(getController().getMySelf());
+        return integer != null ? integer : 0;
     }
 
     /**
@@ -575,6 +578,13 @@ public class FolderStatistic extends PFComponent {
         return current.totalSyncPercentage;
     }
 
+    /**
+     * @return the estimated date the folder will be in sync.
+     * May be null.
+     */
+    public Date getEstimatedSyncDate() {
+        return current.estimatedSyncDate;
+    }
 
     /**
      * @return my ACTUAL size of this folder.
@@ -631,6 +641,9 @@ public class FolderStatistic extends PFComponent {
         // The total sync percentage of the folder
         public double totalSyncPercentage;
 
+        // Date at which the folder should be synchronized.
+        public Date estimatedSyncDate;
+
         // Finer values
         public int incomingFilesCount;
 
@@ -665,6 +678,6 @@ public class FolderStatistic extends PFComponent {
     // General ****************************************************************
 
     public String toString() {
-        return "Folder statistic on '" + folder.getName() + "'";
+        return "Folder statistic on '" + folder.getName() + '\'';
     }
 }
