@@ -22,11 +22,13 @@ package de.dal33t.powerfolder.test.util;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Date;
 
 import junit.framework.TestCase;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.ui.TimeEstimator;
+import de.dal33t.powerfolder.util.ui.SimpleTimeEstimator;
 
 /**
  * Test for the Util class.
@@ -67,6 +69,30 @@ public class UtilTest extends TestCase {
         byte[] output = Util.mergeArrayList(arrayList);
         String outputStr = new String(output, "UTF-8");
         assertEquals("TEST1|||HEYHOXXX", outputStr);
+    }
+
+    public void testSimpleTimeEstimation() throws InterruptedException {
+        SimpleTimeEstimator estimator = new SimpleTimeEstimator();
+        long now = new Date().getTime();
+        long target = now + 10000;
+        int nullCount = 0;
+        int actualCount = 0;
+        for (int i = 0; i <= 100; i++) {
+            estimator.updateEstimate(i);
+            Date value = (Date) estimator.getEstimatedDateVM().getValue();
+            if (value != null) {
+                assertSame(target / 1000, value.getTime() / 1000);
+            }
+            if (value == null) {
+                // First attempt cannot calculate a date.
+                nullCount++;
+            } else {
+                actualCount++;
+            }
+            Thread.sleep(100);
+        }
+        assertEquals(100, actualCount);
+        assertEquals(1, nullCount);
     }
 
     public void testTimeEstimation() throws InterruptedException {
