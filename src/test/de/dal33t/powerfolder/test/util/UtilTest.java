@@ -78,8 +78,7 @@ public class UtilTest extends TestCase {
         int nullCount = 0;
         int actualCount = 0;
         for (int i = 0; i <= 100; i++) {
-            estimator.updateEstimate(i);
-            Date value = (Date) estimator.getEstimatedDateVM().getValue();
+            Date value = estimator.updateEstimate(i);
             if (value != null) {
                 assertSame(target / 1000, value.getTime() / 1000);
             }
