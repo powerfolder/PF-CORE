@@ -193,7 +193,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         return false;
     }
 
-    public boolean validateNext(List list) {
+    public boolean validateNext(List<WizardPanel> list) {
         File localBase = new File((String) locationModel.getValue());
         getWizardContext().setAttribute(
             WizardContextAttributes.FOLDER_LOCAL_BASE, localBase);
@@ -691,7 +691,6 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
                 // Selecting the radiobutton displays the dir chooser.
                 customRB.setSelected(true);
             }
-            displayChooseDirectory();
         }
     }
 
