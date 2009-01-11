@@ -661,13 +661,7 @@ public class SettingsTab extends PFUIComponent {
                 && serverClient.isLastLoginOK()) {
             enabled = true;
 
-            boolean osConfigured = false;
-            for (FolderInfo folderInfo : serverClient.getOnlineFolders()) {
-                if (folder.getInfo().equals(folderInfo)) {
-                    osConfigured = true;
-                    break;
-                }
-            }
+            boolean osConfigured = serverClient.hasJoined(folder);
             confOSAction.configure(!osConfigured);
         }
         confOSAction.setEnabled(enabled);
