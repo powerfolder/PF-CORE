@@ -54,7 +54,7 @@ public class LinkLabel extends PFComponent {
         this.url = url;
         uiComponent = new JLabel();
 
-        setTextAndURL(false);
+        setText(false);
 
         uiComponent.addMouseListener(new MyMouseAdapter());
 
@@ -63,11 +63,17 @@ public class LinkLabel extends PFComponent {
         uiComponent.setBorder(Borders.createEmptyBorder("0, 1px, 0, 0"));
     }
 
+    public void setTextAndURL(String text, String url) {
+        this.text = text;
+        this.url = url;
+        setText(false);
+    }
+
     public JComponent getUiComponent() {
         return uiComponent;
     }
 
-    public void setTextAndURL(boolean mouseOver) {
+    private void setText(boolean mouseOver) {
 
         if (mouseOver ||
                 PreferencesEntry.UNDERLINE_LINKS.getValueBoolean(getController())) {
@@ -90,11 +96,11 @@ public class LinkLabel extends PFComponent {
         }
 
         public void mouseEntered(MouseEvent e) {
-            setTextAndURL(true);
+            setText(true);
         }
 
         public void mouseExited(MouseEvent e) {
-            setTextAndURL(false);
+            setText(false);
         }
 
     }
