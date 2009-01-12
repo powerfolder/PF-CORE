@@ -19,10 +19,11 @@
 */
 package de.dal33t.powerfolder.ui.information.downloads;
 
+import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.model.TransferManagerModel;
 import de.dal33t.powerfolder.ui.render.SortedTableHeaderRenderer;
-import de.dal33t.powerfolder.ui.render.MultisourceDownloadTableCellRenderer;
+import de.dal33t.powerfolder.ui.render.TransferTableCellRenderer;
 
 import javax.swing.*;
 import javax.swing.table.TableCellRenderer;
@@ -31,7 +32,7 @@ import java.awt.*;
 
 /**
  * A Table for displaying the downloads.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.3 $
  */
@@ -39,7 +40,7 @@ public class DownloadsTable extends JTable {
 
     /**
      * Initalizes
-     * 
+     *
      * @param transferManagerModel
      */
     public DownloadsTable(TransferManagerModel transferManagerModel) {
@@ -51,9 +52,9 @@ public class DownloadsTable extends JTable {
         setShowGrid(false);
 
         // Setup renderer
-        TableCellRenderer renderer = new MultisourceDownloadTableCellRenderer(
+        TableCellRenderer transferTableCellRenderer = new TransferTableCellRenderer(
             transferManagerModel.getController());
-        setDefaultRenderer(MultisourceDownload.class, renderer);
+        setDefaultRenderer(Download.class, transferTableCellRenderer);
 
         // Set table columns
         setupColumns();

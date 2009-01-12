@@ -185,19 +185,19 @@ public class DownloadsTablePanel extends PFUIComponent {
 
                         // Do in two passes so changes to the model do not affect
                         // the process.
-                        List<MultisourceDownload> downloadsToClear = new
-                                ArrayList<MultisourceDownload>();
+                        List<Download> downloadsToClear = new ArrayList<Download>();
 
                         for (int i = 0; i < table.getRowCount(); i++) {
                             if (noneSelected || table.isRowSelected(i)) {
-                                MultisourceDownload dl = tableModel.getDownloadAtRow(i);
+                                Download dl = tableModel.getDownloadAtRow(i);
                                 if (dl.isCompleted()) {
                                     downloadsToClear.add(dl);
                                 }
                             }
                         }
-                        for (MultisourceDownload dl : downloadsToClear) {
-                            dl.clearCompletedDownloads(getController().getTransferManager());
+                        for (Download dl : downloadsToClear) {
+                            getController().getTransferManager()
+                                    .clearCompletedDownload(dl.getDownloadManager());
                         }
                         return null;
                     }
@@ -218,7 +218,7 @@ public class DownloadsTablePanel extends PFUIComponent {
 
     /**
      * Returns true if the table has any selected incomplete downloads.
-     * 
+     *
      * @return
      */
     public boolean isIncompleteSelected() {
@@ -229,7 +229,7 @@ public class DownloadsTablePanel extends PFUIComponent {
         boolean rowsSelected = rows.length > 0;
         if (rowsSelected) {
             for (int row : rows) {
-                MultisourceDownload download = tableModel.getDownloadAtRow(row);
+                Download download = tableModel.getDownloadAtRow(row);
                 if (download == null) {
                     continue;
                 }
@@ -244,7 +244,7 @@ public class DownloadsTablePanel extends PFUIComponent {
 
     /**
      * Returns true if a single completed download is selected.
-     * 
+     *
      * @return
      */
     public boolean isSingleCompleteSelected() {
@@ -254,7 +254,7 @@ public class DownloadsTablePanel extends PFUIComponent {
         int[] rows = table.getSelectedRows();
         boolean singleRowSelected = rows.length == 1;
         if (singleRowSelected) {
-            MultisourceDownload download = tableModel.getDownloadAtRow(rows[0]);
+            Download download = tableModel.getDownloadAtRow(rows[0]);
             if (download.isCompleted()) {
                 return true;
             }
@@ -272,9 +272,9 @@ public class DownloadsTablePanel extends PFUIComponent {
         int[] rows = table.getSelectedRows();
         boolean singleRowSelected = rows.length == 1;
         if (singleRowSelected) {
-            MultisourceDownload download = tableModel.getDownloadAtRow(rows[0]);
+            Download download = tableModel.getDownloadAtRow(rows[0]);
             if (download.isCompleted()) {
-                File file = download.getFileInfo().getDiskFile(
+                File file = download.getFile().getDiskFile(
                         getController().getFolderRepository());
                 if (file != null && file.exists()) {
                     try {
@@ -298,7 +298,7 @@ public class DownloadsTablePanel extends PFUIComponent {
         boolean rowsSelected = rows.length > 0;
         if (rowsSelected) {
             for (int row : rows) {
-                MultisourceDownload download = tableModel.getDownloadAtRow(row);
+                Download download = tableModel.getDownloadAtRow(row);
                 if (download == null) {
                     continue;
                 }

@@ -32,7 +32,6 @@ import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.compare.ReverseComparator;
 import de.dal33t.powerfolder.util.compare.TransferComparator;
-import de.dal33t.powerfolder.util.compare.MultisourceDownloadComparator;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 import javax.swing.*;
@@ -44,7 +43,7 @@ import java.util.*;
 
 /**
  * A Tablemodel adapter which acts upon a transfermanager.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.11.2.1 $
  */
@@ -60,7 +59,7 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
 
     private static final int UPDATE_TIME = 1000;
     private final Collection<TableModelListener> listeners;
-    private final List<MultisourceDownload> downloads;
+    private final List<Download> downloads;
     private int fileInfoComparatorType = -1;
     private boolean sortAscending = true;
     private int sortColumn;
@@ -74,8 +73,7 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
         Reject.ifNull(model, "Model is null");
         listeners = Collections
             .synchronizedCollection(new LinkedList<TableModelListener>());
-        downloads = Collections.synchronizedList(
-                new ArrayList<MultisourceDownload>());
+        downloads = Collections.synchronizedList(new ArrayList<Download>());
         // Add listener
         model.getTransferManager().addListener(new MyTransferManagerListener());
 
@@ -85,7 +83,7 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
 
     /**
      * Initalizes the model upon a transfer manager
-     * 
+     *
      * @param tm
      */
     public void initialize() {
@@ -101,22 +99,20 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
 
     /**
      * Add all if there is not an identical download.
-     * 
+     *
      * @param dls
      */
     private void addAll(Collection<Download> dls) {
         for (Download dl : dls) {
             boolean insert = true;
-            for (MultisourceDownload msDownload : downloads) {
-                if (dl.getFile().isCompletelyIdentical(msDownload.getFileInfo())) {
+            for (Download download : downloads) {
+                if (dl.getFile().isCompletelyIdentical(download.getFile())) {
                     insert = false;
-                    // Add so that this partner is known.
-                    msDownload.addDownload(dl);
                     break;
                 }
             }
             if (insert) {
-                downloads.add(new MultisourceDownload(dl));
+                downloads.add(dl);
             }
         }
     }
@@ -128,7 +124,7 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
      * @return the download at the specified download row. Or null if the
      *         rowIndex exceeds the table rows
      */
-    public MultisourceDownload getDownloadAtRow(int rowIndex) {
+    public Download getDownloadAtRow(int rowIndex) {
         synchronized (downloads) {
             if (rowIndex >= 0 && rowIndex < downloads.size()) {
                 return downloads.get(rowIndex);
@@ -137,9 +133,9 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
         return null;
     }
 
-    public boolean sortBy(int columnIndex) {
-        sortColumn = columnIndex;
-        switch (columnIndex) {
+    public boolean sortBy(int modelColumnNo) {
+        sortColumn = modelColumnNo;
+        switch (modelColumnNo) {
             case COLTYPE :
                 return sortMe(TransferComparator.BY_EXT);
             case COLFILE :
@@ -161,7 +157,7 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
     /**
      * Re-sorts the file list with the new comparator only if comparator differs
      * from old one
-     * 
+     *
      * @param newComparator
      * @return if the table was freshly sorted
      */
@@ -181,8 +177,8 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
 
     private boolean sort() {
         if (fileInfoComparatorType != -1) {
-            MultisourceDownloadComparator comparator = new
-                    MultisourceDownloadComparator(fileInfoComparatorType);
+            TransferComparator comparator = new TransferComparator(
+                fileInfoComparatorType);
 
             if (sortAscending) {
                 Collections.sort(downloads, comparator);
@@ -242,8 +238,8 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
         return null;
     }
 
-    public Class<MultisourceDownload> getColumnClass(int columnIndex) {
-        return MultisourceDownload.class;
+    public Class<Download> getColumnClass(int columnIndex) {
+        return Download.class;
     }
 
     public Object getValueAt(int rowIndex, int columnIndex) {
@@ -253,19 +249,19 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
                     + ", downloads " + downloads.size());
             return null;
         }
-        MultisourceDownload download = downloads.get(rowIndex);
+        Download download = downloads.get(rowIndex);
         switch (columnIndex) {
             case COLTYPE :
             case COLFILE :
-                return download.getFileInfo();
+                return download.getFile();
             case COLPROGRESS :
                 return download;
             case COLSIZE :
-                return download.getFileInfo().getSize();
+                return download.getFile().getSize();
             case COLFOLDER :
-                return download.getFileInfo().getFolderInfo();
+                return download.getFile().getFolderInfo();
             case COLFROM :
-                return download.getPartners();
+                return download.getPartner();
         }
         return null;
     }
@@ -311,7 +307,6 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
      * fire change on whole model
      */
     private void rowsUpdatedAll() {
-        System.out.println("hghg updateall");
         rowsUpdated(0, downloads.size());
     }
 
@@ -364,22 +359,19 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
      * @param download
      */
     private void removeDownload(Download download) {
-        int index = -1;
+        int index;
         synchronized (downloads) {
-            int i = 0;
-            for (MultisourceDownload multisourceDownload : downloads) {
-                if (multisourceDownload.isForDownload(download)) {
-                    index = i;
-                    break;
-                }
-                i++;
-            }
+            index = downloads.indexOf(download);
             if (index >= 0) {
                 downloads.remove(index);
+            } else {
+                logSevere(
+                    "Unable to remove download from tablemodel, not found: "
+                        + download);
             }
         }
         if (index >= 0) {
-            rowsUpdatedAll();
+            rowRemoved(index);
         }
     }
 
@@ -389,7 +381,7 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
 
     /**
      * Listener on Transfer manager with new event system
-     * 
+     *
      * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      */
     private class MyTransferManagerListener extends TransferAdapter {
@@ -433,27 +425,19 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
 
             // Update table.
             Download dl = event.getDownload();
-            int index = 0;
-            int i = 0;
-            for (MultisourceDownload download : downloads) {
-                if (download.getFileInfo().equals(dl.getFile())) {
-                    index = i;
-                    break;
-                }
-                i++;
-            }
+            int index = downloads.indexOf(dl);
             if (index >= 0) {
 
                 // Remove existing downloads from all partners, then add a
                 // single complete download. This is a temporary fix; should
                 // really coalesce downloads into one line for each completely
                 // identical fileinfo.
-                for (Iterator<MultisourceDownload> iter = downloads.iterator(); iter
+                for (Iterator<Download> iter = downloads.iterator(); iter
                     .hasNext();)
                 {
-                    MultisourceDownload download = iter.next();
-                    if (dl.getFile().isCompletelyIdentical(
-                            download.getFileInfo())) {
+                    Download download = iter.next();
+                    if (dl.getFile().isCompletelyIdentical(download.getFile()))
+                    {
                         iter.remove();
                     }
                 }
@@ -477,15 +461,13 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
             int index;
             synchronized (downloads) {
                 index = findCompletelyIdenticalDownloadIndex(dl);
-                MultisourceDownload alreadyDl = index >= 0
-                        ? downloads.get(index) : null;
+                Download alreadyDl = index >= 0 ? downloads.get(index) : null;
                 if (alreadyDl == null) {
-                    downloads.add(new MultisourceDownload(dl));
+                    downloads.add(dl);
                     added = true;
                 } else {
                     // Update if completely identical found
-                    MultisourceDownload download = downloads.get(index);
-                    download.addDownload(dl);
+                    downloads.set(index, dl);
                 }
             }
 
@@ -498,7 +480,7 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
 
         /**
          * Searches downloads for a download with identical FileInfo.
-         * 
+         *
          * @param dl
          *            download to search for identical copy
          * @return index of the download with identical FileInfo, -1 if not
@@ -507,9 +489,10 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
         private int findCompletelyIdenticalDownloadIndex(Download dl) {
             synchronized (downloads) {
                 for (int i = 0; i < downloads.size(); i++) {
-                    MultisourceDownload download = downloads.get(i);
-                    if (download.getFileInfo().isCompletelyIdentical(
-                            dl.getFile())) {
+                    Download download = downloads.get(i);
+                    if (download.getFile().isCompletelyIdentical(dl.getFile())
+                        && download.getPartner().equals(dl.getPartner()))
+                    {
                         return i;
                     }
                 }

@@ -32,7 +32,6 @@ import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.transfer.Upload;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.information.downloads.DownloadsTableModel;
-import de.dal33t.powerfolder.ui.information.downloads.MultisourceDownload;
 import de.dal33t.powerfolder.ui.information.uploads.UploadsTableModel;
 
 public class TransferManagerModel extends PFUIComponent {
@@ -111,7 +110,7 @@ public class TransferManagerModel extends PFUIComponent {
 
     /**
      * Count the visible completed downloads for a folder.
-     * 
+     *
      * @param folder
      * @return
      */
@@ -121,8 +120,8 @@ public class TransferManagerModel extends PFUIComponent {
         FolderRepository folderRepository = getController()
             .getFolderRepository();
         for (int i = 0; i < downloadCount; i++) {
-            MultisourceDownload dl = downloadsTableModel.getDownloadAtRow(i);
-            Folder f = dl.getFileInfo().getFolder(folderRepository);
+            Download dl = downloadsTableModel.getDownloadAtRow(i);
+            Folder f = dl.getFile().getFolder(folderRepository);
             if (f == null) {
                 continue;
             }
@@ -135,14 +134,14 @@ public class TransferManagerModel extends PFUIComponent {
 
     /**
      * Count visible completed downloads.
-     * 
+     *
      * @return
      */
     public int countCompletedDownloads() {
         int downloadCount = downloadsTableModel.getRowCount();
         int completedDownloadCount = 0;
         for (int i = 0; i < downloadCount; i++) {
-            MultisourceDownload dl = downloadsTableModel.getDownloadAtRow(i);
+            Download dl = downloadsTableModel.getDownloadAtRow(i);
             if (dl.isCompleted()) {
                 completedDownloadCount++;
             }
@@ -152,14 +151,14 @@ public class TransferManagerModel extends PFUIComponent {
 
     /**
      * Count visible active downloads.
-     * 
+     *
      * @return
      */
     public int countActiveDownloads() {
         int downloadCount = downloadsTableModel.getRowCount();
         int activeDownloadCount = 0;
         for (int i = 0; i < downloadCount; i++) {
-            MultisourceDownload dl = downloadsTableModel.getDownloadAtRow(i);
+            Download dl = downloadsTableModel.getDownloadAtRow(i);
             if (dl.isPending() || dl.isQueued()) {
                 activeDownloadCount++;
             }
@@ -169,7 +168,7 @@ public class TransferManagerModel extends PFUIComponent {
 
     /**
      * Count total visible downloads.
-     * 
+     *
      * @return
      */
     public int countTotalDownloads() {
@@ -238,7 +237,7 @@ public class TransferManagerModel extends PFUIComponent {
         int activeDownloadCount = 0;
         int completedDownloadsCount = 0;
         for (int i = 0; i < downloadCount; i++) {
-            MultisourceDownload dl = downloadsTableModel.getDownloadAtRow(i);
+            Download dl = downloadsTableModel.getDownloadAtRow(i);
             if (dl.isStarted() && !dl.isCompleted() && !dl.isBroken())
             {
                 activeDownloadCount++;
