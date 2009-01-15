@@ -27,16 +27,16 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
-import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.transfer.Upload;
+import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.ui.information.downloads.DownloadsTableModel;
+import de.dal33t.powerfolder.ui.information.downloads.DownloadManagersTableModel;
 import de.dal33t.powerfolder.ui.information.uploads.UploadsTableModel;
 
 public class TransferManagerModel extends PFUIComponent {
     private TransferManager transferManager;
-    private DownloadsTableModel downloadsTableModel;
+    private DownloadManagersTableModel downloadManagersTableModel;
     private UploadsTableModel uploadsTableModel;
     private ValueModel downloadsAutoCleanupModel;
     private ValueModel uploadsAutoCleanupModel;
@@ -66,7 +66,7 @@ public class TransferManagerModel extends PFUIComponent {
         downloadsAutoCleanupModel
             .setValue(ConfigurationEntry.DOWNLOADS_AUTO_CLEANUP
                 .getValueBoolean(getController()));
-        downloadsTableModel = new DownloadsTableModel(this);
+        downloadManagersTableModel = new DownloadManagersTableModel(this);
         uploadsAutoCleanupModel = new ValueHolder();
         uploadsAutoCleanupModel
             .setValue(ConfigurationEntry.UPLOADS_AUTO_CLEANUP
@@ -81,7 +81,7 @@ public class TransferManagerModel extends PFUIComponent {
         // Listen on transfer manager
         transferManager.addListener(new MyTransferManagerListener());
         uploadsTableModel.initialize();
-        downloadsTableModel.initialize();
+        downloadManagersTableModel.initialize();
         updateDownloadsTreeNode();
         updateUploadsTreeNode();
     }
@@ -92,8 +92,8 @@ public class TransferManagerModel extends PFUIComponent {
         return getController().getTransferManager();
     }
 
-    public DownloadsTableModel getDownloadsTableModel() {
-        return downloadsTableModel;
+    public DownloadManagersTableModel getDownloadsTableModel() {
+        return downloadManagersTableModel;
     }
 
     public ValueModel getDownloadsAutoCleanupModel() {
@@ -115,17 +115,17 @@ public class TransferManagerModel extends PFUIComponent {
      * @return
      */
     public int countCompletedDownloads(Folder folder) {
-        int downloadCount = downloadsTableModel.getRowCount();
+        int downloadCount = downloadManagersTableModel.getRowCount();
         int completedDownloadCount = 0;
         FolderRepository folderRepository = getController()
             .getFolderRepository();
         for (int i = 0; i < downloadCount; i++) {
-            Download dl = downloadsTableModel.getDownloadAtRow(i);
-            Folder f = dl.getFile().getFolder(folderRepository);
+            DownloadManager dlm = downloadManagersTableModel.getDownloadManagerAtRow(i);
+            Folder f = dlm.getFileInfo().getFolder(folderRepository);
             if (f == null) {
                 continue;
             }
-            if (dl.isCompleted() && f.equals(folder)) {
+            if (dlm.isCompleted() && f.equals(folder)) {
                 completedDownloadCount++;
             }
         }
@@ -138,11 +138,11 @@ public class TransferManagerModel extends PFUIComponent {
      * @return
      */
     public int countCompletedDownloads() {
-        int downloadCount = downloadsTableModel.getRowCount();
+        int downloadCount = downloadManagersTableModel.getRowCount();
         int completedDownloadCount = 0;
         for (int i = 0; i < downloadCount; i++) {
-            Download dl = downloadsTableModel.getDownloadAtRow(i);
-            if (dl.isCompleted()) {
+            DownloadManager dlm = downloadManagersTableModel.getDownloadManagerAtRow(i);
+            if (dlm.isCompleted()) {
                 completedDownloadCount++;
             }
         }
@@ -155,11 +155,11 @@ public class TransferManagerModel extends PFUIComponent {
      * @return
      */
     public int countActiveDownloads() {
-        int downloadCount = downloadsTableModel.getRowCount();
+        int downloadCount = downloadManagersTableModel.getRowCount();
         int activeDownloadCount = 0;
         for (int i = 0; i < downloadCount; i++) {
-            Download dl = downloadsTableModel.getDownloadAtRow(i);
-            if (dl.isPending() || dl.isQueued()) {
+            DownloadManager dlm = downloadManagersTableModel.getDownloadManagerAtRow(i);
+            if (dlm.isStarted()) {
                 activeDownloadCount++;
             }
         }
@@ -172,7 +172,7 @@ public class TransferManagerModel extends PFUIComponent {
      * @return
      */
     public int countTotalDownloads() {
-        return downloadsTableModel.getRowCount();
+        return downloadManagersTableModel.getRowCount();
     }
 
     /**
@@ -232,16 +232,15 @@ public class TransferManagerModel extends PFUIComponent {
     private void updateDownloadsTreeNode() {
 
         // Recalculate totals for downloads.
-        int downloadCount = downloadsTableModel.getRowCount();
+        int downloadCount = downloadManagersTableModel.getRowCount();
         int allDownloadsCount = 0;
         int activeDownloadCount = 0;
         int completedDownloadsCount = 0;
         for (int i = 0; i < downloadCount; i++) {
-            Download dl = downloadsTableModel.getDownloadAtRow(i);
-            if (dl.isStarted() && !dl.isCompleted() && !dl.isBroken())
-            {
+            DownloadManager dlm = downloadManagersTableModel.getDownloadManagerAtRow(i);
+            if (dlm.isStarted() && !dlm.isCompleted()) {
                 activeDownloadCount++;
-            } else if (dl.isCompleted()) {
+            } else if (dlm.isCompleted()) {
                 completedDownloadsCount++;
             }
             allDownloadsCount++;

@@ -19,14 +19,13 @@
 */
 package de.dal33t.powerfolder.ui.information.downloads;
 
-import de.dal33t.powerfolder.transfer.Download;
+import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.model.TransferManagerModel;
 import de.dal33t.powerfolder.ui.render.SortedTableHeaderRenderer;
-import de.dal33t.powerfolder.ui.render.TransferTableCellRenderer;
+import de.dal33t.powerfolder.ui.render.DownloadManagerTableCellRenderer;
 
 import javax.swing.*;
-import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import java.awt.*;
 
@@ -36,14 +35,14 @@ import java.awt.*;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.3 $
  */
-public class DownloadsTable extends JTable {
+public class DownloadManagersTable extends JTable {
 
     /**
      * Initalizes
      *
      * @param transferManagerModel
      */
-    public DownloadsTable(TransferManagerModel transferManagerModel) {
+    public DownloadManagersTable(TransferManagerModel transferManagerModel) {
         super(transferManagerModel.getDownloadsTableModel());
 
         // Table setup
@@ -52,9 +51,9 @@ public class DownloadsTable extends JTable {
         setShowGrid(false);
 
         // Setup renderer
-        TableCellRenderer transferTableCellRenderer = new TransferTableCellRenderer(
+        DownloadManagerTableCellRenderer renderer = new DownloadManagerTableCellRenderer(
             transferManagerModel.getController());
-        setDefaultRenderer(Download.class, transferTableCellRenderer);
+        setDefaultRenderer(DownloadManager.class, renderer);
 
         // Set table columns
         setupColumns();

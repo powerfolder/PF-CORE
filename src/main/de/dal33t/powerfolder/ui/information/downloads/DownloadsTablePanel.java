@@ -26,6 +26,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.transfer.Download;
+import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.ui.model.TransferManagerModel;
 import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.util.FileUtils;
@@ -50,8 +51,8 @@ public class DownloadsTablePanel extends PFUIComponent {
 
     private JPanel uiComponent;
     private JScrollPane tablePane;
-    private DownloadsTable table;
-    private DownloadsTableModel tableModel;
+    private DownloadManagersTable table;
+    private DownloadManagersTableModel tableModel;
 
     private Action openDownloadAction;
     private Action abortDownloadsAction;
@@ -93,10 +94,10 @@ public class DownloadsTablePanel extends PFUIComponent {
         TransferManagerModel transferManagerModel =
                 getUIController().getTransferManagerModel();
 
-        table = new DownloadsTable(transferManagerModel);
+        table = new DownloadManagersTable(transferManagerModel);
         table.getTableHeader().addMouseListener(new TableHeaderMouseListener());
         tablePane = new JScrollPane(table);
-        tableModel = (DownloadsTableModel) table.getModel();
+        tableModel = (DownloadManagersTableModel) table.getModel();
         table.addMouseListener(new TableMouseListener());
 
         // Whitestrip & set sizes
@@ -185,19 +186,20 @@ public class DownloadsTablePanel extends PFUIComponent {
 
                         // Do in two passes so changes to the model do not affect
                         // the process.
-                        List<Download> downloadsToClear = new ArrayList<Download>();
+                        List<DownloadManager> downloadManagersToClear =
+                                new ArrayList<DownloadManager>();
 
                         for (int i = 0; i < table.getRowCount(); i++) {
                             if (noneSelected || table.isRowSelected(i)) {
-                                Download dl = tableModel.getDownloadAtRow(i);
-                                if (dl.isCompleted()) {
-                                    downloadsToClear.add(dl);
+                                DownloadManager dlm = tableModel.getDownloadManagerAtRow(i);
+                                if (dlm.isCompleted()) {
+                                    downloadManagersToClear.add(dlm);
                                 }
                             }
                         }
-                        for (Download dl : downloadsToClear) {
+                        for (DownloadManager dlm : downloadManagersToClear) {
                             getController().getTransferManager()
-                                    .clearCompletedDownload(dl.getDownloadManager());
+                                    .clearCompletedDownload(dlm);
                         }
                         return null;
                     }
@@ -229,11 +231,11 @@ public class DownloadsTablePanel extends PFUIComponent {
         boolean rowsSelected = rows.length > 0;
         if (rowsSelected) {
             for (int row : rows) {
-                Download download = tableModel.getDownloadAtRow(row);
-                if (download == null) {
+                DownloadManager downloadManager = tableModel.getDownloadManagerAtRow(row);
+                if (downloadManager == null) {
                     continue;
                 }
-                if (!download.isCompleted()) {
+                if (!downloadManager.isCompleted()) {
                     return true;
                 }
             }
@@ -254,8 +256,8 @@ public class DownloadsTablePanel extends PFUIComponent {
         int[] rows = table.getSelectedRows();
         boolean singleRowSelected = rows.length == 1;
         if (singleRowSelected) {
-            Download download = tableModel.getDownloadAtRow(rows[0]);
-            if (download.isCompleted()) {
+            DownloadManager downloadManager = tableModel.getDownloadManagerAtRow(rows[0]);
+            if (downloadManager.isCompleted()) {
                 return true;
             }
         }
@@ -272,9 +274,9 @@ public class DownloadsTablePanel extends PFUIComponent {
         int[] rows = table.getSelectedRows();
         boolean singleRowSelected = rows.length == 1;
         if (singleRowSelected) {
-            Download download = tableModel.getDownloadAtRow(rows[0]);
-            if (download.isCompleted()) {
-                File file = download.getFile().getDiskFile(
+            DownloadManager downloadManager = tableModel.getDownloadManagerAtRow(rows[0]);
+            if (downloadManager.isCompleted()) {
+                File file = downloadManager.getFileInfo().getDiskFile(
                         getController().getFolderRepository());
                 if (file != null && file.exists()) {
                     try {
@@ -298,12 +300,12 @@ public class DownloadsTablePanel extends PFUIComponent {
         boolean rowsSelected = rows.length > 0;
         if (rowsSelected) {
             for (int row : rows) {
-                Download download = tableModel.getDownloadAtRow(row);
-                if (download == null) {
+                DownloadManager downloadManager = tableModel.getDownloadManagerAtRow(row);
+                if (downloadManager == null) {
                     continue;
                 }
-                if (!download.isCompleted()) {
-                    download.abort();
+                if (!downloadManager.isCompleted()) {
+                    downloadManager.abort();
                 }
             }
         }
@@ -315,8 +317,7 @@ public class DownloadsTablePanel extends PFUIComponent {
         }
         int[] rows = table.getSelectedRows();
         if (rows.length == 1) {
-            return ((Download) tableModel.getValueAt(rows[0],
-                    DownloadsTableModel.COLPROGRESS)).getFile();
+            return tableModel.getDownloadManagerAtRow(rows[0]).getFileInfo();
         }
         return null;
     }
@@ -339,13 +340,13 @@ public class DownloadsTablePanel extends PFUIComponent {
                     columnNo);
                 int modelColumnNo = column.getModelIndex();
                 TableModel model = tableHeader.getTable().getModel();
-                if (model instanceof DownloadsTableModel) {
-                    DownloadsTableModel downloadsTableModel = (DownloadsTableModel) model;
-                    boolean freshSorted = downloadsTableModel
+                if (model instanceof DownloadManagersTableModel) {
+                    DownloadManagersTableModel downloadManagersTableModel = (DownloadManagersTableModel) model;
+                    boolean freshSorted = downloadManagersTableModel
                         .sortBy(modelColumnNo);
                     if (!freshSorted) {
                         // reverse list
-                        downloadsTableModel.reverseList();
+                        downloadManagersTableModel.reverseList();
                     }
                 }
             }

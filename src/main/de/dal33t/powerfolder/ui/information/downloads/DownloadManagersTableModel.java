@@ -32,6 +32,7 @@ import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.compare.ReverseComparator;
 import de.dal33t.powerfolder.util.compare.TransferComparator;
+import de.dal33t.powerfolder.util.compare.DownloadManagerComparator;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 import javax.swing.*;
@@ -47,7 +48,7 @@ import java.util.*;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.11.2.1 $
  */
-public class DownloadsTableModel extends PFComponent implements TableModel,
+public class DownloadManagersTableModel extends PFComponent implements TableModel,
     SortedTableModel
 {
     private static final int COLTYPE = 0;
@@ -59,21 +60,19 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
 
     private static final int UPDATE_TIME = 1000;
     private final Collection<TableModelListener> listeners;
-    private final List<Download> downloads;
+    private final List<DownloadManager> downloadManagers;
     private int fileInfoComparatorType = -1;
     private boolean sortAscending = true;
     private int sortColumn;
     private final TransferManagerModel model;
 
-    // private int activeDownloads;
-
-    public DownloadsTableModel(TransferManagerModel model) {
+    public DownloadManagersTableModel(TransferManagerModel model) {
         super(model.getController());
         this.model = model;
         Reject.ifNull(model, "Model is null");
         listeners = Collections
             .synchronizedCollection(new LinkedList<TableModelListener>());
-        downloads = Collections.synchronizedList(new ArrayList<Download>());
+        downloadManagers = Collections.synchronizedList(new ArrayList<DownloadManager>());
         // Add listener
         model.getTransferManager().addListener(new MyTransferManagerListener());
 
@@ -98,44 +97,22 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
     }
 
     /**
-     * Add all if there is not an identical download.
-     *
-     * @param dls
-     */
-    private void addAll(Collection<Download> dls) {
-        for (Download dl : dls) {
-            boolean insert = true;
-            for (Download download : downloads) {
-                if (dl.getFile().isCompletelyIdentical(download.getFile())) {
-                    insert = false;
-                    break;
-                }
-            }
-            if (insert) {
-                downloads.add(dl);
-            }
-        }
-    }
-
-    // Public exposing ********************************************************
-
-    /**
      * @param rowIndex
      * @return the download at the specified download row. Or null if the
      *         rowIndex exceeds the table rows
      */
-    public Download getDownloadAtRow(int rowIndex) {
-        synchronized (downloads) {
-            if (rowIndex >= 0 && rowIndex < downloads.size()) {
-                return downloads.get(rowIndex);
+    public DownloadManager getDownloadManagerAtRow(int rowIndex) {
+        synchronized (downloadManagers) {
+            if (rowIndex >= 0 && rowIndex < downloadManagers.size()) {
+                return downloadManagers.get(rowIndex);
             }
         }
         return null;
     }
 
-    public boolean sortBy(int modelColumnNo) {
-        sortColumn = modelColumnNo;
-        switch (modelColumnNo) {
+    public boolean sortBy(int columnIndex) {
+        sortColumn = columnIndex;
+        switch (columnIndex) {
             case COLTYPE :
                 return sortMe(TransferComparator.BY_EXT);
             case COLFILE :
@@ -175,15 +152,37 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
         return false;
     }
 
+    /**
+     * Add all if there is not an identical download.
+     *
+     * @param dls
+     */
+    private void addAll(Collection<Download> dls) {
+        for (Download dl : dls) {
+            boolean insert = true;
+            for (DownloadManager downloadManager : downloadManagers) {
+                for (Download download : downloadManager.getSources()) {
+                    if (dl.getFile().isCompletelyIdentical(download.getFile())) {
+                        insert = false;
+                        break;
+                    }
+                }
+            }
+            if (insert) {
+                downloadManagers.add(dl.getDownloadManager());
+            }
+        }
+    }
+
     private boolean sort() {
         if (fileInfoComparatorType != -1) {
-            TransferComparator comparator = new TransferComparator(
+            DownloadManagerComparator comparator = new DownloadManagerComparator(
                 fileInfoComparatorType);
 
             if (sortAscending) {
-                Collections.sort(downloads, comparator);
+                Collections.sort(downloadManagers, comparator);
             } else {
-                Collections.sort(downloads, new ReverseComparator(comparator));
+                Collections.sort(downloadManagers, new ReverseComparator(comparator));
             }
             return true;
         }
@@ -194,7 +193,7 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
         Runnable runner = new Runnable() {
             public void run() {
                 TableModelEvent e = new TableModelEvent(
-                    DownloadsTableModel.this);
+                    DownloadManagersTableModel.this);
                 for (Object aTableListener : listeners) {
                     TableModelListener listener = (TableModelListener) aTableListener;
                     listener.tableChanged(e);
@@ -206,8 +205,8 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
 
     public void reverseList() {
         sortAscending = !sortAscending;
-        synchronized (downloads) {
-            Collections.reverse(downloads);
+        synchronized (downloadManagers) {
+            Collections.reverse(downloadManagers);
         }
         fireModelChanged();
     }
@@ -217,7 +216,7 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
     }
 
     public int getRowCount() {
-        return downloads.size();
+        return downloadManagers.size();
     }
 
     public String getColumnName(int columnIndex) {
@@ -238,30 +237,30 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
         return null;
     }
 
-    public Class<Download> getColumnClass(int columnIndex) {
-        return Download.class;
+    public Class<DownloadManager> getColumnClass(int columnIndex) {
+        return DownloadManager.class;
     }
 
     public Object getValueAt(int rowIndex, int columnIndex) {
-        if (rowIndex >= downloads.size()) {
+        if (rowIndex >= downloadManagers.size()) {
             logSevere(
                 "Illegal rowIndex requested. rowIndex " + rowIndex
-                    + ", downloads " + downloads.size());
+                    + ", downloadManagers " + downloadManagers.size());
             return null;
         }
-        Download download = downloads.get(rowIndex);
+        DownloadManager downloadManager = downloadManagers.get(rowIndex);
         switch (columnIndex) {
             case COLTYPE :
             case COLFILE :
-                return download.getFile();
+                return downloadManager.getFileInfo();
             case COLPROGRESS :
-                return download;
+                return downloadManager;
             case COLSIZE :
-                return download.getFile().getSize();
+                return downloadManager.getFileInfo().getSize();
             case COLFOLDER :
-                return download.getFile().getFolderInfo();
+                return downloadManager.getFileInfo().getFolderInfo();
             case COLFROM :
-                return download.getPartner();
+                return downloadManager.getSources();
         }
         return null;
     }
@@ -281,6 +280,14 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
 
     public void removeTableModelListener(TableModelListener l) {
         listeners.remove(l);
+    }
+
+    public int getSortColumn() {
+        return sortColumn;
+    }
+
+    public boolean isSortAscending() {
+        return sortAscending;
     }
 
     /**
@@ -307,7 +314,7 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
      * fire change on whole model
      */
     private void rowsUpdatedAll() {
-        rowsUpdated(0, downloads.size());
+        rowsUpdated(0, downloadManagers.size());
     }
 
     /**
@@ -325,14 +332,6 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
             }
         };
         UIUtil.invokeLaterInEDT(runner);
-    }
-
-    public int getSortColumn() {
-        return sortColumn;
-    }
-
-    public boolean isSortAscending() {
-        return sortAscending;
     }
 
     /**
@@ -354,24 +353,34 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
     }
 
     /**
-     * Removes one download from the model and fires the tablemode event
+     * Removes one download from the model and fires the tablemodel event
      *
      * @param download
      */
     private void removeDownload(Download download) {
-        int index;
-        synchronized (downloads) {
-            index = downloads.indexOf(download);
-            if (index >= 0) {
-                downloads.remove(index);
-            } else {
-                logSevere(
-                    "Unable to remove download from tablemodel, not found: "
-                        + download);
+        int index = -1;
+        synchronized (downloadManagers) {
+            int i = 0;
+            for (Iterator<DownloadManager> iter = downloadManagers.iterator(); iter.hasNext();) {
+                DownloadManager downloadManager = iter.next();
+                for (Download myDownload : downloadManager.getSources()) {
+                    if (myDownload.equals(download)) {
+                        index = i;
+                        break;
+                    }
+                }
+                if (index >= 0) {
+                    iter.remove();
+                    break;
+                }
+                i++;
             }
         }
         if (index >= 0) {
             rowRemoved(index);
+        } else {
+            logSevere("Unable to remove download from tablemodel, not found: "
+                    + download);
         }
     }
 
@@ -425,22 +434,24 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
 
             // Update table.
             Download dl = event.getDownload();
-            int index = downloads.indexOf(dl);
-            if (index >= 0) {
+            boolean found = false;
 
-                // Remove existing downloads from all partners, then add a
-                // single complete download. This is a temporary fix; should
-                // really coalesce downloads into one line for each completely
-                // identical fileinfo.
-                for (Iterator<Download> iter = downloads.iterator(); iter
-                    .hasNext();)
-                {
-                    Download download = iter.next();
-                    if (dl.getFile().isCompletelyIdentical(download.getFile()))
-                    {
-                        iter.remove();
-                    }
+            // Remove existing downloads from all partners, then add a
+            // single complete download. This is a temporary fix; should
+            // really coalesce downloads into one line for each completely
+            // identical fileinfo.
+            for (Iterator<DownloadManager> iter =
+                    downloadManagers.iterator(); iter.hasNext();) {
+                DownloadManager downloadManager = iter.next();
+                if (dl.getFile().isCompletelyIdentical(
+                        downloadManager.getFileInfo())) {
+                    iter.remove();
+                    found = true;
+                    break;
                 }
+            }
+
+            if (found) {
                 addOrUpdateDownload(dl);
             } else {
                 logSevere("Download not found in model: " + dl);
@@ -456,28 +467,6 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
             addOrUpdateDownload(event.getDownload());
         }
 
-        private void addOrUpdateDownload(Download dl) {
-            boolean added = false;
-            int index;
-            synchronized (downloads) {
-                index = findCompletelyIdenticalDownloadIndex(dl);
-                Download alreadyDl = index >= 0 ? downloads.get(index) : null;
-                if (alreadyDl == null) {
-                    downloads.add(dl);
-                    added = true;
-                } else {
-                    // Update if completely identical found
-                    downloads.set(index, dl);
-                }
-            }
-
-            if (added) {
-                rowAdded();
-            } else {
-                rowsUpdated(index, index);
-            }
-        }
-
         /**
          * Searches downloads for a download with identical FileInfo.
          *
@@ -487,19 +476,41 @@ public class DownloadsTableModel extends PFComponent implements TableModel,
          *         found
          */
         private int findCompletelyIdenticalDownloadIndex(Download dl) {
-            synchronized (downloads) {
-                for (int i = 0; i < downloads.size(); i++) {
-                    Download download = downloads.get(i);
-                    if (download.getFile().isCompletelyIdentical(dl.getFile())
-                        && download.getPartner().equals(dl.getPartner()))
-                    {
-                        return i;
+            synchronized (downloadManagers) {
+                for (int i = 0; i < downloadManagers.size(); i++) {
+                    DownloadManager downloadManager = downloadManagers.get(i);
+                    for (Download download : downloadManager.getSources()) {
+                        if (download.getFile().isCompletelyIdentical(dl.getFile())
+                            && download.getPartner().equals(dl.getPartner())) {
+                            return i;
+                        }
                     }
                 }
             }
 
             // No match
             return -1;
+        }
+
+        private void addOrUpdateDownload(Download dl) {
+            boolean added = false;
+            int index;
+            synchronized (downloadManagers) {
+                index = findCompletelyIdenticalDownloadIndex(dl);
+                DownloadManager alreadyDl = index >= 0 ? downloadManagers.get(index) : null;
+                if (alreadyDl == null) {
+                    downloadManagers.add(dl.getDownloadManager());
+                    added = true;
+                } else {
+                    // @todo DownloadManager already knows of change???
+                }
+            }
+
+            if (added) {
+                rowAdded();
+            } else {
+                rowsUpdated(index, index);
+            }
         }
 
         public boolean fireInEventDispatchThread() {
