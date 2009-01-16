@@ -92,6 +92,8 @@ public class PowerFolder {
                 "<language> Sets the language to use (e.g. \"--language de\", sets language to german)");
         options.addOption("p", "createfolder", true,
             "<createfolder> Creates a new PowerFolder");
+        options.addOption("z", "nowarn", false,
+            "Do not warn if already running");
         COMMAND_LINE_OPTIONS = options;
     }
 
