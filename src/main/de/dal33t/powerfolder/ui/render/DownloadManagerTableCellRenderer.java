@@ -162,15 +162,20 @@ public class DownloadManagerTableCellRenderer extends DefaultTableCellRenderer {
             setHorizontalAlignment(LEFT);
         } else if (value instanceof Collection) {
             java.util.Collection<Download> sources = (java.util.Collection<Download>) value;
-            Download primaryDownload = sources.iterator().next();
-            if (sources.size() == 1) {
-                String nickText = primaryDownload.getPartner().getNick();
-                setText(nickText);
+            if (sources.isEmpty()) { // This happens on abort
+                setText("");
+                setIcon(null);
             } else {
-                setText(Translation.getTranslation("transfers.swarm", sources.size()));
+                Download primaryDownload = sources.iterator().next();
+                if (sources.size() == 1) {
+                    String nickText = primaryDownload.getPartner().getNick();
+                    setText(nickText);
+                } else {
+                    setText(Translation.getTranslation("transfers.swarm", sources.size()));
+                }
+                setIcon(Icons.getSimpleIconFor(primaryDownload.getPartner()));
+                setHorizontalAlignment(LEFT);
             }
-            setIcon(Icons.getSimpleIconFor(primaryDownload.getPartner()));
-            setHorizontalAlignment(LEFT);
         } else if (value instanceof EstimatedTime) {
             EstimatedTime time = (EstimatedTime) value;
             if (time.isActive()) {
