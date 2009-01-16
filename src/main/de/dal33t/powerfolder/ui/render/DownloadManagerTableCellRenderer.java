@@ -161,7 +161,7 @@ public class DownloadManagerTableCellRenderer extends DefaultTableCellRenderer {
             setIcon(Icons.FOLDER);
             setHorizontalAlignment(LEFT);
         } else if (value instanceof Collection) {
-            java.util.Collection<Download> sources = (java.util.Collection<Download>) value;
+            Collection<Download> sources = (Collection<Download>) value;
             if (sources.isEmpty()) { // This happens on abort
                 setText("");
                 setIcon(null);
@@ -193,22 +193,5 @@ public class DownloadManagerTableCellRenderer extends DefaultTableCellRenderer {
         }
 
         return defaultComp;
-    }
-
-    /**
-     * Only some types of problem are relevant for display.
-     * <p/>
-     * TODO COPIED from DownloadsTableModel
-     *
-     * @param problem the transfer problem
-     * @return true if it should be displayed.
-     */
-    private static boolean shouldShowProblem(TransferProblem problem) {
-        return TransferProblem.FILE_NOT_FOUND_EXCEPTION.equals(problem)
-                || TransferProblem.IO_EXCEPTION.equals(problem)
-                || TransferProblem.TEMP_FILE_DELETE.equals(problem)
-                || TransferProblem.TEMP_FILE_OPEN.equals(problem)
-                || TransferProblem.TEMP_FILE_WRITE.equals(problem)
-                || TransferProblem.MD5_ERROR.equals(problem);
     }
 }

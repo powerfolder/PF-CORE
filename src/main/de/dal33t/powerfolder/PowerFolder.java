@@ -55,45 +55,28 @@ public class PowerFolder {
     static {
         // Command line parsing
         Options options = new Options();
-        options
-            .addOption(
-                "c",
-                "config",
-                true,
+        options.addOption("c", "config", true,
                 "<config file>. Sets the configuration file to start. Default: PowerFolder.config");
         options.addOption("m", "minimized", false,
-            "Start PowerFolder minimized");
+                "Start PowerFolder minimized");
         options.addOption("s", "server", false,
-            "Start PowerFolder as server/supernode. GUI will be disabled");
-        options
-            .addOption("d", "dns", true,
-                "<ip/dns>. Sets the dns/ip to listen to. May also be an dyndns address");
+                "Start PowerFolder as server/supernode. GUI will be disabled");
+        options.addOption("d", "dns", true,
+                "<ip/dns>. Sets the dns/ip to listen to. May also be a dyndns address");
         options.addOption("h", "help", false, "Displays this help");
         options.addOption("n", "nick", true, "<nickname> Sets the nickname");
         options.addOption("k", "kill", false,
-            "Shutsdown a running PowerFolder instance");
-        options
-            .addOption(
-                "l",
-                "log",
-                true,
+                "Shuts down a running PowerFolder instance");
+        options.addOption("l", "log", true,
                 "<level> Sets console logging to severe, warning, info, fine or finer level (e.g. \"--log info\", sets info level and above");
-        options
-            .addOption(
-                "f",
-                "langfile",
-                true,
+        options.addOption("f", "langfile", true,
                 "<path\\file> Sets the language file to use (e.g. \"--langfile c:\\powerfolder\\translation\\translation_XX.properties\", forces PowerFolder to load this file as language file)");
-        options
-            .addOption(
-                "g",
-                "language",
-                true,
+        options.addOption("g", "language", true,
                 "<language> Sets the language to use (e.g. \"--language de\", sets language to german)");
         options.addOption("p", "createfolder", true,
-            "<createfolder> Creates a new PowerFolder");
+                "<createfolder> Creates a new PowerFolder");
         options.addOption("z", "nowarn", false,
-            "Do not warn if already running");
+                "Do not warn if already running");
         COMMAND_LINE_OPTIONS = options;
     }
 
