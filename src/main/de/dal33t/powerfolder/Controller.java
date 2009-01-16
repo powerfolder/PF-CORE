@@ -1882,7 +1882,8 @@ public class Controller extends PFComponent {
         if (isUIOpen()) {
             parent = uiController.getMainFrame().getUIComponent();
         }
-        if (!isStartMinimized() && isUIEnabled()) {
+        if (!isStartMinimized() && isUIEnabled()
+                && !commandLine.hasOption('z')) {
             Object[] options = new Object[]{
                 Translation
                     .getTranslation("dialog.already_running.start_button"),
