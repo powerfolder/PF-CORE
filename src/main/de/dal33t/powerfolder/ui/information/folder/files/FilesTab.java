@@ -95,7 +95,6 @@ public class FilesTab extends PFUIComponent
         filterSelectionComboBox.addItem(Translation
                 .getTranslation("files_tab.combo.deleted_and_previous_files"));
         filterSelectionComboBox.addActionListener(new MyActionListener());
-
     }
 
     /**
@@ -119,7 +118,27 @@ public class FilesTab extends PFUIComponent
         setFolderInfo(folderInfo);
         if (directoryFilterMode >= 0) {
             directoryFilter.setFilterMode(directoryFilterMode);
+            directoryFilter.scheduleFiltering();
         }
+    }
+
+    /**
+     * Set the tab with details for a folder with local / incoming set
+     * and sort date descending.
+     *
+     * @param folderInfo
+     */
+    public void setFolderInfoLatest(FolderInfo folderInfo) {
+
+        Folder folder = getController().getFolderRepository().getFolder(
+                folderInfo);
+        directoryFilter.setFolder(folder);
+        tablePanel.setFolder(folder);
+        tablePanel.sortLatestDate();
+
+        // Triggers mode change and schedule filtering (MyActionListener).
+        filterSelectionComboBox.setSelectedIndex(
+                DirectoryFilter.MODE_LOCAL_AND_INCOMING);
     }
 
     /**
@@ -182,7 +201,6 @@ public class FilesTab extends PFUIComponent
                 getController().getPreferences().putInt("files.tab.location",
                         splitPane.getDividerLocation());
             }
-
         }
     }
 

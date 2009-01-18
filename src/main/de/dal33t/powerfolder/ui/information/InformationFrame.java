@@ -152,6 +152,19 @@ public class InformationFrame extends PFUIComponent {
     }
 
     /**
+     * Displays file info for a folder with filter set to local / incoming and
+     * sort set to date descending.
+     *
+     * @param folderInfo
+     */
+    public void displayFolderFilesLatest(FolderInfo folderInfo) {
+        buildFolderInformationCard();
+        folderInformationCard.setFolderInfoLatest(folderInfo);
+        folderInformationCard.showFiles();
+        displayCard(folderInformationCard);
+    }
+
+    /**
      * Displays settings info for a folder
      *
      * @param folderInfo

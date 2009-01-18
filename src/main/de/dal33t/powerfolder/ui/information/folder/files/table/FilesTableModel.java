@@ -64,7 +64,6 @@ public class FilesTableModel extends PFComponent implements TableModel,
     private static final int COL_MODIFIED_DATE = 4;
     private static final int COL_AVAILABILITY = 5;
 
-
     private Folder folder;
     private File selectedDirectory;
     private final Map<File, List<DiskItem>> directories;
@@ -181,44 +180,45 @@ public class FilesTableModel extends PFComponent implements TableModel,
             public void run() {
                 synchronized (diskItems) {
 
-                List<DiskItem> tempList = new ArrayList<DiskItem>(diskItems.size());
-                tempList.addAll(diskItems);
+                    List<DiskItem> tempList = new ArrayList<DiskItem>(diskItems.size());
+                    tempList.addAll(diskItems);
 
-                // Look for extra items in the selectedDiskItems list to insert.
-                List<DiskItem> selectedDiskItems = directories.get(selectedDirectory);
-                boolean changed = false;
-                for (DiskItem selectedDiskItem : selectedDiskItems) {
-                    boolean b = false;
-                    for (DiskItem diskItem : tempList) {
-                        if (diskItem.equals(selectedDiskItem)) {
-                            b = true;
-                            break;
-                        }
-                    }
-                    if (!b) {
-                        diskItems.add(selectedDiskItem);
-                        changed = true;
-                    }
-                }
-
-                // Look for extra items in the diskItem list to remove.
-                for (DiskItem diskItem : tempList) {
-                    boolean b = false;
+                    // Look for extra items in the selectedDiskItems list to insert.
+                    List<DiskItem> selectedDiskItems = directories.get(selectedDirectory);
+                    boolean changed = false;
                     for (DiskItem selectedDiskItem : selectedDiskItems) {
-                        if (diskItem.equals(selectedDiskItem)) {
-                            b = true;
-                            break;
+                        boolean b = false;
+                        for (DiskItem diskItem : tempList) {
+                            if (diskItem.equals(selectedDiskItem)) {
+                                b = true;
+                                break;
+                            }
+                        }
+                        if (!b) {
+                            diskItems.add(selectedDiskItem);
+                            changed = true;
                         }
                     }
-                    if (!b) {
-                        diskItems.remove(diskItem);
-                        changed = true;
-                    }
-                }
 
-                if (changed) {
-                    fireModelChanged();
-                }
+                    // Look for extra items in the diskItem list to remove.
+                    for (DiskItem diskItem : tempList) {
+                        boolean b = false;
+                        for (DiskItem selectedDiskItem : selectedDiskItems) {
+                            if (diskItem.equals(selectedDiskItem)) {
+                                b = true;
+                                break;
+                            }
+                        }
+                        if (!b) {
+                            diskItems.remove(diskItem);
+                            changed = true;
+                        }
+                    }
+
+                    if (changed) {
+                        sort();
+                        fireModelChanged();
+                    }
                 }
             }
         };
@@ -317,6 +317,11 @@ public class FilesTableModel extends PFComponent implements TableModel,
             }
         }
         return false;
+    }
+
+    public void sortLatestDate() {
+        sortAscending = true;
+        sortBy(COL_MODIFIED_DATE);
     }
 
     private void fireModelChanged() {

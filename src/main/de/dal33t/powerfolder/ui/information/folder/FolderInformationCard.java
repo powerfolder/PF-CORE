@@ -72,6 +72,19 @@ public class FolderInformationCard extends InformationCard {
     }
 
     /**
+     * Sets the folder in the tabs ith local and incoming set and sort date
+     * descending.
+     *
+     * @param folderInfo
+     */
+    public void setFolderInfoLatest(FolderInfo folderInfo) {
+        this.folderInfo = folderInfo;
+        settingsTab.setFolderInfo(folderInfo);
+        membersTab.setFolderInfo(folderInfo);
+        filesTab.setFolderInfoLatest(folderInfo);
+    }
+
+    /**
      * Gets the image for the card.
      *
      * @return

@@ -74,7 +74,7 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
     private JLabel filesLabel;
     private JLabel transferModeLabel;
     private JLabel syncPercentLabel;
-    private JLabel syncDateLabel;
+    private ActionLabel syncDateLabel;
     private JLabel localSizeLabel;
     private JLabel totalSizeLabel;
     private JLabel recycleLabel;
@@ -218,7 +218,7 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
         lowerBuilder.add(syncPercentLabel, cc.xy(2, 3));
         lowerBuilder.add(openFilesInformationButton, cc.xy(5, 3));
 
-        lowerBuilder.add(syncDateLabel, cc.xy(2, 5));
+        lowerBuilder.add(syncDateLabel.getUIComponent(), cc.xy(2, 5));
 
         lowerBuilder.add(filesLabel, cc.xy(2, 7));
 
@@ -303,7 +303,14 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
         filesLabel = new JLabel();
         transferModeLabel = new JLabel();
         syncPercentLabel = new JLabel();
-        syncDateLabel = new JLabel();
+        syncDateLabel = new ActionLabel(getController(), new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                getController().getUIController().openFilesInformationLatest(
+                        folderInfo);
+            }
+        });
+        syncDateLabel.setToolTipText(Translation.getTranslation(
+                "exp_folder_view.sync_date_label.tip"));
         localSizeLabel = new JLabel();
         totalSizeLabel = new JLabel();
         recycleLabel = new JLabel();

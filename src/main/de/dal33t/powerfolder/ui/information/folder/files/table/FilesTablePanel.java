@@ -336,6 +336,10 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
 
     }
 
+    public void sortLatestDate() {
+        tableModel.sortLatestDate();
+    }
+
     ///////////////////
     // Inner Classes //
     ///////////////////
