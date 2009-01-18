@@ -23,20 +23,17 @@ import java.awt.Color;
 import java.awt.Frame;
 import java.awt.HeadlessException;
 import java.awt.Toolkit;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.datatransfer.Transferable;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.util.Calendar;
-import java.util.Date;
+import java.util.*;
 import java.util.prefs.Preferences;
+import java.io.IOException;
+import java.io.File;
 
-import javax.swing.JCheckBox;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JPanel;
-import javax.swing.SwingConstants;
-import javax.swing.WindowConstants;
+import javax.swing.*;
 import javax.swing.plaf.RootPaneUI;
 
 import com.jgoodies.forms.builder.DefaultFormBuilder;
@@ -48,9 +45,8 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
-import de.dal33t.powerfolder.event.FolderRepositoryEvent;
-import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.ui.action.SyncAllFoldersAction;
+import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.OSUtil;
@@ -85,7 +81,7 @@ public class MainFrame extends PFUIComponent {
     /**
      * @param controller
      *            the controller.
-     * @throws java.awt.HeadlessException
+     * @throws HeadlessException
      */
     public MainFrame(Controller controller) throws HeadlessException {
         super(controller);
@@ -181,11 +177,7 @@ public class MainFrame extends PFUIComponent {
             }
         });
 
-        // Listen to changes in the number of folders in the repository.
-        getController().getFolderRepository().addFolderRepositoryListener(
-            new RepositoryListener());
-        // Ensure we are up to date.
-        configureSyncNowAction();
+        uiComponent.setTransferHandler(new MyTransferHandler());
 
     }
     
@@ -355,28 +347,67 @@ public class MainFrame extends PFUIComponent {
         uiComponent.setExtendedState(state);
     }
 
-    private void configureSyncNowAction() {
-//        getUIController().getSyncAllFoldersAction().setEnabled(
-//            getController().getFolderRepository().getFolders().length != 0);
-    }
+    /**
+     * Handler to accept folder drops, opening folder wizard.
+     */
+    private class MyTransferHandler extends TransferHandler {
 
-    private class RepositoryListener implements FolderRepositoryListener {
-        public boolean fireInEventDispatchThread() {
-            return false;
+        /**
+         * Whether this drop can be imported; must be file list flavor.
+         *
+         * @param support
+         * @return
+         */
+        public boolean canImport(TransferSupport support) {
+            return support.isDataFlavorSupported(DataFlavor.javaFileListFlavor);
         }
 
-        public void folderCreated(FolderRepositoryEvent e) {
-            configureSyncNowAction();
+        /**
+         * Import the file. Only import if it is a single directory.
+         *
+         * @param support
+         * @return
+         */
+        public boolean importData(TransferSupport support) {
+
+            if (!support.isDrop()) {
+                return false;
+            }
+
+            File file = getFileList(support);
+            // @todo harry to import data 
+            return file != null;
         }
 
-        public void folderRemoved(FolderRepositoryEvent e) {
-            configureSyncNowAction();
-        }
-
-        public void maintenanceFinished(FolderRepositoryEvent e) {
-        }
-
-        public void maintenanceStarted(FolderRepositoryEvent e) {
+        /**
+         * Get the directory to import.
+         * The transfer is a list of files; need to check the list has one
+         * directory, else return null.
+         *
+         * @param support
+         * @return
+         */
+        private File getFileList(TransferSupport support) {
+            Transferable t = support.getTransferable();
+            try {
+                List list = (List) t.getTransferData(
+                        DataFlavor.javaFileListFlavor);
+                if (list.size() == 1) {
+                    for (Object o : list) {
+                        if (o instanceof File) {
+                            File file = (File) o;
+                            if (file.isDirectory()) {
+                                return file;
+                            }
+                        }
+                    }
+                }
+            } catch (UnsupportedFlavorException e) {
+                logSevere(e);
+            } catch (IOException e) {
+                logSevere(e);
+            }
+            return null;
         }
     }
 }
