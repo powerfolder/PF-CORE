@@ -247,6 +247,7 @@ public class Wizard extends JPanel implements ActionListener {
         backButton.setEnabled(!previous.isEmpty());
         nextButton.setEnabled(current.hasNext());
         finishButton.setEnabled(current.canFinish());
+        nextButton.requestFocus();
     }
 
     /**

@@ -19,16 +19,14 @@
  */
 package de.dal33t.powerfolder.ui;
 
-import java.awt.Color;
-import java.awt.Frame;
-import java.awt.HeadlessException;
-import java.awt.Toolkit;
+import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.*;
+import java.util.List;
 import java.util.prefs.Preferences;
 import java.io.IOException;
 import java.io.File;
@@ -374,8 +372,16 @@ public class MainFrame extends PFUIComponent {
                 return false;
             }
 
-            File file = getFileList(support);
-            // @todo harry to import data 
+            final File file = getFileList(support);
+
+            // Run later, so do not tie up OS drag and drop process.
+            Runnable runner = new Runnable() {
+                public void run() {
+                    PFWizard.openExistingDirectoryWizard(getController(), file);
+                }
+            };
+            SwingUtilities.invokeLater(runner);
+
             return file != null;
         }
 

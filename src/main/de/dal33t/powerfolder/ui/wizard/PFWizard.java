@@ -40,6 +40,7 @@ import java.awt.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.io.File;
 
 /**
  * The main wizard class
@@ -208,12 +209,18 @@ public class PFWizard extends PFUIComponent {
         wizard.open(new FolderOnlineStoragePanel(controller, folderToSetup));
     }
 
+    public static void openExistingDirectoryWizard(Controller controller, 
+                                                   File directory) {
+        Reject.ifTrue(directory == null || !directory.exists(),
+                "No directory supplied");
+        PFWizard wizard = new PFWizard(controller);
+        wizard.open(new ConfirmDiskLocationPanel(controller, directory));
+    }
+
     /**
      * Opens the wizard on a panel.
      * 
      * @param wizardPanel
-     * @param shift
-     *            amount to shift the wizard when called by another wizard
      */
     public void open(PFWizardPanel wizardPanel) {
         Reject.ifNull(wizardPanel, "Wizard panel is null");
