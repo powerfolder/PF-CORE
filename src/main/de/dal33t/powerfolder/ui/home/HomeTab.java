@@ -20,14 +20,16 @@
 package de.dal33t.powerfolder.ui.home;
 
 import java.awt.Font;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
 import java.util.Date;
+import java.util.List;
+import java.io.File;
+import java.io.IOException;
 
-import javax.swing.AbstractAction;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
+import javax.swing.*;
 
 import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.ButtonBarBuilder;
@@ -37,6 +39,7 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
@@ -60,6 +63,7 @@ import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.InvitationUtil;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
@@ -122,6 +126,7 @@ public class HomeTab extends PFUIComponent {
         if (uiComponent == null) {
             buildUI();
         }
+        uiComponent.setTransferHandler(new MyTransferHandler());
         return uiComponent;
     }
 
@@ -645,4 +650,90 @@ public class HomeTab extends PFUIComponent {
             return true;
         }
     }
+
+
+    /**
+     * Handler to accept folder drops, opening folder wizard.
+     */
+    private class MyTransferHandler extends TransferHandler {
+
+        /**
+         * Whether this drop can be imported; must be file list flavor.
+         *
+         * @param support
+         * @return
+         */
+        public boolean canImport(TransferSupport support) {
+            return support.isDataFlavorSupported(DataFlavor.javaFileListFlavor);
+        }
+
+        /**
+         * Import the file. Only import if it is a single directory.
+         *
+         * @param support
+         * @return
+         */
+        public boolean importData(TransferSupport support) {
+
+            if (!support.isDrop()) {
+                return false;
+            }
+
+            final File file = getFileList(support);
+            if (file == null) {
+                return false;
+            }
+
+            // Run later, so do not tie up OS drag and drop process.
+            Runnable runner = new Runnable() {
+                public void run() {
+                    if (file.isDirectory()) {
+                        PFWizard.openExistingDirectoryWizard(getController(),
+                                file);
+                    } else if (file.getName().endsWith(".invitation")) {
+                        Invitation invitation = InvitationUtil.load(file);
+                        PFWizard.openInvitationReceivedWizard(getController(),
+                                invitation);
+                    }
+                }
+            };
+            SwingUtilities.invokeLater(runner);
+
+            return true;
+        }
+
+        /**
+         * Get the directory to import.
+         * The transfer is a list of files; need to check the list has one
+         * directory, else return null.
+         *
+         * @param support
+         * @return
+         */
+        private File getFileList(TransferSupport support) {
+            Transferable t = support.getTransferable();
+            try {
+                List list = (List) t.getTransferData(
+                        DataFlavor.javaFileListFlavor);
+                if (list.size() == 1) {
+                    for (Object o : list) {
+                        if (o instanceof File) {
+                            File file = (File) o;
+                            if (file.isDirectory()) {
+                                return file;
+                            } else if (file.getName().endsWith(".invitation")) {
+                                return file;
+                            }
+                        }
+                    }
+                }
+            } catch (UnsupportedFlavorException e) {
+                logSevere(e);
+            } catch (IOException e) {
+                logSevere(e);
+            }
+            return null;
+        }
+    }
+
 }

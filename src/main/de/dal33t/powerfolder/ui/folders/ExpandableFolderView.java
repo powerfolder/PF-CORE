@@ -48,6 +48,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.*;
+import java.awt.datatransfer.DataFlavor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.Date;
 
@@ -270,7 +271,7 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
 
         uiComponent = outerBuilder.getPanel();
         uiComponent.setBackground(SystemColor.text);
-
+        uiComponent.setTransferHandler(new MyTransferHandler());
     }
 
     /**
@@ -734,6 +735,23 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
         public void actionPerformed(ActionEvent e) {
             getController().getUIController().openFilesInformation(folderInfo, 
                     DirectoryFilter.MODE_INCOMING_ONLY);
+        }
+    }
+
+    /**
+     * Handle drag 'n' drop of files (not directories) into folder.
+     * It physically copies the files in.
+     */
+    private class MyTransferHandler extends TransferHandler {
+
+        public boolean canImport(TransferSupport support) {
+            return support.isDataFlavorSupported(DataFlavor.javaFileListFlavor);
+        }
+
+        public boolean importData(TransferSupport support) {
+
+            // @todo hey, check the files are not already in the folder :-)
+            return super.importData(support);
         }
     }
 }
