@@ -43,10 +43,12 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.ui.action.SyncAllFoldersAction;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.InvitationUtil;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
@@ -373,16 +375,26 @@ public class MainFrame extends PFUIComponent {
             }
 
             final File file = getFileList(support);
+            if (file == null) {
+                return false;
+            }
 
             // Run later, so do not tie up OS drag and drop process.
             Runnable runner = new Runnable() {
                 public void run() {
-                    PFWizard.openExistingDirectoryWizard(getController(), file);
+                    if (file.isDirectory()) {
+                        PFWizard.openExistingDirectoryWizard(getController(),
+                                file);
+                    } else if (file.getName().endsWith(".invitation")) {
+                        Invitation invitation = InvitationUtil.load(file);
+                        PFWizard.openInvitationReceivedWizard(getController(),
+                                invitation);
+                    }
                 }
             };
             SwingUtilities.invokeLater(runner);
 
-            return file != null;
+            return true;
         }
 
         /**
@@ -403,6 +415,8 @@ public class MainFrame extends PFUIComponent {
                         if (o instanceof File) {
                             File file = (File) o;
                             if (file.isDirectory()) {
+                                return file;
+                            } else if (file.getName().endsWith(".invitation")) {
                                 return file;
                             }
                         }
