@@ -95,6 +95,10 @@ public class MainTabbedPane extends PFUIComponent {
         return uiComponent;
     }
 
+    public int getSelectedTabIndex() {
+        return uiComponent.getSelectedIndex();
+    }
+
     /**
      * Initialize the comonents of the pane.
      */

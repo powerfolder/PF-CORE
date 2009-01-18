@@ -353,13 +353,15 @@ public class MainFrame extends PFUIComponent {
     private class MyTransferHandler extends TransferHandler {
 
         /**
-         * Whether this drop can be imported; must be file list flavor.
+         * Whether this drop can be imported; must be file list flavor,
+         * and only for home tab.
          *
          * @param support
          * @return
          */
         public boolean canImport(TransferSupport support) {
-            return support.isDataFlavorSupported(DataFlavor.javaFileListFlavor);
+            return mainTabbedPane.getSelectedTabIndex() == 0 &&
+                    support.isDataFlavorSupported(DataFlavor.javaFileListFlavor);
         }
 
         /**
