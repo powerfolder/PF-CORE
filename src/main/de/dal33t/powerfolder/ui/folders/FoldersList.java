@@ -358,12 +358,7 @@ public class FoldersList extends PFUIComponent {
             }
 
             FolderBean that = (FolderBean) obj;
-
-            if (!folderInfo.equals(that.folderInfo)) {
-                return false;
-            }
-
-            return true;
+            return folderInfo.equals(that.folderInfo);
         }
 
         public int hashCode() {
