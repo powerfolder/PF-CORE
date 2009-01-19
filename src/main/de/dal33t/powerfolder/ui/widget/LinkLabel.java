@@ -68,6 +68,10 @@ public class LinkLabel extends PFComponent {
         this.url = url;
         setText(false);
     }
+    
+    public void setIcon(Icon icon) {
+        uiComponent.setIcon(icon);
+    }
 
     public JComponent getUiComponent() {
         return uiComponent;
