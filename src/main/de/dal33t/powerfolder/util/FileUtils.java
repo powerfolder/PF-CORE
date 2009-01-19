@@ -207,10 +207,10 @@ public class FileUtils {
 
         OutputStream out = new BufferedOutputStream(new FileOutputStream(to));
 
-        byte[] buffer = new byte[BYTE_CHUNK_SIZE];
-        int read;
-        int position = 0;
         try {
+            byte[] buffer = new byte[BYTE_CHUNK_SIZE];
+            int read;
+            int position = 0;
             do {
                 read = in.read(buffer);
                 if (read < 0) {
@@ -252,7 +252,7 @@ public class FileUtils {
         throws IOException
     {
         int w = n;
-        byte buf[] = new byte[BYTE_CHUNK_SIZE];
+        byte[] buf = new byte[BYTE_CHUNK_SIZE];
         while (w > 0) {
             int read = in.read(buf);
             if (read < 0) {
@@ -361,8 +361,8 @@ public class FileUtils {
         }
         try {
             Process proc = Runtime.getRuntime().exec(
-                "attrib " + (hidden ? "+h" : "") + " " + (system ? "+s" : "")
-                    + " \"" + file.getAbsolutePath() + "\"");
+                "attrib " + (hidden ? "+h" : "") + ' ' + (system ? "+s" : "")
+                    + " \"" + file.getAbsolutePath() + '\"');
             proc.getOutputStream();
             proc.waitFor();
             return true;
@@ -575,15 +575,16 @@ public class FileUtils {
         if (!file.isFile()) {
             throw new IllegalArgumentException("Not a file:  " + file);
         }
-        byte[] buffer = new byte[4096]; // Create a buffer for copying
-        int bytesRead;
         ZipOutputStream out = new ZipOutputStream(new FileOutputStream(zipfile));
         FileInputStream in = new FileInputStream(file); // Stream to read
         // file
         ZipEntry entry = new ZipEntry(file.getName()); // Make a ZipEntry
         out.putNextEntry(entry); // Store entry
-        while ((bytesRead = in.read(buffer)) != -1)
+        int bytesRead;
+        byte[] buffer = new byte[4096]; // Create a buffer for copying
+        while ((bytesRead = in.read(buffer)) != -1) {
             out.write(buffer, 0, bytesRead);
+        }
         in.close();
         out.close();
     }
@@ -603,20 +604,52 @@ public class FileUtils {
         }
         String[] entries = dir.list();
         byte[] buffer = new byte[4096]; // Create a buffer for copying
-        int bytesRead;
         ZipOutputStream out = new ZipOutputStream(new FileOutputStream(zipfile));
-        for (int i = 0; i < entries.length; i++) {
-            File f = new File(dir, entries[i]);
-            if (f.isDirectory())
+        for (String entry1 : entries) {
+            File f = new File(dir, entry1);
+            if (f.isDirectory()) {
                 continue;// Ignore directory
+            }
             FileInputStream in = new FileInputStream(f); // Stream to read
             // file
             ZipEntry entry = new ZipEntry(f.getPath()); // Make a ZipEntry
             out.putNextEntry(entry); // Store entry
-            while ((bytesRead = in.read(buffer)) != -1)
+            int bytesRead;
+            while ((bytesRead = in.read(buffer)) != -1) {
                 out.write(buffer, 0, bytesRead);
+            }
             in.close();
         }
         out.close();
+    }
+
+    /**
+     * See if a file in inside a directory.
+     *
+     * @param file
+     * @param directory
+     * @return
+     */
+    public static boolean isFileInDirectory(File file, File directory) {
+
+        Reject.ifTrue(file == null || directory == null,
+                "File and directory may not be null");
+
+        Reject.ifTrue(file.isDirectory() || !directory.isDirectory(),
+                "File must be a file and directory must be a directory.");
+
+        File fileParent = file.getParentFile();
+        String fileParentPath;
+        if (fileParent == null) {
+            fileParentPath = File.separator;
+        } else {
+            fileParentPath = fileParent.getAbsolutePath();
+        }
+        String directoryPath = directory.getAbsolutePath();
+
+        log.finer("File parent: " + fileParentPath);
+        log.finer("Directory: " + directoryPath);
+        
+        return fileParentPath.startsWith(directoryPath);
     }
 }

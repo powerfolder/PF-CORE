@@ -46,4 +46,68 @@ public class FileUtilsTest extends TestCase {
         FileUtils.zipFile(t, zip);
         assertTrue(zip.exists());
     }
+
+    public void testFileInDirectory() {
+
+        boolean okay = true;
+        File testDir = TestHelper.getTestDir();
+
+        // Test null file.
+        try {
+            FileUtils.isFileInDirectory(null, testDir);
+            okay = false;
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        }
+        assertTrue("Process a null file", okay);
+
+        // Test null directory.
+        try {
+            FileUtils.isFileInDirectory(new File("x"), null);
+            okay = false;
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        }
+        assertTrue("Process a null directory", okay);
+
+        // Test directory for file
+        try {
+            FileUtils.isFileInDirectory(testDir, testDir);
+            okay = false;
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        }
+        assertTrue("Process a directory for file", okay);
+
+        // Test file for directory
+        try {
+            FileUtils.isFileInDirectory(new File("X"), new File("Y"));
+            okay = false;
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        }
+        assertTrue("Process a file for directory", okay);
+
+        // Test file not in directory
+        try {
+            File dir = new File(testDir, "P");
+            dir.mkdir();
+            assertTrue(dir.isDirectory());
+            okay = FileUtils.isFileInDirectory(new File(testDir, "X"), dir);
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        }
+        assertFalse("Process a file not in directory", okay);
+
+        // Test file in directory
+        try {
+            File dir = new File(testDir, "Q");
+            dir.mkdir();
+            assertTrue(dir.isDirectory());
+            okay = FileUtils.isFileInDirectory(new File(dir, "X"), testDir);
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        }
+        assertTrue("Process a file in directory", okay);
+    }
 }
