@@ -135,9 +135,7 @@ public abstract class PFWizardPanel extends WizardPanel {
     /**
      * @return the component representing the picto
      */
-    protected JComponent getPictoComponent() {
-        return new JLabel();
-    }
+    protected abstract JComponent getPictoComponent();
 
     /**
      * Returns the title for the panel

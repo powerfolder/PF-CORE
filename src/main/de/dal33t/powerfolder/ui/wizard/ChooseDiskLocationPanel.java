@@ -44,7 +44,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.ButtonGroup;
-import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
@@ -418,8 +417,8 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         worker.start();
     }
 
-    protected Icon getPicto() {
-        return getContextPicto();
+    protected JComponent getPictoComponent() {
+        return new JLabel(getContextPicto());
     }
 
     protected String getTitle() {
