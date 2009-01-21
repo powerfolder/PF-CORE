@@ -58,12 +58,12 @@ public class UDTConnectionTest extends FiveControllerTestCase {
         connect(getContollerBart(), getContollerLisa());
         connect(getContollerBart(), getContollerMarge());
         getContollerLisa().getMySelf().getInfo().setConnectAddress(
-            new InetSocketAddress("192.168.0.9", 10000));
+            new InetSocketAddress("192.168.0.4", 10000));
         getContollerBart().getMySelf().getInfo().setConnectAddress(
-            new InetSocketAddress("192.168.0.9", 10001));
+            new InetSocketAddress("192.168.0.4", 10001));
 
         ConnectionHandler conHan = getContollerMarge().getIOProvider()
-            .getUDTSocketConnectionManager().initUDTConnectionHandler(
+            .getUDTSocketConnectionManager().initRendezvousUDTConnectionHandler(
                 getContollerLisa().getMySelf().getInfo());
         assertTrue(conHan.isConnected());
         getContollerMarge().getNodeManager().acceptConnection(conHan);
@@ -72,7 +72,7 @@ public class UDTConnectionTest extends FiveControllerTestCase {
         assertNotNull(conHan.getMember());
         assertTrue(conHan.getMember().isCompleteyConnected());
 
-        joinTestFolder(SyncProfile.HOST_FILES);
+        joinTestFolder(SyncProfile.HOST_FILES, false);
         TestHelper.createRandomFile(getFolderAtMarge().getLocalBase(),
             10 * 1024 * 1024);
         scanFolder(getFolderAtMarge());
