@@ -412,6 +412,11 @@ public class FileUtils {
         Reject.ifNull(sourceFile, "Source directory is null");
         Reject.ifNull(targetFile, "Target directory is null");
 
+        if (!sourceFile.exists()) {
+            // Do nothing.
+            return;
+        }
+        
         if (sourceFile.isDirectory() && !targetFile.exists()) {
             targetFile.mkdirs();
         }
