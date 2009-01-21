@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.net;
 
 import java.io.IOException;
@@ -36,6 +36,7 @@ import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.message.KnownNodes;
+import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
@@ -48,8 +49,7 @@ import de.dal33t.powerfolder.util.net.NetworkUtil;
  * @version $Revision: 1.41 $
  */
 public class ConnectionListener extends PFComponent implements Runnable {
-
-    //
+    // 
     // constants
     //
     public static final int DEFAULT_PORT = 1337;
@@ -71,10 +71,11 @@ public class ConnectionListener extends PFComponent implements Runnable {
         String bindToInterface) throws ConnectionException
     {
         super(controller);
-        if (port < 0) {
-            port = DEFAULT_PORT;
+        if (port > 0) {
+            this.port = port;
+        } else {
+            this.port = DEFAULT_PORT;
         }
-        this.port = port;
         this.hasIncomingConnection = false;
         this.interfaceAddress = bindToInterface;
 
@@ -88,7 +89,7 @@ public class ConnectionListener extends PFComponent implements Runnable {
             // Overwrite dyndns entry by commandline server address
             dns = clidns;
         }
-        
+
         // set the dyndns without any validations
         // assuming it has been validated on the pevious time
         // round when it was set.
@@ -173,7 +174,7 @@ public class ConnectionListener extends PFComponent implements Runnable {
             networkInterfaces = NetworkInterface.getNetworkInterfaces();
         } catch (SocketException e) {
             logSevere("Unable to get local network interfaces");
-            logFiner("SocketException", e);
+            logFiner(e);
             return null;
         }
 
@@ -286,10 +287,8 @@ public class ConnectionListener extends PFComponent implements Runnable {
                 if (!checkOK) {
                     getController().getDynDnsManager().close();
 
-                    logWarning(
-                            "Own dyndns address "
-                                + newDns
-                                + " does not match any of the local network intergaces");
+                    logWarning("Own dyndns address " + newDns
+                        + " does not match any of the local network intergaces");
                     return VALIDATION_FAILED;
                 }
 
@@ -397,6 +396,13 @@ public class ConnectionListener extends PFComponent implements Runnable {
         return hasIncomingConnection;
     }
 
+    /**
+     * @return the port this listener is bound to.
+     */
+    public int getPort() {
+        return port;
+    }
+
     public void run() {
         while (!Thread.currentThread().isInterrupted()) {
             try {
@@ -440,15 +446,7 @@ public class ConnectionListener extends PFComponent implements Runnable {
 
                 // new member, accept it
                 getController().getNodeManager().acceptConnectionAsynchron(
-                    nodeSocket);
-                //
-                // if (!getController().isConsoleMode()) {
-                // // Thottle connections a bit in non-console mode to save
-                // // CPU.
-                // Thread.sleep(getController().getWaitTime() / 10);
-                // }
-                // Thread.sleep(getController().getWaitTime() / 4);
-                // Thread.sleep(50);
+                    new SocketAcceptor(nodeSocket));
             } catch (SocketException e) {
                 logFine(
                     "Listening socket on port " + serverSocket.getLocalPort()
@@ -459,20 +457,39 @@ public class ConnectionListener extends PFComponent implements Runnable {
             } catch (RuntimeException e) {
                 logSevere("Exception while accepting socket: " + e, e);
             }
-
-            // catch (InterruptedException e) {
-            // logFiner("Interrupted", e);
-            // break;
-            // }
         }
     }
 
-    /**
-     * Returns the port this listener is bound to.
-     * 
-     * @return
-     */
-    public int getPort() {
-        return port;
+    private class SocketAcceptor extends AbstractAcceptor {
+        private Socket socket;
+
+        private SocketAcceptor(Socket socket) {
+            super(ConnectionListener.this.getController());
+            Reject.ifNull(socket, "Socket is null");
+            this.socket = socket;
+        }
+
+        @Override
+        protected void accept() throws ConnectionException {
+            if (isFiner()) {
+                logFiner(
+                    "Accepting connection from: " + socket.getInetAddress()
+                        + ":" + socket.getPort());
+            }
+            ConnectionHandler handler = getController().getIOProvider()
+                .getConnectionHandlerFactory()
+                .createAndInitSocketConnectionHandler(socket);
+            // Accept node
+            acceptConnection(handler);
+        }
+
+        @Override
+        protected void shutdown() {
+            try {
+                socket.close();
+            } catch (IOException e) {
+                logFiner("Unable to close socket from acceptor", e);
+            }
+        }
     }
 }
