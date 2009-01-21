@@ -149,6 +149,9 @@ public class NodeSearcher extends PFComponent {
         {
             return;
         }
+        if (!member.isOnSameNetwork()) {
+            return;
+        }
         searchResultListModel.add(member);
     }
 
