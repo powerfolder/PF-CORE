@@ -27,7 +27,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.TimerTask;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.Constants;
@@ -129,6 +128,12 @@ public class ReconnectManager extends PFComponent {
      * @param node
      */
     public void markNodeForImmediateReconnection(Member node) {
+
+        if (!started) {
+            logFine("ReconnectManager not started. Unable to spawn new reconnector to "
+                + node + ". Queue: " + reconnectionQueue);
+            return;
+        }
         if (isFiner()) {
             logFiner("Marking node for immediate reconnect: " + node);
         }
@@ -280,6 +285,10 @@ public class ReconnectManager extends PFComponent {
             NetworkingMode.SERVERONLYMODE))
         {
             // Never connect this way to the server, only thru ServerClient.
+            return false;
+        }
+        if (!node.isOnSameNetwork()) {
+            // Don't try to connect to nodes on different network.
             return false;
         }
         // Always add friends
@@ -516,25 +525,6 @@ public class ReconnectManager extends PFComponent {
                     continue;
                 }
 
-                // if (currentNode == null) {
-                //                    
-                // if (isFiner()) {
-                // logFiner(this + " is on idle");
-                // }
-                // // Otherwise wait a bit
-                // synchronized (reconnectionQueue) {
-                // try {
-                // reconnectionQueue
-                // .wait(Constants.SOCKET_CONNECT_TIMEOUT / 2);
-                // } catch (InterruptedException e) {
-                // logFine(this + " Stopping. cause: " + e.toString());
-                // break;
-                // }
-                // }
-                // // Idle time over. continue!
-                // continue;
-                // }
-
                 // A node could be obtained from the reconnection queue, try
                 // to connect now
                 long start = System.currentTimeMillis();
@@ -543,16 +533,18 @@ public class ReconnectManager extends PFComponent {
                         // Reconnect
                         currentNode.reconnect();
                     } catch (InvalidIdentityException e) {
-                        log.log(Level.WARNING, "Invalid identity from "
-                            + currentNode + ". Trying to connect to IP", e);
-
                         Identity otherNodeId = e.getFrom().getIdentity();
                         MemberInfo otherNodeInfo = otherNodeId != null
                             && otherNodeId.getMemberInfo() != null
                             ? otherNodeId.getMemberInfo()
                             : null;
 
-                        if (otherNodeInfo != null) {
+                        if (otherNodeInfo != null
+                            && otherNodeInfo.isOnSameNetwork(getController()))
+                        {
+                            logWarning(
+                                "Invalid identity from " + currentNode
+                                    + ". Triing to connect to IP", e);
                             try {
                                 ConnectionHandler conHan = getController()
                                     .getIOProvider()
@@ -561,7 +553,7 @@ public class ReconnectManager extends PFComponent {
                                 getController().getNodeManager()
                                     .acceptConnection(conHan);
                             } catch (ConnectionException e1) {
-                                logFiner("ConnectionException", e1);
+                                logFiner(e1);
                             }
                         }
                     }
