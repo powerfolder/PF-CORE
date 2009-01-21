@@ -67,6 +67,7 @@ public class Identity extends Message {
     // shouldn't deny the
     // remote side to decide how it wants to download.
     // Leftover for semi-old clients
+    @SuppressWarnings("unused")
     private boolean supportingPartTransfers = true;
 
     /**
