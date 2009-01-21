@@ -130,7 +130,6 @@ public class Download extends Transfer {
      * 
      * @param fileInfo
      *            the fileInfo the remote side uses.
-     * @param usedFileInfo
      */
     public void uploadStarted(FileInfo fileInfo) {
         checkFileInfo(fileInfo);
@@ -179,7 +178,7 @@ public class Download extends Transfer {
      * Requests a single part from the remote peer.
      * 
      * @param range
-     * @return
+     * @return 
      * @throws BrokenDownloadException
      */
     public synchronized boolean requestPart(Range range)
@@ -300,6 +299,7 @@ public class Download extends Transfer {
 
     /**
      * This download is queued at the remote side
+     * @param fInfo 
      */
     public void setQueued(FileInfo fInfo) {
         Reject.ifNull(fInfo, "fInfo is null!");
@@ -373,7 +373,10 @@ public class Download extends Transfer {
      *         anymore or (on blacklist in folder and isRequestedAutomatic)
      */
     public boolean isBroken() {
-        if (super.isBroken() || markedBroken) {
+        if (markedBroken) {
+            return true;
+        }
+        if (super.isBroken()) {
             return true;
         }
         // timeout is, when dl is not enqued at remote side,
@@ -382,13 +385,13 @@ public class Download extends Transfer {
             - Constants.DOWNLOAD_REQUEST_TIMEOUT_LIMIT > lastTouch.getTime()
             && !queued;
         if (timedOut) {
-            logWarning("Abort cause: Timeout.");
+            logWarning("Break cause: Timeout.");
             return true;
         }
         // Check queueing at remote side
         boolean isQueuedAtPartner = stillQueuedAtPartner();
         if (!isQueuedAtPartner) {
-            logWarning("Abort cause: not queued.");
+            logWarning("Break cause: not queued.");
             return true;
         }
         // check blacklist
@@ -396,7 +399,7 @@ public class Download extends Transfer {
             getController().getFolderRepository());
         boolean onBlacklist = folder.getDiskItemFilter().isExcluded(getFile());
         if (onBlacklist) {
-            logWarning("Abort cause: On blacklist.");
+            logWarning("Break cause: On blacklist.");
             return true;
         }
 
@@ -409,7 +412,7 @@ public class Download extends Transfer {
         boolean newerFileAvailable = getFile().isNewerAvailable(
             getController().getFolderRepository());
         if (newerFileAvailable) {
-            logWarning("Abort cause: Newer version available. "
+            logWarning("Break cause: Newer version available. "
                 + getFile().toDetailString());
             return true;
         }
