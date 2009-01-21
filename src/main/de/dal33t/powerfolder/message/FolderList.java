@@ -24,7 +24,7 @@ import java.util.Collection;
 import java.util.List;
 
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.util.StringUtils;
+import de.dal33t.powerfolder.util.Reject;
 
 /**
  * List of available folders
@@ -55,20 +55,19 @@ public class FolderList extends Message {
      *            the magic id which was sent by the remote side
      */
     public FolderList(Collection<FolderInfo> allFolders, String remoteMagicId) {
+        Reject.ifBlank(remoteMagicId, "Remote magic id is blank");
         // Split folderlist into secret and public list
         // Encrypt secret folder ids with magic id
         List<FolderInfo> secretFos = new ArrayList<FolderInfo>(allFolders
             .size());
         for (FolderInfo folderInfo : allFolders) {
-            if (!StringUtils.isBlank(remoteMagicId)) {
-                // Send secret folder infos if magic id is not empty
-                // Clone folderinfo
-                FolderInfo secretFolder = (FolderInfo) folderInfo.clone();
-                // Set Id to secure Id
-                secretFolder.id = secretFolder.calculateSecureId(remoteMagicId);
-                // Secret folder, encrypt folder id with magic id
-                secretFos.add(secretFolder);
-            }
+            // Send secret folder infos if magic id is not empty
+            // Clone folderinfo
+            FolderInfo secretFolder = (FolderInfo) folderInfo.clone();
+            // Set Id to secure Id
+            secretFolder.id = secretFolder.calculateSecureId(remoteMagicId);
+            // Secret folder, encrypt folder id with magic id
+            secretFos.add(secretFolder);
         }
         this.secretFolders = new FolderInfo[secretFos.size()];
         secretFos.toArray(secretFolders);
