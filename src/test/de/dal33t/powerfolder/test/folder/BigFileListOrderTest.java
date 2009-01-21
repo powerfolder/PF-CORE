@@ -115,7 +115,7 @@ public class BigFileListOrderTest extends TwoControllerTestCase {
     private static FileInfo createRandomFileInfo(FolderInfo foInfo) {
         FileInfo fInfo = new FileInfo(foInfo, UUID.randomUUID().toString()
             .intern());
-        MemberInfo m = new MemberInfo("test", "ID");
+        MemberInfo m = new MemberInfo("test", "ID", null);
         fInfo.setModifiedInfo(m, new Date());
         return fInfo;
     }
