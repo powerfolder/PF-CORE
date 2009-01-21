@@ -56,7 +56,7 @@ public class PersistentTaskManagerTestCase extends TwoControllerTestCase {
         assertFalse(man.hasTasks());
         assertEquals(man.activeTaskCount(), 0);
 
-        MemberInfo inf = new MemberInfo("Nobody", "0");
+        MemberInfo inf = new MemberInfo("Nobody", "0", null);
         getContollerBart().getNodeManager().addNode(inf);
 
         man.scheduleTask(new SendMessageTask(getFolderAtBart()
