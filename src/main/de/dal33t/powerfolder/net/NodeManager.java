@@ -19,36 +19,11 @@
  */
 package de.dal33t.powerfolder.net;
 
-import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Constants;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.clientserver.ServerClient;
-import de.dal33t.powerfolder.event.ListenerSupportFactory;
-import de.dal33t.powerfolder.event.NodeManagerEvent;
-import de.dal33t.powerfolder.event.NodeManagerListener;
-import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.message.*;
-import de.dal33t.powerfolder.util.Convert;
-import de.dal33t.powerfolder.util.Debug;
-import de.dal33t.powerfolder.util.IdGenerator;
-import de.dal33t.powerfolder.util.MessageListenerSupport;
-import de.dal33t.powerfolder.util.NamedThreadFactory;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.WrappingTimer;
-import de.dal33t.powerfolder.util.compare.MemberComparator;
-import de.dal33t.powerfolder.util.net.AddressRange;
-import de.dal33t.powerfolder.util.net.NetworkUtil;
-import de.dal33t.powerfolder.util.task.SendMessageTask;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
-import java.net.Socket;
 import java.net.URL;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -73,6 +48,36 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Constants;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.clientserver.ServerClient;
+import de.dal33t.powerfolder.event.ListenerSupportFactory;
+import de.dal33t.powerfolder.event.NodeManagerEvent;
+import de.dal33t.powerfolder.event.NodeManagerListener;
+import de.dal33t.powerfolder.light.MemberInfo;
+import de.dal33t.powerfolder.message.AddFriendNotification;
+import de.dal33t.powerfolder.message.Identity;
+import de.dal33t.powerfolder.message.KnownNodes;
+import de.dal33t.powerfolder.message.Message;
+import de.dal33t.powerfolder.message.MessageListener;
+import de.dal33t.powerfolder.message.Problem;
+import de.dal33t.powerfolder.message.RequestNodeList;
+import de.dal33t.powerfolder.message.TransferStatus;
+import de.dal33t.powerfolder.util.Convert;
+import de.dal33t.powerfolder.util.Debug;
+import de.dal33t.powerfolder.util.IdGenerator;
+import de.dal33t.powerfolder.util.MessageListenerSupport;
+import de.dal33t.powerfolder.util.NamedThreadFactory;
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.WrappingTimer;
+import de.dal33t.powerfolder.util.compare.MemberComparator;
+import de.dal33t.powerfolder.util.net.AddressRange;
+import de.dal33t.powerfolder.util.net.NetworkUtil;
+import de.dal33t.powerfolder.util.task.SendMessageTask;
+
 /**
  * Managing class which takes care about all old and new nodes. reconnects those
  * who disconnected and connectes to new ones
@@ -95,7 +100,7 @@ public class NodeManager extends PFComponent {
     private ExecutorService threadPool;
 
     /** The list of active acceptors for incoming connections */
-    private List<Acceptor> acceptors;
+    List<AbstractAcceptor> acceptors;
 
     // Lock which is hold while a acception is pending
     private Object acceptLock = new Object();
@@ -106,6 +111,14 @@ public class NodeManager extends PFComponent {
     private List<AddressRange> lanRanges;
 
     private Member mySelf;
+
+    /**
+     * @see ConfigurationEntry#NETWORK_ID
+     *      <p>
+     *      #1373
+     */
+    private String networkId;
+    
     /**
      * Set containing all nodes, that went online in the meanwhile (since last
      * broadcast)
@@ -149,7 +162,9 @@ public class NodeManager extends PFComponent {
             }
             ConfigurationEntry.NODE_ID.setValue(getController(), id);
         }
-        mySelf = new Member(getController(), nick, id);
+        networkId = ConfigurationEntry.NETWORK_ID.getValue(getController());
+        mySelf = new Member(getController(),
+            new MemberInfo(nick, id, networkId));
         logInfo("I am '" + mySelf.getNick() + "'");
 
         // Use concurrent hashmap
@@ -163,8 +178,8 @@ public class NodeManager extends PFComponent {
             .synchronizedSet(new HashSet<MemberInfo>());
 
         // Acceptors
-        acceptors = Collections.synchronizedList(new ArrayList<Acceptor>());
-
+        acceptors = Collections.synchronizedList(new ArrayList<AbstractAcceptor>());
+        
         // Value message/event listner support
         valveMessageListenerSupport = new MessageListenerSupport(this);
 
@@ -265,10 +280,10 @@ public class NodeManager extends PFComponent {
 
         logFine("Shutting down " + acceptors.size()
             + " incoming connections (Acceptors)");
-        List<Acceptor> tempList = new ArrayList<Acceptor>(acceptors);
-        for (Acceptor acceptor : tempList) {
+        for (AbstractAcceptor acceptor : acceptors) {
             acceptor.shutdown();
         }
+        acceptors.clear();
 
         if (timer != null) {
             timer.cancel();
@@ -278,19 +293,19 @@ public class NodeManager extends PFComponent {
 
         Collection<Member> conNode = new ArrayList<Member>(connectedNodes);
         logFine("Shutting down connected nodes (" + conNode.size() + ")");
-        ExecutorService threadPool = Executors.newFixedThreadPool(Math.max(1,
+        ExecutorService shutdownThreadPool = Executors.newFixedThreadPool(Math.max(1,
             conNode.size() / 5));
-        Collection<Future> shutdowns = new ArrayList<Future>();
+        Collection<Future<?>> shutdowns = new ArrayList<Future<?>>();
         for (final Member node : conNode) {
             Runnable killer = new Runnable() {
                 public void run() {
                     node.shutdown();
                 }
             };
-            shutdowns.add(threadPool.submit(killer));
+            shutdowns.add(shutdownThreadPool.submit(killer));
         }
 
-        for (Future future : shutdowns) {
+        for (Future<?> future : shutdowns) {
             try {
                 future.get();
             } catch (InterruptedException e) {
@@ -299,7 +314,7 @@ public class NodeManager extends PFComponent {
             } catch (ExecutionException e) {
             }
         }
-        threadPool.shutdown();
+        shutdownThreadPool.shutdown();
 
         // "Traditional" shutdown
         logFine("Shutting down " + knownNodes.size() + " nodes");
@@ -435,6 +450,13 @@ public class NodeManager extends PFComponent {
     public Member getMySelf() {
         return mySelf;
     }
+    
+    /**
+     * @return the network ID this nodemanager belongs to. #1373
+     */
+    public String getNetworkId() {
+        return networkId;
+    }
 
     /**
      * @param member
@@ -560,24 +582,6 @@ public class NodeManager extends PFComponent {
     }
 
     /**
-     * Gets the list of nodes, which have filelist for the given folder.
-     * 
-     * @param foInfo
-     *            the folder to search for
-     * @return the list of members, which have a filelist for the folder.
-     */
-    public List<Member> getNodeWithFileListFrom(FolderInfo foInfo) {
-        Reject.ifNull(foInfo, "Folder is null");
-        List<Member> found = new ArrayList<Member>();
-        for (Member canidate : knownNodes.values()) {
-            if (canidate.hasFileListFor(foInfo)) {
-                found.add(canidate);
-            }
-        }
-        return found;
-    }
-
-    /**
      * Removes a member from the known list
      * 
      * @param node
@@ -640,6 +644,7 @@ public class NodeManager extends PFComponent {
      * 
      * @param node
      * @param friend
+     * @param personalMessage 
      */
     public void friendStateChanged(Member node, boolean friend,
         String personalMessage)
@@ -805,6 +810,11 @@ public class NodeManager extends PFComponent {
                 continue;
             }
 
+            if (!newNode.isOnSameNetwork(getController())) {
+                // Never add nodes from other networks
+                continue;
+            }
+
             // Ask filters if this node is valueable to us
             boolean ignoreNode = true;
             for (NodeFilter filter : nodeFilters) {
@@ -877,29 +887,24 @@ public class NodeManager extends PFComponent {
     }
 
     /**
-     * Accpets a node, method does not block like
-     * <code>acceptNode(Socket)</code>
+     * Accept a node, method does not block.
      * 
-     * @param socket
+     * @param acceptor
      */
-    public void acceptConnectionAsynchron(Socket socket) {
+    public void acceptConnectionAsynchron(AbstractAcceptor acceptor) {
+        Reject.ifNull(acceptor, "Acceptor is null");
         // Create acceptor on socket
 
         if (!started) {
-            logWarning("Not accepting node from " + socket
+            logWarning("Not accepting connection " + acceptor
                 + ". NodeManager is not started");
-            try {
-                socket.close();
-            } catch (IOException e) {
-                logFiner("Unable to close incoming connection", e);
-            }
+            acceptor.shutdown();
             return;
         }
 
         if (isFiner()) {
-            logFiner("Connection queued for acception: " + socket + "");
+            logFiner("Connection queued for acception: " + acceptor + "");
         }
-        Acceptor acceptor = new Acceptor(socket);
 
         // Enqueue for later processing
         acceptors.add(acceptor);
@@ -907,9 +912,10 @@ public class NodeManager extends PFComponent {
 
         // Throttle acception a bit depending on how much incoming connections
         // we are currently processing.
-        long waitTime = (acceptors.size() * getController().getWaitTime()) / 400;
+        long waitTime = (acceptors.size() * Controller.getWaitTime()) / 400;
         if (isFiner()) {
-            logFiner("Currently processing incoming connections ("
+            logFiner(
+                "Currently processing incoming connections ("
                 + acceptors.size() + "), throttled (" + waitTime + "ms wait)");
         }
         if (acceptors.size() > Constants.MAX_INCOMING_CONNECTIONS) {
@@ -920,56 +926,8 @@ public class NodeManager extends PFComponent {
         try {
             Thread.sleep(waitTime);
         } catch (InterruptedException e) {
-            logFiner("InterruptedException", e);
+            logFiner(e);
         }
-    }
-
-    /**
-     * Main method for a new member connection. Connection will be validated
-     * against own member database. Duplicate connections will be dropped.
-     * 
-     * @param socket
-     * @throws ConnectionException
-     */
-    private void acceptConnection(Socket socket) throws ConnectionException {
-        if (isFiner()) {
-            logFiner("Accepting member on socket: " + socket);
-        }
-
-        if (!started) {
-            try {
-                logWarning("NodeManager already shut down. Not accepting any more nodes. Closing socket "
-                    + socket);
-                socket.close();
-            } catch (IOException e) {
-                throw new ConnectionException("Unable to close socket", e);
-            }
-            return;
-        }
-
-        // Build handler around socket, will do handshake
-        if (isFiner()) {
-            logFiner("Initalizing connection handler to " + socket);
-        }
-
-        ConnectionHandler handler = null;
-        try {
-            handler = getController().getIOProvider()
-                .getConnectionHandlerFactory()
-                .createAndInitSocketConnectionHandler(getController(), socket);
-        } catch (ConnectionException e) {
-            if (handler != null) {
-                handler.shutdown();
-            }
-            throw e;
-        }
-
-        if (isFiner()) {
-            logFiner("Connection handler ready " + handler);
-        }
-
-        // Accept node
-        acceptConnection(handler);
     }
 
     /**
@@ -1119,6 +1077,13 @@ public class NodeManager extends PFComponent {
         }
 
         knownNodes.put(node.getId(), node);
+        
+        if (!node.isOnSameNetwork()) {
+            logWarning(
+                "Added node with diffrent network id. Our netID: " + networkId
+                    + ", node netID: " + node.getInfo().networkId + ". "
+                    + node, new RuntimeException("here"));
+        }
 
         // Fire new node event
         fireNodeAdded(node);
@@ -1471,7 +1436,7 @@ public class NodeManager extends PFComponent {
         valveMessageListenerSupport.addMessageListener(listener);
     }
 
-    public void addMessageListenerToAllNodes(Class messageType,
+    public void addMessageListenerToAllNodes(Class<? extends Message> messageType,
         MessageListener listener)
     {
         valveMessageListenerSupport.addMessageListener(messageType, listener);
@@ -1482,75 +1447,7 @@ public class NodeManager extends PFComponent {
     }
 
     // Internal classes *******************************************************
-
-    /**
-     * Processor for one incoming connection on a socket
-     * 
-     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
-     */
-    private class Acceptor implements Runnable {
-        private Socket socket;
-        private Date startTime;
-
-        private Acceptor(Socket aSocket) {
-            Reject.ifNull(aSocket, "Socket is null");
-            socket = aSocket;
-        }
-
-        /**
-         * Shuts the acceptor down and closes the socket
-         */
-        private void shutdown() {
-            try {
-                socket.close();
-            } catch (IOException e) {
-                logFiner("Unable to close socket from acceptor", e);
-            }
-            // Remove from acceptors list
-            acceptors.remove(this);
-        }
-
-        /**
-         * @return if this acceptor has a timeout
-         */
-        private boolean hasTimeout() {
-            if (startTime == null) {
-                // Not started yet
-                return false;
-            }
-            return System.currentTimeMillis() > startTime.getTime() +
-                    Constants.INCOMING_CONNECTION_TIMEOUT * 1000;
-        }
-
-        public void run() {
-            try {
-                startTime = new Date();
-                logFiner("Accepting connection from: "
-                    + socket.getInetAddress() + ":" + socket.getPort());
-                acceptConnection(socket);
-            } catch (ConnectionException e) {
-                logFiner("Unable to connect to " + socket, e);
-                shutdown();
-            } catch (RuntimeException t) {
-                logSevere("RuntimeException", t);
-                shutdown();
-                throw t;
-            } finally {
-                // Remove from acceptors list
-                acceptors.remove(this);
-            }
-            long took = System.currentTimeMillis() - startTime.getTime();
-            if (isFiner()) {
-                logFiner("Acceptor finished to " + socket + ", took " + took
-                    + "ms");
-            }
-        }
-
-        public String toString() {
-            return "Acceptor for " + socket;
-        }
-    }
-
+    
     /**
      * Sets up all tasks, that needs to be periodically executed.
      */
@@ -1573,7 +1470,7 @@ public class NodeManager extends PFComponent {
             Constants.NODES_THAN_WENT_ONLINE_BROADCAST_TIME * 1000 / 2,
             Constants.NODES_THAN_WENT_ONLINE_BROADCAST_TIME * 1000);
         // Check incoming connection tries
-        timer.schedule(new IncomingConnectionChecker(), 0,
+        timer.schedule(new AcceptorsChecker(), 0,
             Constants.INCOMING_CONNECTION_CHECK_TIME * 1000);
 
         // Write statistics and other infos.
@@ -1623,26 +1520,33 @@ public class NodeManager extends PFComponent {
     }
 
     /**
-     * Checks the currently atempted connection tries for timeouts.
+     * Checks the currently attempted connection tries for timeouts.
      */
-    private class IncomingConnectionChecker extends TimerTask {
+    private class AcceptorsChecker extends TimerTask {
         @Override
         public void run() {
-            List<Acceptor> tempList = new ArrayList<Acceptor>(acceptors);
             ThreadPoolExecutor es = (ThreadPoolExecutor) threadPool;
-            logFine("Checking incoming connection queue (" + tempList.size()
-                + ", " + es.getActiveCount() + "/" + es.getCorePoolSize()
-                + " threads)");
-            if (tempList.size() > Constants.MAX_INCOMING_CONNECTIONS) {
-                logWarning("Processing too many incoming connections ("
-                    + tempList.size() + ", " + es.getActiveCount() + "/"
-                    + es.getCorePoolSize() + " threads)");
+            int size = acceptors.size();
+            logFine(
+                "Checking incoming connection queue (" + size + ", "
+                    + es.getActiveCount() + "/" + es.getCorePoolSize()
+                    + " threads)");
+            if (size > Constants.MAX_INCOMING_CONNECTIONS) {
+                logWarning(
+                    "Processing too many incoming connections (" + size + ", "
+                        + es.getActiveCount() + "/" + es.getCorePoolSize()
+                        + " threads)");
             }
-            for (Acceptor acceptor : tempList) {
+            List<AbstractAcceptor> timeouted = new ArrayList<AbstractAcceptor>();
+            for (AbstractAcceptor acceptor : acceptors) {
                 if (acceptor.hasTimeout()) {
-                    logWarning("Acceptor has timeout: " + acceptor);
-                    acceptor.shutdown();
+                    timeouted.add(acceptor);
                 }
+            }
+            for (AbstractAcceptor acceptor : timeouted) {
+                logFine("Acceptor has timeout: " + acceptor);
+                acceptor.shutdown();
+                acceptors.remove(acceptor);
             }
         }
     }
