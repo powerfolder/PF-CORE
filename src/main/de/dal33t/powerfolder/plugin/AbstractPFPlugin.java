@@ -22,6 +22,7 @@ package de.dal33t.powerfolder.plugin;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.ui.preferences.PreferencesDialog;
+import de.dal33t.powerfolder.util.Reject;
 
 /**
  * For your convenience an implementation of the plugin interface that does not
@@ -36,9 +37,23 @@ public abstract class AbstractPFPlugin extends PFComponent implements Plugin {
      * this contructor will be called always, even if disabled. disabled means
      * that start will not be called, so when overwiting this contructor make
      * sure not to do much in there move all code to start().
+     * @param controller 
      */
     public AbstractPFPlugin(Controller controller) {
         super(controller);
+    }
+    
+
+    /**
+     * @param controller
+     * @param searchClass
+     * @return the first plugin with the given class.
+     */
+    public static Plugin findPluginByClass(Controller controller,
+        Class<?> searchClass)
+    {
+        Reject.ifNull(controller, "Controller is null");
+        return controller.getPluginManager().findPluginByClass(searchClass);
     }
 
     /** overwrite this to return true if you implement showOptionsDialog */
