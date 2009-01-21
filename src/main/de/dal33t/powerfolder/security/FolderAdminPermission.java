@@ -35,6 +35,7 @@ import de.dal33t.powerfolder.util.Reject;
 public class FolderAdminPermission extends FolderPermission {
     private static final long serialVersionUID = 100L;
 
+    @SuppressWarnings("hiding")
     @Deprecated
     private FolderInfo folder;
 
@@ -45,8 +46,8 @@ public class FolderAdminPermission extends FolderPermission {
     }
 
     public boolean migrate() {
-        if (super.folderInfo == null) {
-            super.folderInfo = folder;
+        if (super.folder == null) {
+            super.folder = folder;
             folder = null;
             return true;
         }
@@ -55,20 +56,20 @@ public class FolderAdminPermission extends FolderPermission {
 
     // Serialization compatibility ********************************************
 
-//    private void readObject(ObjectInputStream in) throws IOException,
-//        ClassNotFoundException
-//    {
-//        in.defaultReadObject();
-//        if (folder != null) {
-//            super.folderInfo = folder;
-//        }
-//    }
-//
-//    private void writeObject(ObjectOutputStream out) throws IOException {
-//
-//        if (super.folderInfo != null) {
-//            folder = super.folderInfo;
-//        }
-//        out.defaultWriteObject();
-//    }
+    private void readObject(ObjectInputStream in) throws IOException,
+        ClassNotFoundException
+    {
+        in.defaultReadObject();
+        if (folder != null) {
+            super.folder = folder;
+        }
+    }
+
+    private void writeObject(ObjectOutputStream out) throws IOException {
+
+        if (super.folder != null) {
+            folder = super.folder;
+        }
+        out.defaultWriteObject();
+    }
 }

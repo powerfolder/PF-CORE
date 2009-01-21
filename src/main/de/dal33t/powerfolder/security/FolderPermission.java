@@ -30,23 +30,25 @@ import de.dal33t.powerfolder.util.Reject;
  */
 public abstract class FolderPermission implements Permission {
     private static final long serialVersionUID = 100L;
-
-    protected FolderInfo folderInfo;
+    
+    public static final String PROPERTYNAME_FOLDER = "folder";
+    
+    protected FolderInfo folder;
 
     protected FolderPermission(FolderInfo foInfo) {
         Reject.ifNull(foInfo, "Folderinfo is null");
-        folderInfo = foInfo;
+        folder = foInfo;
     }
 
     public FolderInfo getFolder() {
-        return folderInfo;
+        return folder;
     }
 
     @Override
     public int hashCode() {
         final int PRIME = 31;
         int result = 1;
-        result = PRIME * result + ((folderInfo == null) ? 0 : folderInfo.hashCode());
+        result = PRIME * result + ((folder == null) ? 0 : folder.hashCode());
         return result;
     }
 
@@ -59,15 +61,15 @@ public abstract class FolderPermission implements Permission {
         if (getClass() != obj.getClass())
             return false;
         final FolderPermission other = (FolderPermission) obj;
-        if (folderInfo == null) {
-            if (other.folderInfo != null)
+        if (folder == null) {
+            if (other.folder != null)
                 return false;
-        } else if (!folderInfo.equals(other.folderInfo))
+        } else if (!folder.equals(other.folder))
             return false;
         return true;
     }
 
     public String toString() {
-        return getClass().getSimpleName() + " on " + folderInfo;
+        return getClass().getSimpleName() + " on " + folder;
     }
 }
