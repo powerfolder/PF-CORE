@@ -28,6 +28,7 @@ import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_SYNC_PRO
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_WHITELIST;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -56,6 +57,8 @@ import de.dal33t.powerfolder.event.SynchronizationStatsListener;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.transfer.FileRequestor;
 import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.Profiling;
+import de.dal33t.powerfolder.util.ProfilingEntry;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
@@ -97,6 +100,11 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     /** The disk scanner */
     private FolderScanner folderScanner;
+    
+    /**
+     * The current synchronizater of all folder memberships
+     */
+    private AllFolderMembershipSynchronizer folderMembershipSynchronizer;
 
     /**
      * Field list for backup taget pre #777. Used to convert to new backup
@@ -265,6 +273,8 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         if (folderDir == null) {
             logSevere("No folder directory for " + folderName);
+            removeConfigEntries(folderName);
+            getController().saveConfig();
             return null;
         }
 
@@ -334,6 +344,9 @@ public class FolderRepository extends PFComponent implements Runnable {
      * Shuts down folder repo
      */
     public void shutdown() {
+        if (folderMembershipSynchronizer != null) {
+            folderMembershipSynchronizer.canceled = true;
+        }
         folderScanner.shutdown();
 
         if (myThread != null) {
@@ -510,7 +523,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         saveFolderConfig(folderInfo, folderSettings, saveConfig);
 
         // Synchronize folder memberships
-        synchronizeAllFolderMemberships();
+        triggerSynchronizeAllFolderMemberships();
 
         // Calc stats
         folder.getStatistic().scheduleCalculate();
@@ -589,36 +602,23 @@ public class FolderRepository extends PFComponent implements Runnable {
         // remove folder from config
         Properties config = getController().getConfig();
 
-        FolderInfo folderInfo = folder.getInfo();
-        config.remove(FOLDER_SETTINGS_PREFIX + folderInfo.name
-            + FOLDER_SETTINGS_ID);
-        config.remove(FOLDER_SETTINGS_PREFIX + folderInfo.name
-            + FOLDER_SETTINGS_DIR);
-        // Save sync profiles as internal configuration for custom profiles.
-        config.remove(FOLDER_SETTINGS_PREFIX + folderInfo.name
-            + FOLDER_SETTINGS_SYNC_PROFILE);
-        // Inverse logic for backward compatability.
-        config.remove(FOLDER_SETTINGS_PREFIX + folderInfo.name
-            + FOLDER_SETTINGS_DONT_RECYCLE);
-        config.remove(FOLDER_SETTINGS_PREFIX + folderInfo.name
-            + FOLDER_SETTINGS_PREVIEW);
-        config.remove(FOLDER_SETTINGS_PREFIX + folderInfo.name
-            + FOLDER_SETTINGS_WHITELIST);
-
-        // Cleaning up old configs
-        config.remove(FOLDER_SETTINGS_PREFIX + folderInfo.name + ".secret");
-
+        // remove folder from config
+        removeConfigEntries(folder.getInfo().name);
+        
         // Save config
         getController().saveConfig();
 
         // Remove internal
         folders.remove(folder.getInfo());
+        
+        // Break transfers
+        getController().getTransferManager().breakTransfers(folder.getInfo());
 
         // Shutdown folder
         folder.shutdown();
 
         // synchronizememberships
-        synchronizeAllFolderMemberships();
+        triggerSynchronizeAllFolderMemberships();
 
         // Abort scanning
         boolean folderCurrentlyScannng = folder.equals(folderScanner
@@ -629,17 +629,12 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         // Delete the .PowerFolder dir and contents
         if (deleteSystemSubDir) {
-            File systemSubDir = folder.getSystemSubDir();
-            File[] files = systemSubDir.listFiles();
-            for (File file : files) {
-                if (!file.delete()) {
-                    logSevere("Failed to delete: " + file);
-                }
+            try {
+                FileUtils.recursiveDelete(folder.getSystemSubDir());
+            } catch (IOException e) {
+                logSevere("Failed to delete: " + folder.getSystemSubDir());
             }
-            if (!systemSubDir.delete()) {
-                logSevere("Failed to delete: " + systemSubDir);
-            }
-
+            
             // Try to delete the invitation.
             File invite = new File(folder.getLocalBase(), folder.getName()
                 + ".invitation");
@@ -685,20 +680,24 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
-     * Synchronizes all known members with our folders
+     * Triggers the synchronization of all known members with our folders. The
+     * work is done in background thread. Former synchronization processed the
+     * canceled.
      */
-    private void synchronizeAllFolderMemberships() {
+    private void triggerSynchronizeAllFolderMemberships() {
         if (!started) {
-            logFiner("Not synchronizing Foldermemberships, repo not started, yet");
+            logFiner(
+                "Not synchronizing Foldermemberships, repo not started, yet");
         }
-        if (isFiner()) {
-            logFiner("All Nodes: Synchronize Foldermemberships");
+        AllFolderMembershipSynchronizer syncer = folderMembershipSynchronizer;
+        if (syncer != null) {
+            // Cancel the syncer
+            syncer.canceled = true;
         }
-        Collection<Member> connectedNodes = getController().getNodeManager()
-            .getConnectedNodes();
-        Collection<FolderInfo> myJoinedFolders = getJoinedFolderInfos();
-        for (Member node : connectedNodes) {
-            node.synchronizeFolderMemberships(myJoinedFolders);
+        syncer = new AllFolderMembershipSynchronizer();
+        folderMembershipSynchronizer = syncer;
+        if (getController().getThreadPool() != null) {
+            getController().getThreadPool().submit(syncer);
         }
     }
 
@@ -751,7 +750,11 @@ public class FolderRepository extends PFComponent implements Runnable {
                 if (getController().isUIOpen()) {
                     break;
                 }
-                w.waitABit();
+                try {
+                    w.waitABit();
+                } catch (Exception e) {
+                    return;
+                }
             }
             try {
                 // initial wait before first scan
@@ -906,6 +909,56 @@ public class FolderRepository extends PFComponent implements Runnable {
             if (folder.isPreviewOnly()) {
                 removeFolder(folder, true);
             }
+        }
+    }
+    
+    private void removeConfigEntries(String folderName) {
+        Properties config = getController().getConfig();
+        config.remove(FOLDER_SETTINGS_PREFIX + folderName + FOLDER_SETTINGS_ID);
+        config
+            .remove(FOLDER_SETTINGS_PREFIX + folderName + FOLDER_SETTINGS_DIR);
+        // Save sync profiles as internal configuration for custom profiles.
+        config.remove(FOLDER_SETTINGS_PREFIX + folderName
+            + FOLDER_SETTINGS_SYNC_PROFILE);
+        // Inverse logic for backward compatability.
+        config.remove(FOLDER_SETTINGS_PREFIX + folderName
+            + FOLDER_SETTINGS_DONT_RECYCLE);
+        config.remove(FOLDER_SETTINGS_PREFIX + folderName
+            + FOLDER_SETTINGS_PREVIEW);
+        config.remove(FOLDER_SETTINGS_PREFIX + folderName
+            + FOLDER_SETTINGS_WHITELIST);
+        // Cleaning up old configs
+        config.remove(FOLDER_SETTINGS_PREFIX + folderName + ".secret");
+    }
+
+    private class AllFolderMembershipSynchronizer implements Runnable {
+        private volatile boolean canceled;
+
+        public void run() {
+            if (canceled) {
+                logFine(
+                    "Not synchronizing Foldermemberships, "
+                        + "operation already canceled yet");
+                return;
+            }
+            ProfilingEntry pe = Profiling
+                .start("synchronizeAllFolderMemberships");
+            if (isFiner()) {
+                logFiner("All Nodes: Synchronize Foldermemberships");
+            }
+            Collection<Member> connectedNodes = getController()
+                .getNodeManager().getConnectedNodes();
+            Collection<FolderInfo> myJoinedFolders = getJoinedFolderInfos();
+            for (Member node : connectedNodes) {
+                node.synchronizeFolderMemberships(myJoinedFolders);
+                if (canceled) {
+                    logFine("Foldermemberships synchroniziation cancelled");
+                    return;
+                }
+            }
+            Profiling.end(pe, 1000);
+            // Normal termination, remove synchronizer
+            folderMembershipSynchronizer = null;
         }
     }
 }
