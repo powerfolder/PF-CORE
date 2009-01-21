@@ -482,7 +482,8 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
      * @return if there is a newer version available of this file
      */
     public boolean isNewerAvailable(FolderRepository repo) {
-        return getNewestVersion(repo).isNewerThan(this);
+        FileInfo newestFileInfo = getNewestVersion(repo);
+        return newestFileInfo != null && newestFileInfo.isNewerThan(this);
     }
 
     /**
