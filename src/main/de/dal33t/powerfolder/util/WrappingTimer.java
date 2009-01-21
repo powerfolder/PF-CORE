@@ -130,9 +130,10 @@ public class WrappingTimer extends Timer {
                 LOG.log(Level.SEVERE, "Exception in timertask: " + deligate, e);
             } finally {
                 long took = System.currentTimeMillis() - start;
-                if (took > 5000) {
+                if (took > 10000L) {
                     LOG.severe("Timer task took " + took + "ms to complete: "
-                        + deligate);
+                        + deligate
+                        + ". Use own thread or threadpool for execution.");
                 }
                 if (pe != null) {
                     Profiling.end(pe);
