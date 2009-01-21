@@ -167,9 +167,9 @@ public class ByteSerializer extends Loggable {
      */
     public byte[] read(InputStream in, int expectedSize) throws IOException {
         if (expectedSize > MAX_BUFFER_SIZE) {
-            logSevere("Max buffersize overflow while reading. expected size "
-                + expectedSize);
-            return null;
+            throw new IOException(
+                "Max buffersize overflow while reading. expected size "
+                    + expectedSize);
         }
         byte[] byteIn = null;
 
