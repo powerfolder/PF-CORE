@@ -253,41 +253,39 @@ public class FileRequestor extends PFComponent {
     private class Worker implements Runnable {
         public void run() {
             while (!myThread.isInterrupted()) {
-                if (folderQueue.isEmpty()) {
-                    synchronized (folderQueue) {
-                        try {
+                try {
+                    if (folderQueue.isEmpty()) {
+                        synchronized (folderQueue) {
                             folderQueue.wait();
-                        } catch (InterruptedException e) {
-                            logFine("Stopped");
-                            logFiner(e);
-                            break;
                         }
                     }
-                }
 
-                int nFolders = folderQueue.size();
-                logInfo(
-                    "Start requesting files for " + nFolders + " folder(s)");
-                long start = System.currentTimeMillis();
-                for (Iterator<Folder> it = folderQueue.iterator(); it.hasNext();)
-                {
-                    requestMissingFilesForAutodownload(it.next());
-                    it.remove();
-                }
-                if (isFiner()) {
-                    long took = System.currentTimeMillis() - start;
-                    logFiner(
-                        "Requesting files for " + nFolders + " folder(s) took "
-                            + took + "ms.");
-                }
+                    int nFolders = folderQueue.size();
+                    logInfo(
+                            "Start requesting files for " + nFolders
+                                + " folder(s)");
+                    long start = System.currentTimeMillis();
+                    for (Iterator<Folder> it = folderQueue.iterator(); it
+                        .hasNext();)
+                    {
+                        requestMissingFilesForAutodownload(it.next());
+                        it.remove();
+                    }
+                    if (isFiner()) {
+                        long took = System.currentTimeMillis() - start;
+                        logFiner(
+                            "Requesting files for " + nFolders
+                                + " folder(s) took " + took + "ms.");
+                    }
 
-                try {
                     // Sleep a bit to avoid spamming
                     Thread.sleep(250);
                 } catch (InterruptedException e) {
                     logFine("Stopped");
                     logFiner(e);
                     break;
+                } catch (RuntimeException e) {
+                    logSevere("RuntimeException: " + e.toString(), e);
                 }
             }
         }
