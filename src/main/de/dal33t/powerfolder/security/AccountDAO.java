@@ -37,7 +37,8 @@ public interface AccountDAO {
     /**
      * @param folderId
      *            the folder id the account has permission to
-     * @return all accounts that have any folder permission to that folder
+     * @return all accounts that have any
+     *         <code>FolderPermission<code> to that folder.
      */
     Collection<Account> findWithFolderPermission(String folderId);
 
