@@ -161,7 +161,7 @@ public class Constants {
      * The number of incoming connections to queue until the connection is
      * throttled. Socket backlog is two times this value.
      */
-    public static final int MAX_INCOMING_CONNECTIONS = 40;
+    public static final int MAX_INCOMING_CONNECTIONS = 50;
 
     /**
      * The time interval in seconds when the incoming connections should be
@@ -202,11 +202,21 @@ public class Constants {
      * The maximun number of enqued download from a internet connected node
      */
     public static final int MAX_DLS_FROM_INET_MEMBER = 10;
+    
+    /**
+     * Start uploads until 500kb is started in uploads
+     */
+    public static final long START_UPLOADS_TILL_PLANNED_SIZE_INET = 500 * 1024;
 
     /**
      * The maximun number of enqued download from a lan connected node
      */
     public static final int MAX_DLS_FROM_LAN_MEMBER = 50;
+    
+    /**
+     * Start uploads until 3mb is started in uploads
+     */
+    public static final long START_UPLOADS_TILL_PLANNED_SIZE_LAN = 3 * 1024 * 1024;
 
     /**
      * The download timeout of a request. After that time of inactivity the
