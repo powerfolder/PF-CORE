@@ -51,6 +51,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
@@ -73,6 +74,7 @@ import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.transfer.TransferPriorities;
 import de.dal33t.powerfolder.transfer.TransferPriorities.TransferPriority;
 import de.dal33t.powerfolder.util.Convert;
+import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.FileCopier;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.InvitationUtil;
@@ -324,7 +326,9 @@ public class Folder extends PFComponent {
         }
         if (hasOwnDatabase) {
             // Write filelist
-            if (LoggingManager.isLogToFile()) {
+            if (LoggingManager.isLogToFile()
+                && Feature.DEBUG_WRITE_FILELIST_CSV.isEnabled())
+            {
                 writeFilelist();
             }
         }
@@ -1669,18 +1673,20 @@ public class Folder extends PFComponent {
      * @param member
      */
     public void join(Member member) {
-        join0(member);
-
-        // Fire event
-        fireMemberJoined(member);
+        if (join0(member)) {
+            // Fire event if this member is new
+            fireMemberJoined(member);
+        }
     }
 
     /**
      * Joins a member to the folder. Does not fire the event
      * 
      * @param member
+     * @return true if this member is new to the folder. false if he was already
+     *         a member.
      */
-    private void join0(Member member) {
+    private boolean join0(Member member) {
         Reject.ifNull(member, "Member is null, unable to join");
         // member will be joined, here on local
         boolean wasMember = members.put(member, member) != null;
@@ -1692,6 +1698,7 @@ public class Folder extends PFComponent {
         if (!wasMember && member.isCompleteyConnected()) {
             member.sendMessagesAsynchron(FileList.createFileListMessages(this));
         }
+        return !wasMember;
     }
 
     /**
@@ -2222,7 +2229,9 @@ public class Folder extends PFComponent {
         storeFolderDB();
 
         // Write filelist
-        if (LoggingManager.isLogToFile()) {
+        if (LoggingManager.isLogToFile()
+            && Feature.DEBUG_WRITE_FILELIST_CSV.isEnabled())
+        {
             writeFilelist();
 
             // And members' filelists.
@@ -2230,9 +2239,9 @@ public class Folder extends PFComponent {
                 if (!member.isMySelf()) {
                     Collection<FileInfo> memberFiles = getFilesAsCollection(member);
                     if (memberFiles != null) {
-                        // Debug.writeFileListCSV(getName(), member.getNick(),
-                        // memberFiles, "FileList of folder " + getName()
-                        // + ", member " + member.getNick() + ':');
+                        Debug.writeFileListCSV(getName(), member.getNick(),
+                            memberFiles, "FileList of folder " + getName()
+                                + ", member " + member.getNick() + ':');
                     }
                 }
             }
@@ -2242,9 +2251,9 @@ public class Folder extends PFComponent {
 
     private void writeFilelist() {
         // Write filelist to disk
-        // Debug.writeFileListCSV(getName(),
-        // getController().getMySelf().getNick(), knownFiles.keySet(),
-        // "FileList of folder " + getName() + ", member " + this + ':');
+        Debug.writeFileListCSV(getName(),
+            getController().getMySelf().getNick(), knownFiles.keySet(),
+            "FileList of folder " + getName() + ", member " + this + ':');
     }
 
     /*
