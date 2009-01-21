@@ -119,6 +119,7 @@ public class Account extends Model implements Serializable {
             }
             permissions.add(p);
         }
+        firePropertyChange(PROPERTYNAME_PERMISSIONS, null, null);
     }
 
     public void revoke(Permission... revokePermissions) {
@@ -128,10 +129,12 @@ public class Account extends Model implements Serializable {
         for (Permission p : revokePermissions) {
             permissions.remove(p);
         }
+        firePropertyChange(PROPERTYNAME_PERMISSIONS, null, null);
     }
 
     public void revokeAllPermissions() {
         permissions.clear();
+        firePropertyChange(PROPERTYNAME_PERMISSIONS, null, null);
     }
 
     public boolean hasPermission(Permission permission) {
