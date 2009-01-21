@@ -135,7 +135,9 @@ public class ServerClient extends PFComponent {
             + '|' + IdGenerator.makeId();
         Member theNode = getController().getNodeManager().getNode(theNodeId);
         if (theNode == null) {
-            MemberInfo serverInfo = new MemberInfo(theName, theNodeId);
+            String networkId = getController().getNodeManager().getNetworkId();
+            MemberInfo serverInfo = new MemberInfo(theName, theNodeId,
+                networkId);
             // Add only to nodemanager if not temporary
             if (!temporaryNode) {
                 theNode = serverInfo.getNode(getController(), true);
