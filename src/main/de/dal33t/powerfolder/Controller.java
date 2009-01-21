@@ -956,14 +956,14 @@ public class Controller extends PFComponent {
      * Tries to bind a random port
      */
     private void bindRandomPort() {
-        if ((openListener(1337) || openListener(0))
+        if ((openListener(ConnectionListener.DEFAULT_PORT) || openListener(0))
             && connectionListener != null)
         {
             nodeManager.getMySelf().getInfo().setConnectAddress(
                 connectionListener.getAddress());
         } else {
             logSevere("failed to open random port!!!");
-            fatalStartError(Translation.getTranslation("dialog.bind_error"));
+            fatalStartError(Translation.getTranslation("dialog.binderror"));
         }
     }
 
@@ -1477,6 +1477,13 @@ public class Controller extends PFComponent {
             getUIController().getMainFrame().updateTitle();
         }
     }
+    
+    /**
+     * @return the central timer.
+     */
+    public Timer getTimer() {
+        return timer;
+    }
 
     /**
      * @return the io provider.
@@ -1922,24 +1929,26 @@ public class Controller extends PFComponent {
     }
     
     private void initClientBranding(String brandingId) {
-        this.brandingId = brandingId;
-
+  this.brandingId = brandingId;
+        
         logInfo("Starting branded distribution: " + brandingId);
         Feature.SERVER_INTERNAL_FUNCTIONS.disable();
 
         // Use icons
-        Icons.loadIconsFile("branding/" + brandingId + "/Icons.properties");
-
+        Icons.loadOverrideFile("branding/" + brandingId + "/Icons.properties");
+        
         // Load texts
         Locale l = new Locale("en", brandingId);
         Translation.saveLocalSetting(l);
         Translation.resetResourceBundle();
 
         InputStream in = Thread.currentThread().getContextClassLoader()
-            .getResourceAsStream("branding/" + brandingId + "/Client.config");
+            .getResourceAsStream(
+                "branding/" + brandingId + "/Client.config");
         if (in == null) {
-            logSevere("Branding/Preconfiguration file not found for "
-                + brandingId);
+            logSevere(
+                    "Branding/Preconfiguration file not found for "
+                        + brandingId);
             return;
         }
         try {
@@ -1950,13 +1959,14 @@ public class Controller extends PFComponent {
                 String value = preConfig.getProperty(key);
                 if (!config.containsKey(key)) {
                     config.setProperty(key, value);
-                    logFine("Preconfigured " + key + "=" + value);
+                    logWarning("Preconfigured " + key + "=" + value);
                 }
             }
-            logFine("Preconfigs found " + preConfig.size());
+            logWarning("Preconfigs found " + preConfig.size());
         } catch (Exception e) {
-            logSevere("Unable to load Branding/Preconfiguration file "
-                + brandingId, e);
+            logSevere(
+                "Unable to load Branding/Preconfiguration file "
+                    + brandingId, e);
         } finally {
             try {
                 in.close();
