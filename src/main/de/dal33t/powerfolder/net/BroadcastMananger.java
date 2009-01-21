@@ -54,7 +54,7 @@ public class BroadcastMananger extends PFComponent implements Runnable {
 
     private static final Logger log = Logger.getLogger(BroadcastMananger.class
         .getName());
-    private static final int DEFAULT_BROADCAST_PORT = 1337;
+    public static final int DEFAULT_BROADCAST_PORT = 1337;
     private static final int IN_BUFFER_SIZE = 128;
 
     private InetAddress subnetIP;
