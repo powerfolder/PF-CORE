@@ -53,9 +53,9 @@ public class SearchNodeTableModelTest extends ControllerTestCase {
         super.setUp();
 
         moe = getController().getNodeManager().addNode(
-            new MemberInfo("Moe", IdGenerator.makeId()));
+            new MemberInfo("Moe", IdGenerator.makeId(), null));
         homer = getController().getNodeManager().addNode(
-            new MemberInfo("Homer", IdGenerator.makeId()));
+            new MemberInfo("Homer", IdGenerator.makeId(), null));
 
         model = new SearchNodeTableModel(getController());
         listener = new MyTableModelListener();
