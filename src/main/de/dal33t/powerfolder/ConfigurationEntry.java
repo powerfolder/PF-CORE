@@ -52,7 +52,17 @@ public enum ConfigurationEntry {
      */
     NODE_ID("nodeid"),
     
-    // URL Settings ***********************************************************
+    /**
+     * The network ID (#1373). PowerFolder can separate logical peer-to-peer
+     * networks. Nodes with different network IDs won't connect to each other.
+     * They even don't have other nodes in its local peer-to-peer nodes
+     * database.
+     * <P>
+     * The default network ID of the open PowerFolder network is X.
+     */
+    NETWORK_ID("networkid", "X"),
+
+    // Provider Settings ******************************************************
 
     /**
      * URL of the PowerFolder homepage
@@ -364,8 +374,6 @@ public enum ConfigurationEntry {
 
     /**
      * Enable/Disable relayed connections.
-     * <P>
-     * Currently disabled see #994
      */
     UDT_CONNECTIONS_ENABLED("connections.udt", Boolean.TRUE.toString()),
 
@@ -553,6 +561,13 @@ public enum ConfigurationEntry {
     public void removeValue(Controller controller) {
         Reject.ifNull(controller, "Controller is null");
         controller.getConfig().remove(configKey);
+    }
+    
+    /**
+     * @return the default value for this config entry.
+     */
+    public String getDefaultValue() {
+        return defaultValue;
     }
 
     protected void setDefaults() {
