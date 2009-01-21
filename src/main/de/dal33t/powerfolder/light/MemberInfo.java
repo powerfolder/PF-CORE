@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.light;
 
 import java.io.IOException;
@@ -25,9 +25,11 @@ import java.io.Serializable;
 import java.net.InetSocketAddress;
 import java.util.Date;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
 
@@ -39,14 +41,20 @@ import de.dal33t.powerfolder.util.net.NetworkUtil;
  */
 public class MemberInfo implements Serializable {
     private static final long serialVersionUID = 100L;
-    
+
     public static final String PROPERTYNAME_NICK = "nick";
     public static final String PROPERTYNAME_ID = "id";
 
-    // some idenification marks
+    // some identification marks
     public String nick;
-    // The world wide unique id
+    // The world wide unique id / logical address
     public String id;
+    /**
+     * The network Id of this node. #1373
+     * 
+     * @see ConfigurationEntry#NETWORK_ID
+     */
+    public String networkId;
 
     // last know address
     private InetSocketAddress connectAddress;
@@ -68,9 +76,14 @@ public class MemberInfo implements Serializable {
     public MemberInfo() {
     }
 
-    public MemberInfo(String nick, String id) {
+    public MemberInfo(String nick, String id, String networkId) {
         this.nick = nick;
         this.id = id;
+        if (networkId != null) {
+            this.networkId = networkId;
+        } else {
+            this.networkId = ConfigurationEntry.NETWORK_ID.getDefaultValue();
+        }
     }
 
     // Setter/Getter **********************************************************
@@ -122,8 +135,18 @@ public class MemberInfo implements Serializable {
      * @return if this member is a friend
      */
     public boolean isFriend(Controller controller) {
+        Reject.ifNull(controller, "Controller is null");
         Member node = getNode(controller);
         return node != null && node.isFriend();
+    }
+
+    /**
+     * @param controller
+     * @return true if this node is on the same network = same network Id.
+     */
+    public boolean isOnSameNetwork(Controller controller) {
+        Reject.ifNull(controller, "Controller is null");
+        return controller.getNodeManager().getNetworkId().equals(networkId);
     }
 
     /**
@@ -159,22 +182,22 @@ public class MemberInfo implements Serializable {
 
         return false;
         // #1334
-//        if (hasNullIP == null) {
-//            if (NULL_IP != null) {
-//                // Using advanced check
-//                hasNullIP = Boolean.valueOf(NULL_IP.equals(connectAddress
-//                    .getAddress()));
-//            } else {
-//                // Fallback, this works
-//                byte[] addr = connectAddress.getAddress().getAddress();
-//                hasNullIP = Boolean.valueOf((addr[0] & 0xff) == 0
-//                    && (addr[1] & 0xff) == 0 && (addr[2] & 0xff) == 0
-//                    && (addr[3] & 0xff) == 0);
-//            }
-//        }
-//        return hasNullIP.booleanValue();
+        // if (hasNullIP == null) {
+        // if (NULL_IP != null) {
+        // // Using advanced check
+        // hasNullIP = Boolean.valueOf(NULL_IP.equals(connectAddress
+        // .getAddress()));
+        // } else {
+        // // Fallback, this works
+        // byte[] addr = connectAddress.getAddress().getAddress();
+        // hasNullIP = Boolean.valueOf((addr[0] & 0xff) == 0
+        // && (addr[1] & 0xff) == 0 && (addr[2] & 0xff) == 0
+        // && (addr[3] & 0xff) == 0);
+        // }
+        // }
+        // return hasNullIP.booleanValue();
     }
-    
+
     public boolean hasNullIP() {
         if (hasNullIP == null) {
             hasNullIP = NetworkUtil.isNullIP(connectAddress.getAddress());
@@ -242,5 +265,10 @@ public class MemberInfo implements Serializable {
         in.defaultReadObject();
         this.id = id.intern();
         this.nick = nick.intern();
+        if (this.networkId == null) {
+            this.networkId = ConfigurationEntry.NETWORK_ID.getDefaultValue();
+        } else {
+            this.networkId = networkId.intern();
+        }
     }
 }
