@@ -232,14 +232,16 @@ public class Convert {
                     + file.toDetailString());
                 continue;
             }
-            Member member = nm.getNode(fMInfo.id);
-            if (member == null) {
-                member = nm.addNode(fMInfo);
+            if (!fMInfo.isOnSameNetwork(nm.getController())) {
+                continue;
+            }
+            Member dbMember = nm.getNode(fMInfo.id);
+            if (dbMember == null) {
+                dbMember = nm.addNode(fMInfo);
                 // System.err.println("not found: " + fMInfo + ". ID: "
                 // + fMInfo.id);
             }
-            MemberInfo dbMInfo = member != null ? nm.getNode(fMInfo.id)
-                .getInfo() : null;
+            MemberInfo dbMInfo = dbMember.getInfo();
             if (fMInfo == dbMInfo) {
                 // SAME instance, skip.
                 continue;
