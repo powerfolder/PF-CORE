@@ -19,16 +19,15 @@
  */
 package de.dal33t.powerfolder.ui;
 
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.disk.Directory;
-import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.transfer.DownloadManager;
-
-import javax.swing.*;
-import javax.swing.filechooser.FileSystemView;
-import javax.swing.plaf.IconUIResource;
-import java.awt.*;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.GraphicsConfiguration;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
+import java.awt.HeadlessException;
+import java.awt.Image;
+import java.awt.Toolkit;
+import java.awt.Transparency;
 import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorConvertOp;
@@ -46,6 +45,18 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.filechooser.FileSystemView;
+import javax.swing.plaf.IconUIResource;
+
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.disk.Directory;
+import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.transfer.DownloadManager;
+import de.dal33t.powerfolder.util.ui.OverlayedIcon;
+
 
 /**
  * Contains all icons for the powerfolder application
@@ -59,7 +70,7 @@ public class Icons {
 
     private static final Logger log = Logger.getLogger(Icons.class.getName());
 
-    private static Icons INSTANCE;
+    private static Icons DEFAULT;
 
     private static final String DEFAULT_ICON_PROPERTIES_FILENAME = "Icons.properties";
     private static String iconPropertiesFilename = DEFAULT_ICON_PROPERTIES_FILENAME;
@@ -229,46 +240,35 @@ public class Icons {
 
     protected Icons() {
     }
-
-    /**
-     * Loads the properties file containing Icons to override the default icon
-     * set. Does only work with non-static icons/images, that get retrieved by
-     * ID. If icons/image with ID is not found in this file, the default icon is
-     * used. Replaces the instance retrieved by {@link #getInstance()}.
-     * 
-     * @param iconsFile
-     *            the Icons.properties file.
-     */
-    public static void loadIconsFile(String iconsFile) {
-        overridePropertiesFilename = iconsFile;
-        // Re-load icons
-        INSTANCE = new Icons();
+    public static void loadOverrideFile(String iconSetFile) {
+        overridePropertiesFilename = iconSetFile;
+        // Re load icons
+        DEFAULT = new Icons();
     }
 
-    /**
-     * @return the central instance that provides icons.
-     */
     public static Icons getInstance() {
-        if (INSTANCE == null) {
-            INSTANCE = new Icons();
+        if (DEFAULT == null) {
+            DEFAULT = new Icons();
         }
-        return INSTANCE;
+        return DEFAULT;
     }
 
     /**
      * Protected because only this class, subclasses and Translation.properties
      * refer to images
      * 
+     * @deprecated use getIconById to redirect via Icons.properties for better
+     *             configurability
      * @param name
      * @return
      */
-    protected static Icon getIcon(String name) {
+    protected static final Icon getIcon(String name) {
         if (name == null) {
             log.severe("Icon name is null");
             return null;
         }
         if (name.length() <= 6) { // required prefix = icons/
-            // Loggable.logSevereStatic(Icons.class, "Icon not found '" + name + "'");
+            // log.error("Icon not found '" + name + "'");
             return null;
         }
         URL iconURL = Thread.currentThread().getContextClassLoader()
@@ -420,11 +420,9 @@ public class Icons {
     // Open helper
 
     /**
-     * Returns a simplified version of the node icon. Does not reflect the
-     * online- and supernode-state
-     * 
      * @param node
-     * @return
+     * @return a simplified version of the node icon. Does not reflect the
+     * online- and supernode-state
      */
     public static Icon getSimpleIconFor(Member node) {
         if (node == null) {
@@ -440,7 +438,9 @@ public class Icons {
             // Orange head for non-friends
             icon = NODE_NON_FRIEND_CONNECTED;
         }
-
+        if (!node.isOnSameNetwork()) {
+            icon = new OverlayedIcon(icon, Icons.DELETE, 0, 0);
+        }
         return icon;
     }
 
@@ -471,7 +471,9 @@ public class Icons {
                 icon = NODE_NON_FRIEND_DISCONNECTED;
             }
         }
-
+        if (!node.isOnSameNetwork()) {
+            icon = new OverlayedIcon(icon, Icons.DELETE, 0, 0);
+        }
         return icon;
     }
 
@@ -481,6 +483,7 @@ public class Icons {
      * 
      * @param fileInfo
      *            the fileinfo to return a icon for
+     * @param controller 
      * @return the icon
      */
     public static Icon getIconFor(FileInfo fileInfo, Controller controller)
@@ -543,6 +546,7 @@ public class Icons {
      * 
      * @param fileInfo
      *            the fileinfo to return a icon for
+     * @param controller 
      * @return the icon
      */
     public static Icon getEnabledIconFor(FileInfo fileInfo,
@@ -647,10 +651,11 @@ public class Icons {
                         tempFile.deleteOnExit();
                     }
                     return icon;
-                } else {
-                    log.severe("Couldn't create temporary file for icon retrieval for extension:'"
-                            + extension + '\'');
                 }
+                log
+                    .severe("Couldn't create temporary file for icon retrieval for extension:'"
+                        + extension + '\'');
+
             }
         } catch (IOException e) {
             log.log(Level.SEVERE, "Exception", e);
@@ -658,7 +663,9 @@ public class Icons {
         return null;
     }
 
-    /** converts Icon to red, note: first convert to gray * */
+    /** converts Icon to red, note: first convert to gray * 
+     * @param icon 
+     * @return the red icon */
     public static ImageIcon convertToRed(Icon icon) {
         Image image = getImageFromIcon(icon);
         BufferedImage src = toBufferedImage(image);
@@ -692,6 +699,7 @@ public class Icons {
      *            the directory
      * @param isOpen
      *            if it is opend
+     * @param controller 
      * @return the icons
      */
     public static Icon getIconFor(Directory dir, boolean isOpen,
@@ -707,12 +715,10 @@ public class Icons {
     }
 
     /**
-     * Returns the icon for a file
-     * 
      * @param controller
      * @param fInfo
      *            the file
-     * @return
+     * @return the icon for a file
      */
     public static Icon getIconFor(Controller controller, FileInfo fInfo) {
         Icon icon;
