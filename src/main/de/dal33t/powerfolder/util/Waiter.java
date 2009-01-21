@@ -49,7 +49,7 @@ public class Waiter {
     /**
      * Answers if this waiter is timed-out
      * 
-     * @return
+     * @return true if timeout
      */
     public boolean isTimeout() {
         return System.currentTimeMillis() > timeoutTime || interrupted;
@@ -62,6 +62,7 @@ public class Waiter {
         try {
             Thread.sleep(100);
         } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             throw new RuntimeException("Waiter was interrupted @ "
                 + Thread.currentThread().getName(), e);
         }
