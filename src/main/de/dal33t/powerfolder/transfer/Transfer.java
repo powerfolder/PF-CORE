@@ -177,7 +177,7 @@ public abstract class Transfer extends Loggable implements Serializable {
     /**
      * maybe null if loaded from serialized file
      * 
-     * @return
+     * @return the partner
      */
     public final Member getPartner() {
         if (partner == null && partnerInfo != null) {
@@ -219,7 +219,7 @@ public abstract class Transfer extends Loggable implements Serializable {
     /**
      * Answers if this transfer has already started
      * 
-     * @return
+     * @return true if started
      */
     public boolean isStarted() {
         return startTime != null;
@@ -269,7 +269,7 @@ public abstract class Transfer extends Loggable implements Serializable {
     }
 
     /**
-     * @return
+     * @return the start offset
      */
     public long getStartOffset() {
         return startOffset;
@@ -284,9 +284,7 @@ public abstract class Transfer extends Loggable implements Serializable {
     }
 
     /**
-     * Returns the transfer counter
-     * 
-     * @return
+     * @return the transfer counter
      */
     public TransferCounter getCounter() {
         if (counter == null) {
@@ -304,25 +302,25 @@ public abstract class Transfer extends Loggable implements Serializable {
             return false;
         }
         if (getPartner() == null) {
-            logWarning("Abort cause: partner is null.");
+            logWarning("Break cause: partner is null.");
             return true;
         }
         if (!getPartner().isCompleteyConnected()) {
-            logWarning("Abort cause: "
-                + getPartner().getNick() + " not connected.");
+            logWarning(
+                "Break cause: " + getPartner().getNick() + " not connected.");
             return true;
         }
         boolean partnerOnFolder = stillPartnerOnFolder();
         if (!partnerOnFolder) {
             // broken if partner left folder
-            logWarning("Abort cause: "
-                + getPartner().getNick() + " not on folder.");
+            logWarning(
+                "Break cause: " + getPartner().getNick() + " not on folder.");
             return true;
         }
 
         return false;
     }
-
+    
     /**
      * @return if this transfer is still queued at the remote side. if not this
      *         transfer should be set broken
