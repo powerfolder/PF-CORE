@@ -97,10 +97,16 @@ public class NetworkUtil {
 
     /**
      * Sets a socket up for use with PowerFolder
+     * <p>
+     * FIXME: Is broken. Does not consider LAN-IP list or computers discovered
+     * by network broadcast. Recommended new API: setupSocket(UDTSocket socket,
+     * boolean onLAN). Let the caller decide to setup with LAN optimized values.
      * 
      * @param socket
      *            the Socket to setup
-     * @throws SocketException
+     * @param inetSocketAddress
+     *            the remote address
+     * @throws IOException
      */
     public static void setupSocket(UDTSocket socket,
         InetSocketAddress inetSocketAddress) throws IOException
@@ -150,7 +156,7 @@ public class NetworkUtil {
      * Returns a Map with all detected local IP-addresses as keys and the
      * associated NetworkInterface as values.
      * 
-     * @return
+     * @return all local network addresses
      * @throws SocketException
      */
     public static final Map<InetAddress, NetworkInterface> getAllLocalNetworkAddresses()
@@ -176,7 +182,7 @@ public class NetworkUtil {
      * associated NetworkInterface as values. Caches the result for a certain
      * amount of time.
      * 
-     * @return
+     * @return all cached local network addresses
      * @throws SocketException
      */
     public static final Map<InetAddress, NetworkInterface> getAllLocalNetworkAddressesCached()
