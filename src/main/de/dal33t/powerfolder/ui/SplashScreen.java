@@ -138,11 +138,7 @@ public class SplashScreen extends JWindow {
                 } catch (RuntimeException e) {
                     // Ignore
                 } finally {
-                    try {
-                        SwingUtilities.invokeAndWait(closerRunner);
-                    } catch (Exception e) {
-                        log.log(Level.SEVERE, "Exception", e);
-                    }
+                    SwingUtilities.invokeLater(closerRunner);
                 }
             }
         };
