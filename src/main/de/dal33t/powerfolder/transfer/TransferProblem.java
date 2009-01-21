@@ -25,6 +25,7 @@ package de.dal33t.powerfolder.transfer;
 public enum TransferProblem {
 
     NODE_DISCONNECTED("transfer.problem.transfer.broken"),
+    FOLDER_REMOVED("transfer.problem.transfer.broken"),
     OLD_UPLOAD("transfer.problem.old.upload"),
     BROKEN_DOWNLOAD("transfer.problem.broken.download"),
     BROKEN_UPLOAD("transfer.problem.broken.upload"),
