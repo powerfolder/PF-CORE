@@ -57,6 +57,7 @@ import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.AbortUpload;
 import de.dal33t.powerfolder.message.DownloadQueued;
 import de.dal33t.powerfolder.message.FileChunk;
@@ -448,18 +449,7 @@ public class TransferManager extends PFComponent {
         fireDownloadQueued(new TransferManagerEvent(this, download));
     }
 
-    /**
-     * Sets a transfer as broken, removes from queues
-     * 
-     * @param tranfer
-     *            the transfer
-     * @param transferProblem
-     *            the problem that broke the transfer
-     */
-    void setBroken(Transfer transfer, TransferProblem transferProblem) {
-        setBroken(transfer, transferProblem, null);
-    }
-
+  
     void downloadbroken(Download download, TransferProblem problem,
         String problemInfo)
     {
@@ -475,55 +465,96 @@ public class TransferManager extends PFComponent {
         fireDownloadBroken(new TransferManagerEvent(this, download, problem,
             problemInfo));
     }
+    
+    /**
+     * Sets a transfer as broken, removes from queues
+     * 
+     * @param upload
+     *            the upload
+     * @param transferProblem
+     *            the problem that broke the transfer
+     */
+    void setBroken(Upload upload, TransferProblem transferProblem) {
+        setBroken(upload, transferProblem, null);
+    }
 
     /**
      * Sets a transfer as broken, removes from queues
      * 
-     * @param tranfer
-     *            the transfer
+     * @param upload
+     *            the upload
      * @param transferProblem
      *            the problem that broke the transfer
      * @param problemInformation
      *            specific information about the problem
      */
-    void setBroken(Transfer transfer, TransferProblem transferProblem,
+    void setBroken(Upload upload, TransferProblem transferProblem,
         String problemInformation)
     {
         // Ensure shutdown
-        transfer.shutdown();
-
+        upload.shutdown();
         boolean transferFound = false;
-        if (transfer instanceof Download) {
-            throw new UnsupportedOperationException("Don't use TM.setBroken()!");
-        } else if (transfer instanceof Upload) {
-            logWarning("Upload broken: " + transfer + " "
+        logWarning(
+            "Upload broken: " + upload + " "
                 + (transferProblem == null ? "" : transferProblem) + ": "
                 + problemInformation);
-            uploadsLock.lock();
-            try {
-                transferFound = queuedUploads.remove(transfer);
-                transferFound = activeUploads.remove(transfer) || transferFound;
-            } finally {
-                uploadsLock.unlock();
-            }
+        uploadsLock.lock();
+        try {
+            transferFound = queuedUploads.remove(upload);
+            transferFound = activeUploads.remove(upload) || transferFound;
+        } finally {
+            uploadsLock.unlock();
+        }
 
-            // Tell remote peer if possible
-            Upload ul = (Upload) transfer;
-            if (ul.getPartner().isCompleteyConnected()) {
-                logWarning("Sending abort upload of " + ul);
-                ul.getPartner().sendMessagesAsynchron(
-                    new AbortUpload(ul.getFile()));
-            }
+        // Tell remote peer if possible
+        if (upload.getPartner().isCompleteyConnected()) {
+            logWarning("Sending abort upload of " + upload);
+            upload.getPartner().sendMessagesAsynchron(
+                new AbortUpload(upload.getFile()));
+        }
 
-            // Fire event
-            if (transferFound) {
-                fireUploadBroken(new TransferManagerEvent(this,
-                    (Upload) transfer));
-            }
+        // Fire event
+        if (transferFound) {
+            fireUploadBroken(new TransferManagerEvent(this, upload));
         }
 
         // Now trigger, to check uploads/downloads to start
         triggerTransfersCheck();
+    }
+    
+    /**
+     * Breaks all transfers on that folder, usually on folder remove
+     * 
+     * @param foInfo
+     */
+    public void breakTransfers(final FolderInfo foInfo) {
+        Reject.ifNull(foInfo, "Folderinfo is null");
+        // Search for uls to break
+        if (!queuedUploads.isEmpty()) {
+            for (Upload upload : queuedUploads) {
+                if (foInfo.equals(upload.getFile().getFolderInfo())) {
+                    setBroken(upload, TransferProblem.FOLDER_REMOVED, foInfo.name);
+                }
+            }
+        }
+
+        if (!activeUploads.isEmpty()) {
+            for (Upload upload : activeUploads) {
+                if (foInfo.equals(upload.getFile().getFolderInfo())) {
+                    setBroken(upload, TransferProblem.FOLDER_REMOVED,
+                        foInfo.name);
+                }
+            }
+        }
+
+        for (DownloadManager man : dlManagers.values()) {
+            for (Download download : man.getSources()) {
+                if (foInfo.equals(download.getFile().getFolderInfo())) {
+                    download.setBroken(TransferProblem.FOLDER_REMOVED,
+                        foInfo.name);
+                }
+            }
+        }
     }
 
     /**
@@ -946,7 +977,8 @@ public class TransferManager extends PFComponent {
         Upload upload = new Upload(this, from, dl);
         FolderRepository repo = getController().getFolderRepository();
         File diskFile = upload.getFile().getDiskFile(repo);
-        boolean fileInSyncWithDisk = upload.getFile().inSyncWithDisk(diskFile);
+        boolean fileInSyncWithDisk = diskFile != null
+            && upload.getFile().inSyncWithDisk(diskFile);
         if (!fileInSyncWithDisk) {
             // This should free up an otherwise waiting for download partner
             Folder folder = upload.getFile().getFolder(repo);
@@ -1003,12 +1035,22 @@ public class TransferManager extends PFComponent {
         // Trigger working thread on upload enqueued
         triggerTransfersCheck();
 
+        
+        // Wait to let the transfers check grab the new download
+        try {
+            Thread.sleep(50);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
         // If upload is not started, tell peer
         if (!upload.isStarted()) {
             from.sendMessageAsynchron(new DownloadQueued(upload.getFile()),
                 null);
-        } else {
-            logWarning("Optimization!");
+        } else if (isFine()) {
+            logFine(
+                "Optimization. Did not send DownloadQueued message for "
+                    + upload.getFile() + " to " + upload.getPartner());
         }
 
         if (!upload.isBroken()) {
@@ -2165,9 +2207,11 @@ public class TransferManager extends PFComponent {
                     alreadyUploadingTo = true;
                 }
                 totalPlannedSizeUploadingTo += upload.getFile().getSize();
-
+                long maxSizeUpload = upload.getPartner().isOnLAN()
+                    ? Constants.START_UPLOADS_TILL_PLANNED_SIZE_LAN
+                    : Constants.START_UPLOADS_TILL_PLANNED_SIZE_INET;
                 if (!alreadyUploadingTo
-                    || totalPlannedSizeUploadingTo <= 500 * 1024)
+                    || totalPlannedSizeUploadingTo <= maxSizeUpload)
                 {
                     // if (!alreadyUploadingTo) {
                     if (alreadyUploadingTo && log.isLoggable(Level.FINE)) {
