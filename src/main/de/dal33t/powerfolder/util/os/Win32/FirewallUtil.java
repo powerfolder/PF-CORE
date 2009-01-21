@@ -49,35 +49,51 @@ public class FirewallUtil {
      *             in case of a problem
      */
     public static void openport(int port) throws IOException {
+        openport(port, "TCP");
+    }
+
+    /**
+     * Tries to open a port on the windows firewall. In case of an error it
+     * either doesn't return or it throws an IOException.
+     * 
+     * @param port
+     *            the port to open
+     * @param protocol the protocol. "TCP" or "UDP".
+     * @throws IOException
+     *             in case of a problem
+     */
+    public static void openport(int port, String protocol) throws IOException {
         Process netsh;
         BufferedReader nin = null;
         PrintWriter nout = null;
 
         netsh = Runtime.getRuntime().exec("netsh");
         try {
-	        nin = new BufferedReader(new InputStreamReader(netsh.getInputStream()));
-	        nout = new PrintWriter(netsh.getOutputStream(), true);
-	        nout.println("firewall add portopening protocol=TCP port=" + port
-	            + " name=\"PowerFolder\"");
-	        String reply = nin.readLine();
-	        if (reply == null || !reply.equalsIgnoreCase("netsh>Ok.")) {
-	            throw new IOException(reply);
-	        }
-	        nout.println("bye");
-	        try {
-	            int res = netsh.waitFor();
-	            if (res != 0)
-	                throw new IOException("netsh returned " + res);
-	        } catch (InterruptedException e) {
-	            throw (IOException) new IOException(e.toString()).initCause(e);
-	        }
+            nin = new BufferedReader(new InputStreamReader(netsh
+                .getInputStream()));
+            nout = new PrintWriter(netsh.getOutputStream(), true);
+            nout.println("firewall add portopening protocol="
+                + protocol.toUpperCase() + " port=" + port
+                + " name=\"PowerFolder\"");
+            String reply = nin.readLine();
+            if (reply == null || !reply.equalsIgnoreCase("netsh>Ok.")) {
+                throw new IOException(reply);
+            }
+            nout.println("bye");
+            try {
+                int res = netsh.waitFor();
+                if (res != 0)
+                    throw new IOException("netsh returned " + res);
+            } catch (InterruptedException e) {
+                throw (IOException) new IOException(e.toString()).initCause(e);
+            }
         } finally {
-        	if (nin != null) {
-        		nin.close();
-        	}
-        	if (nout != null) {
-        		nout.close();
-        	}
+            if (nin != null) {
+                nin.close();
+            }
+            if (nout != null) {
+                nout.close();
+            }
         }
     }
 
