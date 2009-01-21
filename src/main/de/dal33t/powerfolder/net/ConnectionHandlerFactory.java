@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.net;
 
 import java.io.IOException;
@@ -35,14 +35,19 @@ import de.dal33t.powerfolder.util.net.NetworkUtil;
 import de.dal33t.powerfolder.util.net.UDTSocket;
 
 /**
- * The default factory which creates <code>ConnectionHandler</code>s.
+ * The default factory which creates <code>ConnectionHandler</code>s. Is
+ * capable of connecting to a remote node by {@link #tryToConnect(MemberInfo)}
+ * or to a remote address by {@link #tryToConnect(InetSocketAddress)}.
+ * <p>
+ * The connection attempt by {@link #tryToConnect(MemberInfo)} should always be
+ * prefered since it include the logical peer address (<code>MemberInfo</code>)
+ * of the remote node. Fully relayed connections for exampled don't require a
+ * physical TCP address, but require that logical peer address.
  * 
- * @see PlainSocketConnectionHandler
  * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
 public class ConnectionHandlerFactory extends PFComponent {
-
     public ConnectionHandlerFactory(Controller controller) {
         super(controller);
     }
@@ -60,7 +65,7 @@ public class ConnectionHandlerFactory extends PFComponent {
      * <p>
      * B) PRO only: HTTP tunneled connection
      * 
-     * @param node
+     * @param remoteNode
      *            the node to reconnecc tot.
      * @return a ready initializes connection handler.
      * @throws ConnectionException
@@ -74,14 +79,14 @@ public class ConnectionHandlerFactory extends PFComponent {
 
         if (!nullIP) {
             try {
-                return tryToConnectSocket(remoteNode.getConnectAddress());
+                return tryToConnectTCP(remoteNode.getConnectAddress());
             } catch (ConnectionException e) {
                 logFiner(e);
             }
         }
         try {
             if (useUDTConnections() && !isOnLAN(remoteNode) && !nullIP) {
-                return tryToConnectUDTSocket(remoteNode);
+                return tryToConnectUDTRendezvous(remoteNode);
             }
         } catch (ConnectionException e) {
             logFiner(e);
@@ -106,105 +111,19 @@ public class ConnectionHandlerFactory extends PFComponent {
      * <p>
      * B) PRO only: HTTP tunneled connection
      * 
-     * @param node
-     *            the node to reconnect to.
+     * @param remoteAddress
+     *            the address to connect to
      * @return a ready initializes connection handler.
      * @throws ConnectionException
      */
     public ConnectionHandler tryToConnect(InetSocketAddress remoteAddress)
         throws ConnectionException
     {
-        return tryToConnectSocket(remoteAddress);
-    }
-
-    // Connection layer specific connect methods ******************************
-
-    /**
-     * Tries establish a physical socket connection to that node.
-     * 
-     * @param remoteAddress
-     *            the address to connect to.
-     * @return a ready initializes connection handler.
-     * @throws ConnectionException
-     *             if no connection is possible.
-     */
-    protected ConnectionHandler tryToConnectSocket(
-        InetSocketAddress remoteAddress) throws ConnectionException
-    {
-        try {
-            Socket socket = new Socket();
-            String cfgBind = ConfigurationEntry.NET_BIND_ADDRESS
-                .getValue(getController());
-            if (!StringUtils.isEmpty(cfgBind)) {
-                socket.bind(new InetSocketAddress(cfgBind, 0));
-            }
-            socket.connect(remoteAddress, Constants.SOCKET_CONNECT_TIMEOUT);
-            NetworkUtil.setupSocket(socket);
-            ConnectionHandler handler = createAndInitSocketConnectionHandler(
-                getController(), socket);
-            return handler;
-        } catch (IOException e) {
-            throw new ConnectionException("Unable to connect to: "
-                + remoteAddress, e);
+        if (NetworkUtil.isNullIP(remoteAddress.getAddress())) {
+            throw new ConnectionException("Unable to connect to null IP: "
+                + remoteAddress);
         }
-    }
-
-    /**
-     * Tries to establish a relayed connection to that remote node.
-     * 
-     * @param remoteNode
-     *            the node to connect to
-     * @return the ready-initialized connection handler
-     * @throws ConnectionException
-     *             if no connection is possible.
-     */
-    protected ConnectionHandler tryToConnectRelayed(MemberInfo remoteNode)
-        throws ConnectionException
-    {
-        if (isFiner()) {
-            logFiner("Trying relayed connection to " + remoteNode.nick);
-        }
-        ConnectionHandler conHan = null;
-        try {
-            conHan = getController().getIOProvider()
-                .getRelayedConnectionManager().initRelayedConnectionHandler(
-                    remoteNode);
-            return conHan;
-        } catch (ConnectionException e) {
-            if (conHan != null) {
-                conHan.shutdown();
-            }
-            throw e;
-        }
-    }
-
-    /**
-     * Tries to establish a relayed connection to that remote node.
-     * 
-     * @param remoteNode
-     *            the node to connect to
-     * @return the ready-initialized connection handler
-     * @throws ConnectionException
-     *             if no connection is possible.
-     */
-    protected ConnectionHandler tryToConnectUDTSocket(MemberInfo remoteNode)
-        throws ConnectionException
-    {
-        if (isFiner()) {
-            logFiner("Trying UDT socket connection to " + remoteNode.nick);
-        }
-        ConnectionHandler conHan = null;
-        try {
-            conHan = getController().getIOProvider()
-                .getUDTSocketConnectionManager().initUDTConnectionHandler(
-                    remoteNode);
-            return conHan;
-        } catch (ConnectionException e) {
-            if (conHan != null) {
-                conHan.shutdown();
-            }
-            throw e;
-        }
+        return tryToConnectTCP(remoteAddress);
     }
 
     // Factory methods ********************************************************
@@ -213,18 +132,16 @@ public class ConnectionHandlerFactory extends PFComponent {
      * Creates a initialized connection handler for a socket based TCP/IP
      * connection.
      * 
-     * @param controller
-     *            the controller.
      * @param socket
      *            the tcp/ip socket
      * @return the connection handler for basic IO connection.
      * @throws ConnectionException
      */
-    public ConnectionHandler createAndInitSocketConnectionHandler(
-        Controller controller, Socket socket) throws ConnectionException
+    public ConnectionHandler createAndInitSocketConnectionHandler(Socket socket)
+        throws ConnectionException
     {
-        ConnectionHandler conHan = new PlainSocketConnectionHandler(controller,
-            socket);
+        ConnectionHandler conHan = new PlainSocketConnectionHandler(
+            getController(), socket);
         try {
             conHan.init();
         } catch (ConnectionException e) {
@@ -257,41 +174,91 @@ public class ConnectionHandlerFactory extends PFComponent {
      * Creates an initialized connection handler for a UDT socket based on UDP
      * connection.
      * 
-     * @param controller
-     *            the controller.
      * @param socket
      *            the UDT socket
-     * @param port
-     * @param dest
      * @return the connection handler for basic IO connection.
      * @throws ConnectionException
      */
     public AbstractUDTSocketConnectionHandler createAndInitUDTSocketConnectionHandler(
-        Controller controller, UDTSocket socket, MemberInfo dest, int port)
-        throws ConnectionException
+        UDTSocket socket) throws ConnectionException
     {
         AbstractUDTSocketConnectionHandler conHan = new PlainUDTSocketConnectionHandler(
-            controller, socket);
+            getController(), socket);
         try {
-            // In PowerFolder UDT sockets will always rendezvous
-            socket.setSoRendezvous(true);
-            MemberInfo myInfo = dest.getNode(getController(), true).getInfo();
-            logFine(
-                "UDT connect to " + dest + " at " + myInfo.getConnectAddress());
-            socket.connect(new InetSocketAddress(myInfo.getConnectAddress()
-                .getAddress(), port));
-            logFine(
-                "UDT socket is connected to " + dest + " at "
-                    + myInfo.getConnectAddress() + "!!");
             conHan.init();
         } catch (ConnectionException e) {
             conHan.shutdown();
             throw e;
-        } catch (IOException e) {
-            conHan.shutdown();
-            throw new ConnectionException(e);
         }
         return conHan;
+    }
+
+    // Connection layer specific connect methods ******************************
+
+    /**
+     * Tries establish a physical socket connection to that node.
+     * 
+     * @param remoteAddress
+     *            the address to connect to.
+     * @return a ready initializes connection handler.
+     * @throws ConnectionException
+     *             if no connection is possible.
+     */
+    protected ConnectionHandler tryToConnectTCP(
+        InetSocketAddress remoteAddress) throws ConnectionException
+    {
+        try {
+            Socket socket = new Socket();
+            String cfgBind = ConfigurationEntry.NET_BIND_ADDRESS
+                .getValue(getController());
+            if (!StringUtils.isEmpty(cfgBind)) {
+                socket.bind(new InetSocketAddress(cfgBind, 0));
+            }
+            socket.connect(remoteAddress, Constants.SOCKET_CONNECT_TIMEOUT);
+            NetworkUtil.setupSocket(socket);
+            return createAndInitSocketConnectionHandler(socket);
+        } catch (IOException e) {
+            throw new ConnectionException("Unable to connect to: "
+                + remoteAddress, e);
+        }
+    }
+
+    /**
+     * Tries to establish a relayed connection to that remote node.
+     * 
+     * @param remoteNode
+     *            the node to connect to
+     * @return the ready-initialized connection handler
+     * @throws ConnectionException
+     *             if no connection is possible.
+     */
+    protected ConnectionHandler tryToConnectRelayed(MemberInfo remoteNode)
+        throws ConnectionException
+    {
+        if (isFiner()) {
+            logFiner("Trying relayed connection to " + remoteNode.nick);
+        }
+        return getController().getIOProvider().getRelayedConnectionManager()
+            .initRelayedConnectionHandler(remoteNode);
+    }
+
+    /**
+     * Tries to establish a UDT connection in rendezvous mode via relay.
+     * 
+     * @param remoteNode
+     *            the node to connect to
+     * @return the ready-initialized connection handler
+     * @throws ConnectionException
+     *             if no connection is possible.
+     */
+    protected ConnectionHandler tryToConnectUDTRendezvous(MemberInfo remoteNode)
+        throws ConnectionException
+    {
+        if (isFiner()) {
+            logFiner("Trying UDT socket connection to " + remoteNode.nick);
+        }
+        return getController().getIOProvider().getUDTSocketConnectionManager()
+            .initRendezvousUDTConnectionHandler(remoteNode);
     }
 
     // Internal helper ********************************************************
