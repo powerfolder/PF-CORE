@@ -57,6 +57,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.logging.Level;
+import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 /**
@@ -112,7 +113,9 @@ public class Debug {
         Reject.ifBlank(folderName, "folderName is null");
         Reject.ifBlank(memberName, "memberName is null");
         Reject.ifNull(fileInfos, "Files are null");
-        File logFile = new File(LoggingManager.getDebugDir(), Util
+        File filelistsDir = new File(LoggingManager.getDebugDir(), "filelists");
+        filelistsDir.mkdirs();
+        File logFile = new File(filelistsDir, Util
             .removeInvalidFilenameChars(folderName)
             + File.separator
             + Util.removeInvalidFilenameChars(memberName)
