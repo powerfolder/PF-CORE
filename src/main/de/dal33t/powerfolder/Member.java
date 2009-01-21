@@ -165,7 +165,8 @@ public class Member extends PFComponent implements Comparable<Member> {
     private TransferStatus lastTransferStatus;
 
     /**
-     * The account that is logged in from this node.
+     * The account that is logged in from this node. Filled in SERVER only.
+     * Clients have this always NULL for connected clients.
      */
     private Account account;
 
@@ -200,23 +201,7 @@ public class Member extends PFComponent implements Comparable<Member> {
      */
     public Member(Controller controller, MemberInfo mInfo) {
         super(controller);
-        // Clone memberinfo
-        // this.info = (MemberInfo) mInfo.clone();
-        // HACK: Side effects on memberinfo
         this.info = mInfo;
-        this.receivedWrongRemoteIdentity = false;
-    }
-
-    /**
-     * Constructs a new local member without a connection
-     * 
-     * @param controller
-     * @param nick
-     * @param id
-     */
-    public Member(Controller controller, String nick, String id) {
-        this(controller, new MemberInfo(nick, id));
-        handshaked = false;
     }
 
     /**
@@ -540,6 +525,21 @@ public class Member extends PFComponent implements Comparable<Member> {
             throw new InvalidIdentityException(this
                 + " Remote peer has wrong identity. remote ID: " + identityId
                 + ", our ID: " + getId(), newPeer);
+        }
+        
+        // #1373
+        if (!remoteMemberInfo.isOnSameNetwork(getController())) {
+            logWarning(
+                "Closing connection to node with diffrent network ID. Our netID: "
+                    + getController().getNodeManager().getNetworkId()
+                    + ", remote netID: " + remoteMemberInfo.networkId + " on "
+                    + remoteMemberInfo);
+            newPeer.shutdown();
+            throw new InvalidIdentityException(
+                "Closing connection to node with diffrent network ID. Our netID: "
+                    + getController().getNodeManager().getNetworkId()
+                    + ", remote netID: " + remoteMemberInfo.networkId + " on "
+                    + remoteMemberInfo, newPeer);
         }
 
         // Complete low-level handshake
@@ -963,7 +963,11 @@ public class Member extends PFComponent implements Comparable<Member> {
                 return false;
             }
 
-            waiter.waitABit();
+            try {
+                waiter.waitABit();
+            } catch (Exception e) {
+                return false;
+            }
         }
         if (waiter.isTimeout()) {
             logSevere("Got timeout ("
@@ -1120,6 +1124,8 @@ public class Member extends PFComponent implements Comparable<Member> {
      * 
      * @param message
      *            The message to handle
+     * @param fromPeer
+     *            the peer this message has been received from.
      */
     public void handleMessage(Message message, ConnectionHandler fromPeer) {
 
@@ -1664,20 +1670,26 @@ public class Member extends PFComponent implements Comparable<Member> {
         if (!isCompleteyConnected()) {
             return;
         }
+        ConnectionHandler thisPeer = peer;
+        String remoteMagicId = thisPeer != null
+            ? thisPeer.getRemoteMagicId()
+            : null;
+        if (thisPeer == null || StringUtils.isBlank(remoteMagicId)) {
+            return;
+        }
         folderJoinLock.lock();
         try {
             FolderList folderList = getLastFolderList();
             if (folderList != null) {
                 // Rejoin to local folders
-                joinToLocalFolders(folderList, peer);
+                joinToLocalFolders(folderList, thisPeer);
             } else {
                 // Hopefully we receive this later.
                 logSevere("Unable to synchronize memberships, "
                     + "did not received folderlist from remote");
             }
 
-            FolderList myFolderList = new FolderList(joinedFolders, peer
-                .getRemoteMagicId());
+            FolderList myFolderList = new FolderList(joinedFolders, remoteMagicId);
             sendMessageAsynchron(myFolderList, null);
         } finally {
             folderJoinLock.unlock();
@@ -1994,6 +2006,15 @@ public class Member extends PFComponent implements Comparable<Member> {
         // Fire event on nodemanager
         getController().getNodeManager().fireNodeSettingsChanged(this);
     }
+    
+    /**
+     * #1373
+     * 
+     * @return true if this node is on the same network.
+     */
+    public boolean isOnSameNetwork() {
+        return info.isOnSameNetwork(getController());
+    }
 
     /**
      * Returns the identity of this member.
@@ -2148,6 +2169,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                 }
             }
             info.isSupernode = newInfo.isSupernode;
+            info.networkId = newInfo.networkId;
             // if (!isOnLAN()) {
             // Take his dns address, but only if not on lan
             // (Otherwise our ip to him will be used as reconnect address)
