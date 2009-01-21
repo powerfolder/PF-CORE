@@ -107,6 +107,10 @@ public class DynDnsManager extends PFComponent {
         return DynDnsSettingsTab.newDyndns;
     }
 
+    public boolean isDynDnsSet() {
+        return !StringUtils.isBlank(getHost2Update());
+    }
+
     public void fillDefaultUpdateData(DynDnsUpdateData updateData) {
         updateData.username = getUsername();
         updateData.pass = getUserPassword();
