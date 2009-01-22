@@ -1471,6 +1471,7 @@ public class TransferManager extends PFComponent {
                     man = downloadManagerFactory
                         .createDownloadManager(getController(), fInfo, download
                             .isRequestedAutomatic());
+                    man.init(false);
                 } catch (IOException e) {
                     // Something gone badly wrong
                     logSevere("IOException", e);
@@ -2008,6 +2009,7 @@ public class TransferManager extends PFComponent {
                         man = downloadManagerFactory.createDownloadManager(
                             getController(), download.getFile(), download
                                 .isRequestedAutomatic());
+                        man.init(true);
                         completedDownloads.add(man);
                     }
                     download.setDownloadManager(man);
@@ -2149,8 +2151,8 @@ public class TransferManager extends PFComponent {
                     }
                     transferCheckTriggered = false;
 
-                    // Wait another 200ms to avoid spamming via trigger
-                    Thread.sleep(200);
+                    // Wait another 20ms to avoid spamming via trigger
+                    Thread.sleep(20);
                 } catch (InterruptedException e) {
                     // Break
                     break;

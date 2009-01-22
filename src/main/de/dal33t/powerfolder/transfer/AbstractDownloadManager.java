@@ -117,8 +117,11 @@ public abstract class AbstractDownloadManager extends PFComponent implements
     private final FileInfo fileInfo;
     private Controller controller;
     private RandomAccessFile tempRAF = null;
-
-    private volatile InternalState state = InternalState.WAITING_FOR_SOURCE;
+    
+    /**
+     * Only set on init(boolean).
+     */
+    private volatile InternalState state = null;
 
     private volatile boolean automatic;
     private volatile boolean started;
@@ -134,7 +137,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
     private File tempFile;
 
     public AbstractDownloadManager(Controller controller, FileInfo file,
-        boolean automatic) throws IOException
+        boolean automatic)
     {
         Reject.noNullElements(controller, file);
 
@@ -142,8 +145,6 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         this.automatic = automatic;
 
         this.controller = controller;
-
-        init();
     }
 
     public synchronized void abort() {
@@ -370,8 +371,21 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         return fileInfo.getDiskFile(getController().getFolderRepository());
     }
 
-    protected void init() throws IOException {
+    /**
+     * Call this after construction. Otherwise download might not have tempfile
+     * ready. Does not prepare tempfile if completed
+     * 
+     * @param completed
+     *            if this download is already completed.
+     * @throws IOException
+     */
+    public void init(boolean completed) throws IOException {
         assert fileInfo != null;
+        if (completed) {
+            state = InternalState.COMPLETED;
+        } else {
+            state = InternalState.WAITING_FOR_SOURCE;
+        }
 
         // If it's an old download, don't create a temporary file
         if (isCompleted()) {

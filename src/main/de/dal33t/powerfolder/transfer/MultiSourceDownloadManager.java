@@ -55,14 +55,14 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
     public static final DownloadManagerFactory factory = new DownloadManagerFactory()
     {
         public DownloadManager createDownloadManager(Controller controller,
-            FileInfo file, boolean automatic) throws IOException
+            FileInfo file, boolean automatic)
         {
             return new MultiSourceDownloadManager(controller, file, automatic);
         }
     };
 
     private MultiSourceDownloadManager(Controller controller, FileInfo file,
-        boolean automatic) throws IOException
+        boolean automatic)
     {
         super(controller, file, automatic);
     }
