@@ -10,6 +10,12 @@ import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 
+/**
+ * Primary because of #1399
+ * 
+ * @author Christian Sprajc
+ * @version $Revision$
+ */
 public class DownloadPersistenceTest extends TwoControllerTestCase {
 
     @Override
