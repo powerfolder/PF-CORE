@@ -1,11 +1,22 @@
 package de.dal33t.powerfolder.transfer.swarm;
 
+import java.io.IOException;
+import java.util.Collection;
+
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.transfer.Download;
 
-import java.util.Collection;
-
 public interface DownloadControl {
+    /**
+     * Call this after construction. Otherwise download might not have tempfile
+     * ready. Does not prepare tempfile if completed.
+     * 
+     * @param completed
+     *            if this download is already completed.
+     * @throws IOException
+     */
+    void init(boolean completed) throws IOException;
+    
     /**
      * Returns the download belonging to the given member.
      * 
