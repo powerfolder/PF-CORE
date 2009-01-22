@@ -659,7 +659,8 @@ public class Folder extends PFComponent {
         synchronized (scanLock) {
             if (!tempFile.renameTo(targetFile)) {
                 logWarning("Was not able to rename tempfile, copiing "
-                    + tempFile.getAbsolutePath());
+                    + tempFile.getAbsolutePath() + " to "
+                    + targetFile.getAbsolutePath());
                 try {
                     FileUtils.copyFile(tempFile, targetFile);
                 } catch (IOException e) {
