@@ -80,7 +80,7 @@ public class UtilTest extends TestCase {
         for (int i = 0; i <= 100; i++) {
             Date value = estimator.updateEstimate(i);
             if (value != null) {
-                assertSame(target / 1000, value.getTime() / 1000);
+                assertEquals(target / 1000, value.getTime() / 1000);
             }
             if (value == null) {
                 // First attempt cannot calculate a date.
