@@ -963,7 +963,7 @@ public class Controller extends PFComponent {
                 connectionListener.getAddress());
         } else {
             logSevere("failed to open random port!!!");
-            fatalStartError(Translation.getTranslation("dialog.binderror"));
+            fatalStartError(Translation.getTranslation("dialog.bind_error"));
         }
     }
 
