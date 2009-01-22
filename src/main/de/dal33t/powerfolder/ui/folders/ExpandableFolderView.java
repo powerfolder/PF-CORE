@@ -200,7 +200,6 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
         upperBuilder.add(syncFolderButton, cc.xy(8, 1));
 
         upperPanel = upperBuilder.getPanel();
-        upperPanel.setBackground(SystemColor.text);
         upperPanel.setToolTipText(
                 Translation.getTranslation("exp_folder_view.expand"));
         upperPanel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -241,14 +240,12 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
         lowerBuilder.add(osComponent.getUIComponent(), cc.xywh(2, 22, 4, 1));
 
         JPanel lowerPanel = lowerBuilder.getPanel();
-        lowerPanel.setBackground(SystemColor.text);
 
         // Build spacer then lower outer with lower panel
         FormLayout lowerOuterLayout = new FormLayout("pref:grow",
             "3dlu, pref");
         PanelBuilder lowerOuterBuilder = new PanelBuilder(lowerOuterLayout);
         lowerOuterPanel = lowerOuterBuilder.getPanel();
-        lowerOuterPanel.setBackground(SystemColor.text);
         lowerOuterPanel.setVisible(false);
         lowerOuterBuilder.add(lowerPanel, cc.xy(1, 2));
 
@@ -259,7 +256,6 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
         borderBuilder.add(upperPanel, cc.xy(2, 2));
         borderBuilder.add(lowerOuterBuilder.getPanel(), cc.xy(2, 3));
         JPanel borderPanel = borderBuilder.getPanel();
-        borderPanel.setBackground(SystemColor.text);
         borderPanel.setBorder(BorderFactory.createEtchedBorder());
 
         // Build ui with vertical space before the next one
@@ -269,7 +265,6 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
         outerBuilder.add(borderPanel, cc.xy(2, 1));
 
         uiComponent = outerBuilder.getPanel();
-        uiComponent.setBackground(SystemColor.text);
     }
 
     /**

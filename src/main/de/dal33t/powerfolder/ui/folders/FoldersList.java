@@ -66,6 +66,7 @@ public class FoldersList extends PFUIComponent {
     private Integer folderSelectionType;
     private ExpansionListener expansionListener;
     private FoldersTab foldersTab;
+    private volatile boolean populated;
 
     /**
      * Constructor
@@ -136,6 +137,11 @@ public class FoldersList extends PFUIComponent {
      * server client folders.
      */
     private void updateFolders() {
+
+        // Do nothing until the populate command is received.
+        if (!populated) {
+            return;
+        }
 
         synchronized(views) {
 
@@ -250,6 +256,16 @@ public class FoldersList extends PFUIComponent {
      */
     public void setScroller(JScrollPane scrollPane) {
         this.scrollPane = scrollPane;
+    }
+
+    /**
+     * Enable the updateFolders method so that views get processed.
+     * This is done so views do not get added before Synthetica has set all the
+     * colors, else views look different before and after.
+     */
+    public void populate() {
+        populated = true;
+        updateFolders();
     }
 
     /**
@@ -392,11 +408,6 @@ public class FoldersList extends PFUIComponent {
         private static final FolderBeanComparator INSTANCE = new FolderBeanComparator();
 
         private FolderBeanComparator() {
-        }
-
-        public int compare(Folder o1, Folder o2) {
-            return o1.getName().toLowerCase().compareTo(
-                o2.getName().toLowerCase());
         }
 
         public int compare(FolderBean o1, FolderBean o2) {

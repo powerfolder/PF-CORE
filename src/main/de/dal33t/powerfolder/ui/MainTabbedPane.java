@@ -27,6 +27,9 @@ import de.dal33t.powerfolder.ui.home.HomeTab;
 import de.dal33t.powerfolder.util.Translation;
 
 import javax.swing.*;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ChangeEvent;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * This is the main tabbed pain component in the PowerFolder GUI.
@@ -92,6 +95,8 @@ public class MainTabbedPane extends PFUIComponent {
                 Translation.getTranslation("main_tabbed_pane.computers.description"));
         uiComponent.setIconAt(COMPUTERS_INDEX, Icons.COMPUTER);
 
+        uiComponent.addChangeListener(new MyChagelistener());
+
         return uiComponent;
     }
 
@@ -100,7 +105,7 @@ public class MainTabbedPane extends PFUIComponent {
     }
 
     /**
-     * Initialize the comonents of the pane.
+     * Initialize the components of the pane.
      */
     private void initComponents() {
         uiComponent = new JTabbedPane();
@@ -109,4 +114,19 @@ public class MainTabbedPane extends PFUIComponent {
         computersTab = new ComputersTab(getController());
     }
 
+    /**
+     * Listener to populate the folders and computers the first time the
+     * tabs are selected.
+     */
+    private class MyChagelistener implements ChangeListener {
+
+        private AtomicBoolean done = new AtomicBoolean();
+
+        public void stateChanged(ChangeEvent e) {
+            if (!done.getAndSet(true)) {
+                foldersTab.populate();
+                computersTab.populate();
+            }
+        }
+    }
 }

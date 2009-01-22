@@ -51,6 +51,27 @@ public class ComputersTab extends PFUIComponent {
      */
     public ComputersTab(Controller controller) {
         super(controller);
+        emptyLabel = new JLabel(
+                Translation.getTranslation("computers_tab.no_computers_available"),
+                SwingConstants.CENTER);
+        emptyLabel.setEnabled(false);
+
+        computersList = new ComputersList(getController(), this);
+
+        computerTypeList = new JComboBox();
+        computerTypeList.setToolTipText(Translation.getTranslation(
+                "computers_tab.computer_type_list.text"));
+        computerTypeList.addItem(Translation.getTranslation(
+                "computers_tab.all_friends_online_lan"));
+        computerTypeList.addItem(Translation.getTranslation(
+                "computers_tab.online_friends"));
+        computerTypeList.addItem(Translation.getTranslation(
+                "computers_tab.online_friends_online_lan"));
+        computerTypeList.addActionListener(new MyActionListener());
+        Integer initialSelection = PreferencesEntry.COMPUTER_TYPE_SELECTION
+                .getValueInt(getController());
+        computerTypeList.setSelectedIndex(initialSelection);
+        configureNodeManagerModel();
     }
 
     /**
@@ -69,7 +90,6 @@ public class ComputersTab extends PFUIComponent {
      * Builds the UI component
      */
     private void buildUI() {
-        initComponents();
 
         // Build ui
         FormLayout layout = new FormLayout("pref:grow",
@@ -99,34 +119,6 @@ public class ComputersTab extends PFUIComponent {
         if (scrollPane != null) {
             scrollPane.setVisible(!computersList.isEmpty());
         }
-    }
-
-    /**
-     * Initializes components
-     */
-    private void initComponents() {
-
-        emptyLabel = new JLabel(
-                Translation.getTranslation("computers_tab.no_computers_available"),
-                SwingConstants.CENTER);
-        emptyLabel.setEnabled(false);
-        
-        computersList = new ComputersList(getController(), this);
-
-        computerTypeList = new JComboBox();
-        computerTypeList.setToolTipText(Translation.getTranslation(
-                "computers_tab.computer_type_list.text"));
-        computerTypeList.addItem(Translation.getTranslation(
-                "computers_tab.all_friends_online_lan"));
-        computerTypeList.addItem(Translation.getTranslation(
-                "computers_tab.online_friends"));
-        computerTypeList.addItem(Translation.getTranslation(
-                "computers_tab.online_friends_online_lan"));
-        computerTypeList.addActionListener(new MyActionListener());
-        Integer initialSelection = PreferencesEntry.COMPUTER_TYPE_SELECTION
-                .getValueInt(getController());
-        computerTypeList.setSelectedIndex(initialSelection);
-        configureNodeManagerModel();
     }
 
     /**
@@ -168,6 +160,13 @@ public class ComputersTab extends PFUIComponent {
         } else {
             logSevere("Bad computerTypeList index " + index);
         }
+    }
+
+    /**
+     * Populates the list of computers.
+     */
+    public void populate() {
+        computersList.populate();
     }
 
     ///////////////////

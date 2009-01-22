@@ -44,6 +44,7 @@ public class ComputersList extends PFUIComponent {
     private final Set<ExpandableComputerView> viewList;
     private ExpansionListener expansionListener;
     private ComputersTab computersTab;
+    private volatile boolean populated;
 
     /**
      * Constructor
@@ -95,10 +96,6 @@ public class ComputersList extends PFUIComponent {
         computerListPanel = new JPanel();
         computerListPanel.setLayout(new BoxLayout(computerListPanel,
                 BoxLayout.PAGE_AXIS));
-        Member[] nodes = getController().getNodeManager().getFriends();
-        for (Member node : nodes) {
-            addViewForNode(node);
-        }
         getUIController().getApplicationModel().getNodeManagerModel()
                 .addNodeManagerModelListener(new MyNodeManagerModelListener());
         rebuild();
@@ -110,6 +107,12 @@ public class ComputersList extends PFUIComponent {
      * @param node
      */
     private void addViewForNode(Member node) {
+
+        // Do nothing until populate command is called.
+        if (!populated) {
+            return;
+        }
+
         ExpandableComputerView view = new ExpandableComputerView(getController(),
                 node);
         synchronized (viewList) {
@@ -126,6 +129,12 @@ public class ComputersList extends PFUIComponent {
      * @param node
      */
     private void removeViewForNode(Member node) {
+
+        // Do nothing until populate command is called.
+        if (!populated) {
+            return;
+        }
+
         synchronized (viewList) {
             ExpandableComputerView viewToRemove = null;
             outerLoop:
@@ -155,6 +164,12 @@ public class ComputersList extends PFUIComponent {
      * Rebuild the whole list.
      */
     private void rebuild() {
+
+        // Do nothing until populate command is called.
+        if (!populated) {
+            return;
+        }
+
         synchronized (viewList) {
             for (ExpandableComputerView view : viewList) {
                 view.removeExpansionListener(expansionListener);
@@ -174,6 +189,16 @@ public class ComputersList extends PFUIComponent {
 
     public boolean isEmpty() {
         return viewList.isEmpty();
+    }
+
+    /**
+     * Enable the view processing methods so that views get processed.
+     * This is done so views do not get added before Synthetica has set all the
+     * colors, else views look different before and after.
+     */
+    public void populate() {
+        populated = true;
+        rebuild();
     }
 
     //////////////////

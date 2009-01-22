@@ -132,7 +132,6 @@ public class ExpandableComputerView extends PFUIComponent implements ExpandableV
         upperBuilder.add(chatButton, cc.xy(6, 1));
 
         upperPanel = upperBuilder.getPanel();
-        upperPanel.setBackground(SystemColor.text);
         upperPanel.setToolTipText(
                 Translation.getTranslation("exp_computer_view.expand"));
         MouseAdapter ma = new MyMouseAdapter();
@@ -153,14 +152,12 @@ public class ExpandableComputerView extends PFUIComponent implements ExpandableV
         lowerBuilder.add(reconnectButton, cc.xy(6, 3));
 
         JPanel lowerPanel = lowerBuilder.getPanel();
-        lowerPanel.setBackground(SystemColor.text);
 
         // Build spacer then lower outer with lower panel
         FormLayout lowerOuterLayout = new FormLayout("pref:grow",
             "3dlu, pref");
         PanelBuilder lowerOuterBuilder = new PanelBuilder(lowerOuterLayout);
         lowerOuterPanel = lowerOuterBuilder.getPanel();
-        lowerOuterPanel.setBackground(SystemColor.text);
         lowerOuterPanel.setVisible(false);
         lowerOuterBuilder.add(lowerPanel, cc.xy(1, 2));
 
@@ -171,18 +168,15 @@ public class ExpandableComputerView extends PFUIComponent implements ExpandableV
         borderBuilder.add(upperPanel, cc.xy(2, 2));
         borderBuilder.add(lowerOuterBuilder.getPanel(), cc.xy(2, 3));
         JPanel borderPanel = borderBuilder.getPanel();
-        borderPanel.setBackground(SystemColor.text);
         borderPanel.setBorder(BorderFactory.createEtchedBorder());
 
-        // Build ui with vertical space before the next one
+        // Build ui with vertical space before the next one.
         FormLayout outerLayout = new FormLayout("3dlu, pref:grow, 3dlu",
             "pref, 3dlu");
         PanelBuilder outerBuilder = new PanelBuilder(outerLayout);
         outerBuilder.add(borderPanel, cc.xy(2, 1));
 
         uiComponent = outerBuilder.getPanel();
-        uiComponent.setBackground(SystemColor.text);
-
     }
 
     /**
