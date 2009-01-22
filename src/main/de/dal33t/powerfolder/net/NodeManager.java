@@ -111,13 +111,6 @@ public class NodeManager extends PFComponent {
     private List<AddressRange> lanRanges;
 
     private Member mySelf;
-
-    /**
-     * @see ConfigurationEntry#NETWORK_ID
-     *      <p>
-     *      #1373
-     */
-    private String networkId;
     
     /**
      * Set containing all nodes, that went online in the meanwhile (since last
@@ -162,7 +155,7 @@ public class NodeManager extends PFComponent {
             }
             ConfigurationEntry.NODE_ID.setValue(getController(), id);
         }
-        networkId = ConfigurationEntry.NETWORK_ID.getValue(getController());
+        String networkId = ConfigurationEntry.NETWORK_ID.getValue(getController());
         mySelf = new Member(getController(),
             new MemberInfo(nick, id, networkId));
         logInfo("I am '" + mySelf.getNick() + "'");
@@ -455,7 +448,7 @@ public class NodeManager extends PFComponent {
      * @return the network ID this nodemanager belongs to. #1373
      */
     public String getNetworkId() {
-        return networkId;
+        return mySelf.getInfo().networkId;
     }
 
     /**
@@ -1080,7 +1073,7 @@ public class NodeManager extends PFComponent {
         
         if (!node.isOnSameNetwork()) {
             logWarning(
-                "Added node with diffrent network id. Our netID: " + networkId
+                "Added node with diffrent network id. Our netID: " + getNetworkId()
                     + ", node netID: " + node.getInfo().networkId + ". "
                     + node, new RuntimeException("here"));
         }
