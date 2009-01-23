@@ -84,6 +84,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     private ValueModel locationModel;
     private JComponent locationField;
     private JCheckBox underlineLinkBox;
+    private JCheckBox magneticFrameBox;
 
     private JCheckBox showAdvancedSettingsBox;
     private ValueModel showAdvancedSettingsModel;
@@ -194,6 +195,12 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             new BufferedValueModel(ulModel, writeTrigger), Translation
                 .getTranslation("preferences.dialog.underline_link"));
 
+        ValueModel mfModel = new ValueHolder(
+            PreferencesEntry.USE_MAGNETIC_FRAMES.getValueBoolean(getController()));
+        magneticFrameBox = BasicComponentFactory.createCheckBox(
+            new BufferedValueModel(mfModel, writeTrigger), Translation
+                .getTranslation("preferences.dialog.magnetic_frame"));
+
         ValueModel urbModel = new ValueHolder(
             ConfigurationEntry.USE_RECYCLE_BIN.getValueBoolean(getController()));
         useRecycleBinBox = BasicComponentFactory.createCheckBox(
@@ -294,6 +301,9 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
             row += 2;
             builder.add(underlineLinkBox, cc.xywh(3, row, 3, 1));
+
+            row += 2;
+            builder.add(magneticFrameBox, cc.xywh(3, row, 3, 1));
 
             row += 2;
             builder.add(useRecycleBinBox, cc.xywh(3, row, 3, 1));
@@ -405,9 +415,13 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         PreferencesEntry.SHOW_ADVANCED_SETTINGS.setValue(getController(),
             showAdvancedSettingsBox.isSelected());
 
-        // setAdvanced
+        // Use underlines
         PreferencesEntry.UNDERLINE_LINKS.setValue(getController(),
             underlineLinkBox.isSelected());
+
+        // Use magnetic frames
+        PreferencesEntry.USE_MAGNETIC_FRAMES.setValue(getController(),
+           magneticFrameBox.isSelected());
 
         // UseRecycleBin
         ConfigurationEntry.USE_RECYCLE_BIN.setValue(getController(), Boolean

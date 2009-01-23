@@ -84,7 +84,13 @@ public enum PreferencesEntry {
 
     COMPUTER_TYPE_SELECTION("computer_type_selection", 0),
 
-    FOLDER_TYPE_SELECTION("folder_type_selection", 0);
+    FOLDER_TYPE_SELECTION("folder_type_selection", 0),
+
+    /**
+     * Whether to use magnetic frames by default (i.e. not with ctrl key)
+     */
+    USE_MAGNETIC_FRAMES("use.magnetic.frames", false);
+
 
     /** String, Boolean, Integer */
     private Class type;

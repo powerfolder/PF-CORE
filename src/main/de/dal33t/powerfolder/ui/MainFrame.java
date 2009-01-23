@@ -39,10 +39,11 @@ import de.javasoft.plaf.synthetica.SyntheticaRootPaneUI;
 import javax.swing.*;
 import javax.swing.plaf.RootPaneUI;
 import java.awt.*;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.prefs.Preferences;
 
 /**
@@ -52,6 +53,10 @@ import java.util.prefs.Preferences;
  * @version $Revision: 1.44 $
  */
 public class MainFrame extends PFUIComponent {
+
+    private final AtomicBoolean controlKeyDown = new AtomicBoolean();
+    private final AtomicInteger oldX = new AtomicInteger();
+    private final AtomicInteger oldY = new AtomicInteger();
 
     private JFrame uiComponent;
 
@@ -105,6 +110,9 @@ public class MainFrame extends PFUIComponent {
         Preferences prefs = getController().getPreferences();
         uiComponent.setLocation(prefs.getInt("mainframe4.x", 100), prefs.getInt(
             "mainframe4.y", 100));
+
+        oldX.set(uiComponent.getX());
+        oldY.set(uiComponent.getY());
 
         // Pack elements
         uiComponent.pack();
@@ -166,10 +174,13 @@ public class MainFrame extends PFUIComponent {
                 }.start();
             }
         });
+
+        uiComponent.addComponentListener(new MyComponentAdapter());
+        uiComponent.addMouseMotionListener(new MyMouseAdapter());
     }
     
     /**
-     * Asks user about exit behaviour of the program
+     * Asks user about exit behavior of the program
      * when the program is used for the first time
      */
     private void handleExitFirstRequest() {
@@ -332,5 +343,57 @@ public class MainFrame extends PFUIComponent {
         state &= ~Frame.ICONIFIED;
         // Deiconify the frame
         uiComponent.setExtendedState(state);
+    }
+
+    ///////////////////
+    // Inner Classes //
+    ///////////////////
+
+    /**
+     * Listen for control key, to use in MyComponentAdapter.
+     * // todo - This is really ugly. Does any one know a better way of
+     * detecting the contol key?
+     */
+    private class MyMouseAdapter extends MouseAdapter {
+
+        public void mouseDragged(MouseEvent e) {
+            detectControlKey(e);
+        }
+
+        public void mouseClicked(MouseEvent e) {
+            detectControlKey(e);
+        }
+
+        public void mouseMoved(MouseEvent e) {
+            detectControlKey(e);
+        }
+
+        private void detectControlKey(MouseEvent e) {
+            controlKeyDown.set((e.getModifiers() & InputEvent.CTRL_MASK) != 0);
+        }
+    }
+
+    /**
+     * Listen to movement of the main frame.
+     */
+    private class MyComponentAdapter extends ComponentAdapter {
+
+        /**
+         * Calculate the change in movement and notify the controller.
+         *
+         * @param e
+         */
+        public void componentMoved(ComponentEvent e) {
+            synchronized (oldX) {
+                int newX = uiComponent.getX();
+                int newY = uiComponent.getY();
+                int ox = oldX.getAndSet(uiComponent.getX());
+                int oy = oldY.getAndSet(uiComponent.getY());
+                int diffX = newX - ox;
+                int diffY = newY - oy;
+                getUIController().mainFrameMoved(controlKeyDown.get(), diffX,
+                        diffY);
+            }
+        }
     }
 }

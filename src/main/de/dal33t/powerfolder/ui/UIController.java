@@ -696,6 +696,24 @@ public class UIController extends PFComponent {
         informationFrame.getUIComponent().setVisible(false);
     }
 
+    /**
+     * This method handles movement of the main frame and nudges any
+     * MagneticFrames. USE_MAGNETIC_FRAMES pref xor control key activates this.
+     *
+     * @param diffX
+     * @param diffY
+     */
+    public void mainFrameMoved(boolean controlKeyDown, int diffX, int diffY) {
+
+        Boolean magnetic = PreferencesEntry.USE_MAGNETIC_FRAMES
+                .getValueBoolean(getController());
+        if (magnetic ^ controlKeyDown) {
+            informationFrame.nudge(diffX,  diffY);
+            chatFrame.nudge(diffX,  diffY);
+            systemMonitorFrame.nudge(diffX,  diffY);
+        }
+    }
+
     ///////////////////
     // Inner Classes //
     ///////////////////
