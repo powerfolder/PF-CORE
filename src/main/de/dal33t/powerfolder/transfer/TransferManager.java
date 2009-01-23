@@ -592,10 +592,10 @@ public class TransferManager extends PFComponent {
         }
     }
 
-    void setCompleted(DownloadManager download) {
-        assert download.isDone();
+    void setCompleted(DownloadManager dlManager) {
+        assert dlManager.isDone();
 
-        FileInfo fInfo = download.getFileInfo();
+        FileInfo fInfo = dlManager.getFileInfo();
         // Inform other folder member of added file
         Folder folder = fInfo.getFolder(getController().getFolderRepository());
         if (folder != null) {
@@ -616,23 +616,23 @@ public class TransferManager extends PFComponent {
 
             assert getActiveUploads(fInfo).size() == 0;
 
-            if (!folder.scanDownloadFile(fInfo, download.getTempFile())) {
+            if (!folder.scanDownloadFile(fInfo, dlManager.getTempFile())) {
                 logSevere("Scanning of completed file failed: "
                     + fInfo.toDetailString());
                 return;
             }
         }
-        completedDownloads.add(download);
-        removeDownloadManager(download);
+        completedDownloads.add(dlManager);
+        removeDownloadManager(dlManager);
 
         // Auto cleanup of Downloads
         if (ConfigurationEntry.DOWNLOADS_AUTO_CLEANUP
             .getValueBoolean(getController()))
         {
             if (isFiner()) {
-                logFiner("Auto-cleaned " + download);
+                logFiner("Auto-cleaned " + dlManager);
             }
-            clearCompletedDownload(download);
+            clearCompletedDownload(dlManager);
         }
     }
 
@@ -1664,7 +1664,7 @@ public class TransferManager extends PFComponent {
     public void abortDownload(FileInfo fileInfo, Member from) {
         Reject.ifNull(fileInfo, "FileInfo is null");
         Reject.ifNull(from, "From is null");
-        Download download = getDownload(from, fileInfo);
+        Download download = getActiveDownload(from, fileInfo);
         if (download != null) {
             assert download.getPartner().equals(from);
             download.abort();
@@ -1778,8 +1778,41 @@ public class TransferManager extends PFComponent {
         }
         return null;
     }
+    
+    /**
+     * @param from
+     * @param fInfo
+     * @return The download of the file that has been completed from this
+     *         member.
+     */
+    public Download getCompletedDownload(Member from, FileInfo fInfo) {
+        DownloadManager man = getCompletedDownload(fInfo);
+        if (man == null) {
+            return null;
+        }
+        Download d = man.getSourceFor(from);
+        if (d == null) {
+            return null;
+        }
+        assert d.getPartner().equals(from);
+        return d;
+    }
 
-    public Download getDownload(Member from, FileInfo fInfo) {
+    /**
+     * @param fInfo
+     * @return the download manager containing the completed file, otherwise
+     *         null
+     */
+    public DownloadManager getCompletedDownload(FileInfo fInfo) {
+        for (DownloadManager dlManager : completedDownloads) {
+            if (dlManager.getFileInfo().isCompletelyIdentical(fInfo)) {
+                return dlManager;
+            }
+        }
+        return null;
+    }
+
+    public Download getActiveDownload(Member from, FileInfo fInfo) {
         DownloadManager man = getDownloadManagerFor(fInfo);
         if (man == null) {
             return null;

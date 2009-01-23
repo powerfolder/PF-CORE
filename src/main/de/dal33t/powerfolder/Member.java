@@ -1234,11 +1234,11 @@ public class Member extends PFComponent implements Comparable<Member> {
             } else if (message instanceof DownloadQueued) {
                 // set queued flag here, if we received status from other side
                 DownloadQueued dlQueued = (DownloadQueued) message;
-                Download dl = getController().getTransferManager().getDownload(
-                    this, dlQueued.file);
+                Download dl = getController().getTransferManager()
+                    .getActiveDownload(this, dlQueued.file);
                 if (dl != null) {
                     dl.setQueued(dlQueued.file);
-                } else {
+                } else if (downloadRecentlyCompleted(dlQueued.file)) {
                     logWarning("Remote side queued non-existant download.");
                     sendMessageAsynchron(new AbortDownload(dlQueued.file), null);
                 }
@@ -1261,11 +1261,11 @@ public class Member extends PFComponent implements Comparable<Member> {
             } else if (message instanceof FileChunk) {
                 // File chunk received
                 FileChunk chunk = (FileChunk) message;
-                Download d = getController().getTransferManager().getDownload(
-                    this, chunk.file);
+                Download d = getController().getTransferManager()
+                    .getActiveDownload(this, chunk.file);
                 if (d != null) {
                     d.addChunk(chunk);
-                } else {
+                } else if (downloadRecentlyCompleted(chunk.file)) {
                     sendMessageAsynchron(new AbortDownload(chunk.file), null);
                 }
                 expectedTime = -1;
@@ -1514,11 +1514,11 @@ public class Member extends PFComponent implements Comparable<Member> {
 
             } else if (message instanceof StartUpload) {
                 StartUpload su = (StartUpload) message;
-                Download dl = getController().getTransferManager().getDownload(
+                Download dl = getController().getTransferManager().getActiveDownload(
                     this, su.getFile());
                 if (dl != null) {
                     dl.uploadStarted(su.getFile());
-                } else {
+                } else if (downloadRecentlyCompleted(su.getFile())) {
                     logInfo("Download invalid or obsolete:" + su.getFile());
                     sendMessageAsynchron(new AbortDownload(su.getFile()), null);
                 }
@@ -1546,11 +1546,11 @@ public class Member extends PFComponent implements Comparable<Member> {
 
             } else if (message instanceof ReplyFilePartsRecord) {
                 ReplyFilePartsRecord rep = (ReplyFilePartsRecord) message;
-                Download dl = getController().getTransferManager().getDownload(
-                    this, rep.getFile());
+                Download dl = getController().getTransferManager()
+                    .getActiveDownload(this, rep.getFile());
                 if (dl != null) {
                     dl.receivedFilePartsRecord(rep.getFile(), rep.getRecord());
-                } else {
+                } else if (downloadRecentlyCompleted(rep.getFile())) {
                     logInfo("Download not found: " + dl);
                     sendMessageAsynchron(new AbortDownload(rep.getFile()), null);
                 }
@@ -2206,6 +2206,23 @@ public class Member extends PFComponent implements Comparable<Member> {
 
     public void setAskedForFriendship(boolean flag) {
         askedForFriendship = flag;
+    }
+    
+    private boolean downloadRecentlyCompleted(FileInfo fInfo) {
+        Reject.ifNull(fInfo, "FileInfo is null");
+        Download dl = getController().getTransferManager()
+            .getCompletedDownload(this, fInfo);
+        if (dl != null) {
+            return true;
+        }
+        if (ConfigurationEntry.DOWNLOADS_AUTO_CLEANUP
+            .getValueBoolean(getController()))
+        {
+            // THIS is a HACK(tm), we never know if this download has been
+            // completed, since it probably is already removed.
+            return true;
+        }
+        return false;
     }
 
     // Logger methods *********************************************************

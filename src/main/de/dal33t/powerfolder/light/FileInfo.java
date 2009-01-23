@@ -607,6 +607,9 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
      * version 0 same date but DIFFRENT modifiers. If you are seeking a way of
      * checking if a FileInfo is newer/or in sync use the method
      * <code>{@link #isNewerThan(FileInfo)}</code>
+     * <p>
+     * PROPOSED SOLUTION: Add a method which compares name AND version:
+     * isIdenticalVersion.
      * 
      * @param otherFile
      *            the other file to compare with

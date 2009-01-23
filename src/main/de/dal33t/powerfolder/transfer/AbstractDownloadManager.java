@@ -537,6 +537,9 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         shutdown();
         deleteMetaData();
 
+        for (Download d : getSources()) {
+            d.setCompleted();
+        }
         // Should be called without locking:
         // It's more "event" style and prevents deadlocks
         post(new Runnable() {
@@ -545,9 +548,6 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                     AbstractDownloadManager.this);
             }
         });
-        for (Download d : getSources()) {
-            d.setCompleted();
-        }
     }
 
     protected synchronized void setFilePartsState(FilePartsState state) {
