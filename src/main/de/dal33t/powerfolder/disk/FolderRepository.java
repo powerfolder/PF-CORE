@@ -105,6 +105,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      * The current synchronizater of all folder memberships
      */
     private AllFolderMembershipSynchronizer folderMembershipSynchronizer;
+    private Object folderMembershipSynchronizerLock = new Object();
 
     /**
      * Field list for backup taget pre #777. Used to convert to new backup
@@ -344,8 +345,10 @@ public class FolderRepository extends PFComponent implements Runnable {
      * Shuts down folder repo
      */
     public void shutdown() {
-        if (folderMembershipSynchronizer != null) {
-            folderMembershipSynchronizer.canceled = true;
+        synchronized (folderMembershipSynchronizerLock) {
+            if (folderMembershipSynchronizer != null) {
+                folderMembershipSynchronizer.canceled = true;
+            }
         }
         folderScanner.shutdown();
 
@@ -686,18 +689,19 @@ public class FolderRepository extends PFComponent implements Runnable {
      */
     private void triggerSynchronizeAllFolderMemberships() {
         if (!started) {
-            logFiner(
-                "Not synchronizing Foldermemberships, repo not started, yet");
+            logFiner("Not synchronizing Foldermemberships, repo not started, yet");
         }
-        AllFolderMembershipSynchronizer syncer = folderMembershipSynchronizer;
-        if (syncer != null) {
-            // Cancel the syncer
-            syncer.canceled = true;
-        }
-        syncer = new AllFolderMembershipSynchronizer();
-        folderMembershipSynchronizer = syncer;
-        if (getController().getThreadPool() != null) {
-            getController().getThreadPool().submit(syncer);
+        synchronized (folderMembershipSynchronizerLock) {
+            AllFolderMembershipSynchronizer syncer = folderMembershipSynchronizer;
+            if (syncer != null) {
+                // Cancel the syncer
+                syncer.canceled = true;
+            }
+            syncer = new AllFolderMembershipSynchronizer();
+            folderMembershipSynchronizer = syncer;
+            if (getController().getThreadPool() != null) {
+                getController().getThreadPool().submit(syncer);
+            }
         }
     }
 
@@ -958,7 +962,9 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
             Profiling.end(pe, 1000);
             // Normal termination, remove synchronizer
-            folderMembershipSynchronizer = null;
+            synchronized (folderMembershipSynchronizerLock) {
+                folderMembershipSynchronizer = null;
+            }
         }
     }
 }
