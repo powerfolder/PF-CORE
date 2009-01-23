@@ -692,15 +692,13 @@ public class FolderRepository extends PFComponent implements Runnable {
             logFiner("Not synchronizing Foldermemberships, repo not started, yet");
         }
         synchronized (folderMembershipSynchronizerLock) {
-            AllFolderMembershipSynchronizer syncer = folderMembershipSynchronizer;
-            if (syncer != null) {
+            if (folderMembershipSynchronizer != null) {
                 // Cancel the syncer
-                syncer.canceled = true;
+                folderMembershipSynchronizer.canceled = true;
             }
-            syncer = new AllFolderMembershipSynchronizer();
-            folderMembershipSynchronizer = syncer;
+            folderMembershipSynchronizer =  new AllFolderMembershipSynchronizer();
             if (getController().getThreadPool() != null) {
-                getController().getThreadPool().submit(syncer);
+                getController().getThreadPool().submit(folderMembershipSynchronizer);
             }
         }
     }
@@ -963,7 +961,11 @@ public class FolderRepository extends PFComponent implements Runnable {
             Profiling.end(pe, 1000);
             // Normal termination, remove synchronizer
             synchronized (folderMembershipSynchronizerLock) {
-                folderMembershipSynchronizer = null;
+                // Got already new syner started in the meanwhile? if yes, don't
+                // set to null
+                if (folderMembershipSynchronizer == this) {
+                    folderMembershipSynchronizer = null;
+                }
             }
         }
     }
