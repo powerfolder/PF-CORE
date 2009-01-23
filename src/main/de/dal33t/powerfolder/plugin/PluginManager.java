@@ -66,7 +66,12 @@ public class PluginManager extends PFComponent {
     public void shutdown() {
         if (plugins != null) {
             for (Plugin plugin : plugins) {
-                plugin.stop();
+                try {
+                    plugin.stop();
+                } catch (Exception e) {
+                    logSevere("Exception while stopping plugin: " + plugin + ". "
+                        + e, e);
+                }
                 logFine(plugin.getName() + " stopped");
             }
         }
@@ -104,7 +109,12 @@ public class PluginManager extends PFComponent {
     private void startEnabledPlugins() {
         for (Plugin plugin : plugins) {
             logInfo("Starting plugin: " + plugin.getName());
-            plugin.start();
+            try {
+                plugin.start();
+            } catch (Exception e) {
+                logSevere("Exception while starting plugin: " + plugin + ". "
+                    + e, e);
+            }
         }
     }
 
@@ -215,11 +225,21 @@ public class PluginManager extends PFComponent {
         if (enabled) {
             disabledPlugins.remove(plugin);
             plugins.add(plugin);
-            plugin.start();
+            try {
+                plugin.start();
+            } catch (Exception e) {
+                logSevere("Exception while starting plugin: " + plugin + ". "
+                    + e, e);
+            }
         } else {
             plugins.remove(plugin);
             disabledPlugins.add(plugin);
-            plugin.stop();
+            try {
+                plugin.stop();
+            } catch (Exception e) {
+                logSevere("Exception while stopping plugin: " + plugin + ". "
+                    + e, e);
+            }
         }
         saveConfig();
         firePluginStatusChange(plugin);
