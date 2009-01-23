@@ -19,15 +19,6 @@
  */
 package de.dal33t.powerfolder.util.test;
 
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.transfer.DownloadManager;
-import de.dal33t.powerfolder.transfer.Upload;
-import de.dal33t.powerfolder.util.Reject;
-import junit.framework.Assert;
-import junit.framework.TestCase;
-import org.apache.commons.io.FileUtils;
-
 import java.awt.EventQueue;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -47,11 +38,23 @@ import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
+
+import junit.framework.Assert;
+import junit.framework.TestCase;
+
+import org.apache.commons.io.FileUtils;
+
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.transfer.DownloadManager;
+import de.dal33t.powerfolder.transfer.Upload;
+import de.dal33t.powerfolder.util.Reject;
 
 /**
  * Offers several helping methods for junit tests.
@@ -67,10 +70,34 @@ public class TestHelper {
 
     public static final InetSocketAddress ONLINE_STORAGE_ADDRESS = new InetSocketAddress(
         "access.powerfolder.com", 1337);
-
+    
+    private static final Collection<Controller> STARTED_CONTROLLER = Collections
+        .synchronizedCollection(new ArrayList<Controller>());
+    
     private static File testFile;
 
     private TestHelper() {
+    }
+
+    public static void addStartedController(Controller controller) {
+        Reject.ifNull(controller, "Controller is null");
+        STARTED_CONTROLLER.add(controller);
+    }
+
+    public static void removeStartedController(Controller controller) {
+        Reject.ifNull(controller, "Controller is null");
+        STARTED_CONTROLLER.remove(controller);
+    }
+
+    public static void shutdownStartedController() {
+        synchronized (STARTED_CONTROLLER) {
+            for (Controller controller : STARTED_CONTROLLER) {
+                System.err.println("Shutting down started/left controller: "
+                    + controller);
+                controller.shutdown();
+            }
+            STARTED_CONTROLLER.clear();
+        }
     }
 
     public static String deadlockCheck() {

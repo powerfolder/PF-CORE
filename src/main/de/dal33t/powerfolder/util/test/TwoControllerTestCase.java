@@ -81,6 +81,8 @@ public class TwoControllerTestCase extends TestCase {
             // because of previous failing test.
             stopControllers();
         }
+        // Also for cleaning up failed tests, where tearDown has not been run.
+        TestHelper.shutdownStartedController();
 
         // Default exception logger
         Thread
@@ -156,6 +158,7 @@ public class TwoControllerTestCase extends TestCase {
     protected void startControllerBart() {
         controllerBart = createControllerBart();
         controllerBart.startConfig("build/test/ControllerBart/PowerFolder");
+        TestHelper.addStartedController(controllerBart);
         waitForStart(controllerBart);
         assertNotNull(controllerBart.getConnectionListener());
         // triggerAndWaitForInitialMaitenenace(controllerBart);
@@ -166,6 +169,7 @@ public class TwoControllerTestCase extends TestCase {
     protected void startControllerLisa() {
         controllerLisa = createControllerLisa();
         controllerLisa.startConfig("build/test/ControllerLisa/PowerFolder");
+        TestHelper.addStartedController(controllerLisa);
         waitForStart(controllerLisa);
         assertNotNull(controllerLisa.getConnectionListener());
         // triggerAndWaitForInitialMaitenenace(controllerLisa);
@@ -317,9 +321,11 @@ public class TwoControllerTestCase extends TestCase {
     private void stopControllers() throws InterruptedException {
         if (controllerBart.isStarted()) {
             controllerBart.shutdown();
+            TestHelper.removeStartedController(controllerBart);
         }
         if (controllerLisa.isStarted()) {
             controllerLisa.shutdown();
+            TestHelper.removeStartedController(controllerLisa);
         }
 
         // Give them time to shut down
