@@ -128,7 +128,7 @@ public class ComputersTab extends PFUIComponent {
         JButton searchComputerButton = new JButton(getApplicationModel()
                 .getActionModel().getFindComputersAction());
 
-        FormLayout layout = new FormLayout("3dlu, pref, pref:grow, pref, 3dlu",
+        FormLayout layout = new FormLayout("3dlu, pref, 3dlu:grow, pref, 3dlu",
             "pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();

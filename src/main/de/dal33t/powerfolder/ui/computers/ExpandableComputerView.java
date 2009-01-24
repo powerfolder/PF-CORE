@@ -44,8 +44,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.*;
-import java.util.Date;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.io.File;
+import java.io.IOException;
 
 /**
  * Class to render expandable view of a folder.
@@ -177,6 +182,8 @@ public class ExpandableComputerView extends PFUIComponent implements ExpandableV
         outerBuilder.add(borderPanel, cc.xy(2, 1));
 
         uiComponent = outerBuilder.getPanel();
+
+        uiComponent.setTransferHandler(new MyTransferHandler());
     }
 
     /**
@@ -516,6 +523,66 @@ public class ExpandableComputerView extends PFUIComponent implements ExpandableV
         }
     }
 
+    /**
+     * Handler for single file drop.
+     */
+    private class MyTransferHandler extends TransferHandler {
 
+        public boolean canImport(TransferSupport support) {
+            return support.isDataFlavorSupported(DataFlavor.javaFileListFlavor);
+        }
 
+        public boolean importData(TransferSupport support) {
+
+            if (!support.isDrop()) {
+                return false;
+            }
+
+            final File file = getFileList(support);
+            if (file == null) {
+                return false;
+            }
+
+            // Run later, so do not tie up OS drag and drop process.
+            Runnable runner = new Runnable() {
+                public void run() {
+                    getUIController().transferSingleFile(file, node.getInfo());
+                }
+            };
+            SwingUtilities.invokeLater(runner);
+
+            return true;
+        }
+
+        /**
+         * Get the directory to import.
+         * The transfer is a list of files; need to check the list has one
+         * directory, else return null.
+         *
+         * @param support
+         * @return
+         */
+        private File getFileList(TransferSupport support) {
+            Transferable t = support.getTransferable();
+            try {
+                java.util.List list = (java.util.List) t.getTransferData(
+                        DataFlavor.javaFileListFlavor);
+                if (list.size() == 1) {
+                    for (Object o : list) {
+                        if (o instanceof File) {
+                            File file = (File) o;
+                            if (!file.isDirectory()) {
+                                return file;
+                            }
+                        }
+                    }
+                }
+            } catch (UnsupportedFlavorException e) {
+                logSevere(e);
+            } catch (IOException e) {
+                logSevere(e);
+            }
+            return null;
+        }
+    }
 }
