@@ -143,7 +143,7 @@ public class FoldersTab extends PFUIComponent {
         JButton newFolderButton = new JButton(getApplicationModel().getActionModel()
                 .getNewFolderAction());
 
-        FormLayout layout = new FormLayout("3dlu, pref, pref:grow, pref, 3dlu",
+        FormLayout layout = new FormLayout("3dlu, pref, 3dlu:grow, pref, 3dlu",
             "pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();

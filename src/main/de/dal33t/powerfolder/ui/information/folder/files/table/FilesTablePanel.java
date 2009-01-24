@@ -72,6 +72,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
     private AddIgnoreAction addIgnoreAction;
     private RemoveIgnoreAction removeIgnoreAction;
     private UnmarkAction unmarkAction;
+    private SingleFileTransferAction singleFileTransferAction;
     private JPopupMenu fileMenu;
     private JScrollPane tableScroller;
     private JLabel emptyLabel;
@@ -154,6 +155,8 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         removeIgnoreAction.setEnabled(false);
         unmarkAction = new UnmarkAction(getController());
         unmarkAction.setEnabled(false);
+        singleFileTransferAction = new SingleFileTransferAction(getController());
+        singleFileTransferAction.setEnabled(false);
 
         bar.addGridded(new JToggleButton(new DetailsAction(getController())));
         bar.addRelatedGap();
@@ -178,6 +181,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         fileMenu.add(addIgnoreAction);
         fileMenu.add(removeIgnoreAction);
         fileMenu.add(unmarkAction);
+        fileMenu.add(singleFileTransferAction);
     }
 
     /**
@@ -474,6 +478,8 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
 
                 unmarkAction.setEnabled(tm.isCompletedDownload(fileInfo));
 
+                singleFileTransferAction.setEnabled(true);
+
                 return;
             }
 
@@ -486,6 +492,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
             addIgnoreAction.setEnabled(false);
             removeIgnoreAction.setEnabled(false);
             unmarkAction.setEnabled(false);
+            singleFileTransferAction.setEnabled(false);
         }
     }
 
@@ -606,6 +613,21 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
 
         public void tableChanged(TableModelEvent e) {
             updateEmptyLabel();
+        }
+    }
+
+    private class SingleFileTransferAction extends BaseAction {
+
+        private SingleFileTransferAction(Controller controller) {
+            super("action_single_file_transfer", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            FileInfo fileInfo = getSelectedRow();
+            if (fileInfo != null) {
+                getUIController().transferSingleFile(fileInfo.getDiskFile(
+                        getController().getFolderRepository()), null);
+            }
         }
     }
 }

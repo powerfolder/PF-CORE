@@ -714,6 +714,11 @@ public class UIController extends PFComponent {
         }
     }
 
+    public void transferSingleFile(File file, MemberInfo nodeInfo) {
+        logInfo(file.getAbsolutePath() + " " +
+                (nodeInfo == null ? null : nodeInfo.nick));
+    }
+
     ///////////////////
     // Inner Classes //
     ///////////////////
