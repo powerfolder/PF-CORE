@@ -61,11 +61,10 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
     static final int DISP_WARNING = 1; // warning
     static final int DISP_ERROR = 2; // error
 
-    // FIXME: This is very ugly(tm) public vars!
-    public static String password;
-    public static String username;
-    public static String newDyndns;
-    public static String dyndnsSystem;
+    private static String password;
+    private static String username;
+    private static String newDyndns;
+    private static String dyndnsSystem;
 
     private JTextField myDnsField;
     private LinkLabel myDnsLabel;
@@ -158,26 +157,29 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
     public JPanel getUIPanel() {
         if (panel == null) {
             FormLayout layout = new FormLayout(
-                "right:100dlu, 3dlu, 90dlu, 3dlu, pref",
-                "pref, 3dlu, pref, 6dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, "
-                    + "3dlu, pref, 6dlu, pref, 6dlu");
+                "right:pref, 3dlu, 140dlu, pref",
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, "
+                    + "3dlu, pref, 3dlu, pref, 3dlu");
 
             PanelBuilder builder = new PanelBuilder(layout);
-            builder.setBorder(Borders.createEmptyBorder("3dlu, 3dlu, 0, 3dlu"));
+            builder.setBorder(Borders.createEmptyBorder("3dlu, 3dlu, 3dlu, 3dlu"));
             CellConstraints cc = new CellConstraints();
 
             int row = 1;
             builder.add(myDnsLabel.getUiComponent(), cc.xy(1, row));
-            builder.add(myDnsField, cc.xywh(3, row, 1, 1));
-            // FIXME correct URL
-            builder.add(Help.createWikiLinkButton(getController(), "DYN-Dns"),
-                cc.xy(5, row));
 
+            FormLayout layout2 = new FormLayout("pref:grow, 3dlu, pref", "pref");
+            PanelBuilder builder2 = new PanelBuilder(layout2);
+            builder2.add(myDnsField, cc.xy(1, 1));
+            builder2.add(Help.createWikiLinkButton(getController(), "DYN-Dns"),
+                cc.xy(3, 1));
+            builder.add(builder2.getPanel(), cc.xy(3, row));
+            
             row += 2;
             builder.addLabel(Translation
                 .getTranslation("preferences.dialog.dyn_dnsAutoUpdate"), cc.xy(
                 1, row));
-            builder.add(cbAutoUpdate, cc.xywh(3, row, 3, 1));
+            builder.add(cbAutoUpdate, cc.xy(3, row));
 
             row += 2;
             builder.addLabel(Translation
@@ -188,26 +190,26 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
             builder.addLabel(Translation
                 .getTranslation("preferences.dialog.dyn_dnsUserName"), cc.xy(1,
                 row));
-            builder.add(dyndnsUserField, cc.xywh(3, row, 3, 1));
+            builder.add(dyndnsUserField, cc.xy(3, row));
 
             row += 2;
             dyndnsPasswordField.setEchoChar('*');
             builder.addLabel(Translation
                 .getTranslation("preferences.dialog.dyn_dnsPassword"), cc.xy(1,
                 row));
-            builder.add(dyndnsPasswordField, cc.xywh(3, row, 3, 1));
+            builder.add(dyndnsPasswordField, cc.xy(3, row));
 
             row += 4;
             builder.addLabel(Translation
                 .getTranslation("preferences.dialog.dyn_dnsCurrentIP"), cc.xy(1,
                 row));
-            builder.add(currentIPField, cc.xywh(3, row, 3, 1));
+            builder.add(currentIPField, cc.xy(3, row));
 
             row += 2;
             builder.addLabel(Translation
                 .getTranslation("preferences.dialog.dyn_dnsUpdatedIP"), cc.xy(1,
                 row));
-            builder.add(updatedIPField, cc.xywh(3, row, 3, 1));
+            builder.add(updatedIPField, cc.xy(3, row));
 
             row += 2;
             builder.add(updateButton, cc.xy(3, row));
@@ -328,15 +330,47 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
         dyndnsPasswordField.setEditable(enable);
     }
 
+    public static String getPassword() {
+        return password;
+    }
+
+    public static void setPassword(String password) {
+        DynDnsSettingsTab.password = password;
+    }
+
+    public static String getUsername() {
+        return username;
+    }
+
+    public static void setUsername(String username) {
+        DynDnsSettingsTab.username = username;
+    }
+
+    public static String getNewDyndns() {
+        return newDyndns;
+    }
+
+    public static void setNewDyndns(String newDyndns) {
+        DynDnsSettingsTab.newDyndns = newDyndns;
+    }
+
+    public static String getDyndnsSystem() {
+        return dyndnsSystem;
+    }
+
+    public static void setDyndnsSystem(String dyndnsSystem) {
+        DynDnsSettingsTab.dyndnsSystem = dyndnsSystem;
+    }
+
     private class UpdateDynDnsAction implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             new Thread() {
                 public void run() {
                     updateButton.setEnabled(false);
 
-                    username = dyndnsUserField.getText();
-                    password = new String(dyndnsPasswordField.getPassword());
-                    newDyndns = (String) mydnsndsModel.getValue();
+                    setUsername(dyndnsUserField.getText());
+                    setPassword(new String(dyndnsPasswordField.getPassword()));
+                    setNewDyndns((String) mydnsndsModel.getValue());
                     if (dyndnsUserField.getText().length() == 0) {
                         dyndnsUserField.grabFocus();
                     } else if (new String(dyndnsPasswordField.getPassword()).length()
@@ -345,7 +379,7 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
                         dyndnsPasswordField.grabFocus();
                     }
 
-                    if (!StringUtils.isEmpty(newDyndns)
+                    if (!StringUtils.isEmpty(getNewDyndns())
                         && dyndnsUserField.getText().length() != 0
                         && new String(dyndnsPasswordField.getPassword()).length() != 0)
                     {

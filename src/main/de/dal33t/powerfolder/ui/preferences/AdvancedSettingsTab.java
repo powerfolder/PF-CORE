@@ -250,17 +250,17 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
     public JPanel getUIPanel() {
         if (panel == null) {
             String rows = "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, "
-                + "3dlu, pref, 3dlu, top:pref, 3dlu, pref, 3dlu, pref, 3dlu, pref,"
+                + "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref,"
                 + "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu";
             if (FirewallUtil.isFirewallAccessible()) {
                 rows = "pref, 3dlu, " + rows;
             }
 
             FormLayout layout = new FormLayout(
-                "right:100dlu, 3dlu, pref, 3dlu", rows);
+                "right:pref, 3dlu, 140dlu, pref:grow", rows);
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
-                .createEmptyBorder("3dlu, 0dlu, 0dlu, 0dlu"));
+                .createEmptyBorder("3dlu, 3dlu, 3dlu, 3dlu"));
             CellConstraints cc = new CellConstraints();
 
             int row = 1;
@@ -272,11 +272,11 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
             builder.add(advPort, cc.xy(3, row));
 
             row += 2;
-            builder.add(randomPort, cc.xy(3, row));
+            builder.add(randomPort, cc.xyw(3, row, 2));
 
             if (FirewallUtil.isFirewallAccessible()) {
                 row += 2;
-                builder.add(openport, cc.xy(3, row));
+                builder.add(openport, cc.xyw(3, row, 2));
             }
 
             row += 2;
@@ -294,31 +294,31 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
             row += 2;
             builder.addLabel(Translation
                 .getTranslation("preferences.dialog.ip_lan_list"), cc.xy(1, row));
-            builder.add(lanList.getUIPanel(), cc.xy(3, row));
+            builder.add(lanList.getUIPanel(), cc.xyw(3, row, 2));
 
             row += 2;
-            builder.add(useZipOnLanCheckBox, cc.xy(3, row));
+            builder.add(useZipOnLanCheckBox, cc.xyw(3, row, 2));
 
             row += 2;
-            builder.add(showPreviewPanelBox, cc.xy(3, row));
+            builder.add(showPreviewPanelBox, cc.xyw(3, row, 2));
 
             row += 2;
-            builder.add(useDeltaSyncOnInternetCheckBox, cc.xy(3, row));
+            builder.add(useDeltaSyncOnInternetCheckBox, cc.xyw(3, row, 2));
             
             row += 2;
-            builder.add(useDeltaSyncOnLanCheckBox, cc.xy(3, row));
+            builder.add(useDeltaSyncOnLanCheckBox, cc.xyw(3, row, 2));
 
             row += 2;
-            builder.add(useSwarmingOnInternetCheckBox, cc.xy(3, row));
+            builder.add(useSwarmingOnInternetCheckBox, cc.xyw(3, row, 2));
             
             row += 2;
-            builder.add(useSwarmingOnLanCheckBox, cc.xy(3, row));
+            builder.add(useSwarmingOnLanCheckBox, cc.xyw(3, row, 2));
 
             row += 2;
-            builder.add(deleteEmtpyDirsBox, cc.xy(3, row));
+            builder.add(deleteEmtpyDirsBox, cc.xyw(3, row, 2));
 
             row += 2;
-            builder.add(verboseBox, cc.xy(3, row));
+            builder.add(verboseBox, cc.xyw(3, row, 2));
 
             panel = builder.getPanel();
         }
@@ -494,8 +494,9 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
 
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < address.getAddress().length; i++) {
-                if (i > 0)
+                if (i > 0) {
                     sb.append('.');
+                }
                 sb.append(address.getAddress()[i] & 0xff);
             }
             // sb.append("
@@ -521,7 +522,7 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
      * 
      * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
      */
-    private class NumberAndCommaDocument extends PlainDocument {
+    private static class NumberAndCommaDocument extends PlainDocument {
         public void insertString(int offs, String str, AttributeSet a)
             throws BadLocationException
         {
@@ -532,8 +533,9 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
             StringBuilder b = new StringBuilder();
             char[] chars = str.toCharArray();
             for (char aChar : chars) {
-                if (Character.isDigit(aChar) || aChar == ',')
+                if (Character.isDigit(aChar) || aChar == ',') {
                     b.append(aChar);
+                }
             }
             super.insertString(offs, b.toString(), a);
         }

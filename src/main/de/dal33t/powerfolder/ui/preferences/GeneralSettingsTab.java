@@ -260,12 +260,13 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     public JPanel getUIPanel() {
         if (panel == null) {
             FormLayout layout = new FormLayout(
-                "right:100dlu, 3dlu, 150dlu, 3dlu, pref:grow",
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, top:pref, 3dlu, top:pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
+                "right:pref, 3dlu, 140dlu, pref:grow",
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
 
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
-                .createEmptyBorder("3dlu, 0dlu, 0dlu, 0dlu"));
+                .createEmptyBorder("3dlu, 3dlu, 3dlu, 3dlu"));
+
             CellConstraints cc = new CellConstraints();
             int row = 1;
 
@@ -297,16 +298,16 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             builder.add(locationField, cc.xy(3, row));
 
             row += 2;
-            builder.add(showAdvancedSettingsBox, cc.xywh(3, row, 3, 1));
+            builder.add(showAdvancedSettingsBox, cc.xyw(3, row, 2));
 
             row += 2;
-            builder.add(underlineLinkBox, cc.xywh(3, row, 3, 1));
+            builder.add(underlineLinkBox, cc.xyw(3, row, 2));
 
             row += 2;
-            builder.add(magneticFrameBox, cc.xywh(3, row, 3, 1));
+            builder.add(magneticFrameBox, cc.xyw(3, row, 2));
 
             row += 2;
-            builder.add(useRecycleBinBox, cc.xywh(3, row, 3, 1));
+            builder.add(useRecycleBinBox, cc.xyw(3, row, 2));
 
             // Add info for non-windows systems
             if (OSUtil.isWindowsSystem()) { // Windows System
@@ -320,27 +321,27 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 }
 
                 row += 2;
-                builder.add(createDesktopShortcutsBox, cc.xywh(3, row, 3, 1));
+                builder.add(createDesktopShortcutsBox, cc.xyw(3, row, 2));
 
                 if (startWithWindowsBox != null) {
                     row += 2;
-                    builder.add(startWithWindowsBox, cc.xywh(3, row, 3, 1));
+                    builder.add(startWithWindowsBox, cc.xyw(3, row, 2));
                 }
 
                 if (!OSUtil.isWindowsVistaSystem()) {
                     builder.appendRow("3dlu");
                     builder.appendRow("pref");
                     row += 2;
-                    builder.add(usePowerFolderIconBox, cc.xywh(3, row, 3, 1));
+                    builder.add(usePowerFolderIconBox, cc.xyw(3, row, 2));
                 }
             } else {
-                builder.appendRow("6dlu");
+                builder.appendRow("3dlu");
                 builder.appendRow("pref");
 
                 row += 2;
                 builder.add(new JLabel(Translation
                     .getTranslation("preferences.dialog.non_windows_info"),
-                    SwingConstants.CENTER), cc.xywh(1, row, 5, 1));
+                    SwingConstants.CENTER), cc.xyw(1, row, 2));
             }
             panel = builder.getPanel();
         }
@@ -363,7 +364,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
      * @return
      */
     private JComponent createLocationField() {
-        FormLayout layout = new FormLayout("132dlu, 3dlu, pref", "pref");
+        FormLayout layout = new FormLayout("122dlu, 3dlu, pref", "pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
@@ -482,7 +483,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         JComboBox chooser = new JComboBox();
         final LookAndFeel[] availableLafs = LookAndFeelSupport
             .getAvailableLookAndFeels();
-        final String[] availableLafNames = LookAndFeelSupport
+        String[] availableLafNames = LookAndFeelSupport
                 .getAvailableLookAndFeelNames();
         for (int i = 0; i < availableLafs.length; i++) {
             chooser.addItem(availableLafNames[i]);
@@ -531,7 +532,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
      *            if minimize to system is choosen
      * @return the combobox
      */
-    private JComboBox createXBehaviorChooser(final ValueModel xBehaviorModel) {
+    private JComboBox createXBehaviorChooser(ValueModel xBehaviorModel) {
         // Build combobox model
         ComboBoxAdapter model = new ComboBoxAdapter(new Object[]{Boolean.FALSE,
             Boolean.TRUE}, xBehaviorModel);

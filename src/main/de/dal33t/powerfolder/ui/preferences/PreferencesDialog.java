@@ -141,7 +141,7 @@ public class PreferencesDialog extends BaseDialog {
         mydnsndsModel = new ValueHolder(ConfigurationEntry.DYNDNS_HOSTNAME
             .getValue(getController()));
 
-        tabbedPane = new JTabbedPane(SwingConstants.TOP);
+        tabbedPane = new JTabbedPane(SwingConstants.LEFT);
 
         GeneralSettingsTab generalSettingsTab = new GeneralSettingsTab(
             getController());

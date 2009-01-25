@@ -87,24 +87,24 @@ public class DynDnsManager extends PFComponent {
     }
 
     public String getUsername() {
-        if (DynDnsSettingsTab.username == null) {
+        if (DynDnsSettingsTab.getUsername() == null) {
             return ConfigurationEntry.DYNDNS_USERNAME.getValue(getController());
         }
-        return DynDnsSettingsTab.username;
+        return DynDnsSettingsTab.getUsername();
     }
 
     public String getUserPassword() {
-        if (DynDnsSettingsTab.password == null) {
+        if (DynDnsSettingsTab.getPassword() == null) {
             return ConfigurationEntry.DYNDNS_PASSWORD.getValue(getController());
         }
-        return DynDnsSettingsTab.password;
+        return DynDnsSettingsTab.getPassword();
     }
 
     public String getHost2Update() {
-        if (DynDnsSettingsTab.newDyndns == null) {
+        if (DynDnsSettingsTab.getNewDyndns() == null) {
             return ConfigurationEntry.DYNDNS_HOSTNAME.getValue(getController());
         }
-        return DynDnsSettingsTab.newDyndns;
+        return DynDnsSettingsTab.getNewDyndns();
     }
 
     public boolean isDynDnsSet() {
@@ -128,54 +128,60 @@ public class DynDnsManager extends PFComponent {
     public boolean validateDynDns(String dynDns) {
 
         // validates the dynamic dns entry if there is one entered
-        if (!StringUtils.isBlank(dynDns)) {
+        if (StringUtils.isBlank(dynDns)) {
+            // just resets the dyndns entry
+            if (getController().getConnectionListener() != null) {
+                getController().getConnectionListener()
+                        .setMyDynDns(null, false);
+            }
+        } else {
             if (getController().hasConnectionListener()) {
 
                 // sets the new dyndns with validation enabled
                 int res = getController().getConnectionListener().setMyDynDns(
-                    dynDns, true);
+                        dynDns, true);
 
                 // check the result from validation
                 switch (res) {
-                    case ConnectionListener.VALIDATION_FAILED :
+                    case ConnectionListener.VALIDATION_FAILED:
 
                         // validation failed ask the user if he/she
                         // wants to continue with these settings
                         String message = Translation
-                            .getTranslation("preferences.dialog.dyn_dns_manager.no_match.text");
+                                .getTranslation("preferences.dialog.dyn_dns_manager.no_match.text");
                         String title = Translation
-                            .getTranslation("preferences.dialog.dyn_dns_manager.no_match.title");
+                                .getTranslation("preferences.dialog.dyn_dns_manager.no_match.title");
 
                         int result = DialogFactory.genericDialog(getController(),
                                 title, message,
-                            new String[]{
-                                Translation.getTranslation("general.continue"),
-                                Translation.getTranslation("general.cancel")},
-                            0, GenericDialogType.WARN); // Default is
+                                new String[]{
+                                        Translation.getTranslation("general.continue"),
+                                        Translation.getTranslation("general.cancel")},
+                                0, GenericDialogType.WARN); // Default is
                         // continue
 
                         if (result == 0) { // Continue
                             // the user is happy with his/her settings, then
                             // set the new dyndns without further validation
                             getController().getConnectionListener()
-                                .setMyDynDns(dynDns, false);
+                                    .setMyDynDns(dynDns, false);
                         } else {
                             // the user wants to change the dyndns settings
                             getController().getConnectionListener()
-                                .setMyDynDns(null, false);
+                                    .setMyDynDns(null, false);
                             return false;
                         }
                         break;
-                    case ConnectionListener.CANNOT_RESOLVE :
+                    case ConnectionListener.CANNOT_RESOLVE:
                         // the new dyndns could not be resolved
                         // force the user to enter a new one
                         getController().getConnectionListener().setMyDynDns(
-                            null, false);
+                                null, false);
                         return false;
 
-                    case ConnectionListener.OK :
+                    case ConnectionListener.OK:
                         logInfo(
-                            "Successfully validated dyndns '" + dynDns + '\'');
+                                "Successfully validated dyndns '" + dynDns + '\'');
                         // getController().getUIController()
                         // .showMessage(null,
                         // "Success",
@@ -184,12 +190,6 @@ public class DynDnsManager extends PFComponent {
                 }
             }
 
-        } else {
-            // just resets the dyndns entry
-            if (getController().getConnectionListener() != null) {
-                getController().getConnectionListener()
-                    .setMyDynDns(null, false);
-            }
         }
         // all validations have passed
         return true;
@@ -227,11 +227,11 @@ public class DynDnsManager extends PFComponent {
 
     public void showPanelErrorMessage() {
         String err = "";
-        if (getHost2Update().equals("")) {
+        if (getHost2Update().length() == 0) {
             err = "hostname";
-        } else if (getUsername().equals("")) {
+        } else if (getUsername().length() == 0) {
             err = "username";
-        } else if (getUserPassword().equals("")) {
+        } else if (getUserPassword().length() == 0) {
             err = "password";
         }
 
@@ -337,7 +337,10 @@ public class DynDnsManager extends PFComponent {
             CellConstraints cc = new CellConstraints();
 
             // Build
-            int xpos = 1, ypos = 1, wpos = 1, hpos = 1;
+            int xpos = 1;
+            int ypos = 1;
+            int wpos = 1;
+            int hpos = 1;
             builder.add(new JLabel(Translation.getTranslation(
                 "preferences.dialog.statusWaitDynDns", dyndns)), cc.xywh(xpos,
                 ypos, wpos, hpos));
@@ -378,11 +381,8 @@ public class DynDnsManager extends PFComponent {
             return true;
         }
         // If host did non change...
-        if (myHostIP.equals(lastUpdatedIP)) {
-            return true;
-        }
+        return myHostIP.equals(lastUpdatedIP);
 
-        return false;
     }
 
     /**
@@ -413,7 +413,7 @@ public class DynDnsManager extends PFComponent {
      */
     public synchronized void updateIfNessesary() {
         if (!ConfigurationEntry.DYNDNS_AUTO_UPDATE.getValueBoolean(
-            getController()).booleanValue())
+                getController()))
         {
             return;
         }
@@ -434,10 +434,10 @@ public class DynDnsManager extends PFComponent {
                 boolean dyndnsIsValid = dyndnsValid();
                 logFine(
                     "Dyndns updater start. Update required? " + dyndnsIsValid);
-                if (!dyndnsIsValid) {
-                    updateDynDNS();
-                } else {
+                if (dyndnsIsValid) {
                     logFiner("No dyndns update performed: IP still valid");
+                } else {
+                    updateDynDNS();
                 }
                 logFiner("Dyndns updater finished");
                 updateThread = null;
@@ -470,11 +470,11 @@ public class DynDnsManager extends PFComponent {
 
     public String getHostIP(String host) {
 
-        String strDyndnsIP = "";
-
-        if (host == null)
+        if (host == null) {
             return "";
+        }
 
+        String strDyndnsIP = "";
         try {
             InetAddress myDyndnsIP = InetAddress.getByName(host);
             if (myDyndnsIP != null) {
@@ -534,7 +534,7 @@ public class DynDnsManager extends PFComponent {
      * @param str
      * @return
      */
-    private String filterIPs(String txt) {
+    private static String filterIPs(String txt) {
         String ip = null;
         Pattern p = Pattern
             .compile("[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}");

@@ -147,7 +147,7 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         Dictionary<Integer, JLabel> smtT = new Hashtable<Integer, JLabel>();
         for (int i = 0; i <= 100; i += silentModeThrottle.getMajorTickSpacing())
         {
-            smtT.put(i, new JLabel(Integer.toString(i) + "%"));
+            smtT.put(i, new JLabel(Integer.toString(i) + '%'));
         }
         smtT.put(silentModeThrottle.getMinimum(), new JLabel(silentModeThrottle
             .getMinimum()
@@ -197,48 +197,48 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
     public JPanel getUIPanel() {
         if (panel == null) {
             FormLayout layout = new FormLayout(
-                "right:100dlu, 3dlu, 30dlu, 3dlu, 15dlu, 6dlu, 30dlu, 30dlu, pref, 0:grow",
-                "top:pref, 3dlu, top:pref, 3dlu, top:pref, 3dlu, top:pref, 6dlu, top:pref, 6dlu, top:pref, 6dlu, top:pref, 6dlu, top:pref");
+                "right:pref, 3dlu, 140dlu, pref:grow",
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 6dlu, pref, 6dlu, pref, 3dlu, pref, 3dlu, pref");
             PanelBuilder builder = new PanelBuilder(layout);
-            builder.setBorder(Borders
-                .createEmptyBorder("3dlu, 0dlu, 0dlu, 0dlu"));
+            builder.setBorder(Borders.createEmptyBorder(
+                    "3dlu, 3dlu, 3dlu, 3dlu"));
             CellConstraints cc = new CellConstraints();
 
             int row = 1;
             builder.addLabel(Translation
                 .getTranslation("preferences.dialog.network_mode.name"), cc.xy(
                 1, row));
-            builder.add(networkingMode, cc.xywh(3, row, 7, 1));
+            builder.add(networkingMode, cc.xy(3, row));
 
             row += 2;
-            builder.add(relayedConnectionBox, cc.xywh(3, row, 8, 1));
+            builder.add(relayedConnectionBox, cc.xyw(3, row, 2));
 
             row += 2;
-            builder.add(udtConnectionBox, cc.xywh(3, row, 8, 1));
+            builder.add(udtConnectionBox, cc.xyw(3, row, 2));
 
             row += 2;
-            builder.add(httpProxyButton, cc.xywh(3, row, 7, 1));
+            builder.add(httpProxyButton, cc.xy(3, row));
 
             row += 2;
             builder.addLabel(Translation
                 .getTranslation("preferences.dialog.line_settings"), cc.xy(1,
                 row));
-            builder.add(wanSpeed, cc.xywh(3, row, 7, 1));
+            builder.add(wanSpeed, cc.xy(3, row));
 
             row += 2;
             builder.addLabel(Translation
                 .getTranslation("preferences.dialog.lan_line_settings"), cc.xy(1,
                 row));
-            builder.add(lanSpeed, cc.xywh(3, row, 7, 1));
+            builder.add(lanSpeed, cc.xy(3, row));
 
             row += 2;
             builder.add(silentThrottleLabel, cc.xy(1, row));
-            builder.add(silentModeThrottle, cc.xywh(3, row, 7, 1));
+            builder.add(silentModeThrottle, cc.xy(3, row));
 
             row += 2;
             builder.addLabel(Translation
                 .getTranslation("preferences.dialog.server"), cc.xy(1, row));
-            builder.add(severSelector.getUIComponent(), cc.xywh(3, row, 7, 1));
+            builder.add(severSelector.getUIComponent(), cc.xy(3, row));
             panel = builder.getPanel();
         }
         return panel;
@@ -278,7 +278,7 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         }
     }
 
-    private String getTooltip(NetworkingMode nm) {
+    private static String getTooltip(NetworkingMode nm) {
         if (nm.equals(NetworkingMode.LANONLYMODE)) {
             return Translation
                 .getTranslation("preferences.dialog.network_mode.lan_only.tooltip");
