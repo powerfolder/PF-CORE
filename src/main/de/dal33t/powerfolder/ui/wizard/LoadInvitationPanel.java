@@ -24,7 +24,6 @@ import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.forms.layout.Sizes;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.FolderSettings;
@@ -34,13 +33,12 @@ import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.*;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.InvitationUtil;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.ComplexComponentFactory;
+import de.dal33t.powerfolder.util.ui.FileSelectorFactory;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.ui.SyncProfileSelectorPanel;
 import jwf.WizardPanel;
 
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -139,9 +137,9 @@ public class LoadInvitationPanel extends PFWizardPanel {
 
     protected JPanel buildContent() {
         FormLayout layout = new FormLayout(
-            "$wlabel, $lcg, $wfield, 0:g",
-            "pref, 5dlu, pref, 15dlu, pref, 5dlu, pref, 5dlu, pref, "
-                + "5dlu, pref, 5dlu, pref, 5dlu, pref");
+            "pref, 3dlu, 140dlu, pref:grow",
+            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, "
+                + "3dlu, pref, 3dlu, pref, 3dlu, pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
@@ -174,7 +172,15 @@ public class LoadInvitationPanel extends PFWizardPanel {
                 CellConstraints.TOP));
         JPanel p = (JPanel) syncProfileSelectorPanel.getUIComponent();
         p.setOpaque(false);
-        builder.add(p, cc.xyw(3, 13, 2));
+
+        FormLayout layout2 = new FormLayout(
+            "pref, pref:grow", "pref");
+        PanelBuilder builder2 = new PanelBuilder(layout2);
+        builder2.add(p, cc.xy(1, 1));
+
+        JPanel panel = builder2.getPanel();
+        builder.add(panel, cc.xyw(3, 13, 2));
+        panel.setOpaque(false);
 
         // Preview
         builder.add(previewOnlyCB, cc.xy(3, 15));
@@ -198,15 +204,12 @@ public class LoadInvitationPanel extends PFWizardPanel {
         });
 
         // Invite selector
-        locationField = ComplexComponentFactory.createFileSelectionField(
+        locationField = FileSelectorFactory.createFileSelectionField(
             Translation.getTranslation("wizard.load_invitation.choose_file"),
             locationModel, JFileChooser.FILES_AND_DIRECTORIES, InvitationUtil
-                .createInvitationsFilefilter(), null, null, true);
-        Dimension dims = locationField.getPreferredSize();
-        dims.width = Sizes.dialogUnitXAsPixel(147, locationField);
-        locationField.setPreferredSize(dims);
-        locationField.setBackground(Color.WHITE);
-
+                .createInvitationsFilefilter(), true);
+        locationField.setOpaque(false);
+        
         // Folder name label
         folderHintLabel = new JLabel(Translation
             .getTranslation("general.folder"));

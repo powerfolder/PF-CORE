@@ -24,7 +24,6 @@ import static de.dal33t.powerfolder.ui.wizard.SendInvitationsPanel.OPTIONS.SEND_
 import static de.dal33t.powerfolder.ui.wizard.SendInvitationsPanel.OPTIONS.SEND_DIRECT;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
 
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -54,7 +53,6 @@ import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.forms.layout.Sizes;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
@@ -67,7 +65,7 @@ import de.dal33t.powerfolder.util.InvitationUtil;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.ComplexComponentFactory;
+import de.dal33t.powerfolder.util.ui.FileSelectorFactory;
 
 /**
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
@@ -203,10 +201,10 @@ public class SendInvitationsPanel extends PFWizardPanel {
 
     protected JPanel buildContent() {
         FormLayout layout = new FormLayout(
-            "pref, 5dlu, pref, 0:g",
-            "pref, $nlg, pref, 10dlu, pref, $rg, pref, 10dlu, pref, $rg, "
-                + "pref, $lg, pref, 10dlu, pref, $rg, pref, 10dlu, pref, $rg, "
-                + "pref, $rg, pref, $rg, pref");
+            "pref, 3dlu, 140dlu, pref:grow",
+            "pref, 3dlu, pref, 6dlu, pref, $rg, pref, 6dlu, pref, $rg, "
+                + "pref, 3dlu, pref, 6dlu, pref, 3dlu, pref, 6dlu, pref, 3dlu, "
+                + "pref, 3dlu, pref, 3dlu, pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
@@ -244,7 +242,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
         builder.add(sendViaPowerFolderButton, cc.xyw(1, row, 3));
         row += 2;
 
-        FormLayout layout2 = new FormLayout("100dlu, 4dlu, 15dlu", "pref");
+        FormLayout layout2 = new FormLayout("122dlu, 3dlu, pref", "pref");
         PanelBuilder builder2 = new PanelBuilder(layout2);
         builder2.add(viaPowerFolderText, cc.xy(1, 1));
         builder2.add(viaPowerFolderConfigButton, cc.xy(3, 1));
@@ -316,23 +314,12 @@ public class SendInvitationsPanel extends PFWizardPanel {
             }
         });
 
-        ActionListener action = new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                invitationFileModel.setValue(invitation.folder.name
-                    + ".invitation");
-            }
-        };
-
-        invitationFileField = ComplexComponentFactory.createFileSelectionField(
+        invitationFileField = FileSelectorFactory.createFileSelectionField(
             Translation.getTranslation("wizard.send_invitations.title"),
             invitationFileModel, JFileChooser.FILES_ONLY, // Save invitation
-            InvitationUtil.createInvitationsFilefilter(), action, null, false);
-        // Ensure minimum dimension
-        Dimension dims = invitationFileField.getPreferredSize();
-        dims.width = Sizes.dialogUnitXAsPixel(147, invitationFileField);
-        invitationFileField.setPreferredSize(dims);
-        invitationFileField.setBackground(Color.WHITE);
-
+            InvitationUtil.createInvitationsFilefilter(), false);
+        invitationFileField.setOpaque(false);
+        
         invitationTextField = new JTextField(Translation.getTranslation(
             "wizard.send_invitations.invitation_text_sample", folder.name));
         JScrollPane invTextScroll = new JScrollPane(invitationTextField);
