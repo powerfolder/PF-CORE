@@ -183,12 +183,7 @@ public class Wizard extends JPanel implements ActionListener {
      * Hide a menu so that it responds to accelerator keys of actions.
      */
     private void setupMenu() {
-        JMenuBar mb = new JMenuBar() {
-            public Dimension getPreferredSize() {
-                return new Dimension((int) super.getPreferredSize().getWidth(),
-                    0);
-            }
-        };
+        JMenuBar mb = new MyJMenuBar();
         add(mb, BorderLayout.NORTH);
         Action helpAction = new MyHelpAction();
         mb.add(new JMenuItem(helpAction));
@@ -270,8 +265,8 @@ public class Wizard extends JPanel implements ActionListener {
         Cursor c = getCursor();
         try {
             setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-            List<WizardPanel> list = new ArrayList<WizardPanel>();
-            if (current.validateNext(list)) {
+            List<String> errors = new ArrayList<String>();
+            if (current.validateNext(errors)) {
                 previous.push(current);
                 WizardPanel wp = current.next();
                 if (null != wp) {
@@ -281,8 +276,8 @@ public class Wizard extends JPanel implements ActionListener {
                 setPanel(wp);
                 updateButtons();
             } else {
-                if (!list.isEmpty()) {
-                    showErrorMessages(list);
+                if (!errors.isEmpty()) {
+                    showErrorMessages(errors);
                 }
             }
         } finally {
@@ -296,14 +291,14 @@ public class Wizard extends JPanel implements ActionListener {
     
     private void finish() {
 
-        List<WizardPanel> list = new ArrayList<WizardPanel>();
-        if (current.validateFinish(list)) {
+        List<String> errors = new ArrayList<String>();
+        if (current.validateFinish(errors)) {
             current.finish();
             for (WizardListener listener : listeners) {
                 listener.wizardFinished(this);
             }
         } else {
-            showErrorMessages(list);
+            showErrorMessages(errors);
         }
     }
 
@@ -318,7 +313,7 @@ public class Wizard extends JPanel implements ActionListener {
         current.help();
     }
 
-    private void showErrorMessages(List<WizardPanel> list) {
+    private void showErrorMessages(List<String> errors) {
         Window w = SwingUtilities.windowForComponent(this);
         ErrorMessageBox errorMsgBox;
 
@@ -330,7 +325,7 @@ public class Wizard extends JPanel implements ActionListener {
             errorMsgBox = new ErrorMessageBox();
         }
 
-        errorMsgBox.showErrorMessages(list);
+        errorMsgBox.showErrorMessages(errors);
     }
 
     private class MyHelpAction extends AbstractAction {
@@ -341,6 +336,13 @@ public class Wizard extends JPanel implements ActionListener {
 
         public void actionPerformed(ActionEvent e) {
             help();
+        }
+    }
+
+    private static class MyJMenuBar extends JMenuBar {
+        public Dimension getPreferredSize() {
+            return new Dimension((int) super.getPreferredSize().getWidth(),
+                0);
         }
     }
 }

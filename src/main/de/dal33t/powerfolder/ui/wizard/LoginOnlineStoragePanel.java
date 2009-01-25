@@ -108,7 +108,7 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
         return !entryRequired || !StringUtils.isEmpty(usernameField.getText());
     }
 
-    public boolean validateNext(List list) {
+    public boolean validateNext(List<String> errors) {
         if (!entryRequired && StringUtils.isEmpty(usernameField.getText())) {
             return true;
         }
@@ -119,12 +119,12 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
             loginOk = client.login(usernameField.getText(),
                 new String(passwordField.getPassword())).isValid();
             if (!loginOk) {
-                list.add(Translation
+                errors.add(Translation
                     .getTranslation("online_storage.account_data"));
             }
         } catch (Exception e) {
             LOG.log(Level.SEVERE, "Problem logging in", e);
-            list.add(Translation.getTranslation("online_storage.general_error",
+            errors.add(Translation.getTranslation("online_storage.general_error",
                 e.getMessage()));
         }
         return loginOk;

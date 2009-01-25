@@ -62,7 +62,7 @@ public class SelectInvitationPanel extends PFWizardPanel {
         return true;
     }
 
-    public boolean validateNext(List list) {
+    public boolean validateNext(List<String> errors) {
         int index = foldersCombo.getSelectedIndex();
         FolderInfo folderInfo = possibleFolders.get(index);
         Invitation invitation = folderInfo.getFolder(getController())

@@ -39,7 +39,7 @@ import java.awt.event.ActionListener;
 import java.util.Collection;
 
 /**
- * Dialog for selecting a number of users for the invite wizard.
+ * Dialog for selecting a number of users.
  */
 public class NodesSelectDialog extends PFUIComponent {
 
@@ -58,7 +58,9 @@ public class NodesSelectDialog extends PFUIComponent {
      * @param viaPowerFolderModel
      * @param viaPowerFolderMembers
      */
-    public NodesSelectDialog(Controller controller, ValueModel viaPowerFolderModel, Collection<Member> viaPowerFolderMembers) {
+    public NodesSelectDialog(Controller controller,
+                             ValueModel viaPowerFolderModel,
+                             Collection<Member> viaPowerFolderMembers) {
         super(controller);
         this.viaPowerFolderModel = viaPowerFolderModel;
         this.viaPowerFolderMembers = viaPowerFolderMembers;
@@ -72,7 +74,7 @@ public class NodesSelectDialog extends PFUIComponent {
         // General dialog initalization
         uiComponent = new JDialog(getUIController().getMainFrame().getUIComponent(),
                 Translation
-            .getTranslation("dialog.user_select.title"), true);
+            .getTranslation("dialog.node_select.title"), true);
 
         uiComponent.setResizable(false);
         uiComponent.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
@@ -114,7 +116,7 @@ public class NodesSelectDialog extends PFUIComponent {
         CellConstraints cc = new CellConstraints();
 
         // Add components
-        builder.addLabel(Translation.getTranslation("dialog.user_select.text"),
+        builder.addLabel(Translation.getTranslation("dialog.node_select.text"),
                 cc.xy(1, 1));
 
         hideOffline = new JCheckBox(Translation
@@ -204,11 +206,11 @@ public class NodesSelectDialog extends PFUIComponent {
         public void actionPerformed(ActionEvent e) {
             Collection<Member> selectedMembers = nodesSelectTable.getSelectedMembers();
             if (selectedMembers.isEmpty()) {
-                viaPowerFolderModel.setValue(Translation.getTranslation("send_invitation.no_users"));
+                viaPowerFolderModel.setValue(Translation.getTranslation("dialog.node_select.no_users"));
             } else if (selectedMembers.size() == 1) {
                 viaPowerFolderModel.setValue(selectedMembers.iterator().next().getNick());
             } else {
-                viaPowerFolderModel.setValue(Translation.getTranslation("send_invitation.multi_users"));
+                viaPowerFolderModel.setValue(Translation.getTranslation("dialog.node_select.multi_users"));
             }
             viaPowerFolderMembers.clear();
             viaPowerFolderMembers.addAll(selectedMembers);

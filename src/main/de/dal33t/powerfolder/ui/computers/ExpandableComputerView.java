@@ -546,7 +546,7 @@ public class ExpandableComputerView extends PFUIComponent implements ExpandableV
             // Run later, so do not tie up OS drag and drop process.
             Runnable runner = new Runnable() {
                 public void run() {
-                    getUIController().transferSingleFile(file, node.getInfo());
+                    getUIController().transferSingleFile(file, node);
                 }
             };
             SwingUtilities.invokeLater(runner);

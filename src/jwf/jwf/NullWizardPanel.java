@@ -32,7 +32,7 @@ public class NullWizardPanel extends WizardPanel {
      * @param list a List of error messages to be displayed.
      * @return true if the panel is valid,
      */
-    public boolean validateNext(List<WizardPanel> list) {
+    public boolean validateNext(List<String> errors) {
         return false;
     }
 
@@ -60,7 +60,7 @@ public class NullWizardPanel extends WizardPanel {
      * @param list a List of error messages to be displayed.
      * @return true if it is valid for this wizard to finish.
      */
-    public boolean validateFinish(List<WizardPanel> list) {
+    public boolean validateFinish(List<String> errors) {
         return false;
     }
 

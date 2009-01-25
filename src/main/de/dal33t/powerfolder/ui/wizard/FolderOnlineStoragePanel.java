@@ -65,10 +65,10 @@ public class FolderOnlineStoragePanel extends PFWizardPanel {
     /**
      * Give user warning if stopping backing up.
      * 
-     * @param list
+     * @param panelList
      * @return
      */
-    public boolean validateNext(List<WizardPanel> list) {
+    public boolean validateNext(List<String> errors) {
         if (hasJoined) {
             int result = DialogFactory.genericDialog(getController(),
                     Translation.getTranslation(

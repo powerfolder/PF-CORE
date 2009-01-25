@@ -80,7 +80,7 @@ public class BasicSetupPanel extends PFWizardPanel {
         return !StringUtils.isBlank((String) nameModel.getValue());
     }
 
-    public boolean validateNext(List<WizardPanel> list) {
+    public boolean validateNext(List<String> errors) {
         long uploadSpeedKBPS = wanLineSpeed.getUploadSpeedKBPS();
         long downloadSpeedKBPS = wanLineSpeed.getDownloadSpeedKBPS();
         if (uploadSpeedKBPS == 0 && downloadSpeedKBPS == 0) {

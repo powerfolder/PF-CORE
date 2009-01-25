@@ -75,7 +75,7 @@ public class WhatToDoPanel extends PFWizardPanel {
         return decision.getValue() != null;
     }
 
-    public boolean validateNext(List<WizardPanel> list) {
+    public boolean validateNext(List<String> errors) {
         return true;
     }
 

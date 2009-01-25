@@ -78,7 +78,7 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
         return invitation != null;
     }
 
-    public boolean validateNext(List list) {
+    public boolean validateNext(List<String> errors) {
         return !previewOnlyCB.isSelected() || createPreviewFolder();
     }
 

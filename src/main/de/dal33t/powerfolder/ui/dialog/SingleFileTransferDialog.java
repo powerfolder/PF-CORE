@@ -1,0 +1,204 @@
+/*
+* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+*
+* This file is part of PowerFolder.
+*
+* PowerFolder is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation.
+*
+* PowerFolder is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+*
+* $Id$
+*/
+package de.dal33t.powerfolder.ui.dialog;
+
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.factories.ButtonBarFactory;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
+import com.jgoodies.binding.adapter.BasicComponentFactory;
+import com.jgoodies.binding.value.ValueModel;
+import com.jgoodies.binding.value.ValueHolder;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.widget.JButtonMini;
+import de.dal33t.powerfolder.ui.action.BaseAction;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.BaseDialog;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
+import java.io.File;
+import java.util.Collection;
+import java.util.ArrayList;
+
+/**
+ * Dialog for creatigng or editing profile configuration. User can select a
+ * default profile and then adjust the configuration.
+ *
+ * @author <a href="mailto:hglasgow@powerfolder.com">Harry Glasgow</a>
+ * @version $Revision: 2.01 $
+ */
+public class SingleFileTransferDialog extends BaseDialog {
+
+    private JButton transferButton;
+    private JButton cancelButton;
+
+    private File file;
+
+    private JTextField viaPowerFolderText;
+    private JButton viaPowerFolderConfigButton;
+    private ValueModel viaPowerFolderModel;
+    private final Collection<Member> viaPowerFolderMembers = new ArrayList<Member>();
+               
+    /**
+     * Constructor.
+     */
+    public SingleFileTransferDialog(Controller controller, File file,
+                                    Member node) {
+        super(controller, true);
+        this.file = file;
+        if (node != null) {
+            viaPowerFolderMembers.add(node);
+        }
+    }
+
+    /**
+     * Gets the title of the dialog.
+     *
+     * @return
+     */
+    public String getTitle() {
+        return Translation.getTranslation("dialog.single_file_transfer.title");
+    }
+
+    protected Component getButtonBar() {
+        return ButtonBarFactory.buildCenteredBar(transferButton, cancelButton);
+    }
+
+    /**
+     * Gets the icon for the dialog.
+     *
+     * @return
+     */
+    protected Icon getIcon() {
+        return Icons.SYNC_FOLDER;
+    }
+
+    /**
+     * Creates the visual component.
+     *
+     * @return
+     */
+    protected Component getContent() {
+        initComponents();
+        FormLayout layout = new FormLayout(
+            "right:pref, 3dlu, pref",
+            "pref, 3dlu, pref");
+        PanelBuilder builder = new PanelBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+
+        // Profile name
+        builder.add(new JLabel(Translation.getTranslation(
+                "dialog.single_file_transfer.file_name")), cc.xy(1, 1));
+        JTextField fileNameTextField = new JTextField(file.getAbsolutePath());
+        fileNameTextField.setEnabled(false);
+        FormLayout layout2 = new FormLayout("140dlu", "pref");
+        PanelBuilder builder2 = new PanelBuilder(layout2);
+        builder2.add(fileNameTextField, cc.xy(1, 1));
+        JPanel panel2 = builder2.getPanel();
+        builder.add(panel2, cc.xy(3, 1));
+
+        builder.add(new JLabel(Translation.getTranslation(
+                "dialog.single_file_transfer.computer")), cc.xy(1, 3));
+        if (viaPowerFolderMembers.isEmpty()) {
+            FormLayout layout4 = new FormLayout("122dlu, 3dlu, pref", "pref");
+            PanelBuilder builder4 = new PanelBuilder(layout4);
+            builder4.add(viaPowerFolderText, cc.xy(1, 1));
+            builder4.add(viaPowerFolderConfigButton, cc.xy(3, 1));
+            JPanel panel4 = builder4.getPanel();
+            builder.add(panel4, cc.xy(3, 3));
+        } else {
+            Member node = viaPowerFolderMembers.iterator().next();
+            JTextField nodeNameTextField = new JTextField(node.getInfo().nick);
+            nodeNameTextField.setEnabled(false);
+            FormLayout layout3 = new FormLayout("140dlu", "pref");
+            PanelBuilder builder3 = new PanelBuilder(layout3);
+            builder3.add(nodeNameTextField, cc.xy(1, 1));
+            JPanel panel3 = builder3.getPanel();
+            builder.add(panel3, cc.xy(3, 3));
+        }
+
+        return builder.getPanel();
+    }
+
+    /**
+     * Initialize the dialog components.
+     */
+    private void initComponents() {
+
+        cancelButton = createCancelButton(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                close();
+            }
+        });
+
+        // Buttons
+        createTransferButton();
+
+        viaPowerFolderModel = new ValueHolder();
+        viaPowerFolderModel.setValue(Translation
+            .getTranslation("dialog.node_select.no_users"));
+        viaPowerFolderText = BasicComponentFactory.createTextField(
+            viaPowerFolderModel, false);
+        viaPowerFolderText.setEnabled(false);
+        viaPowerFolderConfigButton = new JButtonMini(Icons.NODE_FRIEND_CONNECTED,
+                Translation.getTranslation(
+                        "dialog.single_file_transfer.select_computer.tip"));
+        viaPowerFolderConfigButton.addActionListener(new MyActionListener());
+    }
+
+    private void createTransferButton() {
+        SingleFileTransferAction action =
+                new SingleFileTransferAction(getController());
+        transferButton = new JButton(action);
+    }
+
+    private class SingleFileTransferAction extends BaseAction {
+
+        private SingleFileTransferAction(Controller controller) {
+            super("action_single_file_transfer", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            close();
+        }
+    }
+
+    /**
+     * Listen for activation of the via powerfolder button.
+     */
+    private class MyActionListener implements ActionListener {
+
+        /**
+         * Open a UserSelectDialog
+         *
+         * @param e
+         */
+        public void actionPerformed(ActionEvent e) {
+            NodesSelectDialog dialog = new NodesSelectDialog(getController(),
+                viaPowerFolderModel, viaPowerFolderMembers);
+            dialog.open();
+        }
+    }
+}

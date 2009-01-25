@@ -31,7 +31,7 @@ import de.dal33t.powerfolder.net.ConnectionListener;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.util.ui.ComplexComponentFactory;
+import de.dal33t.powerfolder.util.TransferCounter;
 import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker;
 import de.dal33t.powerfolder.util.ui.UIPanel;
 
@@ -45,6 +45,7 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.TimerTask;
 
 /**
  * The status bar on the lower side of the main window.
@@ -193,7 +194,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
         getController().getSilentModeVM().addValueChangeListener(
                 new MyValueChangeListener());
 
-        upStats = ComplexComponentFactory.createTransferCounterLabel(
+        upStats = createTransferCounterLabel(
             getController(), Icons.UPLOAD, Translation
                 .getTranslation("status.upload"), getController()
                 .getTransferManager().getUploadCounter(), Translation
@@ -205,7 +206,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             }
         });
 
-        downStats = ComplexComponentFactory.createTransferCounterLabel(
+        downStats = createTransferCounterLabel(
             getController(), Icons.DOWNLOAD, Translation
                 .getTranslation("status.download"), getController()
                 .getTransferManager().getDownloadCounter(), Translation
@@ -387,6 +388,29 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                 }
             }
         }
+    }
+
+
+    public static JLabel createTransferCounterLabel(
+        Controller controller, final Icon icon, final String format,
+        final TransferCounter tc, final String toolTip)
+    {
+        final JLabel label = new JLabel();
+        // Create task which updates the counter each second
+        controller.scheduleAndRepeat(new TimerTask() {
+            @Override
+            public void run() {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        label.setIcon(icon);
+                        label.setText(String.format(format, tc
+                            .calculateCurrentKBS()));
+                        label.setToolTipText(toolTip);
+                    }
+                });
+            }
+        }, 0, 1000);
+        return label;
     }
 
     private class MyActionListener implements ActionListener {

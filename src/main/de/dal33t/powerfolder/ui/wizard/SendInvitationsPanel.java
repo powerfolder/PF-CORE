@@ -61,6 +61,7 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.ui.dialog.NodesSelectDialog;
 import de.dal33t.powerfolder.util.InvitationUtil;
 import de.dal33t.powerfolder.util.Reject;
@@ -178,8 +179,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
         return true;
     }
 
-    @Override
-    public boolean validateNext(List list) {
+    public boolean validateNext(List<String> errors) {
         invitation.setInvitationText(invitationTextField.getText());
         boolean ok = false;
         if (decision.getValue() == SEND_BY_MAIL) {
@@ -309,7 +309,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
             public void actionPerformed(ActionEvent e) {
                 if (viaPowerFolderModel.getValue() == null
                     || viaPowerFolderModel.getValue().equals(
-                        Translation.getTranslation("send_invitation.no_users")))
+                        Translation.getTranslation("dialog.node_select.no_users")))
                 {
                     openNodesSelectDialog();
                 }
@@ -340,15 +340,14 @@ public class SendInvitationsPanel extends PFWizardPanel {
 
         viaPowerFolderModel = new ValueHolder();
         viaPowerFolderModel.setValue(Translation
-            .getTranslation("send_invitation.no_users"));
+            .getTranslation("dialog.node_select.no_users"));
         viaPowerFolderText = BasicComponentFactory.createTextField(
             viaPowerFolderModel, false);
         viaPowerFolderText.setEnabled(false);
-        viaPowerFolderConfigButton = new JButton(Icons.NODE_FRIEND_CONNECTED);
-        viaPowerFolderConfigButton.setToolTipText(Translation
-            .getTranslation("send_invitation.select_user.text"));
-        viaPowerFolderConfigButton
-            .setEnabled(decision.getValue() == SAVE_TO_FILE);
+        viaPowerFolderConfigButton = new JButtonMini(Icons.NODE_FRIEND_CONNECTED,
+                Translation.getTranslation("send_invitation.select_user.text"));
+        viaPowerFolderConfigButton.setEnabled(decision.getValue()
+                == SAVE_TO_FILE);
         viaPowerFolderConfigButton.addActionListener(new MyActionListener());
 
         emailField.setEnabled(decision.getValue() == SEND_BY_MAIL);

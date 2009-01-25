@@ -25,7 +25,6 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.util.TimerTask;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
@@ -37,10 +36,8 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.Sizes;
 
-import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
-import de.dal33t.powerfolder.util.TransferCounter;
 import de.dal33t.powerfolder.util.Translation;
 
 /**
@@ -175,27 +172,5 @@ public class ComplexComponentFactory {
             }
         });
         return panel;
-    }
-
-    public static JLabel createTransferCounterLabel(
-        Controller controller, final Icon icon, final String format,
-        final TransferCounter tc, final String toolTip)
-    {
-        final JLabel label = new JLabel();
-        // Create task which updates the counter each second
-        controller.scheduleAndRepeat(new TimerTask() {
-            @Override
-            public void run() {
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        label.setIcon(icon);
-                        label.setText(String.format(format, tc
-                            .calculateCurrentKBS()));
-                        label.setToolTipText(toolTip);
-                    }
-                });
-            }
-        }, 0, 1000);
-        return label;
     }
 }

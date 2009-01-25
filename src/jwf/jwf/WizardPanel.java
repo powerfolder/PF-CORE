@@ -32,11 +32,11 @@ public abstract class WizardPanel extends JPanel {
     /**
      * Called to validate the panel before moving to next panel.
      * 
-     * @param list
+     * @param panelList
      *            a List of error messages to be displayed.
      * @return true if the panel is valid,
      */
-    public abstract boolean validateNext(List<WizardPanel> list);
+    public abstract boolean validateNext(List<String> errors);
 
     /** Get the next panel to go to. */
     public abstract WizardPanel next();
@@ -60,11 +60,11 @@ public abstract class WizardPanel extends JPanel {
      * Called to validate the panel before finishing the wizard. Should return
      * false if canFinish returns false.
      * 
-     * @param list
+     * @param panelList
      *            a List of error messages to be displayed.
      * @return true if it is valid for this wizard to finish.
      */
-    public abstract boolean validateFinish(List<WizardPanel> list);
+    public abstract boolean validateFinish(List<String> errors);
 
     /** Handle finishing the wizard. */
     public abstract void finish();

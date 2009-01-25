@@ -122,6 +122,7 @@ public class Icons {
     public static final Icon SEARCH_NODES = getIcon("icons/pictos/Friends.png");
     public static final Icon NEW_FOLDER = getIcon("icons/pictos/NewFolder-48.png");
     public static final Icon JOIN_FOLDER = getIcon("icons/pictos/JoinFolder-48.png");
+    public static final Icon SYNC_FOLDER = getIcon("icons/pictos/Sync-48.png");
     public static final Icon REMOVE_FOLDER = getIcon("icons/pictos/LeaveFolder-48.png");
     public static final Icon PREFERENCES = getIcon("icons/Preferences.png");
     public static final Icon PREFERENCES_PICTO = getIcon("icons/pictos/Preferences.png");

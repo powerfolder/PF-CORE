@@ -40,6 +40,7 @@ import de.dal33t.powerfolder.ui.model.TransferManagerModel;
 import de.dal33t.powerfolder.ui.notification.NotificationHandler;
 import de.dal33t.powerfolder.ui.render.BlinkManager;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
+import de.dal33t.powerfolder.ui.dialog.SingleFileTransferDialog;
 import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
@@ -714,9 +715,17 @@ public class UIController extends PFComponent {
         }
     }
 
-    public void transferSingleFile(File file, MemberInfo nodeInfo) {
-        logInfo(file.getAbsolutePath() + " " +
-                (nodeInfo == null ? null : nodeInfo.nick));
+    /**
+     * Handles single file transfer requests. Displays dialog to send offer to
+     * member.
+     *
+     * @param file
+     * @param nodeInfo
+     */
+    public void transferSingleFile(File file, Member node) {
+        SingleFileTransferDialog sftd = new SingleFileTransferDialog(
+                getController(), file, node);
+        sftd.open();
     }
 
     ///////////////////
