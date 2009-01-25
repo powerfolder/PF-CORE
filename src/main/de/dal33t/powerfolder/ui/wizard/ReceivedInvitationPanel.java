@@ -138,8 +138,8 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
     protected JPanel buildContent() {
 
         FormLayout layout = new FormLayout("$wlabel, $lcg, $wfield, 0:g",
-            "pref, 10dlu, pref, 5dlu, pref, 5dlu, pref, "
-                + "5dlu, pref, 5dlu, pref, 5dlu, pref, 5dlu, pref, 5dlu");
+            "pref, 6dlu, pref, 3dlu, pref, 3dlu, pref, "
+                + "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
 
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();

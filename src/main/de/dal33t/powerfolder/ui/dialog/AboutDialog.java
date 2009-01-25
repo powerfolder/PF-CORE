@@ -266,7 +266,7 @@ public class AboutDialog extends PFUIComponent {
             "pref:grow, pref:grow, pref:grow, pref:grow",
             "fill:pref:grow, fill:pref:grow");
         PanelBuilder builder = new PanelBuilder(layout);
-        builder.setBorder(Borders.createEmptyBorder("0, 0, 5dlu, 0"));
+        builder.setBorder(Borders.createEmptyBorder("0, 0, 3dlu, 0"));
         CellConstraints cc = new CellConstraints();
         builder.add(createGeneralPanel(), cc.xywh(1, 1, 2, 1));
         builder.add(powerFolder, cc.xy(1, 2));
@@ -465,7 +465,7 @@ public class AboutDialog extends PFUIComponent {
         for (String lineText : contentsArray) {
             if (StringUtils.isEmpty(lineText.trim())) {
                 // Add gap
-                builder.appendRow("4dlu");
+                builder.appendRow("3dlu");
             } else {
                 builder.appendRow("pref");
                 builder.add(new JLabel("<HTML><BODY>" + lineText

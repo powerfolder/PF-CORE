@@ -82,8 +82,8 @@ public class WhatToDoPanel extends PFWizardPanel {
     protected JPanel buildContent() {
 
         FormLayout layout = new FormLayout("pref",
-            "pref, 10dlu, pref, 10dlu, pref, 10dlu, pref, "
-                + "30dlu, pref, 10dlu, pref");
+            "pref, 6dlu, pref, 6dlu, pref, 6dlu, pref, "
+                + "30dlu, pref, 6dlu, pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();

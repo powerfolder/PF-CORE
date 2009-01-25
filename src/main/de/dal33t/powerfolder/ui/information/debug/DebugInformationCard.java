@@ -410,8 +410,8 @@ public class DebugInformationCard extends InformationCard{
 	        
 	            FormLayout layout = new FormLayout(
 	                    //      2           4            6         8           10           12          14         16            18          20         22
-	                    "4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 8dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, fill:pref:grow",
-	                    "4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, fill:pref:grow");
+	                    "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 8dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, fill:pref:grow",
+	                    "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, fill:pref:grow");
 	            PanelBuilder builder = new PanelBuilder(layout);
 	            CellConstraints cc = new CellConstraints();
 

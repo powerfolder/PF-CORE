@@ -81,7 +81,7 @@ public class FolderInfoFilterPanel extends PFUIComponent {
         folderInfoFilterModel.setSearchField(filterTextField.getValueModel());
 
         // Now build panel and align items
-        FormLayout layout = new FormLayout("150dlu, 7dlu, pref", "pref");
+        FormLayout layout = new FormLayout("150dlu, 6dlu, pref", "pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 

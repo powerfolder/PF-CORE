@@ -88,8 +88,8 @@ public class DeleteSyncProfileDialog extends BaseDialog
     protected Component getContent() {
         initComponents();
         FormLayout layout = new FormLayout(
-            "right:pref, 4dlu, pref",
-            "pref, 4dlu, pref");
+            "right:pref, 3dlu, pref",
+            "pref, 3dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 

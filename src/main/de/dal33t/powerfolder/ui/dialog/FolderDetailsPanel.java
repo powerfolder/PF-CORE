@@ -208,7 +208,7 @@ public class FolderDetailsPanel extends PFUIComponent {
             // initalize UI elements
             initComponents();
 
-            FormLayout layout = new FormLayout("right:pref, 7dlu, pref:grow",
+            FormLayout layout = new FormLayout("right:pref, 6dlu, pref:grow",
                 "p, 3dlu, p, 3dlu, p, 3dlu, p, 3dlu, p, 3dlu, p");
             DefaultFormBuilder builder = new DefaultFormBuilder(layout, panel);
             CellConstraints cc = new CellConstraints();

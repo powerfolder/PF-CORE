@@ -141,8 +141,8 @@ public class PreviewToJoinPanel extends BaseDialog {
         initComponents();
 
         FormLayout layout = new FormLayout(
-            "right:pref, 4dlu, max(120dlu;pref):grow",
-            "pref, 4dlu, pref");
+            "right:pref, 3dlu, max(120dlu;pref):grow",
+            "pref, 3dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
 
         CellConstraints cc = new CellConstraints();
@@ -174,7 +174,7 @@ public class PreviewToJoinPanel extends BaseDialog {
      * @return
      */
     private JComponent createLocationField() {
-        FormLayout layout = new FormLayout("100dlu, 4dlu, 15dlu", "pref");
+        FormLayout layout = new FormLayout("100dlu, 3dlu, 15dlu", "pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();

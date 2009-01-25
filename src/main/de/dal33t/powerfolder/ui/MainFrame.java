@@ -95,7 +95,7 @@ public class MainFrame extends PFUIComponent {
             "0dlu, pref, 1dlu, fill:0:grow, 1dlu, pref");
           // menu  head        body               footer
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
-        builder.setBorder(Borders.createEmptyBorder("4dlu, 2dlu, 2dlu, 2dlu"));
+        builder.setBorder(Borders.createEmptyBorder("3dlu, 2dlu, 2dlu, 2dlu"));
         CellConstraints cc = new CellConstraints();
 
         builder.add(menuBar, cc.xy(1, 1));

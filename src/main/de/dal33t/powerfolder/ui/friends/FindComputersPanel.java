@@ -152,7 +152,7 @@ public class FindComputersPanel extends PFUIPanel {
         JButton connectButton = new JButton(getApplicationModel()
                 .getActionModel().getConnectAction());
 
-        FormLayout layout = new FormLayout("pref, 4dlu, pref, fill:pref:grow, 105dlu",
+        FormLayout layout = new FormLayout("pref, 3dlu, pref, fill:pref:grow, 105dlu",
             "pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
@@ -204,7 +204,7 @@ public class FindComputersPanel extends PFUIPanel {
                             Translation
                                     .getTranslation("general.cancel")};
 
-                    FormLayout layout = new FormLayout("pref", "pref, 5dlu, pref, pref");
+                    FormLayout layout = new FormLayout("pref", "pref, 3dlu, pref, pref");
                     PanelBuilder builder = new PanelBuilder(layout);
                     CellConstraints cc = new CellConstraints();
                     String text;

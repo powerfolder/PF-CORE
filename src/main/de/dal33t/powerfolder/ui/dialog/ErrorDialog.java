@@ -181,7 +181,7 @@ public class ErrorDialog extends PFUIComponent {
      */
     private JPanel createGeneralPanel() {
         FormLayout layout = new FormLayout("max(0;pref):grow, pref",
-            "pref, 4dlu, pref");
+            "pref, 3dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
         if (kindOfError == ErrorManager.WARN) {
@@ -269,7 +269,7 @@ public class ErrorDialog extends PFUIComponent {
             uiComponent.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
             FormLayout layout = new FormLayout(
-                "max(0;pref):grow, 15dlu, pref, 10dlu, pref, pref",// max(0;pref):grow,
+                "max(0;pref):grow, 15dlu, pref, 6dlu, pref, pref",// max(0;pref):grow,
                                                                     // pref,
                                                                     // pref,pref,pref",
                 "pref, 25dlu, pref, 25dlu, pref, 25dlu, pref, 25dlu, pref");

@@ -45,7 +45,7 @@ public class TextLinesPanelBuilder {
             String lineText = contentsArray[i];
             if (StringUtils.isEmpty(lineText.trim())) {
                 // Add gap
-                builder.appendRow("4dlu");
+                builder.appendRow("3dlu");
             } else {
                 builder.appendRow("pref");
                 JLabel label = new JLabel("<HTML><BODY>" + contentsArray[i]

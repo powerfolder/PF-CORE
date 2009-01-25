@@ -109,7 +109,7 @@ public class AskForFriendshipAction extends BaseAction {
                 // if mainframe is hidden we should wait till its opened
 
                 FormLayout layout = new FormLayout("pref",
-                        "pref, 5dlu, pref, pref");
+                        "pref, 3dlu, pref, pref");
                 PanelBuilder builder = new PanelBuilder(layout);
                 CellConstraints cc = new CellConstraints();
                 PanelBuilder panelBuilder = LinkedTextBuilder.build(getController(),
@@ -177,7 +177,7 @@ public class AskForFriendshipAction extends BaseAction {
                     // if mainframe is hidden we should wait till its opened
 
                     FormLayout layout = new FormLayout("pref",
-                            "pref, 5dlu, pref, pref");
+                            "pref, 3dlu, pref, pref");
                     PanelBuilder builder = new PanelBuilder(layout);
                     CellConstraints cc = new CellConstraints();
                     PanelBuilder panelBuilder = LinkedTextBuilder.build(getController(), text);

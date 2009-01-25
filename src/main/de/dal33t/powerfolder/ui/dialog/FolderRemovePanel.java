@@ -150,7 +150,7 @@ public class FolderRemovePanel extends BaseDialog {
     protected Component getContent() {
         initComponents();
 
-        FormLayout layout = new FormLayout("pref:grow, 5dlu, pref:grow",
+        FormLayout layout = new FormLayout("pref:grow, 3dlu, pref:grow",
             "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
 

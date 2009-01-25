@@ -79,7 +79,7 @@ public class DialogFactory {
             textArea.setEditable(false);
             JScrollPane scrollPane = new JScrollPane(textArea);
 
-            FormLayout layout = new FormLayout("pref", "pref, 5dlu, pref");
+            FormLayout layout = new FormLayout("pref", "pref, 3dlu, pref");
             PanelBuilder builder = new PanelBuilder(layout);
 
             CellConstraints cc = new CellConstraints();

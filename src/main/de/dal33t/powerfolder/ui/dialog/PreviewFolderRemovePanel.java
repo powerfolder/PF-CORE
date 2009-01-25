@@ -118,7 +118,7 @@ public class PreviewFolderRemovePanel extends BaseDialog {
     protected Component getContent() {
         initComponents();
 
-        FormLayout layout = new FormLayout("pref:grow", "pref, 7dlu, pref");
+        FormLayout layout = new FormLayout("pref:grow", "pref, 6dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
 
         CellConstraints cc = new CellConstraints();

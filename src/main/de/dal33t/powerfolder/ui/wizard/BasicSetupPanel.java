@@ -97,7 +97,7 @@ public class BasicSetupPanel extends PFWizardPanel {
 
     protected JPanel buildContent() {
         FormLayout layout = new FormLayout("100dlu, $lcg, $wfield",
-            "pref, 7dlu, pref, 7dlu, pref, 7dlu, pref, 10dlu, top:pref");
+            "pref, 6dlu, pref, 6dlu, pref, 6dlu, pref, 6dlu, top:pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 

@@ -59,7 +59,7 @@ public class LinkedTextBuilder {
                         row));
             } else if (StringUtils.isEmpty(lineText.trim())) {
                 // Add gap
-                builder.appendRow("4dlu");
+                builder.appendRow("3dlu");
             } else {
                 builder.appendRow("pref");
                 builder.add(new JLabel(lineText), cc.xy(1, row));

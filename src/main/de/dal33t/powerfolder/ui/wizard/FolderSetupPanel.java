@@ -96,7 +96,7 @@ public class FolderSetupPanel extends PFWizardPanel {
 
     protected JPanel buildContent() {
         FormLayout layout = new FormLayout("$wlabel, $lcg, $wfield, 0:g",
-            "pref, 5dlu, pref, 5dlu, pref");
+            "pref, 3dlu, pref, 3dlu, pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();

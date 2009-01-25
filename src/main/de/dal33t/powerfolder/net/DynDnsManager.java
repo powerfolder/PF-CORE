@@ -330,7 +330,7 @@ public class DynDnsManager extends PFComponent {
             uiComponent.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
             FormLayout layout = new FormLayout("pref, 14dlu, pref:grow",
-                "pref, pref:grow, 7dlu, pref");
+                "pref, pref:grow, 6dlu, pref");
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders.DLU14_BORDER);
 

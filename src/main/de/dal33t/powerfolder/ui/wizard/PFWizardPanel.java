@@ -227,7 +227,7 @@ public abstract class PFWizardPanel extends WizardPanel {
             "pref, 15dlu, pref, fill:pref:grow");
         PanelBuilder pageBuilder = new PanelBuilder(layout, this);
         pageBuilder.setBorder(Borders
-            .createEmptyBorder("5dlu, 20dlu, 0dlu, 20dlu"));
+            .createEmptyBorder("3dlu, 20dlu, 0dlu, 20dlu"));
         CellConstraints cc = new CellConstraints();
 
         pageBuilder.add(createTitleLabel(title), cc.xy(3, 1));

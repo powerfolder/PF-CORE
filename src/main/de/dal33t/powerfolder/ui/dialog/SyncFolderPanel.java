@@ -89,7 +89,7 @@ public class SyncFolderPanel extends BaseDialog {
         initComponents();
 
         FormLayout layout = new FormLayout("pref",
-            "pref, 10dlu, pref, 10dlu, pref, pref, pref, 7dlu");
+            "pref, 6dlu, pref, 6dlu, pref, pref, pref, 6dlu");
         PanelBuilder builder = new PanelBuilder(layout);
 
         CellConstraints cc = new CellConstraints();

@@ -121,8 +121,8 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
     protected Component getContent() {
         initComponents();
         FormLayout layout = new FormLayout(
-            "right:pref, 4dlu, pref",
-            "pref, 14dlu, pref, 14dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 14dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref");
+            "right:pref, 3dlu, pref",
+            "pref, 14dlu, pref, 14dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 14dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
         builder.setBorder(Borders.createEmptyBorder("0, 0, 30dlu, 0"));
@@ -171,7 +171,7 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
     }
 
     public Component createDailyComboPanel() {
-        FormLayout layout = new FormLayout("pref, 4dlu, pref", "pref");
+        FormLayout layout = new FormLayout("pref, 3dlu, pref", "pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
         builder.add(hourSpinner, cc.xy(1, 1));
@@ -180,7 +180,7 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
     }
 
     public Component createRegularPanel() {
-        FormLayout layout = new FormLayout("pref, 4dlu, pref", "pref");
+        FormLayout layout = new FormLayout("pref, 3dlu, pref", "pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
         builder.add(scanTimeSpinner, cc.xy(1, 1));

@@ -224,11 +224,11 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         // Include cutom button in size calculations.
         // Two buttons every row.
         for (int i = 0; i < 1 + userDirectories.size() / 3; i++) {
-            verticalUserDirectoryLayout.append("pref, 5dlu, ");
+            verticalUserDirectoryLayout.append("pref, 3dlu, ");
         }
 
         String verticalLayout = verticalUserDirectoryLayout
-            + "5dlu, pref, 5dlu, pref, 5dlu, pref, 15dlu, pref, 5dlu, pref, 5dlu, pref, 5dlu, pref";
+            + "3dlu, pref, 3dlu, pref, 3dlu, pref, 15dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref";
 
         FormLayout layout = new FormLayout(
             "pref, 15dlu, pref, 15dlu, pref, 0:grow", verticalLayout);
@@ -520,7 +520,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
      * @return
      */
     private JComponent createLocationField() {
-        FormLayout layout = new FormLayout("100dlu, 4dlu, 15dlu", "pref");
+        FormLayout layout = new FormLayout("100dlu, 3dlu, 15dlu", "pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();

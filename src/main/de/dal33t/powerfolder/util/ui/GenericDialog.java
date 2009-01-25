@@ -157,8 +157,8 @@ public class GenericDialog {
     public int display() {
         dialog = new JDialog(parent, title, true);
 
-        FormLayout layout = new FormLayout("5dlu, pref, 5dlu, pref:grow, 5dlu",
-                "5dlu, pref:grow, 5dlu, pref, 5dlu, pref, 5dlu");
+        FormLayout layout = new FormLayout("3dlu, pref, 3dlu, pref:grow, 3dlu",
+                "3dlu, pref:grow, 3dlu, pref, 3dlu, pref, 3dlu");
 
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();

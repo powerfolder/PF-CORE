@@ -159,9 +159,9 @@ public class FileNameProblemDialog extends PFUIComponent {
         if (panel == null) {
             initComponents();
             FormLayout layout = new FormLayout("fill:pref:grow, pref",
-                "7dlu, pref, 7dlu, fill:200dlu:grow, pref");
+                "6dlu, pref, 6dlu, fill:200dlu:grow, pref");
             PanelBuilder builder = new PanelBuilder(layout);
-            builder.setBorder(Borders.createEmptyBorder("0, 4dlu, 0, 4dlu"));
+            builder.setBorder(Borders.createEmptyBorder("0, 3dlu, 0, 3dlu"));
             CellConstraints cc = new CellConstraints();
 
             builder.add(SimpleComponentFactory.createBigTextLabel(Translation
@@ -185,7 +185,7 @@ public class FileNameProblemDialog extends PFUIComponent {
             .charAt(0));
 
         JPanel buttons = ButtonBarFactory.buildCenteredBar(ok, cancel);
-        buttons.setBorder(Borders.createEmptyBorder("7dlu, 7dlu, 7dlu, 7dlu"));
+        buttons.setBorder(Borders.createEmptyBorder("6dlu, 6dlu, 6dlu, 6dlu"));
         buttons.setOpaque(false);
 
         cancel.addActionListener(new ActionListener() {

@@ -486,7 +486,7 @@ public class ExpandableComputerView extends PFUIComponent implements ExpandableV
                             Translation.getTranslation("general.ok"),
                             Translation.getTranslation("general.cancel")};
 
-                    FormLayout layout = new FormLayout("pref", "pref, 5dlu, pref, pref");
+                    FormLayout layout = new FormLayout("pref", "pref, 3dlu, pref, pref");
                     PanelBuilder builder = new PanelBuilder(layout);
                     CellConstraints cc = new CellConstraints();
                     String nick = node.getNick();

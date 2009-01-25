@@ -502,7 +502,7 @@ public class ChatPanel extends PFUIComponent {
                             Translation.getTranslation("general.ok"),
                             Translation.getTranslation("general.cancel")};
 
-                    FormLayout layout = new FormLayout("pref", "pref, 5dlu, pref, pref");
+                    FormLayout layout = new FormLayout("pref", "pref, 3dlu, pref, pref");
                     PanelBuilder builder = new PanelBuilder(layout);
                     CellConstraints cc = new CellConstraints();
                     String nick = chatPartner.getNick();

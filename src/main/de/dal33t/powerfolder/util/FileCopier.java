@@ -195,7 +195,7 @@ public class FileCopier extends PFComponent {
                             .setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
                         // progressBar.setStringPainted(true);
                         FormLayout layout = new FormLayout("pref",
-                            "pref, 4dlu, pref, 4dlu, pref, 4dlu, pref");
+                            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
                         PanelBuilder builder = new PanelBuilder(layout);
 
                         CellConstraints cc = new CellConstraints();
@@ -207,7 +207,7 @@ public class FileCopier extends PFComponent {
                         builder.add(createAbortButtonBar(), cc.xy(1, 7));
 
                         builder.setBorder(Borders
-                            .createEmptyBorder("4dlu, 4dlu, 4dlu, 4dlu"));
+                            .createEmptyBorder("3dlu, 3dlu, 3dlu, 3dlu"));
 
                         dialog.add(builder.getPanel());
                         dialog.pack();

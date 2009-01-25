@@ -250,26 +250,26 @@ public abstract class BaseDialog extends PFUIComponent {
             JLabel iconLabel = icon != null ? new JLabel(getIcon()) : null;
             if (iconLabel != null) {
                 iconLabel.setBorder(Borders
-                    .createEmptyBorder("7dlu, 7dlu, 7dlu, 7dlu"));
+                    .createEmptyBorder("3dlu, 3dlu, 3dlu, 3dlu"));
                 builder.add(iconLabel, cc.xywh(1, 1, 1, 1, "right, top"));
             }
 
             Component content = getContent();
             if (border) {
                 ((JComponent) content).setBorder(Borders
-                    .createEmptyBorder("7dlu, 7dlu, 7dlu, 7dlu"));
+                    .createEmptyBorder("3dlu, 3dlu, 3dlu, 3dlu"));
             }
             builder.add(content, cc.xy(2, 1));
 
             Component buttonBar = getButtonBar();
             ((JComponent) buttonBar).setBorder(Borders
-                .createEmptyBorder("7dlu, 7dlu, 7dlu, 7dlu"));
+                .createEmptyBorder("3dlu, 3dlu, 3dlu, 3dlu"));
             builder.add(buttonBar, cc.xyw(1, 2, 2));
 
             // Add panel to component
             dialog.getContentPane().add(builder.getPanel());
 
-            // add escape key as close
+            // Add escape key as close
             KeyStroke strokeEsc = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
             JComponent rootPane = dialog.getRootPane();
             rootPane.registerKeyboardAction(new CloseAction(), strokeEsc,

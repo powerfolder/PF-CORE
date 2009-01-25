@@ -197,8 +197,8 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
     public JPanel getUIPanel() {
         if (panel == null) {
             FormLayout layout = new FormLayout(
-                "right:100dlu, 3dlu, 30dlu, 3dlu, 15dlu, 10dlu, 30dlu, 30dlu, pref, 0:grow",
-                "top:pref, 3dlu, top:pref, 3dlu, top:pref, 3dlu, top:pref, 7dlu, top:pref, 7dlu, top:pref, 7dlu, top:pref, 7dlu, top:pref");
+                "right:100dlu, 3dlu, 30dlu, 3dlu, 15dlu, 6dlu, 30dlu, 30dlu, pref, 0:grow",
+                "top:pref, 3dlu, top:pref, 3dlu, top:pref, 3dlu, top:pref, 6dlu, top:pref, 6dlu, top:pref, 6dlu, top:pref, 6dlu, top:pref");
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
                 .createEmptyBorder("3dlu, 0dlu, 0dlu, 0dlu"));
