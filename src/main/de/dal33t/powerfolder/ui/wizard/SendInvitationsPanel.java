@@ -307,7 +307,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
             public void actionPerformed(ActionEvent e) {
                 if (viaPowerFolderModel.getValue() == null
                     || viaPowerFolderModel.getValue().equals(
-                        Translation.getTranslation("dialog.node_select.no_users")))
+                        Translation.getTranslation("dialog.node_select.no_computers")))
                 {
                     openNodesSelectDialog();
                 }
@@ -327,12 +327,12 @@ public class SendInvitationsPanel extends PFWizardPanel {
 
         viaPowerFolderModel = new ValueHolder();
         viaPowerFolderModel.setValue(Translation
-            .getTranslation("dialog.node_select.no_users"));
+            .getTranslation("dialog.node_select.no_computers"));
         viaPowerFolderText = BasicComponentFactory.createTextField(
             viaPowerFolderModel, false);
         viaPowerFolderText.setEnabled(false);
         viaPowerFolderConfigButton = new JButtonMini(Icons.NODE_FRIEND_CONNECTED,
-                Translation.getTranslation("send_invitation.select_user.text"));
+                Translation.getTranslation("send_invitation.select_computer.text"));
         viaPowerFolderConfigButton.setEnabled(decision.getValue()
                 == SAVE_TO_FILE);
         viaPowerFolderConfigButton.addActionListener(new MyActionListener());

@@ -122,19 +122,19 @@ public class NetworkStatisticsPanel extends PFUIComponent implements UIPanel {
 
         int row = 1;
         builder.add(new JLabel(Translation
-            .getTranslation("network_statistics_panel.connected_users")), cc.xy(
+            .getTranslation("network_statistics_panel.connected_computers")), cc.xy(
             1, row));
         builder.add(connectedUsers, cc.xy(3, row));
 
         row += 2;
         builder.add(new JLabel(Translation
-            .getTranslation("network_statistics_panel.online_users")), cc.xy(1,
+            .getTranslation("network_statistics_panel.online_computers")), cc.xy(1,
             row));
         builder.add(onlineUsers, cc.xy(3, row));
 
         row += 2;
         builder.add(new JLabel(Translation
-            .getTranslation("network_statistics_panel.known_users")), cc.xy(1,
+            .getTranslation("network_statistics_panel.known_computers")), cc.xy(1,
             row));
         builder.add(knownUsers, cc.xy(3, row));
 

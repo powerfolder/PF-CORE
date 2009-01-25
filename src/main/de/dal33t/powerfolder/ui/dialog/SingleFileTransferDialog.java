@@ -158,7 +158,7 @@ public class SingleFileTransferDialog extends BaseDialog {
 
         viaPowerFolderModel = new ValueHolder();
         viaPowerFolderModel.setValue(Translation
-            .getTranslation("dialog.node_select.no_users"));
+            .getTranslation("dialog.node_select.no_computers"));
         viaPowerFolderText = BasicComponentFactory.createTextField(
             viaPowerFolderModel, false);
         viaPowerFolderText.setEnabled(false);
