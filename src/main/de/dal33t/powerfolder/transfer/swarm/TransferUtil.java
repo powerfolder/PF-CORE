@@ -25,6 +25,11 @@ import java.util.concurrent.Executors;
 /**
  * Provides utilities for transfers. Currently only centralizes event
  * dispatching in downloads.
+ * <p>
+ * TODO Remove this. Synchronize with locks instead. This queue can explode
+ * without notice.
+ * <p>
+ * TODO This never gets shut down.
  * 
  * @author Dennis "Bytekeeper" Waldherr
  */
