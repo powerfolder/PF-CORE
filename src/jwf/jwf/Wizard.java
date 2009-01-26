@@ -29,6 +29,7 @@ import de.dal33t.powerfolder.ui.Icons;
  */
 public class Wizard extends JPanel implements ActionListener {
     public static final String WIZARD_ATTRIBUTE = "wizard";
+    public static final String DIALOG_ATTRIBUTE = "dialog";
 
     public static final String BACK_I18N = "BACK_I18N";
     public static final String NEXT_I18N = "NEXT_I18N";
