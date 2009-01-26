@@ -139,16 +139,18 @@ public class SendInvitationsPanel extends PFWizardPanel {
         if (invitation == null) {
             return false;
         }
-        if (getController().getOSClient().isConnected()) {
+        if (firstFocusGainOfEmailField) {
+            emailModel.setValue("");
+        }
+        if (getController().getOSClient().isLastLoginOK()) {
             InvitationUtil.invitationByServer(getController(), invitation,
                 (String) emailModel.getValue(), (Boolean) ccValue.getValue());
             // TODO Could fail, but that's a "latent" event.
             return true;
-        } else {
-            // TODO Think about total removal of this crappy thing.
-            return InvitationUtil.invitationToMail(getController(), invitation,
-                (String) emailModel.getValue());
         }
+        // TODO Think about total removal of this crappy thing.
+        return InvitationUtil.invitationToMail(getController(), invitation,
+            (String) emailModel.getValue());
     }
 
     /**
@@ -228,10 +230,10 @@ public class SendInvitationsPanel extends PFWizardPanel {
 
         row += 2;
         builder.add(sendByMailButton, cc.xyw(1, row, 3));
+        row += 2;        
+        builder.add(ccBox, cc.xy(1, row));
         row += 2;
         builder.add(emailField, cc.xy(1, row));
-        row += 2;
-        builder.add(ccBox, cc.xy(1, row));
 
         row += 2;
         builder.add(saveToFileButton, cc.xyw(1, row, 3));
@@ -269,7 +271,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
         invitationFileModel = new ValueHolder();
         emailModel = new ValueHolder(Translation
             .getTranslation("send_invitation.example_email_address"));
-        ccValue = new ValueHolder(false);
+        ccValue = new ValueHolder(true);
         decision = new ValueHolder(SEND_BY_MAIL, true);
 
         sendByMailButton = BasicComponentFactory.createRadioButton(decision,
