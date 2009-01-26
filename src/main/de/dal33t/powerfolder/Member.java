@@ -1147,11 +1147,15 @@ public class Member extends PFComponent implements Comparable<Member> {
                 expectedTime = 100;
             } else if (message instanceof FolderList) {
                 FolderList fList = (FolderList) message;
-                joinToLocalFolders(fList, fromPeer);
-              
+                folderJoinLock.lock();
+                try {
+                    lastFolderList = fList;
+                    joinToLocalFolders(fList, fromPeer);
+                } finally {
+                    folderJoinLock.unlock();
+                }
                 // Notify waiting ppl
                 synchronized (folderListWaiter) {
-                    lastFolderList = fList;
                     folderListWaiter.notifyAll();
                 }
                 expectedTime = 300;
