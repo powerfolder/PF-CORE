@@ -58,11 +58,7 @@ import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.message.AbortUpload;
-import de.dal33t.powerfolder.message.DownloadQueued;
-import de.dal33t.powerfolder.message.FileChunk;
-import de.dal33t.powerfolder.message.RequestDownload;
-import de.dal33t.powerfolder.message.TransferStatus;
+import de.dal33t.powerfolder.message.*;
 import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.transfer.swarm.FileRecordProvider;
 import de.dal33t.powerfolder.transfer.swarm.VolatileFileRecordProvider;
@@ -223,8 +219,9 @@ public class TransferManager extends PFComponent {
      */
     private void checkConfigCPS(ConfigurationEntry entry, long _cps) {
         String cps = entry.getValue(getController());
-        if (cps == null)
+        if (cps == null) {
             entry.setValue(getController(), Long.toString(_cps / 1024));
+        }
     }
 
     private long getConfigCPS(ConfigurationEntry entry) {
@@ -238,7 +235,7 @@ public class TransferManager extends PFComponent {
                 }
             } catch (NumberFormatException e) {
                 logWarning("Illegal value for KByte." + entry + " '" + cps
-                    + "'");
+                    + '\'');
             }
         }
         return maxCps;
@@ -343,14 +340,16 @@ public class TransferManager extends PFComponent {
     }
 
     public BandwidthLimiter getOutputLimiter(ConnectionHandler handler) {
-        if (handler.isOnLAN())
+        if (handler.isOnLAN()) {
             return sharedLANOutputHandler;
+        }
         return sharedWANOutputHandler;
     }
 
     public BandwidthLimiter getInputLimiter(ConnectionHandler handler) {
-        if (handler.isOnLAN())
+        if (handler.isOnLAN()) {
             return sharedLANInputHandler;
+        }
         return sharedWANInputHandler;
     }
 
@@ -453,7 +452,7 @@ public class TransferManager extends PFComponent {
     void downloadbroken(Download download, TransferProblem problem,
         String problemInfo)
     {
-        logWarning("Download broken: " + download + " "
+        logWarning("Download broken: " + download + ' '
             + (problem == null ? "" : problem) + ": " + problemInfo);
 
         download.setTransferProblem(problem);
@@ -495,7 +494,7 @@ public class TransferManager extends PFComponent {
         upload.shutdown();
         boolean transferFound = false;
         logWarning(
-            "Upload broken: " + upload + " "
+            "Upload broken: " + upload + ' '
                 + (transferProblem == null ? "" : transferProblem) + ": "
                 + problemInformation);
         uploadsLock.lock();
@@ -2131,6 +2130,24 @@ public class TransferManager extends PFComponent {
         }
     }
 
+    /**
+     * Send single file offerings to members.
+     *
+     * @param file
+     * @param members
+     * @param message
+     */
+    public void offerSingleFile(File file, Collection<Member> members,
+                                String message) {
+        Message offer = new SingleFileOffer(file,
+                getController().getMySelf().getInfo(), message);
+        for (Member member : members) {
+            if (member.isCompleteyConnected()) {
+                member.sendMessageAsynchron(offer, null);
+            }
+        }
+    }
+
     // Worker code ************************************************************
 
     /**
@@ -2338,8 +2355,8 @@ public class TransferManager extends PFComponent {
 
         String memberInfo = "";
         if (member != null) {
-            memberInfo = ((download) ? " from " : " to ") + "'"
-                + member.getNick() + "'";
+            memberInfo = ((download) ? " from " : " to ") + '\''
+                + member.getNick() + '\'';
         }
 
         String cpsStr = "-";

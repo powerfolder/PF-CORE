@@ -58,10 +58,11 @@ public class SingleFileTransferDialog extends BaseDialog {
 
     private File file;
 
-    private JTextField viaPowerFolderText;
-    private JButton viaPowerFolderConfigButton;
-    private ValueModel viaPowerFolderModel;
-    private final Collection<Member> viaPowerFolderMembers = new ArrayList<Member>();
+    private JTextField computersText;
+    private JButton computersSelectButton;
+    private ValueModel computersTextModel;
+    private final Collection<Member> computersMembers = new ArrayList<Member>();
+    private JTextArea messageTextArea;
                
     /**
      * Constructor.
@@ -71,7 +72,7 @@ public class SingleFileTransferDialog extends BaseDialog {
         super(controller, true);
         this.file = file;
         if (node != null) {
-            viaPowerFolderMembers.add(node);
+            computersMembers.add(node);
         }
     }
 
@@ -106,7 +107,7 @@ public class SingleFileTransferDialog extends BaseDialog {
         initComponents();
         FormLayout layout = new FormLayout(
             "right:pref, 3dlu, pref",
-            "pref, 3dlu, pref");
+            "pref, 3dlu, pref, 3dlu, pref, pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
@@ -123,15 +124,15 @@ public class SingleFileTransferDialog extends BaseDialog {
 
         builder.add(new JLabel(Translation.getTranslation(
                 "dialog.single_file_transfer.computer")), cc.xy(1, 3));
-        if (viaPowerFolderMembers.isEmpty()) {
+        if (computersMembers.isEmpty()) {
             FormLayout layout4 = new FormLayout("122dlu, 3dlu, pref", "pref");
             PanelBuilder builder4 = new PanelBuilder(layout4);
-            builder4.add(viaPowerFolderText, cc.xy(1, 1));
-            builder4.add(viaPowerFolderConfigButton, cc.xy(3, 1));
+            builder4.add(computersText, cc.xy(1, 1));
+            builder4.add(computersSelectButton, cc.xy(3, 1));
             JPanel panel4 = builder4.getPanel();
             builder.add(panel4, cc.xy(3, 3));
         } else {
-            Member node = viaPowerFolderMembers.iterator().next();
+            Member node = computersMembers.iterator().next();
             JTextField nodeNameTextField = new JTextField(node.getInfo().nick);
             nodeNameTextField.setEnabled(false);
             FormLayout layout3 = new FormLayout("140dlu", "pref");
@@ -140,6 +141,13 @@ public class SingleFileTransferDialog extends BaseDialog {
             JPanel panel3 = builder3.getPanel();
             builder.add(panel3, cc.xy(3, 3));
         }
+
+        builder.add(new JLabel(Translation.getTranslation(
+                "dialog.single_file_transfer.friend_message.text")), cc.xyw(1, 5, 3));
+
+        JScrollPane scrollPane = new JScrollPane(messageTextArea);
+        scrollPane.setPreferredSize(new Dimension(400, 200));
+        builder.add(scrollPane, cc.xyw(1, 6, 3));
 
         return builder.getPanel();
     }
@@ -158,27 +166,29 @@ public class SingleFileTransferDialog extends BaseDialog {
         // Buttons
         createTransferButton();
 
-        viaPowerFolderModel = new ValueHolder();
-        viaPowerFolderModel.setValue(Translation
+        computersTextModel = new ValueHolder();
+        computersTextModel.setValue(Translation
             .getTranslation("dialog.node_select.no_computers"));
-        viaPowerFolderModel.addValueChangeListener(new PropertyChangeListener() {
+        computersTextModel.addValueChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 updateTransferButton();
             }
         });
-        viaPowerFolderText = BasicComponentFactory.createTextField(
-            viaPowerFolderModel, false);
-        viaPowerFolderText.setEnabled(false);
-        viaPowerFolderConfigButton = new JButtonMini(Icons.NODE_FRIEND_CONNECTED,
+        computersText = BasicComponentFactory.createTextField(
+                computersTextModel, false);
+        computersText.setEnabled(false);
+        computersSelectButton = new JButtonMini(Icons.NODE_FRIEND_CONNECTED,
                 Translation.getTranslation(
                         "dialog.single_file_transfer.select_computer.tip"));
-        viaPowerFolderConfigButton.addActionListener(new MyActionListener());
+        computersSelectButton.addActionListener(new MyActionListener());
 
         updateTransferButton();
+
+        messageTextArea = new JTextArea();
     }
 
     private void updateTransferButton() {
-        transferButton.setEnabled(!viaPowerFolderMembers.isEmpty());
+        transferButton.setEnabled(!computersMembers.isEmpty());
     }
 
     private void createTransferButton() {
@@ -194,6 +204,8 @@ public class SingleFileTransferDialog extends BaseDialog {
         }
 
         public void actionPerformed(ActionEvent e) {
+            getController().getTransferManager().offerSingleFile(file, 
+                    computersMembers, messageTextArea.getText());
             close();
         }
     }
@@ -210,7 +222,7 @@ public class SingleFileTransferDialog extends BaseDialog {
          */
         public void actionPerformed(ActionEvent e) {
             NodesSelectDialog dialog = new NodesSelectDialog(getController(),
-                viaPowerFolderModel, viaPowerFolderMembers);
+                    computersTextModel, computersMembers, true);
             dialog.open();
         }
     }

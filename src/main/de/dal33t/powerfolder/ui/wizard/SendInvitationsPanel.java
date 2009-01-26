@@ -98,7 +98,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
 
     private final Collection<Member> viaPowerFolderMembers = new ArrayList<Member>();
 
-    public SendInvitationsPanel(Controller controller, boolean showDyndnsSetup)
+    public SendInvitationsPanel(Controller controller)
     {
         super(controller);
         firstFocusGainOfEmailField = true;
@@ -363,7 +363,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
 
     private void openNodesSelectDialog() {
         NodesSelectDialog dialog = new NodesSelectDialog(getController(),
-            viaPowerFolderModel, viaPowerFolderMembers);
+            viaPowerFolderModel, viaPowerFolderMembers, false);
         dialog.open();
     }
 

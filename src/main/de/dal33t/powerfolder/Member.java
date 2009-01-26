@@ -1098,11 +1098,9 @@ public class Member extends PFComponent implements Comparable<Member> {
      *            the error message to be logged on connection problem
      */
     public void sendMessageAsynchron(Message message, String errorMessage) {
-        // synchronized (peerInitalizeLock) {
         if (peer != null && peer.isConnected()) {
             peer.sendMessagesAsynchron(message);
         }
-        // }
     }
 
     /**
