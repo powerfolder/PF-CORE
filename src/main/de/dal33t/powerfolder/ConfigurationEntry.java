@@ -115,7 +115,7 @@ public enum ConfigurationEntry {
      * HTTP RPC URL for
      */
     PROVIDER_HTTP_TUNNEL_RPC_URL("provider.url.httptunnel",
-        "http://access.powerfolder.com/rpc"),
+        "http://relay.powerfolder.com/rpc"),
 
     // Server settings ********************************************************
 
@@ -354,7 +354,7 @@ public enum ConfigurationEntry {
     /**
      * Whether to do auto-cleanup for downloads.
      */
-    DOWNLOADS_AUTO_CLEANUP("downloads.auto.cleanup", Boolean.FALSE.toString()),
+    DOWNLOADS_AUTO_CLEANUP("downloads.auto.cleanup", Boolean.TRUE.toString()),
 
     /**
      * Whether to do auto-cleanup for uploads.
