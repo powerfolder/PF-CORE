@@ -19,7 +19,6 @@
  */
 package de.dal33t.powerfolder.clientserver;
 
-import java.io.IOException;
 import java.io.Serializable;
 
 import de.dal33t.powerfolder.message.Invitation;
@@ -76,25 +75,18 @@ public class SendInvitationEmail implements Serializable {
 
     private void validate() {
         Reject.ifNull(invitation, "Invitation is null!");
-        validateRecipient();
+        // validateRecipient();
     }
 
-    private void validateRecipient() {
-        Reject.ifNull(getRecipient(), "Recipient is null!");
-        validateEmail(getRecipient());
-    }
+    // private void validateRecipient() {
+    // Reject.ifNull(getRecipient(), "Recipient is null!");
+    // validateEmail(getRecipient());
+    // }
 
-    private void validateEmail(String address) {
-        Reject.ifTrue(address.indexOf('@') < 0,
-            "Address has to be an email address: " + address);
-    }
-
-    private void readObject(java.io.ObjectInputStream in) throws IOException,
-        ClassNotFoundException
-    {
-        in.defaultReadObject();
-        validate();
-    }
+    // private void validateEmail(String address) {
+    // Reject.ifTrue(address.indexOf('@') < 0,
+    // "Address has to be an email address: " + address);
+    // }
 
     /**
      * @return the invitation
