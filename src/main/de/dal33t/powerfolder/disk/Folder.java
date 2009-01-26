@@ -70,7 +70,6 @@ import de.dal33t.powerfolder.message.FolderFilesChanged;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.message.ScanCommand;
-import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.transfer.TransferPriorities;
 import de.dal33t.powerfolder.transfer.TransferPriorities.TransferPriority;
 import de.dal33t.powerfolder.util.Convert;
@@ -292,10 +291,6 @@ public class Folder extends PFComponent {
         {
             // Empty folder... no scan required for database
             hasOwnDatabase = true;
-        } else if (!syncProfile.isAutoDetectLocalChanges()) {
-            logWarning("Folder is not empty, "
-                + "does not have an own database and "
-                + "is not on auto-detect changed");
         }
 
         diskItemFilter = new DiskItemFilter(whitelist);
@@ -1214,6 +1209,12 @@ public class Folder extends PFComponent {
                 Convert.cleanMemberInfos(getController().getNodeManager(),
                     files);
                 for (FileInfo fileInfo : files) {
+                    if (fileInfo.getName().contains(
+                        Constants.POWERFOLDER_SYSTEM_SUBDIR))
+                    {
+                        // Skip #1411
+                        continue;
+                    }
                     // scanFile(fileInfo);
                     addFile(fileInfo);
                 }

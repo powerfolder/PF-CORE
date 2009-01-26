@@ -33,6 +33,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Semaphore;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.PFComponent;
@@ -503,8 +504,10 @@ public class FolderScanner extends PFComponent {
         return !(FileUtils.isTempDownloadFile(file)
             || FileUtils.isDownloadMetaFile(file)
             || FileCopier.isTempBackup(file)
-            || file.getName().equalsIgnoreCase(Folder.DB_FILENAME) || file
-            .getName().equalsIgnoreCase(Folder.DB_BACKUP_FILENAME));
+            || file.getName().equalsIgnoreCase(Folder.DB_FILENAME)
+            || file.getName().equalsIgnoreCase(Folder.DB_BACKUP_FILENAME) || file
+            .getAbsolutePath().contains(Constants.POWERFOLDER_SYSTEM_SUBDIR));
+        // #1411
     }
 
     /** @return true if all directory Crawler are idle. */
