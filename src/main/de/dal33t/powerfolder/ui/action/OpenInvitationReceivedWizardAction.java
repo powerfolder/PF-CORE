@@ -42,7 +42,7 @@ public class OpenInvitationReceivedWizardAction extends BaseAction {
 
         ReceivedInvitationsModel invitationsModel = getController()
                 .getUIController().getApplicationModel()
-                .getReceivedInvitationModel();
+                .getReceivedInvitationsModel();
 
         if ((Integer) invitationsModel.getReceivedInvitationsCountVM().getValue()
                 == 0) {

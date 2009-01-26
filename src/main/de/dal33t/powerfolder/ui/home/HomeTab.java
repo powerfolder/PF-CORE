@@ -44,20 +44,7 @@ import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.event.AskForFriendshipReceivedEvent;
-import de.dal33t.powerfolder.event.AskForFriendshipReceivedListener;
-import de.dal33t.powerfolder.event.FolderEvent;
-import de.dal33t.powerfolder.event.FolderListener;
-import de.dal33t.powerfolder.event.FolderRepositoryEvent;
-import de.dal33t.powerfolder.event.FolderRepositoryListener;
-import de.dal33t.powerfolder.event.InvitationReceivedEvent;
-import de.dal33t.powerfolder.event.InvitationReceivedListener;
-import de.dal33t.powerfolder.event.NodeManagerModelEvent;
-import de.dal33t.powerfolder.event.NodeManagerModelListener;
-import de.dal33t.powerfolder.event.SynchronizationStatsEvent;
-import de.dal33t.powerfolder.event.SynchronizationStatsListener;
-import de.dal33t.powerfolder.event.TransferManagerEvent;
-import de.dal33t.powerfolder.event.TransferManagerListener;
+import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.os.OnlineStorageSubscriptionType;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
@@ -80,6 +67,7 @@ public class HomeTab extends PFUIComponent {
     private HomeTabLine filesAvailableLine;
     private HomeTabLine newInvitationsLine;
     private HomeTabLine newFriendRequestLine;
+    private HomeTabLine newSingleFileOffersLine;
     private HomeTabLine computersLine;
     private HomeTabLine downloadsLine;
     private HomeTabLine uploadsLine;
@@ -91,6 +79,7 @@ public class HomeTab extends PFUIComponent {
     private OnlineStorageSection onlineStorageSection;
     private final ValueModel newFriendRequestCountVM;
     private final ValueModel newInvitationsCountVM;
+    private final ValueModel newSingleFileOffersCountVM;
 
     /**
      * Constructor
@@ -107,12 +96,16 @@ public class HomeTab extends PFUIComponent {
         client = getApplicationModel().getServerClientModel().getClient();
         getUIController().getApplicationModel().getReceivedAskedForFriendshipModel()
                 .addListener(new MyAskForFriendshipReceivedListener());
-        getUIController().getApplicationModel().getReceivedInvitationModel()
+        getUIController().getApplicationModel().getReceivedInvitationsModel()
                 .addInvitationReceivedListener(new MyInvitationReceivedListener());
+        getUIController().getApplicationModel().getReceivedSingleFileOffersModel()
+                .addSingleFileOfferReceivedListener(new MySingleFileOfferReceivedListener());
         newFriendRequestCountVM = getUIController().getApplicationModel()
                 .getReceivedAskedForFriendshipModel().getReceivedAskForFriendshipCountVM();
         newInvitationsCountVM = getUIController().getApplicationModel()
-                .getReceivedInvitationModel().getReceivedInvitationsCountVM();
+                .getReceivedInvitationsModel().getReceivedInvitationsCountVM();
+        newSingleFileOffersCountVM = getUIController().getApplicationModel()
+                .getReceivedSingleFileOffersModel().getReceivedSingleFileOfferCountVM();
         controller.getFolderRepository().addSynchronizationStatsListener(
                 new MySynchronizationStatsListener());
 
@@ -178,6 +171,13 @@ public class HomeTab extends PFUIComponent {
                 Translation.getTranslation("home_tab.new_friend_requests"), null,
                 true, true, getApplicationModel().getActionModel()
                 .getAskForFriendshipAction());
+        newSingleFileOffersLine = new HomeTabLine(getController(),
+                Translation.getTranslation("home_tab.new_single_file_offers"),
+                null, true, true, new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                // @todo harry to implement
+            }
+        });
         downloadsLine = new HomeTabLine(getController(),
                 Translation.getTranslation("home_tab.files_downloaded"), null,
                 false, true, getApplicationModel().getActionModel()
@@ -204,6 +204,7 @@ public class HomeTab extends PFUIComponent {
         updateOnlineStorageDetails();
         updateNewInvitationsText();
         updateNewComputersText();
+        updateNewSingleFileOffersText();
         initialSyncStats();
         registerListeners();
     }
@@ -233,8 +234,8 @@ public class HomeTab extends PFUIComponent {
      */
     private JPanel buildMainPanel() {
         FormLayout layout = new FormLayout("3dlu, 100dlu, pref:grow, 3dlu",
-            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, pref, pref, pref, pref, pref, 3dlu, pref, pref, pref, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref:grow");
-        //   sync-stat   sync-date   sep         you-have    files comps invs  down  upl   sep         #fol  szfo  comp  sep         os-acc      osSec
+            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, pref, pref, pref, pref, pref, pref, 3dlu, pref, pref, pref, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref:grow");
+        //   sync-stat   sync-date   sep         you-have    files invs  comps singl down  upl   sep         #fol  szfo  comp  sep         os-acc      osSec
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
@@ -261,6 +262,9 @@ public class HomeTab extends PFUIComponent {
         row++;
 
         builder.add(newFriendRequestLine.getUIComponent(), cc.xywh(2, row, 2, 1));
+        row++;
+
+        builder.add(newSingleFileOffersLine.getUIComponent(), cc.xywh(2, row, 2, 1));
         row++;
 
         builder.add(downloadsLine.getUIComponent(), cc.xywh(2, row, 2, 1));
@@ -336,6 +340,11 @@ public class HomeTab extends PFUIComponent {
     private void updateNewComputersText() {
         Integer integer = (Integer) newFriendRequestCountVM.getValue();
         newFriendRequestLine.setValue(integer);
+    }
+
+    private void updateNewSingleFileOffersText() {
+        Integer integer = (Integer) newSingleFileOffersCountVM.getValue();
+        newSingleFileOffersLine.setValue(integer);
     }
 
     /**
@@ -621,8 +630,7 @@ public class HomeTab extends PFUIComponent {
     private class MyAskForFriendshipReceivedListener
             implements AskForFriendshipReceivedListener {
 
-        public void notificationReceived(AskForFriendshipReceivedEvent
-                askForFriendshipReceivedEvent) {
+        public void notificationReceived() {
             updateNewComputersText();
         }
     }
@@ -630,8 +638,7 @@ public class HomeTab extends PFUIComponent {
     private class MyInvitationReceivedListener
             implements InvitationReceivedListener {
 
-        public void invitationReceived(InvitationReceivedEvent
-                invitationReceivedEvent) {
+        public void invitationReceived() {
             updateNewInvitationsText();
         }
     }
@@ -650,7 +657,6 @@ public class HomeTab extends PFUIComponent {
             return true;
         }
     }
-
 
     /**
      * Handler to accept folder drops, opening folder wizard.
@@ -736,4 +742,10 @@ public class HomeTab extends PFUIComponent {
         }
     }
 
+    private class MySingleFileOfferReceivedListener
+            implements SingleFileOfferReceivedListener {
+        public void offerReceived() {
+            updateNewSingleFileOffersText();
+        }
+    }
 }

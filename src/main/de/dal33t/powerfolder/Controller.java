@@ -64,6 +64,7 @@ import de.dal33t.powerfolder.disk.RecycleBin;
 import de.dal33t.powerfolder.event.AskForFriendshipEvent;
 import de.dal33t.powerfolder.event.AskForFriendshipListener;
 import de.dal33t.powerfolder.event.InvitationHandler;
+import de.dal33t.powerfolder.event.SingleFileOfferHandler;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.message.SettingsChange;
 import de.dal33t.powerfolder.message.SingleFileOffer;
@@ -215,6 +216,7 @@ public class Controller extends PFComponent {
 
     private final List<AskForFriendshipListener> askForFriendshipListeners;
     private final List<InvitationHandler> invitationHandlers;
+    private final List<SingleFileOfferHandler> singleFileOfferHandlers;
 
     /** The BroadcastManager send "broadcasts" on the LAN so we can */
     private BroadcastMananger broadcastManager;
@@ -295,6 +297,7 @@ public class Controller extends PFComponent {
             "PowerFolder");
         askForFriendshipListeners = new CopyOnWriteArrayList<AskForFriendshipListener>();
         invitationHandlers = new CopyOnWriteArrayList<InvitationHandler>();
+        singleFileOfferHandlers = new CopyOnWriteArrayList<SingleFileOfferHandler>();
         silentModeVM = new ValueHolder(Boolean.FALSE);
     }
 
@@ -593,6 +596,24 @@ public class Controller extends PFComponent {
      */
     public void removeInvitationHandler(InvitationHandler l) {
         invitationHandlers.remove(l);
+    }
+
+    /**
+     * Add single file offer listener.
+     *
+     * @param l
+     */
+    public void addSingleFileOfferHandler(SingleFileOfferHandler l) {
+        singleFileOfferHandlers.add(l);
+    }
+
+    /**
+     * Remove single file offer listener.
+     *
+     * @param l
+     */
+    public void removeSingleFileOfferHandler(SingleFileOfferHandler l) {
+        singleFileOfferHandlers.remove(l);
     }
 
     private void setupProPlugins() {
@@ -2026,7 +2047,10 @@ public class Controller extends PFComponent {
             return;
         }
 
-        uiController.singleFileOfferReceived(singleFileOffer);
+        for (SingleFileOfferHandler handler : singleFileOfferHandlers) {
+            handler.gotOffer(singleFileOffer);
+        }
+
     }
 
     /**

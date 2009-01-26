@@ -27,7 +27,6 @@ import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.event.AskForFriendshipEvent;
 import de.dal33t.powerfolder.event.AskForFriendshipListener;
-import de.dal33t.powerfolder.event.AskForFriendshipReceivedEvent;
 import de.dal33t.powerfolder.event.AskForFriendshipReceivedListener;
 
 import java.util.List;
@@ -112,7 +111,7 @@ public class ReceivedAskedForFriendshipModel extends PFComponent implements AskF
             addAskForFriendshipEvents.add(event);
             receivedAskForFriendshipCountVM.setValue(addAskForFriendshipEvents.size());
             for (AskForFriendshipReceivedListener listener : listeners) {
-                listener.notificationReceived(new AskForFriendshipReceivedEvent(this));
+                listener.notificationReceived();
             }
         }
     }
@@ -129,8 +128,7 @@ public class ReceivedAskedForFriendshipModel extends PFComponent implements AskF
             receivedAskForFriendshipCountVM.setValue(
                     addAskForFriendshipEvents.size());
             for (AskForFriendshipReceivedListener listener : listeners) {
-                listener.notificationReceived(
-                        new AskForFriendshipReceivedEvent(this));
+                listener.notificationReceived();
             }
             return askForFriendshipEvent;
         }

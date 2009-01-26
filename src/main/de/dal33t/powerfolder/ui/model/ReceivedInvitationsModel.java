@@ -25,7 +25,6 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.event.InvitationHandler;
-import de.dal33t.powerfolder.event.InvitationReceivedEvent;
 import de.dal33t.powerfolder.event.InvitationReceivedListener;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
@@ -120,8 +119,7 @@ public class ReceivedInvitationsModel extends PFComponent implements InvitationH
             receivedInvitationsCountVM.setValue(invitations.size());
             for (InvitationReceivedListener invitationReceivedListener
                     : listeners) {
-                invitationReceivedListener.invitationReceived(
-                        new InvitationReceivedEvent(this));
+                invitationReceivedListener.invitationReceived();
             }
         }
     }
@@ -137,8 +135,7 @@ public class ReceivedInvitationsModel extends PFComponent implements InvitationH
             receivedInvitationsCountVM.setValue(invitations.size());
             for (InvitationReceivedListener invitationReceivedListener
                     : listeners) {
-                invitationReceivedListener.invitationReceived(
-                        new InvitationReceivedEvent(this));
+                invitationReceivedListener.invitationReceived();
             }
             return invitation;
         }

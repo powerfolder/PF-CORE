@@ -20,7 +20,6 @@
 package de.dal33t.powerfolder.ui;
 
 import de.dal33t.powerfolder.*;
-import de.dal33t.powerfolder.message.SingleFileOffer;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
@@ -725,11 +724,6 @@ public class UIController extends PFComponent {
         SingleFileTransferDialog sftd = new SingleFileTransferDialog(
                 getController(), file, node);
         sftd.open();
-    }
-
-    public void singleFileOfferReceived(SingleFileOffer singleFileOffer) {
-        // @todo harry to implement
-        //System.out.println(singleFileOffer.getFile().getAbsolutePath());
     }
 
     ///////////////////

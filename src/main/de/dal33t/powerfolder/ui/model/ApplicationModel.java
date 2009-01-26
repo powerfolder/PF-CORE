@@ -41,6 +41,7 @@ public class ApplicationModel extends PFUIComponent {
     private ServerClientModel serverClientModel;
     private ReceivedInvitationsModel receivedInvitationsModel;
     private ReceivedAskedForFriendshipModel receivedAskedForFriendshipModel;
+    private ReceivedSingleFileOffersModel receivedSingleFileOffersModel;
 
     /**
      * Constructs a non-initialized application model. Before the model can used
@@ -62,6 +63,8 @@ public class ApplicationModel extends PFUIComponent {
         receivedInvitationsModel = new ReceivedInvitationsModel(getController());
         receivedAskedForFriendshipModel =
                 new ReceivedAskedForFriendshipModel(getController());
+        receivedSingleFileOffersModel =
+                new ReceivedSingleFileOffersModel(getController());
     }
 
     /**
@@ -98,11 +101,15 @@ public class ApplicationModel extends PFUIComponent {
         return serverClientModel;
     }
 
-    public ReceivedInvitationsModel getReceivedInvitationModel() {
+    public ReceivedInvitationsModel getReceivedInvitationsModel() {
         return receivedInvitationsModel;
     }
 
     public ReceivedAskedForFriendshipModel getReceivedAskedForFriendshipModel() {
         return receivedAskedForFriendshipModel;
+    }
+
+    public ReceivedSingleFileOffersModel getReceivedSingleFileOffersModel() {
+        return receivedSingleFileOffersModel;
     }
 }
