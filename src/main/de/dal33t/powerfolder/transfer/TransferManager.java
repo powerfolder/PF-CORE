@@ -66,6 +66,7 @@ import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.TransferCounter;
 import de.dal33t.powerfolder.util.Validate;
+import de.dal33t.powerfolder.util.task.SendMessageTask;
 import de.dal33t.powerfolder.util.compare.MemberComparator;
 import de.dal33t.powerfolder.util.compare.ReverseComparator;
 import de.dal33t.powerfolder.util.delta.FilePartsRecord;
@@ -2141,9 +2142,12 @@ public class TransferManager extends PFComponent {
                                 String message) {
         Message offer = new SingleFileOffer(file,
                 getController().getMySelf().getInfo(), message);
-        for (Member member : members) {
-            if (member.isCompleteyConnected()) {
-                member.sendMessageAsynchron(offer, null);
+        for (Member computer : members) {
+            getController().getTaskManager().scheduleTask(
+                new SendMessageTask(offer, computer.getId()));
+
+            if (!computer.isCompleteyConnected()) {
+                computer.markForImmediateConnect();
             }
         }
     }

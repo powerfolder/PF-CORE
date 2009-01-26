@@ -42,41 +42,7 @@ import de.dal33t.powerfolder.event.AskForFriendshipEvent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.message.AbortDownload;
-import de.dal33t.powerfolder.message.AbortUpload;
-import de.dal33t.powerfolder.message.AddFriendNotification;
-import de.dal33t.powerfolder.message.DownloadQueued;
-import de.dal33t.powerfolder.message.FileChunk;
-import de.dal33t.powerfolder.message.FileList;
-import de.dal33t.powerfolder.message.FolderFilesChanged;
-import de.dal33t.powerfolder.message.FolderList;
-import de.dal33t.powerfolder.message.FolderRelatedMessage;
-import de.dal33t.powerfolder.message.HandshakeCompleted;
-import de.dal33t.powerfolder.message.Identity;
-import de.dal33t.powerfolder.message.IdentityReply;
-import de.dal33t.powerfolder.message.Invitation;
-import de.dal33t.powerfolder.message.KnownNodes;
-import de.dal33t.powerfolder.message.Message;
-import de.dal33t.powerfolder.message.MessageListener;
-import de.dal33t.powerfolder.message.NodeInformation;
-import de.dal33t.powerfolder.message.Ping;
-import de.dal33t.powerfolder.message.Pong;
-import de.dal33t.powerfolder.message.Problem;
-import de.dal33t.powerfolder.message.RelayedMessage;
-import de.dal33t.powerfolder.message.ReplyFilePartsRecord;
-import de.dal33t.powerfolder.message.RequestDownload;
-import de.dal33t.powerfolder.message.RequestFileList;
-import de.dal33t.powerfolder.message.RequestFilePartsRecord;
-import de.dal33t.powerfolder.message.RequestNodeInformation;
-import de.dal33t.powerfolder.message.RequestNodeList;
-import de.dal33t.powerfolder.message.RequestPart;
-import de.dal33t.powerfolder.message.ScanCommand;
-import de.dal33t.powerfolder.message.SearchNodeRequest;
-import de.dal33t.powerfolder.message.SettingsChange;
-import de.dal33t.powerfolder.message.StartUpload;
-import de.dal33t.powerfolder.message.StopUpload;
-import de.dal33t.powerfolder.message.TransferStatus;
-import de.dal33t.powerfolder.message.UDTMessage;
+import de.dal33t.powerfolder.message.*;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.net.InvalidIdentityException;
@@ -1134,7 +1100,6 @@ public class Member extends PFComponent implements Comparable<Member> {
 
         // Profile this execution.
         ProfilingEntry profilingEntry = null;
-        int expectedTime = -1;
         if (Profiling.ENABLED) {
             profilingEntry = Profiling.start("Member.handleMessage", message
                 .getClass().getSimpleName());
@@ -1145,6 +1110,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             getController().getSecurityManager().setSession(account);
         }
 
+        int expectedTime = -1;
         try {
             // related folder is filled if message is a folder related message
             FolderInfo targetedFolderInfo = null;
@@ -1565,12 +1531,15 @@ public class Member extends PFComponent implements Comparable<Member> {
                     .handleUDTMessage(this, (UDTMessage) message);
                 expectedTime = 50;
 
+            } else if (message instanceof SingleFileOffer) {
+                getController().singleFileOfferReceived((SingleFileOffer) message);
+                expectedTime = 50;
             } else {
                 logFiner("Message not known to message handling code, "
                     + "maybe handled in listener: " + message);
             }
 
-            // Give message to nodemanager
+            // Give message to node manager
             getController().getNodeManager().messageReceived(this, message);
             // now give the message to all message listeners
             fireMessageToListeners(message);

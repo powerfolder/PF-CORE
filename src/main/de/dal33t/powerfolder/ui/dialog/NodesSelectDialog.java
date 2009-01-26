@@ -50,7 +50,6 @@ public class NodesSelectDialog extends PFUIComponent {
     private NodesSelectTable nodesSelectTable;
     private NodesSelectTableModel nodesSelectTableModel;
     private JCheckBox hideOffline;
-    private boolean onlineOnly;
 
     /**
      * Initialize
@@ -61,12 +60,10 @@ public class NodesSelectDialog extends PFUIComponent {
      */
     public NodesSelectDialog(Controller controller,
                              ValueModel viaPowerFolderModel,
-                             Collection<Member> viaPowerFolderMembers,
-                             boolean onlineOnly) {
+                             Collection<Member> viaPowerFolderMembers) {
         super(controller);
         this.viaPowerFolderModel = viaPowerFolderModel;
         this.viaPowerFolderMembers = viaPowerFolderMembers;
-        this.onlineOnly = onlineOnly;
     }
 
     /**
@@ -155,12 +152,6 @@ public class NodesSelectDialog extends PFUIComponent {
             int y = parent.getY()
                 + (parent.getHeight() - uiComponent.getHeight()) / 2;
             uiComponent.setLocation(x, y);
-        }
-
-        if (onlineOnly) {
-            hideOffline.setEnabled(false);
-            hideOffline.setSelected(true);
-            doHide();
         }
     }
 

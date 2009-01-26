@@ -116,7 +116,7 @@ public class PFWizard extends PFUIComponent {
                 .getTranslation("wizard.send_invitations.send_success_info"));
         wizard.getWizardContext().setAttribute(SUCCESS_PANEL, successPanel);
 
-        wizard.open(new SendInvitationsPanel(controller, false));
+        wizard.open(new SendInvitationsPanel(controller));
     }
 
     /**

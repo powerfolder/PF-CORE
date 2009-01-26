@@ -66,6 +66,7 @@ import de.dal33t.powerfolder.event.AskForFriendshipListener;
 import de.dal33t.powerfolder.event.InvitationHandler;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.message.SettingsChange;
+import de.dal33t.powerfolder.message.SingleFileOffer;
 import de.dal33t.powerfolder.net.BroadcastMananger;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.net.ConnectionHandler;
@@ -2010,6 +2011,22 @@ public class Controller extends PFComponent {
         for (InvitationHandler handler : invitationHandlers) {
             handler.gotInvitation(invitation, sendIfJoined);
         }
+    }
+
+    /**
+     * Process receipt of a SingleFileOffer.
+     *
+     * @param member
+     * @param singleFileOffer
+     */
+    public void singleFileOfferReceived(SingleFileOffer singleFileOffer) {
+
+        if (!isUIEnabled()) {
+            // This is a UI-only feature.
+            return;
+        }
+
+        uiController.singleFileOfferReceived(singleFileOffer);
     }
 
     /**

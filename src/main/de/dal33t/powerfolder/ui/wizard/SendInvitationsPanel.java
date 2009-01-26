@@ -363,7 +363,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
 
     private void openNodesSelectDialog() {
         NodesSelectDialog dialog = new NodesSelectDialog(getController(),
-            viaPowerFolderModel, viaPowerFolderMembers, false);
+            viaPowerFolderModel, viaPowerFolderMembers);
         dialog.open();
     }
 

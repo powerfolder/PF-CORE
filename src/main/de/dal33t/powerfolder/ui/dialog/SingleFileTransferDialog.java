@@ -222,7 +222,7 @@ public class SingleFileTransferDialog extends BaseDialog {
          */
         public void actionPerformed(ActionEvent e) {
             NodesSelectDialog dialog = new NodesSelectDialog(getController(),
-                    computersTextModel, computersMembers, true);
+                    computersTextModel, computersMembers);
             dialog.open();
         }
     }
