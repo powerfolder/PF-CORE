@@ -112,9 +112,10 @@ public class Download extends Transfer {
 
     public void setDownloadManager(DownloadManager handler) {
         Reject.ifNull(handler, "Handler is null!");
-        Reject.ifFalse(handler.getFileInfo().isCompletelyIdentical(getFile()),
-            "Fileinfos mismatch. expected " + getFile().toDetailString()
-                + ", got " + handler.getFileInfo().toDetailString());
+        Reject.ifFalse(handler.getFileInfo().isVersionAndDateIdentical(
+            getFile()), "Fileinfos mismatch. expected "
+            + getFile().toDetailString() + ", got "
+            + handler.getFileInfo().toDetailString());
         if (this.handler != null) {
             throw new IllegalStateException("DownloadManager already set!");
         }
@@ -472,7 +473,7 @@ public class Download extends Transfer {
     }
 
     private void checkFileInfo(FileInfo fileInfo) {
-        Reject.ifFalse(fileInfo.isCompletelyIdentical(getFile()),
+        Reject.ifFalse(fileInfo.isVersionAndDateIdentical(getFile()),
             "FileInfo mismatch!");
     }
 }

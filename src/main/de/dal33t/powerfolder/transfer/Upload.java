@@ -103,7 +103,7 @@ public class Upload extends Transfer {
 
         // Requests for different files on the same transfer connection are not
         // supported currently
-        if (!pr.getFile().isCompletelyIdentical(getFile())
+        if (!pr.getFile().isVersionAndDateIdentical(getFile())
             || pr.getRange().getLength() > TransferManager.MAX_CHUNK_SIZE
             || pr.getRange().getLength() <= 0)
         {

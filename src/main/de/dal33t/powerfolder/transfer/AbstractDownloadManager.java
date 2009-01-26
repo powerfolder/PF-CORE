@@ -192,7 +192,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
     public synchronized void chunkReceived(Download download, FileChunk chunk) {
         Reject.noNullElements(download, chunk);
         validateDownload(download);
-        assert chunk.file.isCompletelyIdentical(getFileInfo());
+        assert chunk.file.isVersionAndDateIdentical(getFileInfo());
         try {
             receivedChunk0(download, chunk);
         } catch (BrokenDownloadException e) {
@@ -537,9 +537,6 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         shutdown();
         deleteMetaData();
 
-        for (Download d : getSources()) {
-            d.setCompleted();
-        }
         // Should be called without locking:
         // It's more "event" style and prevents deadlocks
         post(new Runnable() {
@@ -781,7 +778,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
 
     private void validateDownload(Download download) {
         Reject.ifNull(download, "Download is null!");
-        Reject.ifTrue(!download.getFile().isCompletelyIdentical(getFileInfo()),
+        Reject.ifTrue(!download.getFile().isVersionAndDateIdentical(getFileInfo()),
             "Download FileInfo differs: " + download.getFile().toDetailString()
                 + " vs mine: " + getFileInfo().toDetailString());
     }
@@ -950,7 +947,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         ObjectInputStream in = new ObjectInputStream(new FileInputStream(mf));
         try {
             FileInfo fi = (FileInfo) in.readObject();
-            if (fi.isCompletelyIdentical(fileInfo)) {
+            if (fi.isVersionAndDateIdentical(fileInfo)) {
                 List<?> content = (List<?>) in.readObject();
                 for (Object o : content) {
                     if (o.getClass() == FilePartsState.class) {
