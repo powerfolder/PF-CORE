@@ -1318,6 +1318,12 @@ public class Member extends PFComponent implements Comparable<Member> {
                     remoteFileList.files.length, 0.75f, 1);
 
                 for (int i = 0; i < remoteFileList.files.length; i++) {
+                    if (remoteFileList.files[i].getName().contains(
+                        Constants.POWERFOLDER_SYSTEM_SUBDIR))
+                    {
+                        continue;
+                        // #1411
+                    }
                     cachedFileList.put(remoteFileList.files[i],
                         remoteFileList.files[i]);
                 }
@@ -1357,6 +1363,12 @@ public class Member extends PFComponent implements Comparable<Member> {
                 if (changes.added != null) {
                     for (int i = 0; i < changes.added.length; i++) {
                         FileInfo file = changes.added[i];
+                        if (file.getName().contains(
+                            Constants.POWERFOLDER_SYSTEM_SUBDIR))
+                        {
+                            continue;
+                            // #1411
+                        }
                         cachedFileList.remove(file);
                         cachedFileList.put(file, file);
 
@@ -1372,6 +1384,12 @@ public class Member extends PFComponent implements Comparable<Member> {
                 if (changes.removed != null) {
                     for (int i = 0; i < changes.removed.length; i++) {
                         FileInfo file = changes.removed[i];
+                        if (file.getName().contains(
+                            Constants.POWERFOLDER_SYSTEM_SUBDIR))
+                        {
+                            continue;
+                            // #1411
+                        }
                         cachedFileList.remove(file);
                         cachedFileList.put(file, file);
                         // file removed so if downloading break the download
