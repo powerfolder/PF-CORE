@@ -1,25 +1,26 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id: AddLicenseHeader.java 4282 2008-06-16 03:25:09Z tot $
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id: AddLicenseHeader.java 4282 2008-06-16 03:25:09Z tot $
+ */
 package de.dal33t.powerfolder.test.folder;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 import de.dal33t.powerfolder.Member;
@@ -133,16 +134,15 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         // assertEquals(1, getFolderAtBart().getConnectedMembers()[0]
         // .getFile(testfInfoBart).getVersion());
         System.out.println(getFolderAtBart().getKnowFilesAsArray()[0]);
-        
+
         DownloadManager source = getContollerBart().getTransferManager()
-            .downloadNewestVersion(
-                testfInfoBart);
+            .downloadNewestVersion(testfInfoBart);
         assertNull("Download source is not null", source);
 
         // Barts version is 2 (del) and Lisa has 1, so it shouldn't revert back
-        
+
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
-        
+
         TestHelper.waitMilliSeconds(200);
         TestHelper.waitForCondition(20, new Condition() {
             public boolean reached() {
@@ -156,11 +156,13 @@ public class DeletionSyncTest extends TwoControllerTestCase {
             .iterator().next(), getContollerBart());
         // TODO: Discuss: The downloaded version should be 3 (?).
         // Version 3 of the file = restored.
-        // As agreed on IRC, downloadNewestVersion shouldn't download an older version even if a newer
+        // As agreed on IRC, downloadNewestVersion shouldn't download an older
+        // version even if a newer
         // one was deleted.
         assertEquals(2, getFolderAtBart().getKnownFiles().iterator().next()
             .getVersion());
-        assertTrue(getFolderAtLisa().getKnownFiles().iterator().next().isDeleted());
+        assertTrue(getFolderAtLisa().getKnownFiles().iterator().next()
+            .isDeleted());
     }
 
     /**
@@ -408,8 +410,8 @@ public class DeletionSyncTest extends TwoControllerTestCase {
      * EVIL: #666
      */
     public void testDeleteCustomProfile() {
-        getFolderAtBart().setSyncProfile(SyncProfile.
-                getSyncProfileByFieldList("false,false,true,true,60"));
+        getFolderAtBart().setSyncProfile(
+            SyncProfile.getSyncProfileByFieldList("false,false,true,true,60"));
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_DOWNLOAD);
         final Member lisaAtBart = getContollerBart().getNodeManager().getNode(
             getContollerLisa().getMySelf().getInfo());
@@ -461,5 +463,41 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         assertFalse(testFileBart.exists());
         assertEquals(2, getFolderAtBart().getKnownFiles().iterator().next()
             .getVersion());
+    }
+
+    public void testDbNotInSyncDeletion() throws IOException {
+        // Step 1) Create file
+        File testFile = TestHelper.createRandomFile(getFolderAtBart()
+            .getLocalBase());
+        scanFolder(getFolderAtBart());
+        getFolderAtBart().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
+        getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
+
+        // 2) Delete and sync deletion
+        testFile.delete();
+        scanFolder(getFolderAtBart());
+        assertTrue(getFolderAtBart().getKnownFiles().iterator().next()
+            .isDeleted());
+
+        TestHelper.waitForCondition(100, new Condition() {
+            public boolean reached() {
+                return getFolderAtLisa().getKnownFilesCount() == 1;
+            }
+        });
+        assertTrue(getFolderAtLisa().getKnownFiles().iterator().next()
+            .isDeleted());
+        assertFileMatch(testFile, getFolderAtBart().getKnownFiles().iterator()
+            .next(), getContollerBart());
+        disconnectBartAndLisa();
+
+        // Now bring PF into the problematic state
+        testFile.createNewFile();
+        TestHelper.changeFile(testFile);
+
+        // Not scanned yet
+        connectBartAndLisa();
+
+        TestHelper.waitMilliSeconds(1000);
+        assertTrue(testFile.exists());
     }
 }
