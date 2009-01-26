@@ -277,9 +277,8 @@ public class FolderScanner extends PFComponent {
                         "Unable to scan " + unableToScanFiles.size()
                             + " file(s)");
                 } else {
-                    logFiner(
-                        "Unable to scan " + unableToScanFiles.size()
-                            + " file(s)");
+                    logFiner("Unable to scan " + unableToScanFiles.size()
+                        + " file(s)");
                 }
             }
             // Remaining files = deleted! But only if they are not already
@@ -293,6 +292,8 @@ public class FolderScanner extends PFComponent {
                     // This file was already flagged as deleted,
                     // = not a freshly deleted file
                     it.remove();
+                } else {
+                    logFine("Deleted file detected: " + fInfo.toDetailString());
                 }
             }
 
