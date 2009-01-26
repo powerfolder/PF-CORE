@@ -300,5 +300,6 @@ public class PFWizard extends PFUIComponent {
         int y = ((int) Toolkit.getDefaultToolkit().getScreenSize().getHeight()
                 - dialog.getHeight()) / 2;
         dialog.setLocation(x, y);
+        wizard.getContext().setAttribute(Wizard.DIALOG_ATTRIBUTE, dialog);
     }
 }
