@@ -58,18 +58,25 @@ import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.message.*;
+import de.dal33t.powerfolder.message.AbortUpload;
+import de.dal33t.powerfolder.message.DownloadQueued;
+import de.dal33t.powerfolder.message.FileChunk;
+import de.dal33t.powerfolder.message.Message;
+import de.dal33t.powerfolder.message.RequestDownload;
+import de.dal33t.powerfolder.message.SingleFileOffer;
+import de.dal33t.powerfolder.message.TransferStatus;
 import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.transfer.swarm.FileRecordProvider;
+import de.dal33t.powerfolder.transfer.swarm.TransferUtil;
 import de.dal33t.powerfolder.transfer.swarm.VolatileFileRecordProvider;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.TransferCounter;
 import de.dal33t.powerfolder.util.Validate;
-import de.dal33t.powerfolder.util.task.SendMessageTask;
 import de.dal33t.powerfolder.util.compare.MemberComparator;
 import de.dal33t.powerfolder.util.compare.ReverseComparator;
 import de.dal33t.powerfolder.util.delta.FilePartsRecord;
+import de.dal33t.powerfolder.util.task.SendMessageTask;
 
 /**
  * Transfer manager for downloading/uploading files
@@ -404,7 +411,7 @@ public class TransferManager extends PFComponent {
     private DownloadManager getDownloadManagerFor(FileInfo info) {
         Validate.notNull(info);
         DownloadManager man = dlManagers.get(info);
-        if (man != null && man.getFileInfo().isCompletelyIdentical(info)) {
+        if (man != null && man.getFileInfo().isVersionAndDateIdentical(info)) {
             return man;
         }
         return null;
@@ -591,8 +598,46 @@ public class TransferManager extends PFComponent {
             }
         }
     }
+    
+    /**
+     * Breaks all transfers on the file. Usually when the file is going to be
+     * changed. TODO: Transfers have been ABORTED instead of BROKEN before.
+     * 
+     * @param fInfo
+     */
+    public void breakTransfers(final FileInfo fInfo) {
+        Reject.ifNull(fInfo, "FileInfo is null");
+        // Search for uls to break
+        if (!queuedUploads.isEmpty()) {
+            for (Upload upload : queuedUploads) {
+                if (fInfo.equals(upload.getFile())) {
+                    setBroken(upload, TransferProblem.FILE_CHANGED, fInfo
+                        .getName());
+                }
+            }
+        }
 
-    void setCompleted(DownloadManager dlManager) {
+        if (!activeUploads.isEmpty()) {
+            for (Upload upload : activeUploads) {
+                if (fInfo.equals(upload.getFile())) {
+                    upload.abort();
+                    setBroken(upload, TransferProblem.FILE_CHANGED, fInfo
+                        .getName());
+                }
+            }
+        }
+
+        for (DownloadManager man : dlManagers.values()) {
+            for (Download download : man.getSources()) {
+                if (fInfo.equals(download.getFile())) {
+                    download.setBroken(TransferProblem.FILE_CHANGED, fInfo
+                        .getName());
+                }
+            }
+        }
+    }
+
+    void setCompleted(final DownloadManager dlManager) {
         assert dlManager.isDone();
 
         FileInfo fInfo = dlManager.getFileInfo();
@@ -617,22 +662,28 @@ public class TransferManager extends PFComponent {
             assert getActiveUploads(fInfo).size() == 0;
 
             if (!folder.scanDownloadFile(fInfo, dlManager.getTempFile())) {
-                logSevere("Scanning of completed file failed: "
-                    + fInfo.toDetailString());
+                logSevere("Scanning of completed file failed.");
                 return;
             }
         }
         completedDownloads.add(dlManager);
+        for (Download d : dlManager.getSources()) {
+            d.setCompleted();
+        }
         removeDownloadManager(dlManager);
 
         // Auto cleanup of Downloads
         if (ConfigurationEntry.DOWNLOADS_AUTO_CLEANUP
             .getValueBoolean(getController()))
         {
-            if (isFiner()) {
-                logFiner("Auto-cleaned " + dlManager);
-            }
-            clearCompletedDownload(dlManager);
+            TransferUtil.invokeLater(new Runnable() {
+                public void run() {
+                    if (isFiner()) {
+                        logFiner("Auto-cleaned " + dlManager);
+                    }
+                    clearCompletedDownload(dlManager);
+                }
+            });
         }
     }
 
@@ -1081,7 +1132,7 @@ public class TransferManager extends PFComponent {
         Upload abortedUpload = null;
 
         for (Upload upload : queuedUploads) {
-            if (upload.getFile().isCompletelyIdentical(fInfo)
+            if (upload.getFile().isVersionAndDateIdentical(fInfo)
                 && to.equals(upload.getPartner()))
             {
                 // Remove upload from queue
@@ -1282,7 +1333,7 @@ public class TransferManager extends PFComponent {
 
         Folder folder = fInfo.getFolder(getController().getFolderRepository());
         FileInfo localFile = folder != null ? folder.getFile(fInfo) : null;
-        if (localFile != null && fInfo.isCompletelyIdentical(localFile)) {
+        if (localFile != null && fInfo.isVersionAndDateIdentical(localFile)) {
             logWarning("Not adding pending download, already have: " + fInfo);
             return false;
         }
@@ -1389,7 +1440,7 @@ public class TransferManager extends PFComponent {
                 continue;
             }
             // Skip "wrong" sources
-            if (!newestVersionFile.isCompletelyIdentical(remoteFile)) {
+            if (!newestVersionFile.isVersionAndDateIdentical(remoteFile)) {
                 continue;
             }
             if (bestSources == null) {
@@ -1444,7 +1495,7 @@ public class TransferManager extends PFComponent {
         FileInfo localFile = getController().getFolderRepository().getFolder(
             fInfo.getFolderInfo()).getFile(fInfo);
 
-        if (localFile != null && localFile.isCompletelyIdentical(fInfo)) {
+        if (localFile != null && localFile.isVersionAndDateIdentical(fInfo)) {
             log
                 .warning("Tried to request download for file with same version as local file!");
             return;
@@ -1457,7 +1508,7 @@ public class TransferManager extends PFComponent {
         synchronized (dlManagers) {
             man = dlManagers.get(fInfo);
 
-            if (man == null || !fInfo.isCompletelyIdentical(man.getFileInfo()))
+            if (man == null || !fInfo.isVersionAndDateIdentical(man.getFileInfo()))
             {
                 if (man != null) {
                     if (!man.isDone()) {
@@ -1763,14 +1814,14 @@ public class TransferManager extends PFComponent {
      */
     public Upload getUpload(Member to, FileInfo fInfo) {
         for (Upload u : activeUploads) {
-            if (u.getFile().isCompletelyIdentical(fInfo)
+            if (u.getFile().isVersionAndDateIdentical(fInfo)
                 && u.getPartner().equals(to))
             {
                 return u;
             }
         }
         for (Upload u : queuedUploads) {
-            if (u.getFile().isCompletelyIdentical(fInfo)
+            if (u.getFile().isVersionAndDateIdentical(fInfo)
                 && u.getPartner().equals(to))
             {
                 return u;
@@ -1805,7 +1856,7 @@ public class TransferManager extends PFComponent {
      */
     public DownloadManager getCompletedDownload(FileInfo fInfo) {
         for (DownloadManager dlManager : completedDownloads) {
-            if (dlManager.getFileInfo().isCompletelyIdentical(fInfo)) {
+            if (dlManager.getFileInfo().isVersionAndDateIdentical(fInfo)) {
                 return dlManager;
             }
         }
@@ -2031,7 +2082,7 @@ public class TransferManager extends PFComponent {
                 if (download.isCompleted()) {
                     DownloadManager man = null;
                     for (DownloadManager tmp : completedDownloads) {
-                        if (tmp.getFileInfo().isCompletelyIdentical(
+                        if (tmp.getFileInfo().isVersionAndDateIdentical(
                             download.getFile()))
                         {
                             man = tmp;

@@ -23,7 +23,8 @@ package de.dal33t.powerfolder.transfer;
  * Enum of variaous problems that can occur when transfering files.
  */
 public enum TransferProblem {
-
+    
+    FILE_CHANGED("transfer.problem.transfer.broken"),
     NODE_DISCONNECTED("transfer.problem.transfer.broken"),
     FOLDER_REMOVED("transfer.problem.transfer.broken"),
     OLD_UPLOAD("transfer.problem.old.upload"),
