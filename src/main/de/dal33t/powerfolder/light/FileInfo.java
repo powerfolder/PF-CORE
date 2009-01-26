@@ -599,6 +599,24 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
     /*
      * General
      */
+    
+    /**
+     * @param otherFile
+     * @return true if the file name, version and date is equal.
+     */
+    public boolean isVersionAndDateIdentical(FileInfo otherFile) {
+        if (otherFile == null) {
+            return false;
+        }
+
+        if (!equals(otherFile)) {
+            // not equals, return
+            return false;
+        }
+
+        return this.getVersion() == otherFile.getVersion()
+            && this.getModifiedDate().equals(otherFile.getModifiedDate());
+    }
 
     /**
      * ATTENTION: BE WARNED USING THIS METHOD! It is possible that FileInfos
