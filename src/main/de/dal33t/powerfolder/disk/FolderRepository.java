@@ -937,34 +937,37 @@ public class FolderRepository extends PFComponent implements Runnable {
         private volatile boolean canceled;
 
         public void run() {
-            if (canceled) {
-                logFine(
-                    "Not synchronizing Foldermemberships, "
-                        + "operation already canceled yet");
-                return;
-            }
-            ProfilingEntry pe = Profiling
-                .start("synchronizeAllFolderMemberships");
-            if (isFiner()) {
-                logFiner("All Nodes: Synchronize Foldermemberships");
-            }
-            Collection<Member> connectedNodes = getController()
-                .getNodeManager().getConnectedNodes();
-            Collection<FolderInfo> myJoinedFolders = getJoinedFolderInfos();
-            for (Member node : connectedNodes) {
-                node.synchronizeFolderMemberships(myJoinedFolders);
+            try {
                 if (canceled) {
-                    logFine("Foldermemberships synchroniziation cancelled");
+                    logFine(
+                        "Not synchronizing Foldermemberships, "
+                            + "operation already canceled yet");
                     return;
                 }
-            }
-            Profiling.end(pe, 1000);
-            // Normal termination, remove synchronizer
-            synchronized (folderMembershipSynchronizerLock) {
-                // Got already new syner started in the meanwhile? if yes, don't
-                // set to null
-                if (folderMembershipSynchronizer == this) {
-                    folderMembershipSynchronizer = null;
+                ProfilingEntry pe = Profiling
+                    .start("synchronizeAllFolderMemberships");
+                if (isFiner()) {
+                    logFiner("All Nodes: Synchronize Foldermemberships");
+                }
+                Collection<Member> connectedNodes = getController()
+                    .getNodeManager().getConnectedNodes();
+                Collection<FolderInfo> myJoinedFolders = getJoinedFolderInfos();
+                for (Member node : connectedNodes) {
+                    node.synchronizeFolderMemberships(myJoinedFolders);
+                    if (canceled) {
+                        logFiner("Foldermemberships synchroniziation cancelled");
+                        return;
+                    }
+                }
+                Profiling.end(pe);
+            } finally {
+                // Termination, remove synchronizer
+                synchronized (folderMembershipSynchronizerLock) {
+                    // Got already new syner started in the meanwhile? if yes,
+                    // don't set to null
+                    if (folderMembershipSynchronizer == this) {
+                        folderMembershipSynchronizer = null;
+                    }
                 }
             }
         }
