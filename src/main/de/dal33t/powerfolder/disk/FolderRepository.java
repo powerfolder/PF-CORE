@@ -937,15 +937,15 @@ public class FolderRepository extends PFComponent implements Runnable {
         private volatile boolean canceled;
 
         public void run() {
+            ProfilingEntry pe = Profiling
+                .start("synchronizeAllFolderMemberships");
             try {
                 if (canceled) {
-                    logFine(
-                        "Not synchronizing Foldermemberships, "
-                            + "operation already canceled yet");
+                    logFine("Not synchronizing Foldermemberships, "
+                        + "operation already canceled yet");
                     return;
                 }
-                ProfilingEntry pe = Profiling
-                    .start("synchronizeAllFolderMemberships");
+
                 if (isFiner()) {
                     logFiner("All Nodes: Synchronize Foldermemberships");
                 }
@@ -959,8 +959,9 @@ public class FolderRepository extends PFComponent implements Runnable {
                         return;
                     }
                 }
-                Profiling.end(pe);
+
             } finally {
+                Profiling.end(pe);
                 // Termination, remove synchronizer
                 synchronized (folderMembershipSynchronizerLock) {
                     // Got already new syner started in the meanwhile? if yes,
