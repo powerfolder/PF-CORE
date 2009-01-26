@@ -210,19 +210,19 @@ public class InvitationUtil {
         JFrame parent = controller.getUIController().getMainFrame()
             .getUIComponent();
 
-        if (to == null) {
-            to = (String) JOptionPane.showInputDialog(parent, Translation
-                .getTranslation("send_invitation.ask_emailaddres.message"),
-                Translation
-                    .getTranslation("send_invitation.ask_emailaddres.title"),
-                JOptionPane.QUESTION_MESSAGE, null, null, Translation
-                    .getTranslation("send_invitation.example_email_address"));
-        }
-
-        // null if canceled
-        if (to == null) {
-            return;
-        }
+        // if (to == null) {
+        // to = (String) JOptionPane.showInputDialog(parent, Translation
+        // .getTranslation("send_invitation.ask_emailaddres.message"),
+        // Translation
+        // .getTranslation("send_invitation.ask_emailaddres.title"),
+        // JOptionPane.QUESTION_MESSAGE, null, null, Translation
+        // .getTranslation("send_invitation.example_email_address"));
+        // }
+        //
+        // // null if canceled
+        // if (to == null) {
+        // return;
+        // }
 
         controller.getOSClient().getFolderService().sendInvitationEmail(
             new SendInvitationEmail(invitation, to, ccMe));
@@ -267,6 +267,7 @@ public class InvitationUtil {
         if (containsNoneAscii(filename)) {
             filename = "powerfolder";
         }
+        filename = Util.removeInvalidFilenameChars(filename);
         String tmpDir = System.getProperty("java.io.tmpdir");
         File file;
         if (tmpDir != null && tmpDir.length() > 0) {
