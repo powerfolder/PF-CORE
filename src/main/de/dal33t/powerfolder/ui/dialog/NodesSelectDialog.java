@@ -201,10 +201,13 @@ public class NodesSelectDialog extends PFUIComponent {
 
         /**
          * Set the value model and user collection in the underlying wizard.
+         * 
          * @param e
          */
         public void actionPerformed(ActionEvent e) {
             Collection<Member> selectedMembers = nodesSelectTable.getSelectedMembers();
+            viaPowerFolderMembers.clear();
+            viaPowerFolderMembers.addAll(selectedMembers);
             if (selectedMembers.isEmpty()) {
                 viaPowerFolderModel.setValue(Translation.getTranslation("dialog.node_select.no_computers"));
             } else if (selectedMembers.size() == 1) {
@@ -212,8 +215,6 @@ public class NodesSelectDialog extends PFUIComponent {
             } else {
                 viaPowerFolderModel.setValue(Translation.getTranslation("dialog.node_select.multi_computers"));
             }
-            viaPowerFolderMembers.clear();
-            viaPowerFolderMembers.addAll(selectedMembers);
             close();
         }
     }

@@ -41,6 +41,8 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.Collection;
 import java.util.ArrayList;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
 
 /**
  * Dialog for creatigng or editing profile configuration. User can select a
@@ -159,6 +161,11 @@ public class SingleFileTransferDialog extends BaseDialog {
         viaPowerFolderModel = new ValueHolder();
         viaPowerFolderModel.setValue(Translation
             .getTranslation("dialog.node_select.no_computers"));
+        viaPowerFolderModel.addValueChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                updateTransferButton();
+            }
+        });
         viaPowerFolderText = BasicComponentFactory.createTextField(
             viaPowerFolderModel, false);
         viaPowerFolderText.setEnabled(false);
@@ -166,6 +173,12 @@ public class SingleFileTransferDialog extends BaseDialog {
                 Translation.getTranslation(
                         "dialog.single_file_transfer.select_computer.tip"));
         viaPowerFolderConfigButton.addActionListener(new MyActionListener());
+
+        updateTransferButton();
+    }
+
+    private void updateTransferButton() {
+        transferButton.setEnabled(!viaPowerFolderMembers.isEmpty());
     }
 
     private void createTransferButton() {
