@@ -381,12 +381,6 @@ public class Folder extends PFComponent {
             }
             // Add file to folder
             currentInfo.addFile(newFileInfo);
-
-            // if meta then add the meta scan queue
-            // Disabled, causing bug #293
-            // if (FileMetaInfoReader.isConvertingSupported(newFileInfo)) {
-            // fileInfosToConvert.add(newFileInfo);
-            // }
         }
         // Add new files to the UI this is relatively slow on folders with a
         // lot of new files (initial scan) so done in different thread
@@ -434,13 +428,6 @@ public class Folder extends PFComponent {
             // changedFileInfo.invalidateFilePartsRecord();
         }
 
-        // if (scanResult.getProblemFiles().size() > 0) {
-        // problemFiles = scanResult.getProblemFiles();
-        // if (problemFiles != null && problemFiles.size() > 0) {
-        // fireProblemsFound();
-        // }
-        // }
-
         hasOwnDatabase = true;
         if (isFine()) {
             logFine("Scanned " + scanResult.getTotalFilesCount() + " total, "
@@ -463,11 +450,6 @@ public class Folder extends PFComponent {
             broadcastFolderChanges(scanResult);
         }
 
-        // Disabled, causing bug #293
-        // in new files are found we can convert to meta info please do so..
-        // if (fileInfosToConvert.size() > 0) {
-        // convertToMeta(fileInfosToConvert);
-        // }
         if (isFiner()) {
             logFiner("commitScanResult DONE");
         }
@@ -648,11 +630,7 @@ public class Folder extends PFComponent {
         }
         synchronized (deleteLock) {
             if (targetFile.exists()) {
-                // if file was a "newer file" the file already esists here
-                if (isFiner()) {
-                    logFiner("file already exists: " + targetFile
-                        + " moving to recycle bin");
-                }
+                // if file was a "newer file" the file already exists here
                 deleteFile(fInfo, targetFile);
             }
         }
@@ -1161,12 +1139,8 @@ public class Folder extends PFComponent {
             return false;
         }
 
-        // Abort downloads of files
-        DownloadManager dl = getController().getTransferManager()
-            .getActiveDownload(fInfo);
-        if (dl != null) {
-            dl.abortAndCleanup();
-        }
+        // Abort transfers files
+        getController().getTransferManager().breakTransfers(fInfo);
 
         File diskFile = getDiskFile(fInfo);
         boolean folderChanged = false;
@@ -1223,6 +1197,7 @@ public class Folder extends PFComponent {
      *            the file to load as db file
      * @return true if succeeded
      */
+    @SuppressWarnings("unchecked")
     private boolean loadFolderDB(File dbFile) {
         synchronized (scanLock) {
             if (!dbFile.exists()) {
@@ -1771,8 +1746,9 @@ public class Folder extends PFComponent {
      */
     public void syncRemoteDeletedFiles(boolean force) {
         if (isFiner()) {
-            logFiner("Deleting files, which are deleted by friends. con-members: "
-                + Arrays.asList(getConnectedMembers()));
+            logFiner(
+                "Deleting files, which are deleted by friends. con-members: "
+                    + Arrays.asList(getConnectedMembers()));
         }
 
         List<FileInfo> removedFiles = new ArrayList<FileInfo>();
@@ -1794,6 +1770,10 @@ public class Folder extends PFComponent {
                     + "' has " + fileList.size() + " possible files");
             }
             for (FileInfo remoteFile : fileList) {
+                if (!remoteFile.isDeleted()) {
+                    // Not interesting...
+                    continue;
+                }
                 boolean modifiedByFriend = remoteFile
                     .isModifiedByFriend(getController());
                 boolean syncFromMemberAllowed = (modifiedByFriend && syncProfile
@@ -1807,64 +1787,56 @@ public class Folder extends PFComponent {
                 }
 
                 FileInfo localFile = getFile(remoteFile);
-                boolean remoteFileNewer = true;
-                if (localFile != null) {
-                    remoteFileNewer = remoteFile.isNewerThan(localFile);
-                }
-
-                if (!remoteFileNewer) {
-                    // Not newer, skip file
-                    // logWarning(
-                    // "Ingoring file (not newer): " + remoteFile.getName()
-                    // + ". local-ver: " + localFile.getVersion()
-                    // + ", remote-ver: " + remoteFile.getVersion());
+                if (localFile != null && !remoteFile.isNewerThan(localFile)) {
+                    // Local file is newer
                     continue;
                 }
 
-                // logWarning("Remote file has a newer file :" +
-                // remoteFile.toDetailString());
-
-                // Okay the remote file is newer
-
                 // Add to local file to database if was deleted on remote
-                if (localFile == null && remoteFile.isDeleted()) {
+                if (localFile == null) {
                     addFile(remoteFile);
                     localFile = getFile(remoteFile);
                     // File has been marked as removed at our side
                     removedFiles.add(localFile);
                 }
+                if (localFile.isDeleted()) {
+                    continue;
+                }
+                File localCopy = localFile.getDiskFile(getController()
+                    .getFolderRepository());
+                if (!localFile.inSyncWithDisk(localCopy)) {
+                    logFine(
+                        "Not deleting file from member " + member
+                            + ", local file not in sync with disk: "
+                            + localFile.toDetailString() + " at "
+                            + localCopy.getAbsolutePath());
+                    recommendScanOnNextMaintenance();
+                    continue;
+                }
 
-                if (localFile != null) {
-                    // logWarning("Okay we have local file :" + localFile);
-                    if (remoteFile.isDeleted() && !localFile.isDeleted()) {
-                        File localCopy = localFile.getDiskFile(getController()
-                            .getFolderRepository());
+                if (isFine()) {
+                    logFine(
+                        "File was deleted by " + member + ", deleting local: "
+                            + localFile.toDetailString() + " at "
+                            + localCopy.getAbsolutePath());
+                }
 
-                        logFiner("File was deleted by " + member
-                            + ", deleting local: " + localCopy);
+                // Abort transfers on file.
+                getController().getTransferManager().breakTransfers(localFile);
 
-                        // Abort dl if one is active
-                        DownloadManager dl = getController()
-                            .getTransferManager().getActiveDownload(localFile);
-                        if (dl != null) {
-                            dl.abortAndCleanup();
-                        }
-
-                        synchronized (deleteLock) {
-                            if (localCopy.exists()) {
-                                deleteFile(localFile, localCopy);
-                            }
-                        }
-                        // FIXME: Size might not be correct
-                        localFile.setDeleted(true);
-                        localFile.setModifiedInfo(remoteFile.getModifiedBy(),
-                            remoteFile.getModifiedDate());
-                        localFile.setVersion(remoteFile.getVersion());
-
-                        // File has been removed
-                        removedFiles.add(localFile);
+                synchronized (deleteLock) {
+                    if (localCopy.exists()) {
+                        deleteFile(localFile, localCopy);
                     }
                 }
+                // FIXME: Size might not be correct
+                localFile.setDeleted(true);
+                localFile.setModifiedInfo(remoteFile.getModifiedBy(),
+                    remoteFile.getModifiedDate());
+                localFile.setVersion(remoteFile.getVersion());
+
+                // File has been removed
+                removedFiles.add(localFile);
             }
         }
 
@@ -1881,7 +1853,7 @@ public class Folder extends PFComponent {
             broadcastMessages(changes);
         }
     }
-
+    
     /**
      * Broadcasts a message through the folder
      * 
@@ -2367,6 +2339,10 @@ public class Folder extends PFComponent {
      */
     private void deleteFile(FileInfo fileInfo, File file) {
         if (useRecycleBin) {
+            if (isFine()) {
+                logFine("Deleting file " + fileInfo.toDetailString()
+                    + " moving to recycle bin");
+            }
             RecycleBin recycleBin = getController().getRecycleBin();
             if (!recycleBin.moveToRecycleBin(fileInfo, file)) {
                 logSevere("Unable to move file to recycle bin" + file);
@@ -2375,6 +2351,10 @@ public class Folder extends PFComponent {
                 }
             }
         } else {
+            if (isFine()) {
+                logFine("Deleting file " + fileInfo.toDetailString()
+                    + " NOT moving to recycle bin (disabled)");
+            }
             if (!file.delete()) {
                 logSevere("Unable to delete file " + file);
             }
