@@ -51,6 +51,7 @@ import java.util.logging.Logger;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.clientserver.ServerClient;
@@ -490,6 +491,12 @@ public class NodeManager extends PFComponent {
     public boolean isOnLANorConfiguredOnLAN(InetAddress adr) {
         Reject.ifNull(adr, "Address is null");
         if (!(adr instanceof Inet4Address)) {
+            return false;
+        }
+        if (Feature.CORRECT_LAN_DETECTION.isDisabled()) {
+            return true;
+        }
+        if (Feature.CORRECT_INTERNET_DETECTION.isDisabled()) {
             return false;
         }
         return NetworkUtil.isOnLanOrLoopback(adr)
