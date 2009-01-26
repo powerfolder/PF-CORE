@@ -870,8 +870,8 @@ public class FileTransferTest extends TwoControllerTestCase {
             }
 
             public String message() {
-                return "Lisa download started: "
-                    + lisasListener.downloadRequested + " requested, "
+                return "Lisa download requested: "
+                    + lisasListener.downloadRequested + " started, "
                     + lisasListener.downloadStarted + ", broken: "
                     + lisasListener.downloadBroken + ", aborted: "
                     + lisasListener.downloadAborted + ", last problem: "
