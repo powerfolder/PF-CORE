@@ -143,13 +143,15 @@ public class Account extends Model implements Serializable {
             log.severe("Illegal account " + username + ", permissions is null");
             return false;
         }
-
-        // TODO Solve this a better way.
-        if (permissions.contains(AdminPermission.INSTANCE)) {
-            // Admin- everything allowed.
-            return true;
+        for (Permission p : permissions) {
+            if (p.equals(permission)) {
+                return true;
+            }
+            if (p.implies(permission)) {
+                return true;
+            }
         }
-        return permissions.contains(permission);
+        return false;
     }
 
     public Collection<Permission> getPermissions() {
@@ -409,8 +411,7 @@ public class Account extends Model implements Serializable {
      */
     public boolean hasReadPermissions(FolderInfo foInfo) {
         Reject.ifNull(foInfo, "Folder info is null");
-        return hasPermission(new FolderAdminPermission(foInfo))
-            || hasPermission(new FolderReadPermission(foInfo));
+        return hasPermission(new FolderReadPermission(foInfo));
     }
 
     /**
@@ -420,10 +421,9 @@ public class Account extends Model implements Serializable {
      *            the folder to check
      * @return true if the user is allowed to write into the folder.
      */
-    public boolean hasWritePermissions(FolderInfo foInfo) {
+    public boolean hasReadWritePermissions(FolderInfo foInfo) {
         Reject.ifNull(foInfo, "Folder info is null");
-        return hasPermission(new FolderAdminPermission(foInfo))
-            || hasPermission(new FolderWritePermission(foInfo));
+        return hasPermission(new FolderReadWritePermission(foInfo));
     }
 
     /**

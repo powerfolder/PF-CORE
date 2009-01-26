@@ -53,6 +53,17 @@ public class FolderAdminPermission extends FolderPermission {
         }
         return false;
     }
+    
+    public boolean implies(Permission impliedPermision) {
+        if (impliedPermision instanceof FolderReadPermission) {
+            FolderReadPermission rp = (FolderReadPermission) impliedPermision;
+            return rp.getFolder().equals(getFolder());
+        } else if (impliedPermision instanceof FolderReadWritePermission) {
+            FolderReadWritePermission rwp = (FolderReadWritePermission) impliedPermision;
+            return rwp.getFolder().equals(getFolder());
+        }
+        return false;
+    }
 
     // Serialization compatibility ********************************************
 

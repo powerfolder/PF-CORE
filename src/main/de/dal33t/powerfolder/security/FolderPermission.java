@@ -40,7 +40,7 @@ public abstract class FolderPermission implements Permission {
         folder = foInfo;
     }
 
-    public FolderInfo getFolder() {
+    public final FolderInfo getFolder() {
         return folder;
     }
 

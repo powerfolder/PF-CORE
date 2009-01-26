@@ -33,6 +33,11 @@ public class AdminPermission implements Permission {
     public AdminPermission() {
     }
 
+    public boolean implies(Permission impliedPermision) {
+        // ADMIN, All permissions implied
+        return true;
+    }
+    
     @Override
     public int hashCode() {
         return 31;

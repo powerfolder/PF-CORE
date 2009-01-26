@@ -15,12 +15,11 @@
 * You should have received a copy of the GNU General Public License
 * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
 *
-* $Id$
+* $Id: FolderWritePermission.java 4282 2008-06-16 03:25:09Z tot $
 */
 package de.dal33t.powerfolder.security;
 
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.util.Reject;
 
 /**
  * Permission that allows the user to write into the folder.
@@ -28,18 +27,19 @@ import de.dal33t.powerfolder.util.Reject;
  * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
-public class FolderWritePermission implements Permission {
+public class FolderReadWritePermission extends FolderPermission {
     private static final long serialVersionUID = 100L;
 
-    private FolderInfo folder;
-
-    public FolderWritePermission(FolderInfo foInfo) {
-        Reject.ifNull(foInfo, "Folderinfo is null");
-        folder = foInfo;
+    public FolderReadWritePermission(FolderInfo foInfo) {
+        super(foInfo);
     }
-
-    public FolderInfo getFolder() {
-        return folder;
+    
+    public boolean implies(Permission impliedPermision) {
+        if (impliedPermision instanceof FolderReadPermission) {
+            FolderReadPermission rp = (FolderReadPermission) impliedPermision;
+            return rp.getFolder().equals(getFolder());
+        }
+        return false;
     }
 
     @Override
@@ -58,7 +58,7 @@ public class FolderWritePermission implements Permission {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        final FolderWritePermission other = (FolderWritePermission) obj;
+        final FolderReadWritePermission other = (FolderReadWritePermission) obj;
         if (folder == null) {
             if (other.folder != null)
                 return false;
@@ -66,5 +66,4 @@ public class FolderWritePermission implements Permission {
             return false;
         return true;
     }
-
 }

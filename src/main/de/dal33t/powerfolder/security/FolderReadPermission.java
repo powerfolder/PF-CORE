@@ -20,7 +20,6 @@
 package de.dal33t.powerfolder.security;
 
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.util.Reject;
 
 /**
  * The permission to read files in the folder. Write
@@ -28,18 +27,15 @@ import de.dal33t.powerfolder.util.Reject;
  * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
-public class FolderReadPermission implements Permission {
+public class FolderReadPermission extends FolderPermission {
     private static final long serialVersionUID = 100L;
 
-    private FolderInfo folder;
-
     public FolderReadPermission(FolderInfo foInfo) {
-        Reject.ifNull(foInfo, "Folderinfo is null");
-        folder = foInfo;
+       super(foInfo);
     }
 
-    public FolderInfo getFolder() {
-        return folder;
+    public boolean implies(Permission impliedPermision) {
+        return false;
     }
 
     @Override
@@ -66,4 +62,6 @@ public class FolderReadPermission implements Permission {
             return false;
         return true;
     }
+
+
 }

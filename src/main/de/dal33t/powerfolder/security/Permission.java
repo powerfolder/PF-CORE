@@ -28,4 +28,5 @@ import java.io.Serializable;
  * @version $Revision: 1.5 $
  */
 public interface Permission extends Serializable {
+    boolean implies(Permission impliedPermision);
 }
