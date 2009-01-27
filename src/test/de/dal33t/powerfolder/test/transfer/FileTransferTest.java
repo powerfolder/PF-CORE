@@ -1023,6 +1023,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         long oldByteCount = getFolderAtLisa().getStatistic()
             .getDownloadCounter().getBytesTransferred();
 
+        TestHelper.waitMilliSeconds(100);
         // Scan changed file
         assertTrue(fbart.lastModified() > flisa.lastModified());
 
