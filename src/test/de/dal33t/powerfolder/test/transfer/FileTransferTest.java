@@ -1018,12 +1018,12 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertTrue(TestHelper.compareFiles(fbart, flisa));
 
         disconnectBartAndLisa();
+        TestHelper.waitMilliSeconds(100);
         fbart.setLastModified(System.currentTimeMillis());
 
         long oldByteCount = getFolderAtLisa().getStatistic()
             .getDownloadCounter().getBytesTransferred();
 
-        TestHelper.waitMilliSeconds(100);
         // Scan changed file
         assertTrue(fbart.lastModified() > flisa.lastModified());
 
