@@ -39,7 +39,6 @@ public class ReceivedSingleFileOffersModel extends PFComponent
         implements SingleFileOfferHandler {
 
     private final ValueModel receivedSingleFileOffersVM = new ValueHolder();
-    private List<SingleFileOfferReceivedListener> listeners;
 
     private List<SingleFileOffer> offers =
             new CopyOnWriteArrayList<SingleFileOffer>();
@@ -52,27 +51,7 @@ public class ReceivedSingleFileOffersModel extends PFComponent
     public ReceivedSingleFileOffersModel(Controller controller) {
         super(controller);
         receivedSingleFileOffersVM.setValue(0);
-        listeners =
-                new CopyOnWriteArrayList<SingleFileOfferReceivedListener>();
         getController().addSingleFileOfferHandler(this);
-    }
-
-    /**
-     * Add listener.
-     *
-     * @param l
-     */
-    public void addSingleFileOfferReceivedListener(SingleFileOfferReceivedListener l) {
-        listeners.add(l);
-    }
-
-    /**
-     * Remove listener.
-     *
-     * @param l
-     */
-    public void removeSingleFileOfferReceivedListener(SingleFileOfferReceivedListener l) {
-        listeners.remove(l);
     }
 
     /**
@@ -87,8 +66,21 @@ public class ReceivedSingleFileOffersModel extends PFComponent
     public void gotOffer(SingleFileOffer offer) {
         offers.add(offer);
         receivedSingleFileOffersVM.setValue(offers.size());
-        for (SingleFileOfferReceivedListener listener : listeners) {
-            listener.offerReceived();
-        }
     }
+
+    /**
+     * Remove an notification from the model for display, etc.
+     *
+     * @return
+     */
+    public SingleFileOffer popOffer() {
+        if (!offers.isEmpty()) {
+            SingleFileOffer offer = offers.remove(0);
+            receivedSingleFileOffersVM.setValue(
+                    offers.size());
+            return offer;
+        }
+        return null;
+    }
+
 }

@@ -119,7 +119,7 @@ public class ReceivedInvitationsModel extends PFComponent implements InvitationH
             receivedInvitationsCountVM.setValue(invitations.size());
             for (InvitationReceivedListener invitationReceivedListener
                     : listeners) {
-                invitationReceivedListener.invitationReceived();
+                invitationReceivedListener.modelChanged();
             }
         }
     }
@@ -135,7 +135,7 @@ public class ReceivedInvitationsModel extends PFComponent implements InvitationH
             receivedInvitationsCountVM.setValue(invitations.size());
             for (InvitationReceivedListener invitationReceivedListener
                     : listeners) {
-                invitationReceivedListener.invitationReceived();
+                invitationReceivedListener.modelChanged();
             }
             return invitation;
         }

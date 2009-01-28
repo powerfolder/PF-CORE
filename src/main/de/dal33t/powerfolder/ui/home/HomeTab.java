@@ -28,6 +28,8 @@ import java.util.Date;
 import java.util.List;
 import java.io.File;
 import java.io.IOException;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
 
 import javax.swing.*;
 
@@ -98,14 +100,13 @@ public class HomeTab extends PFUIComponent {
                 .addListener(new MyAskForFriendshipReceivedListener());
         getUIController().getApplicationModel().getReceivedInvitationsModel()
                 .addInvitationReceivedListener(new MyInvitationReceivedListener());
-        getUIController().getApplicationModel().getReceivedSingleFileOffersModel()
-                .addSingleFileOfferReceivedListener(new MySingleFileOfferReceivedListener());
         newFriendRequestCountVM = getUIController().getApplicationModel()
                 .getReceivedAskedForFriendshipModel().getReceivedAskForFriendshipCountVM();
         newInvitationsCountVM = getUIController().getApplicationModel()
                 .getReceivedInvitationsModel().getReceivedInvitationsCountVM();
         newSingleFileOffersCountVM = getUIController().getApplicationModel()
                 .getReceivedSingleFileOffersModel().getReceivedSingleFileOfferCountVM();
+        newSingleFileOffersCountVM.addValueChangeListener(new MyOfferPropertyListener());
         controller.getFolderRepository().addSynchronizationStatsListener(
                 new MySynchronizationStatsListener());
 
@@ -173,11 +174,8 @@ public class HomeTab extends PFUIComponent {
                 .getAskForFriendshipAction());
         newSingleFileOffersLine = new HomeTabLine(getController(),
                 Translation.getTranslation("home_tab.new_single_file_offers"),
-                null, true, true, new AbstractAction() {
-            public void actionPerformed(ActionEvent e) {
-                // @todo harry to implement
-            }
-        });
+                null, true, true, getApplicationModel().getActionModel()
+                .getSingleFileTransferOfferAction());
         downloadsLine = new HomeTabLine(getController(),
                 Translation.getTranslation("home_tab.files_downloaded"), null,
                 false, true, getApplicationModel().getActionModel()
@@ -630,7 +628,7 @@ public class HomeTab extends PFUIComponent {
     private class MyAskForFriendshipReceivedListener
             implements AskForFriendshipReceivedListener {
 
-        public void notificationReceived() {
+        public void modelChanged() {
             updateNewComputersText();
         }
     }
@@ -638,7 +636,7 @@ public class HomeTab extends PFUIComponent {
     private class MyInvitationReceivedListener
             implements InvitationReceivedListener {
 
-        public void invitationReceived() {
+        public void modelChanged() {
             updateNewInvitationsText();
         }
     }
@@ -742,9 +740,9 @@ public class HomeTab extends PFUIComponent {
         }
     }
 
-    private class MySingleFileOfferReceivedListener
-            implements SingleFileOfferReceivedListener {
-        public void offerReceived() {
+    private class MyOfferPropertyListener implements PropertyChangeListener {
+
+        public void propertyChange(PropertyChangeEvent evt) {
             updateNewSingleFileOffersText();
         }
     }

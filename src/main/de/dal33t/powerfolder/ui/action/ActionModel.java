@@ -44,6 +44,7 @@ public class ActionModel extends PFComponent {
     private OpenInvitationReceivedWizardAction openInvitationReceivedWizardAction;
     private AskForFriendshipAction askForFriendshipAction;
     private OpenDebugInformationAction openDebugInformationAction;
+    private SingleFileTransferOfferAction singleFileTransferOfferAction;
 
     public NewFolderAction getNewFolderAction() {
         if (newFolderAction == null) {
@@ -116,5 +117,12 @@ public class ActionModel extends PFComponent {
         	openDebugInformationAction = new OpenDebugInformationAction(getController());
         }
         return openDebugInformationAction;
+    }
+
+    public SingleFileTransferOfferAction getSingleFileTransferOfferAction() {
+        if (singleFileTransferOfferAction == null) {
+        	singleFileTransferOfferAction = new SingleFileTransferOfferAction(getController());
+        }
+        return singleFileTransferOfferAction;
     }
 }

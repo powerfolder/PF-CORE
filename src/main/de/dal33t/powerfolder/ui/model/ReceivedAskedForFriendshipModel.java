@@ -111,7 +111,7 @@ public class ReceivedAskedForFriendshipModel extends PFComponent implements AskF
             addAskForFriendshipEvents.add(event);
             receivedAskForFriendshipCountVM.setValue(addAskForFriendshipEvents.size());
             for (AskForFriendshipReceivedListener listener : listeners) {
-                listener.notificationReceived();
+                listener.modelChanged();
             }
         }
     }
@@ -128,7 +128,7 @@ public class ReceivedAskedForFriendshipModel extends PFComponent implements AskF
             receivedAskForFriendshipCountVM.setValue(
                     addAskForFriendshipEvents.size());
             for (AskForFriendshipReceivedListener listener : listeners) {
-                listener.notificationReceived();
+                listener.modelChanged();
             }
             return askForFriendshipEvent;
         }

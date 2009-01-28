@@ -25,5 +25,5 @@ package de.dal33t.powerfolder.event;
  * ReceivedInvitationModel in the ApplicationModel.
  */
 public interface InvitationReceivedListener {
-    void invitationReceived();
+    void modelChanged();
 }

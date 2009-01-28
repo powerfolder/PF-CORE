@@ -25,5 +25,5 @@ package de.dal33t.powerfolder.event;
  * ReceivedNotificationModel in the ApplicationModel.
  */
 public interface AskForFriendshipReceivedListener {
-    void notificationReceived();
+    void modelChanged();
 }
