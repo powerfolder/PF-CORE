@@ -27,7 +27,6 @@ import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.event.AskForFriendshipEvent;
 import de.dal33t.powerfolder.event.AskForFriendshipListener;
-import de.dal33t.powerfolder.event.AskForFriendshipReceivedListener;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -35,13 +34,10 @@ import java.util.concurrent.CopyOnWriteArrayList;
 /**
  * Class to manage received notifications. Notifications can be added and removed.
  * Also a value model is available to count notifications.
- * Listeners can be added to be notified of changes to the number of notifications
- * in the model.
  */
 public class ReceivedAskedForFriendshipModel extends PFComponent implements AskForFriendshipListener {
 
     private final ValueModel receivedAskForFriendshipCountVM = new ValueHolder();
-    private List<AskForFriendshipReceivedListener> listeners;
 
     private List<AskForFriendshipEvent> addAskForFriendshipEvents =
             new CopyOnWriteArrayList<AskForFriendshipEvent>();
@@ -54,26 +50,7 @@ public class ReceivedAskedForFriendshipModel extends PFComponent implements AskF
     public ReceivedAskedForFriendshipModel(Controller controller) {
         super(controller);
         receivedAskForFriendshipCountVM.setValue(0);
-        listeners = new CopyOnWriteArrayList<AskForFriendshipReceivedListener>();
         controller.addAskForFriendshipListener(this);
-    }
-
-    /**
-     * Add a listener
-     *
-     * @param l
-     */
-    public void addListener(AskForFriendshipReceivedListener l) {
-        listeners.add(l);
-    }
-
-    /**
-     * Remove a listener
-     *
-     * @param l
-     */
-    public void removeListener(AskForFriendshipReceivedListener l) {
-        listeners.remove(l);
     }
 
     /**
@@ -110,9 +87,6 @@ public class ReceivedAskedForFriendshipModel extends PFComponent implements AskF
 
             addAskForFriendshipEvents.add(event);
             receivedAskForFriendshipCountVM.setValue(addAskForFriendshipEvents.size());
-            for (AskForFriendshipReceivedListener listener : listeners) {
-                listener.modelChanged();
-            }
         }
     }
 
@@ -127,9 +101,6 @@ public class ReceivedAskedForFriendshipModel extends PFComponent implements AskF
                     addAskForFriendshipEvents.remove(0);
             receivedAskForFriendshipCountVM.setValue(
                     addAskForFriendshipEvents.size());
-            for (AskForFriendshipReceivedListener listener : listeners) {
-                listener.modelChanged();
-            }
             return askForFriendshipEvent;
         }
         return null;

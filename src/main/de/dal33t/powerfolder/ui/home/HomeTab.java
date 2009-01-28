@@ -96,14 +96,12 @@ public class HomeTab extends PFUIComponent {
                 .getTransferManagerModel().getCompletedUploadsCountVM();
         folderListener = new MyFolderListener();
         client = getApplicationModel().getServerClientModel().getClient();
-        getUIController().getApplicationModel().getReceivedAskedForFriendshipModel()
-                .addListener(new MyAskForFriendshipReceivedListener());
-        getUIController().getApplicationModel().getReceivedInvitationsModel()
-                .addInvitationReceivedListener(new MyInvitationReceivedListener());
         newFriendRequestCountVM = getUIController().getApplicationModel()
                 .getReceivedAskedForFriendshipModel().getReceivedAskForFriendshipCountVM();
+        newFriendRequestCountVM.addValueChangeListener(new MyFriendRequestListener());
         newInvitationsCountVM = getUIController().getApplicationModel()
                 .getReceivedInvitationsModel().getReceivedInvitationsCountVM();
+        newInvitationsCountVM.addValueChangeListener(new MyInvitationListener());
         newSingleFileOffersCountVM = getUIController().getApplicationModel()
                 .getReceivedSingleFileOffersModel().getReceivedSingleFileOfferCountVM();
         newSingleFileOffersCountVM.addValueChangeListener(new MyOfferPropertyListener());
@@ -625,22 +623,6 @@ public class HomeTab extends PFUIComponent {
         }
     }
 
-    private class MyAskForFriendshipReceivedListener
-            implements AskForFriendshipReceivedListener {
-
-        public void modelChanged() {
-            updateNewComputersText();
-        }
-    }
-
-    private class MyInvitationReceivedListener
-            implements InvitationReceivedListener {
-
-        public void modelChanged() {
-            updateNewInvitationsText();
-        }
-    }
-
     /**
      * Class to listen for SynchronizationStatsEvents, affects the label text. 
      */
@@ -744,6 +726,20 @@ public class HomeTab extends PFUIComponent {
 
         public void propertyChange(PropertyChangeEvent evt) {
             updateNewSingleFileOffersText();
+        }
+    }
+
+    private class MyFriendRequestListener implements PropertyChangeListener {
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            updateNewComputersText();
+        }
+    }
+
+    private class MyInvitationListener implements PropertyChangeListener {
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            updateNewInvitationsText();            
         }
     }
 }

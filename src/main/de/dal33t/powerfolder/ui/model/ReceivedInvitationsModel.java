@@ -25,7 +25,6 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.event.InvitationHandler;
-import de.dal33t.powerfolder.event.InvitationReceivedListener;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 
@@ -36,13 +35,10 @@ import java.util.concurrent.CopyOnWriteArrayList;
 /**
  * Class to manage received invitations. Invitations can be added and removed.
  * Also a value model is available to count invites.
- * Listeners can be added to be notified of changes to the number of invites
- * in the model.
  */
 public class ReceivedInvitationsModel extends PFComponent implements InvitationHandler {
 
     private final ValueModel receivedInvitationsCountVM = new ValueHolder();
-    private List<InvitationReceivedListener> listeners;
 
     private List<Invitation> invitations =
             new CopyOnWriteArrayList<Invitation>();
@@ -55,27 +51,7 @@ public class ReceivedInvitationsModel extends PFComponent implements InvitationH
     public ReceivedInvitationsModel(Controller controller) {
         super(controller);
         receivedInvitationsCountVM.setValue(0);
-        listeners =
-                new CopyOnWriteArrayList<InvitationReceivedListener>();
         getController().addInvitationHandler(this);
-    }
-
-    /**
-     * Add listener.
-     *
-     * @param l
-     */
-    public void addInvitationReceivedListener(InvitationReceivedListener l) {
-        listeners.add(l);
-    }
-
-    /**
-     * Remove listener.
-     *
-     * @param l
-     */
-    public void removeInvitationReceivedListener(InvitationReceivedListener l) {
-        listeners.remove(l);
     }
 
     /**
@@ -113,14 +89,10 @@ public class ReceivedInvitationsModel extends PFComponent implements InvitationH
             return;
         }
 
-        // Normal - add to invitation model and distribute notification.
+        // Normal - add to invitation model.
         if (!repository.hasJoinedFolder(invitation.folder)) {
             invitations.add(invitation);
             receivedInvitationsCountVM.setValue(invitations.size());
-            for (InvitationReceivedListener invitationReceivedListener
-                    : listeners) {
-                invitationReceivedListener.modelChanged();
-            }
         }
     }
 
@@ -133,10 +105,6 @@ public class ReceivedInvitationsModel extends PFComponent implements InvitationH
         if (!invitations.isEmpty()) {
             Invitation invitation = invitations.remove(0);
             receivedInvitationsCountVM.setValue(invitations.size());
-            for (InvitationReceivedListener invitationReceivedListener
-                    : listeners) {
-                invitationReceivedListener.modelChanged();
-            }
             return invitation;
         }
         return null;
