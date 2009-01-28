@@ -45,6 +45,7 @@ public class SingleFileTransferOfferAction extends BaseAction {
         }
 
         SingleFileOffer offer = model.popOffer();
+        
 
     }
 }

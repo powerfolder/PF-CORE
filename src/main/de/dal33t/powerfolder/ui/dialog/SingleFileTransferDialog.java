@@ -45,8 +45,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 
 /**
- * Dialog for creatigng or editing profile configuration. User can select a
- * default profile and then adjust the configuration.
+ * Dialog for offering a file to transfer to another computer..
  *
  * @author <a href="mailto:hglasgow@powerfolder.com">Harry Glasgow</a>
  * @version $Revision: 2.01 $

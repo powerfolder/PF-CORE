@@ -69,10 +69,7 @@ import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.transfer.swarm.FileRecordProvider;
 import de.dal33t.powerfolder.transfer.swarm.TransferUtil;
 import de.dal33t.powerfolder.transfer.swarm.VolatileFileRecordProvider;
-import de.dal33t.powerfolder.util.Format;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.TransferCounter;
-import de.dal33t.powerfolder.util.Validate;
+import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.compare.MemberComparator;
 import de.dal33t.powerfolder.util.compare.ReverseComparator;
 import de.dal33t.powerfolder.util.delta.FilePartsRecord;
@@ -2191,8 +2188,10 @@ public class TransferManager extends PFComponent {
      */
     public void offerSingleFile(File file, Collection<Member> members,
                                 String message) {
+        String uuid = IdGenerator.makeId();
+        // @todo need to remember this offer with uuid, to prevent spoofing attacks.
         Message offer = new SingleFileOffer(file,
-                getController().getMySelf().getInfo(), message);
+                getController().getMySelf().getInfo(), message, uuid);
         for (Member computer : members) {
             getController().getTaskManager().scheduleTask(
                 new SendMessageTask(offer, computer.getId()));
