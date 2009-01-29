@@ -2188,10 +2188,9 @@ public class TransferManager extends PFComponent {
      */
     public void offerSingleFile(File file, Collection<Member> members,
                                 String message) {
-        String uuid = IdGenerator.makeId();
-        // @todo need to remember this offer with uuid, to prevent spoofing attacks.
+        // @todo need to remember this offer, to prevent spoofing attacks.
         Message offer = new SingleFileOffer(file,
-                getController().getMySelf().getInfo(), message, uuid);
+                getController().getMySelf().getInfo(), message);
         for (Member computer : members) {
             getController().getTaskManager().scheduleTask(
                 new SendMessageTask(offer, computer.getId()));

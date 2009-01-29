@@ -22,6 +22,7 @@ package de.dal33t.powerfolder.ui.action;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.message.SingleFileOffer;
 import de.dal33t.powerfolder.ui.model.ReceivedSingleFileOffersModel;
+import de.dal33t.powerfolder.ui.dialog.SingleFileAcceptDialog;
 
 import java.awt.event.ActionEvent;
 
@@ -45,7 +46,9 @@ public class SingleFileTransferOfferAction extends BaseAction {
         }
 
         SingleFileOffer offer = model.popOffer();
-        
+        SingleFileAcceptDialog dialog = new SingleFileAcceptDialog(
+                getController(), offer);
+        dialog.open();
 
     }
 }

@@ -33,14 +33,12 @@ public class SingleFileOffer extends Message  {
     private File file;
     private MemberInfo sourceMemberInfo;
     private String message;
-    private String uuid;
 
     public SingleFileOffer(File file, MemberInfo sourceMemberInfo,
-                                  String message, String hash) {
+                                  String message) {
         this.file = file;
         this.sourceMemberInfo = sourceMemberInfo;
         this.message = message;
-        this.uuid = uuid;
     }
 
     public File getFile() {
@@ -53,9 +51,5 @@ public class SingleFileOffer extends Message  {
 
     public MemberInfo getSourceMemberInfo() {
         return sourceMemberInfo;
-    }
-
-    public String getUUID() {
-        return uuid;
     }
 }
