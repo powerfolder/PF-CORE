@@ -58,13 +58,8 @@ import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.message.AbortUpload;
-import de.dal33t.powerfolder.message.DownloadQueued;
-import de.dal33t.powerfolder.message.FileChunk;
-import de.dal33t.powerfolder.message.Message;
-import de.dal33t.powerfolder.message.RequestDownload;
-import de.dal33t.powerfolder.message.SingleFileOffer;
-import de.dal33t.powerfolder.message.TransferStatus;
+import de.dal33t.powerfolder.light.MemberInfo;
+import de.dal33t.powerfolder.message.*;
 import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.transfer.swarm.FileRecordProvider;
 import de.dal33t.powerfolder.transfer.swarm.TransferUtil;
@@ -2198,6 +2193,23 @@ public class TransferManager extends PFComponent {
             if (!computer.isCompleteyConnected()) {
                 computer.markForImmediateConnect();
             }
+        }
+    }
+
+    /**
+     * Send single file acceptance to originating member.
+     *
+     * @param file
+     * @param member
+     */
+    public void offerSingleFile(File file, Member member) {
+        Message offer = new SingleFileAccept(file, 
+                getController().getMySelf().getInfo());
+        getController().getTaskManager().scheduleTask(
+            new SendMessageTask(offer, member.getId()));
+
+        if (!member.isCompleteyConnected()) {
+            member.markForImmediateConnect();
         }
     }
 

@@ -26,6 +26,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.binding.value.ValueHolder;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.message.SingleFileOffer;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.action.BaseAction;
@@ -204,6 +205,7 @@ public class SingleFileAcceptDialog extends BaseDialog {
         SingleFileAcceptAction action =
                 new SingleFileAcceptAction(getController());
         acceptButton = new JButton(action);
+        acceptButton.addActionListener(new MyAcceptListener());
     }
 
     private class SingleFileAcceptAction extends BaseAction {
@@ -220,6 +222,24 @@ public class SingleFileAcceptDialog extends BaseDialog {
     private class MyActionListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             displayChooseDirectory();
+        }
+    }
+
+    /**
+     * Class to process acceptance of a single file transfer offer.
+     */
+    private class MyAcceptListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            Member member = getController().getNodeManager().getNode(
+                    offer.getSourceMemberInfo());
+            if (member == null) {
+                logSevere("Could not find member "
+                        + offer.getSourceMemberInfo().nick);
+            } else {
+                getController().getTransferManager().offerSingleFile(
+                        offer.getFile(), member);
+                close();
+            }
         }
     }
 }
