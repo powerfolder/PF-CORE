@@ -1558,8 +1558,10 @@ public class Member extends PFComponent implements Comparable<Member> {
                 expectedTime = 50;
 
             } else if (message instanceof SingleFileAccept) {
-                // @todo handle message 
-                
+                getController().getTransferManager().processSingleFileAcceptance(
+                        (SingleFileAccept) message, fromPeer.getMember().getInfo());
+                expectedTime = 50;
+
             } else {
                 logFiner("Message not known to message handling code, "
                     + "maybe handled in listener: " + message);

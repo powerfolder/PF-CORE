@@ -58,6 +58,7 @@ import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.*;
 import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.transfer.swarm.FileRecordProvider;
@@ -158,8 +159,8 @@ public class TransferManager extends PFComponent {
 
     private DownloadManagerFactory downloadManagerFactory = MultiSourceDownloadManager.factory;
 
-    private List<SingleFileOffer> singleFileOffers
-            = new CopyOnWriteArrayList<SingleFileOffer>();
+    private final List<SingleFileOffer> singleFileOffers
+            = new ArrayList<SingleFileOffer>();
 
     public TransferManager(Controller controller) {
         super(controller);
@@ -2193,6 +2194,9 @@ public class TransferManager extends PFComponent {
                     message);
 
             singleFileOffers.add(offer);
+            log.info("Added SingleFileOffer to list: " +
+                    offer.getFile().getAbsolutePath() + ", " +
+                    offer.getAcceptingMemberInfo());
 
             getController().getTaskManager().scheduleTask(
                 new SendMessageTask(offer, computer.getId()));
@@ -2229,7 +2233,46 @@ public class TransferManager extends PFComponent {
         }
     }
 
-    // Worker code ************************************************************
+    /**
+     * Process the acceptance of a single file offer by another computer.
+     *
+     * @param accept
+     * @param from
+     */
+    public void processSingleFileAcceptance(SingleFileAccept accept,
+                                            MemberInfo from) {
+        SingleFileOffer foundOffer = null;
+        synchronized (singleFileOffers) {
+            for (Iterator<SingleFileOffer> iter = singleFileOffers.iterator();
+                 iter.hasNext();) {
+                SingleFileOffer offer =  iter.next();
+                if (offer.getFile().equals(accept.getFile())
+                        && offer.getAcceptingMemberInfo().equals(
+                            accept.getAcceptingMemberInfo())
+                        && offer.getOfferingMemberInfo().equals(
+                            accept.getOfferingMemberInfo())
+                        && from.equals(accept.getAcceptingMemberInfo())) {
+                    foundOffer = offer;
+                    iter.remove();
+                    break;
+                }
+            }
+        }
+
+        if (foundOffer == null) {
+            logSevere("*** W A R N I N G ***");
+            logSevere("Received SingleFileAccept from "
+                    + from + " for file " + accept.getFile().getAbsolutePath()
+                    + " but was not found in list of known SingleFileOffers!");
+            logSevere("**********************");
+        } else {
+            logInfo("Received SingleFileAccept: " + 
+                    accept.getFile().getAbsolutePath() + ", " +
+                    accept.getAcceptingMemberInfo());
+
+            // @todo upload the file.
+        }
+    }
 
     /**
      * The core maintenance thread of transfermanager.
