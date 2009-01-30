@@ -31,18 +31,25 @@ public class SingleFileAccept extends Message  {
     private static final long serialVersionUID = 100L;
 
     private File file;
-    private MemberInfo targetMemberInfo;
+    private MemberInfo offeringMemberInfo;
+    private MemberInfo acceptingMemberInfo;
 
-    public SingleFileAccept(File file, MemberInfo targetMemberInfo) {
+    public SingleFileAccept(File file, MemberInfo offeringMemberInfo,
+                            MemberInfo acceptingMemberInfo) {
         this.file = file;
-        this.targetMemberInfo = targetMemberInfo;
+        this.offeringMemberInfo = offeringMemberInfo;
+        this.acceptingMemberInfo = acceptingMemberInfo;
     }
 
     public File getFile() {
         return file;
     }
 
-    public MemberInfo getTargetMemberInfo() {
-        return targetMemberInfo;
+    public MemberInfo getOfferingMemberInfo() {
+        return offeringMemberInfo;
+    }
+
+    public MemberInfo getAcceptingMemberInfo() {
+        return acceptingMemberInfo;
     }
 }

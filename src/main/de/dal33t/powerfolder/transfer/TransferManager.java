@@ -58,7 +58,6 @@ import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.*;
 import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.transfer.swarm.FileRecordProvider;
@@ -158,6 +157,9 @@ public class TransferManager extends PFComponent {
     private TransferManagerListener listenerSupport;
 
     private DownloadManagerFactory downloadManagerFactory = MultiSourceDownloadManager.factory;
+
+    private List<SingleFileOffer> singleFileOffers
+            = new CopyOnWriteArrayList<SingleFileOffer>();
 
     public TransferManager(Controller controller) {
         super(controller);
@@ -2183,10 +2185,15 @@ public class TransferManager extends PFComponent {
      */
     public void offerSingleFile(File file, Collection<Member> members,
                                 String message) {
-        // @todo need to remember this offer, to prevent spoofing attacks.
-        Message offer = new SingleFileOffer(file,
-                getController().getMySelf().getInfo(), message);
+
         for (Member computer : members) {
+
+            SingleFileOffer offer = new SingleFileOffer(file,
+                    getController().getMySelf().getInfo(), computer.getInfo(),
+                    message);
+
+            singleFileOffers.add(offer);
+
             getController().getTaskManager().scheduleTask(
                 new SendMessageTask(offer, computer.getId()));
 
@@ -2197,19 +2204,28 @@ public class TransferManager extends PFComponent {
     }
 
     /**
-     * Send single file acceptance to originating member.
+     * Accept an offer by sending an acceptance back to offerer.
      *
-     * @param file
-     * @param member
+     * @param offer
      */
-    public void offerSingleFile(File file, Member member) {
-        Message offer = new SingleFileAccept(file, 
-                getController().getMySelf().getInfo());
-        getController().getTaskManager().scheduleTask(
-            new SendMessageTask(offer, member.getId()));
+    public void acceptSingleFile(SingleFileOffer offer) {
 
-        if (!member.isCompleteyConnected()) {
-            member.markForImmediateConnect();
+        Member computer = getController().getNodeManager().getNode(
+                offer.getOfferingMemberInfo());
+        if (computer == null) {
+            logSevere("Could not find member "
+                    + offer.getOfferingMemberInfo().nick);
+        } else {
+            SingleFileAccept accept = new SingleFileAccept(offer.getFile(),
+                    offer.getOfferingMemberInfo(),
+                    offer.getAcceptingMemberInfo());
+
+            getController().getTaskManager().scheduleTask(
+                new SendMessageTask(accept, computer.getId()));
+
+            if (!computer.isCompleteyConnected()) {
+                computer.markForImmediateConnect();
+            }
         }
     }
 

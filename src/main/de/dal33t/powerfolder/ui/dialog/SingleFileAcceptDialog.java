@@ -113,7 +113,7 @@ public class SingleFileAcceptDialog extends BaseDialog {
 
         builder.add(new JLabel(Translation.getTranslation(
                 "dialog.single_file_accept.line_2",
-                offer.getSourceMemberInfo().nick,
+                offer.getOfferingMemberInfo().nick,
                 offer.getFile().getName())), cc.xy(1, 3));
 
         int row = 5;
@@ -132,7 +132,7 @@ public class SingleFileAcceptDialog extends BaseDialog {
 
         builder.add(new JLabel(Translation.getTranslation(
                 "dialog.single_file_accept.line_3",
-                offer.getSourceMemberInfo().nick,
+                offer.getOfferingMemberInfo().nick,
                 offer.getFile().getName())), cc.xy(1, row));
         row += 2;
 
@@ -230,16 +230,8 @@ public class SingleFileAcceptDialog extends BaseDialog {
      */
     private class MyAcceptListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
-            Member member = getController().getNodeManager().getNode(
-                    offer.getSourceMemberInfo());
-            if (member == null) {
-                logSevere("Could not find member "
-                        + offer.getSourceMemberInfo().nick);
-            } else {
-                getController().getTransferManager().offerSingleFile(
-                        offer.getFile(), member);
-                close();
-            }
+            getController().getTransferManager().acceptSingleFile(offer);
+            close();
         }
     }
 }

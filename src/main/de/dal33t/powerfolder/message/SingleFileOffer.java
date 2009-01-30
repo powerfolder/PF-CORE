@@ -31,13 +31,16 @@ public class SingleFileOffer extends Message  {
     private static final long serialVersionUID = 100L;
 
     private File file;
-    private MemberInfo sourceMemberInfo;
+    private MemberInfo offeringMemberInfo;
+    private MemberInfo acceptingMemberInfo;
     private String message;
 
-    public SingleFileOffer(File file, MemberInfo sourceMemberInfo,
+    public SingleFileOffer(File file, MemberInfo offeringMemberInfo,
+                                  MemberInfo acceptingMemberInfo,
                                   String message) {
         this.file = file;
-        this.sourceMemberInfo = sourceMemberInfo;
+        this.offeringMemberInfo = offeringMemberInfo;
+        this.acceptingMemberInfo = acceptingMemberInfo;
         this.message = message;
     }
 
@@ -49,7 +52,11 @@ public class SingleFileOffer extends Message  {
         return message;
     }
 
-    public MemberInfo getSourceMemberInfo() {
-        return sourceMemberInfo;
+    public MemberInfo getOfferingMemberInfo() {
+        return offeringMemberInfo;
+    }
+
+    public MemberInfo getAcceptingMemberInfo() {
+        return acceptingMemberInfo;
     }
 }
