@@ -44,8 +44,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import com.sun.xml.internal.messaging.saaj.util.LogDomainConstants;
-
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
@@ -1294,6 +1292,9 @@ public class TransferManager extends PFComponent {
      */
     private void removeDownload(final Download download) {
         final DownloadManager man = download.getDownloadManager();
+        if (man == null) {
+            return;
+        }
         synchronized (man) {
             downloadsCount.remove(download.getPartner());
             if (man.hasSource(download)) {
@@ -1421,33 +1422,37 @@ public class TransferManager extends PFComponent {
             return null;
         }
 
-        // Check if the FileInfo is valid.
-        // (This wouldn't be necessary, if the info had already checked itself.)
-        try {
-            fInfo.validate();
-        } catch (Exception e) {
-            logWarning(e.getMessage() + ". " + fInfo.toDetailString(), e);
-            return null;
-        }
-
-        FileInfo localFile = null;
-
         // return null if in blacklist on automatic download
         if (folder.getDiskItemFilter().isExcluded(fInfo)) {
             return null;
         }
 
-        
+        // Now walk through all sources and get the best one
+        // Member bestSource = null;
+        FileInfo newestVersionFile = fInfo.getNewestVersion(getController()
+            .getFolderRepository());
+        FileInfo localFile = folder.getFile(fInfo);
+
+        // Check if the FileInfo is valid.
+        // (This wouldn't be necessary, if the info had already checked itself.)
+        try {
+            fInfo.validate();
+            newestVersionFile.validate();
+        } catch (Exception e) {
+            logWarning(e.getMessage() + ". " + fInfo.toDetailString(), e);
+            return null;
+        }
+
         // Check if we have the file already downloaded in the meantime.
         // Or we have this file actual on disk but not in own db yet.
-        localFile = folder.getFile(fInfo);
-        if (localFile != null && !fInfo.isNewerThan(localFile)) {
+
+        if (localFile != null && !newestVersionFile.isNewerThan(localFile)) {
             logFiner(
                 "NOT requesting download, already has latest file in own db: "
                     + fInfo.toDetailString());
             return null;
-        } else if (fInfo.inSyncWithDisk(fInfo.getDiskFile(getController()
-            .getFolderRepository())))
+        } else if (newestVersionFile.inSyncWithDisk(fInfo
+            .getDiskFile(getController().getFolderRepository())))
         {
             logFiner(
                 "NOT requesting download, file seems already to exists on disk: "
@@ -1461,13 +1466,6 @@ public class TransferManager extends PFComponent {
         }
 
         List<Member> sources = getSourcesWithFreeUploadCapacity(fInfo);
-        // logFiner("Got " + sources.length + " sources for " + fInfo);
-
-        // Now walk through all sources and get the best one
-        // Member bestSource = null;
-        FileInfo newestVersionFile = fInfo.getNewestVersion(getController()
-            .getFolderRepository());
-
         assert !fInfo.isNewerThan(newestVersionFile) : "getNewestVersion returned older version.";
         // ap<>
         // Map<Member, Integer> downloadCountList =
@@ -1489,17 +1487,7 @@ public class TransferManager extends PFComponent {
             bestSources.add(source);
         }
 
-        if (newestVersionFile != null && bestSources != null) {
-            // Check if the FileInfo is valid.
-            // (This wouldn't be necessary, if the info had already checked
-            // itself.)
-            try {
-                newestVersionFile.validate();
-            } catch (Exception e) {
-                logWarning(e.getMessage() + ". " + fInfo.toDetailString(), e);
-                return null;
-            }
-
+        if (bestSources != null) {
             for (Member bestSource : bestSources) {
                 Download download;
                 download = new Download(this, newestVersionFile, automatic);
@@ -1509,20 +1497,19 @@ public class TransferManager extends PFComponent {
                 }
                 if (localFile != null
                     && localFile.getModifiedDate().after(
-                        newestVersionFile.getModifiedDate()))
+                        newestVersionFile.getModifiedDate())
+                    && !localFile.isDeleted())
                 {
-                    logWarning(
-                        "Requesting older file requested: "
-                            + newestVersionFile.toDetailString() + ", local: "
-                            + localFile.toDetailString() + ", isNewer: "
-                            + localFile.isNewerThan(newestVersionFile));
+                    logWarning("Requesting older file requested: "
+                        + newestVersionFile.toDetailString() + ", local: "
+                        + localFile.toDetailString() + ", isNewer: "
+                        + localFile.isNewerThan(newestVersionFile));
                 }
                 if (newestVersionFile.isNewerAvailable(getController()
                     .getFolderRepository()))
                 {
-                    logSevere(
-                        "Downloading old version while newer is available: "
-                            + localFile);
+                    logSevere("Downloading old version while newer is available: "
+                        + localFile);
                 }
                 requestDownload(download, bestSource);
             }
@@ -1530,7 +1517,8 @@ public class TransferManager extends PFComponent {
 
         if (bestSources == null && !automatic) {
             // Okay enque as pending download if was manually requested
-            enquePendingDownload(new Download(this, fInfo, automatic));
+            enquePendingDownload(new Download(this, newestVersionFile,
+                automatic));
             return null;
         }
         return getActiveDownload(fInfo);
