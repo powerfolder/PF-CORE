@@ -21,6 +21,8 @@ package de.dal33t.powerfolder;
 
 import java.awt.Component;
 import java.awt.GraphicsEnvironment;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -51,12 +53,13 @@ import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
 
 import javax.swing.JOptionPane;
 
 import org.apache.commons.cli.CommandLine;
+
+import com.jgoodies.binding.value.ValueHolder;
+import com.jgoodies.binding.value.ValueModel;
 
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.FolderRepository;
@@ -85,6 +88,7 @@ import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.ForcedLanguageFileResourceBundle;
+import de.dal33t.powerfolder.util.NamedThreadFactory;
 import de.dal33t.powerfolder.util.Profiling;
 import de.dal33t.powerfolder.util.PropertiesUtil;
 import de.dal33t.powerfolder.util.Reject;
@@ -100,8 +104,6 @@ import de.dal33t.powerfolder.util.task.PersistentTaskManager;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
 import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker;
-import com.jgoodies.binding.value.ValueModel;
-import com.jgoodies.binding.value.ValueHolder;
 
 /**
  * Central class gives access to all core components in PowerFolder. Make sure
@@ -353,14 +355,15 @@ public class Controller extends PFComponent {
                 "Configuration already started, shutdown controller first");
         }
         
-        //initOnlineDuplicate();
+        // initOnlineDuplicate();
 
         // Default updatesettings
         updateSettings = new Updater.UpdateSetting();
         additionalConnectionListeners = Collections
             .synchronizedList(new ArrayList<ConnectionListener>());
         started = false;
-        threadPool = Executors.newCachedThreadPool();
+        threadPool = Executors.newCachedThreadPool(new NamedThreadFactory(
+            "Controller-Thread-"));
 
         // Initalize resouce bundle eager
         // check forced language file from commandline
