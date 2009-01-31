@@ -113,8 +113,8 @@ public class DialogFactory {
                     initialDirectory.trim().length() != 0) {
                 dc.setCurrentDirectory(new File(initialDirectory));
             }
-            int i = dc.showOpenDialog(controller.getUIController().getMainFrame()
-                    .getUIComponent());
+            int i = dc.showOpenDialog(controller.getUIController()
+                    .getActiveFrame());
             if (i == JFileChooser.APPROVE_OPTION) {
                 return dc.getSelectedFile().getAbsolutePath();
             }
@@ -222,8 +222,8 @@ public class DialogFactory {
 
         try {
             dialogInUse.set(true);
-            GenericDialog dialog = new GenericDialog(controller.getUIController()
-                    .getMainFrame().getUIComponent(), title, panel,
+            GenericDialog dialog = new GenericDialog(controller
+                    .getUIController().getActiveFrame(), title, panel,
                 type, options, defaultOption, null);
 
             return dialog.display();
@@ -273,8 +273,8 @@ public class DialogFactory {
 
         try {
             dialogInUse.set(true);
-            GenericDialog dialog = new GenericDialog(controller.getUIController()
-                    .getMainFrame().getUIComponent(), title, panel,
+            GenericDialog dialog = new GenericDialog(controller
+                    .getUIController().getActiveFrame(), title, panel,
                 type, options, defaultOption, neverAskAgainMessage);
 
             return new NeverAskAgainResponse(dialog.display(), dialog

@@ -173,7 +173,7 @@ public abstract class BaseDialog extends PFUIComponent {
      * Shows (and builds) the dialog
      */
     public final void open() {
-        JFrame frame = getUIController().getMainFrame().getUIComponent();
+        JFrame frame = getUIController().getActiveFrame();
         Cursor c = frame.getCursor();
         try {
             frame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -236,10 +236,10 @@ public abstract class BaseDialog extends PFUIComponent {
      */
     protected final JDialog getUIComponent() {
         if (dialog == null) {
-            dialog = new JDialog(getUIController().getMainFrame()
-                .getUIComponent(), getTitle(), modal);
+            dialog = new JDialog(getUIController().getActiveFrame(),
+                    getTitle(), modal);
             dialog.setResizable(allowResize());
-            dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+            dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
             FormLayout layout = new FormLayout("pref, pref:grow",
                 "pref:grow, pref");

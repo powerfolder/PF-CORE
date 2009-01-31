@@ -56,9 +56,8 @@ public class ConnectDialog extends PFUIComponent {
 
     private void initComponents() {
         // General dialog initalization
-        uiComponent = new JDialog(getUIController().getMainFrame()
-            .getUIComponent(), Translation
-            .getTranslation("dialog.connect.connecting"), false);
+        uiComponent = new JDialog(getUIController().getActiveFrame(), 
+                Translation.getTranslation("dialog.connect.connecting"), false);
 
         // Cancel connect
         uiComponent.addWindowListener(new WindowAdapter() {

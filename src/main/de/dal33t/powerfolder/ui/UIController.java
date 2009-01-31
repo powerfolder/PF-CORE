@@ -726,6 +726,27 @@ public class UIController extends PFComponent {
         sftd.open();
     }
 
+    /**
+     * This returns the PowerFolder frame that currently has focus. Possibly
+     * the InformationFrame, ChatFrame or (default) MainFrame. Used by dialogs,
+     * so focus does not jump to the wrong (Main) frame.
+     *
+     * @return
+     */
+    public JFrame getActiveFrame() {
+        JFrame infoComponent = informationFrame.getUIComponent();
+        if (infoComponent.isVisible() && infoComponent.isActive()) {
+            return infoComponent;
+        } else {
+            JFrame chatComponent = chatFrame.getUIComponent();
+            if (chatComponent.isVisible() && chatComponent.isActive()) {
+                return chatComponent;
+            } else {
+                return mainFrame.getUIComponent();
+            }
+        }
+    }
+
     ///////////////////
     // Inner Classes //
     ///////////////////
