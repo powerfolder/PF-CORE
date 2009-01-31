@@ -47,8 +47,10 @@ public interface DownloadControl {
      * transfer anything.
      * 
      * @param download
+     * @return true if the download was actually requested from the remote side.
+     *         false if not.
      */
-    void addSource(Download download);
+    boolean addSource(Download download);
 
     /**
      * Returns true if adding a source using that member is allowed.
