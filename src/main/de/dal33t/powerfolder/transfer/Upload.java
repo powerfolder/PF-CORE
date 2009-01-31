@@ -47,7 +47,7 @@ import de.dal33t.powerfolder.util.delta.FilePartsRecord;
 @SuppressWarnings("serial")
 public class Upload extends Transfer {
 
-    public static final int MAX_REQUESTS_QUEUED = 20;
+    public static final int MAX_REQUESTS_QUEUED = 50;
 
     private boolean aborted;
     private transient Queue<Message> pendingRequests = new LinkedList<Message>();
