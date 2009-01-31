@@ -219,7 +219,7 @@ public class NodeManager extends PFComponent {
         }
         // Starting own threads, which cares about incoming node connections
         threadPool = Executors.newCachedThreadPool(new NamedThreadFactory(
-            "Incoming-Connection-"));
+            "NodeManager-Thread-"));
 
         // Alternative:
         // threadPool = Executors.newFixedThreadPool(
