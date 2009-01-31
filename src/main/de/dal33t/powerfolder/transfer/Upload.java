@@ -220,7 +220,9 @@ public class Upload extends Transfer {
                         getTransferManager().logTransfer(false, took,
                             getFile(), getPartner());
                     }
-                    getTransferManager().setCompleted(Upload.this);
+                    if (!isBroken() && !aborted) {
+                        getTransferManager().setCompleted(Upload.this);
+                    }
                 } catch (TransferException e) {
                     // Loggable.logWarningStatic(Upload.class, "Upload broken: "
                     // + Upload.this, e);
@@ -303,12 +305,8 @@ public class Upload extends Transfer {
         if (getFile() == null) {
             throw new NullPointerException("Upload file is null");
         }
-
-        if (isAborted()) {
-            throw new TransferException("Upload aborted: " + this);
-        }
-        if (isBroken()) {
-            throw new TransferException("Upload broken: " + this);
+        if (isAborted() || isBroken()) {
+            return false;
         }
         transferState.setState(TransferState.UPLOADING);
         RequestPart pr = null;
@@ -334,7 +332,7 @@ public class Upload extends Transfer {
             }
             pr = (RequestPart) pendingRequests.remove();
 
-            if (isBroken()) {
+            if (isAborted() || isBroken()) {
                 return false;
             }
         }
