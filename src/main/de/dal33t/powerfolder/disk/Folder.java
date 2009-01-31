@@ -75,7 +75,6 @@ import de.dal33t.powerfolder.transfer.TransferPriorities;
 import de.dal33t.powerfolder.transfer.TransferPriorities.TransferPriority;
 import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.Debug;
-import de.dal33t.powerfolder.util.FileCopier;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.InvitationUtil;
 import de.dal33t.powerfolder.util.Reject;
@@ -362,64 +361,72 @@ public class Folder extends PFComponent {
      *            the scanresult to commit.
      */
     private void commitScanResult(ScanResult scanResult) {
-        // Disabled, causing bug #293
-        // final List<FileInfo> fileInfosToConvert = new
-        // ArrayList<FileInfo>();
-        // new files
-        for (FileInfo newFileInfo : scanResult.getNewFiles()) {
-            // add to the DB
-            FileInfo localFile = knownFiles.putIfAbsent(newFileInfo,
-                newFileInfo);
-            // boolean reallyNew = localFile == null || localFile ==
-            // newFileInfo;
-            if (!(localFile == null || localFile == newFileInfo)) {
-                // Probably this got into database thru download in the
-                // meantime
-                logWarning("Skipping add of new scanned file, already in db: "
-                    + localFile.toDetailString() + ", scanned: "
-                    + newFileInfo.toDetailString());
-            } else {
-                // Add file to folder
-                currentInfo.addFile(newFileInfo);
-                if (rootDirectory != null) {
-                    if (isFiner()) {
-                        logFiner("Adding " + scanResult.getNewFiles().size()
-                            + " to directory");
+        synchronized (scanLock) {
+            synchronized (knownFiles) {
+                for (FileInfo newFileInfo : scanResult.getNewFiles()) {
+                    // add to the DB
+                    FileInfo localFile = knownFiles.putIfAbsent(newFileInfo,
+                        newFileInfo);
+                    // boolean reallyNew = localFile == null || localFile ==
+                    // newFileInfo;
+                    if (!(localFile == null || localFile == newFileInfo)) {
+                        // Probably this got into database thru download in the
+                        // meantime
+                        logSevere("Skipping add of new scanned file, already in db: "
+                            + localFile.toDetailString()
+                            + ", scanned: "
+                            + newFileInfo.toDetailString());
+                    } else {
+                        // Add file to folder
+                        currentInfo.addFile(newFileInfo);
+                        if (rootDirectory != null) {
+                            if (isFiner()) {
+                                logFiner("Adding "
+                                    + scanResult.getNewFiles().size()
+                                    + " to directory");
+                            }
+                            rootDirectory.add(getController().getMySelf(),
+                                newFileInfo);
+                        }
                     }
-                    rootDirectory.add(getController().getMySelf(), newFileInfo);
+                }
+
+                // deleted files
+                for (FileInfo deletedFileInfo : scanResult.getDeletedFiles()) {
+                    deletedFileInfo.setDeleted(true);
+                    deletedFileInfo.setSize(0);
+                    deletedFileInfo
+                        .setVersion(deletedFileInfo.getVersion() + 1);
+                    deletedFileInfo.setModifiedInfo(getController().getMySelf()
+                        .getInfo(), new Date());
+                }
+
+                // restored files
+                for (FileInfo restoredFileInfo : scanResult.getRestoredFiles())
+                {
+                    File diskFile = getDiskFile(restoredFileInfo);
+                    restoredFileInfo.setModifiedInfo(getController()
+                        .getMySelf().getInfo(), new Date(diskFile
+                        .lastModified()));
+                    restoredFileInfo.setSize(diskFile.length());
+                    restoredFileInfo.setDeleted(false);
+                    restoredFileInfo
+                        .setVersion(restoredFileInfo.getVersion() + 1);
+                }
+
+                // changed files
+                for (FileInfo changedFileInfo : scanResult.getChangedFiles()) {
+                    File diskFile = getDiskFile(changedFileInfo);
+                    changedFileInfo.setModifiedInfo(getController().getMySelf()
+                        .getInfo(), new Date(diskFile.lastModified()));
+                    changedFileInfo.setSize(diskFile.length());
+                    changedFileInfo.setDeleted(!diskFile.exists());
+                    changedFileInfo
+                        .setVersion(changedFileInfo.getVersion() + 1);
+                    // DISABLED because of #644
+                    // changedFileInfo.invalidateFilePartsRecord();
                 }
             }
-        }
-
-        // deleted files
-        for (FileInfo deletedFileInfo : scanResult.getDeletedFiles()) {
-            deletedFileInfo.setDeleted(true);
-            deletedFileInfo.setSize(0);
-            deletedFileInfo.setVersion(deletedFileInfo.getVersion() + 1);
-            deletedFileInfo.setModifiedInfo(getController().getMySelf()
-                .getInfo(), new Date());
-        }
-
-        // restored files
-        for (FileInfo restoredFileInfo : scanResult.getRestoredFiles()) {
-            File diskFile = getDiskFile(restoredFileInfo);
-            restoredFileInfo.setModifiedInfo(getController().getMySelf()
-                .getInfo(), new Date(diskFile.lastModified()));
-            restoredFileInfo.setSize(diskFile.length());
-            restoredFileInfo.setDeleted(false);
-            restoredFileInfo.setVersion(restoredFileInfo.getVersion() + 1);
-        }
-
-        // changed files
-        for (FileInfo changedFileInfo : scanResult.getChangedFiles()) {
-            File diskFile = getDiskFile(changedFileInfo);
-            changedFileInfo.setModifiedInfo(getController().getMySelf()
-                .getInfo(), new Date(diskFile.lastModified()));
-            changedFileInfo.setSize(diskFile.length());
-            changedFileInfo.setDeleted(!diskFile.exists());
-            changedFileInfo.setVersion(changedFileInfo.getVersion() + 1);
-            // DISABLED because of #644
-            // changedFileInfo.invalidateFilePartsRecord();
         }
 
         hasOwnDatabase = true;
@@ -642,8 +649,6 @@ public class Folder extends PFComponent {
 
         synchronized (scanLock) {
             if (!tempFile.renameTo(targetFile)) {
-                // Fallback, ensure that folder scanner does not intefers.
-
                 logWarning("Was not able to rename tempfile, copiing "
                     + tempFile.getAbsolutePath() + " to "
                     + targetFile.getAbsolutePath() + ". "
@@ -674,18 +679,20 @@ public class Folder extends PFComponent {
                 }
             }
 
-            // Update internal database
-            FileInfo dbFile = getFile(fInfo);
-            if (dbFile != null) {
-                // Update database
-                dbFile.copyFrom(fInfo);
-                fileChanged(dbFile);
-            } else {
-                // File new, scan
-                if (scanFile(fInfo)) {
-                    fileChanged(fInfo);
+            synchronized (knownFiles) {
+                // Update internal database
+                FileInfo dbFile = getFile(fInfo);
+                if (dbFile != null) {
+                    // Update database
+                    dbFile.copyFrom(fInfo);
+                    fileChanged(dbFile);
                 } else {
-                    return false;
+                    // File new, scan
+                    if (scanFile(fInfo)) {
+                        fileChanged(fInfo);
+                    } else {
+                        return false;
+                    }
                 }
             }
         }
@@ -886,135 +893,121 @@ public class Folder extends PFComponent {
      * @return true if the file was successfully scanned
      */
     private boolean scanFile(FileInfo fInfo) {
+        if (fInfo == null) {
+            throw new NullPointerException("File is null");
+        }
+        if (isFiner()) {
+            logFiner("Scanning file: " + fInfo + ", folderId: " + fInfo);
+        }
+        File file = getDiskFile(fInfo);
+
+        if (!file.canRead()) {
+            // ignore not readable
+            logWarning("File not readable: " + file);
+            return false;
+        }
+
+        // ignore our database file
+        if (file.getName().equals(DB_FILENAME)
+            || file.getName().equals(DB_BACKUP_FILENAME))
+        {
+            if (!file.isHidden()) {
+                FileUtils.makeHiddenOnWindows(file);
+            }
+            logFiner("Ignoring folder database file: " + file);
+            return false;
+        }
+
+        // check for incomplete download files and delete them, if
+        // the real file exists
+        if (FileUtils.isTempDownloadFile(file)) {
+            if (FileUtils.isCompletedTempDownloadFile(file)
+                || fInfo.isDeleted())
+            {
+                logFiner("Removing temp download file: " + file);
+                if (!file.delete()) {
+                    logSevere("Failed to remove temp download file: " + file);
+                }
+            } else {
+                logFiner("Ignoring incomplete download file: " + file);
+            }
+            return false;
+        }
+
+        // remove placeholder file if exist for this file
+        // Commented, no useful until full implementation of placeholder
+        // file
+        /*
+         * if (file.exists()) { File placeHolderFile =
+         * Util.getPlaceHolderFile(file); if (placeHolderFile.exists()) {
+         * logFiner("Removing placeholder file for: " + file);
+         * placeHolderFile.delete(); } }
+         */
+        if (PreferencesEntry.FILE_NAME_CHECK.getValueBoolean(getController())) {
+            checkFileName(fInfo);
+        }
+
+        // First relink modified by memberinfo to
+        // actual instance if available on nodemanager
         synchronized (scanLock) {
-            if (fInfo == null) {
-                throw new NullPointerException("File is null");
-            }
-            // First relink modified by memberinfo to
-            // actual instance if available on nodemanager
-            Member from = getController().getNodeManager().getNode(
-                fInfo.getModifiedBy());
-            if (from != null) {
-                fInfo.setModifiedInfo(from.getInfo(), fInfo.getModifiedDate());
-            }
-
-            if (isFiner()) {
-                logFiner("Scanning file: " + fInfo + ", folderId: " + fInfo);
-            }
-            File file = getDiskFile(fInfo);
-
-            if (!file.canRead()) {
-                // ignore not readable
-                logWarning("File not readable: " + file);
-                return false;
-            }
-
-            // ignore our database file
-            if (file.getName().equals(DB_FILENAME)
-                || file.getName().equals(DB_BACKUP_FILENAME))
-            {
-                if (!file.isHidden()) {
-                    FileUtils.makeHiddenOnWindows(file);
-                }
-                logFiner("Ignoring folder database file: " + file);
-                return false;
-            }
-
-            // check for incomplete download files and delete them, if
-            // the real file exists
-            if (FileUtils.isTempDownloadFile(file)) {
-                if (FileUtils.isCompletedTempDownloadFile(file)
-                    || fInfo.isDeleted())
-                {
-                    logFiner("Removing temp download file: " + file);
-                    if (!file.delete()) {
-                        logSevere("Failed to remove temp download file: "
-                            + file);
+            synchronized (knownFiles) {
+                // link new file to our folder
+                fInfo.setFolderInfo(this.currentInfo);
+                if (!isKnown(fInfo)) {
+                    if (isFiner()) {
+                        logFiner(
+                            fInfo + ", modified by: " + fInfo.getModifiedBy());
                     }
-                } else {
-                    logFiner("Ignoring incomplete download file: " + file);
+                    // Update last - modified data
+                    MemberInfo modifiedBy = fInfo.getModifiedBy();
+                    if (modifiedBy == null) {
+                        modifiedBy = getController().getMySelf().getInfo();
+                    }
+                    Member from = modifiedBy.getNode(getController());
+                    if (from != null) {
+                        fInfo.setModifiedInfo(from.getInfo(), fInfo
+                            .getModifiedDate());
+                    }
+
+                    if (file.exists()) {
+                        fInfo.setModifiedInfo(modifiedBy, new Date(file
+                            .lastModified()));
+                        fInfo.setSize(file.length());
+                    }
+
+                    addFile(fInfo);
+
+                    // update directory
+                    // don't do this in the server version
+                    if (rootDirectory != null) {
+                        rootDirectory.add(getController().getMySelf(), fInfo);
+                    }
+
+                    // get folder icon info and set it
+                    if (FileUtils.isDesktopIni(file)) {
+                        makeFolderIcon(file);
+                    }
+
+                    // Fire folder change event
+                    // fireEvent(new FolderChanged());
+
+                    if (isFiner()) {
+                        logFiner(
+                            this.toString() + ": Local file scanned: "
+                                + fInfo.toDetailString());
+                    }
+                    return true;
                 }
-                return false;
-            }
 
-            // ignore a copy backup tempfile
-            // created on copy process if overwriting file
-            if (FileCopier.isTempBackup(file)) {
-                return false;
-            }
-
-            // remove placeholder file if exist for this file
-            // Commented, no useful until full implementation of placeholder
-            // file
-            /*
-             * if (file.exists()) { File placeHolderFile =
-             * Util.getPlaceHolderFile(file); if (placeHolderFile.exists()) {
-             * logFiner("Removing placeholder file for: " + file);
-             * placeHolderFile.delete(); } }
-             */
-            if (PreferencesEntry.FILE_NAME_CHECK
-                .getValueBoolean(getController()))
-            {
-                checkFileName(fInfo);
-            }
-
-            // link new file to our folder
-            fInfo.setFolderInfo(currentInfo);
-            if (!isKnown(fInfo)) {
+                // Now process/check existing files
+                FileInfo dbFile = getFile(fInfo);
+                dbFile.syncFromDiskIfRequired(getController(), file);
                 if (isFiner()) {
-                    logFiner(fInfo + ", modified by: " + fInfo.getModifiedBy());
-                }
-                // Update last - modified data
-                MemberInfo modifiedBy = fInfo.getModifiedBy();
-                if (modifiedBy == null) {
-                    modifiedBy = getController().getMySelf().getInfo();
-                }
-
-                if (file.exists()) {
-                    fInfo.setModifiedInfo(modifiedBy, new Date(file
-                        .lastModified()));
-                    fInfo.setSize(file.length());
-                }
-
-                // add file to folder
-                // FileInfo converted = FileMetaInfoReader
-                // .convertToMetaInfoFileInfo(this, fInfo);
-                // addFile(converted);
-                addFile(fInfo);
-
-                // update directory
-                // don't do this in the server version
-                if (rootDirectory != null) {
-                    rootDirectory.add(getController().getMySelf(), fInfo);
-                }
-                // get folder icon info and set it
-                if (FileUtils.isDesktopIni(file)) {
-                    makeFolderIcon(file);
-                }
-
-                // Fire folder change event
-                // fireEvent(new FolderChanged());
-
-                if (isFiner()) {
-                    logFiner(toString() + ": Local file scanned: "
-                        + fInfo.toDetailString());
+                    logFiner("File already known: " + fInfo);
                 }
                 return true;
             }
-
-            // Now process/check existing files
-            FileInfo dbFile = getFile(fInfo);
-
-            boolean fileChanged = dbFile.syncFromDiskIfRequired(
-                getController(), file);
-
-            if (isFiner()) {
-                logFiner("File already known: " + fInfo);
-            }
-
-            return fileChanged;
         }
-
     }
 
     /**
@@ -1224,15 +1217,18 @@ public class Folder extends PFComponent {
                 FileInfo[] files = (FileInfo[]) in.readObject();
                 Convert.cleanMemberInfos(getController().getNodeManager(),
                     files);
-                for (FileInfo fileInfo : files) {
-                    if (fileInfo.getName().contains(
-                        Constants.POWERFOLDER_SYSTEM_SUBDIR))
-                    {
-                        // Skip #1411
-                        continue;
+                synchronized (knownFiles) {
+                    knownFiles.clear();
+                    for (FileInfo fileInfo : files) {
+                        if (fileInfo.getName().contains(
+                            Constants.POWERFOLDER_SYSTEM_SUBDIR))
+                        {
+                            // Skip #1411
+                            continue;
+                        }
+                        // scanFile(fileInfo);
+                        addFile(fileInfo);
                     }
-                    // scanFile(fileInfo);
-                    addFile(fileInfo);
                 }
 
                 // read them always ..
@@ -1357,7 +1353,7 @@ public class Folder extends PFComponent {
         File dbFileBackup = new File(getSystemSubDir(), DB_BACKUP_FILENAME);
         try {
             FileInfo[] files;
-            synchronized (scanLock) {
+            synchronized (knownFiles) {
                 files = knownFiles.keySet().toArray(new FileInfo[knownFiles.keySet().size()]);
             }
             if (dbFile.exists()) {
