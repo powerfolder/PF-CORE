@@ -47,6 +47,7 @@ import java.util.SortedMap;
 import java.util.TimerTask;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
@@ -123,7 +124,7 @@ public class Folder extends PFComponent {
      * The internal database of locally known files. Contains FileInfo ->
      * FileInfo
      */
-    private Map<FileInfo, FileInfo> knownFiles;
+    private ConcurrentMap<FileInfo, FileInfo> knownFiles;
 
     /** files that should(not) be downloaded in auto download */
     private DiskItemFilter diskItemFilter;
@@ -362,32 +363,30 @@ public class Folder extends PFComponent {
      */
     private void commitScanResult(ScanResult scanResult) {
         // Disabled, causing bug #293
-        // final List<FileInfo> fileInfosToConvert = new ArrayList<FileInfo>();
+        // final List<FileInfo> fileInfosToConvert = new
+        // ArrayList<FileInfo>();
         // new files
         for (FileInfo newFileInfo : scanResult.getNewFiles()) {
             // add to the DB
-            FileInfo old = knownFiles.put(newFileInfo, newFileInfo);
-            if (old != null) {
-                logSevere("hmmzzz it was new!?!?!?!: old: "
-                    + old.toDetailString() + " , new: "
+            FileInfo localFile = knownFiles.putIfAbsent(newFileInfo,
+                newFileInfo);
+            // boolean reallyNew = localFile == null || localFile ==
+            // newFileInfo;
+            if (!(localFile == null || localFile == newFileInfo)) {
+                // Probably this got into database thru download in the
+                // meantime
+                logWarning("Skipping add of new scanned file, already in db: "
+                    + localFile.toDetailString() + ", scanned: "
                     + newFileInfo.toDetailString());
-                // Remove old file from info
-                currentInfo.removeFile(old);
-            }
-            // Add file to folder
-            currentInfo.addFile(newFileInfo);
-        }
-        // Add new files to the UI this is relatively slow on folders with a
-        // lot of new files (initial scan) so done in different thread
-        if (!scanResult.getNewFiles().isEmpty()) {
-            if (rootDirectory != null) {
-                if (isFiner()) {
-                    logFiner("Adding " + scanResult.getNewFiles().size()
-                        + " to directory");
-                }
-                for (FileInfo newFileInfo : scanResult.getNewFiles()) {
+            } else {
+                // Add file to folder
+                currentInfo.addFile(newFileInfo);
+                if (rootDirectory != null) {
+                    if (isFiner()) {
+                        logFiner("Adding " + scanResult.getNewFiles().size()
+                            + " to directory");
+                    }
                     rootDirectory.add(getController().getMySelf(), newFileInfo);
-
                 }
             }
         }
@@ -439,7 +438,6 @@ public class Folder extends PFComponent {
         if (scanResult.isChangeDetected()) {
             // Check for identical files
             findSameFilesOnRemote();
-            // Set dirty
             setDBDirty();
             // broadcast changes on folder
             broadcastFolderChanges(scanResult);
@@ -617,45 +615,63 @@ public class Folder extends PFComponent {
         // rename file
         File targetFile = fInfo.getDiskFile(getController()
             .getFolderRepository());
-        if (!targetFile.getParentFile().exists()
-            && !targetFile.getParentFile().mkdirs())
-        {
-            logSevere("Couldn't create directory structure for " + targetFile);
+
+        if (!targetFile.getParentFile().exists()) {
+            targetFile.getParentFile().mkdirs();
+        }
+        if (!targetFile.getParentFile().isDirectory()) {
+            logSevere("Unable to scan downloaded file. Parent dir is not a directory: "
+                + targetFile + ". " + fInfo.toDetailString());
             return false;
         }
+
         synchronized (deleteLock) {
             if (targetFile.exists()) {
-                // if file was a "newer file" the file already exists here
+                // if file was a "newer file" the file already esists here
                 deleteFile(fInfo, targetFile);
             }
         }
+
+        // Prepare last modification date of tempfile.
+        if (!tempFile.setLastModified(fInfo.getModifiedDate().getTime())) {
+            logSevere(
+                "Failed to set modified date on " + tempFile + " for "
+                    + fInfo.getModifiedDate().getTime());
+            return false;
+        }
+
         synchronized (scanLock) {
             if (!tempFile.renameTo(targetFile)) {
+                // Fallback, ensure that folder scanner does not intefers.
+
                 logWarning("Was not able to rename tempfile, copiing "
                     + tempFile.getAbsolutePath() + " to "
-                    + targetFile.getAbsolutePath());
+                    + targetFile.getAbsolutePath() + ". "
+                    + fInfo.toDetailString());
+
                 try {
                     FileUtils.copyFile(tempFile, targetFile);
                 } catch (IOException e) {
                     // TODO give a diskfull warning?
-                    logFiner(e);
                     logSevere("Unable to store completed download "
                         + targetFile.getAbsolutePath() + ". " + e.getMessage()
                         + ". " + fInfo.toDetailString());
+                    logFiner(e);
                     return false;
                 }
-            }
 
-            if (tempFile.exists() && !tempFile.delete()) {
-                logSevere("Unable to remove temp file: " + tempFile);
-            }
+                // Set modified date of remote
+                if (!targetFile.setLastModified(fInfo.getModifiedDate()
+                    .getTime()))
+                {
+                    logSevere("Failed to set modified date on " + targetFile
+                        + " to " + fInfo.getModifiedDate().getTime());
+                    return false;
+                }
 
-            // Set modified date of remote
-            if (!targetFile.setLastModified(fInfo.getModifiedDate().getTime()))
-            {
-                logSevere("Failed to set modified date on " + targetFile
-                    + " to " + fInfo.getModifiedDate().getTime());
-                return false;
+                if (tempFile.exists() && !tempFile.delete()) {
+                    logSevere("Unable to remove temp file: " + tempFile);
+                }
             }
 
             // Update internal database
@@ -2101,8 +2117,8 @@ public class Folder extends PFComponent {
                 // localFileInfo.getModifiedDate(), remoteFileInfo
                 // .getModifiedDate());
                 if (fileSizeSame && dateSame) {
-                    if (isWarning()) {
-                        logWarning("Found identical file remotely: local "
+                    if (isFine()) {
+                        logFine("Found identical file remotely: local "
                             + localFileInfo.toDetailString() + " remote: "
                             + remoteFileInfo.toDetailString()
                             + ". Taking over modification infos");
