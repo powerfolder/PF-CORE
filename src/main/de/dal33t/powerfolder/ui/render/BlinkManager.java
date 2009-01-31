@@ -109,7 +109,6 @@ public class BlinkManager extends PFUIComponent {
      *            The member that should not blink anymore
      */
     public void removeBlinking(Member member) {
-        update();
         if (blinkingMembers.containsKey(member)) {
             blinkingMembers.remove(member);
             if (blinkingFolders.isEmpty() && blinkingMembers.isEmpty()) {
@@ -156,7 +155,6 @@ public class BlinkManager extends PFUIComponent {
      *            The folder that should not blink anymore
      */
     public void removeBlinking(Folder folder) {
-        update();
         if (blinkingFolders.containsKey(folder)) {
             blinkingFolders.remove(folder);
             if (blinkingFolders.isEmpty() && blinkingMembers.isEmpty()) {
