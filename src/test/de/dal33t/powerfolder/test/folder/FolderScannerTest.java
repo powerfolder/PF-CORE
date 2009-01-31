@@ -67,10 +67,6 @@ public class FolderScannerTest extends ControllerTestCase {
             "(incomplete) this is a temp download file.whatever");
         fileTempDownloadFile.createNewFile();
 
-        File tempCopieFile = new File(getFolder().getLocalBase(),
-            "this is a temp copy file.whatever(copy_temp_powerfolder)");
-        tempCopieFile.createNewFile();
-
         File oldFolderDBFile = new File(getFolder().getLocalBase(),
             Folder.DB_FILENAME);
         oldFolderDBFile.createNewFile();
