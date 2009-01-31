@@ -278,6 +278,10 @@ public class Download extends Transfer {
      * Requests to abort this dl
      */
     public void abort() {
+        if (getDownloadManager() == null) {
+            // For Pending downloads without download manager
+            getController().getTransferManager().downloadAborted(Download.this);;
+        }
         synchronized (getDownloadManager()) {
             synchronized (this) {
                 shutdown();
@@ -318,7 +322,7 @@ public class Download extends Transfer {
             // not pending when completed
             return false;
         }
-        return getPartner() == null || isBroken();
+        return getPartner() == null;
     }
 
     /**
