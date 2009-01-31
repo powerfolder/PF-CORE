@@ -187,7 +187,7 @@ public class SyncFolderPanel extends BaseDialog {
                 folder.syncRemoteDeletedFiles(true);
                 // Request ALL files now modified by friends
                 getController().getFolderRepository().getFileRequestor()
-                    .requestMissingFiles(folder, true, true, true);
+                    .requestMissingFiles(folder, true, true, false);
             }
             return null;
         }
