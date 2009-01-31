@@ -186,7 +186,6 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             }
         });
 
-        // @todo this is temporary, until decision on how this is to work (hg)
         sleepButton = new JButtonMini(Icons.SLEEP,
                 Translation.getTranslation("status_bar.sleep.tips"));
         sleepButton.addActionListener(new MyActionListener());
