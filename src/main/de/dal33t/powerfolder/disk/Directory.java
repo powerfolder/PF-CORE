@@ -30,15 +30,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.DiskItem;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.util.FileCopier;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 
@@ -204,45 +203,6 @@ public class Directory implements Comparable<Directory>, DiskItem {
             }
         }
         return newFile.exists() && !file.exists();
-    }
-
-    /** copy a file from this source to this Directory */
-    public boolean copyFileFrom(File file, final FileCopier fileCopier) {
-        if (file.exists() && file.canRead()) {
-            File newFile = new File(getFile(), file.getName());
-            try {
-                if (file.getCanonicalPath().equals(newFile.getCanonicalPath()))
-                {
-                    // cannot copy file onto itself
-                    throw new IllegalStateException("cannot copy onto itself");
-                }
-            } catch (IOException e) {
-                return false;
-            }
-            fileCopier.add(file, newFile, this);
-
-            if (!fileCopier.isStarted()) {
-                Runnable runner = new Runnable() {
-                    public void run() {
-                        fileCopier.start();
-                    }
-                };
-                Thread thread = new Thread(runner);
-                thread.start();
-                // wait for start else more are started if more files are
-                // added using this method
-                while (!fileCopier.isStarted()) {
-                    try {
-                        Thread.sleep(100);
-                    } catch (InterruptedException ie) {
-
-                    }
-                }
-            }
-            return true;
-        }
-        return false;
-
     }
 
     /**
