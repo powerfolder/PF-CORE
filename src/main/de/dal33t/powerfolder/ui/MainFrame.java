@@ -159,7 +159,17 @@ public class MainFrame extends PFUIComponent {
                     exitProgram();
                 }
 			}
-            
+
+            /**
+             * Hide other frames when main frame gets minimized.
+             * 
+             * @param e
+             */
+            public void windowIconified(WindowEvent e) {
+                getUIController().hideOtherFrames();
+                super.windowIconified(e);
+            }
+
             /**
              * Shuts down the program
              */

@@ -747,6 +747,15 @@ public class UIController extends PFComponent {
         }
     }
 
+    /**
+     * Hides other frames. Called when main frame is minimized.
+     */
+    public void hideOtherFrames() {
+        informationFrame.getUIComponent().setVisible(false);
+        chatFrame.getUIComponent().setVisible(false);
+        systemMonitorFrame.getUIComponent().setVisible(false);
+    }
+
     ///////////////////
     // Inner Classes //
     ///////////////////
