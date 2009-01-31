@@ -34,9 +34,9 @@ import de.dal33t.powerfolder.Controller;
  * @author Christian Sprajc
  * @version $Revision$
  */
-public class DelayedExecution {
+public class DelayedUpdater {
 
-    private static final Logger LOG = Logger.getLogger(DelayedExecution.class
+    private static final Logger LOG = Logger.getLogger(DelayedUpdater.class
         .getName());
 
     private long delay = 250L;
@@ -46,7 +46,7 @@ public class DelayedExecution {
     /**
      * Constructs a delayed execution. Creates own timer lazily
      */
-    public DelayedExecution() {
+    public DelayedUpdater() {
     }
 
     /**
@@ -54,7 +54,7 @@ public class DelayedExecution {
      * 
      * @param controller
      */
-    public DelayedExecution(Controller controller) {
+    public DelayedUpdater(Controller controller) {
         timer = controller.getTimer();
     }
 
@@ -92,7 +92,7 @@ public class DelayedExecution {
                 UIUtil.invokeAndWaitInEDT(new Runnable() {
                     public void run() {
                         // Ready for new tasks
-                        synchronized (DelayedExecution.this) {
+                        synchronized (DelayedUpdater.this) {
                             currentTask = null;
                         }
                         try {
