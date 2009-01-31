@@ -1186,10 +1186,6 @@ public abstract class AbstractDownloadManager extends PFComponent implements
     }
 
     private void updateTempFile() {
-        assert getTempFile() != null && getTempFile().exists();
-
-        // logFine("Updating tempfile modification date to: " +
-        // getFileInfo().getModifiedDate());
         if (getTempFile() == null
             || !getTempFile().setLastModified(
                 getFileInfo().getModifiedDate().getTime()))
