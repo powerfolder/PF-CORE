@@ -166,7 +166,7 @@ public class MainFrame extends PFUIComponent {
              * @param e
              */
             public void windowIconified(WindowEvent e) {
-                getUIController().hideOtherFrames();
+                getUIController().hideChildPanels();
                 super.windowIconified(e);
             }
 
