@@ -307,82 +307,62 @@ public class RecycleBin extends PFComponent {
         FolderRepository repo = getController().getFolderRepository();
         Folder[] folders = repo.getFolders();
         int numberOfFolder = folders.length;
-        int folderIndex = 0;
+        int folderIndex = -1;
         for (Folder folder : folders) {
-
+            folderIndex++;
+            
             // First of four stages for this folder.
-            // Find files to delete.
+            // Find FileInfos to be removed.
             if (progressListener != null) {
                 progressListener
                     .progressReached((int) (100.0 * folderIndex / numberOfFolder));
             }
 
             File recycleBinDir = getRecycleBinDirectory(folder);
-            List<FileInfo> toRemove = new ArrayList<FileInfo>();
             Collection<FileInfo> fileInfos = folder.getKnownFiles();
             for (FileInfo fileInfo : fileInfos) {
-                File fileToRemove = new File(recycleBinDir, fileInfo.getName());
-                if (fileToRemove.exists()) {
-                    if (RecycleDelete.isSupported()) {
-                        RecycleDelete.delete(fileToRemove.getAbsolutePath());
-                    } else {
-                        if (!fileToRemove.delete()) {
-                            logSevere("cannot remove file from recycle bin: "
-                                + fileToRemove);
-                        }
-                    }
-                }
-                if (!fileToRemove.exists()) {
-                    toRemove.add(fileInfo);
+                if (isInRecycleBin(fileInfo)) {
+                    removeFile(fileInfo);
                 }
             }
 
             // Second of four stages for this folder.
-            // Remove files.
+            // Actucall delete the recylce bin dir.
             if (progressListener != null) {
                 progressListener
                     .progressReached((int) (100.0 * ((double) folderIndex + 0.25) / numberOfFolder));
             }
 
-            if (!toRemove.isEmpty()) {
-                removeFiles(toRemove);
-            }
-
-            // Third of four stages for this folder.
-            // Delete from recycle bin.
-            if (progressListener != null) {
-                progressListener
-                    .progressReached((int) (100.0 * ((double) folderIndex + 0.5) / numberOfFolder));
-            }
             if (recycleBinDir.exists()) {
                 if (!recycleBinDir.isDirectory()) {
                     logSevere("recycle bin is not a directory!");
                     continue;
                 }
-                File[] files = recycleBinDir.listFiles();
-                for (File fileToRemove : files) {
-                    if (RecycleDelete.isSupported()) {
-                        RecycleDelete.delete(fileToRemove.getAbsolutePath());
-                    } else {
-                        if (!fileToRemove.delete()) {
-                            logSevere("cannot remove file from recycle bin: "
-                                + fileToRemove);
-                        }
+
+                if (RecycleDelete.isSupported()) {
+                    RecycleDelete.delete(recycleBinDir.getAbsolutePath());
+                } else {
+                    try {
+                        FileUtils.recursiveDelete(recycleBinDir);
+                    } catch (IOException e) {
+                        logSevere("Unable to empty recycle bin", e);
                     }
                 }
             }
 
-            // Fourth of four stages for this folder.
+            if (progressListener != null) {
+                progressListener
+                    .progressReached((int) (100.0 * ((double) folderIndex + 0.5) / numberOfFolder));
+            }
+
+            // Third stage for this folder.
             // Remove empty directories.
             if (progressListener != null) {
                 progressListener
                     .progressReached((int) (100.0 * ((double) folderIndex + 0.75) / numberOfFolder));
             }
             removeEmptyDirs(recycleBinDir);
-
-            folderIndex++;
         }
-
     }
 
     /**
