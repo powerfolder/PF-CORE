@@ -158,9 +158,9 @@ public class SettingsTab extends PFUIComponent {
      * Builds the ui component.
      */
     private void buildUIComponent() {
-                  // label           folder       butn
+                  // label           folder       butn   padding
         FormLayout layout = new FormLayout(
-            "3dlu, right:pref, 3dlu, 210dlu, 3dlu, pref",
+            "3dlu, right:pref, 3dlu, 122dlu, 3dlu, pref, pref:grow",
                 "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
@@ -168,14 +168,14 @@ public class SettingsTab extends PFUIComponent {
         builder.add(new JLabel(Translation.getTranslation(
                 "settings_tab.transfer_mode")),
                 cc.xy(2, 2));
-        builder.add(transferModeSelectorPanel.getUIComponent(), cc.xyw(4, 2, 3));
+        builder.add(transferModeSelectorPanel.getUIComponent(), cc.xyw(4, 2, 4));
 
-        builder.add(useRecycleBinBox, cc.xyw(4, 4, 3));
+        builder.add(useRecycleBinBox, cc.xyw(4, 4, 4));
 
         builder.add(new JLabel(Translation.getTranslation(
                 "settings_tab.ignore_patterns")),
                 cc.xy(2, 6));
-        builder.add(createPatternsPanel(), cc.xyw(4, 6, 3));
+        builder.add(createPatternsPanel(), cc.xyw(4, 6, 4));
         
         builder.add(new JLabel(Translation.getTranslation(
                 "settings_tab.local_folder_location")),
@@ -357,7 +357,7 @@ public class SettingsTab extends PFUIComponent {
                 .getTranslation("settings_tab.edit_a_pattern.title");
 
             String pattern = (String) JOptionPane.showInputDialog(
-                getUIController().getMainFrame().getUIComponent(), text, title,
+                getUIController().getActiveFrame(), text, title,
                 JOptionPane.PLAIN_MESSAGE, null, null,
                 // the text to edit:
                 selectionModel.getSelection());
@@ -402,7 +402,7 @@ public class SettingsTab extends PFUIComponent {
             String text = Translation
                 .getTranslation("settings_tab.add_a_pattern.text");
             String patternResult = (String) JOptionPane.showInputDialog(
-                getUIController().getMainFrame().getUIComponent(), text, title,
+                getUIController().getActiveFrame(), text, title,
                 JOptionPane.PLAIN_MESSAGE, null, null, pattern);
             if (!StringUtils.isBlank(patternResult)) {
                 folder.getDiskItemFilter().addPattern(patternResult);
@@ -450,17 +450,17 @@ public class SettingsTab extends PFUIComponent {
 
         // Find out if the user wants to move the content of the current folder
         // to the new one.
-        final int moveContent = shouldMoveContent();
+        int moveContent = shouldMoveContent();
 
         if (moveContent == 2) {
             // Cancel
             return;
         }
 
-        final File originalDirectory = folder.getLocalBase();
+        File originalDirectory = folder.getLocalBase();
 
         // Select the new folder.
-        final DirectoryChooser dc = new DirectoryChooser();
+        DirectoryChooser dc = new DirectoryChooser();
         if (originalDirectory != null) {
             dc.setCurrentDirectory(originalDirectory);
         }

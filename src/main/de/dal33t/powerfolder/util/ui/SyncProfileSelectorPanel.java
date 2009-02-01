@@ -207,7 +207,7 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
      * Builds the visible panel.
      */
     private void buildPanel() {
-        FormLayout layout = new FormLayout("pref:grow, 3dlu, pref",
+        FormLayout layout = new FormLayout("122dlu, 3dlu, pref, pref:grow",
                 "pref, 3dlu, pref");
         panel = new JPanel(layout);
 
@@ -215,7 +215,7 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
 
         panel.add(syncProfilesCombo, cc.xy(1, 1));
         panel.add(helpButton, cc.xy(3, 1));
-        panel.add(createButtonBar(), cc.xyw(1, 3, 3));
+        panel.add(createButtonBar(), cc.xyw(1, 3, 4));
     }
 
     private JPanel createButtonBar() {
