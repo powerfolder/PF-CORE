@@ -647,6 +647,7 @@ public class Folder extends PFComponent {
             return false;
         }
 
+        // TODO BOTTLENECK for many transfers
         synchronized (scanLock) {
             if (!tempFile.renameTo(targetFile)) {
                 logWarning("Was not able to rename tempfile, copiing "

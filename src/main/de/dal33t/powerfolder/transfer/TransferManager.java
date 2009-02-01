@@ -1535,18 +1535,19 @@ public class TransferManager extends PFComponent {
      */
     private void requestDownload(final Download download, final Member from) {
         final FileInfo fInfo = download.getFile();
-
-        if (abortUploadsOf(fInfo)) {
-            logFine(
-                "Aborted uploads of file to be downloaded: "
-                    + fInfo.toDetailString());
-        }
-
         boolean dlWasRequested = false;
         // Lock/Disable transfer checker
-
         DownloadManager man;
         synchronized (dlManagers) {
+            Download dl = getActiveDownload(from, fInfo);
+            if (dl != null) {
+                if (isFiner()) {
+                    logFiner(
+                        "Already downloading " + fInfo.toDetailString()
+                            + " from " + from);
+                }
+                return;
+            }
             if (fInfo.isVersionAndDateIdentical(fInfo.getFolder(
                 getController().getFolderRepository()).getFile(fInfo)))
             {
@@ -1586,14 +1587,18 @@ public class TransferManager extends PFComponent {
             }
         }
 
+        if (abortUploadsOf(fInfo)) {
+            logFine("Aborted uploads of file to be downloaded: "
+                + fInfo.toDetailString());
+        }
+
         synchronized (man) {
             if (fInfo.isVersionAndDateIdentical(fInfo.getFolder(
                 getController().getFolderRepository()).getFile(fInfo)))
             {
                 // Skip exact same version etc.
-                logWarning(
-                    "Aborting download, already have latest file version: "
-                        + fInfo.toDetailString());
+                logWarning("Aborting download, already have latest file version: "
+                    + fInfo.toDetailString());
                 man.abort();
                 return;
             }
