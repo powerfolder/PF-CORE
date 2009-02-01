@@ -25,11 +25,30 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.util.Reject;
 
 /**
  * Helper class to perform UI updates delayed. If an UI update is scheduled
- * twice only thr last update is actually performed. This is useful if you want
- * to reduce the number of events in EDT thread.
+ * twice quickly after each other (<delay) only last update is actually
+ * performed. But it is ensured that at least every "delay" time period at least
+ * an update is performed once. This is useful if you want to reduce the number
+ * of events in EDT thread. ATTENTION: Do only schedule events in ONE
+ * DelayedUpdater that can override each other. This utility class DISCARDS
+ * previously scheduled events. In other words: The last update wins.
+ * <p>
+ * Graphcial representation. E = scheduled event, U = update in UI.
+ * <p>
+ * Timeline with one event:
+ * <p>
+ * -----E-----------U-----------------
+ * <p>
+ * Two events:
+ * <p>
+ * -----E-------E---X-----------------
+ * <p>
+ * Many events:
+ * <p>
+ * -----E--E-E--E---X--E--E----E---X--
  * 
  * @author Christian Sprajc
  * @version $Revision$
@@ -38,15 +57,18 @@ public class DelayedUpdater {
 
     private static final Logger LOG = Logger.getLogger(DelayedUpdater.class
         .getName());
+    private static final long DEFAULT_DELAY = 250L;
 
-    private long delay = 250L;
+    private long delay;
+    private long nextMandatoryEvent = -1;
     private static Timer timer;
-    private volatile TimerTask currentTask;
+    private volatile DelayedTimerTask currentTask;
 
     /**
      * Constructs a delayed execution. Creates own timer lazily
      */
     public DelayedUpdater() {
+        delay = DEFAULT_DELAY;
     }
 
     /**
@@ -55,7 +77,28 @@ public class DelayedUpdater {
      * @param controller
      */
     public DelayedUpdater(Controller controller) {
+        this(controller, DEFAULT_DELAY);
+    }
+
+    /**
+     * Constructs a delayed execution. Uses shared timer from Controller.
+     * 
+     * @param controller
+     * @param delay
+     *            the delay to use
+     */
+    public DelayedUpdater(Controller controller, long delay) {
         timer = controller.getTimer();
+        this.delay = delay;
+    }
+
+    public synchronized void setDelay(long delay) {
+        Reject.ifTrue(delay < 0, "Illegal delay value: " + delay);
+        this.delay = delay;
+    }
+
+    public long getDelay() {
+        return delay;
     }
 
     /**
@@ -67,13 +110,19 @@ public class DelayedUpdater {
     public synchronized void schedule(final Runnable task) {
         if (currentTask != null) {
             currentTask.cancel();
+            currentTask.canceled = true;
         }
         currentTask = new DelayedTimerTask(task);
         if (timer == null) {
             timer = new Timer();
         }
         try {
-            timer.schedule(currentTask, delay);
+            long now = System.currentTimeMillis();
+            if (nextMandatoryEvent < 0) {
+                nextMandatoryEvent = now + delay;
+            }
+            long delayUntilEvent = nextMandatoryEvent - now;
+            timer.schedule(currentTask, delayUntilEvent);
         } catch (Exception e) {
             LOG.log(Level.FINER, "Unable to schedule task to timer: " + e, e);
         }
@@ -81,19 +130,28 @@ public class DelayedUpdater {
 
     private final class DelayedTimerTask extends TimerTask {
         private final Runnable task;
+        private volatile boolean canceled;
 
         private DelayedTimerTask(Runnable task) {
             this.task = task;
+            this.canceled = false;
         }
 
         @Override
         public void run() {
+            // Ready for new tasks
+            synchronized (DelayedUpdater.this) {
+                currentTask = null;
+                nextMandatoryEvent = -1;
+            }
+            if (canceled) {
+                return;
+            }
             try {
                 UIUtil.invokeAndWaitInEDT(new Runnable() {
                     public void run() {
-                        // Ready for new tasks
-                        synchronized (DelayedUpdater.this) {
-                            currentTask = null;
+                        if (canceled) {
+                            return;
                         }
                         try {
                             task.run();
