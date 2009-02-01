@@ -117,7 +117,6 @@ public class FolderRemovePanel extends BaseDialog {
                 confirmedFolderLeave(removeFromLocalBox.isSelected(),
                         deleteSystemSubFolderBox.isSelected(),
                         removeFromServerBox.isSelected());
-                close();
             }
         });
 
@@ -226,6 +225,9 @@ public class FolderRemovePanel extends BaseDialog {
                     folderSettings, true);
             }
         }
+
+        // Dispose before closing parent frame.
+        close();
 
         // Folder is gone. Close the information frame 
         getUIController().closeInformationFrame();
