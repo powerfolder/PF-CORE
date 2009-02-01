@@ -1003,7 +1003,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         
         long oldByteCount = getFolderAtLisa().getStatistic()
             .getDownloadCounter().getBytesTransferred();
-        Thread.sleep(2100);
+        Thread.sleep(3000);
 
         // Change and scan file.
         assertTrue(fbart.setLastModified(System.currentTimeMillis()));
@@ -1090,9 +1090,9 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertTrue(TestHelper.compareFiles(fbart, flisa));
 
         disconnectBartAndLisa();
-
-        // Wait at least 10ms
-        TestHelper.waitMilliSeconds(10);
+        
+        // Wait at least 3000ms
+        TestHelper.waitMilliSeconds(3000);
         // Make a modification in bart's file
         int modSize = (int) (1024 + Math.random() * 8192);
         RandomAccessFile rbart = new RandomAccessFile(fbart, "rw");
@@ -1107,12 +1107,8 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         // Scan changed file
         assertTrue(fbart.lastModified() > flisa.lastModified());
-
-        do {
-            fbart.setLastModified(System.currentTimeMillis());
-            scanFolder(getFolderAtBart());
-            Thread.sleep(500);
-        } while (!getFolderAtBart().getKnownFiles().iterator().next()
+        scanFolder(getFolderAtBart());
+        assertTrue(getFolderAtBart().getKnownFiles().iterator().next()
             .isNewerThan(getFolderAtLisa().getKnownFiles().iterator().next()));
         FileInfo binfo = getFolderAtBart().getKnownFiles().iterator().next();
         assertFileMatch(fbart, binfo, getContollerBart());
