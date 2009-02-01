@@ -29,6 +29,7 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.util.test.Condition;
+import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 
@@ -388,8 +389,21 @@ public class DeletionSyncTest extends TwoControllerTestCase {
             .triggerFileRequesting();
 
         // Give them time to undelete sync (means downloading;)
-        TestHelper.waitMilliSeconds(3000);
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+            public boolean reached() {
+                return getContollerBart().getTransferManager()
+                    .countCompletedDownloads() >= getFolderAtBart()
+                    .getKnownFilesCount();
+            }
 
+            public String message() {
+                return "Downloaded files: "
+                    + getContollerBart().getTransferManager()
+                        .countCompletedDownloads() + " known: "
+                    + getFolderAtBart().getKnownFilesCount();
+            }
+        });
+        
         // all 3 must not be deleted anymore at folder1
         for (FileInfo fileInfo : getFolderAtBart().getKnowFilesAsArray()) {
             assertEquals(2, fileInfo.getVersion());
