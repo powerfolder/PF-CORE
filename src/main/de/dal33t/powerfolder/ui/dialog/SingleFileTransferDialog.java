@@ -203,8 +203,8 @@ public class SingleFileTransferDialog extends BaseDialog {
         }
 
         public void actionPerformed(ActionEvent e) {
-            getController().getTransferManager().offerSingleFile(file, 
-                    computersMembers, messageTextArea.getText());
+//            getController().getTransferManager().offerSingleFile(file, 
+//                    computersMembers, messageTextArea.getText());
             close();
         }
     }

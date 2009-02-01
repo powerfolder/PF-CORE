@@ -230,8 +230,8 @@ public class SingleFileAcceptDialog extends BaseDialog {
      */
     private class MyAcceptListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
-            getController().getTransferManager().acceptSingleFile(offer);
-            close();
+//            getController().getTransferManager().acceptSingleFile(offer);
+//            close();
         }
     }
 }

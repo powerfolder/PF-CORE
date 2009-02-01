@@ -1558,8 +1558,8 @@ public class Member extends PFComponent implements Comparable<Member> {
                 expectedTime = 50;
 
             } else if (message instanceof SingleFileAccept) {
-                getController().getTransferManager().processSingleFileAcceptance(
-                        (SingleFileAccept) message, fromPeer.getMember().getInfo());
+//                getController().getTransferManager().processSingleFileAcceptance(
+//                        (SingleFileAccept) message, fromPeer.getMember().getInfo());
                 expectedTime = 50;
 
             } else {
