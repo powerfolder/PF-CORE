@@ -225,11 +225,9 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Let him scan the new content
         scanFolder(getFolderAtBart());
 
-        TestHelper.waitForCondition(100, new ConditionWithMessage() {
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
             public boolean reached() {
-                return tm2Listener.downloadRequested >= 2
-                    && tm2Listener.downloadCompleted >= 2
-                /* && tm1Listener.uploadCompleted >= 1 */;
+                return tm2Listener.downloadCompleted >= 2;
             }
 
             public String message() {
@@ -239,13 +237,6 @@ public class FileTransferTest extends TwoControllerTestCase {
         });
 
         // Check correct event fireing
-        // assertEquals(1, tm1Listener.uploadRequested);
-        // assertEquals(1, tm1Listener.uploadStarted);
-        // assertEquals(1, tm1Listener.uploadCompleted);
-        // assertEquals(2, tm1Listener.uploadRequested);
-        // assertEquals(2, tm1Listener.uploadStarted);
-        // assertEquals(2, tm1Listener.uploadCompleted);
-        // Changed: Wase of bandwidth to request empty files...
         assertEquals(0, tm1Listener.uploadRequested);
         assertEquals(0, tm1Listener.uploadStarted);
         assertEquals(0, tm1Listener.uploadCompleted);
@@ -253,11 +244,9 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(0, tm1Listener.uploadBroken);
 
         // Check correct event fireing
-        assertEquals(2, tm2Listener.downloadRequested);
-        // We can't rely on that all downloads have been queued.
-        // Might be started fast! So now queued message is sent
-        // assertEquals(1, tm2Listener.downloadQueued);
-        // assertEquals(1, tm2Listener.downloadStarted);
+        assertEquals(0, tm2Listener.downloadRequested);
+        assertEquals(0, tm2Listener.downloadQueued);
+        assertEquals(0, tm2Listener.downloadStarted);
         assertEquals(2, tm2Listener.downloadCompleted);
         assertEquals(0, tm2Listener.downloadAborted);
         assertEquals(0, tm2Listener.downloadBroken);
@@ -702,7 +691,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(0, lisasListener.downloadAborted);
         assertEquals(0, lisasListener.downloadBroken);
         assertEquals(0, lisasListener.downloadsCompletedRemoved);
-        assertEquals(nFiles, lisasListener.downloadRequested);
+        assertEquals(0, lisasListener.downloadRequested);
         // 0 bytes downloads never get requested, nor queued or started.
         assertEquals(0, lisasListener.downloadRequested);
         assertEquals(0, lisasListener.downloadQueued);
@@ -849,7 +838,8 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Reconnect /Resume transfer
         connectBartAndLisa();
         // Trigger. FIXME: Should be automatically done on connect!
-        getContollerLisa().getFolderRepository().getFileRequestor().triggerFileRequesting();
+        getContollerLisa().getFolderRepository().getFileRequestor()
+            .triggerFileRequesting();
 
         // Wait untill download is started
         TestHelper.waitForCondition(20, new ConditionWithMessage() {
@@ -1097,6 +1087,9 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertTrue(TestHelper.compareFiles(fbart, flisa));
 
         disconnectBartAndLisa();
+
+        // Wait at least 10ms
+        TestHelper.waitMilliSeconds(10);
         // Make a modification in bart's file
         int modSize = (int) (1024 + Math.random() * 8192);
         RandomAccessFile rbart = new RandomAccessFile(fbart, "rw");

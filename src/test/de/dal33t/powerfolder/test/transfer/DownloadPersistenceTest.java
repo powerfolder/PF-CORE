@@ -53,7 +53,8 @@ public class DownloadPersistenceTest extends TwoControllerTestCase {
             .getTransferManager().getCompletedDownloadsCollection())
         {
             assertTrue(dlManager.getTempFile() == null);
-            assertTrue(dlManager.isCompleted());
+            assertTrue("Got state on completed download: "
+                + dlManager.getState().toString(), dlManager.isCompleted());
         }
 
         startControllerLisa();
