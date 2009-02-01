@@ -25,5 +25,5 @@ import de.dal33t.powerfolder.light.FileInfo;
 import java.io.IOException;
 
 public interface DownloadManagerFactory {
-    DownloadManager createDownloadManager(Controller controller, FileInfo file, boolean automatic) throws IOException;
+    DownloadManager createDownloadManager(Controller controller, FileInfo file, boolean automatic);
 }

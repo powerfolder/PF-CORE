@@ -19,8 +19,6 @@
  */
 package de.dal33t.powerfolder.transfer;
 
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;

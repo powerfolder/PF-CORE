@@ -1587,6 +1587,16 @@ public class TransferManager extends PFComponent {
         }
 
         synchronized (man) {
+            if (fInfo.isVersionAndDateIdentical(fInfo.getFolder(
+                getController().getFolderRepository()).getFile(fInfo)))
+            {
+                // Skip exact same version etc.
+                logWarning(
+                    "Aborting download, already have latest file version: "
+                        + fInfo.toDetailString());
+                man.abort();
+                return;
+            }
             if (man.getSourceFor(from) == null && !man.isDone()
                 && man.canAddSource(from))
             {
