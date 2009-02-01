@@ -654,7 +654,6 @@ public abstract class AbstractDownloadManager extends PFComponent implements
      * @return true, if the download was actually requested from the source.
      */
     private boolean addSource0(final Download download) {
-        validateDownload(download);
         // This should be true because the addSource() caller should be
         // locking the calls
         assert download.isCompleted() || canAddSource(download.getPartner()) : "Illegal addSource() call!!";

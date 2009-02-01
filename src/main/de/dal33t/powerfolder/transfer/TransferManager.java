@@ -1094,7 +1094,7 @@ public class TransferManager extends PFComponent {
 
         // Wait to let the transfers check grab the new download
         try {
-            Thread.sleep(2);
+            Thread.sleep(5);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
