@@ -30,6 +30,7 @@ import de.dal33t.powerfolder.ui.model.SortedTableModel;
 import de.dal33t.powerfolder.ui.model.TransferManagerModel;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.compare.ReverseComparator;
 import de.dal33t.powerfolder.util.compare.TransferComparator;
 import de.dal33t.powerfolder.util.compare.DownloadManagerComparator;
@@ -354,37 +355,37 @@ public class DownloadManagersTableModel extends PFComponent implements TableMode
 
     /**
      * Removes one download from the model and fires the tablemodel event
-     *
+     * 
      * @param download
      */
     private void removeDownload(Download download) {
         int index = -1;
-        synchronized (downloadManagers) {
-            int i = 0;
-            for (Iterator<DownloadManager> iter = downloadManagers.iterator(); iter.hasNext();) {
-                DownloadManager downloadManager = iter.next();
-                for (Download myDownload : downloadManager.getSources()) {
-                    if (myDownload.equals(download)) {
-                        index = i;
-                        break;
-                    }
-                }
-                if (index >= 0) {
-                    iter.remove();
+        int i = 0;
+        for (Iterator<DownloadManager> iter = downloadManagers.iterator(); iter
+            .hasNext();)
+        {
+            DownloadManager downloadManager = iter.next();
+            for (Download myDownload : downloadManager.getSources()) {
+                if (myDownload.equals(download)) {
+                    index = i;
                     break;
                 }
-                i++;
             }
+            if (index >= 0) {
+                iter.remove();
+                break;
+            }
+            i++;
         }
         if (index >= 0) {
             rowRemoved(index);
         } else {
             logSevere("Unable to remove download from tablemodel, not found: "
-                    + download);
+                + download);
         }
     }
 
-    ///////////////////
+    // /////////////////
     // Inner Classes //
     ///////////////////
 
@@ -440,11 +441,13 @@ public class DownloadManagersTableModel extends PFComponent implements TableMode
             // single complete download. This is a temporary fix; should
             // really coalesce downloads into one line for each completely
             // identical fileinfo.
-            for (Iterator<DownloadManager> iter =
-                    downloadManagers.iterator(); iter.hasNext();) {
+            for (Iterator<DownloadManager> iter = downloadManagers.iterator(); iter
+                .hasNext();)
+            {
                 DownloadManager downloadManager = iter.next();
-                if (dl.getFile().isCompletelyIdentical(
-                        downloadManager.getFileInfo())) {
+                if (dl.getFile().isVersionAndDateIdentical(
+                    downloadManager.getFileInfo()))
+                {
                     iter.remove();
                     found = true;
                     break;
@@ -469,21 +472,21 @@ public class DownloadManagersTableModel extends PFComponent implements TableMode
 
         /**
          * Searches downloads for a download with identical FileInfo.
-         *
+         * 
          * @param dl
          *            download to search for identical copy
          * @return index of the download with identical FileInfo, -1 if not
          *         found
          */
-        private int findCompletelyIdenticalDownloadIndex(Download dl) {
-            synchronized (downloadManagers) {
-                for (int i = 0; i < downloadManagers.size(); i++) {
-                    DownloadManager downloadManager = downloadManagers.get(i);
-                    for (Download download : downloadManager.getSources()) {
-                        if (download.getFile().isCompletelyIdentical(dl.getFile())
-                            && download.getPartner().equals(dl.getPartner())) {
-                            return i;
-                        }
+        private int findDownloadIndex(Download dl) {
+            for (int i = 0; i < downloadManagers.size(); i++) {
+                DownloadManager downloadManager = downloadManagers.get(i);
+                for (Download download : downloadManager.getSources()) {
+                    if (download.getFile().isVersionAndDateIdentical(
+                        dl.getFile())
+                        && Util.equals(download.getPartner(), dl.getPartner()))
+                    {
+                        return i;
                     }
                 }
             }
@@ -493,22 +496,14 @@ public class DownloadManagersTableModel extends PFComponent implements TableMode
         }
 
         private void addOrUpdateDownload(Download dl) {
-            boolean added = false;
-            int index;
-            synchronized (downloadManagers) {
-                index = findCompletelyIdenticalDownloadIndex(dl);
-                DownloadManager alreadyDl = index >= 0 ? downloadManagers.get(index) : null;
-                if (alreadyDl == null) {
-                    downloadManagers.add(dl.getDownloadManager());
-                    added = true;
-                } else {
-                    // @todo DownloadManager already knows of change???
-                }
-            }
-
-            if (added) {
+            int index = findDownloadIndex(dl);
+            DownloadManager alreadyDl = index >= 0 ? downloadManagers
+                .get(index) : null;
+            if (alreadyDl == null) {
+                downloadManagers.add(dl.getDownloadManager());
                 rowAdded();
             } else {
+                // @todo DownloadManager already knows of change???
                 rowsUpdated(index, index);
             }
         }

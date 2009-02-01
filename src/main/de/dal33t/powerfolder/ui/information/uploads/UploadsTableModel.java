@@ -30,6 +30,7 @@ import de.dal33t.powerfolder.transfer.Upload;
 import de.dal33t.powerfolder.ui.model.SortedTableModel;
 import de.dal33t.powerfolder.ui.model.TransferManagerModel;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.compare.ReverseComparator;
 import de.dal33t.powerfolder.util.compare.TransferComparator;
 import de.dal33t.powerfolder.util.ui.UIUtil;
@@ -261,7 +262,7 @@ public class UploadsTableModel extends PFComponent implements TableModel,
         boolean added = false;
         int index;
         synchronized (uploads) {
-            index = findCompletelyIdenticalUploadIndex(ul);
+            index = findUploadIndex(ul);
             Upload alreadyUl = index >= 0 ? uploads.get(index) : null;
             if (alreadyUl == null) {
                 uploads.add(ul);
@@ -286,16 +287,13 @@ public class UploadsTableModel extends PFComponent implements TableModel,
      *            download to search for identical copy
      * @return index of the download with identical FileInfo, -1 if not found
      */
-    private int findCompletelyIdenticalUploadIndex(Upload uploadArg) {
-        synchronized (uploads) {
-            for (int i = 0; i < uploads.size(); i++) {
-                Upload ul = uploads.get(i);
-                if (ul.getFile().isCompletelyIdentical(uploadArg.getFile())
-                    && (uploadArg.getPartner() == null || uploadArg
-                        .getPartner().equals(ul.getPartner())))
-                {
-                    return i;
-                }
+    private int findUploadIndex(Upload uploadArg) {
+        for (int i = 0; i < uploads.size(); i++) {
+            Upload ul = uploads.get(i);
+            if (ul.getFile().isVersionAndDateIdentical(uploadArg.getFile())
+                && Util.equals(ul.getPartner(), uploadArg.getPartner()))
+            {
+                return i;
             }
         }
 
@@ -310,17 +308,15 @@ public class UploadsTableModel extends PFComponent implements TableModel,
      * @return the index where this upload was removed from.
      */
     private int removeUpload(Upload upload) {
-        int index;
-        synchronized (uploads) {
-            index = uploads.indexOf(upload);
-            if (index >= 0) {
-                logFiner("Remove upload from tablemodel: " + upload);
-                uploads.remove(index);
-            } else {
-                logSevere("Unable to remove upload from tablemodel, not found: "
-                    + upload);
-            }
+        int index = uploads.indexOf(upload);
+        if (index >= 0) {
+            logFiner("Remove upload from tablemodel: " + upload);
+            uploads.remove(index);
+        } else {
+            logSevere("Unable to remove upload from tablemodel, not found: "
+                + upload);
         }
+
         return index;
     }
 
