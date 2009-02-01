@@ -132,11 +132,13 @@ public class Download extends Transfer {
         checkFileInfo(fileInfo);
         lastTouch.setTime(System.currentTimeMillis());
         if (isStarted()) {
-            logWarning("Received multiple upload start messages!");
+            logWarning("Received multiple upload start messages: "
+                + fileInfo.toDetailString());
             return;
         }
 
-        logFiner("Uploader supports partial transfers.");
+        logFiner("Uploader supports partial transfers for "
+            + fileInfo.toDetailString());
         setStarted();
         handler.readyForRequests(Download.this);
     }
