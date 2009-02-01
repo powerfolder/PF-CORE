@@ -825,11 +825,9 @@ public class Member extends PFComponent implements Comparable<Member> {
             }
         }
 
-        synchronized (peerInitalizeLock) {
-            if (peer != null && !peer.isConnected()) {
-                shutdown();
-                return false;
-            }
+        if (peer != null && !peer.isConnected()) {
+            shutdown();
+            return false;
         }
 
         handshaked = thisHandshakeCompleted;
