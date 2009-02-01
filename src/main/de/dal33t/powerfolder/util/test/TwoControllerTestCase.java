@@ -19,6 +19,14 @@
  */
 package de.dal33t.powerfolder.util.test;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Date;
+import java.util.UUID;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
+
+import junit.framework.TestCase;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
@@ -29,17 +37,9 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.net.ConnectionException;
+import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Reject;
-import junit.framework.TestCase;
-import org.apache.commons.io.FileUtils;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Date;
-import java.util.UUID;
-import java.util.prefs.BackingStoreException;
-import java.util.prefs.Preferences;
 
 /**
  * Provides basic testcase-setup with two controllers. Bart and Lisa
@@ -99,7 +99,7 @@ public class TwoControllerTestCase extends TestCase {
 
         // Cleanup
         TestHelper.cleanTestDir();
-        FileUtils.deleteDirectory(new File(Controller.getMiscFilesLocation(),
+        FileUtils.recursiveDelete(new File(Controller.getMiscFilesLocation(),
             "build"));
         cleanPreferences(Preferences.userNodeForPackage(PowerFolder.class)
             .node("build/test/ControllerBart/PowerFolder"));
@@ -237,8 +237,8 @@ public class TwoControllerTestCase extends TestCase {
      */
     protected void deleteTestFolderContents() {
         try {
-            FileUtils.deleteDirectory(TESTFOLDER_BASEDIR_BART);
-            FileUtils.deleteDirectory(TESTFOLDER_BASEDIR_LISA);
+            FileUtils.recursiveDelete(TESTFOLDER_BASEDIR_BART);
+            FileUtils.recursiveDelete(TESTFOLDER_BASEDIR_LISA);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
