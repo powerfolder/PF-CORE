@@ -363,7 +363,6 @@ public class DeletionSyncTest extends TwoControllerTestCase {
 
         // switch profiles
         getFolderAtLisa().setSyncProfile(SyncProfile.HOST_FILES);
-        getFolderAtBart().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
 
         RecycleBin recycleBin = getContollerLisa().getRecycleBin();
         List<FileInfo> deletedFilesAtLisa = getContollerLisa().getRecycleBin()
@@ -385,6 +384,19 @@ public class DeletionSyncTest extends TwoControllerTestCase {
                 .lastModified());
         }
 
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+            public String message() {
+                return "Bart incoming: "
+                    + getFolderAtBart().getIncomingFiles(true, true);
+            }
+
+            public boolean reached() {
+                return getFolderAtBart().getIncomingFiles(true, true).size() == getFolderAtLisa()
+                    .getKnownFilesCount();
+            }
+        });
+
+        getFolderAtBart().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         getContollerBart().getFolderRepository().getFileRequestor()
             .triggerFileRequesting();
 
@@ -403,7 +415,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
                     + getFolderAtBart().getKnownFilesCount();
             }
         });
-        
+
         // all 3 must not be deleted anymore at folder1
         for (FileInfo fileInfo : getFolderAtBart().getKnowFilesAsArray()) {
             assertEquals(2, fileInfo.getVersion());
