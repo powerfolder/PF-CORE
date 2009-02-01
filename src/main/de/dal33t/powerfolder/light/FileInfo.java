@@ -634,6 +634,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
      * @return if the the two files are completely identical, also checks
      *         version, date and modified user
      * @see #isNewerThan(FileInfo)
+     * @deprecated
      */
     public boolean isCompletelyIdentical(FileInfo otherFile) {
         if (otherFile == null) {
