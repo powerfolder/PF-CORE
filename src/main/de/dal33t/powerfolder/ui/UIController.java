@@ -60,6 +60,7 @@ import java.text.ParseException;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -75,6 +76,10 @@ public class UIController extends PFComponent {
 
     private static final Logger log = Logger.getLogger(UIController.class.getName());
     private static final long TEN_GIG = 10L << 30;
+
+    public static final int MAIN_FRAME_ID = 0;
+    public static final int INFO_FRAME_ID = 1;
+    public static final int CHAT_FRAME_ID = 2;
 
     private boolean started;
     private SplashScreen splash;
@@ -100,6 +105,8 @@ public class UIController extends PFComponent {
     private TransferManagerModel transferManagerModel;
 
     private final AtomicBoolean folderRepositorySynchronizing;
+
+    private final AtomicInteger activeFrame = new AtomicInteger();
 
     /**
      * Initializes a new UI controller. open UI with #start
@@ -727,24 +734,41 @@ public class UIController extends PFComponent {
     }
 
     /**
-     * This returns the PowerFolder frame that currently has focus. Possibly
+     * This returns most recently active PowerFolder frame. Possibly
      * the InformationFrame, ChatFrame or (default) MainFrame. Used by dialogs,
-     * so focus does not jump to the wrong (Main) frame.
+     * so focus does not always jump to the wrong (Main) frame.
      *
      * @return
      */
     public JFrame getActiveFrame() {
-        JFrame infoComponent = informationFrame.getUIComponent();
-        if (infoComponent.isVisible() && infoComponent.isActive()) {
-            return infoComponent;
-        } else {
+
+        int f = activeFrame.get();
+        if (f == MAIN_FRAME_ID) {
+            return mainFrame.getUIComponent();
+        } else if (f == INFO_FRAME_ID) {
+            JFrame infoComponent = informationFrame.getUIComponent();
+            if (infoComponent.isVisible()) {
+                return infoComponent;
+            } else {
+                // Fallback if the info frame is not visible.
+                return mainFrame.getUIComponent();
+            }
+        } else if (f == CHAT_FRAME_ID) {
             JFrame chatComponent = chatFrame.getUIComponent();
-            if (chatComponent.isVisible() && chatComponent.isActive()) {
+            if (chatComponent.isVisible()) {
                 return chatComponent;
             } else {
+                // Fallback if the chat frame is not visible.
                 return mainFrame.getUIComponent();
             }
         }
+
+        // Huh? Somthing else active?
+        return mainFrame.getUIComponent();
+    }
+
+    public void setActiveFrame(int activeFrameId) {
+        activeFrame.set(activeFrameId);
     }
 
     ///////////////////

@@ -31,16 +31,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
-import javax.swing.DefaultListModel;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextField;
+import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -459,22 +450,21 @@ public class SettingsTab extends PFUIComponent {
 
         // Find out if the user wants to move the content of the current folder
         // to the new one.
-        int moveContent = shouldMoveContent();
+        final int moveContent = shouldMoveContent();
 
         if (moveContent == 2) {
             // Cancel
             return;
         }
 
-        File originalDirectory = folder.getLocalBase();
+        final File originalDirectory = folder.getLocalBase();
 
         // Select the new folder.
-        DirectoryChooser dc = new DirectoryChooser();
+        final DirectoryChooser dc = new DirectoryChooser();
         if (originalDirectory != null) {
             dc.setCurrentDirectory(originalDirectory);
         }
-        int i = dc.showOpenDialog(getController().getUIController()
-            .getMainFrame().getUIComponent());
+        int i = dc.showOpenDialog(getController().getUIController().getActiveFrame());
         if (i == JFileChooser.APPROVE_OPTION) {
             File selectedFile = dc.getSelectedFile();
             moveDirectory(originalDirectory, selectedFile, moveContent == 0);

@@ -71,7 +71,7 @@ public abstract class ActivityVisualizationWorker extends SwingWorker {
     public ActivityVisualizationWorker(UIController uiController,
         boolean indeterminate)
     {
-        this(uiController.getMainFrame().getUIComponent());
+        this(uiController.getActiveFrame());
         if (!indeterminate) {
             progressListener = new MyProgressListener();
         }

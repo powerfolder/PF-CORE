@@ -111,11 +111,13 @@ public class PreviewToJoinPanel extends BaseDialog {
                 FolderPreviewHelper.convertFolderFromPreview(getController(),
                         folder, newFolderSettings, false);
 
+                // Dispose before parent is closed.
+                close();
+
                 // The original folder no longer actually exists, so we need to
                 // close the information frame.
                 getController().getUIController().closeInformationFrame();
 
-                close();
             }
         });
 

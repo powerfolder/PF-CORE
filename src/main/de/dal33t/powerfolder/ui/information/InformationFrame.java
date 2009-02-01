@@ -20,6 +20,8 @@
 package de.dal33t.powerfolder.ui.information;
 
 import java.awt.Frame;
+import java.awt.event.WindowFocusListener;
+import java.awt.event.WindowEvent;
 import java.util.prefs.Preferences;
 
 import javax.swing.JFrame;
@@ -27,10 +29,10 @@ import javax.swing.WindowConstants;
 import javax.swing.plaf.RootPaneUI;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.MagneticFrame;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.ui.information.debug.DebugInformationCard;
 import de.dal33t.powerfolder.ui.information.downloads.DownloadsInformationCard;
 import de.dal33t.powerfolder.ui.information.folder.FolderInformationCard;
@@ -112,6 +114,15 @@ public class InformationFrame extends MagneticFrame {
      */
     private void initialize() {
         uiComponent = new JFrame();
+        uiComponent.addWindowFocusListener(new WindowFocusListener() {
+            public void windowGainedFocus(WindowEvent e) {
+                getUIController().setActiveFrame(UIController.INFO_FRAME_ID);
+            }
+            public void windowLostFocus(WindowEvent e) {
+                //Ignore.
+            }
+        });
+
         uiComponent.setIconImage(Icons.getInstance().POWERFOLDER_IMAGE);
     }
 

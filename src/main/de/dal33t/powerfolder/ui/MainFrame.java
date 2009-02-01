@@ -240,6 +240,14 @@ public class MainFrame extends PFUIComponent {
             + Toolkit.getDefaultToolkit().getScreenSize());
 
         uiComponent = new JFrame();
+        uiComponent.addWindowFocusListener(new WindowFocusListener() {
+            public void windowGainedFocus(WindowEvent e) {
+                getUIController().setActiveFrame(UIController.MAIN_FRAME_ID);
+            }
+            public void windowLostFocus(WindowEvent e) {
+                //Ignore.
+            }
+        });
         uiComponent.setIconImage(Icons.getInstance().POWERFOLDER_IMAGE);
 
         createMenuBar();

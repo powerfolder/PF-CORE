@@ -24,20 +24,19 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.MagneticFrame;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.util.Translation;
 import de.javasoft.plaf.synthetica.SyntheticaRootPaneUI;
 
 import javax.swing.*;
 import javax.swing.plaf.RootPaneUI;
 import java.awt.*;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -115,6 +114,14 @@ public class ChatFrame extends MagneticFrame {
      */
     private void initialize() {
         uiComponent = new JFrame();
+        uiComponent.addWindowFocusListener(new WindowFocusListener() {
+            public void windowGainedFocus(WindowEvent e) {
+                getUIController().setActiveFrame(UIController.CHAT_FRAME_ID);
+            }
+            public void windowLostFocus(WindowEvent e) {
+                //Ignore.
+            }
+        });
         uiComponent.setIconImage(Icons.CHAT_IMAGE);
         uiComponent.setTitle(Translation.getTranslation("chat_frame.title"));
         uiComponent.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
