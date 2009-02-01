@@ -823,9 +823,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             } else if (isFiner()) {
                 logFiner("Got handshake completion!!");
             }
-        }
-
-        if (peer != null && !peer.isConnected()) {
+        } else if (peer != null && !peer.isConnected()) {
             shutdown();
             return false;
         }
