@@ -186,6 +186,8 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
     }
 
     public void testDisconnectWhileUpload() {
+        ConfigurationEntry.UPLOADLIMIT_LAN.setValue(getContollerBart(), "1000");
+        ConfigurationEntry.UPLOADLIMIT_LAN.setValue(getContollerLisa(), "1000");
         // Create a 10 megs file
         TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 10000000);
         scanFolder(getFolderAtBart());
