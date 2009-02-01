@@ -1205,7 +1205,12 @@ public class TransferManager extends PFComponent {
      * @return the currently active uploads
      */
     public Upload[] getActiveUploads() {
-        return activeUploads.toArray(new Upload[activeUploads.size()]);
+        uploadsLock.lock();
+        try {
+            return activeUploads.toArray(new Upload[activeUploads.size()]);
+        } finally {
+            uploadsLock.unlock();
+        }
     }
 
     /**
