@@ -1432,12 +1432,15 @@ public class TransferManager extends PFComponent {
         FileInfo newestVersionFile = fInfo.getNewestVersion(getController()
             .getFolderRepository());
         FileInfo localFile = folder.getFile(fInfo);
+        FileInfo fileToDl = newestVersionFile != null
+            ? newestVersionFile
+            : fInfo;
 
         // Check if the FileInfo is valid.
         // (This wouldn't be necessary, if the info had already checked itself.)
         try {
             fInfo.validate();
-            newestVersionFile.validate();
+            fileToDl.validate();
         } catch (Exception e) {
             logWarning(e.getMessage() + ". " + fInfo.toDetailString(), e);
             return null;
@@ -1446,13 +1449,13 @@ public class TransferManager extends PFComponent {
         // Check if we have the file already downloaded in the meantime.
         // Or we have this file actual on disk but not in own db yet.
 
-        if (localFile != null && !newestVersionFile.isNewerThan(localFile)) {
+        if (localFile != null && !fileToDl.isNewerThan(localFile)) {
             logFiner(
                 "NOT requesting download, already has latest file in own db: "
                     + fInfo.toDetailString());
             return null;
-        } else if (newestVersionFile.inSyncWithDisk(fInfo
-            .getDiskFile(getController().getFolderRepository())))
+        } else if (fileToDl.inSyncWithDisk(fInfo.getDiskFile(getController()
+            .getFolderRepository())))
         {
             logFiner(
                 "NOT requesting download, file seems already to exists on disk: "
@@ -1478,7 +1481,7 @@ public class TransferManager extends PFComponent {
                 continue;
             }
             // Skip "wrong" sources
-            if (!newestVersionFile.isVersionAndDateIdentical(remoteFile)) {
+            if (!fileToDl.isVersionAndDateIdentical(remoteFile)) {
                 continue;
             }
             if (bestSources == null) {
@@ -1490,26 +1493,27 @@ public class TransferManager extends PFComponent {
         if (bestSources != null) {
             for (Member bestSource : bestSources) {
                 Download download;
-                download = new Download(this, newestVersionFile, automatic);
+                download = new Download(this, fileToDl, automatic);
                 if (isFiner()) {
                     logFiner(
                         "Best source for " + fInfo + " is " + bestSource);
                 }
                 if (localFile != null
                     && localFile.getModifiedDate().after(
-                        newestVersionFile.getModifiedDate())
-                    && !localFile.isDeleted())
+                        fileToDl.getModifiedDate()) && !localFile.isDeleted())
                 {
-                    logWarning("Requesting older file requested: "
-                        + newestVersionFile.toDetailString() + ", local: "
-                        + localFile.toDetailString() + ", isNewer: "
-                        + localFile.isNewerThan(newestVersionFile));
+                    logWarning(
+                        "Requesting older file requested: "
+                            + fileToDl.toDetailString() + ", local: "
+                            + localFile.toDetailString() + ", isNewer: "
+                            + localFile.isNewerThan(newestVersionFile));
                 }
-                if (newestVersionFile.isNewerAvailable(getController()
+                if (fileToDl.isNewerAvailable(getController()
                     .getFolderRepository()))
                 {
-                    logSevere("Downloading old version while newer is available: "
-                        + localFile);
+                    logSevere(
+                        "Downloading old version while newer is available: "
+                            + localFile);
                 }
                 requestDownload(download, bestSource);
             }
@@ -1517,8 +1521,7 @@ public class TransferManager extends PFComponent {
 
         if (bestSources == null && !automatic) {
             // Okay enque as pending download if was manually requested
-            enquePendingDownload(new Download(this, newestVersionFile,
-                automatic));
+            enquePendingDownload(new Download(this, fileToDl, automatic));
             return null;
         }
         return getActiveDownload(fInfo);
