@@ -1030,6 +1030,12 @@ public class FileTransferTest extends TwoControllerTestCase {
             public boolean reached() {
                 return lisaListener.downloadCompleted >= 2
                     && lisaListener.downloadRequested >= 2
+                    && lisaListener.downloadAborted == 0
+                    && lisaListener.downloadBroken == 0
+                    && bartListener.uploadRequested >= 2
+                    && bartListener.uploadAborted == 0
+                    && bartListener.uploadBroken == 0
+                    && bartListener.uploadStarted >= 2
                     && bartListener.uploadCompleted >= 2;
             }
 
@@ -1037,7 +1043,9 @@ public class FileTransferTest extends TwoControllerTestCase {
                 return "lisa: completed dl= " + lisaListener.downloadCompleted
                     + ", req dl= " + lisaListener.downloadRequested
                     + ", brkn dl= " + lisaListener.downloadBroken
-                    + "; bart: completed ul= " + bartListener.uploadCompleted
+                    + ", abrt dl= " + lisaListener.downloadAborted
+                    + "; bart: req ul= " + bartListener.uploadRequested
+                    + ", cmpld ul= " + bartListener.uploadCompleted
                     + ", brkn ul= " + bartListener.uploadBroken;
             }
         });
