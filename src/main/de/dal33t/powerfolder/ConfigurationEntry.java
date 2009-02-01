@@ -84,7 +84,7 @@ public enum ConfigurationEntry {
     /**
      * URL of the PowerFolder Wiki
      */
-    PROVIDER_WIKI_URL("provider.url.wiki", "http://wiki.powerfolder.com/wiki"),
+    PROVIDER_WIKI_URL("provider.url.wiki", "http://www.powerfolder.com/wiki"),
 
     /**
      * URL of the PowerFolder Support
