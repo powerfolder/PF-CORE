@@ -7,6 +7,7 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.util.test.Condition;
+import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 
@@ -83,13 +84,19 @@ public class DownloadPersistenceTest extends TwoControllerTestCase {
             }
         }
         scanFolder(getFolderAtBart());
-        TestHelper.waitForCondition(nFiles, new Condition() {
+        TestHelper.waitForCondition(nFiles, new ConditionWithMessage() {
             public boolean reached() {
                 return getContollerLisa().getTransferManager()
                     .getCompletedDownloadsCollection().size() == nFiles * 2;
             }
-        });
 
+            public String message() {
+                return "Completed dls at lisa: "
+                    + getContollerLisa().getTransferManager()
+                        .getCompletedDownloadsCollection().size();
+            }
+        });
+        
         scanFolder(getFolderAtBart());
         for (FileInfo fInfo : getFolderAtBart().getKnownFiles()) {
             assertFileMatch(fInfo.getDiskFile(getContollerBart()
