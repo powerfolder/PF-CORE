@@ -967,7 +967,6 @@ public class FileTransferTest extends TwoControllerTestCase {
             setUp();
         }
     }
-
     public void testDeltaFileNotChanged() throws InterruptedException {
         ConfigurationEntry.USE_DELTA_ON_LAN
             .setValue(getContollerBart(), "true");
@@ -1000,23 +999,18 @@ public class FileTransferTest extends TwoControllerTestCase {
             .getDiskFile(getContollerLisa().getFolderRepository());
 
         assertTrue(TestHelper.compareFiles(fbart, flisa));
-
         disconnectBartAndLisa();
-        TestHelper.waitMilliSeconds(100);
-        fbart.setLastModified(System.currentTimeMillis());
-
+        
         long oldByteCount = getFolderAtLisa().getStatistic()
             .getDownloadCounter().getBytesTransferred();
-
-        // Scan changed file
-        assertTrue(fbart.lastModified() > flisa.lastModified());
-
         Thread.sleep(2100);
-        do {
-            fbart.setLastModified(System.currentTimeMillis());
-            scanFolder(getFolderAtBart());
-            Thread.sleep(500);
-        } while (!getFolderAtBart().getKnownFiles().iterator().next()
+
+        // Change and scan file.
+        assertTrue(fbart.setLastModified(System.currentTimeMillis()));
+        assertTrue("Bart lastmod: " + fbart.lastModified() + ", Lisa lastmod: "
+            + flisa.lastModified(), fbart.lastModified() > flisa.lastModified());
+        scanFolder(getFolderAtBart());
+        assertTrue(getFolderAtBart().getKnownFiles().iterator().next()
             .isNewerThan(getFolderAtLisa().getKnownFiles().iterator().next()));
         FileInfo binfo = getFolderAtBart().getKnownFiles().iterator().next();
         assertFileMatch(fbart, binfo, getContollerBart());
@@ -1024,6 +1018,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(0, linfo.getVersion());
         assertTrue(getFolderAtBart().getKnownFiles().iterator().next()
             .isNewerThan(getFolderAtLisa().getKnownFiles().iterator().next()));
+        assertTrue(binfo.inSyncWithDisk(fbart));
         connectBartAndLisa();
 
         TestHelper.waitForCondition(20, new ConditionWithMessage() {
@@ -1059,7 +1054,7 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         TestHelper.assertIncompleteFilesGone(this);
     }
-
+    
     public void testDeltaFileChanged() throws IOException, InterruptedException
     {
         ConfigurationEntry.USE_DELTA_ON_LAN.setValue(getContollerBart(),
