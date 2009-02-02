@@ -85,6 +85,7 @@ import de.dal33t.powerfolder.security.SecurityManager;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.UIController;
+import de.dal33t.powerfolder.util.ConfigurationLoader;
 import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.ForcedLanguageFileResourceBundle;
@@ -1953,53 +1954,43 @@ public class Controller extends PFComponent {
         exit(1);
     }
     
-    private void initClientBranding(String brandingId) {
-  this.brandingId = brandingId;
-        
+    private void initClientBranding(String bId, boolean serverInternalFunctions)
+    {
+        this.brandingId = bId;
+
         logInfo("Starting branded distribution: " + brandingId);
-        Feature.SERVER_INTERNAL_FUNCTIONS.disable();
+        if (!serverInternalFunctions) {
+            Feature.SERVER_INTERNAL_FUNCTIONS.disable();
+        }
 
         // Use icons
-        Icons.loadOverrideFile("branding/" + brandingId + "/Icons.properties");
-        
+        String iconsFile = "branding/" + brandingId + "/Icons.properties";
+        if (Thread.currentThread().getContextClassLoader().getResourceAsStream(
+            iconsFile) != null)
+        {
+            Icons.loadOverrideFile(iconsFile);
+            logInfo("Branding/Icons file loaded: " + iconsFile);
+        }
+
         // Load texts
-        Locale l = new Locale("en", brandingId);
-        Translation.saveLocalSetting(l);
-        Translation.resetResourceBundle();
+        String translationFile = "Translation_en_" + brandingId + ".properties";
+        if (Thread.currentThread().getContextClassLoader().getResourceAsStream(
+            translationFile) != null)
+        {
+            Locale l = new Locale("en", brandingId);
+            Translation.saveLocalSetting(l);
+            Translation.resetResourceBundle();
+            logInfo("Branding/Translation file loaded: " + translationFile);
+        }
 
         InputStream in = Thread.currentThread().getContextClassLoader()
-            .getResourceAsStream(
-                "branding/" + brandingId + "/Client.config");
-        if (in == null) {
-            logSevere(
-                    "Branding/Preconfiguration file not found for "
-                        + brandingId);
-            return;
-        }
-        try {
-            Properties preConfig = new Properties();
-            preConfig.load(in);
-            for (Object obj : preConfig.keySet()) {
-                String key = (String) obj;
-                String value = preConfig.getProperty(key);
-                if (!config.containsKey(key)) {
-                    config.setProperty(key, value);
-                    logWarning("Preconfigured " + key + "=" + value);
-                }
-            }
-            logWarning("Preconfigs found " + preConfig.size());
-        } catch (Exception e) {
-            logSevere(
-                "Unable to load Branding/Preconfiguration file "
-                    + brandingId, e);
-        } finally {
-            try {
-                in.close();
-            } catch (IOException e) {
-            }
+            .getResourceAsStream("branding/" + brandingId + "/Client.config");
+        if (in != null) {
+            ConfigurationLoader.loadPreConfiguration(in, config, true);
+            logInfo("Branding/Preconfiguration file loaded for " + brandingId);
         }
     }
-
+    
     /**
      * Answers the waittime for threads time differst a bit to avoid
      * concurrencies
@@ -2039,8 +2030,7 @@ public class Controller extends PFComponent {
 
     /**
      * Process receipt of a SingleFileOffer.
-     *
-     * @param member
+     * 
      * @param singleFileOffer
      */
     public void singleFileOfferReceived(SingleFileOffer singleFileOffer) {
