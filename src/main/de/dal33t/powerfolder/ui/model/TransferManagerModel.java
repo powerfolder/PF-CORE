@@ -33,6 +33,7 @@ import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.information.downloads.DownloadManagersTableModel;
 import de.dal33t.powerfolder.ui.information.uploads.UploadsTableModel;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 public class TransferManagerModel extends PFUIComponent {
     private TransferManager transferManager;
@@ -80,8 +81,17 @@ public class TransferManagerModel extends PFUIComponent {
     public void initialize() {
         // Listen on transfer manager
         transferManager.addListener(new MyTransferManagerListener());
-        uploadsTableModel.initialize();
-        downloadManagersTableModel.initialize();
+        try {
+            // Ensure that models are not modified out of EDT.
+            UIUtil.invokeAndWaitInEDT(new Runnable() {
+                public void run() {
+                    uploadsTableModel.initialize();
+                    downloadManagersTableModel.initialize();
+                }
+            });
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         updateDownloadsTreeNode();
         updateUploadsTreeNode();
     }
