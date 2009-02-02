@@ -26,27 +26,6 @@ public class RecycleDeleteImpl {
     
     public static boolean loadLibrary() {
         return OSUtil.loadLibrary(RecycleDeleteImpl.class, LIBRARY);
-    	
-    	/* If the webstart thing is still required it should be moved to OSUtil.loadLibrary
-        try {
-            LOG.verbose("Loading library: " + LIBRARY);
-            System.loadLibrary(RecycleDeleteImpl.LIBRARY);
-            return true;
-        } catch (UnsatisfiedLinkError e) {
-            LOG.error(e);
-            // WORKAROUND: For PowerFolder webstart this workaround is
-            // required (FIXME Still needed?)
-            try {
-                File base = new File(Controller.getTempFilesLocation(), LIBRARY);
-                LOG.warn("Loading library (harder): " + base.getAbsolutePath());
-                System.loadLibrary(base.getAbsolutePath());
-                return true;
-            } catch (UnsatisfiedLinkError e2) {
-                LOG.error(e2);
-                return false;
-            }
-        }
-        */
     }
    
 
