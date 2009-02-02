@@ -1984,7 +1984,7 @@ public class TransferManager extends PFComponent {
      * @return unodifiable instance to the internal active downloads collection.
      */
     public Collection<DownloadManager> getActiveDownloads() {
-        return new LinkedList<DownloadManager>(dlManagers.values());
+        return Collections.unmodifiableCollection(dlManagers.values());
     }
 
     /**
