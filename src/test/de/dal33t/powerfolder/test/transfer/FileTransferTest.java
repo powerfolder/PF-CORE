@@ -1037,14 +1037,17 @@ public class FileTransferTest extends TwoControllerTestCase {
             public String message() {
                 return "lisa: completed dl= " + lisaListener.downloadCompleted
                     + ", req dl= " + lisaListener.downloadRequested
+                    + ", srtd dl= " + lisaListener.downloadStarted
                     + ", brkn dl= " + lisaListener.downloadBroken
                     + ", abrt dl= " + lisaListener.downloadAborted
                     + "; bart: req ul= " + bartListener.uploadRequested
+                    + ", srtd ul= " + bartListener.uploadStarted
                     + ", cmpld ul= " + bartListener.uploadCompleted
-                    + ", brkn ul= " + bartListener.uploadBroken;
+                    + ", brkn ul= " + bartListener.uploadBroken + ", abrt ul="
+                    + bartListener.uploadAborted;
             }
         });
-
+        
         assertTrue(TestHelper.compareFiles(fbart, flisa));
         assertTrue("Failed: "
             + getFolderAtLisa().getStatistic().getDownloadCounter()
@@ -1055,7 +1058,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         TestHelper.assertIncompleteFilesGone(this);
     }
     
-    public void testDeltaFileChanged() throws IOException, InterruptedException
+    public void testDeltaFileChanged() throws IOException
     {
         ConfigurationEntry.USE_DELTA_ON_LAN.setValue(getContollerBart(),
             Boolean.TRUE.toString());
@@ -1123,12 +1126,26 @@ public class FileTransferTest extends TwoControllerTestCase {
             public boolean reached() {
                 return lisaListener.downloadCompleted >= 2
                     && lisaListener.downloadRequested >= 2
+                    && lisaListener.downloadAborted == 0
+                    && lisaListener.downloadBroken == 0
+                    && bartListener.uploadRequested >= 2
+                    && bartListener.uploadAborted == 0
+                    && bartListener.uploadBroken == 0
+                    && bartListener.uploadStarted >= 2
                     && bartListener.uploadCompleted >= 2;
             }
 
             public String message() {
-                return "lisas dl completed: " + lisaListener.downloadCompleted
-                    + ", barts ul completed: " + bartListener.uploadCompleted;
+                return "lisa: completed dl= " + lisaListener.downloadCompleted
+                    + ", req dl= " + lisaListener.downloadRequested
+                    + ", srtd dl= " + lisaListener.downloadStarted
+                    + ", brkn dl= " + lisaListener.downloadBroken
+                    + ", abrt dl= " + lisaListener.downloadAborted
+                    + "; bart: req ul= " + bartListener.uploadRequested
+                    + ", srtd ul= " + bartListener.uploadStarted
+                    + ", cmpld ul= " + bartListener.uploadCompleted
+                    + ", brkn ul= " + bartListener.uploadBroken + ", abrt ul="
+                    + bartListener.uploadAborted;
             }
         });
 
