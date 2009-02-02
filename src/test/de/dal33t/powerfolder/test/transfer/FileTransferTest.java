@@ -867,16 +867,29 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         TestHelper.waitForCondition(60, new ConditionWithMessage() {
             public boolean reached() {
-                return lisasListener.downloadRequested >= 1
-                    && lisasListener.downloadCompleted >= 1
-                    && bartsListener.uploadCompleted >= 1;
+                return lisasListener.downloadCompleted == 1
+                    && lisasListener.downloadRequested == 2
+                    && lisasListener.downloadStarted == 2
+                    && lisasListener.downloadAborted == 0
+                    && lisasListener.downloadBroken == 1
+                    && bartsListener.uploadRequested == 2
+                    && bartsListener.uploadStarted == 2
+                    && bartsListener.uploadAborted == 1
+                    && bartsListener.uploadBroken == 0
+                    && bartsListener.uploadCompleted == 1;
             }
 
             public String message() {
-                return "Lisa downloads completed "
-                    + lisasListener.downloadCompleted
-                    + ". Bart uploads completed "
-                    + bartsListener.uploadCompleted;
+                return "lisa: completed dl= " + lisasListener.downloadCompleted
+                    + ", req dl= " + lisasListener.downloadRequested
+                    + ", srtd dl= " + lisasListener.downloadStarted
+                    + ", brkn dl= " + lisasListener.downloadBroken
+                    + ", abrt dl= " + lisasListener.downloadAborted
+                    + "; bart: req ul= " + bartsListener.uploadRequested
+                    + ", srtd ul= " + bartsListener.uploadStarted
+                    + ", cmpld ul= " + bartsListener.uploadCompleted
+                    + ", brkn ul= " + bartsListener.uploadBroken + ", abrt ul="
+                    + bartsListener.uploadAborted;
             }
         });
 
