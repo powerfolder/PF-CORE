@@ -307,7 +307,9 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         // Give them time to copy
         TestHelper.waitForCondition(20, new Condition() {
             public boolean reached() {
-                return getFolderAtLisa().getKnownFilesCount() >= 3;
+                return getFolderAtLisa().getKnownFilesCount() >= 3
+                    && getContollerBart().getTransferManager()
+                        .getCompletedUploadsCollection().size() >= 3;
             }
         });
 
@@ -324,14 +326,14 @@ public class DeletionSyncTest extends TwoControllerTestCase {
             assertEquals(0, fileInfo.getVersion());
         }
 
-        assertEquals(
-            getContollerBart().getRecycleBin().countAllRecycledFiles(), 0);
-        assertEquals(
-            getContollerLisa().getRecycleBin().countAllRecycledFiles(), 0);
+        assertEquals(0, getContollerBart().getRecycleBin()
+            .countAllRecycledFiles());
+        assertEquals(0, getContollerLisa().getRecycleBin()
+            .countAllRecycledFiles());
 
-        assertTrue(file1.delete());
-        assertTrue(file2.delete());
-        assertTrue(file3.delete());
+        assertTrue("Unable to delete: " + file1, file1.delete());
+        assertTrue("Unable to delete: " + file2, file2.delete());
+        assertTrue("Unable to delete: " + file3, file3.delete());
 
         assertFalse(file1.exists());
         assertFalse(file2.exists());

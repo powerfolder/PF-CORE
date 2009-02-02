@@ -1199,6 +1199,14 @@ public class TransferManager extends PFComponent {
             uploadsLock.unlock();
         }
     }
+    
+    /**
+     * @return an unmodifiable collection reffering to the internal completed
+     *         upload list. May change after returned.
+     */
+    public List<Upload> getCompletedUploadsCollection() {
+        return Collections.unmodifiableList(completedUploads);
+    }
 
     /**
      * @return the total number of queued / active uploads
@@ -1594,7 +1602,7 @@ public class TransferManager extends PFComponent {
                         + from);
                 }
 
-                if (download.getFile().isNewerThan(man.getFileInfo())) {
+                if (fInfo.isNewerThan(man.getFileInfo())) {
                     logSevere("Requested newer download: " + download
                         + " than " + man);
                 }

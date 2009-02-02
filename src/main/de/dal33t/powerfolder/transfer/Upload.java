@@ -220,24 +220,29 @@ public class Upload extends Transfer {
                         getTransferManager().logTransfer(false, took,
                             getFile(), getPartner());
                     }
+                    closeRAF();
                     if (!isBroken() && !aborted) {
                         getTransferManager().setCompleted(Upload.this);
                     }
                 } catch (TransferException e) {
+                    closeRAF();
                     // Loggable.logWarningStatic(Upload.class, "Upload broken: "
                     // + Upload.this, e);
                     getTransferManager().setBroken(Upload.this,
                         TransferProblem.TRANSFER_EXCEPTION, e.getMessage());
                 } finally {
                     debugState = "DONE";
-                    try {
-                        raf.close();
-                    } catch (IOException e) {
-                        logSevere("IOException", e);
-                    }
                 }
             }
 
+            private void closeRAF() {
+                try {
+                    raf.close();
+                } catch (IOException e) {
+                    logSevere("IOException", e);
+                }
+            }
+            
             public String toString() {
                 return "Upload " + getFile().toDetailString() + " to "
                     + getPartner().getNick();
