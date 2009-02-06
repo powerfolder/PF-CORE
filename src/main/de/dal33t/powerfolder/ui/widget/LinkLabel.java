@@ -90,6 +90,10 @@ public class LinkLabel extends PFComponent {
         }
     }
 
+    public void setToolTipText(String tips) {
+        uiComponent.setToolTipText(tips);
+    }
+
     private class MyMouseAdapter extends MouseAdapter {
         public void mouseClicked(MouseEvent e) {
             try {
