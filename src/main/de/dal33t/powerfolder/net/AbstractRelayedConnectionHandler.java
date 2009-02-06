@@ -19,8 +19,14 @@
 */
 package de.dal33t.powerfolder.net;
 
+import java.net.InetSocketAddress;
+import java.util.Date;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.light.MemberInfo;
@@ -36,15 +42,6 @@ import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Reject;
 
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.util.Date;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.logging.Logger;
-
 /**
  * The base super class for connection which get relayed through a third node.
  * <p>
@@ -57,7 +54,6 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
     implements ConnectionHandler
 {
 
-    private static final Logger log = Logger.getLogger(AbstractRelayedConnectionHandler.class.getName());
     /** The relay to use */
     private Member relay;
 
@@ -89,8 +85,6 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
     private Queue<Message> messagesToSendQueue;
 
     private boolean started;
-    // Flag if client is on lan
-    private boolean onLAN;
 
     // Locks
     private final Object identityWaiter = new Object();
@@ -274,9 +268,6 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
                     + getIdentity());
         }
 
-        // Analyse connection
-        analyseConnection();
-
         // Check this connection for keep-alive
         getController().getIOProvider().startKeepAliveCheck(this);
     }
@@ -365,11 +356,10 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
     }
 
     public boolean isOnLAN() {
-        return onLAN;
+        return false;
     }
 
     public void setOnLAN(boolean onlan) {
-        onLAN = onlan;
     }
 
     public void setMember(Member member) {
@@ -625,37 +615,6 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
             }
         }
         return messagesToSendQueue.isEmpty();
-    }
-
-    /**
-     * Analysese the connection of the user
-     */
-    private void analyseConnection() {
-        if (Feature.CORRECT_LAN_DETECTION.isDisabled()) {
-            logWarning("ON LAN because of correct connection analyse disabled");
-            setOnLAN(true);
-            return;
-        }
-        if (Feature.CORRECT_INTERNET_DETECTION.isDisabled()) {
-            logWarning("ON Internet because of correct connection analyse disabled");
-            setOnLAN(false);
-            return;
-        }
-        if (identity != null && identity.isTunneled()) {
-            setOnLAN(false);
-            return;
-        }
-        if (getRemoteAddress() != null
-            && getRemoteAddress().getAddress() != null)
-        {
-            InetAddress adr = getRemoteAddress().getAddress();
-            setOnLAN(getController().getNodeManager().isOnLANorConfiguredOnLAN(
-                adr));
-        }
-
-        if (isFiner()) {
-            logFiner("analyse connection: lan: " + onLAN);
-        }
     }
 
     public boolean acceptHandshake() {
