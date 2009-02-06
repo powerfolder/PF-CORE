@@ -23,7 +23,6 @@ import java.io.InputStream;
 import java.util.Locale;
 import java.util.Properties;
 
-import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.ConfigurationLoader;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.logging.Loggable;
@@ -35,19 +34,6 @@ import de.dal33t.powerfolder.util.logging.Loggable;
  * @version $Revision$
  */
 public abstract class AbstractBranding extends Loggable implements Branding {
-
-    protected boolean loadIcons(String brandingId) {
-        // Use icons
-        String iconsFile = "branding/" + brandingId + "/Icons.properties";
-        if (Thread.currentThread().getContextClassLoader().getResourceAsStream(
-            iconsFile) != null)
-        {
-            Icons.loadOverrideFile(iconsFile);
-            logInfo("Branding/Icons file loaded: " + iconsFile);
-            return true;
-        }
-        return false;
-    }
 
     protected boolean loadTranslation(String brandingId) {
         // Load texts
@@ -64,13 +50,12 @@ public abstract class AbstractBranding extends Loggable implements Branding {
         return false;
     }
 
-    protected boolean loadPreConfiguration(String brandingId, Properties config)
-    {
+    protected boolean loadClientPreConfig(Properties config) {
         InputStream in = Thread.currentThread().getContextClassLoader()
-            .getResourceAsStream("branding/" + brandingId + "/Client.config");
+            .getResourceAsStream("Client.config");
         if (in != null) {
             ConfigurationLoader.loadPreConfiguration(in, config, true);
-            logInfo("Branding/Preconfiguration file loaded for " + brandingId);
+            logInfo("Branding/Preconfiguration file Client.config");
             return true;
         }
         return false;
