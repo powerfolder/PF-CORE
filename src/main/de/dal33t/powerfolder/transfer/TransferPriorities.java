@@ -64,19 +64,22 @@ public class TransferPriorities implements Serializable {
     private Map<FileInfo, TransferPriority> priorities;
 
     /**
-     * Creates a TransferPriorities object with all files set no NORMAL priority.
+     * Creates a TransferPriorities object with all files set no NORMAL
+     * priority.
      */
     public TransferPriorities() {
         priorities = new HashMap<FileInfo, TransferPriority>();
-        
+
         priorityComparator = new Comparator<FileInfo>() {
             public int compare(FileInfo o1, FileInfo o2) {
-                return getPriority(o2).compareTo(getPriority(o1));
+                return getPriority(o2).compareTo(getPriority(o1)) * 10
+                    + o2.getName().compareToIgnoreCase(o1.getName());
             }
         };
-        
+
         validatePriorities();
     }
+    
     
     /**
      * @return a comparator which compares files based on their priority.
