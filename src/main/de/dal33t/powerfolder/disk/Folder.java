@@ -2350,7 +2350,8 @@ public class Folder extends PFComponent {
      * @param fileInfo
      * @param file
      */
-    private void deleteFile(FileInfo fileInfo, File file) {
+    private void deleteFile(FileInfo newFileInfo, File file) {
+        FileInfo fileInfo = getFile(newFileInfo);
         if (useRecycleBin) {
             if (isFine()) {
                 logFine("Deleting file " + fileInfo.toDetailString()
