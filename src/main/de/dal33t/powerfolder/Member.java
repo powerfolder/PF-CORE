@@ -823,12 +823,15 @@ public class Member extends PFComponent implements Comparable<Member> {
             } else if (isFiner()) {
                 logFiner("Got handshake completion!!");
             }
-        } else if (peer != null && !peer.isConnected()) {
+        } else if (peer != null && peer.isConnected()) {
+            // Handshaked
+            handshaked = true;
+        } else {
             shutdown();
             return false;
         }
 
-        handshaked = thisHandshakeCompleted;
+
         // Reset things
         connectionRetries = 0;
 
@@ -982,7 +985,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                 }
             }
         }
-        return lastHandshakeCompleted != null;
+        return lastHandshakeCompleted != null && handshaked;
     }
 
     /**
@@ -1138,6 +1141,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                 lastHandshakeCompleted = (HandshakeCompleted) message;
                 // Notify waiting ppl
                 synchronized (handshakeCompletedWaiter) {
+                    handshaked = true;
                     handshakeCompletedWaiter.notifyAll();
                 }
                 expectedTime = 100;
