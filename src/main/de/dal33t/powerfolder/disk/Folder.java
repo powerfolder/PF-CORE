@@ -784,7 +784,8 @@ public class Folder extends PFComponent {
             }
             return false;
         }
-        if (lastScan == null) {
+        Date wasLastScan = lastScan;
+        if (wasLastScan == null) {
             return true;
         }
 
@@ -797,7 +798,7 @@ public class Folder extends PFComponent {
             }
 
         } else {
-            long secondsSinceLastSync = (System.currentTimeMillis() - lastScan
+            long secondsSinceLastSync = (System.currentTimeMillis() - wasLastScan
                 .getTime()) / 1000;
             if (secondsSinceLastSync < syncProfile.getSecondsBetweenScans()) {
                 if (isFiner()) {
@@ -1502,8 +1503,6 @@ public class Folder extends PFComponent {
             + desktopIni.getParentFile().getAbsolutePath());
 
         FileUtils.setAttributesOnWindows(desktopIni, true, true);
-        FileUtils.setAttributesOnWindows(desktopIni.getParentFile(), false,
-            true);
     }
 
     /**
