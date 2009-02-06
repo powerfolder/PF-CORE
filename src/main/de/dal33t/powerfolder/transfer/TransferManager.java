@@ -1189,6 +1189,13 @@ public class TransferManager extends PFComponent {
     }
 
     /**
+     * @return the number of currently activly transferring uploads.
+     */
+    public int countActiveUploads() {
+        return activeUploads.size();
+    }
+
+    /**
      * @return the currently active uploads
      */
     public Upload[] getActiveUploads() {

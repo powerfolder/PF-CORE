@@ -304,15 +304,17 @@ public class SwarmingTest extends MultipleControllerTestCase {
 
         TestHelper.waitForCondition(10, new Condition() {
             public boolean reached() {
-                return getFolderOf("5").getKnownFiles().iterator().next()
-                    .getVersion() == 2;
+                return getFolderOf("4").getKnownFiles().iterator().next()
+                    .getVersion() == 2
+                    && getFolderOf("1").getKnownFiles().iterator().next()
+                        .getVersion() == 2;
             }
         });
 
         TestHelper.assertIncompleteFilesGone(this);
     }
 
-    public void xtestMultiFileAlterations() throws Exception {
+    public void testMultiFileAlterations() throws Exception {
         for (int i = 0; i < 20; i++) {
             testFileAlterations();
             tearDown();

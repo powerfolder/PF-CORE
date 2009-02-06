@@ -162,7 +162,9 @@ public class TestHelper {
         waitForCondition(10, new Condition() {
             public boolean reached() {
                 for (Controller c : testCase.getControllers()) {
-                    if (c.getTransferManager().countActiveDownloads() != 0) {
+                    if (c.getTransferManager().countActiveDownloads() != 0
+                        && c.getTransferManager().countActiveUploads() != 0)
+                    {
                         return false;
                     }
                 }
