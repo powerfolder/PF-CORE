@@ -29,7 +29,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.security.Security;
@@ -40,9 +39,9 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Properties;
 import java.util.ResourceBundle;
+import java.util.ServiceLoader;
 import java.util.StringTokenizer;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -61,6 +60,8 @@ import org.apache.commons.cli.CommandLine;
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
 
+import de.dal33t.powerfolder.branding.Branding;
+import de.dal33t.powerfolder.branding.DefaultBranding;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.RecycleBin;
@@ -83,9 +84,7 @@ import de.dal33t.powerfolder.net.ReconnectManager;
 import de.dal33t.powerfolder.plugin.PluginManager;
 import de.dal33t.powerfolder.security.SecurityManager;
 import de.dal33t.powerfolder.transfer.TransferManager;
-import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.UIController;
-import de.dal33t.powerfolder.util.ConfigurationLoader;
 import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.ForcedLanguageFileResourceBundle;
@@ -156,9 +155,9 @@ public class Controller extends PFComponent {
     private Preferences preferences;
     
     /**
-     * The branding setup id. or null if using default
+     * The branding used.
      */
-    private String brandingId;
+    private Branding branding;
 
     /** Program start time */
     private Date startTime;
@@ -431,7 +430,7 @@ public class Controller extends PFComponent {
         osClient = new ServerClient(this);
 
         // Initialize branding/preconfiguration of the client
-        //initClientBranding("online_duplicate");
+        initBranding();
 
         if (isUIEnabled()) {
             uiController = new UIController(this);
@@ -1455,10 +1454,10 @@ public class Controller extends PFComponent {
     }
     
     /**
-     * @return the branding id of this client. or null if default
+     * @return the branding of this client.
      */
-    public String getBrandingId() {
-        return brandingId;
+    public Branding getBranding() {
+        return branding;
     }
 
     /**
@@ -1954,40 +1953,24 @@ public class Controller extends PFComponent {
         exit(1);
     }
     
-    private void initClientBranding(String bId, boolean serverInternalFunctions)
-    {
-        this.brandingId = bId;
-
-        logInfo("Starting branded distribution: " + brandingId);
-        if (!serverInternalFunctions) {
-            Feature.SERVER_INTERNAL_FUNCTIONS.disable();
+    private void initBranding() {
+        ServiceLoader<Branding> brandingLoader = ServiceLoader
+            .load(Branding.class);
+        for (Branding br : brandingLoader) {
+            if (branding != null) {
+                logSevere("Found multiple branding classes: " + br
+                    + ", got already " + branding);
+            }
+            branding = br;
         }
-
-        // Use icons
-        String iconsFile = "branding/" + brandingId + "/Icons.properties";
-        if (Thread.currentThread().getContextClassLoader().getResourceAsStream(
-            iconsFile) != null)
-        {
-            Icons.loadOverrideFile(iconsFile);
-            logInfo("Branding/Icons file loaded: " + iconsFile);
+        if (branding == null) {
+            branding = new DefaultBranding();
         }
-
-        // Load texts
-        String translationFile = "Translation_en_" + brandingId + ".properties";
-        if (Thread.currentThread().getContextClassLoader().getResourceAsStream(
-            translationFile) != null)
-        {
-            Locale l = new Locale("en", brandingId);
-            Translation.saveLocalSetting(l);
-            Translation.resetResourceBundle();
-            logInfo("Branding/Translation file loaded: " + translationFile);
-        }
-
-        InputStream in = Thread.currentThread().getContextClassLoader()
-            .getResourceAsStream("branding/" + brandingId + "/Client.config");
-        if (in != null) {
-            ConfigurationLoader.loadPreConfiguration(in, config, true);
-            logInfo("Branding/Preconfiguration file loaded for " + brandingId);
+        logInfo("Running branded as: " + branding.getName());
+        try {
+            branding.init(this);
+        } catch (Exception e) {
+            logSevere("Failed to initialize branding " + branding.getName(), e);
         }
     }
     

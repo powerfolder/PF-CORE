@@ -25,7 +25,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.ui.action.BaseAction;
@@ -50,7 +49,7 @@ public class OpenServerWebUrlInBrowserAction extends BaseAction {
 
     private void updateState() {
         setEnabled(getController().getOSClient().hasWebURL()
-            && Feature.SERVER_INTERNAL_FUNCTIONS.isEnabled());
+            && getController().getBranding().supportWeb());
     }
 
     private class MyServerClientListener implements ServerClientListener {

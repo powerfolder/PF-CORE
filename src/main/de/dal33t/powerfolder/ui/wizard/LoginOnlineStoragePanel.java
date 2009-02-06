@@ -43,7 +43,6 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
@@ -155,7 +154,7 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
 
         builder.add(rememberPasswordBox, cc.xy(3, 7));
 
-        if (Feature.SERVER_INTERNAL_FUNCTIONS.isEnabled()
+        if (getController().getBranding().supportWeb()
             && client.getRegisterURL() != null)
         {
             builder.add(new LinkLabel(getController(), Translation
