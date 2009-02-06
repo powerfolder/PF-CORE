@@ -484,7 +484,8 @@ public class DownloadManagersTableModel extends PFComponent implements TableMode
                 for (Download download : downloadManager.getSources()) {
                     if (download.getFile().isVersionAndDateIdentical(
                         dl.getFile())
-                        && Util.equals(download.getPartner(), dl.getPartner()))
+                        && (Util.equals(download.getPartner(), dl.getPartner()) || download
+                            .isPending()))
                     {
                         return i;
                     }
