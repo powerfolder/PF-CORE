@@ -267,7 +267,7 @@ public abstract class FiveControllerTestCase extends MultipleControllerTestCase
     protected void waitForCompletedDownloads(final int h, final int b,
         final int mar, final int l, final int mag)
     {
-        TestHelper.waitForCondition(20, new ConditionWithMessage() {
+        TestHelper.waitForCondition(40, new ConditionWithMessage() {
             public boolean reached() {
                 return getContollerHomer().getTransferManager()
                     .getCompletedDownloadsCollection().size() == h
