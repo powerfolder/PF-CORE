@@ -43,7 +43,7 @@ import de.dal33t.powerfolder.message.clientserver.AccountDetails;
 import de.dal33t.powerfolder.net.ConnectionListener;
 import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.security.AnonymousAccount;
-import de.dal33t.powerfolder.security.FolderAdminPermission;
+import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.security.Permission;
 import de.dal33t.powerfolder.util.Base64;
 import de.dal33t.powerfolder.util.IdGenerator;
@@ -114,8 +114,12 @@ public class ServerClient extends PFComponent {
      * Constructs a server client with the defaults from the config.
      * 
      * @param controller
-     * @param server
+     * @param name 
+     * @param host 
+     * @param nodeId 
+     * @param webURL 
      * @param allowServerChange
+     * @param updateConfig 
      */
     public ServerClient(Controller controller, String name, String host,
         String nodeId, String webURL, boolean allowServerChange,
@@ -558,19 +562,14 @@ public class ServerClient extends PFComponent {
     }
 
     /**
-     * Method to get a list of folder infos that are available online.
-     * 
-     * @return
+     * @return a list of folder infos that are available online.
      */
     public List<FolderInfo> getOnlineFolders() {
         List<FolderInfo> folderInfos = new ArrayList<FolderInfo>();
         for (Permission permission : getAccount().getPermissions()) {
-            if (permission instanceof FolderAdminPermission) {
-                FolderAdminPermission folderAdminPermission =
-                        (FolderAdminPermission) permission;
-                FolderInfo folderInfo = folderAdminPermission.getFolder();
-                
-                folderInfos.add(folderInfo);
+            if (permission instanceof FolderPermission) {
+                FolderPermission fp = (FolderPermission) permission;
+                folderInfos.add(fp.getFolder());
             }
         }
         return folderInfos;
@@ -637,13 +636,13 @@ public class ServerClient extends PFComponent {
         Runnable retriever = new Runnable() {
             public void run() {
                 Collection<FolderInfo> infos = getController()
-                        .getFolderRepository().getJoinedFolderInfos();
-                FolderInfo[] folders = infos.toArray(new FolderInfo[infos.size()]);
+                    .getFolderRepository().getJoinedFolderInfos();
+                FolderInfo[] folders = infos.toArray(new FolderInfo[infos
+                    .size()]);
                 Collection<MemberInfo> servers = getFolderService()
                     .getHostingServers(folders);
-                logWarning(
-                    "Got " + servers.size() + " servers for our "
-                        + folders.length + " folders: " + servers);
+                logFine("Got " + servers.size() + " servers for our "
+                    + folders.length + " folders: " + servers);
                 for (MemberInfo serverMInfo : servers) {
                     Member hostingServer = serverMInfo.getNode(getController(),
                         true);
