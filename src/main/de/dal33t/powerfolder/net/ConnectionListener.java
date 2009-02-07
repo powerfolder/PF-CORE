@@ -71,10 +71,10 @@ public class ConnectionListener extends PFComponent implements Runnable {
         String bindToInterface) throws ConnectionException
     {
         super(controller);
-        if (port > 0) {
-            this.port = port;
-        } else {
+        if (port < 0) {
             this.port = DEFAULT_PORT;
+        } else {
+            this.port = port;
         }
         this.hasIncomingConnection = false;
         this.interfaceAddress = bindToInterface;
