@@ -72,8 +72,7 @@ public class TransferPriorities implements Serializable {
 
         priorityComparator = new Comparator<FileInfo>() {
             public int compare(FileInfo o1, FileInfo o2) {
-                return getPriority(o2).compareTo(getPriority(o1)) * 10
-                    + o2.getName().compareToIgnoreCase(o1.getName());
+                return getPriority(o2).compareTo(getPriority(o1));
             }
         };
 
