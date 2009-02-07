@@ -237,6 +237,10 @@ public class Upload extends Transfer {
 
             private void closeRAF() {
                 try {
+                    if (isFiner()) {
+                        logFiner("Closing raf for "
+                            + getFile().toDetailString());
+                    }
                     raf.close();
                 } catch (IOException e) {
                     logSevere("IOException", e);
