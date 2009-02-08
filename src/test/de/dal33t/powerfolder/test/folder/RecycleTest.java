@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.test.folder;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.util.Arrays;
 import java.util.Date;
 
 import de.dal33t.powerfolder.disk.RecycleBin;
@@ -82,4 +83,18 @@ public class RecycleTest extends ControllerTestCase {
         assertFalse(file.exists());
     }
 
+    public void testEmptyRecycleBin() {
+        FileInfo[] files = getFolder().getKnowFilesAsArray();
+        FileInfo testfile = files[0];
+        File file = getFolder().getDiskFile(testfile);
+        RecycleBin bin = getController().getRecycleBin();
+
+        getFolder().removeFilesLocal(files);
+        assertFalse(file.exists());
+        bin.emptyRecycleBin(null);
+        File recycleBinDir = new File(getFolder().getSystemSubDir(), ".recycle");
+        assertTrue(recycleBinDir.exists());
+        assertTrue(Arrays.asList(recycleBinDir.list()).toString(),
+            recycleBinDir.list().length == 0);
+    }
 }

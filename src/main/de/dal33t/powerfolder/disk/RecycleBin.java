@@ -339,14 +339,10 @@ public class RecycleBin extends PFComponent {
                     continue;
                 }
 
-                if (RecycleDelete.isSupported()) {
-                    RecycleDelete.delete(recycleBinDir.getAbsolutePath());
-                } else {
-                    try {
-                        FileUtils.recursiveDelete(recycleBinDir);
-                    } catch (IOException e) {
-                        logSevere("Unable to empty recycle bin", e);
-                    }
+                try {
+                    FileUtils.recursiveDelete(recycleBinDir);
+                } catch (IOException e) {
+                    logSevere("Unable to empty recycle bin", e);
                 }
             }
 
