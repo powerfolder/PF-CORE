@@ -95,13 +95,13 @@ public enum Feature {
     }
 
     public void disable() {
-        log.warning(name() + " disabled");
+        log.fine(name() + " disabled");
         System.setProperty("powerfolder.feature." + name(), "disabled");
         enabled = false;
     }
 
     public void enable() {
-        log.warning(name() + " enabled");
+        log.fine(name() + " enabled");
         System.setProperty("powerfolder.feature." + name(), "enabled");
         enabled = true;
     }
