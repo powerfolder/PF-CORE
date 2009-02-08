@@ -122,7 +122,7 @@ public abstract class MultipleControllerTestCase extends TestCase {
         Controller controller = Controller.createController();
         controller.startConfig(config);
         waitForStart(controller);
-        assertNotNull("Connectiin listener for controller '" + id
+        assertNotNull("Connection listener for controller '" + id
             + "' could not be opened", controller.getConnectionListener());
         // triggerAndWaitForInitialMaitenenace(controller);
         controller.getPreferences().putBoolean("createdesktopshortcuts", false);
