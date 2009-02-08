@@ -49,6 +49,7 @@ import java.util.List;
  * @version $Revision: 1.13 $
  */
 public class WhatToDoPanel extends PFWizardPanel {
+
     static final int PICTO_FONT_SIZE = 6;
 
     // The options of this screen
@@ -64,7 +65,6 @@ public class WhatToDoPanel extends PFWizardPanel {
     private ActionLabel customLink;
     private ActionLabel inviteLink;
     private LinkLabel documentationLink;
-
     private ValueModel decision;
 
     public WhatToDoPanel(Controller controller) {
@@ -169,6 +169,8 @@ public class WhatToDoPanel extends PFWizardPanel {
         FolderSetupPanel setupPanel = new FolderSetupPanel(getController());
         return new ChooseDiskLocationPanel(getController(), null,
             setupPanel);
+//        return new ChooseMultiDiskLocationPanel(getController(),
+//            setupPanel);
     }
 
     private WizardPanel doHostOption() {
@@ -210,6 +212,8 @@ public class WhatToDoPanel extends PFWizardPanel {
 
         return new ChooseDiskLocationPanel(getController(), null,
             createPanel);
+//        return new ChooseMultiDiskLocationPanel(getController(),
+//            createPanel);
     }
 
     private WizardPanel doBackupOption() {
@@ -253,6 +257,8 @@ public class WhatToDoPanel extends PFWizardPanel {
 
         return new ChooseDiskLocationPanel(getController(), null,
             createPanel);
+//        return new ChooseMultiDiskLocationPanel(getController(),
+//            createPanel);
     }
 
     private WizardPanel doSyncOption() {
@@ -294,6 +300,8 @@ public class WhatToDoPanel extends PFWizardPanel {
 
         return new ChooseDiskLocationPanel(getController(), null,
             createPanel);
+//        return new ChooseMultiDiskLocationPanel(getController(),
+//            createPanel);
     }
 
     /**

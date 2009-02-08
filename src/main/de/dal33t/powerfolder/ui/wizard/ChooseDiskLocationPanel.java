@@ -27,7 +27,6 @@ import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SEND_INVIA
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SYNC_PROFILE_ATTRIBUTE;
 
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.SystemColor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -221,14 +220,14 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
     protected JPanel buildContent() {
 
         StringBuilder verticalUserDirectoryLayout = new StringBuilder();
-        // Include cutom button in size calculations.
-        // Two buttons every row.
+        // Include custom button in size calculations.
+        // Three buttons every row.
         for (int i = 0; i < 1 + userDirectories.size() / 3; i++) {
             verticalUserDirectoryLayout.append("pref, 3dlu, ");
         }
 
         String verticalLayout = verticalUserDirectoryLayout
-            + "3dlu, pref, 3dlu, pref, 3dlu, pref, 15dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref";
+            + "3dlu, pref, 3dlu, pref, 3dlu, pref, 10dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref";
 
         FormLayout layout = new FormLayout(
             "pref, 15dlu, pref, 15dlu, pref, 0:grow", verticalLayout);
@@ -365,9 +364,6 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         });
 
         locationField = createLocationField();
-        Dimension dims = locationField.getPreferredSize();
-        dims.width = Sizes.dialogUnitXAsPixel(147, locationField);
-        locationField.setPreferredSize(dims);
         locationField.setBackground(Color.WHITE);
 
         folderSizeLabel = new JLabel();
@@ -510,7 +506,6 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
             value = transientDirectory;
         }
         locationTF.setText(value);
-        // locationButton.setEnabled(customRB.isSelected());
     }
 
     /**
@@ -520,7 +515,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
      * @return
      */
     private JComponent createLocationField() {
-        FormLayout layout = new FormLayout("100dlu, 3dlu, 15dlu", "pref");
+        FormLayout layout = new FormLayout("122dlu, 3dlu, 15dlu", "pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
