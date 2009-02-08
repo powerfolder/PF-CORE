@@ -19,17 +19,9 @@
 */
 package de.dal33t.powerfolder.util.ui;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.factories.ButtonBarFactory;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.net.AddressRange;
-import de.dal33t.powerfolder.util.ui.AddressEditor.EditorResult;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.text.ParseException;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -38,9 +30,20 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.text.ParseException;
+
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.factories.ButtonBarFactory;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
+
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.util.StringUtils;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.net.AddressRange;
+import de.dal33t.powerfolder.util.ui.AddressEditor.EditorResult;
 
 public class LANList extends PFComponent {
 
@@ -143,8 +146,12 @@ public class LANList extends PFComponent {
     }
 
     public void load() {
-        String lanlist[] = ConfigurationEntry.LANLIST.getValue(getController())
-            .split(",");
+        String lanListValue = ConfigurationEntry.LANLIST
+            .getValue(getController());
+        if (StringUtils.isBlank(lanListValue)) {
+            return;
+        }
+        String lanlist[] = lanListValue.split(",");
         for (String ip : lanlist) {
             AddressRange ar;
             try {
