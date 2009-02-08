@@ -259,14 +259,24 @@ public class TestHelper {
         }
         if (0 != testDir.listFiles().length) {
             StringBuilder b = new StringBuilder();
-            for (File f : testDir.listFiles()) {
-                b.append(f.getAbsolutePath() + ", ");
-                // System.err.println(Arrays.asList(f.listFiles()[0].list()));
-            }
+            listFiles(testDir, b);
             throw new IllegalStateException(
                 "cleaning test dir not succeded. Files left:" + b.toString());
         }
     }
+
+    private static void listFiles(File base, StringBuilder b) {
+        File[] files = base.listFiles();
+        for (int i = 0; i < files.length; i++) {
+            File file = files[i];
+            if (file.isDirectory()) {
+                listFiles(file, b);
+            } else {
+                b.append(file.getAbsolutePath() + ", ");
+            }
+        }
+    }
+
 
     /**
      * Wraps <code>Thread.sleep()</code> and just try/catches the
