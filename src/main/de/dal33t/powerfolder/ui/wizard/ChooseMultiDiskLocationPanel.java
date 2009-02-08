@@ -33,9 +33,12 @@ import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
 import jwf.WizardPanel;
 
 import javax.swing.*;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.event.ListSelectionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.ActionEvent;
@@ -103,12 +106,14 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
     private Map<String, File> userDirectories = new TreeMap<String, File>();
 
     private JList customDirectoryList;
+    private DefaultListModel customDirectoryListModel;
     private JCheckBox backupByOnlineStorageBox;
     private JCheckBox createDesktopShortcutBox;
     private JCheckBox manualSyncCheckBox;
     private JCheckBox sendInviteAfterCB;
     private Action addAction;
     private Action removeAction;
+    private String initialDirectory;
 
     /**
      * Creates a new disk location wizard panel. Name of new folder is
@@ -163,7 +168,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         }
 
         String verticalLayout = verticalUserDirectoryLayout
-            + "pref, 3dlu, 30dlu, 3dlu, pref, 10dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref";
+            + "pref, 3dlu, 40dlu, 3dlu, pref, 10dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref";
         FormLayout layout = new FormLayout(
             "pref, 15dlu, pref, 15dlu, pref, 0:grow", verticalLayout);
         PanelBuilder builder = new PanelBuilder(layout);
@@ -240,13 +245,17 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
      */
     protected void initComponents() {
 
+        initialDirectory = System.getProperty("user.home");
+
         findUserDirectories();
 
         addAction = new MyAddAction(getController());
         removeAction = new MyRemoveAction(getController());
 
-        DefaultListModel customDirectoryListModel = new DefaultListModel();
+        customDirectoryListModel = new DefaultListModel();
         customDirectoryList = new JList(customDirectoryListModel);
+        customDirectoryList.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+        customDirectoryList.addListSelectionListener(new MyListSelectionListener());
 
         // Online Storage integration
         boolean backupByOS = !getController().isLanOnly()
@@ -284,6 +293,8 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
             .getTranslation("choose_disk_location_panel.send_invitation"));
         sendInviteAfterCB.setOpaque(false);
         sendInviteAfterCB.setSelected(sendInvite);
+
+        enableRemoveAction();
 
     }
 
@@ -425,6 +436,11 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         }
     }
 
+    private void enableRemoveAction() {
+        removeAction.setEnabled (!customDirectoryList.getSelectionModel()
+                .isSelectionEmpty());
+    }
+
     private class MyAddAction extends BaseAction {
 
         MyAddAction(Controller controller) {
@@ -432,6 +448,14 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         }
 
         public void actionPerformed(ActionEvent e) {
+            String dir = DialogFactory.chooseDirectory(getController(),
+                    initialDirectory);
+            if (new File(dir).exists()) {
+                initialDirectory = dir;
+                if (!customDirectoryListModel.contains(dir)) {
+                    customDirectoryListModel.addElement(dir);
+                }
+            }
         }
     }
 
@@ -442,6 +466,15 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         }
 
         public void actionPerformed(ActionEvent e) {
+            customDirectoryListModel.removeRange(
+                customDirectoryList.getSelectionModel().getMinSelectionIndex(),
+                customDirectoryList.getSelectionModel().getMaxSelectionIndex());
+        }
+    }
+
+    private class MyListSelectionListener implements ListSelectionListener {
+        public void valueChanged(ListSelectionEvent e) {
+            enableRemoveAction();
         }
     }
 }
