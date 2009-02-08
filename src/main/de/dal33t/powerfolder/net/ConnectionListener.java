@@ -400,7 +400,7 @@ public class ConnectionListener extends PFComponent implements Runnable {
      * @return the port this listener is bound to.
      */
     public int getPort() {
-        return port;
+        return serverSocket != null ? serverSocket.getLocalPort() : port;
     }
 
     public void run() {
