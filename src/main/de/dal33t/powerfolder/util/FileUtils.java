@@ -19,13 +19,7 @@
  */
 package de.dal33t.powerfolder.util;
 
-import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.util.os.OSUtil;
-
 import java.awt.Desktop;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
@@ -43,6 +37,10 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
+
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.util.os.OSUtil;
 
 public class FileUtils {
 
@@ -143,8 +141,7 @@ public class FileUtils {
         if (from.equals(to)) {
             throw new IllegalArgumentException("cannot copy onto itself");
         }
-        copyFromStreamToFile(
-            new BufferedInputStream(new FileInputStream(from)), to);
+        copyFromStreamToFile(new FileInputStream(from), to);
     }
 
     /**
@@ -188,29 +185,31 @@ public class FileUtils {
         if (to == null) {
             throw new NullPointerException("To file is null");
         }
-        if (to.exists()) {
-            if (!to.delete()) {
-                throw new IOException("Unable to delete old file "
+        OutputStream out = null;
+        try {
+            if (to.exists()) {
+                if (!to.delete()) {
+                    throw new IOException("Unable to delete old file "
+                        + to.getAbsolutePath());
+                }
+            }
+            if (to.getParentFile() != null && !to.getParentFile().exists()) {
+                to.getParentFile().mkdirs();
+            }
+            if (!to.createNewFile()) {
+                throw new IOException("Unable to create file "
                     + to.getAbsolutePath());
             }
-        }
-        if (to.getParentFile() != null && !to.getParentFile().exists()) {
-            to.getParentFile().mkdirs();
-        }
-        if (!to.createNewFile()) {
-            throw new IOException("Unable to create file "
-                + to.getAbsolutePath());
-        }
-        if (!to.canWrite()) {
-            throw new IOException("Unable to write to " + to.getAbsolutePath());
-        }
+            if (!to.canWrite()) {
+                throw new IOException("Unable to write to "
+                    + to.getAbsolutePath());
+            }
 
-        OutputStream out = new BufferedOutputStream(new FileOutputStream(to));
-
-        try {
+            out = new FileOutputStream(to);
             byte[] buffer = new byte[BYTE_CHUNK_SIZE];
             int read;
             int position = 0;
+
             do {
                 read = in.read(buffer);
                 if (read < 0) {
@@ -231,8 +230,16 @@ public class FileUtils {
             } while (read >= 0);
         } finally {
             // Close streams
-            in.close();
-            out.close();
+            try {
+                in.close();
+            } catch (IOException e) {
+            }
+            if (out != null) {
+                try {
+                    out.close();
+                } catch (IOException e) {
+                }
+            }
         }
     }
 
