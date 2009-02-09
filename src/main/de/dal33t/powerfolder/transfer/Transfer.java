@@ -302,18 +302,18 @@ public abstract class Transfer extends Loggable implements Serializable {
             return false;
         }
         if (getPartner() == null) {
-            logWarning("Break cause: partner is null.");
+            logFine("Break cause: partner is null.");
             return true;
         }
         if (!getPartner().isCompleteyConnected()) {
-            logWarning(
+            logFine(
                 "Break cause: " + getPartner().getNick() + " not connected.");
             return true;
         }
         boolean partnerOnFolder = stillPartnerOnFolder();
         if (!partnerOnFolder) {
             // broken if partner left folder
-            logWarning(
+            logFine(
                 "Break cause: " + getPartner().getNick() + " not on folder.");
             return true;
         }

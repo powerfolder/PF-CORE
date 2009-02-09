@@ -384,13 +384,13 @@ public class Download extends Transfer {
             - Constants.DOWNLOAD_REQUEST_TIMEOUT_LIMIT > lastTouch.getTime()
             && !queued;
         if (timedOut) {
-            logWarning("Break cause: Timeout.");
+            logFine("Break cause: Timeout.");
             return true;
         }
         // Check queueing at remote side
         boolean isQueuedAtPartner = stillQueuedAtPartner();
         if (!isQueuedAtPartner) {
-            logWarning("Break cause: not queued.");
+            logFine("Break cause: not queued.");
             return true;
         }
         // check blacklist
@@ -398,7 +398,7 @@ public class Download extends Transfer {
             getController().getFolderRepository());
         boolean onBlacklist = folder.getDiskItemFilter().isExcluded(getFile());
         if (onBlacklist) {
-            logWarning("Break cause: On blacklist.");
+            logFine("Break cause: On blacklist.");
             return true;
         }
 
@@ -411,7 +411,7 @@ public class Download extends Transfer {
         boolean newerFileAvailable = getFile().isNewerAvailable(
             getController().getFolderRepository());
         if (newerFileAvailable) {
-            logWarning("Break cause: Newer version available. "
+            logFine("Break cause: Newer version available. "
                 + getFile().toDetailString());
             return true;
         }
