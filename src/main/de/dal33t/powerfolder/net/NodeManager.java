@@ -308,7 +308,7 @@ public class NodeManager extends PFComponent {
             } catch (ExecutionException e) {
             }
         }
-        shutdownThreadPool.shutdown();
+        shutdownThreadPool.shutdownNow();
 
         // "Traditional" shutdown
         logFine("Shutting down " + knownNodes.size() + " nodes");
