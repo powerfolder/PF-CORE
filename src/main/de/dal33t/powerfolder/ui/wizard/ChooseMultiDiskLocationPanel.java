@@ -190,7 +190,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
             getWizardContext().setAttribute(SYNC_PROFILE_ATTRIBUTE,
                 SyncProfile.MANUAL_SYNCHRONIZATION);
         }
-        return false;
+        return true;
     }
 
     protected JPanel buildContent() {
@@ -232,7 +232,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
             PROMPT_TEXT_ATTRIBUTE);
         if (infoText == null) {
             infoText = Translation
-                .getTranslation("choose_multi_disk_location_panel.select");
+                .getTranslation("wizard.choose_multi_disk_location.select");
         }
         builder.addLabel(infoText, cc.xyw(1, row, 6));
         row += 2;
@@ -300,7 +300,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
             && Boolean.TRUE.equals(getWizardContext().getAttribute(
                 BACKUP_ONLINE_STOARGE));
         backupByOnlineStorageBox = new JCheckBox(Translation
-            .getTranslation("choose_disk_location_panel.backup_by_online_storage"));
+            .getTranslation("wizard.choose_disk_location.backup_by_online_storage"));
         backupByOnlineStorageBox.setSelected(backupByOS);
         backupByOnlineStorageBox.getModel().addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
@@ -314,13 +314,13 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
 
         // Create desktop shortcut
         createDesktopShortcutBox = new JCheckBox(Translation
-            .getTranslation("choose_disk_location_panel.create_desktop_shortcut"));
+            .getTranslation("wizard.choose_disk_location.create_desktop_shortcut"));
 
         createDesktopShortcutBox.setOpaque(false);
 
         // Create manual sync cb
         manualSyncCheckBox = new JCheckBox(Translation
-            .getTranslation("choose_disk_location_panel.maual_sync"));
+            .getTranslation("wizard.choose_disk_location.maual_sync"));
 
         manualSyncCheckBox.setOpaque(false);
 
@@ -328,7 +328,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         boolean sendInvite = Boolean.TRUE.equals(getWizardContext()
             .getAttribute(SEND_INVIATION_AFTER_ATTRIBUTE));
         sendInviteAfterCB = SimpleComponentFactory.createCheckBox(Translation
-            .getTranslation("choose_disk_location_panel.send_invitation"));
+            .getTranslation("wizard.choose_disk_location.send_invitation"));
         sendInviteAfterCB.setOpaque(false);
         sendInviteAfterCB.setSelected(sendInvite);
 
@@ -340,7 +340,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
     }
 
     protected String getTitle() {
-        return Translation.getTranslation("choose_multi_disk_location_panel.select");
+        return Translation.getTranslation("wizard.choose_multi_disk_location.title");
     }
 
     /**

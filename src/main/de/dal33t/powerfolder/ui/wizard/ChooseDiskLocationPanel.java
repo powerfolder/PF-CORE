@@ -276,7 +276,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
             PROMPT_TEXT_ATTRIBUTE);
         if (infoText == null) {
             infoText = Translation
-                .getTranslation("choose_disk_location_panel.select");
+                .getTranslation("wizard.choose_disk_location.select");
         }
         builder.addLabel(infoText, cc.xyw(1, row, 6));
         row += 2;
@@ -373,7 +373,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
             && Boolean.TRUE.equals(getWizardContext().getAttribute(
                 WizardContextAttributes.BACKUP_ONLINE_STOARGE));
         backupByOnlineStorageBox = new JCheckBox(Translation
-            .getTranslation("choose_disk_location_panel.backup_by_online_storage"));
+            .getTranslation("wizard.choose_disk_location.backup_by_online_storage"));
         backupByOnlineStorageBox.setSelected(backupByOS);
         backupByOnlineStorageBox.getModel().addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
@@ -387,13 +387,13 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
 
         // Create desktop shortcut
         createDesktopShortcutBox = new JCheckBox(Translation
-            .getTranslation("choose_disk_location_panel.create_desktop_shortcut"));
+            .getTranslation("wizard.choose_disk_location.create_desktop_shortcut"));
 
         createDesktopShortcutBox.setOpaque(false);
 
         // Create manual sync cb
         manualSyncCheckBox = new JCheckBox(Translation
-            .getTranslation("choose_disk_location_panel.maual_sync"));
+            .getTranslation("wizard.choose_disk_location.maual_sync"));
 
         manualSyncCheckBox.setOpaque(false);
 
@@ -401,7 +401,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         boolean sendInvite = Boolean.TRUE.equals(getWizardContext()
             .getAttribute(SEND_INVIATION_AFTER_ATTRIBUTE));
         sendInviteAfterCB = SimpleComponentFactory.createCheckBox(Translation
-            .getTranslation("choose_disk_location_panel.send_invitation"));
+            .getTranslation("wizard.choose_disk_location.send_invitation"));
         sendInviteAfterCB.setOpaque(false);
         sendInviteAfterCB.setSelected(sendInvite);
 
@@ -417,7 +417,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
     }
 
     protected String getTitle() {
-        return Translation.getTranslation("choose_disk_location_panel.select");
+        return Translation.getTranslation("wizard.choose_disk_location.title");
     }
 
     /**
@@ -445,10 +445,10 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
 
                     if (!f.exists()) {
                         ok = false;
-                        messageKey = "choose_disk_location_panel.directory_non_existent";
+                        messageKey = "wizard.choose_disk_location.directory_non_existent";
                     } else if (!f.canWrite()) {
                         ok = false;
-                        messageKey = "choose_disk_location_panel.directory_no_write";
+                        messageKey = "wizard.choose_disk_location.directory_no_write";
                     }
                     if (!ok) {
                         String baseDir = getController().getFolderRepository()
@@ -470,7 +470,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
                             .genericDialog(
                                 getController(),
                                 Translation
-                                    .getTranslation("choose_disk_location_panel.target_dir"),
+                                    .getTranslation("wizard.choose_disk_location.target_dir"),
                                 Translation.getTranslation(messageKey, f
                                     .getAbsolutePath(), alternate
                                     .getAbsolutePath()), new String[]{
@@ -526,7 +526,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
 
         JButton locationButton = new JButton(Icons.DIRECTORY);
         locationButton.setToolTipText(Translation
-            .getTranslation("choose_disk_location_panel.select_file"));
+            .getTranslation("wizard.choose_disk_location.select_file"));
         locationButton.addActionListener(new MyActionListener());
         builder.add(locationButton, cc.xy(3, 1));
         return builder.getPanel();
@@ -702,7 +702,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         protected void beforeConstruct() {
             folderSizeLabel
                 .setText(Translation
-                    .getTranslation("choose_disk_location_panel.calculating_directory_size"));
+                    .getTranslation("wizard.choose_disk_location.calculating_directory_size"));
             folderSizeLabel.setForeground(SystemColor.textText);
         }
 
@@ -745,16 +745,16 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
                     if (nonExistent) {
                         folderSizeLabel
                             .setText(Translation
-                                .getTranslation("choose_disk_location_panel.directory_non_existent"));
+                                .getTranslation("wizard.choose_disk_location.directory_non_existent"));
                         folderSizeLabel.setForeground(Color.red);
                     } else if (noWrite) {
                         folderSizeLabel
                             .setText(Translation
-                                .getTranslation("choose_disk_location_panel.directory_no_write"));
+                                .getTranslation("wizard.choose_disk_location.directory_no_write"));
                         folderSizeLabel.setForeground(Color.red);
                     } else {
                         folderSizeLabel.setText(Translation.getTranslation(
-                                "choose_disk_location_panel.directory_size", Format
+                                "wizard.choose_disk_location.directory_size", Format
                                 .formatBytes(directorySize)));
                         folderSizeLabel.setForeground(SystemColor.textText);
                     }

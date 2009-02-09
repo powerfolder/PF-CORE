@@ -127,7 +127,7 @@ public class ConfirmDiskLocationPanel extends PFWizardPanel {
                 && Boolean.TRUE.equals(getWizardContext().getAttribute(
                 BACKUP_ONLINE_STOARGE));
         backupByOnlineStorageBox = new JCheckBox(Translation
-                .getTranslation("choose_disk_location_panel.backup_by_online_storage"));
+                .getTranslation("wizard.choose_disk_location.backup_by_online_storage"));
         backupByOnlineStorageBox.setSelected(backupByOS);
         backupByOnlineStorageBox.getModel().addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
@@ -141,7 +141,7 @@ public class ConfirmDiskLocationPanel extends PFWizardPanel {
 
         // Create desktop shortcut
         createDesktopShortcutBox = new JCheckBox(Translation
-                .getTranslation("choose_disk_location_panel.create_desktop_shortcut"));
+                .getTranslation("wizard.choose_disk_location.create_desktop_shortcut"));
 
         createDesktopShortcutBox.setOpaque(false);
 
@@ -149,7 +149,7 @@ public class ConfirmDiskLocationPanel extends PFWizardPanel {
         boolean sendInvite = Boolean.TRUE.equals(getWizardContext()
                 .getAttribute(SEND_INVIATION_AFTER_ATTRIBUTE));
         sendInviteAfterCB = SimpleComponentFactory.createCheckBox(Translation
-                .getTranslation("choose_disk_location_panel.send_invitation"));
+                .getTranslation("wizard.choose_disk_location.send_invitation"));
         sendInviteAfterCB.setOpaque(false);
         sendInviteAfterCB.setSelected(sendInvite);
 
@@ -160,6 +160,6 @@ public class ConfirmDiskLocationPanel extends PFWizardPanel {
     }
 
     protected String getTitle() {
-        return Translation.getTranslation("choose_disk_location_panel.options");
+        return Translation.getTranslation("wizard.choose_disk_location.options");
     }
 }
