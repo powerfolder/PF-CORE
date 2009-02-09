@@ -275,11 +275,20 @@ public class Download extends Transfer {
         getPartner().sendMessagesAsynchron(
             new RequestDownload(getFile(), startOffset));
     }
-
+    
     /**
      * Requests to abort this dl
      */
     public void abort() {
+        abort(true);
+    }
+
+    /**
+     * @param informRemote
+     *            if a <code>AbortDownload</code> message should be sent to the
+     *            partner
+     */
+    void abort(boolean informRemote) {
         if (getDownloadManager() == null) {
             // For Pending downloads without download manager
             getController().getTransferManager().downloadAborted(Download.this);;

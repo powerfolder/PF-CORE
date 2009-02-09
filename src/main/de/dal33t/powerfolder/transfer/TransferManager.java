@@ -121,6 +121,7 @@ public class TransferManager extends PFComponent {
      * are executed untill the lock is released.
      */
     private Lock uploadsLock = new ReentrantLock();
+    private Object downloadRequestLock = new Object();
 
     private FileRecordProvider fileRecordProvider;
 
@@ -1019,21 +1020,21 @@ public class TransferManager extends PFComponent {
             return null;
         }
 
-        Upload upload = new Upload(this, from, dl);
         FolderRepository repo = getController().getFolderRepository();
-        File diskFile = upload.getFile().getDiskFile(repo);
+        File diskFile = dl.file.getDiskFile(repo);
         boolean fileInSyncWithDisk = diskFile != null
-            && upload.getFile().inSyncWithDisk(diskFile);
+            && dl.file.inSyncWithDisk(diskFile);
         if (!fileInSyncWithDisk) {
             // This should free up an otherwise waiting for download partner
-            Folder folder = upload.getFile().getFolder(repo);
+            Folder folder = dl.file.getFolder(repo);
             folder.recommendScanOnNextMaintenance();
             logWarning("File not in sync with disk: '"
-                + upload.getFile().toDetailString()
-                + "', should be modified at " + diskFile.lastModified());
+                + dl.file.toDetailString() + "', should be modified at "
+                + diskFile.lastModified());
             return null;
         }
 
+        Upload upload = new Upload(this, from, dl);
         if (upload.isBroken()) { // connection lost
             // Check if this download is broken
             return null;
@@ -1156,7 +1157,7 @@ public class TransferManager extends PFComponent {
             // Trigger check
             triggerTransfersCheck();
         } else {
-            logFine("Failed to abort upload: " + fInfo + " to " + to);
+            logWarning("Failed to abort upload: " + fInfo + " to " + to);
         }
     }
 
@@ -1414,118 +1415,124 @@ public class TransferManager extends PFComponent {
     public DownloadManager downloadNewestVersion(FileInfo fInfo,
         boolean automatic)
     {
-        Folder folder = fInfo.getFolder(getController().getFolderRepository());
-        if (folder == null) {
-            // on shutdown folder maybe null here
-            return null;
-        }
-        if (!started) {
-            return null;
-        }
-        // FIXME Does not actually CHECK the base dir, but takes result of last
-        // scan. Possible problem on Mac/Linux: Unmounted path might exist.
-        if (folder.isDeviceDisconnected()) {
-            return null;
-        }
-
-        // return null if in blacklist on automatic download
-        if (folder.getDiskItemFilter().isExcluded(fInfo)) {
-            return null;
-        }
-
-        // Now walk through all sources and get the best one
-        // Member bestSource = null;
-        FileInfo newestVersionFile = fInfo.getNewestVersion(getController()
-            .getFolderRepository());
-        FileInfo localFile = folder.getFile(fInfo);
-        FileInfo fileToDl = newestVersionFile != null
-            ? newestVersionFile
-            : fInfo;
-
-        // Check if the FileInfo is valid.
-        // (This wouldn't be necessary, if the info had already checked itself.)
-        try {
-            fInfo.validate();
-            fileToDl.validate();
-        } catch (Exception e) {
-            logWarning(e.getMessage() + ". " + fInfo.toDetailString(), e);
-            return null;
-        }
-
-        // Check if we have the file already downloaded in the meantime.
-        // Or we have this file actual on disk but not in own db yet.
-
-        if (localFile != null && !fileToDl.isNewerThan(localFile)) {
-            logFiner("NOT requesting download, already has latest file in own db: "
-                + fInfo.toDetailString());
-            return null;
-        } else if (fileToDl.inSyncWithDisk(fInfo.getDiskFile(getController()
-            .getFolderRepository())))
-        {
-            logFiner("NOT requesting download, file seems already to exists on disk: "
-                + fInfo.toDetailString());
-            // DB seems to be out of sync. Recommend scan
-            Folder f = fInfo.getFolder(getController().getFolderRepository());
-            if (f != null) {
-                f.recommendScanOnNextMaintenance();
+        synchronized (downloadRequestLock) {
+            Folder folder = fInfo.getFolder(getController()
+                .getFolderRepository());
+            if (folder == null) {
+                // on shutdown folder maybe null here
+                return null;
             }
-            return null;
-        }
-
-        List<Member> sources = getSourcesWithFreeUploadCapacity(fInfo);
-        assert !fInfo.isNewerThan(newestVersionFile) : "getNewestVersion returned older version.";
-        // ap<>
-        // Map<Member, Integer> downloadCountList =
-        // countNodesActiveAndQueuedDownloads();
-
-        Collection<Member> bestSources = null;
-        for (Member source : sources) {
-            FileInfo remoteFile = source.getFile(fInfo);
-            if (remoteFile == null) {
-                continue;
+            if (!started) {
+                return null;
             }
-            // Skip "wrong" sources
-            if (!fileToDl.isVersionAndDateIdentical(remoteFile)) {
-                continue;
+            // FIXME Does not actually CHECK the base dir, but takes result of
+            // last
+            // scan. Possible problem on Mac/Linux: Unmounted path might exist.
+            if (folder.isDeviceDisconnected()) {
+                return null;
             }
-            if (bestSources == null) {
-                bestSources = new LinkedList<Member>();
-            }
-            bestSources.add(source);
-        }
 
-        if (bestSources != null) {
-            for (Member bestSource : bestSources) {
-                Download download;
-                download = new Download(this, fileToDl, automatic);
-                if (isFiner()) {
-                    logFiner("Best source for " + fInfo + " is " + bestSource);
+            // return null if in blacklist on automatic download
+            if (folder.getDiskItemFilter().isExcluded(fInfo)) {
+                return null;
+            }
+
+            // Now walk through all sources and get the best one
+            // Member bestSource = null;
+            FileInfo newestVersionFile = fInfo.getNewestVersion(getController()
+                .getFolderRepository());
+            FileInfo localFile = folder.getFile(fInfo);
+            FileInfo fileToDl = newestVersionFile != null
+                ? newestVersionFile
+                : fInfo;
+
+            // Check if the FileInfo is valid.
+            // (This wouldn't be necessary, if the info had already checked
+            // itself.)
+            try {
+                fInfo.validate();
+                fileToDl.validate();
+            } catch (Exception e) {
+                logWarning(e.getMessage() + ". " + fInfo.toDetailString(), e);
+                return null;
+            }
+
+            // Check if we have the file already downloaded in the meantime.
+            // Or we have this file actual on disk but not in own db yet.
+            if (localFile != null && !fileToDl.isNewerThan(localFile)) {
+                logFiner("NOT requesting download, already has latest file in own db: "
+                    + fInfo.toDetailString());
+                return null;
+            } else if (fileToDl.inSyncWithDisk(fInfo
+                .getDiskFile(getController().getFolderRepository())))
+            {
+                logFiner("NOT requesting download, file seems already to exists on disk: "
+                    + fInfo.toDetailString());
+                // DB seems to be out of sync. Recommend scan
+                Folder f = fInfo.getFolder(getController()
+                    .getFolderRepository());
+                if (f != null) {
+                    f.recommendScanOnNextMaintenance();
                 }
-                if (localFile != null
-                    && localFile.getModifiedDate().after(
-                        fileToDl.getModifiedDate()) && !localFile.isDeleted())
-                {
-                    logWarning("Requesting older file requested: "
-                        + fileToDl.toDetailString() + ", local: "
-                        + localFile.toDetailString() + ", isNewer: "
-                        + localFile.isNewerThan(newestVersionFile));
-                }
-                if (fileToDl.isNewerAvailable(getController()
-                    .getFolderRepository()))
-                {
-                    logSevere("Downloading old version while newer is available: "
-                        + localFile);
-                }
-                requestDownload(download, bestSource);
+                return null;
             }
-        }
 
-        if (bestSources == null && !automatic) {
-            // Okay enque as pending download if was manually requested
-            enquePendingDownload(new Download(this, fileToDl, automatic));
-            return null;
+            List<Member> sources = getSourcesWithFreeUploadCapacity(fInfo);
+            // ap<>
+            // Map<Member, Integer> downloadCountList =
+            // countNodesActiveAndQueuedDownloads();
+
+            Collection<Member> bestSources = null;
+            for (Member source : sources) {
+                FileInfo remoteFile = source.getFile(fInfo);
+                if (remoteFile == null) {
+                    continue;
+                }
+                // Skip "wrong" sources
+                if (!fileToDl.isVersionAndDateIdentical(remoteFile)) {
+                    continue;
+                }
+                if (bestSources == null) {
+                    bestSources = new LinkedList<Member>();
+                }
+                bestSources.add(source);
+            }
+
+            if (bestSources != null) {
+                for (Member bestSource : bestSources) {
+                    Download download;
+                    download = new Download(this, fileToDl, automatic);
+                    if (isFiner()) {
+                        logFiner("Best source for " + fInfo + " is "
+                            + bestSource);
+                    }
+                    if (localFile != null
+                        && localFile.getModifiedDate().after(
+                            fileToDl.getModifiedDate())
+                        && !localFile.isDeleted())
+                    {
+                        logWarning("Requesting older file requested: "
+                            + fileToDl.toDetailString() + ", local: "
+                            + localFile.toDetailString() + ", isNewer: "
+                            + localFile.isNewerThan(fileToDl));
+                    }
+                    if (fileToDl.isNewerAvailable(getController()
+                        .getFolderRepository()))
+                    {
+                        logSevere("Downloading old version while newer is available: "
+                            + localFile);
+                    }
+                    requestDownload(download, bestSource);
+                }
+            }
+
+            if (bestSources == null && !automatic) {
+                // Okay enque as pending download if was manually requested
+                enquePendingDownload(new Download(this, fileToDl, automatic));
+                return null;
+            }
+            return getActiveDownload(fInfo);
         }
-        return getActiveDownload(fInfo);
     }
 
     /**
@@ -1764,14 +1771,14 @@ public class TransferManager extends PFComponent {
         Download download = getActiveDownload(from, fileInfo);
         if (download != null) {
             assert download.getPartner().equals(from);
-            download.abort();
+            download.abort(false);
         } else {
             for (Download pendingDL : pendingDownloads) {
                 if (pendingDL.getFile().equals(fileInfo)
                     && pendingDL.getPartner() != null
                     && pendingDL.getPartner().equals(from))
                 {
-                    pendingDL.abort();
+                    pendingDL.abort(false);
                 }
             }
         }
@@ -2039,7 +2046,7 @@ public class TransferManager extends PFComponent {
      * @return the number of all downloads
      */
     public int countActiveDownloads() {
-        return dlManagers.values().size();
+        return dlManagers.size();
     }
 
     /**
@@ -2310,6 +2317,10 @@ public class TransferManager extends PFComponent {
         }
 
         for (DownloadManager man : dlManagers.values()) {
+            if (!man.isDone()) {
+                downloadNewestVersion(man.getFileInfo(), man
+                    .isRequestedAutomatic());
+            }
             downloadNewestVersion(man.getFileInfo(), man.isRequestedAutomatic());
             for (Download download : man.getSources()) {
                 if (!download.isCompleted() && download.isBroken()) {
