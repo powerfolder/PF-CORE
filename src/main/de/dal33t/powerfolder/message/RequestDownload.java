@@ -57,6 +57,7 @@ public class RequestDownload extends Message {
     }
 
     public String toString() {
-        return "Request to download: " + file + ", starting at " + startOffset;
+        return "Request to download: " + file.toDetailString()
+            + ", starting at " + startOffset;
     }
 }
