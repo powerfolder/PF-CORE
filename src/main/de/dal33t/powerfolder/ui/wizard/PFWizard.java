@@ -187,8 +187,8 @@ public class PFWizard extends PFUIComponent {
             nextFinishPanel = new FolderOnlineStoragePanel(controller, folderToSetup);
         } else {
             nextFinishPanel = new TextPanelPanel(controller,
-                    Translation.getTranslation("wizard.finish_panel.os_login_title"),
-                    Translation.getTranslation("wizard.finish_panel.os_login_text"));
+                    Translation.getTranslation("wizard.finish.os_login_title"),
+                    Translation.getTranslation("wizard.finish.os_login_text"));
         }
         wizard.open(new LoginOnlineStoragePanel(controller, client,
             nextFinishPanel, true));

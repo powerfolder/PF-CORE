@@ -112,7 +112,7 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
 
         // Setup choose disk location panel
         getWizardContext().setAttribute(PROMPT_TEXT_ATTRIBUTE,
-            Translation.getTranslation("wizard.invite.select_local_directory"));
+            Translation.getTranslation("wizard.what_to_do.invite.select_local"));
 
         // Setup sucess panel of this wizard path
         TextPanelPanel successPanel = new TextPanelPanel(getController(),

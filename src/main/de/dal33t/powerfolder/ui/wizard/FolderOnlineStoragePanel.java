@@ -72,11 +72,11 @@ public class FolderOnlineStoragePanel extends PFWizardPanel {
         if (hasJoined) {
             int result = DialogFactory.genericDialog(getController(),
                     Translation.getTranslation(
-                            "wizard.folder_online_storage_panel.warning_title"),
+                            "wizard.folder_online_storage.warning_title"),
                     Translation.getTranslation(
-                            "wizard.folder_online_storage_panel.warning_message"),
+                            "wizard.folder_online_storage.warning_message"),
                     new String[]{Translation.getTranslation(
-                            "wizard.folder_online_storage_panel.warning_stop_backing"),
+                            "wizard.folder_online_storage.warning_stop_backing"),
                             Translation.getTranslation("general.cancel")}, 0,
                     GenericDialogType.WARN);
             return result == 0; // Stop backing up
@@ -121,16 +121,16 @@ public class FolderOnlineStoragePanel extends PFWizardPanel {
                         folder.getInfo(), true);
                 getController().getOSClient().refreshAccountDetails();
                 return new TextPanelPanel(getController(),
-                        Translation.getTranslation("wizard.folder_online_storage_panel.remove_success_title"),
-                        Translation.getTranslation("wizard.folder_online_storage_panel.remove_success_message",
+                        Translation.getTranslation("wizard.folder_online_storage.remove_success_title"),
+                        Translation.getTranslation("wizard.folder_online_storage.remove_success_message",
                                 folder.getName()));
             } else {
                 getController().getOSClient().getFolderService().createFolder(
                         folder.getInfo(), SyncProfile.BACKUP_TARGET_NO_CHANGE_DETECT);
                 getController().getOSClient().refreshAccountDetails();
                 return new TextPanelPanel(getController(),
-                        Translation.getTranslation("wizard.folder_online_storage_panel.backup_success_title"),
-                        Translation.getTranslation("wizard.folder_online_storage_panel.backup_success_message",
+                        Translation.getTranslation("wizard.folder_online_storage.backup_success_title"),
+                        Translation.getTranslation("wizard.folder_online_storage.backup_success_message",
                                 folder.getName()));
             }
         } catch (Exception e) {
@@ -145,8 +145,8 @@ public class FolderOnlineStoragePanel extends PFWizardPanel {
             }
 
             return new TextPanelPanel(getController(),
-                    Translation.getTranslation("wizard.folder_online_storage_panel.failure_title"),
-                    Translation.getTranslation("wizard.folder_online_storage_panel.failure_message",
+                    Translation.getTranslation("wizard.folder_online_storage.failure_title"),
+                    Translation.getTranslation("wizard.folder_online_storage.failure_message",
                             folder.getName(), sb.toString().trim()));
         }
 

@@ -126,7 +126,7 @@ public class WhatToDoPanel extends PFWizardPanel {
         getWizardContext().setAttribute(
                 PROMPT_TEXT_ATTRIBUTE,
                 Translation
-                    .getTranslation("wizard.invite.select_local_directory"));
+                    .getTranslation("wizard.what_to_do.invite.select_local"));
 
         // Setup sucess panel of this wizard path
         TextPanelPanel successPanel = new TextPanelPanel(getController(),
@@ -161,8 +161,8 @@ public class WhatToDoPanel extends PFWizardPanel {
             getController(),
             Translation.getTranslation("wizard.setup_success"),
             Translation
-                .getTranslation("wizard.project_panel.folder_project_success")
-                + Translation.getTranslation("wizard.backup_panel.pcs_join"));
+                .getTranslation("wizard.project_name.folder_project_success")
+                + Translation.getTranslation("wizard.what_to_do.pcs_join"));
         getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL,
                 successPanel);
 
@@ -186,7 +186,7 @@ public class WhatToDoPanel extends PFWizardPanel {
 
         // Setup choose disk location panel
         getWizardContext().setAttribute(PROMPT_TEXT_ATTRIBUTE,
-                Translation.getTranslation("wizard.host_panel.select"));
+                Translation.getTranslation("wizard.what_to_do.host_pcs.select"));
 
         // Prompt for send invitation afterwards
         getWizardContext().setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE,
@@ -199,8 +199,8 @@ public class WhatToDoPanel extends PFWizardPanel {
         // Setup sucess panel of this wizard path
         TextPanelPanel successPanel = new TextPanelPanel(getController(),
             Translation.getTranslation("wizard.setup_success"), Translation
-                .getTranslation("wizard.host_panel.folder_host_success")
-                + Translation.getTranslation("wizard.host_panel.pcs_join"));
+                .getTranslation("wizard.what_to_do.folder_host_success")
+                + Translation.getTranslation("wizard.what_to_do.host_pcs_join"));
         getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL,
                 successPanel);
 
@@ -229,7 +229,7 @@ public class WhatToDoPanel extends PFWizardPanel {
 
         // Setup choose disk location panel
         getWizardContext().setAttribute(PROMPT_TEXT_ATTRIBUTE,
-                Translation.getTranslation("wizard.backup_panel.select"));
+                Translation.getTranslation("wizard.what_to_do.backp.select"));
 
         // Prompt for send invitation afterwards
         getWizardContext().setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE,
@@ -244,8 +244,8 @@ public class WhatToDoPanel extends PFWizardPanel {
             getController(),
             Translation.getTranslation("wizard.setup_success"),
             Translation
-                .getTranslation("wizard.backup_panel.folder_backup_success")
-                + Translation.getTranslation("wizard.backup_panel.pcs_join"));
+                .getTranslation("wizard.what_to_do.folder_backup_success")
+                + Translation.getTranslation("wizard.what_to_do.pcs_join"));
         getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL,
                 successPanel);
 
@@ -282,13 +282,13 @@ public class WhatToDoPanel extends PFWizardPanel {
 
         // Setup choose disk location panel
         getWizardContext().setAttribute(PROMPT_TEXT_ATTRIBUTE,
-                Translation.getTranslation("wizard.sync_pcs_panel.select"));
+                Translation.getTranslation("wizard.what_to_do.sync_pcs.select"));
 
         // Setup sucess panel of this wizard path
         TextPanelPanel successPanel = new TextPanelPanel(getController(),
             Translation.getTranslation("wizard.setup_success"), Translation
-                .getTranslation("wizard.sync_pcs_panel.folder_sync_success")
-                + Translation.getTranslation("wizard.sync_pcs_panel.pcs_join"));
+                .getTranslation("wizard.what_to_do.sync_pcs.success")
+                + Translation.getTranslation("wizard.what_to_do.sync_pcs.pcs_join"));
         getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL,
                 successPanel);
 
