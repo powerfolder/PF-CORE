@@ -172,7 +172,7 @@ public class NodeManager extends PFComponent {
             .synchronizedSet(new HashSet<MemberInfo>());
 
         // Acceptors
-        acceptors = Collections.synchronizedList(new ArrayList<AbstractAcceptor>());
+        acceptors = new CopyOnWriteArrayList<AbstractAcceptor>();
         
         // Value message/event listner support
         valveMessageListenerSupport = new MessageListenerSupport(this);
