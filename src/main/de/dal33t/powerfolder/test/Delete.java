@@ -81,7 +81,7 @@ public class Delete {
                 return false;
             }
             // Make recycle bin system/hidden
-            FileUtils.setAttributesOnWindows(recycleBinDir, true, true);
+            FileUtils.makeHiddenOnWindows(recycleBinDir);
         }
 
         File target = new File(recycleBinDir, file.getName()); //getName should be the complete dir but for this test this is ok
