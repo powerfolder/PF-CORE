@@ -1,21 +1,28 @@
-PowerFolder Version 3.1.5 - http://www.powerfolder.com
+PowerFolder Version 3.1.6 - http://www.powerfolder.com
 
-Enhancements:
- * Less memory use. Better user interface responsiveness
- * Possibility to setup of HTTP-Proxy for all HTTP based contact
-   (e.g. activation or check for program updates)
- * Several preparation for the PowerFolder server beta release:
- * Setup of the server connection
- * New networking mode: Server only
- * Disallow removal of encrypted transfers plugin
- * Disconnect/Connect messages not longer shown in chat unless running in debug mode. 
+New features and improvements:
+ * Auto-cleanup of downloads is now turned on by default.
+ * Speed improvements of file up- and downloads.
+ * Activation wizard now clearly indicates that account creation is mandatory.
+ * Added start menu link to Wiki documentation.
+ * Invitation can now also be sent to own email address only.
+ * User interface is now more responsive during many file transfers.
+ * Reduced the overhead traffic on transfer failures.
+ * Empty recycle bin is now faster.
+ * Renamed "Setup" to "New" in toolbar.
 
 Bugfixes:
- * Downloads of old file versions now get prevented 
- * Wrong warning about non-writable directories in setup are now gone
- * Removed a small memory leak
- * Dyndns now get validated only once when OK is clicked in preferences
-
+ * System service now correctly starts when running as default user.
+ * List of recently completed downloads do not longer leave temporary files open.
+ * Fixed race condition that caused files to get moved into recycle bin.
+ * Checks actual file on disk before moving file into recycle bin during remote deletion synchronization.
+ * Stuck downloads should not longer occur.
+ * Fixed crash of automatic files requestor which caused the sync to stop.
+ * Manual sync now requests all incoming files instead of 10 only.
+ * Now completely excludes ".PowerFolder" meta-directories from sync, e.g. when setting up a PowerFolder inside a PowerFolder.
+ * Installer does not longer overwrite PowerFolder.l4j.ini memory settings files.
+ * Fixed duplicate system service entry under Preferences/Pro Settings.
+ * Many other minor bugfixes.
 
 Please give us feedback and request improvements at our forum:
 http://forums.powerfolder.com
@@ -50,6 +57,33 @@ External libraries used:
 
 
 History:
+
+Version 3.1.5
+-------------
+
+Enhancements:
+ * Less memory use. Better user interface responsiveness
+ * Possibility to setup of HTTP-Proxy for all HTTP based contact
+   (e.g. activation or check for program updates)
+ * Several preparation for the PowerFolder server beta release:
+ * Setup of the server connection
+ * New networking mode: Server only
+ * Disallow removal of encrypted transfers plugin
+ * Disconnect/Connect messages not longer shown in chat unless running in debug mode. 
+
+Bugfixes:
+ * Downloads of old file versions now get prevented 
+ * Wrong warning about non-writable directories in setup are now gone
+ * Removed a small memory leak
+ * Dyndns now get validated only once when OK is clicked in preferences
+
+
+Version 3.1.4
+-------------
+
+No public release.
+See release notes of 3.1.5
+
 
 Version 3.1.3
 -------------
