@@ -283,7 +283,7 @@ public class TransferManager extends PFComponent {
         }
 
         if (threadPool != null) {
-            threadPool.shutdown();
+            threadPool.shutdownNow();
         }
 
         // shutdown active uploads
