@@ -40,13 +40,12 @@ import de.dal33t.powerfolder.util.test.TestHelper;
 
 public class SwarmingTest extends MultipleControllerTestCase {
 
-    public void xtestAlotOfControllers() throws Exception {
+    public void testAlotOfControllers() throws Exception {
         joinNTestFolder(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
 
         for (int i = 0; i < 10; i++) {
             nSetupControllers(5);
             connectAll();
-            TestHelper.waitMilliSeconds(2000);
             tearDown();
             setUp();
         }
@@ -85,11 +84,9 @@ public class SwarmingTest extends MultipleControllerTestCase {
 
     public void testFiveSwarmMulti() throws Exception {
         for (int i = 0; i < 5; i++) {
-            if (i != 0) {
-                tearDown();
-                setUp();
-            }
             testFiveSwarmDownload();
+            tearDown();
+            setUp();
         }
     }
 
@@ -314,11 +311,10 @@ public class SwarmingTest extends MultipleControllerTestCase {
         TestHelper.assertIncompleteFilesGone(this);
     }
 
-    public void testMultiFileAlterations() throws Exception {
+    public void xtestMultiFileAlterations() throws Exception {
         for (int i = 0; i < 20; i++) {
             testFileAlterations();
             tearDown();
-            TestHelper.waitMilliSeconds(1000);
             setUp();
         }
     }
@@ -491,7 +487,10 @@ public class SwarmingTest extends MultipleControllerTestCase {
             }
         });
 
+        assertEquals(0, getContoller("0").getTransferManager()
+            .countCompletedDownloads());
         TestHelper.assertIncompleteFilesGone(this);
+        TestHelper.cleanTestDir();
     }
 
     public void testConcurrentModificationsLargeSwarmDeltaSync()
