@@ -75,6 +75,7 @@ public class Upload extends Transfer {
         }
         setStartOffset(dl.startOffset);
         aborted = false;
+        debugState = "initialized";
     }
 
     private void enqueueMessage(Message m) {
@@ -162,6 +163,7 @@ public class Upload extends Transfer {
             return;
         }
 
+        debugState = "Starting";
         // Mark upload as started
         setStarted();
 
