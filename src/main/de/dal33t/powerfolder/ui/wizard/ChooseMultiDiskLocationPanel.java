@@ -42,11 +42,11 @@ import javax.swing.event.ListSelectionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.*;
 import java.io.File;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 import java.util.logging.Logger;
 
 /**
@@ -114,6 +114,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
     private Action addAction;
     private Action removeAction;
     private String initialDirectory;
+    private List<JCheckBox> boxes;
 
     /**
      * Creates a new disk location wizard panel. Name of new folder is
@@ -138,10 +139,43 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
     }
 
     public boolean hasNext() {
+        if (customDirectoryListModel.getSize() > 0) {
+            return true;
+        }
+        for (JCheckBox box : boxes) {
+            if (box.isSelected()) {
+                return true;
+            }
+        }
         return false;
     }
 
     public boolean validateNext(List<String> errors) {
+
+        Map<String, File> localBases = new HashMap<String, File>();
+        String nick = getController().getMySelf().getNick();
+
+        // Check boxes
+        for (String boxName : userDirectories.keySet()) {
+            for (JCheckBox box : boxes) {
+                if (box.getText().equals(boxName)) {
+                    if (box.isSelected()) {
+                        localBases.put(nick + '-' + boxName, userDirectories.get(boxName));
+                    }
+                }
+            }
+        }
+
+        // Additional folders
+        for (int i = 0; i < customDirectoryListModel.size(); i++) {
+            String dir = (String) customDirectoryListModel.getElementAt(i);
+            File file = new File(dir);
+            localBases.put(nick + '-' + file.getName(), file);
+        }
+
+        getWizardContext().setAttribute(
+                FOLDER_LOCAL_BASES, localBases);
+
         getWizardContext().setAttribute(
             BACKUP_ONLINE_STOARGE,
             backupByOnlineStorageBox.isSelected());
@@ -156,7 +190,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
             getWizardContext().setAttribute(SYNC_PROFILE_ATTRIBUTE,
                 SyncProfile.MANUAL_SYNCHRONIZATION);
         }
-        return true;
+        return false;
     }
 
     protected JPanel buildContent() {
@@ -179,6 +213,8 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         for (String name : userDirectories.keySet()) {
             JCheckBox box = new JCheckBox(name);
             box.setOpaque(false);
+            box.addActionListener(new MyActionListener());
+            boxes.add(box);
             builder.add(box, cc.xy(col, row));
             if (col == 1) {
                 col = 3;
@@ -248,6 +284,8 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         initialDirectory = System.getProperty("user.home");
 
         findUserDirectories();
+
+        boxes = new ArrayList<JCheckBox>();
 
         addAction = new MyAddAction(getController());
         removeAction = new MyRemoveAction(getController());
@@ -453,6 +491,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
                 initialDirectory = dir;
                 if (!customDirectoryListModel.contains(dir)) {
                     customDirectoryListModel.addElement(dir);
+                    updateButtons();
                 }
             }
         }
@@ -468,12 +507,19 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
             customDirectoryListModel.removeRange(
                 customDirectoryList.getSelectionModel().getMinSelectionIndex(),
                 customDirectoryList.getSelectionModel().getMaxSelectionIndex());
+            updateButtons();
         }
     }
 
     private class MyListSelectionListener implements ListSelectionListener {
         public void valueChanged(ListSelectionEvent e) {
             enableRemoveAction();
+        }
+    }
+
+    private class MyActionListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            updateButtons();
         }
     }
 }

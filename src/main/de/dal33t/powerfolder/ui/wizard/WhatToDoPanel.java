@@ -156,7 +156,7 @@ public class WhatToDoPanel extends PFWizardPanel {
         getWizardContext().setAttribute(BACKUP_ONLINE_STOARGE,
                 true);
 
-        // Setup sucess panel of this wizard path
+        // Setup success panel of this wizard path
         TextPanelPanel successPanel = new TextPanelPanel(
             getController(),
             Translation.getTranslation("wizard.setup_success"),
