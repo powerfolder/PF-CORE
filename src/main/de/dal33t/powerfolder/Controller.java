@@ -1271,7 +1271,7 @@ public class Controller extends PFComponent {
         }
         if (threadPool != null) {
             logFine("Shutting down global threadpool");
-            threadPool.shutdown();
+            threadPool.shutdownNow();
         }
 
         // shut down current connection try
