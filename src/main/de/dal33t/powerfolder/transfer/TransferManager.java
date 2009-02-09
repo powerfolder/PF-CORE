@@ -1559,8 +1559,10 @@ public class TransferManager extends PFComponent {
                 getController().getFolderRepository()).getFile(fInfo)))
             {
                 // Skip exact same version etc.
-                logWarning("Not requesting download, already have latest file version: "
-                    + fInfo.toDetailString());
+                if (isFiner()) {
+                    logFiner("Not requesting download, already have latest file version: "
+                        + fInfo.toDetailString());
+                }
                 return;
             }
 
