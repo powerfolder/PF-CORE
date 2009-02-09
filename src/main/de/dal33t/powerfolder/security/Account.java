@@ -75,6 +75,11 @@ public class Account extends Model implements Serializable {
     private MemberInfo lastLoginFrom;
     private boolean newsLetter;
     private boolean proUser;
+    
+    /**
+     * The list of computers associated with this account.
+     */
+    private Collection<MemberInfo> computers;
 
     /**
      * Server where the folders of this account are hosted on.
@@ -104,6 +109,7 @@ public class Account extends Model implements Serializable {
         this.osSubscription = new OnlineStorageSubscription();
         this.osSubscription.setType(OnlineStorageSubscriptionType.NONE);
         this.licenseKeyFiles = new CopyOnWriteArrayList<String>();
+        this.computers = new CopyOnWriteArrayList<MemberInfo>();
     }
 
     // Basic permission stuff *************************************************
@@ -273,6 +279,9 @@ public class Account extends Model implements Serializable {
         this.lastLoginFrom = lastLoginFrom;
         firePropertyChange(PROPERTYNAME_LAST_LOGIN_FROM, oldValue,
             this.lastLoginFrom);
+        if (lastLoginFrom != null && !computers.contains(lastLoginFrom)) {
+            computers.add(lastLoginFrom);
+        }
     }
 
     public Date getLastLoginDate() {
@@ -286,6 +295,13 @@ public class Account extends Model implements Serializable {
         lastLoginDate = new Date();
     }
 
+    /**
+     * @return the computers this account is associated with.
+     */
+    public Collection<MemberInfo> getComputers() {
+        return computers;
+    }
+    
     public Collection<String> getLicenseKeyFiles() {
         if (licenseKeyFiles == null) {
             // Migrate
