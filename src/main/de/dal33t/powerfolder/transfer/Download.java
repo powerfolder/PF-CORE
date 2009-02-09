@@ -290,8 +290,10 @@ public class Download extends Transfer {
      */
     void abort(boolean informRemote) {
         if (getDownloadManager() == null) {
+            shutdown();
             // For Pending downloads without download manager
-            getController().getTransferManager().downloadAborted(Download.this);;
+            getController().getTransferManager().downloadAborted(Download.this);
+            return;
         }
         synchronized (getDownloadManager()) {
             synchronized (this) {
