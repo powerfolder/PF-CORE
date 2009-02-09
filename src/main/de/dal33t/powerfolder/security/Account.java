@@ -150,6 +150,10 @@ public class Account extends Model implements Serializable {
             return false;
         }
         for (Permission p : permissions) {
+            if (p == null) {
+                log.severe("Got null permission on " + this);
+                continue;
+            }
             if (p.equals(permission)) {
                 return true;
             }
