@@ -146,7 +146,7 @@ public class WhatToDoPanel extends PFWizardPanel {
 
         // Setup choose disk location panel
         getWizardContext().setAttribute(PROMPT_TEXT_ATTRIBUTE,
-                Translation.getTranslation("choose_disk_location_panel.select"));
+                Translation.getTranslation("choose_multi_disk_location_panel.select_additional"));
 
         // Prompt for send invitation afterwards
         getWizardContext().setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE,

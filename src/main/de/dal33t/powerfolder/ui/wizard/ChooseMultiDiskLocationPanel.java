@@ -196,7 +196,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
             PROMPT_TEXT_ATTRIBUTE);
         if (infoText == null) {
             infoText = Translation
-                .getTranslation("choose_disk_location_panel.select");
+                .getTranslation("choose_multi_disk_location_panel.select");
         }
         builder.addLabel(infoText, cc.xyw(1, row, 6));
         row += 2;
@@ -295,7 +295,6 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         sendInviteAfterCB.setSelected(sendInvite);
 
         enableRemoveAction();
-
     }
 
     protected JComponent getPictoComponent() {
@@ -303,7 +302,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
     }
 
     protected String getTitle() {
-        return Translation.getTranslation("choose_disk_location_panel.select");
+        return Translation.getTranslation("choose_multi_disk_location_panel.select");
     }
 
     /**
