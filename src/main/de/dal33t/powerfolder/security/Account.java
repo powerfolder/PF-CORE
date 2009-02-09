@@ -279,6 +279,8 @@ public class Account extends Model implements Serializable {
         this.lastLoginFrom = lastLoginFrom;
         firePropertyChange(PROPERTYNAME_LAST_LOGIN_FROM, oldValue,
             this.lastLoginFrom);
+        // Ensure initialization
+        getComputers();
         if (lastLoginFrom != null && !computers.contains(lastLoginFrom)) {
             computers.add(lastLoginFrom);
         }
@@ -299,9 +301,12 @@ public class Account extends Model implements Serializable {
      * @return the computers this account is associated with.
      */
     public Collection<MemberInfo> getComputers() {
+        if (computers == null) {
+            computers = new CopyOnWriteArrayList<MemberInfo>();
+        }
         return computers;
     }
-    
+
     public Collection<String> getLicenseKeyFiles() {
         if (licenseKeyFiles == null) {
             // Migrate
