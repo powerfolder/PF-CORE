@@ -262,14 +262,11 @@ public class FolderCreatePanel extends PFWizardPanel {
             try {
                 Writer w = new OutputStreamWriter(
                     new FileOutputStream(helpFile));
-                w
-                    .write("This is the default synchronized folder of PowerFolder.\r\n");
-                w
-                    .write("Simply place files into this directory to sync them\r\n");
+                w.write("This is the default synchronized folder of PowerFolder.\r\n");
+                w.write("Simply place files into this directory to sync them\r\n");
                 w.write("across all your computers running PowerFolder.\r\n");
                 w.write("\r\n");
-                w
-                    .write("More information: http://wiki.powerfolder.com/wiki/Default_Folder");
+                w.write("More information: http://wiki.powerfolder.com/wiki/Default_Folder");
                 w.close();
             } catch (IOException e) {
                 // Doesn't matter.

@@ -103,7 +103,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
     }
 
     private WizardPanel next;
-    private Map<String, File> userDirectories = new TreeMap<String, File>();
+    private Map<String, File> userDirectories;
 
     private JList customDirectoryList;
     private DefaultListModel customDirectoryListModel;
@@ -130,6 +130,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         super(controller);
         Reject.ifNull(next, "Next wizard panel is null");
         this.next = next;
+        userDirectories = new TreeMap<String, File>();
     }
 
     // From WizardPanel *******************************************************
@@ -152,15 +153,16 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
 
     public boolean validateNext(List<String> errors) {
 
-        Map<String, File> localBases = new HashMap<String, File>();
-        String nick = getController().getMySelf().getNick();
+        List<FolderCreateItem> folderCreateItems = new ArrayList<FolderCreateItem>();
 
         // Check boxes
         for (String boxName : userDirectories.keySet()) {
             for (JCheckBox box : boxes) {
                 if (box.getText().equals(boxName)) {
                     if (box.isSelected()) {
-                        localBases.put(nick + '-' + boxName, userDirectories.get(boxName));
+                        FolderCreateItem item = new FolderCreateItem(
+                                userDirectories.get(boxName));
+                        folderCreateItems.add(item);
                     }
                 }
             }
@@ -170,11 +172,10 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         for (int i = 0; i < customDirectoryListModel.size(); i++) {
             String dir = (String) customDirectoryListModel.getElementAt(i);
             File file = new File(dir);
-            localBases.put(nick + '-' + file.getName(), file);
+            folderCreateItems.add(new FolderCreateItem(file));
         }
 
-        getWizardContext().setAttribute(
-                FOLDER_LOCAL_BASES, localBases);
+        getWizardContext().setAttribute(FOLDER_LOCAL_BASES, folderCreateItems);
 
         getWizardContext().setAttribute(
             BACKUP_ONLINE_STOARGE,
