@@ -166,11 +166,13 @@ public class WhatToDoPanel extends PFWizardPanel {
         getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL,
                 successPanel);
 
+        //MultiFolderSetupPanel setupPanel = new MultiFolderSetupPanel(getController());
+        //return new ChooseMultiDiskLocationPanel(getController(),
+        //    setupPanel);
+        
         FolderSetupPanel setupPanel = new FolderSetupPanel(getController());
         return new ChooseDiskLocationPanel(getController(), null,
             setupPanel);
-//        return new ChooseMultiDiskLocationPanel(getController(),
-//            setupPanel);
     }
 
     private WizardPanel doHostOption() {

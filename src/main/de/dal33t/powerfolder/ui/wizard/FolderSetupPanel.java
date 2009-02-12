@@ -95,7 +95,7 @@ public class FolderSetupPanel extends PFWizardPanel {
     }
 
     protected JPanel buildContent() {
-        FormLayout layout = new FormLayout("pref, 3dlu, 140dlu, pref:grow",
+        FormLayout layout = new FormLayout("right:pref, 3dlu, 140dlu, pref:grow",
             "pref, 3dlu, pref, 3dlu, pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
