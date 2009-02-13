@@ -237,7 +237,7 @@ public class LoadInvitationPanel extends PFWizardPanel {
 
         // Sync profile
         syncProfileHintLabel = new JLabel(Translation
-            .getTranslation("wizard.folder_setup.transfer_mode"));
+            .getTranslation("general.transfer_mode"));
         syncProfileHintLabel.setEnabled(false);
         syncProfileSelectorPanel = new SyncProfileSelectorPanel(getController());
         syncProfileSelectorPanel.setEnabled(false);

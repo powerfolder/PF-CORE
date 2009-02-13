@@ -166,7 +166,7 @@ public class SettingsTab extends PFUIComponent {
         CellConstraints cc = new CellConstraints();
 
         builder.add(new JLabel(Translation.getTranslation(
-                "settings_tab.transfer_mode")),
+                "general.transfer_mode")),
                 cc.xy(2, 2));
         builder.add(transferModeSelectorPanel.getUIComponent(), cc.xyw(4, 2, 4));
 

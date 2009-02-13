@@ -228,7 +228,7 @@ public class FolderDetailsPanel extends PFUIComponent {
             builder.add(totalSyncField, cc.xy(3, 5));
 
             builder.addLabel(
-                Translation.getTranslation("folderinfo.transfer_mode"),
+                Translation.getTranslation("general.transfer_mode"),
                 cc.xy(1, 7)).setForeground(Color.BLACK);
             builder.add(syncProfileSelectorPanel.getUIComponent(), cc.xy(3, 7));
 
