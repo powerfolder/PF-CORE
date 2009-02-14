@@ -23,6 +23,7 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.Icons;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDER_LOCAL_BASES;
@@ -30,15 +31,19 @@ import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
+import de.dal33t.powerfolder.util.ui.SyncProfileSelectorPanel;
 import jwf.WizardPanel;
 
 import javax.swing.*;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.awt.event.ItemListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.KeyEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
 
 /**
  * Class to do folder creations for optional specified FolderCreateItems.
@@ -55,6 +60,7 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
     private FolderCreateItem selectedItem;
 
     private JTextField nameField;
+    private SyncProfileSelectorPanel syncProfileSelectorPanel;
 
     /**
      * Constuctor
@@ -123,7 +129,7 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
 
     protected JPanel buildContent() {
         FormLayout layout = new FormLayout("right:pref, 3dlu, 140dlu, pref:grow",
-            "pref, 3dlu, pref, 3dlu, pref");
+            "pref, 6dlu, pref, 6dlu, pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
@@ -136,6 +142,13 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
                 cc.xy(1, 3));
         builder.add(nameField, cc.xy(3, 3));
 
+        builder.add(new JLabel(Translation
+            .getTranslation("general.transfer_mode")), cc.xy(1, 5,
+                CellConstraints.DEFAULT, CellConstraints.TOP));
+        JPanel p = (JPanel) syncProfileSelectorPanel.getUIComponent();
+        p.setOpaque(false);
+        builder.add(p, cc.xyw(3, 5, 2));
+
         return builder.getPanel();
     }
 
@@ -143,6 +156,10 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
      * Initializes all necessary components
      */
     protected void initComponents() {
+
+        syncProfileSelectorPanel = new SyncProfileSelectorPanel(getController());
+        syncProfileSelectorPanel.addModelValueChangeListener(
+                new MyPropertyValueChangeListener());
 
         KeyListener myKeyListener = new MyKeyListener();
 
@@ -180,7 +197,7 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
             }
         }
 
-        updateOnSelection();
+        localBaseComboSelectionChange();
     }
 
     protected JComponent getPictoComponent() {
@@ -191,13 +208,23 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
         return Translation.getTranslation("wizard.multi_folder_setup.title");
     }
 
-    private void updateOnSelection() {
+    /**
+     * Update name and profile fields when base selection changes.
+     */
+    private void localBaseComboSelectionChange() {
         String dirName = (String) localBaseComboModel.getSelectedItem();
         for (FolderCreateItem item : folderCreateItems) {
             if (item.getLocalBase().getAbsolutePath().equals(dirName)) {
+                selectedItem = item;
                 FolderInfo folderInfo = item.getFolderInfo();
                 nameField.setText(folderInfo.name);
-                selectedItem = item;
+                SyncProfile profile = item.getSyncProfile();
+                if (profile == null) {
+                    System.out.println("hghg lbcsc - setting default");
+                    profile = SyncProfile.AUTOMATIC_SYNCHRONIZATION;
+                }
+                System.out.println("hghg lbcsc - " + profile.getProfileName());
+                syncProfileSelectorPanel.setSyncProfile(profile, false);
                 break;
             }
         }
@@ -218,9 +245,19 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
         item.setFolderInfo(folderInfo);
     }
 
+    private void syncProfileSelectorPanelChange() {
+        System.out.println("hghg spspc");
+        if (selectedItem != null) {
+            System.out.println("hghg spspc " + selectedItem.getLocalBase().getAbsolutePath()
+                    + " - " + syncProfileSelectorPanel.getSyncProfile().getProfileName());
+            selectedItem.setSyncProfile(
+                    syncProfileSelectorPanel.getSyncProfile());
+        }
+    }
+
     private class MyItemListener implements ItemListener {
         public void itemStateChanged(ItemEvent e) {
-            updateOnSelection();
+            localBaseComboSelectionChange();
         }
     }
 
@@ -235,6 +272,14 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
             if (selectedItem != null) {
                 selectedItem.getFolderInfo().name = nameField.getText();
             }
+        }
+    }
+
+    private class MyPropertyValueChangeListener implements
+            PropertyChangeListener {
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            syncProfileSelectorPanelChange();
         }
     }
 }
