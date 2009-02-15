@@ -59,7 +59,7 @@ public class SelectOnlineStoragePanel extends PFWizardPanel {
         return true;
     }
 
-    public boolean validateNext(List<String> errors) {
+    public boolean validateNext() {
         return true;
     }
 

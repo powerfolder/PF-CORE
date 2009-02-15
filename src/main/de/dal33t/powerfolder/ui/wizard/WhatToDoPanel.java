@@ -83,14 +83,16 @@ public class WhatToDoPanel extends PFWizardPanel {
         return decision.getValue() != null;
     }
 
-    public boolean validateNext(List<String> errors) {
+    public boolean validateNext() {
         Object option = decision.getValue();
         if (option == onlineOption) {
             List<FolderInfo> folderList = findFolderList();
 
             if (folderList.isEmpty()) {
-                errors.add(Translation.getTranslation(
-                        "wizard.what_to_do.no_os_text"));
+                DialogFactory.genericDialog(getController(),
+                        Translation.getTranslation("wizard.error_title"),
+                        Translation.getTranslation("wizard.what_to_do.no_os_text"),
+                        GenericDialogType.INFO);
                 return false;
             }
         }

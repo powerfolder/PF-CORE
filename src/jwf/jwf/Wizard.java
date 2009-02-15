@@ -5,7 +5,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.util.*;
-import java.util.List;
 
 import javax.swing.*;
 
@@ -270,8 +269,7 @@ public class Wizard extends JPanel implements ActionListener {
         Cursor c = getCursor();
         try {
             setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-            List<String> errors = new ArrayList<String>();
-            if (current.validateNext(errors)) {
+            if (current.validateNext()) {
                 previous.push(current);
                 WizardPanel wp = current.next();
                 if (null != wp) {
@@ -280,10 +278,6 @@ public class Wizard extends JPanel implements ActionListener {
 
                 setPanel(wp);
                 updateButtons();
-            } else {
-                if (!errors.isEmpty()) {
-                    showErrorMessages(errors);
-                }
             }
         } finally {
             setCursor(c);
@@ -296,14 +290,11 @@ public class Wizard extends JPanel implements ActionListener {
     
     private void finish() {
 
-        List<String> errors = new ArrayList<String>();
-        if (current.validateFinish(errors)) {
+        if (current.validateFinish()) {
             current.finish();
             for (WizardListener listener : listeners) {
                 listener.wizardFinished(this);
             }
-        } else {
-            showErrorMessages(errors);
         }
     }
 
@@ -316,21 +307,6 @@ public class Wizard extends JPanel implements ActionListener {
 
     private void help() {
         current.help();
-    }
-
-    private void showErrorMessages(List<String> errors) {
-        Window w = SwingUtilities.windowForComponent(this);
-        ErrorMessageBox errorMsgBox;
-
-        if (w instanceof Frame) {
-            errorMsgBox = new ErrorMessageBox((Frame) w);
-        } else if (w instanceof Dialog) {
-            errorMsgBox = new ErrorMessageBox((Dialog) w);
-        } else {
-            errorMsgBox = new ErrorMessageBox();
-        }
-
-        errorMsgBox.showErrorMessages(errors);
     }
 
     private class MyHelpAction extends AbstractAction {

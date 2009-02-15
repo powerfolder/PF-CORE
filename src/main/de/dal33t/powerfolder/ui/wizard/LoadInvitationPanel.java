@@ -120,7 +120,7 @@ public class LoadInvitationPanel extends PFWizardPanel {
         }
     }
 
-    public boolean validateNext(List<String> errors) {
+    public boolean validateNext() {
         return !previewOnlyCB.isSelected() || createPreviewFolder();
     }
 

@@ -1,7 +1,6 @@
 
 package jwf;
 
-import java.util.List;
 import javax.swing.border.TitledBorder;
 
 /** An implementation of the base class used for implementing a panel that is
@@ -32,7 +31,7 @@ public class NullWizardPanel extends WizardPanel {
      * @param list a List of error messages to be displayed.
      * @return true if the panel is valid,
      */
-    public boolean validateNext(List<String> errors) {
+    public boolean validateNext() {
         return false;
     }
 
@@ -60,7 +59,7 @@ public class NullWizardPanel extends WizardPanel {
      * @param list a List of error messages to be displayed.
      * @return true if it is valid for this wizard to finish.
      */
-    public boolean validateFinish(List<String> errors) {
+    public boolean validateFinish() {
         return false;
     }
 

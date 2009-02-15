@@ -1,7 +1,5 @@
 package jwf;
 
-import java.util.List;
-
 import javax.swing.JPanel;
 
 /**
@@ -36,7 +34,7 @@ public abstract class WizardPanel extends JPanel {
      *            a List of error messages to be displayed.
      * @return true if the panel is valid,
      */
-    public abstract boolean validateNext(List<String> errors);
+    public abstract boolean validateNext();
 
     /** Get the next panel to go to. */
     public abstract WizardPanel next();
@@ -73,7 +71,7 @@ public abstract class WizardPanel extends JPanel {
      *            a List of error messages to be displayed.
      * @return true if it is valid for this wizard to finish.
      */
-    public abstract boolean validateFinish(List<String> errors);
+    public abstract boolean validateFinish();
 
     /** Handle finishing the wizard. */
     public abstract void finish();

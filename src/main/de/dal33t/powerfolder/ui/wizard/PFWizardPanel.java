@@ -33,7 +33,6 @@ import jwf.WizardPanel;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.List;
 
 /**
  * Base class for wizard panels All subclasses have a title, optional picto and
@@ -99,7 +98,7 @@ public abstract class PFWizardPanel extends WizardPanel {
      * @param list
      * @return
      */
-    public boolean validateNext(List<String> errors) {
+    public boolean validateNext() {
         return true;
     }
 
@@ -109,7 +108,7 @@ public abstract class PFWizardPanel extends WizardPanel {
      * @param list
      * @return
      */
-    public boolean validateFinish(List<String> errors) {
+    public boolean validateFinish() {
         return true;
     }
 

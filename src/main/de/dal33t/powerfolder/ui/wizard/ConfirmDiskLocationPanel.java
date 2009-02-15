@@ -68,7 +68,7 @@ public class ConfirmDiskLocationPanel extends PFWizardPanel {
         return true;
     }
 
-    public boolean validateNext(List<String> errors) {
+    public boolean validateNext() {
         getWizardContext().setAttribute(CREATE_DESKTOP_SHORTCUT,
                 createDesktopShortcutBox.isSelected());
         getWizardContext().setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE,

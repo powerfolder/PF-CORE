@@ -154,7 +154,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         return count;
     }
 
-    public boolean validateNext(List<String> errors) {
+    public boolean validateNext() {
 
         List<FolderCreateItem> folderCreateItems = new ArrayList<FolderCreateItem>();
 

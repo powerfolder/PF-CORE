@@ -21,7 +21,6 @@ package de.dal33t.powerfolder.ui.wizard;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -53,6 +52,8 @@ import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.ui.GenericDialogType;
 
 public class LoginOnlineStoragePanel extends PFWizardPanel {
     private static final Logger LOG = Logger
@@ -107,7 +108,7 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
         return !entryRequired || !StringUtils.isEmpty(usernameField.getText());
     }
 
-    public boolean validateNext(List<String> errors) {
+    public boolean validateNext() {
         if (!entryRequired && StringUtils.isEmpty(usernameField.getText())) {
             return true;
         }
@@ -118,13 +119,17 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
             loginOk = client.login(usernameField.getText(),
                 new String(passwordField.getPassword())).isValid();
             if (!loginOk) {
-                errors.add(Translation
-                    .getTranslation("online_storage.account_data"));
+                DialogFactory.genericDialog(getController(),
+                        Translation.getTranslation("wizard.error_title"),
+                        Translation.getTranslation("online_storage.account_data"),
+                        GenericDialogType.INFO);
             }
         } catch (Exception e) {
             LOG.log(Level.SEVERE, "Problem logging in", e);
-            errors.add(Translation.getTranslation("online_storage.general_error",
-                e.getMessage()));
+            DialogFactory.genericDialog(getController(),
+                    Translation.getTranslation("wizard.error_title"),
+                    Translation.getTranslation("online_storage.general_error"),
+                    GenericDialogType.INFO);
         }
         return loginOk;
     }

@@ -80,7 +80,7 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
         return true;
     }
 
-    public boolean validateNext(List<String> errors) {
+    public boolean validateNext() {
 
         // Check that all folders have names.
         for (FolderCreateItem folderCreateItem : folderCreateItems) {

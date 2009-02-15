@@ -68,7 +68,7 @@ public class FolderOnlineStoragePanel extends PFWizardPanel {
      * @param panelList
      * @return
      */
-    public boolean validateNext(List<String> errors) {
+    public boolean validateNext() {
         if (hasJoined) {
             int result = DialogFactory.genericDialog(getController(),
                     Translation.getTranslation(

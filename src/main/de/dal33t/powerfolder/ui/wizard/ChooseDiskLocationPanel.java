@@ -190,7 +190,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         return false;
     }
 
-    public boolean validateNext(List<String> errors) {
+    public boolean validateNext() {
         File localBase = new File((String) locationModel.getValue());
         getWizardContext().setAttribute(
             WizardContextAttributes.FOLDER_LOCAL_BASE, localBase);
