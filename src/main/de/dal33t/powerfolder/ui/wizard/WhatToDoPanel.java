@@ -36,6 +36,8 @@ import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.*;
 import de.dal33t.powerfolder.util.Help;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.ui.GenericDialogType;
 import jwf.Wizard;
 import jwf.WizardPanel;
 
@@ -82,7 +84,37 @@ public class WhatToDoPanel extends PFWizardPanel {
     }
 
     public boolean validateNext(List<String> errors) {
+        Object option = decision.getValue();
+        if (option == onlineOption) {
+            List<FolderInfo> folderList = findFolderList();
+
+            if (folderList.isEmpty()) {
+                DialogFactory.genericDialog(getController(),
+                        Translation.getTranslation("wizard.what_to_do.no_os_title"),
+                        Translation.getTranslation("wizard.what_to_do.no_os_text"),
+                        GenericDialogType.INFO);
+                return false;
+            }
+        }
         return true;
+    }
+
+    /**
+     * Find list of folders that are online storage but not local.
+     * 
+     * @return
+     */
+    private List<FolderInfo> findFolderList() {
+        List<FolderInfo> folderList = new ArrayList<FolderInfo>();
+        ServerClient client = getController().getOSClient();
+        List<FolderInfo> onlineFolderInfos = client.getOnlineFolders();
+        for (FolderInfo onlineFolderInfo : onlineFolderInfos) {
+            Folder folder = onlineFolderInfo.getFolder(getController());
+            if (folder == null) {
+                folderList.add(onlineFolderInfo);
+            }
+        }
+        return folderList;
     }
 
     protected JPanel buildContent() {
@@ -125,19 +157,11 @@ public class WhatToDoPanel extends PFWizardPanel {
     }
 
     private WizardPanel doOnlineOption() {
-        List<FolderInfo> folderList = new ArrayList<FolderInfo>();
-        ServerClient client = getController().getOSClient();
-        List<FolderInfo> onlineFolderInfos = client.getOnlineFolders();
-        for (FolderInfo onlineFolderInfo : onlineFolderInfos) {
-            Folder folder = onlineFolderInfo.getFolder(getController());
-            if (folder == null) {
-                folderList.add(onlineFolderInfo);
-            }
-        }
 
         getWizardContext().setAttribute(PFWizard.PICTO_ICON,
                 Icons.FILE_SHARING_PICTO);
 
+        List<FolderInfo> folderList = findFolderList();
         return new SelectOnlineStoragePanel(getController(), folderList);
     }
 

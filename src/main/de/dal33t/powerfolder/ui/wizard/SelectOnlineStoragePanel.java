@@ -147,7 +147,7 @@ public class SelectOnlineStoragePanel extends PFWizardPanel {
                     }
                 }
 
-                // Update with cb seleciton.
+                // Update with cb selection.
                 if (selectedFolderInfo != null) {
                     folderMap.put(selectedFolderInfo, cb.isSelected());
                 }
