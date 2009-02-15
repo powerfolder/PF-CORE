@@ -134,6 +134,10 @@ public class WhatToDoPanel extends PFWizardPanel {
                 folderList.add(onlineFolderInfo);
             }
         }
+
+        getWizardContext().setAttribute(PFWizard.PICTO_ICON,
+                Icons.FILE_SHARING_PICTO);
+
         return new SelectOnlineStoragePanel(getController(), folderList);
     }
 

@@ -29,7 +29,12 @@ import jwf.WizardPanel;
 
 import javax.swing.*;
 import java.util.List;
-import java.util.logging.Logger;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.HashMap;
+import java.awt.*;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 
 /**
  * Wizard for selecting folders that are Online Storage and not locally managed.
@@ -39,14 +44,15 @@ import java.util.logging.Logger;
  */
 public class SelectOnlineStoragePanel extends PFWizardPanel {
 
-    private static final Logger log = Logger.getLogger(SelectOnlineStoragePanel.class.getName());
-
-    private List<FolderInfo> possibleFolders;
+    private Map<FolderInfo, Boolean> folderMap;
 
     public SelectOnlineStoragePanel(Controller controller,
                                  List<FolderInfo> possibleFolders) {
         super(controller);
-        this.possibleFolders = possibleFolders;
+        folderMap = new HashMap<FolderInfo, Boolean>();
+        for (FolderInfo possibleFolder : possibleFolders) {
+            folderMap.put(possibleFolder, false);
+        }
     }
 
     public boolean hasNext() {
@@ -65,15 +71,51 @@ public class SelectOnlineStoragePanel extends PFWizardPanel {
 
     protected JPanel buildContent() {
         FormLayout layout = new FormLayout(
-                "pref, max(pref;140dlu)",
-                "pref, 3dlu, pref, 6dlu, pref, 3dlu, pref, 6dlu, pref, 3dlu, " +
-                        "pref");
+                "max(pref;140dlu)",
+                "pref, 3dlu, 50dlu");
 
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
         int row = 1;
 
+        builder.add(new JLabel(Translation.getTranslation(
+                "wizard.select_online_storage.info")), cc.xy(1, row));
+        row += 2;
+
+        JPanel selectionPanel = createSelectionPanel();
+        JScrollPane scrollPane = new JScrollPane(selectionPanel);
+        scrollPane.getVerticalScrollBar().setUnitIncrement(20);
+        builder.add(scrollPane, cc.xy(1, row, CellConstraints.DEFAULT, CellConstraints.TOP));
+
+        return builder.getPanel();
+    }
+
+    /**
+     * Add all online folders to a panel as check boxes.
+     * @return
+     */
+    private JPanel createSelectionPanel() {
+        FormLayout layout = new FormLayout("pref", "pref");
+        PanelBuilder builder = new PanelBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+
+        MyActionListener myActionListener = new MyActionListener();
+        int row = 1;
+        for (Iterator<FolderInfo> iter = folderMap.keySet().iterator();
+             iter.hasNext();) {
+            FolderInfo possibleFolder = iter.next();
+            JCheckBox checkBox = new JCheckBox(possibleFolder.name);
+            checkBox.addActionListener(myActionListener);
+            builder.add(checkBox, cc.xy(1, row));
+            if (iter.hasNext()) {
+                row += 1;
+                builder.appendRow("pref");
+            }
+        }
+        JPanel panel = builder.getPanel();
+        panel.setOpaque(true);
+        panel.setBackground(SystemColor.text);
         return builder.getPanel();
     }
 
@@ -88,7 +130,28 @@ public class SelectOnlineStoragePanel extends PFWizardPanel {
     }
 
     protected String getTitle() {
-        return Translation
-                .getTranslation("wizard.select_online_storage.title");
+        return Translation.getTranslation("wizard.select_online_storage.title");
+    }
+
+    private class MyActionListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            Object source = e.getSource();
+            if (source instanceof JCheckBox) {
+                JCheckBox cb = (JCheckBox) source;
+                FolderInfo selectedFolderInfo = null;
+                for (FolderInfo folderInfo : folderMap.keySet()) {
+                    if (folderInfo.name.equals(cb.getText())) {
+                        // found the correct cb.
+                        selectedFolderInfo = folderInfo;
+                        break;
+                    }
+                }
+
+                // Update with cb seleciton.
+                if (selectedFolderInfo != null) {
+                    folderMap.put(selectedFolderInfo, cb.isSelected());
+                }
+            }
+        }
     }
 }
