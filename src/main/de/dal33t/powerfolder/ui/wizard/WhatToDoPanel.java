@@ -89,10 +89,8 @@ public class WhatToDoPanel extends PFWizardPanel {
             List<FolderInfo> folderList = findFolderList();
 
             if (folderList.isEmpty()) {
-                DialogFactory.genericDialog(getController(),
-                        Translation.getTranslation("wizard.what_to_do.no_os_title"),
-                        Translation.getTranslation("wizard.what_to_do.no_os_text"),
-                        GenericDialogType.INFO);
+                errors.add(Translation.getTranslation(
+                        "wizard.what_to_do.no_os_text"));
                 return false;
             }
         }
