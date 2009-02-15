@@ -315,7 +315,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
         });
 
         invitationFileField = FileSelectorFactory.createFileSelectionField(
-            Translation.getTranslation("wizard.send_invitations.title"),
+            Translation.getTranslation("wizard.send_invitations.select"),
             invitationFileModel, JFileChooser.FILES_ONLY, // Save invitation
             InvitationUtil.createInvitationsFilefilter(), false);
         invitationFileField.setOpaque(false);
@@ -358,7 +358,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
 
     protected String getTitle() {
         return Translation
-            .getTranslation("wizard.send_invitations.send_invitation");
+            .getTranslation("wizard.send_invitations.title");
     }
 
     private void openNodesSelectDialog() {

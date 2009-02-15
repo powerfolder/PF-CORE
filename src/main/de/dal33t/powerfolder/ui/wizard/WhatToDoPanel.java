@@ -25,7 +25,10 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
@@ -41,6 +44,7 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
+import java.util.ArrayList;
 
 /**
  * The start panel of the "what to do" wizard line
@@ -57,12 +61,14 @@ public class WhatToDoPanel extends PFWizardPanel {
     private static final Object backupOption = new Object();
     private static final Object hostOption = new Object();
     private static final Object customOption = new Object();
+    private static final Object onlineOption = new Object();
     private static final Object inviteOption = new Object();
 
     private ActionLabel synchronizedLink;
     private ActionLabel backupLink;
     private ActionLabel hostLink;
     private ActionLabel customLink;
+    private ActionLabel onlineLink;
     private ActionLabel inviteLink;
     private LinkLabel documentationLink;
     private ValueModel decision;
@@ -82,7 +88,7 @@ public class WhatToDoPanel extends PFWizardPanel {
     protected JPanel buildContent() {
 
         FormLayout layout = new FormLayout("pref",
-            "pref, 6dlu, pref, 6dlu, pref, 6dlu, pref, 30dlu, pref, 6dlu, pref");
+            "pref, 6dlu, pref, 6dlu, pref, 6dlu, pref, 15dlu, pref, 15dlu, pref, 15dlu, pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
@@ -91,8 +97,9 @@ public class WhatToDoPanel extends PFWizardPanel {
         builder.add(backupLink.getUIComponent(), cc.xy(1, 3));
         builder.add(hostLink.getUIComponent(), cc.xy(1, 5));
         builder.add(customLink.getUIComponent(), cc.xy(1, 7));
-        builder.add(inviteLink.getUIComponent(), cc.xy(1, 9));
-        builder.add(documentationLink.getUiComponent(), cc.xy(1, 11));
+        builder.add(onlineLink.getUIComponent(), cc.xy(1, 9));
+        builder.add(inviteLink.getUIComponent(), cc.xy(1, 11));
+        builder.add(documentationLink.getUiComponent(), cc.xy(1, 13));
         return builder.getPanel();
     }
 
@@ -108,11 +115,26 @@ public class WhatToDoPanel extends PFWizardPanel {
             return doHostOption();
         } else if (option == customOption) {
             return doCustomAction();
+        } else if (option == onlineOption) {
+            return doOnlineOption();
         } else if (option == inviteOption) {
             return doInviteOption();
         }
 
         return null;
+    }
+
+    private WizardPanel doOnlineOption() {
+        List<FolderInfo> folderList = new ArrayList<FolderInfo>();
+        ServerClient client = getController().getOSClient();
+        List<FolderInfo> onlineFolderInfos = client.getOnlineFolders();
+        for (FolderInfo onlineFolderInfo : onlineFolderInfos) {
+            Folder folder = onlineFolderInfo.getFolder(getController());
+            if (folder == null) {
+                folderList.add(onlineFolderInfo);
+            }
+        }
+        return new SelectOnlineStoragePanel(getController(), folderList);
     }
 
     private WizardPanel doInviteOption() {
@@ -327,6 +349,14 @@ public class WhatToDoPanel extends PFWizardPanel {
         customLink.setToolTipText(Translation.getTranslation(
                 "wizard.what_to_do.custom_sync.tip"));
         SimpleComponentFactory.setFontSize((JLabel) customLink.getUIComponent(),
+                PFWizard.MED_FONT_SIZE);
+
+        onlineLink = new ActionLabel(getController(), new WhatToDoAction(Translation
+            .getTranslation("wizard.what_to_do.join_online"), onlineOption,
+            decision));
+        onlineLink.setToolTipText(Translation.getTranslation(
+                "wizard.what_to_do.join_online.tip"));
+        SimpleComponentFactory.setFontSize((JLabel) onlineLink.getUIComponent(),
                 PFWizard.MED_FONT_SIZE);
 
         inviteLink = new ActionLabel(getController(), new WhatToDoAction(Translation

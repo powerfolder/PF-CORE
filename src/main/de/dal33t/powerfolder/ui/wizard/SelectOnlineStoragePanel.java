@@ -23,11 +23,7 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.message.Invitation;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
-import de.dal33t.powerfolder.util.InvitationUtil;
 import de.dal33t.powerfolder.util.Translation;
 import jwf.WizardPanel;
 
@@ -36,26 +32,21 @@ import java.util.List;
 import java.util.logging.Logger;
 
 /**
- * Wizard for sending an invitation to a user for a selected folder.
+ * Wizard for selecting folders that are Online Storage and not locally managed.
  *
  * @author <a href="mailto:hglasgow@powerfolder.com">Harry Glasgow</a>
  * @version $Revision: 1.12 $
  */
-public class SelectInvitationPanel extends PFWizardPanel {
+public class SelectOnlineStoragePanel extends PFWizardPanel {
 
-    private static final Logger log = Logger.getLogger(SelectInvitationPanel.class.getName());
+    private static final Logger log = Logger.getLogger(SelectOnlineStoragePanel.class.getName());
 
     private List<FolderInfo> possibleFolders;
-    private Member member;
-    private JComboBox foldersCombo;
-    private JTextField messageField;
 
-    public SelectInvitationPanel(Controller controller,
-                                 Member member,
+    public SelectOnlineStoragePanel(Controller controller,
                                  List<FolderInfo> possibleFolders) {
         super(controller);
         this.possibleFolders = possibleFolders;
-        this.member = member;
     }
 
     public boolean hasNext() {
@@ -63,16 +54,6 @@ public class SelectInvitationPanel extends PFWizardPanel {
     }
 
     public boolean validateNext(List<String> errors) {
-        int index = foldersCombo.getSelectedIndex();
-        FolderInfo folderInfo = possibleFolders.get(index);
-        Invitation invitation = folderInfo.getFolder(getController())
-                .createInvitation();
-        invitation.setSuggestedLocalBase(getController(),
-                folderInfo.getFolder(getController()).getLocalBase());
-        invitation.setInvitationText(messageField.getText());
-        InvitationUtil.invitationToNode(getController(), invitation, member);
-        log.finer("Invited " + member.getNick() + " to folder "
-                + folderInfo.name);
         return true;
     }
 
@@ -92,26 +73,6 @@ public class SelectInvitationPanel extends PFWizardPanel {
         CellConstraints cc = new CellConstraints();
 
         int row = 1;
-        builder.addLabel(Translation.getTranslation("select_invitation.text1"),
-                cc.xyw(1, row, 2));
-
-        row += 2;
-        builder.addLabel(Translation.getTranslation("select_invitation.text2"),
-                cc.xyw(1, row, 2));
-
-        row += 2;
-        builder.addLabel(Translation.getTranslation("select_invitation.message_text"),
-                cc.xyw(1, row, 2));
-
-        row += 2;
-        builder.add(messageField, cc.xy(1, row));
-
-        row += 2;
-        builder.addLabel(Translation.getTranslation("select_invitation.folder_text"),
-                cc.xyw(1, row, 2));
-
-        row += 2;
-        builder.add(foldersCombo, cc.xy(1, row));
 
         return builder.getPanel();
     }
@@ -120,15 +81,6 @@ public class SelectInvitationPanel extends PFWizardPanel {
      * Initializes all necessary components
      */
     protected void initComponents() {
-        // Clear folder attribute
-        getWizardContext().setAttribute(FOLDERINFO_ATTRIBUTE, null);
-
-        foldersCombo = new JComboBox();
-        for (FolderInfo possibleFolder : possibleFolders) {
-            foldersCombo.addItem(possibleFolder.name);
-        }
-
-        messageField = new JTextField();
     }
 
     protected JComponent getPictoComponent() {
@@ -137,6 +89,6 @@ public class SelectInvitationPanel extends PFWizardPanel {
 
     protected String getTitle() {
         return Translation
-                .getTranslation("wizard.send_invitations.title");
+                .getTranslation("wizard.select_online_storage.title");
     }
 }
