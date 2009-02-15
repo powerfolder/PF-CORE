@@ -26,7 +26,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.Icons;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDER_LOCAL_BASES;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDER_CREATE_ITEMS;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
@@ -37,7 +37,6 @@ import jwf.WizardPanel;
 import javax.swing.*;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.awt.event.ItemListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.KeyListener;
@@ -114,16 +113,16 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
 //        // Setup choose disk location panel
 //        getWizardContext().setAttribute(PROMPT_TEXT_ATTRIBUTE,
 //            Translation.getTranslation("wizard.what_to_do.invite.select_local"));
-//
-//        // Setup sucess panel of this wizard path
-//        TextPanelPanel successPanel = new TextPanelPanel(getController(),
-//            Translation.getTranslation("wizard.setup_success"), Translation
-//                .getTranslation("wizard.success_join"));
-//        getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL, successPanel);
-//
-//        getWizardContext().setAttribute(SAVE_INVITE_LOCALLY,
-//            Boolean.TRUE);
-//
+
+        // Setup sucess panel of this wizard path
+        TextPanelPanel successPanel = new TextPanelPanel(getController(),
+            Translation.getTranslation("wizard.setup_success"), Translation
+                .getTranslation("wizard.success_join"));
+        getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL, successPanel);
+
+        getWizardContext().setAttribute(WizardContextAttributes.
+                SAVE_INVITE_LOCALLY, Boolean.TRUE);
+
         return new FolderCreatePanel(getController());
     }
 
@@ -180,7 +179,7 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
 
     public void afterDisplay() {
         localBaseComboModel.removeAllElements();
-        Object attribute = getWizardContext().getAttribute(FOLDER_LOCAL_BASES);
+        Object attribute = getWizardContext().getAttribute(FOLDER_CREATE_ITEMS);
         if (attribute != null && attribute instanceof List) {
             List list = (List) attribute;
             for (Object o : list) {
@@ -220,10 +219,8 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
                 nameField.setText(folderInfo.name);
                 SyncProfile profile = item.getSyncProfile();
                 if (profile == null) {
-                    System.out.println("hghg lbcsc - setting default");
                     profile = SyncProfile.AUTOMATIC_SYNCHRONIZATION;
                 }
-                System.out.println("hghg lbcsc - " + profile.getProfileName());
                 syncProfileSelectorPanel.setSyncProfile(profile, false);
                 break;
             }
@@ -246,10 +243,7 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
     }
 
     private void syncProfileSelectorPanelChange() {
-        System.out.println("hghg spspc");
         if (selectedItem != null) {
-            System.out.println("hghg spspc " + selectedItem.getLocalBase().getAbsolutePath()
-                    + " - " + syncProfileSelectorPanel.getSyncProfile().getProfileName());
             selectedItem.setSyncProfile(
                     syncProfileSelectorPanel.getSyncProfile());
         }

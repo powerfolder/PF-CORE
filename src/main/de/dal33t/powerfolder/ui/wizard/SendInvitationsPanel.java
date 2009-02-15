@@ -104,8 +104,6 @@ public class SendInvitationsPanel extends PFWizardPanel {
         firstFocusGainOfEmailField = true;
     }
 
-    // Application logic
-
     /**
      * Handles the invitation to disk option.
      * 

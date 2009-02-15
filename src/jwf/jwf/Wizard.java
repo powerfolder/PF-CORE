@@ -240,7 +240,7 @@ public class Wizard extends JPanel implements ActionListener {
     void updateButtons() {
         cancelButton.setEnabled(current.canCancel());
         helpButton.setEnabled(current.hasHelp());
-        backButton.setEnabled(!previous.isEmpty());
+        backButton.setEnabled(!previous.isEmpty() && previous.peek().canGoBackTo());
         nextButton.setEnabled(current.hasNext());
         finishButton.setEnabled(current.canFinish());
         if (nextButton.isEnabled()) {

@@ -37,7 +37,7 @@ public interface WizardContextAttributes {
     String FOLDER_LOCAL_BASE = "disklocation.localbase";
 
     /** The local file locations for the folders. List<FolderCreateItem> */
-    String FOLDER_LOCAL_BASES = "disklocation.localbases";
+    String FOLDER_CREATE_ITEMS = "disklocation.folder_create_items";
 
     /** The folder info object for the targeted folder */
     String SYNC_PROFILE_ATTRIBUTE = "disklocation.sync_profile";

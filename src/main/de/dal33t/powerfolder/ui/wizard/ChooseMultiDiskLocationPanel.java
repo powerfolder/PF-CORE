@@ -140,15 +140,18 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
     }
 
     public boolean hasNext() {
-        if (customDirectoryListModel.getSize() > 0) {
-            return true;
-        }
+        return countSelectedFolders() > 0;
+    }
+
+    private int countSelectedFolders() {
+        int count = customDirectoryListModel.getSize();
+
         for (JCheckBox box : boxes) {
             if (box.isSelected()) {
-                return true;
+                count++;
             }
         }
-        return false;
+        return count;
     }
 
     public boolean validateNext(List<String> errors) {
@@ -175,7 +178,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
             folderCreateItems.add(new FolderCreateItem(file));
         }
 
-        getWizardContext().setAttribute(FOLDER_LOCAL_BASES, folderCreateItems);
+        getWizardContext().setAttribute(FOLDER_CREATE_ITEMS, folderCreateItems);
 
         getWizardContext().setAttribute(
             BACKUP_ONLINE_STOARGE,
@@ -183,8 +186,10 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         getWizardContext().setAttribute(
             CREATE_DESKTOP_SHORTCUT,
             createDesktopShortcutBox.isSelected());
+
+        // Don't allow send after if 2 or more folders.
         getWizardContext().setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE,
-            sendInviteAfterCB.isSelected());
+            sendInviteAfterCB.isSelected() && countSelectedFolders() <= 1);
 
         // Change to manual sync if requested.
         if (manualSyncCheckBox.isSelected()) {
@@ -477,6 +482,16 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
     private void enableRemoveAction() {
         removeAction.setEnabled (!customDirectoryList.getSelectionModel()
                 .isSelectionEmpty());
+    }
+
+    protected void updateButtons() {
+        super.updateButtons();
+        if (countSelectedFolders() <= 1) {
+            sendInviteAfterCB.setEnabled(true);
+        } else {
+            sendInviteAfterCB.setSelected(false);
+            sendInviteAfterCB.setEnabled(false);
+        }
     }
 
     private class MyAddAction extends BaseAction {

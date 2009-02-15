@@ -32,6 +32,7 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.dialog.SyncFolderPanel;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SET_DEFAULT_SYNCHRONIZED_FOLDER;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Reject;
@@ -44,6 +45,10 @@ import javax.swing.*;
 import java.io.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
 
 /**
  * A panel that actually starts the creation process of a folder on display.
@@ -60,13 +65,12 @@ public class FolderCreatePanel extends PFWizardPanel {
 
     private static final Logger log = Logger.getLogger(FolderCreatePanel.class.getName());
 
-    private FolderInfo foInfo;
+    private Map<FolderInfo, FolderSettings> configurations;
     private boolean backupByOS;
     private boolean sendInvitations;
     private boolean createShortcut;
-    private FolderSettings folderSettings;
 
-    private Folder folder;
+    private List<Folder> folders;
 
     private JLabel statusLabel;
     private JTextArea errorArea;
@@ -75,10 +79,22 @@ public class FolderCreatePanel extends PFWizardPanel {
 
     public FolderCreatePanel(Controller controller) {
         super(controller);
+        configurations = new HashMap<FolderInfo, FolderSettings>();
+        folders = new ArrayList<Folder>();
     }
 
     @Override
     public boolean canFinish() {
+        return false;
+    }
+
+    /**
+     * Folders created; can not change that.
+     *
+     * @return
+     */
+    @Override
+    public boolean canGoBackTo() {
         return false;
     }
 
@@ -111,29 +127,12 @@ public class FolderCreatePanel extends PFWizardPanel {
     protected void afterDisplay() {
 
         // Mandatory
-        File localBase = (File) getWizardContext().getAttribute(
-            WizardContextAttributes.FOLDER_LOCAL_BASE);
-        SyncProfile syncProfile = (SyncProfile) getWizardContext()
-            .getAttribute(WizardContextAttributes.SYNC_PROFILE_ATTRIBUTE);
         Boolean saveLocalInvite = (Boolean) getWizardContext().getAttribute(
             WizardContextAttributes.SAVE_INVITE_LOCALLY);
-        Reject.ifNull(localBase, "Local base for folder is null/not set");
-        Reject.ifNull(syncProfile, "Sync profile for folder is null/not set");
         Reject.ifNull(saveLocalInvite,
             "Save invite locally attribute is null/not set");
 
         // Optional
-        foInfo = (FolderInfo) getWizardContext().getAttribute(
-            WizardContextAttributes.FOLDERINFO_ATTRIBUTE);
-        if (foInfo == null) {
-            // Create new folder info
-            String name = getController().getMySelf().getNick() + '-'
-                + localBase.getName();
-            String folderId = '[' + IdGenerator.makeId() + ']';
-            foInfo = new FolderInfo(name, folderId);
-            getWizardContext().setAttribute(
-                WizardContextAttributes.FOLDERINFO_ATTRIBUTE, foInfo);
-        }
         Boolean prevAtt = (Boolean) getWizardContext().getAttribute(
             WizardContextAttributes.PREVIEW_FOLDER_ATTIRBUTE);
         boolean previewFolder = prevAtt != null && prevAtt;
@@ -148,16 +147,55 @@ public class FolderCreatePanel extends PFWizardPanel {
             getController().getUIController().getApplicationModel()
                     .getServerClientModel().checkAndSetupAccount();
         }
-        // Send invitation after by default.
         Boolean sendInvsAtt = (Boolean) getWizardContext().getAttribute(
             WizardContextAttributes.SEND_INVIATION_AFTER_ATTRIBUTE);
         sendInvitations = sendInvsAtt == null || sendInvsAtt;
 
-        folderSettings = new FolderSettings(localBase, syncProfile,
-            saveLocalInvite, useRecycleBin, previewFolder, false);
+        // Either we have FOLDER_CREATE_ITEMS ... 
+        List<FolderCreateItem> folderCreateItems = (List<FolderCreateItem>)
+                getWizardContext().getAttribute(WizardContextAttributes.
+                        FOLDER_CREATE_ITEMS);
+        if (folderCreateItems != null && !folderCreateItems.isEmpty()) {
+            for (FolderCreateItem folderCreateItem : folderCreateItems) {
+                File localBase = folderCreateItem.getLocalBase();
+                SyncProfile syncProfile = folderCreateItem.getSyncProfile();
+                if (syncProfile == null) {
+                    syncProfile = SyncProfile.AUTOMATIC_SYNCHRONIZATION;
+                }
+                FolderInfo folderInfo = folderCreateItem.getFolderInfo();
+                if (folderInfo == null) {
+                    folderInfo = createFolderInfo(localBase);
+                }
+                FolderSettings folderSettings = new FolderSettings(localBase,
+                        syncProfile, saveLocalInvite, useRecycleBin, previewFolder,
+                        false);
+                configurations.put(folderInfo, folderSettings);
+            }
+        } else {
+            // ... or FOLDER_LOCAL_BASE + SYNC_PROFILE_ATTRIBUTE + optional
+            // FOLDERINFO_ATTRIBUTE...
+            File localBase = (File) getWizardContext().getAttribute(
+                WizardContextAttributes.FOLDER_LOCAL_BASE);
+            SyncProfile syncProfile = (SyncProfile) getWizardContext()
+                .getAttribute(WizardContextAttributes.SYNC_PROFILE_ATTRIBUTE);
+            Reject.ifNull(localBase, "Local base for folder is null/not set");
+            Reject.ifNull(syncProfile, "Sync profile for folder is null/not set");
+
+            // Optional
+            FolderInfo folderInfo = (FolderInfo) getWizardContext().getAttribute(
+                WizardContextAttributes.FOLDERINFO_ATTRIBUTE);
+            if (folderInfo == null) {
+                folderInfo = createFolderInfo(localBase);
+            }
+
+            FolderSettings folderSettings = new FolderSettings(localBase,
+                    syncProfile, saveLocalInvite, useRecycleBin, previewFolder,
+                    false);
+            configurations.put(folderInfo, folderSettings);
+        }
 
         // Reset
-        folder = null;
+        folders.clear();
 
         SwingWorker worker = new MyFolderCreateWorker();
         bar.setVisible(true);
@@ -165,6 +203,14 @@ public class FolderCreatePanel extends PFWizardPanel {
         worker.start();
 
         updateButtons();
+    }
+
+    private FolderInfo createFolderInfo(File localBase) {
+        // Create new folder info
+        String name = getController().getMySelf().getNick() + '-'
+            + localBase.getName();
+        String folderId = '[' + IdGenerator.makeId() + ']';
+        return new FolderInfo(name, folderId);        
     }
 
     protected void initComponents() {
@@ -180,7 +226,7 @@ public class FolderCreatePanel extends PFWizardPanel {
 
     @Override
     public boolean hasNext() {
-        return folder != null;
+        return !folders.isEmpty();
     }
 
     @Override
@@ -201,67 +247,77 @@ public class FolderCreatePanel extends PFWizardPanel {
 
         @Override
         public Object construct() {
-            folder = getController().getFolderRepository().createFolder(foInfo,
-                folderSettings);
-            if (createShortcut) {
-                folder.setDesktopShortcut(true);
-            }
-
-            folder.addDefaultExcludes();
             ServerClient client = getController().getOSClient();
-            if (backupByOS && client.isLastLoginOK()) {
-                try {
-                    // Try to back this up by online storage.
-                    if (client.hasJoined(folder)) {
-                        // Already have this os folder.
-                        log.log(Level.WARNING,
-                            "Already have os folder " + foInfo.name);
-                        return null;
-                    }
+            for (FolderInfo folderInfo : configurations.keySet()) {
+                FolderSettings folderSettings = configurations.get(folderInfo);
+                Folder folder = getController().getFolderRepository()
+                        .createFolder(folderInfo, folderSettings);
+                if (createShortcut) {
+                    folder.setDesktopShortcut(true);
+                }
+                folder.addDefaultExcludes();
+                folders.add(folder);
+                if (configurations.size() == 1) {
+                    // Set for SendInvitationsPanel
+                    getWizardContext().setAttribute(FOLDERINFO_ATTRIBUTE,
+                            folder.getInfo());
+                }
 
-                    client.getFolderService().createFolder(foInfo,
-                        SyncProfile.BACKUP_TARGET_NO_CHANGE_DETECT);
-                    client.refreshAccountDetails();
-
-                    // Set as default synced folder?
-                    Object attribute = getWizardContext().getAttribute(
-                        SET_DEFAULT_SYNCHRONIZED_FOLDER);
-                    if (attribute != null && (Boolean) attribute) {
-                        // TODO: Ugly. Use abstraction: Runnable? Callback with
-                        // folder? Which is placed on WizardContext.
-                        client.getFolderService().setDefaultSynchronizedFolder(
-                            foInfo);
-                        client.refreshAccountDetails();
-                        createDefaultFolderHelpFile();
-                        folder.recommendScanOnNextMaintenance();
-                        try {
-                            FileUtils.openFile(folder.getLocalBase());
-                        } catch (IOException e) {
-                            log.log(Level.FINER, "IOException", e);
+                if (backupByOS && client.isLastLoginOK()) {
+                    try {
+                        // Try to back this up by online storage.
+                        if (client.hasJoined(folder)) {
+                            // Already have this os folder.
+                            log.log(Level.WARNING,
+                                "Already have os folder " + folderInfo.name);
+                            continue;
                         }
+
+                        client.getFolderService().createFolder(folderInfo,
+                            SyncProfile.BACKUP_TARGET_NO_CHANGE_DETECT);
+                        client.refreshAccountDetails();
+
+                        // Set as default synced folder?
+                        Object attribute = getWizardContext().getAttribute(
+                            SET_DEFAULT_SYNCHRONIZED_FOLDER);
+                        if (attribute != null && (Boolean) attribute) {
+                            // TODO: Ugly. Use abstraction: Runnable? Callback with
+                            // folder? Which is placed on WizardContext.
+                            client.getFolderService().setDefaultSynchronizedFolder(
+                                folderInfo);
+                            client.refreshAccountDetails();
+                            createDefaultFolderHelpFile(folder);
+                            folder.recommendScanOnNextMaintenance();
+                            try {
+                                FileUtils.openFile(folder.getLocalBase());
+                            } catch (IOException e) {
+                                log.log(Level.FINER, "IOException", e);
+                            }
+                        }
+                    } catch (FolderException e) {
+                        problems = true;
+                        errorArea.setText(Translation
+                            .getTranslation("folder_create.dialog.backup_error.text")
+                            + '\n' + e.getMessage());
+                        errorPane.setVisible(true);
+                        log.log(Level.SEVERE,
+                                "Unable to backup folder to online storage", e);
                     }
-                } catch (FolderException e) {
-                    problems = true;
-                    errorArea.setText(Translation
-                        .getTranslation("folder_create.dialog.backup_error.text")
-                        + '\n' + e.getMessage());
-                    errorPane.setVisible(true);
-                    log.log(Level.SEVERE,
-                            "Unable to backup folder to online storage", e);
                 }
             }
+
             return null;
         }
 
-        private void createDefaultFolderHelpFile() {
+        private void createDefaultFolderHelpFile(Folder folder) {
             File helpFile = new File(folder.getLocalBase(),
                 "Place files to sync here.txt");
             if (helpFile.exists()) {
                 return;
             }
+            Writer w = null;
             try {
-                Writer w = new OutputStreamWriter(
-                    new FileOutputStream(helpFile));
+                w = new OutputStreamWriter(new FileOutputStream(helpFile));
                 w.write("This is the default synchronized folder of PowerFolder.\r\n");
                 w.write("Simply place files into this directory to sync them\r\n");
                 w.write("across all your computers running PowerFolder.\r\n");
@@ -270,6 +326,14 @@ public class FolderCreatePanel extends PFWizardPanel {
                 w.close();
             } catch (IOException e) {
                 // Doesn't matter.
+            } finally {
+                if (w != null) {
+                    try {
+                        w.close();
+                    } catch (IOException e) {
+                        // Ignore
+                    }
+                }
             }
         }
 
@@ -284,11 +348,12 @@ public class FolderCreatePanel extends PFWizardPanel {
                     .getTranslation("wizard.create_folder.failed"));
                 errorPane.setVisible(true);
             } else {
-                if (SyncProfile.MANUAL_SYNCHRONIZATION.equals(folder
-                    .getSyncProfile()))
-                {
-                    // Show sync folder panel after created a project folder
-                    new SyncFolderPanel(getController(), folder).open();
+                for (Folder folder : folders) {
+                    if (SyncProfile.MANUAL_SYNCHRONIZATION.equals(folder
+                        .getSyncProfile())) {
+                        // Show sync folder panel after created a project folder
+                        new SyncFolderPanel(getController(), folder).open();
+                    }
                 }
 
                 Wizard wiz = (Wizard) getWizardContext().getAttribute(
@@ -297,5 +362,4 @@ public class FolderCreatePanel extends PFWizardPanel {
             }
         }
     }
-
 }

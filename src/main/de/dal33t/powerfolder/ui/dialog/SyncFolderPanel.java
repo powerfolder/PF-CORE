@@ -40,7 +40,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 /**
- * The Sync action panel. user can input his sync actions. e.g. scan. scan &
+ * The Sync action panel. User can input his sync actions. e.g. scan. scan &
  * download. Now used only if syncprofile is Project work
  * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>

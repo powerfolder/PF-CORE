@@ -49,6 +49,15 @@ public abstract class WizardPanel extends JPanel {
     public abstract boolean canFinish();
 
     /**
+     * Whether a wizard can go back to this panel. Some flows may not allow this
+     * like where folders have been created.
+     * @return
+     */
+    public boolean canGoBackTo() {
+        return true;
+    }
+
+    /**
      * Can this panel cancel the wizard? Terminating panels, where Finish is
      * the only logical option, should set this to false.
      *
