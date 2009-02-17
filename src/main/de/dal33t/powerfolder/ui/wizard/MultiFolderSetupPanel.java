@@ -101,19 +101,6 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
 
     public WizardPanel next() {
 
-//        // Set FolderInfo
-//        FolderInfo folderInfo = new FolderInfo(folderNameTextField.getText()
-//            .trim(), '[' + IdGenerator.makeId() + ']');
-//        getWizardContext().setAttribute(FOLDERINFO_ATTRIBUTE, folderInfo);
-//
-//        // Set sync profile
-//        getWizardContext().setAttribute(SYNC_PROFILE_ATTRIBUTE,
-//            syncProfileSelectorPanel.getSyncProfile());
-//
-//        // Setup choose disk location panel
-//        getWizardContext().setAttribute(PROMPT_TEXT_ATTRIBUTE,
-//            Translation.getTranslation("wizard.what_to_do.invite.select_local"));
-
         // Setup sucess panel of this wizard path
         TextPanelPanel successPanel = new TextPanelPanel(getController(),
             Translation.getTranslation("wizard.setup_success"), Translation

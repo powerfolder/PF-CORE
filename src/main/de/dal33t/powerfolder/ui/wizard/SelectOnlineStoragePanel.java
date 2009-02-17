@@ -30,10 +30,8 @@ import de.dal33t.powerfolder.util.os.OSUtil;
 import jwf.WizardPanel;
 
 import javax.swing.*;
+import java.util.*;
 import java.util.List;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.HashMap;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
@@ -80,9 +78,18 @@ public class SelectOnlineStoragePanel extends PFWizardPanel {
                 WizardContextAttributes.USE_RECYCLE_BIN,
                 useRecycleBinBox.isSelected());
 
+        List<FolderInfo> folderInfos = new ArrayList<FolderInfo>();
+        for (FolderInfo folderInfo : folderMap.keySet()) {
+            Boolean selected = folderMap.get(folderInfo);
+            if (selected) {
+                folderInfos.add(folderInfo);
+            }
+        }
+        getWizardContext().setAttribute(WizardContextAttributes.FOLDER_INFOS,
+                folderInfos);
+
         // Show success panel
-        return (WizardPanel) getWizardContext().getAttribute(
-                PFWizard.SUCCESS_PANEL);
+        return new MultiOnlineStorageSetupPanel(getController());
     }
 
     protected JPanel buildContent() {

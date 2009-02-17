@@ -68,4 +68,9 @@ public interface WizardContextAttributes {
      */
     String USE_RECYCLE_BIN = "use.recycle.bin";
 
+    /**
+     * List<FolderInfo>
+     */
+    String FOLDER_INFOS = "folder.infos";
+
 }
