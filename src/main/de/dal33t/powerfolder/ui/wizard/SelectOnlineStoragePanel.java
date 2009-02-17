@@ -23,8 +23,10 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.os.OSUtil;
 import jwf.WizardPanel;
 
 import javax.swing.*;
@@ -37,7 +39,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
 /**
- * Wizard for selecting folders that are Online Storage and not locally managed.
+ * Wizard for selecting folders to join that are Online Storage and not locally managed.
  *
  * @author <a href="mailto:hglasgow@powerfolder.com">Harry Glasgow</a>
  * @version $Revision: 1.12 $
@@ -45,6 +47,9 @@ import java.awt.event.ActionEvent;
 public class SelectOnlineStoragePanel extends PFWizardPanel {
 
     private Map<FolderInfo, Boolean> folderMap;
+
+    private JCheckBox createDesktopShortcutBox;
+    private JCheckBox useRecycleBinBox;
 
     public SelectOnlineStoragePanel(Controller controller,
                                  List<FolderInfo> possibleFolders) {
@@ -56,11 +61,13 @@ public class SelectOnlineStoragePanel extends PFWizardPanel {
     }
 
     public boolean hasNext() {
-        return true;
-    }
-
-    public boolean validateNext() {
-        return true;
+        for (FolderInfo folderInfo : folderMap.keySet()) {
+            Boolean selected = folderMap.get(folderInfo);
+            if (selected) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public WizardPanel next() {
@@ -71,8 +78,8 @@ public class SelectOnlineStoragePanel extends PFWizardPanel {
 
     protected JPanel buildContent() {
         FormLayout layout = new FormLayout(
-                "max(pref;140dlu)",
-                "pref, 3dlu, 50dlu");
+                "max(pref;140dlu), pref:grow",
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
@@ -80,13 +87,24 @@ public class SelectOnlineStoragePanel extends PFWizardPanel {
         int row = 1;
 
         builder.add(new JLabel(Translation.getTranslation(
-                "wizard.select_online_storage.info")), cc.xy(1, row));
+                "wizard.select_online_storage.info")), cc.xyw(1, row, 2));
         row += 2;
 
         JPanel selectionPanel = createSelectionPanel();
         JScrollPane scrollPane = new JScrollPane(selectionPanel);
         scrollPane.getVerticalScrollBar().setUnitIncrement(20);
         builder.add(scrollPane, cc.xy(1, row, CellConstraints.DEFAULT, CellConstraints.TOP));
+
+        row += 2;
+
+        builder.add(useRecycleBinBox, cc.xyw(1, row, 2));
+
+        row += 2;
+
+        if (OSUtil.isWindowsSystem()) {
+            builder.add(createDesktopShortcutBox, cc.xyw(1, row, 2));
+            row += 2;
+        }
 
         return builder.getPanel();
     }
@@ -123,6 +141,12 @@ public class SelectOnlineStoragePanel extends PFWizardPanel {
      * Initializes all necessary components
      */
     protected void initComponents() {
+        useRecycleBinBox = new JCheckBox(Translation.getTranslation(
+                "wizard.select_online_storage.recycle_bin.text"));
+        useRecycleBinBox.setSelected(ConfigurationEntry.USE_RECYCLE_BIN
+                .getValueBoolean(getController()));
+        createDesktopShortcutBox = new JCheckBox(Translation.getTranslation(
+                "wizard.select_online_storage.desktop_shortcut.text"));
     }
 
     protected JComponent getPictoComponent() {
@@ -152,6 +176,7 @@ public class SelectOnlineStoragePanel extends PFWizardPanel {
                     folderMap.put(selectedFolderInfo, cb.isSelected());
                 }
             }
+            updateButtons();
         }
     }
 }
