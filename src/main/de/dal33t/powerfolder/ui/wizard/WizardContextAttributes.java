@@ -63,4 +63,9 @@ public interface WizardContextAttributes {
      */
     String SAVE_INVITE_LOCALLY = "save.invitation.locally";
 
+    /**
+     * Whether to use recycle bin.
+     */
+    String USE_RECYCLE_BIN = "use.recycle.bin";
+
 }

@@ -71,6 +71,15 @@ public class SelectOnlineStoragePanel extends PFWizardPanel {
     }
 
     public WizardPanel next() {
+
+        getWizardContext().setAttribute(
+                WizardContextAttributes.CREATE_DESKTOP_SHORTCUT,
+                createDesktopShortcutBox.isSelected());
+
+        getWizardContext().setAttribute(
+                WizardContextAttributes.USE_RECYCLE_BIN,
+                useRecycleBinBox.isSelected());
+
         // Show success panel
         return (WizardPanel) getWizardContext().getAttribute(
                 PFWizard.SUCCESS_PANEL);
