@@ -25,19 +25,25 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.disk.SyncProfile;
+import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX;
+import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_DONT_RECYCLE;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SyncProfileSelectorPanel;
+import de.javasoft.synthetica.addons.DirectoryChooser;
 import jwf.WizardPanel;
 
 import javax.swing.*;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Properties;
 import java.awt.event.ItemListener;
 import java.awt.event.ItemEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.io.File;
@@ -115,7 +121,8 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
         localFolderButton = new JButtonMini(Icons.DIRECTORY,
                 Translation.getTranslation(
                         "wizard.multi_online_storage_setup.select_directory"));
-        localFolderButton.setEnabled(false);
+        MyActionListener myActionListener = new MyActionListener();
+        localFolderButton.addActionListener(myActionListener);
 
         syncProfileSelectorPanel = new SyncProfileSelectorPanel(getController());
         syncProfileSelectorPanel.addModelValueChangeListener(
@@ -209,6 +216,35 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
 
         public void propertyChange(PropertyChangeEvent evt) {
             syncProfileSelectorPanelChange();
+        }
+    }
+
+    private void configureLocalFolder() {
+        Object selectedItem = folderInfoCombo.getSelectedItem();
+        FolderInfo selectedFolderInfo = null;
+        for (FolderInfo folderInfo : folderLocalBaseMap.keySet()) {
+            if (folderInfo.name.equals(selectedItem)) {
+                selectedFolderInfo = folderInfo;
+                break;
+            }
+        }
+        if (selectedFolderInfo != null) {
+            DirectoryChooser dc = new DirectoryChooser();
+            dc.setCurrentDirectory(folderLocalBaseMap.get(selectedFolderInfo));
+            int i = dc.showOpenDialog(getController().getUIController().getActiveFrame());
+            if (i == JFileChooser.APPROVE_OPTION) {
+                File selectedFile = dc.getSelectedFile();
+                localFolderField.setText(selectedFile.getAbsolutePath());
+                folderLocalBaseMap.put(selectedFolderInfo, selectedFile);
+            }
+        }
+    }
+
+    private class MyActionListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            if (e.getSource().equals(localFolderButton)) {
+                configureLocalFolder();
+            }
         }
     }
 }
