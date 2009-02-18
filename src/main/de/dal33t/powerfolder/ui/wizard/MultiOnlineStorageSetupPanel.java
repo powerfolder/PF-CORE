@@ -23,9 +23,11 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SyncProfileSelectorPanel;
 import jwf.WizardPanel;
@@ -38,9 +40,10 @@ import java.awt.event.ItemListener;
 import java.awt.event.ItemEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.io.File;
 
 /**
- * Class to do configuration for optional specified OS joins.
+ * Class to do sync profile configuration for OS joins.
  *
  * @author <a href="mailto:harry@powerfolder.com">Harry Glasgow</a>
  * @version $Revision: 1.11 $
@@ -48,26 +51,25 @@ import java.beans.PropertyChangeEvent;
 public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
 
     private Map<FolderInfo, SyncProfile> folderProfileMap;
+    private Map<FolderInfo, File> folderLocalBaseMap;
     private JComboBox folderInfoCombo;
     private DefaultComboBoxModel folderInfoComboModel;
     private SyncProfileSelectorPanel syncProfileSelectorPanel;
-    boolean changingSelecton = false;
+    private boolean changingSelecton;
+
+    private JTextField localFolderField;
+    private JButton localFolderButton;
+
 
     /**
      * Constuctor
      *
      * @param controller
-     * @param folderName
-     *            the recommended folder name.
      */
     public MultiOnlineStorageSetupPanel(Controller controller) {
         super(controller);
-
     }
 
-    /**
-     * Can procede if an invitation exists.
-     */
     public boolean hasNext() {
         return true;
     }
@@ -77,22 +79,28 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
     }
 
     protected JPanel buildContent() {
-        FormLayout layout = new FormLayout("right:pref, 3dlu, 140dlu, pref:grow",
-            "pref, 6dlu, pref, 6dlu, pref");
+        FormLayout layout = new FormLayout("right:pref, 3dlu, 122dlu, 3dlu, 15dlu, pref:grow",
+            "pref, 6dlu, pref, 6dlu, pref, 6dlu, pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
         builder.addLabel(Translation.getTranslation("general.directory"),
                 cc.xy(1, 1));
-        builder.add(folderInfoCombo, cc.xy(3, 1));
+        builder.add(folderInfoCombo, cc.xyw(3, 1, 3));
+
+        builder.add(new JLabel(Translation.getTranslation(
+                "wizard.multi_online_storage_setup.local_folder_location")),
+                cc.xy(1, 3));
+        builder.add(localFolderField, cc.xy(3, 3));
+        builder.add(localFolderButton, cc.xy(5, 3));
 
         builder.add(new JLabel(Translation
             .getTranslation("general.transfer_mode")), cc.xy(1, 5,
                 CellConstraints.DEFAULT, CellConstraints.TOP));
         JPanel p = (JPanel) syncProfileSelectorPanel.getUIComponent();
         p.setOpaque(false);
-        builder.add(p, cc.xyw(3, 5, 2));
+        builder.add(p, cc.xyw(3, 5, 4));
 
         return builder.getPanel();
     }
@@ -101,6 +109,13 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
      * Initializes all necessary components
      */
     protected void initComponents() {
+
+        localFolderField = new JTextField();
+        localFolderField.setEditable(false);
+        localFolderButton = new JButtonMini(Icons.DIRECTORY,
+                Translation.getTranslation(
+                        "wizard.multi_online_storage_setup.select_directory"));
+        localFolderButton.setEnabled(false);
 
         syncProfileSelectorPanel = new SyncProfileSelectorPanel(getController());
         syncProfileSelectorPanel.addModelValueChangeListener(
@@ -115,12 +130,21 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
             Icons.FILE_SHARING_PICTO);
     }
 
+    /**
+     * Build map of foInfo and syncProfs
+     */
     public void afterDisplay() {
         folderProfileMap = new HashMap<FolderInfo, SyncProfile>();
+        folderLocalBaseMap = new HashMap<FolderInfo, File>();
+        String folderBasedir = ConfigurationEntry.FOLDER_BASEDIR.getValue(getController());
+
         List<FolderInfo> folderInfoList = (List<FolderInfo>) getWizardContext()
                 .getAttribute(WizardContextAttributes.FOLDER_INFOS);
         for (FolderInfo folderInfo : folderInfoList) {
-            folderProfileMap.put(folderInfo, SyncProfile.AUTOMATIC_SYNCHRONIZATION);
+            folderProfileMap.put(folderInfo,
+                    SyncProfile.AUTOMATIC_SYNCHRONIZATION);
+            folderLocalBaseMap.put(folderInfo, new File(folderBasedir,
+                    folderInfo.name));
             folderInfoComboModel.addElement(folderInfo.name);
         }
     }
@@ -148,6 +172,8 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
             }
         }
         if (selectedFolderInfo != null) {
+            localFolderField.setText(folderLocalBaseMap.get(
+                    selectedFolderInfo).getAbsolutePath());
             syncProfileSelectorPanel.setSyncProfile(
                     folderProfileMap.get(selectedFolderInfo), false);
         }
