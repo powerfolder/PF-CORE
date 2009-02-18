@@ -23,6 +23,7 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Translation;
@@ -31,10 +32,10 @@ import jwf.WizardPanel;
 
 import javax.swing.*;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 import java.awt.event.ItemListener;
 import java.awt.event.ItemEvent;
-import java.awt.event.KeyListener;
-import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 
@@ -46,11 +47,11 @@ import java.beans.PropertyChangeEvent;
  */
 public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
 
-    private List<FolderInfo> folderInfos;
+    private Map<FolderInfo, SyncProfile> folderProfileMap;
     private JComboBox folderInfoCombo;
     private DefaultComboBoxModel folderInfoComboModel;
-
     private SyncProfileSelectorPanel syncProfileSelectorPanel;
+    boolean changingSelecton = false;
 
     /**
      * Constuctor
@@ -68,10 +69,6 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
      * Can procede if an invitation exists.
      */
     public boolean hasNext() {
-        return true;
-    }
-
-    public boolean validateNext() {
         return true;
     }
 
@@ -109,8 +106,6 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
         syncProfileSelectorPanel.addModelValueChangeListener(
                 new MyPropertyValueChangeListener());
 
-        KeyListener myKeyListener = new MyKeyListener();
-
         folderInfoComboModel = new DefaultComboBoxModel();
         folderInfoCombo = new JComboBox(folderInfoComboModel);
 
@@ -121,9 +116,11 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
     }
 
     public void afterDisplay() {
-        folderInfos = (List<FolderInfo>) getWizardContext().getAttribute(
-                WizardContextAttributes.FOLDER_INFOS);
-        for (FolderInfo folderInfo : folderInfos) {
+        folderProfileMap = new HashMap<FolderInfo, SyncProfile>();
+        List<FolderInfo> folderInfoList = (List<FolderInfo>) getWizardContext()
+                .getAttribute(WizardContextAttributes.FOLDER_INFOS);
+        for (FolderInfo folderInfo : folderInfoList) {
+            folderProfileMap.put(folderInfo, SyncProfile.AUTOMATIC_SYNCHRONIZATION);
             folderInfoComboModel.addElement(folderInfo.name);
         }
     }
@@ -139,33 +136,45 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
     /**
      * Update name and profile fields when base selection changes.
      */
-    private void localBaseComboSelectionChange() {
+    private void folderInfoComboSelectionChange() {
+        changingSelecton = true;
+
+        Object selectedItem = folderInfoCombo.getSelectedItem();
+        FolderInfo selectedFolderInfo = null;
+        for (FolderInfo folderInfo : folderProfileMap.keySet()) {
+            if (folderInfo.name.equals(selectedItem)) {
+                selectedFolderInfo = folderInfo;
+                break;
+            }
+        }
+        if (selectedFolderInfo != null) {
+            syncProfileSelectorPanel.setSyncProfile(
+                    folderProfileMap.get(selectedFolderInfo), false);
+        }
+
+        changingSelecton = false;
     }
 
     private void syncProfileSelectorPanelChange() {
-//        if (selectedItem != null) {
-//            selectedItem.setSyncProfile(
-//                    syncProfileSelectorPanel.getSyncProfile());
-//        }
+        if (!changingSelecton) {
+            Object selectedItem = folderInfoCombo.getSelectedItem();
+            FolderInfo selectedFolderInfo = null;
+            for (FolderInfo folderInfo : folderProfileMap.keySet()) {
+                if (folderInfo.name.equals(selectedItem)) {
+                    selectedFolderInfo = folderInfo;
+                    break;
+                }
+            }
+            if (selectedFolderInfo != null) {
+                folderProfileMap.put(selectedFolderInfo,
+                        syncProfileSelectorPanel.getSyncProfile());
+            }
+        }
     }
 
     private class MyItemListener implements ItemListener {
         public void itemStateChanged(ItemEvent e) {
-            localBaseComboSelectionChange();
-        }
-    }
-
-    private class MyKeyListener implements KeyListener {
-        public void keyTyped(KeyEvent e) {
-        }
-
-        public void keyPressed(KeyEvent e) {
-        }
-
-        public void keyReleased(KeyEvent e) {
-//            if (selectedItem != null) {
-//                selectedItem.getFolderInfo().name = nameField.getText();
-//            }
+            folderInfoComboSelectionChange();
         }
     }
 
