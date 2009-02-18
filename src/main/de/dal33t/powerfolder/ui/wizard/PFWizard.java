@@ -27,6 +27,7 @@ import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.UIController;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
@@ -37,6 +38,8 @@ import jwf.WizardPanel;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -301,5 +304,7 @@ public class PFWizard extends PFUIComponent {
                 - dialog.getHeight()) / 2;
         dialog.setLocation(x, y);
         wizard.getContext().setAttribute(Wizard.DIALOG_ATTRIBUTE, dialog);
+        getUIController().setWizardDialogReference(dialog);
+        getUIController().setActiveFrame(UIController.WIZARD_DIALOG_ID);
     }
 }

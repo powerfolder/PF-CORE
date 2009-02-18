@@ -50,7 +50,7 @@ public class GenericDialog {
     private static final Icon ERROR_ICON_ICON;
     private static final Icon QUESTION_ICON_ICON;
 
-    private JFrame parent;
+    private Window parent;
     private boolean neverAskAgainMode;
     private JCheckBox neverAskAgainCheckBox;
     private String title;
@@ -84,7 +84,7 @@ public class GenericDialog {
      * @param initialSelection
      * @param neverAskAgainText
      */
-    public GenericDialog(JFrame parent,
+    public GenericDialog(Window parent,
                          String title,
                          JPanel innerPanel,
                          GenericDialogType type,
@@ -154,7 +154,7 @@ public class GenericDialog {
     }
 
     public int display() {
-        dialog = new JDialog(parent, title, true);
+        dialog = new JDialog(parent, title, Dialog.ModalityType.APPLICATION_MODAL);
 
         FormLayout layout = new FormLayout("3dlu, pref, 3dlu, pref:grow, 3dlu",
                 "3dlu, pref:grow, 3dlu, pref, 3dlu, pref, 3dlu");

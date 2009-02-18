@@ -56,6 +56,7 @@ import java.awt.event.ComponentEvent;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.ref.WeakReference;
 import java.text.ParseException;
 import java.util.*;
 import java.util.List;
@@ -76,10 +77,11 @@ public class UIController extends PFComponent {
 
     private static final Logger log = Logger.getLogger(UIController.class.getName());
     private static final long TEN_GIG = 10L << 30;
-
+    
     public static final int MAIN_FRAME_ID = 0;
     public static final int INFO_FRAME_ID = 1;
     public static final int CHAT_FRAME_ID = 2;
+    public static final int WIZARD_DIALOG_ID = 3;
 
     private boolean started;
     private SplashScreen splash;
@@ -90,7 +92,7 @@ public class UIController extends PFComponent {
     private SystemMonitorFrame systemMonitorFrame;
     private InformationFrame informationFrame;
     private ChatFrame chatFrame;
-
+    private WeakReference<JDialog> wizardDialogReference;
     private BlinkManager blinkManager;
 
     // List of pending jobs, execute when ui is opend
@@ -740,35 +742,38 @@ public class UIController extends PFComponent {
      *
      * @return
      */
-    public JFrame getActiveFrame() {
+    public Window getActiveFrame() {
 
         int f = activeFrame.get();
-        if (f == MAIN_FRAME_ID) {
-            return mainFrame.getUIComponent();
-        } else if (f == INFO_FRAME_ID) {
+        if (f == INFO_FRAME_ID) {
             JFrame infoComponent = informationFrame.getUIComponent();
             if (infoComponent.isVisible()) {
                 return infoComponent;
-            } else {
-                // Fallback if the info frame is not visible.
-                return mainFrame.getUIComponent();
             }
         } else if (f == CHAT_FRAME_ID) {
             JFrame chatComponent = chatFrame.getUIComponent();
             if (chatComponent.isVisible()) {
                 return chatComponent;
-            } else {
-                // Fallback if the chat frame is not visible.
-                return mainFrame.getUIComponent();
+            }
+        } else if (f == WIZARD_DIALOG_ID) {
+            if (wizardDialogReference != null) {
+                JDialog wizardDialog = wizardDialogReference.get();
+                if (wizardDialog != null) {
+                    return wizardDialog;
+                }
             }
         }
 
-        // Huh? Somthing else active?
+        // Default - main frame
         return mainFrame.getUIComponent();
     }
 
     public void setActiveFrame(int activeFrameId) {
         activeFrame.set(activeFrameId);
+    }
+
+    public void setWizardDialogReference(JDialog wizardDialog) {
+        wizardDialogReference = new WeakReference<JDialog>(wizardDialog);
     }
 
     ///////////////////

@@ -77,7 +77,7 @@ public abstract class ActivityVisualizationWorker extends SwingWorker {
         }
     }
 
-    public ActivityVisualizationWorker(Frame theParent) {
+    public ActivityVisualizationWorker(Window theParent) {
         this();
         dialog = new JDialog(theParent);
     }
