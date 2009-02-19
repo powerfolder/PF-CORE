@@ -66,7 +66,7 @@ public class ConnectionHandlerFactory extends PFComponent {
      * B) PRO only: HTTP tunneled connection
      * 
      * @param remoteNode
-     *            the node to reconnecc tot.
+     *            the node to reconnect to.
      * @return a ready initializes connection handler.
      * @throws ConnectionException
      */
@@ -74,8 +74,9 @@ public class ConnectionHandlerFactory extends PFComponent {
         throws ConnectionException
     {
         boolean nullIP = remoteNode.getConnectAddress() == null
-            || NetworkUtil
-                .isNullIP(remoteNode.getConnectAddress().getAddress());
+                || remoteNode.getConnectAddress().getAddress() == null
+                || NetworkUtil.isNullIP(remoteNode.getConnectAddress()
+                .getAddress());
 
         if (!nullIP) {
             try {
