@@ -65,6 +65,7 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
     private JButtonMini openFilesInformationButton;
     private JButtonMini inviteButton;
     private JButtonMini syncFolderButton;
+    private JButtonMini joinOnlineStorageButton;
     private ActionLabel membersLabel;
 
     private JPanel uiComponent;
@@ -186,7 +187,7 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
     private void buildUI() {
 
         // Build ui
-                                            //  icon        name   space            # files     sync
+                                            //  icon        name   space            # files     sync / join
         FormLayout upperLayout = new FormLayout("pref, 3dlu, pref, pref:grow, 3dlu, pref, 3dlu, pref",
             "pref");
         PanelBuilder upperBuilder = new PanelBuilder(upperLayout);
@@ -197,7 +198,10 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
         upperBuilder.add(jLabel, cc.xy(1, 1));
         upperBuilder.add(new JLabel(folderInfo.name), cc.xy(3, 1));
         upperBuilder.add(filesAvailableLabel.getUIComponent(), cc.xy(6, 1));
+
+        // syncFolderButton and joinOnlineStorageButton share same slot.
         upperBuilder.add(syncFolderButton, cc.xy(8, 1));
+        upperBuilder.add(joinOnlineStorageButton, cc.xy(8, 1));
 
         upperPanel = upperBuilder.getPanel();
         upperPanel.setToolTipText(
@@ -281,6 +285,8 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
                 new MyOpenMembersInformationAction(getController());
         MySyncFolderAction mySyncFolderAction =
                 new MySyncFolderAction(getController());
+        MyJoinOnlineStorageAction myJoinOnlineStorageAction =
+                new MyJoinOnlineStorageAction(getController());
 
         expanded = new AtomicBoolean();
 
@@ -294,6 +300,7 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
 
         inviteButton = new JButtonMini(myInviteAction, true);
         syncFolderButton = new JButtonMini(mySyncFolderAction, true);
+        joinOnlineStorageButton = new JButtonMini(myJoinOnlineStorageAction, true);
         filesLabel = new JLabel();
         transferModeLabel = new JLabel();
         syncPercentLabel = new JLabel();
@@ -328,8 +335,9 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
         openSettingsInformationButton.setEnabled(enabled);
         openFilesInformationButton.setEnabled(enabled);
         inviteButton.setEnabled(enabled);
-        syncFolderButton.setEnabled(enabled);
         membersLabel.setEnabled(enabled);
+        syncFolderButton.setVisible(enabled);
+        joinOnlineStorageButton.setVisible(!enabled);
     }
 
     /**
@@ -720,6 +728,17 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
 
         public void actionPerformed(ActionEvent e) {
             getController().getUIController().syncFolder(folderInfo);
+        }
+    }
+
+    private class MyJoinOnlineStorageAction extends BaseAction {
+
+        private MyJoinOnlineStorageAction(Controller controller) {
+            super("action_join_online_storage", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            // @todo harry ......
         }
     }
 
