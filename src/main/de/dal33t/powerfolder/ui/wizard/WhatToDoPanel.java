@@ -161,6 +161,16 @@ public class WhatToDoPanel extends PFWizardPanel {
         getWizardContext().setAttribute(PFWizard.PICTO_ICON,
                 Icons.FILE_SHARING_PICTO);
 
+        // Do not prompt for send invitation afterwards
+        getWizardContext().setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE, false);
+
+        // Setup success panel of this wizard path
+        TextPanelPanel successPanel = new TextPanelPanel(getController(),
+            Translation.getTranslation("wizard.setup_success"), Translation
+                .getTranslation("wizard.success_join"));
+        getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL,
+                successPanel);
+
         List<FolderInfo> folderList = findFolderList();
         return new SelectOnlineStoragePanel(getController(), folderList);
     }

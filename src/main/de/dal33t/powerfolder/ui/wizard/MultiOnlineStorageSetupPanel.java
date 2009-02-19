@@ -25,8 +25,6 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.disk.SyncProfile;
-import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX;
-import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_DONT_RECYCLE;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
@@ -36,10 +34,7 @@ import de.javasoft.synthetica.addons.DirectoryChooser;
 import jwf.WizardPanel;
 
 import javax.swing.*;
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Properties;
+import java.util.*;
 import java.awt.event.ItemListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ActionListener;
@@ -81,6 +76,26 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
     }
 
     public WizardPanel next() {
+
+        List<FolderCreateItem> folderCreateItems =
+                new ArrayList<FolderCreateItem>();
+
+        for (FolderInfo folderInfo : folderProfileMap.keySet()) {
+            SyncProfile sp = folderProfileMap.get(folderInfo);
+            File localBase = folderLocalBaseMap.get(folderInfo);
+            FolderCreateItem fci = new FolderCreateItem(localBase);
+            fci.setSyncProfile(sp);
+            fci.setFolderInfo(folderInfo);
+            folderCreateItems.add(fci);
+        }
+
+        getWizardContext().setAttribute(WizardContextAttributes.
+                FOLDER_CREATE_ITEMS, folderCreateItems);
+
+        getWizardContext().setAttribute(
+            WizardContextAttributes.SAVE_INVITE_LOCALLY, false);
+
+
         return new FolderCreatePanel(getController());
     }
 
