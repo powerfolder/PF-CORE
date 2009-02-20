@@ -136,8 +136,17 @@ public class FolderCreatePanel extends PFWizardPanel {
         Boolean prevAtt = (Boolean) getWizardContext().getAttribute(
             WizardContextAttributes.PREVIEW_FOLDER_ATTIRBUTE);
         boolean previewFolder = prevAtt != null && prevAtt;
-        boolean useRecycleBin = ConfigurationEntry.USE_RECYCLE_BIN
-            .getValueBoolean(getController());
+
+        boolean useRecycleBin;
+        Object attribute = getWizardContext().getAttribute(
+                WizardContextAttributes.USE_RECYCLE_BIN);
+        if (attribute == null) {
+            useRecycleBin = ConfigurationEntry.USE_RECYCLE_BIN.getValueBoolean(
+                    getController());
+        } else {
+            useRecycleBin = (Boolean) attribute;
+        }
+
         createShortcut = (Boolean) getWizardContext().getAttribute(
             WizardContextAttributes.CREATE_DESKTOP_SHORTCUT);
         Boolean osAtt = (Boolean) getWizardContext().getAttribute(
@@ -182,8 +191,8 @@ public class FolderCreatePanel extends PFWizardPanel {
             Reject.ifNull(syncProfile, "Sync profile for folder is null/not set");
 
             // Optional
-            FolderInfo folderInfo = (FolderInfo) getWizardContext().getAttribute(
-                WizardContextAttributes.FOLDERINFO_ATTRIBUTE);
+            FolderInfo folderInfo = (FolderInfo) getWizardContext().
+                    getAttribute(FOLDERINFO_ATTRIBUTE);
             if (folderInfo == null) {
                 folderInfo = createFolderInfo(localBase);
             }
