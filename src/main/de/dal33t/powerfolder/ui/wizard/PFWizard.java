@@ -38,8 +38,6 @@ import jwf.WizardPanel;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -124,7 +122,7 @@ public class PFWizard extends PFUIComponent {
 
     /**
      * Opens the send-invitation wizard.
-     * 
+     *
      * @param controller
      *            the controller.
      * @param foInfo
@@ -145,6 +143,30 @@ public class PFWizard extends PFUIComponent {
 
         wizard.open(new SelectInvitationPanel(controller, member,
             possibleFolders));
+    }
+
+    public static void openSingletonOnlineStorageJoinWizard(
+            Controller controller, List<FolderInfo> folderInfoList) {
+
+        PFWizard wizard = new PFWizard(controller);
+
+        wizard.getWizardContext().setAttribute(
+                WizardContextAttributes.FOLDER_INFOS, folderInfoList);
+
+        wizard.getWizardContext().setAttribute(
+            WizardContextAttributes.CREATE_DESKTOP_SHORTCUT, false);
+
+        wizard.getWizardContext().setAttribute(
+            WizardContextAttributes.SEND_INVIATION_AFTER_ATTRIBUTE, false);
+
+        // Setup success panel of this wizard path
+        TextPanelPanel successPanel = new TextPanelPanel(controller,
+            Translation.getTranslation("wizard.setup_success"), Translation
+                .getTranslation("wizard.success_join"));
+        wizard.getWizardContext().setAttribute(SUCCESS_PANEL,
+                successPanel);
+
+        wizard.open(new MultiOnlineStorageSetupPanel(controller));
     }
 
     /**

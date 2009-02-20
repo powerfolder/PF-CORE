@@ -50,6 +50,8 @@ import java.awt.event.MouseEvent;
 import java.awt.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.Date;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Class to render expandable view of a folder.
@@ -738,7 +740,10 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
         }
 
         public void actionPerformed(ActionEvent e) {
-            // @todo harry ......
+            List<FolderInfo> folderInfoList = new ArrayList<FolderInfo>();
+            folderInfoList.add(folderInfo);
+            PFWizard.openSingletonOnlineStorageJoinWizard(getController(),
+                    folderInfoList);
         }
     }
 
