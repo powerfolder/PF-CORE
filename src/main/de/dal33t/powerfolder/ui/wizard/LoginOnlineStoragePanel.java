@@ -24,12 +24,7 @@ import java.beans.PropertyChangeListener;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.swing.JCheckBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JPasswordField;
-import javax.swing.JTextField;
+import javax.swing.*;
 
 import jwf.WizardPanel;
 
@@ -64,6 +59,9 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
     private JTextField usernameField;
     private JPasswordField passwordField;
     private JLabel connectingLabel;
+    private JLabel usernameLabel;
+    private JLabel passwordLabel;
+    private JProgressBar workingBar;
     private JCheckBox rememberPasswordBox;
     private WizardPanel nextPanel;
     private DefaultFolderWizardHelper defaultFolderHelper;
@@ -105,15 +103,14 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
     }
 
     public boolean hasNext() {
-        return !entryRequired || !StringUtils.isEmpty(usernameField.getText());
+        return client.isConnected() &&
+                (!entryRequired || !StringUtils.isEmpty(usernameField.getText()));
     }
 
     public boolean validateNext() {
         if (!entryRequired && StringUtils.isEmpty(usernameField.getText())) {
             return true;
         }
-        // TODO Move this into worker. Make nicer. Difficult because function
-        // returns loginOk.
         boolean loginOk = false;
         try {
             loginOk = client.login(usernameField.getText(),
@@ -140,40 +137,48 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
 
     protected JPanel buildContent() {
         FormLayout layout = new FormLayout(
-            "$wlabel, $lcg, $wfield, 0:g",
-            "pref, 6dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 15dlu, pref, 3dlu, pref");
+            "right:pref, 3dlu, 140dlu, pref:grow",
+            "pref, 6dlu, pref, 3dlu, pref, 3dlu, pref, 10dlu, pref, 10dlu, pref, 10dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
         builder.addLabel(Translation
             .getTranslation("wizard.webservice.enter_account"), cc.xyw(1, 1, 4));
 
-        builder.addLabel(Translation
-            .getTranslation("wizard.webservice.username"), cc.xy(1, 3));
+        builder.add(usernameLabel, cc.xy(1, 3));
+
+        // usernameField and connectingLabel have the same slot.
         builder.add(usernameField, cc.xy(3, 3));
-        builder.add(connectingLabel, cc.xy(3, 3));
+        builder.add(connectingLabel, cc.xyw(3, 3, 2));
 
-        builder.addLabel(Translation
-            .getTranslation("wizard.webservice.password"), cc.xy(1, 5));
+        builder.add(passwordLabel, cc.xy(1, 5));
+
+        // passwordField and workingBar have the same slot.
         builder.add(passwordField, cc.xy(3, 5));
+        builder.add(workingBar, cc.xy(3, 5));
 
-        builder.add(rememberPasswordBox, cc.xy(3, 7));
+        builder.add(rememberPasswordBox, cc.xyw(3, 7, 2));
+
+        int row = 9;
 
         if (getController().getBranding().supportWeb()
-            && client.getRegisterURL() != null)
-        {
+                && client.getRegisterURL() != null) {
             builder.add(new LinkLabel(getController(), Translation
-                .getTranslation("pro.wizard.activation.register_now"), client
-                .getRegisterURL()).getUiComponent(), cc.xy(3, 9));
+                    .getTranslation("pro.wizard.activation.register_now"), client
+                    .getRegisterURL()).getUiComponent(), cc.xyw(1, row, 4));
+            row += 2;
 
             LinkLabel link = new LinkLabel(getController(), Translation
-                .getTranslation("wizard.webservice.learn_more"),
-                ConfigurationEntry.PROVIDER_ABOUT_URL.getValue(getController()));
-            builder.add(link.getUiComponent(), cc.xyw(1, 11, 4));
+                    .getTranslation("wizard.webservice.learn_more"),
+                    ConfigurationEntry.PROVIDER_ABOUT_URL.getValue(getController()));
+            builder.add(link.getUiComponent(), cc.xyw(1, row, 4));
+            row += 2;
+
         }
 
         // Default setup
-        builder.add(defaultFolderHelper.getUIComponent(), cc.xyw(1, 13, 4));
+        builder.add(defaultFolderHelper.getUIComponent(), cc.xyw(1, row, 4));
+        row += 2;
 
         return builder.getPanel();
     }
@@ -186,7 +191,11 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
     protected void initComponents() {
         // FIXME Use separate account stores for diffrent servers?
         ValueModel usernameModel = new ValueHolder(client.getUsername(), true);
+        usernameLabel = new JLabel(Translation.getTranslation(
+                "wizard.webservice.username"));
         usernameField = BasicComponentFactory.createTextField(usernameModel);
+        passwordLabel = new JLabel(Translation.getTranslation(
+                "wizard.webservice.password"));
         passwordField = new JPasswordField(client.getPassword());
         updateButtons();
         usernameModel.addValueChangeListener(new PropertyChangeListener() {
@@ -201,6 +210,8 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
         rememberPasswordBox.setOpaque(false);
         connectingLabel = SimpleComponentFactory.createLabel(Translation
             .getTranslation("wizard.login_online_storage.connecting"));
+        workingBar = new JProgressBar();
+        workingBar.setIndeterminate(true);
         updateOnlineStatus();
         client.addListener(new MyServerClientListner());
 
@@ -218,9 +229,14 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
 
     private void updateOnlineStatus() {
         boolean enabled = client.isConnected();
+        usernameLabel.setVisible(enabled);
         usernameField.setVisible(enabled);
+        passwordLabel.setVisible(enabled);
         passwordField.setVisible(enabled);
+        rememberPasswordBox.setVisible(enabled);
         connectingLabel.setVisible(!enabled);
+        workingBar.setVisible(!enabled);
+        updateButtons();
     }
 
     private class MyServerClientListner implements ServerClientListener {
