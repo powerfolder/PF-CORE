@@ -240,13 +240,13 @@ public class Wizard extends JPanel implements ActionListener {
         cancelButton.setEnabled(current.canCancel());
         helpButton.setEnabled(current.hasHelp());
         backButton.setEnabled(!previous.isEmpty() && previous.peek().canGoBackTo());
-        nextButton.setEnabled(current.hasNext());
         finishButton.setEnabled(current.canFinish());
-        if (nextButton.isEnabled()) {
-            nextButton.requestFocus();
-        } else {
+
+        // If next has focus and is about to go disabled, loose focus.
+        if (nextButton.hasFocus() && !current.hasNext()) {
             helpButton.requestFocus();
         }
+        nextButton.setEnabled(current.hasNext());
     }
 
     /**

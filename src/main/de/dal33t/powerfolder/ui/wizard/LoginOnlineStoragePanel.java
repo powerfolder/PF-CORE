@@ -19,18 +19,16 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 
 import javax.swing.*;
 
 import jwf.WizardPanel;
 
 import com.jgoodies.binding.adapter.BasicComponentFactory;
-import com.jgoodies.binding.value.ValueHolder;
-import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
@@ -103,8 +101,12 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
     }
 
     public boolean hasNext() {
-        return client.isConnected() &&
-                (!entryRequired || !StringUtils.isEmpty(usernameField.getText()));
+        if (entryRequired) {
+            return client.isConnected() &&
+                    !StringUtils.isEmpty(usernameField.getText());  
+        } else {
+            return true;
+        }
     }
 
     public boolean validateNext() {
@@ -142,8 +144,15 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
-        builder.addLabel(Translation
-            .getTranslation("wizard.webservice.enter_account"), cc.xyw(1, 1, 4));
+        if (entryRequired) {
+            builder.addLabel(Translation
+                .getTranslation("wizard.webservice.enter_account"),
+                    cc.xyw(1, 1, 4));
+        } else {
+            builder.addLabel(Translation
+                .getTranslation("wizard.webservice.enter_account_optional"),
+                    cc.xyw(1, 1, 4));
+        }
 
         builder.add(usernameLabel, cc.xy(1, 3));
 
@@ -190,23 +199,23 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
      */
     protected void initComponents() {
         // FIXME Use separate account stores for diffrent servers?
-        ValueModel usernameModel = new ValueHolder(client.getUsername(), true);
         usernameLabel = new JLabel(Translation.getTranslation(
                 "wizard.webservice.username"));
-        usernameField = BasicComponentFactory.createTextField(usernameModel);
+        usernameField = new JTextField();
+        usernameField.addKeyListener(new MyKeyListener());
         passwordLabel = new JLabel(Translation.getTranslation(
                 "wizard.webservice.password"));
-        passwordField = new JPasswordField(client.getPassword());
-        updateButtons();
-        usernameModel.addValueChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                updateButtons();
-            }
-        });
+        passwordField = new JPasswordField();
+
+        if (client.isConnected()) {
+            usernameField.setText(client.getUsername());
+            passwordField.setText(client.getPassword());
+        }
+
         rememberPasswordBox = BasicComponentFactory.createCheckBox(
             PreferencesEntry.SERVER_REMEMBER_PASSWORD.getModel(getController()),
-            Translation
-                .getTranslation("wizard.login_online_storage.remember_password"));
+            Translation.getTranslation(
+                    "wizard.login_online_storage.remember_password"));
         rememberPasswordBox.setOpaque(false);
         connectingLabel = SimpleComponentFactory.createLabel(Translation
             .getTranslation("wizard.login_online_storage.connecting"));
@@ -248,6 +257,8 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
         }
 
         public void serverConnected(ServerClientEvent event) {
+            usernameField.setText(client.getUsername());
+            passwordField.setText(client.getPassword());
             updateOnlineStatus();
         }
 
@@ -257,6 +268,13 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
 
         public boolean fireInEventDispatchThread() {
             return true;
+        }
+    }
+
+    private class MyKeyListener extends KeyAdapter {
+        public void keyReleased(KeyEvent e) {
+            // Fires hasNext(), to see if user has entered username.
+            updateButtons();
         }
     }
 }

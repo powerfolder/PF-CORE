@@ -82,7 +82,9 @@ public class PFWizard extends PFUIComponent {
      */
     public static void openBasicSetupWizard(Controller controller) {
         PFWizard wizard = new PFWizard(controller);
-        wizard.open(new BasicSetupPanel(controller));
+        WhatToDoPanel wtdp = new WhatToDoPanel(controller);
+        BasicSetupPanel basicPanel = new BasicSetupPanel(controller, wtdp);
+        wizard.open(new LoginOnlineStoragePanel(controller, basicPanel, false));
     }
 
     /**

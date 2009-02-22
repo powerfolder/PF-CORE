@@ -45,6 +45,7 @@ import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 import de.javasoft.plaf.synthetica.SyntheticaSilverMoonLookAndFeel;
 
 import javax.swing.*;
@@ -310,8 +311,14 @@ public class UIController extends PFComponent {
         if (!Util.isRunningProVersion()
             && getController().getPreferences().getBoolean("openwizard2", true))
         {
-            hideSplash();
-            PFWizard.openBasicSetupWizard(getController());
+            UIUtil.invokeLaterInEDT(new Runnable() {
+
+                // Don't block start!
+                public void run() {
+                    hideSplash();
+                    PFWizard.openBasicSetupWizard(getController());
+                }
+            });
         }
 
         // Goes to the homepage if required.

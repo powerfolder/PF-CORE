@@ -24,7 +24,6 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.List;
 import java.util.Locale;
 
 import javax.swing.DefaultListCellRenderer;
@@ -50,6 +49,7 @@ import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
 import de.dal33t.powerfolder.util.ui.LineSpeedSelectionPanel;
@@ -71,9 +71,12 @@ public class BasicSetupPanel extends PFWizardPanel {
     private JComboBox networkingModeChooser;
     private JComboBox languageChooser;
     private DefaultFolderWizardHelper defaultFolderHelper;
+    private WizardPanel nextPanel;
 
-    public BasicSetupPanel(Controller controller) {
+    public BasicSetupPanel(Controller controller, WizardPanel nextPanel) {
         super(controller);
+        Reject.ifNull(nextPanel, "Nextpanel is null");
+        this.nextPanel = nextPanel;
     }
 
     public boolean hasNext() {
@@ -96,7 +99,7 @@ public class BasicSetupPanel extends PFWizardPanel {
     }
 
     protected JPanel buildContent() {
-        FormLayout layout = new FormLayout("100dlu, $lcg, $wfield",
+        FormLayout layout = new FormLayout("right:pref, 3dlu, 140dlu",
             "pref, 6dlu, pref, 6dlu, pref, 6dlu, pref, 6dlu, top:pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
@@ -164,8 +167,8 @@ public class BasicSetupPanel extends PFWizardPanel {
             return defaultFolderHelper.next(new WhatToDoPanel(getController()),
                 getWizardContext());
         }
-        return new LoginOnlineStoragePanel(getController(), new WhatToDoPanel(
-            getController()), false);
+        
+        return nextPanel;
     }
 
     /**
@@ -259,26 +262,26 @@ public class BasicSetupPanel extends PFWizardPanel {
         chooser.setSelectedItem(Translation.getResourceBundle().getLocale());
 
         // Add renderer
-        chooser.setRenderer(new DefaultListCellRenderer() {
-            public Component getListCellRendererComponent(JList list,
-                Object value, int index, boolean isSelected,
-                boolean cellHasFocus)
-            {
-                super.getListCellRendererComponent(list, value, index,
-                    isSelected, cellHasFocus);
-                if (value instanceof Locale) {
-                    Locale locale = (Locale) value;
-                    setText(locale.getDisplayName(locale));
-                } else {
-                    setText("- unknown -");
-                }
-                return this;
-            }
-        });
+        chooser.setRenderer(new MyDefaultListCellRenderer());
 
         // Initialize chooser with the active locale.
         chooser.setSelectedItem(Translation.getActiveLocale());
         return chooser;
     }
 
+    private static class MyDefaultListCellRenderer extends DefaultListCellRenderer {
+        public Component getListCellRendererComponent(JList list,
+            Object value, int index, boolean isSelected,
+            boolean cellHasFocus) {
+            super.getListCellRendererComponent(list, value, index,
+                isSelected, cellHasFocus);
+            if (value instanceof Locale) {
+                Locale locale = (Locale) value;
+                setText(locale.getDisplayName(locale));
+            } else {
+                setText("- unknown -");
+            }
+            return this;
+        }
+    }
 }
