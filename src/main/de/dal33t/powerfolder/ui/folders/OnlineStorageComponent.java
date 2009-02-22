@@ -73,7 +73,6 @@ public class OnlineStorageComponent extends PFUIComponent {
         builder.add(syncLabel, cc.xy(1, 4));
         builder.add(webButton, cc.xy(3, 4));
         uiComponent = builder.getPanel();
-        uiComponent.setBackground(SystemColor.text);
     }
 
     public void setSyncPercentage(double serverSync, boolean warned) {
