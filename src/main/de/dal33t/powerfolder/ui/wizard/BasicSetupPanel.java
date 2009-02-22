@@ -251,7 +251,7 @@ public class BasicSetupPanel extends PFWizardPanel {
      * 
      * @return a language chooser, which contains the supported locales
      */
-    private JComboBox createLanguageChooser() {
+    private static JComboBox createLanguageChooser() {
         // Create combobox
         JComboBox chooser = new JComboBox();
         Locale[] locales = Translation.getSupportedLocales();

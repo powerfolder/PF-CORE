@@ -23,10 +23,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.ActionEvent;
 
 import javax.swing.*;
 
 import jwf.WizardPanel;
+import jwf.Wizard;
 
 import com.jgoodies.binding.adapter.BasicComponentFactory;
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -40,7 +42,9 @@ import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
+import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
@@ -64,6 +68,7 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
     private WizardPanel nextPanel;
 
     private boolean entryRequired;
+    private boolean noThanks;
 
     /**
      * Constructs a login panel for login to the default OS.
@@ -108,8 +113,14 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
         }
     }
 
+    protected void afterDisplay() {
+        noThanks = false;
+    }
+
     public boolean validateNext() {
-        if (!entryRequired && StringUtils.isEmpty(usernameField.getText())) {
+        if (noThanks ||
+                !entryRequired && StringUtils.isEmpty(usernameField.getText()))
+        {
             return true;
         }
         boolean loginOk = false;
@@ -139,7 +150,7 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
     protected JPanel buildContent() {
         FormLayout layout = new FormLayout(
             "right:pref, 3dlu, 140dlu, pref:grow",
-            "pref, 6dlu, pref, 3dlu, pref, 3dlu, pref, 10dlu, pref, 10dlu, pref");
+            "pref, 6dlu, pref, 3dlu, pref, 3dlu, pref, 10dlu, pref, 10dlu, pref, 10dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
@@ -167,9 +178,17 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
 
         builder.add(rememberPasswordBox, cc.xyw(3, 7, 2));
 
+        int row = 9;
+
+        if (!entryRequired) {
+            builder.add(new ActionLabel(getController(),
+                    new MySkipLoginAction(getController())).getUIComponent(),
+                    cc.xyw(1, row, 4));
+            row += 2;
+        }
+
         if (getController().getBranding().supportWeb()
                 && client.getRegisterURL() != null) {
-            int row = 9;
             builder.add(new LinkLabel(getController(), Translation
                     .getTranslation("pro.wizard.activation.register_now"), client
                     .getRegisterURL()).getUiComponent(), cc.xyw(1, row, 4));
@@ -265,6 +284,20 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
         public void keyReleased(KeyEvent e) {
             // Fires hasNext(), to see if user has entered username.
             updateButtons();
+        }
+    }
+
+    private class MySkipLoginAction extends BaseAction {
+
+        private MySkipLoginAction(Controller controller) {
+            super("action_skip_login", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            noThanks = true;            
+            Wizard wizard = (Wizard) getWizardContext().getAttribute(
+                Wizard.WIZARD_ATTRIBUTE);
+            wizard.next();
         }
     }
 }
