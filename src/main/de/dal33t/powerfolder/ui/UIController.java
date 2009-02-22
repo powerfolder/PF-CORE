@@ -321,7 +321,7 @@ public class UIController extends PFComponent {
             });
         }
 
-        // Goes to the homepage if required.
+        // Goes to the home page if required.
         gotoHPIfRequired();
         detectAndShowLimitDialog();
     }

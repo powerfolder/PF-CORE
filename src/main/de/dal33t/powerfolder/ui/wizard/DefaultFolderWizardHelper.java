@@ -96,7 +96,8 @@ public class DefaultFolderWizardHelper extends PFUIPanel {
             PanelBuilder builder = new PanelBuilder(layout);
             CellConstraints cc = new CellConstraints();
             builder.add(setupDefaultCB, cc.xy(1, 1));
-            builder.add(Help.createWikiLinkButton(getController(), "Default_Folder"), cc.xy(3, 1));
+            builder.add(Help.createWikiLinkButton(getController(), "Default_Folder"),
+                    cc.xy(3, 1));
             builder.setOpaque(true);
             builder.setBackground(Color.white);
 

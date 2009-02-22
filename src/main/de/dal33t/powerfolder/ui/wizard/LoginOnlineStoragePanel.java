@@ -62,7 +62,6 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
     private JProgressBar workingBar;
     private JCheckBox rememberPasswordBox;
     private WizardPanel nextPanel;
-    private DefaultFolderWizardHelper defaultFolderHelper;
 
     private boolean entryRequired;
 
@@ -134,13 +133,13 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
     }
 
     public WizardPanel next() {
-        return defaultFolderHelper.next(nextPanel, getWizardContext());
+        return nextPanel;
     }
 
     protected JPanel buildContent() {
         FormLayout layout = new FormLayout(
             "right:pref, 3dlu, 140dlu, pref:grow",
-            "pref, 6dlu, pref, 3dlu, pref, 3dlu, pref, 10dlu, pref, 10dlu, pref, 10dlu, pref");
+            "pref, 6dlu, pref, 3dlu, pref, 3dlu, pref, 10dlu, pref, 10dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
@@ -168,10 +167,9 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
 
         builder.add(rememberPasswordBox, cc.xyw(3, 7, 2));
 
-        int row = 9;
-
         if (getController().getBranding().supportWeb()
                 && client.getRegisterURL() != null) {
+            int row = 9;
             builder.add(new LinkLabel(getController(), Translation
                     .getTranslation("pro.wizard.activation.register_now"), client
                     .getRegisterURL()).getUiComponent(), cc.xyw(1, row, 4));
@@ -182,12 +180,7 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
                     ConfigurationEntry.PROVIDER_ABOUT_URL.getValue(getController()));
             builder.add(link.getUiComponent(), cc.xyw(1, row, 4));
             row += 2;
-
         }
-
-        // Default setup
-        builder.add(defaultFolderHelper.getUIComponent(), cc.xyw(1, row, 4));
-        row += 2;
 
         return builder.getPanel();
     }
@@ -223,9 +216,6 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
         workingBar.setIndeterminate(true);
         updateOnlineStatus();
         client.addListener(new MyServerClientListner());
-
-        defaultFolderHelper = new DefaultFolderWizardHelper(getController(),
-            client);
     }
 
     protected JComponent getPictoComponent() {

@@ -99,7 +99,7 @@ public class BasicSetupPanel extends PFWizardPanel {
     }
 
     protected JPanel buildContent() {
-        FormLayout layout = new FormLayout("right:pref, 3dlu, 140dlu",
+        FormLayout layout = new FormLayout("right:pref, 3dlu, 140dlu, pref:grow",
             "pref, 6dlu, pref, 6dlu, pref, 6dlu, pref, 6dlu, top:pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
@@ -115,10 +115,10 @@ public class BasicSetupPanel extends PFWizardPanel {
         builder.add(wanLineSpeed, cc.xy(3, 5));
         builder
             .addLabel(Translation
-                .getTranslation("wizard.basic_setup.language_restart"), cc.xy(
-                1, 7));
+                .getTranslation("wizard.basic_setup.language_restart"),
+                    cc.xy(1, 7));
         builder.add(languageChooser, cc.xy(3, 7));
-        builder.add(defaultFolderHelper.getUIComponent(), cc.xyw(1, 9, 3));
+        builder.add(defaultFolderHelper.getUIComponent(), cc.xyw(3, 9, 2));
 
         return builder.getPanel();
     }
