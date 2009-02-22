@@ -19,16 +19,14 @@
  */
 package de.dal33t.powerfolder.disk;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.TimerTask;
+import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.event.FolderAdapter;
 import de.dal33t.powerfolder.event.FolderEvent;
 import de.dal33t.powerfolder.event.FolderMembershipEvent;
@@ -64,6 +62,10 @@ public class FolderStatistic extends PFComponent {
     private CalculationResult current;
     private SimpleTimeEstimator estimator;
 
+    private final List<Download> activeDownloads =
+            new CopyOnWriteArrayList<Download>();
+    private final AtomicBoolean downloadMonitorRunning = new AtomicBoolean();
+
     /**
      * The Date of the last change to a folder file.
      */
@@ -75,7 +77,8 @@ public class FolderStatistic extends PFComponent {
     // Used to calculate ETA
     private TransferCounter downloadCounter;
     private long lastCalc;
-    private MyTimerTask task;
+    private MyCalculatorTask calculatorTask;
+    private MyDownloadMonitorTask downloadMonitorTask;
 
     FolderStatistic(Folder folder) {
         super(folder.getController());
@@ -99,133 +102,27 @@ public class FolderStatistic extends PFComponent {
 
     // Component listener *****************************************************
 
-    /**
-     * FolderMembershipListener
-     */
-    private class MyFolderMembershipListener implements
-        FolderMembershipListener
-    {
-        public void memberJoined(FolderMembershipEvent folderEvent) {
-            // Recalculate statistics
-            scheduleCalculate();
+    // Ensure that a task is running to watch for partail download changes.
+    private void checkDownloadMonitor() {
+
+        if (activeDownloads.isEmpty()) {
+            // Nothing to monitor.
+            return;
         }
 
-        public void memberLeft(FolderMembershipEvent folderEvent) {
-            // Recalculate statistics
-            scheduleCalculate();
+        if (downloadMonitorRunning.getAndSet(true)) {
+            // Monitor is running.
+            return;
         }
 
-        public boolean fireInEventDispatchThread() {
-            return false;
+        downloadMonitorTask = new MyDownloadMonitorTask();
+        try {
+            getController().schedule(downloadMonitorTask, 0);
+        } catch (IllegalStateException ise) {
+            // ignore this happends if this shutdown in debug mode
+            logFiner("IllegalStateException", ise);
         }
 
-    }
-
-    private class MyFolderListener extends FolderAdapter {
-
-        public void remoteContentsChanged(FolderEvent folderEvent) {
-            // Recalculate statistics
-            scheduleCalculate();
-        }
-
-        public void scanResultCommited(FolderEvent folderEvent) {
-            if (folderEvent.getScanResult().isChangeDetected()) {
-                // Recalculate statistics
-                scheduleCalculate();
-            }
-        }
-
-        public void fileChanged(FolderEvent folderEvent) {
-            // Recalculate statistics
-            scheduleCalculate();
-        }
-
-        public void filesDeleted(FolderEvent folderEvent) {
-            // Recalculate statistics
-            scheduleCalculate();
-        }
-
-        public void syncProfileChanged(FolderEvent folderEvent) {
-            // Recalculate statistics
-            scheduleCalculate();
-        }
-
-        public void statisticsCalculated(FolderEvent folderEvent) {
-            // do not implement may cause loop!
-        }
-
-        public boolean fireInEventDispatchThread() {
-            return false;
-        }
-    }
-
-    /**
-     * Listener on transfermanager
-     * 
-     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
-     */
-    private class MyTransferManagerListener extends TransferAdapter {
-        public void downloadCompleted(TransferManagerEvent event) {
-            // Calculate new statistic when download completed
-            if (event.getFile().getFolderInfo().equals(folder.getInfo())) {
-                scheduleCalculate();
-            }
-        }
-
-        public boolean fireInEventDispatchThread() {
-            return false;
-        }
-    }
-
-    /**
-     * Listens to the nodemanager and triggers recalculcation if required
-     * 
-     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
-     */
-    private class MyNodeManagerListener implements NodeManagerListener {
-        public void nodeRemoved(NodeManagerEvent e) {
-            calculateIfRequired(e);
-        }
-
-        public void nodeAdded(NodeManagerEvent e) {
-            calculateIfRequired(e);
-        }
-
-        public void nodeConnected(NodeManagerEvent e) {
-            calculateIfRequired(e);
-        }
-
-        public void nodeDisconnected(NodeManagerEvent e) {
-            calculateIfRequired(e);
-        }
-
-        public void friendAdded(NodeManagerEvent e) {
-            calculateIfRequired(e);
-        }
-
-        public void friendRemoved(NodeManagerEvent e) {
-            calculateIfRequired(e);
-        }
-
-        public void settingsChanged(NodeManagerEvent e) {
-            // Do nothing
-        }
-
-        public void startStop(NodeManagerEvent e) {
-            // Do nothing
-        }
-
-        public boolean fireInEventDispatchThread() {
-            return false;
-        }
-
-        private void calculateIfRequired(NodeManagerEvent e) {
-            if (!folder.hasMember(e.getNode())) {
-                // Member not on folder
-                return;
-            }
-            scheduleCalculate();
-        }
     }
 
     // package protected called from Folder
@@ -240,7 +137,7 @@ public class FolderStatistic extends PFComponent {
             return;
         }
         long millisPast = System.currentTimeMillis() - lastCalc;
-        if (task != null) {
+        if (calculatorTask != null) {
             return;
         }
         if (millisPast > DELAY_10S || current.totalFilesCount < MAX_ITEMS) {
@@ -250,22 +147,15 @@ public class FolderStatistic extends PFComponent {
         }
     }
 
-    // Timer code *************************************************************
-
-    private class MyTimerTask extends TimerTask {
-        public void run() {
-            calculate0();
-            task = null;
-        }
-    }
+    // Calculator timer code *************************************************************
 
     private void setCalculateIn(long timeToWait) {
-        if (task != null) {
+        if (calculatorTask != null) {
             return;
         }
-        task = new MyTimerTask();
+        calculatorTask = new MyCalculatorTask();
         try {
-            getController().schedule(task, timeToWait);
+            getController().schedule(calculatorTask, timeToWait);
         } catch (IllegalStateException ise) {
             // ignore this happends if this shutdown in debug mode
             logFiner("IllegalStateException", ise);
@@ -278,6 +168,7 @@ public class FolderStatistic extends PFComponent {
      * @private public because for test
      */
     public synchronized void calculate0() {
+        System.out.println("hghg - calcing for " + folder.getInfo().name);
         if (isFiner()) {
             logFiner("-------------Recalculation statisitcs on " + folder);
         }
@@ -452,6 +343,10 @@ public class FolderStatistic extends PFComponent {
         calculating.filesCountInSync.put(member, memberFilesCountInSync);
         calculating.sizes.put(member, memberSize);
         calculating.sizesInSync.put(member, memberSizeInSync);
+    }
+
+    public String toString() {
+        return "Folder statistic on '" + folder.getName() + '\'';
     }
 
     private void calculateMemberAndTotalSync(Collection<Member> members) {
@@ -629,9 +524,9 @@ public class FolderStatistic extends PFComponent {
         return downloadCounter;
     }
 
-    // Innter classes *********************************************************
+    // Inner classes *********************************************************
 
-    private static final class CalculationResult {
+    private static class CalculationResult {
         // Total size of folder in bytes
         public long totalSize;
 
@@ -668,16 +563,182 @@ public class FolderStatistic extends PFComponent {
         public Map<Member, Long> sizesInSync = new HashMap<Member, Long>();
     }
 
-    // Logging interface ******************************************************
-
     @Override
     public String getLoggerName() {
         return super.getLoggerName() + " '" + folder.getName() + '\'';
     }
 
-    // General ****************************************************************
-
-    public String toString() {
-        return "Folder statistic on '" + folder.getName() + '\'';
+    private class MyCalculatorTask extends TimerTask {
+        public void run() {
+            calculate0();
+            calculatorTask = null;
+        }
     }
+
+    private class MyDownloadMonitorTask extends TimerTask {
+
+        public void run() {
+
+            while (!activeDownloads.isEmpty()) {
+
+                try {
+                    Thread.sleep(DELAY_10S);
+                } catch (InterruptedException e) {
+                    // Ignore
+                }
+
+                logFiner("monitoring " + activeDownloads.size() + " downloads");
+
+                for (Download download : activeDownloads) {
+                    // @todo something...........
+                }
+            }
+
+            // Free the task
+            downloadMonitorRunning.set(false);
+            logFiner("finished monitoring downloads");
+        }
+    }
+
+    /**
+     * FolderMembershipListener
+     */
+    private class MyFolderMembershipListener implements
+        FolderMembershipListener
+    {
+        public void memberJoined(FolderMembershipEvent folderEvent) {
+            // Recalculate statistics
+            scheduleCalculate();
+        }
+
+        public void memberLeft(FolderMembershipEvent folderEvent) {
+            // Recalculate statistics
+            scheduleCalculate();
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return false;
+        }
+
+    }
+
+    private class MyFolderListener extends FolderAdapter {
+
+        public void remoteContentsChanged(FolderEvent folderEvent) {
+            // Recalculate statistics
+            scheduleCalculate();
+        }
+
+        public void scanResultCommited(FolderEvent folderEvent) {
+            if (folderEvent.getScanResult().isChangeDetected()) {
+                // Recalculate statistics
+                scheduleCalculate();
+            }
+        }
+
+        public void fileChanged(FolderEvent folderEvent) {
+            // Recalculate statistics
+            scheduleCalculate();
+        }
+
+        public void filesDeleted(FolderEvent folderEvent) {
+            // Recalculate statistics
+            scheduleCalculate();
+        }
+
+        public void syncProfileChanged(FolderEvent folderEvent) {
+            // Recalculate statistics
+            scheduleCalculate();
+        }
+
+        public void statisticsCalculated(FolderEvent folderEvent) {
+            // do not implement may cause loop!
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return false;
+        }
+    }
+
+    /**
+     * Listener on transfermanager
+     *
+     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
+     */
+    private class MyTransferManagerListener extends TransferAdapter {
+
+        public void downloadStarted(TransferManagerEvent event) {
+            activeDownloads.add(event.getDownload());
+            checkDownloadMonitor();
+        }
+
+        public void downloadAborted(TransferManagerEvent event) {
+            activeDownloads.add(event.getDownload());
+        }
+
+        public void downloadCompleted(TransferManagerEvent event) {
+            // Calculate new statistic when download completed
+            if (event.getFile().getFolderInfo().equals(folder.getInfo())) {
+                activeDownloads.remove(event.getDownload());
+                scheduleCalculate();
+            }
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return false;
+        }
+    }
+
+    /**
+     * Listens to the nodemanager and triggers recalculation if required
+     *
+     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
+     */
+    private class MyNodeManagerListener implements NodeManagerListener {
+        public void nodeRemoved(NodeManagerEvent e) {
+            calculateIfRequired(e);
+        }
+
+        public void nodeAdded(NodeManagerEvent e) {
+            calculateIfRequired(e);
+        }
+
+        public void nodeConnected(NodeManagerEvent e) {
+            calculateIfRequired(e);
+        }
+
+        public void nodeDisconnected(NodeManagerEvent e) {
+            calculateIfRequired(e);
+        }
+
+        public void friendAdded(NodeManagerEvent e) {
+            calculateIfRequired(e);
+        }
+
+        public void friendRemoved(NodeManagerEvent e) {
+            calculateIfRequired(e);
+        }
+
+        public void settingsChanged(NodeManagerEvent e) {
+            // Do nothing
+        }
+
+        public void startStop(NodeManagerEvent e) {
+            // Do nothing
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return false;
+        }
+
+        private void calculateIfRequired(NodeManagerEvent e) {
+            if (!folder.hasMember(e.getNode())) {
+                // Member not on folder
+                return;
+            }
+            scheduleCalculate();
+        }
+    }
+
+
 }
