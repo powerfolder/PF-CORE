@@ -261,6 +261,17 @@ public class FolderCreatePanel extends PFWizardPanel {
                 FolderSettings folderSettings = configurations.get(folderInfo);
                 Folder folder = getController().getFolderRepository()
                         .createFolder(folderInfo, folderSettings);
+
+                // Make sure recycle bin was made.
+                if (folderSettings.isUseRecycleBin()) {
+                    File recycleBinFolder = getController().getRecycleBin()
+                            .makeRecycleBinDirectory(folderInfo);
+                    if (recycleBinFolder == null) {
+                        addProblem(Translation.getTranslation(
+                                "folder_create.recycle_error.text",
+                                folderInfo.name));
+                    }
+                }
                 if (createShortcut) {
                     folder.setDesktopShortcut(true);
                 }
@@ -304,11 +315,9 @@ public class FolderCreatePanel extends PFWizardPanel {
                             }
                         }
                     } catch (FolderException e) {
-                        problems = true;
-                        errorArea.setText(Translation
-                            .getTranslation("folder_create.dialog.backup_error.text")
-                            + '\n' + e.getMessage());
-                        errorPane.setVisible(true);
+                        addProblem(Translation.getTranslation(
+                                "folder_create.os_error.text", e.fInfo.name) +
+                                '\n' + e.getMessage());
                         log.log(Level.SEVERE,
                                 "Unable to backup folder to online storage", e);
                     }
@@ -316,6 +325,18 @@ public class FolderCreatePanel extends PFWizardPanel {
             }
 
             return null;
+        }
+
+        private void addProblem(String problem) {
+            problems = true;
+            StringBuilder stringBuilder = new StringBuilder(
+                    errorArea.getText());
+            if (stringBuilder.length() > 0) {
+                stringBuilder.append("\n\n");
+            }
+            stringBuilder.append(problem);
+            errorArea.setText(stringBuilder.toString());
+            errorPane.setVisible(true);
         }
 
         private void createDefaultFolderHelpFile(Folder folder) {
@@ -354,7 +375,7 @@ public class FolderCreatePanel extends PFWizardPanel {
                 updateButtons();
 
                 statusLabel.setText(Translation
-                    .getTranslation("wizard.create_folder.failed"));
+                    .getTranslation("wizard.create_folder.problems"));
                 errorPane.setVisible(true);
             } else {
                 for (Folder folder : folders) {

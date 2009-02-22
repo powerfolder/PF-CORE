@@ -148,7 +148,7 @@ public class RecycleBin extends PFComponent {
      * @param fileInfo
      */
     public void delete(FileInfo fileInfo) {
-        File recycleDir = getRecycleBinDirectory(fileInfo);
+        File recycleDir = getRecycleBinDirectory(fileInfo.getFolderInfo());
         File fileToDelete = new File(recycleDir, fileInfo.getName());
         if (fileToDelete.exists()) {
             if (RecycleDelete.isSupported()) {
@@ -200,9 +200,9 @@ public class RecycleBin extends PFComponent {
      * @param fileInfo
      *            the fileInfo to get the recyclebin dir for
      */
-    private File getRecycleBinDirectory(FileInfo fileInfo) {
+    private File getRecycleBinDirectory(FolderInfo folderInfo) {
         FolderRepository repo = getController().getFolderRepository();
-        Folder folder = repo.getFolder(fileInfo.getFolderInfo());
+        Folder folder = repo.getFolder(folderInfo);
         if (folder == null) {
             return null;
         }
@@ -233,7 +233,7 @@ public class RecycleBin extends PFComponent {
 
     /** @retrun is this fileInfo in the powerfolder recycle bin */
     public boolean isInRecycleBin(FileInfo fileInfo) {
-        File recycleBinDir = getRecycleBinDirectory(fileInfo);
+        File recycleBinDir = getRecycleBinDirectory(fileInfo.getFolderInfo());
         if (recycleBinDir == null) {
             // no longer on folder
             return false;
@@ -362,6 +362,26 @@ public class RecycleBin extends PFComponent {
     }
 
     /**
+     * Return / make recyclebin directory for a FolderInfo.
+     *
+     * @param fileInfo
+     * @return
+     */
+    public File makeRecycleBinDirectory(FolderInfo folderInfo) {
+        File recycleBinDir = getRecycleBinDirectory(folderInfo);
+        if (!recycleBinDir.exists()) {
+            if (!recycleBinDir.mkdir()) {
+                logSevere("moveToRecycleBin: cannot create recycle bin: "
+                    + recycleBinDir);
+                return null;
+            }
+            // Make recycle bin system/hidden
+            FileUtils.makeHiddenOnWindows(recycleBinDir);
+        }
+        return recycleBinDir;
+    }
+
+    /**
      * Moves the file to the PowerFolder Recycle Bin.
      * 
      * @return true if succeded
@@ -371,15 +391,9 @@ public class RecycleBin extends PFComponent {
             logSevere("moveToRecycleBin: source file does not exists: " + file);
         }
 
-        File recycleBinDir = getRecycleBinDirectory(fileInfo);
-        if (!recycleBinDir.exists()) {
-            if (!recycleBinDir.mkdir()) {
-                logSevere("moveToRecycleBin: cannot create recycle bin: "
-                    + recycleBinDir);
-                return false;
-            }
-            // Make recycle bin system/hidden
-            FileUtils.makeHiddenOnWindows(recycleBinDir);
+        File recycleBinDir = makeRecycleBinDirectory(fileInfo.getFolderInfo());
+        if (recycleBinDir == null) {
+            return false;
         }
 
         File target = new File(recycleBinDir, fileInfo.getName());
@@ -440,7 +454,7 @@ public class RecycleBin extends PFComponent {
             throw new IllegalArgumentException(
                 "getDiskFile: fileInfo should be in recyclebin: " + fileInfo);
         }
-        File recycleBinDir = getRecycleBinDirectory(fileInfo);
+        File recycleBinDir = getRecycleBinDirectory(fileInfo.getFolderInfo());
         return new File(recycleBinDir, fileInfo.getName());
     }
 
@@ -455,7 +469,7 @@ public class RecycleBin extends PFComponent {
                 "restoreFromRecycleBin: fileInfo should be in recyclebin: "
                     + fileInfo);
         }
-        File recycleBinDir = getRecycleBinDirectory(fileInfo);
+        File recycleBinDir = getRecycleBinDirectory(fileInfo.getFolderInfo());
         FolderRepository repo = getController().getFolderRepository();
         Folder folder = repo.getFolder(fileInfo.getFolderInfo());
         File folderBaseDir = folder.getLocalBase();
