@@ -168,7 +168,6 @@ public class FolderStatistic extends PFComponent {
      * @private public because for test
      */
     public synchronized void calculate0() {
-        System.out.println("hghg - calcing for " + folder.getInfo().name);
         if (isFiner()) {
             logFiner("-------------Recalculation statisitcs on " + folder);
         }
