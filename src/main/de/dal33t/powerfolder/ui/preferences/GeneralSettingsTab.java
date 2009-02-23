@@ -242,7 +242,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             }
 
             // DesktopIni does not work on Vista
-            if (OSUtil.isWindowsSystem() && !OSUtil.isWindowsVistaSystem()) {
+            if (OSUtil.isWindowsSystem()) {
                 ValueModel pfiModel = new ValueHolder(
                     ConfigurationEntry.USE_PF_ICON
                         .getValueBoolean(getController()));
@@ -315,10 +315,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 builder.appendRow("pref");
                 builder.appendRow("3dlu");
                 builder.appendRow("pref");
-                if (!OSUtil.isWindowsSystem()) {
-                    builder.appendRow("3dlu");
-                    builder.appendRow("pref");
-                }
 
                 row += 2;
                 builder.add(createDesktopShortcutsBox, cc.xyw(3, row, 2));
@@ -328,12 +324,10 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                     builder.add(startWithWindowsBox, cc.xyw(3, row, 2));
                 }
 
-                if (!OSUtil.isWindowsVistaSystem()) {
-                    builder.appendRow("3dlu");
-                    builder.appendRow("pref");
-                    row += 2;
-                    builder.add(usePowerFolderIconBox, cc.xyw(3, row, 2));
-                }
+                builder.appendRow("3dlu");
+                builder.appendRow("pref");
+                row += 2;
+                builder.add(usePowerFolderIconBox, cc.xyw(3, row, 2));
             } else {
                 builder.appendRow("3dlu");
                 builder.appendRow("pref");
