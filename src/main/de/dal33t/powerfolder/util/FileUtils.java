@@ -462,9 +462,9 @@ public class FileUtils {
     public static void maintainDesktopIni(Controller controller, File directory)
     {
 
-        // Only works on Windows, and not Vista
-        if (!OSUtil.isWindowsSystem() || OSUtil.isWindowsVistaSystem()
-            || OSUtil.isWebStart())
+        // Only works on Windows
+        // Vista you must log off and on again to see change
+        if (!OSUtil.isWindowsSystem() || OSUtil.isWebStart())
         {
             return;
         }
