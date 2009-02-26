@@ -67,11 +67,13 @@ public class ExpandableComputerView extends PFUIComponent implements ExpandableV
     private JButtonMini chatButton;
     private JPanel upperPanel;
     private MyAddRemoveFriendAction addRemoveFriendAction;
-
+    private MyReconnectAction reconnectAction;
     private JLabel lastSeenLabel;
     private MyNodeManagerListener nodeManagerListener;
 
     private ExpansionListener listenerSupport;
+
+    private JPopupMenu contextMenu;
 
     /**
      * Constructor
@@ -193,7 +195,8 @@ public class ExpandableComputerView extends PFUIComponent implements ExpandableV
         expanded = new AtomicBoolean();
 
         lastSeenLabel = new JLabel();
-        reconnectButton = new JButtonMini(new MyReconnectAction(getController()), true);
+        reconnectAction = new MyReconnectAction(getController());
+        reconnectButton = new JButtonMini(reconnectAction, true);
         addRemoveFriendAction = new MyAddRemoveFriendAction(getController());
         addRemoveButton = new JButtonMini(addRemoveFriendAction, true);
         chatButton = new JButtonMini(new MyOpenChatAction(getController()), true);
@@ -341,6 +344,15 @@ public class ExpandableComputerView extends PFUIComponent implements ExpandableV
         ListenerSupportFactory.addListener(listenerSupport, listener);
     }
 
+    public JPopupMenu createPopupMenu() {
+        if (contextMenu == null) {
+            contextMenu = new JPopupMenu();
+            contextMenu.add(addRemoveFriendAction);
+            contextMenu.add(reconnectAction);
+        }
+        return contextMenu;
+    }
+
     ///////////////////
     // Inner Classes //
     ///////////////////
@@ -350,12 +362,31 @@ public class ExpandableComputerView extends PFUIComponent implements ExpandableV
      */
     private class MyMouseAdapter extends MouseAdapter {
 
+        public void mousePressed(MouseEvent e) {
+            if (e.isPopupTrigger()) {
+                showContextMenu(e);
+            }
+        }
+
+        public void mouseReleased(MouseEvent e) {
+            if (e.isPopupTrigger()) {
+                showContextMenu(e);
+            }
+        }
+
+        private void showContextMenu(MouseEvent evt) {
+            if (!expanded.get()) {
+                createPopupMenu().show(evt.getComponent(), evt.getX(), evt.getY());
+            }
+        }
+
         public void mouseClicked(MouseEvent e) {
-            boolean exp = expanded.get();
-            if (exp) {
-                collapse();
-            } else {
-                expand();
+            if (e.getButton() == MouseEvent.BUTTON1) {
+                if (expanded.get()) {
+                    collapse();
+                } else {
+                    expand();
+                }
             }
         }
     }

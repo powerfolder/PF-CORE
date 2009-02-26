@@ -94,6 +94,14 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
     private OnlineStorageComponent osComponent;
     private ServerClient serverClient;
 
+    private MyOpenFilesInformationAction openFilesInformationAction;
+    private MyOpenSettingsInformationAction openSettingsInformationAction;
+    private MyInviteAction inviteAction;
+    private MyOpenMembersInformationAction openMembersInformationAction;
+    private MyMostRecentChangesAction mostRecentChangesAction;
+
+    private JPopupMenu contextMenu;
+
     /**
      * Constructor
      *
@@ -278,47 +286,41 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
      */
     private void initComponent() {
 
-        MyOpenFilesInformationAction myOpenFilesInformationAction =
+        openFilesInformationAction =
                 new MyOpenFilesInformationAction(getController());
-        MyOpenSettingsInformationAction myOpenSettingsInformationAction =
+        inviteAction = new MyInviteAction(getController());
+        openSettingsInformationAction =
                 new MyOpenSettingsInformationAction(getController());
-        MyInviteAction myInviteAction = new MyInviteAction(getController());
-        MyOpenMembersInformationAction myOpenMembersInformationAction =
+        openMembersInformationAction =
                 new MyOpenMembersInformationAction(getController());
+        mostRecentChangesAction = new MyMostRecentChangesAction(getController());
+
         MySyncFolderAction mySyncFolderAction =
                 new MySyncFolderAction(getController());
-        MyJoinOnlineStorageAction myJoinOnlineStorageAction =
-                new MyJoinOnlineStorageAction(getController());
+        MyJoinOnlineStorageAction myJoinOnlineStorageAction = new MyJoinOnlineStorageAction(getController());
 
         expanded = new AtomicBoolean();
 
         osComponent = new OnlineStorageComponent(getController());
 
         openSettingsInformationButton = new JButtonMini(
-                myOpenSettingsInformationAction, true);
+                openSettingsInformationAction, true);
 
-        openFilesInformationButton = new JButtonMini(myOpenFilesInformationAction,
+        openFilesInformationButton = new JButtonMini(openFilesInformationAction,
                 true);
 
-        inviteButton = new JButtonMini(myInviteAction, true);
+        inviteButton = new JButtonMini(inviteAction, true);
         syncFolderButton = new JButtonMini(mySyncFolderAction, true);
         joinOnlineStorageButton = new JButtonMini(myJoinOnlineStorageAction, true);
         filesLabel = new JLabel();
         transferModeLabel = new JLabel();
         syncPercentLabel = new JLabel();
-        syncDateLabel = new ActionLabel(getController(), new AbstractAction() {
-            public void actionPerformed(ActionEvent e) {
-                getController().getUIController().openFilesInformationLatest(
-                        folderInfo);
-            }
-        });
-        syncDateLabel.setToolTipText(Translation.getTranslation(
-                "exp_folder_view.sync_date_label.tip"));
+        syncDateLabel = new ActionLabel(getController(), mostRecentChangesAction);
         localSizeLabel = new JLabel();
         totalSizeLabel = new JLabel();
         recycleLabel = new JLabel();
         membersLabel = new ActionLabel(getController(),
-                myOpenMembersInformationAction);
+                openMembersInformationAction);
         filesAvailableLabel = new ActionLabel(getController(),
                 new MyFilesAvailableAction());
 
@@ -334,16 +336,28 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
 
     private void updateButtons() {
         boolean enabled = folder != null;
+
         openSettingsInformationButton.setEnabled(enabled);
+        openSettingsInformationAction.setEnabled(enabled);
+
         openFilesInformationButton.setEnabled(enabled);
+        openFilesInformationAction.setEnabled(enabled);
+
         inviteButton.setEnabled(enabled);
+        inviteAction.setEnabled(enabled);
+
+        syncDateLabel.setEnabled(enabled);
+        mostRecentChangesAction.setEnabled(enabled);
+
         membersLabel.setEnabled(enabled);
+        openMembersInformationAction.setEnabled(enabled);
+
         syncFolderButton.setVisible(enabled);
         joinOnlineStorageButton.setVisible(!enabled);
     }
 
     /**
-     * Call if this object is being discarded, so that lesteners are not orphaned.
+     * Call if this object is being discarded, so that listeners are not orphaned.
      */
     public void unregisterListeners() {
         if (myServerClientListener != null) {
@@ -577,6 +591,18 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
         return expanded.get();
     }
 
+    public JPopupMenu createPopupMenu() {
+        if (contextMenu == null) {
+            contextMenu = new JPopupMenu();
+            contextMenu.add(openFilesInformationAction);
+            contextMenu.add(mostRecentChangesAction);
+            contextMenu.add(inviteAction);
+            contextMenu.add(openMembersInformationAction);
+            contextMenu.add(openSettingsInformationAction);
+        }
+        return contextMenu;
+    }
+
     ///////////////////
     // Inner Classes //
     ///////////////////
@@ -645,12 +671,31 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
      */
     private class MyMouseAdapter extends MouseAdapter {
 
+        public void mousePressed(MouseEvent e) {
+            if (e.isPopupTrigger()) {
+                showContextMenu(e);
+            }
+        }
+
+        public void mouseReleased(MouseEvent e) {
+            if (e.isPopupTrigger()) {
+                showContextMenu(e);
+            }
+        }
+
+        private void showContextMenu(MouseEvent evt) {
+            if (!expanded.get()) {
+                createPopupMenu().show(evt.getComponent(), evt.getX(), evt.getY());
+            }
+        }
+
         public void mouseClicked(MouseEvent e) {
-            boolean exp = expanded.get();
-            if (exp) {
-                collapse();
-            } else {
-                expand();
+            if (e.getButton() == MouseEvent.BUTTON1) {
+                if (expanded.get()) {
+                    collapse();
+                } else {
+                    expand();
+                }
             }
         }
     }
@@ -747,10 +792,22 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
         }
     }
 
+    private class MyMostRecentChangesAction extends BaseAction {
+
+        private MyMostRecentChangesAction(Controller controller) {
+            super("action_most_recent_changes", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            getController().getUIController().openFilesInformationLatest(
+                        folderInfo);
+        }
+    }
+
     private class MyFilesAvailableAction extends AbstractAction {
 
         public void actionPerformed(ActionEvent e) {
-            getController().getUIController().openFilesInformation(folderInfo, 
+            getController().getUIController().openFilesInformation(folderInfo,
                     DirectoryFilter.MODE_INCOMING_ONLY);
         }
     }
