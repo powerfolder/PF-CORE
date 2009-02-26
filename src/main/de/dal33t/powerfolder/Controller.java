@@ -53,7 +53,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 
-import javax.swing.JOptionPane;
+import javax.swing.*;
 
 import org.apache.commons.cli.CommandLine;
 
@@ -960,21 +960,24 @@ public class Controller extends PFComponent {
             exit(1);
             return;
         }
-        switch (DialogFactory.genericDialog(null, Translation
-            .getTranslation("dialog.bind_error.option.title"), Translation
-            .getTranslation("dialog.bind_error.option.text"), new String[]{
-            Translation.getTranslation("dialog.bind_error.option.ignore"),
-            Translation.getTranslation("dialog.bind_error.option.exit")}, 0,
-            GenericDialogType.ERROR)) {
-            case -1 :
-            case 0 :
-                bindRandomPort();
-                break;
+
+        // Must use JOptionPane here because there is no Controller yet for
+        // DialogFactory!
+        int response = JOptionPane.showOptionDialog(null, Translation
+                .getTranslation("dialog.bind_error.option.text"), Translation
+                .getTranslation("dialog.bind_error.option.title"),
+                JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, 
+                null, new String[]{
+                Translation.getTranslation("dialog.bind_error.option.ignore"),
+                Translation.getTranslation("dialog.bind_error.option.exit")}, 0);
+        switch (response) {
             case 1 :
                 exit(0);
                 break;
+            default:
+                bindRandomPort();
+                break;
         }
-
     }
 
     /**
