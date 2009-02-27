@@ -20,7 +20,6 @@
 package de.dal33t.powerfolder.util.ui;
 
 import java.util.TimerTask;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -28,6 +27,7 @@ import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.WrappedScheduledThreadPoolExecutor;
 
 /**
  * Helper class to perform UI updates delayed. If an UI update is scheduled
@@ -116,7 +116,7 @@ public class DelayedUpdater {
         }
         currentTask = new DelayedTimerTask(task);
         if (scheduledES == null) {
-            scheduledES = Executors.newScheduledThreadPool(0);
+            scheduledES = new WrappedScheduledThreadPoolExecutor(1);
         }
         try {
             long now = System.currentTimeMillis();
