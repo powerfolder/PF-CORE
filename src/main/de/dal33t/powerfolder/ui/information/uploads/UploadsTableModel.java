@@ -99,10 +99,8 @@ public class UploadsTableModel extends PFComponent implements TableModel,
      */
     public void initialize() {
         TransferManager tm = model.getTransferManager();
-        Upload[] uls = tm.getActiveUploads();
-        uploads.addAll(Arrays.asList(uls));
-        uls = tm.getQueuedUploads();
-        uploads.addAll(Arrays.asList(uls));
+        uploads.addAll(tm.getActiveUploads());
+        uploads.addAll(tm.getQueuedUploads());
     }
 
     // Public exposing ********************************************************
