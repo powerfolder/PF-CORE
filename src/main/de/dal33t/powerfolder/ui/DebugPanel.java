@@ -165,7 +165,8 @@ public class DebugPanel extends PFUIComponent implements UIPanel {
             public void itemStateChanged(ItemEvent e) {
                 if (e.getSource() == logLevelCombo) {
                     Object selectedItem = logLevelCombo.getSelectedItem();
-                    LoggingManager.setDocumentLogging((Level) selectedItem);
+                    LoggingManager.setDocumentLogging((Level) selectedItem,
+                            getController());
                 } else if (e.getSource() == scrollLockCheckBox) {
                     textPanel.setAutoScroll(!scrollLockCheckBox.isSelected());
                 } else if (e.getSource() == showDebugReportsCheckBox) {

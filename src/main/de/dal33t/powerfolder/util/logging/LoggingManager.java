@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.util.logging;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.logging.handlers.ConsoleHandler;
@@ -132,12 +133,14 @@ public class LoggingManager {
      *
      * @param level
      */
-    public static void setDocumentLogging(Level level) {
+    public static void setDocumentLogging(Level level, Controller controller) {
         if (documentLoggingLevel == null) {
             getRootLogger().addHandler(documentHandler);
         }
         documentLoggingLevel = level;
         documentHandler.setLevel(level);
+
+        PreferencesEntry.DOCUMENT_LOGGING.setValue(controller, level.getName());
 
         setMinimumBaseLoggingLevel();
     }
@@ -291,5 +294,31 @@ public class LoggingManager {
             }
         }
         getRootLogger().setLevel(level);
+    }
+
+    public static Level levelForName(String levelName) {
+        if (levelName == null) {
+            return null;
+        }
+        if (levelName.equals(Level.ALL.getName())) {
+            return Level.ALL;
+        } else if (levelName.equals(Level.CONFIG.getName())) {
+            return Level.CONFIG;
+        } else if (levelName.equals(Level.FINE.getName())) {
+            return Level.FINE;
+        } else if (levelName.equals(Level.FINER.getName())) {
+            return Level.FINER;
+        } else if (levelName.equals(Level.FINEST.getName())) {
+            return Level.FINEST;
+        } else if (levelName.equals(Level.INFO.getName())) {
+            return Level.INFO;
+        } else if (levelName.equals(Level.OFF.getName())) {
+            return Level.OFF;
+        } else if (levelName.equals(Level.SEVERE.getName())) {
+            return Level.SEVERE;
+        } else if (levelName.equals(Level.WARNING.getName())) {
+            return Level.WARNING;
+        }
+        return null;
     }
 }

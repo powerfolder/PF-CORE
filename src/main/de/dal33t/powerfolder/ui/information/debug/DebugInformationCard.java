@@ -156,7 +156,8 @@ public class DebugInformationCard extends InformationCard{
 	            public void itemStateChanged(ItemEvent e) {
 	                if (e.getSource() == logLevelCombo) {
 	                    Object selectedItem = logLevelCombo.getSelectedItem();
-	                    LoggingManager.setDocumentLogging((Level) selectedItem);
+	                    LoggingManager.setDocumentLogging((Level) selectedItem,
+                                getController());
 	                } else if (e.getSource() == logToFileCheckBox) {
 	                    if(logToFileCheckBox.isSelected()){
 	                    	LoggingManager.setFileLogging(LoggingManager.getDocumentLoggingLevel());//need to check

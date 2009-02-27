@@ -24,6 +24,8 @@ import com.jgoodies.binding.value.ValueModel;
 
 import de.dal33t.powerfolder.util.Reject;
 
+import java.util.logging.Level;
+
 /**
  * Refelects an entry setting in the preferences. Provides basic method for
  * accessing and setting the prefs. Preferences are stored (on windows) in the
@@ -89,7 +91,9 @@ public enum PreferencesEntry {
     /**
      * Whether to use magnetic frames by default (i.e. not with ctrl key)
      */
-    USE_MAGNETIC_FRAMES("use.magnetic.frames", false);
+    USE_MAGNETIC_FRAMES("use.magnetic.frames", false),
+
+    DOCUMENT_LOGGING("document.logging", Level.WARNING.getName());
 
 
     /** String, Boolean, Integer */

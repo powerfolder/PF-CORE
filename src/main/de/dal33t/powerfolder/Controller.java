@@ -641,7 +641,18 @@ public class Controller extends PFComponent {
             LoggingManager.setConsoleLogging(Level.WARNING);
             LoggingManager.setFileLogging(Level.FINE);
             // Switch on the document handler.
-            LoggingManager.setDocumentLogging(Level.WARNING);
+            String name = PreferencesEntry.DOCUMENT_LOGGING.getValueString(this);
+            if (name == null || name.length() == 0) {
+                LoggingManager.setDocumentLogging(Level.WARNING, this);
+            } else {
+                Level level = LoggingManager.levelForName(name);
+                if (level == null) {
+                    LoggingManager.setDocumentLogging(Level.WARNING, this);
+                } else {
+                    LoggingManager.setDocumentLogging(level, this);
+                }
+            }
+
             if (LoggingManager.isLogToFile()) {
                 logInfo("Running in VERBOSE mode, logging to file '"
                     + LoggingManager.getLoggingFileName() + '\'');
