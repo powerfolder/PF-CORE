@@ -22,7 +22,6 @@ package de.dal33t.powerfolder.test.transfer;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.util.Arrays;
 import java.util.Random;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
@@ -133,7 +132,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
                         }
                     }
                     if (c.getTransferManager().countActiveDownloads() != 0
-                        || c.getTransferManager().getActiveUploads().length != 0)
+                        || c.getTransferManager().getActiveUploads().size() != 0)
                     {
                         return false;
                     }
@@ -160,7 +159,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
                     if (c == getContoller("4")) {
                         continue;
                     }
-                    if (c.getTransferManager().getActiveUploads().length != 1) {
+                    if (c.getTransferManager().getActiveUploads().size() != 1) {
                         return false;
                     }
                 }
@@ -443,9 +442,8 @@ public class SwarmingTest extends MultipleControllerTestCase {
                     b.append(i).append(": ").append(
                         "Download Managers: " + tm.getActiveDownloads()
                             + ", Total downloads: " + dloads + ", uploads:"
-                            + Arrays.toString(tm.getActiveUploads())
-                            + ", Queued uploads:"
-                            + tm.getQueuedUploads().length).append('\n');
+                            + tm.getActiveUploads() + ", Queued uploads:"
+                            + tm.getQueuedUploads().size()).append('\n');
                 }
                 // out.close();
                 return b.toString() + "\nUploads total: " + ups
@@ -479,7 +477,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
                         getContoller("" + i).getTransferManager()
                             .getActiveDownloads());
                     b.append(", ").append(
-                        Arrays.toString(getContoller("" + i)
+                        (getContoller("" + i)
                             .getTransferManager().getActiveUploads())).append(
                         '\n');
                 }
@@ -571,8 +569,8 @@ public class SwarmingTest extends MultipleControllerTestCase {
                                 getContoller("" + i).getTransferManager()
                                     .getActiveDownloads());
                             b.append(", ").append(
-                                Arrays.toString(getContoller("" + i)
-                                    .getTransferManager().getActiveUploads()));
+                                getContoller("" + i).getTransferManager()
+                                    .getActiveUploads());
                         }
                         return b.toString();
                     }
@@ -638,8 +636,8 @@ public class SwarmingTest extends MultipleControllerTestCase {
                         getFolderOf("" + i).getKnowFilesAsArray()[0]
                             .getVersion());
                     b.append(", uploads: ");
-                    b.append(Arrays.toString(getContoller("" + i)
-                        .getTransferManager().getActiveUploads()));
+                    b.append(getContoller("" + i).getTransferManager()
+                        .getActiveUploads());
                     b.append(", downloads: ");
                     b.append(getContoller("" + i).getTransferManager()
                         .getActiveDownloads());
@@ -653,7 +651,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
                     TransferManager tm = getContoller("" + i)
                         .getTransferManager();
                     if (tm.countActiveDownloads() != 0
-                        || tm.getActiveUploads().length != 0)
+                        || tm.getActiveUploads().size() != 0)
                     {
                         return false;
                     }
@@ -671,7 +669,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
                         .getTransferManager();
                     b.append(i).append(": ").append(
                         tm.countActiveDownloads() + "|"
-                            + tm.getActiveUploads().length);
+                            + tm.getActiveUploads().size());
                 }
                 return b.toString();
             }
