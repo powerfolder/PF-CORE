@@ -46,7 +46,6 @@ import java.util.StringTokenizer;
 import java.util.TimerTask;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -96,6 +95,7 @@ import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Updater;
 import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.WrappedScheduledThreadPoolExecutor;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.FirewallUtil;
@@ -346,7 +346,7 @@ public class Controller extends PFComponent {
             throw new IllegalStateException(
                 "Configuration already started, shutdown controller first");
         }
-        
+
         // initOnlineDuplicate();
 
         // Default updatesettings
@@ -354,7 +354,7 @@ public class Controller extends PFComponent {
         additionalConnectionListeners = Collections
             .synchronizedList(new ArrayList<ConnectionListener>());
         started = false;
-        threadPool = Executors.newScheduledThreadPool(1,
+        threadPool = new WrappedScheduledThreadPoolExecutor(1,
             new NamedThreadFactory("Controller-Thread-"));
 
         // Initalize resouce bundle eager
