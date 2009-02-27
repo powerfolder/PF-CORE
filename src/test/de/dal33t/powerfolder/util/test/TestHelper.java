@@ -610,8 +610,7 @@ public class TestHelper {
     {
         List<Upload> uploads = new ArrayList<Upload>();
         for (Controller c : controllers) {
-            uploads.addAll(Arrays.asList(c.getTransferManager()
-                .getActiveUploads()));
+            uploads.addAll(c.getTransferManager().getActiveUploads());
         }
         for (Controller c : controllers) {
             for (DownloadManager dm : c.getTransferManager()
