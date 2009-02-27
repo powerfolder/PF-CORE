@@ -316,14 +316,12 @@ public class Debug {
                     b.append(" (none)\n");
                 }
 
-                Upload[] actULs = tm.getActiveUploads();
-                Upload[] quedULs = tm.getQueuedUploads();
                 b.append("\nUploads ("
                     + tm.getAllowedUploads()
                     + " allowed, "
-                    + actULs.length
+                    + tm.countActiveUploads()
                     + " active, "
-                    + quedULs.length
+                    + tm.countQueuedUploads()
                     + " queued, "
                     + Format.getNumberFormat().format(
                         tm.getUploadCounter().calculateCurrentKBS())
@@ -334,10 +332,9 @@ public class Debug {
                     + Format.formatBytes(tm.getUploadCounter()
                         .getBytesTransferred()) + " bytes total):");
 
-                List<Upload> uploads = new ArrayList<Upload>(actULs.length
-                    + quedULs.length);
-                uploads.addAll(Arrays.asList(actULs));
-                uploads.addAll(Arrays.asList(quedULs));
+                List<Upload> uploads = new ArrayList<Upload>();
+                uploads.addAll(tm.getActiveUploads());
+                uploads.addAll(tm.getQueuedUploads());
                 for (Iterator it = uploads.iterator(); it.hasNext();) {
                     Upload upload = (Upload) it.next();
                     b.append("\n ");
@@ -345,7 +342,7 @@ public class Debug {
                     b.append(" " + upload);
                 }
                 b.append('\n');
-                if (actULs.length == 0 && quedULs.length == 0) {
+                if (uploads.size() == 0) {
                     b.append(" (none)\n");
                 }
 
