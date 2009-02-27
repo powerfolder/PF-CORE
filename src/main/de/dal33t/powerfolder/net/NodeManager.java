@@ -36,7 +36,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -73,7 +72,6 @@ import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.MessageListenerSupport;
 import de.dal33t.powerfolder.util.NamedThreadFactory;
 import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.WrappingTimer;
 import de.dal33t.powerfolder.util.compare.MemberComparator;
 import de.dal33t.powerfolder.util.net.AddressRange;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
@@ -93,8 +91,6 @@ public class NodeManager extends PFComponent {
     // The central inet nodes file
     private static final String NODES_URL = "http://nodes.powerfolder.com/PowerFolder.nodes";
 
-    /** Timer for periodical tasks */
-    private Timer timer;
     /**
      * Threadpool to handle incoming connections.
      */
@@ -246,7 +242,6 @@ public class NodeManager extends PFComponent {
             inetNodeLoader.start();
         }
 
-        timer = new WrappingTimer("NodeManager timer for peridical tasks", true);
         setupPeridicalTasks();
 
         started = true;
@@ -278,10 +273,6 @@ public class NodeManager extends PFComponent {
             acceptor.shutdown();
         }
         acceptors.clear();
-
-        if (timer != null) {
-            timer.cancel();
-        }
 
         logFine("Shutting down nodes");
 
@@ -1452,9 +1443,8 @@ public class NodeManager extends PFComponent {
      * Sets up all tasks, that needs to be periodically executed.
      */
     private void setupPeridicalTasks() {
-        Reject.ifNull(timer, "Timer is null to setup periodical tasks");
         // Broadcast transfer status
-        timer.schedule(new TransferStatusBroadcaster(),
+        getController().scheduleAndRepeat(new TransferStatusBroadcaster(),
             Constants.TRANSFER_STATUS_BROADCAST_INTERVAL * 1000 / 2,
             Constants.TRANSFER_STATUS_BROADCAST_INTERVAL * 1000);
         // Request network folder list
@@ -1462,20 +1452,22 @@ public class NodeManager extends PFComponent {
         // Constants.NETWORK_FOLDER_LIST_REQUEST_INTERVAL * 1000 / 2,
         // Constants.NETWORK_FOLDER_LIST_REQUEST_INTERVAL * 1000);
         // Request new node list from time to time
-        timer.schedule(new NodeListRequestor(),
+        getController().scheduleAndRepeat(new NodeListRequestor(),
             Constants.NODE_LIST_REQUEST_INTERVAL * 1000 / 2,
             Constants.NODE_LIST_REQUEST_INTERVAL * 1000);
         // Broadcast the nodes that went online
-        timer.schedule(new NodesThatWentOnlineListBroadcaster(),
+        getController().scheduleAndRepeat(
+            new NodesThatWentOnlineListBroadcaster(),
             Constants.NODES_THAN_WENT_ONLINE_BROADCAST_TIME * 1000 / 2,
             Constants.NODES_THAN_WENT_ONLINE_BROADCAST_TIME * 1000);
         // Check incoming connection tries
-        timer.schedule(new AcceptorsChecker(), 0,
+        getController().scheduleAndRepeat(new AcceptorsChecker(), 0,
             Constants.INCOMING_CONNECTION_CHECK_TIME * 1000);
 
         // Write statistics and other infos.
         if (getController().isVerbose()) {
-            timer.schedule(new StatisticsWriter(), 59 * 1000, 60 * 1000);
+            getController().scheduleAndRepeat(new StatisticsWriter(),
+                59 * 1000, 60 * 1000);
         }
     }
 
