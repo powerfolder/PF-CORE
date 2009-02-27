@@ -19,8 +19,10 @@
  */
 package de.dal33t.powerfolder.util.ui;
 
-import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -61,7 +63,7 @@ public class DelayedUpdater {
 
     private long delay;
     private long nextMandatoryEvent = -1;
-    private static Timer timer;
+    private static ScheduledExecutorService scheduledES;
     private volatile DelayedTimerTask currentTask;
 
     /**
@@ -88,7 +90,7 @@ public class DelayedUpdater {
      *            the delay to use
      */
     public DelayedUpdater(Controller controller, long delay) {
-        timer = controller.getTimer();
+        scheduledES = controller.getThreadPool();
         this.delay = delay;
     }
 
@@ -113,8 +115,8 @@ public class DelayedUpdater {
             currentTask.canceled = true;
         }
         currentTask = new DelayedTimerTask(task);
-        if (timer == null) {
-            timer = new Timer();
+        if (scheduledES == null) {
+            scheduledES = Executors.newScheduledThreadPool(0);
         }
         try {
             long now = System.currentTimeMillis();
@@ -122,7 +124,8 @@ public class DelayedUpdater {
                 nextMandatoryEvent = now + delay;
             }
             long delayUntilEvent = nextMandatoryEvent - now;
-            timer.schedule(currentTask, delayUntilEvent);
+            scheduledES.schedule(currentTask, delayUntilEvent,
+                TimeUnit.MILLISECONDS);
         } catch (Exception e) {
             LOG.log(Level.FINER, "Unable to schedule task to timer: " + e, e);
         }
