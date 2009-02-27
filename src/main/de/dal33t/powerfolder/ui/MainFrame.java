@@ -117,7 +117,7 @@ public class MainFrame extends PFUIComponent {
         // Pack elements
         uiComponent.pack();
 
-        int width = prefs.getInt("mainframe4.width", 500);
+        int width = prefs.getInt("mainframe4.width", 350);
         int height = prefs.getInt("mainframe4.height", 600);
         if (width < 50) {
             width = 50;
