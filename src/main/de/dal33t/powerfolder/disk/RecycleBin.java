@@ -358,6 +358,8 @@ public class RecycleBin extends PFComponent {
                     .progressReached((int) (100.0 * ((double) folderIndex + 0.75) / numberOfFolder));
             }
             removeEmptyDirs(recycleBinDir);
+            // Recreate bin
+            recycleBinDir.mkdirs();
         }
     }
 
