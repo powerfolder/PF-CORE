@@ -146,7 +146,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         TestHelper.waitForCondition(30, new Condition() {
             public boolean reached() {
                 return getContollerBart().getTransferManager()
-                    .getActiveUploads().length == 1
+                    .getActiveUploads().size() == 1
                     && getContollerLisa().getTransferManager()
                         .countActiveDownloads() == 1;
             }
