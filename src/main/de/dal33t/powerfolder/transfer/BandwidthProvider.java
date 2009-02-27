@@ -19,13 +19,15 @@
 */
 package de.dal33t.powerfolder.transfer;
 
-import de.dal33t.powerfolder.util.WrappingTimer;
-import de.dal33t.powerfolder.util.logging.Loggable;
-
 import java.util.Map;
-import java.util.Timer;
 import java.util.TimerTask;
 import java.util.WeakHashMap;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.logging.Loggable;
 
 /**
  * A BandwidthProvider can be used to periodically assign BandwidthLimiters a
@@ -41,14 +43,17 @@ public class BandwidthProvider extends Loggable {
     public static final int PERIOD = 1000;
 
     private Map<BandwidthLimiter, Long> limits = new WeakHashMap<BandwidthLimiter, Long>();
-    private Timer timer;
-
-    public BandwidthProvider() {
+    private ScheduledExecutorService scheduledES;
+    private ScheduledFuture<?> task;
+    
+    public BandwidthProvider(ScheduledExecutorService scheduledES) {
+        super();
+        Reject.ifNull(scheduledES, "ScheduledExecutorService is null");
+        this.scheduledES = scheduledES;
     }
 
     public void start() {
-        timer = new WrappingTimer("Bandwidth-provider", true);
-        timer.scheduleAtFixedRate(new TimerTask() {
+        task = scheduledES.scheduleAtFixedRate(new TimerTask() {
             public void run() {
                 synchronized (limits) {
                     for (Map.Entry<BandwidthLimiter, Long> me : limits
@@ -63,12 +68,12 @@ public class BandwidthProvider extends Loggable {
                     }
                 }
             }
-        }, 0, PERIOD);
+        }, 0, PERIOD, TimeUnit.MILLISECONDS);
     }
 
     public void shutdown() {
-        if (timer != null) {
-            timer.cancel();
+        if (task != null) {
+            task.cancel(true);
         }
     }
 
