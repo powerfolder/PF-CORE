@@ -22,6 +22,10 @@ package de.dal33t.powerfolder.test.transfer;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.concurrent.Executors;
+import java.util.logging.Level;
+
+import junit.framework.TestCase;
 
 import org.apache.commons.io.output.ByteArrayOutputStream;
 
@@ -29,11 +33,13 @@ import de.dal33t.powerfolder.transfer.BandwidthLimiter;
 import de.dal33t.powerfolder.transfer.BandwidthProvider;
 import de.dal33t.powerfolder.transfer.LimitedInputStream;
 import de.dal33t.powerfolder.transfer.LimitedOutputStream;
-import junit.framework.TestCase;
+import de.dal33t.powerfolder.util.Debug;
+import de.dal33t.powerfolder.util.logging.LoggingManager;
 
 public class BandwidthLimitTest extends TestCase {
-    BandwidthProvider provider = new BandwidthProvider();
-    
+    BandwidthProvider provider = new BandwidthProvider(Executors
+        .newScheduledThreadPool(1));
+
     public void testUnlimited() {
         BandwidthLimiter bl = new BandwidthLimiter();
         try {
@@ -118,7 +124,9 @@ public class BandwidthLimitTest extends TestCase {
         }
         provider.removeLimiter(bl);
         provider.shutdown();
-        assertTrue(bl.getAvailable() == 1000 / BandwidthProvider.PERIOD * BandwidthProvider.PERIOD);
+        assertEquals(
+            1000 / BandwidthProvider.PERIOD * BandwidthProvider.PERIOD, bl
+                .getAvailable());
     }
     
     public static class ReaderThread implements Runnable {
@@ -162,13 +170,13 @@ public class BandwidthLimitTest extends TestCase {
         for (int i = 0; i < pool.length; i++)
             pool[i].start();
         
-        
         try {
             Thread.sleep(6000);
             pool[0].join(1);
         } catch (InterruptedException e) {
             fail(e.toString());
         }
+   
         provider.shutdown();
         assertEquals(Thread.State.TERMINATED, pool[0].getState());
         for (int i = 0; i < pool.length; i++) {
