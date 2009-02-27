@@ -187,7 +187,8 @@ public class TransferManager extends PFComponent {
                 + allowedUploads);
         }
 
-        bandwidthProvider = new BandwidthProvider();
+        bandwidthProvider = new BandwidthProvider(getController()
+            .getThreadPool());
 
         sharedWANOutputHandler = new BandwidthLimiter();
         sharedWANInputHandler = new BandwidthLimiter();
@@ -287,11 +288,9 @@ public class TransferManager extends PFComponent {
         }
 
         // shutdown active uploads
-        Upload[] uploads = getActiveUploads();
-        for (int i = 0; i < uploads.length; i++) {
-            // abort && shutdown uploads
-            uploads[i].abort();
-            uploads[i].shutdown();
+        for (Upload upload : activeUploads) {
+            upload.abort();
+            upload.shutdown();
         }
 
         bandwidthProvider.shutdown();
@@ -1199,21 +1198,23 @@ public class TransferManager extends PFComponent {
     /**
      * @return the currently active uploads
      */
-    public Upload[] getActiveUploads() {
-        uploadsLock.lock();
-        try {
-            return activeUploads.toArray(new Upload[activeUploads.size()]);
-        } finally {
-            uploadsLock.unlock();
-        }
+    public Collection<Upload> getActiveUploads() {
+        return Collections.unmodifiableCollection(activeUploads);
     }
-    
+
     /**
      * @return an unmodifiable collection reffering to the internal completed
      *         upload list. May change after returned.
      */
     public List<Upload> getCompletedUploadsCollection() {
         return Collections.unmodifiableList(completedUploads);
+    }
+    
+    /**
+     * @return the number of queued uploads.
+     */
+    public int countQueuedUploads() {
+        return queuedUploads.size();
     }
 
     /**
@@ -1256,8 +1257,8 @@ public class TransferManager extends PFComponent {
      * 
      * @return Array of all queued upload
      */
-    public Upload[] getQueuedUploads() {
-        return queuedUploads.toArray(new Upload[queuedUploads.size()]);
+    public Collection<Upload> getQueuedUploads() {
+        return Collections.unmodifiableCollection(queuedUploads);
 
     }
 
