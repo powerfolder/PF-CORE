@@ -43,17 +43,17 @@ import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.ServiceLoader;
 import java.util.StringTokenizer;
-import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 
-import javax.swing.*;
+import javax.swing.JOptionPane;
 
 import org.apache.commons.cli.CommandLine;
 
@@ -96,13 +96,10 @@ import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Updater;
 import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.util.WrappingTimer;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.FirewallUtil;
 import de.dal33t.powerfolder.util.task.PersistentTaskManager;
-import de.dal33t.powerfolder.util.ui.DialogFactory;
-import de.dal33t.powerfolder.util.ui.GenericDialogType;
 import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker;
 
 /**
@@ -272,14 +269,9 @@ public class Controller extends PFComponent {
      */
     private Socket currentConnectingSocket;
 
-    /**
-     * A global timer used for sheduling things like updates every x seconds in
-     * the UI
-     */
-    private Timer timer;
-
     /** global Threadpool */
-    private ExecutorService threadPool;
+    private ScheduledExecutorService threadPool;
+   
 
     /** Remembers if a port on the local firewall was opened */
     private boolean portWasOpened = false;
@@ -362,8 +354,8 @@ public class Controller extends PFComponent {
         additionalConnectionListeners = Collections
             .synchronizedList(new ArrayList<ConnectionListener>());
         started = false;
-        threadPool = Executors.newCachedThreadPool(new NamedThreadFactory(
-            "Controller-Thread-"));
+        threadPool = Executors.newScheduledThreadPool(1,
+            new NamedThreadFactory("Controller-Thread-"));
 
         // Initalize resouce bundle eager
         // check forced language file from commandline
@@ -408,8 +400,7 @@ public class Controller extends PFComponent {
         // create node manager
         nodeManager = new NodeManager(this);
 
-        // The task brothers
-        timer = new WrappingTimer("Controller schedule timer", true);
+        // Only one task brother left...
         taskManager = new PersistentTaskManager(this);
 
         // Folder repository
@@ -647,10 +638,10 @@ public class Controller extends PFComponent {
         verbose = ConfigurationEntry.VERBOSE.getValueBoolean(getController());
         if (verbose) {
             // Enable file logging
-            LoggingManager.setConsoleLogging(Level.FINE);
+            LoggingManager.setConsoleLogging(Level.WARNING);
             LoggingManager.setFileLogging(Level.FINE);
             // Switch on the document handler.
-            LoggingManager.setDocumentLogging(Level.INFO);
+            LoggingManager.setDocumentLogging(Level.WARNING);
             if (LoggingManager.isLogToFile()) {
                 logInfo("Running in VERBOSE mode, logging to file '"
                     + LoggingManager.getLoggingFileName() + '\'');
@@ -720,10 +711,6 @@ public class Controller extends PFComponent {
     /**
      * Use to schedule a lightweight short running task that gets repeated
      * periodically.
-     * <p>
-     * ATTENTION: Task may block other important task, never enqueue a long
-     * running task here! Use own thread or any threadpool for long running
-     * tasks.
      * 
      * @param task
      *            the task to schedule
@@ -732,17 +719,14 @@ public class Controller extends PFComponent {
      */
     public void scheduleAndRepeat(TimerTask task, long period) {
         if (!isShuttingDown()) {
-            timer.schedule(task, period, period);
+            threadPool.scheduleWithFixedDelay(task, 0, period,
+                TimeUnit.MILLISECONDS);
         }
     }
 
     /**
      * Use to schedule a lightweight short running task that gets repeated
      * periodically.
-     * <p>
-     * ATTENTION: Task may block other important task, never enqueue a long
-     * running task here! Use own thread or any threadpool for long running
-     * tasks.
      * 
      * @param task
      *            the task to schedule
@@ -754,16 +738,13 @@ public class Controller extends PFComponent {
     public void scheduleAndRepeat(TimerTask task, long initialDelay, long period)
     {
         if (!isShuttingDown()) {
-            timer.schedule(task, initialDelay, period);
+            threadPool.scheduleWithFixedDelay(task, initialDelay, period,
+                TimeUnit.MILLISECONDS);
         }
     }
 
     /**
      * Use to schedule a lightweight short running task.
-     * <p>
-     * ATTENTION: Task may block other important task, never enqueue a long
-     * running task here! Use own thread or any threadpool for long running
-     * tasks.
      * 
      * @param task
      *            the task to schedule
@@ -772,7 +753,7 @@ public class Controller extends PFComponent {
      */
     public void schedule(TimerTask task, long delay) {
         if (!isShuttingDown()) {
-            timer.schedule(task, delay);
+            threadPool.schedule(task, delay, TimeUnit.MILLISECONDS);
         }
     }
 
@@ -792,8 +773,8 @@ public class Controller extends PFComponent {
             }
         };
         // Check for update 20 seconds after start.
-        scheduleAndRepeat(updateCheckTask, Controller.getWaitTime() * 3,
-            updateCheckTime * 1000);
+        threadPool.scheduleWithFixedDelay(updateCheckTask, Controller
+            .getWaitTime() * 3, 1000L * updateCheckTime, TimeUnit.MILLISECONDS);
 
         // Test the connectivity after a while.
         LimitedConnectivityChecker.install(this);
@@ -815,20 +796,20 @@ public class Controller extends PFComponent {
         Date tomorrowMorning = cal.getTime();
         logInfo("Initial log reconfigure at " + tomorrowMorning
             + " milliseconds");
-        timer.scheduleAtFixedRate(new TimerTask() {
+        threadPool.scheduleAtFixedRate(new TimerTask() {
             public void run() {
                 initLogger();
                 logInfo("Reconfigured log file");
             }
-        }, tomorrowMorning, 1000L * 24 * 3600);
+        }, tomorrowMorning.getTime(), 1000L * 24 * 3600, TimeUnit.MILLISECONDS);
 
         if (Profiling.ENABLED) {
-            scheduleAndRepeat(new TimerTask() {
+            threadPool.scheduleWithFixedDelay(new TimerTask() {
                 @Override
                 public void run() {
                     logFine(Profiling.dumpStats());
                 }
-            }, 60L * 1000);
+            }, 0, 60L * 1000, TimeUnit.MILLISECONDS);
         }
     }
 
@@ -1267,11 +1248,6 @@ public class Controller extends PFComponent {
             taskManager.shutdown();
         }
 
-        if (timer != null) {
-            logFine("Cancel global timer");
-            timer.cancel();
-            timer.purge();
-        }
         if (threadPool != null) {
             logFine("Shutting down global threadpool");
             threadPool.shutdownNow();
@@ -1376,7 +1352,7 @@ public class Controller extends PFComponent {
         logInfo("Shutting down done");
     }
 
-    public ExecutorService getThreadPool() {
+    public ScheduledExecutorService getThreadPool() {
         return threadPool;
     }
 
@@ -1504,13 +1480,6 @@ public class Controller extends PFComponent {
             // Update title
             getUIController().getMainFrame().updateTitle();
         }
-    }
-    
-    /**
-     * @return the central timer.
-     */
-    public Timer getTimer() {
-        return timer;
     }
 
     /**
