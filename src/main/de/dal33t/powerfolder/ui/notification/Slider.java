@@ -19,6 +19,8 @@
 */
 package de.dal33t.powerfolder.ui.notification;
 
+import com.sun.awt.AWTUtilities;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -116,7 +118,7 @@ public class Slider {
         animateDownTimer = new Timer(ANIMATION_DELAY, new ActionListener() {
             private int percentage = 99;
             public void actionPerformed(ActionEvent e) {
-                animate(percentage);
+                animate(percentage, true);
                 if (percentage-- <= 0) {
                     animateDownTimer.stop();
                 }
@@ -135,7 +137,7 @@ public class Slider {
         animateUpTimer = new Timer(ANIMATION_DELAY, new ActionListener() {
             private int percentage = 1;
             public void actionPerformed(ActionEvent e) {
-                animate(percentage);
+                animate(percentage, false);
                 if (percentage++ >= 100) {
                     animateUpTimer.stop();
                     dismissTimer.start();
@@ -175,7 +177,7 @@ public class Slider {
      *
      * @param percentage
      */
-    public void animate(long percentage) {
+    public void animate(long percentage, boolean collapsing) {
 
         if (window == null) {
             // Huh?
@@ -199,6 +201,9 @@ public class Slider {
             window.getContentPane().add(animatingSheet);
             window.pack();
             window.setLocation(showX, startY - window.getHeight());
+            if (collapsing) {
+                AWTUtilities.setWindowOpacity(window, (float) percentage / 100.0f);
+            }
         }
     }
 }
