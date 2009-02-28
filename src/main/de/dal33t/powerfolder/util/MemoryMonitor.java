@@ -24,7 +24,7 @@ import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
 
-import java.awt.EventQueue;
+import java.awt.*;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -40,35 +40,30 @@ public class MemoryMonitor implements Runnable {
 
     private static final String POWERFOLDER_INI_FILE = "PowerFolder.l4j.ini";
     private Controller controller;
+    private boolean runAlready;
 
     public MemoryMonitor(Controller controller) {
         this.controller = controller;
     }
 
     public void run() {
+
+        // Do not show dialog repeatedly.
+        if (runAlready) {
+            return;
+        }
+
         Runtime runtime = Runtime.getRuntime();
         long maxMemory = runtime.maxMemory();
-        while (!controller.isShuttingDown()) {
-            try {
-                // Check every minute.
-                Thread.sleep(60000);
-            } catch (InterruptedException e) {
-                // Interrupt? ==> quit!
-                return;
-            }
+        long totalMemory = runtime.totalMemory();
+        log.fine("Max Memory: " + Format.formatBytesShort(maxMemory)
+                + ", Total Memory: " + Format.formatBytesShort(totalMemory));
 
-            long totalMemory = runtime.totalMemory();
-            log.fine("Max Memory: " + Format.formatBytesShort(maxMemory)
-                    + ", Total Memory: " + Format.formatBytesShort(totalMemory));
-
-            // See if there is any more memory to allocate. Defer if dialog
-            // currently shown.
-            if (maxMemory == totalMemory && !DialogFactory.isDialogInUse()) {
-                showDialog();
-
-                // Do not show dialog repeatedly.
-                break;
-            }
+        // See if there is any more memory to allocate. Defer if dialog
+        // currently shown.
+        if (maxMemory == totalMemory && !DialogFactory.isDialogInUse()) {
+            showDialog();
+            runAlready = true;
         }
     }
 
@@ -153,14 +148,14 @@ public class MemoryMonitor implements Runnable {
         // Show a response
         if (wroteNewIni) {
             DialogFactory.genericDialog(controller, Translation
-                .getTranslation("low_memory.title"), Translation
-                .getTranslation("low_memory.configure_success"),
-                GenericDialogType.INFO);
+                    .getTranslation("low_memory.title"), Translation
+                    .getTranslation("low_memory.configure_success"),
+                    GenericDialogType.INFO);
         } else {
             DialogFactory.genericDialog(controller, Translation
-                .getTranslation("low_memory.title"), Translation
-                .getTranslation("low_memory.configure_failure"),
-                GenericDialogType.WARN);
+                    .getTranslation("low_memory.title"), Translation
+                    .getTranslation("low_memory.configure_failure"),
+                    GenericDialogType.WARN);
         }
     }
 }

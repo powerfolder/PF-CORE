@@ -24,6 +24,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -208,12 +210,8 @@ public class PowerFolder {
 
         // Begin monitoring memory usage.
         if (controller.isUIEnabled()) {
-            ExecutorService service = controller.getThreadPool();
-            synchronized (service) {
-                if (!service.isShutdown()) {
-                    service.submit(new MemoryMonitor(controller));
-                }
-            }
+            ScheduledExecutorService service = controller.getThreadPool();
+            service.schedule(new MemoryMonitor(controller), 1, TimeUnit.MINUTES);
         }
 
         // Not go into console mode if ui is open
