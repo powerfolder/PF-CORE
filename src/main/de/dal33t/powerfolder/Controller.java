@@ -354,7 +354,7 @@ public class Controller extends PFComponent {
         additionalConnectionListeners = Collections
             .synchronizedList(new ArrayList<ConnectionListener>());
         started = false;
-        threadPool = new WrappedScheduledThreadPoolExecutor(1,
+        threadPool = new WrappedScheduledThreadPoolExecutor(10,
             new NamedThreadFactory("Controller-Thread-"));
 
         // Initalize resouce bundle eager
