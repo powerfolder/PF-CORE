@@ -209,8 +209,11 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
 
         String verticalLayout = verticalUserDirectoryLayout
             + "pref, 3dlu, 40dlu, 3dlu, pref, 10dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref";
+
+        // Fixed (60dlu) sizing used so that other components display okay if
+        // there is only 1 or two (or even zero) check boxes displayed.
         FormLayout layout = new FormLayout(
-            "pref, 15dlu, pref, 15dlu, pref, 0:grow", verticalLayout);
+            "60dlu, 15dlu, 60dlu, 15dlu, 60dlu, 0:grow", verticalLayout);
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
         int row = 1;
@@ -255,18 +258,18 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
 
         if (OSUtil.isWindowsSystem()) {
             row += 2;
-            builder.add(createDesktopShortcutBox, cc.xyw(1, row, 5));
+            builder.add(createDesktopShortcutBox, cc.xyw(1, row, 6));
         }
 
         Object object = getWizardContext().getAttribute(SYNC_PROFILE_ATTRIBUTE);
         if (object != null && object.equals(AUTOMATIC_SYNCHRONIZATION)) {
             row += 2;
-            builder.add(manualSyncCheckBox, cc.xyw(1, row, 5));
+            builder.add(manualSyncCheckBox, cc.xyw(1, row, 6));
         }
 
         // Send Invite
         row += 2;
-        builder.add(sendInviteAfterCB, cc.xyw(1, row, 5));
+        builder.add(sendInviteAfterCB, cc.xyw(1, row, 6));
 
         return builder.getPanel();
     }
