@@ -276,30 +276,11 @@ public class FileUtils {
      * @param file
      * @throws IOException
      */
-    public static final void openFile(File file) throws IOException {
+    public static void openFile(File file) throws IOException {
         Reject.ifNull(file, "File is null");
 
-        try {
-            if (Desktop.isDesktopSupported()) {
-                Desktop.getDesktop().open(file);
-                return;
-            }
-        } catch (NoClassDefFoundError e) {
-            log.fine("OpenFile() fallback for old JVM.");
-        }
-
-        // Fallback
-        if (OSUtil.isMacOS()) {
-            URL url = file.toURI().toURL();
-            Runtime.getRuntime().exec("open " + url.toString());
-        } else if (OSUtil.isWindowsSystem()) {
-            URL url = file.toURI().toURL();
-            // Use rundll approach
-            Runtime.getRuntime().exec(
-                "rundll32 url.dll,FileProtocolHandler " + url.toString());
-        } else {
-            log.severe("Unable to start file '"
-                + file + "', system not supported");
+        if (Desktop.isDesktopSupported()) {
+            Desktop.getDesktop().open(file);
         }
     }
 

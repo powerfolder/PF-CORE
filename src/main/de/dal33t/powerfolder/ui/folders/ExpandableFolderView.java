@@ -42,6 +42,7 @@ import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.FileUtils;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -52,6 +53,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.Date;
 import java.util.ArrayList;
 import java.util.List;
+import java.io.IOException;
 
 /**
  * Class to render expandable view of a folder.
@@ -99,8 +101,10 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
     private MyInviteAction inviteAction;
     private MyOpenMembersInformationAction openMembersInformationAction;
     private MyMostRecentChangesAction mostRecentChangesAction;
+    private MyOpenExplorerAction openExplorerAction;
 
-    private JPopupMenu contextMenu;
+    private JPopupMenu collapsedContextMenu;
+    private JPopupMenu expandedContextMenu;
 
     /**
      * Constructor
@@ -294,10 +298,12 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
         openMembersInformationAction =
                 new MyOpenMembersInformationAction(getController());
         mostRecentChangesAction = new MyMostRecentChangesAction(getController());
+        openExplorerAction = new MyOpenExplorerAction(getController());
 
         MySyncFolderAction mySyncFolderAction =
                 new MySyncFolderAction(getController());
-        MyJoinOnlineStorageAction myJoinOnlineStorageAction = new MyJoinOnlineStorageAction(getController());
+        MyJoinOnlineStorageAction myJoinOnlineStorageAction =
+                new MyJoinOnlineStorageAction(getController());
 
         expanded = new AtomicBoolean();
 
@@ -354,6 +360,7 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
 
         syncFolderButton.setVisible(enabled);
         joinOnlineStorageButton.setVisible(!enabled);
+        openExplorerAction.setEnabled(enabled && Desktop.isDesktopSupported());
     }
 
     /**
@@ -591,16 +598,34 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
         return expanded.get();
     }
 
-    public JPopupMenu createPopupMenu() {
-        if (contextMenu == null) {
-            contextMenu = new JPopupMenu();
-            contextMenu.add(openFilesInformationAction);
-            contextMenu.add(mostRecentChangesAction);
-            contextMenu.add(inviteAction);
-            contextMenu.add(openMembersInformationAction);
-            contextMenu.add(openSettingsInformationAction);
+    public JPopupMenu createCollapsedPopupMenu() {
+        if (collapsedContextMenu == null) {
+            collapsedContextMenu = new JPopupMenu();
+            collapsedContextMenu.add(openExplorerAction);
+            collapsedContextMenu.addSeparator();
+            collapsedContextMenu.add(openFilesInformationAction);
+            collapsedContextMenu.add(mostRecentChangesAction);
+            collapsedContextMenu.add(inviteAction);
+            collapsedContextMenu.add(openMembersInformationAction);
+            collapsedContextMenu.add(openSettingsInformationAction);
         }
-        return contextMenu;
+        return collapsedContextMenu;
+    }
+
+    private void openExplorer() {
+        try {
+            FileUtils.openFile(folder.getLocalBase());
+        } catch (IOException ioe) {
+            logSevere("IOException", ioe);
+        }
+    }
+
+    public JPopupMenu createExpandedPopupMenu() {
+        if (expandedContextMenu == null) {
+            expandedContextMenu = new JPopupMenu();
+            expandedContextMenu.add(openExplorerAction);
+        }
+        return expandedContextMenu;
     }
 
     ///////////////////
@@ -684,8 +709,12 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
         }
 
         private void showContextMenu(MouseEvent evt) {
-            if (!expanded.get()) {
-                createPopupMenu().show(evt.getComponent(), evt.getX(), evt.getY());
+            if (expanded.get()) {
+                createExpandedPopupMenu().show(evt.getComponent(), evt.getX(),
+                        evt.getY());
+            } else {
+                createCollapsedPopupMenu().show(evt.getComponent(), evt.getX(),
+                        evt.getY());
             }
         }
 
@@ -809,6 +838,17 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
         public void actionPerformed(ActionEvent e) {
             getController().getUIController().openFilesInformation(folderInfo,
                     DirectoryFilter.MODE_INCOMING_ONLY);
+        }
+    }
+
+    private class MyOpenExplorerAction extends BaseAction {
+
+        private MyOpenExplorerAction(Controller controller) {
+            super("action_open_explorer", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            openExplorer();
         }
     }
 }
