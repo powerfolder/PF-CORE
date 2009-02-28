@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.RecycleBin;
 import de.dal33t.powerfolder.disk.SyncProfile;
@@ -46,6 +47,8 @@ public class DeletionSyncTest extends TwoControllerTestCase {
     protected void setUp() throws Exception {
         System.out.println("DeletionSyncTest.setUp()");
         super.setUp();
+        ConfigurationEntry.UPLOADS_AUTO_CLEANUP.setValue(getContollerBart(),
+            "false");
         connectBartAndLisa();
         // Note: Don't make friends, SYNC_PC profile should sync even if PCs are
         // not friends.
@@ -191,7 +194,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         File testFileLisa = fInfoLisa.getDiskFile(getContollerLisa()
             .getFolderRepository());
 
-        assertTrue(fInfoLisa.isCompletelyIdentical(fInfoBart));
+        assertTrue(fInfoLisa.isVersionAndDateIdentical(fInfoBart));
         assertEquals(testFileBart.length(), testFileLisa.length());
 
         // Now delete the file at lisa
@@ -277,6 +280,14 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         // Assume only 1 file (=PowerFolder system dir)
         assertEquals(1, getFolderAtBart().getLocalBase().list().length);
 
+    }
+    
+    public void testDeletionSyncScenarioMultiple() throws Exception {
+        for (int i = 0; i < 10; i++) {
+            testDeletionSyncScenario();
+            tearDown();
+            setUp();
+        }
     }
 
     /**
