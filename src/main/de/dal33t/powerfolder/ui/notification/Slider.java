@@ -27,10 +27,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 /**
- * Creates an animated view that slides out of the bottom-right corner of the
+ * Creates an animated view that fades out of the bottom-right corner of the
  * screen. The user of this class supplies the contents for sliding. Also, the
  * view automatically closes itself after predetermined amount of time, which is
- * currently set to 15 seconds.<br>
+ * currently set to 10 seconds.<br>
  * This class is based on code and ideas from <i>Swing Hacks</i> book by Joshua
  * Marinacci and Chris Adamson.<br>
  * 
@@ -50,9 +50,9 @@ public class Slider {
     public static final int ANIMATION_DELAY = 10;
 
     /**
-     * Default delay before autodismissing the view is 15 seconds
+     * Default delay before autodismissing the view is 10 seconds
      */
-    public static final int DISMISS_DELAY = 15000;
+    public static final int DISMISS_DELAY = 10000;
 
     private JWindow window;
 
@@ -67,10 +67,6 @@ public class Slider {
     private int showX;
 
     private int startY;
-
-    private Dimension contentsSize;
-
-    private AnimatingSheet animatingSheet;
 
     /**
      * Constructor
@@ -103,13 +99,10 @@ public class Slider {
             return;
         }
         window = new JWindow();
-        animatingSheet = new AnimatingSheet();
-        animatingSheet.setSource(contents);
         window.setAlwaysOnTop(true);
-        window.setVisible(true);
 
         // Initial boundaries.
-        contentsSize = contents.getSize();
+        Dimension contentsSize = contents.getSize();
         Rectangle desktopBounds = initDesktopBounds();
         showX = desktopBounds.width - contentsSize.width;
         startY = desktopBounds.y + desktopBounds.height;
@@ -118,7 +111,7 @@ public class Slider {
         animateDownTimer = new Timer(ANIMATION_DELAY, new ActionListener() {
             private int percentage = 99;
             public void actionPerformed(ActionEvent e) {
-                animate(percentage, true);
+                animate(percentage);
                 if (percentage-- <= 0) {
                     animateDownTimer.stop();
                 }
@@ -137,7 +130,7 @@ public class Slider {
         animateUpTimer = new Timer(ANIMATION_DELAY, new ActionListener() {
             private int percentage = 1;
             public void actionPerformed(ActionEvent e) {
-                animate(percentage, false);
+                animate(percentage);
                 if (percentage++ >= 100) {
                     animateUpTimer.stop();
                     dismissTimer.start();
@@ -177,7 +170,7 @@ public class Slider {
      *
      * @param percentage
      */
-    public void animate(long percentage, boolean collapsing) {
+    public void animate(long percentage) {
 
         if (window == null) {
             // Huh?
@@ -194,16 +187,13 @@ public class Slider {
             // Nothing to show
             window.dispose();
         } else {
-            int animatingHeight = (int) (percentage * contentsSize.height / 100.0);
-            animatingHeight = Math.max(animatingHeight, 1);
-            animatingSheet.setAnimatingHeight(animatingHeight);
             window.getContentPane().removeAll();
-            window.getContentPane().add(animatingSheet);
+            window.getContentPane().add(contents);
             window.pack();
             window.setLocation(showX, startY - window.getHeight());
-            if (collapsing) {
-                AWTUtilities.setWindowOpacity(window, (float) percentage / 100.0f);
-            }
+            // Fade it.
+            AWTUtilities.setWindowOpacity(window, (float) percentage / 100.0f);
+            window.setVisible(true);
         }
     }
 }
