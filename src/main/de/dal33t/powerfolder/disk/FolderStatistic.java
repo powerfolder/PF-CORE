@@ -20,13 +20,14 @@
 package de.dal33t.powerfolder.disk;
 
 import java.util.*;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.transfer.Download;
+import de.dal33t.powerfolder.transfer.TransferManager;
+import de.dal33t.powerfolder.transfer.DownloadManager;
+import de.dal33t.powerfolder.transfer.Upload;
 import de.dal33t.powerfolder.event.FolderAdapter;
 import de.dal33t.powerfolder.event.FolderEvent;
 import de.dal33t.powerfolder.event.FolderMembershipEvent;
@@ -62,9 +63,7 @@ public class FolderStatistic extends PFComponent {
     private CalculationResult current;
     private SimpleTimeEstimator estimator;
 
-    private final List<Download> activeDownloads =
-            new CopyOnWriteArrayList<Download>();
-    private final AtomicBoolean downloadMonitorRunning = new AtomicBoolean();
+    private final AtomicBoolean transferMonitorRunning = new AtomicBoolean();
 
     /**
      * The Date of the last change to a folder file.
@@ -78,7 +77,6 @@ public class FolderStatistic extends PFComponent {
     private TransferCounter downloadCounter;
     private long lastCalc;
     private MyCalculatorTask calculatorTask;
-    private MyDownloadMonitorTask downloadMonitorTask;
 
     FolderStatistic(Folder folder) {
         super(folder.getController());
@@ -100,26 +98,19 @@ public class FolderStatistic extends PFComponent {
             new MyTransferManagerListener());
     }
 
-    // Component listener *****************************************************
-
     // Ensure that a task is running to watch for partail download changes.
-    private void checkDownloadMonitor() {
+    private void checkTransferMonitor() {
 
-        if (activeDownloads.isEmpty()) {
-            // Nothing to monitor.
-            return;
-        }
-
-        if (downloadMonitorRunning.getAndSet(true)) {
+        if (transferMonitorRunning.getAndSet(true)) {
             // Monitor is running.
             return;
         }
 
-        downloadMonitorTask = new MyDownloadMonitorTask();
+        MyTransferMonitorTask transferMonitorTask = new MyTransferMonitorTask();
         try {
-            getController().schedule(downloadMonitorTask, 0);
+            getController().schedule(transferMonitorTask, DELAY_10S);
         } catch (IllegalStateException ise) {
-            // ignore this happends if this shutdown in debug mode
+            // ignore, this happens if this shutdown in debug mode
             logFiner("IllegalStateException", ise);
         }
 
@@ -250,6 +241,7 @@ public class FolderStatistic extends PFComponent {
         long memberSize = 0;
         // Total size of files completely in sync at the member.
         long memberSizeInSync = 0;
+        long memberSizeSyncing = 0;
         for (FileInfo fInfo : files) {
             if (fInfo.isDeleted()) {
                 continue;
@@ -307,11 +299,20 @@ public class FolderStatistic extends PFComponent {
             if (inSync) {
                 memberFilesCountInSync++;
                 memberSizeInSync += fInfo.getSize();
-            }
+            } else {
+                TransferManager tm = getController().getTransferManager();
 
-            if (!inSync) {
-                // Not in sync, therefore not added to totals
-                continue;
+                DownloadManager activeDM = tm.getActiveDownload(newestFileInfo);
+                if (activeDM != null) {
+                    memberSizeSyncing += activeDM.getCounter().getBytesTransferred();
+                }
+
+                for (Upload upload : tm.getActiveUploads()) {
+                    if (upload.getPartner().equals(member)) {
+                        memberSizeSyncing += upload.getCounter().getBytesTransferred();
+                        break;
+                    }
+                }
             }
 
             boolean addToTotals = !newestFileInfo.isDeleted();
@@ -332,16 +333,12 @@ public class FolderStatistic extends PFComponent {
                 calculating.totalSize += fInfo.getSize();
             }
         }
-        //
-        // if (member.isMySelf()) {
-        // calculating.incomingFilesCount = folder.getIncomingFiles(
-        // folder.getSyncProfile().getConfiguration()
-        // .isAutoDownloadFromOthers()).size();
-        // }
+
         calculating.filesCount.put(member, memberFilesCount);
         calculating.filesCountInSync.put(member, memberFilesCountInSync);
         calculating.sizes.put(member, memberSize);
         calculating.sizesInSync.put(member, memberSizeInSync);
+        calculating.sizesSyncing.put(member, memberSizeSyncing);
     }
 
     public String toString() {
@@ -352,7 +349,8 @@ public class FolderStatistic extends PFComponent {
         double totalSync = 0;
         int considered = 0;
         for (Member member : members) {
-            Long sizeInSync = calculating.sizesInSync.get(member);
+            Long sizeInSync = calculating.sizesInSync.get(member) +
+                    calculating.sizesSyncing.get(member);
             if (sizeInSync == null) {
                 calculating.syncPercentages.put(member, -1.0d);
                 continue;
@@ -557,9 +555,13 @@ public class FolderStatistic extends PFComponent {
         // member -> Long
         public Map<Member, Long> sizes = new HashMap<Member, Long>();
 
-        // Size of folder (what is in sync) per member
+        // Size of folder that are in sync per member
         // member -> Long
         public Map<Member, Long> sizesInSync = new HashMap<Member, Long>();
+
+        // Size of folder that are syncing per member
+        // member -> Long
+        public Map<Member, Long> sizesSyncing = new HashMap<Member, Long>();
     }
 
     @Override
@@ -574,11 +576,18 @@ public class FolderStatistic extends PFComponent {
         }
     }
 
-    private class MyDownloadMonitorTask extends TimerTask {
+    private class MyTransferMonitorTask extends TimerTask {
 
         public void run() {
 
-            while (!activeDownloads.isEmpty()) {
+            TransferManager transferManager = getController().getTransferManager();
+
+            while (!transferManager.getActiveDownloads().isEmpty() ||
+                    !transferManager.getActiveUploads().isEmpty()) {
+
+                logFiner("monitoring downloads");
+
+                calculate0();
 
                 try {
                     Thread.sleep(DELAY_10S);
@@ -586,16 +595,11 @@ public class FolderStatistic extends PFComponent {
                     // Ignore
                 }
 
-                logFiner("monitoring " + activeDownloads.size() + " downloads");
-
-                for (Download download : activeDownloads) {
-                    // @todo something...........
-                }
             }
 
             // Free the task
-            downloadMonitorRunning.set(false);
-            logFiner("finished monitoring downloads");
+            transferMonitorRunning.set(false);
+            logFiner("finished monitoring transfers");
         }
     }
 
@@ -667,18 +671,16 @@ public class FolderStatistic extends PFComponent {
     private class MyTransferManagerListener extends TransferAdapter {
 
         public void downloadStarted(TransferManagerEvent event) {
-            activeDownloads.add(event.getDownload());
-            checkDownloadMonitor();
+            checkTransferMonitor();
         }
 
-        public void downloadAborted(TransferManagerEvent event) {
-            activeDownloads.add(event.getDownload());
+        public void uploadStarted(TransferManagerEvent event) {
+            checkTransferMonitor();
         }
 
         public void downloadCompleted(TransferManagerEvent event) {
             // Calculate new statistic when download completed
             if (event.getFile().getFolderInfo().equals(folder.getInfo())) {
-                activeDownloads.remove(event.getDownload());
                 scheduleCalculate();
             }
         }
