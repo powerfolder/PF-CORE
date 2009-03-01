@@ -102,7 +102,6 @@ public class WrappedScheduledThreadPoolExecutor extends
 
     @Override
     public <T> Future<T> submit(Runnable task, T result) {
-
         return super.submit(new WrappedRunnable(task), result);
     }
 
