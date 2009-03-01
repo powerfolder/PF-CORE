@@ -138,7 +138,8 @@ public class FolderStatistic extends PFComponent {
         }
     }
 
-    // Calculator timer code *************************************************************
+    // Calculator timer code
+    // *************************************************************
 
     private void setCalculateIn(long timeToWait) {
         if (calculatorTask != null) {
@@ -256,11 +257,6 @@ public class FolderStatistic extends PFComponent {
             boolean inSync = inSync(fInfo, newestFileInfo);
 
             if (inSync && !newestFileInfo.isDeleted()) {
-                // if (getController().getMySelf().getNick().equalsIgnoreCase(
-                // "sprajc-neu"))
-                // {
-                // System.err.println("HOMER");
-                // }
                 boolean incoming = true;
                 for (Member alreadyM : alreadyConsidered) {
                     FileInfo otherMemberFile = alreadyM.getFile(fInfo);
@@ -300,16 +296,23 @@ public class FolderStatistic extends PFComponent {
                 memberFilesCountInSync++;
                 memberSizeInSync += fInfo.getSize();
             } else {
+                // FIXME Does not work for new/unknown files. Currently
+                // iterating the list of know files.
+                // First time downloadeds are not in the list of know files yet.
+                // Recommendation: Checking download/uploads should happen
+                // outside of this loop.
                 TransferManager tm = getController().getTransferManager();
 
                 DownloadManager activeDM = tm.getActiveDownload(newestFileInfo);
                 if (activeDM != null) {
-                    memberSizeSyncing += activeDM.getCounter().getBytesTransferred();
+                    memberSizeSyncing += activeDM.getCounter()
+                        .getBytesTransferred();
                 }
 
                 for (Upload upload : tm.getActiveUploads()) {
                     if (upload.getPartner().equals(member)) {
-                        memberSizeSyncing += upload.getCounter().getBytesTransferred();
+                        memberSizeSyncing += upload.getCounter()
+                            .getBytesTransferred();
                         break;
                     }
                 }
@@ -349,8 +352,8 @@ public class FolderStatistic extends PFComponent {
         double totalSync = 0;
         int considered = 0;
         for (Member member : members) {
-            Long sizeInSync = calculating.sizesInSync.get(member) +
-                    calculating.sizesSyncing.get(member);
+            Long sizeInSync = calculating.sizesInSync.get(member)
+                + calculating.sizesSyncing.get(member);
             if (sizeInSync == null) {
                 calculating.syncPercentages.put(member, -1.0d);
                 continue;
@@ -383,8 +386,8 @@ public class FolderStatistic extends PFComponent {
             }
         }
         calculating.totalSyncPercentage = totalSync / considered;
-        calculating.estimatedSyncDate = estimator.updateEstimate(
-                calculating.totalSyncPercentage);
+        calculating.estimatedSyncDate = estimator
+            .updateEstimate(calculating.totalSyncPercentage);
     }
 
     public long getTotalSize() {
@@ -471,8 +474,7 @@ public class FolderStatistic extends PFComponent {
     }
 
     /**
-     * @return the estimated date the folder will be in sync.
-     * May be null.
+     * @return the estimated date the folder will be in sync. May be null.
      */
     public Date getEstimatedSyncDate() {
         return current.estimatedSyncDate;
@@ -580,10 +582,14 @@ public class FolderStatistic extends PFComponent {
 
         public void run() {
 
-            TransferManager transferManager = getController().getTransferManager();
+            TransferManager transferManager = getController()
+                .getTransferManager();
 
-            while (!transferManager.getActiveDownloads().isEmpty() ||
-                    !transferManager.getActiveUploads().isEmpty()) {
+            // FIXME Should stop if no transfers on the ascociated folder. Now
+            // stop only until no transfers running at all.
+            while (!transferManager.getActiveDownloads().isEmpty()
+                || !transferManager.getActiveUploads().isEmpty())
+            {
 
                 logFiner("monitoring downloads");
 
@@ -665,25 +671,30 @@ public class FolderStatistic extends PFComponent {
 
     /**
      * Listener on transfermanager
-     *
+     * 
      * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      */
     private class MyTransferManagerListener extends TransferAdapter {
 
         public void downloadStarted(TransferManagerEvent event) {
-            checkTransferMonitor();
+            if (event.getFile().getFolderInfo().equals(folder.getInfo())) {
+                checkTransferMonitor();
+            }
         }
 
         public void uploadStarted(TransferManagerEvent event) {
-            checkTransferMonitor();
-        }
-
-        public void downloadCompleted(TransferManagerEvent event) {
-            // Calculate new statistic when download completed
             if (event.getFile().getFolderInfo().equals(folder.getInfo())) {
-                scheduleCalculate();
+                checkTransferMonitor();
             }
         }
+
+        // Not required: Solved thru FolderListener.fileChanged event.
+        // public void downloadCompleted(TransferManagerEvent event) {
+        // // Calculate new statistic when download completed
+        // if (event.getFile().getFolderInfo().equals(folder.getInfo())) {    
+        // scheduleCalculate();
+        // }
+        // }
 
         public boolean fireInEventDispatchThread() {
             return false;
@@ -692,7 +703,7 @@ public class FolderStatistic extends PFComponent {
 
     /**
      * Listens to the nodemanager and triggers recalculation if required
-     *
+     * 
      * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      */
     private class MyNodeManagerListener implements NodeManagerListener {
@@ -740,6 +751,5 @@ public class FolderStatistic extends PFComponent {
             scheduleCalculate();
         }
     }
-
 
 }
