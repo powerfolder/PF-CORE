@@ -91,7 +91,7 @@ public enum PreferencesEntry {
     /**
      * Whether to use magnetic frames by default (i.e. not with ctrl key)
      */
-    USE_MAGNETIC_FRAMES("use.magnetic.frames", false),
+    USE_MAGNETIC_FRAMES("use.magnetic.frames", true),
 
     DOCUMENT_LOGGING("document.logging", Level.WARNING.getName());
 

@@ -84,8 +84,8 @@ public class InformationFrame extends MagneticFrame {
         // Pack elements
         uiComponent.pack();
 
-        int width = prefs.getInt("infoframe4.width", 500);
-        int height = prefs.getInt("infoframe4.height", 600);
+        int width = prefs.getInt("infoframe4.width", 700);
+        int height = prefs.getInt("infoframe4.height", 500);
         if (width < 50) {
             width = 50;
         }

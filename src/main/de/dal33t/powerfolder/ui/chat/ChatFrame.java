@@ -88,8 +88,8 @@ public class ChatFrame extends MagneticFrame {
         // Pack elements
         uiComponent.pack();
 
-        int width = prefs.getInt("chatframe4.width", 500);
-        int height = prefs.getInt("chatframe4.height", 600);
+        int width = prefs.getInt("chatframe4.width", 700);
+        int height = prefs.getInt("chatframe4.height", 500);
         if (width < 50) {
             width = 50;
         }

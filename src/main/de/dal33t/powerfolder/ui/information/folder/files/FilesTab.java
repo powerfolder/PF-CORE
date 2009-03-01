@@ -74,7 +74,7 @@ public class FilesTab extends PFUIComponent
         splitPane = new UIFSplitPane(JSplitPane.HORIZONTAL_SPLIT,
                 treePanel.getUIComponent(), tablePanel.getUIComponent());
         int dividerLocation = getController().getPreferences().getInt(
-                "files.tab.location", 50);
+                "files.tab.location", 150);
         splitPane.setDividerLocation(dividerLocation);
         splitPane.addPropertyChangeListener(new MyPropertyChangeListner());
         filterTextField = new FilterTextField(12,

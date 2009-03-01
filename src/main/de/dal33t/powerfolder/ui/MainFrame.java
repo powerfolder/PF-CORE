@@ -108,8 +108,12 @@ public class MainFrame extends PFUIComponent {
         uiComponent.setResizable(true);
 
         Preferences prefs = getController().getPreferences();
-        uiComponent.setLocation(prefs.getInt("mainframe4.x", 100), prefs.getInt(
-            "mainframe4.y", 100));
+        int width = prefs.getInt("mainframe4.width", 350);
+        int height = prefs.getInt("mainframe4.height", 600);
+        // Initial top-right corner
+        uiComponent.setLocation(prefs.getInt("mainframe4.x",
+                Toolkit.getDefaultToolkit().getScreenSize().width - 50 - width),
+                prefs.getInt("mainframe4.y", 50));
 
         oldX.set(uiComponent.getX());
         oldY.set(uiComponent.getY());
@@ -117,8 +121,6 @@ public class MainFrame extends PFUIComponent {
         // Pack elements
         uiComponent.pack();
 
-        int width = prefs.getInt("mainframe4.width", 350);
-        int height = prefs.getInt("mainframe4.height", 600);
         if (width < 50) {
             width = 50;
         }

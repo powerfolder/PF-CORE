@@ -180,8 +180,8 @@ public class PowerFolder {
                 StringBuffer openFilesRCommand = new StringBuffer(
                     RemoteCommandManager.OPEN);
 
-                for (int i = 0; i < files.length; i++) {
-                    openFilesRCommand.append(files[i]);
+                for (String file : files) {
+                    openFilesRCommand.append(file);
                     // FIXME: Add ; separator ?
                 }
 
