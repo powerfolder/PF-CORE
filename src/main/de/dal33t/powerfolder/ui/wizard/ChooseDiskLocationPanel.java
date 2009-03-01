@@ -60,6 +60,7 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -373,9 +374,22 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
                 WizardContextAttributes.BACKUP_ONLINE_STOARGE));
         backupByOnlineStorageBox = new JCheckBox(Translation
             .getTranslation("wizard.choose_disk_location.backup_by_online_storage"));
-        backupByOnlineStorageBox.setSelected(backupByOS);
+        // Is backup suggested?
+        if (backupByOS) {
+
+            // Remember last preference...
+            Boolean buos = PreferencesEntry.BACKUP_OS.getValueBoolean(
+                    getController());
+            if (buos == null) {
+                // .. or default to if last os client login ok.
+                buos = getController().getOSClient().isLastLoginOK();
+            }
+            backupByOnlineStorageBox.setSelected(buos);
+        }
         backupByOnlineStorageBox.getModel().addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
+                PreferencesEntry.BACKUP_OS.setValue(getController(),
+                        backupByOnlineStorageBox.isSelected());
                 if (backupByOnlineStorageBox.isSelected()) {
                     getController().getUIController().getApplicationModel()
                         .getServerClientModel().checkAndSetupAccount();

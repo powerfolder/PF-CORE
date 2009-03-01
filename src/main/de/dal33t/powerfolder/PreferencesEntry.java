@@ -93,7 +93,9 @@ public enum PreferencesEntry {
      */
     USE_MAGNETIC_FRAMES("use.magnetic.frames", true),
 
-    DOCUMENT_LOGGING("document.logging", Level.WARNING.getName());
+    DOCUMENT_LOGGING("document.logging", Level.WARNING.getName()),
+
+    BACKUP_OS("backup.os", true);
 
 
     /** String, Boolean, Integer */
