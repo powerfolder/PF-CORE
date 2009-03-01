@@ -300,23 +300,23 @@ public class LoggingManager {
         if (levelName == null) {
             return null;
         }
-        if (levelName.equals(Level.ALL.getName())) {
+        if (levelName.equalsIgnoreCase(Level.ALL.getName())) {
             return Level.ALL;
-        } else if (levelName.equals(Level.CONFIG.getName())) {
+        } else if (levelName.equalsIgnoreCase(Level.CONFIG.getName())) {
             return Level.CONFIG;
-        } else if (levelName.equals(Level.FINE.getName())) {
+        } else if (levelName.equalsIgnoreCase(Level.FINE.getName())) {
             return Level.FINE;
-        } else if (levelName.equals(Level.FINER.getName())) {
+        } else if (levelName.equalsIgnoreCase(Level.FINER.getName())) {
             return Level.FINER;
-        } else if (levelName.equals(Level.FINEST.getName())) {
+        } else if (levelName.equalsIgnoreCase(Level.FINEST.getName())) {
             return Level.FINEST;
-        } else if (levelName.equals(Level.INFO.getName())) {
+        } else if (levelName.equalsIgnoreCase(Level.INFO.getName())) {
             return Level.INFO;
-        } else if (levelName.equals(Level.OFF.getName())) {
+        } else if (levelName.equalsIgnoreCase(Level.OFF.getName())) {
             return Level.OFF;
-        } else if (levelName.equals(Level.SEVERE.getName())) {
+        } else if (levelName.equalsIgnoreCase(Level.SEVERE.getName())) {
             return Level.SEVERE;
-        } else if (levelName.equals(Level.WARNING.getName())) {
+        } else if (levelName.equalsIgnoreCase(Level.WARNING.getName())) {
             return Level.WARNING;
         }
         return null;

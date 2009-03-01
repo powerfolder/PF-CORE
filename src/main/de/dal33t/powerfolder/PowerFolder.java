@@ -114,17 +114,10 @@ public class PowerFolder {
 
         // -l --log console log levels (severe, warning, info, fine and finer).
         if (commandLine.hasOption("l")) {
-            String level = commandLine.getOptionValue("l");
-            if (Level.SEVERE.getName().toLowerCase().equals(level)) {
-                LoggingManager.setConsoleLogging(Level.SEVERE);
-            } else if (Level.WARNING.getName().toLowerCase().equals(level)) {
-                LoggingManager.setConsoleLogging(Level.WARNING);
-            } else if (Level.INFO.getName().toLowerCase().equals(level)) {
-                LoggingManager.setConsoleLogging(Level.INFO);
-            } else if (Level.FINE.getName().toLowerCase().equals(level)) {
-                LoggingManager.setConsoleLogging(Level.FINE);
-            } else if (Level.FINER.getName().toLowerCase().equals(level)) {
-                LoggingManager.setConsoleLogging(Level.FINER);
+            String levelName = commandLine.getOptionValue("l");
+            Level level = LoggingManager.levelForName(levelName);
+            if (level != null) {
+                LoggingManager.setConsoleLogging(level);
             }
         }
 
