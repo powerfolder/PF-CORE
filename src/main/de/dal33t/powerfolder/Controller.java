@@ -84,18 +84,7 @@ import de.dal33t.powerfolder.plugin.PluginManager;
 import de.dal33t.powerfolder.security.SecurityManager;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.UIController;
-import de.dal33t.powerfolder.util.Debug;
-import de.dal33t.powerfolder.util.FileUtils;
-import de.dal33t.powerfolder.util.ForcedLanguageFileResourceBundle;
-import de.dal33t.powerfolder.util.NamedThreadFactory;
-import de.dal33t.powerfolder.util.Profiling;
-import de.dal33t.powerfolder.util.PropertiesUtil;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.StringUtils;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Updater;
-import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.util.WrappedScheduledThreadPoolExecutor;
+import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.FirewallUtil;
@@ -434,8 +423,7 @@ public class Controller extends PFComponent {
         logInfo("PowerFolder v" + PROGRAM_VERSION + " (build: "
             + getBuildTime() + ')');
         logFine("OS: " + System.getProperty("os.name"));
-        logFine("Java: " + System.getProperty("java.version") + " ("
-            + System.getProperty("java.runtime.version") + ", "
+        logFine("Java: " + JavaVersion.systemVersion().toString() + " ("
             + System.getProperty("java.vendor") + ')');
         logFine("Current time: " + new Date());
         

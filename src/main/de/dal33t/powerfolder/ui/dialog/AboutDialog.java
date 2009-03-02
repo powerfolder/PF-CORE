@@ -61,10 +61,7 @@ import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
-import de.dal33t.powerfolder.util.BrowserLauncher;
-import de.dal33t.powerfolder.util.ManuallyInvokedUpdater;
-import de.dal33t.powerfolder.util.StringUtils;
-import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.ui.TextLinesPanelBuilder;
 
@@ -213,8 +210,8 @@ public class AboutDialog extends PFUIComponent {
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
         system = createTextBox(Translation
             .getTranslation("about_dialog.your_system.title"), Translation
-            .getTranslation("about_dialog.your_system.java_version", System
-                .getProperty("java.version"))
+            .getTranslation("about_dialog.your_system.java_version",
+                    JavaVersion.systemVersion().toString())
             + '\n'
             + Translation.getTranslation("about_dialog.your_system.os", System
                 .getProperty("os.name"))
