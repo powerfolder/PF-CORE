@@ -77,7 +77,7 @@ public class PreviewToJoinPanel extends BaseDialog {
     private void initComponents() {
 
         FolderSettings folderSettings = getController().getFolderRepository()
-                .loadFolderSettings(folder.getName());
+                .loadV3FolderSettings(folder.getName());
 
         syncProfileSelectorPanel = new SyncProfileSelectorPanel(
             getController(), folderSettings.getSyncProfile());
@@ -98,7 +98,7 @@ public class PreviewToJoinPanel extends BaseDialog {
             .trim().charAt(0));
 
         final FolderSettings existingFoldersSettings = getController()
-                .getFolderRepository().loadFolderSettings(folder.getName());
+                .getFolderRepository().loadV3FolderSettings(folder.getName());
         joinButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {

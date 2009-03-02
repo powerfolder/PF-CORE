@@ -19,7 +19,7 @@
  */
 package de.dal33t.powerfolder.disk;
 
-import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX;
+import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX_V4;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_SYNC_PROFILE;
 
 import java.io.BufferedInputStream;
@@ -1583,7 +1583,7 @@ public class Folder extends PFComponent {
         syncProfile = aSyncProfile;
 
         // Store on disk
-        String syncProfKey = FOLDER_SETTINGS_PREFIX + getName()
+        String syncProfKey = FOLDER_SETTINGS_PREFIX_V4 + getName()
             + FOLDER_SETTINGS_SYNC_PROFILE;
         getController().getConfig()
             .put(syncProfKey, syncProfile.getFieldList());

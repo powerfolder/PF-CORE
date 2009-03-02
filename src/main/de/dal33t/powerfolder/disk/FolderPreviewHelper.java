@@ -79,7 +79,7 @@ public class FolderPreviewHelper {
         FolderRepository folderRepository = controller.getFolderRepository();
 
         FolderSettings initialFolderSettings = folderRepository
-                .loadFolderSettings(folder.getName());
+                .loadV3FolderSettings(folder.getName());
 
         if (initialFolderSettings == null) {
             return false;

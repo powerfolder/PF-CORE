@@ -220,7 +220,7 @@ public class FolderRemovePanel extends BaseDialog {
 
             if (!removeLocal) {
                 FolderSettings folderSettings = folderRepository
-                    .loadFolderSettings(folder.getName());
+                    .loadV3FolderSettings(folder.getName());
                 folderRepository.saveFolderConfig(folder.getInfo(),
                     folderSettings, true);
             }

@@ -35,7 +35,6 @@ import javax.swing.*;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
-import java.util.List;
 
 /**
  * A generally used wizard panel for choosing a disk location for a folder.

@@ -22,10 +22,13 @@ package de.dal33t.powerfolder.disk;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_DIR;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_DONT_RECYCLE;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_ID;
-import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX;
+import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX_V3;
+import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX_V4;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREVIEW;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_SYNC_PROFILE;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_WHITELIST;
+import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_NAME;
+import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_RECYCLE;
 
 import java.io.File;
 import java.io.IOException;
@@ -56,13 +59,7 @@ import de.dal33t.powerfolder.event.SynchronizationStatsEvent;
 import de.dal33t.powerfolder.event.SynchronizationStatsListener;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.transfer.FileRequestor;
-import de.dal33t.powerfolder.util.FileUtils;
-import de.dal33t.powerfolder.util.Profiling;
-import de.dal33t.powerfolder.util.ProfilingEntry;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.StringUtils;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Waiter;
+import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.compare.FolderComparator;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
@@ -219,6 +216,21 @@ public class FolderRepository extends PFComponent implements Runnable {
      */
     public void init() {
 
+        processV3Format();
+
+        processV4Format();
+
+        // Set the folders base with a desktop ini.
+        FileUtils.maintainDesktopIni(getController(), new File(
+            getFoldersBasedir()));
+    }
+
+    /**
+     * Version 3 (and earlier) folder format was like 'folder.<folderName>.XXXX
+     * This is replaced with V4 format, allowing folders with the same name
+     * to be saved.
+     */
+    private void processV3Format() {
         Properties config = getController().getConfig();
 
         // Find all folder names.
@@ -229,7 +241,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             String propName = en.nextElement();
 
             // Look for a folder.<foldername>.XXXX
-            if (propName.startsWith(FOLDER_SETTINGS_PREFIX)) {
+            if (propName.startsWith(FOLDER_SETTINGS_PREFIX_V3)) {
                 int firstDot = propName.indexOf('.');
                 int secondDot = propName.indexOf('.', firstDot + 1);
 
@@ -246,11 +258,11 @@ public class FolderRepository extends PFComponent implements Runnable {
         // Scan config for all found folder names.
         for (String folderName : allFolderNames) {
 
-            String folderId = config.getProperty(FOLDER_SETTINGS_PREFIX
+            String folderId = config.getProperty(FOLDER_SETTINGS_PREFIX_V3
                 + folderName + FOLDER_SETTINGS_ID);
             FolderInfo foInfo = new FolderInfo(folderName, folderId);
 
-            FolderSettings folderSettings = loadFolderSettings(folderName);
+            FolderSettings folderSettings = loadV3FolderSettings(folderName);
 
             // Do not add if already added
             if (!hasJoinedFolder(foInfo) && folderId != null
@@ -259,27 +271,23 @@ public class FolderRepository extends PFComponent implements Runnable {
                 createFolder0(foInfo, folderSettings, false);
             }
         }
-
-        // Set the folders base with a desktop ini.
-        FileUtils.maintainDesktopIni(getController(), new File(
-            getFoldersBasedir()));
     }
 
-    public FolderSettings loadFolderSettings(String folderName) {
+    public FolderSettings loadV3FolderSettings(String folderName) {
 
         Properties config = getController().getConfig();
 
-        String folderDir = config.getProperty(FOLDER_SETTINGS_PREFIX
+        String folderDir = config.getProperty(FOLDER_SETTINGS_PREFIX_V3
             + folderName + FOLDER_SETTINGS_DIR);
 
         if (folderDir == null) {
             logSevere("No folder directory for " + folderName);
-            removeConfigEntries(folderName);
+            removeConfigEntries(FOLDER_SETTINGS_PREFIX_V3 + folderName);
             getController().saveConfig();
             return null;
         }
 
-        String syncProfConfig = config.getProperty(FOLDER_SETTINGS_PREFIX
+        String syncProfConfig = config.getProperty(FOLDER_SETTINGS_PREFIX_V3
             + folderName + FOLDER_SETTINGS_SYNC_PROFILE);
 
         // Migration for #603
@@ -298,18 +306,117 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
 
         // Inverse logic for backward compatability.
-        String dontRecycleSetting = config.getProperty(FOLDER_SETTINGS_PREFIX
+        String dontRecycleSetting = config.getProperty(FOLDER_SETTINGS_PREFIX_V3
             + folderName + FOLDER_SETTINGS_DONT_RECYCLE);
         boolean useRecycleBin = dontRecycleSetting == null
             || !"true".equalsIgnoreCase(dontRecycleSetting);
 
-        String previewSetting = config.getProperty(FOLDER_SETTINGS_PREFIX
+        String previewSetting = config.getProperty(FOLDER_SETTINGS_PREFIX_V3
             + folderName + FOLDER_SETTINGS_PREVIEW);
         boolean preview = previewSetting != null
             && "true".equalsIgnoreCase(previewSetting);
 
-        String whitelistSetting = config.getProperty(FOLDER_SETTINGS_PREFIX
+        String whitelistSetting = config.getProperty(FOLDER_SETTINGS_PREFIX_V3
             + folderName + FOLDER_SETTINGS_WHITELIST);
+        boolean whitelist = whitelistSetting != null
+            && "true".equalsIgnoreCase(whitelistSetting);
+
+        return new FolderSettings(new File(folderDir), syncProfile, false,
+            useRecycleBin, preview, whitelist);
+    }
+
+    /**
+     * Version 4 format is like f.<md5>.XXXX, where md5 is the MD5 of the folder
+     * id. This format allows folders with the same name to be stored. 
+     */
+    private void processV4Format() {
+        Properties config = getController().getConfig();
+
+        // Find all folder names.
+        Set<String> allFolderMD5s = new TreeSet<String>();
+        for (Enumeration<String> en = (Enumeration<String>) config
+            .propertyNames(); en.hasMoreElements();)
+        {
+            String propName = en.nextElement();
+
+            // Look for a f.<folderMD5>.XXXX
+            if (propName.startsWith(FOLDER_SETTINGS_PREFIX_V4)) {
+                int firstDot = propName.indexOf('.');
+                int secondDot = propName.indexOf('.', firstDot + 1);
+
+                if (firstDot > 0 && secondDot > 0
+                    && secondDot < propName.length())
+                {
+                    String folderMD5 = propName.substring(firstDot + 1,
+                        secondDot);
+                    allFolderMD5s.add(folderMD5);
+                }
+            }
+        }
+
+        // Scan config for all found folder MD5s.
+        for (String folderMD5 : allFolderMD5s) {
+
+            String folderId = config.getProperty(FOLDER_SETTINGS_PREFIX_V4
+                + folderMD5 + FOLDER_SETTINGS_ID);
+            String folderName = config.getProperty(FOLDER_SETTINGS_PREFIX_V4
+                + folderMD5 + FOLDER_SETTINGS_NAME);
+            FolderInfo foInfo = new FolderInfo(folderName, folderId);
+            FolderSettings folderSettings = loadV4FolderSettings(folderMD5);
+
+            // Do not add if already added
+            if (!hasJoinedFolder(foInfo) && folderId != null
+                && folderSettings != null)
+            {
+                createFolder0(foInfo, folderSettings, false);
+            }
+        }
+    }
+
+    public FolderSettings loadV4FolderSettings(String folderMD5) {
+
+        Properties config = getController().getConfig();
+
+        String folderDir = config.getProperty(FOLDER_SETTINGS_PREFIX_V4
+            + folderMD5 + FOLDER_SETTINGS_DIR);
+
+        if (folderDir == null) {
+            logSevere("No folder directory for " + folderMD5);
+            removeConfigEntries(FOLDER_SETTINGS_PREFIX_V4 + folderMD5);
+            getController().saveConfig();
+            return null;
+        }
+
+        String syncProfConfig = config.getProperty(FOLDER_SETTINGS_PREFIX_V4
+            + folderMD5 + FOLDER_SETTINGS_SYNC_PROFILE);
+
+        // Migration for #603
+        if ("autodownload_friends".equals(syncProfConfig)) {
+            syncProfConfig = SyncProfile.AUTO_DOWNLOAD_FRIENDS.getFieldList();
+        }
+
+        SyncProfile syncProfile;
+        if (PRE_777_BACKUP_TARGET_FIELD_LIST.equals(syncProfConfig)) {
+            // Migration for #787 (backup target timeBetweenScans changed
+            // from 0 to 60).
+            syncProfile = SyncProfile.BACKUP_TARGET;
+        } else {
+            // Load profile from field list.
+            syncProfile = SyncProfile.getSyncProfileByFieldList(syncProfConfig);
+        }
+
+        String recycleSetting = config.getProperty(FOLDER_SETTINGS_PREFIX_V4
+            + folderMD5 + FOLDER_SETTINGS_RECYCLE);
+        boolean useRecycleBin = recycleSetting == null
+            && "true".equalsIgnoreCase(recycleSetting);
+
+        String previewSetting = config.getProperty(FOLDER_SETTINGS_PREFIX_V4
+            + folderMD5 + FOLDER_SETTINGS_PREVIEW);
+        boolean preview = previewSetting != null
+            && "true".equalsIgnoreCase(previewSetting);
+
+        String whitelistSetting = config.getProperty(FOLDER_SETTINGS_PREFIX_V4
+            + folderMD5 + FOLDER_SETTINGS_WHITELIST);
         boolean whitelist = whitelistSetting != null
             && "true".equalsIgnoreCase(whitelistSetting);
 
@@ -559,26 +666,30 @@ public class FolderRepository extends PFComponent implements Runnable {
     public void saveFolderConfig(FolderInfo folderInfo,
         FolderSettings folderSettings, boolean saveConfig)
     {
+        // #1448 - remove any old V3 config entries before saving V4 ones.
+        removeConfigEntries(FOLDER_SETTINGS_PREFIX_V3 + folderInfo.name);
 
+        String md5 = new String(Util.encodeHex(Util.md5(folderInfo.id.getBytes())));
         // store folder in config
         Properties config = getController().getConfig();
-        config.setProperty(FOLDER_SETTINGS_PREFIX + folderInfo.name
+        config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
+            + FOLDER_SETTINGS_NAME, folderInfo.name);
+        config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
             + FOLDER_SETTINGS_ID, folderInfo.id);
-        config.setProperty(FOLDER_SETTINGS_PREFIX + folderInfo.name
+        config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
             + FOLDER_SETTINGS_DIR, folderSettings.getLocalBaseDir()
             .getAbsolutePath());
         // Save sync profiles as internal configuration for custom profiles.
-        config.setProperty(FOLDER_SETTINGS_PREFIX + folderInfo.name
+        config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
             + FOLDER_SETTINGS_SYNC_PROFILE, folderSettings.getSyncProfile()
             .getFieldList());
-        // Inverse logic for backward compatability.
-        config.setProperty(FOLDER_SETTINGS_PREFIX + folderInfo.name
-            + FOLDER_SETTINGS_DONT_RECYCLE, String.valueOf(!folderSettings
+        config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
+            + FOLDER_SETTINGS_RECYCLE, String.valueOf(folderSettings
             .isUseRecycleBin()));
-        config.setProperty(FOLDER_SETTINGS_PREFIX + folderInfo.name
+        config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
             + FOLDER_SETTINGS_PREVIEW, String.valueOf(folderSettings
             .isPreviewOnly()));
-        config.setProperty(FOLDER_SETTINGS_PREFIX + folderInfo.name
+        config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
             + FOLDER_SETTINGS_WHITELIST, String.valueOf(folderSettings
             .isWhitelist()));
 
@@ -603,11 +714,9 @@ public class FolderRepository extends PFComponent implements Runnable {
         FileUtils.deleteDesktopIni(folder.getLocalBase());
 
         // remove folder from config
-        Properties config = getController().getConfig();
+        String md5 = new String(Util.encodeHex(Util.md5(folder.getInfo().id.getBytes())));
+        removeConfigEntries(FOLDER_SETTINGS_PREFIX_V4 + md5);
 
-        // remove folder from config
-        removeConfigEntries(folder.getInfo().name);
-        
         // Save config
         getController().saveConfig();
 
@@ -913,24 +1022,25 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
         }
     }
-    
-    private void removeConfigEntries(String folderName) {
+
+    /**
+     * Expect something like 'f.c70001efd21928644ee14e327aa94724'
+     * or 'folder.TEST-Contacts' to remove config entries beginning with these.
+     * @param prefix
+     */
+    private void removeConfigEntries(String prefix) {
         Properties config = getController().getConfig();
-        config.remove(FOLDER_SETTINGS_PREFIX + folderName + FOLDER_SETTINGS_ID);
-        config
-            .remove(FOLDER_SETTINGS_PREFIX + folderName + FOLDER_SETTINGS_DIR);
-        // Save sync profiles as internal configuration for custom profiles.
-        config.remove(FOLDER_SETTINGS_PREFIX + folderName
-            + FOLDER_SETTINGS_SYNC_PROFILE);
-        // Inverse logic for backward compatability.
-        config.remove(FOLDER_SETTINGS_PREFIX + folderName
-            + FOLDER_SETTINGS_DONT_RECYCLE);
-        config.remove(FOLDER_SETTINGS_PREFIX + folderName
-            + FOLDER_SETTINGS_PREVIEW);
-        config.remove(FOLDER_SETTINGS_PREFIX + folderName
-            + FOLDER_SETTINGS_WHITELIST);
-        // Cleaning up old configs
-        config.remove(FOLDER_SETTINGS_PREFIX + folderName + ".secret");
+        for (Enumeration<String> en = (Enumeration<String>) config
+            .propertyNames(); en.hasMoreElements();)
+        {
+            String propName = en.nextElement();
+
+            // Add a dot to prefix, like 'folder.TEST-Contacts.', to prevent it
+            // from also deleting things like 'folder.TEST.XXXXX'.
+            if (propName.startsWith(prefix + '.')) {
+                config.remove(propName);
+            }
+        }
     }
 
     private class AllFolderMembershipSynchronizer implements Runnable {

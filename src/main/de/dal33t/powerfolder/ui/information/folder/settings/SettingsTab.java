@@ -19,8 +19,8 @@
 */
 package de.dal33t.powerfolder.ui.information.folder.settings;
 
-import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_DONT_RECYCLE;
-import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX;
+import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_RECYCLE;
+import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX_V4;
 
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -61,11 +61,7 @@ import de.dal33t.powerfolder.ui.dialog.PreviewToJoinPanel;
 import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
-import de.dal33t.powerfolder.util.FileUtils;
-import de.dal33t.powerfolder.util.PatternMatch;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.StringUtils;
-import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
 import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
@@ -685,10 +681,11 @@ public class SettingsTab extends PFUIComponent {
             } else if (e.getSource().equals(useRecycleBinBox)) {
                 folder.setUseRecycleBin(useRecycleBinBox.isSelected());
                 Properties config = getController().getConfig();
-                // Inverse logic for backward compatability.
-                config.setProperty(FOLDER_SETTINGS_PREFIX + folder.getName()
-                    + FOLDER_SETTINGS_DONT_RECYCLE, String
-                    .valueOf(!useRecycleBinBox.isSelected()));
+                String md5 = new String(Util.encodeHex(Util.md5(
+                        folder.getInfo().id.getBytes())));
+                config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
+                    + FOLDER_SETTINGS_RECYCLE, String
+                    .valueOf(useRecycleBinBox.isSelected()));
                 getController().saveConfig();
             }
         }

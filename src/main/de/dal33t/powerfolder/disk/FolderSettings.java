@@ -29,7 +29,8 @@ import java.io.File;
  */
 public class FolderSettings {
 
-    public static final String FOLDER_SETTINGS_PREFIX = "folder.";
+    public static final String FOLDER_SETTINGS_PREFIX_V3 = "folder.";
+    public static final String FOLDER_SETTINGS_PREFIX_V4 = "f.";
     public static final String FOLDER_SETTINGS_ID = ".id";
     public static final String FOLDER_SETTINGS_PREVIEW = ".preview";
     public static final String FOLDER_SETTINGS_DONT_RECYCLE = ".dontuserecyclebin";
@@ -37,6 +38,8 @@ public class FolderSettings {
     public static final String FOLDER_SETTINGS_DIR = ".dir";
     public static final String FOLDER_SETTINGS_LAST_LOCAL = ".last-localbase";
     public static final String FOLDER_SETTINGS_WHITELIST = ".whitelist";
+    public static final String FOLDER_SETTINGS_NAME = ".name"; // V4 only
+    public static final String FOLDER_SETTINGS_RECYCLE = ".recycle"; // V4 only
 
     /**
      * Base location of files in the folder.
