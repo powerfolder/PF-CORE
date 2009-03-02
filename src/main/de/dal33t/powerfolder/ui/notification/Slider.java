@@ -26,55 +26,64 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import de.dal33t.powerfolder.util.JavaVersion;
+
 /**
- * Creates an animated view that fades out of the bottom-right corner of the
+ * Creates an animated view that slides out of the bottom-right corner of the
  * screen. The user of this class supplies the contents for sliding. Also, the
  * view automatically closes itself after predetermined amount of time, which is
  * currently set to 10 seconds.<br>
  * This class is based on code and ideas from <i>Swing Hacks</i> book by Joshua
  * Marinacci and Chris Adamson.<br>
- * 
+ *
+ * If the Java version is high enough, it fades the window instead of sliding
+ * it.
+ *
  * @author <a href="mailto:magapov@gmail.com">Maxim Agapov</a>
  * @version $Revision: 1.2 $
  */
 public class Slider {
 
     /**
-     * Default animation time
+     * Default animation time, 700ms
      */
     public static final int ANIMATION_TIME = 700;
 
     /**
-     * Default delay between animation frames
+     * Default delay between animation frames, 10ms
      */
     public static final int ANIMATION_DELAY = 10;
 
     /**
-     * Default delay before autodismissing the view is 10 seconds
+     * Delay before autodismissing the view, 10 seconds
      */
     public static final int DISMISS_DELAY = 10000;
 
+    /**
+     * The minimum suported version for AWTUtilities.setWindowOpacity is
+     * 1.6.0_10-b12.
+     */
+    private static final boolean OPACITY_SUPPORTED = JavaVersion.systemVersion()
+               .compareTo(new JavaVersion(1, 6, 0, 10, 12)) >= 0;
+
     private JWindow window;
-
     private JComponent contents;
-
     private Timer animateUpTimer;
-
     private Timer dismissTimer;
-
     private Timer animateDownTimer;
-
     private int showX;
-
     private int startY;
+    private Dimension contentsSize;
+    private AnimatingSheet animatingSheet;
 
     /**
      * Constructor
-     * 
+     *
      * @param contents
      */
     public Slider(JComponent contents) {
         this.contents = contents;
+
     }
 
     public JComponent getContents() {
@@ -99,10 +108,17 @@ public class Slider {
             return;
         }
         window = new JWindow();
+        animatingSheet = new AnimatingSheet();
+        animatingSheet.setSource(contents);
         window.setAlwaysOnTop(true);
+        if (OPACITY_SUPPORTED) {
+            AWTUtilities.setWindowOpacity(window, 0.0f);
+        }
+
+        window.setVisible(true);
 
         // Initial boundaries.
-        Dimension contentsSize = contents.getSize();
+        contentsSize = contents.getSize();
         Rectangle desktopBounds = initDesktopBounds();
         showX = desktopBounds.width - contentsSize.width;
         startY = desktopBounds.y + desktopBounds.height;
@@ -187,13 +203,24 @@ public class Slider {
             // Nothing to show
             window.dispose();
         } else {
+            int animatingHeight;
+            if (OPACITY_SUPPORTED) {
+                // Do not animate, just fade in / out full-size window.
+                animatingHeight = contentsSize.height;
+            } else {
+                animatingHeight =
+                        (int) (percentage * contentsSize.height / 100.0);
+            }
+            animatingHeight = Math.max(animatingHeight, 1);
+            animatingSheet.setAnimatingHeight(animatingHeight);
             window.getContentPane().removeAll();
-            window.getContentPane().add(contents);
+            window.getContentPane().add(animatingSheet);
             window.pack();
             window.setLocation(showX, startY - window.getHeight());
-            // Fade it.
-            AWTUtilities.setWindowOpacity(window, (float) percentage / 100.0f);
-            window.setVisible(true);
+            if (OPACITY_SUPPORTED) {
+                AWTUtilities.setWindowOpacity(window,
+                        (float) percentage / 100.0f);
+            }
         }
     }
 }

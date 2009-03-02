@@ -22,7 +22,7 @@ package de.dal33t.powerfolder.util;
 /**
  * Class representing a Java version. It follows the java.runtime.version
  * format of
- * &lt;major&gt;.&lt;minor&gt;.&lt;point&gt;_&lt;build&gt;-b&lt;update&gt;,
+ * &lt;major&gt;.&lt;minor&gt;.&lt;point&gt;_&lt;update&gt;-b&lt;build&gt;,
  * eg 1.6.2_10-b12
  * It implements Comparable&lt;JavaVersion&gt; by traversing the version
  * values.
@@ -34,8 +34,8 @@ public class JavaVersion implements Comparable<JavaVersion> {
     private final int major;
     private final int minor;
     private final int point;
-    private final int build;
     private final int update;
+    private final int build;
 
     /**
      * Constructor
@@ -43,32 +43,32 @@ public class JavaVersion implements Comparable<JavaVersion> {
      * @param major
      * @param minor
      * @param point
-     * @param build
      * @param update
+     * @param build
      */
-    public JavaVersion(int major, int minor, int point, int build, int update)
+    public JavaVersion(int major, int minor, int point, int update, int build)
     {
         this.major = major;
         this.minor = minor;
         this.point = point;
-        this.build = build;
         this.update = update;
+        this.build = build;
     }
 
     /**
-     * Constructor, defaulting update to zero.
+     * Constructor, defaulting build to zero.
      *
      * @param major
      * @param minor
      * @param point
-     * @param build
+     * @param update
      */
-    public JavaVersion(int major, int minor, int point, int build) {
-        this(major, minor, point, build, 0);
+    public JavaVersion(int major, int minor, int point, int update) {
+        this(major, minor, point, update, 0);
     }
 
     /**
-     * Constructor, defaulting build and update to zero.
+     * Constructor, defaulting update and build to zero.
      *
      * @param major
      * @param minor
@@ -79,7 +79,7 @@ public class JavaVersion implements Comparable<JavaVersion> {
     }
 
     /**
-     * Constructor, defaulting point, build and update to zero.
+     * Constructor, defaulting point, update and build to zero.
      *
      * @param major
      * @param minor
@@ -185,7 +185,7 @@ public class JavaVersion implements Comparable<JavaVersion> {
 
     /**
      * Compare to another JavaVersion, progressing down major, minor, point,
-     * build and finally update.
+     * update and finally build.
      *
      * @param o
      * @return
@@ -194,14 +194,14 @@ public class JavaVersion implements Comparable<JavaVersion> {
         if (major == o.major) {
             if (minor == o.minor) {
                 if (point == o.point) {
-                    if (build == o.build) {
-                        if (update == o.update) {
+                    if (update == o.update) {
+                        if (build == o.build) {
                             return 0;
                         } else  {
-                            return update - o.update;
+                            return build - o.build;
                         }
                     } else  {
-                        return build - o.build;
+                        return update - o.update;
                     }
                 } else  {
                     return point - o.point;
@@ -216,24 +216,24 @@ public class JavaVersion implements Comparable<JavaVersion> {
 
     /**
      * Displays as
-     * &lt;major&gt;.&lt;minor&gt;.&lt;point&gt;_&lt;build&gt;-b&lt;update&gt;
+     * &lt;major&gt;.&lt;minor&gt;.&lt;point&gt;_&lt;update&gt;-b&lt;build&gt;
      * It skips 'build' and 'update' values if not available (zero).
      *
      * @return
      */
     public String toString() {
-        if (build > 0) {
-            if (update > 0) {
-                if (update <= 10) {
-                    // update like '-b0x'
-                    return major + "." + minor + '.' + point + '_' + build +
-                            "-b0" + update;
+        if (update > 0) {
+            if (build > 0) {
+                if (build <= 10) {
+                    // build like '-b0x'
+                    return major + "." + minor + '.' + point + '_' + update +
+                            "-b0" + build;
                 } else {
-                    return major + "." + minor + '.' + point + '_' + build +
-                            "-b" + update;
+                    return major + "." + minor + '.' + point + '_' + update +
+                            "-b" + build;
                 }
             } else {
-                return major + "." + minor + '.' + point + '_' + build;
+                return major + "." + minor + '.' + point + '_' + update;
             }
         } else {
             return major + "." + minor + '.' + point;
@@ -284,8 +284,8 @@ public class JavaVersion implements Comparable<JavaVersion> {
 
         // Defaults
         String pointString = "0";
-        String buildString = "0";
         String updateString = "0";
+        String buildString = "0";
 
         if (strings.length >= 3) {
             String strings1 = strings[2];
@@ -294,9 +294,9 @@ public class JavaVersion implements Comparable<JavaVersion> {
                 pointString = strings2[0];
                 if (strings2.length >= 2) {
                     String[] strings3 = strings2[1].split("\\-b");
-                    buildString = strings3[0];
+                    updateString = strings3[0];
                     if (strings3.length >= 2) {
-                        updateString = strings3[1];
+                        buildString = strings3[1];
                     }
                 }
             } else {
@@ -306,6 +306,6 @@ public class JavaVersion implements Comparable<JavaVersion> {
 
         return new JavaVersion(Integer.parseInt(majorString),
                 Integer.parseInt(minorString), Integer.parseInt(pointString),
-                Integer.parseInt(buildString), Integer.parseInt(updateString));
+                Integer.parseInt(updateString), Integer.parseInt(buildString));
     }
 }

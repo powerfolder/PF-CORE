@@ -134,4 +134,14 @@ public class JavaVersionTest extends TestCase {
         assertTrue("HashCode eq", version.hashCode()
                 == versionEqual.hashCode());
     }
+
+    /**
+     * Test that the system version is a single instance.
+     */
+    public void testSystemSingleton() {
+        JavaVersion javaVersion1 = JavaVersion.systemVersion();
+        JavaVersion javaVersion2 = JavaVersion.systemVersion();
+        assertTrue("Singleton", javaVersion1 == javaVersion2 
+                && javaVersion1.equals(javaVersion2));
+    }
 }
