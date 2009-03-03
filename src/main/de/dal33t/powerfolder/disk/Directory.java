@@ -370,7 +370,6 @@ public class Directory implements Comparable<Directory>, DiskItem {
                 iterator.remove();
             }
         }
-        Collections.sort(list);
         return list;
     }
 
@@ -646,6 +645,10 @@ public class Directory implements Comparable<Directory>, DiskItem {
     }
 
     public String getName() {
+        return name;
+    }
+    
+    public String getFilenameOnly() {
         return name;
     }
 

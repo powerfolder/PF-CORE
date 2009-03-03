@@ -234,8 +234,8 @@ public class DiskItemFilter {
                     return true;
                 }
             }
-        } else {
-            String name = diskItem.getName();
+        } else if (diskItem instanceof FileInfo) {
+            String name = ((FileInfo) diskItem).getName();
 
             for (String pattern : patterns) {
                 if (PatternMatch.isMatch(name, pattern)) {
