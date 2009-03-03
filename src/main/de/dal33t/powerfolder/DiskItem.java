@@ -30,7 +30,7 @@ import java.util.Date;
  */
 public interface DiskItem {
     String getExtension();
-    String getName();
+    String getFilenameOnly();
     String getLowerCaseName();
     long getSize();
     MemberInfo getModifiedBy();
