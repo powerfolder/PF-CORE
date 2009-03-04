@@ -585,11 +585,9 @@ public class FolderStatistic extends PFComponent {
             TransferManager transferManager = getController()
                 .getTransferManager();
 
-            // FIXME Should stop if no transfers on the ascociated folder. Now
-            // stop only until no transfers running at all.
-            while (!transferManager.getActiveDownloads().isEmpty()
-                || !transferManager.getActiveUploads().isEmpty())
-            {
+            // Keep rolling while there are up/downloads for this folder.
+            while (transferManager.countActiveDownloads(folder) > 0 ||
+                transferManager.countActiveUploads(folder) > 0) {
 
                 logFiner("monitoring downloads");
 

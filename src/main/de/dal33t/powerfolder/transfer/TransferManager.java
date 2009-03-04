@@ -718,6 +718,23 @@ public class TransferManager extends PFComponent {
     }
 
     /**
+     * Coounts the number of active uploads for a folder.
+     *
+     * @param folder
+     * @return
+     */
+    public int countActiveUploads(Folder folder) {
+        int count = 0;
+        for (Upload activeUpload : activeUploads) {
+            if (activeUpload.getFile().getFolderInfo().equals(folder.getInfo()))
+            {
+                 count++;
+            }
+        }
+        return count;
+    }
+
+    /**
      * Callback method to indicate that a transfer is completed
      * 
      * @param transfer
@@ -2015,6 +2032,24 @@ public class TransferManager extends PFComponent {
         int count = 0;
         for (DownloadManager completedDownload : completedDownloads) {
             Folder f = completedDownload.getFileInfo().getFolder(
+                getController().getFolderRepository());
+            if (f != null && f.getInfo().equals(folder.getInfo())) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    /**
+     * Counts the number of active downloads for a folder.
+     * 
+     * @param folder
+     * @return
+     */
+    public int countActiveDownloads(Folder folder) {
+        int count = 0;
+        for (DownloadManager activeDownload : dlManagers.values()) {
+            Folder f = activeDownload.getFileInfo().getFolder(
                 getController().getFolderRepository());
             if (f != null && f.getInfo().equals(folder.getInfo())) {
                 count++;
