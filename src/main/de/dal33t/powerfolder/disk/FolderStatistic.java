@@ -26,8 +26,6 @@ import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.transfer.TransferManager;
-import de.dal33t.powerfolder.transfer.DownloadManager;
-import de.dal33t.powerfolder.transfer.Upload;
 import de.dal33t.powerfolder.event.FolderAdapter;
 import de.dal33t.powerfolder.event.FolderEvent;
 import de.dal33t.powerfolder.event.FolderMembershipEvent;
@@ -242,7 +240,6 @@ public class FolderStatistic extends PFComponent {
         long memberSize = 0;
         // Total size of files completely in sync at the member.
         long memberSizeInSync = 0;
-        long memberSizeSyncing = 0;
         for (FileInfo fInfo : files) {
             if (fInfo.isDeleted()) {
                 continue;
@@ -278,16 +275,6 @@ public class FolderStatistic extends PFComponent {
                     calculating.incomingFilesCount++;
                 }
             }
-            // if (!isNewestVersion) {
-            // if (!newestFileInfo.isDeleted() && member.isMySelf()) {
-            // calculating.incomingFilesCount++;
-            // }
-            // inSync = false;
-            // } else if (fInfo.isExpected(repo)) {
-            // logWarning("file expected: " + newestFileInfo.toDetailString());
-            // calculating.incomingFilesCount++;
-            // inSync = false;
-            // }
 
             // Count file
             memberFilesCount++;
@@ -295,27 +282,6 @@ public class FolderStatistic extends PFComponent {
             if (inSync) {
                 memberFilesCountInSync++;
                 memberSizeInSync += fInfo.getSize();
-            } else {
-                // FIXME Does not work for new/unknown files. Currently
-                // iterating the list of know files.
-                // First time downloadeds are not in the list of know files yet.
-                // Recommendation: Checking download/uploads should happen
-                // outside of this loop.
-                TransferManager tm = getController().getTransferManager();
-
-                DownloadManager activeDM = tm.getActiveDownload(newestFileInfo);
-                if (activeDM != null) {
-                    memberSizeSyncing += activeDM.getCounter()
-                        .getBytesTransferred();
-                }
-
-                for (Upload upload : tm.getActiveUploads()) {
-                    if (upload.getPartner().equals(member)) {
-                        memberSizeSyncing += upload.getCounter()
-                            .getBytesTransferred();
-                        break;
-                    }
-                }
             }
 
             boolean addToTotals = !newestFileInfo.isDeleted();
@@ -341,7 +307,6 @@ public class FolderStatistic extends PFComponent {
         calculating.filesCountInSync.put(member, memberFilesCountInSync);
         calculating.sizes.put(member, memberSize);
         calculating.sizesInSync.put(member, memberSizeInSync);
-        calculating.sizesSyncing.put(member, memberSizeSyncing);
     }
 
     public String toString() {
@@ -352,24 +317,22 @@ public class FolderStatistic extends PFComponent {
         double totalSync = 0;
         int considered = 0;
         for (Member member : members) {
-            Long sizeInSync = calculating.sizesInSync.get(member)
-                + calculating.sizesSyncing.get(member);
+            Long inSync = calculating.sizesInSync.get(member);
+            Long syncing = calculating.sizesSyncing.get(member);
+            Long sizeInSync = (inSync == null ? 0 : inSync)
+                + (syncing == null ? 0 : syncing);
             if (sizeInSync == null) {
                 calculating.syncPercentages.put(member, -1.0d);
                 continue;
             }
             double sync = ((double) sizeInSync) / calculating.totalSize * 100;
             if (sync > 100) {
-                logWarning("Over 100% sync: "
-                    + sync
-                    + "% sync: "
-                    + member.getNick()
-                    + ", size(in sync): "
-                    + Format.formatBytesShort(sizeInSync)
-                    + ", size: "
-                    + Format.formatBytesShort(calculating.sizesInSync
+                logWarning("Over 100% sync: " + sync + "% sync: "
+                        + member.getNick() + ", size(in sync): "
+                        + Format.formatBytesShort(sizeInSync) + ", size: "
+                        + Format.formatBytesShort(calculating.sizesInSync
                         .get(member)) + ", totalsize: "
-                    + Format.formatBytesShort(calculating.totalSize));
+                        + Format.formatBytesShort(calculating.totalSize));
             }
             if (calculating.totalSize == 0) {
                 logFiner("Got total size 0");
@@ -523,53 +486,12 @@ public class FolderStatistic extends PFComponent {
         return downloadCounter;
     }
 
-    // Inner classes *********************************************************
-
-    private static class CalculationResult {
-        // Total size of folder in bytes
-        public long totalSize;
-
-        // Total number of files
-        public int totalFilesCount;
-
-        // The total sync percentage of the folder
-        public double totalSyncPercentage;
-
-        // Date at which the folder should be synchronized.
-        public Date estimatedSyncDate;
-
-        // Finer values
-        public int incomingFilesCount;
-
-        // Contains the sync percentages of the members
-        // Member -> Double
-        public Map<Member, Double> syncPercentages = new HashMap<Member, Double>();
-
-        // Number of files
-        // Member -> Integer
-        public Map<Member, Integer> filesCount = new HashMap<Member, Integer>();
-
-        // Number of files in sync
-        // Member -> Integer
-        public Map<Member, Integer> filesCountInSync = new HashMap<Member, Integer>();
-
-        // Size of folder per member
-        // member -> Long
-        public Map<Member, Long> sizes = new HashMap<Member, Long>();
-
-        // Size of folder that are in sync per member
-        // member -> Long
-        public Map<Member, Long> sizesInSync = new HashMap<Member, Long>();
-
-        // Size of folder that are syncing per member
-        // member -> Long
-        public Map<Member, Long> sizesSyncing = new HashMap<Member, Long>();
-    }
-
     @Override
     public String getLoggerName() {
         return super.getLoggerName() + " '" + folder.getName() + '\'';
     }
+
+    // Inner classes *********************************************************
 
     private class MyCalculatorTask extends TimerTask {
         public void run() {
@@ -750,4 +672,45 @@ public class FolderStatistic extends PFComponent {
         }
     }
 
+    private static class CalculationResult {
+
+        // Total size of folder in bytes
+        public long totalSize;
+
+        // Total number of files
+        public int totalFilesCount;
+
+        // The total sync percentage of the folder
+        public double totalSyncPercentage;
+
+        // Date at which the folder should be synchronized.
+        public Date estimatedSyncDate;
+
+        // Finer values
+        public int incomingFilesCount;
+
+        // Contains the sync percentages of the members
+        // Member -> Double
+        public Map<Member, Double> syncPercentages = new HashMap<Member, Double>();
+
+        // Number of files
+        // Member -> Integer
+        public Map<Member, Integer> filesCount = new HashMap<Member, Integer>();
+
+        // Number of files in sync
+        // Member -> Integer
+        public Map<Member, Integer> filesCountInSync = new HashMap<Member, Integer>();
+
+        // Size of folder per member
+        // member -> Long
+        public Map<Member, Long> sizes = new HashMap<Member, Long>();
+
+        // Size of folder that are in sync per member
+        // member -> Long
+        public Map<Member, Long> sizesInSync = new HashMap<Member, Long>();
+
+        // Size of folder that are syncing per member
+        // member -> Long
+        public Map<Member, Long> sizesSyncing = new HashMap<Member, Long>();
+    }
 }
