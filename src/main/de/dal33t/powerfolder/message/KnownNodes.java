@@ -24,6 +24,7 @@ import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.Reject;
 
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
@@ -112,7 +113,9 @@ public class KnownNodes extends Message {
             messages[arrSize - 1] = new KnownNodes(slice);
         }
 
-        log.warning("Built " + messages.length + " nodelists");
+        if (log.isLoggable(Level.FINER)) {
+            log.finer("Built " + messages.length + " nodelists");
+        }
 
         return messages;
     }
