@@ -281,7 +281,7 @@ public class ExpandableComputerView extends PFUIComponent implements ExpandableV
         lastSeenLabel.setText(Translation.getTranslation(
                 "exp_computer_view.last_seen_text", lastConnectedTime));
 
-        if (node.isConnected()) {
+        if (node.isCompleteyConnected()) {
             if (node.isFriend()) {
                 pictoLabel.setIcon(Icons.NODE_FRIEND_CONNECTED);
                 pictoLabel.setToolTipText(Translation.getTranslation(
