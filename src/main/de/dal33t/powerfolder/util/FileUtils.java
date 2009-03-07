@@ -30,7 +30,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.RandomAccessFile;
-import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
@@ -642,7 +641,53 @@ public class FileUtils {
 
         log.finer("File parent: " + fileParentPath);
         log.finer("Directory: " + directoryPath);
-        
+
         return fileParentPath.startsWith(directoryPath);
+    }
+    
+    /**
+     * Removes invalid characters from the filename.
+     * 
+     * @param filename
+     * @return
+     */
+    public static String removeInvalidFilenameChars(String filename) {
+        String invalidChars = "/\\:*?\"<>|";
+        for (int i = 0; i < invalidChars.length(); i++) {
+            char c = invalidChars.charAt(i);
+            while (filename.indexOf(c) != -1) {
+                int index = filename.indexOf(c);
+                filename = filename.substring(0, index)
+                    + filename.substring(index + 1, filename.length());
+            }
+        }
+        return filename;
+    }
+
+    /**
+     * Methods does two things: 1. Removes all invalid characters from the raw
+     * name and 2. searches and takes care that this directory is new and not
+     * yet existing. If dir already exists with the same raw name it appends
+     * (1), (2), and so on until it finds an non-existing sub directory.
+     * <p>
+     * 
+     * @param baseDir
+     * @param rawName
+     *            the raw name of the directory. is it NOT guranteed that it
+     *            will/can be named like this.
+     * @return the directory that is guranteed to be NEW and EMPTY.
+     */
+    public static File createEmptyDirectory(File baseDir, String rawName) {
+        Reject.ifNull(baseDir, "Base dir is null");
+        Reject.ifBlank(rawName, "Raw name is null");
+
+        String name = removeInvalidFilenameChars(rawName);
+        File candidate = new File(baseDir, name);
+        int suffix = 2;
+        while (candidate.exists()) {
+            candidate = new File(baseDir, name + " (" + suffix + ")");
+        }
+        candidate.mkdirs();
+        return candidate;
     }
 }

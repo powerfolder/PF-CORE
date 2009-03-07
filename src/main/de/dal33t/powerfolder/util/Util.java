@@ -230,17 +230,13 @@ public class Util {
         return false;
     }
 
+    /**
+     * @param folderName
+     * @return
+     * @deprecated use {@link FileUtils#removeInvalidFilenameChars(String)}
+     */
     public static String removeInvalidFilenameChars(String folderName) {
-        String invalidChars = "/\\:*?\"<>|";
-        for (int i = 0; i < invalidChars.length(); i++) {
-            char c = invalidChars.charAt(i);
-            while (folderName.indexOf(c) != -1) {
-                int index = folderName.indexOf(c);
-                folderName = folderName.substring(0, index)
-                    + folderName.substring(index + 1, folderName.length());
-            }
-        }
-        return folderName;
+        return FileUtils.removeInvalidFilenameChars(folderName);
     }
 
     public static final boolean equals(Object a, Object b) {

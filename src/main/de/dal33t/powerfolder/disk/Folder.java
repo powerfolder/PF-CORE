@@ -337,12 +337,11 @@ public class Folder extends PFComponent {
             1000L * ConfigurationEntry.FOLDER_DB_PERSIST_TIME
                 .getValueInt(getController()));
 
-
         // Create invitation
         if (folderSettings.isCreateInvitationFile()) {
             Invitation inv = createInvitation();
             InvitationUtil.save(inv, new File(folderSettings.getLocalBaseDir(),
-                Util.removeInvalidFilenameChars(inv.folder.name)
+                FileUtils.removeInvalidFilenameChars(inv.folder.name)
                     + ".invitation"));
         }
 
@@ -2643,7 +2642,7 @@ public class Folder extends PFComponent {
     /**
      * Ensures that default ignore patterns are set.
      */
-    public void addDefaultExcludes() {
+    void addDefaultExcludes() {
         if (OSUtil.isWindowsSystem()) {
             // Add thumbs to ignore pattern on windows systems
             // Don't duplicate thumbs (like when moving a preview folder)

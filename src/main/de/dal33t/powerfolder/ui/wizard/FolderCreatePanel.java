@@ -275,7 +275,6 @@ public class FolderCreatePanel extends PFWizardPanel {
                 if (createShortcut) {
                     folder.setDesktopShortcut(true);
                 }
-                folder.addDefaultExcludes();
                 folders.add(folder);
                 if (configurations.size() == 1) {
                     // Set for SendInvitationsPanel

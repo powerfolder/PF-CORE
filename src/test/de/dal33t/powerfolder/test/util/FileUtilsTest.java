@@ -110,4 +110,28 @@ public class FileUtilsTest extends TestCase {
         }
         assertTrue("Process a file in directory", okay);
     }
+
+    public void testGetValidEmptyDirectory() throws IOException {
+        File baseDir = new File("build/test");
+        FileUtils.recursiveDelete(baseDir);
+
+        File actual = FileUtils.createEmptyDirectory(baseDir, "test");
+        assertTrue(actual.exists());
+        assertTrue(actual.isDirectory());
+        assertEquals(0, actual.list().length);
+        assertEquals("test", actual.getName());
+
+        File actual2 = FileUtils.createEmptyDirectory(baseDir, "test");
+        assertTrue(actual2.exists());
+        assertTrue(actual2.isDirectory());
+        assertEquals(0, actual2.list().length);
+        assertEquals("test (2)", actual2.getName());
+
+        File actual3 = FileUtils.createEmptyDirectory(baseDir,
+            "hümmers / rüttenscheiß: Wichtige Doxx|");
+        assertTrue(actual3.exists());
+        assertTrue(actual3.isDirectory());
+        assertEquals(0, actual3.list().length);
+        assertEquals("hümmers  rüttenscheiß Wichtige Doxx", actual3.getName());
+    }
 }

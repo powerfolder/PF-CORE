@@ -93,7 +93,6 @@ public abstract class FolderCreateWorker extends ActivityVisualizationWorker {
         if (createShortcut) {
             folder.setDesktopShortcut(true);
         }
-        folder.addDefaultExcludes();
         return null;
     }
 }
