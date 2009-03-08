@@ -169,7 +169,11 @@ public class FilesTreePanel extends PFUIComponent implements DirectoryFilterList
                     setFont(new Font(getFont().getName(), Font.PLAIN, 
                             getFont().getSize()));
                 }
-                setIcon(Icons.FOLDER);
+                if (expanded) {
+                    setIcon(Icons.DIRECTORY_OPEN);
+                } else {
+                    setIcon(Icons.DIRECTORY);
+                }
             }
             return this;
         }
