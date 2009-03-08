@@ -25,6 +25,7 @@ import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.event.PatternChangeListener;
 import de.dal33t.powerfolder.event.PatternChangedEvent;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.ui.information.folder.files.FilteredDirectoryModel;
 import de.dal33t.powerfolder.ui.model.SortedTableModel;
@@ -254,6 +255,14 @@ public class FilesTableModel extends PFComponent implements TableModel,
         Object at = getValueAt(row, COL_NAME);
         if (at instanceof FileInfo) {
             return (FileInfo) at;
+        }
+        return null;
+    }
+
+    public Directory getDirectoryAtRow(int row) {
+        Object at = getValueAt(row, COL_NAME);
+        if (at instanceof Directory) {
+            return (Directory) at;
         }
         return null;
     }

@@ -24,6 +24,7 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.information.folder.files.DirectoryFilterListener;
 import de.dal33t.powerfolder.ui.information.folder.files.FilteredDirectoryEvent;
@@ -36,6 +37,7 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreePath;
 import static javax.swing.tree.TreeSelectionModel.SINGLE_TREE_SELECTION;
 import java.awt.*;
+import java.io.File;
 
 public class FilesTreePanel extends PFUIComponent implements DirectoryFilterListener {
 
@@ -90,11 +92,60 @@ public class FilesTreePanel extends PFUIComponent implements DirectoryFilterList
         uiComponent.setBorder(BorderFactory.createEtchedBorder());
     }
 
-    public void adviseOfChange(FilteredDirectoryEvent e) {
-        directoryTreeModel.setTree(e.getModel());
-        if (e.isFolderChanged()) {
+    public void adviseOfChange(FilteredDirectoryEvent event) {
+        directoryTreeModel.setTree(event.getModel());
+        if (event.isFolderChanged()) {
             // New folder - select root so table has something to display
             tree.getSelectionModel().setSelectionPath(new TreePath(directoryTreeModel.getRoot()));
+        }
+    }
+
+    /**
+     * Set the selected tree node to this directory.
+     *
+     * @param directory
+     */
+    public void setSelection(Directory directory) {
+        File file = new File(directory.getPath(), directory.getName());
+        DefaultMutableTreeNode root =
+                (DefaultMutableTreeNode) directoryTreeModel.getRoot();
+        int count = root.getChildCount();
+        for (int i = 0; i < count; i++) {
+            DefaultMutableTreeNode node =
+                    (DefaultMutableTreeNode) root.getChildAt(i);
+            DirectoryTreeNodeUserObject userObject =
+                    (DirectoryTreeNodeUserObject) node.getUserObject();
+            drill(file, node, userObject, 0);
+        }
+    }
+
+    /**
+     * Drill down the directory stucture and try to find the file.
+     *
+     * @param file
+     * @param node
+     * @param userObject
+     */
+    private void drill(File file, DefaultMutableTreeNode node,
+                       DirectoryTreeNodeUserObject userObject, int level) {
+
+        if (level > 100) {
+            // Catch evil tail-recursive parent-directory references.
+            return;
+        }
+
+        if (userObject.getFile().equals(file)) {
+            tree.setSelectionPath(new TreePath(node.getPath()));
+        } else {
+            // Recurse.
+            int count = node.getChildCount();
+            for (int i = 0; i < count; i++) {
+                DefaultMutableTreeNode subNode =
+                        (DefaultMutableTreeNode) node.getChildAt(i);
+                DirectoryTreeNodeUserObject subUserObject =
+                        (DirectoryTreeNodeUserObject) subNode.getUserObject();
+                drill(file, subNode, subUserObject, level + 1);
+            }
         }
     }
 

@@ -28,15 +28,13 @@ import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.RecycleBin;
+import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.information.HasDetailsPanel;
-import de.dal33t.powerfolder.ui.information.folder.files.DirectoryFilterListener;
-import de.dal33t.powerfolder.ui.information.folder.files.FileDetailsPanel;
-import de.dal33t.powerfolder.ui.information.folder.files.FilteredDirectoryEvent;
-import de.dal33t.powerfolder.ui.information.folder.files.FilteredDirectoryModel;
+import de.dal33t.powerfolder.ui.information.folder.files.*;
 import de.dal33t.powerfolder.ui.information.folder.files.tree.DirectoryTreeNodeUserObject;
 import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.util.FileUtils;
@@ -76,9 +74,11 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
     private JPopupMenu fileMenu;
     private JScrollPane tableScroller;
     private JLabel emptyLabel;
+    private FilesTab parent;
 
-    public FilesTablePanel(Controller controller) {
+    public FilesTablePanel(Controller controller, FilesTab parent) {
         super(controller);
+        this.parent = parent;
         fileDetailsPanel = new FileDetailsPanel(controller);
         tableModel = new FilesTableModel(controller);
         tableModel.addTableModelListener(new MyTableModelListener());
@@ -344,6 +344,24 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         tableModel.sortLatestDate();
     }
 
+    /**
+     * When a user double-clicks a row
+     */
+    private void handleDoubleClick() {
+        int min = table.getSelectionModel().getMinSelectionIndex();
+        int max = table.getSelectionModel().getMaxSelectionIndex();
+        // Single selection?
+        if (min == max) {
+            int index = table.getSelectionModel().getLeadSelectionIndex();
+            Directory directory = tableModel.getDirectoryAtRow(index);
+            if (directory != null) {
+                // Double click on a directory makes that directory the
+                // selected one in the tree.
+                parent.setSelection(directory);
+            }
+        }
+    }
+
     ///////////////////
     // Inner Classes //
     ///////////////////
@@ -523,6 +541,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
     }
 
     private class TableMouseListener extends MouseAdapter {
+
         public void mousePressed(MouseEvent e) {
             if (e.isPopupTrigger()) {
                 showContextMenu(e);
@@ -532,6 +551,14 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         public void mouseReleased(MouseEvent e) {
             if (e.isPopupTrigger()) {
                 showContextMenu(e);
+            }
+        }
+
+        public void mouseClicked(MouseEvent e) {
+            if (SwingUtilities.isLeftMouseButton(e)) {
+                if (e.getClickCount() == 2) {
+                    handleDoubleClick();
+                }
             }
         }
 

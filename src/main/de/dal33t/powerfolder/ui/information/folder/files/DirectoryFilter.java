@@ -202,7 +202,7 @@ public class DirectoryFilter extends FilterModel {
         AtomicLong incomingCount = new AtomicLong();
         AtomicLong localCount = new AtomicLong();
         FilteredDirectoryModel filteredDirectoryModel
-                = new FilteredDirectoryModel(folder.getName(),
+                = new FilteredDirectoryModel(null, folder, folder.getName(),
                 originalDirectory.getFile());
 
         // Recursive filter.
@@ -321,7 +321,7 @@ public class DirectoryFilter extends FilterModel {
         for (Directory subDirectory : directory.getSubDirectoriesAsCollection())
         {
             FilteredDirectoryModel subModel = new FilteredDirectoryModel(
-                    subDirectory.getFile().getName(),
+                    directory, folder, subDirectory.getFile().getName(),
                     subDirectory.getFile());
             filterDirectory(subDirectory, subModel, keywords, originalCount,
                     filteredCount,  deletedCount, recycledCount,

@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.ui.information.folder.files;
 
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.disk.Directory;
+import de.dal33t.powerfolder.disk.Folder;
 
 import java.io.File;
 import java.util.List;
@@ -38,15 +39,33 @@ public class FilteredDirectoryModel {
     private List<FileInfo> files;
     private List<FilteredDirectoryModel> subdirectories;
     private boolean newFiles;
+    private Folder rootFolder;
+    private final Directory parentDirectory;
 
     /**
      * Constructor
      */
-    public FilteredDirectoryModel(String displayName, File file) {
+    public FilteredDirectoryModel(Directory parentDirectory,
+                                  Folder rootFolder, String displayName,
+                                  File file) {
+        this.parentDirectory = parentDirectory;
+        this.rootFolder = rootFolder;
         this.displayName = displayName;
         this.file = file;
         files = new CopyOnWriteArrayList<FileInfo>();
         subdirectories = new CopyOnWriteArrayList<FilteredDirectoryModel>();
+    }
+
+    /**
+     * Parent of this model, may be null.
+     * @return
+     */
+    public Directory getParentDirectory() {
+        return parentDirectory;
+    }
+
+    public Folder getRootFolder() {
+        return rootFolder;
     }
 
     /**

@@ -26,6 +26,7 @@ import com.jgoodies.uif_lite.component.UIFSplitPane;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.information.folder.files.table.FilesTablePanel;
 import de.dal33t.powerfolder.ui.information.folder.files.tree.FilesTreePanel;
@@ -50,6 +51,7 @@ public class FilesTab extends PFUIComponent
     private JComboBox filterSelectionComboBox;
     private FilesStatsPanel statsPanel;
     private DirectoryFilter directoryFilter;
+    private FilesTreePanel treePanel;
 
     /**
      * Constructor
@@ -64,10 +66,10 @@ public class FilesTab extends PFUIComponent
         directoryFilter = new DirectoryFilter(controller);
         directoryFilter.addListener(this);
 
-        FilesTreePanel treePanel = new FilesTreePanel(controller);
+        treePanel = new FilesTreePanel(controller);
         directoryFilter.addListener(treePanel);
 
-        tablePanel = new FilesTablePanel(controller);
+        tablePanel = new FilesTablePanel(controller, this);
         directoryFilter.addListener(tablePanel);
         treePanel.addTreeSelectionListener(tablePanel);
 
@@ -188,6 +190,15 @@ public class FilesTab extends PFUIComponent
     public void adviseOfChange(FilteredDirectoryEvent event) {
         statsPanel.setStats(event.getLocalFiles(), event.getIncomingFiles(),
                 event.getDeletedFiles(), event.getRecycledFiles());
+    }
+
+    /**
+     * Set the selected tree node to this directory.
+     *
+     * @param directory
+     */
+    public void setSelection(Directory directory) {
+        treePanel.setSelection(directory);
     }
 
     /**
