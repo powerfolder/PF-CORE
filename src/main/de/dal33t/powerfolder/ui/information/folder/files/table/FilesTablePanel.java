@@ -23,6 +23,8 @@ import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+import com.jgoodies.binding.value.ValueModel;
+import com.jgoodies.binding.value.ValueHolder;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.disk.Folder;
@@ -52,6 +54,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 
@@ -75,6 +78,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
     private JScrollPane tableScroller;
     private JLabel emptyLabel;
     private FilesTab parent;
+    private ValueModel flatMode;
 
     public FilesTablePanel(Controller controller, FilesTab parent) {
         super(controller);
@@ -86,6 +90,11 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         table.getSelectionModel().addListSelectionListener(new MyListSelectionListener());
         table.getTableHeader().addMouseListener(new TableHeaderMouseListener());
         table.addMouseListener(new TableMouseListener());
+        flatMode = new ValueHolder();
+    }
+
+    public ValueModel getFlatMode() {
+        return flatMode;
     }
 
     /**
@@ -139,6 +148,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
      */
     private JPanel createToolBar() {
         ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
+        
         openFileAction = new OpenFileAction();
         openFileAction.setEnabled(false);
         downloadFileAction = new DownloadFileAction();
@@ -163,7 +173,23 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         bar.addGridded(new JButton(downloadFileAction));
         bar.addRelatedGap();
         bar.addGridded(new JButton(openFileAction));
-        return bar.getPanel();
+
+        final JCheckBox flatViewCB = new JCheckBox(
+                Translation.getTranslation("files_tab.flat_view.text"));
+        flatViewCB.setToolTipText(
+                Translation.getTranslation("files_tab.flat_view.tip"));
+        flatViewCB.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                flatMode.setValue(flatViewCB.isSelected());
+            }
+        });
+
+        FormLayout layout = new FormLayout("pref, 3dlu, pref", "pref");
+        DefaultFormBuilder builder = new DefaultFormBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+        builder.add(flatViewCB, cc.xy(1, 1));
+        builder.add(bar.getPanel(), cc.xy(3, 1));
+        return builder.getPanel();
     }
 
     /**

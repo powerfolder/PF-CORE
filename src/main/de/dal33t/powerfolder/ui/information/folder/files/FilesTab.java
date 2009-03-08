@@ -71,6 +71,7 @@ public class FilesTab extends PFUIComponent
 
         tablePanel = new FilesTablePanel(controller, this);
         directoryFilter.addListener(tablePanel);
+        directoryFilter.setFlatMode(tablePanel.getFlatMode());
         treePanel.addTreeSelectionListener(tablePanel);
 
         splitPane = new UIFSplitPane(JSplitPane.HORIZONTAL_SPLIT,
@@ -178,12 +179,12 @@ public class FilesTab extends PFUIComponent
      * @return the toolbar
      */
     private JPanel createToolBar() {
-        FormLayout layout = new FormLayout("pref, fill:pref:grow, pref",
+        FormLayout layout = new FormLayout("pref, 3dlu, pref, fill:pref:grow",
                 "pref");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
-        builder.add(filterTextField.getUIComponent(), cc.xy(3, 1));
         builder.add(filterSelectionComboBox, cc.xy(1, 1));
+        builder.add(filterTextField.getUIComponent(), cc.xy(3, 1));
         return builder.getPanel();
     }
 

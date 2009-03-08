@@ -35,13 +35,18 @@ import java.util.TimerTask;
  * @version $Revision: 1.3 $
  */
 public abstract class FilterModel extends PFComponent {
+
     /** the delay to use to give fast typers to complete their words */
     private static final long DELAY = 500;
+
     /** The task that performs the filtering */
-    private TimerTask task = null;
+    private TimerTask task;
 
     /** The value model of the searchfield we listen to */
     private ValueModel searchField;
+
+    /** The value model setting flat mode */
+    private ValueModel flatMode;
 
     public FilterModel(Controller controller) {
         super(controller);
@@ -54,6 +59,30 @@ public abstract class FilterModel extends PFComponent {
 
     public ValueModel getSearchField() {
         return searchField;
+    }
+
+    public boolean isFlatMode() {
+        Object value = flatMode.getValue();
+        if (value == null) {
+            return false;
+        } else {
+            return (Boolean)flatMode.getValue();
+        }
+    }
+
+    public void setFlatMode(ValueModel flatMode) {
+        this.flatMode = flatMode;
+        flatMode.addValueChangeListener(new PropertyChangeListener() {
+
+            public void propertyChange(PropertyChangeEvent evt) {
+                TimerTask flatTask = new TimerTask() {
+                    public void run() {
+                        scheduleFiltering();
+                    }
+                };
+                getController().schedule(flatTask, DELAY);
+            }
+        });
     }
 
     public void setSearchField(ValueModel searchField) {
