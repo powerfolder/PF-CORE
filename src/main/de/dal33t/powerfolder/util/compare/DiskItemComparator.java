@@ -188,6 +188,13 @@ public class DiskItemComparator extends Loggable implements
     }
 
     private static int sortByFileName(DiskItem o1, DiskItem o2) {
+
+        // Sort directories before files.
+        if (o1 instanceof Directory && o2 instanceof FileInfo) {
+            return -1;
+        } else if (o1 instanceof FileInfo && o2 instanceof Directory) {
+            return 1;
+        }
         return o1.getFilenameOnly().compareToIgnoreCase(o2.getFilenameOnly());
     }
 

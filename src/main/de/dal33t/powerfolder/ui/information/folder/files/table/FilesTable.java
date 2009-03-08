@@ -38,8 +38,10 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.DiskItem;
 import de.dal33t.powerfolder.disk.FileInfoHolder;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.ImageFileInfo;
 import de.dal33t.powerfolder.light.MP3FileInfo;
@@ -79,6 +81,8 @@ public class FilesTable extends JTable {
         setupColumns();
 
         setDefaultRenderer(FileInfo.class, new MyDefaultTreeCellRenderer(
+                model.getController()));
+        setDefaultRenderer(Directory.class, new MyDefaultTreeCellRenderer(
                 model.getController()));
 
         getTableHeader().addMouseListener(new TableHeaderMouseListener());
@@ -145,185 +149,204 @@ public class FilesTable extends JTable {
 
         public Component getTableCellRendererComponent(JTable table, Object value,
                 boolean isSelected, boolean hasFocus, int row, int column) {
-            FileInfo fileInfo = (FileInfo) value;
-            Folder folder = controller.getFolderRepository().getFolder(
-                    fileInfo.getFolderInfo());
-            setIcon(null);
+            DiskItem diskItem = (DiskItem) value;
             String myValue = "";
-            switch (column) {
-                case 0:  // file type
-                    Icon icon = Icons.getIconFor(fileInfo, controller);
-                    setIcon(icon);
-                    setHorizontalAlignment(LEFT);
-                    break;
-                case 1:  // file name
+            if (diskItem instanceof FileInfo) {
+                FileInfo fileInfo = (FileInfo) diskItem;
+                Folder folder = controller.getFolderRepository().getFolder(
+                        fileInfo.getFolderInfo());
+                setIcon(null);
+                switch (column) {
+                    case 0:  // file type
+                        Icon icon = Icons.getIconFor(fileInfo, controller);
+                        setIcon(icon);
+                        setHorizontalAlignment(LEFT);
+                        break;
+                    case 1:  // file name
 
-                    myValue = fileInfo.getFilenameOnly();
+                        myValue = fileInfo.getFilenameOnly();
 
-                    // Prepare diskfile
-                    File diskFile = fileInfo.getDiskFile(controller
-                            .getFolderRepository());
-                    if (diskFile != null) {
-                        if (!diskFile.exists()) {
-                            diskFile = null;
-                        }
-                    }
-                    String fileNameForTooltip;
-                    if (diskFile != null) {
-                        fileNameForTooltip = replaceSpacesWithNBSP(diskFile
-                                .getAbsolutePath());
-                    } else {
-                        fileNameForTooltip = replaceSpacesWithNBSP(fileInfo
-                                .getFilenameOnly());
-                    }
-                    // Obtain the newest version of this file
-                    FileInfo newestVersion = null;
-                    FileInfo newestDeletedVersion = null;
-                    if (fileInfo.getFolder(controller.getFolderRepository()) != null) {
-                        newestVersion = fileInfo.getNewestNotDeletedVersion(controller
+                        // Prepare diskfile
+                        File diskFile = fileInfo.getDiskFile(controller
                                 .getFolderRepository());
-                        newestDeletedVersion = fileInfo.getNewestVersion(controller
-                                .getFolderRepository());
-                    }
-                    setIcon(null);
-
-                    String statusForTooltip = null;
-                    if (fileInfo.isDownloading(controller)) {
-                        setForeground(DOWNLOADING);
-                        DownloadManager dl = controller.getTransferManager()
-                                .getActiveDownload(fileInfo);
-                        if (dl != null && dl.isStarted()) {
-                            StringBuilder b = new StringBuilder();
-                            for (Download d : dl.getSources()) {
-                                if (b.length() > 0) {
-                                    b.append(", ");
-                                }
-                                b.append(d.getPartner().getNick());
+                        if (diskFile != null) {
+                            if (!diskFile.exists()) {
+                                diskFile = null;
                             }
-                            setIcon(Icons.DOWNLOAD_ACTIVE);
-                            statusForTooltip = Translation.getTranslation(
-                                    "file_info.downloading_from_member", b.toString());
-                        } else {
-                            setIcon(Icons.DOWNLOAD);
-                            statusForTooltip = Translation
-                                    .getTranslation("transfers.queued");
                         }
-                        // preference goes to deleted, then ignored then available icon
-                    } else if (fileInfo.isDeleted()) {
-                        setForeground(DELETED);
-                        setIcon(Icons.DELETE);
-                        statusForTooltip = Translation.getTranslation("file_info.deleted");
-
-                    } else if (folder.getDiskItemFilter().isExcluded(fileInfo)
-                            && !folder.isWhitelist()) {
-                        // Blacklist and file filtered out by blacklist.
-                        setIcon(Icons.BLACK_LIST);
-                        statusForTooltip = replaceSpacesWithNBSP(Translation
-                                .getTranslation("file_info.ignore"));
-                        setForeground(NORMAL);
-                    } else if (!folder.getDiskItemFilter().isExcluded(fileInfo)
-                            && folder.isWhitelist()) {
-                        // Whitelist and file not filtered out by whitelist.
-                        setIcon(Icons.WHITE_LIST);
-                        statusForTooltip = replaceSpacesWithNBSP(Translation
-                                .getTranslation("file_info.ignore"));
-                        setForeground(NORMAL);
-                    } else
-                    if (fileInfo.isExpected(controller.getFolderRepository())) {
-                        setForeground(AVAILABLE);
-
-                        setIcon(Icons.EXPECTED);
-                        statusForTooltip = Translation.getTranslation("file_info.expected");
-
-                    } else
-                    if (newestVersion != null && newestVersion.isNewerThan(fileInfo)) {
-                        // A newer version is available
-                        // FIXME: If newest version (e.g. v10) is deleted, but a
-                        // newer (e.g. v9) is available
-                        // DONE? Should be fixed with exclusion of deleted newer files
-                        setForeground(NEWER_AVAILABLE);
-                        if (newestVersion.isDeleted()) {
-                            if (newestVersion.equals(newestDeletedVersion)) {
-                                if (MANUAL_SYNCHRONIZATION.equals(folder.getSyncProfile())) {
-                                    // Show remote deletions when in project work sync
-                                    setIcon(Icons.DELETE);
-                                    statusForTooltip = Translation
-                                            .getTranslation("file_info.remote_deleted");
-                                }
-                            }
+                        String fileNameForTooltip;
+                        if (diskFile != null) {
+                            fileNameForTooltip = replaceSpacesWithNBSP(diskFile
+                                    .getAbsolutePath());
                         } else {
+                            fileNameForTooltip = replaceSpacesWithNBSP(fileInfo
+                                    .getFilenameOnly());
+                        }
+                        // Obtain the newest version of this file
+                        FileInfo newestVersion = null;
+                        FileInfo newestDeletedVersion = null;
+                        if (fileInfo.getFolder(controller.getFolderRepository()) != null) {
+                            newestVersion = fileInfo.getNewestNotDeletedVersion(controller
+                                    .getFolderRepository());
+                            newestDeletedVersion = fileInfo.getNewestVersion(controller
+                                    .getFolderRepository());
+                        }
+                        setIcon(null);
+
+                        String statusForTooltip = null;
+                        if (fileInfo.isDownloading(controller)) {
+                            setForeground(DOWNLOADING);
+                            DownloadManager dl = controller.getTransferManager()
+                                    .getActiveDownload(fileInfo);
+                            if (dl != null && dl.isStarted()) {
+                                StringBuilder b = new StringBuilder();
+                                for (Download d : dl.getSources()) {
+                                    if (b.length() > 0) {
+                                        b.append(", ");
+                                    }
+                                    b.append(d.getPartner().getNick());
+                                }
+                                setIcon(Icons.DOWNLOAD_ACTIVE);
+                                statusForTooltip = Translation.getTranslation(
+                                        "file_info.downloading_from_member", b.toString());
+                            } else {
+                                setIcon(Icons.DOWNLOAD);
+                                statusForTooltip = Translation
+                                        .getTranslation("transfers.queued");
+                            }
+                            // preference goes to deleted, then ignored then available icon
+                        } else if (fileInfo.isDeleted()) {
+                            setForeground(DELETED);
+                            setIcon(Icons.DELETE);
+                            statusForTooltip = Translation.getTranslation("file_info.deleted");
+
+                        } else if (folder.getDiskItemFilter().isExcluded(fileInfo)
+                                && !folder.isWhitelist()) {
+                            // Blacklist and file filtered out by blacklist.
+                            setIcon(Icons.BLACK_LIST);
+                            statusForTooltip = replaceSpacesWithNBSP(Translation
+                                    .getTranslation("file_info.ignore"));
+                            setForeground(NORMAL);
+                        } else if (!folder.getDiskItemFilter().isExcluded(fileInfo)
+                                && folder.isWhitelist()) {
+                            // Whitelist and file not filtered out by whitelist.
+                            setIcon(Icons.WHITE_LIST);
+                            statusForTooltip = replaceSpacesWithNBSP(Translation
+                                    .getTranslation("file_info.ignore"));
+                            setForeground(NORMAL);
+                        } else
+                        if (fileInfo.isExpected(controller.getFolderRepository())) {
+                            setForeground(AVAILABLE);
+
                             setIcon(Icons.EXPECTED);
-                            statusForTooltip = Translation
-                                    .getTranslation("file_info.new_version_available");
-                        }
-                    } else {
-                        setForeground(NORMAL);
-                        if (recentlyDownloaded(fileInfo)) {
-                            statusForTooltip = Translation
-                                    .getTranslation("file_info.recently_downloaded");
-                        }
-                    }
+                            statusForTooltip = Translation.getTranslation("file_info.expected");
 
-                    // Okay basic infos added
-                    // Add meta info in tooltip now
-                    if (fileInfo instanceof MP3FileInfo) {
-                        MP3FileInfo mp3FileInfo = (MP3FileInfo) fileInfo;
-                        if (mp3FileInfo.isID3InfoValid()) {
-                            setToolTipText(getToolTipMp3(mp3FileInfo, fileNameForTooltip,
+                        } else
+                        if (newestVersion != null && newestVersion.isNewerThan(fileInfo)) {
+                            // A newer version is available
+                            // FIXME: If newest version (e.g. v10) is deleted, but a
+                            // newer (e.g. v9) is available
+                            // DONE? Should be fixed with exclusion of deleted newer files
+                            setForeground(NEWER_AVAILABLE);
+                            if (newestVersion.isDeleted()) {
+                                if (newestVersion.equals(newestDeletedVersion)) {
+                                    if (MANUAL_SYNCHRONIZATION.equals(folder.getSyncProfile())) {
+                                        // Show remote deletions when in project work sync
+                                        setIcon(Icons.DELETE);
+                                        statusForTooltip = Translation
+                                                .getTranslation("file_info.remote_deleted");
+                                    }
+                                }
+                            } else {
+                                setIcon(Icons.EXPECTED);
+                                statusForTooltip = Translation
+                                        .getTranslation("file_info.new_version_available");
+                            }
+                        } else {
+                            setForeground(NORMAL);
+                            if (recentlyDownloaded(fileInfo)) {
+                                statusForTooltip = Translation
+                                        .getTranslation("file_info.recently_downloaded");
+                            }
+                        }
+
+                        // Okay basic infos added
+                        // Add meta info in tooltip now
+                        if (fileInfo instanceof MP3FileInfo) {
+                            MP3FileInfo mp3FileInfo = (MP3FileInfo) fileInfo;
+                            if (mp3FileInfo.isID3InfoValid()) {
+                                setToolTipText(getToolTipMp3(mp3FileInfo, fileNameForTooltip,
+                                        statusForTooltip));
+                            } else {
+                                setToolTipText(null);
+                            }
+                        } else if (fileInfo instanceof ImageFileInfo) {
+                            ImageFileInfo imageFileInfo = (ImageFileInfo) fileInfo;
+                            setToolTipText(getToolTipImg(imageFileInfo, fileNameForTooltip,
                                     statusForTooltip));
                         } else {
-                            setToolTipText(null);
+                            setToolTipText(getToolTip(fileInfo, fileNameForTooltip,
+                                    statusForTooltip));
                         }
-                    } else if (fileInfo instanceof ImageFileInfo) {
-                        ImageFileInfo imageFileInfo = (ImageFileInfo) fileInfo;
-                        setToolTipText(getToolTipImg(imageFileInfo, fileNameForTooltip,
-                                statusForTooltip));
-                    } else {
-                        setToolTipText(getToolTip(fileInfo, fileNameForTooltip,
-                                statusForTooltip));
-                    }
-                    setHorizontalAlignment(LEFT);
-                    break;
-                case 2:  // file size
-                    myValue = Format.formatBytesShort(fileInfo.getSize());
-                    setToolTipText(Format.formatBytes(fileInfo.getSize()));
-                    setHorizontalAlignment(RIGHT);
-                    break;
-                case 3:  // member nick
-                    MemberInfo member = fileInfo.getModifiedBy();
-                    myValue = member.nick;
-                    setIcon(Icons.getSimpleIconFor(member.getNode(controller)));
-                    setHorizontalAlignment(LEFT);
-                    break;
-                case 4: // modified date
-                    myValue = Format.formatDate(fileInfo.getModifiedDate());
-                    setHorizontalAlignment(RIGHT);
-                    break;
-                case 5:  // availability
+                        setHorizontalAlignment(LEFT);
+                        break;
+                    case 2:  // file size
+                        myValue = Format.formatBytesShort(fileInfo.getSize());
+                        setToolTipText(Format.formatBytes(fileInfo.getSize()));
+                        setHorizontalAlignment(RIGHT);
+                        break;
+                    case 3:  // member nick
+                        MemberInfo member = fileInfo.getModifiedBy();
+                        myValue = member.nick;
+                        setIcon(Icons.getSimpleIconFor(member.getNode(controller)));
+                        setHorizontalAlignment(LEFT);
+                        break;
+                    case 4: // modified date
+                        myValue = Format.formatDate(fileInfo.getModifiedDate());
+                        setHorizontalAlignment(RIGHT);
+                        break;
+                    case 5:  // availability
 
-                    // See if it is in the recicle bin.
-                    if (fileInfo.isDeleted()
-                            && controller.getRecycleBin().isInRecycleBin(fileInfo)) {
-                        myValue = Translation.getTranslation(
-                                "file_info.in_recycle_bin");
-                    } else {
-                        FileInfoHolder holder = folder.getDirectory()
-                                .getFileInfoHolder(fileInfo);
-                        if (holder == null) {
-                            myValue = "0";
+                        // See if it is in the recicle bin.
+                        if (fileInfo.isDeleted()
+                                && controller.getRecycleBin().isInRecycleBin(fileInfo)) {
+                            myValue = Translation.getTranslation(
+                                    "file_info.in_recycle_bin");
                         } else {
-                            myValue = String.valueOf(holder.getAvailability());
+                            FileInfoHolder holder = folder.getDirectory()
+                                    .getFileInfoHolder(fileInfo);
+                            if (holder == null) {
+                                myValue = "0";
+                            } else {
+                                myValue = String.valueOf(holder.getAvailability());
+                            }
                         }
-                    }
+                }
+            } else if (diskItem instanceof Directory) {
+                Directory dir = (Directory) diskItem;
+                myValue = "";
+                setIcon(null);
+                switch (column) {
+                    case 0:  // file type
+                        Icon icon = Icons.DIRECTORY;
+                        setIcon(icon);
+                        setHorizontalAlignment(LEFT);
+                        break;
+                    case 1: // dir name
+                        myValue = dir.getName();
+                }
             }
 
             Component c = super.getTableCellRendererComponent(table, myValue,
                     isSelected, hasFocus, row, column);
 
+
             // Show new files in bold.
-            if (recentlyDownloaded(fileInfo)) {
-                c.setFont(new Font(getFont().getName(), Font.BOLD,
-                        getFont().getSize()));
+            if (diskItem instanceof FileInfo) {
+                if (recentlyDownloaded((FileInfo) diskItem)) {
+                    c.setFont(new Font(getFont().getName(), Font.BOLD,
+                            getFont().getSize()));
+                }
             }
 
             return c;

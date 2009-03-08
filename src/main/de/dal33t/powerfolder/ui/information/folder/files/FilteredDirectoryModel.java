@@ -20,9 +20,11 @@
 package de.dal33t.powerfolder.ui.information.folder.files;
 
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.disk.Directory;
 
 import java.io.File;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
@@ -79,6 +81,16 @@ public class FilteredDirectoryModel {
      */
     public List<FilteredDirectoryModel> getSubdirectories() {
         return subdirectories;
+    }
+
+    public List<Directory> getSubdirectoryDirectories() {
+        List<Directory> list = new ArrayList<Directory>();
+        for (FilteredDirectoryModel subdirectory : subdirectories) {
+            Directory d = new Directory(null, subdirectory.displayName,
+                    file.getAbsolutePath(), null);
+            list.add(d);
+        }
+        return list;
     }
 
     /**
