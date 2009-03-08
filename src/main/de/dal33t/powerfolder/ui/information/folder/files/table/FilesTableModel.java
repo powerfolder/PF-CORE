@@ -117,9 +117,10 @@ public class FilesTableModel extends PFComponent implements TableModel,
      *
      * @param model
      */
-    public void setFilteredDirectoryModel(FilteredDirectoryModel model) {
+    public void setFilteredDirectoryModel(FilteredDirectoryModel model,
+                                          boolean flat) {
         directories.clear();
-        walkFilteredDirectoryModel(model);
+        walkFilteredDirectoryModel(model, flat);
         update();
     }
 
@@ -128,14 +129,17 @@ public class FilesTableModel extends PFComponent implements TableModel,
      *
      * @param model
      */
-    private void walkFilteredDirectoryModel(FilteredDirectoryModel model) {
+    private void walkFilteredDirectoryModel(FilteredDirectoryModel model,
+                                            boolean flat) {
         File file = model.getFile();
         List<DiskItem> diskItemList = new ArrayList<DiskItem>();
         diskItemList.addAll(model.getFiles());
-        diskItemList.addAll(model.getSubdirectoryDirectories());
+        if (!flat) {
+            diskItemList.addAll(model.getSubdirectoryDirectories());
+        }
         directories.put(file, diskItemList);
         for (FilteredDirectoryModel subModel : model.getSubdirectories()) {
-            walkFilteredDirectoryModel(subModel);
+            walkFilteredDirectoryModel(subModel, flat);
         }
     }
 

@@ -225,8 +225,8 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
     public void adviseOfChange(FilteredDirectoryEvent event) {
         // Try to find the correct FilteredDirectoryModel for the selected
         // directory.
-        FilteredDirectoryModel filteredDirectoryModel = event.getModel();
-        tableModel.setFilteredDirectoryModel(filteredDirectoryModel);
+        FilteredDirectoryModel filteredDirectoryModel = event.getFlatModel();
+        tableModel.setFilteredDirectoryModel(filteredDirectoryModel, event.isFlat());
     }
 
     /**

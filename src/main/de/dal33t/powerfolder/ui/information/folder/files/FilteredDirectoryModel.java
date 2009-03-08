@@ -158,4 +158,13 @@ public class FilteredDirectoryModel {
 
         return false;
     }
+
+    public List<FileInfo> getFilesRecursive() {
+        List<FileInfo> list = new ArrayList<FileInfo>();
+        list.addAll(files);
+        for (FilteredDirectoryModel subdirectory : subdirectories) {
+            list.addAll(subdirectory.getFilesRecursive());
+        }
+        return list;
+    }
 }

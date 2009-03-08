@@ -205,8 +205,16 @@ public class DirectoryFilter extends FilterModel {
                 = new FilteredDirectoryModel(null, folder, folder.getName(),
                 originalDirectory.getFile());
 
+        FilteredDirectoryModel flatFilteredDirectoryModel = null;
+
+        if (isFlatMode()) {
+            flatFilteredDirectoryModel = new FilteredDirectoryModel(null,
+                    folder, folder.getName(), originalDirectory.getFile());
+        }
+
         // Recursive filter.
-        filterDirectory(originalDirectory, filteredDirectoryModel, keywords,
+        filterDirectory(originalDirectory, filteredDirectoryModel,
+                flatFilteredDirectoryModel, keywords,
                 originalFileCount, filteredFileCount, deletedCount,
                 recycledCount, incomingCount, localCount);
 
@@ -217,8 +225,8 @@ public class DirectoryFilter extends FilterModel {
 
         boolean changed = folderChanged.getAndSet(false);
         FilteredDirectoryEvent event = new FilteredDirectoryEvent(deletedFiles,
-                incomingFiles, localFiles, filteredDirectoryModel, recycledFiles,
-                changed);
+                incomingFiles, localFiles, filteredDirectoryModel,
+                flatFilteredDirectoryModel, recycledFiles, changed);
         for (DirectoryFilterListener listener : listeners) {
             listener.adviseOfChange(event);
         }
@@ -233,6 +241,7 @@ public class DirectoryFilter extends FilterModel {
      *
      * @param directory
      * @param filteredDirectoryModel
+     * @param flatFilteredDirectoryModel
      * @param keywords
      * @param originalCount
      * @param filteredCount
@@ -243,6 +252,7 @@ public class DirectoryFilter extends FilterModel {
      */
     private void filterDirectory(Directory directory,
                                  FilteredDirectoryModel filteredDirectoryModel,
+                                 FilteredDirectoryModel flatFilteredDirectoryModel,
                                  String[] keywords,
                                  AtomicLong originalCount,
                                  AtomicLong filteredCount,
@@ -300,8 +310,12 @@ public class DirectoryFilter extends FilterModel {
                 if (showFile) {
                     filteredCount.incrementAndGet();
                     filteredDirectoryModel.getFiles().add(fileInfo);
+                    if (flatFilteredDirectoryModel != null) {
+                        flatFilteredDirectoryModel.getFiles().add(fileInfo);
+                    }
                     if (isNew) {
                         filteredDirectoryModel.setNewFiles(true);
+                        flatFilteredDirectoryModel.setNewFiles(true);
                     }
                 }
             }
@@ -323,14 +337,35 @@ public class DirectoryFilter extends FilterModel {
             FilteredDirectoryModel subModel = new FilteredDirectoryModel(
                     directory, folder, subDirectory.getFile().getName(),
                     subDirectory.getFile());
-            filterDirectory(subDirectory, subModel, keywords, originalCount,
-                    filteredCount,  deletedCount, recycledCount,
+
+            FilteredDirectoryModel flatSubModel = null;
+            if (isFlatMode()) {
+                flatSubModel = new FilteredDirectoryModel(
+                        directory, folder, subDirectory.getFile().getName(),
+                        subDirectory.getFile());
+            }
+            filterDirectory(subDirectory, subModel, flatSubModel, keywords,
+                    originalCount, filteredCount,  deletedCount, recycledCount,
                     incomingCount, localCount);
+
+            // Add FileInfos from subdirs to flat model.
+            if (flatFilteredDirectoryModel != null) {
+                for (FileInfo fileInfo : subModel.getFilesRecursive()) {
+                    if (!flatFilteredDirectoryModel.getFiles().contains(
+                            fileInfo)) {
+                        flatFilteredDirectoryModel.getFiles().add(fileInfo);
+                    }
+                }
+            }
 
             // Only keep if files lower in tree.
             if (!subModel.getFiles().isEmpty()
                     || !subModel.getSubdirectories().isEmpty()) {
                 filteredDirectoryModel.getSubdirectories().add(subModel);
+                if (flatFilteredDirectoryModel != null) {
+                    flatFilteredDirectoryModel.getSubdirectories().add(
+                            flatSubModel);
+                }
             }
         }
     }
