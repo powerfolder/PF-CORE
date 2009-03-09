@@ -19,21 +19,7 @@
  */
 package de.dal33t.powerfolder.util;
 
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.disk.Folder;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_ID;
-import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.message.Identity;
-import de.dal33t.powerfolder.message.NodeInformation;
-import de.dal33t.powerfolder.transfer.Download;
-import de.dal33t.powerfolder.transfer.DownloadManager;
-import de.dal33t.powerfolder.transfer.TransferManager;
-import de.dal33t.powerfolder.transfer.Upload;
-import de.dal33t.powerfolder.util.compare.DiskItemComparator;
-import de.dal33t.powerfolder.util.compare.MemberComparator;
-import de.dal33t.powerfolder.util.logging.LoggingManager;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -57,8 +43,22 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.logging.Level;
-import java.util.logging.LogManager;
 import java.util.logging.Logger;
+
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.MemberInfo;
+import de.dal33t.powerfolder.message.Identity;
+import de.dal33t.powerfolder.message.NodeInformation;
+import de.dal33t.powerfolder.transfer.Download;
+import de.dal33t.powerfolder.transfer.DownloadManager;
+import de.dal33t.powerfolder.transfer.TransferManager;
+import de.dal33t.powerfolder.transfer.Upload;
+import de.dal33t.powerfolder.util.compare.DiskItemComparator;
+import de.dal33t.powerfolder.util.compare.MemberComparator;
+import de.dal33t.powerfolder.util.logging.LoggingManager;
 
 /**
  * Utility class with methods for debugging
@@ -115,10 +115,10 @@ public class Debug {
         Reject.ifNull(fileInfos, "Files are null");
         File filelistsDir = new File(LoggingManager.getDebugDir(), "filelists");
         filelistsDir.mkdirs();
-        File logFile = new File(filelistsDir, Util
+        File logFile = new File(filelistsDir, FileUtils
             .removeInvalidFilenameChars(folderName)
             + File.separator
-            + Util.removeInvalidFilenameChars(memberName)
+            + FileUtils.removeInvalidFilenameChars(memberName)
             + ".list.txt");
         return writeFileListCSV(logFile, fileInfos, header);
     }
@@ -641,9 +641,10 @@ public class Debug {
     public static void writeStatistics(Controller c) {
         OutputStream fOut = null;
         try {
-            fOut = new BufferedOutputStream(new FileOutputStream(c
+            File file = new File(LoggingManager.getDebugDir(), c
                 .getConfigName()
-                + ".netstat.csv", true));
+                + ".netstat.csv");
+            fOut = new BufferedOutputStream(new FileOutputStream(file, true));
             Date now = new Date();
             String statLine = Format.getFullDateFormat().format(now) + ';'
                 + now.getTime() + ';'
