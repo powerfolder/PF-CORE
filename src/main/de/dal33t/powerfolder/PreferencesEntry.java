@@ -95,8 +95,11 @@ public enum PreferencesEntry {
 
     DOCUMENT_LOGGING("document.logging", Level.WARNING.getName()),
 
-    BACKUP_OS("backup.os", true);
+    /** Whether the backup os check box is checked. */
+    BACKUP_OS("backup.os", true),
 
+    /** Whether the user uses OS. If not, don't show OS stuff. */
+    USE_ONLINE_STORAGE("use.os", true);
 
     /** String, Boolean, Integer */
     private Class type;

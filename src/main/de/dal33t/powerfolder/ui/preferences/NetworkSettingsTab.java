@@ -38,11 +38,7 @@ import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
-import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.NetworkingMode;
-import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.*;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.net.UDTSocket;
@@ -62,6 +58,7 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
     private JButton httpProxyButton;
     private ServerSelectorPanel severSelector;
     private ValueModel serverModel;
+    private JCheckBox useOnlineStorageCB;
 
     public NetworkSettingsTab(Controller controller) {
         super(controller);
@@ -179,6 +176,12 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         serverModel = new ValueHolder(server, true);
         severSelector = new ServerSelectorPanel(getController(), serverModel);
 
+        useOnlineStorageCB = new JCheckBox(Translation.getTranslation(
+                "preferences.dialog.online_storage.text"));
+        useOnlineStorageCB.setToolTipText(Translation.getTranslation(
+                "preferences.dialog.online_storage.tip"));
+        useOnlineStorageCB.setSelected(PreferencesEntry.USE_ONLINE_STORAGE
+                .getValueBoolean(getController()));
         enableDisableComponents(getController().isLanOnly());
     }
 
@@ -198,7 +201,7 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         if (panel == null) {
             FormLayout layout = new FormLayout(
                 "right:pref, 3dlu, 140dlu, pref:grow",
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 6dlu, pref, 6dlu, pref, 3dlu, pref, 3dlu, pref");
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 6dlu, pref, 6dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders.createEmptyBorder(
                     "3dlu, 3dlu, 3dlu, 3dlu"));
@@ -239,6 +242,10 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
             builder.addLabel(Translation
                 .getTranslation("preferences.dialog.server"), cc.xy(1, row));
             builder.add(severSelector.getUIComponent(), cc.xy(3, row));
+
+            row += 2;
+            builder.add(useOnlineStorageCB, cc.xyw(3, row, 2));
+
             panel = builder.getPanel();
         }
         return panel;
@@ -264,6 +271,8 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
             + udtConnectionBox.isSelected());
         Member oldServer = getController().getOSClient().getServer();
         Member newServer = (Member) serverModel.getValue();
+        PreferencesEntry.USE_ONLINE_STORAGE.setValue(getController(),
+                useOnlineStorageCB.isSelected());
         if (newServer == null) {
             ConfigurationEntry.SERVER_NAME.removeValue(getController());
             ConfigurationEntry.SERVER_HOST.removeValue(getController());
