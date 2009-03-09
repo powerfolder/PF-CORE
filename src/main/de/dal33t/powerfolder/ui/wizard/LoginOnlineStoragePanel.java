@@ -296,6 +296,9 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
         public void actionPerformed(ActionEvent e) {
             noThanks = true;
 
+            // Hide the existing Online Storage lines
+            getController().getUIController().hideOSLines();
+
             // Use is not interested in OS. Hide OS stuff in UI.
             PreferencesEntry.USE_ONLINE_STORAGE.setValue(getController(), false);
             

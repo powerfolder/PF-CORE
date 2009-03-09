@@ -115,6 +115,13 @@ public class MainTabbedPane extends PFUIComponent {
     }
 
     /**
+     * Hide the Online Storage lines in the home tab.
+     */
+    public void hideOSLines() {
+        homeTab.hideOSLines();
+    }
+
+    /**
      * Listener to populate the folders and computers the first time the
      * tabs are selected.
      */

@@ -255,6 +255,12 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
      * Saves the network settings.
      */
     public void save() {
+
+        if (PreferencesEntry.USE_ONLINE_STORAGE.getValueBoolean(getController())
+                ^ useOnlineStorageCB.isSelected()) {
+            needsRestart = true;
+        }
+        
         NetworkingMode netMode = NetworkingMode.values()[networkingMode
             .getSelectedIndex()];
         getController().setNetworkingMode(netMode);

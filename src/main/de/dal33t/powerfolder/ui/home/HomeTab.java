@@ -41,6 +41,7 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
@@ -281,16 +282,28 @@ public class HomeTab extends PFUIComponent {
         builder.add(computersLine.getUIComponent(), cc.xywh(2, row, 2, 1));
         row++;
 
-        builder.addSeparator(null, cc.xywh(2, row, 2, 1));
-        row +=2;
+        if (PreferencesEntry.USE_ONLINE_STORAGE.getValueBoolean(getController())) {
+    
+            builder.addSeparator(null, cc.xywh(2, row, 2, 1));
+            row +=2;
 
-        builder.add(onlineStorageAccountLabel.getUIComponent(), cc.xywh(2, row, 2, 1));
-        row += 2;
+            builder.add(onlineStorageAccountLabel.getUIComponent(), cc.xywh(2, row, 2, 1));
+            row += 2;
 
-        builder.add(onlineStorageSection.getUIComponent(), cc.xywh(2, row, 2, 1));
-        row++;
+            builder.add(onlineStorageSection.getUIComponent(), cc.xywh(2, row, 2, 1));
+            row++;
+
+        }
 
         return builder.getPanel();
+    }
+
+    /**
+     * Hide the Online Storage lines in the home tab.
+     */
+    public void hideOSLines() {
+        onlineStorageAccountLabel.getUIComponent().setVisible(false);
+        onlineStorageSection.getUIComponent().setVisible(false);
     }
 
     /**

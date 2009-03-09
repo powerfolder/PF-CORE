@@ -365,6 +365,13 @@ public class MainFrame extends PFUIComponent {
         uiComponent.setExtendedState(state);
     }
 
+    /**
+     * Hide the Online Storage lines in the home tab.
+     */
+    public void hideOSLines() {
+        mainTabbedPane.hideOSLines();
+    }
+
     ///////////////////
     // Inner Classes //
     ///////////////////
