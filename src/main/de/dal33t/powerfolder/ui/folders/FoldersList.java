@@ -39,6 +39,7 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
@@ -156,17 +157,20 @@ public class FoldersList extends PFUIComponent {
                 folderBeanList.add(bean);
             }
 
-            for (FolderInfo folderInfo : client.getOnlineFolders()) {
-                FolderBean bean = new FolderBean(folderInfo);
-                if (folderBeanList.contains(bean)) {
-                    for (FolderBean existingBean : folderBeanList) {
-                        if (existingBean.getFolderInfo().equals(folderInfo)) {
-                            existingBean.setOnline(true);
+            // Only process OS if USE_ONLINE_STORAGE configured.  
+            if (PreferencesEntry.USE_ONLINE_STORAGE.getValueBoolean(getController())) {
+                for (FolderInfo folderInfo : client.getOnlineFolders()) {
+                    FolderBean bean = new FolderBean(folderInfo);
+                    if (folderBeanList.contains(bean)) {
+                        for (FolderBean existingBean : folderBeanList) {
+                            if (existingBean.getFolderInfo().equals(folderInfo)) {
+                                existingBean.setOnline(true);
+                            }
                         }
+                    } else {
+                        bean.setOnline(true);
+                        folderBeanList.add(bean);
                     }
-                } else {
-                    bean.setOnline(true);
-                    folderBeanList.add(bean);
                 }
             }
 

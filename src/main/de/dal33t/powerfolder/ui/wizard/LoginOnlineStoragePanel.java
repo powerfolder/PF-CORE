@@ -299,8 +299,11 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
             // Hide the existing Online Storage lines
             getController().getUIController().hideOSLines();
 
-            // Use is not interested in OS. Hide OS stuff in UI.
+            // User is not interested in OS. Hide OS stuff in UI.
             PreferencesEntry.USE_ONLINE_STORAGE.setValue(getController(), false);
+
+            // User will not want to back up to OS.
+            PreferencesEntry.BACKUP_OS.setValue(getController(), false);
             
             Wizard wizard = (Wizard) getWizardContext().getAttribute(
                 Wizard.WIZARD_ATTRIBUTE);
