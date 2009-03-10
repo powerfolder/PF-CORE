@@ -55,21 +55,20 @@ import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
-import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.*;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.LookAndFeelSupport;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.JavaVersion;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 
 public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
+
 
     private JPanel panel;
     private JTextField nickField;
@@ -85,6 +84,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     private JComponent locationField;
     private JCheckBox underlineLinkBox;
     private JCheckBox magneticFrameBox;
+    private JCheckBox translucentMainFrame;
 
     private JCheckBox showAdvancedSettingsBox;
     private ValueModel showAdvancedSettingsModel;
@@ -200,6 +200,12 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         magneticFrameBox = BasicComponentFactory.createCheckBox(
             new BufferedValueModel(mfModel, writeTrigger), Translation
                 .getTranslation("preferences.dialog.magnetic_frame"));
+
+        ValueModel transModel = new ValueHolder(
+            PreferencesEntry.TRANSLUCENT_MAIN_FRAME.getValueBoolean(getController()));
+        translucentMainFrame = BasicComponentFactory.createCheckBox(
+            new BufferedValueModel(transModel, writeTrigger), Translation
+                .getTranslation("preferences.dialog.translucent_frame"));
 
         ValueModel urbModel = new ValueHolder(
             ConfigurationEntry.USE_RECYCLE_BIN.getValueBoolean(getController()));
@@ -337,6 +343,14 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                     .getTranslation("preferences.dialog.non_windows_info"),
                     SwingConstants.CENTER), cc.xyw(1, row, 2));
             }
+
+            if (Constants.OPACITY_SUPPORTED) {
+                builder.appendRow("3dlu");
+                builder.appendRow("pref");
+
+                row += 2;
+                builder.add(translucentMainFrame, cc.xyw(3, row, 2));                
+            }
             panel = builder.getPanel();
         }
         return panel;
@@ -417,6 +431,9 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         // Use magnetic frames
         PreferencesEntry.USE_MAGNETIC_FRAMES.setValue(getController(),
            magneticFrameBox.isSelected());
+
+        PreferencesEntry.TRANSLUCENT_MAIN_FRAME.setValue(getController(),
+           translucentMainFrame.isSelected());
 
         // UseRecycleBin
         ConfigurationEntry.USE_RECYCLE_BIN.setValue(getController(), Boolean

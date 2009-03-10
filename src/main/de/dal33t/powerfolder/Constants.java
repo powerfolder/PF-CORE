@@ -19,6 +19,8 @@
  */
 package de.dal33t.powerfolder;
 
+import de.dal33t.powerfolder.util.JavaVersion;
+
 
 /**
  * Central constants holder for all important constants in PowerFolder.
@@ -29,6 +31,13 @@ package de.dal33t.powerfolder;
 public class Constants {
     
     // General settings *******************************************************
+
+    /**
+     * The minimum suported version for AWTUtilities.setWindowOpacity is
+     * 1.6.0_10-b12.
+     */
+    public static final boolean OPACITY_SUPPORTED = JavaVersion.systemVersion()
+               .compareTo(new JavaVersion(1, 6, 0, 10, 12)) >= 0;
 
     /**
      * The name of the subdirectory in every folder to store powerfolder

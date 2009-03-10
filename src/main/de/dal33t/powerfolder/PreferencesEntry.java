@@ -99,7 +99,10 @@ public enum PreferencesEntry {
     BACKUP_OS("backup.os", true),
 
     /** Whether the user uses OS. If not, don't show OS stuff. */
-    USE_ONLINE_STORAGE("use.os", true);
+    USE_ONLINE_STORAGE("use.os", true),
+
+    /** Whether to show the main frame translucent when lost focus. */
+    TRANSLUCENT_MAIN_FRAME("translucent.main.frame", false);
 
     /** String, Boolean, Integer */
     private Class type;

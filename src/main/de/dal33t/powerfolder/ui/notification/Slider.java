@@ -27,6 +27,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import de.dal33t.powerfolder.util.JavaVersion;
+import de.dal33t.powerfolder.Constants;
 
 /**
  * Creates an animated view that slides out of the bottom-right corner of the
@@ -58,13 +59,6 @@ public class Slider {
      * Delay before autodismissing the view, 10 seconds
      */
     public static final int DISMISS_DELAY = 10000;
-
-    /**
-     * The minimum suported version for AWTUtilities.setWindowOpacity is
-     * 1.6.0_10-b12.
-     */
-    private static final boolean OPACITY_SUPPORTED = JavaVersion.systemVersion()
-               .compareTo(new JavaVersion(1, 6, 0, 10, 12)) >= 0;
 
     private JWindow window;
     private JComponent contents;
@@ -111,7 +105,7 @@ public class Slider {
         animatingSheet = new AnimatingSheet();
         animatingSheet.setSource(contents);
         window.setAlwaysOnTop(true);
-        if (OPACITY_SUPPORTED) {
+        if (Constants.OPACITY_SUPPORTED) {
             AWTUtilities.setWindowOpacity(window, 0.0f);
         }
 
@@ -204,7 +198,7 @@ public class Slider {
             window.dispose();
         } else {
             int animatingHeight;
-            if (OPACITY_SUPPORTED) {
+            if (Constants.OPACITY_SUPPORTED) {
                 // Do not animate, just fade in / out full-size window.
                 animatingHeight = contentsSize.height;
             } else {
@@ -217,7 +211,7 @@ public class Slider {
             window.getContentPane().add(animatingSheet);
             window.pack();
             window.setLocation(showX, startY - window.getHeight());
-            if (OPACITY_SUPPORTED) {
+            if (Constants.OPACITY_SUPPORTED) {
                 AWTUtilities.setWindowOpacity(window,
                         (float) percentage / 100.0f);
             }

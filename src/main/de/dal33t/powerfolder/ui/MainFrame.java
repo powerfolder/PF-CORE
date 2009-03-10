@@ -24,9 +24,11 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+import com.sun.awt.AWTUtilities;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.ui.action.SyncAllFoldersAction;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
@@ -243,11 +245,21 @@ public class MainFrame extends PFUIComponent {
 
         uiComponent = new JFrame();
         uiComponent.addWindowFocusListener(new WindowFocusListener() {
+
             public void windowGainedFocus(WindowEvent e) {
                 getUIController().setActiveFrame(UIController.MAIN_FRAME_ID);
+
+                if (Constants.OPACITY_SUPPORTED) {
+                    AWTUtilities.setWindowOpacity(uiComponent, 1.0f);
+                }
             }
+
             public void windowLostFocus(WindowEvent e) {
-                //Ignore.
+                if (Constants.OPACITY_SUPPORTED
+                        && PreferencesEntry.TRANSLUCENT_MAIN_FRAME
+                        .getValueBoolean(getController())) {
+                    AWTUtilities.setWindowOpacity(uiComponent, 0.5f);
+                }
             }
         });
         uiComponent.setIconImage(Icons.getInstance().POWERFOLDER_IMAGE);
