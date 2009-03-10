@@ -252,7 +252,8 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
 
         builder.add(createAddRemoveLine(), cc.xyw(1, row, 6));
 
-        if (!getController().isLanOnly()) {
+        if (!getController().isLanOnly()
+                && PreferencesEntry.USE_ONLINE_STORAGE.getValueBoolean(getController())) {
             row += 2;
             builder.add(backupByOnlineStorageBox, cc.xyw(1, row, 6));
         }
@@ -307,6 +308,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
 
         // Online Storage integration
         boolean backupByOS = !getController().isLanOnly()
+                && PreferencesEntry.USE_ONLINE_STORAGE.getValueBoolean(getController())
             && Boolean.TRUE.equals(getWizardContext().getAttribute(
                 BACKUP_ONLINE_STOARGE));
         backupByOnlineStorageBox = new JCheckBox(Translation

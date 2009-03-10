@@ -286,7 +286,8 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         row += 2;
         builder.add(folderSizeLabel, cc.xyw(1, row, 6));
 
-        if (!getController().isLanOnly()) {
+        if (!getController().isLanOnly()
+                && PreferencesEntry.USE_ONLINE_STORAGE.getValueBoolean(getController())) {
             row += 2;
             builder.add(backupByOnlineStorageBox, cc.xyw(1, row, 6));
         }
@@ -370,6 +371,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
 
         // Online Storage integration
         boolean backupByOS = !getController().isLanOnly()
+                && PreferencesEntry.USE_ONLINE_STORAGE.getValueBoolean(getController())
             && Boolean.TRUE.equals(getWizardContext().getAttribute(
                 WizardContextAttributes.BACKUP_ONLINE_STOARGE));
         backupByOnlineStorageBox = new JCheckBox(Translation
