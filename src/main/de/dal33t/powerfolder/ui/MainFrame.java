@@ -258,7 +258,10 @@ public class MainFrame extends PFUIComponent {
                 if (Constants.OPACITY_SUPPORTED
                         && PreferencesEntry.TRANSLUCENT_MAIN_FRAME
                         .getValueBoolean(getController())) {
-                    AWTUtilities.setWindowOpacity(uiComponent, 0.5f);
+                    // Translucency is 1 - opacity.
+                    float translucency = 1.0f - PreferencesEntry
+                            .TRANSLUCENT_PERCENTAGE.getValueInt(getController()) /  100.0f;
+                    AWTUtilities.setWindowOpacity(uiComponent, translucency);
                 }
             }
         });

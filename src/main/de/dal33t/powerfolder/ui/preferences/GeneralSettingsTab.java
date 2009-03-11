@@ -29,19 +29,9 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.Locale;
 
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.LookAndFeel;
-import javax.swing.SwingConstants;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.*;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ChangeEvent;
 
 import com.jgoodies.binding.adapter.BasicComponentFactory;
 import com.jgoodies.binding.adapter.ComboBoxAdapter;
@@ -62,7 +52,6 @@ import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.util.JavaVersion;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
@@ -84,7 +73,11 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     private JComponent locationField;
     private JCheckBox underlineLinkBox;
     private JCheckBox magneticFrameBox;
-    private JCheckBox translucentMainFrame;
+    private JCheckBox translucentMainFrameCB;
+    private JLabel transPercLabel1;
+    private JLabel transPercLabel2;
+    private JSpinner transPercSpinner;
+    private SpinnerNumberModel transPercModel;
 
     private JCheckBox showAdvancedSettingsBox;
     private ValueModel showAdvancedSettingsModel;
@@ -203,10 +196,22 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
         ValueModel transModel = new ValueHolder(
             PreferencesEntry.TRANSLUCENT_MAIN_FRAME.getValueBoolean(getController()));
-        translucentMainFrame = BasicComponentFactory.createCheckBox(
+        translucentMainFrameCB = BasicComponentFactory.createCheckBox(
             new BufferedValueModel(transModel, writeTrigger), Translation
                 .getTranslation("preferences.dialog.translucent_frame"));
+        translucentMainFrameCB.addChangeListener(new ChangeListener() {
+            public void stateChanged(ChangeEvent e) {
+                enableTransPerc();
+            }
+        });
 
+        transPercModel = new SpinnerNumberModel(
+                PreferencesEntry.TRANSLUCENT_PERCENTAGE.getValueInt(getController()).intValue(),
+                10, 90, 1);
+        transPercSpinner = new JSpinner(transPercModel);
+        transPercLabel1 = new JLabel(Translation
+                .getTranslation("preferences.dialog.translucent_text"));
+        transPercLabel2 = new JLabel("%");
         ValueModel urbModel = new ValueHolder(
             ConfigurationEntry.USE_RECYCLE_BIN.getValueBoolean(getController()));
         useRecycleBinBox = BasicComponentFactory.createCheckBox(
@@ -347,13 +352,38 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             if (Constants.OPACITY_SUPPORTED) {
                 builder.appendRow("3dlu");
                 builder.appendRow("pref");
+                builder.appendRow("3dlu");
+                builder.appendRow("pref");
 
                 row += 2;
-                builder.add(translucentMainFrame, cc.xyw(3, row, 2));                
+                builder.add(translucentMainFrameCB, cc.xyw(3, row, 2));
+
+                row += 2;
+                builder.add(transPercLabel1, cc.xy(1, row));
+                builder.add(getSpinnerPanel(), cc.xy(3, row));
             }
             panel = builder.getPanel();
+
+            enableTransPerc();
         }
         return panel;
+    }
+
+    private void enableTransPerc() {
+        transPercLabel1.setEnabled(translucentMainFrameCB.isSelected());
+        transPercLabel2.setEnabled(translucentMainFrameCB.isSelected());
+        transPercSpinner.setEnabled(translucentMainFrameCB.isSelected());
+    }
+
+    private Component getSpinnerPanel() {
+        FormLayout layout = new FormLayout(
+            "pref, 3dlu, pref, pref:grow", "pref");
+
+        CellConstraints cc = new CellConstraints();
+        PanelBuilder builder = new PanelBuilder(layout);
+        builder.add(transPercSpinner, cc.xy(1, 1));
+        builder.add(transPercLabel2, cc.xy(3, 1));
+        return builder.getPanel();
     }
 
     /**
@@ -433,7 +463,10 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
            magneticFrameBox.isSelected());
 
         PreferencesEntry.TRANSLUCENT_MAIN_FRAME.setValue(getController(),
-           translucentMainFrame.isSelected());
+           translucentMainFrameCB.isSelected());
+
+        PreferencesEntry.TRANSLUCENT_PERCENTAGE.setValue(getController(),
+                transPercModel.getNumber().intValue());
 
         // UseRecycleBin
         ConfigurationEntry.USE_RECYCLE_BIN.setValue(getController(), Boolean
