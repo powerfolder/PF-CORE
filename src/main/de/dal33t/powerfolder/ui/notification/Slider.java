@@ -26,9 +26,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import de.dal33t.powerfolder.util.JavaVersion;
 import de.dal33t.powerfolder.Constants;
-import de.dal33t.powerfolder.PreferencesEntry;
 
 /**
  * Creates an animated view that slides out of the bottom-right corner of the
@@ -66,16 +64,20 @@ public class Slider {
     private int startY;
     private Dimension contentsSize;
     private AnimatingSheet animatingSheet;
+    private int translucencyPercentage;
 
     /**
      * Constructor
      *
      * @param contents
+     * @param displaySeconds
+     * @param translucencyPercentage
      */
-    public Slider(JComponent contents, int displaySeconds) {
+    public Slider(JComponent contents, int displaySeconds,
+                  int translucencyPercentage) {
         this.contents = contents;
         this.displaySeconds = displaySeconds;
-
+        this.translucencyPercentage = translucencyPercentage;
     }
 
     public JComponent getContents() {
@@ -210,8 +212,10 @@ public class Slider {
             window.pack();
             window.setLocation(showX, startY - window.getHeight());
             if (Constants.OPACITY_SUPPORTED) {
+                // Opaacity = 1 - translucency.
+                float opacity = 1.0f - translucencyPercentage / 100.0f;
                 AWTUtilities.setWindowOpacity(window,
-                        (float) percentage / 100.0f);
+                        (float) opacity * percentage / 100.0f);
             }
         }
     }

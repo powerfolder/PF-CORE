@@ -28,10 +28,7 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.*;
 import de.dal33t.powerfolder.util.Translation;
 
 import javax.swing.*;
@@ -49,6 +46,11 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
     /** Show system notifications */
     private JCheckBox showSystemNotificationBox;
 
+    /** Notification translucency */
+    private SpinnerNumberModel notificationTranslucentModel;
+    private JSpinner notificationTranslucentSpinner;
+
+    /** Notification dwell period (seconds) */
     private SpinnerNumberModel notificationDisplayModel;
     private JSpinner notificationDisplaySpinner;
 
@@ -124,6 +126,12 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
                 3, 30, 1);
         notificationDisplaySpinner = new JSpinner(notificationDisplayModel);
 
+        notificationTranslucentModel = new SpinnerNumberModel(
+                PreferencesEntry.NOTIFICATION_TRANSLUCENT.getValueInt(
+                        getController()).intValue(),
+                0, 90, 1);
+        notificationTranslucentSpinner = new JSpinner(notificationTranslucentModel);
+
         boolean checkForUpdate = PreferencesEntry.CHECK_UPDATE
             .getValueBoolean(getController());
         boolean askFriendship = PreferencesEntry.ASK_FOR_FRIENDSHIP_ON_PRIVATE_FOLDER_JOIN
@@ -175,8 +183,8 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
      */
     public JPanel getUIPanel() {
         if (panel == null) {
-            FormLayout layout = new FormLayout("pref, 3dlu, pref",
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
+            FormLayout layout = new FormLayout("right:pref, 3dlu, pref",
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
                 .createEmptyBorder("3dlu, 3dlu, 3dlu, 3dlu"));
@@ -219,18 +227,26 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
             row += 2;
             builder.add(showSystemNotificationBox, cc.xy(3, row));
 
+            if (Constants.OPACITY_SUPPORTED) {
+                row += 2;
+                builder.addLabel(Translation.getTranslation(
+                        "preferences.dialog.dialogs.notification_translucency"),
+                        cc.xy(1, row));
+                builder.add(createNotificationTranslucentSpinnerPanel(), cc.xy(3, row));
+            }
+
             row += 2;
             builder.addLabel(Translation.getTranslation(
                     "preferences.dialog.dialogs.notification_delay"),
                     cc.xy(1, row));
-            builder.add(createNotificationSpinnerPanel(), cc.xy(3, row));
+            builder.add(createNotificationDisplaySpinnerPanel(), cc.xy(3, row));
 
             panel = builder.getPanel();
         }
         return panel;
     }
 
-    private Component createNotificationSpinnerPanel() {
+    private Component createNotificationDisplaySpinnerPanel() {
         FormLayout layout = new FormLayout("pref, 3dlu, pref, 3dlu, pref, pref:grow", "pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
@@ -240,6 +256,15 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
         JButton preview = new JButton("Preview");
         preview.addActionListener(new MyActionListener());
         builder.add(preview, cc.xy(5, 1));
+        return builder.getPanel();
+    }
+
+    private Component createNotificationTranslucentSpinnerPanel() {
+        FormLayout layout = new FormLayout("pref, 3dlu, pref, pref:grow", "pref");
+        PanelBuilder builder = new PanelBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+        builder.add(notificationTranslucentSpinner, cc.xy(1, 1));
+        builder.addLabel("%", cc.xy(3, 1));
         return builder.getPanel();
     }
 
@@ -271,9 +296,12 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
                     Boolean.toString(showSystemNotificationBox.isSelected()));
         }
 
+        PreferencesEntry.NOTIFICATION_TRANSLUCENT.setValue(getController(),
+                notificationTranslucentModel.getNumber().intValue());
+
         PreferencesEntry.NOTIFICATION_DISPLAY.setValue(getController(),
                 notificationDisplayModel.getNumber().intValue());
-        
+
         PreferencesEntry.CHECK_UPDATE.setValue(getController(), checkForUpdate);
         PreferencesEntry.ASK_FOR_FRIENDSHIP_ON_PRIVATE_FOLDER_JOIN.setValue(
             getController(), askFriendship);
@@ -293,13 +321,32 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
      */
     private class MyActionListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
-            Integer current = PreferencesEntry.NOTIFICATION_DISPLAY.getValueInt(getController());
-            PreferencesEntry.NOTIFICATION_DISPLAY.setValue(getController(), notificationDisplayModel.getNumber().intValue());
+
+            // Remember current
+            Integer currentDisplay = PreferencesEntry.NOTIFICATION_DISPLAY
+                    .getValueInt(getController());
+            Integer currentTranlucent = PreferencesEntry.NOTIFICATION_TRANSLUCENT
+                    .getValueInt(getController());
+
+            // Set temporary
+            PreferencesEntry.NOTIFICATION_DISPLAY.setValue(getController(),
+                    notificationDisplayModel.getNumber().intValue());
+            PreferencesEntry.NOTIFICATION_TRANSLUCENT.setValue(getController(),
+                    notificationTranslucentModel.getNumber().intValue());
+
+            // Dispaly
             getController().getUIController().notifyMessage(
-                    Translation.getTranslation("preferences.dialog.dialogs.notification.preview.title"),
-                    Translation.getTranslation("preferences.dialog.dialogs.notification.preview.text"),
+                    Translation.getTranslation(
+                            "preferences.dialog.dialogs.notification.preview.title"),
+                    Translation.getTranslation(
+                            "preferences.dialog.dialogs.notification.preview.text"),
                     true);
-            PreferencesEntry.NOTIFICATION_DISPLAY.setValue(getController(), current);
+
+            // Reset
+            PreferencesEntry.NOTIFICATION_DISPLAY.setValue(getController(),
+                    currentDisplay);
+            PreferencesEntry.NOTIFICATION_TRANSLUCENT.setValue(getController(),
+                    currentTranlucent);
         }
     }
 }

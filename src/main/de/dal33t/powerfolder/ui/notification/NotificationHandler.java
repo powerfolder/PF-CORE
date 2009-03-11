@@ -90,8 +90,10 @@ public class NotificationHandler extends PFComponent {
         this.title = title;
         this.message = message;
         this.task = task;
-        acceptOptionLabel = Translation.getTranslation("notification_handler.display.text");
-        cancelOptionLabel = Translation.getTranslation("notification_handler.ignore.text");
+        acceptOptionLabel = Translation.getTranslation(
+                "notification_handler.display.text");
+        cancelOptionLabel = Translation.getTranslation(
+                "notification_handler.ignore.text");
     }
 
     /**
@@ -105,6 +107,8 @@ public class NotificationHandler extends PFComponent {
         contentPane.setLayout(new BorderLayout());
         final Slider slider = new Slider((JComponent) contentPane,
                 PreferencesEntry.NOTIFICATION_DISPLAY.getValueInt(
+                        getController()),
+                PreferencesEntry.NOTIFICATION_TRANSLUCENT.getValueInt(
                         getController()));
 
         Action acceptAction = new AbstractAction() {

@@ -111,7 +111,7 @@ public enum PreferencesEntry {
     NOTIFICATION_DISPLAY("notification.display", 10),
 
     /** How translucent the notification should display, as percentage. */
-    NOTIFICATION_TRANSLUCENT("notification.translucent", 25);
+    NOTIFICATION_TRANSLUCENT("notification.translucent", 0);
 
     /** String, Boolean, Integer */
     private Class type;
