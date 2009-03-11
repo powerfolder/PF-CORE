@@ -28,6 +28,7 @@ import java.awt.event.ActionListener;
 
 import de.dal33t.powerfolder.util.JavaVersion;
 import de.dal33t.powerfolder.Constants;
+import de.dal33t.powerfolder.PreferencesEntry;
 
 /**
  * Creates an animated view that slides out of the bottom-right corner of the
@@ -55,11 +56,7 @@ public class Slider {
      */
     public static final int ANIMATION_DELAY = 10;
 
-    /**
-     * Delay before autodismissing the view, 10 seconds
-     */
-    public static final int DISMISS_DELAY = 10000;
-
+    private int displaySeconds;
     private JWindow window;
     private JComponent contents;
     private Timer animateUpTimer;
@@ -75,8 +72,9 @@ public class Slider {
      *
      * @param contents
      */
-    public Slider(JComponent contents) {
+    public Slider(JComponent contents, int displaySeconds) {
         this.contents = contents;
+        this.displaySeconds = displaySeconds;
 
     }
 
@@ -129,7 +127,7 @@ public class Slider {
         });
 
         // Timer to pause for the user to read.
-        dismissTimer = new Timer(DISMISS_DELAY, new ActionListener() {
+        dismissTimer = new Timer(1000 * displaySeconds, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 animateDownTimer.start();
             }

@@ -35,6 +35,9 @@ import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.util.Translation;
 
 import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 
 public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
 
@@ -45,6 +48,9 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
 
     /** Show system notifications */
     private JCheckBox showSystemNotificationBox;
+
+    private SpinnerNumberModel notificationDisplayModel;
+    private JSpinner notificationDisplaySpinner;
 
     /** Ask to add to friends if user becomes member of a folder */
     private JCheckBox askForFriendship;
@@ -112,6 +118,11 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
             new BufferedValueModel(ssnModel, writeTrigger), Translation
                 .getTranslation("preferences.dialog.show_system_notifications"));
 
+        notificationDisplayModel = new SpinnerNumberModel(
+                PreferencesEntry.NOTIFICATION_DISPLAY.getValueInt(
+                        getController()).intValue(),
+                3, 30, 1);
+        notificationDisplaySpinner = new JSpinner(notificationDisplayModel);
 
         boolean checkForUpdate = PreferencesEntry.CHECK_UPDATE
             .getValueBoolean(getController());
@@ -164,7 +175,7 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
      */
     public JPanel getUIPanel() {
         if (panel == null) {
-            FormLayout layout = new FormLayout("pref",
+            FormLayout layout = new FormLayout("pref, 3dlu, pref",
                 "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
@@ -173,35 +184,63 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
 
             int row = 1;
 
-            builder.add(showChatNotificationBox, cc.xy(1, row));
+            builder.add(updateCheck, cc.xy(3, row));
 
             row += 2;
-            builder.add(showSystemNotificationBox, cc.xy(1, row));
+            builder.add(warnOnCloseIfNotInSync, cc.xy(3, row));
 
             row += 2;
-            builder.add(updateCheck, cc.xy(1, row));
+            builder.add(warnOnLimitedConnectivity, cc.xy(3, row));
 
             row += 2;
-            builder.add(warnOnCloseIfNotInSync, cc.xy(1, row));
+            builder.add(warnOnPossibleFilenameProblems, cc.xy(3, row));
 
             row += 2;
-            builder.add(warnOnLimitedConnectivity, cc.xy(1, row));
+            builder.add(askForFriendship, cc.xy(3, row));
 
             row += 2;
-            builder.add(warnOnPossibleFilenameProblems, cc.xy(1, row));
+            builder.add(askForFriendshipMessage, cc.xy(3, row));
 
             row += 2;
-            builder.add(askForFriendship, cc.xy(1, row));
+            builder.add(warnOnDuplicateFolders, cc.xy(3, row));
+
+            ////////////////////////////////////////
+            // Notification stuff only below here //
+            ////////////////////////////////////////
 
             row += 2;
-            builder.add(askForFriendshipMessage, cc.xy(1, row));
+            builder.addSeparator(Translation.getTranslation(
+                    "preferences.dialog.dialogs.notifications"),
+                    cc.xyw(1, row, 3));
 
             row += 2;
-            builder.add(warnOnDuplicateFolders, cc.xy(1, row));
+            builder.add(showChatNotificationBox, cc.xy(3, row));
+
+            row += 2;
+            builder.add(showSystemNotificationBox, cc.xy(3, row));
+
+            row += 2;
+            builder.addLabel(Translation.getTranslation(
+                    "preferences.dialog.dialogs.notification_delay"),
+                    cc.xy(1, row));
+            builder.add(createNotificationSpinnerPanel(), cc.xy(3, row));
 
             panel = builder.getPanel();
         }
         return panel;
+    }
+
+    private Component createNotificationSpinnerPanel() {
+        FormLayout layout = new FormLayout("pref, 3dlu, pref, 3dlu, pref, pref:grow", "pref");
+        PanelBuilder builder = new PanelBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+        builder.add(notificationDisplaySpinner, cc.xy(1, 1));
+        builder.addLabel(Translation.getTranslation("general.seconds.lower"),
+                cc.xy(3, 1));
+        JButton preview = new JButton("Preview");
+        preview.addActionListener(new MyActionListener());
+        builder.add(preview, cc.xy(5, 1));
+        return builder.getPanel();
     }
 
     /**
@@ -231,6 +270,9 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
             ConfigurationEntry.SHOW_SYSTEM_NOTIFICATIONS.setValue(getController(),
                     Boolean.toString(showSystemNotificationBox.isSelected()));
         }
+
+        PreferencesEntry.NOTIFICATION_DISPLAY.setValue(getController(),
+                notificationDisplayModel.getNumber().intValue());
         
         PreferencesEntry.CHECK_UPDATE.setValue(getController(), checkForUpdate);
         PreferencesEntry.ASK_FOR_FRIENDSHIP_ON_PRIVATE_FOLDER_JOIN.setValue(
@@ -246,4 +288,18 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
             .setValue(getController(), duplicateFolders);
     }
 
+    /**
+     * Show a preview of the notification.
+     */
+    private class MyActionListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            Integer current = PreferencesEntry.NOTIFICATION_DISPLAY.getValueInt(getController());
+            PreferencesEntry.NOTIFICATION_DISPLAY.setValue(getController(), notificationDisplayModel.getNumber().intValue());
+            getController().getUIController().notifyMessage(
+                    Translation.getTranslation("preferences.dialog.dialogs.notification.preview.title"),
+                    Translation.getTranslation("preferences.dialog.dialogs.notification.preview.text"),
+                    true);
+            PreferencesEntry.NOTIFICATION_DISPLAY.setValue(getController(), current);
+        }
+    }
 }

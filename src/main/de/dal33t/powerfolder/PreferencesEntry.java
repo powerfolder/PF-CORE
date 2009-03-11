@@ -105,7 +105,13 @@ public enum PreferencesEntry {
     TRANSLUCENT_PERCENTAGE("translucent.percentage", 50),
 
     /** Whether to show the main frame translucent when lost focus. */
-    TRANSLUCENT_MAIN_FRAME("translucent.main.frame", false);
+    TRANSLUCENT_MAIN_FRAME("translucent.main.frame", false),
+
+    /** How many seconds the notification should display. */
+    NOTIFICATION_DISPLAY("notification.display", 10),
+
+    /** How translucent the notification should display, as percentage. */
+    NOTIFICATION_TRANSLUCENT("notification.translucent", 25);
 
     /** String, Boolean, Integer */
     private Class type;

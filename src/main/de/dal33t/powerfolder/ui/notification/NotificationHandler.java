@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.ui.notification;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.ui.MainFrame;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
@@ -102,7 +103,9 @@ public class NotificationHandler extends PFComponent {
         JWindow dialog = new JWindow();
         Container contentPane = dialog.getContentPane();
         contentPane.setLayout(new BorderLayout());
-        final Slider slider = new Slider((JComponent) contentPane);
+        final Slider slider = new Slider((JComponent) contentPane,
+                PreferencesEntry.NOTIFICATION_DISPLAY.getValueInt(
+                        getController()));
 
         Action acceptAction = new AbstractAction() {
             public void actionPerformed(ActionEvent e) {

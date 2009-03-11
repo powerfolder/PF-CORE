@@ -1089,15 +1089,29 @@ public class UIController extends PFComponent {
 
     /**
      * Shows a notification message only if the UI is minimized.
-     * 
+     *
      * @param title
      *            The title to display under 'PowerFolder'.
      * @param message
      *            Message to show if notification is displayed.
      */
     public void notifyMessage(String title, String message) {
+        notifyMessage(title, message, false);
+    }
 
-        if (started && mainFrame.isIconifiedOrHidden()
+    /**
+     * Shows a notification message only if the UI is minimized.
+     *
+     * @param title
+     *            The title to display under 'PowerFolder'.
+     * @param message
+     *            Message to show if notification is displayed.
+     * @param override
+     *            Show if not iconified / hidden.
+     */
+    public void notifyMessage(String title, String message, boolean override) {
+
+        if (started && (mainFrame.isIconifiedOrHidden() || override)
             && !getController().isShuttingDown())
         {
             NotificationHandler notificationHandler = new NotificationHandler(
