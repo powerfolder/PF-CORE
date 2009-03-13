@@ -708,7 +708,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         TestHelper.assertIncompleteFilesGone(this);
     }
 
-    public void testMultipleResumeTransfer() throws Exception {
+    public void xtestMultipleResumeTransfer() throws Exception {
         // Logger l = Logger.getLogger(AbstractDownloadManager.class.getName());
         // l.setFilter(null);
         // l.setLevel(Level.ALL);
