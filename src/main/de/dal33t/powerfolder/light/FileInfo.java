@@ -566,15 +566,29 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
      * @return the file.
      */
     public File getDiskFile(FolderRepository repo) {
-        if (repo == null) {
-            throw new NullPointerException("Repository is null");
-        }
+        Reject.ifNull(repo, "Repo is null");
 
         Folder folder = getFolder(repo);
         if (folder == null) {
             return null;
         }
         return folder.getDiskFile(this);
+    }
+
+    /**
+     * Resolves a FileInfo from local folder db by folder repository, File MAY
+     * NOT Exist! Returns null if folder was not found
+     * 
+     * @param repo
+     * @return the FileInfo which is is in my own DB/knownfiles.
+     */
+    public FileInfo getLocalFileInfo(FolderRepository repo) {
+        Reject.ifNull(repo, "Repo is null");
+        Folder folder = getFolder(repo);
+        if (folder == null) {
+            return null;
+        }
+        return folder.getFile(this);
     }
 
     /**
