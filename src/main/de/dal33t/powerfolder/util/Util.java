@@ -78,7 +78,7 @@ public class Util {
      */
     public static final boolean isRunningProVersion() {
         return Util.class.getClassLoader().getResourceAsStream(
-            "web-resources/js/ajax.js") != null;
+            "de/dal33t/powerfolder/ConfigurationProEntry.class") != null;
     }
 
     /**
