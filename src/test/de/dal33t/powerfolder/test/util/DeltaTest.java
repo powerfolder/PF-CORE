@@ -74,7 +74,7 @@ public class DeltaTest extends TestCase {
      * FilePartsRecord r2 = b2.getRecord(); FilePartsRecord r3 = b3.getRecord();
      * assertEquals(r1, r2); assertEquals(r1, r3); }
      */
-    public void testAdlerMultiple() throws Exception {
+    public void xtestAdlerMultiple() throws Exception {
         for (int i = 0; i < 40; i++) {
             testAdler();
             tearDown();
