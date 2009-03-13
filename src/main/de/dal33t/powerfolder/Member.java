@@ -1486,6 +1486,25 @@ public class Member extends PFComponent implements Comparable<Member> {
                         notification.getPersonalMessage());
                 getController().addAskForFriendship(event);
                 expectedTime = 50;
+            } else if (message instanceof Notification) {
+                // This is the V3 freidnship notification class.
+                // V4 uses AddFriendNotification.
+                Notification not = (Notification) message;
+                if (not.getEvent() == null) {
+                    logWarning("Unknown event from peer");
+                } else {
+                    switch (not.getEvent()) {
+                        case ADDED_TO_FRIENDS :
+                            AskForFriendshipEvent event =
+                                    new AskForFriendshipEvent(getInfo(),
+                                    not.getPersonalMessage());
+                            getController().addAskForFriendship(event);
+                            break;
+                        default :
+                            logWarning("Unhandled event: " + not.getEvent());
+                    }
+                }
+                expectedTime = 50;
 
             } else if (message instanceof RequestPart) {
                 RequestPart pr = (RequestPart) message;

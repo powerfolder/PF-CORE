@@ -82,7 +82,9 @@ public class SendMessageTask extends PersistentTask {
 	@Override
 	public void shutdown() {
 		try {
-			if (getController() != null && getController().getNodeManager() != null && listener != null) {
+			if (getController() != null
+                    && getController().getNodeManager() != null
+                    && listener != null) {
 				getController().getNodeManager().removeNodeManagerListener(listener);
 			}
 		} finally {
@@ -110,7 +112,8 @@ public class SendMessageTask extends PersistentTask {
 	
 	@Override
 	public String toString() {
-		return "SendMessageTask trying to send " + message + " to " + targetID + " until " + expires;
+		return "SendMessageTask trying to send " + message + " to " + targetID
+                + " until " + expires;
 	}
 
 	private class MessageTrigger implements NodeManagerListener {
