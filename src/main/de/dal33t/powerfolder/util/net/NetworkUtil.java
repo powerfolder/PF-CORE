@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.util.net;
 
 import java.io.IOException;
@@ -32,8 +32,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.Reject;
-
 
 /**
  * Utility class for all low level networking stuff.
@@ -42,18 +43,18 @@ import de.dal33t.powerfolder.util.Reject;
  * @version $Revision: 1.4 $
  */
 public class NetworkUtil {
+    private final static Logger LOG = Logger.getLogger(NetworkUtil.class.getName());
 
-    private static final Logger log = Logger.getLogger(NetworkUtil.class.getName());
-    private static final int LAN_SOCKET_BUFFER_SIZE = 64 * 1024;
-    private static final int INET_SOCKET_BUFFER_SIZE = 16 * 1024;
-    private static final int LAN_SOCKET_BUFFER_LIMIT = 1024 * 1024;
-    private static final int INET_SOCKET_BUFFER_LIMIT = 256 * 1024;
+//    private static final int LAN_SOCKET_BUFFER_SIZE = 64 * 1024;
+//    private static final int INET_SOCKET_BUFFER_SIZE = 16 * 1024;
+//    private static final int LAN_SOCKET_BUFFER_LIMIT = 1024 * 1024;
+//    private static final int INET_SOCKET_BUFFER_LIMIT = 256 * 1024;
 
     private static final long CACHE_TIMEOUT = 10 * 1000;
 
     private static long LAST_CHACHE_UPDATE = 0;
     private static Map<InetAddress, NetworkInterface> LOCAL_NETWORK_ADDRESSES_CACHE;
-    
+
     private static InetAddress NULL_IP;
     static {
         try {
@@ -76,21 +77,30 @@ public class NetworkUtil {
      *            the Socket to setup
      * @throws SocketException
      */
-    public static void setupSocket(Socket socket) throws SocketException {
+    public static void setupSocket(Socket socket, Controller controller)
+        throws SocketException
+    {
         Reject.ifNull(socket, "Socket is null");
+        Reject.ifNull(controller, "Controller is null");
 
         boolean onLan = isOnLanOrLoopback(socket.getInetAddress());
         // socket.setSoTimeout(Constants.SOCKET_CONNECT_TIMEOUT);
         // socket.setSoLinger(true, 4000);
         // socket.setKeepAlive(true);
-        socket.setReceiveBufferSize(onLan
-            ? LAN_SOCKET_BUFFER_SIZE
-            : INET_SOCKET_BUFFER_SIZE);
-        socket.setSendBufferSize(onLan
-            ? LAN_SOCKET_BUFFER_SIZE
-            : INET_SOCKET_BUFFER_SIZE);
+
+        if (onLan) {
+            int bufferSize = ConfigurationEntry.NET_SOCKET_LAN_BUFFER_SIZE
+                .getValueInt(controller);
+            socket.setReceiveBufferSize(bufferSize);
+            socket.setSendBufferSize(bufferSize);
+        } else {
+            int bufferSize = ConfigurationEntry.NET_SOCKET_INTERNET_BUFFER_SIZE
+                .getValueInt(controller);
+            socket.setReceiveBufferSize(bufferSize);
+            socket.setSendBufferSize(bufferSize);
+        }
         // socket.setTcpNoDelay(true);
-        log.finer("Socket setup: (" + socket.getSendBufferSize() + "/"
+        LOG.finer("Socket setup: (" + socket.getSendBufferSize() + "/"
             + socket.getReceiveBufferSize() + "/" + socket.getSoLinger()
             + "ms) " + socket);
     }
@@ -109,28 +119,39 @@ public class NetworkUtil {
      * @throws IOException
      */
     public static void setupSocket(UDTSocket socket,
-        InetSocketAddress inetSocketAddress) throws IOException
+        InetSocketAddress inetSocketAddress, Controller controller)
+        throws IOException
     {
         Reject.ifNull(socket, "Socket is null");
+        Reject.ifNull(controller, "Controller is null");
 
         boolean onLan = (inetSocketAddress != null && inetSocketAddress
             .getAddress() != null) ? isOnLanOrLoopback(inetSocketAddress
             .getAddress()) : false;
 
-        socket.setSoUDPReceiverBufferSize(onLan
-            ? LAN_SOCKET_BUFFER_SIZE
-            : INET_SOCKET_BUFFER_SIZE);
-        socket.setSoUDPSenderBufferSize(onLan
-            ? LAN_SOCKET_BUFFER_SIZE
-            : INET_SOCKET_BUFFER_SIZE);
-        socket.setSoSenderBufferLimit(onLan
-            ? LAN_SOCKET_BUFFER_LIMIT
-            : INET_SOCKET_BUFFER_LIMIT);
-        socket.setSoReceiverBufferLimit(onLan
-            ? LAN_SOCKET_BUFFER_LIMIT
-            : INET_SOCKET_BUFFER_LIMIT);
-        log.finer("Socket setup: ("
-                + socket.getSoUDPSenderBufferSize() + "/"
+        if (onLan) {
+            int bufferSize = ConfigurationEntry.NET_SOCKET_LAN_BUFFER_SIZE
+                .getValueInt(controller);
+            socket.setSoUDPReceiverBufferSize(bufferSize);
+            socket.setSoUDPSenderBufferSize(bufferSize);
+
+            int bufferLimit = ConfigurationEntry.NET_SOCKET_LAN_BUFFER_LIMIT
+                .getValueInt(controller);
+            socket.setSoSenderBufferLimit(bufferLimit);
+            socket.setSoReceiverBufferLimit(bufferLimit);
+        } else {
+            int bufferSize = ConfigurationEntry.NET_SOCKET_INTERNET_BUFFER_SIZE
+                .getValueInt(controller);
+            socket.setSoUDPReceiverBufferSize(bufferSize);
+            socket.setSoUDPSenderBufferSize(bufferSize);
+
+            int bufferLimit = ConfigurationEntry.NET_SOCKET_INTERNET_BUFFER_LIMIT
+                .getValueInt(controller);
+            socket.setSoSenderBufferLimit(bufferLimit);
+            socket.setSoReceiverBufferLimit(bufferLimit);
+        }
+
+        LOG.finer("Socket setup: (" + socket.getSoUDPSenderBufferSize() + "/"
             + socket.getSoUDPReceiverBufferSize() + " " + socket);
     }
 
@@ -142,7 +163,7 @@ public class NetworkUtil {
     public static boolean isOnLanOrLoopback(InetAddress addr) {
         Reject.ifNull(addr, "Address is null");
         if (!(addr instanceof Inet4Address)) {
-            log.warning("Inet6 not supported yet: " + addr);
+            LOG.warning("Inet6 not supported yet: " + addr);
         }
         try {
             return addr.isLoopbackAddress() || addr.isSiteLocalAddress()
@@ -182,7 +203,7 @@ public class NetworkUtil {
      * associated NetworkInterface as values. Caches the result for a certain
      * amount of time.
      * 
-     * @return all cached local network addresses
+     * @return the cached list al all network addresses
      * @throws SocketException
      */
     public static final Map<InetAddress, NetworkInterface> getAllLocalNetworkAddressesCached()
@@ -203,7 +224,7 @@ public class NetworkUtil {
     public static final boolean isUDTSupported() {
         return UDTSocket.isSupported();
     }
-    
+
     /**
      * @param address
      * @return true if the address is 0.0.0.0
@@ -223,4 +244,5 @@ public class NetworkUtil {
         }
         return nullIP;
     }
+
 }
