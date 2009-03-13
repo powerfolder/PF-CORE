@@ -19,14 +19,6 @@
 */
 package de.dal33t.powerfolder.util.logging;
 
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PreferencesEntry;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.util.logging.handlers.ConsoleHandler;
-import de.dal33t.powerfolder.util.logging.handlers.DocumentHandler;
-
-import javax.swing.text.StyledDocument;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -37,6 +29,15 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+
+import javax.swing.text.StyledDocument;
+
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.logging.handlers.ConsoleHandler;
+import de.dal33t.powerfolder.util.logging.handlers.DocumentHandler;
 
 /**
  * Class to manage logging handler.
@@ -160,9 +161,11 @@ public class LoggingManager {
             if (fileHandler == null) {
                 try {
                     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-                    String logFilename = prefix + '-' + sdf.format(new Date()) + "-log.txt";
-                    fileLoggingFileName = new File(getDebugDir(),
-                            Util.removeInvalidFilenameChars(logFilename)).getAbsolutePath();
+                    String logFilename = prefix + '-' + sdf.format(new Date())
+                        + "-log.txt";
+                    fileLoggingFileName = new File(getDebugDir(), FileUtils
+                        .removeInvalidFilenameChars(logFilename))
+                        .getAbsolutePath();
                     fileHandler = new FileHandler(fileLoggingFileName);
                     fileHandler.setFormatter(new LoggingFormatter());
                     getRootLogger().addHandler(fileHandler);
