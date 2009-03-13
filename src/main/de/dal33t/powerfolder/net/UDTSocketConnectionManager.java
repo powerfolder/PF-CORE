@@ -189,7 +189,7 @@ public class UDTSocketConnectionManager extends PFComponent {
         slot.socket = new UDTSocket();
         try {
             NetworkUtil.setupSocket(slot.socket, destination
-                .getConnectAddress());
+                .getConnectAddress(), getController());
         } catch (IOException e1) {
             logSevere(e1);
         }
