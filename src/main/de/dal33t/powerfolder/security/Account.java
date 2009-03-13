@@ -410,6 +410,18 @@ public class Account extends Model implements Serializable {
         getOSSubscription().setDisabledExpirationDate(null);
         controller.getSecurityManager().getDAO().store(this);
 
+        enableSync(controller);
+    }
+
+    /**
+     * Sets all folders that have SyncProfile.DISABLED to
+     * SyncProfile.BACKUP_TARGET_NO_CHANGE_DETECT.
+     * 
+     * @param controller
+     */
+    public int enableSync(Controller controller) {
+        Reject.ifNull(controller, "Controller is null");
+        int n = 0;
         for (Permission p : getPermissions()) {
             if (!(p instanceof FolderAdminPermission)) {
                 continue;
@@ -420,9 +432,11 @@ public class Account extends Model implements Serializable {
                 continue;
             }
             if (f.getSyncProfile().equals(SyncProfile.DISABLED)) {
+                n++;
                 f.setSyncProfile(SyncProfile.BACKUP_TARGET_NO_CHANGE_DETECT);
             }
         }
+        return n;
     }
 
     // Permission convenience ************************************************
