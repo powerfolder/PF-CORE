@@ -23,15 +23,11 @@ import java.io.File;
 import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.InetAddress;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -72,7 +68,6 @@ import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.MessageListenerSupport;
 import de.dal33t.powerfolder.util.NamedThreadFactory;
 import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.compare.MemberComparator;
 import de.dal33t.powerfolder.util.net.AddressRange;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
 import de.dal33t.powerfolder.util.task.SendMessageTask;
@@ -87,9 +82,6 @@ import de.dal33t.powerfolder.util.task.SendMessageTask;
 public class NodeManager extends PFComponent {
 
     private static final Logger log = Logger.getLogger(NodeManager.class.getName());
-
-    // The central inet nodes file
-    private static final String NODES_URL = "http://nodes.powerfolder.com/PowerFolder.nodes";
 
     /**
      * Threadpool to handle incoming connections.
@@ -231,16 +223,6 @@ public class NodeManager extends PFComponent {
             }
         };
         nodefileLoader.start();
-        if (!getController().isLanOnly()) {
-            // we don't need supernodes if on lan
-            // load (super) nodes from inet in own thread
-            Thread inetNodeLoader = new Thread("Supernodes loader") {
-                public void run() {
-                    loadNodesFromInet();
-                }
-            };
-            inetNodeLoader.start();
-        }
 
         setupPeridicalTasks();
 
@@ -1356,68 +1338,6 @@ public class NodeManager extends PFComponent {
                 + "'. " + e.getMessage());
             logFiner("IOException", e);
             return false;
-        }
-    }
-
-    /**
-     * Loads supernodes from inet and connects to them
-     */
-    private void loadNodesFromInet() {
-        logInfo("Loading nodes from inet: " + NODES_URL);
-        URL url;
-        try {
-            url = new URL(NODES_URL);
-        } catch (MalformedURLException e) {
-            logFiner("MalformedURLException", e);
-            return;
-        }
-
-        NodeList inetNodes = new NodeList();
-        try {
-            inetNodes.load(url);
-            List<MemberInfo> supernodes = inetNodes.getNodeList();
-
-            // Sort by connet time
-            Collections.sort(supernodes, MemberComparator.BY_LAST_CONNECT_DATE);
-
-            for (Iterator<MemberInfo> it = supernodes.iterator(); it.hasNext();)
-            {
-                MemberInfo node = it.next();
-                if (!node.isSupernode) {
-                    it.remove();
-                    continue;
-                }
-
-                if (isFiner()) {
-                    logFiner(node.toString() + " ,last connect: "
-                        + node.lastConnectTime);
-                }
-
-                // If supernode is outdated, fix date
-                if (node.lastConnectTime == null
-                    || node.lastConnectTime.getTime() < (System
-                        .currentTimeMillis() - Constants.MAX_NODE_OFFLINE_TIME))
-                {
-                    logFiner("Fixed date of internet supernode list " + node);
-                    // Give supernode date last connect time 2 hours before
-                    // no connection is retried.
-                    node.lastConnectTime = new Date(System.currentTimeMillis()
-                        - Constants.MAX_NODE_OFFLINE_TIME + 1000L * 60 * 60 * 2);
-                }
-            }
-
-            logInfo("Loaded " + supernodes.size() + " new supernodes from "
-                + NODES_URL);
-
-            MemberInfo[] supernodesArr = new MemberInfo[supernodes.size()];
-            supernodes.toArray(supernodesArr);
-            queueNewNodes(supernodesArr);
-        } catch (IOException e) {
-            log.log(Level.WARNING, "Unable to read supernodes files from " + NODES_URL, e);
-        } catch (ClassCastException e) {
-            log.log(Level.WARNING, "Illegal format of supernodes files on " + NODES_URL, e);
-        } catch (ClassNotFoundException e) {
-            log.log(Level.WARNING, "Illegal format of supernodes files on " + NODES_URL, e);
         }
     }
 
