@@ -172,6 +172,30 @@ public enum ConfigurationEntry {
      * Use a random port in the (49152) 0 to 65535 range, overides NET_BIND_PORT
      */
     NET_BIND_RANDOM_PORT("random-port", Boolean.TRUE.toString()),
+    
+    /**
+     * The TCP/IP socket buffer size for TCP/UDT connections over Internet.
+     */
+    NET_SOCKET_INTERNET_BUFFER_SIZE("net.socket.internet.buffer.size", String
+        .valueOf(16 * 1024)),
+
+    /**
+     * The TCP/IP socket buffer size for TCP/UDT connections in LAN.
+     */
+    NET_SOCKET_LAN_BUFFER_SIZE("net.socket.lan.buffer.size", String
+        .valueOf(64 * 1024)),
+
+    /**
+     * The TCP/IP socket buffer size limit for UDT connections over Internet.
+     */
+    NET_SOCKET_INTERNET_BUFFER_LIMIT("net.socket.internet.buffer.limit", String
+        .valueOf(256 * 1024)),
+
+    /**
+     * The TCP/IP socket buffer size limit for UDT connections in LAN.
+     */
+    NET_SOCKET_LAN_BUFFER_LIMIT("net.socket.lan.buffer.limit", String
+        .valueOf(1024 * 1024)),
 
     /**
      * The maximum number of concurrent uploads.
@@ -202,6 +226,18 @@ public enum ConfigurationEntry {
      * The percentage to throttle the uploadlimits in silentmode.
      */
     UPLOADLIMIT_SILENTMODE_THROTTLE("net.silentmodethrottle"),
+    
+    /**
+     * The maximum size (in bytes) of an {@link FileChunk} used for file transfers
+     */
+    TRANSFERS_MAX_FILE_CHUNK_SIZE("transfers.max.file.chunk.size", String
+        .valueOf(32 * 1024)),
+
+    /**
+     * The maximum number of queued request for {@link FileChunk}s
+     */
+    TRANSFERS_MAX_REQUESTS_QUEUED("transfers.max.request.queued", String
+        .valueOf(15)),
 
     /**
      * My dynamic dns hostname or fix ip.
