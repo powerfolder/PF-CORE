@@ -19,11 +19,6 @@
 */
 package de.dal33t.powerfolder.test;
 
-import de.dal33t.powerfolder.message.FileChunk;
-import de.dal33t.powerfolder.transfer.TransferManager;
-import de.dal33t.powerfolder.util.Convert;
-import de.dal33t.powerfolder.util.FileUtils;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -33,6 +28,11 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Date;
 import java.util.logging.Logger;
+
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.message.FileChunk;
+import de.dal33t.powerfolder.util.Convert;
+import de.dal33t.powerfolder.util.FileUtils;
 
 
 /**
@@ -134,7 +134,9 @@ public class Test {
 
     private void testFileChunkSize() throws IOException {
         FileChunk chunk = new FileChunk();
-        chunk.data = new byte[TransferManager.MAX_CHUNK_SIZE];
+        chunk.data = new byte[Integer
+            .valueOf(ConfigurationEntry.TRANSFERS_MAX_FILE_CHUNK_SIZE
+                .getDefaultValue())];
         File file = new File("test.chunk");
         log.info("Writing test chunk (" + chunk.data.length + " bytes) to "
             + file);
