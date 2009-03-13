@@ -216,7 +216,7 @@ public class ConnectionHandlerFactory extends PFComponent {
                 socket.bind(new InetSocketAddress(cfgBind, 0));
             }
             socket.connect(remoteAddress, Constants.SOCKET_CONNECT_TIMEOUT);
-            NetworkUtil.setupSocket(socket);
+            NetworkUtil.setupSocket(socket, getController());
             return createAndInitSocketConnectionHandler(socket);
         } catch (IOException e) {
             throw new ConnectionException("Unable to connect to: "
