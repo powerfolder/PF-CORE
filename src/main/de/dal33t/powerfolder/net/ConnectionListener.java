@@ -421,7 +421,7 @@ public class ConnectionListener extends PFComponent implements Runnable {
                     nodeSocket.close();
                     continue;
                 }
-                NetworkUtil.setupSocket(nodeSocket);
+                NetworkUtil.setupSocket(nodeSocket, getController());
 
                 hasIncomingConnection = true;
                 if (isFiner()) {
