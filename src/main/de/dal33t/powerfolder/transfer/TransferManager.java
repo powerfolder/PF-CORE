@@ -81,8 +81,12 @@ import de.dal33t.powerfolder.util.delta.FilePartsRecord;
  */
 public class TransferManager extends PFComponent {
 
-    /** The maximum size of a chunk transferred at once */
-    public static final int MAX_CHUNK_SIZE = 32 * 1024;
+    /**
+     * The maximum size of a chunk transferred at once of older, prev 3.1.7/4.0
+     * versions.
+     */
+    public static final int OLD_MAX_CHUNK_SIZE = 32 * 1024;
+    public static final int OLD_MAX_REQUESTS_QUEUED = 20;
 
     private static final DecimalFormat CPS_FORMAT = new DecimalFormat(
         "#,###,###,###.##");
@@ -210,6 +214,19 @@ public class TransferManager extends PFComponent {
         // set ul limit
         setAllowedUploadCPSForLAN(getConfigCPS(ConfigurationEntry.UPLOADLIMIT_LAN));
         setAllowedDownloadCPSForLAN(getConfigCPS(ConfigurationEntry.DOWNLOADLIMIT_LAN));
+
+        if (getMaxFileChunkSize() > OLD_MAX_CHUNK_SIZE) {
+            logWarning("Max filechunk size set to "
+                + Format.formatBytes(getMaxFileChunkSize())
+                + ". Can only communicate with clients"
+                + " running version 3.1.7 or higher.");
+        }
+        if (getMaxRequestsQueued() > OLD_MAX_REQUESTS_QUEUED) {
+            logWarning("Max request queue size set to "
+                + getMaxRequestsQueued()
+                + ". Can only communicate with clients"
+                + " running version 3.1.7 or higher.");
+        }
     }
 
     /**
@@ -971,6 +988,24 @@ public class TransferManager extends PFComponent {
     }
 
     /**
+     *@see ConfigurationEntry#TRANSFERS_MAX_FILE_CHUNK_SIZE
+     * @return the maximum size of a {@link FileChunk}
+     */
+    int getMaxFileChunkSize() {
+        return ConfigurationEntry.TRANSFERS_MAX_FILE_CHUNK_SIZE
+            .getValueInt(getController());
+    }
+
+    /**
+     * @see ConfigurationEntry#TRANSFERS_MAX_REQUESTS_QUEUED
+     * @return
+     */
+    int getMaxRequestsQueued() {
+        return ConfigurationEntry.TRANSFERS_MAX_REQUESTS_QUEUED
+            .getValueInt(getController());
+    }
+
+    /**
      * @return true if the manager has free upload slots
      */
     private boolean hasFreeUploadSlots() {
@@ -1047,6 +1082,15 @@ public class TransferManager extends PFComponent {
             logWarning("File not in sync with disk: '"
                 + dl.file.toDetailString() + "', should be modified at "
                 + diskFile.lastModified());
+            return null;
+        }
+
+        FileInfo localFile = dl.file.getLocalFileInfo(repo);
+        boolean fileInSyncWithDb = localFile != null
+            && localFile.isVersionAndDateIdentical(dl.file);
+        if (!fileInSyncWithDb) {
+            logWarning("File not in sync with db: '" + dl.file.toDetailString()
+                + "', but I have " + localFile.toDetailString());
             return null;
         }
 

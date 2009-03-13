@@ -214,7 +214,8 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
                 break;
             }
             range = Range.getRangeByLength(range.getStart(), Math.min(
-                TransferManager.MAX_CHUNK_SIZE, range.getLength()));
+                getController().getTransferManager().getMaxFileChunkSize(),
+                range.getLength()));
             // Split requests across sources
             if (findAndRequestDownloadFor(range)) {
                 filePartsState.setPartState(range, PartState.PENDING);

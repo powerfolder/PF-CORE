@@ -47,8 +47,6 @@ import de.dal33t.powerfolder.util.delta.FilePartsRecord;
 @SuppressWarnings("serial")
 public class Upload extends Transfer {
 
-    public static final int MAX_REQUESTS_QUEUED = 50;
-
     private boolean aborted;
     private transient Queue<Message> pendingRequests = new LinkedList<Message>();
 
@@ -81,8 +79,12 @@ public class Upload extends Transfer {
     private void enqueueMessage(Message m) {
         try {
             synchronized (pendingRequests) {
-                if (pendingRequests.size() >= MAX_REQUESTS_QUEUED) {
-                    throw new TransferException("Too many requests");
+                if (pendingRequests.size() >= getTransferManager()
+                    .getMaxRequestsQueued() * 5)
+                {
+                    throw new TransferException("Too many requests queued: "
+                        + pendingRequests.size() + ", maximum: "
+                        + getTransferManager().getMaxRequestsQueued() * 5);
                 }
                 pendingRequests.add(m);
                 pendingRequests.notifyAll();
@@ -105,12 +107,17 @@ public class Upload extends Transfer {
         // Requests for different files on the same transfer connection are not
         // supported currently
         if (!pr.getFile().isVersionAndDateIdentical(getFile())
-            || pr.getRange().getLength() > TransferManager.MAX_CHUNK_SIZE
             || pr.getRange().getLength() <= 0)
         {
             logSevere("Received invalid part request!");
             getTransferManager().setBroken(this, TransferProblem.INVALID_PART);
             return;
+        }
+        if (pr.getRange().getLength() > getTransferManager()
+            .getMaxFileChunkSize())
+        {
+            logWarning("Got request for a range bigger then my max filechunk size ("
+                + pr.getRange() + "): " + pr.getRange().getLength());
         }
         transferState.setProgress(pr.getProgress());
         enqueueMessage(pr);

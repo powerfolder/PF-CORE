@@ -55,7 +55,6 @@ import de.dal33t.powerfolder.util.delta.FilePartsRecord;
 public class Download extends Transfer {
 
     private static final long serialVersionUID = 100L;
-    public static final int MAX_REQUESTS_QUEUED = 15;
 
     private Date lastTouch;
     private boolean automatic;
@@ -188,7 +187,9 @@ public class Download extends Transfer {
 
         RequestPart rp;
         synchronized (pendingRequests) {
-            if (pendingRequests.size() >= MAX_REQUESTS_QUEUED) {
+            if (pendingRequests.size() >= getTransferManager()
+                .getMaxRequestsQueued())
+            {
                 return false;
             }
 
