@@ -58,24 +58,20 @@ public class SimpleTimeEstimator {
             // Yey! Reached 100%. Set the estimated date to NOW.
             estimatedDate = now;
             lastPercentage = thisPercentage;
+        } else if (Double.compare(thisPercentage, lastPercentage) == 0) {
+            // No change
         } else if (thisPercentage > lastPercentage && lastTime > 0) {
-            if (Double.compare(thisPercentage, lastPercentage) == 0) {
-                // Duh, no percentage change from last time? Theoretically
-                // the target time would be infinity. Probably updating too
-                // fast. Ignore this estimate.
-            } else {
-                // . . . --> T I M E - L I N E --> . . .
-                // lastTime       ... thisTime       ... targetTime
-                // lastPercentage ... thisPercentage ... 100%
-                //
-                // (thisTime - lastTime) / (thisPercentage - lastPercentage) ==
-                // (targetTime - thisTime) / (100% - thisPercentage)
-                long targetTime = thisTime + (long) ((100.0 - thisPercentage) *
-                    (thisTime - lastTime) / (thisPercentage - lastPercentage));
-                lastPercentage = thisPercentage;
-                lastTime = thisTime;
-                estimatedDate = new Date(targetTime);
-            }
+            // . . . --> T I M E - L I N E --> . . .
+            // lastTime       ... thisTime       ... targetTime
+            // lastPercentage ... thisPercentage ... 100%
+            //
+            // (thisTime - lastTime) / (thisPercentage - lastPercentage) ==
+            // (targetTime - thisTime) / (100% - thisPercentage)
+            long targetTime = thisTime + (long) ((100.0 - thisPercentage) *
+                (thisTime - lastTime) / (thisPercentage - lastPercentage));
+            lastPercentage = thisPercentage;
+            lastTime = thisTime;
+            estimatedDate = new Date(targetTime);
         } else {
             // Presumably this is the first value or the time sequence was
             // recalculated or something. Can not estimate a time before now,
