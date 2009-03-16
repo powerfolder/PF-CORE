@@ -17,7 +17,7 @@
  *
  * $Id: ServerClient.java 6435 2009-01-21 23:35:04Z tot $
  */
-package de.dal33t.powerfolder.branding;
+package de.dal33t.powerfolder.distribution;
 
 import java.io.InputStream;
 import java.util.Locale;
@@ -33,7 +33,7 @@ import de.dal33t.powerfolder.util.logging.Loggable;
  * @author Christian Sprajc
  * @version $Revision$
  */
-public abstract class AbstractBranding extends Loggable implements Branding {
+public abstract class AbstractDistribution extends Loggable implements Distribution {
 
     protected boolean loadTranslation(String brandingId) {
         // Load texts

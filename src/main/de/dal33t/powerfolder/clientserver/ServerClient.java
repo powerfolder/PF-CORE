@@ -310,7 +310,7 @@ public class ServerClient extends PFComponent {
      * @return the registration URL for this server.
      */
     public String getRegisterURL() {
-        if (!getController().getBranding().supportsWebRegistration()) {
+        if (!getController().getDistribution().supportsWebRegistration()) {
             return null;
         }
         if (!hasWebURL()) {

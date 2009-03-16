@@ -17,7 +17,7 @@
  *
  * $Id: ServerClient.java 6435 2009-01-21 23:35:04Z tot $
  */
-package de.dal33t.powerfolder.branding;
+package de.dal33t.powerfolder.distribution;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.Updater.UpdateSetting;
@@ -29,7 +29,7 @@ import de.dal33t.powerfolder.util.Updater.UpdateSetting;
  * @author Christian Sprajc
  * @version $Revision$
  */
-public interface Branding {
+public interface Distribution {
     /**
      * @return name of the branding
      */

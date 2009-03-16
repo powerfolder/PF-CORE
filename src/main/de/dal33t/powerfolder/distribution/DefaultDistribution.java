@@ -17,12 +17,12 @@
  *
  * $Id: ServerClient.java 6435 2009-01-21 23:35:04Z tot $
  */
-package de.dal33t.powerfolder.branding;
+package de.dal33t.powerfolder.distribution;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.Updater.UpdateSetting;
 
-public class DefaultBranding extends AbstractBranding {
+public class DefaultDistribution extends AbstractDistribution {
 
     public String getName() {
         return "PowerFolder";

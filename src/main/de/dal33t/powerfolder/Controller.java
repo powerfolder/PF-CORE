@@ -59,11 +59,11 @@ import org.apache.commons.cli.CommandLine;
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
 
-import de.dal33t.powerfolder.branding.Branding;
-import de.dal33t.powerfolder.branding.DefaultBranding;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.RecycleBin;
+import de.dal33t.powerfolder.distribution.Distribution;
+import de.dal33t.powerfolder.distribution.DefaultDistribution;
 import de.dal33t.powerfolder.event.AskForFriendshipEvent;
 import de.dal33t.powerfolder.event.AskForFriendshipListener;
 import de.dal33t.powerfolder.event.InvitationHandler;
@@ -141,9 +141,9 @@ public class Controller extends PFComponent {
     private Preferences preferences;
     
     /**
-     * The branding used.
+     * The distribution running.
      */
-    private Branding branding;
+    private Distribution distribution;
 
     /** Program start time */
     private Date startTime;
@@ -410,7 +410,7 @@ public class Controller extends PFComponent {
         osClient = new ServerClient(this);
 
         // Initialize branding/preconfiguration of the client
-        initBranding();
+        initDistribution();
 
         if (isUIEnabled()) {
             uiController = new UIController(this);
@@ -1432,10 +1432,10 @@ public class Controller extends PFComponent {
     }
     
     /**
-     * @return the branding of this client.
+     * @return the distribution of this client.
      */
-    public Branding getBranding() {
-        return branding;
+    public Distribution getDistribution() {
+        return distribution;
     }
 
     /**
@@ -1924,24 +1924,25 @@ public class Controller extends PFComponent {
         exit(1);
     }
     
-    private void initBranding() {
-        ServiceLoader<Branding> brandingLoader = ServiceLoader
-            .load(Branding.class);
-        for (Branding br : brandingLoader) {
-            if (branding != null) {
-                logSevere("Found multiple branding classes: " + br
-                    + ", got already " + branding);
+    private void initDistribution() {
+        ServiceLoader<Distribution> brandingLoader = ServiceLoader
+            .load(Distribution.class);
+        for (Distribution br : brandingLoader) {
+            if (distribution != null) {
+                logSevere("Found multiple distribution classes: " + br
+                    + ", got already " + distribution);
             }
-            branding = br;
+            distribution = br;
         }
-        if (branding == null) {
-            branding = new DefaultBranding();
+        if (distribution == null) {
+            distribution = new DefaultDistribution();
         }
-        logInfo("Running branded as: " + branding.getName());
+        logInfo("Running distribution: " + distribution.getName());
         try {
-            branding.init(this);
+            distribution.init(this);
         } catch (Exception e) {
-            logSevere("Failed to initialize branding " + branding.getName(), e);
+            logSevere("Failed to initialize distribution "
+                + distribution.getName(), e);
         }
     }
     
