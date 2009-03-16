@@ -278,7 +278,8 @@ public class UIUtil {
     /**
      * Apply opacity to a window.
      * Done with reflection to ensure there is no issue pre Java 1.6.0_10,
-     * although the Java version should already have been checked.
+     * although the Java version should already have been checked
+     * ({@link de.dal33t.powerfolder.Constants#OPACITY_SUPPORTED}).
      *
      * @param window
      * @param opacity
