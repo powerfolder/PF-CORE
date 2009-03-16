@@ -19,14 +19,13 @@
 */
 package de.dal33t.powerfolder.ui.notification;
 
-import com.sun.awt.AWTUtilities;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import de.dal33t.powerfolder.Constants;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * Creates an animated view that slides out of the bottom-right corner of the
@@ -106,7 +105,7 @@ public class Slider {
         animatingSheet.setSource(contents);
         window.setAlwaysOnTop(true);
         if (Constants.OPACITY_SUPPORTED) {
-            AWTUtilities.setWindowOpacity(window, 0.0f);
+            UIUtil.applyTranslucency(window, 0.0f);
         }
 
         window.setVisible(true);
@@ -212,10 +211,9 @@ public class Slider {
             window.pack();
             window.setLocation(showX, startY - window.getHeight());
             if (Constants.OPACITY_SUPPORTED) {
-                // Opaacity = 1 - translucency.
+                // Opacity = 1 - translucency.
                 float opacity = 1.0f - translucencyPercentage / 100.0f;
-                AWTUtilities.setWindowOpacity(window,
-                        (float) opacity * percentage / 100.0f);
+                UIUtil.applyTranslucency(window, opacity * percentage / 100.0f);
             }
         }
     }

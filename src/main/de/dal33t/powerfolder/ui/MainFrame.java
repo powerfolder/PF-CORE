@@ -24,7 +24,6 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-import com.sun.awt.AWTUtilities;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
@@ -36,6 +35,7 @@ import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
 import de.dal33t.powerfolder.util.ui.NeverAskAgainResponse;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 import de.javasoft.plaf.synthetica.SyntheticaRootPaneUI;
 
 import javax.swing.*;
@@ -250,7 +250,7 @@ public class MainFrame extends PFUIComponent {
                 getUIController().setActiveFrame(UIController.MAIN_FRAME_ID);
 
                 if (Constants.OPACITY_SUPPORTED) {
-                    AWTUtilities.setWindowOpacity(uiComponent, 1.0f);
+                    UIUtil.applyTranslucency(uiComponent, 1.0f);
                 }
             }
 
@@ -259,9 +259,10 @@ public class MainFrame extends PFUIComponent {
                         && PreferencesEntry.TRANSLUCENT_MAIN_FRAME
                         .getValueBoolean(getController())) {
                     // Translucency is 1 - opacity.
-                    float translucency = 1.0f - PreferencesEntry
-                            .TRANSLUCENT_PERCENTAGE.getValueInt(getController()) /  100.0f;
-                    AWTUtilities.setWindowOpacity(uiComponent, translucency);
+                    float opacity = 1.0f - PreferencesEntry
+                            .TRANSLUCENT_PERCENTAGE.getValueInt(getController())
+                            /  100.0f;
+                    UIUtil.applyTranslucency(uiComponent, opacity);
                 }
             }
         });
