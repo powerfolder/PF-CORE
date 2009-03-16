@@ -51,7 +51,7 @@ public class NotificationForm extends JPanel {
         JPanel jPanel = createPanel(titleText, messageText, acceptOptionLabel,
                 acceptAction, cancelOptionLabel, cancelAction);
         add(jPanel, BorderLayout.CENTER);
-        setBorder(new LineBorder(Color.black, 1));
+        setBorder(new LineBorder(Color.lightGray, 1));
     }
 
     /**
