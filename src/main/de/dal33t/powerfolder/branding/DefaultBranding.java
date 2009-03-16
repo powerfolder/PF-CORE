@@ -31,7 +31,7 @@ public class DefaultBranding extends AbstractBranding {
     public void init(Controller controller) {
     }
 
-    public boolean supportWeb() {
+    public boolean supportsWebRegistration() {
         return true;
     }
 

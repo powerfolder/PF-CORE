@@ -298,11 +298,21 @@ public class ServerClient extends PFComponent {
     }
 
     /**
+     * @return true if client supports register on registerURL.
+     */
+    public boolean supportsWebRegistration() {
+        return getRegisterURL() != null;
+    }
+    
+    /**
      * Convenience method for getting register URL
      * 
      * @return the registration URL for this server.
      */
     public String getRegisterURL() {
+        if (!getController().getBranding().supportsWebRegistration()) {
+            return null;
+        }
         if (!hasWebURL()) {
             return null;
         }

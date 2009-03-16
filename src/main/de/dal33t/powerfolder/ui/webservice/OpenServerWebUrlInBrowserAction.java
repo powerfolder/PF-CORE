@@ -40,16 +40,18 @@ public class OpenServerWebUrlInBrowserAction extends BaseAction {
     }
 
     public void actionPerformed(ActionEvent e) {
-        try {
-            BrowserLauncher.openURL(getController().getOSClient().getWebURL());
-        } catch (IOException e1) {
-            Logger.getAnonymousLogger().log(Level.SEVERE, e.toString(), e);
+        if (getController().getOSClient().hasWebURL()) {
+            try {
+                BrowserLauncher.openURL(getController().getOSClient()
+                    .getWebURL());
+            } catch (IOException e1) {
+                Logger.getAnonymousLogger().log(Level.SEVERE, e.toString(), e);
+            }
         }
     }
 
     private void updateState() {
-        setEnabled(getController().getOSClient().hasWebURL()
-            && getController().getBranding().supportWeb());
+        setEnabled(getController().getOSClient().hasWebURL());
     }
 
     private class MyServerClientListener implements ServerClientListener {

@@ -91,10 +91,13 @@ public class OnlineStorageComponent extends PFUIComponent {
         }
 
         public void actionPerformed(ActionEvent e) {
-            try {
-                BrowserLauncher.openURL(getController().getOSClient().getWebURL());
-            } catch (IOException e1) {
-                logSevere(e1);
+            if (getController().getOSClient().hasWebURL()) {
+                try {
+                    BrowserLauncher.openURL(getController().getOSClient()
+                        .getWebURL());
+                } catch (IOException e1) {
+                    logSevere(e1);
+                }
             }
         }
     }

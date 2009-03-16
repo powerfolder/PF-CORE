@@ -70,12 +70,17 @@ public enum Feature {
     DETECT_UPDATE_BY_VERSION,
 
     /**
-     * If the server/console should offer PowerFolder internal functions.
+     * If the server should offer PowerFolder internal functions.
      * <p>
      * TODO Find abstraction for separated parts.
      */
     SERVER_INTERNAL_FUNCTIONS,
-    
+
+    /**
+     * If the internal features of the client console should be activated.
+     */
+    CLIENT_INTERNAL_FUNCTIONS(false),
+
     /**
      * Writes the debug filelist CSV into debug directory
      */

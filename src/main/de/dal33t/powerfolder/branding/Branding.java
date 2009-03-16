@@ -45,10 +45,10 @@ public interface Branding {
     void init(Controller controller);
 
     /**
-     * @return true if this branding should link/use the web capabilities of the
-     *         attached online storage server.
+     * @return true if this client supports registration of new trial account
+     *         via activation wizard
      */
-    boolean supportWeb();
+    boolean supportsWebRegistration();
 
     /**
      * @return the update settings for this branded version. return null to use
