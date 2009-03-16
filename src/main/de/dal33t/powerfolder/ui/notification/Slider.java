@@ -113,8 +113,8 @@ public class Slider {
         // Initial boundaries.
         contentsSize = contents.getSize();
         Rectangle desktopBounds = initDesktopBounds();
-        showX = desktopBounds.width - contentsSize.width;
-        startY = desktopBounds.y + desktopBounds.height;
+        showX = desktopBounds.width - contentsSize.width - 10;
+        startY = desktopBounds.y + desktopBounds.height - 10;
 
         // Timer to animate the sheet down.
         animateDownTimer = new Timer(ANIMATION_DELAY, new ActionListener() {
