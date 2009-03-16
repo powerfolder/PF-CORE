@@ -38,7 +38,7 @@ public class StreamUtils {
 
     private static final Logger log = Logger.getLogger(StreamUtils.class.getName());
 
-    private static final int BUFFER_SIZE = 1024;
+    private static final int BUFFER_SIZE = 8024;
 
     private StreamUtils() {
     }
