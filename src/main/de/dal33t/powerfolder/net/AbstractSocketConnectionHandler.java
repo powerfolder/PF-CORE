@@ -224,7 +224,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
             if (isFiner()) {
                 logFiner("Got streams");
             }
-            
+
             // Pre-Analyse connection
             analyseConnection();
 
@@ -276,7 +276,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                 + ((getTimeDeltaMS() / 1000) / 60) + " min, remote ident: "
                 + getIdentity());
         }
-        
+
         // Re-Analyse connection
         analyseConnection();
 
@@ -573,6 +573,10 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
 
     public Identity getIdentity() {
         return identity;
+    }
+
+    public Identity getMyIdentity() {
+        return myIdentity;
     }
 
     public String getMyMagicId() {

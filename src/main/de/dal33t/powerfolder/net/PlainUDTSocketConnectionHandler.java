@@ -64,7 +64,9 @@ public class PlainUDTSocketConnectionHandler extends
     {
         boolean expectCompressed = !isOnLAN();
         try {
-            return ByteSerializer.deserializeStatic(data, expectCompressed);
+            return ByteSerializer.deserializeStatic(data, getIdentity() != null
+                ? getIdentity().isUseCompressedStream()
+                : expectCompressed);
         } catch (IOException e) {
             throw new ConnectionException(
                 "Unable to send message to peer, connection closed", e)
@@ -75,11 +77,8 @@ public class PlainUDTSocketConnectionHandler extends
     @Override
     protected byte[] serialize(Message message) throws ConnectionException {
         try {
-            // Serialize message, don't compress on LAN
-            // unless config says otherwise
-            boolean compressed = !isOnLAN()
-                || (isOnLAN() && getController().useZipOnLan());
-            return getSerializer().serialize(message, compressed, -1);
+            return getSerializer().serialize(message,
+                getMyIdentity().isUseCompressedStream(), -1);
         } catch (IOException e) {
             throw new ConnectionException(
                 "Unable to send message to peer, connection closed", e)

@@ -70,6 +70,8 @@ public class Identity extends Message {
     @SuppressWarnings("unused")
     private boolean supportingPartTransfers = true;
 
+    private final boolean useCompressedStream;
+
     /**
      * If I got interesting pending messages for you. Better keep the
      * connection!
@@ -80,6 +82,7 @@ public class Identity extends Message {
 
     public Identity() {
         // Serialisation constructor
+        useCompressedStream = true;
     }
 
     public Identity(Controller controller, MemberInfo myself, String magicId,
@@ -99,6 +102,9 @@ public class Identity extends Message {
         // sent. Problem: The remote side cannot be known at the time the
         // identity is created, so we have to use this workaround.
         this.pendingMessages = controller.getTaskManager().hasSendMessageTask();
+
+        useCompressedStream = !handler.isOnLAN()
+            || (handler.isOnLAN() && controller.useZipOnLan());
     }
 
     /**
@@ -134,6 +140,10 @@ public class Identity extends Message {
      */
     public boolean isSupportsEncryption() {
         return supportsEncryption;
+    }
+
+    public boolean isUseCompressedStream() {
+        return useCompressedStream;
     }
 
     /**

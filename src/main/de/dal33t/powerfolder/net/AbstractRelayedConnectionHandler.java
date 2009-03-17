@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.net;
 
 import java.net.InetSocketAddress;
@@ -232,10 +232,9 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
         // Create identity
         myIdentity = createOwnIdentity();
         if (isFiner()) {
-            logFiner(
-                "Sending my identity, nick: '"
-                    + myIdentity.getMemberInfo().nick + "', ID: "
-                    + myIdentity.getMemberInfo().id);
+            logFiner("Sending my identity, nick: '"
+                + myIdentity.getMemberInfo().nick + "', ID: "
+                + myIdentity.getMemberInfo().id);
         }
 
         // Send identity
@@ -262,10 +261,9 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
 
         long took = System.currentTimeMillis() - startTime;
         if (isFiner()) {
-            logFiner(
-                "Connect took " + took + "ms, time differ: "
-                    + ((getTimeDeltaMS() / 1000) / 60) + " min, remote ident: "
-                    + getIdentity());
+            logFiner("Connect took " + took + "ms, time differ: "
+                + ((getTimeDeltaMS() / 1000) / 60) + " min, remote ident: "
+                + getIdentity());
         }
 
         // Check this connection for keep-alive
@@ -501,6 +499,10 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
         return identity;
     }
 
+    public Identity getMyIdentity() {
+        return myIdentity;
+    }
+
     public String getMyMagicId() {
         return myMagicId;
     }
@@ -551,26 +553,22 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
 
         long took = (System.currentTimeMillis() - start) / 1000;
         if (identityReply != null && !identityReply.accepted) {
-            logWarning(
-                    "Remote peer rejected our connection: "
-                        + identityReply.message);
+            logWarning("Remote peer rejected our connection: "
+                + identityReply.message);
             member = null;
             return false;
         }
 
         if (!isConnected()) {
-            logWarning(
-                "Remote member disconnected while waiting for identity reply. "
-                    + identity);
+            logWarning("Remote member disconnected while waiting for identity reply. "
+                + identity);
             member = null;
             return false;
         }
 
         if (identityReply == null) {
-            logWarning(
-                "Did not receive a identity reply after " + took
-                    + "s. Connected? " + isConnected() + ". remote id: "
-                    + identity);
+            logWarning("Did not receive a identity reply after " + took
+                + "s. Connected? " + isConnected() + ". remote id: " + identity);
             member = null;
             return false;
         }
@@ -608,10 +606,9 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
         }
         if (waited > 0) {
             if (isFiner()) {
-                logFiner(
-                    "Waited " + waited
-                        + "ms for empty sendbuffer, clear now, proceeding to "
-                        + getMember());
+                logFiner("Waited " + waited
+                    + "ms for empty sendbuffer, clear now, proceeding to "
+                    + getMember());
             }
         }
         return messagesToSendQueue.isEmpty();
@@ -677,9 +674,8 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
             // return;
             // }
             if (isFiner()) {
-                logFiner(
-                    "<- (received, " + Format.formatBytes(data.length) + ") - "
-                        + obj);
+                logFiner("<- (received, " + Format.formatBytes(data.length)
+                    + ") - " + obj);
             }
 
             if (!getController().isStarted()) {
@@ -726,12 +722,10 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
                 if (member != null) {
                     member.handleMessage(problem, this);
                 } else {
-                    logWarning(
-                        "("
-                            + (identity != null
-                                ? identity.getMemberInfo().nick
-                                : "-") + ") Problem received: "
-                            + problem.message);
+                    logWarning("("
+                        + (identity != null
+                            ? identity.getMemberInfo().nick
+                            : "-") + ") Problem received: " + problem.message);
                     if (problem.fatal) {
                         // Fatal problem, disconnecting
                         shutdown();
@@ -749,9 +743,8 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
                     // Simply break. Already disconnected
                     shutdownWithMember();
                 } else {
-                    logSevere(
-                        "Connection closed, message received, before peer identified itself: "
-                            + obj);
+                    logSevere("Connection closed, message received, before peer identified itself: "
+                        + obj);
                     // connection closed
                     shutdownWithMember();
                 }
@@ -764,9 +757,8 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
             logConnectionClose(e);
         } catch (ClassNotFoundException e) {
             logFiner("ClassNotFoundException", e);
-            logWarning(
-                "Received unknown packet/class: " + e.getMessage() + " from "
-                    + AbstractRelayedConnectionHandler.this);
+            logWarning("Received unknown packet/class: " + e.getMessage()
+                + " from " + AbstractRelayedConnectionHandler.this);
             // do not break connection
         } catch (RuntimeException e) {
             logSevere("RuntimeException", e);
@@ -809,17 +801,14 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
     class Sender implements Runnable {
         public void run() {
             if (isFiner()) {
-                logFiner(
-                    "Asynchron message send triggered, sending "
-                        + messagesToSendQueue.size() + " message(s)");
+                logFiner("Asynchron message send triggered, sending "
+                    + messagesToSendQueue.size() + " message(s)");
             }
 
             if (!isConnected()) {
                 // Client disconnected, stop
-                logFine(
-                    "Peer disconnected while sender got active. Msgs in queue: "
-                        + messagesToSendQueue.size() + ": "
-                        + messagesToSendQueue);
+                logFine("Peer disconnected while sender got active. Msgs in queue: "
+                    + messagesToSendQueue.size() + ": " + messagesToSendQueue);
                 return;
             }
 
