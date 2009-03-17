@@ -129,7 +129,7 @@ public enum ConfigurationEntry {
     PROVIDER_WIKI_URL("provider.url.wiki", "http://www.powerfolder.com/wiki"),
 
     /**
-     * HTTP RPC URL for
+     * HTTP tunnel relay URL
      */
     PROVIDER_HTTP_TUNNEL_RPC_URL("provider.url.httptunnel",
         "http://relay.powerfolder.com/rpc"),
