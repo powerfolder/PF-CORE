@@ -647,7 +647,7 @@ public class Controller extends PFComponent {
             } else {
                 logInfo("Running in VERBOSE mode, not logging to file");
             }
-            Profiling.setEnabled(true);
+            Profiling.setEnabled(false);
             Profiling.reset();
         }
 
