@@ -19,18 +19,19 @@
  */
 package de.dal33t.powerfolder.ui;
 
+import java.awt.BorderLayout;
+import java.awt.Frame;
+import java.util.prefs.Preferences;
+
+import javax.swing.JFrame;
+import javax.swing.plaf.RootPaneUI;
+
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.MagneticFrame;
 import de.dal33t.powerfolder.util.Translation;
 import de.javasoft.plaf.synthetica.SyntheticaRootPaneUI;
 import de.javasoft.synthetica.addons.SystemMonitor;
 import de.javasoft.synthetica.addons.systemmonitor.CollectorFactory;
-
-import javax.swing.*;
-import javax.swing.plaf.RootPaneUI;
-import java.awt.*;
-import java.util.prefs.Preferences;
 
 /**
  * This class displays a system monitor frame.
