@@ -292,6 +292,12 @@ public class Download extends Transfer {
     void abort(boolean informRemote) {
         if (getDownloadManager() == null) {
             shutdown();
+            if (getPartner() != null && getPartner().isCompleteyConnected()
+                && informRemote)
+            {
+                getPartner().sendMessageAsynchron(new AbortDownload(getFile()),
+                    null);
+            }
             // For Pending downloads without download manager
             getController().getTransferManager().downloadAborted(Download.this);
             return;
@@ -299,7 +305,8 @@ public class Download extends Transfer {
         synchronized (getDownloadManager()) {
             synchronized (this) {
                 shutdown();
-                if (getPartner() != null && getPartner().isCompleteyConnected())
+                if (getPartner() != null && getPartner().isCompleteyConnected()
+                    && informRemote)
                 {
                     getPartner().sendMessageAsynchron(
                         new AbortDownload(getFile()), null);
