@@ -385,6 +385,9 @@ public class Controller extends PFComponent {
         }
         silentModeVM.setValue(preferences.getBoolean("silentMode", false));
         silentModeVM.addValueChangeListener(new MyPropertyChangeListener());
+        
+        // Initialize branding/preconfiguration of the client
+        initDistribution();
 
         // create node manager
         nodeManager = new NodeManager(this);
@@ -405,12 +408,6 @@ public class Controller extends PFComponent {
         }
 
         reconnectManager = new ReconnectManager(this);
-
-        // Create os client
-        osClient = new ServerClient(this);
-
-        // Initialize branding/preconfiguration of the client
-        initDistribution();
 
         if (isUIEnabled()) {
             uiController = new UIController(this);
@@ -458,6 +455,8 @@ public class Controller extends PFComponent {
             nodeManager.start();
         }
 
+        // Create os client
+        osClient = new ServerClient(this);
         setLoadingCompletion(35, 60);
 
         // init repo (read folders)
