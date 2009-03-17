@@ -62,10 +62,13 @@ public class PlainSocketConnectionHandler extends
         throws ClassNotFoundException, ConnectionException
     {
         boolean expectCompressed = !isOnLAN();
+        if (getIdentity() != null
+            && getIdentity().isUseCompressedStream() != null)
+        {
+            expectCompressed = getIdentity().isUseCompressedStream();
+        }
         try {
-            return ByteSerializer.deserializeStatic(data, getIdentity() != null
-                ? getIdentity().isUseCompressedStream()
-                : expectCompressed);
+            return ByteSerializer.deserializeStatic(data, expectCompressed);
         } catch (IOException e) {
             throw new ConnectionException(
                 "Unable to send message to peer, connection closed", e)

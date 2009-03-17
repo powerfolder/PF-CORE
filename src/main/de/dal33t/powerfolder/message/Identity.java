@@ -70,7 +70,7 @@ public class Identity extends Message {
     @SuppressWarnings("unused")
     private boolean supportingPartTransfers = true;
 
-    private final boolean useCompressedStream;
+    private Boolean useCompressedStream;
 
     /**
      * If I got interesting pending messages for you. Better keep the
@@ -82,7 +82,6 @@ public class Identity extends Message {
 
     public Identity() {
         // Serialisation constructor
-        useCompressedStream = true;
     }
 
     public Identity(Controller controller, MemberInfo myself, String magicId,
@@ -142,7 +141,11 @@ public class Identity extends Message {
         return supportsEncryption;
     }
 
-    public boolean isUseCompressedStream() {
+    /**
+     * @return true, if the stream is compressed; false, if the stream is not
+     *         compressed; null, if we don't know
+     */
+    public Boolean isUseCompressedStream() {
         return useCompressedStream;
     }
 
@@ -179,5 +182,4 @@ public class Identity extends Message {
     public String toString() {
         return "Identity: " + member;
     }
-
 }
