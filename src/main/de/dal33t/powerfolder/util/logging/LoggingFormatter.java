@@ -58,7 +58,7 @@ public class LoggingFormatter extends Formatter {
         }
         StringBuilder buf = new StringBuilder(300);
         buf.append('[');
-        SimpleDateFormat sdf = new SimpleDateFormat("hh:mm:ss");
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
         buf.append(sdf.format(new Date(record.getMillis())));
         buf.append("] ");
         buf.append(levelDescription);
