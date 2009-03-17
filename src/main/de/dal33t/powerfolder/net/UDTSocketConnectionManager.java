@@ -270,15 +270,20 @@ public class UDTSocketConnectionManager extends PFComponent {
         AbstractUDTSocketConnectionHandler conHan = null;
         try {
             socket.setSoRendezvous(true);
-            logFine("UDT connect to " + destination);
+            if (isFiner()) {
+                logFiner("UDT connect to " + destination);
+            }
             socket.connect(destination);
-            logFine("UDT socket is connected to " + destination);
+            if (isFiner()) {
+                logFiner("UDT socket is connected to " + destination);
+            }
             conHan = getController().getIOProvider()
                 .getConnectionHandlerFactory()
                 .createAndInitUDTSocketConnectionHandler(socket);
-            logWarning(
-                "Is connected? " + conHan.isConnected() + " : "
+            if (isFiner()) {
+                logFiner("Is connected? " + conHan.isConnected() + " : "
                     + socket.getRemoteAddress());
+            }
         } catch (ConnectionException e) {
             try {
                 socket.close();
