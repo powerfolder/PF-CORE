@@ -38,7 +38,9 @@ import de.dal33t.powerfolder.util.StringUtils;
 /** @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A> */
 public class PluginManager extends PFComponent {
 
-    private static final Logger log = Logger.getLogger(PluginManager.class.getName());
+    private static final Logger log = Logger.getLogger(PluginManager.class
+        .getName());
+    private static final String OLD_WEBINTERFACE_PLUGIN_CLASS_NAME = "de.dal33t.powerfolder.AB";
     private List<Plugin> plugins;
     private List<Plugin> disabledPlugins;
     private List<PluginManagerListener> listeners;
@@ -152,6 +154,13 @@ public class PluginManager extends PFComponent {
     private Plugin initalizePlugin(String pluginClassName) {
         if (StringUtils.isBlank(pluginClassName)) {
             throw new IllegalArgumentException("Plugin string blank");
+        }
+        if (OLD_WEBINTERFACE_PLUGIN_CLASS_NAME
+            .equalsIgnoreCase(pluginClassName))
+        {
+            logFine("Not loading web interface. "
+                + "It not longer available in v4.0 of PowerFolder.");
+            return null;
         }
 
         if (log.isLoggable(Level.FINE)) {
