@@ -40,6 +40,16 @@ import de.dal33t.powerfolder.util.os.Win32.WinUtils;
  * @version $Revision: 1.5 $
  */
 public enum ConfigurationEntry {
+
+    // Basics *****************************************************************
+
+    /**
+     * If the GUI should be disabled (=console mode). Default: False (Show GUI).
+     */
+    DISABLE_GUI("disableui", Boolean.FALSE.toString()),
+
+    // Node setup *************************************************************
+    
     /**
      * The nickname to use.
      */

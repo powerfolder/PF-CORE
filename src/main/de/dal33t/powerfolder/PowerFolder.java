@@ -61,7 +61,7 @@ public class PowerFolder {
         options.addOption("m", "minimized", false,
                 "Start PowerFolder minimized");
         options.addOption("s", "server", false,
-                "Start PowerFolder as server/supernode. GUI will be disabled");
+                "Start PowerFolder in console mode. Graphical user interface will be disabled");
         options.addOption("d", "dns", true,
                 "<ip/dns>. Sets the dns/ip to listen to. May also be a dyndns address");
         options.addOption("h", "help", false, "Displays this help");

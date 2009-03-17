@@ -173,10 +173,6 @@ public class ServerClient extends PFComponent {
         getController().getNodeManager().addNodeManagerListener(
             new MyNodeManagerListener());
     }
-    
-    private static boolean isTempServerNode(Member node) {
-        return node.getId().startsWith(MEMBER_ID_TEMP_PREFIX);
-    }
 
     private boolean isRememberPassword() {
         return PreferencesEntry.SERVER_REMEMBER_PASSWORD
@@ -199,6 +195,17 @@ public class ServerClient extends PFComponent {
         // Don't start, not really required?
         // getController().scheduleAndRepeat(new AccountRefresh(), 1000L * 30,
         // 1000L * 30);
+    }
+
+    /**
+     * Answers if the node is a temporary node info for a server. It does not
+     * contains a valid id, but a hostname/port.
+     * 
+     * @param node
+     * @return true if the node is a temporary node info.
+     */
+    public static boolean isTempServerNode(Member node) {
+        return node.getId().startsWith(MEMBER_ID_TEMP_PREFIX);
     }
 
     /**
