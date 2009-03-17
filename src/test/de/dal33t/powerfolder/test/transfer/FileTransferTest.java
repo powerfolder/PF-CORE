@@ -973,7 +973,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         TestHelper.assertIncompleteFilesGone(this);
     }
 
-    public void testDeltaFileNotChangedMultipe() throws Exception {
+    public void xtestDeltaFileNotChangedMultipe() throws Exception {
         for (int i = 0; i < 50; i++) {
             testDeltaFileNotChanged();
             tearDown();

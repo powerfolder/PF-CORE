@@ -38,7 +38,7 @@ public class MirrorFolderTest extends FiveControllerTestCase {
         joinTestFolder(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
     }
 
-    public void testRandomSyncOperationsMultiple() throws Exception {
+    public void xtestRandomSyncOperationsMultiple() throws Exception {
         for (int i = 0; i < 10; i++) {
             testRandomSyncOperations();
             tearDown();
