@@ -2416,8 +2416,10 @@ public class Folder extends PFComponent {
                 continue;
             }
             if (!member.hasCompleteFileListFor(currentInfo)) {
-                logWarning("Skipping " + member
-                    + " no complete filelist from him");
+                if (isFine()) {
+                    logFine("Skipping " + member
+                        + " no complete filelist from him");
+                }
                 continue;
             }
 
