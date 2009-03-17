@@ -19,6 +19,7 @@
  */
 package de.dal33t.powerfolder.distribution;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.Updater.UpdateSetting;
 
@@ -29,6 +30,32 @@ public class DefaultDistribution extends AbstractDistribution {
     }
 
     public void init(Controller controller) {
+        // Reset network ID to default in default distribution.
+        // Separating networks should only be available with Server/Client
+        // distribution
+        ConfigurationEntry.NETWORK_ID.setValue(controller,
+            ConfigurationEntry.NETWORK_ID.getDefaultValue());
+        
+        // Reset Provider URLs to PowerFolder.com in default distribution
+        ConfigurationEntry.PROVIDER_URL.setValue(controller,
+            ConfigurationEntry.PROVIDER_URL.getDefaultValue());
+        ConfigurationEntry.PROVIDER_ABOUT_URL.setValue(controller,
+            ConfigurationEntry.PROVIDER_ABOUT_URL.getDefaultValue());
+        ConfigurationEntry.PROVIDER_QUICKSTART_URL.setValue(controller,
+            ConfigurationEntry.PROVIDER_QUICKSTART_URL.getDefaultValue());
+        ConfigurationEntry.PROVIDER_SUPPORT_URL.setValue(controller,
+            ConfigurationEntry.PROVIDER_SUPPORT_URL.getDefaultValue());
+        ConfigurationEntry.PROVIDER_SUPPORT_FILE_TICKET_URL.setValue(
+            controller, ConfigurationEntry.PROVIDER_SUPPORT_FILE_TICKET_URL
+                .getDefaultValue());
+        ConfigurationEntry.PROVIDER_BUY_URL.setValue(controller,
+            ConfigurationEntry.PROVIDER_BUY_URL.getDefaultValue());
+        ConfigurationEntry.PROVIDER_CONTACT_URL.setValue(controller,
+            ConfigurationEntry.PROVIDER_CONTACT_URL.getDefaultValue());
+        ConfigurationEntry.PROVIDER_WIKI_URL.setValue(controller,
+            ConfigurationEntry.PROVIDER_WIKI_URL.getDefaultValue());
+        ConfigurationEntry.PROVIDER_HTTP_TUNNEL_RPC_URL.setValue(controller,
+            ConfigurationEntry.PROVIDER_HTTP_TUNNEL_RPC_URL.getDefaultValue());
     }
 
     public boolean supportsWebRegistration() {
