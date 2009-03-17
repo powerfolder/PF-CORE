@@ -199,12 +199,7 @@ public class RelayedConnectionManager extends PFComponent {
 
     public boolean isRelay(MemberInfo node) {
         Reject.ifNull(node, "Node info is null");
-        // TODO Remove later
-        if (node.id.equals("INFRASTRUCTURE01")) {
-            return false;
-        }
-        return node.id.toUpperCase().contains("INFRASTRUCTURE")
-            || node.id.toUpperCase().contains("RELAY");
+        return node.id.toUpperCase().contains("RELAY");
     }
 
     public boolean isRelay(Member node) {
