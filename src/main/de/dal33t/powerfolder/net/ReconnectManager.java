@@ -27,7 +27,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.TimerTask;
-import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
@@ -48,9 +47,6 @@ import de.dal33t.powerfolder.util.compare.MemberComparator;
  * @version $Revision: 1.5 $
  */
 public class ReconnectManager extends PFComponent {
-
-    private static final Logger log = Logger.getLogger(ReconnectManager.class
-        .getName());
 
     /** Queue holding all nodes, which are waiting to be reconnected */
     private List<Member> reconnectionQueue;
@@ -542,9 +538,9 @@ public class ReconnectManager extends PFComponent {
                         if (otherNodeInfo != null
                             && otherNodeInfo.isOnSameNetwork(getController()))
                         {
-                            logWarning(
-                                "Invalid identity from " + currentNode
-                                    + ". Triing to connect to IP", e);
+                            logWarning("Invalid identity from " + currentNode
+                                + ". Triing to connect to IP. " + e);
+                            logFiner(e);
                             try {
                                 ConnectionHandler conHan = getController()
                                     .getIOProvider()
