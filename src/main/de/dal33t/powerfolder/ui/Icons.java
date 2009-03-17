@@ -846,7 +846,7 @@ public class Icons {
             bimage = gc.createCompatibleImage(image.getWidth(null), image
                 .getHeight(null), transparency);
         } catch (HeadlessException e) {
-            log.log(Level.SEVERE, "HeadlessException", e);
+            log.log(Level.FINER, "HeadlessException", e);
         }
 
         if (bimage == null) {
