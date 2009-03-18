@@ -318,9 +318,7 @@ public class FolderStatistic extends PFComponent {
         int considered = 0;
         for (Member member : members) {
             Long inSync = calculating.sizesInSync.get(member);
-            Long syncing = calculating.sizesSyncing.get(member);
-            Long sizeInSync = (inSync == null ? 0 : inSync)
-                + (syncing == null ? 0 : syncing);
+            Long sizeInSync = inSync == null ? 0 : inSync;
             if (sizeInSync == null) {
                 calculating.syncPercentages.put(member, -1.0d);
                 continue;
@@ -513,7 +511,8 @@ public class FolderStatistic extends PFComponent {
 
                 logFiner("monitoring downloads");
 
-                calculate0();
+                // Removed until the test works.
+                //calculate0();
 
                 try {
                     Thread.sleep(DELAY_10S);
@@ -608,14 +607,6 @@ public class FolderStatistic extends PFComponent {
             }
         }
 
-        // Not required: Solved thru FolderListener.fileChanged event.
-        // public void downloadCompleted(TransferManagerEvent event) {
-        // // Calculate new statistic when download completed
-        // if (event.getFile().getFolderInfo().equals(folder.getInfo())) {    
-        // scheduleCalculate();
-        // }
-        // }
-
         public boolean fireInEventDispatchThread() {
             return false;
         }
@@ -708,9 +699,5 @@ public class FolderStatistic extends PFComponent {
         // Size of folder that are in sync per member
         // member -> Long
         public Map<Member, Long> sizesInSync = new HashMap<Member, Long>();
-
-        // Size of folder that are syncing per member
-        // member -> Long
-        public Map<Member, Long> sizesSyncing = new HashMap<Member, Long>();
     }
 }
