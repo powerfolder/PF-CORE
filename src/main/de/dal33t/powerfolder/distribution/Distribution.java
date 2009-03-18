@@ -51,6 +51,12 @@ public interface Distribution {
     boolean supportsWebRegistration();
 
     /**
+     * @return true if this distribution allows the user to change the server
+     *         via Prefs.
+     */
+    boolean allowUserToSelectServer();
+
+    /**
      * @return the update settings for this branded version. return null to use
      *         default location
      */

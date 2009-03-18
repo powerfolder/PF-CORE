@@ -46,6 +46,11 @@ public class DefaultDistribution extends AbstractDistribution {
         return true;
     }
 
+    public boolean allowUserToSelectServer() {
+        // Don't allow the user to change the server.
+        return false;
+    }
+
     public UpdateSetting createUpdateSettings() {
         return null;
     }
