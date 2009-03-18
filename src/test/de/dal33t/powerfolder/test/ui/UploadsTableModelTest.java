@@ -194,8 +194,10 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
     }
 
     public void testDisconnectWhileUpload() {
-        ConfigurationEntry.UPLOADLIMIT_LAN.setValue(getContollerBart(), "500");
-        ConfigurationEntry.UPLOADLIMIT_LAN.setValue(getContollerLisa(), "500");
+        getContollerBart().getTransferManager()
+            .setAllowedUploadCPSForLAN(40000);
+        getContollerLisa().getTransferManager()
+            .setAllowedUploadCPSForWAN(40000);
 
         // Create a 10 megs file
         TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 10000000);
@@ -203,13 +205,26 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
 
         TestHelper.waitForCondition(10, new Condition() {
             public boolean reached() {
-                return bartModel.getRowCount() > 0;
+                return getContollerBart().getTransferManager()
+                    .countActiveUploads() > 0;
             }
         });
+        // Give EDT time
+        TestHelper.waitForEmptyEDT();
+
+        assertEquals(1, bartModel.getRowCount());
+        // Requested and Started
+        assertEquals(2, bartModelListener.events.size());
+        // Upload requested
+        assertTrue(bartModelListener.events.get(0).getType() == TableModelEvent.INSERT);
+        // Upload started
+        assertTrue(bartModelListener.events.get(1).getType() == TableModelEvent.UPDATE);
+
         disconnectBartAndLisa();
         TestHelper.waitForCondition(10, new Condition() {
             public boolean reached() {
-                return bartModel.getRowCount() == 0;
+                return getContollerBart().getTransferManager()
+                    .countLiveUploads() == 0;
             }
         });
 
