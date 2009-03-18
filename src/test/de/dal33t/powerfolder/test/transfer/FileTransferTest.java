@@ -1295,8 +1295,10 @@ public class FileTransferTest extends TwoControllerTestCase {
     public void testSwitchSyncProfile() {
         getContollerBart().setSilentMode(true);
         getContollerLisa().setSilentMode(true);
-        ConfigurationEntry.UPLOADLIMIT_LAN.setValue(getContollerBart(), "1000");
-        ConfigurationEntry.UPLOADLIMIT_LAN.setValue(getContollerLisa(), "1000");
+        getContollerBart().getTransferManager().setAllowedUploadCPSForLAN(
+            100000);
+        getContollerLisa().getTransferManager().setAllowedUploadCPSForLAN(
+            100000);
 
         // Prepare
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
