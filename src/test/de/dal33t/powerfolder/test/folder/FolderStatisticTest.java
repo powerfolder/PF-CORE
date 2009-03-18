@@ -50,6 +50,11 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         super.setUp();
         assertTrue(tryToConnectSimpsons());
         joinTestFolder(SyncProfile.HOST_FILES);
+        getContollerHomer().setSilentMode(true);
+        getContollerBart().setSilentMode(true);
+        getContollerMarge().setSilentMode(true);
+        getContollerLisa().setSilentMode(true);
+        getContollerMaggie().setSilentMode(true);
     }
 
     /**
@@ -172,11 +177,11 @@ public class FolderStatisticTest extends FiveControllerTestCase {
     }
 
     public void testMultipleFiles() {
-        assertFalse(getContollerHomer().isSilentMode());
-        assertFalse(getContollerBart().isSilentMode());
-        assertFalse(getContollerMarge().isSilentMode());
-        assertFalse(getContollerLisa().isSilentMode());
-        assertFalse(getContollerMaggie().isSilentMode());
+//        assertFalse(getContollerHomer().isSilentMode());
+//        assertFalse(getContollerBart().isSilentMode());
+//        assertFalse(getContollerMarge().isSilentMode());
+//        assertFalse(getContollerLisa().isSilentMode());
+//        assertFalse(getContollerMaggie().isSilentMode());
         int nFiles = 100;
         int totalSize = 0;
         List<File> files = new ArrayList<File>();
