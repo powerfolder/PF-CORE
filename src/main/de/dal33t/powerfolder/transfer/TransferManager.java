@@ -1127,6 +1127,9 @@ public class TransferManager extends PFComponent {
         } finally {
             uploadsLock.unlock();
         }
+        
+        // Fire as requested
+        fireUploadRequested(new TransferManagerEvent(this, upload));
 
         if (oldUpload != null) {
             logWarning("Received already known download request for " + dl.file
@@ -1155,7 +1158,6 @@ public class TransferManager extends PFComponent {
             logFiner("Optimization. Did not send DownloadQueued message for "
                 + upload.getFile() + " to " + upload.getPartner());
         }
-        fireUploadRequested(new TransferManagerEvent(this, upload));
         return upload;
     }
 
