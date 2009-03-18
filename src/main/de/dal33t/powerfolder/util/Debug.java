@@ -730,8 +730,11 @@ public class Debug {
     }
 
     public static void dumpCurrentStackTrace() {
-        log.fine(getStackTrace(Thread
-            .currentThread().getStackTrace()));
+        log.fine(getCurrentStackTrace());
+    }
+
+    public static String getCurrentStackTrace() {
+        return getStackTrace(Thread.currentThread().getStackTrace());
     }
 
     private static String detailedObjectState0(Class<?> c, Object o) {
