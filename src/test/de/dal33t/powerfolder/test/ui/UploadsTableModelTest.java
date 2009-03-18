@@ -185,9 +185,18 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         TestHelper.waitForEmptyEDT();
     }
 
+    public void testDisconnectWhileUploadMultiple() throws Exception {
+        for (int i = 0; i < 20; i++) {
+            testDisconnectWhileUpload();
+            tearDown();
+            setUp();
+        }
+    }
+
     public void testDisconnectWhileUpload() {
-        ConfigurationEntry.UPLOADLIMIT_LAN.setValue(getContollerBart(), "1000");
-        ConfigurationEntry.UPLOADLIMIT_LAN.setValue(getContollerLisa(), "1000");
+        ConfigurationEntry.UPLOADLIMIT_LAN.setValue(getContollerBart(), "500");
+        ConfigurationEntry.UPLOADLIMIT_LAN.setValue(getContollerLisa(), "500");
+
         // Create a 10 megs file
         TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 10000000);
         scanFolder(getFolderAtBart());
@@ -197,9 +206,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
                 return bartModel.getRowCount() > 0;
             }
         });
-        TestHelper.waitForEmptyEDT();
         disconnectBartAndLisa();
-
         TestHelper.waitForCondition(10, new Condition() {
             public boolean reached() {
                 return bartModel.getRowCount() == 0;
@@ -211,7 +218,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
 
         // no active upload
         assertEquals(0, bartModel.getRowCount());
-        // Upload queued, started, aborted
+        // Upload requested, started, aborted
         assertEquals(3, bartModelListener.events.size());
         // Upload requested
         assertTrue(bartModelListener.events.get(0).getType() == TableModelEvent.INSERT);
@@ -227,8 +234,8 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         public List<TableModelEvent> events = new ArrayList<TableModelEvent>();
 
         public void tableChanged(TableModelEvent e) {
-            // System.err.println("Got event: " + e.getType() + " row: "
-            // + e.getFirstRow() + "-" + e.getLastRow());
+            System.err.println("Got event: " + e.getType() + " row: "
+                + e.getFirstRow() + "-" + e.getLastRow());
             events.add(e);
         }
     }
