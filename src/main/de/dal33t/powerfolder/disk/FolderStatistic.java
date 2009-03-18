@@ -284,6 +284,11 @@ public class FolderStatistic extends PFComponent {
                 memberSizeInSync += fInfo.getSize();
             }
 
+            if (!inSync) {
+                // Not in sync, therefore not added to totals
+                continue;
+            }
+
             boolean addToTotals = !newestFileInfo.isDeleted();
             for (Member alreadyM : alreadyConsidered) {
                 FileInfo otherMemberFile = alreadyM.getFile(fInfo);
