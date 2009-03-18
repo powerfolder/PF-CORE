@@ -440,7 +440,6 @@ public abstract class MultipleControllerTestCase extends TestCase {
             // add a pause to make sure files can be cleaned before next
             // test.
             TestHelper.waitMilliSeconds(500);
-            controller.shutdown();
             assertFalse("Shutdown of controller(" + id + ") failed", controller
                 .isShuttingDown());
             assertFalse("Shutdown of controller(" + id + ")  failed",
