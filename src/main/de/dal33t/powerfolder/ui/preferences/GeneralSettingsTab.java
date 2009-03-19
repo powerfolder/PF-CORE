@@ -28,6 +28,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.Locale;
+import java.util.Dictionary;
+import java.util.Hashtable;
 
 import javax.swing.*;
 import javax.swing.event.ChangeListener;
@@ -75,9 +77,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     private JCheckBox magneticFrameBox;
     private JCheckBox translucentMainFrameCB;
     private JLabel transPercLabel1;
-    private JLabel transPercLabel2;
-    private JSpinner transPercSpinner;
-    private SpinnerNumberModel transPercModel;
+    private JSlider transPercSlider;
 
     private JCheckBox showAdvancedSettingsBox;
     private ValueModel showAdvancedSettingsModel;
@@ -205,13 +205,30 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             }
         });
 
-        transPercModel = new SpinnerNumberModel(
-                PreferencesEntry.TRANSLUCENT_PERCENTAGE.getValueInt(getController()).intValue(),
-                10, 90, 1);
-        transPercSpinner = new JSpinner(transPercModel);
+        transPercSlider = new JSlider();
+        transPercSlider.setMinimum(10);
+        transPercSlider.setMaximum(90);
+        transPercSlider.setValue(PreferencesEntry.TRANSLUCENT_PERCENTAGE
+                .getValueInt(getController()).intValue());
+        transPercSlider.setMajorTickSpacing(20);
+        transPercSlider.setMinorTickSpacing(5);
+
+        transPercSlider.setPaintTicks(true);
+        transPercSlider.setPaintLabels(true);
+
+        Dictionary<Integer, JLabel> dictionary = new Hashtable<Integer, JLabel>();
+        for (int i = 10; i <= 90; i += transPercSlider.getMajorTickSpacing())
+        {
+            dictionary.put(i, new JLabel(Integer.toString(i) + '%'));
+        }
+        dictionary.put(transPercSlider.getMinimum(), new JLabel(transPercSlider
+            .getMinimum() + "%"));
+        dictionary.put(transPercSlider.getMaximum(), new JLabel(transPercSlider
+            .getMaximum() + "%"));
+        transPercSlider.setLabelTable(dictionary);
+
         transPercLabel1 = new JLabel(Translation
                 .getTranslation("preferences.dialog.translucent_text"));
-        transPercLabel2 = new JLabel("%");
         ValueModel urbModel = new ValueHolder(
             ConfigurationEntry.USE_RECYCLE_BIN.getValueBoolean(getController()));
         useRecycleBinBox = BasicComponentFactory.createCheckBox(
@@ -371,18 +388,16 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
     private void enableTransPerc() {
         transPercLabel1.setEnabled(translucentMainFrameCB.isSelected());
-        transPercLabel2.setEnabled(translucentMainFrameCB.isSelected());
-        transPercSpinner.setEnabled(translucentMainFrameCB.isSelected());
+        transPercSlider.setEnabled(translucentMainFrameCB.isSelected());
     }
 
     private Component getSpinnerPanel() {
         FormLayout layout = new FormLayout(
-            "pref, 3dlu, pref, pref:grow", "pref");
+            "pref, pref:grow", "pref");
 
         CellConstraints cc = new CellConstraints();
         PanelBuilder builder = new PanelBuilder(layout);
-        builder.add(transPercSpinner, cc.xy(1, 1));
-        builder.add(transPercLabel2, cc.xy(3, 1));
+        builder.add(transPercSlider, cc.xy(1, 1));
         return builder.getPanel();
     }
 
@@ -466,7 +481,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
            translucentMainFrameCB.isSelected());
 
         PreferencesEntry.TRANSLUCENT_PERCENTAGE.setValue(getController(),
-                transPercModel.getNumber().intValue());
+                transPercSlider.getValue());
 
         // UseRecycleBin
         ConfigurationEntry.USE_RECYCLE_BIN.setValue(getController(), Boolean
