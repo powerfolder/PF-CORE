@@ -79,8 +79,12 @@ public class PlainSocketConnectionHandler extends
     @Override
     protected byte[] serialize(Message message) throws ConnectionException {
         try {
-            return getSerializer().serialize(message,
-                getMyIdentity().isUseCompressedStream(), -1);
+            boolean compressed = getMyIdentity().isUseCompressedStream();
+            ByteSerializer serializer = getSerializer();
+            if (serializer == null) {
+                throw new IOException("Connection already closed");
+            }
+            return serializer.serialize(message, compressed, -1);
         } catch (IOException e) {
             throw new ConnectionException(
                 "Unable to send message to peer, connection closed", e)
