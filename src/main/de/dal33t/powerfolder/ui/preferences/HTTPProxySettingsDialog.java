@@ -35,6 +35,7 @@ import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 
 public class HTTPProxySettingsDialog extends PFUIComponent {
+    private JFrame parentFrame;
     private JDialog dialog;
     private JPanel panel;
 
@@ -57,23 +58,27 @@ public class HTTPProxySettingsDialog extends PFUIComponent {
     private ValueModel proxyTypeModel;
 
     public HTTPProxySettingsDialog(Controller controller) {
+        this(controller, controller.getUIController().getMainFrame()
+            .getUIComponent());
+    }
+
+    public HTTPProxySettingsDialog(Controller controller, JFrame parentFrame) {
         super(controller);
+        this.parentFrame = parentFrame;
     }
 
     public void open() {
         if (dialog == null) {
-            JFrame parent = getController().getUIController().getMainFrame()
-                .getUIComponent();
-            dialog = new JDialog(parent, Translation
+            dialog = new JDialog(parentFrame, Translation
                 .getTranslation("pro.http.options.title"), true);
             dialog.setContentPane(getUIComponent());
             dialog.pack();
             dialog.setResizable(false);
-            if (parent != null) {
-                int x = parent.getX() + (parent.getWidth() - dialog.getWidth())
-                    / 2;
-                int y = parent.getY()
-                    + (parent.getHeight() - dialog.getHeight()) / 2;
+            if (parentFrame != null) {
+                int x = parentFrame.getX()
+                    + (parentFrame.getWidth() - dialog.getWidth()) / 2;
+                int y = parentFrame.getY()
+                    + (parentFrame.getHeight() - dialog.getHeight()) / 2;
                 dialog.setLocation(x, y);
             }
         }

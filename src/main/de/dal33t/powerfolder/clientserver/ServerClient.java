@@ -129,7 +129,8 @@ public class ServerClient extends PFComponent {
 
         this.allowServerChange = allowServerChange;
         this.updateConfig = updateConfig;
-        this.webURL = !StringUtils.isBlank(webURL) ? webURL : null;
+        this.webURL = !StringUtils.isBlank(webURL) ? Util
+            .removeLastSlashFromURI(webURL) : null;
 
         // Custom server
         String theName = !StringUtils.isBlank(name) ? name : Translation

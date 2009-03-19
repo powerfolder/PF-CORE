@@ -270,7 +270,7 @@ public class PluginSettingsTab extends PFUIComponent implements PreferenceTab,
         }
     }
 
-    private static class EnableAction extends SelectionBaseAction {
+    private class EnableAction extends SelectionBaseAction {
 
         public EnableAction(Controller controller, SelectionModel selectionModel)
         {
@@ -287,6 +287,10 @@ public class PluginSettingsTab extends PFUIComponent implements PreferenceTab,
             boolean newStatus = !getController().getPluginManager().isEnabled(
                 plugin);
             getController().getPluginManager().setEnabled(plugin, newStatus);
+            if (newStatus && plugin.hasOptionsDialog()) {
+                plugin
+                    .showOptionsDialog(PluginSettingsTab.this.preferencesDialog);
+            }
         }
 
         private void updateButton(Plugin plugin) {

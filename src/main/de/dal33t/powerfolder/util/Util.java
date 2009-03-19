@@ -502,6 +502,27 @@ public class Util {
     }
 
     /**
+     * Removes the last '/' from an URI and trims the string. Example:
+     * http://www.powerfolder.com/ gets converted into
+     * http://www.powerfolder.com
+     * 
+     * @param uri
+     *            the URI to trim and remove last slash from
+     * @return the new URI string
+     */
+    public static String removeLastSlashFromURI(String uri) {
+        if (uri == null) {
+            return null;
+        }
+        String newURI = uri.trim();
+        if (newURI.endsWith("/") && !newURI.endsWith("://")) {
+            // Remove last '/' if existing
+            newURI = newURI.substring(0, newURI.length() - 1);
+        }
+        return newURI;
+    }
+
+    /**
      * compares two ip addresses.
      * 
      * @param ip1
