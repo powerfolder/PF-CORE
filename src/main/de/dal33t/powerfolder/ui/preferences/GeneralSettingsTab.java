@@ -221,10 +221,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         {
             dictionary.put(i, new JLabel(Integer.toString(i) + '%'));
         }
-        dictionary.put(transPercSlider.getMinimum(), new JLabel(transPercSlider
-            .getMinimum() + "%"));
-        dictionary.put(transPercSlider.getMaximum(), new JLabel(transPercSlider
-            .getMaximum() + "%"));
         transPercSlider.setLabelTable(dictionary);
 
         transPercLabel1 = new JLabel(Translation

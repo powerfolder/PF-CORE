@@ -35,6 +35,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.util.Dictionary;
+import java.util.Hashtable;
 
 public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
 
@@ -47,8 +49,7 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
     private JCheckBox showSystemNotificationBox;
 
     /** Notification translucency */
-    private SpinnerNumberModel notificationTranslucentModel;
-    private JSpinner notificationTranslucentSpinner;
+    private JSlider notificationTranslucentSlider;
 
     /** Notification dwell period (seconds) */
     private SpinnerNumberModel notificationDisplayModel;
@@ -126,11 +127,23 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
                 3, 30, 1);
         notificationDisplaySpinner = new JSpinner(notificationDisplayModel);
 
-        notificationTranslucentModel = new SpinnerNumberModel(
-                PreferencesEntry.NOTIFICATION_TRANSLUCENT.getValueInt(
-                        getController()).intValue(),
-                0, 90, 1);
-        notificationTranslucentSpinner = new JSpinner(notificationTranslucentModel);
+        notificationTranslucentSlider = new JSlider();
+        notificationTranslucentSlider.setMinimum(10);
+        notificationTranslucentSlider.setMaximum(90);
+        notificationTranslucentSlider.setValue(PreferencesEntry.NOTIFICATION_TRANSLUCENT
+                .getValueInt(getController()).intValue());
+        notificationTranslucentSlider.setMajorTickSpacing(20);
+        notificationTranslucentSlider.setMinorTickSpacing(5);
+
+        notificationTranslucentSlider.setPaintTicks(true);
+        notificationTranslucentSlider.setPaintLabels(true);
+
+        Dictionary<Integer, JLabel> dictionary = new Hashtable<Integer, JLabel>();
+        for (int i = 10; i <= 90; i += notificationTranslucentSlider.getMajorTickSpacing())
+        {
+            dictionary.put(i, new JLabel(Integer.toString(i) + '%'));
+        }
+        notificationTranslucentSlider.setLabelTable(dictionary);
 
         boolean checkForUpdate = PreferencesEntry.CHECK_UPDATE
             .getValueBoolean(getController());
@@ -260,11 +273,10 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
     }
 
     private Component createNotificationTranslucentSpinnerPanel() {
-        FormLayout layout = new FormLayout("pref, 3dlu, pref, pref:grow", "pref");
+        FormLayout layout = new FormLayout("pref, pref:grow", "pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
-        builder.add(notificationTranslucentSpinner, cc.xy(1, 1));
-        builder.addLabel("%", cc.xy(3, 1));
+        builder.add(notificationTranslucentSlider, cc.xy(1, 1));
         return builder.getPanel();
     }
 
@@ -297,7 +309,7 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
         }
 
         PreferencesEntry.NOTIFICATION_TRANSLUCENT.setValue(getController(),
-                notificationTranslucentModel.getNumber().intValue());
+                notificationTranslucentSlider.getValue());
 
         PreferencesEntry.NOTIFICATION_DISPLAY.setValue(getController(),
                 notificationDisplayModel.getNumber().intValue());
@@ -332,7 +344,7 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
             PreferencesEntry.NOTIFICATION_DISPLAY.setValue(getController(),
                     notificationDisplayModel.getNumber().intValue());
             PreferencesEntry.NOTIFICATION_TRANSLUCENT.setValue(getController(),
-                    notificationTranslucentModel.getNumber().intValue());
+                    notificationTranslucentSlider.getValue());
 
             // Dispaly
             getController().getUIController().notifyMessage(
