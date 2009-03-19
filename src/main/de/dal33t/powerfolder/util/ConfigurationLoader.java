@@ -33,31 +33,25 @@ import java.util.logging.Logger;
  * @version $Revision$
  */
 public class ConfigurationLoader {
-    private static Logger LOG = Logger.getLogger(ConfigurationLoader.class.getName());
+    private static Logger LOG = Logger.getLogger(ConfigurationLoader.class
+        .getName());
 
     private ConfigurationLoader() {
     }
 
     /**
-     * Loads a pre-configuration from the URL and sets/replaces the values in
-     * the given config.
+     * Loads a pre-configuration from the URL
      * 
      * @param from
      *            the URL to load from
-     * @param config
-     *            the config file to set the pre-configuration values into.
      * @return the loaded properties WITHOUT those in config.
      * @throws IOException
      */
-    public static Properties loadPreConfiguration(URL from, Properties config)
-        throws IOException
-    {
+    public static Properties loadPreConfiguration(URL from) throws IOException {
         Reject.ifNull(from, "URL is null");
         InputStream in = from.openStream();
         try {
-            Properties preConfig = loadPreConfiguration(in);
-            mergeConfigs(preConfig, config, true);
-            return preConfig;
+            return loadPreConfiguration(in);
         } finally {
             try {
                 in.close();
@@ -67,18 +61,15 @@ public class ConfigurationLoader {
     }
 
     /**
-     * Loads the pre configuration from file from the classpath. Overwrites all
-     * values in the given config.
+     * Loads the pre configuration from file from the classpath.
      * 
      * @param filename
      *            the filename to load
-     * @param config
-     *            the config file to set the pre-configuration values into.
-     * @return the loaded properties WITHOUT those in config.
+     * @return the loaded properties
      * @throws IOException
      */
-    public static Properties loadPreConfigFromClasspath(String filename,
-        Properties config) throws IOException
+    public static Properties loadPreConfigFromClasspath(String filename)
+        throws IOException
     {
         InputStream in = Thread.currentThread().getContextClassLoader()
             .getResourceAsStream(filename);
@@ -87,9 +78,7 @@ public class ConfigurationLoader {
                 + "' not found in classpath");
         }
         try {
-            Properties preConfig = loadPreConfiguration(in);
-            mergeConfigs(preConfig, config, true);
-            return preConfig;
+            return loadPreConfiguration(in);
         } finally {
             try {
                 in.close();
@@ -112,7 +101,7 @@ public class ConfigurationLoader {
      *            pre config.
      * @return the number of merged entries.
      */
-    private static int mergeConfigs(Properties preConfig,
+    public static int mergeConfigs(Properties preConfig,
         Properties targetConfig, boolean replaceExisting)
     {
         Reject.ifNull(preConfig, "PreConfig is null");

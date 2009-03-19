@@ -23,6 +23,8 @@ import java.io.IOException;
 import java.util.Locale;
 import java.util.Properties;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.ConfigurationLoader;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.logging.Loggable;
@@ -36,6 +38,26 @@ import de.dal33t.powerfolder.util.logging.Loggable;
 public abstract class AbstractDistribution extends Loggable implements
     Distribution
 {
+    /**
+     * @param c
+     * @return true if the set server is part of the public PowerFolder network
+     *         (non inhouse server).
+     */
+    protected static boolean isPowerFolderServer(Controller c) {
+        String host = ConfigurationEntry.SERVER_HOST.getValue(c);
+        if (host != null) {
+            if (host.toLowerCase().contains("powerfolder.com")) {
+                return true;
+            }
+        }
+        String nodeId = ConfigurationEntry.SERVER_NODEID.getValue(c);
+        if (nodeId != null) {
+            if (nodeId.toLowerCase().contains("WEBSERVICE")) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     protected boolean loadTranslation(String customTranslationId) {
         // Load texts
@@ -55,9 +77,11 @@ public abstract class AbstractDistribution extends Loggable implements
 
     protected boolean loadPreConfigFromClasspath(Properties config) {
         try {
-            ConfigurationLoader.loadPreConfigFromClasspath("Client.properties",
-                config);
-            logInfo("Loaded preconfiguration file Client.config from jar file");
+            Properties preConfig = ConfigurationLoader
+                .loadPreConfigFromClasspath("Client.properties");
+            ConfigurationLoader.mergeConfigs(preConfig, config, true);
+            logInfo(
+                "Loaded preconfiguration file Client.config from jar file");
             return true;
         } catch (IOException e) {
             logSevere("Error while loading Client.config from jar file");

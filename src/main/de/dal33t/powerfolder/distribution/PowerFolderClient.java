@@ -69,22 +69,6 @@ public class PowerFolderClient extends AbstractDistribution {
         setDefaultValue(c, ConfigurationEntry.SERVER_HOST);
     }
 
-    private static boolean isPowerFolderServer(Controller c) {
-        String host = ConfigurationEntry.SERVER_HOST.getValue(c);
-        if (host != null) {
-            if (host.toLowerCase().contains("powerfolder.com")) {
-                return true;
-            }
-        }
-        String nodeId = ConfigurationEntry.SERVER_NODEID.getValue(c);
-        if (nodeId != null) {
-            if (nodeId.toLowerCase().contains("WEBSERVICE")) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     private static void resetNetworkID(Controller c) {
         setDefaultValue(c, ConfigurationEntry.NETWORK_ID);
     }
