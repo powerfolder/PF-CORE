@@ -31,6 +31,7 @@ import javax.swing.SwingUtilities;
  */
 public abstract class SwingWorker {
     private Object value; // see getValue(), setValue()
+    private Throwable throwable;
 
     /**
      * Class to maintain reference to current worker thread under separate
@@ -72,7 +73,7 @@ public abstract class SwingWorker {
     /**
      * Compute the value to be returned by the <code>get</code> method.
      */
-    public abstract Object construct();
+    public abstract Object construct() throws Throwable;
 
     /**
      * Called on the event dispatching thread (not on the worker thread) after
@@ -116,8 +117,20 @@ public abstract class SwingWorker {
     }
 
     /**
-     * Start a thread that will call the <code>construct</code> method and
-     * then exit.
+     * Return the Throwable that occurred by the <code>construct</code> method.
+     * Returns null if either the constructing thread, the current thread was
+     * interrupted before a value was produced or now exception occurred.
+     * 
+     * @return the value created by the <code>construct</code> method
+     */
+    public Throwable getThrowable() {
+        get();
+        return throwable;
+    }
+
+    /**
+     * Start a thread that will call the <code>construct</code> method and then
+     * exit.
      */
     public SwingWorker() {
         final Runnable doFinished = new Runnable() {
@@ -132,7 +145,7 @@ public abstract class SwingWorker {
                     beforeConstruct();
                     setValue(construct());
                 } catch (Throwable t) {
-                    t.printStackTrace();
+                    throwable = t;
                 } finally {
                     afterConstruct();
                     threadVar.clear();
