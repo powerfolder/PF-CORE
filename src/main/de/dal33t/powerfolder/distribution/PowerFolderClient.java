@@ -39,7 +39,9 @@ public class PowerFolderClient extends AbstractDistribution {
         resetProviderURLs(controller);
 
         // Reset primary server if not PowerFolder server
-        resetServer(controller);
+        if (!isPowerFolderServer(controller)) {
+            resetServer(controller);
+        }
     }
 
     public boolean supportsWebRegistration() {
@@ -58,9 +60,6 @@ public class PowerFolderClient extends AbstractDistribution {
     // Internal ***************************************************************
 
     private void resetServer(Controller c) {
-        if (isPowerFolderServer(c)) {
-            return;
-        }
         logInfo("Resetting server connection to "
             + ConfigurationEntry.SERVER_HOST.getDefaultValue());
         setDefaultValue(c, ConfigurationEntry.SERVER_NAME);
