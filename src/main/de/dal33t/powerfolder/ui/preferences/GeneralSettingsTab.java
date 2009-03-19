@@ -300,35 +300,8 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
             row += 2;
             builder.add(new JLabel(Translation
-                .getTranslation("preferences.dialog.language")), cc.xy(1, row));
-            builder.add(languageChooser, cc.xy(3, row));
-
-            row += 2;
-            builder
-                .add(new JLabel(Translation
-                    .getTranslation("preferences.dialog.exit_behavior")), cc.xy(1,
-                    row));
-            builder.add(xBehaviorChooser, cc.xy(3, row));
-
-            row += 2;
-            builder.add(new JLabel(Translation
-                .getTranslation("preferences.dialog.color_theme")), cc
-                .xy(1, row));
-            builder.add(lookAndFeelChooser, cc.xy(3, row));
-
-            row += 2;
-            builder.add(new JLabel(Translation
                 .getTranslation("preferences.dialog.base_dir")), cc.xy(1, row));
             builder.add(locationField, cc.xy(3, row));
-
-            row += 2;
-            builder.add(showAdvancedSettingsBox, cc.xyw(3, row, 2));
-
-            row += 2;
-            builder.add(underlineLinkBox, cc.xyw(3, row, 2));
-
-            row += 2;
-            builder.add(magneticFrameBox, cc.xyw(3, row, 2));
 
             row += 2;
             builder.add(useRecycleBinBox, cc.xyw(3, row, 2));
@@ -361,6 +334,42 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                     .getTranslation("preferences.dialog.non_windows_info"),
                     SwingConstants.CENTER), cc.xyw(1, row, 4));
             }
+
+            row += 2;
+            builder.add(showAdvancedSettingsBox, cc.xyw(3, row, 2));
+
+            //////////////////////////////////////////
+            // User Interface stuff only below here //
+            //////////////////////////////////////////
+
+            row += 2;
+            builder.addSeparator(Translation.getTranslation(
+                    "preferences.dialog.user_interface"),
+                    cc.xyw(1, row, 3));
+
+            row += 2;
+            builder.add(new JLabel(Translation
+                .getTranslation("preferences.dialog.language")), cc.xy(1, row));
+            builder.add(languageChooser, cc.xy(3, row));
+
+            row += 2;
+            builder
+                .add(new JLabel(Translation
+                    .getTranslation("preferences.dialog.exit_behavior")), cc.xy(1,
+                    row));
+            builder.add(xBehaviorChooser, cc.xy(3, row));
+
+            row += 2;
+            builder.add(new JLabel(Translation
+                .getTranslation("preferences.dialog.color_theme")), cc
+                .xy(1, row));
+            builder.add(lookAndFeelChooser, cc.xy(3, row));
+
+            row += 2;
+            builder.add(underlineLinkBox, cc.xyw(3, row, 2));
+
+            row += 2;
+            builder.add(magneticFrameBox, cc.xyw(3, row, 2));
 
             if (Constants.OPACITY_SUPPORTED) {
                 builder.appendRow("3dlu");
