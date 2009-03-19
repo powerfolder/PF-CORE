@@ -21,7 +21,6 @@ package de.dal33t.powerfolder;
 
 import java.util.logging.Logger;
 
-
 /**
  * Available features to enable/disable. Primary for testing.
  * <p>
@@ -33,7 +32,7 @@ import java.util.logging.Logger;
 public enum Feature {
 
     OS_CLIENT, EXIT_ON_SHUTDOWN,
-    
+
     /**
      * If the nodes of a server clusters should automatically connect.
      */
@@ -49,7 +48,7 @@ public enum Feature {
      * CORRECT_LAN_DETECTION to be ENABLED!
      */
     CORRECT_INTERNET_DETECTION,
-    
+
     /**
      * If file movements should be checked after scan.
      */
