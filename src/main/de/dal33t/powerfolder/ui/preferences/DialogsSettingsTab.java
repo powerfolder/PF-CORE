@@ -40,8 +40,6 @@ import java.util.Hashtable;
 
 public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
 
-    private JCheckBox updateCheck;
-
     /** Show chat notifications */
     private JCheckBox showChatNotificationBox;
 
@@ -157,8 +155,6 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
         }
         notificationTranslucentSlider.setLabelTable(dictionary);
 
-        boolean checkForUpdate = PreferencesEntry.CHECK_UPDATE
-            .getValueBoolean(getController());
         boolean askFriendship = PreferencesEntry.ASK_FOR_FRIENDSHIP_ON_PRIVATE_FOLDER_JOIN
             .getValueBoolean(getController());
         boolean askFriendshipMessage = PreferencesEntry.ASK_FOR_FRIENDSHIP_MESSAGE
@@ -171,10 +167,6 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
             .getValueBoolean(getController());
         boolean duplicateFolders = PreferencesEntry.DUPLICATE_FOLDER_USE
             .getValueBoolean(getController());
-        updateCheck = new JCheckBox(
-            Translation
-                .getTranslation("preferences.dialog.dialogs.check_for_program_updates"),
-            checkForUpdate);
         askForFriendship = new JCheckBox(
             Translation
                 .getTranslation("preferences.dialog.dialogs.ask_to_add_to_friends_if_node_becomes_member_of_folder"),
@@ -217,9 +209,6 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
 
             int row = 1;
 
-            builder.add(updateCheck, cc.xy(3, row));
-
-            row += 2;
             builder.add(warnOnCloseIfNotInSync, cc.xy(3, row));
 
             row += 2;
@@ -299,7 +288,6 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
         // Write properties into core
         writeTrigger.triggerCommit();
         
-        boolean checkForUpdate = updateCheck.isSelected();
         boolean testConnectivity = warnOnLimitedConnectivity.isSelected();
         boolean warnOnClose = warnOnCloseIfNotInSync.isSelected();
         boolean filenamCheck = warnOnPossibleFilenameProblems.isSelected();
@@ -325,7 +313,6 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
         PreferencesEntry.NOTIFICATION_DISPLAY.setValue(getController(),
                 notificationDisplaySlider.getValue());
 
-        PreferencesEntry.CHECK_UPDATE.setValue(getController(), checkForUpdate);
         PreferencesEntry.ASK_FOR_FRIENDSHIP_ON_PRIVATE_FOLDER_JOIN.setValue(
             getController(), askFriendship);
         PreferencesEntry.ASK_FOR_FRIENDSHIP_MESSAGE.setValue(

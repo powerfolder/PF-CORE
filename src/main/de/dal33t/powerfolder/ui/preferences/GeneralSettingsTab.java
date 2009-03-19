@@ -67,6 +67,8 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
     private JCheckBox startWithWindowsBox;
 
+    private JCheckBox updateCheck;
+
     private JComboBox languageChooser;
     private JComboBox lookAndFeelChooser;
     private JComboBox xBehaviorChooser;
@@ -147,6 +149,13 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
         // Language selector
         languageChooser = createLanguageChooser();
+
+        boolean checkForUpdate = PreferencesEntry.CHECK_UPDATE
+            .getValueBoolean(getController());
+        updateCheck = new JCheckBox(
+            Translation
+                .getTranslation("preferences.dialog.dialogs.check_for_program_updates"),
+            checkForUpdate);
 
         // Build color theme chooser
         oldLaf = UIManager.getLookAndFeel();
@@ -285,7 +294,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         if (panel == null) {
             FormLayout layout = new FormLayout(
                 "right:pref, 3dlu, 140dlu, pref:grow",
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
 
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
@@ -338,6 +347,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             row += 2;
             builder.add(showAdvancedSettingsBox, cc.xyw(3, row, 2));
 
+
             //////////////////////////////////////////
             // User Interface stuff only below here //
             //////////////////////////////////////////
@@ -353,10 +363,9 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             builder.add(languageChooser, cc.xy(3, row));
 
             row += 2;
-            builder
-                .add(new JLabel(Translation
-                    .getTranslation("preferences.dialog.exit_behavior")), cc.xy(1,
-                    row));
+            builder.add(new JLabel(Translation
+                    .getTranslation("preferences.dialog.exit_behavior")),
+                    cc.xy(1, row));
             builder.add(xBehaviorChooser, cc.xy(3, row));
 
             row += 2;
@@ -364,6 +373,9 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 .getTranslation("preferences.dialog.color_theme")), cc
                 .xy(1, row));
             builder.add(lookAndFeelChooser, cc.xy(3, row));
+
+            row += 2;
+            builder.add(updateCheck, cc.xyw(3, row, 2));
 
             row += 2;
             builder.add(underlineLinkBox, cc.xyw(3, row, 2));
@@ -453,6 +465,9 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             // Remove setting
             Translation.saveLocalSetting(null);
         }
+
+        boolean checkForUpdate = updateCheck.isSelected();
+        PreferencesEntry.CHECK_UPDATE.setValue(getController(), checkForUpdate);
 
         // Set folder base
         String folderbase = (String) locationModel.getValue();
