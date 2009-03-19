@@ -57,6 +57,7 @@ import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
@@ -211,6 +212,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         translucentMainFrameCB.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
                 enableTransPerc();
+                doMainFrameTranslucency();
             }
         });
 
@@ -231,6 +233,11 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             dictionary.put(i, new JLabel(Integer.toString(i) + '%'));
         }
         transPercSlider.setLabelTable(dictionary);
+        transPercSlider.addChangeListener(new ChangeListener() {
+            public void stateChanged(ChangeEvent e) {
+                doMainFrameTranslucency();
+            }
+        });
 
         transPercLabel1 = new JLabel(Translation
                 .getTranslation("preferences.dialog.translucent_text"));
@@ -284,6 +291,24 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                         .getTranslation("preferences.dialog.use_pf_icon"));
             }
 
+        }
+    }
+
+    /**
+     * This temporarily sets the main frame translucency to match the controls.
+     * If user cancels out, the MainFrame's focus listener will fix things.
+     */
+    private void doMainFrameTranslucency() {
+        if (Constants.OPACITY_SUPPORTED) {
+            if (translucentMainFrameCB.isSelected()) {
+                // Translucency is 1 - opacity.
+                float opacity = 1.0f - transPercSlider.getValue() /  100.0f;
+                UIUtil.applyTranslucency(getController().getUIController()
+                        .getMainFrame().getUIComponent(), opacity);
+            } else {
+                UIUtil.applyTranslucency(getController().getUIController()
+                        .getMainFrame().getUIComponent(), 1.0f);
+            }
         }
     }
 
