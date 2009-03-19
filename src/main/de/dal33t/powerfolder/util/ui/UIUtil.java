@@ -19,25 +19,30 @@
 */
 package de.dal33t.powerfolder.util.ui;
 
-import com.jgoodies.forms.factories.Borders;
-import com.jgoodies.forms.layout.Sizes;
-import com.sun.awt.AWTUtilities;
-import de.dal33t.powerfolder.util.Reject;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Window;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Logger;
 
-import javax.swing.*;
+import javax.swing.JComponent;
+import javax.swing.JTable;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
-import java.awt.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.Logger;
+
+import com.jgoodies.forms.factories.Borders;
+import com.jgoodies.forms.layout.Sizes;
+
+import de.dal33t.powerfolder.util.Reject;
 
 
 /**
@@ -285,17 +290,17 @@ public class UIUtil {
      * @param opacity
      */
     public static void applyTranslucency(Window window, Float opacity) {
-        try {
-            Method m = AWTUtilities.class.getMethod("setWindowOpacity",
-                    JWindow.class, Float.class);
-            m.invoke(AWTUtilities.class, window, opacity);
-        } catch (NoSuchMethodException e) {
-            log.warning(e.getMessage());
-        } catch (InvocationTargetException e) {
-            log.warning(e.getMessage());
-        } catch (IllegalAccessException e) {
-            log.warning(e.getMessage());
-        }
-        AWTUtilities.setWindowOpacity(window, opacity);
+//        try {
+//            Method m = AWTUtilities.class.getMethod("setWindowOpacity",
+//                    JWindow.class, Float.class);
+//            m.invoke(AWTUtilities.class, window, opacity);
+//        } catch (NoSuchMethodException e) {
+//            log.warning(e.getMessage());
+//        } catch (InvocationTargetException e) {
+//            log.warning(e.getMessage());
+//        } catch (IllegalAccessException e) {
+//            log.warning(e.getMessage());
+//        }
+//        AWTUtilities.setWindowOpacity(window, opacity);
     }
 }
