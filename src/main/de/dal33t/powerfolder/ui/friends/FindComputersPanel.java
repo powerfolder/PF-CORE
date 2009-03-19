@@ -181,7 +181,7 @@ public class FindComputersPanel extends PFUIPanel {
         }
 
         searcher = new NodeSearcher(getController(),
-                searchText, searchNodeTableModel.getListModel(), true,
+                searchText, searchNodeTableModel.getListModel(), false,
             hideOffline.isSelected());
         searcher.start();
     }
