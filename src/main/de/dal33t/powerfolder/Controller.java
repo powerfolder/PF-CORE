@@ -63,7 +63,7 @@ import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.RecycleBin;
 import de.dal33t.powerfolder.distribution.Distribution;
-import de.dal33t.powerfolder.distribution.DefaultDistribution;
+import de.dal33t.powerfolder.distribution.PowerFolderClient;
 import de.dal33t.powerfolder.event.AskForFriendshipEvent;
 import de.dal33t.powerfolder.event.AskForFriendshipListener;
 import de.dal33t.powerfolder.event.InvitationHandler;
@@ -1933,7 +1933,7 @@ public class Controller extends PFComponent {
             distribution = br;
         }
         if (distribution == null) {
-            distribution = new DefaultDistribution();
+            distribution = new PowerFolderClient();
         }
         logInfo("Running distribution: " + distribution.getName());
         try {

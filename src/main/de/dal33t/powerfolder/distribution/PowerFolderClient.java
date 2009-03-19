@@ -23,7 +23,7 @@ import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.Updater.UpdateSetting;
 
-public class DefaultDistribution extends AbstractDistribution {
+public class PowerFolderClient extends AbstractDistribution {
 
     public String getName() {
         return "PowerFolder";
