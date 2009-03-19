@@ -52,8 +52,7 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
     private JSlider notificationTranslucentSlider;
 
     /** Notification dwell period (seconds) */
-    private SpinnerNumberModel notificationDisplayModel;
-    private JSpinner notificationDisplaySpinner;
+    private JSlider notificationDisplaySlider;
 
     /** Ask to add to friends if user becomes member of a folder */
     private JCheckBox askForFriendship;
@@ -121,11 +120,24 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
             new BufferedValueModel(ssnModel, writeTrigger), Translation
                 .getTranslation("preferences.dialog.show_system_notifications"));
 
-        notificationDisplayModel = new SpinnerNumberModel(
-                PreferencesEntry.NOTIFICATION_DISPLAY.getValueInt(
-                        getController()).intValue(),
-                3, 30, 1);
-        notificationDisplaySpinner = new JSpinner(notificationDisplayModel);
+        notificationDisplaySlider = new JSlider();
+        notificationDisplaySlider.setMinimum(5);
+        notificationDisplaySlider.setMaximum(30);
+        notificationDisplaySlider.setValue(PreferencesEntry.NOTIFICATION_DISPLAY
+                .getValueInt(getController()).intValue());
+        notificationDisplaySlider.setMajorTickSpacing(5);
+        notificationDisplaySlider.setMinorTickSpacing(1);
+
+        notificationDisplaySlider.setPaintTicks(true);
+        notificationDisplaySlider.setPaintLabels(true);
+
+        Dictionary<Integer, JLabel> dictionary = new Hashtable<Integer, JLabel>();
+        dictionary.put(5, new JLabel(String.valueOf(5)));
+        for (int i = 10; i <= 30; i += notificationDisplaySlider.getMajorTickSpacing())
+        {
+            dictionary.put(i, new JLabel(Integer.toString(i)));
+        }
+        notificationDisplaySlider.setLabelTable(dictionary);
 
         notificationTranslucentSlider = new JSlider();
         notificationTranslucentSlider.setMinimum(10);
@@ -138,7 +150,7 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
         notificationTranslucentSlider.setPaintTicks(true);
         notificationTranslucentSlider.setPaintLabels(true);
 
-        Dictionary<Integer, JLabel> dictionary = new Hashtable<Integer, JLabel>();
+        dictionary = new Hashtable<Integer, JLabel>();
         for (int i = 10; i <= 90; i += notificationTranslucentSlider.getMajorTickSpacing())
         {
             dictionary.put(i, new JLabel(Integer.toString(i) + '%'));
@@ -260,15 +272,13 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
     }
 
     private Component createNotificationDisplaySpinnerPanel() {
-        FormLayout layout = new FormLayout("pref, 3dlu, pref, 3dlu, pref, pref:grow", "pref");
+        FormLayout layout = new FormLayout("pref, 3dlu, pref, pref:grow", "pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
-        builder.add(notificationDisplaySpinner, cc.xy(1, 1));
-        builder.addLabel(Translation.getTranslation("general.seconds.lower"),
-                cc.xy(3, 1));
+        builder.add(notificationDisplaySlider, cc.xy(1, 1));
         JButton preview = new JButton("Preview");
         preview.addActionListener(new MyActionListener());
-        builder.add(preview, cc.xy(5, 1));
+        builder.add(preview, cc.xy(3, 1));
         return builder.getPanel();
     }
 
@@ -312,7 +322,7 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
                 notificationTranslucentSlider.getValue());
 
         PreferencesEntry.NOTIFICATION_DISPLAY.setValue(getController(),
-                notificationDisplayModel.getNumber().intValue());
+                notificationDisplaySlider.getValue());
 
         PreferencesEntry.CHECK_UPDATE.setValue(getController(), checkForUpdate);
         PreferencesEntry.ASK_FOR_FRIENDSHIP_ON_PRIVATE_FOLDER_JOIN.setValue(
@@ -342,11 +352,11 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
 
             // Set temporary
             PreferencesEntry.NOTIFICATION_DISPLAY.setValue(getController(),
-                    notificationDisplayModel.getNumber().intValue());
+                    notificationDisplaySlider.getValue());
             PreferencesEntry.NOTIFICATION_TRANSLUCENT.setValue(getController(),
                     notificationTranslucentSlider.getValue());
 
-            // Dispaly
+            // Display
             getController().getUIController().notifyMessage(
                     Translation.getTranslation(
                             "preferences.dialog.dialogs.notification.preview.title"),
