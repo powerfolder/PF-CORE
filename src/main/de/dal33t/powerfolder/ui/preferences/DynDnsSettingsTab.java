@@ -232,9 +232,8 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
             }
         });
         myDnsLabel = new LinkLabel(getController(), Translation
-            .getTranslation("preferences.dialog.dyn_dns"),
-            ConfigurationEntry.PROVIDER_WIKI_URL.getValue(getController())
-                + "/DynDNS");
+            .getTranslation("preferences.dialog.dyn_dns"), Help
+            .getWikiArticleURL(getController(), "DynDNS"));
 
         if (ConfigurationEntry.DYNDNS_USERNAME.getValue(getController()) == null)
         {

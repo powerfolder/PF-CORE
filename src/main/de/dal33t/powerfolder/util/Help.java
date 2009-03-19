@@ -78,6 +78,20 @@ public class Help {
     }
 
     /**
+     * @param controller
+     *            the controller.
+     * @param article
+     *            the article name, e.g. "Supernode"
+     * @return the URL of the article e.g.
+     *         http://www.powerfolder.com/wiki/Supernode
+     */
+    public static String getWikiArticleURL(Controller controller, String article)
+    {
+        return ConfigurationEntry.PROVIDER_WIKI_URL.getValue(controller) + '/'
+            + article;
+    }
+
+    /**
      * Creates a linklabel, which links to a article on the PowerFolder wiki.
      * 
      * @param labelText
@@ -91,8 +105,7 @@ public class Help {
         String article)
     {
         String toolTips = Translation.getTranslation("general.what_is_this");
-        return new LinkJButton(Icons.QUESTION, toolTips,
-            ConfigurationEntry.PROVIDER_WIKI_URL.getValue(controller) + '/'
-                + article);
+        return new LinkJButton(Icons.QUESTION, toolTips, getWikiArticleURL(
+            controller, article));
     }
 }
