@@ -615,12 +615,19 @@ public enum ConfigurationEntry {
         Reject.ifNull(controller, "Controller is null");
         controller.getConfig().remove(configKey);
     }
-    
+
     /**
      * @return the default value for this config entry.
      */
     public String getDefaultValue() {
         return defaultValue;
+    }
+
+    /**
+     * @return the key in config
+     */
+    public String getConfigKey() {
+        return configKey;
     }
 
     protected void setDefaults() {

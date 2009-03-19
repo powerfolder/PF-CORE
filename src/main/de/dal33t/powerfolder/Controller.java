@@ -336,8 +336,6 @@ public class Controller extends PFComponent {
                 "Configuration already started, shutdown controller first");
         }
 
-        // initOnlineDuplicate();
-
         // Default updatesettings
         updateSettings = new Updater.UpdateSetting();
         additionalConnectionListeners = Collections
@@ -383,11 +381,26 @@ public class Controller extends PFComponent {
             preferences = Preferences.userNodeForPackage(PowerFolder.class)
                 .node(getConfigName());
         }
+        
+        // initialize logger
+        initLogger();
+        logInfo("PowerFolder v" + PROGRAM_VERSION + " (build: "
+            + getBuildTime() + ')');
+        logFine("OS: " + System.getProperty("os.name"));
+        logFine("Java: " + JavaVersion.systemVersion().toString() + " ("
+            + System.getProperty("java.vendor") + ')');
+        logFine("Current time: " + new Date());
+        
+        // Init silentmode
         silentModeVM.setValue(preferences.getBoolean("silentMode", false));
         silentModeVM.addValueChangeListener(new MyPropertyChangeListener());
         
         // Initialize branding/preconfiguration of the client
         initDistribution();
+        
+        // Load and set http proxy settings
+        HTTPProxySettings.loadFromConfig(this);
+        Debug.writeSystemProperties();
 
         // create node manager
         nodeManager = new NodeManager(this);
@@ -414,19 +427,6 @@ public class Controller extends PFComponent {
         }
 
         setLoadingCompletion(10, 20);
-
-        // initialize logger
-        initLogger();
-        logInfo("PowerFolder v" + PROGRAM_VERSION + " (build: "
-            + getBuildTime() + ')');
-        logFine("OS: " + System.getProperty("os.name"));
-        logFine("Java: " + JavaVersion.systemVersion().toString() + " ("
-            + System.getProperty("java.vendor") + ')');
-        logFine("Current time: " + new Date());
-        
-        // Load and set http proxy settings
-        HTTPProxySettings.loadFromConfig(this);
-        Debug.writeSystemProperties();
 
         // The io provider.
         ioProvider = new IOProvider(this);

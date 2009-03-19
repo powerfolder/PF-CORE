@@ -19,7 +19,7 @@
  */
 package de.dal33t.powerfolder.distribution;
 
-import java.io.InputStream;
+import java.io.IOException;
 import java.util.Locale;
 import java.util.Properties;
 
@@ -33,31 +33,35 @@ import de.dal33t.powerfolder.util.logging.Loggable;
  * @author Christian Sprajc
  * @version $Revision$
  */
-public abstract class AbstractDistribution extends Loggable implements Distribution {
+public abstract class AbstractDistribution extends Loggable implements
+    Distribution
+{
 
-    protected boolean loadTranslation(String brandingId) {
+    protected boolean loadTranslation(String customTranslationId) {
         // Load texts
-        String translationFile = "Translation_en_" + brandingId + ".properties";
+        String translationFile = "Translation_en_" + customTranslationId
+            + ".properties";
         if (Thread.currentThread().getContextClassLoader().getResourceAsStream(
             translationFile) != null)
         {
-            Locale l = new Locale("en", brandingId);
+            Locale l = new Locale("en", customTranslationId);
             Translation.saveLocalSetting(l);
             Translation.resetResourceBundle();
-            logInfo("Branding/Translation file loaded: " + translationFile);
+            logInfo("Translation file loaded: " + translationFile);
             return true;
         }
         return false;
     }
 
-    protected boolean loadClientPreConfig(Properties config) {
-        InputStream in = Thread.currentThread().getContextClassLoader()
-            .getResourceAsStream("Client.config");
-        if (in != null) {
-            ConfigurationLoader.loadPreConfiguration(in, config, true);
-            logInfo("Branding/Preconfiguration file Client.config");
+    protected boolean loadPreConfigFromClasspath(Properties config) {
+        try {
+            ConfigurationLoader.loadPreConfigFromClasspath("Client.properties",
+                config);
+            logInfo("Loaded preconfiguration file Client.config from jar file");
             return true;
+        } catch (IOException e) {
+            logSevere("Error while loading Client.config from jar file");
+            return false;
         }
-        return false;
     }
 }
