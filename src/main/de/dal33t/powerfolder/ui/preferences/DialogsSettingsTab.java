@@ -140,8 +140,8 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
         notificationDisplaySlider.setLabelTable(dictionary);
 
         notificationTranslucentSlider = new JSlider();
-        notificationTranslucentSlider.setMinimum(10);
-        notificationTranslucentSlider.setMaximum(90);
+        notificationTranslucentSlider.setMinimum(0);
+        notificationTranslucentSlider.setMaximum(80);
         notificationTranslucentSlider.setValue(PreferencesEntry.NOTIFICATION_TRANSLUCENT
                 .getValueInt(getController()).intValue());
         notificationTranslucentSlider.setMajorTickSpacing(20);
@@ -151,7 +151,7 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
         notificationTranslucentSlider.setPaintLabels(true);
 
         dictionary = new Hashtable<Integer, JLabel>();
-        for (int i = 10; i <= 90; i += notificationTranslucentSlider.getMajorTickSpacing())
+        for (int i = 0; i <= 80; i += notificationTranslucentSlider.getMajorTickSpacing())
         {
             dictionary.put(i, new JLabel(Integer.toString(i) + '%'));
         }
@@ -276,7 +276,8 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
         builder.add(notificationDisplaySlider, cc.xy(1, 1));
-        JButton preview = new JButton("Preview");
+        JButton preview = new JButton(
+                Translation.getTranslation("preferences.dialog.dialogs.preview"));
         preview.addActionListener(new MyActionListener());
         builder.add(preview, cc.xy(3, 1));
         return builder.getPanel();
@@ -362,7 +363,7 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
                             "preferences.dialog.dialogs.notification.preview.title"),
                     Translation.getTranslation(
                             "preferences.dialog.dialogs.notification.preview.text"),
-                    true);
+                    true, false);
 
             // Reset
             PreferencesEntry.NOTIFICATION_DISPLAY.setValue(getController(),

@@ -46,10 +46,10 @@ public class NotificationForm extends JPanel {
      */
     NotificationForm(String titleText, String messageText, String acceptOptionLabel,
                      Action acceptAction, String cancelOptionLabel,
-                     Action cancelAction) {
+                     Action cancelAction, boolean showAccept) {
         setLayout(new BorderLayout());
         JPanel jPanel = createPanel(titleText, messageText, acceptOptionLabel,
-                acceptAction, cancelOptionLabel, cancelAction);
+                acceptAction, cancelOptionLabel, cancelAction, showAccept);
         add(jPanel, BorderLayout.CENTER);
         setBorder(new LineBorder(Color.lightGray, 1));
     }
@@ -61,7 +61,8 @@ public class NotificationForm extends JPanel {
                                       String acceptOptionLabel,
                                       Action acceptAction,
                                       String cancelOptionLabel,
-                                      Action cancelAction) {
+                                      Action cancelAction,
+                                      boolean showAccept) {
         JPanel jPanel = new JPanel();
         jPanel.setBackground(Color.WHITE);
         CellConstraints cc = new CellConstraints();
@@ -78,7 +79,9 @@ public class NotificationForm extends JPanel {
                     "center:40px:none, center:70px:none, center:12px:none, center:default:none, center:default:none");
             internalWidth = 3;
             jPanel.setLayout(formLayout);
-            jPanel.add(button, cc.xy(3, 4));
+            if (showAccept) {
+                jPanel.add(button, cc.xy(3, 4));
+            }
             cols = new int[]{2, 3, 4};
         } else {
             formLayout = new FormLayout(
@@ -88,10 +91,12 @@ public class NotificationForm extends JPanel {
             jPanel.setLayout(formLayout);
             jPanel.add(button, cc.xy(3, 4));
 
-            button = new JButton();
-            button.setAction(cancelAction);
-            button.setText(cancelOptionLabel);
-            jPanel.add(button, cc.xy(5, 4));
+            if (showAccept) {
+                button = new JButton();
+                button.setAction(cancelAction);
+                button.setText(cancelOptionLabel);
+                jPanel.add(button, cc.xy(5, 4));
+            }
             cols = new int[]{2, 3, 4, 5, 6};
         }
 

@@ -1096,7 +1096,7 @@ public class UIController extends PFComponent {
      *            Message to show if notification is displayed.
      */
     public void notifyMessage(String title, String message) {
-        notifyMessage(title, message, false);
+        notifyMessage(title, message, false, true);
     }
 
     /**
@@ -1108,14 +1108,17 @@ public class UIController extends PFComponent {
      *            Message to show if notification is displayed.
      * @param override
      *            Show if not iconified / hidden.
+     * @param showAccept
+     *            Show the accept button
      */
-    public void notifyMessage(String title, String message, boolean override) {
+    public void notifyMessage(String title, String message, boolean override,
+                              boolean showAccept) {
 
         if (started && (mainFrame.isIconifiedOrHidden() || override)
             && !getController().isShuttingDown())
         {
             NotificationHandler notificationHandler = new NotificationHandler(
-                getController(), title, message);
+                getController(), title, message, showAccept);
             notificationHandler.show();
         }
     }
