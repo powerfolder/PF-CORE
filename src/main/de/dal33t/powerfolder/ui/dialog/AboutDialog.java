@@ -205,7 +205,11 @@ public class AboutDialog extends PFUIComponent {
                 Runtime.getRuntime().maxMemory() / 1024 / 1024)
             + '\n'
             + Translation.getTranslation("about_dialog.power_folder.used",
-                Runtime.getRuntime().totalMemory() / 1024 / 1024));
+                Runtime.getRuntime().totalMemory() / 1024 / 1024)
+            + '\n'
+            + Translation.getTranslation(
+                "about_dialog.power_folder.distribution", getController()
+                    .getDistribution().getName()));
 
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
         system = createTextBox(Translation
