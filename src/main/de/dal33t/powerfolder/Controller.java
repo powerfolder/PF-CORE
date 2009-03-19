@@ -627,6 +627,9 @@ public class Controller extends PFComponent {
             // Enable file logging
             LoggingManager.setConsoleLogging(Level.WARNING);
             LoggingManager.setFileLogging(Level.FINE);
+
+            monitorFileLog();
+
             // Switch on the document handler.
             String name = PreferencesEntry.DOCUMENT_LOGGING.getValueString(this);
             if (name == null || name.length() == 0) {
@@ -656,8 +659,35 @@ public class Controller extends PFComponent {
     }
 
     /**
+     * Start a task that re-sets the log file at midnight,
+     * setting the filename for the new day.
+     */
+    private void monitorFileLog() {
+
+        Calendar cal = new GregorianCalendar();
+        long now = cal.getTime().getTime();
+
+        // Move to midnight
+        cal.add(Calendar.DATE, 1);
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        long midnight = cal.getTime().getTime();
+
+        // How long to go?
+        long secondsToMidnight = (midnight - now) / 1000;
+        getController().getThreadPool().scheduleAtFixedRate(new Runnable() {
+            public void run() {
+                LoggingManager.resetFileLogging();
+            }
+        }, secondsToMidnight, 24 * 60 * 60, TimeUnit.SECONDS);
+    }
+
+    /**
      * Loads a config file (located in "getConfigLocationBase()")
      * 
+     * @param theFilename
      * @return false if unsuccesfull, true if file found and reading succeded.
      */
     private boolean loadConfigFile(String theFilename) {

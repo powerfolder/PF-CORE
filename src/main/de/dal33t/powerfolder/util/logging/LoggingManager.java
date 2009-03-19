@@ -156,33 +156,44 @@ public class LoggingManager {
      */
     public static void setFileLogging(Level level) {
 
-        // Make sure nothing else tries to create the file handler concurrently.
-        synchronized (fileHandlerLock) {
-            if (fileHandler == null) {
-                try {
-                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-                    String logFilename = prefix + '-' + sdf.format(new Date())
-                        + "-log.txt";
-                    fileLoggingFileName = new File(getDebugDir(), FileUtils
-                        .removeInvalidFilenameChars(logFilename))
-                        .getAbsolutePath();
-                    fileHandler = new FileHandler(fileLoggingFileName);
-                    fileHandler.setFormatter(new LoggingFormatter());
-                    getRootLogger().addHandler(fileHandler);
-                } catch (IOException e) {
-                    // Duh. No file logger.
-                    e.printStackTrace();
-                }
+        fileLoggingLevel = level;
 
-                if (fileHandler != null) {
-                    fileLoggingLevel = level;
-                    fileHandler.setLevel(level);
-                    fileHandler.setFilter(filter);
-                }
-            }
+        if (fileHandler == null) {
+            createFileHandler(level);
         }
 
         setMinimumBaseLoggingLevel();
+    }
+
+    /**
+     * Physically create the file handler.
+     * 
+     * @param level
+     */
+    private static void createFileHandler(Level level) {
+
+        // Make sure nothing else tries to create the file handler concurrently.
+        synchronized (fileHandlerLock) {
+            try {
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                String logFilename = prefix + '-' + sdf.format(new Date())
+                    + "-log.txt";
+                fileLoggingFileName = new File(getDebugDir(), FileUtils
+                    .removeInvalidFilenameChars(logFilename))
+                    .getAbsolutePath();
+                fileHandler = new FileHandler(fileLoggingFileName);
+                fileHandler.setFormatter(new LoggingFormatter());
+                getRootLogger().addHandler(fileHandler);
+            } catch (IOException e) {
+                // Duh. No file logger.
+                e.printStackTrace();
+            }
+
+            if (fileHandler != null) {
+                fileHandler.setLevel(level);
+                fileHandler.setFilter(filter);
+            }
+        }
     }
 
     /**
@@ -323,5 +334,14 @@ public class LoggingManager {
             return Level.WARNING;
         }
         return null;
+    }
+
+    /**
+     * Re-set the file logging, to change the log file to a new date.
+     */
+    public static void resetFileLogging() {
+        if (fileLoggingLevel != null && fileHandler != null) {
+            createFileHandler(fileLoggingLevel);
+        }
     }
 }
