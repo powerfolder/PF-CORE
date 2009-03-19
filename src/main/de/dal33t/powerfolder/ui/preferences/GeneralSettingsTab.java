@@ -345,7 +345,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             row += 2;
             builder.addSeparator(Translation.getTranslation(
                     "preferences.dialog.user_interface"),
-                    cc.xyw(1, row, 3));
+                    cc.xyw(1, row, 4));
 
             row += 2;
             builder.add(new JLabel(Translation
