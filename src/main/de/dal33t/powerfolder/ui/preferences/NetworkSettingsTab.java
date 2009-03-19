@@ -238,10 +238,15 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
             builder.add(silentThrottleLabel, cc.xy(1, row));
             builder.add(silentModeThrottle, cc.xy(3, row));
 
-            row += 2;
-            builder.addLabel(Translation
-                .getTranslation("preferences.dialog.server"), cc.xy(1, row));
-            builder.add(severSelector.getUIComponent(), cc.xy(3, row));
+            if (getController().getDistribution().allowUserToSelectServer()) {
+                row += 2;
+                builder
+                    .addLabel(Translation
+                        .getTranslation("preferences.dialog.server"), cc.xy(1,
+                        row));
+                builder.add(severSelector.getUIComponent(), cc.xywh(3, row, 7,
+                    1));
+            }
 
             row += 2;
             builder.add(useOnlineStorageCB, cc.xyw(3, row, 2));
