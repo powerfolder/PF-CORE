@@ -94,7 +94,9 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
      */
     public void setUpdateableFolder(Folder folder) {
         updateableFolder = folder;
+        settingSyncProfile = true;
         configureCombo(folder.getSyncProfile());
+        settingSyncProfile = false;
     }
 
     /**
