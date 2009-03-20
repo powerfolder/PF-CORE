@@ -78,13 +78,12 @@ public abstract class AbstractDistribution extends Loggable implements
     protected boolean loadPreConfigFromClasspath(Properties config) {
         try {
             Properties preConfig = ConfigurationLoader
-                .loadPreConfigFromClasspath("Client.properties");
+                .loadPreConfigFromClasspath("Client.config");
             ConfigurationLoader.mergeConfigs(preConfig, config, true);
-            logInfo(
-                "Loaded preconfiguration file Client.config from jar file");
+            logInfo("Loaded preconfiguration file Client.config from jar file");
             return true;
         } catch (IOException e) {
-            logSevere("Error while loading Client.config from jar file");
+            logSevere("Error while loading Client.config from jar file", e);
             return false;
         }
     }
