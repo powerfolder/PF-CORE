@@ -108,8 +108,7 @@ public class FolderSetupPanel extends PFWizardPanel {
 
         // Sync
         builder.add(new JLabel(Translation
-            .getTranslation("general.transfer_mode")), cc.xy(1, 3,
-                CellConstraints.DEFAULT, CellConstraints.TOP));
+            .getTranslation("general.transfer_mode")), cc.xy(1, 3));
         JPanel p = (JPanel) syncProfileSelectorPanel.getUIComponent();
         p.setOpaque(false);
         builder.add(p, cc.xyw(3, 3, 2));

@@ -168,8 +168,7 @@ public class LoadInvitationPanel extends PFWizardPanel {
         builder.add(estimatedSize, cc.xy(3, 11));
 
         // Sync
-        builder.add(syncProfileHintLabel, cc.xy(1, 13, CellConstraints.DEFAULT,
-                CellConstraints.TOP));
+        builder.add(syncProfileHintLabel, cc.xy(1, 13));
         JPanel p = (JPanel) syncProfileSelectorPanel.getUIComponent();
         p.setOpaque(false);
 

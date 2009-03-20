@@ -21,28 +21,24 @@ package de.dal33t.powerfolder.util.ui;
 
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
-import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
-import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.dialog.CreateEditSyncProfileDialog;
 import de.dal33t.powerfolder.ui.dialog.DeleteSyncProfileDialog;
-import de.dal33t.powerfolder.util.Help;
+import de.dal33t.powerfolder.ui.action.BaseAction;
+import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.util.PFUIPanel;
 import de.dal33t.powerfolder.util.Translation;
 
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
+import javax.swing.*;
 import java.awt.Component;
-import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -62,11 +58,7 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
     private ValueModel valueModel;
     private Folder updateableFolder;
     private boolean ignoreChanges;
-    private JButton helpButton;
-    private CreateAction createAction;
-    private EditAction editAction;
-    private DeleteAction deleteAction;
-    private boolean enabled = true;
+    private JButtonMini configureButton;
     private boolean settingSyncProfile;
 
     public SyncProfileSelectorPanel(Controller controller,
@@ -111,10 +103,6 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
      */
     private void initComponents(SyncProfile syncProfile) {
 
-        createAction = new CreateAction(getController());
-        editAction = new EditAction(getController());
-        deleteAction = new DeleteAction(getController());
-
         syncProfilesCombo = new JComboBox();
         syncProfilesCombo.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
@@ -126,7 +114,7 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
         valueModel = new ValueHolder();
         valueModel.setValue(syncProfile);
 
-        helpButton = Help.createWikiLinkButton(getController(), "Sync_Profiles");
+        configureButton = new JButtonMini(new MyAction(getController()));
 
         // Warn if changing to delete type profiles
         addModelValueChangeListener(new PropertyChangeListener() {
@@ -165,16 +153,6 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
             if (updateableFolder != null) {
                 updateableFolder.setSyncProfile(profile);
             }
-
-            editAction.setEnabled(enabled && profile != null
-                && profile.isCustom());
-            deleteAction.setEnabled(enabled && profile != null
-                && profile.isCustom());
-            createAction.setEnabled(enabled);
-        } else {
-            editAction.setEnabled(false);
-            deleteAction.setEnabled(false);
-            createAction.setEnabled(false);
         }
     }
 
@@ -195,8 +173,6 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
         int i = syncProfilesCombo.getSelectedIndex();
         if (i >= 0) {
             SyncProfile profile = SyncProfile.getSyncProfilesCopy().get(i);
-            editAction.setEnabled(profile.isCustom());
-            deleteAction.setEnabled(profile.isCustom());
         }
 
         // Begin processing itemStateChange events again.
@@ -208,26 +184,13 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
      */
     private void buildPanel() {
         FormLayout layout = new FormLayout("122dlu, 3dlu, pref, pref:grow",
-                "pref, 3dlu, pref");
+                "pref");
         panel = new JPanel(layout);
 
         CellConstraints cc = new CellConstraints();
 
         panel.add(syncProfilesCombo, cc.xy(1, 1));
-        panel.add(helpButton, cc.xy(3, 1));
-        panel.add(createButtonBar(), cc.xyw(1, 3, 4));
-    }
-
-    private JPanel createButtonBar() {
-        ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
-        bar.addGridded(new JButton(createAction));
-        bar.addRelatedGap();
-        bar.addGridded(new JButton(editAction));
-        bar.addRelatedGap();
-        bar.addGridded(new JButton(deleteAction));
-        bar.setOpaque(false);
-
-        return bar.getPanel();
+        panel.add(configureButton, cc.xy(3, 1));
     }
 
     /**
@@ -316,10 +279,9 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
      * @param enable
      */
     public void setEnabled(boolean enable) {
-        enabled = enable;
         enableButtons();
         syncProfilesCombo.setEnabled(enable);
-        helpButton.setVisible(enable);
+        configureButton.setVisible(enable);
     }
 
     /**
@@ -421,37 +383,46 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
         return folders;
     }
 
-    private class EditAction extends BaseAction {
+//    private class EditAction extends BaseAction {
+//
+//        private EditAction(Controller controller) {
+//            super("action_edit_transfer_mode", controller);
+//        }
+//
+//        public void actionPerformed(ActionEvent e) {
+//            openCustomSyncProfileDialog(false);
+//        }
+//    }
+//
+//    private class DeleteAction extends BaseAction {
+//
+//        private DeleteAction(Controller controller) {
+//            super("action_delete_transfer_mode", controller);
+//        }
+//
+//        public void actionPerformed(ActionEvent e) {
+//            deleteProfile();
+//        }
+//    }
+//
+//    private class CreateAction extends BaseAction {
+//
+//        private CreateAction(Controller controller) {
+//            super("action_create_transfer_mode", controller);
+//        }
+//
+//        public void actionPerformed(ActionEvent e) {
+//            openCustomSyncProfileDialog(true);
+//        }
+//    }
 
-        private EditAction(Controller controller) {
-            super("action_edit_transfer_mode", controller);
+    private class MyAction extends BaseAction {
+
+        private MyAction(Controller controller) {
+            super("action_configure_transfer_mode", controller);
         }
 
         public void actionPerformed(ActionEvent e) {
-            openCustomSyncProfileDialog(false);
         }
     }
-
-    private class DeleteAction extends BaseAction {
-
-        private DeleteAction(Controller controller) {
-            super("action_delete_transfer_mode", controller);
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            deleteProfile();
-        }
-    }
-
-    private class CreateAction extends BaseAction {
-
-        private CreateAction(Controller controller) {
-            super("action_create_transfer_mode", controller);
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            openCustomSyncProfileDialog(true);
-        }
-    }
-
 }

@@ -129,8 +129,7 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
         builder.add(nameField, cc.xy(3, 3));
 
         builder.add(new JLabel(Translation
-            .getTranslation("general.transfer_mode")), cc.xy(1, 5,
-                CellConstraints.DEFAULT, CellConstraints.TOP));
+            .getTranslation("general.transfer_mode")), cc.xy(1, 5));
         JPanel p = (JPanel) syncProfileSelectorPanel.getUIComponent();
         p.setOpaque(false);
         builder.add(p, cc.xyw(3, 5, 2));
