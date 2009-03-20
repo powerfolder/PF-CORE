@@ -62,7 +62,7 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
     private JSpinner scanTimeSpinner;
     private SyncProfileSelectorPanel syncProfileSelectorPanel;
     private JLabel scanInfoLabel;
-    private JRadioButton regularRadioButton;
+    private JRadioButton periodicRadioButton;
     private JRadioButton dailyRadioButton;
     private SpinnerNumberModel hourModel;
     private JSpinner hourSpinner;
@@ -142,7 +142,7 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
         builder.add(syncDeletionWithFriendsBox, cc.xy(3, 9));
         builder.add(syncDeletionWithOthersBox, cc.xy(3, 11));
 
-        builder.add(regularRadioButton, cc.xy(3, 13));
+        builder.add(periodicRadioButton, cc.xy(3, 13));
 
         builder.add(new JLabel(Translation
             .getTranslation("dialog.create_edit_profile.time_between_scans")), cc
@@ -156,7 +156,7 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
         builder.add(createDailyComboPanel(), cc.xy(3, 19));
 
         ButtonGroup bg = new ButtonGroup();
-        bg.add(regularRadioButton);
+        bg.add(periodicRadioButton);
         bg.add(dailyRadioButton);
 
         return builder.getPanel();
@@ -238,9 +238,9 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
             }
         });
 
-        regularRadioButton = new JRadioButton(Translation
-            .getTranslation("dialog.create_edit_profile.regular_sync"));
-        regularRadioButton.addActionListener(this);
+        periodicRadioButton = new JRadioButton(Translation
+            .getTranslation("dialog.create_edit_profile.periodic_sync"));
+        periodicRadioButton.addActionListener(this);
         dailyRadioButton = new JRadioButton(Translation
             .getTranslation("dialog.create_edit_profile.daily_sync"));
         dailyRadioButton.addActionListener(this);
@@ -283,7 +283,7 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
             .isSyncDeletionWithOthers());
         scanTimeModel.setValue(configuration.getTimeBetweenRegularScans());
         dailyRadioButton.setSelected(configuration.isDailySync());
-        regularRadioButton.setSelected(!configuration.isDailySync());
+        periodicRadioButton.setSelected(!configuration.isDailySync());
         hourModel.setValue(configuration.getDailyHour());
         dayCombo.setSelectedIndex(configuration.getDailyDay());
         if (configuration.getRegularTimeType().equals(SyncProfileConfiguration
@@ -380,7 +380,7 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
             syncDeletionWithOthersBox.setSelected(configuration
                 .isSyncDeletionWithOthers());
             scanTimeModel.setValue(configuration.getTimeBetweenRegularScans());
-            regularRadioButton.setSelected(!configuration.isDailySync());
+            periodicRadioButton.setSelected(!configuration.isDailySync());
             dailyRadioButton.setSelected(configuration.isDailySync());
             hourModel.setValue(configuration.getDailyHour());
             dayCombo.setSelectedIndex(configuration.getDailyDay());
@@ -560,7 +560,7 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
     }
 
     public void actionPerformed(ActionEvent e) {
-        if (e.getSource().equals(regularRadioButton)
+        if (e.getSource().equals(periodicRadioButton)
             || e.getSource().equals(dailyRadioButton))
         {
             enableTimeDate();
@@ -568,9 +568,9 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
     }
 
     private void enableTimeDate() {
-        scanTimeSpinner.setEnabled(regularRadioButton.isSelected());
-        scanInfoLabel.setEnabled(regularRadioButton.isSelected());
-        timeTypeCombo.setEnabled(regularRadioButton.isSelected());
+        scanTimeSpinner.setEnabled(periodicRadioButton.isSelected());
+        scanInfoLabel.setEnabled(periodicRadioButton.isSelected());
+        timeTypeCombo.setEnabled(periodicRadioButton.isSelected());
         hourSpinner.setEnabled(dailyRadioButton.isSelected());
         dayCombo.setEnabled(dailyRadioButton.isSelected());
     }
