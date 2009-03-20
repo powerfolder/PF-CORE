@@ -383,39 +383,6 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
         return folders;
     }
 
-//    private class EditAction extends BaseAction {
-//
-//        private EditAction(Controller controller) {
-//            super("action_edit_transfer_mode", controller);
-//        }
-//
-//        public void actionPerformed(ActionEvent e) {
-//            openCustomSyncProfileDialog(false);
-//        }
-//    }
-//
-//    private class DeleteAction extends BaseAction {
-//
-//        private DeleteAction(Controller controller) {
-//            super("action_delete_transfer_mode", controller);
-//        }
-//
-//        public void actionPerformed(ActionEvent e) {
-//            deleteProfile();
-//        }
-//    }
-//
-//    private class CreateAction extends BaseAction {
-//
-//        private CreateAction(Controller controller) {
-//            super("action_create_transfer_mode", controller);
-//        }
-//
-//        public void actionPerformed(ActionEvent e) {
-//            openCustomSyncProfileDialog(true);
-//        }
-//    }
-
     private class MyAction extends BaseAction {
 
         private MyAction(Controller controller) {
@@ -423,6 +390,10 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
         }
 
         public void actionPerformed(ActionEvent e) {
+            SyncProfile syncProfile = getSyncProfile();
+            if (syncProfile != null) {
+                openCustomSyncProfileDialog(!syncProfile.isCustom());
+            }
         }
     }
 }
