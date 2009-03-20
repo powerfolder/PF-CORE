@@ -1951,26 +1951,37 @@ public class Controller extends PFComponent {
         }
         exit(1);
     }
-    
+
     private void initDistribution() {
-        ServiceLoader<Distribution> brandingLoader = ServiceLoader
-            .load(Distribution.class);
-        for (Distribution br : brandingLoader) {
-            if (distribution != null) {
-                logSevere("Found multiple distribution classes: " + br
-                    + ", got already " + distribution);
-            }
-            distribution = br;
-        }
-        if (distribution == null) {
-            distribution = new PowerFolderClient();
-        }
-        logInfo("Running distribution: " + distribution.getName());
         try {
+            ServiceLoader<Distribution> brandingLoader = ServiceLoader
+                .load(Distribution.class);
+            for (Distribution br : brandingLoader) {
+                if (distribution != null) {
+                    logSevere("Found multiple distribution classes: " + br
+                        + ", got already " + distribution);
+                }
+                distribution = br;
+            }
+            if (distribution == null) {
+                distribution = new PowerFolderClient();
+            }
+            logInfo("Running distribution: " + distribution.getName());
             distribution.init(this);
         } catch (Exception e) {
             logSevere("Failed to initialize distribution "
                 + distribution.getName(), e);
+
+            // Fallback
+            try {
+                if (distribution == null) {
+                    distribution = new PowerFolderClient();
+                }
+                logInfo("Running distribution: " + distribution.getName());
+                distribution.init(this);
+            } catch (Exception e2) {
+                logSevere("Failed to initialize fallback distribution", e2);
+            }
         }
     }
     
