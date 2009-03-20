@@ -25,14 +25,13 @@ import java.awt.Window;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
-import javax.swing.JComponent;
-import javax.swing.JTable;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
+import javax.swing.*;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -290,17 +289,19 @@ public class UIUtil {
      * @param opacity
      */
     public static void applyTranslucency(Window window, Float opacity) {
-//        try {
-//            Method m = AWTUtilities.class.getMethod("setWindowOpacity",
-//                    JWindow.class, Float.class);
-//            m.invoke(AWTUtilities.class, window, opacity);
-//        } catch (NoSuchMethodException e) {
-//            log.warning(e.getMessage());
-//        } catch (InvocationTargetException e) {
-//            log.warning(e.getMessage());
-//        } catch (IllegalAccessException e) {
-//            log.warning(e.getMessage());
-//        }
-//        AWTUtilities.setWindowOpacity(window, opacity);
+        try {
+            Class clazz = Class.forName("com.sun.awt.AWTUtilities");
+            Method m = clazz.getMethod("setWindowOpacity",
+                    Window.class, Float.TYPE);
+            m.invoke(clazz, window, opacity);
+        } catch (NoSuchMethodException e) {
+            log.warning(e.getMessage());
+        } catch (InvocationTargetException e) {
+            log.warning(e.getMessage());
+        } catch (ClassNotFoundException e) {
+            log.warning(e.getMessage());
+        } catch (IllegalAccessException e) {
+            log.warning(e.getMessage());
+        }
     }
 }
