@@ -117,7 +117,9 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
         configureButton = new JButtonMini(new MyConfigureAction(getController()));
         deleteButton = new JButtonMini(new MyDeleteAction(getController()));
 
+        settingSyncProfile = true;
         configureCombo(syncProfile);
+        settingSyncProfile = false;
 
         // Warn if changing to delete type profiles
         addModelValueChangeListener(new PropertyChangeListener() {
