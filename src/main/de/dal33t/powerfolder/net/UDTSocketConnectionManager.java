@@ -462,8 +462,8 @@ public class UDTSocketConnectionManager extends PFComponent {
                         logSevere(e1);
                     }
                 }
-                logWarning("Unable to connect (UDT) to " + msg.getSource());
-                logFiner(e);
+                logFiner("Unable to connect (UDT) to " + msg.getSource() + ": "
+                    + e, e);
             }
         }
     }
