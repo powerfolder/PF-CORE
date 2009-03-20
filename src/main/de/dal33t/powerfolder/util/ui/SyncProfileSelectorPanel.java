@@ -59,6 +59,7 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
     private Folder updateableFolder;
     private boolean ignoreChanges;
     private JButtonMini configureButton;
+    private JButtonMini deleteButton;
     private boolean settingSyncProfile;
 
     public SyncProfileSelectorPanel(Controller controller,
@@ -109,12 +110,14 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
                 udateSyncProfile();
             }
         });
-        configureCombo(syncProfile);
 
         valueModel = new ValueHolder();
         valueModel.setValue(syncProfile);
 
-        configureButton = new JButtonMini(new MyAction(getController()));
+        configureButton = new JButtonMini(new MyConfigureAction(getController()));
+        deleteButton = new JButtonMini(new MyDeleteAction(getController()));
+
+        configureCombo(syncProfile);
 
         // Warn if changing to delete type profiles
         addModelValueChangeListener(new PropertyChangeListener() {
@@ -124,6 +127,7 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
                 }
             }
         });
+        enableButtons();
     }
 
     private void udateSyncProfile() {
@@ -138,7 +142,7 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
                     updateableFolder.setSyncProfile(profile);
                 }
 
-                // Configure edit / delete for selection.
+                // Configure delete for selection.
                 enableButtons();
             }
         }
@@ -154,6 +158,10 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
                 updateableFolder.setSyncProfile(profile);
             }
         }
+
+        SyncProfile profile = (SyncProfile) valueModel.getValue();
+        deleteButton.setEnabled(profile != null && profile.isCustom());
+        configureButton.setEnabled(profile != null);
     }
 
     public void configureCombo(SyncProfile syncProfile) {
@@ -170,10 +178,7 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
         }
 
         // Configure edit / delete for initial selection.
-        int i = syncProfilesCombo.getSelectedIndex();
-        if (i >= 0) {
-            SyncProfile profile = SyncProfile.getSyncProfilesCopy().get(i);
-        }
+        enableButtons();
 
         // Begin processing itemStateChange events again.
         ignoreChanges = false;
@@ -183,7 +188,7 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
      * Builds the visible panel.
      */
     private void buildPanel() {
-        FormLayout layout = new FormLayout("122dlu, 3dlu, pref, pref:grow",
+        FormLayout layout = new FormLayout("107dlu, 3dlu, pref, pref, pref:grow",
                 "pref");
         panel = new JPanel(layout);
 
@@ -191,13 +196,14 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
 
         panel.add(syncProfilesCombo, cc.xy(1, 1));
         panel.add(configureButton, cc.xy(3, 1));
+        panel.add(deleteButton, cc.xy(4, 1));
     }
 
     /**
-     * Shows a warning if the syncprofile will sync deletions.
+     * Shows a warning if the syncProfile will sync deletions.
      * 
      * @param syncProfile
-     *            the syncprofile selected
+     *            the syncProfile selected
      * @return true only if the profile doesn't sync deletion or the user
      *         approved it
      */
@@ -282,6 +288,7 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
         enableButtons();
         syncProfilesCombo.setEnabled(enable);
         configureButton.setVisible(enable);
+        deleteButton.setVisible(enable);
     }
 
     /**
@@ -306,7 +313,7 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
         }
     }
 
-    private void deleteProfile() {
+    public void deleteProfile() {
         List<Folder> folders = usedFolders();
 
         int response = 0; // Default to dialog OK
@@ -383,9 +390,9 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
         return folders;
     }
 
-    private class MyAction extends BaseAction {
+    private class MyConfigureAction extends BaseAction {
 
-        private MyAction(Controller controller) {
+        private MyConfigureAction(Controller controller) {
             super("action_configure_transfer_mode", controller);
         }
 
@@ -393,6 +400,20 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
             SyncProfile syncProfile = getSyncProfile();
             if (syncProfile != null) {
                 openCustomSyncProfileDialog(!syncProfile.isCustom());
+            }
+        }
+    }
+
+    private class MyDeleteAction extends BaseAction {
+
+        private MyDeleteAction(Controller controller) {
+            super("action_delete_transfer_mode", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            SyncProfile syncProfile = getSyncProfile();
+            if (syncProfile != null) {
+                deleteProfile();
             }
         }
     }
