@@ -32,18 +32,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.security.Security;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-import java.util.ResourceBundle;
-import java.util.ServiceLoader;
-import java.util.StringTokenizer;
-import java.util.TimerTask;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ScheduledExecutorService;
@@ -62,6 +51,7 @@ import com.jgoodies.binding.value.ValueModel;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.RecycleBin;
+import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX_V3;
 import de.dal33t.powerfolder.distribution.Distribution;
 import de.dal33t.powerfolder.distribution.PowerFolderClient;
 import de.dal33t.powerfolder.event.AskForFriendshipEvent;
@@ -717,6 +707,7 @@ public class Controller extends PFComponent {
             }
             bis = new BufferedInputStream(new FileInputStream(configFile));
             config.load(bis);
+            backupConfigIfV3();
         } catch (FileNotFoundException e) {
             logWarning("Unable to start config, file '" + filename
                 + "' not found, using defaults");
@@ -734,6 +725,48 @@ public class Controller extends PFComponent {
             }
         }
         return true;
+    }
+
+    /**
+     * This backs up version 3 config, because version 4 config is very
+     * different and once converted, there is no going back.
+     */
+    private void backupConfigIfV3() {
+
+        boolean v3 = false;
+        for (Enumeration<String> en = (Enumeration<String>) config
+            .propertyNames(); en.hasMoreElements();) {
+
+            // Look for a v3 'folder.' entry.
+            String propName = en.nextElement();
+            if (propName.startsWith(FOLDER_SETTINGS_PREFIX_V3)) {
+                v3 = true;
+                break;
+            }
+        }
+
+        // Found a V3 config file. Back it up before anything changes it.
+        if (v3) {
+            String backupFilename = configFilename + ".v3";
+            File backupFile = new File(getConfigLocationBase(), backupFilename);
+
+            // Do it only once.
+            if (!backupFile.exists()) {
+                try {
+                    logInfo("Backing up version 3 config file to "
+                            + backupFile.getAbsolutePath());
+                    PropertiesUtil.saveConfig(backupFile, config,
+                        "PowerFolder config file (v3 backup)");
+                } catch (IOException e) {
+                    logSevere("Unable to save v3 backup config", e);
+                } catch (Exception e) {
+                    // major problem , setting code is wrong
+                    System.out.println("major problem , v3 setting code is wrong");
+                    e.printStackTrace();
+                    logSevere("major problem , v3 setting code is wrong", e);
+                }
+            }
+        }
     }
 
     /**
