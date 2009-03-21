@@ -77,7 +77,7 @@ public class UtilTest extends TestCase {
         long target = now + 10000;
         int nullCount = 0;
         int actualCount = 0;
-        for (int i = 0; i <= 100; i++) {
+        for (int i = 1; i <= 100; i++) {
             Date value = estimator.updateEstimate(i);
             if (value != null) {
                 assertEquals(target / 1000, value.getTime() / 1000);
@@ -90,7 +90,7 @@ public class UtilTest extends TestCase {
             }
             Thread.sleep(100);
         }
-        assertEquals(100, actualCount);
+        assertEquals(99, actualCount);
         assertEquals(1, nullCount);
     }
 
