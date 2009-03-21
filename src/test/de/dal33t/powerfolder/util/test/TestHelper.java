@@ -254,7 +254,7 @@ public class TestHelper {
                     FileUtils.forceDelete(file);
                 }
             } catch (IOException e) {
-                // logSevere("IOException", e);
+                e.printStackTrace();
             }
         }
         if (0 != testDir.listFiles().length) {
@@ -267,8 +267,7 @@ public class TestHelper {
 
     private static void listFiles(File base, StringBuilder b) {
         File[] files = base.listFiles();
-        for (int i = 0; i < files.length; i++) {
-            File file = files[i];
+        for (File file : files) {
             if (file.isDirectory()) {
                 listFiles(file, b);
             } else {
