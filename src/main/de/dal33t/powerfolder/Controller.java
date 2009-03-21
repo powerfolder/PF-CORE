@@ -657,17 +657,18 @@ public class Controller extends PFComponent {
         Calendar cal = new GregorianCalendar();
         long now = cal.getTime().getTime();
 
-        // Move to midnight
+        // Move to midnight, plus a couple of seconds,
+        // so that the new filename is definately for the new day.
         cal.add(Calendar.DATE, 1);
         cal.set(Calendar.HOUR_OF_DAY, 0);
         cal.set(Calendar.MINUTE, 0);
-        cal.set(Calendar.SECOND, 0);
-        cal.set(Calendar.MILLISECOND, 0);
+        cal.set(Calendar.SECOND, 2);
         long midnight = cal.getTime().getTime();
 
-        // How long to go?
+        // How long to wait initially?
         long secondsToMidnight = (midnight - now) / 1000;
-        getController().getThreadPool().scheduleAtFixedRate(new Runnable() {
+        
+        threadPool.scheduleAtFixedRate(new Runnable() {
             public void run() {
                 LoggingManager.resetFileLogging();
             }

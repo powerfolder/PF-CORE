@@ -341,6 +341,11 @@ public class LoggingManager {
      */
     public static void resetFileLogging() {
         if (fileLoggingLevel != null && fileHandler != null) {
+
+            // Close off the old one first.
+            fileHandler.flush();
+            fileHandler.close();
+            
             createFileHandler();
         }
     }
