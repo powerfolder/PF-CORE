@@ -686,6 +686,7 @@ public class FileUtils {
         int suffix = 2;
         while (candidate.exists()) {
             candidate = new File(baseDir, name + " (" + suffix + ")");
+            suffix++;
         }
         candidate.mkdirs();
         return candidate;
