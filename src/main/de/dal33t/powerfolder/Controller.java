@@ -2075,7 +2075,10 @@ public class Controller extends PFComponent {
     }
 
     /**
-     * Class to listen for changes to silentModeVM
+     * Class to listen for changes to silentModeVM.
+     * <p>
+     * TODO Refactor this. Violates "Listener / Event usage" rule
+     * http://dev.powerfolder.com/projects/powerfolder/wiki/GeneralDevelopRules
      */
     private class MyPropertyChangeListener implements PropertyChangeListener {
 
