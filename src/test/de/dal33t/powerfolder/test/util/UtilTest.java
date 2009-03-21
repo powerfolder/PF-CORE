@@ -94,6 +94,29 @@ public class UtilTest extends TestCase {
         assertEquals(1, nullCount);
     }
 
+    /**
+     * Estimating backwards is not possible.
+     *
+     * @throws InterruptedException
+     */
+    public void testSimpleTimeEstimationBack() throws InterruptedException {
+        SimpleTimeEstimator estimator = new SimpleTimeEstimator();
+        int nullCount = 0;
+        int actualCount = 0;
+        for (int i = 99; i >= 0; i--) {
+            Date value = estimator.updateEstimate(i);
+            if (value == null) {
+                // First attempt cannot calculate a date.
+                nullCount++;
+            } else {
+                actualCount++;
+            }
+            Thread.sleep(100);
+        }
+        assertEquals(0, actualCount);
+        assertEquals(100, nullCount);
+    }
+
     public void testTimeEstimation() throws InterruptedException {
         TimeEstimator t = new TimeEstimator();
         int warmup = Constants.ESTIMATION_MINVALUES;
