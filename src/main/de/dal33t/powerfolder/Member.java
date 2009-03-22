@@ -490,7 +490,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             }
             throw new InvalidIdentityException(this
                 + " Remote peer has wrong identity. remote ID: " + identityId
-                + ", our ID: " + getId(), newPeer);
+                + ", expected ID: " + getId(), newPeer);
         }
         
         // #1373
