@@ -110,7 +110,6 @@ public class Icons {
     public static final Icon CHAT = getIcon("icons/Chat.gif");
     public static final Icon SETTINGS = getIcon("icons/Settings.png");
     public static final Icon ADVANCED = getIcon("icons/Advanced.png");
-    public static final Icon STAR = getIcon("icons/Star.gif");
     public static final Icon INFORMATION = getIcon("icons/information.png");
     public static final Icon COMPUTER = getIcon("icons/Computer.png");
 
