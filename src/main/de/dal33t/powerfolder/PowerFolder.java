@@ -203,7 +203,8 @@ public class PowerFolder {
         // Begin monitoring memory usage.
         if (controller.isUIEnabled()) {
             ScheduledExecutorService service = controller.getThreadPool();
-            service.schedule(new MemoryMonitor(controller), 1, TimeUnit.MINUTES);
+            service.scheduleAtFixedRate(new MemoryMonitor(controller), 1, 1,
+                    TimeUnit.MINUTES);
         }
 
         // Not go into console mode if ui is open
