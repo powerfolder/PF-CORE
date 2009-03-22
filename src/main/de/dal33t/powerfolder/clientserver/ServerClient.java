@@ -354,6 +354,7 @@ public class ServerClient extends PFComponent {
 
         settings.versionCheckURL = getWebURL()
             + "/client_deployment/PowerFolderPro_LatestVersion.txt";
+        settings.downloadLinkInfoURL = null;
         settings.releaseExeURL = getWebURL()
             + "/client_deployment/PowerFolder_Latest_Win32_Installer.exe";
 
