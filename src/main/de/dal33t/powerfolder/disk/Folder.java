@@ -291,6 +291,7 @@ public class Folder extends PFComponent {
         {
             // Empty folder... no scan required for database
             hasOwnDatabase = true;
+            setDBDirty();
         }
 
         diskItemFilter = new DiskItemFilter(whitelist);
