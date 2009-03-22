@@ -20,11 +20,11 @@
 package de.dal33t.powerfolder.util;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.event.WarningEvent;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
 
-import java.awt.*;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -59,27 +59,25 @@ public class MemoryMonitor implements Runnable {
         log.fine("Max Memory: " + Format.formatBytesShort(maxMemory)
                 + ", Total Memory: " + Format.formatBytesShort(totalMemory));
 
-        // See if there is any more memory to allocate. Defer if dialog
-        // currently shown.
-        if (maxMemory == totalMemory && !DialogFactory.isDialogInUse()) {
-            showDialog();
+        if (maxMemory == totalMemory) {
+            addWarning();
             runAlready = true;
         }
     }
 
     /**
-     * Show dialog in event thread.
+     * Add a warning event for the user.
      */
-    private void showDialog() {
-        EventQueue.invokeLater(new Runnable() {
+    private void addWarning() {
+        WarningEvent event = new WarningEvent("Memory warning", new Runnable() {
             public void run() {
                 if (OSUtil.isWindowsSystem() && !OSUtil.isWebStart()) {
                     int response = DialogFactory.genericDialog(controller, Translation
                             .getTranslation("low_memory.title"), Translation
                             .getTranslation("low_memory.text"), new String[]{
                             Translation.getTranslation("low_memory.increase"),
-                            Translation.getTranslation("low_memory.do_nothing")}, 0,
-                            GenericDialogType.WARN);
+                            Translation.getTranslation("low_memory.do_nothing")},
+                            0, GenericDialogType.WARN);
                     if (response == 0) { // Increase memory
                         increaseAvailableMemory();
                     }
@@ -93,6 +91,7 @@ public class MemoryMonitor implements Runnable {
                 }
             }
         });
+        controller.pushWarningEvent(event);
     }
 
     /**

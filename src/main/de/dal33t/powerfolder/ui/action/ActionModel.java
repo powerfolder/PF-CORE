@@ -42,6 +42,7 @@ public class ActionModel extends PFComponent {
     private OpenDownloadsInformationAction openDownloadsInformationAction;
     private OpenUploadsInformationAction openUploadsInformationAction;
     private OpenInvitationReceivedWizardAction openInvitationReceivedWizardAction;
+    private ActivateWarningAction activateWarningAction;
     private AskForFriendshipAction askForFriendshipAction;
     private OpenDebugInformationAction openDebugInformationAction;
     private SingleFileTransferOfferAction singleFileTransferOfferAction;
@@ -110,6 +111,13 @@ public class ActionModel extends PFComponent {
             askForFriendshipAction = new AskForFriendshipAction(getController());
         }
         return askForFriendshipAction;
+    }
+
+    public ActivateWarningAction getActivateWarningAction() {
+        if (activateWarningAction == null) {
+            activateWarningAction = new ActivateWarningAction(getController());
+        }
+        return activateWarningAction;
     }
 
     public OpenDebugInformationAction getOpenDebugInformationAction() {

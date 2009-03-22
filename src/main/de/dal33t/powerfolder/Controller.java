@@ -54,10 +54,7 @@ import de.dal33t.powerfolder.disk.RecycleBin;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX_V3;
 import de.dal33t.powerfolder.distribution.Distribution;
 import de.dal33t.powerfolder.distribution.PowerFolderClient;
-import de.dal33t.powerfolder.event.AskForFriendshipEvent;
-import de.dal33t.powerfolder.event.AskForFriendshipListener;
-import de.dal33t.powerfolder.event.InvitationHandler;
-import de.dal33t.powerfolder.event.SingleFileOfferHandler;
+import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.message.SettingsChange;
 import de.dal33t.powerfolder.message.SingleFileOffer;
@@ -195,6 +192,7 @@ public class Controller extends PFComponent {
     private final List<AskForFriendshipListener> askForFriendshipListeners;
     private final List<InvitationHandler> invitationHandlers;
     private final List<SingleFileOfferHandler> singleFileOfferHandlers;
+    private final List<WarningHandler> warningHandlers;
 
     /** The BroadcastManager send "broadcasts" on the LAN so we can */
     private BroadcastMananger broadcastManager;
@@ -271,6 +269,7 @@ public class Controller extends PFComponent {
         askForFriendshipListeners = new CopyOnWriteArrayList<AskForFriendshipListener>();
         invitationHandlers = new CopyOnWriteArrayList<InvitationHandler>();
         singleFileOfferHandlers = new CopyOnWriteArrayList<SingleFileOfferHandler>();
+        warningHandlers = new CopyOnWriteArrayList<WarningHandler>();
         silentModeVM = new ValueHolder(Boolean.FALSE);
     }
 
@@ -576,6 +575,15 @@ public class Controller extends PFComponent {
      */
     public void addSingleFileOfferHandler(SingleFileOfferHandler l) {
         singleFileOfferHandlers.add(l);
+    }
+
+    /**
+     * Add single file offer listener.
+     *
+     * @param l
+     */
+    public void addWarningHandler(WarningHandler l) {
+        warningHandlers.add(l);
     }
 
     /**
@@ -2072,6 +2080,17 @@ public class Controller extends PFComponent {
             handler.gotOffer(singleFileOffer);
         }
 
+    }
+
+    /**
+     * Adds a warning event to the app model.
+     *
+     * @param event
+     */
+    public void pushWarningEvent(WarningEvent event) {
+        for (WarningHandler warningHandler : warningHandlers) {
+            warningHandler.pushWarning(event);
+        }
     }
 
     /**

@@ -68,8 +68,9 @@ public class HomeTab extends PFUIComponent {
     private HomeTabLine numberOfFoldersLine;
     private HomeTabLine sizeOfFoldersLine;
     private HomeTabLine filesAvailableLine;
+    private HomeTabLine newWarningsLine;
     private HomeTabLine newInvitationsLine;
-    private HomeTabLine newFriendRequestLine;
+    private HomeTabLine newFriendRequestsLine;
     private HomeTabLine newSingleFileOffersLine;
     private HomeTabLine computersLine;
     private HomeTabLine downloadsLine;
@@ -80,7 +81,8 @@ public class HomeTab extends PFUIComponent {
     private ServerClient client;
     private ActionLabel onlineStorageAccountLabel;
     private OnlineStorageSection onlineStorageSection;
-    private final ValueModel newFriendRequestCountVM;
+    private final ValueModel newWarningsCountVM;
+    private final ValueModel newFriendRequestsCountVM;
     private final ValueModel newInvitationsCountVM;
     private final ValueModel newSingleFileOffersCountVM;
 
@@ -97,15 +99,18 @@ public class HomeTab extends PFUIComponent {
                 .getTransferManagerModel().getCompletedUploadsCountVM();
         folderListener = new MyFolderListener();
         client = getApplicationModel().getServerClientModel().getClient();
-        newFriendRequestCountVM = getUIController().getApplicationModel()
+        newFriendRequestsCountVM = getUIController().getApplicationModel()
                 .getReceivedAskedForFriendshipModel().getReceivedAskForFriendshipCountVM();
-        newFriendRequestCountVM.addValueChangeListener(new MyFriendRequestListener());
+        newFriendRequestsCountVM.addValueChangeListener(new MyFriendRequestListener());
         newInvitationsCountVM = getUIController().getApplicationModel()
                 .getReceivedInvitationsModel().getReceivedInvitationsCountVM();
         newInvitationsCountVM.addValueChangeListener(new MyInvitationListener());
         newSingleFileOffersCountVM = getUIController().getApplicationModel()
                 .getReceivedSingleFileOffersModel().getReceivedSingleFileOfferCountVM();
         newSingleFileOffersCountVM.addValueChangeListener(new MyOfferPropertyListener());
+        newWarningsCountVM = getUIController().getApplicationModel()
+                .getWarningsModel().getWarningsCountVM();
+        newWarningsCountVM.addValueChangeListener(new MyWarningsListener());
         controller.getFolderRepository().addSynchronizationStatsListener(
                 new MySynchronizationStatsListener());
 
@@ -163,11 +168,15 @@ public class HomeTab extends PFUIComponent {
         filesAvailableLine = new HomeTabLine(getController(),
                 Translation.getTranslation("home_tab.files_available"), null,
                 true, true);
+        newWarningsLine = new HomeTabLine(getController(),
+                Translation.getTranslation("home_tab.new_warnings"), null,
+                true, true, getApplicationModel().getActionModel()
+                .getActivateWarningAction());
         newInvitationsLine = new HomeTabLine(getController(),
                 Translation.getTranslation("home_tab.new_invitations"), null,
                 true, true, getApplicationModel().getActionModel()
                 .getOpenInvitationReceivedWizardAction());
-        newFriendRequestLine = new HomeTabLine(getController(),
+        newFriendRequestsLine = new HomeTabLine(getController(),
                 Translation.getTranslation("home_tab.new_friend_requests"), null,
                 true, true, getApplicationModel().getActionModel()
                 .getAskForFriendshipAction());
@@ -200,6 +209,7 @@ public class HomeTab extends PFUIComponent {
         updateComputers();
         updateOnlineStorageDetails();
         updateNewInvitationsText();
+        updateNewWarningsText();
         updateNewComputersText();
         updateNewSingleFileOffersText();
         initialSyncStats();
@@ -231,8 +241,8 @@ public class HomeTab extends PFUIComponent {
      */
     private JPanel buildMainPanel() {
         FormLayout layout = new FormLayout("3dlu, 100dlu, pref:grow, 3dlu",
-            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, pref, pref, pref, pref, pref, pref, 3dlu, pref, pref, pref, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref:grow");
-        //   sync-stat   sync-date   sep         you-have    files invs  comps singl down  upl   sep         #fol  szfo  comp  sep         os-acc      osSec
+            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, pref, pref, pref, pref, pref, pref, pref, 3dlu, pref, pref, pref, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref:grow");
+        //   sync-stat   sync-date   sep         you-have    warn, files invs  comps singl down  upl   sep         #fol  szfo  comp  sep         os-acc      osSec
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
@@ -252,13 +262,16 @@ public class HomeTab extends PFUIComponent {
         builder.add(youHaveLabel, cc.xywh(2, row, 2, 1));
         row +=2;
 
+        builder.add(newWarningsLine.getUIComponent(), cc.xywh(2, row, 2, 1));
+        row++;
+
         builder.add(filesAvailableLine.getUIComponent(), cc.xywh(2, row, 2, 1));
         row++;
 
         builder.add(newInvitationsLine.getUIComponent(), cc.xywh(2, row, 2, 1));
         row++;
 
-        builder.add(newFriendRequestLine.getUIComponent(), cc.xywh(2, row, 2, 1));
+        builder.add(newFriendRequestsLine.getUIComponent(), cc.xywh(2, row, 2, 1));
         row++;
 
         builder.add(newSingleFileOffersLine.getUIComponent(), cc.xywh(2, row, 2, 1));
@@ -341,14 +354,19 @@ public class HomeTab extends PFUIComponent {
         uploadsLine.setValue((Integer) uploadsCountVM.getValue());
     }
 
+    private void updateNewWarningsText() {
+        Integer integer = (Integer) newWarningsCountVM.getValue();
+        newWarningsLine.setValue(integer);
+    }
+
     private void updateNewInvitationsText() {
         Integer integer = (Integer) newInvitationsCountVM.getValue();
         newInvitationsLine.setValue(integer);
     }
 
     private void updateNewComputersText() {
-        Integer integer = (Integer) newFriendRequestCountVM.getValue();
-        newFriendRequestLine.setValue(integer);
+        Integer integer = (Integer) newFriendRequestsCountVM.getValue();
+        newFriendRequestsLine.setValue(integer);
     }
 
     private void updateNewSingleFileOffersText() {
@@ -752,7 +770,14 @@ public class HomeTab extends PFUIComponent {
     private class MyInvitationListener implements PropertyChangeListener {
 
         public void propertyChange(PropertyChangeEvent evt) {
-            updateNewInvitationsText();            
+            updateNewInvitationsText();
+        }
+    }
+
+    private class MyWarningsListener implements PropertyChangeListener {
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            updateNewWarningsText();
         }
     }
 }
