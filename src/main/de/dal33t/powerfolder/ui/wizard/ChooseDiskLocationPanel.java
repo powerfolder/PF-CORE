@@ -287,10 +287,16 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         builder.add(folderSizeLabel, cc.xyw(1, row, 6));
 
         if (!getController().isLanOnly()
-                && PreferencesEntry.USE_ONLINE_STORAGE.getValueBoolean(getController())) {
+            && PreferencesEntry.USE_ONLINE_STORAGE
+                .getValueBoolean(getController()))
+        {
             row += 2;
             builder.add(backupByOnlineStorageBox, cc.xyw(1, row, 6));
         }
+
+        // Send Invite
+        row += 2;
+        builder.add(sendInviteAfterCB, cc.xyw(1, row, 5));
 
         if (OSUtil.isWindowsSystem()) {
             row += 2;
@@ -302,10 +308,6 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
             row += 2;
             builder.add(manualSyncCheckBox, cc.xyw(1, row, 5));
         }
-
-        // Send Invite
-        row += 2;
-        builder.add(sendInviteAfterCB, cc.xyw(1, row, 5));
 
         return builder.getPanel();
     }
