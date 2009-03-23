@@ -275,13 +275,14 @@ public class LoadInvitationPanel extends PFWizardPanel {
             folderNameLabel.setText(invitation.folder.name);
 
             invitorHintLabel.setEnabled(true);
-            Member node = invitation.getInvitor().getNode(getController());
-            invitorLabel.setText(node != null
-                ? node.getNick()
-                : invitation.getInvitor().nick);
+            Member node = invitation.getInvitor()
+                .getNode(getController(), true);
+            invitorLabel.setText(node != null ? node.getNick() : invitation
+                .getInvitor().nick);
 
             invitationMessageHintLabel.setEnabled(true);
-            invitationMessageLabel.setText(invitation.getInvitationText() == null
+            invitationMessageLabel
+                .setText(invitation.getInvitationText() == null
                 ? ""
                 : invitation.getInvitationText());
 

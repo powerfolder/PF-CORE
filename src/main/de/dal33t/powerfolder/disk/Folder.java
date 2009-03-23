@@ -965,7 +965,7 @@ public class Folder extends PFComponent {
                     if (modifiedBy == null) {
                         modifiedBy = getController().getMySelf().getInfo();
                     }
-                    Member from = modifiedBy.getNode(getController());
+                    Member from = modifiedBy.getNode(getController(), true);
                     if (from != null) {
                         fInfo.setModifiedInfo(from.getInfo(), fInfo
                             .getModifiedDate());

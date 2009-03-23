@@ -207,10 +207,13 @@ public class MemberInfo implements Serializable {
 
     /**
      * Returns the full node/member for this info item. May return null if
-     * member is not longer available on nodemanager
+     * member is not longer available on nodemanager.
+     * <p>
+     * ATTENTION: May return null if node is not known yet!
      * 
      * @param controller
-     * @return the node
+     * @return the node or null if not know yet.
+     * @see #getNode(Controller, boolean)
      */
     public Member getNode(Controller controller) {
         return controller.getNodeManager().getNode(this);

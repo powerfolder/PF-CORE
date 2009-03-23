@@ -156,8 +156,10 @@ public class FileRequestor extends PFComponent {
             }
 
             // Arrange for a download.
-            boolean download = requestFromOthers || requestFromFriends
-                && fInfo.getModifiedBy().getNode(getController()).isFriend();
+            boolean download = requestFromOthers
+                || requestFromFriends
+                && fInfo.getModifiedBy().getNode(getController(), true)
+                    .isFriend();
 
             if (download) {
                 tm.downloadNewestVersion(fInfo, autoDownload);
@@ -231,7 +233,8 @@ public class FileRequestor extends PFComponent {
                 .isAutoDownloadFromOthers()
                 || folder.getSyncProfile().getConfiguration()
                     .isAutoDownloadFromFriends()
-                && fInfo.getModifiedBy().getNode(getController()).isFriend();
+                && fInfo.getModifiedBy().getNode(getController(), true)
+                    .isFriend();
 
             if (download) {
                 filesToDownload.add(fInfo);

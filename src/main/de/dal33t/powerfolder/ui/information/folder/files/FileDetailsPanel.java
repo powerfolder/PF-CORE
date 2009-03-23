@@ -155,10 +155,11 @@ public class FileDetailsPanel extends PFUIComponent {
         statusField.setText(status.toString());
         statusField.setIcon(statusIcon);
 
-        Member node = fileInfo.getModifiedBy().getNode(getController());
+        Member node = fileInfo.getModifiedBy().getNode(getController(), true);
         modifiedByField.setText(fileInfo.getModifiedBy().nick);
         modifiedByField.setIcon(Icons.getIconFor(node));
-        modifiedDateField.setText(Format.formatDate(fileInfo.getModifiedDate()));
+        modifiedDateField
+            .setText(Format.formatDate(fileInfo.getModifiedDate()));
 
         versionField.setText(String.valueOf(fileInfo.getVersion()));
 
