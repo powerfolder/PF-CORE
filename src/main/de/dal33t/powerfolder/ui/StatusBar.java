@@ -19,33 +19,44 @@
  */
 package de.dal33t.powerfolder.ui;
 
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.EventQueue;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.TimerTask;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JSeparator;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
+
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.NetworkingMode;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.net.ConnectionListener;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
+import de.dal33t.powerfolder.util.TransferCounter;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.util.TransferCounter;
 import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker;
 import de.dal33t.powerfolder.util.ui.UIPanel;
-
-import javax.swing.*;
-
-import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.TimerTask;
 
 /**
  * The status bar on the lower side of the main window.
@@ -345,6 +356,11 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             if (controller.isLanOnly()) {
                 text += " (" + Translation.getTranslation("general.lan_only")
                     + ')';
+            } else if (controller.getNetworkingMode().equals(
+                NetworkingMode.SERVERONLYMODE))
+            {
+                text += " ("
+                    + Translation.getTranslation("general.server_only") + ')';
             }
             label.setToolTipText(text);
             label.setIcon(Icons.CONNECTED);
@@ -354,6 +370,11 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             if (controller.isLanOnly()) {
                 text += " (" + Translation.getTranslation("general.lan_only")
                     + ')';
+            } else if (controller.getNetworkingMode().equals(
+                NetworkingMode.SERVERONLYMODE))
+            {
+                text += " ("
+                    + Translation.getTranslation("general.server_only") + ')';
             }
             label.setToolTipText(text);
             label.setIcon(Icons.DISCONNECTED);
