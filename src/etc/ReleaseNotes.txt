@@ -1,4 +1,56 @@
-PowerFolder Version 3.1.6 - http://www.powerfolder.com
+PowerFolder Version 3.1.7 - http://www.powerfolder.com
+
+New features and improvements:
+ * Added support for separated peer-to-peer networks
+   (http://www.powerfolder.com/wiki/Network_ID).
+ * Simplified connection setup to custom server
+   (http://www.powerfolder.com/wiki/Server_client_deployment).
+ * Does not longer initially loads nodes file from PowerFolder website
+   for Internet use.
+ * Added support for direct UDT high speed connections.
+ * Added log level network tuning options
+   (http://www.powerfolder.com/wiki/Low_level_network_settings).
+ * Several minor improvments. 
+
+Bugfixes:
+ * Fixes auto start problem, that caused PowerFolder to start twice.
+ * Fixed bug that caused invitation files failed to get opened.
+ * Several minor bugfixes. 
+
+
+Please give us feedback and request improvements at our forum:
+http://forums.powerfolder.com
+
+Minimum Java version is 6.0.
+
+Thanks to those who requested features in our forum and we hope to implement
+even more if you keep requesting them for the next version.
+
+- The PowerFolder Team
+
+Official Roadmap:
+http://www.powerfolder.com/roadmap.html
+
+Please remember: You agree to keep us free of any (legal) issues involved with
+downloading and using this PowerFolder!
+
+Contact information:
+Homepage   : http://www.powerfolder.com
+Contact    : http://www.powerfolder.com/contact.html
+Support    : http://www.powerfolder.com/support.html
+Development: http://www.powerfolder.com/about_us.html
+Email	   : contact (at) powerfolder.com
+
+External libraries used:
+- JGoodies looks, forms & binding (http://www.jgoodies.com). Under BSD License. (jar/jgoodies-LICENSE.txt)
+- jakarta-commons (http://jakarta.apache.org/commons).
+  Under Apache License, Version 2.0
+
+
+History:
+ 
+Version 3.1.6
+-------------
 
 New features and improvements:
  * Auto-cleanup of downloads is now turned on by default.
@@ -24,39 +76,6 @@ Bugfixes:
  * Fixed duplicate system service entry under Preferences/Pro Settings.
  * Many other minor bugfixes.
 
-Please give us feedback and request improvements at our forum:
-http://forums.powerfolder.com
-
-Minimum Java version is 6.0.
-
-Thanks to those who requested features in our forum and we hope to implement
-even more if you keep requesting them for the next version.
-
-- The PowerFolder Team
-
-Official Roadmap:
-http://www.powerfolder.com/roadmap.html
-
-Please remember: You agree to keep us free of any (legal) issues involved with
-downloading and using this PowerFolder!
-
-Contact information:
-
-Web  	: http://www.powerfolder.com
-Contact	: http://www.powerfolder.com/contact.html
-Support	: http://www.powerfolder.com/support.html
-Email	: contact@powerfolder.com
-IRC	: QuakeNet, Nick: TotMacherr, Flo and Nakata on channel #powerfolder
-ICQ	: 1898935
-
-External libraries used:
-- JGoodies looks, forms & binding (http://www.jgoodies.com). Under BSD License. (jar/jgoodies-LICENSE.txt)
-- systray (http://systray.sourceforge.net). Under LGPL License. (jar/systray-ReadMe.txt)
-- jakarta-commons (http://jakarta.apache.org/commons).
-  Under Apache License, Version 2.0
-
-
-History:
 
 Version 3.1.5
 -------------
