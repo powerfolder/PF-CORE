@@ -649,7 +649,7 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         FolderInfo foInfo, MemberInfo source)
     {
         Folder folder = controller.getFolderRepository().getFolder(foInfo);
-        return folder.getFilesAsCollection(source.getNode(controller));
+        return folder.getFilesAsCollection(source.getNode(controller, false));
     }
 
     private boolean identicalFileList(Collection<FileInfo> filesA,

@@ -298,7 +298,7 @@ public class FilesTable extends JTable {
                     case 3:  // member nick
                         MemberInfo member = fileInfo.getModifiedBy();
                         myValue = member.nick;
-                        setIcon(Icons.getSimpleIconFor(member.getNode(controller)));
+                        setIcon(Icons.getSimpleIconFor(member.getNode(controller, false)));
                         setHorizontalAlignment(LEFT);
                         break;
                     case 4: // modified date

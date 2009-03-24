@@ -91,7 +91,7 @@ public class OnePublicFolderTableCellRenderer extends DefaultTableCellRenderer {
             case 3 : { // member nick
                 MemberInfo member = fileInfo.getModifiedBy();
                 newValue = member.nick;
-                setIcon(Icons.getSimpleIconFor(member.getNode(controller)));
+                setIcon(Icons.getSimpleIconFor(member.getNode(controller, false)));
                 setHorizontalAlignment(SwingConstants.LEFT);
                 break;
             }

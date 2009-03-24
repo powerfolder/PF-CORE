@@ -71,7 +71,7 @@ public class PersistentTaskManagerTestCase extends TwoControllerTestCase {
         assertFalse(man.hasTasks());
         assertEquals(man.activeTaskCount(), 0);
 
-        inf.getNode(getContollerBart()).setFriend(true, "");
+        inf.getNode(getContollerBart(), false).setFriend(true, "");
         assertEquals(man.activeTaskCount(), 1);
         man.purgeAllTasks();
     }

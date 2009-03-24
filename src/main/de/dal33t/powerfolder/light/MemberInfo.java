@@ -136,7 +136,7 @@ public class MemberInfo implements Serializable {
      */
     public boolean isFriend(Controller controller) {
         Reject.ifNull(controller, "Controller is null");
-        Member node = getNode(controller);
+        Member node = getNode(controller, false);
         return node != null && node.isFriend();
     }
 
@@ -206,31 +206,19 @@ public class MemberInfo implements Serializable {
     }
 
     /**
-     * Returns the full node/member for this info item. May return null if
-     * member is not longer available on nodemanager.
-     * <p>
-     * ATTENTION: May return null if node is not known yet!
+     * Returns the full node/member for this member info. Return null if member
+     * is not longer known to the NodeManager. If flagged with addIfNessesary a
+     * new node will be created if not available @ NodeManager. Calling with
+     * addIfNessesary = true always returns a valid node (Member).
      * 
      * @param controller
-     * @return the node or null if not know yet.
-     * @see #getNode(Controller, boolean)
-     */
-    public Member getNode(Controller controller) {
-        return controller.getNodeManager().getNode(this);
-    }
-
-    /**
-     * Returns the full node/member for this member info. May return null if
-     * member is not longer available on nodemanager. If flagged with
-     * addIfNessesary a new node will be created if not available @ nodemanager.
-     * Calling with addIfNessesary = true always returns a valid node (Member).
-     * @param controller
      * @param addIfNessesary
-     * if a new node should be added if not available @ nodemanager
-     * @return the node
+     *            if a new node should be added if not available @ nodemanager
+     * @return the node OR null if node was not found.
      */
     public Member getNode(Controller controller, boolean addIfNessesary) {
-        Member node = getNode(controller);
+        Reject.ifNull(controller, "Controller is null");
+        Member node = controller.getNodeManager().getNode(this);
         if (node == null && addIfNessesary) {
             node = controller.getNodeManager().addNode(this);
         }
