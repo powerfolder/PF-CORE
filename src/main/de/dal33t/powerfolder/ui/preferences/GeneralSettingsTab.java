@@ -424,8 +424,11 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             row += 2;
             builder.add(magneticFrameBox, cc.xyw(3, row, 2));
 
-            row += 2;
-            builder.add(mainAlwaysOnTopCB, cc.xyw(3, row, 2));
+            if (getUIController().getMainFrame().getUIComponent()
+                    .isAlwaysOnTopSupported()) {
+                row += 2;
+                builder.add(mainAlwaysOnTopCB, cc.xyw(3, row, 2));
+            }
 
             if (Constants.OPACITY_SUPPORTED) {
                 builder.appendRow("3dlu");
