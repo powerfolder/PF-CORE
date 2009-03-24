@@ -111,7 +111,10 @@ public enum PreferencesEntry {
     NOTIFICATION_DISPLAY("notification.display", 10),
 
     /** How translucent the notification should display, as percentage. */
-    NOTIFICATION_TRANSLUCENT("notification.translucent", 0);
+    NOTIFICATION_TRANSLUCENT("notification.translucent", 0),
+
+    /** Main frame always on top. */
+    MAIN_ALWAYS_ON_TOP("main.stay.on.top", false);
 
     /** String, Boolean, Integer */
     private Class type;

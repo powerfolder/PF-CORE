@@ -79,6 +79,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     private JCheckBox underlineLinkBox;
     private JCheckBox magneticFrameBox;
     private JCheckBox translucentMainFrameCB;
+    private JCheckBox mainAlwaysOnTopCB;
     private JLabel transPercLabel1;
     private JSlider transPercSlider;
 
@@ -216,6 +217,17 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             }
         });
 
+        ValueModel onTopModel = new ValueHolder(
+            PreferencesEntry.MAIN_ALWAYS_ON_TOP.getValueBoolean(getController()));
+        mainAlwaysOnTopCB = BasicComponentFactory.createCheckBox(
+            new BufferedValueModel(onTopModel, writeTrigger), Translation
+                .getTranslation("preferences.dialog.main_on_top"));
+        mainAlwaysOnTopCB.addChangeListener(new ChangeListener() {
+            public void stateChanged(ChangeEvent e) {
+                doMainOnTop(mainAlwaysOnTopCB.isSelected());
+            }
+        });
+
         transPercSlider = new JSlider();
         transPercSlider.setMinimum(10);
         transPercSlider.setMaximum(90);
@@ -294,6 +306,10 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         }
     }
 
+    private void doMainOnTop(Boolean onTop) {
+        getUIController().getMainFrame().getUIComponent().setAlwaysOnTop(onTop);
+    }
+
     /**
      * This temporarily sets the main frame translucency to match the controls.
      * If user cancels out, the MainFrame's focus listener will fix things.
@@ -319,7 +335,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         if (panel == null) {
             FormLayout layout = new FormLayout(
                 "right:pref, 3dlu, 140dlu, pref:grow",
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
 
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
@@ -407,6 +423,9 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
             row += 2;
             builder.add(magneticFrameBox, cc.xyw(3, row, 2));
+
+            row += 2;
+            builder.add(mainAlwaysOnTopCB, cc.xyw(3, row, 2));
 
             if (Constants.OPACITY_SUPPORTED) {
                 builder.appendRow("3dlu");
@@ -524,6 +543,9 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
         PreferencesEntry.TRANSLUCENT_MAIN_FRAME.setValue(getController(),
            translucentMainFrameCB.isSelected());
+
+        PreferencesEntry.MAIN_ALWAYS_ON_TOP.setValue(getController(),
+           mainAlwaysOnTopCB.isSelected());
 
         PreferencesEntry.TRANSLUCENT_PERCENTAGE.setValue(getController(),
                 transPercSlider.getValue());

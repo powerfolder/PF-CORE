@@ -244,6 +244,9 @@ public class MainFrame extends PFUIComponent {
             + Toolkit.getDefaultToolkit().getScreenSize());
 
         uiComponent = new JFrame();
+        if (PreferencesEntry.MAIN_ALWAYS_ON_TOP.getValueBoolean(getController())) {
+            uiComponent.setAlwaysOnTop(true);
+        }
         uiComponent.addWindowFocusListener(new WindowFocusListener() {
 
             public void windowGainedFocus(WindowEvent e) {
