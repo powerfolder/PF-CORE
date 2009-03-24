@@ -8,7 +8,7 @@ New features and improvements:
  * Does not longer initially load nodes file from PowerFolder website
    for Internet use.
  * Added support for direct UDT high speed connections.
- * Added log level network tuning options
+ * Added low level network tuning options
    (http://www.powerfolder.com/wiki/Low_level_network_settings).
  * Several minor improvements. 
 
