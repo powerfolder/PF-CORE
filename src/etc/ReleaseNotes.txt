@@ -10,11 +10,12 @@ New features and improvements:
  * Added support for direct UDT high speed connections.
  * Added low level network tuning options
    (http://www.powerfolder.com/wiki/Low_level_network_settings).
- * Several minor improvements. 
+ * Several minor improvements.
 
 Bugfixes:
  * Fixes auto start problem, that caused PowerFolder to start twice.
  * Fixed bug that caused invitation files failed to get opened.
+ * Fixed stuck uploads/downloads problem.
  * Several minor bugfixes. 
 
 

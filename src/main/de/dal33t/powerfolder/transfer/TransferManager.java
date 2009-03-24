@@ -2401,16 +2401,21 @@ public class TransferManager extends PFComponent {
         }
 
         for (DownloadManager man : dlManagers.values()) {
-            if (!man.isDone()) {
+            try {
+                if (!man.isDone()) {
+                    downloadNewestVersion(man.getFileInfo(), man
+                        .isRequestedAutomatic());
+                }
                 downloadNewestVersion(man.getFileInfo(), man
                     .isRequestedAutomatic());
-            }
-            downloadNewestVersion(man.getFileInfo(), man.isRequestedAutomatic());
-            for (Download download : man.getSources()) {
-                if (!download.isCompleted() && download.isBroken()) {
-                    download.setBroken(TransferProblem.BROKEN_DOWNLOAD,
-                        "isBroken()");
+                for (Download download : man.getSources()) {
+                    if (!download.isCompleted() && download.isBroken()) {
+                        download.setBroken(TransferProblem.BROKEN_DOWNLOAD,
+                            "isBroken()");
+                    }
                 }
+            } catch (Exception e) {
+                logSevere("Exception while cheking downloads. " + e, e);
             }
         }
     }
@@ -2427,52 +2432,58 @@ public class TransferManager extends PFComponent {
         }
 
         for (Upload upload : queuedUploads) {
-            if (upload.isBroken()) {
-                // Broken
-                setBroken(upload, TransferProblem.BROKEN_UPLOAD);
-                uploadsBroken++;
-            } else if (hasFreeUploadSlots() || upload.getPartner().isOnLAN()) {
-                boolean alreadyUploadingTo;
-                // The total size planned+current uploading to that node.
-                long totalPlannedSizeUploadingTo = uploadingToSize(upload
-                    .getPartner());
-                if (totalPlannedSizeUploadingTo == -1) {
-                    alreadyUploadingTo = false;
-                    totalPlannedSizeUploadingTo = 0;
-                } else {
-                    alreadyUploadingTo = true;
-                }
-                totalPlannedSizeUploadingTo += upload.getFile().getSize();
-                long maxSizeUpload = upload.getPartner().isOnLAN()
-                    ? Constants.START_UPLOADS_TILL_PLANNED_SIZE_LAN
-                    : Constants.START_UPLOADS_TILL_PLANNED_SIZE_INET;
-                if (!alreadyUploadingTo
-                    || totalPlannedSizeUploadingTo <= maxSizeUpload)
+            try {
+                if (upload.isBroken()) {
+                    // Broken
+                    setBroken(upload, TransferProblem.BROKEN_UPLOAD);
+                    uploadsBroken++;
+                } else if (hasFreeUploadSlots()
+                    || upload.getPartner().isOnLAN())
                 {
-                    // if (!alreadyUploadingTo) {
-                    if (alreadyUploadingTo && isFiner()) {
-                        logFiner("Starting another upload to "
-                            + upload.getPartner().getNick()
-                            + ". Total size to upload to: "
-                            + Format
-                                .formatBytesShort(totalPlannedSizeUploadingTo));
-
+                    boolean alreadyUploadingTo;
+                    // The total size planned+current uploading to that node.
+                    long totalPlannedSizeUploadingTo = uploadingToSize(upload
+                        .getPartner());
+                    if (totalPlannedSizeUploadingTo == -1) {
+                        alreadyUploadingTo = false;
+                        totalPlannedSizeUploadingTo = 0;
+                    } else {
+                        alreadyUploadingTo = true;
                     }
-                    // start the upload if we have free slots
-                    // and not uploading to member currently
-                    // or user is on local network
+                    totalPlannedSizeUploadingTo += upload.getFile().getSize();
+                    long maxSizeUpload = upload.getPartner().isOnLAN()
+                        ? Constants.START_UPLOADS_TILL_PLANNED_SIZE_LAN
+                        : Constants.START_UPLOADS_TILL_PLANNED_SIZE_INET;
+                    if (!alreadyUploadingTo
+                        || totalPlannedSizeUploadingTo <= maxSizeUpload)
+                    {
+                        // if (!alreadyUploadingTo) {
+                        if (alreadyUploadingTo && isFiner()) {
+                            logFiner("Starting another upload to "
+                                + upload.getPartner().getNick()
+                                + ". Total size to upload to: "
+                                + Format
+                                    .formatBytesShort(totalPlannedSizeUploadingTo));
 
-                    // TODO should check if this file is not sended (or is
-                    // being send) to other user in the last minute or so to
-                    // allow for disitributtion of that file by user that
-                    // just received that file from us
+                        }
+                        // start the upload if we have free slots
+                        // and not uploading to member currently
+                        // or user is on local network
 
-                    // Enqueue upload to friends and lan members first
+                        // TODO should check if this file is not sended (or is
+                        // being send) to other user in the last minute or so to
+                        // allow for disitributtion of that file by user that
+                        // just received that file from us
 
-                    logFiner("Starting upload: " + upload);
-                    upload.start();
-                    uploadsStarted++;
+                        // Enqueue upload to friends and lan members first
+
+                        logFiner("Starting upload: " + upload);
+                        upload.start();
+                        uploadsStarted++;
+                    }
                 }
+            } catch (Exception e) {
+                logSevere("Exception while cheking queued uploads. " + e, e);
             }
         }
 
@@ -2493,32 +2504,36 @@ public class TransferManager extends PFComponent {
 
         // Checking pending downloads
         for (Download dl : pendingDownloads) {
-            FileInfo fInfo = dl.getFile();
-            boolean notDownloading = getDownloadManagerFor(fInfo) == null;
-            if (notDownloading
-                && getController().getFolderRepository().hasJoinedFolder(
-                    fInfo.getFolderInfo()))
-            {
-                // MultiSourceDownload source = downloadNewestVersion(fInfo,
-                // download
-                // .isRequestedAutomatic());
-                DownloadManager source = downloadNewestVersion(fInfo, dl
-                    .isRequestedAutomatic());
-                if (source != null) {
-                    logFine("Pending download restored: " + fInfo + " from "
-                        + source);
+            try {
+                FileInfo fInfo = dl.getFile();
+                boolean notDownloading = getDownloadManagerFor(fInfo) == null;
+                if (notDownloading
+                    && getController().getFolderRepository().hasJoinedFolder(
+                        fInfo.getFolderInfo()))
+                {
+                    // MultiSourceDownload source = downloadNewestVersion(fInfo,
+                    // download
+                    // .isRequestedAutomatic());
+                    DownloadManager source = downloadNewestVersion(fInfo, dl
+                        .isRequestedAutomatic());
+                    if (source != null) {
+                        logFine("Pending download restored: " + fInfo
+                            + " from " + source);
+                        synchronized (pendingDownloads) {
+                            pendingDownloads.remove(dl);
+                        }
+                    }
+                } else if (dl.getDownloadManager() != null
+                    && !dl.getDownloadManager().isDone())
+                {
+                    // Not joined folder, break pending dl
+                    logWarning("Pending download removed: " + fInfo);
                     synchronized (pendingDownloads) {
                         pendingDownloads.remove(dl);
                     }
                 }
-            } else if (dl.getDownloadManager() != null
-                && !dl.getDownloadManager().isDone())
-            {
-                // Not joined folder, break pending dl
-                logWarning("Pending download removed: " + fInfo);
-                synchronized (pendingDownloads) {
-                    pendingDownloads.remove(dl);
-                }
+            } catch (Exception e) {
+                logSevere("Exception while cheking pending downloads. " + e, e);
             }
         }
     }
