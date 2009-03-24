@@ -29,7 +29,7 @@ import java.util.zip.Adler32;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.util.ProgressObserver;
+import de.dal33t.powerfolder.util.ProgressListener;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.delta.FilePartsRecord;
 import de.dal33t.powerfolder.util.delta.FilePartsRecordBuilder;
@@ -59,7 +59,7 @@ public abstract class AbstractFileRecordProvider implements FileRecordProvider {
     }
 
     protected FilePartsRecord computeFilePartsRecord(FileInfo fileInfo,
-        ProgressObserver obs) throws IOException
+        ProgressListener obs) throws IOException
     {
         assert fileInfo != null;
         long start = System.currentTimeMillis();
@@ -84,7 +84,7 @@ public abstract class AbstractFileRecordProvider implements FileRecordProvider {
             while ((read = in.read(buf)) > 0) {
                 b.update(buf, 0, read);
                 if (obs != null) {
-                    obs.progressed((double) processed / size);
+                    obs.progressReached((double) processed / size);
                     processed += read;
                 }
             }

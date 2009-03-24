@@ -30,6 +30,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.RandomAccessFile;
+import java.security.MessageDigest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
@@ -43,7 +44,8 @@ import de.dal33t.powerfolder.util.os.OSUtil;
 
 public class FileUtils {
 
-    private static final Logger log = Logger.getLogger(FileUtils.class.getName());
+    private static final Logger log = Logger.getLogger(FileUtils.class
+        .getName());
 
     private static final int BYTE_CHUNK_SIZE = 8192;
 
@@ -403,7 +405,7 @@ public class FileUtils {
             // Do nothing.
             return;
         }
-        
+
         if (sourceFile.isDirectory() && !targetFile.exists()) {
             targetFile.mkdirs();
         }
@@ -444,8 +446,7 @@ public class FileUtils {
 
         // Only works on Windows
         // Vista you must log off and on again to see change
-        if (!OSUtil.isWindowsSystem() || OSUtil.isWebStart())
-        {
+        if (!OSUtil.isWindowsSystem() || OSUtil.isWebStart()) {
             return;
         }
 
@@ -472,7 +473,7 @@ public class FileUtils {
                 File powerFolderFile = new File(herePath, "PowerFolder.exe");
                 if (!powerFolderFile.exists()) {
                     log.severe("Could not find PowerFolder.exe at "
-                            + powerFolderFile.getAbsolutePath());
+                        + powerFolderFile.getAbsolutePath());
                     return;
                 }
 
@@ -617,7 +618,7 @@ public class FileUtils {
 
     /**
      * See if a file in inside a directory.
-     *
+     * 
      * @param file
      * @param directory
      * @return
@@ -625,10 +626,10 @@ public class FileUtils {
     public static boolean isFileInDirectory(File file, File directory) {
 
         Reject.ifTrue(file == null || directory == null,
-                "File and directory may not be null");
+            "File and directory may not be null");
 
         Reject.ifTrue(file.isDirectory() || !directory.isDirectory(),
-                "File must be a file and directory must be a directory.");
+            "File must be a file and directory must be a directory.");
 
         File fileParent = file.getParentFile();
         String fileParentPath;
@@ -644,7 +645,7 @@ public class FileUtils {
 
         return fileParentPath.startsWith(directoryPath);
     }
-    
+
     /**
      * Removes invalid characters from the filename.
      * 
@@ -690,5 +691,45 @@ public class FileUtils {
         }
         candidate.mkdirs();
         return candidate;
+    }
+
+    /**
+     * Helper method to perform hashing on a file.
+     * 
+     * @param file
+     * @param digest
+     *            the MessageDigest to use, MUST be in initial state - aka
+     *            either newly created or being reseted.
+     * @param listener
+     * @return the result of the hashing, usually size 16.
+     * @throws IOException
+     *             if the file was not found or an error occured while reading.
+     * @throws InterruptedException
+     *             if this thread got interrupted, this can be used to cancel a
+     *             ongoing hashing operation.
+     */
+    public static byte[] digest(File file, MessageDigest digest,
+        ProgressListener listener) throws IOException, InterruptedException
+    {
+        FileInputStream in = new FileInputStream(file);
+        try {
+            byte[] buf = new byte[BYTE_CHUNK_SIZE];
+            long size = file.length();
+            long pos = 0;
+            int read;
+            while ((read = in.read(buf)) > 0) {
+                if (Thread.interrupted()) {
+                    throw new InterruptedException();
+                }
+                digest.update(buf, 0, read);
+                pos += read;
+                if (listener != null) {
+                    listener.progressReached(pos * 100.0 / size);
+                }
+            }
+            return digest.digest();
+        } finally {
+            in.close();
+        }
     }
 }

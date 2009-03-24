@@ -30,10 +30,17 @@ import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.message.*;
+import de.dal33t.powerfolder.message.FileChunk;
+import de.dal33t.powerfolder.message.Message;
+import de.dal33t.powerfolder.message.ReplyFilePartsRecord;
+import de.dal33t.powerfolder.message.RequestDownload;
+import de.dal33t.powerfolder.message.RequestFilePartsRecord;
+import de.dal33t.powerfolder.message.RequestPart;
+import de.dal33t.powerfolder.message.StartUpload;
+import de.dal33t.powerfolder.message.StopUpload;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.util.Convert;
-import de.dal33t.powerfolder.util.ProgressObserver;
+import de.dal33t.powerfolder.util.ProgressListener;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.delta.FilePartsRecord;
@@ -255,7 +262,7 @@ public class Upload extends Transfer {
                     logSevere("IOException", e);
                 }
             }
-            
+
             public String toString() {
                 return "Upload " + getFile().toDetailString() + " to "
                     + getPartner().getNick();
@@ -288,10 +295,9 @@ public class Upload extends Transfer {
         try {
             transferState.setState(TransferState.FILEHASHING);
             fpr = getTransferManager().getFileRecordManager().retrieveRecord(
-                fi, new ProgressObserver() {
-
-                    public void progressed(double percent) {
-                        transferState.setProgress(percent);
+                fi, new ProgressListener() {
+                    public void progressReached(double percentageReached) {
+                        transferState.setProgress(percentageReached);
                     }
 
                 });

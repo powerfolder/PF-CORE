@@ -28,21 +28,21 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 import de.dal33t.powerfolder.util.CountedInputStream;
-import de.dal33t.powerfolder.util.ProgressObserver;
+import de.dal33t.powerfolder.util.ProgressListener;
 import de.dal33t.powerfolder.util.Reject;
 
 public class MatchResultWorker implements Callable<List<MatchInfo>> {
     private final FilePartsRecord record;
     private final File inFile;
-    private final ProgressObserver progressObserver;
+    private final ProgressListener progressListener;
 
     public MatchResultWorker(FilePartsRecord record, File inFile,
-        ProgressObserver obs)
+        ProgressListener obs)
     {
         Reject.noNullElements(record, inFile);
         this.record = record;
         this.inFile = inFile;
-        this.progressObserver = obs;
+        this.progressListener = obs;
     }
 
     public List<MatchInfo> call() throws Exception {
@@ -58,8 +58,8 @@ public class MatchResultWorker implements Callable<List<MatchInfo>> {
             List<MatchInfo> matches = new LinkedList<MatchInfo>();
             MatchInfo match = null;
             while ((match = matcher.nextMatch()) != null) {
-                if (progressObserver != null) {
-                    progressObserver.progressed((double) in.getReadBytes()
+                if (progressListener != null) {
+                    progressListener.progressReached((double) in.getReadBytes()
                         / fsize);
                 }
                 matches.add(match);

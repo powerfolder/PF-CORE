@@ -31,6 +31,7 @@ import java.io.RandomAccessFile;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -44,9 +45,8 @@ import de.dal33t.powerfolder.message.FileChunk;
 import de.dal33t.powerfolder.transfer.Transfer.State;
 import de.dal33t.powerfolder.transfer.Transfer.TransferState;
 import de.dal33t.powerfolder.util.Debug;
-import de.dal33t.powerfolder.util.FileCheckWorker;
 import de.dal33t.powerfolder.util.FileUtils;
-import de.dal33t.powerfolder.util.ProgressObserver;
+import de.dal33t.powerfolder.util.ProgressListener;
 import de.dal33t.powerfolder.util.Range;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.TransferCounter;
@@ -303,20 +303,20 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         setTransferState(TransferState.VERIFYING);
         // logFine("Verifying file hash for " + this);
         try {
-            Callable<Boolean> fileChecker = null;
+            byte[] tempFileHash = null;
             if (remotePartRecord != null) {
-                fileChecker = new FileCheckWorker(getTempFile(), MessageDigest
-                    .getInstance("MD5"), remotePartRecord.getFileDigest())
-                {
-                    @Override
-                    protected void setProgress(int percent) {
-                        setTransferState(percent / 100.0);
+                tempFileHash = FileUtils.digest(getTempFile(), MessageDigest
+                    .getInstance("MD5"), new ProgressListener() {
+
+                    public void progressReached(double percentageReached) {
+                        setTransferState(percentageReached / 100.0);
                     }
-                };
+
+                });
             }
-            // If we don't have a record, the file is assumed to be
-            // "valid"
-            if (fileChecker == null || fileChecker.call()) {
+            // If we don't have a record, no hashing was performed and the file
+            // is assumed to be "valid"
+            if (tempFileHash == null || Arrays.equals(remotePartRecord.getFileDigest(), tempFileHash)) {
                 return true;
             }
             logWarning("Checksum test FAILED on " + fileInfo.toDetailString());
@@ -402,9 +402,9 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             File src = getFile();
 
             setTransferState(TransferState.MATCHING);
-            ProgressObserver transferObs = new ProgressObserver() {
-                public void progressed(double percent) {
-                    setTransferState(percent);
+            ProgressListener transferObs = new ProgressListener() {
+                public void progressReached(double percentageReached) {
+                    setTransferState(percentageReached);
                 }
             };
             Callable<List<MatchInfo>> mInfoWorker = new MatchResultWorker(
@@ -469,8 +469,8 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         if (isBroken()) {
             return;
         }
-        logFine("Download broken: " + fileInfo.toDetailString()
-            + ". Problem: " + problem + ": " + message);
+        logFine("Download broken: " + fileInfo.toDetailString() + ". Problem: "
+            + problem + ": " + message);
         setState(InternalState.BROKEN);
         shutdown();
 
@@ -811,8 +811,8 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             return null;
         }
         try {
-            metaFile = new File(getMetaDataBaseDir(), FileUtils.DOWNLOAD_META_FILE
-                + getFileID());
+            metaFile = new File(getMetaDataBaseDir(),
+                FileUtils.DOWNLOAD_META_FILE + getFileID());
             return metaFile;
         } catch (IOException e) {
             logSevere("IOException", e);
@@ -1171,9 +1171,8 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         }
 
         if (isFiner()) {
-            logFiner(
-                "State change to " + newState + ": "
-                    + getFileInfo().toDetailString());
+            logFiner("State change to " + newState + ": "
+                + getFileInfo().toDetailString());
         }
 
         state = newState;

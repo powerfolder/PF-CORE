@@ -23,7 +23,7 @@ import java.io.IOException;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.util.ProgressObserver;
+import de.dal33t.powerfolder.util.ProgressListener;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.delta.FilePartsRecord;
 
@@ -41,7 +41,7 @@ public class VolatileFileRecordProvider extends AbstractFileRecordProvider {
     }
 
     public FilePartsRecord retrieveRecord(FileInfo fileInfo,
-        ProgressObserver obs) throws IOException
+        ProgressListener obs) throws IOException
     {
         Reject.ifNull(fileInfo, "FileInfo is null!");
         return computeFilePartsRecord(fileInfo, obs);

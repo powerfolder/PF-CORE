@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 import de.dal33t.powerfolder.util.FileUtils;
-import de.dal33t.powerfolder.util.ProgressObserver;
+import de.dal33t.powerfolder.util.ProgressListener;
 import de.dal33t.powerfolder.util.Range;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.delta.FilePartsState.PartState;
@@ -38,10 +38,10 @@ public class MatchCopyWorker implements Callable<FilePartsState> {
 
     private RandomAccessFile src;
     private RandomAccessFile dst;
-    private final ProgressObserver progressObserver;
+    private final ProgressListener progressObserver;
 
     public MatchCopyWorker(File srcFile, File dstFile, FilePartsRecord record,
-        List<MatchInfo> matchInfoList, ProgressObserver obs)
+        List<MatchInfo> matchInfoList, ProgressListener obs)
     {
         super();
         Reject.noNullElements(srcFile, dstFile, record, matchInfoList);
@@ -65,7 +65,7 @@ public class MatchCopyWorker implements Callable<FilePartsState> {
                         throw new InterruptedException();
                     }
                     if (progressObserver != null) {
-                        progressObserver.progressed((double) index
+                        progressObserver.progressReached((double) index
                             / matchInfoList.size());
                     }
                     index++;

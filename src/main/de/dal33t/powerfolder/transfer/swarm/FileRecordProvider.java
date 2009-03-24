@@ -22,7 +22,7 @@ package de.dal33t.powerfolder.transfer.swarm;
 import java.io.IOException;
 
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.util.ProgressObserver;
+import de.dal33t.powerfolder.util.ProgressListener;
 import de.dal33t.powerfolder.util.delta.FilePartsRecord;
 
 /**
@@ -42,7 +42,7 @@ public interface FileRecordProvider {
      * @throws IOException
      *             if an exception occurred while retrieving the record
      */
-    FilePartsRecord retrieveRecord(FileInfo fileInfo, ProgressObserver progObs)
+    FilePartsRecord retrieveRecord(FileInfo fileInfo, ProgressListener progObs)
         throws IOException;
 
     /**
