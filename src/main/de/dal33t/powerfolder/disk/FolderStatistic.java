@@ -35,7 +35,6 @@ import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.event.TransferAdapter;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.TransferCounter;
 import de.dal33t.powerfolder.util.ui.SimpleTimeEstimator;
 
@@ -168,14 +167,18 @@ public class FolderStatistic extends PFComponent {
         Collection<Member> members = folder.getMembersAsCollection();
         Collection<Member> membersCalulated = new ArrayList<Member>(members
             .size());
-        // considered.clear();
+
+        // Calc member stats.
         for (Member member : members) {
             if (member.isCompleteyConnected() || member.isMySelf()) {
                 calculateMemberStats(member, membersCalulated);
                 membersCalulated.add(member);
             }
         }
-        calculateMemberAndTotalSync(membersCalulated);
+
+        // Update the estimator with the new total sync.
+        calculating.estimatedSyncDate = estimator.updateEstimate(
+                calculating.getTotalSyncPercentage());
 
         // Switch figures
         current = calculating;
@@ -318,44 +321,6 @@ public class FolderStatistic extends PFComponent {
         return "Folder statistic on '" + folder.getName() + '\'';
     }
 
-    private void calculateMemberAndTotalSync(Collection<Member> members) {
-        double totalSync = 0;
-        int considered = 0;
-        for (Member member : members) {
-            Long inSync = calculating.sizesInSync.get(member);
-            Long sizeInSync = inSync == null ? 0 : inSync;
-            if (sizeInSync == null) {
-                calculating.syncPercentages.put(member, -1.0d);
-                continue;
-            }
-            double sync = ((double) sizeInSync) / calculating.totalSize * 100;
-            if (sync > 100) {
-                logWarning("Over 100% sync: " + sync + "% sync: "
-                        + member.getNick() + ", size(in sync): "
-                        + Format.formatBytesShort(sizeInSync) + ", size: "
-                        + Format.formatBytesShort(calculating.sizesInSync
-                        .get(member)) + ", totalsize: "
-                        + Format.formatBytesShort(calculating.totalSize));
-            }
-            if (calculating.totalSize == 0) {
-                logFiner("Got total size 0");
-                sync = 100;
-            }
-            calculating.syncPercentages.put(member, sync);
-            totalSync += sync;
-            considered++;
-
-            if (isFiner()) {
-                logFiner(member.getNick() + ": size: "
-                    + calculating.sizes.get(member) + ", size(insync): "
-                    + sizeInSync + ": " + sync + '%');
-            }
-        }
-        calculating.totalSyncPercentage = totalSync / considered;
-        calculating.estimatedSyncDate = estimator
-            .updateEstimate(calculating.totalSyncPercentage);
-    }
-
     public long getTotalSize() {
         return current.totalSize;
     }
@@ -420,23 +385,21 @@ public class FolderStatistic extends PFComponent {
      * @return the sync percentage of the member, -1 if unknown
      */
     public double getSyncPercentage(Member member) {
-        Double sync = current.syncPercentages.get(member);
-        return sync != null ? sync : -1;
+        return current.getSyncPercentage(member);
     }
 
     /**
      * @return the local sync percentage.-1 if unknown.
      */
     public double getLocalSyncPercentage() {
-        Double d = current.syncPercentages.get(getController().getMySelf());
-        return d != null ? d : -1;
+        return current.getSyncPercentage(getController().getMySelf());
     }
 
     /**
      * @return the total sync percentange across all members.
      */
     public double getTotalSyncPercentage() {
-        return current.totalSyncPercentage;
+        return current.getTotalSyncPercentage();
     }
 
     /**
@@ -668,7 +631,7 @@ public class FolderStatistic extends PFComponent {
         }
     }
 
-    private static class CalculationResult {
+    private class CalculationResult {
 
         // Total size of folder in bytes
         public long totalSize;
@@ -676,33 +639,71 @@ public class FolderStatistic extends PFComponent {
         // Total number of files
         public int totalFilesCount;
 
-        // The total sync percentage of the folder
-        public double totalSyncPercentage;
-
         // Date at which the folder should be synchronized.
         public Date estimatedSyncDate;
 
         // Finer values
         public int incomingFilesCount;
 
-        // Contains the sync percentages of the members
-        // Member -> Double
-        public Map<Member, Double> syncPercentages = new HashMap<Member, Double>();
-
         // Number of files
-        // Member -> Integer
         public Map<Member, Integer> filesCount = new HashMap<Member, Integer>();
 
         // Number of files in sync
-        // Member -> Integer
         public Map<Member, Integer> filesCountInSync = new HashMap<Member, Integer>();
 
         // Size of folder per member
-        // member -> Long
         public Map<Member, Long> sizes = new HashMap<Member, Long>();
 
         // Size of folder that are in sync per member
-        // member -> Long
         public Map<Member, Long> sizesInSync = new HashMap<Member, Long>();
+
+        /**
+         * Calculate the sync percentage for a member.
+         * This is the size of files in sync divided by the total size of the
+         * folder.
+         *
+         * @param member
+         * @return
+         */
+        public double getSyncPercentage(Member member) {
+            if (totalSize == 0) {
+                return 100.0;
+            } else if (sizesInSync.get(member) == 0) {
+                return 0;
+            } else {
+                double sync = 100.0 * sizesInSync.get(member) / totalSize;
+                if (sync > 100.0) {
+                    sync = 100.0;
+                    logSevere("Sync percentage > 100% - folder="
+                            + folder.getInfo().name + ", member="
+                            + member.getInfo().nick + ", sync=" + sync);
+                }
+                return sync;
+            }
+        }
+
+        /**
+         * Calculate the total sync percentage for a folder.
+         * This is the sync percentage for each member divided by the
+         * number of members.
+         *
+         * @return
+         */
+        public double getTotalSyncPercentage() {
+            if (sizesInSync.isEmpty() || totalSize == 0) {
+                return 100.0;
+            }
+            double sizesync = 0;
+            for (Member member : sizesInSync.keySet()) {
+                sizesync += getSyncPercentage(member);
+            }
+            double sync = sizesync / sizesInSync.size();
+            if (sync > 100.0) {
+                sync = 100.0;
+                logSevere("Sync percentage > 100% - folder="
+                        + folder.getInfo().name + ", sync=" + sync);
+            }
+            return sync;
+        }
     }
 }
