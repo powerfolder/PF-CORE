@@ -43,6 +43,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -263,9 +264,17 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
         }
 
+        // Load with 6 concurrent threads. 
+        final Semaphore loadPermit = new Semaphore(6); 
         final AtomicInteger nCreated = new AtomicInteger();
         // Scan config for all found folder names.
         for (final String folderName : allFolderNames) {
+            try {
+                loadPermit.acquire();
+            } catch (InterruptedException e) {
+                logFiner(e);
+                return;
+            }
             Runnable folderCreator = new Runnable() {
                 public void run() {
                     try {
@@ -286,6 +295,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                         logSevere("Problem loading/creating folder '"
                             + folderName + "'. " + e, e);
                     }
+                    loadPermit.release();
                     synchronized (nCreated) {
                         nCreated.incrementAndGet();
                         nCreated.notify();
@@ -389,9 +399,17 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
         }
 
+        // Load with 6 concurrent threads.
+        final Semaphore loadPermit = new Semaphore(6);
         final AtomicInteger nCreated = new AtomicInteger();
         // Scan config for all found folder MD5s.
         for (final String folderMD5 : allFolderMD5s) {
+            try {
+                loadPermit.acquire();
+            } catch (InterruptedException e) {
+                logFiner(e);
+                return;
+            }
             Runnable folderCreator = new Runnable() {
                 public void run() {
                     try {
@@ -412,6 +430,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                         logSevere("Problem loading/creating folder #"
                             + folderMD5 + ". " + e, e);
                     }
+                    loadPermit.release();
                     synchronized (nCreated) {
                         nCreated.incrementAndGet();
                         nCreated.notify();
