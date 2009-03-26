@@ -274,7 +274,8 @@ public class Util {
 
     public static boolean useSwarming(Controller c, Member other) {
         Reject.ifNull(c, "Controller is null");
-        return allowSwarming(c, other.isOnLAN());
+        return other.getIdentity().isSupportingPartTransfers()
+            && allowSwarming(c, other.isOnLAN());
     }
 
     public static boolean useDeltaSync(Controller c, Member other) {

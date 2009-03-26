@@ -141,6 +141,10 @@ public class Identity extends Message {
         return supportsEncryption;
     }
 
+    public boolean isSupportingPartTransfers() {
+        return supportingPartTransfers;
+    }
+
     /**
      * @return true, if the stream is compressed; false, if the stream is not
      *         compressed; null, if we don't know
