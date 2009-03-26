@@ -56,6 +56,8 @@ public class ControllerTestCase extends TestCase {
     private Folder folder;
 
     protected void setUp() throws Exception {
+        System.setProperty("user.home", new File("build/test/home")
+            .getCanonicalPath());
         super.setUp();
 
         Feature.setupForTests();

@@ -72,6 +72,8 @@ public class TwoControllerTestCase extends TestCase {
     private Folder folderLisa;
 
     protected void setUp() throws Exception {
+        System.setProperty("user.home", new File("build/test/home")
+            .getCanonicalPath());
         super.setUp();
 
         if ((getContollerBart() != null && getContollerBart().isStarted())

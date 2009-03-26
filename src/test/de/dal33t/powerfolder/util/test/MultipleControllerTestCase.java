@@ -66,6 +66,8 @@ public abstract class MultipleControllerTestCase extends TestCase {
     private int port = 4000;
 
     protected void setUp() throws Exception {
+        System.setProperty("user.home", new File("build/test/home")
+        .getCanonicalPath());
         super.setUp();
 
         for (Controller controller : controllers.values()) {
@@ -323,7 +325,6 @@ public abstract class MultipleControllerTestCase extends TestCase {
         }
     }
 
-    @SuppressWarnings("unchecked")
     protected void connectAll() {
         Controller entries[] = controllers.values().toArray(new Controller[controllers.values().size()]);
         for (int i = 0; i < entries.length; i++) {
@@ -331,7 +332,6 @@ public abstract class MultipleControllerTestCase extends TestCase {
                 tryToConnect(entries[i], entries[j]);
             }
         }
-
     }
 
     protected void disconnectAll() {
