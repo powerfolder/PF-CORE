@@ -128,10 +128,10 @@ public class FileUtilsTest extends TestCase {
         assertEquals("test (2)", actual2.getName());
 
         File actual3 = FileUtils.createEmptyDirectory(baseDir,
-            "hümmers / rüttenscheiß: Wichtige Doxx|");
+            "hÃ¼mmers / rÃ¼ttenscheiÃŸ: Wichtige Doxx|");
         assertTrue(actual3.exists());
         assertTrue(actual3.isDirectory());
         assertEquals(0, actual3.list().length);
-        assertEquals("hümmers  rüttenscheiß Wichtige Doxx", actual3.getName());
+        assertEquals("hÃ¼mmers  rÃ¼ttenscheiÃŸ Wichtige Doxx", actual3.getName());
     }
 }
