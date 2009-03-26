@@ -736,7 +736,7 @@ public class TransferManager extends PFComponent {
 
     /**
      * Coounts the number of active uploads for a folder.
-     *
+     * 
      * @param folder
      * @return
      */
@@ -745,7 +745,7 @@ public class TransferManager extends PFComponent {
         for (Upload activeUpload : activeUploads) {
             if (activeUpload.getFile().getFolderInfo().equals(folder.getInfo()))
             {
-                 count++;
+                count++;
             }
         }
         return count;
@@ -1127,7 +1127,7 @@ public class TransferManager extends PFComponent {
         } finally {
             uploadsLock.unlock();
         }
-        
+
         // Fire as requested
         fireUploadRequested(new TransferManagerEvent(this, upload));
 
@@ -1272,7 +1272,7 @@ public class TransferManager extends PFComponent {
     public List<Upload> getCompletedUploadsCollection() {
         return Collections.unmodifiableList(completedUploads);
     }
-    
+
     /**
      * @return the number of queued uploads.
      */
@@ -2196,8 +2196,8 @@ public class TransferManager extends PFComponent {
      * private boolean hasActiveDownloadsFrom(Member from) { synchronized
      * (downloads) { for (Iterator it = downloads.values().iterator();
      * it.hasNext();) { Download download = (Download) it.next(); if
-     * (download.isStarted() && download.getFrom().equals(from)) { return true; } } }
-     * return false; }
+     * (download.isStarted() && download.getFrom().equals(from)) { return true;
+     * } } } return false; }
      */
 
     /**

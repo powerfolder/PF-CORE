@@ -90,6 +90,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
     }
 
     public void testFiveSwarmDownload() throws IOException {
+        final long fsize = 10000000;
         nSetupControllers(5);
         setConfigurationEntry(ConfigurationEntry.USE_SWARMING_ON_LAN, "true");
 
@@ -98,7 +99,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
         joinNTestFolder(SyncProfile.HOST_FILES);
 
         File tmpFile = TestHelper.createRandomFile(getFolderOf("0")
-            .getLocalBase(), 10000000);
+            .getLocalBase(), fsize);
         scanFolder(getFolderOf("0"));
         final FileInfo fInfo = getFolderOf("0").getKnowFilesAsArray()[0];
 
@@ -223,13 +224,37 @@ public class SwarmingTest extends MultipleControllerTestCase {
                         .countCompletedDownloads();
             }
         });
-        DownloadManager man;
-        man = getContoller("4").getTransferManager()
-            .getCompletedDownloadsCollection().get(0);
-        for (Download dl : man.getSources()) {
-            assertTrue(dl.getCounter().getBytesTransferred() > 0);
-        }
 
+        for (Controller c1 : getControllers()) {
+            for (Controller c2 : getControllers()) {
+                if (c1 == c2) {
+                    continue;
+                }
+
+                File f1 = getFolderOf(c1).getKnowFilesAsArray()[0]
+                    .getDiskFile(c1.getFolderRepository());
+                File f2 = getFolderOf(c2).getKnowFilesAsArray()[0]
+                    .getDiskFile(c2.getFolderRepository());
+
+                TestHelper.compareFiles(f1, f2);
+            }
+        }
+        // DownloadManager man;
+        // man = getContoller("4").getTransferManager()
+        // .getCompletedDownloadsCollection().get(0);
+        // This asserts too much, it's not guaranteed that the client will
+        // download from ALL other clients, due to factors like queue size,
+        // distribution etc.
+        // for (Download dl : man.getSources()) {
+        // assertTrue(dl.getCounter().getBytesTransferred() > 0);
+        // }
+
+        // Interesting enough, this fails:
+        // long sum = 0;
+        // for (Download dl : man.getSources()) {
+        // sum += dl.getCounter().getBytesTransferred();
+        // }
+        // assertEquals(fsize, sum);
         TestHelper.assertIncompleteFilesGone(this);
     }
 
@@ -477,9 +502,8 @@ public class SwarmingTest extends MultipleControllerTestCase {
                         getContoller("" + i).getTransferManager()
                             .getActiveDownloads());
                     b.append(", ").append(
-                        (getContoller("" + i)
-                            .getTransferManager().getActiveUploads())).append(
-                        '\n');
+                        (getContoller("" + i).getTransferManager()
+                            .getActiveUploads())).append('\n');
                 }
                 return b.toString() + " " + TestHelper.deadlockCheck();
             }

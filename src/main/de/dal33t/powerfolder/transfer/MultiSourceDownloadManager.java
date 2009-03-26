@@ -100,7 +100,6 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
 
     /*
      * Returns the sources of this manager.
-     * 
      * @see de.dal33t.powerfolder.transfer.MultiSourceDownload#getSources()
      */
     public Collection<Download> getSources() {

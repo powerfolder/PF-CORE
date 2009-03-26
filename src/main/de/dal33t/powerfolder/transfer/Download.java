@@ -19,8 +19,8 @@
  */
 package de.dal33t.powerfolder.transfer;
 
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -57,7 +57,7 @@ public class Download extends Transfer {
     private static final long serialVersionUID = 100L;
 
     private Date lastTouch;
-    private boolean automatic;
+    private final boolean automatic;
     private boolean queued;
     private boolean markedBroken;
 
@@ -67,6 +67,7 @@ public class Download extends Transfer {
 
     /** for serialisation */
     public Download() {
+        automatic = false;
     }
 
     /**
@@ -105,11 +106,12 @@ public class Download extends Transfer {
         return automatic;
     }
 
-    public void setDownloadManager(DownloadManager handler) {
+    public synchronized void setDownloadManager(DownloadManager handler) {
         Reject.ifNull(handler, "Handler is null!");
-        Reject.ifFalse(handler.getFileInfo().isVersionAndDateIdentical(getFile()),
-            "Fileinfos mismatch. expected " + getFile().toDetailString()
-                + ", got " + handler.getFileInfo().toDetailString());
+        Reject.ifFalse(handler.getFileInfo().isVersionAndDateIdentical(
+            getFile()), "Fileinfos mismatch. expected "
+            + getFile().toDetailString() + ", got "
+            + handler.getFileInfo().toDetailString());
         if (this.handler != null) {
             throw new IllegalStateException("DownloadManager already set!");
         }
@@ -145,7 +147,7 @@ public class Download extends Transfer {
     /**
      * Requests a FPR from the remote side.
      */
-    synchronized void requestFilePartsRecord() {
+    void requestFilePartsRecord() {
         assert Util.useDeltaSync(getController(), getPartner()) : "Requesting FilePartsRecord from a client that doesn't support that!";
         requestCheckState();
 
@@ -179,9 +181,7 @@ public class Download extends Transfer {
      * @return
      * @throws BrokenDownloadException
      */
-    synchronized boolean requestPart(Range range)
-        throws BrokenDownloadException
-    {
+    boolean requestPart(Range range) throws BrokenDownloadException {
         Validate.notNull(range);
         requestCheckState();
 
@@ -210,7 +210,7 @@ public class Download extends Transfer {
 
     public Collection<RequestPart> getPendingRequests() {
         synchronized (pendingRequests) {
-            return new ArrayList<RequestPart>(pendingRequests);
+            return Collections.unmodifiableCollection(pendingRequests);
         }
     }
 
@@ -270,13 +270,13 @@ public class Download extends Transfer {
         requestCheckState();
 
         if (isFiner()) {
-            logFiner(
-                "request(" + startOffset + "): " + getFile().toDetailString());
+            logFiner("request(" + startOffset + "): "
+                + getFile().toDetailString());
         }
         getPartner().sendMessagesAsynchron(
             new RequestDownload(getFile(), startOffset));
     }
-    
+
     /**
      * Requests to abort this dl
      */
@@ -290,31 +290,20 @@ public class Download extends Transfer {
      *            partner
      */
     void abort(boolean informRemote) {
+        shutdown();
+        if (getPartner() != null && getPartner().isCompleteyConnected()
+            && informRemote)
+        {
+            getPartner().sendMessageAsynchron(new AbortDownload(getFile()),
+                null);
+        }
         if (getDownloadManager() == null) {
-            shutdown();
-            if (getPartner() != null && getPartner().isCompleteyConnected()
-                && informRemote)
-            {
-                getPartner().sendMessageAsynchron(new AbortDownload(getFile()),
-                    null);
-            }
+            logSevere(this + " has no DownloadManager! (abort before start?)");
             // For Pending downloads without download manager
             getController().getTransferManager().downloadAborted(Download.this);
             return;
         }
-        synchronized (getDownloadManager()) {
-            synchronized (this) {
-                shutdown();
-                if (getPartner() != null && getPartner().isCompleteyConnected()
-                    && informRemote)
-                {
-                    getPartner().sendMessageAsynchron(
-                        new AbortDownload(getFile()), null);
-                }
-                getController().getTransferManager().downloadAborted(
-                    Download.this);
-            }
-        }
+        getController().getTransferManager().downloadAborted(Download.this);
     }
 
     /**
@@ -329,7 +318,7 @@ public class Download extends Transfer {
     }
 
     @Override
-    synchronized void setCompleted() {
+    void setCompleted() {
         super.setCompleted();
         getPartner().sendMessagesAsynchron(new StopUpload(getFile()));
         getTransferManager().setCompleted(Download.this);
@@ -353,28 +342,24 @@ public class Download extends Transfer {
      * @param message
      */
     public void setBroken(final TransferProblem problem, final String message) {
-        synchronized (getDownloadManager()) {
-            synchronized (this) {
-                // Prevent setBroken from being called more than once on a
-                // single
-                // download
-                if (markedBroken) {
-                    if (isFiner()) {
-                        logFiner(
-                            "Not breaking already marked broken download");
-                    }
-                    return;
+        synchronized (this) {
+            // Prevent setBroken from being called more than once on a
+            // single
+            // download
+            if (markedBroken) {
+                if (isFiner()) {
+                    logFiner("Not breaking already marked broken download");
                 }
-                Member p = getPartner();
-                if (p != null && p.isCompleteyConnected()) {
-                    p.sendMessageAsynchron(new AbortDownload(getFile()), null);
-                }
-                shutdown();
-                getTransferManager().downloadbroken(Download.this, problem,
-                    message);
-                markedBroken = true;
+                return;
             }
+            markedBroken = true;
         }
+        Member p = getPartner();
+        if (p != null && p.isCompleteyConnected()) {
+            p.sendMessageAsynchron(new AbortDownload(getFile()), null);
+        }
+        shutdown();
+        getTransferManager().downloadbroken(Download.this, problem, message);
     }
 
     /**
