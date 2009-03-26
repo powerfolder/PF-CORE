@@ -22,13 +22,13 @@ package de.dal33t.powerfolder.disk;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_DIR;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_DONT_RECYCLE;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_ID;
+import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_NAME;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX_V3;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX_V4;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREVIEW;
+import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_RECYCLE;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_SYNC_PROFILE;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_WHITELIST;
-import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_NAME;
-import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_RECYCLE;
 
 import java.io.File;
 import java.io.IOException;
@@ -43,6 +43,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -59,7 +60,14 @@ import de.dal33t.powerfolder.event.SynchronizationStatsEvent;
 import de.dal33t.powerfolder.event.SynchronizationStatsListener;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.transfer.FileRequestor;
-import de.dal33t.powerfolder.util.*;
+import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.Profiling;
+import de.dal33t.powerfolder.util.ProfilingEntry;
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.StringUtils;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.Waiter;
 import de.dal33t.powerfolder.util.compare.FolderComparator;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
@@ -231,7 +239,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      * to be saved.
      */
     private void processV3Format() {
-        Properties config = getController().getConfig();
+        final Properties config = getController().getConfig();
 
         // Find all folder names.
         Set<String> allFolderNames = new TreeSet<String>();
@@ -255,20 +263,47 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
         }
 
+        final AtomicInteger nCreated = new AtomicInteger();
         // Scan config for all found folder names.
-        for (String folderName : allFolderNames) {
+        for (final String folderName : allFolderNames) {
+            Runnable folderCreator = new Runnable() {
+                public void run() {
+                    try {
+                        String folderId = config
+                            .getProperty(FOLDER_SETTINGS_PREFIX_V3 + folderName
+                                + FOLDER_SETTINGS_ID);
+                        FolderInfo foInfo = new FolderInfo(folderName, folderId);
 
-            String folderId = config.getProperty(FOLDER_SETTINGS_PREFIX_V3
-                + folderName + FOLDER_SETTINGS_ID);
-            FolderInfo foInfo = new FolderInfo(folderName, folderId);
+                        FolderSettings folderSettings = loadV3FolderSettings(folderName);
 
-            FolderSettings folderSettings = loadV3FolderSettings(folderName);
+                        // Do not add if already added
+                        if (!hasJoinedFolder(foInfo) && folderId != null
+                            && folderSettings != null)
+                        {
+                            createFolder0(foInfo, folderSettings, false);
+                        }
+                    } catch (Exception e) {
+                        logSevere("Problem loading/creating folder '"
+                            + folderName + "'. " + e, e);
+                    }
+                    synchronized (nCreated) {
+                        nCreated.incrementAndGet();
+                        nCreated.notify();
+                    }
+                }
+            };
+            getController().getIOProvider().startIO(folderCreator);
+        }
 
-            // Do not add if already added
-            if (!hasJoinedFolder(foInfo) && folderId != null
-                && folderSettings != null)
-            {
-                createFolder0(foInfo, folderSettings, false);
+        // Wait for creators to complete
+        while (nCreated.get() < allFolderNames.size()) {
+            synchronized (nCreated) {
+                try {
+                    nCreated.wait(10);
+                } catch (InterruptedException e) {
+                    logFiner(e);
+                    return;
+                }
             }
         }
     }
@@ -330,7 +365,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      * id. This format allows folders with the same name to be stored. 
      */
     private void processV4Format() {
-        Properties config = getController().getConfig();
+        final Properties config = getController().getConfig();
 
         // Find all folder names.
         Set<String> allFolderMD5s = new TreeSet<String>();
@@ -354,21 +389,47 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
         }
 
+        final AtomicInteger nCreated = new AtomicInteger();
         // Scan config for all found folder MD5s.
-        for (String folderMD5 : allFolderMD5s) {
+        for (final String folderMD5 : allFolderMD5s) {
+            Runnable folderCreator = new Runnable() {
+                public void run() {
+                    try {
+                        String folderId = config.getProperty(FOLDER_SETTINGS_PREFIX_V4
+                            + folderMD5 + FOLDER_SETTINGS_ID);
+                        String folderName = config.getProperty(FOLDER_SETTINGS_PREFIX_V4
+                            + folderMD5 + FOLDER_SETTINGS_NAME);
+                        FolderInfo foInfo = new FolderInfo(folderName, folderId);
+                        FolderSettings folderSettings = loadV4FolderSettings(folderMD5);
 
-            String folderId = config.getProperty(FOLDER_SETTINGS_PREFIX_V4
-                + folderMD5 + FOLDER_SETTINGS_ID);
-            String folderName = config.getProperty(FOLDER_SETTINGS_PREFIX_V4
-                + folderMD5 + FOLDER_SETTINGS_NAME);
-            FolderInfo foInfo = new FolderInfo(folderName, folderId);
-            FolderSettings folderSettings = loadV4FolderSettings(folderMD5);
+                        // Do not add if already added
+                        if (!hasJoinedFolder(foInfo) && folderId != null
+                            && folderSettings != null)
+                        {
+                            createFolder0(foInfo, folderSettings, false);
+                        }
+                    } catch (Exception e) {
+                        logSevere("Problem loading/creating folder #"
+                            + folderMD5 + ". " + e, e);
+                    }
+                    synchronized (nCreated) {
+                        nCreated.incrementAndGet();
+                        nCreated.notify();
+                    }
+                }
+            };
+            getController().getIOProvider().startIO(folderCreator);
+        }
 
-            // Do not add if already added
-            if (!hasJoinedFolder(foInfo) && folderId != null
-                && folderSettings != null)
-            {
-                createFolder0(foInfo, folderSettings, false);
+        // Wait for creators to complete
+        while (nCreated.get() < allFolderMD5s.size()) {
+            synchronized (nCreated) {
+                try {
+                    nCreated.wait(10);
+                } catch (InterruptedException e) {
+                    logFiner(e);
+                    return;
+                }
             }
         }
     }
