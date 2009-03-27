@@ -74,14 +74,15 @@ public class UtilTest extends TestCase {
     public void testSimpleTimeEstimation() throws InterruptedException {
         SimpleTimeEstimator estimator = new SimpleTimeEstimator();
         long now = new Date().getTime();
-        long target = now + 10000;
+        long target = now + 600000;
         int nullCount = 0;
         int actualCount = 0;
-        for (int i = 1; i <= 100; i++) {
+        for (int i = 1; i <= 10; i++) {
+            System.out.println("testSimpleTimeEstimation " + i + " of 10...");
             Date value = estimator.updateEstimate(i);
             if (value != null) {
                 // Allow for minor time calculation rounding varaitions.
-                assertTrue(Math.abs(target / 1000 - value.getTime() / 1000) < 3);
+                assertTrue(Math.abs(target / 1000 - value.getTime() / 1000 - 6) < 2);
             }
             if (value == null) {
                 // First attempt cannot calculate a date.
@@ -89,9 +90,9 @@ public class UtilTest extends TestCase {
             } else {
                 actualCount++;
             }
-            Thread.sleep(100);
+            Thread.sleep(6000);
         }
-        assertEquals(99, actualCount);
+        assertEquals(9, actualCount);
         assertEquals(1, nullCount);
     }
 
