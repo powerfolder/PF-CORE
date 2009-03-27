@@ -76,6 +76,7 @@ public class ServerInfo implements Serializable {
     }
 
     public String toString() {
-        return "Server " + node + " web @ " + webUrl;
+        return "Server " + node.nick + '/' + node.networkId + '/' + node.id
+            + ", web: " + webUrl;
     }
 }
