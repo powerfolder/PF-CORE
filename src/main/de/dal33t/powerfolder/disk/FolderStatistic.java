@@ -20,20 +20,17 @@
 package de.dal33t.powerfolder.disk;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.ConcurrentHashMap;
 
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.event.FolderAdapter;
 import de.dal33t.powerfolder.event.FolderEvent;
 import de.dal33t.powerfolder.event.FolderMembershipEvent;
 import de.dal33t.powerfolder.event.FolderMembershipListener;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
-import de.dal33t.powerfolder.event.TransferAdapter;
-import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.TransferCounter;
 import de.dal33t.powerfolder.util.ui.SimpleTimeEstimator;
@@ -60,7 +57,8 @@ public class FolderStatistic extends PFComponent {
     private CalculationResult current;
     private SimpleTimeEstimator estimator;
 
-    private final AtomicBoolean transferMonitorRunning = new AtomicBoolean();
+    /** Map of bytes received for a file for a member. */
+    private final Map<Member, Map<FileInfo, Long>> partialSyncStatMap;
 
     /**
      * The Date of the last change to a folder file.
@@ -77,7 +75,9 @@ public class FolderStatistic extends PFComponent {
 
     FolderStatistic(Folder folder) {
         super(folder.getController());
+
         // Empty at start
+        partialSyncStatMap = new ConcurrentHashMap<Member, Map<FileInfo, Long>>();
         current = new CalculationResult();
         estimator = new SimpleTimeEstimator();
         this.folder = folder;
@@ -89,28 +89,6 @@ public class FolderStatistic extends PFComponent {
         // Add to NodeManager
         getController().getNodeManager().addNodeManagerListener(
             new MyNodeManagerListener());
-
-        // Listener on transfer manager
-        folder.getController().getTransferManager().addListener(
-            new MyTransferManagerListener());
-    }
-
-    // Ensure that a task is running to watch for partail download changes.
-    private void checkTransferMonitor() {
-
-        if (transferMonitorRunning.getAndSet(true)) {
-            // Monitor is running.
-            return;
-        }
-
-        MyTransferMonitorTask transferMonitorTask = new MyTransferMonitorTask();
-        try {
-            getController().schedule(transferMonitorTask, DELAY_10S);
-        } catch (IllegalStateException ise) {
-            // ignore, this happens if this shutdown in debug mode
-            logFiner("IllegalStateException", ise);
-        }
-
     }
 
     // package protected called from Folder
@@ -218,11 +196,11 @@ public class FolderStatistic extends PFComponent {
         return lastFileChangeDate;
     }
 
-    private static boolean inSync(FileInfo fInfo, FileInfo newestFileInfo) {
-        if (fInfo == null) {
+    private static boolean inSync(FileInfo fileInfo, FileInfo newestFileInfo) {
+        if (fileInfo == null) {
             return false;
         }
-        return !newestFileInfo.isNewerThan(fInfo);
+        return !newestFileInfo.isNewerThan(fileInfo);
     }
 
     private void calculateMemberStats(Member member,
@@ -243,23 +221,39 @@ public class FolderStatistic extends PFComponent {
         long memberSize = 0;
         // Total size of files completely in sync at the member.
         long memberSizeInSync = 0;
-        for (FileInfo fInfo : files) {
-            if (fInfo.isDeleted()) {
+        for (FileInfo fileInfo : files) {
+            if (fileInfo.isDeleted()) {
                 continue;
             }
-            if (folder.getDiskItemFilter().isExcluded(fInfo)) {
+            if (folder.getDiskItemFilter().isExcluded(fileInfo)) {
                 continue;
             }
 
-            FileInfo newestFileInfo = fInfo.getNewestVersion(repo);
-            FileInfo myFileInfo = folder.getFile(fInfo);
+            FileInfo newestFileInfo = fileInfo.getNewestVersion(repo);
+            FileInfo myFileInfo = folder.getFile(fileInfo);
 
-            boolean inSync = inSync(fInfo, newestFileInfo);
+            boolean inSync = inSync(fileInfo, newestFileInfo);
+
+            if (inSync) {
+                // Remove partial stat for this member / file, if it exists.
+                Map<FileInfo, Long> memberMap
+                        = partialSyncStatMap.get(member);
+                if (memberMap != null) {
+                    Long removedBytes = memberMap.remove(fileInfo);
+                    if (removedBytes != null) {
+                        if(isFiner()) {
+                            logFiner("Removed partial stat for "
+                                    + member.getInfo().nick + ", "
+                                    + fileInfo.getName() + ", " + removedBytes);
+                        }
+                    }
+                }
+            }
 
             if (inSync && !newestFileInfo.isDeleted()) {
                 boolean incoming = true;
-                for (Member alreadyM : alreadyConsidered) {
-                    FileInfo otherMemberFile = alreadyM.getFile(fInfo);
+                for (Member alreadyMember : alreadyConsidered) {
+                    FileInfo otherMemberFile = alreadyMember.getFile(fileInfo);
                     if (otherMemberFile == null) {
                         continue;
                     }
@@ -281,10 +275,10 @@ public class FolderStatistic extends PFComponent {
 
             // Count file
             memberFilesCount++;
-            memberSize += fInfo.getSize();
+            memberSize += fileInfo.getSize();
             if (inSync) {
                 memberFilesCountInSync++;
-                memberSizeInSync += fInfo.getSize();
+                memberSizeInSync += fileInfo.getSize();
             }
 
             if (!inSync) {
@@ -294,7 +288,7 @@ public class FolderStatistic extends PFComponent {
 
             boolean addToTotals = !newestFileInfo.isDeleted();
             for (Member alreadyM : alreadyConsidered) {
-                FileInfo otherMemberFile = alreadyM.getFile(fInfo);
+                FileInfo otherMemberFile = alreadyM.getFile(fileInfo);
                 if (otherMemberFile == null) {
                     continue;
                 }
@@ -307,7 +301,7 @@ public class FolderStatistic extends PFComponent {
             }
             if (addToTotals) {
                 calculating.totalFilesCount++;
-                calculating.totalSize += fInfo.getSize();
+                calculating.totalSize += fileInfo.getSize();
             }
         }
 
@@ -457,42 +451,38 @@ public class FolderStatistic extends PFComponent {
         return super.getLoggerName() + " '" + folder.getName() + '\'';
     }
 
+    /**
+     * Put a partial sync stat in the holding map.
+     *
+     * @param fileInfo
+     * @param member
+     * @param bytesTransfered
+     */
+    public void putPartialSyncStat(FileInfo fileInfo, Member member,
+                                   long bytesTransferred) {
+        if (isFiner()) {
+            logFiner("Partial stat for " + fileInfo.getName()  + ", "
+                    + member.getInfo().nick + ", " + bytesTransferred);
+        }
+        Map<FileInfo, Long> memberMap = partialSyncStatMap.get(member);
+        if (memberMap == null) {
+            memberMap = new ConcurrentHashMap<FileInfo, Long>();
+            partialSyncStatMap.put(member, memberMap);
+        }
+        memberMap.put(fileInfo, bytesTransferred);
+        if (current != null) {
+            current.estimatedSyncDate = estimator.updateEstimate(
+                    current.getTotalSyncPercentage());
+        }
+        folder.fireStatisticsCalculated();
+    }
+
     // Inner classes *********************************************************
 
     private class MyCalculatorTask extends TimerTask {
         public void run() {
             calculate0();
             calculatorTask = null;
-        }
-    }
-
-    private class MyTransferMonitorTask extends TimerTask {
-
-        public void run() {
-
-            TransferManager transferManager = getController()
-                .getTransferManager();
-
-            // Keep rolling while there are up/downloads for this folder.
-            while (transferManager.countActiveDownloads(folder) > 0 ||
-                transferManager.countActiveUploads(folder) > 0) {
-
-                logFiner("monitoring downloads");
-
-                // Removed until the test works.
-                //calculate0();
-
-                try {
-                    Thread.sleep(DELAY_10S);
-                } catch (InterruptedException e) {
-                    // Ignore
-                }
-
-            }
-
-            // Free the task
-            transferMonitorRunning.set(false);
-            logFiner("finished monitoring transfers");
         }
     }
 
@@ -549,30 +539,6 @@ public class FolderStatistic extends PFComponent {
 
         public void statisticsCalculated(FolderEvent folderEvent) {
             // do not implement may cause loop!
-        }
-
-        public boolean fireInEventDispatchThread() {
-            return false;
-        }
-    }
-
-    /**
-     * Listener on transfermanager
-     * 
-     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
-     */
-    private class MyTransferManagerListener extends TransferAdapter {
-
-        public void downloadStarted(TransferManagerEvent event) {
-            if (event.getFile().getFolderInfo().equals(folder.getInfo())) {
-                checkTransferMonitor();
-            }
-        }
-
-        public void uploadStarted(TransferManagerEvent event) {
-            if (event.getFile().getFolderInfo().equals(folder.getInfo())) {
-                checkTransferMonitor();
-            }
         }
 
         public boolean fireInEventDispatchThread() {
@@ -671,7 +637,29 @@ public class FolderStatistic extends PFComponent {
             } else if (sizesInSync.get(member) == 0) {
                 return 0;
             } else {
-                double sync = 100.0 * sizesInSync.get(member) / totalSize;
+
+                // Total up partial transfers for this member.
+                Map<FileInfo, Long> map = partialSyncStatMap.get(member);
+                long partialTotal = 0;
+                if (map != null) {
+                    for (FileInfo fileInfo : map.keySet()) {
+                        Long partial = map.get(fileInfo);
+                        if (partial != null) {
+                            partialTotal += partial;
+                        }
+                    }
+                }
+
+                // Sync = synchronized file sizes plus any partials divided by
+                // total size.
+                double sync = 100.0 * (sizesInSync.get(member) + partialTotal)
+                        / totalSize;
+                if (isFiner()) {
+                    logFiner("Sync for member " + member.getInfo().nick + ", "
+                            + sizesInSync.get(member) + " + " +  partialTotal
+                            + " / " + totalSize + " = " + sync);
+                }
+
                 if (sync > 100.0) {
                     sync = 100.0;
                     logSevere("Sync percentage > 100% - folder="
@@ -685,19 +673,19 @@ public class FolderStatistic extends PFComponent {
         /**
          * Calculate the total sync percentage for a folder.
          * This is the sync percentage for each member divided by the
-         * number of members.
+         * number of members (the average).
          *
          * @return
          */
         public double getTotalSyncPercentage() {
-            if (sizesInSync.isEmpty() || totalSize == 0) {
+            if (sizesInSync.isEmpty()) {
                 return 100.0;
             }
-            double sizesync = 0;
+            double syncSum = 0;
             for (Member member : sizesInSync.keySet()) {
-                sizesync += getSyncPercentage(member);
+                syncSum += getSyncPercentage(member);
             }
-            double sync = sizesync / sizesInSync.size();
+            double sync = syncSum / sizesInSync.size();
             if (sync > 100.0) {
                 sync = 100.0;
                 logSevere("Sync percentage > 100% - folder="

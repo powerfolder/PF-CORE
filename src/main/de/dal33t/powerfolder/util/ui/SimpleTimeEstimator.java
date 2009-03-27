@@ -67,11 +67,16 @@ public class SimpleTimeEstimator {
             //
             // (thisTime - lastTime) / (thisPercentage - lastPercentage) ==
             // (targetTime - thisTime) / (100% - thisPercentage)
-            long targetTime = thisTime + (long) ((100.0 - thisPercentage) *
-                (thisTime - lastTime) / (thisPercentage - lastPercentage));
-            lastPercentage = thisPercentage;
-            lastTime = thisTime;
-            estimatedDate = new Date(targetTime);
+
+            // Skip updates less than 5 seconds ago.
+            // This prevents rapid sequeces giving bad results.
+            if (thisTime - lastTime > 5000) {
+                long targetTime = thisTime + (long) ((100.0 - thisPercentage) *
+                    (thisTime - lastTime) / (thisPercentage - lastPercentage));
+                lastPercentage = thisPercentage;
+                lastTime = thisTime;
+                estimatedDate = new Date(targetTime);
+            }
         } else {
             // Presumably this is the first value or the time sequence was
             // recalculated or something. Can not estimate a time before now,

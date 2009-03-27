@@ -28,14 +28,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -87,6 +80,7 @@ public class TransferManager extends PFComponent {
      */
     public static final int OLD_MAX_CHUNK_SIZE = 32 * 1024;
     public static final int OLD_MAX_REQUESTS_QUEUED = 20;
+    public static final long PARTIAL_TRANSFER_DELAY = 10000; // Ten seconds
 
     private static final DecimalFormat CPS_FORMAT = new DecimalFormat(
         "#,###,###,###.##");
@@ -283,6 +277,9 @@ public class TransferManager extends PFComponent {
 
         // Load all pending downloads
         loadDownloads();
+
+        getController().scheduleAndRepeat(new PartialTransferStatsUpdater(),
+                PARTIAL_TRANSFER_DELAY, PARTIAL_TRANSFER_DELAY);
 
         started = true;
         logFine("Started");
@@ -2645,4 +2642,28 @@ public class TransferManager extends PFComponent {
         listenerSupport.pendingDownloadEnqueud(event);
     }
 
+    /**
+     * This class regularly checks to see if any downloads or uploads are active,
+     * and updates folder statistics with partial down/upload byte count. 
+     */
+    private class PartialTransferStatsUpdater extends TimerTask {
+        public void run() {
+            FolderRepository folderRepository =
+                    getController().getFolderRepository();
+            for (FileInfo fileInfo : dlManagers.keySet()) {
+                DownloadManager downloadManager = dlManagers.get(fileInfo);
+                Folder folder =
+                        folderRepository.getFolder(fileInfo.getFolderInfo());
+                folder.getStatistic().putPartialSyncStat(fileInfo,
+                        getController().getMySelf(),
+                        downloadManager.getCounter().getBytesTransferred());
+            }
+            for (Upload upload : activeUploads) {
+                Folder folder = upload.getFile().getFolder(folderRepository);
+                folder.getStatistic().putPartialSyncStat(upload.getFile(),
+                        upload.getPartner(),
+                        upload.getCounter().getBytesTransferred());
+            }
+        }
+    }
 }
