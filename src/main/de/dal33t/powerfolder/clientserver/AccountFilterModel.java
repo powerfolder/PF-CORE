@@ -98,6 +98,14 @@ public class AccountFilterModel extends Model {
 
     // Logic ******************************************************************
 
+    public void reset() {
+        activeTrial = false;
+        disabledOnly = false;
+        nonTrialOnly = false;
+        proUsersOnly = false;
+        username = null;
+    }
+    
     public boolean matches(Account account) {
         Reject.ifNull(account, "Account is null");
         if (disabledOnly && !account.getOSSubscription().isDisabled()) {
