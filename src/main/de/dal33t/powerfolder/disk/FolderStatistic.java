@@ -19,7 +19,12 @@
  */
 package de.dal33t.powerfolder.disk;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 
 import de.dal33t.powerfolder.Constants;
@@ -32,6 +37,7 @@ import de.dal33t.powerfolder.event.FolderMembershipListener;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.light.FileInfo;
+
 import de.dal33t.powerfolder.util.TransferCounter;
 import de.dal33t.powerfolder.util.ui.SimpleTimeEstimator;
 
@@ -149,8 +155,9 @@ public class FolderStatistic extends PFComponent {
         // Calc member stats.
         for (Member member : members) {
             if (member.isCompleteyConnected() || member.isMySelf()) {
-                calculateMemberStats(member, membersCalulated);
-                membersCalulated.add(member);
+                if (calculateMemberStats(member, membersCalulated)) {
+                    membersCalulated.add(member);
+                }
             }
         }
 
@@ -196,21 +203,32 @@ public class FolderStatistic extends PFComponent {
         return lastFileChangeDate;
     }
 
+
     private static boolean inSync(FileInfo fileInfo, FileInfo newestFileInfo) {
+        if (newestFileInfo == null) {
+            // It is intended not to use Reject.ifNull for performance reasons.
+            throw new NullPointerException("Newest FileInfo not found of "
+                + fileInfo.toDetailString());
+        }
         if (fileInfo == null) {
             return false;
         }
         return !newestFileInfo.isNewerThan(fileInfo);
     }
 
-    private void calculateMemberStats(Member member,
+    /**
+     * @param member
+     * @param alreadyConsidered
+     * @return true if the member stats could be calced. false if filelist is missing.
+     */
+    private boolean calculateMemberStats(Member member,
         Collection<Member> alreadyConsidered)
     {
         Collection<FileInfo> files = folder.getFilesAsCollection(member);
         if (files == null) {
-            logFiner("Unable to calc stats on member, no filelist yet: "
+            logWarning("Unable to calc stats on member, no filelist yet: "
                 + member);
-            return;
+            return false;
         }
 
         FolderRepository repo = getController().getFolderRepository();
@@ -232,7 +250,14 @@ public class FolderStatistic extends PFComponent {
             FileInfo newestFileInfo = fileInfo.getNewestVersion(repo);
             FileInfo myFileInfo = folder.getFile(fileInfo);
 
+
+            if (newestFileInfo == null) {
+                logSevere("zzzz");
+                newestFileInfo = fileInfo.getNewestVersion(repo);
+            }
             boolean inSync = inSync(fileInfo, newestFileInfo);
+
+
 
             if (inSync) {
                 // Remove partial stat for this member / file, if it exists.
@@ -308,7 +333,9 @@ public class FolderStatistic extends PFComponent {
         calculating.filesCount.put(member, memberFilesCount);
         calculating.filesCountInSync.put(member, memberFilesCountInSync);
         calculating.sizes.put(member, memberSize);
+        //logWarning("put: " + member + ", sizeinSync: " + memberSizeInSync);
         calculating.sizesInSync.put(member, memberSizeInSync);
+        return true;
     }
 
     public String toString() {
