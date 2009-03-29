@@ -299,7 +299,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Let him scan the new content
         scanFolder(getFolderAtBart());
 
-        TestHelper.waitForCondition(30, new Condition() {
+        TestHelper.waitForCondition(50, new Condition() {
             public boolean reached() {
                 return tm2Listener.downloadRequested >= 1
                     && tm2Listener.downloadCompleted >= 1
@@ -357,7 +357,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(nFiles, getFolderAtBart().getKnownFilesCount());
 
         // Wait for copy (timeout 50)
-        TestHelper.waitForCondition(50, new Condition() {
+        TestHelper.waitForCondition(100, new Condition() {
             public boolean reached() {
                 return tm2Listener.downloadRequested >= nFiles
                     && tm2Listener.downloadCompleted >= nFiles
