@@ -141,13 +141,20 @@ public class PreferencesDialog extends BaseDialog {
         mydnsndsModel = new ValueHolder(ConfigurationEntry.DYNDNS_HOSTNAME
             .getValue(getController()));
 
-        tabbedPane = new JTabbedPane(SwingConstants.LEFT);
+        tabbedPane = new JTabbedPane(SwingConstants.TOP, 
+                JTabbedPane.WRAP_TAB_LAYOUT);
 
         GeneralSettingsTab generalSettingsTab = new GeneralSettingsTab(
             getController());
         preferenceTabs.add(generalSettingsTab);
         tabbedPane.addTab(generalSettingsTab.getTabName(),
             Icons.PREFERENCES, generalSettingsTab.getUIPanel(), null);
+
+        UISettingsTab uiSettingsTab = new UISettingsTab(
+            getController());
+        preferenceTabs.add(uiSettingsTab);
+        tabbedPane.addTab(uiSettingsTab.getTabName(),
+            Icons.MAC, uiSettingsTab.getUIPanel(), null);
 
         NetworkSettingsTab networkSettingsTab = new NetworkSettingsTab(
             getController());
