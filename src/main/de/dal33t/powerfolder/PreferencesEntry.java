@@ -57,7 +57,7 @@ public enum PreferencesEntry {
 
     ASK_FOR_FRIENDSHIP_MESSAGE("AskForFriendshipMessage", true),
 
-    AUTO_CLEANUP_FREQUENCE("AutoCleanupFrequency", 5),
+    AUTO_CLEANUP_FREQUENCY("AutoCleanupFrequency", 5),
 
     SHOW_PREVIEW_PANEL("ShowPreviewPanel", false),
 

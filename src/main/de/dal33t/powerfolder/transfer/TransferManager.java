@@ -37,11 +37,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Constants;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.*;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
@@ -232,8 +228,9 @@ public class TransferManager extends PFComponent {
      */
     private void checkConfigCPS(ConfigurationEntry entry, long _cps) {
         String cps = entry.getValue(getController());
-        if (cps == null)
+        if (cps == null) {
             entry.setValue(getController(), Long.toString(_cps / 1024));
+        }
     }
 
     private long getConfigCPS(ConfigurationEntry entry) {
@@ -247,7 +244,7 @@ public class TransferManager extends PFComponent {
                 }
             } catch (NumberFormatException e) {
                 logWarning("Illegal value for KByte." + entry + " '" + cps
-                    + "'");
+                    + '\'');
             }
         }
         return maxCps;
@@ -355,14 +352,16 @@ public class TransferManager extends PFComponent {
     }
 
     public BandwidthLimiter getOutputLimiter(ConnectionHandler handler) {
-        if (handler.isOnLAN())
+        if (handler.isOnLAN()) {
             return sharedLANOutputHandler;
+        }
         return sharedWANOutputHandler;
     }
 
     public BandwidthLimiter getInputLimiter(ConnectionHandler handler) {
-        if (handler.isOnLAN())
+        if (handler.isOnLAN()) {
             return sharedLANInputHandler;
+        }
         return sharedWANInputHandler;
     }
 
@@ -476,7 +475,7 @@ public class TransferManager extends PFComponent {
     void downloadbroken(Download download, TransferProblem problem,
         String problemInfo)
     {
-        logWarning("Download broken: " + download + " "
+        logWarning("Download broken: " + download + ' '
             + (problem == null ? "" : problem) + ": " + problemInfo);
 
         download.setTransferProblem(problem);
@@ -505,7 +504,7 @@ public class TransferManager extends PFComponent {
         // Ensure shutdown
         upload.shutdown();
         boolean transferFound = false;
-        logWarning("Upload broken: " + upload + " "
+        logWarning("Upload broken: " + upload + ' '
             + (transferProblem == null ? "" : transferProblem) + ": "
             + problemInformation);
         uploadsLock.lock();
@@ -663,7 +662,7 @@ public class TransferManager extends PFComponent {
                 }
             } while (abortedUL);
 
-            assert getActiveUploads(fInfo).size() == 0;
+            assert getActiveUploads(fInfo).isEmpty();
 
             if (!folder.scanDownloadFile(fInfo, dlManager.getTempFile())) {
                 logSevere("Scanning of completed file failed: "
@@ -682,7 +681,8 @@ public class TransferManager extends PFComponent {
         // Auto cleanup of Downloads
 
         if (ConfigurationEntry.DOWNLOADS_AUTO_CLEANUP
-            .getValueBoolean(getController()))
+            .getValueBoolean(getController()) && PreferencesEntry
+                .AUTO_CLEANUP_FREQUENCY.getValueInt(getController()) == 0)
         {
             if (isFiner()) {
                 logFiner("Auto-cleaned " + dlManager.getSources());
@@ -804,7 +804,8 @@ public class TransferManager extends PFComponent {
 
             // Auto cleanup of uploads
             if (ConfigurationEntry.UPLOADS_AUTO_CLEANUP
-                .getValueBoolean(getController()))
+                .getValueBoolean(getController()) && PreferencesEntry
+                    .AUTO_CLEANUP_FREQUENCY.getValueInt(getController()) == 0)
             {
                 if (isFiner()) {
                     logFiner("Auto-cleaned " + transfer);
@@ -2551,8 +2552,8 @@ public class TransferManager extends PFComponent {
 
         String memberInfo = "";
         if (member != null) {
-            memberInfo = ((download) ? " from " : " to ") + "'"
-                + member.getNick() + "'";
+            memberInfo = ((download) ? " from " : " to ") + '\''
+                + member.getNick() + '\'';
         }
 
         String cpsStr = "-";
@@ -2560,9 +2561,9 @@ public class TransferManager extends PFComponent {
         // printout rate only if dl last longer than 0,5 s
         if (took > 1000) {
             double cps = fInfo.getSize();
-            cps = cps / 1024;
-            cps = cps / took;
-            cps = cps * 1000;
+            cps /= 1024;
+            cps /= took;
+            cps *= 1000;
             synchronized (CPS_FORMAT) {
                 cpsStr = CPS_FORMAT.format(cps);
             }

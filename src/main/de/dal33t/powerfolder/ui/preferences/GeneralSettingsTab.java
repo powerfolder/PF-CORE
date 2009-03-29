@@ -128,7 +128,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         locationField = createLocationField();
 
         autoCleanupSlider = new JSlider(0, 30, PreferencesEntry.
-                AUTO_CLEANUP_FREQUENCE.getValueInt(getController()));
+                AUTO_CLEANUP_FREQUENCY.getValueInt(getController()));
         autoCleanupSlider.setMajorTickSpacing(5);
         autoCleanupSlider.setMinorTickSpacing(1);
 
@@ -313,7 +313,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             getController().changeNick(nickField.getText(), false);
         }
 
-        PreferencesEntry.AUTO_CLEANUP_FREQUENCE.setValue(getController(),
+        PreferencesEntry.AUTO_CLEANUP_FREQUENCY.setValue(getController(),
                 autoCleanupSlider.getValue());
 
         // setAdvanced
