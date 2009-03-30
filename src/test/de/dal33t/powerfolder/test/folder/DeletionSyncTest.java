@@ -91,11 +91,18 @@ public class DeletionSyncTest extends TwoControllerTestCase {
 
         // Let Lisa download the file via auto-dl and broadcast the change to
         // bart
-        TestHelper.waitForCondition(10, new Condition() {
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
             public boolean reached() {
                 return getFolderAtLisa().getKnownFilesCount() >= 1
-                    && lisaAtBart.getLastFileListAsCollection(
-                        getFolderAtLisa().getInfo()).size() >= 1;
+                    && getFolderAtBart().getFilesAsCollection(lisaAtBart)
+                        .size() >= 1;
+            }
+
+            public String message() {
+                return "Know files at lisa: "
+                    + getFolderAtLisa().getKnownFilesCount()
+                    + ", Lisas filelist at Bart: "
+                    + getFolderAtBart().getFilesAsCollection(lisaAtBart).size();
             }
         });
         assertEquals(1, getFolderAtLisa().getKnownFiles().iterator().next()
@@ -127,9 +134,8 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         // Now let Bart re-download the file! -> Manually triggerd
         FileInfo testfInfoBart = getFolderAtBart().getKnownFiles().iterator()
             .next();
-        assertTrue(""
-            + lisaAtBart.getLastFileListAsCollection(getFolderAtBart()
-                .getInfo()), lisaAtBart.hasFile(testfInfoBart));
+        assertTrue("" + getFolderAtBart().getFilesAsCollection(lisaAtBart),
+            lisaAtBart.hasFile(testfInfoBart));
         assertTrue(lisaAtBart.isCompleteyConnected());
         List<Member> sources = getContollerBart().getTransferManager()
             .getSourcesFor(testfInfoBart);
@@ -477,8 +483,8 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         TestHelper.waitForCondition(10, new Condition() {
             public boolean reached() {
                 return getFolderAtLisa().getKnownFilesCount() >= 1
-                    && lisaAtBart.getLastFileListAsCollection(
-                        getFolderAtLisa().getInfo()).size() >= 1;
+                    && getFolderAtBart().getFilesAsCollection(lisaAtBart)
+                        .size() >= 1;
             }
         });
         assertEquals(1, getFolderAtLisa().getKnownFiles().iterator().next()
@@ -518,9 +524,14 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         assertTrue(getFolderAtBart().getKnownFiles().iterator().next()
             .isDeleted());
 
-        TestHelper.waitForCondition(100, new Condition() {
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
             public boolean reached() {
                 return getFolderAtLisa().getKnownFilesCount() == 1;
+            }
+
+            public String message() {
+                return "Know files at lisa: "
+                    + getFolderAtLisa().getKnownFilesCount();
             }
         });
         assertTrue(getFolderAtLisa().getKnownFiles().iterator().next()
