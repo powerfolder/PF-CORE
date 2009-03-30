@@ -644,6 +644,7 @@ public class Debug {
             File file = new File(LoggingManager.getDebugDir(), c
                 .getConfigName()
                 + ".netstat.csv");
+            file.getParentFile().mkdirs();
             fOut = new BufferedOutputStream(new FileOutputStream(file, true));
             Date now = new Date();
             String statLine = Format.getFullDateFormat().format(now) + ';'
