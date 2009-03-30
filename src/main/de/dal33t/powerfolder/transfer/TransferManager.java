@@ -28,7 +28,15 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.text.DecimalFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -37,7 +45,12 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import de.dal33t.powerfolder.*;
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Constants;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
@@ -276,7 +289,7 @@ public class TransferManager extends PFComponent {
         loadDownloads();
 
         getController().scheduleAndRepeat(new PartialTransferStatsUpdater(),
-                PARTIAL_TRANSFER_DELAY, PARTIAL_TRANSFER_DELAY);
+            PARTIAL_TRANSFER_DELAY, PARTIAL_TRANSFER_DELAY);
 
         started = true;
         logFine("Started");
@@ -681,8 +694,9 @@ public class TransferManager extends PFComponent {
         // Auto cleanup of Downloads
 
         if (ConfigurationEntry.DOWNLOADS_AUTO_CLEANUP
-            .getValueBoolean(getController()) && PreferencesEntry
-                .AUTO_CLEANUP_FREQUENCY.getValueInt(getController()) == 0)
+            .getValueBoolean(getController())
+            && PreferencesEntry.AUTO_CLEANUP_FREQUENCY
+                .getValueInt(getController()) == 0)
         {
             if (isFiner()) {
                 logFiner("Auto-cleaned " + dlManager.getSources());
@@ -804,8 +818,9 @@ public class TransferManager extends PFComponent {
 
             // Auto cleanup of uploads
             if (ConfigurationEntry.UPLOADS_AUTO_CLEANUP
-                .getValueBoolean(getController()) && PreferencesEntry
-                    .AUTO_CLEANUP_FREQUENCY.getValueInt(getController()) == 0)
+                .getValueBoolean(getController())
+                && PreferencesEntry.AUTO_CLEANUP_FREQUENCY
+                    .getValueInt(getController()) == 0)
             {
                 if (isFiner()) {
                     logFiner("Auto-cleaned " + transfer);
@@ -2239,9 +2254,13 @@ public class TransferManager extends PFComponent {
                         man.init(true);
                         completedDownloads.add(man);
                     }
-                    download.setDownloadManager(man);
-                    if (man.canAddSource(download.getPartner())) {
-                        man.addSource(download);
+                    // FIXME The UI shouldn't access Downloads directly anyway,
+                    // there should be a representation suitable for that.
+                    if (download.getPartner() != null) {
+                        download.setDownloadManager(man);
+                        if (man.canAddSource(download.getPartner())) {
+                            man.addSource(download);
+                        }
                     }
                 } else if (download.isPending()) {
                     enquePendingDownload(download);
@@ -2644,26 +2663,27 @@ public class TransferManager extends PFComponent {
     }
 
     /**
-     * This class regularly checks to see if any downloads or uploads are active,
-     * and updates folder statistics with partial down/upload byte count. 
+     * This class regularly checks to see if any downloads or uploads are
+     * active, and updates folder statistics with partial down/upload byte
+     * count.
      */
     private class PartialTransferStatsUpdater extends TimerTask {
         public void run() {
-            FolderRepository folderRepository =
-                    getController().getFolderRepository();
+            FolderRepository folderRepository = getController()
+                .getFolderRepository();
             for (FileInfo fileInfo : dlManagers.keySet()) {
                 DownloadManager downloadManager = dlManagers.get(fileInfo);
-                Folder folder =
-                        folderRepository.getFolder(fileInfo.getFolderInfo());
+                Folder folder = folderRepository.getFolder(fileInfo
+                    .getFolderInfo());
                 folder.getStatistic().putPartialSyncStat(fileInfo,
-                        getController().getMySelf(),
-                        downloadManager.getCounter().getBytesTransferred());
+                    getController().getMySelf(),
+                    downloadManager.getCounter().getBytesTransferred());
             }
             for (Upload upload : activeUploads) {
                 Folder folder = upload.getFile().getFolder(folderRepository);
                 folder.getStatistic().putPartialSyncStat(upload.getFile(),
-                        upload.getPartner(),
-                        upload.getCounter().getBytesTransferred());
+                    upload.getPartner(),
+                    upload.getCounter().getBytesTransferred());
             }
         }
     }
