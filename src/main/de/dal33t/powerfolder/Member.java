@@ -23,7 +23,6 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -42,7 +41,44 @@ import de.dal33t.powerfolder.event.AskForFriendshipEvent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.message.*;
+import de.dal33t.powerfolder.message.AbortDownload;
+import de.dal33t.powerfolder.message.AbortUpload;
+import de.dal33t.powerfolder.message.AddFriendNotification;
+import de.dal33t.powerfolder.message.DownloadQueued;
+import de.dal33t.powerfolder.message.FileChunk;
+import de.dal33t.powerfolder.message.FileList;
+import de.dal33t.powerfolder.message.FolderFilesChanged;
+import de.dal33t.powerfolder.message.FolderList;
+import de.dal33t.powerfolder.message.FolderRelatedMessage;
+import de.dal33t.powerfolder.message.HandshakeCompleted;
+import de.dal33t.powerfolder.message.Identity;
+import de.dal33t.powerfolder.message.IdentityReply;
+import de.dal33t.powerfolder.message.Invitation;
+import de.dal33t.powerfolder.message.KnownNodes;
+import de.dal33t.powerfolder.message.Message;
+import de.dal33t.powerfolder.message.MessageListener;
+import de.dal33t.powerfolder.message.NodeInformation;
+import de.dal33t.powerfolder.message.Notification;
+import de.dal33t.powerfolder.message.Ping;
+import de.dal33t.powerfolder.message.Pong;
+import de.dal33t.powerfolder.message.Problem;
+import de.dal33t.powerfolder.message.RelayedMessage;
+import de.dal33t.powerfolder.message.ReplyFilePartsRecord;
+import de.dal33t.powerfolder.message.RequestDownload;
+import de.dal33t.powerfolder.message.RequestFileList;
+import de.dal33t.powerfolder.message.RequestFilePartsRecord;
+import de.dal33t.powerfolder.message.RequestNodeInformation;
+import de.dal33t.powerfolder.message.RequestNodeList;
+import de.dal33t.powerfolder.message.RequestPart;
+import de.dal33t.powerfolder.message.ScanCommand;
+import de.dal33t.powerfolder.message.SearchNodeRequest;
+import de.dal33t.powerfolder.message.SettingsChange;
+import de.dal33t.powerfolder.message.SingleFileAccept;
+import de.dal33t.powerfolder.message.SingleFileOffer;
+import de.dal33t.powerfolder.message.StartUpload;
+import de.dal33t.powerfolder.message.StopUpload;
+import de.dal33t.powerfolder.message.TransferStatus;
+import de.dal33t.powerfolder.message.UDTMessage;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.net.InvalidIdentityException;
@@ -850,6 +886,9 @@ public class Member extends PFComponent implements Comparable<Member> {
             // folder he joined.
             getController().getFolderRepository().getFileRequestor()
                 .triggerFileRequesting(folder.getInfo());
+            if (folder.getSyncProfile().isSyncDeletion()) {
+                folder.syncRemoteDeletedFiles(false);
+            }
         }
 
         if (getController().isDebugReports()) {
@@ -1350,16 +1389,15 @@ public class Member extends PFComponent implements Comparable<Member> {
                 Convert.cleanFileList(getController(), changes.removed);
 
                 Integer nExpected = expectedListMessages.get(changes.folder);
-                // Correct filelist
-                Map<FileInfo, FileInfo> cachedFileList = getLastFileList0(changes.folder);
-                if (cachedFileList == null || nExpected == null) {
-                    logWarning("Received folder changes on "
+                if (nExpected == null) {
+                    logSevere("Received folder changes on "
                         + changes.folder.name
                         + ", but not received the full filelist");
                     return;
                 }
                 nExpected -= 1;
                 expectedListMessages.put(changes.folder, nExpected);
+                
                 TransferManager tm = getController().getTransferManager();
                 if (changes.added != null) {
                     for (int i = 0; i < changes.added.length; i++) {
@@ -1370,9 +1408,6 @@ public class Member extends PFComponent implements Comparable<Member> {
                             continue;
                             // #1411
                         }
-                        cachedFileList.remove(file);
-                        cachedFileList.put(file, file);
-
                         // file "changed" so if downloading break the
                         // download
                         if (isFiner()) {
@@ -1391,8 +1426,6 @@ public class Member extends PFComponent implements Comparable<Member> {
                             continue;
                             // #1411
                         }
-                        cachedFileList.remove(file);
-                        cachedFileList.put(file, file);
                         // file removed so if downloading break the download
                         if (isFiner()) {
                             logFiner("downloading removed file, breaking it! "
@@ -1400,11 +1433,6 @@ public class Member extends PFComponent implements Comparable<Member> {
                         }
                         tm.abortDownload(file, this);
                     }
-                }
-
-                if (targetFolder != null) {
-                    // Inform folder
-                    targetFolder.fileListChanged(this, changes);
                 }
 
                 if (isFine()) {
@@ -1416,6 +1444,11 @@ public class Member extends PFComponent implements Comparable<Member> {
                         logFine("Received folder change. Received " + (-msgs)
                             + " additional deltas. " + message);
                     }
+                }
+                
+                if (targetFolder != null) {
+                    // Inform folder
+                    targetFolder.fileListChanged(this, changes);
                 }
                 expectedTime = 250;
 
@@ -1807,17 +1840,6 @@ public class Member extends PFComponent implements Comparable<Member> {
     }
 
     /**
-     * Answers if user has a filelist for the folder
-     * 
-     * @param foInfo
-     *            the FolderInfo to check if there is a file list filelist for.
-     * @return true if user has a filelist for the folder
-     */
-    public boolean hasFileListFor(FolderInfo foInfo) {
-        return getLastFileList0(foInfo) != null;
-    }
-
-    /**
      * Answers if we received the complete filelist (+all nessesary deltas) on
      * that folder.
      * 
@@ -1826,10 +1848,6 @@ public class Member extends PFComponent implements Comparable<Member> {
      *         on that folder.
      */
     public boolean hasCompleteFileListFor(FolderInfo foInfo) {
-        Map<FileInfo, FileInfo> files = getLastFileList0(foInfo);
-        if (files == null) {
-            return false;
-        }
         if (expectedListMessages == null) {
             return false;
         }
@@ -1843,40 +1861,6 @@ public class Member extends PFComponent implements Comparable<Member> {
     }
 
     /**
-     * Answers the last filelist of a member/folder. Returns null if no filelist
-     * has been received yet. But may return empty collection.
-     * <p>
-     * Avoids temporary list creation by returning an (unmodifiable) reference
-     * to the keyset of the cached filelist.
-     * 
-     * @param foInfo
-     *            The folder to get the listlist for
-     * @return an collection unmodifieable containing the fileinfos.
-     */
-    public Collection<FileInfo> getLastFileListAsCollection(FolderInfo foInfo) {
-        Map<FileInfo, FileInfo> list = getLastFileList0(foInfo);
-        if (list == null) {
-            return null;
-        }
-        return Collections.unmodifiableCollection(list.keySet());
-    }
-
-    /**
-     * Removes the fileinfo from the cached filelist.
-     * 
-     * @param fInfo
-     * @return true if the fileinfo was removed
-     */
-    public boolean removeFileInfo(FileInfo fInfo) {
-        Reject.ifNull(fInfo, "FileInfo is null");
-        Map<FileInfo, FileInfo> list = getLastFileList0(fInfo.getFolderInfo());
-        if (list != null) {
-            return list.remove(fInfo) != null;
-        }
-        return false;
-    }
-
-    /**
      * Removes the list from the cached filelist.
      * 
      * @param foInfo
@@ -1885,27 +1869,6 @@ public class Member extends PFComponent implements Comparable<Member> {
     public boolean removeFileList(FolderInfo foInfo) {
         Reject.ifNull(foInfo, "FolderInfo is null");
         return lastFiles != null && lastFiles.remove(foInfo) != null;
-    }
-
-    /**
-     * Answers the last filelist of a member/folder May return null.
-     * 
-     * @param foInfo
-     *            The folder to get the listlist for
-     * @return A Map<FileInfo, FileInfo> for this folder (foInfo)
-     */
-    private Map<FileInfo, FileInfo> getLastFileList0(FolderInfo foInfo) {
-        FolderList list = getLastFolderList();
-        // FIXME: Check if node still on folder
-        if (list == null) {
-            // Node not on folder or did not send a folder list yet
-            // Thus we do not return any filelist
-            return null;
-        }
-        if (lastFiles == null) {
-            return null;
-        }
-        return lastFiles.get(foInfo);
     }
 
     /**
@@ -1976,20 +1939,15 @@ public class Member extends PFComponent implements Comparable<Member> {
         if (file == null) {
             throw new NullPointerException("File is null");
         }
-        if (isMySelf()) {
-            Folder folder = file.getFolder(getController()
-                .getFolderRepository());
-            if (folder == null) {
-                // Folder not joined, so we don't have the file.
-                return null;
-            }
-            return folder.getFile(file);
-        }
-        Map<FileInfo, FileInfo> list = getLastFileList0(file.getFolderInfo());
-        if (list == null) {
+        Folder folder = file.getFolder(getController().getFolderRepository());
+        if (folder == null) {
+            // Folder not joined, so we don't have the file.
             return null;
         }
-        return list.get(file);
+        if (isMySelf()) {
+            return folder.getDAO().find(file, null);
+        }
+        return folder.getDAO().find(file, getId());
     }
 
     /*

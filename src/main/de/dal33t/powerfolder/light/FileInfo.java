@@ -25,6 +25,7 @@ import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.logging.Logger;
 
@@ -46,7 +47,16 @@ import de.dal33t.powerfolder.util.Util;
  */
 public class FileInfo implements Serializable, DiskItem, Cloneable {
 
-    private static final Logger log = Logger.getLogger(FileInfo.class.getName());
+    public static final String PROPERTYNAME_FILE_NAME = "fileName";
+    public static final String PROPERTYNAME_SIZE = "size";
+    public static final String PROPERTYNAME_MODIFIED_BY = "modifiedBy";
+    public static final String PROPERTYNAME_LAST_MODIFIED_DATE = "lastModifiedDate";
+    public static final String PROPERTYNAME_VERSION = "version";
+    public static final String PROPERTYNAME_DELETED = "deleted";
+    public static final String PROPERTYNAME_FOLDER_INFO = "folderInfo";
+
+    private static final Logger log = Logger
+        .getLogger(FileInfo.class.getName());
     private static final long serialVersionUID = 100L;
 
     /** The filename (including the path from the base of the folder) */
@@ -128,6 +138,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
      * Gets filled with all important data from the other file info
      * 
      * @param other
+     * @deprecated Method is ugly shit. Main oppenent of TRAC #1924
      */
     public void copyFrom(FileInfo other) {
         this.fileName = other.fileName;
@@ -502,24 +513,16 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
                 "Unable to determine newest version. Folder not joined "
                     + getFolderInfo());
         }
-        FileInfo newestVersion = null;
+        ArrayList<String> domains = new ArrayList<String>();
         for (Member member : folder.getMembersAsCollection()) {
-            if (member.isCompleteyConnected() || member.isMySelf()) {
-                // Get remote file
-                FileInfo remoteFile = member.getFile(this);
-                if (remoteFile == null) {
-                    continue;
-                }
-                // Check if remote file in newer
-                if (newestVersion == null
-                    || remoteFile.isNewerThan(newestVersion))
-                {
-                    // log.finer("Newer version found at " + member);
-                    newestVersion = remoteFile;
-                }
+            if (member.isCompleteyConnected()) {
+                domains.add(member.getId());
+            } else if (member.isMySelf()) {
+                domains.add(null);
             }
         }
-        return newestVersion;
+        return folder.getDAO().findNewestVersion(this,
+            domains.toArray(new String[0]));
     }
 
     /**
@@ -613,7 +616,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
     /*
      * General
      */
-    
+
     /**
      * @param otherFile
      * @return true if the file name, version and date is equal.
@@ -693,9 +696,9 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
 
         return false;
     }
-
+    
     public String toString() {
-        return "[" + folderInfo.name + "]:/" + (deleted ? "(del) " : "")
+        return "[" + folderInfo.name + "]:" + (deleted ? "(del) /" : "/")
             + fileName;
     }
 
@@ -717,9 +720,6 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
      *            the stringbuilder to add the detail info to.
      */
     private final void toDetailString(StringBuilder str) {
-        if (deleted) {
-            str.append("(del) ");
-        }
         str.append(toString());
         str.append(", size: ");
         str.append(size);

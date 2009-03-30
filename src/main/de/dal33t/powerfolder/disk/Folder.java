@@ -40,14 +40,12 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TimerTask;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
@@ -56,6 +54,8 @@ import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.disk.dao.FileInfoDAO;
+import de.dal33t.powerfolder.disk.dao.FileInfoDAOHashMapImpl;
 import de.dal33t.powerfolder.event.FileNameProblemEvent;
 import de.dal33t.powerfolder.event.FileNameProblemHandler;
 import de.dal33t.powerfolder.event.FolderEvent;
@@ -105,6 +105,11 @@ public class Folder extends PFComponent {
     private File localBase;
 
     /**
+     * TRAC #1422: The DAO to store the FileInfos in.
+     */
+    private FileInfoDAO dao;
+
+    /**
      * Date of the last directory scan
      */
     private Date lastScan;
@@ -120,10 +125,9 @@ public class Folder extends PFComponent {
     private Date lastDBMaintenance;
 
     /**
-     * The internal database of locally known files. Contains FileInfo ->
-     * FileInfo
+     * Access lock to the DB/DAO.
      */
-    private ConcurrentMap<FileInfo, FileInfo> knownFiles;
+    private Object dbAccessLock = new Object();
 
     /** files that should(not) be downloaded in auto download */
     private DiskItemFilter diskItemFilter;
@@ -272,14 +276,13 @@ public class Folder extends PFComponent {
         }
 
         statistic = new FolderStatistic(this);
-        knownFiles = new ConcurrentHashMap<FileInfo, FileInfo>();
         members = new ConcurrentHashMap<Member, Member>();
 
         // put myself in membership
         join0(controller.getMySelf());
 
-        logFine("Opening " + toString() + " at '"
-            + localBase.getAbsolutePath() + '\'');
+        logFine("Opening " + toString() + " at '" + localBase.getAbsolutePath()
+            + '\'');
 
         FileFilter allExceptSystemDirFilter = new FileFilter() {
             public boolean accept(File pathname) {
@@ -298,6 +301,9 @@ public class Folder extends PFComponent {
         diskItemFilter.loadPatternsFrom(getSystemSubDir());
 
         transferPriorities = new TransferPriorities();
+
+        // Initialize the DAO
+        initFileInfoDAO();
 
         // Load folder database
         loadFolderDB(); // will also read the blacklist
@@ -334,7 +340,7 @@ public class Folder extends PFComponent {
         // Only on controller shutdown
         Persister persister = new Persister();
         getController().scheduleAndRepeat(
-                persister,
+            persister,
             1000L * ConfigurationEntry.FOLDER_DB_PERSIST_TIME
                 .getValueInt(getController()));
 
@@ -362,34 +368,21 @@ public class Folder extends PFComponent {
      */
     private void commitScanResult(ScanResult scanResult) {
         synchronized (scanLock) {
-            synchronized (knownFiles) {
+            synchronized (dbAccessLock) {
                 for (FileInfo newFileInfo : scanResult.getNewFiles()) {
-                    // add to the DB
-                    FileInfo localFile = knownFiles.putIfAbsent(newFileInfo,
-                        newFileInfo);
-                    // boolean reallyNew = localFile == null || localFile ==
-                    // newFileInfo;
-                    if (!(localFile == null || localFile == newFileInfo)) {
-                        // Probably this got into database thru download in the
-                        // meantime
-                        logSevere("Skipping add of new scanned file, already in db: "
-                            + localFile.toDetailString()
-                            + ", scanned: "
-                            + newFileInfo.toDetailString());
-                    } else {
-                        // Add file to folder
-                        currentInfo.addFile(newFileInfo);
-                        if (rootDirectory != null) {
-                            if (isFiner()) {
-                                logFiner("Adding "
-                                    + scanResult.getNewFiles().size()
-                                    + " to directory");
-                            }
-                            rootDirectory.add(getController().getMySelf(),
-                                newFileInfo);
+                    // Add file to folder
+                    currentInfo.addFile(newFileInfo);
+                    if (rootDirectory != null) {
+                        if (isFiner()) {
+                            logFiner("Adding "
+                                + scanResult.getNewFiles().size()
+                                + " to directory");
                         }
+                        rootDirectory.add(getController().getMySelf(),
+                            newFileInfo);
                     }
                 }
+                dao.store(null, scanResult.getNewFiles());
 
                 // deleted files
                 for (FileInfo deletedFileInfo : scanResult.getDeletedFiles()) {
@@ -399,7 +392,9 @@ public class Folder extends PFComponent {
                         .setVersion(deletedFileInfo.getVersion() + 1);
                     deletedFileInfo.setModifiedInfo(getController().getMySelf()
                         .getInfo(), new Date());
+
                 }
+                dao.store(null, scanResult.getDeletedFiles());
 
                 // restored files
                 for (FileInfo restoredFileInfo : scanResult.getRestoredFiles())
@@ -413,6 +408,7 @@ public class Folder extends PFComponent {
                     restoredFileInfo
                         .setVersion(restoredFileInfo.getVersion() + 1);
                 }
+                dao.store(null, scanResult.getRestoredFiles());
 
                 // changed files
                 for (FileInfo changedFileInfo : scanResult.getChangedFiles()) {
@@ -426,6 +422,7 @@ public class Folder extends PFComponent {
                     // DISABLED because of #644
                     // changedFileInfo.invalidateFilePartsRecord();
                 }
+                dao.store(null, scanResult.getChangedFiles());
             }
         }
 
@@ -581,7 +578,7 @@ public class Folder extends PFComponent {
     }
 
     /*
-     * Local disk/folder management *******************************************
+     * Local disk/folder management
      */
 
     /**
@@ -641,9 +638,8 @@ public class Folder extends PFComponent {
 
         // Prepare last modification date of tempfile.
         if (!tempFile.setLastModified(fInfo.getModifiedDate().getTime())) {
-            logSevere(
-                "Failed to set modified date on " + tempFile + " for "
-                    + fInfo.getModifiedDate().getTime());
+            logSevere("Failed to set modified date on " + tempFile + " for "
+                + fInfo.getModifiedDate().getTime());
             return false;
         }
 
@@ -680,12 +676,13 @@ public class Folder extends PFComponent {
                 }
             }
 
-            synchronized (knownFiles) {
+            synchronized (dbAccessLock) {
                 // Update internal database
                 FileInfo dbFile = getFile(fInfo);
                 if (dbFile != null) {
                     // Update database
                     dbFile.copyFrom(fInfo);
+                    dao.store(null, fInfo);
                     fileChanged(dbFile);
                 } else {
                     // File new, scan
@@ -723,7 +720,8 @@ public class Folder extends PFComponent {
         }
 
         // #1249
-        if (!knownFiles.isEmpty() && (OSUtil.isMacOS() || OSUtil.isLinux())) {
+        if (getKnownFilesCount() > 0 && (OSUtil.isMacOS() || OSUtil.isLinux()))
+        {
             boolean inaccessible = localBase.list() == null
                 || localBase.list().length == 0 || !localBase.exists();
             if (inaccessible) {
@@ -734,8 +732,9 @@ public class Folder extends PFComponent {
             }
         }
         if (wasDeviceDisconnected && !deviceDisconnected
-            && knownFiles.isEmpty())
+            && getKnownFilesCount() == 0)
         {
+            initFileInfoDAO();
             // Try to load db from connected device now.
             loadFolderDB();
         }
@@ -888,7 +887,7 @@ public class Folder extends PFComponent {
      * Scans one file
      * <p>
      * Package protected because used by Recylcebin to tell, that file was
-     * restored
+     * restored.
      * 
      * @param fInfo
      *            the file to be scanned
@@ -952,13 +951,13 @@ public class Folder extends PFComponent {
         // First relink modified by memberinfo to
         // actual instance if available on nodemanager
         synchronized (scanLock) {
-            synchronized (knownFiles) {
+            synchronized (dbAccessLock) {
                 // link new file to our folder
                 fInfo.setFolderInfo(this.currentInfo);
                 if (!isKnown(fInfo)) {
                     if (isFiner()) {
-                        logFiner(
-                            fInfo + ", modified by: " + fInfo.getModifiedBy());
+                        logFiner(fInfo + ", modified by: "
+                            + fInfo.getModifiedBy());
                     }
                     // Update last - modified data
                     MemberInfo modifiedBy = fInfo.getModifiedBy();
@@ -978,6 +977,7 @@ public class Folder extends PFComponent {
                     }
 
                     addFile(fInfo);
+                    dao.store(null, fInfo);
 
                     // update directory
                     // don't do this in the server version
@@ -994,16 +994,19 @@ public class Folder extends PFComponent {
                     // fireEvent(new FolderChanged());
 
                     if (isFiner()) {
-                        logFiner(
-                            this.toString() + ": Local file scanned: "
-                                + fInfo.toDetailString());
+                        logFiner(this.toString() + ": Local file scanned: "
+                            + fInfo.toDetailString());
                     }
                     return true;
                 }
 
                 // Now process/check existing files
                 FileInfo dbFile = getFile(fInfo);
-                dbFile.syncFromDiskIfRequired(getController(), file);
+                boolean wasSyced = dbFile.syncFromDiskIfRequired(
+                    getController(), file);
+                if (wasSyced) {
+                    dao.store(null, dbFile);
+                }
                 if (isFiner()) {
                     logFiner("File already known: " + fInfo);
                 }
@@ -1036,8 +1039,8 @@ public class Folder extends PFComponent {
                 String neverShowAgainText = Translation
                     .getTranslation("general.neverAskAgain");
                 NeverAskAgainResponse response = DialogFactory.genericDialog(
-                    getController(), title, message,
-                    new String[]{Translation.getTranslation("general.ok")}, 0,
+                    getController(), title, message, new String[]{Translation
+                        .getTranslation("general.ok")}, 0,
                     GenericDialogType.INFO, neverShowAgainText);
                 if (response.isNeverAskAgain()) {
                     PreferencesEntry.FILE_NAME_CHECK.setValue(getController(),
@@ -1099,15 +1102,11 @@ public class Folder extends PFComponent {
         // Add to this folder
         fInfo.setFolderInfo(currentInfo);
 
-        FileInfo old = knownFiles.put(fInfo, fInfo);
-
         TransferPriority prio = TransferPriority.NORMAL;
 
-        if (old != null) {
-            prio = transferPriorities.getPriority(old);
-            // Remove old file from info
-            currentInfo.removeFile(old);
-        }
+        prio = transferPriorities.getPriority(fInfo);
+        // Remove old file from info
+        currentInfo.removeFile(fInfo);
 
         // logWarning("Adding " + fInfo.getClass() + ", removing " + old);
 
@@ -1122,7 +1121,7 @@ public class Folder extends PFComponent {
      * @return if this file is known to the internal db
      */
     public boolean isKnown(FileInfo fi) {
-        return knownFiles.containsKey(fi);
+        return hasFile(fi);
     }
 
     /**
@@ -1156,6 +1155,9 @@ public class Folder extends PFComponent {
                 FileInfo localFile = getFile(fInfo);
                 folderChanged = localFile.syncFromDiskIfRequired(
                     getController(), diskFile);
+                if (folderChanged) {
+                    dao.store(null, localFile);
+                }
             }
         }
 
@@ -1196,6 +1198,22 @@ public class Folder extends PFComponent {
         }
     }
 
+    private void initFileInfoDAO() {
+        if (dao != null) {
+            // Stop old DAO
+            dao.stop();
+        }
+        dao = new FileInfoDAOHashMapImpl();
+
+        // File daoDir = new File(getSystemSubDir(), "db");
+        // try {
+        // dao = new FileInfoDAOLuceneImpl(getController(), daoDir);
+        // } catch (IOException e) {
+        // logSevere("Unable to initialize file info index database at "
+        // + daoDir);
+        // }
+    }
+
     /**
      * Loads the folder database from disk
      * 
@@ -1219,8 +1237,7 @@ public class Folder extends PFComponent {
                 FileInfo[] files = (FileInfo[]) in.readObject();
                 Convert.cleanMemberInfos(getController().getNodeManager(),
                     files);
-                synchronized (knownFiles) {
-                    knownFiles.clear();
+                synchronized (dbAccessLock) {
                     for (FileInfo fileInfo : files) {
                         if (fileInfo.getName().contains(
                             Constants.POWERFOLDER_SYSTEM_SUBDIR))
@@ -1228,9 +1245,9 @@ public class Folder extends PFComponent {
                             // Skip #1411
                             continue;
                         }
-                        // scanFile(fileInfo);
                         addFile(fileInfo);
                     }
+                    dao.store(null, files);
                 }
 
                 // read them always ..
@@ -1334,6 +1351,7 @@ public class Folder extends PFComponent {
         if (dirty) {
             persist();
         }
+        dao.stop();
         if (diskItemFilter.isDirty()) {
             diskItemFilter.savePatternsTo(getSystemSubDir());
         }
@@ -1355,8 +1373,8 @@ public class Folder extends PFComponent {
         File dbFileBackup = new File(getSystemSubDir(), DB_BACKUP_FILENAME);
         try {
             FileInfo[] files;
-            synchronized (knownFiles) {
-                files = knownFiles.keySet().toArray(new FileInfo[knownFiles.keySet().size()]);
+            synchronized (dbAccessLock) {
+                files = dao.findAll(null).toArray(new FileInfo[0]);
             }
             if (dbFile.exists()) {
                 if (!dbFile.delete()) {
@@ -1421,7 +1439,7 @@ public class Folder extends PFComponent {
     }
 
     private boolean maintainFolderDBrequired() {
-        if (knownFiles.isEmpty()) {
+        if (getKnownFilesCount() == 0) {
             return false;
         }
         if (lastDBMaintenance == null) {
@@ -1445,14 +1463,14 @@ public class Folder extends PFComponent {
             - 1000L
             * ConfigurationEntry.MAX_FILEINFO_DELETED_AGE_SECONDS
                 .getValueInt(getController());
-        int nFilesBefore = knownFiles.size();
+        int nFilesBefore = getKnownFilesCount();
         if (isFiner()) {
             logFiner("Maintaining folder db, known files: " + nFilesBefore
                 + ". Expiring deleted files older than "
                 + new Date(removeBeforeDate));
         }
         int expired = 0;
-        for (FileInfo file : knownFiles.values()) {
+        for (FileInfo file : dao.findAll(null)) {
             if (!file.isDeleted()) {
                 continue;
             }
@@ -1462,13 +1480,13 @@ public class Folder extends PFComponent {
                     continue;
                 }
                 expired++;
-                knownFiles.remove(file);
-
+                // Remove
+                dao.delete(null, file);
                 if (rootDirectory != null) {
                     rootDirectory.removeFileInfo(file);
                 }
                 for (Member member : members.values()) {
-                    member.removeFileInfo(file);
+                    dao.delete(member.getId(), file);
                 }
                 logFine("FileInfo expired: " + file.toDetailString());
             }
@@ -1583,8 +1601,8 @@ public class Folder extends PFComponent {
         syncProfile = aSyncProfile;
 
         // Store on disk
-        String md5 =
-                new String(Util.encodeHex(Util.md5(currentInfo.id.getBytes())));
+        String md5 = new String(Util.encodeHex(Util.md5(currentInfo.id
+            .getBytes())));
         String syncProfKey = FOLDER_SETTINGS_PREFIX_V4 + md5
             + FOLDER_SETTINGS_SYNC_PROFILE;
         getController().getConfig()
@@ -1656,7 +1674,7 @@ public class Folder extends PFComponent {
     }
 
     /*
-     * Member managing methods ************************************************
+     * Member managing methods
      */
     /**
      * Joins a member to the folder,
@@ -1761,9 +1779,8 @@ public class Folder extends PFComponent {
      */
     public void syncRemoteDeletedFiles(boolean force) {
         if (isFiner()) {
-            logFiner(
-                "Deleting files, which are deleted by friends. con-members: "
-                    + Arrays.asList(getConnectedMembers()));
+            logFiner("Deleting files, which are deleted by friends. con-members: "
+                + Arrays.asList(getConnectedMembers()));
         }
 
         List<FileInfo> removedFiles = new ArrayList<FileInfo>();
@@ -1774,8 +1791,7 @@ public class Folder extends PFComponent {
                 continue;
             }
 
-            Collection<FileInfo> fileList = member
-                .getLastFileListAsCollection(currentInfo);
+            Collection<FileInfo> fileList = getFilesAsCollection(member);
             if (fileList == null) {
                 continue;
             }
@@ -1810,6 +1826,7 @@ public class Folder extends PFComponent {
                 // Add to local file to database if was deleted on remote
                 if (localFile == null) {
                     addFile(remoteFile);
+                    dao.store(null, remoteFile);
                     localFile = getFile(remoteFile);
                     // File has been marked as removed at our side
                     removedFiles.add(localFile);
@@ -1820,20 +1837,18 @@ public class Folder extends PFComponent {
                 File localCopy = localFile.getDiskFile(getController()
                     .getFolderRepository());
                 if (!localFile.inSyncWithDisk(localCopy)) {
-                    logFine(
-                        "Not deleting file from member " + member
-                            + ", local file not in sync with disk: "
-                            + localFile.toDetailString() + " at "
-                            + localCopy.getAbsolutePath());
+                    logFine("Not deleting file from member " + member
+                        + ", local file not in sync with disk: "
+                        + localFile.toDetailString() + " at "
+                        + localCopy.getAbsolutePath());
                     recommendScanOnNextMaintenance();
                     continue;
                 }
 
                 if (isFine()) {
-                    logFine(
-                        "File was deleted by " + member + ", deleting local: "
-                            + localFile.toDetailString() + " at "
-                            + localCopy.getAbsolutePath());
+                    logFine("File was deleted by " + member
+                        + ", deleting local: " + localFile.toDetailString()
+                        + " at " + localCopy.getAbsolutePath());
                 }
 
                 // Abort transfers on file.
@@ -1852,6 +1867,7 @@ public class Folder extends PFComponent {
 
                 // File has been removed
                 removedFiles.add(localFile);
+                dao.store(null, localFile);
             }
         }
 
@@ -1868,7 +1884,7 @@ public class Folder extends PFComponent {
             broadcastMessages(changes);
         }
     }
-    
+
     /**
      * Broadcasts a message through the folder
      * 
@@ -1953,6 +1969,14 @@ public class Folder extends PFComponent {
      * @param newList
      */
     public void fileListChanged(Member from, FileList newList) {
+        if (shutdown) {
+            return;
+        }
+
+        // Update DAO
+        dao.deleteDomain(from.getId());
+        dao.store(from.getId(), newList.files);
+
         // logFine(
         // "New Filelist received from " + from + " #files: "
         // + newList.files.length);
@@ -1993,16 +2017,18 @@ public class Folder extends PFComponent {
      * @param from
      * @param changes
      */
-    public void fileListChanged(Member from,
-        FolderFilesChanged changes)
-    {
-        // logFine("File changes received from " + from);
+    public void fileListChanged(Member from, FolderFilesChanged changes) {
+        if (shutdown) {
+            return;
+        }
 
         // Try to find same files
         if (changes.added != null) {
+            dao.store(from.getId(), changes.added);
             findSameFiles(from, Arrays.asList(changes.added));
         }
         if (changes.removed != null) {
+            dao.store(from.getId(), changes.removed);
             findSameFiles(from, Arrays.asList(changes.removed));
         }
 
@@ -2088,29 +2114,27 @@ public class Folder extends PFComponent {
             logFiner("Triing to find same files in remote list with "
                 + remoteFileInfos.size() + " files from " + remotePeer);
         }
-        boolean checkForFilenameProblems = OSUtil.isWindowsSystem();
-        Map<String, FileInfo> problemCanidates = new HashMap<String, FileInfo>();
+
         for (FileInfo remoteFileInfo : remoteFileInfos) {
             FileInfo localFileInfo = getFile(remoteFileInfo);
             if (localFileInfo == null) {
-                if (checkForFilenameProblems) {
-                    // Possible check canidate for case-problem file matching
-                    problemCanidates.put(remoteFileInfo.getLowerCaseName(),
-                        remoteFileInfo);
-                }
                 continue;
             }
+
             if (localFileInfo.isDeleted() || remoteFileInfo.isDeleted()) {
                 continue;
             }
+
+            boolean fileSizeSame = localFileInfo.getSize() == remoteFileInfo
+                .getSize();
+            boolean dateSame = Util.equalsFileDateCrossPlattform(localFileInfo
+                .getModifiedDate(), remoteFileInfo.getModifiedDate());
+            boolean fileCaseSame = localFileInfo.getName().equals(
+                remoteFileInfo.getName());
+
             if (localFileInfo.getVersion() < remoteFileInfo.getVersion()
                 && remoteFileInfo.getVersion() > 0)
             {
-                boolean fileSizeSame = localFileInfo.getSize() == remoteFileInfo
-                    .getSize();
-                boolean dateSame = Util.equalsFileDateCrossPlattform(
-                    localFileInfo.getModifiedDate(), remoteFileInfo
-                        .getModifiedDate());
                 // boolean localFileNewer = Util.isNewerFileDateCrossPlattform(
                 // localFileInfo.getModifiedDate(), remoteFileInfo
                 // .getModifiedDate());
@@ -2122,6 +2146,7 @@ public class Folder extends PFComponent {
                             + ". Taking over modification infos");
                     }
                     localFileInfo.copyFrom(remoteFileInfo);
+                    dao.store(null, localFileInfo);
                     // FIXME That might produce a LOT of traffic! Single update
                     // message per file! This also might intefere with FileList
                     // exchange at beginning of communication
@@ -2143,44 +2168,45 @@ public class Folder extends PFComponent {
                 // // exchange at beginning of communication
                 // fileChanged(localFileInfo);
                 // }
+            } else if (!fileCaseSame && dateSame && fileSizeSame) {
+                if (localFileInfo.getName().compareTo(remoteFileInfo.getName()) <= 0)
+                {
+                    // Skip this fileinfo. Compare by name is performed
+                    // to ensure that the FileInfo with the greatest
+                    // lexographic index is taken. This is a
+                    // deterministic rule to keep file db repos in sync
+                    // among peers.
+
+                    if (isFine()) {
+                        logFine("Found identical file remotely with diffrent name-case: local "
+                            + localFileInfo.toDetailString()
+                            + " remote: "
+                            + remoteFileInfo.toDetailString()
+                            + ". Taking over all infos");
+                    }
+
+                    synchronized (dbAccessLock) {
+                        // FIXME: Ugly. FileInfo needs to be removed add
+                        // re-added to Map since filename is the key and
+                        // this is diffrent in this case
+                        // knownFiles.remove(localFileInfo);
+                        // Copy over
+                        localFileInfo.copyFrom(remoteFileInfo);
+                        // Re-Add and index
+                        addFile(localFileInfo);
+                        dao.store(null, localFileInfo);
+                    }
+
+                    // FIXME That might produce a LOT of traffic! Single
+                    // update
+                    // message per file! This also might intefere with
+                    // FileList
+                    // exchange at beginning of communication
+                    fileChanged(localFileInfo);
+                }
             }
+
         }
-
-        // logWarning("Canidates files: " + problemCanidates);
-
-        // Check for problematic files (TRAC #232)
-        // Disabled for windows #836
-        if (!checkForFilenameProblems || OSUtil.isWindowsSystem()) {
-            return;
-        }
-
-        Map<FileInfo, List<FilenameProblem>> problemFiles = new HashMap<FileInfo, List<FilenameProblem>>();
-        for (FileInfo localInfo : knownFiles.keySet()) {
-            FileInfo problemFileInfo = problemCanidates.get(localInfo
-                .getLowerCaseName());
-            if (problemFileInfo == null) {
-                continue;
-            }
-
-            // Duplicate problem!
-            problemFiles
-                .put(localInfo, Collections.singletonList(new FilenameProblem(
-                    localInfo, problemFileInfo)));
-        }
-
-        if (isWarning() && !problemFiles.isEmpty()) {
-            logWarning("Got " + problemFiles.size() + " problematic files");
-        }
-
-        FileNameProblemHandler handler = getController().getFolderRepository()
-            .getFileNameProblemHandler();
-        // logWarning("Problem handler: " + handler);
-        if (handler != null && !problemFiles.isEmpty()) {
-            handler.fileNameProblemsDetected(new FileNameProblemEvent(this,
-                problemFiles));
-        }
-
-        // logWarning("Handled problematic files: " + problemFiles);
     }
 
     /**
@@ -2192,8 +2218,7 @@ public class Folder extends PFComponent {
      */
     private void findSameFilesOnRemote() {
         for (Member member : getConnectedMembers()) {
-            Collection<FileInfo> lastFileList = member
-                .getLastFileListAsCollection(currentInfo);
+            Collection<FileInfo> lastFileList = getFilesAsCollection(member);
             if (lastFileList != null) {
                 findSameFiles(member, lastFileList);
             }
@@ -2240,12 +2265,12 @@ public class Folder extends PFComponent {
     private void writeFilelist() {
         // Write filelist to disk
         Debug.writeFileListCSV(getName(),
-            getController().getMySelf().getNick(), knownFiles.keySet(),
+            getController().getMySelf().getNick(), dao.findAll(null),
             "FileList of folder " + getName() + ", member " + this + ':');
     }
 
     /*
-     * Simple getters/exposing methods ****************************************
+     * Simple getters/exposing methods
      */
 
     /**
@@ -2291,7 +2316,7 @@ public class Folder extends PFComponent {
     }
 
     public int getKnownFilesCount() {
-        return knownFiles.size();
+        return dao.count(null);
     }
 
     public boolean isPreviewOnly() {
@@ -2308,8 +2333,7 @@ public class Folder extends PFComponent {
      * @return the internal file database as array. ONLY FOR TESTs
      */
     public FileInfo[] getKnowFilesAsArray() {
-        return knownFiles.keySet().toArray(
-            new FileInfo[knownFiles.keySet().size()]);
+        return dao.findAll(null).toArray(new FileInfo[0]);
     }
 
     /**
@@ -2319,12 +2343,12 @@ public class Folder extends PFComponent {
      *         hashmap (keySet).
      */
     public Collection<FileInfo> getKnownFiles() {
-        return Collections.unmodifiableCollection(knownFiles.keySet());
+        return dao.findAll(null);
     }
 
     /** package protected, used by FolderScanner */
     Map<FileInfo, FileInfo> getKnownFilesMap() {
-        return Collections.unmodifiableMap(knownFiles);
+        return dao.findAllAsMap(null);
     }
 
     /**
@@ -2339,7 +2363,7 @@ public class Folder extends PFComponent {
         synchronized (rootDirectoryInitLock) {
             if (rootDirectory == null) {
                 rootDirectory = Directory.buildDirsRecursive(getController()
-                    .getNodeManager().getMySelf(), knownFiles.values(), this);
+                    .getNodeManager().getMySelf(), dao.findAll(null), this);
             }
         }
         return rootDirectory;
@@ -2413,7 +2437,7 @@ public class Folder extends PFComponent {
         // add expeced files
         for (Member member : getMembersAsCollection()) {
             if (!member.isCompleteyConnected()) {
-                // disconnected
+                // disconnected or myself (=skip)
                 continue;
             }
             if (!member.hasCompleteFileListFor(currentInfo)) {
@@ -2479,14 +2503,9 @@ public class Folder extends PFComponent {
             throw new NullPointerException("Member is null");
         }
         if (member.isMySelf()) {
-            return getKnownFiles();
+            return dao.findAll(null);
         }
-        Collection<FileInfo> list = member
-            .getLastFileListAsCollection(currentInfo);
-        if (list == null) {
-            return null;
-        }
-        return list;
+        return dao.findAll(member.getId());
     }
 
     /**
@@ -2552,7 +2571,7 @@ public class Folder extends PFComponent {
      * @return if folder has this file
      */
     public boolean hasFile(FileInfo fInfo) {
-        return knownFiles.containsKey(fInfo);
+        return getFile(fInfo) != null;
     }
 
     /**
@@ -2560,7 +2579,7 @@ public class Folder extends PFComponent {
      * @return the local fileinfo instance
      */
     public FileInfo getFile(FileInfo fInfo) {
-        return knownFiles.get(fInfo);
+        return dao.find(fInfo, null);
     }
 
     /**
@@ -2612,6 +2631,13 @@ public class Folder extends PFComponent {
      */
     public FolderStatistic getStatistic() {
         return statistic;
+    }
+
+    /**
+     * @return the {@link FileInfoDAO}. TRAC #1422
+     */
+    public FileInfoDAO getDAO() {
+        return dao;
     }
 
     /**

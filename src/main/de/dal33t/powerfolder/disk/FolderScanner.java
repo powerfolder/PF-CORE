@@ -250,18 +250,16 @@ public class FolderScanner extends PFComponent {
                     // Is a directory. Remove all from remaining that are in
                     // that
                     // dir.
-                    logFiner(
-                        "Checking unreadable folder for files that were not scanned: "
-                            + dirPath);
-                    for (Iterator<FileInfo> it = remaining.keySet().iterator(); it
+                    logFiner("Checking unreadable folder for files that were not scanned: "
+                        + dirPath);
+                    for (Iterator<FileInfo> it = remaining.values().iterator(); it
                         .hasNext();)
                     {
                         FileInfo fInfo2 = it.next();
                         String locationInFolder = fInfo2.getLowerCaseName();
                         if (dirPath.endsWith(locationInFolder)) {
-                            logWarning(
-                                "Found file in unreadable folder. Unable to scan: "
-                                    + fInfo2);
+                            logWarning("Found file in unreadable folder. Unable to scan: "
+                                + fInfo2);
                             it.remove();
                             unableToScanFiles.add(fInfo2
                                 .getDiskFile(getController()
@@ -284,7 +282,7 @@ public class FolderScanner extends PFComponent {
             // Remaining files = deleted! But only if they are not already
             // flagged
             // as deleted or if the could not be scanned
-            for (Iterator<FileInfo> it = remaining.keySet().iterator(); it
+            for (Iterator<FileInfo> it = remaining.values().iterator(); it
                 .hasNext();)
             {
                 FileInfo fInfo = it.next();
@@ -302,8 +300,8 @@ public class FolderScanner extends PFComponent {
             // result.setNewFiles(newFiles);
             // FIX for Mac OS X. empty keyset causes problems.
             synchronized (remaining) {
-                currentScanResult.deletedFiles.addAll(!remaining.keySet()
-                    .isEmpty() ? remaining.keySet() : Collections.EMPTY_LIST);
+                currentScanResult.deletedFiles.addAll(!remaining.values()
+                    .isEmpty() ? remaining.values() : Collections.EMPTY_LIST);
             }
             // result.setMovedFiles(moved);
             // result.setProblemFiles(problemFiles);
@@ -588,6 +586,19 @@ public class FolderScanner extends PFComponent {
         // }
 
         FileInfo exists = remaining.remove(fInfo);
+        if (exists == null && OSUtil.isWindowsSystem()) {
+            // Try harder, same file with the
+            for (FileInfo otherFInfo : remaining.values()) {
+                if (otherFInfo.getName().equalsIgnoreCase(filename)) {
+                    logWarning("Found local diskfile with diffrent name-case in db. file: "
+                        + fileToScan.getAbsolutePath()
+                        + ", dbFile: "
+                        + otherFInfo.toDetailString());
+                    remaining.remove(otherFInfo);
+                    exists = otherFInfo;
+                }
+            }
+        }
 
         if (exists != null) {// file was known
             if (exists.isDeleted()) {
