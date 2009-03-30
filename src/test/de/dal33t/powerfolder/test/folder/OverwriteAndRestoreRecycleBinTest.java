@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id: AddLicenseHeader.java 4282 2008-06-16 03:25:09Z tot $
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id: AddLicenseHeader.java 4282 2008-06-16 03:25:09Z tot $
+ */
 package de.dal33t.powerfolder.test.folder;
 
 import java.io.File;
@@ -27,6 +27,7 @@ import de.dal33t.powerfolder.event.RecycleBinConfirmEvent;
 import de.dal33t.powerfolder.event.RecycleBinConfirmationHandler;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.test.Condition;
+import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 
@@ -36,8 +37,7 @@ import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 public class OverwriteAndRestoreRecycleBinTest extends TwoControllerTestCase {
 
     @Override
-    protected void setUp() throws Exception
-    {
+    protected void setUp() throws Exception {
         super.setUp();
         connectBartAndLisa();
         makeFriends();
@@ -54,7 +54,8 @@ public class OverwriteAndRestoreRecycleBinTest extends TwoControllerTestCase {
 
         scanFolder(getFolderAtBart());
 
-        final FileInfo fInfoBart = getFolderAtBart().getKnownFiles().iterator().next();
+        final FileInfo fInfoBart = getFolderAtBart().getKnownFiles().iterator()
+            .next();
 
         TestHelper.waitForCondition(10, new Condition() {
             public boolean reached() {
@@ -62,11 +63,12 @@ public class OverwriteAndRestoreRecycleBinTest extends TwoControllerTestCase {
             }
         });
         assertEquals(1, getFolderAtLisa().getKnownFilesCount());
-        final FileInfo fInfoLisa = getFolderAtLisa().getKnownFiles().iterator().next();
+        FileInfo fInfoLisa = getFolderAtLisa().getKnownFiles().iterator()
+            .next();
         final File testFileLisa = fInfoLisa.getDiskFile(getContollerLisa()
             .getFolderRepository());
 
-        assertTrue(fInfoLisa.isCompletelyIdentical(fInfoBart));
+        assertTrue(fInfoLisa.isVersionAndDateIdentical(fInfoBart));
         assertEquals(testFileBart.length(), testFileLisa.length());
 
         // overwrite file at Bart
@@ -78,7 +80,9 @@ public class OverwriteAndRestoreRecycleBinTest extends TwoControllerTestCase {
 
         TestHelper.waitForCondition(10, new Condition() {
             public boolean reached() {
-                return fInfoLisa.isCompletelyIdentical(fInfoBart)
+                FileInfo fInfoLisa = getFolderAtLisa().getKnownFiles()
+                    .iterator().next();
+                return fInfoLisa.isVersionAndDateIdentical(fInfoBart)
                     && (testFileBart.length() == testFileLisa.length());
             }
         });
@@ -103,10 +107,19 @@ public class OverwriteAndRestoreRecycleBinTest extends TwoControllerTestCase {
         assertEquals(0, binAtLisa.countAllRecycledFiles());
         TestHelper.waitMilliSeconds(500);
 
-        TestHelper.waitForCondition(10, new Condition() {
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
             public boolean reached() {
-                return fInfoLisa.isCompletelyIdentical(fInfoBart)
+                FileInfo fInfoLisa = getFolderAtLisa().getKnownFiles()
+                    .iterator().next();
+                return fInfoLisa.isVersionAndDateIdentical(fInfoBart)
                     && (testFileBart.length() == testFileLisa.length());
+            }
+
+            public String message() {
+                FileInfo fInfoLisa = getFolderAtLisa().getKnownFiles()
+                    .iterator().next();
+                return "Bart's file: " + fInfoBart.toDetailString()
+                    + ", Lisa's file: " + fInfoLisa.toDetailString();
             }
         });
     }
