@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.disk.SyncProfile;
@@ -39,6 +40,7 @@ import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
@@ -169,11 +171,30 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Let him scan the new content
         scanFolder(getFolderAtBart());
 
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+            public String message() {
+                return "Icoming files at lisa: "
+                    + getFolderAtLisa().getIncomingFiles(true, true).size();
+            }
+
+            public boolean reached() {
+                return getFolderAtLisa().getIncomingFiles(true, true).size() == 1;
+            }
+
+        });
         // Give them time to copy
-        TestHelper.waitForCondition(10, new Condition() {
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
             public boolean reached() {
                 return testFile1.length() == getFolderAtLisa().getKnownFiles()
                     .iterator().next().getSize();
+            }
+
+            public String message() {
+                return "Testfile length: "
+                    + testFile1.length()
+                    + ". Known size: "
+                    + getFolderAtLisa().getKnownFiles().iterator().next()
+                        .getSize();
             }
         });
 
@@ -357,7 +378,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(nFiles, getFolderAtBart().getKnownFilesCount());
 
         // Wait for copy (timeout 50)
-        TestHelper.waitForCondition(100, new Condition() {
+        TestHelper.waitForCondition(200, new Condition() {
             public boolean reached() {
                 return tm2Listener.downloadRequested >= nFiles
                     && tm2Listener.downloadCompleted >= nFiles
@@ -980,6 +1001,7 @@ public class FileTransferTest extends TwoControllerTestCase {
             setUp();
         }
     }
+
     public void testDeltaFileNotChanged() throws InterruptedException {
         ConfigurationEntry.USE_DELTA_ON_LAN
             .setValue(getContollerBart(), "true");
@@ -1013,7 +1035,7 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         assertTrue(TestHelper.compareFiles(fbart, flisa));
         disconnectBartAndLisa();
-        
+
         long oldByteCount = getFolderAtLisa().getStatistic()
             .getDownloadCounter().getBytesTransferred();
         Thread.sleep(3000);
@@ -1060,7 +1082,7 @@ public class FileTransferTest extends TwoControllerTestCase {
                     + bartListener.uploadAborted;
             }
         });
-        
+
         assertTrue(TestHelper.compareFiles(fbart, flisa));
         assertTrue("Failed: "
             + getFolderAtLisa().getStatistic().getDownloadCounter()
@@ -1070,9 +1092,8 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         TestHelper.assertIncompleteFilesGone(this);
     }
-    
-    public void testDeltaFileChanged() throws IOException
-    {
+
+    public void testDeltaFileChanged() throws IOException {
         ConfigurationEntry.USE_DELTA_ON_LAN.setValue(getContollerBart(),
             Boolean.TRUE.toString());
         ConfigurationEntry.USE_DELTA_ON_LAN.setValue(getContollerLisa(),
@@ -1106,7 +1127,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertTrue(TestHelper.compareFiles(fbart, flisa));
 
         disconnectBartAndLisa();
-        
+
         // Wait at least 3000ms
         TestHelper.waitMilliSeconds(3000);
         // Make a modification in bart's file
