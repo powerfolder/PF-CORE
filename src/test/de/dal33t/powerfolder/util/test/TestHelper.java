@@ -544,7 +544,7 @@ public class TestHelper {
         boolean silentModeBefore = folder.getController().isSilentMode();
         // Break scanning process
         folder.getController().setSilentMode(true);
-        TestHelper.waitForCondition(10, new Condition() {
+        TestHelper.waitForCondition(30, new Condition() {
             public boolean reached() {
                 return folder.getController().getFolderRepository()
                     .getCurrentlyMaintainingFolder() == null
