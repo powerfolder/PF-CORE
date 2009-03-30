@@ -2673,11 +2673,13 @@ public class TransferManager extends PFComponent {
                 .getFolderRepository();
             for (FileInfo fileInfo : dlManagers.keySet()) {
                 DownloadManager downloadManager = dlManagers.get(fileInfo);
-                Folder folder = folderRepository.getFolder(fileInfo
-                    .getFolderInfo());
-                folder.getStatistic().putPartialSyncStat(fileInfo,
-                    getController().getMySelf(),
-                    downloadManager.getCounter().getBytesTransferred());
+                if (downloadManager != null) {
+                    Folder folder = folderRepository.getFolder(fileInfo
+                        .getFolderInfo());
+                    folder.getStatistic().putPartialSyncStat(fileInfo,
+                        getController().getMySelf(),
+                        downloadManager.getCounter().getBytesTransferred());
+                }
             }
             for (Upload upload : activeUploads) {
                 Folder folder = upload.getFile().getFolder(folderRepository);
