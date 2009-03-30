@@ -1,31 +1,40 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id: AddLicenseHeader.java 4282 2008-06-16 03:25:09Z tot $
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id: AddLicenseHeader.java 4282 2008-06-16 03:25:09Z tot $
+ */
 package de.dal33t.powerfolder.test.folder;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.logging.Level;
 
 import org.apache.commons.io.filefilter.FileFilterUtils;
 
 import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.event.TransferManagerEvent;
+import de.dal33t.powerfolder.event.TransferManagerListener;
+import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.FiveControllerTestCase;
 import de.dal33t.powerfolder.util.test.TestHelper;
@@ -86,6 +95,61 @@ public class MirrorFolderTest extends FiveControllerTestCase {
 
         waitForCompletedDownloads(50, 0, 50, 50, 50);
         assertIdenticalTestFolder();
+    }
+
+    public void testMixedCaseSubdirs() throws IOException {
+        getFolderAtHomer().setSyncProfile(SyncProfile.NO_SYNC);
+        getFolderAtMarge().setSyncProfile(SyncProfile.NO_SYNC);
+        getFolderAtMaggie().setSyncProfile(SyncProfile.NO_SYNC);
+
+        LoggingManager.setConsoleLogging(Level.WARNING);
+        MyTransferManagerListener bartListener = new MyTransferManagerListener();
+        getContollerBart().getTransferManager().addListener(bartListener);
+        File fileAtBart = TestHelper.createRandomFile(getFolderAtBart()
+            .getLocalBase(), "subdirectory/sourcedir/Testfile.txt");
+        scanFolder(getFolderAtBart());
+        File fileAtLisa = new File(getFolderAtLisa().getLocalBase(),
+            "subdirectory/Sourcedir/Testfile.txt");
+        FileUtils.copyFile(fileAtBart, fileAtLisa);
+        fileAtLisa.setLastModified(fileAtBart.lastModified());
+        scanFolder(getFolderAtLisa());
+        connectSimpsons();
+
+        getContollerBart().getFolderRepository().getFileRequestor()
+            .triggerFileRequesting();
+        TestHelper.waitMilliSeconds(5);
+
+        assertEquals(0, getFolderAtBart().getIncomingFiles(true, true).size());
+        assertEquals(0, getFolderAtLisa().getIncomingFiles(true, true).size());
+        assertEquals(0, bartListener.uploadRequested);
+        assertEquals(0, bartListener.uploadStarted);
+        assertEquals(0, bartListener.uploadCompleted);
+        assertEquals(0, bartListener.uploadAborted);
+        assertEquals(0, bartListener.uploadBroken);
+        assertEquals(0, bartListener.downloadRequested);
+        assertEquals(0, bartListener.downloadQueued);
+        assertEquals(0, bartListener.downloadStarted);
+        assertEquals(0, bartListener.downloadCompleted);
+        assertEquals(0, bartListener.downloadAborted);
+        assertEquals(0, bartListener.downloadBroken);
+        assertEquals(0, bartListener.downloadsCompletedRemoved);
+
+        assertEquals(0, getContollerBart().getTransferManager()
+            .getCompletedDownloadsCollection().size());
+        assertEquals(0, getContollerLisa().getTransferManager()
+            .getCompletedDownloadsCollection().size());
+
+        FileInfo fBart = getFolderAtBart().getKnownFiles().iterator().next();
+        FileInfo fLisa = getFolderAtLisa().getKnownFiles().iterator().next();
+
+        assertEquals(0, fBart.getVersion());
+        assertFalse(fBart.isDeleted());
+        assertFileMatch(fileAtBart, fBart, getContollerBart());
+
+        assertEquals(0, fLisa.getVersion());
+        assertFalse(fLisa.isDeleted());
+        assertFileMatch(fileAtLisa, fLisa, getContollerLisa());
+
     }
 
     private void assertIdenticalTestFolder() {
@@ -195,5 +259,135 @@ public class MirrorFolderTest extends FiveControllerTestCase {
             File file = files[(int) (Math.random() * files.length)];
             file.delete();
         }
+    }
+
+    /**
+     * For checking the correct events.
+     */
+    private class MyTransferManagerListener implements TransferManagerListener {
+        public int downloadRequested;
+        public int downloadQueued;
+        public int pendingDownloadEnqued;
+        public int downloadStarted;
+        public int downloadBroken;
+        public int downloadAborted;
+        public int downloadCompleted;
+        public int downloadsCompletedRemoved;
+
+        public int uploadsCompletedRemoved;
+        public int uploadRequested;
+        public int uploadStarted;
+        public int uploadBroken;
+        public int uploadAborted;
+        public int uploadCompleted;
+
+        private TransferManagerEvent lastEvent;
+
+        public List<FileInfo> uploadsRequested = new ArrayList<FileInfo>();
+        public List<FileInfo> downloadsRequested = new ArrayList<FileInfo>();
+        private final boolean failOnSecondRequest;
+
+        public MyTransferManagerListener(boolean failOnSecondRequest) {
+            this.failOnSecondRequest = failOnSecondRequest;
+        }
+
+        public MyTransferManagerListener() {
+            failOnSecondRequest = false;
+        }
+
+        public synchronized void downloadRequested(TransferManagerEvent event) {
+            downloadRequested++;
+            if (downloadsRequested.contains(event.getFile())) {
+                if (failOnSecondRequest) {
+                    fail("Second download request for "
+                        + event.getFile().toDetailString());
+                } else {
+                    System.err.println("Second download request for "
+                        + event.getFile().toDetailString());
+                }
+            }
+            downloadsRequested.add(event.getFile());
+        }
+
+        public synchronized void downloadQueued(TransferManagerEvent event) {
+            downloadQueued++;
+            lastEvent = event;
+        }
+
+        public synchronized void downloadStarted(TransferManagerEvent event) {
+            downloadStarted++;
+            lastEvent = event;
+        }
+
+        public synchronized void downloadAborted(TransferManagerEvent event) {
+            downloadAborted++;
+        }
+
+        public synchronized void downloadBroken(TransferManagerEvent event) {
+            downloadBroken++;
+            lastEvent = event;
+        }
+
+        public synchronized void downloadCompleted(TransferManagerEvent event) {
+            downloadCompleted++;
+            lastEvent = event;
+        }
+
+        public synchronized void completedDownloadRemoved(
+            TransferManagerEvent event)
+        {
+            downloadsCompletedRemoved++;
+            lastEvent = event;
+        }
+
+        public synchronized void pendingDownloadEnqueud(
+            TransferManagerEvent event)
+        {
+            pendingDownloadEnqued++;
+            lastEvent = event;
+        }
+
+        public synchronized void uploadRequested(TransferManagerEvent event) {
+            uploadRequested++;
+            lastEvent = event;
+
+            if (uploadsRequested.contains(event.getFile())) {
+                System.err.println("Second upload request for "
+                    + event.getFile().toDetailString());
+            }
+            uploadsRequested.add(event.getFile());
+        }
+
+        public synchronized void uploadStarted(TransferManagerEvent event) {
+            uploadStarted++;
+            lastEvent = event;
+        }
+
+        public synchronized void uploadAborted(TransferManagerEvent event) {
+            uploadAborted++;
+            lastEvent = event;
+        }
+
+        public synchronized void uploadBroken(TransferManagerEvent event) {
+            uploadAborted++;
+            lastEvent = event;
+        }
+
+        public synchronized void uploadCompleted(TransferManagerEvent event) {
+            uploadCompleted++;
+            lastEvent = event;
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return false;
+        }
+
+        public synchronized void completedUploadRemoved(
+            TransferManagerEvent event)
+        {
+            uploadsCompletedRemoved++;
+            lastEvent = event;
+        }
+
     }
 }
