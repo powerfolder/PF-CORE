@@ -1,43 +1,46 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id: AddLicenseHeader.java 4282 2008-06-16 03:25:09Z tot $
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id: AddLicenseHeader.java 4282 2008-06-16 03:25:09Z tot $
+ */
 package de.dal33t.powerfolder.test.folder;
-
-import de.dal33t.powerfolder.disk.SyncProfile;
-import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.disk.FolderSettings;
-import de.dal33t.powerfolder.util.FileUtils;
-import de.dal33t.powerfolder.util.test.ControllerTestCase;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.FolderRepository;
+import de.dal33t.powerfolder.disk.FolderSettings;
+import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.test.ControllerTestCase;
+
 /**
- * This test checks that a folder can be moved for one location to another.
- * It moves a file from testFolder to testFolder2.
- * Tests functionality found in the HomeTab class.
+ * This test checks that a folder can be moved for one location to another. It
+ * moves a file from testFolder to testFolder2. Tests functionality found in the
+ * HomeTab class.
  */
 public class FolderMoveTest extends ControllerTestCase {
+    private Folder folder;
 
     /**
      * Creates test.txt and sub/test2.txt file2 to move.
+     * 
      * @throws Exception
      */
     public void setUp() throws Exception {
@@ -46,7 +49,8 @@ public class FolderMoveTest extends ControllerTestCase {
 
         // Setup a test folder; delete previous tests.
         setupTestFolder(SyncProfile.HOST_FILES, true);
-        File localBase = getFolder().getLocalBase();
+        folder = getFolder();
+        File localBase = folder.getLocalBase();
 
         // Create a test.txt file
         File testFile = new File(localBase, "test.txt");
@@ -70,16 +74,16 @@ public class FolderMoveTest extends ControllerTestCase {
         emptySub.mkdir();
         assertTrue(emptySub.exists());
 
-
-
         // Wrtie a test files.
         FileWriter writer = new FileWriter(testFile);
-        writer.write("This is the test text.\n\nl;fjk sdl;fkjs dfljkdsf ljds flsfjd lsjdf lsfjdoi;ureffd dshf\nhjfkluhgfidgh kdfghdsi8yt ribnv.,jbnfd kljhfdlkghes98o jkkfdgh klh8iesyt");
+        writer
+            .write("This is the test text.\n\nl;fjk sdl;fkjs dfljkdsf ljds flsfjd lsjdf lsfjdoi;ureffd dshf\nhjfkluhgfidgh kdfghdsi8yt ribnv.,jbnfd kljhfdlkghes98o jkkfdgh klh8iesyt");
         writer.close();
         writer = new FileWriter(testFile2);
-        writer.write("This is the test2 text.\n\nl;fjk sdl;fkjs dfljkdsf ljds flsfjd lsjdf lsfjdoi;ureffd dshf\nhjfkluhgfidgh kdfghdsi8yt ribnv.,jbnfd kljhfdlkghes98o jkkfdgh osdjft");
+        writer
+            .write("This is the test2 text.\n\nl;fjk sdl;fkjs dfljkdsf ljds flsfjd lsjdf lsfjdoi;ureffd dshf\nhjfkluhgfidgh kdfghdsi8yt ribnv.,jbnfd kljhfdlkghes98o jkkfdgh osdjft");
         writer.close();
-        scanFolder(getFolder());
+        scanFolder(folder);
 
         File testFolder3 = new File(localBase.getAbsolutePath() + '3');
         testFolder3.mkdir();
@@ -98,42 +102,43 @@ public class FolderMoveTest extends ControllerTestCase {
     }
 
     /**
-     * Tests that a valid move is passed by canMoveFiles.
-     * Test move goes okay.
+     * Tests that a valid move is passed by canMoveFiles. Test move goes okay.
      * Tests old dir emptied.
      */
     public void testFolderMove() {
 
         // Create new directories
         // .../ControllerBart/testFolder2
-        File testFolder2 = new File(getFolder().getLocalBase().getAbsolutePath() + '2');
+        File testFolder2 = new File(
+            folder.getLocalBase().getAbsolutePath() + '2');
         FolderRepository repository = getController().getFolderRepository();
 
         // Remove original folder from the folder repository.
-        repository.removeFolder(getFolder(), false);
+        repository.removeFolder(folder, false);
 
+        // Simulate tests done in HomeTab to check the folder can be moved.
+        File oldLocalBase = folder.getLocalBase();
         try {
-            // Create new folder
-            FolderSettings folderSettings =
-                    new FolderSettings(testFolder2,
-                            getFolder().getSyncProfile(),
-                            false, getFolder().isUseRecycleBin());
-
-            // Simulate tests done in HomeTab to check the folder can be moved.
-            File oldLocalBase = getFolder().getLocalBase();
-
-            // Move contents
-            repository.createFolder(getFolder().getInfo(), folderSettings);
-
-            // Move the folder.
+            // Move the contents.
             FileUtils.recursiveMove(oldLocalBase, testFolder2);
 
-            // The folder should have the test files.
-            assertEquals(2, getFolder().getKnownFilesCount());
-
             // The new location should contain the
-            // 1) .PowerFolder dir, 2) the test file, 3) sub dir and 4) emptySub dir.
+            // 1) .PowerFolder dir, 2) the test file, 3) sub dir and 4) emptySub
+            // dir.
             assertEquals(4, testFolder2.listFiles().length);
+
+            // Create new folder
+            FolderSettings folderSettings = new FolderSettings(testFolder2,
+                getFolder().getSyncProfile(), false, getFolder()
+                    .isUseRecycleBin());
+
+            // Move the folder
+            folder = repository.createFolder(folder.getInfo(), folderSettings);
+
+            scanFolder(folder);
+
+            // The folder should have the test files.
+            assertEquals(2, folder.getKnownFilesCount());
 
             // Sub dir should contain one file; test2.txt
             boolean foundTest2 = false;
