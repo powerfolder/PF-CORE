@@ -57,6 +57,7 @@ import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker;
 import de.dal33t.powerfolder.util.ui.UIPanel;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * The status bar on the lower side of the main window.
@@ -198,15 +199,15 @@ public class StatusBar extends PFUIComponent implements UIPanel {
         });
 
         sleepButton = new JButtonMini(Icons.SLEEP,
-                Translation.getTranslation("status_bar.sleep.tips"));
+                Translation
+            .getTranslation("status_bar.sleep.tips"));
         sleepButton.addActionListener(new MyActionListener());
 
-        getController().getSilentModeVM().addValueChangeListener(
-                new MyValueChangeListener());
+        getController().addPropertyChangeListener(
+            Controller.PROPERTY_SILENT_MODE, new MyValueChangeListener());
 
-        upStats = createTransferCounterLabel(
-            getController(), Icons.UPLOAD, Translation
-                .getTranslation("status.upload"), getController()
+        upStats = createTransferCounterLabel(getController(), Icons.UPLOAD,
+            Translation.getTranslation("status.upload"), getController()
                 .getTransferManager().getUploadCounter(), Translation
                 .getTranslation("status.upload.text"));
         upStats.addMouseListener(new MouseAdapter() {
@@ -440,17 +441,22 @@ public class StatusBar extends PFUIComponent implements UIPanel {
     }
 
     private class MyValueChangeListener implements PropertyChangeListener {
-
         public void propertyChange(PropertyChangeEvent evt) {
-            if (getController().isSilentMode()) {
-                sleepButton.setIcon(Icons.WAKE_UP);
-                sleepButton.setToolTipText(
-                        Translation.getTranslation("status_bar.no_sleep.tips"));
-            } else {
-                sleepButton.setIcon(Icons.SLEEP);
-                sleepButton.setToolTipText(
-                        Translation.getTranslation("status_bar.sleep.tips"));
-            }
+            // Move into EDT. Property change event might be called from
+            // anywhere, not just from EDT.
+            UIUtil.invokeLaterInEDT(new Runnable() {
+                public void run() {
+                    if (getController().isSilentMode()) {
+                        sleepButton.setIcon(Icons.WAKE_UP);
+                        sleepButton.setToolTipText(Translation
+                            .getTranslation("status_bar.no_sleep.tips"));
+                    } else {
+                        sleepButton.setIcon(Icons.SLEEP);
+                        sleepButton.setToolTipText(Translation
+                            .getTranslation("status_bar.sleep.tips"));
+                    }
+                }
+            });
         }
     }
 }

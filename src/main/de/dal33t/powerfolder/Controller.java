@@ -153,7 +153,7 @@ public class Controller extends PFComponent {
     /**
      * If running is silent mode
      */
-    private ValueModel silentModeVM; //Boolean
+    private boolean silentMode;
 
     /**
      * Contains the configuration for the update check
@@ -270,7 +270,6 @@ public class Controller extends PFComponent {
         invitationHandlers = new CopyOnWriteArrayList<InvitationHandler>();
         singleFileOfferHandlers = new CopyOnWriteArrayList<SingleFileOfferHandler>();
         warningHandlers = new CopyOnWriteArrayList<WarningHandler>();
-        silentModeVM = new ValueHolder(Boolean.FALSE);
     }
 
     /**
@@ -379,14 +378,13 @@ public class Controller extends PFComponent {
         logFine("Java: " + JavaVersion.systemVersion().toString() + " ("
             + System.getProperty("java.vendor") + ')');
         logFine("Current time: " + new Date());
-        
+
         // Init silentmode
-        silentModeVM.setValue(preferences.getBoolean("silentMode", false));
-        silentModeVM.addValueChangeListener(new MyPropertyChangeListener());
-        
+        silentMode = preferences.getBoolean("silentMode", false);
+
         // Initialize branding/preconfiguration of the client
         initDistribution();
-        
+
         // Load and set http proxy settings
         HTTPProxySettings.loadFromConfig(this);
         Debug.writeSystemProperties();
@@ -432,7 +430,7 @@ public class Controller extends PFComponent {
         }
         if (!isUIEnabled()) {
             // Disable silent mode
-            silentModeVM.setValue(false);
+            silentMode = false;
         }
         taskManager.start();
 
@@ -1136,16 +1134,28 @@ public class Controller extends PFComponent {
         return System.currentTimeMillis() - startTime.getTime();
     }
 
-    public ValueModel getSilentModeVM() {
-        return silentModeVM;
+    /**
+     *Sets the silent mode.
+     * 
+     * @param newSilentMode
+     */
+    public void setSilentMode(boolean newSilentMode) {
+        boolean oldValue = isSilentMode();
+        this.silentMode = newSilentMode;
+        if (newSilentMode) {
+            getFolderRepository().getFolderScanner().abortScan();
+        }
+        if (oldValue != newSilentMode) {
+            getTransferManager().updateSpeedLimits();
+        }
+        firePropertyChange(PROPERTY_SILENT_MODE, oldValue, newSilentMode);
     }
 
-    public void setSilentMode(boolean silentMode) {
-        silentModeVM.setValue(silentMode);
-    }
-
+    /**
+     * @return true if the controller is running is silent mode.
+     */
     public boolean isSilentMode() {
-        return (Boolean) silentModeVM.getValue();
+        return silentMode;
     }
 
     /**
@@ -2090,24 +2100,6 @@ public class Controller extends PFComponent {
     public void pushWarningEvent(WarningEvent event) {
         for (WarningHandler warningHandler : warningHandlers) {
             warningHandler.pushWarning(event);
-        }
-    }
-
-    /**
-     * Class to listen for changes to silentModeVM.
-     * <p>
-     * TODO Refactor this. Violates "Listener / Event usage" rule
-     * http://dev.powerfolder.com/projects/powerfolder/wiki/GeneralDevelopRules
-     */
-    private class MyPropertyChangeListener implements PropertyChangeListener {
-
-        public void propertyChange(PropertyChangeEvent evt) {
-            boolean silent = (Boolean) silentModeVM.getValue();
-            if (silent) {
-                getFolderRepository().getFolderScanner().abortScan();
-            }
-            getTransferManager().updateSpeedLimits();
-            firePropertyChange(PROPERTY_SILENT_MODE, !silent, silent);
         }
     }
 }
