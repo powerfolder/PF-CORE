@@ -1,37 +1,41 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id: Loggable.java 5457 2008-10-17 14:25:41Z harry $
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id: Loggable.java 5457 2008-10-17 14:25:41Z harry $
+ */
 package de.dal33t.powerfolder.util.logging;
 
-import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
+
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PFComponent;
 
 /**
- * This class provides generic logging functionality. Extend from this class
- * if possible, for simple logging methods. If you cannot extend from this,
- * add a static final Logger to your class.
+ * This class provides generic logging functionality. Extend from this class if
+ * possible, for simple logging methods. If you cannot extend from this, add a
+ * static final Logger to your class.
  */
 public abstract class Loggable {
 
     /** The class logger. */
     private transient Logger log;
-    
+
     /**
      * @return the name of the logger. by default uses the classname
      */
@@ -40,9 +44,9 @@ public abstract class Loggable {
     }
 
     /**
-     * Answers whether the logger level for this class is severe.
-     * Use to check whether it is worth assebling a message to log.
-     *
+     * Answers whether the logger level for this class is severe. Use to check
+     * whether it is worth assebling a message to log.
+     * 
      * @return
      */
     protected boolean isSevere() {
@@ -50,9 +54,9 @@ public abstract class Loggable {
     }
 
     /**
-     * Answers whether the logger level for this class is warning.
-     * Use to check whether it is worth assebling a message to log.
-     *
+     * Answers whether the logger level for this class is warning. Use to check
+     * whether it is worth assebling a message to log.
+     * 
      * @return
      */
     protected boolean isWarning() {
@@ -60,9 +64,9 @@ public abstract class Loggable {
     }
 
     /**
-     * Answers whether the logger level for this class is info.
-     * Use to check whether it is worth assebling a message to log.
-     *
+     * Answers whether the logger level for this class is info. Use to check
+     * whether it is worth assebling a message to log.
+     * 
      * @return
      */
     protected boolean isInfo() {
@@ -70,9 +74,9 @@ public abstract class Loggable {
     }
 
     /**
-     * Answers whether the logger level for this class is fine.
-     * Use to check whether it is worth assebling a message to log.
-     *
+     * Answers whether the logger level for this class is fine. Use to check
+     * whether it is worth assebling a message to log.
+     * 
      * @return
      */
     protected boolean isFine() {
@@ -80,9 +84,9 @@ public abstract class Loggable {
     }
 
     /**
-     * Answers whether the logger level for this class is finer.
-     * Use to check whether it is worth assebling a message to log.
-     *
+     * Answers whether the logger level for this class is finer. Use to check
+     * whether it is worth assebling a message to log.
+     * 
      * @return
      */
     protected boolean isFiner() {
@@ -91,7 +95,7 @@ public abstract class Loggable {
 
     /**
      * Log a message if logging level is severe.
-     *
+     * 
      * @param message
      */
     protected void logSevere(String message) {
@@ -100,7 +104,7 @@ public abstract class Loggable {
 
     /**
      * Log a message if logging level is warning.
-     *
+     * 
      * @param message
      */
     protected void logWarning(String message) {
@@ -109,7 +113,7 @@ public abstract class Loggable {
 
     /**
      * Log a message if logging level is info.
-     *
+     * 
      * @param message
      */
     protected void logInfo(String message) {
@@ -118,7 +122,7 @@ public abstract class Loggable {
 
     /**
      * Log a message if logging level is fine.
-     *
+     * 
      * @param message
      */
     protected void logFine(String message) {
@@ -127,7 +131,7 @@ public abstract class Loggable {
 
     /**
      * Log a message if logging level is finer.
-     *
+     * 
      * @param message
      */
     protected void logFiner(String message) {
@@ -136,7 +140,7 @@ public abstract class Loggable {
 
     /**
      * Log a message and throwable if logging level is severe.
-     *
+     * 
      * @param message
      * @param t
      */
@@ -146,7 +150,7 @@ public abstract class Loggable {
 
     /**
      * Log a message and throwable if logging level is warning.
-     *
+     * 
      * @param message
      * @param t
      */
@@ -156,7 +160,7 @@ public abstract class Loggable {
 
     /**
      * Log a message and throwable if logging level is info.
-     *
+     * 
      * @param message
      * @param t
      */
@@ -166,7 +170,7 @@ public abstract class Loggable {
 
     /**
      * Log a message and throwable if logging level is fine.
-     *
+     * 
      * @param message
      * @param t
      */
@@ -176,7 +180,7 @@ public abstract class Loggable {
 
     /**
      * Log a message and throwable if logging level is finer.
-     *
+     * 
      * @param message
      * @param t
      */
@@ -186,7 +190,7 @@ public abstract class Loggable {
 
     /**
      * Log a throwable if logging level is severe.
-     *
+     * 
      * @param t
      */
     protected void logSevere(Throwable t) {
@@ -195,7 +199,7 @@ public abstract class Loggable {
 
     /**
      * Log a throwable if logging level is warning.
-     *
+     * 
      * @param t
      */
     protected void logWarning(Throwable t) {
@@ -204,7 +208,7 @@ public abstract class Loggable {
 
     /**
      * Log a throwable if logging level is info.
-     *
+     * 
      * @param t
      */
     protected void logInfo(Throwable t) {
@@ -213,7 +217,7 @@ public abstract class Loggable {
 
     /**
      * Log a throwable if logging level is fine.
-     *
+     * 
      * @param t
      */
     protected void logFine(Throwable t) {
@@ -222,7 +226,7 @@ public abstract class Loggable {
 
     /**
      * Log a throwable if logging level is finer.
-     *
+     * 
      * @param t
      */
     protected void logFiner(Throwable t) {
@@ -231,7 +235,7 @@ public abstract class Loggable {
 
     /**
      * Actually check if a logger is at or above a specific logging level.
-     *
+     * 
      * @param level
      * @return
      */
@@ -244,7 +248,7 @@ public abstract class Loggable {
 
     /**
      * Actually log a message and optionally a Throwable.
-     *
+     * 
      * @param level
      * @param message
      * @param t
@@ -253,10 +257,22 @@ public abstract class Loggable {
         if (log == null) {
             log = Logger.getLogger(getLoggerName());
         }
-        if (t == null) {
-            log.log(level, message);
-        } else {
-            log.log(level, message, t);
+        Controller controller = null;
+        if (this instanceof PFComponent) {
+            controller = ((PFComponent) this).getController();
         }
+        LogRecord lr = new LogRecord(level, message);
+        if (t != null) {
+            lr.setThrown(t);
+        }
+        if (controller != null) {
+            lr.setParameters(new Object[]{controller});
+        }
+        lr.setLoggerName(log.getName());
+        lr.setResourceBundleName(log.getResourceBundleName());
+        lr.setResourceBundle(log.getResourceBundle());
+
+        log.log(lr);
+        // log.log(level, message);
     }
 }
