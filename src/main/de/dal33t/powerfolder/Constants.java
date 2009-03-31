@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder;
 
 import de.dal33t.powerfolder.util.JavaVersion;
+import de.dal33t.powerfolder.util.os.OSUtil;
 
 
 /**
@@ -34,10 +35,11 @@ public class Constants {
 
     /**
      * The minimum suported version for AWTUtilities.setWindowOpacity is
-     * 1.6.0_10-b12.
+     * 1.6.0_10-b12. And not in Linux, but okay in Mac and Windows.
      */
     public static final boolean OPACITY_SUPPORTED = JavaVersion.systemVersion()
-               .compareTo(new JavaVersion(1, 6, 0, 10, 12)) >= 0;
+               .compareTo(new JavaVersion(1, 6, 0, 10, 12)) >= 0 &&
+            !OSUtil.isLinux(); 
 
     /**
      * The name of the subdirectory in every folder to store powerfolder
