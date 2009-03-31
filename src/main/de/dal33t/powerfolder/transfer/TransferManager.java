@@ -28,15 +28,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-import java.util.TimerTask;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -90,6 +82,7 @@ public class TransferManager extends PFComponent {
     public static final int OLD_MAX_CHUNK_SIZE = 32 * 1024;
     public static final int OLD_MAX_REQUESTS_QUEUED = 20;
     public static final long PARTIAL_TRANSFER_DELAY = 10000; // Ten seconds
+    public static final long ONE_DAY = 24 * 3600 * 1000; // One day in ms
 
     private static final DecimalFormat CPS_FORMAT = new DecimalFormat(
         "#,###,###,###.##");
@@ -117,7 +110,7 @@ public class TransferManager extends PFComponent {
 
     /** The trigger, where transfermanager waits on */
     private Object waitTrigger = new Object();
-    private boolean transferCheckTriggered = false;
+    private boolean transferCheckTriggered;
     /**
      * To lock the transfer checker. Lock this to make sure no transfer checks
      * are executed untill the lock is released.
@@ -288,11 +281,66 @@ public class TransferManager extends PFComponent {
         // Load all pending downloads
         loadDownloads();
 
+        // Do an initial clean.
+        cleanupOldTransfers();
+
         getController().scheduleAndRepeat(new PartialTransferStatsUpdater(),
             PARTIAL_TRANSFER_DELAY, PARTIAL_TRANSFER_DELAY);
 
+        getController().scheduleAndRepeat(new TransferCleaner(),
+                ONE_DAY, ONE_DAY);
+
         started = true;
         logFine("Started");
+    }
+
+    /**
+     * This method cleans up old uploads and downloads.
+     * Only cleans up if the UPLOADS_AUTO_CLEANUP / DOWNLOAD_AUTO_CLEANUP is
+     * true and the transfer is older than AUTO_CLEANUP_FREQUENCY in days.
+     */
+    private void cleanupOldTransfers() {
+        Integer cleanupFrequency = PreferencesEntry.AUTO_CLEANUP_FREQUENCY
+                .getValueInt(getController());
+        if (ConfigurationEntry.UPLOADS_AUTO_CLEANUP.getValueBoolean(
+                getController())) {
+            for (Upload completedUpload : completedUploads) {
+                long numberOfDays = calcDays(completedUpload.getCompletedDate());
+                if (numberOfDays >= cleanupFrequency) {
+                    logInfo("Auto-cleaning up upload '"
+                            + completedUpload.getFile().getName() + "' (days="
+                            + numberOfDays + ')');
+                    clearCompletedUpload(completedUpload);
+                }
+            }
+        }
+        if (ConfigurationEntry.DOWNLOADS_AUTO_CLEANUP.getValueBoolean(
+                getController())) {
+            for (DownloadManager completedDownload : completedDownloads) {
+                long numberOfDays = calcDays(completedDownload.getCompletedDate());
+                if (numberOfDays >= cleanupFrequency) {
+                    logInfo("Auto-cleaning up download '"
+                            + completedDownload.getFileInfo().getName()
+                            + "' (days=" + numberOfDays + ')');
+                    clearCompletedDownload(completedDownload);
+                }
+            }
+        }
+    }
+
+    /**
+     * Returns the number of days between two dates.
+     * 
+     * @param completedDate
+     * @return
+     */
+    private static long calcDays(Date completedDate) {
+        if (completedDate == null) {
+            return -1;
+        }
+        Date now = new Date();
+        long diff = now.getTime() - completedDate.getTime();
+        return diff / ONE_DAY;
     }
 
     /**
@@ -2687,6 +2735,12 @@ public class TransferManager extends PFComponent {
                     upload.getPartner(),
                     upload.getCounter().getBytesTransferred());
             }
+        }
+    }
+
+    private class TransferCleaner extends TimerTask {
+        public void run() {
+            cleanupOldTransfers();
         }
     }
 }

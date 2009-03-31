@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.transfer;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Logger;
@@ -96,6 +97,22 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
     public boolean hasSource(Download d) {
         Reject.ifNull(d, "Download is null!");
         return downloads.get(d.getPartner().getInfo()) == d;
+    }
+
+    /**
+     * Returns the first valid completed date of a download.
+     *
+     * @return
+     */
+    public Date getCompletedDate() {
+        if (!downloads.isEmpty()) {
+            for (Download download : downloads.values()) {
+                if (download.getCompletedDate() != null) {
+                    return download.getCompletedDate();
+                }
+            }
+        }
+        return null;
     }
 
     /*

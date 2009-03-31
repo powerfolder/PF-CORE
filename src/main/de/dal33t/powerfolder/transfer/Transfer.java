@@ -82,6 +82,7 @@ public abstract class Transfer extends Loggable implements Serializable {
 
         private TransferState state = TransferState.NONE;
         private double progress = -1;
+        private Date completedDate;
 
         public synchronized TransferState getState() {
             return state;
@@ -89,8 +90,11 @@ public abstract class Transfer extends Loggable implements Serializable {
 
         public synchronized void setState(TransferState state) {
             if (!this.state.equals(state)) {
-                this.progress = -1;
+                progress = -1;
                 this.state = state;
+                if (state.equals(TransferState.DONE)) {
+                    completedDate = new Date();
+                }
             }
         }
 
@@ -115,6 +119,14 @@ public abstract class Transfer extends Loggable implements Serializable {
          */
         public synchronized double getProgress() {
             return progress;
+        }
+
+        /**
+         * Returns the date the transfer completed.
+         * @return
+         */
+        public Date getCompletedDate() {
+            return completedDate;
         }
     }
 
@@ -281,6 +293,11 @@ public abstract class Transfer extends Loggable implements Serializable {
     public boolean isCompleted() {
         return transferState != null && transferState.getState() != null
             && transferState.getState().equals(TransferState.DONE);
+    }
+
+    public Date getCompletedDate() {
+        return transferState != null && transferState.getCompletedDate() != null
+                ? transferState.getCompletedDate() : null;
     }
 
     /**

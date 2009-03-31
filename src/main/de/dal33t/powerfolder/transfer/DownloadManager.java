@@ -26,6 +26,7 @@ import de.dal33t.powerfolder.transfer.swarm.DownloadSourceHandler;
 import de.dal33t.powerfolder.util.TransferCounter;
 
 import java.io.File;
+import java.util.Date;
 
 /**
  * @author Dennis "Bytekeeper" Waldherr
@@ -93,4 +94,6 @@ public interface DownloadManager extends DownloadSourceHandler, DownloadControl
     boolean isDone();
 
     boolean hasSource(Download download);
+
+    Date getCompletedDate();
 }

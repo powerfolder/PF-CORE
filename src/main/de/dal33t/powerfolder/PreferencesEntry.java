@@ -57,6 +57,10 @@ public enum PreferencesEntry {
 
     ASK_FOR_FRIENDSHIP_MESSAGE("AskForFriendshipMessage", true),
 
+    /**
+     * Days until auto cleanup of uploads / downloads.
+     * Zero = cleanup on completion.
+     */
     AUTO_CLEANUP_FREQUENCY("AutoCleanupFrequency", 5),
 
     SHOW_PREVIEW_PANEL("ShowPreviewPanel", false),
