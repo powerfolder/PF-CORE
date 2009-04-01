@@ -31,6 +31,7 @@ import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderStatistic;
 import de.dal33t.powerfolder.disk.RecycleBin;
+import de.dal33t.powerfolder.disk.ScanResult;
 import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.Icons;
@@ -433,58 +434,70 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
                     "?", "?");
             filesAvailableLabelText = "";
         } else {
-            FolderStatistic statistic = folder.getStatistic();
-            double sync = statistic.getHarmonizedSyncPercentage();
-            if (sync < 0) {
-                sync = 0;
-            }
-            if (sync > 100) {
-                sync = 100;
-            }
-            syncPercentText = Translation.getTranslation(
-                    "exp_folder_view.synchronized", sync);
-
-            Date date = folder.getStatistic().getEstimatedSyncDate();
-            String formattedDate;
-            if (date == null) {
-                formattedDate = "-";
-            } else {
-                formattedDate = Format.formatDate(date);
-            }
-            folder.getStatistic().getEstimatedSyncDate();
-            if (Double.compare(sync, 100.0) == 0) {
+            ScanResult.ResultState state = folder.getLastScanResultState();
+            if (state == null) {
+                syncPercentText = Translation.getTranslation(
+                        "exp_folder_view.not_yet_scanned");
                 syncDateText = Translation.getTranslation(
-                        "exp_folder_view.last_synchronized",
-                        formattedDate);
-            } else {
-                syncDateText = Translation.getTranslation(
-                        "exp_folder_view.estimated_synchronized",
-                        formattedDate);
-            }
-
-            long localSize = statistic.getLocalSize();
-            localSizeString = Format.formatBytesShort(localSize);
-
-            long totalSize = statistic.getTotalSize();
-            totalSizeString = Format.formatBytesShort(totalSize);
-
-            if (folder.isUseRecycleBin()) {
-                RecycleBin recycleBin = getController().getRecycleBin();
-                int recycledCount = recycleBin.countRecycledFiles(folderInfo);
-                long recycledSize = recycleBin.recycledFilesSize(folderInfo);
-                String recycledSizeString = Format.formatBytesShort(recycledSize);
-                recycleLabelText = Translation.getTranslation("exp_folder_view.recycled",
-                        recycledCount, recycledSizeString);
-            } else {
-                recycleLabelText = Translation.getTranslation("exp_folder_view.no_recycled");
-            }
-
-            int count = statistic.getIncomingFilesCount();
-            if (count == 0) {
+                        "exp_folder_view.last_synchronized", "?");
+                localSizeString = "?";
+                totalSizeString = "?";
+                recycleLabelText = Translation.getTranslation(
+                        "exp_folder_view.recycled", "?", "?");
                 filesAvailableLabelText = "";
             } else {
-                filesAvailableLabelText = Translation.getTranslation(
-                        "exp_folder_view.files_available", count);
+                FolderStatistic statistic = folder.getStatistic();
+                double sync = statistic.getHarmonizedSyncPercentage();
+                if (sync < 0) {
+                    sync = 0;
+                }
+                if (sync > 100) {
+                    sync = 100;
+                }
+                syncPercentText = Translation.getTranslation(
+                        "exp_folder_view.synchronized", sync);
+
+                Date date = folder.getStatistic().getEstimatedSyncDate();
+                String formattedDate;
+                if (date == null) {
+                    formattedDate = "-";
+                } else {
+                    formattedDate = Format.formatDate(date);
+                }
+                if (Double.compare(sync, 100.0) == 0) {
+                    syncDateText = Translation.getTranslation(
+                            "exp_folder_view.last_synchronized",
+                            formattedDate);
+                } else {
+                    syncDateText = Translation.getTranslation(
+                            "exp_folder_view.estimated_synchronized",
+                            formattedDate);
+                }
+
+                long localSize = statistic.getLocalSize();
+                localSizeString = Format.formatBytesShort(localSize);
+
+                long totalSize = statistic.getTotalSize();
+                totalSizeString = Format.formatBytesShort(totalSize);
+
+                if (folder.isUseRecycleBin()) {
+                    RecycleBin recycleBin = getController().getRecycleBin();
+                    int recycledCount = recycleBin.countRecycledFiles(folderInfo);
+                    long recycledSize = recycleBin.recycledFilesSize(folderInfo);
+                    String recycledSizeString = Format.formatBytesShort(recycledSize);
+                    recycleLabelText = Translation.getTranslation("exp_folder_view.recycled",
+                            recycledCount, recycledSizeString);
+                } else {
+                    recycleLabelText = Translation.getTranslation("exp_folder_view.no_recycled");
+                }
+
+                int count = statistic.getIncomingFilesCount();
+                if (count == 0) {
+                    filesAvailableLabelText = "";
+                } else {
+                    filesAvailableLabelText = Translation.getTranslation(
+                            "exp_folder_view.files_available", count);
+                }
             }
         }
 
