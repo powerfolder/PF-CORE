@@ -1,5 +1,5 @@
 /*
- * Copyright 2004 - 20089 Christian Sprajc. All rights reserved.
+ * Copyright 2004 - 2009 Christian Sprajc. All rights reserved.
  *
  * This file is part of PowerFolder.
  *
@@ -107,7 +107,7 @@ public class FileInfoDocumentConverter {
         String folderId = doc.get(FIELDNAME_FOLDER_ID);
         FolderInfo foInfo = null;
         // Try to retrieve from repo
-
+        // TODO Speed this UP!
         if (controller != null) {
             for (Folder folder : controller.getFolderRepository()
                 .getFoldersAsCollection())
