@@ -1,5 +1,5 @@
 /*
- * Copyright 2004 - 20089 Christian Sprajc. All rights reserved.
+ * Copyright 2004 - 2009 Christian Sprajc. All rights reserved.
  *
  * This file is part of PowerFolder.
  *
