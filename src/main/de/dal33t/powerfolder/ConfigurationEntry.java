@@ -27,6 +27,8 @@ import java.util.logging.Logger;
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
 
+import de.dal33t.powerfolder.disk.FolderStatistic;
+import de.dal33t.powerfolder.message.FileChunk;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
@@ -450,6 +452,13 @@ public enum ConfigurationEntry {
      * Whether to show preview folders in nav / folders panles.
      */
     HIDE_PREVIEW_FOLDERS("show.preview.folders", Boolean.FALSE.toString()),
+    
+    /**
+     * The number of seconds to wait to recalc a {@link FolderStatistic} when a
+     * change to the folder happend. Applies to large folders only, that host
+     * more files than {@link FolderStatistic#MAX_ITEMS}
+     */
+    FOLDER_STATS_CALC_TIME("filedb.stats.seconds", String.valueOf(10)),
 
     /**
      * The maximum time powerfolder keeps the folder database dirty in memory
