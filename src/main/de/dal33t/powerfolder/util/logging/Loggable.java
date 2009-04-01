@@ -20,7 +20,6 @@
 package de.dal33t.powerfolder.util.logging;
 
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.Controller;
@@ -33,8 +32,27 @@ import de.dal33t.powerfolder.PFComponent;
  */
 public abstract class Loggable {
 
+    private static boolean logNickPrefix;
+
     /** The class logger. */
     private transient Logger log;
+
+    /**
+     * @return true if the nick gets added as prefix to the log message if a
+     *         {@link Controller} could be retrieved from this object.
+     */
+    public static boolean isLogNickPrefix() {
+        return logNickPrefix;
+    }
+
+    /**
+     * @param logPrefix
+     *            if the nick should be added as prefix to the log message if a
+     *            {@link Controller} could be retrieved from this object.
+     */
+    public static void setLogNickPrefix(boolean logPrefix) {
+        Loggable.logNickPrefix = logPrefix;
+    }
 
     /**
      * @return the name of the logger. by default uses the classname
@@ -257,22 +275,19 @@ public abstract class Loggable {
         if (log == null) {
             log = Logger.getLogger(getLoggerName());
         }
-        Controller controller = null;
-        if (this instanceof PFComponent) {
-            controller = ((PFComponent) this).getController();
-        }
-        LogRecord lr = new LogRecord(level, message);
-        if (t != null) {
-            lr.setThrown(t);
-        }
-        if (controller != null) {
-            lr.setParameters(new Object[]{controller});
-        }
-        lr.setLoggerName(log.getName());
-        lr.setResourceBundleName(log.getResourceBundleName());
-        lr.setResourceBundle(log.getResourceBundle());
+        String prefix = null;
 
-        log.log(lr);
-        // log.log(level, message);
+        if (logNickPrefix && this instanceof PFComponent) {
+            Controller controller = ((PFComponent) this).getController();
+            if (controller != null && controller.getMySelf() != null) {
+                prefix = controller.getMySelf().getNick();
+            }
+        }
+
+        if (prefix != null) {
+            log.log(level, prefix + " | " + message, t);
+        } else {
+            log.log(level, message, t);
+        }
     }
 }

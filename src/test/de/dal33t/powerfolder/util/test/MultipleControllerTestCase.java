@@ -42,6 +42,7 @@ import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.PropertiesUtil;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.logging.Loggable;
 
 /**
  * Provides basic testcase-setup with N controllers.
@@ -64,7 +65,8 @@ public abstract class MultipleControllerTestCase extends TestCase {
 
     protected void setUp() throws Exception {
         System.setProperty("user.home", new File("build/test/home")
-        .getCanonicalPath());
+            .getCanonicalPath());
+        Loggable.setLogNickPrefix(true);
         super.setUp();
 
         for (Controller controller : controllers.values()) {

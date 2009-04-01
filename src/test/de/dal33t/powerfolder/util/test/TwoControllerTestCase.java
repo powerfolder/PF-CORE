@@ -37,6 +37,7 @@ import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.logging.Loggable;
 
 /**
  * Provides basic testcase-setup with two controllers. Bart and Lisa
@@ -71,6 +72,7 @@ public class TwoControllerTestCase extends TestCase {
     protected void setUp() throws Exception {
         System.setProperty("user.home", new File("build/test/home")
             .getCanonicalPath());
+        Loggable.setLogNickPrefix(true);
         super.setUp();
 
         if ((getContollerBart() != null && getContollerBart().isStarted())
