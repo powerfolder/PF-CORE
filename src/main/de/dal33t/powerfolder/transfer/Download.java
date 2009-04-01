@@ -93,7 +93,7 @@ public class Download extends Transfer {
      * @param aTransferManager
      *            the transfermanager
      */
-    public void init(TransferManager aTransferManager) {
+    void init(TransferManager aTransferManager) {
         super.init(aTransferManager);
         queued = false;
         markedBroken = false;

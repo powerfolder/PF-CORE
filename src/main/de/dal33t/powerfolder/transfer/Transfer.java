@@ -159,7 +159,7 @@ public abstract class Transfer extends Loggable implements Serializable {
      * 
      * @param aTransferManager
      */
-    public void init(TransferManager aTransferManager) {
+    void init(TransferManager aTransferManager) {
         if (transferManager != null) {
             logSevere(
                 "Unable to set TransferManager. Having already one. " + this);
