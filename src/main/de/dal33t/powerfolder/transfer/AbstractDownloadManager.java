@@ -493,16 +493,12 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             }
         }
         final Download sources[] = getSources().toArray(new Download[0]);
-
-        tm.doWork(new Runnable() {
-            public void run() {
-                for (Download d : sources) {
-                    d.setBroken(problem, message);
-                }
-                tm.downloadManagerBroken(AbstractDownloadManager.this, problem,
-                    message);
-            }
-        });
+        for (Download d : sources) {
+            d.setBroken(problem, message);
+        }
+        tm
+            .downloadManagerBroken(AbstractDownloadManager.this, problem,
+                message);
     }
 
     protected synchronized void setCompleted() {
@@ -518,12 +514,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         setState(InternalState.COMPLETED);
         shutdown();
         deleteMetaData();
-
-        tm.doWork(new Runnable() {
-            public void run() {
-                tm.setCompleted(AbstractDownloadManager.this);
-            }
-        });
+        tm.setCompleted(AbstractDownloadManager.this);
     }
 
     protected synchronized void setFilePartsState(FilePartsState state) {
@@ -1179,16 +1170,10 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         }
         // Prevent ConcurrentModificiation Exceptions
         final Download sources[] = getSources().toArray(new Download[0]);
-
-        tm.doWork(new Runnable() {
-            public void run() {
-                for (Download d : sources) {
-                    d.abort();
-                }
-                tm.downloadManagerAborted(AbstractDownloadManager.this);
-            }
-
-        });
+        for (Download d : sources) {
+            d.abort();
+        }
+        tm.downloadManagerAborted(AbstractDownloadManager.this);
     }
 
     private void setState(InternalState newState) {
