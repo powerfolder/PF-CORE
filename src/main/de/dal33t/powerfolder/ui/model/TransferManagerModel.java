@@ -91,8 +91,8 @@ public class TransferManagerModel extends PFUIComponent {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-        updateDownloadsTreeNode();
-        updateUploadsTreeNode();
+        updateDownloadsValueModels();
+        updateUploadsValueModels();
     }
 
     // Exposing ***************************************************************
@@ -238,7 +238,7 @@ public class TransferManagerModel extends PFUIComponent {
         return completedDownloadsCountVM;
     }
 
-    private void updateDownloadsTreeNode() {
+    private void updateDownloadsValueModels() {
 
         // Recalculate totals for downloads.
         int downloadCount = downloadManagersTableModel.getRowCount();
@@ -260,7 +260,7 @@ public class TransferManagerModel extends PFUIComponent {
         completedDownloadsCountVM.setValue(completedDownloadsCount);
     }
 
-    private void updateUploadsTreeNode() {
+    private void updateUploadsValueModels() {
 
         // Recalculate total and active uploads.
         int uploadCount = uploadsTableModel.getRowCount();
@@ -294,55 +294,55 @@ public class TransferManagerModel extends PFUIComponent {
     private class MyTransferManagerListener implements TransferManagerListener {
 
          public void downloadRequested(TransferManagerEvent event) {
-            updateDownloadsTreeNode();
+            updateDownloadsValueModels();
         }
 
         public void downloadQueued(TransferManagerEvent event) {
-            updateDownloadsTreeNode();
+            updateDownloadsValueModels();
         }
 
         public void downloadStarted(TransferManagerEvent event) {
-            updateDownloadsTreeNode();
+            updateDownloadsValueModels();
         }
 
         public void downloadAborted(TransferManagerEvent event) {
-            updateDownloadsTreeNode();
+            updateDownloadsValueModels();
         }
 
         public void downloadBroken(TransferManagerEvent event) {
-            updateDownloadsTreeNode();
+            updateDownloadsValueModels();
         }
 
         public void downloadCompleted(TransferManagerEvent event) {
-            updateDownloadsTreeNode();
+            updateDownloadsValueModels();
         }
 
         public void completedDownloadRemoved(TransferManagerEvent event) {
-            updateDownloadsTreeNode();
+            updateDownloadsValueModels();
         }
 
         public void pendingDownloadEnqueud(TransferManagerEvent event) {
-            updateUploadsTreeNode();
+            updateUploadsValueModels();
         }
 
         public void uploadRequested(TransferManagerEvent event) {
-            updateUploadsTreeNode();
+            updateUploadsValueModels();
         }
 
         public void uploadStarted(TransferManagerEvent event) {
-            updateUploadsTreeNode();
+            updateUploadsValueModels();
         }
 
         public void uploadAborted(TransferManagerEvent event) {
-            updateUploadsTreeNode();
+            updateUploadsValueModels();
         }
 
         public void uploadBroken(TransferManagerEvent event) {
-            updateUploadsTreeNode();
+            updateUploadsValueModels();
         }
 
         public void uploadCompleted(TransferManagerEvent event) {
-            updateUploadsTreeNode();
+            updateUploadsValueModels();
         }
 
         public boolean fireInEventDispatchThread() {
@@ -350,7 +350,7 @@ public class TransferManagerModel extends PFUIComponent {
         }
 
         public void completedUploadRemoved(TransferManagerEvent event) {
-            updateUploadsTreeNode();
+            updateUploadsValueModels();
         }
     }
 }
