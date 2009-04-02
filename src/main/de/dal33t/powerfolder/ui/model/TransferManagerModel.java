@@ -30,7 +30,6 @@ import de.dal33t.powerfolder.event.TransferManagerListener;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.transfer.Upload;
 import de.dal33t.powerfolder.transfer.DownloadManager;
-import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.information.downloads.DownloadManagersTableModel;
 import de.dal33t.powerfolder.ui.information.uploads.UploadsTableModel;
 import de.dal33t.powerfolder.util.ui.UIUtil;
@@ -296,37 +295,30 @@ public class TransferManagerModel extends PFUIComponent {
 
          public void downloadRequested(TransferManagerEvent event) {
             updateDownloadsTreeNode();
-            updateFolderTreeNode(event);
         }
 
         public void downloadQueued(TransferManagerEvent event) {
             updateDownloadsTreeNode();
-            updateFolderTreeNode(event);
         }
 
         public void downloadStarted(TransferManagerEvent event) {
             updateDownloadsTreeNode();
-            updateFolderTreeNode(event);
         }
 
         public void downloadAborted(TransferManagerEvent event) {
             updateDownloadsTreeNode();
-            updateFolderTreeNode(event);
         }
 
         public void downloadBroken(TransferManagerEvent event) {
             updateDownloadsTreeNode();
-            updateFolderTreeNode(event);
         }
 
         public void downloadCompleted(TransferManagerEvent event) {
             updateDownloadsTreeNode();
-            updateFolderTreeNode(event);
         }
 
         public void completedDownloadRemoved(TransferManagerEvent event) {
             updateDownloadsTreeNode();
-            updateFolderTreeNode(event);
         }
 
         public void pendingDownloadEnqueud(TransferManagerEvent event) {
@@ -335,27 +327,22 @@ public class TransferManagerModel extends PFUIComponent {
 
         public void uploadRequested(TransferManagerEvent event) {
             updateUploadsTreeNode();
-            updateFolderTreeNode(event);
         }
 
         public void uploadStarted(TransferManagerEvent event) {
             updateUploadsTreeNode();
-            updateFolderTreeNode(event);
         }
 
         public void uploadAborted(TransferManagerEvent event) {
             updateUploadsTreeNode();
-            updateFolderTreeNode(event);
         }
 
         public void uploadBroken(TransferManagerEvent event) {
             updateUploadsTreeNode();
-            updateFolderTreeNode(event);
         }
 
         public void uploadCompleted(TransferManagerEvent event) {
             updateUploadsTreeNode();
-            updateFolderTreeNode(event);
         }
 
         public boolean fireInEventDispatchThread() {
@@ -364,21 +351,6 @@ public class TransferManagerModel extends PFUIComponent {
 
         public void completedUploadRemoved(TransferManagerEvent event) {
             updateUploadsTreeNode();
-            updateFolderTreeNode(event);
-        }
-
-        private void updateFolderTreeNode(TransferManagerEvent event) {
-            Folder folder = event.getFile().getFolder(
-                getController().getFolderRepository());
-            if (folder == null) {
-                return;
-            }
-            if (folder.isTransferring()) {
-                getUIController().getBlinkManager().addChatBlinking(folder,
-                    Icons.FOLDER);
-            } else {
-                getUIController().getBlinkManager().removeBlinking(folder);
-            }
         }
     }
 }

@@ -38,7 +38,6 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.event.AskForFriendshipEvent;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.model.ReceivedAskedForFriendshipModel;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
@@ -89,8 +88,6 @@ public class AskForFriendshipAction extends BaseAction {
                                         final String message) {
         Runnable friendAsker = new Runnable() {
             public void run() {
-                getController().getUIController().getBlinkManager()
-                        .setBlinkingTrayIcon(Icons.SYSTRAY_FRIEND_ICON);
 
                 StringBuilder folderString = new StringBuilder();
                 for (FolderInfo folderInfo : joinedFolders) {
@@ -141,8 +138,6 @@ public class AskForFriendshipAction extends BaseAction {
                     PreferencesEntry.ASK_FOR_FRIENDSHIP_ON_PRIVATE_FOLDER_JOIN
                             .setValue(getController(), false);
                 }
-                getController().getUIController().getBlinkManager()
-                        .setBlinkingTrayIcon(null);
             }
         };
         SwingUtilities.invokeLater(friendAsker);
@@ -162,8 +157,6 @@ public class AskForFriendshipAction extends BaseAction {
             node.setAskedForFriendship(true);
             Runnable friendAsker = new Runnable() {
                 public void run() {
-                    getController().getUIController().getBlinkManager()
-                        .setBlinkingTrayIcon(Icons.SYSTRAY_FRIEND_ICON);
 
                     String[] options = {
                         Translation
@@ -209,8 +202,6 @@ public class AskForFriendshipAction extends BaseAction {
                         PreferencesEntry.ASK_FOR_FRIENDSHIP_ON_PRIVATE_FOLDER_JOIN
                                 .setValue(getController(), false);
                     }
-                    getController().getUIController().getBlinkManager()
-                            .setBlinkingTrayIcon(null);
                 }
             };
             SwingUtilities.invokeLater(friendAsker);

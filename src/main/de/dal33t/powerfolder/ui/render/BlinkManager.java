@@ -88,7 +88,7 @@ public class BlinkManager extends PFUIComponent {
 
     /**
      * set the member thats needs blinking
-     * 
+     *
      * @param member
      *            The member that should have a blinking icon
      * @param icon
@@ -237,8 +237,9 @@ public class BlinkManager extends PFUIComponent {
                 Folder chatFolder = (Folder) event.getSource();
                 Folder currentChatFolder = null;
                 if (!chatFolder.equals(currentChatFolder)) {
-                    getUIController().getBlinkManager().addChatBlinking(chatFolder,
-                        Icons.CHAT);
+                    // rework
+//                    getUIController().getBlinkManager().addChatBlinking(chatFolder,
+//                        Icons.CHAT);
                 }
             }
         }

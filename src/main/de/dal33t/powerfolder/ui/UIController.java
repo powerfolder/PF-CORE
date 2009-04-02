@@ -30,15 +30,11 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.ui.action.SyncAllFoldersAction;
 import de.dal33t.powerfolder.ui.chat.ChatFrame;
-import de.dal33t.powerfolder.ui.chat.ChatModel;
-import de.dal33t.powerfolder.ui.chat.ChatModelEvent;
-import de.dal33t.powerfolder.ui.chat.ChatModelListener;
 import de.dal33t.powerfolder.ui.information.InformationCard;
 import de.dal33t.powerfolder.ui.information.InformationFrame;
 import de.dal33t.powerfolder.ui.model.ApplicationModel;
 import de.dal33t.powerfolder.ui.model.TransferManagerModel;
 import de.dal33t.powerfolder.ui.notification.NotificationHandler;
-import de.dal33t.powerfolder.ui.render.BlinkManager;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.ui.dialog.SingleFileTransferDialog;
 import de.dal33t.powerfolder.util.*;
@@ -88,12 +84,10 @@ public class UIController extends PFComponent {
     private Image defaultIcon;
     private TrayIcon sysTrayMenu;
     private MainFrame mainFrame;
-    private ChatModel chatModel;
     private SystemMonitorFrame systemMonitorFrame;
     private InformationFrame informationFrame;
     private ChatFrame chatFrame;
     private WeakReference<JDialog> wizardDialogReference;
-    private BlinkManager blinkManager;
 
     // List of pending jobs, execute when ui is opend
     private final List<Runnable> pendingJobs;
@@ -235,9 +229,6 @@ public class UIController extends PFComponent {
         mainFrame = new MainFrame(getController());
 
         // create the models
-        chatModel = applicationModel.getChatModel();
-        blinkManager = new BlinkManager(getController(), chatModel);
-        new ChatNotificationManager(chatModel);
         getController().getFolderRepository().addFolderRepositoryListener(
             new MyFolderRepositoryListener());
 
@@ -604,13 +595,6 @@ public class UIController extends PFComponent {
         }
     }
 
-    /**
-     * @return the model holding all chat data
-     */
-    public ChatModel getChatModel() {
-        return chatModel;
-    }
-
     public TransferManagerModel getTransferManagerModel() {
         return transferManagerModel;
     }
@@ -925,10 +909,6 @@ public class UIController extends PFComponent {
         started = false;
     }
 
-    public BlinkManager getBlinkManager() {
-        return blinkManager;
-    }
-
     /**
      * @return the setted ui laf as String (classname)
      */
@@ -1018,27 +998,6 @@ public class UIController extends PFComponent {
             logFine("Added runner to pending jobs: " + runner);
             // Add to pending jobs
             pendingJobs.add(runner);
-        }
-    }
-
-    private class ChatNotificationManager implements ChatModelListener {
-
-        private ChatNotificationManager(ChatModel chatModel) {
-            chatModel.addChatModelListener(this);
-        }
-
-        public void chatChanged(ChatModelEvent event) {
-            if (event.isStatus()) {
-                // Ignore status updates
-                return;
-            }
-            notifyMessage(Translation.getTranslation("chat.notification.title"),
-                    Translation.getTranslation("chat.notification.message"),
-                    true);
-        }
-
-        public boolean fireInEventDispatchThread() {
-            return true;
         }
     }
 

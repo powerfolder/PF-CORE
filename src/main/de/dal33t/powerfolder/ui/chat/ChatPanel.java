@@ -69,6 +69,7 @@ public class ChatPanel extends PFUIComponent {
     private Member chatPartner;
     private ChatFrame chatFrame;
     private MyAddRemoveFriendAction addRemoveFriendAction;
+    private ChatModel chatModel;
 
     /**
      * Constructor
@@ -78,12 +79,12 @@ public class ChatPanel extends PFUIComponent {
     public ChatPanel(Controller controller, ChatFrame chatFrame,
                      Member chatPartner) {
         super(controller);
+        chatModel = controller.getUIController().getApplicationModel().getChatModel();
         this.chatPartner = chatPartner;
         this.chatFrame = chatFrame;
         controller.getNodeManager().addNodeManagerListener(
             new MyNodeManagerListener());
-        controller.getUIController().getChatModel().addChatModelListener(
-            new MyChatModelListener());
+        chatModel.addChatModelListener(new MyChatModelListener());
     }
 
     /**
@@ -215,7 +216,7 @@ public class ChatPanel extends PFUIComponent {
      * Update the chat lines if for me.
      */
     private void updateChat() {
-        ChatLine[] lines = getUIController().getChatModel().getChatText(chatPartner);
+        ChatLine[] lines = chatModel.getChatText(chatPartner);
         if (lines != null) {
             updateChat(lines);
         }
@@ -330,8 +331,6 @@ public class ChatPanel extends PFUIComponent {
             if (keyTyped == '\n') { // enter key = send message
                 String message = chatInput.getText();
                 if (message.trim().length() > 0) { // no SPAM on "enter"
-                    ChatModel chatModel = getUIController()
-                            .getChatModel();
                     if (chatPartner.isCompleteyConnected()) {
                         chatModel.addChatLine(
                                 chatPartner, getController().getMySelf(), message);
