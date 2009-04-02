@@ -21,9 +21,15 @@ package de.dal33t.powerfolder.ui.model;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.ui.action.ActionModel;
 import de.dal33t.powerfolder.ui.chat.ChatModel;
 import de.dal33t.powerfolder.ui.webservice.ServerClientModel;
+import com.jgoodies.binding.value.ValueModel;
+import com.jgoodies.binding.value.ValueHolder;
+
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
 
 /**
  * Contains all core models for the application.
@@ -43,6 +49,8 @@ public class ApplicationModel extends PFUIComponent {
     private ReceivedAskedForFriendshipModel receivedAskedForFriendshipModel;
     private ReceivedSingleFileOffersModel receivedSingleFileOffersModel;
     private WarningModel warningsModel;
+    private ValueModel chatNotificationsValueModel;
+    private ValueModel systemNotificationsValueModel;
 
     /**
      * Constructs a non-initialized application model. Before the model can used
@@ -51,7 +59,7 @@ public class ApplicationModel extends PFUIComponent {
      * @param controller
      * @see #initialize()
      */
-    public ApplicationModel(Controller controller) {
+    public ApplicationModel(final Controller controller) {
         super(controller);
         actionModel = new ActionModel(getController());
         chatModel = new ChatModel(getController());
@@ -67,6 +75,27 @@ public class ApplicationModel extends PFUIComponent {
         receivedSingleFileOffersModel =
                 new ReceivedSingleFileOffersModel(getController());
         warningsModel = new WarningModel(getController());
+
+        chatNotificationsValueModel = new ValueHolder(
+                ConfigurationEntry.SHOW_CHAT_NOTIFICATIONS.getValueBoolean(
+                        controller));
+        chatNotificationsValueModel.addValueChangeListener(
+                new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                ConfigurationEntry.SHOW_CHAT_NOTIFICATIONS.setValue(
+                        controller, evt.getNewValue().toString());
+            }
+        });
+        systemNotificationsValueModel = new ValueHolder(
+                ConfigurationEntry.SHOW_SYSTEM_NOTIFICATIONS.getValueBoolean(
+                        controller));
+        systemNotificationsValueModel.addValueChangeListener(
+                new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                ConfigurationEntry.SHOW_SYSTEM_NOTIFICATIONS.setValue(
+                        controller, evt.getNewValue().toString());
+            }
+        });
     }
 
     /**
@@ -117,5 +146,13 @@ public class ApplicationModel extends PFUIComponent {
 
     public WarningModel getWarningsModel() {
         return warningsModel;
+    }
+
+    public ValueModel getChatNotificationsValueModel() {
+        return chatNotificationsValueModel;
+    }
+
+    public ValueModel getSystemNotificationsValueModel() {
+        return systemNotificationsValueModel;
     }
 }

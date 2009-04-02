@@ -50,10 +50,7 @@ import de.javasoft.plaf.synthetica.SyntheticaSilverMoonLookAndFeel;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
+import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -67,6 +64,8 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
 
 /**
  * The ui controller.
@@ -421,6 +420,47 @@ public class UIController extends PFComponent {
         item.addActionListener(systrayActionHandler);
 
         menu.addSeparator();
+
+        Menu notificationsMenu = new Menu(Translation
+                .getTranslation("systray.notifications"));
+        menu.add(notificationsMenu);
+        notificationsMenu.addActionListener(systrayActionHandler);
+
+        final CheckboxMenuItem chatMenuItem = new CheckboxMenuItem(Translation
+                .getTranslation("systray.notifications.chat"));
+        notificationsMenu.add(chatMenuItem);
+        chatMenuItem.setState((Boolean) applicationModel
+                .getChatNotificationsValueModel().getValue());
+        chatMenuItem.addItemListener(new ItemListener() {
+            public void itemStateChanged(ItemEvent e) {
+                applicationModel.getChatNotificationsValueModel().setValue(
+                        chatMenuItem.getState());
+            }
+        });
+        applicationModel.getChatNotificationsValueModel().addValueChangeListener(
+                new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                chatMenuItem.setState((Boolean) evt.getNewValue());
+            }
+        });
+
+        final CheckboxMenuItem systemMenuItem = new CheckboxMenuItem(Translation
+                .getTranslation("systray.notifications.system"));
+        notificationsMenu.add(systemMenuItem);
+        systemMenuItem.setState((Boolean) applicationModel
+                .getSystemNotificationsValueModel().getValue());
+        systemMenuItem.addItemListener(new ItemListener() {
+            public void itemStateChanged(ItemEvent e) {
+                applicationModel.getSystemNotificationsValueModel().setValue(
+                        systemMenuItem.getState());
+            }
+        });
+        applicationModel.getSystemNotificationsValueModel().addValueChangeListener(
+                new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                systemMenuItem.setState((Boolean) evt.getNewValue());
+            }
+        });
 
         sysTrayFoldersMenu = new Menu(Translation
             .getTranslation("general.powerfolder"));

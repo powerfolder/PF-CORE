@@ -19,16 +19,13 @@
 */
 package de.dal33t.powerfolder.ui.preferences;
 
-import com.jgoodies.binding.adapter.BasicComponentFactory;
-import com.jgoodies.binding.value.BufferedValueModel;
 import com.jgoodies.binding.value.Trigger;
-import com.jgoodies.binding.value.ValueHolder;
-import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.*;
+import de.dal33t.powerfolder.ui.model.ApplicationModel;
 import de.dal33t.powerfolder.util.Translation;
 
 import javax.swing.*;
@@ -37,6 +34,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.util.Dictionary;
 import java.util.Hashtable;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
 
 public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
 
@@ -76,6 +75,7 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
 
     // The triggers the writing into core
     private Trigger writeTrigger;
+    private ApplicationModel applicationModel;
 
     public DialogsSettingsTab(Controller controller) {
         super(controller);
@@ -99,30 +99,39 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
     }
 
     private void initComponents() {
+        applicationModel = getController().getUIController().getApplicationModel();
 
         writeTrigger = new Trigger();
 
         // Show chat notifications when minimized
-        ValueModel scnModel = new ValueHolder(
-            ConfigurationEntry.SHOW_CHAT_NOTIFICATIONS
-                .getValueBoolean(getController()));
-        showChatNotificationBox = BasicComponentFactory.createCheckBox(
-            new BufferedValueModel(scnModel, writeTrigger), Translation
+        showChatNotificationBox = new JCheckBox(Translation
                 .getTranslation("preferences.dialog.show_chat_notifications"));
+        showChatNotificationBox.setSelected((Boolean) applicationModel
+                .getChatNotificationsValueModel().getValue());
+        applicationModel.getChatNotificationsValueModel().addValueChangeListener(
+                new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                showChatNotificationBox.setSelected((Boolean) evt.getNewValue());
+            }
+        });
 
         // Show system notifications when minimized
-        ValueModel ssnModel = new ValueHolder(
-            ConfigurationEntry.SHOW_SYSTEM_NOTIFICATIONS
-                .getValueBoolean(getController()));
-        showSystemNotificationBox = BasicComponentFactory.createCheckBox(
-            new BufferedValueModel(ssnModel, writeTrigger), Translation
+        showSystemNotificationBox = new JCheckBox(Translation
                 .getTranslation("preferences.dialog.show_system_notifications"));
+        showSystemNotificationBox.setSelected((Boolean) applicationModel
+                .getSystemNotificationsValueModel().getValue());
+        applicationModel.getSystemNotificationsValueModel().addValueChangeListener(
+                new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                showSystemNotificationBox.setSelected((Boolean) evt.getNewValue());
+            }
+        });
 
         notificationDisplaySlider = new JSlider();
         notificationDisplaySlider.setMinimum(5);
         notificationDisplaySlider.setMaximum(30);
         notificationDisplaySlider.setValue(PreferencesEntry.NOTIFICATION_DISPLAY
-                .getValueInt(getController()).intValue());
+                .getValueInt(getController()));
         notificationDisplaySlider.setMajorTickSpacing(5);
         notificationDisplaySlider.setMinorTickSpacing(1);
 
@@ -140,8 +149,9 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
         notificationTranslucentSlider = new JSlider();
         notificationTranslucentSlider.setMinimum(0);
         notificationTranslucentSlider.setMaximum(80);
-        notificationTranslucentSlider.setValue(PreferencesEntry.NOTIFICATION_TRANSLUCENT
-                .getValueInt(getController()).intValue());
+        notificationTranslucentSlider.setValue(
+                PreferencesEntry.NOTIFICATION_TRANSLUCENT.getValueInt(
+                        getController()));
         notificationTranslucentSlider.setMajorTickSpacing(20);
         notificationTranslucentSlider.setMinorTickSpacing(5);
 
@@ -296,15 +306,13 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
         boolean duplicateFolders = warnOnDuplicateFolders.isSelected();
 
         if (showChatNotificationBox != null) {
-            // Show Notifications
-            ConfigurationEntry.SHOW_CHAT_NOTIFICATIONS.setValue(getController(),
-                    Boolean.toString(showChatNotificationBox.isSelected()));
+            applicationModel.getChatNotificationsValueModel().setValue(
+                    showChatNotificationBox.isSelected());
         }
 
         if (showSystemNotificationBox != null) {
-            // Show Notifications
-            ConfigurationEntry.SHOW_SYSTEM_NOTIFICATIONS.setValue(getController(),
-                    Boolean.toString(showSystemNotificationBox.isSelected()));
+            applicationModel.getSystemNotificationsValueModel().setValue(
+                    showSystemNotificationBox.isSelected());
         }
 
         PreferencesEntry.NOTIFICATION_TRANSLUCENT.setValue(getController(),
