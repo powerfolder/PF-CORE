@@ -1183,11 +1183,11 @@ public class UIController extends PFComponent {
      *            Whether to run the task if PF is already shown.
      */
     public void notifyMessage(String title, String message, TimerTask task,
-        boolean runIfShown)
-    {
-        if (started && mainFrame.isIconifiedOrHidden()
-            && !getController().isShuttingDown())
-        {
+        boolean runIfShown) {
+        if (started && mainFrame.isIconifiedOrHidden() &&
+                !getController().isShuttingDown() && (Boolean)
+                applicationModel.getSystemNotificationsValueModel()
+                        .getValue()) {
             NotificationHandler notificationHandler = new NotificationHandler(
                 getController(), title, message, task);
             notificationHandler.show();
