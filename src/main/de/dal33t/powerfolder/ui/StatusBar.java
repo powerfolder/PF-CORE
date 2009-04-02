@@ -399,11 +399,13 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                 if (newState == DISABLED) {
                     notificationText = Translation
                         .getTranslation("status_bar.status_change.disabled");
-                    getUIController().notifyMessage(title, notificationText);
+                    getUIController().notifyMessage(title, notificationText,
+                            false);
                 } else if (newState == CONNECTED) {
                     notificationText = Translation
                         .getTranslation("status_bar.status_change.connected");
-                    getUIController().notifyMessage(title, notificationText);
+                    getUIController().notifyMessage(title, notificationText,
+                            false);
                 } else {
                     // Disconnected
                 }

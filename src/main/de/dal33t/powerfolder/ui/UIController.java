@@ -1033,7 +1033,8 @@ public class UIController extends PFComponent {
                 return;
             }
             notifyMessage(Translation.getTranslation("chat.notification.title"),
-                    Translation.getTranslation("chat.notification.message"));
+                    Translation.getTranslation("chat.notification.message"),
+                    true);
         }
 
         public boolean fireInEventDispatchThread() {
@@ -1122,7 +1123,7 @@ public class UIController extends PFComponent {
 
                 notifyMessage(Translation
                     .getTranslation("quickinfo.my_folders.title"), text1
-                    + "\n\n" + text2);
+                    + "\n\n" + text2, false);
             }
         }
     }
@@ -1134,33 +1135,36 @@ public class UIController extends PFComponent {
      *            The title to display under 'PowerFolder'.
      * @param message
      *            Message to show if notification is displayed.
+     * @param chat
+     *           True if this is a chat message,
+     *           otherwise it is a system message
      */
-    public void notifyMessage(String title, String message) {
-        notifyMessage(title, message, false, true);
+    public void notifyMessage(String title, String message, boolean chat) {
+        if (started && mainFrame.isIconifiedOrHidden()
+            && !getController().isShuttingDown()) {
+            if (chat ? (Boolean) applicationModel
+                    .getChatNotificationsValueModel().getValue() : (Boolean)
+                    applicationModel.getSystemNotificationsValueModel()
+                            .getValue()) {
+                NotificationHandler notificationHandler = new NotificationHandler(
+                    getController(), title, message, true);
+                notificationHandler.show();
+            }
+        }
     }
 
     /**
-     * Shows a notification message only if the UI is minimized.
+     * Only use this for preview from the DialogSettingsTab.
+     * It by-passes all the usual safty checks.
      *
      * @param title
-     *            The title to display under 'PowerFolder'.
      * @param message
-     *            Message to show if notification is displayed.
-     * @param override
-     *            Show if not iconified / hidden.
-     * @param showAccept
-     *            Show the accept button
      */
-    public void notifyMessage(String title, String message, boolean override,
-                              boolean showAccept) {
+    public void previewMessage(String title, String message) {
 
-        if (started && (mainFrame.isIconifiedOrHidden() || override)
-            && !getController().isShuttingDown())
-        {
             NotificationHandler notificationHandler = new NotificationHandler(
-                getController(), title, message, showAccept);
+                getController(), title, message, false);
             notificationHandler.show();
-        }
     }
 
     /**

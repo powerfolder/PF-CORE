@@ -84,6 +84,7 @@ public class ApplicationModel extends PFUIComponent {
             public void propertyChange(PropertyChangeEvent evt) {
                 ConfigurationEntry.SHOW_CHAT_NOTIFICATIONS.setValue(
                         controller, evt.getNewValue().toString());
+                controller.saveConfig();
             }
         });
         systemNotificationsValueModel = new ValueHolder(
@@ -94,6 +95,7 @@ public class ApplicationModel extends PFUIComponent {
             public void propertyChange(PropertyChangeEvent evt) {
                 ConfigurationEntry.SHOW_SYSTEM_NOTIFICATIONS.setValue(
                         controller, evt.getNewValue().toString());
+                controller.saveConfig();
             }
         });
     }

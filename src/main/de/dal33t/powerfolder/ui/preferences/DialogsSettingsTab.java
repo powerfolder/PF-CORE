@@ -353,12 +353,12 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
                     notificationTranslucentSlider.getValue());
 
             // Display
-            getController().getUIController().notifyMessage(
+            getController().getUIController().previewMessage(
                     Translation.getTranslation(
                             "preferences.dialog.dialogs.notification.preview.title"),
                     Translation.getTranslation(
-                            "preferences.dialog.dialogs.notification.preview.text"),
-                    true, false);
+                            "preferences.dialog.dialogs.notification.preview.text")
+                    );
 
             // Reset
             PreferencesEntry.NOTIFICATION_DISPLAY.setValue(getController(),
