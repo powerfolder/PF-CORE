@@ -30,7 +30,7 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.InvitationUtil;
-import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.task.SendMessageTask;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 
@@ -51,7 +51,7 @@ public class PowerFolderInvitationTest extends TwoControllerTestCase {
                 File dir = new File(getContollerBart().getFolderRepository()
                     .getFoldersBasedir()
                     + System.getProperty("file.separator")
-                    + Util.removeInvalidFilenameChars(invitation.folder.name));
+                    + FileUtils.removeInvalidFilenameChars(invitation.folder.name));
                 try {
                     FolderSettings folderSettings = new FolderSettings(dir,
                         SyncProfile.HOST_FILES, false, true);

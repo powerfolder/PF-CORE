@@ -180,7 +180,7 @@ public class Debug {
      */
     private static String toCSVLine(FileInfo f) {
         Reject.ifNull(f, "FileInfo is null");
-        StringBuffer b = new StringBuffer();
+        StringBuilder b = new StringBuilder();
 
         b.append(f.getModifiedDate() != null ? DATE_FORMAT.get().format(
             f.getModifiedDate()) : "-");
@@ -529,7 +529,7 @@ public class Debug {
         String fileName;
         if (nodeInfo.node != null) {
             fileName = "Node."
-                + Util.removeInvalidFilenameChars(nodeInfo.node.nick)
+                + FileUtils.removeInvalidFilenameChars(nodeInfo.node.nick)
                 + ".report.txt";
         } else {
             fileName = "Node.-unknown-.report.txt";

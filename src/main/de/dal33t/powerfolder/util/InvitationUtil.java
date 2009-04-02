@@ -267,7 +267,7 @@ public class InvitationUtil {
         if (containsNoneAscii(filename)) {
             filename = "powerfolder";
         }
-        filename = Util.removeInvalidFilenameChars(filename);
+        filename = FileUtils.removeInvalidFilenameChars(filename);
         String tmpDir = System.getProperty("java.io.tmpdir");
         File file;
         if (tmpDir != null && tmpDir.length() > 0) {
@@ -324,7 +324,7 @@ public class InvitationUtil {
             fc
                 .setSelectedFile(new File(invitation.folder.name
                     + ".invitation"));
-            fc.setFileFilter(InvitationUtil.createInvitationsFilefilter());
+            fc.setFileFilter(createInvitationsFilefilter());
             int result = fc.showSaveDialog(controller.getUIController()
                 .getMainFrame().getUIComponent());
             if (result != JFileChooser.APPROVE_OPTION) {

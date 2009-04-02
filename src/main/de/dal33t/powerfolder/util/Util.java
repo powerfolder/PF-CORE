@@ -224,19 +224,7 @@ public class Util {
             return false;
         }
         long difference = time1 - time2;
-        if (difference > 2000) {
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * @param folderName
-     * @return
-     * @deprecated use {@link FileUtils#removeInvalidFilenameChars(String)}
-     */
-    public static String removeInvalidFilenameChars(String folderName) {
-        return FileUtils.removeInvalidFilenameChars(folderName);
+        return difference > 2000;
     }
 
     public static final boolean equals(Object a, Object b) {
@@ -425,7 +413,7 @@ public class Util {
             }
             InputStream in = (InputStream) content;
 
-            StringBuffer buf = new StringBuffer();
+            StringBuilder buf = new StringBuilder();
             while (in.available() > 0) {
                 buf.append((char) in.read());
             }
@@ -475,12 +463,12 @@ public class Util {
     public static String encodeURI(String string) {
         StringBuilder b = new StringBuilder();
         byte[] bin = string.getBytes(Charset.forName("UTF8"));
-        for (int i = 0; i < bin.length; i++) {
-            if (Character.isLetterOrDigit(bin[i] & 0xff)) {
-                b.append((char) (bin[i] & 0xff));
+        for (byte aBin : bin) {
+            if (Character.isLetterOrDigit(aBin & 0xff)) {
+                b.append((char) (aBin & 0xff));
             } else {
-                b.append('%').append(DIGITS[bin[i] >> 4]).append(
-                    DIGITS[bin[i] & 0xf]);
+                b.append('%').append(DIGITS[aBin >> 4]).append(
+                        DIGITS[aBin & 0xf]);
             }
         }
         return b.toString();
@@ -683,9 +671,6 @@ public class Util {
         versionStr1 = versionStr1.trim();
         versionStr2 = versionStr2.trim();
 
-        int major1 = 0;
-        int minor1 = 0;
-        int bugfix1 = 0;
         String addition1 = "";
         int addStart1 = versionStr1.indexOf(' ');
         if (addStart1 >= 0) {
@@ -696,23 +681,23 @@ public class Util {
         }
 
         StringTokenizer nizer1 = new StringTokenizer(versionStr1, ".");
+        int major1 = 0;
         try {
-            major1 = Integer.valueOf(nizer1.nextToken()).intValue();
+            major1 = Integer.valueOf(nizer1.nextToken());
         } catch (Exception e) {
         }
+        int minor1 = 0;
         try {
-            minor1 = Integer.valueOf(nizer1.nextToken()).intValue();
+            minor1 = Integer.valueOf(nizer1.nextToken());
         } catch (Exception e) {
             // e.printStackTrace();
         }
+        int bugfix1 = 0;
         try {
-            bugfix1 = Integer.valueOf(nizer1.nextToken()).intValue();
+            bugfix1 = Integer.valueOf(nizer1.nextToken());
         } catch (Exception e) {
         }
 
-        int major2 = 0;
-        int minor2 = 0;
-        int bugfix2 = 0;
         String addition2 = "";
         int addStart2 = versionStr2.indexOf(' ');
         if (addStart2 >= 0) {
@@ -723,16 +708,19 @@ public class Util {
         }
 
         StringTokenizer nizer2 = new StringTokenizer(versionStr2, ".");
+        int major2 = 0;
         try {
-            major2 = Integer.valueOf(nizer2.nextToken()).intValue();
+            major2 = Integer.valueOf(nizer2.nextToken());
         } catch (Exception e) {
         }
+        int minor2 = 0;
         try {
-            minor2 = Integer.valueOf(nizer2.nextToken()).intValue();
+            minor2 = Integer.valueOf(nizer2.nextToken());
         } catch (Exception e) {
         }
+        int bugfix2 = 0;
         try {
-            bugfix2 = Integer.valueOf(nizer2.nextToken()).intValue();
+            bugfix2 = Integer.valueOf(nizer2.nextToken());
         } catch (Exception e) {
         }
 
@@ -780,8 +768,7 @@ public class Util {
         }
 
         // try to connect
-        InetSocketAddress connectAddress = new InetSocketAddress(ip, remotePort);
-        return connectAddress;
+        return new InetSocketAddress(ip, remotePort);
     }
 
     /**

@@ -71,7 +71,6 @@ import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
@@ -743,7 +742,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         private boolean canWriteDirectory(File dir) {
             File testFile;
             do {
-                testFile = new File(dir, Util
+                testFile = new File(dir, FileUtils
                     .removeInvalidFilenameChars(IdGenerator.makeId()));
             } while (testFile.exists());
             try {
