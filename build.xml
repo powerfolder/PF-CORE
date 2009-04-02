@@ -80,6 +80,8 @@ For creation of the installer:
 			<include name="uif_lite-2.0.4.jar" />
 			<include name="validation-2.0.1.jar" />
 			<include name="lucene-core-2.4.0.jar" />
+			<include name="h2-1.1.109.jar" />
+			
 
             <include name="synthetica/commons-logging-1.1.jar" />
             <include name="synthetica/flexdock.jar" />

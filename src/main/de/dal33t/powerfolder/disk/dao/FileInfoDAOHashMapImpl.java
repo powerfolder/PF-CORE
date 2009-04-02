@@ -1,5 +1,6 @@
 package de.dal33t.powerfolder.disk.dao;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
@@ -69,10 +70,7 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
     }
 
     public void store(String domain, FileInfo... infos) {
-        Domain d = getDomain(domain);
-        for (FileInfo fileInfo : infos) {
-            d.files.put(fileInfo, fileInfo);
-        }
+        store(domain, Arrays.asList(infos));
     }
 
     public void store(String domain, Collection<FileInfo> infos) {

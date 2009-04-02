@@ -91,7 +91,7 @@ public class FileInfoDAOLuceneImpl extends PFComponent implements FileInfoDAO {
         iwriter.setMergeFactor(2);
         // iwriter.setMaxFieldLength(25000);
         searcherPool = new IndexSearcherPool();
-        ignoreFileNameCase = !OSUtil.isWindowsSystem();
+        ignoreFileNameCase = OSUtil.isWindowsSystem();
 //        controller.getThreadPool().scheduleWithFixedDelay(new Runnable() {
 //
 //            public void run() {
