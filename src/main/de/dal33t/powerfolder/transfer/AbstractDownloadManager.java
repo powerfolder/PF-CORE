@@ -509,8 +509,10 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             return;
         }
 
-        logInfo("Download completed: " + fileInfo.toDetailString());
-
+        if (isInfo()) {
+            logInfo("Download completed: " + fileInfo.toDetailString());    
+        }
+        
         setState(InternalState.COMPLETED);
         shutdown();
         deleteMetaData();
