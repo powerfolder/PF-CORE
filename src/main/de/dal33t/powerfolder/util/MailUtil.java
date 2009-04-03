@@ -119,8 +119,8 @@ public class MailUtil {
             log.log(Level.SEVERE, "IOException", e);
             return false;
         } catch (URISyntaxException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            log.log(Level.SEVERE, "URISyntaxException", e);
+            return false;
         }
         return true;
     }
