@@ -315,7 +315,9 @@ public class DirectoryFilter extends FilterModel {
                     }
                     if (isNew) {
                         filteredDirectoryModel.setNewFiles(true);
-                        flatFilteredDirectoryModel.setNewFiles(true);
+                        if (flatFilteredDirectoryModel != null) {
+                            flatFilteredDirectoryModel.setNewFiles(true);
+                        }
                     }
                 }
             }
