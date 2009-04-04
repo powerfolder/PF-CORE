@@ -470,6 +470,11 @@ public class ConnectionListener extends PFComponent implements Runnable {
         }
 
         @Override
+        public String getConnectionInfo() {
+            return socket.getRemoteSocketAddress().toString();
+        }
+
+        @Override
         protected void accept() throws ConnectionException {
             if (isFiner()) {
                 logFiner(

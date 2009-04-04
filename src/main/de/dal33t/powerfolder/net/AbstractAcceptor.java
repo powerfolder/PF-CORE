@@ -39,6 +39,11 @@ public abstract class AbstractAcceptor extends PFComponent implements Runnable {
     protected AbstractAcceptor(Controller controller) {
         super(controller);
     }
+    
+    /**
+     * @return information about the connection, e.g. remote address
+     */
+    public abstract String getConnectionInfo();
 
     /**
      * Shuts the acceptor down and closes the socket
@@ -95,11 +100,16 @@ public abstract class AbstractAcceptor extends PFComponent implements Runnable {
             getController().getNodeManager().acceptConnection(handler);
         } catch (ConnectionException e) {
             logFiner(
-                "Unable to accept incoming connection handler " + handler, e);
+                "Unable to accept incoming connection handler " + handler,
+                e);
             handler.shutdown();
             shutdown();
             // Remove from acceptors list
             getController().getNodeManager().acceptors.remove(this);
         }
+    }
+
+    public String toString() {
+        return getClass().getSimpleName() + ":" + getConnectionInfo();
     }
 }
