@@ -34,13 +34,13 @@ public class AccountFilterModel extends Model {
 
     public static final String PROPERTY_DISABLED_ONLY = "disabledOnly";
     public static final String PROPERTY_PRO_USERS_ONLY = "proUsersOnly";
-    public static final String PROPERTY_NON_TRIAL_ONLY = "nonTrialOnly";
+    public static final String PROPERTY_PAYING_OS_ONLY = "payingOSOnly";
     public static final String PROPERTY_ACTIVE_TRIAL = "activeTrial";
     public static final String PROPERTY_USERNAME = "username";
 
     private boolean disabledOnly;
     private boolean proUsersOnly;
-    private boolean nonTrialOnly;
+    private boolean payingOSOnly;
     private boolean activeTrial;
     private String username;
 
@@ -66,14 +66,14 @@ public class AccountFilterModel extends Model {
         firePropertyChange(PROPERTY_PRO_USERS_ONLY, oldValue, this.proUsersOnly);
     }
 
-    public boolean isNonTrialOnly() {
-        return nonTrialOnly;
+    public boolean isPayingOSOnly() {
+        return payingOSOnly;
     }
 
-    public void setNonTrialOnly(boolean nonTrial) {
-        Object oldValue = isNonTrialOnly();
-        this.nonTrialOnly = nonTrial;
-        firePropertyChange(PROPERTY_NON_TRIAL_ONLY, oldValue, this.nonTrialOnly);
+    public void setPayingOSOnly(boolean nonTrial) {
+        Object oldValue = isPayingOSOnly();
+        this.payingOSOnly = nonTrial;
+        firePropertyChange(PROPERTY_PAYING_OS_ONLY, oldValue, this.payingOSOnly);
     }
 
     public boolean isActiveTrial() {
@@ -101,7 +101,7 @@ public class AccountFilterModel extends Model {
     public void reset() {
         activeTrial = false;
         disabledOnly = false;
-        nonTrialOnly = false;
+        payingOSOnly = false;
         proUsersOnly = false;
         username = null;
     }
@@ -111,7 +111,7 @@ public class AccountFilterModel extends Model {
         if (disabledOnly && !account.getOSSubscription().isDisabled()) {
             return false;
         }
-        if (nonTrialOnly && account.getOSSubscription().getType().isTrial()) {
+        if (payingOSOnly && account.getOSSubscription().getType().isTrial()) {
             return false;
         }
         if (proUsersOnly && !account.isProUser()) {
