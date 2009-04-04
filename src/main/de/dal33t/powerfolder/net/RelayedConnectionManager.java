@@ -19,7 +19,14 @@
  */
 package de.dal33t.powerfolder.net;
 
-import de.dal33t.powerfolder.ConfigurationEntry;
+import java.util.Collection;
+import java.util.TimerTask;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
@@ -29,14 +36,6 @@ import de.dal33t.powerfolder.message.RelayedMessage.Type;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.TransferCounter;
 import de.dal33t.powerfolder.util.Waiter;
-
-import java.util.Collection;
-import java.util.TimerTask;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Listens for incoming relayed messages and
@@ -486,11 +485,6 @@ public class RelayedConnectionManager extends PFComponent {
                 return;
             }
             if (getController().isLanOnly()) {
-                return;
-            }
-            if (!ConfigurationEntry.AUTO_CONNECT
-                .getValueBoolean(getController()))
-            {
                 return;
             }
             if (!getController().getNodeManager().isStarted()) {
