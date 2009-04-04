@@ -199,6 +199,7 @@ public class RelayedConnectionManager extends PFComponent {
 
     public boolean isRelay(MemberInfo node) {
         Reject.ifNull(node, "Node info is null");
+        // FIXME: Develop a better strategy
         return node.id.toUpperCase().contains("RELAY");
     }
 
@@ -499,19 +500,18 @@ public class RelayedConnectionManager extends PFComponent {
             for (Member canidate : getController().getNodeManager()
                 .getNodesAsCollection())
             {
-                if (canidate.isCompleteyConnected()) {
-                    continue;
-                }
                 if (!isRelay(canidate.getInfo())) {
                     continue;
                 }
-                if (!canidate.isReconnecting()) {
-                    logFine("Trying to connect to relay: " + canidate + " id: " + canidate.getId());
-                    canidate.markForImmediateConnect();
-                } else {
-                    logFine("Not reconnecting to relay. Already trying to connect to "
-                        + canidate);
+                if (canidate.isConnected()) {
+                    continue;
                 }
+                if (canidate.isReconnecting()) {
+                    continue;
+                }
+                logFine("Triing to connect to relay: " + canidate + " id: "
+                    + canidate.getId());
+                canidate.markForImmediateConnect();
             }
         }
     }
