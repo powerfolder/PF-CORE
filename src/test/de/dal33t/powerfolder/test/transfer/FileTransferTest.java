@@ -320,7 +320,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Let him scan the new content
         scanFolder(getFolderAtBart());
 
-        TestHelper.waitForCondition(50, new Condition() {
+        TestHelper.waitForCondition(100, new Condition() {
             public boolean reached() {
                 return tm2Listener.downloadRequested >= 1
                     && tm2Listener.downloadCompleted >= 1
