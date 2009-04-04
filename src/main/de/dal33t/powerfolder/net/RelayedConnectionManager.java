@@ -199,7 +199,7 @@ public class RelayedConnectionManager extends PFComponent {
     public boolean isRelay(MemberInfo node) {
         Reject.ifNull(node, "Node info is null");
         // FIXME: Develop a better strategy
-        return node.id.toUpperCase().contains("RELAY");
+        return node.id.contains("RELAY");
     }
 
     public boolean isRelay(Member node) {

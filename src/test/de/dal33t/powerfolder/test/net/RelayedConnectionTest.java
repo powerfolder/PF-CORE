@@ -20,7 +20,6 @@
 package de.dal33t.powerfolder.test.net;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.NetworkingMode;
 import de.dal33t.powerfolder.disk.SyncProfile;
