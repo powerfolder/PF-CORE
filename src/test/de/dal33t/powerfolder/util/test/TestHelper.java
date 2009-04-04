@@ -181,7 +181,7 @@ public class TestHelper {
     public static void assertIncompleteFilesGone(
         final TwoControllerTestCase testCase)
     {
-        waitForCondition(10, new Condition() {
+        waitForCondition(20, new Condition() {
             public boolean reached() {
                 for (Controller c : new Controller[]{
                     testCase.getContollerLisa(), testCase.getContollerBart()})
