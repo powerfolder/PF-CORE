@@ -19,9 +19,16 @@
  */
 package de.dal33t.powerfolder.event;
 
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.ui.GenericDialogType;
+
 /**
  * This class encapsulates a warning in the form of a Runnable. The
  * Runnable should advise the user of the problem and take action.
+ *
+ * Also includes a simple implementation that takes a title and message to
+ * display in a dialog.
  */
 public class WarningEvent {
 
@@ -31,6 +38,19 @@ public class WarningEvent {
     public WarningEvent(String name, Runnable runnable) {
         this.name = name;
         this.runnable = runnable;
+    }
+
+    public WarningEvent(final Controller controller, final String name,
+                        final String message) {
+        this.name = name;
+        runnable = new Runnable() {
+            public void run() {
+                if (controller.isStarted() && !controller.isShuttingDown()) {
+                    DialogFactory.genericDialog(controller, name, message,
+                            GenericDialogType.WARN);
+                }
+            }
+        };
     }
 
     public String getName() {

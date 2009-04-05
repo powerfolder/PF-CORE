@@ -210,76 +210,25 @@ public class Translation {
     /**
      * Returns a paramterized translation for this id.
      * <p>
-     * Use <code>{0}</code> as placeholder in property files
+     * Use <code>{0}</code> <code>{1}</code> etc as placeholders in property files
      * 
      * @param id
-     * @param param1
-     *            the parameter to be included.
+     * @param params
+     *            the parameters to be included.
      * @return a paramterized translation for this id.
      */
-    public static String getTranslation(String id, Object param1) {
+    public static String getTranslation(String id, Object... params) {
         String translation = getTranslation(id);
-        int i;
-        String formattedParam = formatParam(param1);
-        while ((i = translation.indexOf("{0}")) >= 0) {
-            translation = translation.substring(0, i) + formattedParam
-                + translation.substring(i + 3, translation.length());
+        int paramCount = 0;
+        for (Object param : params) {
+            int i;
+            String formattedParam = formatParam(param);
+            String paramSymbol = "{" + paramCount++ + '}';
+            while ((i = translation.indexOf(paramSymbol)) >= 0) {
+                translation = translation.substring(0, i) + formattedParam
+                    + translation.substring(i + 3, translation.length());
+            }
         }
-        return translation;
-    }
-
-    /**
-     * Returns a paramterized translation for this id.
-     * <p>
-     * Use <code>{0}</code> and <code>{1}</code> as placeholder in property
-     * files
-     * 
-     * @param id
-     * @param param1
-     *            the parameter to be included.
-     * @param param2
-     *            the second parameter to be included.
-     * @return a paramterized translation for this id.
-     */
-    public static String getTranslation(String id, Object param1, Object param2)
-    {
-        String translation = getTranslation(id, param1);
-        int i;
-        String formattedParam = formatParam(param2);
-        while ((i = translation.indexOf("{1}")) >= 0) {
-            translation = translation.substring(0, i) + formattedParam
-                + translation.substring(i + 3, translation.length());
-        }
-        // log.warning("Translation for '" + id + "': " + translation);
-        return translation;
-    }
-
-    /**
-     * Returns a paramterized translation for this id.
-     * <p>
-     * Use <code>{0}</code> and <code>{1}</code> as placeholder in property
-     * files
-     * 
-     * @param id
-     * @param param1
-     *            the parameter to be included.
-     * @param param2
-     *            the second parameter to be included.
-     * @param param3
-     *            the third parameter to be included.
-     * @return a paramterized translation for this id.
-     */
-    public static String getTranslation(String id, Object param1,
-        Object param2, Object param3)
-    {
-        String translation = getTranslation(id, param1, param2);
-        int i;
-        String formattedParam = formatParam(param3);
-        while ((i = translation.indexOf("{2}")) >= 0) {
-            translation = translation.substring(0, i) + formattedParam
-                + translation.substring(i + 3, translation.length());
-        }
-        // log.warning("Translation for '" + id + "': " + translation);
         return translation;
     }
 

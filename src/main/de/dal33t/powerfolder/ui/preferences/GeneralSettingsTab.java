@@ -21,9 +21,13 @@ package de.dal33t.powerfolder.ui.preferences;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemListener;
+import java.awt.event.ItemEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.util.Hashtable;
+import java.util.Dictionary;
 
 import javax.swing.*;
 
@@ -62,10 +66,13 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
     private JSlider autoCleanupSlider;
 
-    private JCheckBox showAdvancedSettingsBox;
-    private ValueModel showAdvancedSettingsModel;
+    private JCheckBox massDeleteBox;
+    private JSlider massDeleteSlider;
 
     private JCheckBox useRecycleBinBox;
+
+    private JCheckBox showAdvancedSettingsBox;
+    private ValueModel showAdvancedSettingsModel;
 
     private JCheckBox usePowerFolderIconBox;
 
@@ -127,14 +134,13 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
         locationField = createLocationField();
 
-        autoCleanupSlider = new JSlider(0, 30, PreferencesEntry.
+        autoCleanupSlider = new JSlider(0, 20, PreferencesEntry.
                 AUTO_CLEANUP_FREQUENCY.getValueInt(getController()));
         autoCleanupSlider.setMajorTickSpacing(5);
         autoCleanupSlider.setMinorTickSpacing(1);
 
         autoCleanupSlider.setPaintTicks(true);
         autoCleanupSlider.setPaintLabels(true);
-
 
         showAdvancedSettingsBox = BasicComponentFactory.createCheckBox(
             showAdvancedSettingsModel, Translation
@@ -145,6 +151,25 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         useRecycleBinBox = BasicComponentFactory.createCheckBox(
             new BufferedValueModel(urbModel, writeTrigger), Translation
                 .getTranslation("preferences.dialog.use_recycle_bin"));
+
+        ValueModel massDeleteModel = new ValueHolder(
+                PreferencesEntry.MASS_DELETE_PROTECTION.getValueBoolean(getController()));
+        massDeleteBox = BasicComponentFactory.createCheckBox(
+            new BufferedValueModel(massDeleteModel, writeTrigger), Translation
+                .getTranslation("preferences.dialog.use_mass_delete"));
+        massDeleteBox.addItemListener(new MassDeleteItemListener());
+        massDeleteSlider = new JSlider(20, 100, PreferencesEntry.
+                MASS_DELETE_THRESHOLD.getValueInt(getController()));
+        massDeleteSlider.setMajorTickSpacing(20);
+        massDeleteSlider.setMinorTickSpacing(5);
+        massDeleteSlider.setPaintTicks(true);
+        massDeleteSlider.setPaintLabels(true);
+        Dictionary<Integer, JLabel> dictionary = new Hashtable<Integer, JLabel>();
+        for (int i = 20; i <= 100; i += massDeleteSlider.getMajorTickSpacing()) {
+            dictionary.put(i, new JLabel(Integer.toString(i) + '%'));
+        }
+        massDeleteSlider.setLabelTable(dictionary);
+        enableMassDeleteSlider();
 
         // Windows only...
         if (OSUtil.isWindowsSystem()) {
@@ -200,7 +225,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         if (panel == null) {
             FormLayout layout = new FormLayout(
                 "right:pref, 3dlu, 140dlu, pref:grow",
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
 
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
@@ -226,6 +251,15 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
             row += 2;
             builder.add(useRecycleBinBox, cc.xyw(3, row, 2));
+
+            row += 2;
+            builder.add(massDeleteBox, cc.xyw(3, row, 2));
+
+            row += 2;
+            builder.add(new JLabel(Translation
+                .getTranslation("preferences.dialog.mass_delete_threshold")),
+                    cc.xy(1, row));
+            builder.add(massDeleteSlider, cc.xy(3, row));
 
             // Add info for non-windows systems
             if (OSUtil.isWindowsSystem()) { // Windows System
@@ -300,6 +334,13 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         return builder.getPanel();
     }
 
+    /**
+     * Enable the mass delete slider if the box is selected.
+     */
+    private void enableMassDeleteSlider() {
+        massDeleteSlider.setEnabled(massDeleteBox.isSelected());
+    }
+
     public void save() {
         // Write properties into core
         writeTrigger.triggerCommit();
@@ -329,6 +370,11 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             ConfigurationEntry.USE_PF_ICON.setValue(getController(), Boolean
                 .toString(usePowerFolderIconBox.isSelected()));
         }
+
+        PreferencesEntry.MASS_DELETE_PROTECTION.setValue(getController(),
+                massDeleteBox.isSelected());
+        PreferencesEntry.MASS_DELETE_THRESHOLD.setValue(getController(),
+                massDeleteSlider.getValue()); 
     }
 
     /**
@@ -341,6 +387,12 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             String file = DialogFactory.chooseDirectory(getController(),
                 initial);
             locationModel.setValue(file);
+        }
+    }
+
+    private class MassDeleteItemListener implements ItemListener {
+        public void itemStateChanged(ItemEvent e) {
+            enableMassDeleteSlider();
         }
     }
 }

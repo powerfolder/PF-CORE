@@ -34,10 +34,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.disk.ScanResult;
+import de.dal33t.powerfolder.disk.*;
 import de.dal33t.powerfolder.event.AskForFriendshipEvent;
+import de.dal33t.powerfolder.event.WarningEvent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
@@ -87,15 +86,7 @@ import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.transfer.Upload;
-import de.dal33t.powerfolder.util.Convert;
-import de.dal33t.powerfolder.util.Debug;
-import de.dal33t.powerfolder.util.MessageListenerSupport;
-import de.dal33t.powerfolder.util.Profiling;
-import de.dal33t.powerfolder.util.ProfilingEntry;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.StringUtils;
-import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.util.Waiter;
+import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
 
 /**
@@ -1387,6 +1378,54 @@ public class Member extends PFComponent implements Comparable<Member> {
                 FolderFilesChanged changes = (FolderFilesChanged) message;
                 Convert.cleanFileList(getController(), changes.added);
                 Convert.cleanFileList(getController(), changes.removed);
+
+                // #1022 - Mass delete detection. Switch to a safe profile if
+                // a large percent of files would get deleted by another node.
+                if (targetFolder != null && changes.removed != null
+                        && getController().isUIEnabled()
+                        && PreferencesEntry.MASS_DELETE_PROTECTION
+                        .getValueBoolean(getController())) {
+                    int delsCount = changes.removed.length;
+                    int knownFilesCount = targetFolder.getKnownFilesCount();
+                    if (knownFilesCount > 0) {
+                        int delPercentage = 100 * delsCount / knownFilesCount;
+                        logFine("FolderFilesChanged delete percentage "
+                                + delPercentage + '%');
+                        if (delPercentage >= PreferencesEntry
+                                .MASS_DELETE_THRESHOLD.getValueInt(
+                                getController())) {
+                            SyncProfileConfiguration config = targetFolder
+                                    .getSyncProfile().getConfiguration();
+                            if (config.isSyncDeletionWithFriends() ||
+                                    config.isSyncDeletionWithOthers()) {
+                                String originalName = targetFolder
+                                        .getSyncProfile().getProfileName();
+                                targetFolder.setSyncProfile(SyncProfile.HOST_FILES);
+                                logWarning("Received a FolderFilesChanged message from "
+                                        + fromPeer.getMember().getInfo().nick
+                                        + " which will delete " + delPercentage
+                                        + " percent of known files in folder "
+                                        + targetFolder.getInfo().name + ". The "
+                                        + " sync profile has been switched from " +
+                                        originalName + " to "
+                                        + targetFolder.getSyncProfile().getProfileName()
+                                        + " to protect the files.");
+                                WarningEvent we = new WarningEvent(getController(),
+                                        Translation.getTranslation(
+                                                "member.mass_delete.warning_title"),
+                                        Translation.getTranslation(
+                                                "member.mass_delete.warning_message",
+                                                fromPeer.getMember().getInfo().nick,
+                                                delPercentage,
+                                                targetFolder.getInfo().name,
+                                                originalName,
+                                                targetFolder.getSyncProfile()
+                                                        .getProfileName()));
+                                getController().pushWarningEvent(we);
+                            }
+                        }
+                    }
+                }
 
                 Integer nExpected = expectedListMessages.get(changes.folder);
                 if (nExpected == null) {

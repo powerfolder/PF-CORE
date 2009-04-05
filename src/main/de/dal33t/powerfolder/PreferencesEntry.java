@@ -75,6 +75,10 @@ public enum PreferencesEntry {
 
     CHECK_UPDATE("updatechecker.askfornewreleaseversion", true),
 
+    MASS_DELETE_PROTECTION("mass.delete.protection", true),
+
+    MASS_DELETE_THRESHOLD("mass.delete.threshold", 75),
+
     /**
      * the pref that holds a boolean value if the connection should be tested
      * and a warning displayed if limited connectivty is given.
