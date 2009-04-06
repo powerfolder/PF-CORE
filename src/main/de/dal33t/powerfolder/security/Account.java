@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.jgoodies.binding.beans.Model;
@@ -418,6 +419,7 @@ public class Account extends Model implements Serializable {
      * SyncProfile.BACKUP_TARGET_NO_CHANGE_DETECT.
      * 
      * @param controller
+     * @return the number of folder the sync was re-enabled.
      */
     public int enableSync(Controller controller) {
         Reject.ifNull(controller, "Controller is null");
@@ -437,6 +439,41 @@ public class Account extends Model implements Serializable {
             }
         }
         return n;
+    }
+
+    /**
+     * Sets all folders that don't have SyncProfile.DISABLED to
+     * SyncProfile.DISABLED.
+     * 
+     * @param controller
+     * @return the number of folder the sync was disabled.
+     */
+    public int disableSync(Controller controller) {
+        Reject.ifNull(controller, "Controller is null");
+        int nNewDisabled = 0;
+        for (Permission p : getPermissions()) {
+            if (!(p instanceof FolderAdminPermission)) {
+                continue;
+            }
+            FolderAdminPermission fp = (FolderAdminPermission) p;
+            Folder folder = fp.getFolder().getFolder(controller);
+            if (folder == null) {
+                continue;
+            }
+            if (log.isLoggable(Level.FINE)) {
+                log.fine("Disable download of new files for folder: " + folder
+                    + " for " + getUsername());
+            }
+            if (!folder.getSyncProfile().equals(SyncProfile.DISABLED)) {
+                folder.setSyncProfile(SyncProfile.DISABLED);
+                nNewDisabled++;
+            }
+        }
+        if (nNewDisabled > 0) {
+            log.info("Disabled " + nNewDisabled + " folder for "
+                + getUsername());
+        }
+        return nNewDisabled;
     }
 
     // Permission convenience ************************************************
