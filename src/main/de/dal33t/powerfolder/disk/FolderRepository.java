@@ -1065,6 +1065,7 @@ public class FolderRepository extends PFComponent implements Runnable {
     private void fireMaintanceStarted(Folder folder) {
         folderRepositoryListenerSupport.maintenanceStarted(new FolderRepositoryEvent(this,
             folder));
+        // TODO Why not to use existing event maintenanceStarted/fireMaintenanceFinished?
         // @todo harry to implement real event
         synchronizationStatsListenerSupport.synchronizationStatsChanged(
                 new SynchronizationStatsEvent(this, new Date(), true));
@@ -1073,6 +1074,7 @@ public class FolderRepository extends PFComponent implements Runnable {
     private void fireMaintenanceFinished(Folder folder) {
         folderRepositoryListenerSupport.maintenanceFinished(new FolderRepositoryEvent(this,
             folder));
+        // TODO Why not to use existing event maintenanceStarted/fireMaintenanceFinished?
         // @todo harry to implement real event
         synchronizationStatsListenerSupport.synchronizationStatsChanged(
                 new SynchronizationStatsEvent(this, new Date(), false));
