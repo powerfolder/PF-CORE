@@ -83,7 +83,8 @@ public class ControllerTestCase extends TestCase {
         // triggerAndWaitForInitialMaitenenace(controller);
         controller.getPreferences().putBoolean("createdesktopshortcuts", false);
         // Clean up on completion.
-        PreferencesEntry.AUTO_CLEANUP_FREQUENCY.setValue(controller, 0);
+        PreferencesEntry.UPLOAD_AUTO_CLEANUP_FREQUENCY.setValue(controller, 0);
+        PreferencesEntry.DOWNLOAD_AUTO_CLEANUP_FREQUENCY.setValue(controller, 0);
 
         System.out.println("Controller started");
     }

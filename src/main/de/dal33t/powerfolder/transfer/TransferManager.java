@@ -300,13 +300,13 @@ public class TransferManager extends PFComponent {
      * true and the transfer is older than AUTO_CLEANUP_FREQUENCY in days.
      */
     private void cleanupOldTransfers() {
-        Integer cleanupFrequency = PreferencesEntry.AUTO_CLEANUP_FREQUENCY
-                .getValueInt(getController());
         if (ConfigurationEntry.UPLOADS_AUTO_CLEANUP.getValueBoolean(
                 getController())) {
+            Integer uploadCleanupFrequency = PreferencesEntry.UPLOAD_AUTO_CLEANUP_FREQUENCY
+                    .getValueInt(getController());
             for (Upload completedUpload : completedUploads) {
                 long numberOfDays = calcDays(completedUpload.getCompletedDate());
-                if (numberOfDays >= cleanupFrequency) {
+                if (numberOfDays >= uploadCleanupFrequency) {
                     logInfo("Auto-cleaning up upload '"
                             + completedUpload.getFile().getName() + "' (days="
                             + numberOfDays + ')');
@@ -316,9 +316,11 @@ public class TransferManager extends PFComponent {
         }
         if (ConfigurationEntry.DOWNLOADS_AUTO_CLEANUP.getValueBoolean(
                 getController())) {
+            Integer downloadCleanupFrequency = PreferencesEntry.UPLOAD_AUTO_CLEANUP_FREQUENCY
+                    .getValueInt(getController());
             for (DownloadManager completedDownload : completedDownloads) {
                 long numberOfDays = calcDays(completedDownload.getCompletedDate());
-                if (numberOfDays >= cleanupFrequency) {
+                if (numberOfDays >= downloadCleanupFrequency) {
                     logInfo("Auto-cleaning up download '"
                             + completedDownload.getFileInfo().getName()
                             + "' (days=" + numberOfDays + ')');
@@ -743,7 +745,7 @@ public class TransferManager extends PFComponent {
 
         if (ConfigurationEntry.DOWNLOADS_AUTO_CLEANUP
             .getValueBoolean(getController())
-            && PreferencesEntry.AUTO_CLEANUP_FREQUENCY
+            && PreferencesEntry.DOWNLOAD_AUTO_CLEANUP_FREQUENCY
                 .getValueInt(getController()) == 0)
         {
             if (isFiner()) {
@@ -867,7 +869,7 @@ public class TransferManager extends PFComponent {
             // Auto cleanup of uploads
             if (ConfigurationEntry.UPLOADS_AUTO_CLEANUP
                 .getValueBoolean(getController())
-                && PreferencesEntry.AUTO_CLEANUP_FREQUENCY
+                && PreferencesEntry.UPLOAD_AUTO_CLEANUP_FREQUENCY
                     .getValueInt(getController()) == 0)
             {
                 if (isFiner()) {

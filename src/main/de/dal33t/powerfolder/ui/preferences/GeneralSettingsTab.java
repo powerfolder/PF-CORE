@@ -64,8 +64,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     private ValueModel locationModel;
     private JComponent locationField;
 
-    private JSlider autoCleanupSlider;
-
     private JCheckBox massDeleteBox;
     private JSlider massDeleteSlider;
 
@@ -133,14 +131,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         });
 
         locationField = createLocationField();
-
-        autoCleanupSlider = new JSlider(0, 20, PreferencesEntry.
-                AUTO_CLEANUP_FREQUENCY.getValueInt(getController()));
-        autoCleanupSlider.setMajorTickSpacing(5);
-        autoCleanupSlider.setMinorTickSpacing(1);
-
-        autoCleanupSlider.setPaintTicks(true);
-        autoCleanupSlider.setPaintLabels(true);
 
         showAdvancedSettingsBox = BasicComponentFactory.createCheckBox(
             showAdvancedSettingsModel, Translation
@@ -225,7 +215,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         if (panel == null) {
             FormLayout layout = new FormLayout(
                 "right:pref, 3dlu, 140dlu, pref:grow",
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
 
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
@@ -242,12 +232,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             builder.add(new JLabel(Translation
                 .getTranslation("preferences.dialog.base_dir")), cc.xy(1, row));
             builder.add(locationField, cc.xy(3, row));
-
-            row += 2;
-            builder.add(new JLabel(Translation
-                .getTranslation("preferences.dialog.auto_cleanup")),
-                    cc.xy(1, row));
-            builder.add(autoCleanupSlider, cc.xy(3, row));
 
             row += 2;
             builder.add(useRecycleBinBox, cc.xyw(3, row, 2));
@@ -353,9 +337,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         if (!StringUtils.isBlank(nickField.getText())) {
             getController().changeNick(nickField.getText(), false);
         }
-
-        PreferencesEntry.AUTO_CLEANUP_FREQUENCY.setValue(getController(),
-                autoCleanupSlider.getValue());
 
         // setAdvanced
         PreferencesEntry.SHOW_ADVANCED_SETTINGS.setValue(getController(),

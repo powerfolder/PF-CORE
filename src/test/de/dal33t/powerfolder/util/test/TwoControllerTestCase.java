@@ -166,7 +166,8 @@ public class TwoControllerTestCase extends TestCase {
         controllerBart.getPreferences().putBoolean("createdesktopshortcuts",
             false);
         // Clean up on completion.
-        PreferencesEntry.AUTO_CLEANUP_FREQUENCY.setValue(controllerBart, 0);
+        PreferencesEntry.DOWNLOAD_AUTO_CLEANUP_FREQUENCY.setValue(controllerBart, 0);
+        PreferencesEntry.UPLOAD_AUTO_CLEANUP_FREQUENCY.setValue(controllerBart, 0);
     }
 
     protected void startControllerLisa() {
@@ -179,7 +180,8 @@ public class TwoControllerTestCase extends TestCase {
         controllerLisa.getPreferences().putBoolean("createdesktopshortcuts",
             false);
         // Clean up on completion.
-        PreferencesEntry.AUTO_CLEANUP_FREQUENCY.setValue(controllerLisa, 0);
+        PreferencesEntry.DOWNLOAD_AUTO_CLEANUP_FREQUENCY.setValue(controllerLisa, 0);
+        PreferencesEntry.UPLOAD_AUTO_CLEANUP_FREQUENCY.setValue(controllerLisa, 0);
     }
 
     /**
