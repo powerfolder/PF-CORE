@@ -56,7 +56,14 @@ import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAO;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAOHashMapImpl;
-import de.dal33t.powerfolder.event.*;
+import de.dal33t.powerfolder.event.FileNameProblemEvent;
+import de.dal33t.powerfolder.event.FileNameProblemHandler;
+import de.dal33t.powerfolder.event.FolderEvent;
+import de.dal33t.powerfolder.event.FolderListener;
+import de.dal33t.powerfolder.event.FolderMembershipEvent;
+import de.dal33t.powerfolder.event.FolderMembershipListener;
+import de.dal33t.powerfolder.event.ListenerSupportFactory;
+import de.dal33t.powerfolder.event.WarningEvent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
@@ -1249,6 +1256,10 @@ public class Folder extends PFComponent {
             dao.stop();
         }
         dao = new FileInfoDAOHashMapImpl();
+
+        // File daoDir = new File(getSystemSubDir(), "db_h2");
+        // dao = new FileInfoDAOSQLImpl(getController(), "jdbc:h2:"
+        // + daoDir, "sa", "", null);
 
         // File daoDir = new File(getSystemSubDir(), "db");
         // try {
