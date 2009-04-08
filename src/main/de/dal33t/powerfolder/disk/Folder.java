@@ -56,13 +56,7 @@ import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAO;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAOHashMapImpl;
-import de.dal33t.powerfolder.event.FileNameProblemEvent;
-import de.dal33t.powerfolder.event.FileNameProblemHandler;
-import de.dal33t.powerfolder.event.FolderEvent;
-import de.dal33t.powerfolder.event.FolderListener;
-import de.dal33t.powerfolder.event.FolderMembershipEvent;
-import de.dal33t.powerfolder.event.FolderMembershipListener;
-import de.dal33t.powerfolder.event.ListenerSupportFactory;
+import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
@@ -127,7 +121,7 @@ public class Folder extends PFComponent {
     /**
      * Access lock to the DB/DAO.
      */
-    private Object dbAccessLock = new Object();
+    private final Object dbAccessLock = new Object();
 
     /** files that should(not) be downloaded in auto download */
     private DiskItemFilter diskItemFilter;
@@ -360,13 +354,52 @@ public class Folder extends PFComponent {
 
     /**
      * Commits the scan results into the internal file database. Changes get
-     * broadcasted to other members if nessesary. public because also called
-     * from SyncFolderPanel (until that class maybe handles that itself)
+     * broadcasted to other members if nessesary.
      * 
      * @param scanResult
      *            the scanresult to commit.
+     * @param ignoreEmptyCheck
+     *            ignore the check for empty folders.
      */
-    private void commitScanResult(ScanResult scanResult) {
+    private void commitScanResult(ScanResult scanResult,
+                                  boolean ignoreEmptyCheck) {
+
+        // See if everything has been deleted.
+        // Does the user want to stop managing this folder?
+        if (getKnownFilesCount() > 0 && !scanResult.getDeletedFiles().isEmpty()
+                && scanResult.getTotalFilesCount() == 0
+                && getController().isUIEnabled() && !ignoreEmptyCheck) {
+
+            Runnable runnable = new Runnable() {
+                public void run() {
+                    int result = DialogFactory.genericDialog(getController(),
+                            Translation.getTranslation("folder.empty_folder.title"),
+                            Translation.getTranslation("folder.empty_folder.message",
+                                    getName()), new String[]{
+                                    Translation.getTranslation(
+                                            "folder.empty_folder.stop_managing"),
+                                    Translation.getTranslation(
+                                            "folder.empty_folder.send_deletions")},
+                            1, GenericDialogType.WARN);
+                    if (result == 0) { // Leave folder
+                        logInfo("User decided to leave forlder "
+                                + getInfo().name
+                                + " because all files are deleted.");
+                        getController().getFolderRepository().removeFolder(
+                                Folder.this, true);
+                    } else { // Broadcast as usual.
+                        scanLocalFiles(true);
+                    }
+                }
+            };
+            WarningEvent we = new WarningEvent("local folder delete",
+                    runnable);
+            getController().pushWarningEvent(we);
+
+            // Quit here, so deletions are not broadcast to other members.
+            return;
+        }
+
         synchronized (scanLock) {
             synchronized (dbAccessLock) {
                 for (FileInfo newFileInfo : scanResult.getNewFiles()) {
@@ -699,12 +732,25 @@ public class Folder extends PFComponent {
 
     /**
      * Scans the local directory for new files. Be carefull! This method is not
-     * Thread save. In most cases you want to use
+     * Thread safe. In most cases you want to use
      * recommendScanOnNextMaintenance() followed by maintain().
-     * 
+     *
      * @return if the local files where scanned
      */
     public boolean scanLocalFiles() {
+        return scanLocalFiles(false);
+    }
+
+    /**
+     * Scans the local directory for new files. Be carefull! This method is not
+     * Thread safe. In most cases you want to use
+     * recommendScanOnNextMaintenance() followed by maintain().
+     *
+     * @param ignoreEmptyCheck
+     *            ignore the check for empty folders.
+     * @return if the local files where scanned
+     */
+    public boolean scanLocalFiles(boolean ignoreEmptyCheck) {
 
         boolean wasDeviceDisconnected = deviceDisconnected;
         /**
@@ -757,12 +803,11 @@ public class Folder extends PFComponent {
                     FileNameProblemHandler handler = getController()
                         .getFolderRepository().getFileNameProblemHandler();
                     if (handler != null) {
-                        handler
-                            .fileNameProblemsDetected(new FileNameProblemEvent(
-                                this, result));
+                        handler.fileNameProblemsDetected(
+                                new FileNameProblemEvent(this, result));
                     }
                 }
-                commitScanResult(result);
+                commitScanResult(result, ignoreEmptyCheck);
                 lastScan = new Date();
                 return true;
             }
