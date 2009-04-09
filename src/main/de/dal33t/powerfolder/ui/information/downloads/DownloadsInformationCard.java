@@ -219,7 +219,6 @@ public class DownloadsInformationCard extends InformationCard
         cleanupLabel.setEnabled(autoCleanupCB.isSelected());
     }
 
-
     ///////////////////
     // Inner Classes //
     ///////////////////
