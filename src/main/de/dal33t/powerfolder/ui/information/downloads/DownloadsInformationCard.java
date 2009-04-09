@@ -25,6 +25,7 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.information.HasDetailsPanel;
@@ -33,10 +34,7 @@ import de.dal33t.powerfolder.ui.information.folder.files.FileDetailsPanel;
 import de.dal33t.powerfolder.util.Translation;
 
 import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
+import javax.swing.event.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -55,6 +53,8 @@ public class DownloadsInformationCard extends InformationCard
     private FileDetailsPanel detailsPanel;
     private JCheckBox autoCleanupCB;
     private Action clearCompletedDownloadsAction;
+    private JSlider cleanupSlider;
+    private JLabel cleanupLabel;
 
     /**
      * Constructor
@@ -100,6 +100,7 @@ public class DownloadsInformationCard extends InformationCard
      * Initialize components
      */
     private void initialize() {
+        cleanupLabel = new JLabel();
         buildToolbar();
         tablePanel = new DownloadsTablePanel(getController(), 
                 openDownloadAction, abortDownloadsAction,
@@ -126,18 +127,22 @@ public class DownloadsInformationCard extends InformationCard
             .getTranslation("downloads_information_card.auto_cleanup.description"));
         autoCleanupCB.setSelected(ConfigurationEntry.DOWNLOADS_AUTO_CLEANUP
             .getValueBoolean(getController()));
-        autoCleanupCB.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                getUIController().getTransferManagerModel()
-                        .getDownloadsAutoCleanupModel().setValue(
-                    autoCleanupCB.isSelected());
-                ConfigurationEntry.DOWNLOADS_AUTO_CLEANUP
-                    .setValue(getController(), String.valueOf(autoCleanupCB
-                        .isSelected()));
-                getController().saveConfig();
+        autoCleanupCB.addActionListener(new MyActionListener());
+
+        cleanupSlider = new JSlider(0, 10,
+                PreferencesEntry.DOWNLOAD_AUTO_CLEANUP_FREQUENCY
+                        .getValueInt(getController())) {
+            public Dimension getPreferredSize() {
+                return new Dimension(20, (int) super.getPreferredSize()
+                        .getSize().getHeight());
             }
-        });
-        
+        };
+        cleanupSlider.setMinorTickSpacing(1);
+        cleanupSlider.setMajorTickSpacing(5);
+        cleanupSlider.setPaintTicks(true);
+        cleanupSlider.setSnapToTicks(true);
+        cleanupSlider.addChangeListener(new MyChangeListener());
+
         ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
         bar.addGridded(new JToggleButton(new DetailsAction(getController())));
         bar.addRelatedGap();
@@ -148,24 +153,29 @@ public class DownloadsInformationCard extends InformationCard
         bar.addGridded(new JButton(clearCompletedDownloadsAction));
         bar.addRelatedGap();
         bar.addGridded(autoCleanupCB);
+        bar.addRelatedGap();
+        bar.addGridded(cleanupSlider);
         toolBar = bar.getPanel();
+        updateCleanupLabel();
     }
 
     /**
      * Build the ui component pane.
      */
     private void buildUIComponent() {
-        FormLayout layout = new FormLayout("3dlu, pref:grow, 3dlu",
+        FormLayout layout = new FormLayout("3dlu, pref, 3dlu, pref:grow, 3dlu",
                 "3dlu, pref, 3dlu, pref, 3dlu, fill:pref:grow, 3dlu, pref");
                 //     tools       sep         table                 details
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
         builder.add(toolBar, cc.xy(2, 2));
-        builder.addSeparator(null, cc.xyw(1, 4, 3));
-        builder.add(tablePanel.getUIComponent(), cc.xy(2, 6));
-        builder.add(detailsPanel.getPanel(), cc.xy(2, 8));
+        builder.add(cleanupLabel, cc.xy(4, 2));
+        builder.addSeparator(null, cc.xyw(1, 4, 5));
+        builder.add(tablePanel.getUIComponent(), cc.xyw(2, 6, 3));
+        builder.add(detailsPanel.getPanel(), cc.xyw(2, 8, 3));
         uiComponent = builder.getPanel();
+        enableCleanupComponents();
     }
 
     /**
@@ -190,6 +200,25 @@ public class DownloadsInformationCard extends InformationCard
 
         detailsPanel.setFileInfo(tablePanel.getSelectdFile());
     }
+
+    private void updateCleanupLabel() {
+        PreferencesEntry.DOWNLOAD_AUTO_CLEANUP_FREQUENCY
+                .setValue(getController(), cleanupSlider.getValue());
+        if (cleanupSlider.getValue() == 0) {
+            cleanupLabel.setText(Translation.getTranslation(
+                    "downloads_information_card.auto_cleanup.immediate"));
+        } else {
+            cleanupLabel.setText(Translation.getTranslation(
+                    "downloads_information_card.auto_cleanup.days",
+                    cleanupSlider.getValue()));
+        }
+    }
+
+    private void enableCleanupComponents() {
+        cleanupSlider.setEnabled(autoCleanupCB.isSelected());
+        cleanupLabel.setEnabled(autoCleanupCB.isSelected());
+    }
+
 
     ///////////////////
     // Inner Classes //
@@ -270,5 +299,24 @@ public class DownloadsInformationCard extends InformationCard
         public void valueChanged(ListSelectionEvent e) {
             update();
         }
+    }
+
+    private class MyChangeListener implements ChangeListener {
+        public void stateChanged(ChangeEvent e) {
+            updateCleanupLabel();
+        }
+    }
+
+    private class MyActionListener implements ActionListener {
+            public void actionPerformed(ActionEvent e) {
+                getUIController().getTransferManagerModel()
+                        .getDownloadsAutoCleanupModel().setValue(
+                    autoCleanupCB.isSelected());
+                ConfigurationEntry.DOWNLOADS_AUTO_CLEANUP
+                    .setValue(getController(), String.valueOf(autoCleanupCB
+                        .isSelected()));
+                getController().saveConfig();
+                enableCleanupComponents();
+            }
     }
 }
