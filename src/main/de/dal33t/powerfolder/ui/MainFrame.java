@@ -194,47 +194,40 @@ public class MainFrame extends PFUIComponent {
     }
     
     /**
-     * Asks user about exit behavior of the program
-     * when the program is used for the first time
+     * Asks user about exit behavior of the program when the program is used for
+     * the first time
      */
     private void handleExitFirstRequest() {
-		boolean askForQuitOnX = PreferencesEntry.ASK_FOR_QUIT_ON_X
-				.getValueBoolean(getController());
-		if (askForQuitOnX) {
-			// Prompt for personal message.
-			String[] options = { Translation.getTranslation("general.ok"),
-					Translation.getTranslation("general.cancel") };
-			FormLayout layout = new FormLayout("pref", "pref, pref, pref, pref");
-			PanelBuilder builder = new PanelBuilder(layout);
-			CellConstraints cc = new CellConstraints();
-			JCheckBox checkbox = new JCheckBox(Translation
-					.getTranslation("dialog.ask_for_quit_on_x.text"));
-			checkbox.setSelected(!PreferencesEntry.QUIT_ON_X.getValueBoolean(getController()));
-			builder.add(checkbox, cc.xy(1, 1));
+        boolean askForQuitOnX = PreferencesEntry.ASK_FOR_QUIT_ON_X
+            .getValueBoolean(getController());
+        if (askForQuitOnX) {
+            // Prompt for personal message.
+            String[] options = {
+                Translation
+                    .getTranslation("dialog.ask_for_quit_on_x.Minimize_button"),
+                Translation
+                    .getTranslation("dialog.ask_for_quit_on_x.Exit_button")};
 
-			JPanel innerPanel = builder.getPanel();
-			NeverAskAgainResponse response = DialogFactory.genericDialog(
-                    getController(), Translation
-							.getTranslation("dialog.ask_for_quit_on_x.title"),
-					innerPanel, options, 0, GenericDialogType.QUESTION,
-					Translation.getTranslation("general.neverAskAgain"));
+            NeverAskAgainResponse response = DialogFactory.genericDialog(
+                getController(), Translation
+                    .getTranslation("dialog.ask_for_quit_on_x.title"),
+                Translation.getTranslation("dialog.ask_for_quit_on_x.text"),
+                options, 0, GenericDialogType.QUESTION, Translation
+                    .getTranslation("general.neverAskAgain"));
 
-			if (response.getButtonIndex() == 0) { // == OK
-				boolean checked = checkbox.isSelected();
-				if (checked) {
-					// minimize to systray
-					PreferencesEntry.QUIT_ON_X.setValue(getController(), false);
-				}else{
-					PreferencesEntry.QUIT_ON_X.setValue(getController(), true);
-				}
-			}
-			if (response.isNeverAskAgain()) {
-				// don't ask me again
-				PreferencesEntry.ASK_FOR_QUIT_ON_X.setValue(getController(),
-						false);
-			}
-		}
-	}
+            if (response.getButtonIndex() == 1) { // == Exit
+                PreferencesEntry.QUIT_ON_X.setValue(getController(), true);
+            } else {
+                PreferencesEntry.QUIT_ON_X.setValue(getController(), false);
+            }
+
+            if (response.isNeverAskAgain()) {
+                // don't ask me again
+                PreferencesEntry.ASK_FOR_QUIT_ON_X.setValue(getController(),
+                    false);
+            }
+        }
+    }
 
     /**
      * Initalizes all ui components
