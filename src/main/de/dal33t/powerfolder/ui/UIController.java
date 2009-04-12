@@ -22,10 +22,7 @@ package de.dal33t.powerfolder.ui;
 import de.dal33t.powerfolder.*;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.event.FolderRepositoryEvent;
-import de.dal33t.powerfolder.event.FolderRepositoryListener;
-import de.dal33t.powerfolder.event.SynchronizationStatsListener;
-import de.dal33t.powerfolder.event.SynchronizationStatsEvent;
+import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.ui.action.SyncAllFoldersAction;
@@ -812,6 +809,42 @@ public class UIController extends PFComponent {
      */
     public void hideOSLines() {
         mainFrame.hideOSLines();
+    }
+
+    /**
+     * Handle the case where all files have been deleted from a folder.
+     * Perhaps the user actually wants to stop managing the folder?
+     *
+     * @param folder
+     */
+    public void handleTotalFolderDeletion(final Folder folder) {
+        Runnable runnable = new Runnable() {
+            public void run() {
+                int result = DialogFactory.genericDialog(getController(),
+                        Translation.getTranslation(
+                                "uicontroller.empty_folder.title"),
+                        Translation.getTranslation(
+                                "uicontroller.empty_folder.message",
+                                folder.getName()), new String[]{
+                        Translation.getTranslation(
+                                "uicontroller.empty_folder.stop_managing"),
+                        Translation.getTranslation(
+                                "uicontroller.empty_folder.send_deletions")},
+                        1, "Total-Folder-Delete", GenericDialogType.WARN);
+                if (result == 0) { // Leave folder
+                    logInfo("User decided to leave forlder "
+                            + folder.getInfo().name
+                            + " because all files are deleted.");
+                    getController().getFolderRepository().removeFolder(
+                            folder, true);
+                } else { // Broadcast as usual.
+                    folder.scanLocalFiles(true);
+                }
+            }
+        };
+        WarningEvent we = new WarningEvent("local folder delete", runnable);
+        getController().pushWarningEvent(we);
+
     }
 
     ///////////////////

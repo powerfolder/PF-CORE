@@ -24,11 +24,11 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.CellConstraints;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Help;
 import de.javasoft.synthetica.addons.DirectoryChooser;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.io.File;
 
 /**
@@ -42,23 +42,7 @@ import java.io.File;
 public class DialogFactory {
 
     /**
-     * Used to give an INDICATION that a dialog is currently being shown. It is
-     * not guaranteed because this would involve locks around dialogs, which
-     * would be unwise. USE WITH CAUSTION: Do not cause a Thread to wait for
-     * this to clear.
-     */
-    private static final AtomicBoolean dialogInUse = new AtomicBoolean();
-
-    /**
-     * Whether a dialog is (probably) being displayed.
-     * @return
-     */
-    public static boolean isDialogInUse() {
-        return dialogInUse.get();
-    }
-
-    /**
-     * shows a OK / CANCEL dialog with a long text in a JTextArea.
+     * Shows an OK / CANCEL dialog with a long text in a JTextArea.
      *
      * @param parent the parent frame. May safely be null if necessary, but prefer object to be modal on.
      * @param title the dialog title
@@ -71,28 +55,22 @@ public class DialogFactory {
         String longText)
     {
 
-        try {
-            dialogInUse.set(true);
+        JTextArea textArea = new JTextArea(longText, 10, 30);
+        textArea.setBackground(Color.WHITE);
+        textArea.setEditable(false);
+        JScrollPane scrollPane = new JScrollPane(textArea);
 
-            JTextArea textArea = new JTextArea(longText, 10, 30);
-            textArea.setBackground(Color.WHITE);
-            textArea.setEditable(false);
-            JScrollPane scrollPane = new JScrollPane(textArea);
+        FormLayout layout = new FormLayout("pref", "pref, 3dlu, pref");
+        PanelBuilder builder = new PanelBuilder(layout);
 
-            FormLayout layout = new FormLayout("pref", "pref, 3dlu, pref");
-            PanelBuilder builder = new PanelBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+        builder.add(LinkedTextBuilder.build(controller, message).getPanel(), cc.xy(1, 1));
+        builder.add(scrollPane, cc.xy(1, 3));
 
-            CellConstraints cc = new CellConstraints();
-            builder.add(LinkedTextBuilder.build(controller, message).getPanel(), cc.xy(1, 1));
-            builder.add(scrollPane, cc.xy(1, 3));
-
-            return genericDialog(controller, title, builder.getPanel(),
-                    new String[]{Translation.getTranslation("general.ok"),
-                    Translation.getTranslation("general.cancel")},
-                    0, GenericDialogType.QUESTION);
-        } finally {
-            dialogInUse.set(false);
-        }
+        return genericDialog(controller, title, builder.getPanel(),
+                new String[]{Translation.getTranslation("general.ok"),
+                Translation.getTranslation("general.cancel")},
+                0, GenericDialogType.QUESTION);
     }
 
     /**
@@ -106,22 +84,17 @@ public class DialogFactory {
     public static String chooseDirectory(Controller controller,
         String initialDirectory)
     {
-        try {
-            dialogInUse.set(true);
-            DirectoryChooser dc = new DirectoryChooser();
-            if (initialDirectory != null &&
-                    initialDirectory.trim().length() != 0) {
-                dc.setCurrentDirectory(new File(initialDirectory));
-            }
-            int i = dc.showOpenDialog(controller.getUIController()
-                    .getActiveFrame());
-            if (i == JFileChooser.APPROVE_OPTION) {
-                return dc.getSelectedFile().getAbsolutePath();
-            }
-            return initialDirectory;
-        } finally {
-            dialogInUse.set(false);
+        DirectoryChooser dc = new DirectoryChooser();
+        if (initialDirectory != null &&
+                initialDirectory.trim().length() != 0) {
+            dc.setCurrentDirectory(new File(initialDirectory));
         }
+        int i = dc.showOpenDialog(controller.getUIController()
+                .getActiveFrame());
+        if (i == JFileChooser.APPROVE_OPTION) {
+            return dc.getSelectedFile().getAbsolutePath();
+        }
+        return initialDirectory;
     }
 
     /**
@@ -186,7 +159,7 @@ public class DialogFactory {
 
     /**
      * Generic dialog with message.
-     * 
+     *
      * @param parent the parent frame. May safely be null if necessary, but prefer object to be modal on.
      * @param title the title for the dialog
      * @param message the message to display in the dialog
@@ -197,17 +170,54 @@ public class DialogFactory {
      */
     public static int genericDialog(Controller controller, String title,
         String message, String[] options, int defaultOption,
-        GenericDialogType type)
+        GenericDialogType type) {
+        return genericDialog(controller, title, message, options, defaultOption,
+                null, type);
+    }
+
+    /**
+     * Generic dialog with message.
+     *
+     * @param parent the parent frame. May safely be null if necessary, but prefer object to be modal on.
+     * @param title the title for the dialog
+     * @param message the message to display in the dialog
+     * @param options array of strings that will be displayed on a sequential bar of buttons
+     * @param defaultOption the index of the option that is the default highlighted button
+     * @param helpLink Help class link
+     * @param type a {@link GenericDialogType}
+     * @return the index of the selected option button, -1 if dialog cancelled
+     */
+    public static int genericDialog(Controller controller, String title,
+        String message, String[] options, int defaultOption,
+        String helpLink, GenericDialogType type)
     {
 
         PanelBuilder panelBuilder = LinkedTextBuilder.build(controller, message);
         return genericDialog(controller, title, panelBuilder.getPanel(), options,
-            defaultOption, type);
+            defaultOption, helpLink, type);
     }
 
     /**
      * Generic dialog with custom panel.
-     * 
+     *
+     * @param parent the parent frame. May safely be null if necessary, but prefer object to be modal on.
+     * @param title the title for the dialog
+     * @param panel a panel that will be the displayed section of the dialog right of icon and above buttons
+     * @param options array of strings that will be displayed on a sequential bar of buttons
+     * @param defaultOption the index of the option that is the default highlighted button
+     * @param type a {@link GenericDialogType}
+     * @return the index of the selected option button, -1 if dialog cancelled
+     */
+    public static int genericDialog(Controller controller, String title,
+                                    JPanel panel, String[] options,
+                                    int defaultOption, GenericDialogType type) {
+        return genericDialog(controller, title, panel, options, defaultOption,
+                null, type);
+    }
+
+    /**
+     * Generic dialog with custom panel.
+     *
      * @param parent the parent frame. May safely be null if necessary, but prefer object to be modal on.
      * @param title the title for the dialog
      * @param panel a panel that will be the displayed section of the dialog right of icon and above buttons
@@ -217,19 +227,16 @@ public class DialogFactory {
      * @return the index of the selected option button, -1 if dialog cancelled
      */
     public static int genericDialog(Controller controller, String title, JPanel panel,
-        String[] options, int defaultOption, GenericDialogType type)
+        String[] options, int defaultOption, String helpLink, GenericDialogType type)
     {
-
-        try {
-            dialogInUse.set(true);
-            GenericDialog dialog = new GenericDialog(controller
-                    .getUIController().getActiveFrame(), title, panel,
-                type, options, defaultOption, null);
-
-            return dialog.display();
-        } finally {
-            dialogInUse.set(false);
+        JButton helpButton = null;
+        if (helpLink != null) {
+            helpButton = Help.createWikiLinkButton(controller, helpLink);
         }
+        GenericDialog dialog = new GenericDialog(controller
+                .getUIController().getActiveFrame(), title, panel,
+            type, options, defaultOption, null, helpButton);
+        return dialog.display();
     }
 
     /**
@@ -270,18 +277,11 @@ public class DialogFactory {
         String title, JPanel panel, String[] options, int defaultOption,
         GenericDialogType type, String neverAskAgainMessage)
     {
+        GenericDialog dialog = new GenericDialog(controller
+                .getUIController().getActiveFrame(), title, panel,
+            type, options, defaultOption, neverAskAgainMessage, null);
 
-        try {
-            dialogInUse.set(true);
-            GenericDialog dialog = new GenericDialog(controller
-                    .getUIController().getActiveFrame(), title, panel,
-                type, options, defaultOption, neverAskAgainMessage);
-
-            return new NeverAskAgainResponse(dialog.display(), dialog
-                .isNeverAskAgain());
-
-        } finally {
-            dialogInUse.set(false);
-        }
+        return new NeverAskAgainResponse(dialog.display(), dialog
+            .isNeverAskAgain());
     }
 }

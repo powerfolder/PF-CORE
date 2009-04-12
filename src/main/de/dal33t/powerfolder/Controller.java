@@ -21,8 +21,6 @@ package de.dal33t.powerfolder;
 
 import java.awt.Component;
 import java.awt.GraphicsEnvironment;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -45,12 +43,10 @@ import javax.swing.JOptionPane;
 
 import org.apache.commons.cli.CommandLine;
 
-import com.jgoodies.binding.value.ValueHolder;
-import com.jgoodies.binding.value.ValueModel;
-
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.RecycleBin;
+import de.dal33t.powerfolder.disk.Folder;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX_V3;
 import de.dal33t.powerfolder.distribution.Distribution;
 import de.dal33t.powerfolder.distribution.PowerFolderClient;
@@ -1055,15 +1051,14 @@ public class Controller extends PFComponent {
             } catch (ConnectionException e) {
                 logSevere("Problems starting listener " + connectionListener, e);
             }
-            for (Iterator<ConnectionListener> it = additionalConnectionListeners
-                .iterator(); it.hasNext();)
-            {
+            for (ConnectionListener additionalConnectionListener :
+                    additionalConnectionListeners) {
                 try {
-                    ConnectionListener addListener = it.next();
+                    ConnectionListener addListener = additionalConnectionListener;
                     addListener.start();
                 } catch (ConnectionException e) {
                     logSevere("Problems starting listener "
-                        + connectionListener, e);
+                            + connectionListener, e);
                 }
             }
         }
@@ -1377,10 +1372,8 @@ public class Controller extends PFComponent {
         if (connectionListener != null) {
             connectionListener.shutdown();
         }
-        for (Iterator<ConnectionListener> it = additionalConnectionListeners
-            .iterator(); it.hasNext();)
-        {
-            ConnectionListener addListener = it.next();
+        for (ConnectionListener addListener :
+                additionalConnectionListeners) {
             addListener.shutdown();
         }
         additionalConnectionListeners.clear();
@@ -2101,5 +2094,23 @@ public class Controller extends PFComponent {
         for (WarningHandler warningHandler : warningHandlers) {
             warningHandler.pushWarning(event);
         }
+    }
+
+    /**
+     * Handle case when all files are deleted from a folder.
+     *
+     * @param folder
+     * @param folder
+     * @return true if deletion is considered dangerous and controller should
+     *         quit the scan.
+     */
+    public boolean handleTotalFolderDeletion(Folder folder) {
+        if (isUIEnabled()) {
+            uiController.handleTotalFolderDeletion(folder);
+            return true;
+        }
+
+        // No UI - ignore - continue as normal.
+        return false;
     }
 }

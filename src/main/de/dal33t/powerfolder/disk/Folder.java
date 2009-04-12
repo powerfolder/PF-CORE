@@ -33,6 +33,7 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.io.EOFException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -63,7 +64,6 @@ import de.dal33t.powerfolder.event.FolderListener;
 import de.dal33t.powerfolder.event.FolderMembershipEvent;
 import de.dal33t.powerfolder.event.FolderMembershipListener;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
-import de.dal33t.powerfolder.event.WarningEvent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
@@ -375,36 +375,13 @@ public class Folder extends PFComponent {
         // Does the user want to stop managing this folder?
         if (getKnownFilesCount() > 0 && !scanResult.getDeletedFiles().isEmpty()
                 && scanResult.getTotalFilesCount() == 0
-                && getController().isUIEnabled() && !ignoreEmptyCheck) {
-
-            Runnable runnable = new Runnable() {
-                public void run() {
-                    int result = DialogFactory.genericDialog(getController(),
-                            Translation.getTranslation("folder.empty_folder.title"),
-                            Translation.getTranslation("folder.empty_folder.message",
-                                    getName()), new String[]{
-                                    Translation.getTranslation(
-                                            "folder.empty_folder.stop_managing"),
-                                    Translation.getTranslation(
-                                            "folder.empty_folder.send_deletions")},
-                            1, GenericDialogType.WARN);
-                    if (result == 0) { // Leave folder
-                        logInfo("User decided to leave forlder "
-                                + getInfo().name
-                                + " because all files are deleted.");
-                        getController().getFolderRepository().removeFolder(
-                                Folder.this, true);
-                    } else { // Broadcast as usual.
-                        scanLocalFiles(true);
-                    }
-                }
-            };
-            WarningEvent we = new WarningEvent("local folder delete",
-                    runnable);
-            getController().pushWarningEvent(we);
+                && !ignoreEmptyCheck) {
+            boolean quitHere = getController().handleTotalFolderDeletion(this);
 
             // Quit here, so deletions are not broadcast to other members.
-            return;
+            if (quitHere) {
+                return;
+            }
         }
 
         synchronized (scanLock) {
@@ -1005,7 +982,7 @@ public class Folder extends PFComponent {
         synchronized (scanLock) {
             synchronized (dbAccessLock) {
                 // link new file to our folder
-                fInfo.setFolderInfo(this.currentInfo);
+                fInfo.setFolderInfo(currentInfo);
                 if (!isKnown(fInfo)) {
                     if (isFiner()) {
                         logFiner(fInfo + ", modified by: "
@@ -1046,7 +1023,7 @@ public class Folder extends PFComponent {
                     // fireEvent(new FolderChanged());
 
                     if (isFiner()) {
-                        logFiner(this.toString() + ": Local file scanned: "
+                        logFiner(toString() + ": Local file scanned: "
                             + fInfo.toDetailString());
                     }
                     return true;
@@ -1105,7 +1082,7 @@ public class Folder extends PFComponent {
             }
         }
         // check length of path elements and filename
-        // TODO: The check if 30 chars or more cuurrently disabled
+        // TODO: The check if 30 chars or more currently disabled
         // Should only check if on mac system
         // Jan: No longer needed since there is no java 1.5 for mac classic!
 
@@ -1154,9 +1131,8 @@ public class Folder extends PFComponent {
         // Add to this folder
         fInfo.setFolderInfo(currentInfo);
 
-        TransferPriority prio = TransferPriority.NORMAL;
-
-        prio = transferPriorities.getPriority(fInfo);
+        TransferPriority prio = transferPriorities.getPriority(fInfo);
+        
         // Remove old file from info
         currentInfo.removeFile(fInfo);
 
@@ -1329,7 +1305,7 @@ public class Folder extends PFComponent {
                             logFiner("ignore@" + info.getName());
                         }
                     }
-                } catch (java.io.EOFException e) {
+                } catch (EOFException e) {
                     logFine("ignore nothing for " + this);
                 } catch (Exception e) {
                     logSevere("read ignore error: " + this + e.getMessage(), e);
@@ -1343,7 +1319,7 @@ public class Folder extends PFComponent {
                             logFiner("lastScan" + lastScan);
                         }
                     }
-                } catch (java.io.EOFException e) {
+                } catch (EOFException e) {
                     // ignore nothing available for ignore
                     logFine("ignore nothing for " + this);
                 } catch (Exception e) {
@@ -1430,7 +1406,8 @@ public class Folder extends PFComponent {
         try {
             FileInfo[] files;
             synchronized (dbAccessLock) {
-                files = dao.findAll(null).toArray(new FileInfo[0]);
+                Collection<FileInfo> infoCollection = dao.findAll(null);
+                files = infoCollection.toArray(new FileInfo[infoCollection.size()]);
             }
             if (dbFile.exists()) {
                 if (!dbFile.delete()) {
@@ -2387,9 +2364,11 @@ public class Folder extends PFComponent {
      * ATTENTION: DO NOT USE!!
      * 
      * @return the internal file database as array. ONLY FOR TESTs
+     * @deprecated do not use - ONLY FOR TESTs
      */
     public FileInfo[] getKnowFilesAsArray() {
-        return dao.findAll(null).toArray(new FileInfo[0]);
+        Collection<FileInfo> infoCollection = dao.findAll(null);
+        return infoCollection.toArray(new FileInfo[infoCollection.size()]);
     }
 
     /**

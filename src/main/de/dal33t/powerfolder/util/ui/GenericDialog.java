@@ -58,6 +58,7 @@ public class GenericDialog {
     private JPanel innerPanel;
     private int initialSelection;
     private JButton[] buttons;
+    private JButton helpButton;
     private ValueModel buttonModel;
     private JDialog dialog;
     private String[] mnemonics;
@@ -83,6 +84,7 @@ public class GenericDialog {
      * @param options
      * @param initialSelection
      * @param neverAskAgainText
+     * @param helpLink
      */
     public GenericDialog(Window parent,
                          String title,
@@ -90,12 +92,14 @@ public class GenericDialog {
                          GenericDialogType type,
                          String[] options,
                          int initialSelection,
-                         String neverAskAgainText) {
+                         String neverAskAgainText,
+                         JButton helpButton) {
 
         this.parent = parent;
         this.title = title;
         this.innerPanel = innerPanel;
         this.initialSelection = initialSelection;
+        this.helpButton = helpButton;
 
         validateArgs(options);
 
@@ -171,6 +175,13 @@ public class GenericDialog {
             builder.add(neverAskAgainCheckBox, cc.xywh(2, 4, 3, 1));
         }
 
+        FormLayout barLayout;
+        if (helpButton == null) {
+            barLayout = new FormLayout("pref", "pref");
+        } else {
+            barLayout = new FormLayout("pref, 3dlu, pref", "pref");
+        }
+        PanelBuilder barBuilder = new PanelBuilder(barLayout);
         ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
         int i = 0;
         for (JButton button : buttons) {
@@ -180,8 +191,11 @@ public class GenericDialog {
                 dialog.getRootPane().setDefaultButton(button);
             }
         }
-        bar.addRelatedGap();
-        builder.add(bar.getPanel(), cc.xywh(2, 6, 3, 1, "center, center"));
+        barBuilder.add(bar.getPanel(), cc.xy(1, 1));
+        if (helpButton != null) {
+            barBuilder.add(helpButton, cc.xy(3, 1));
+        }
+        builder.add(barBuilder.getPanel(), cc.xywh(2, 6, 3, 1, "center, center"));
 
         dialog.getContentPane().add(builder.getPanel());
         dialog.getContentPane().setSize(innerPanel.getPreferredSize().width,
