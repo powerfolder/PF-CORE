@@ -20,17 +20,16 @@
 package de.dal33t.powerfolder.ui;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.Waiter;
+import de.dal33t.powerfolder.util.Translation;
 
 import javax.swing.*;
 import javax.swing.border.AbstractBorder;
 import java.awt.*;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Date;
+import java.util.*;
 import java.util.Timer;
-import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -61,7 +60,7 @@ public class SplashScreen extends JWindow {
     private int nPercentageGuessed;
     private int nextPercentage;
     private Date startTime;
-    private long lastStartTookMS;
+    private String tipOfTheDay;
 
     /**
      * New splashscreen
@@ -71,15 +70,14 @@ public class SplashScreen extends JWindow {
      * @param waitTime
      */
     public SplashScreen(final Controller controller, int waitTime) {
-        super();
         if (controller == null) {
             throw new NullPointerException("Controller is null");
         }
         this.controller = controller;
 
         // Get last start time
-        lastStartTookMS = controller.getPreferences().getLong(
-            "lastStartTookMS", 1000);
+        long lastStartTookMS = controller.getPreferences().getLong(
+                "lastStartTookMS", 1000);
 
         image = new JLabel(Icons.getInstance().SPLASH);
         bar = new JProgressBar(SwingConstants.HORIZONTAL, 0, 100);
@@ -95,15 +93,9 @@ public class SplashScreen extends JWindow {
         }
         bar.setBorder(BorderFactory.createEmptyBorder());
 
-        // l.setBorder(new SplashBorder());
-        // bar.setBorder(new SplashBorder());
         getContentPane().add(image, BorderLayout.NORTH);
         getContentPane().add(bar, BorderLayout.SOUTH);
-     //   getContentPane().setBackground(Color.WHITE);
-      //  getRootPane().setOpaque(true);
-        
 
-      
         pack();
 
         getRootPane().setBorder(new SplashBorder());
@@ -113,9 +105,9 @@ public class SplashScreen extends JWindow {
             (int) lastStartTookMS / 200, 10));
 
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        Dimension labelSize = this.getPreferredSize();
-        setLocation(screenSize.width / 2 - (labelSize.width / 2),
-            (int) (screenSize.height / 2.5) - (labelSize.height / 2));
+        Dimension labelSize = getPreferredSize();
+        setLocation(screenSize.width / 2 - labelSize.width / 2,
+                (int) (screenSize.height / 2.5) - labelSize.height / 2);
         final int pause = waitTime;
         final Runnable closerRunner = new Runnable() {
             public void run() {
@@ -143,6 +135,14 @@ public class SplashScreen extends JWindow {
             }
         };
         setVisible(true);
+
+        // Get 'tip of the day' text.
+        int dayOfYear = new GregorianCalendar().get(Calendar.DAY_OF_YEAR);
+        String tipOfDayLengthString =
+                Translation.getTranslation("tip_of_the_day.length");
+        int day = 1 + dayOfYear % Integer.valueOf(tipOfDayLengthString);
+        tipOfTheDay = Translation.getTranslation("tip_of_the_day.text_" + day);
+
         splashThread = new Thread(waitRunner, "SplashScreenThread");
         splashThread.start();
     }
@@ -203,9 +203,9 @@ public class SplashScreen extends JWindow {
                     } else {
                         g.setColor(FREE_TEXT_COLOR);
                     }
-                    String version = Translation.getTranslation(
-                        "splash.version", Controller.PROGRAM_VERSION);
-                    g.drawString(version, 460, 145);
+                    String version = Controller.PROGRAM_VERSION;
+                    g.drawString(version, 510, 98);
+                    g.drawString(tipOfTheDay, 30, 146);
                 }
             });
         } catch (InterruptedException e) {
@@ -235,7 +235,7 @@ public class SplashScreen extends JWindow {
      * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      * @version $Revision: 1.16 $
      */
-    private class SplashBorder extends AbstractBorder {
+    private static class SplashBorder extends AbstractBorder {
 
         public void paintBorder(Component c, Graphics g, int x, int y,
             int width, int height)
