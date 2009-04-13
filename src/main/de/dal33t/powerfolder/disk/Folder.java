@@ -1817,90 +1817,94 @@ public class Folder extends PFComponent {
         }
 
         List<FileInfo> removedFiles = new ArrayList<FileInfo>();
-
-        for (Member member : getMembersAsCollection()) {
-            if (!member.isCompleteyConnected()) {
-                // disconected go to next member
-                continue;
-            }
-
-            Collection<FileInfo> fileList = getFilesAsCollection(member);
-            if (fileList == null) {
-                continue;
-            }
-
-            if (isFiner()) {
-                logFiner("RemoteFileDeletion sync. Member '" + member.getNick()
-                    + "' has " + fileList.size() + " possible files");
-            }
-            for (FileInfo remoteFile : fileList) {
-                if (!remoteFile.isDeleted()) {
-                    // Not interesting...
-                    continue;
-                }
-                boolean modifiedByFriend = remoteFile
-                    .isModifiedByFriend(getController());
-                boolean syncFromMemberAllowed = (modifiedByFriend && syncProfile
-                    .getConfiguration().isSyncDeletionWithFriends())
-                    || (!modifiedByFriend && syncProfile.getConfiguration()
-                        .isSyncDeletionWithOthers()) || force;
-
-                if (!syncFromMemberAllowed) {
-                    // Not allowed to sync from that guy.
+        synchronized (scanLock) {
+            for (Member member : getMembersAsCollection()) {
+                if (!member.isCompleteyConnected()) {
+                    // disconected go to next member
                     continue;
                 }
 
-                FileInfo localFile = getFile(remoteFile);
-                if (localFile != null && !remoteFile.isNewerThan(localFile)) {
-                    // Local file is newer
+                Collection<FileInfo> fileList = getFilesAsCollection(member);
+                if (fileList == null) {
                     continue;
                 }
 
-                // Add to local file to database if was deleted on remote
-                if (localFile == null) {
-                    addFile(remoteFile);
-                    dao.store(null, remoteFile);
-                    localFile = getFile(remoteFile);
-                    // File has been marked as removed at our side
-                    removedFiles.add(localFile);
+                if (isFiner()) {
+                    logFiner("RemoteFileDeletion sync. Member '"
+                        + member.getNick() + "' has " + fileList.size()
+                        + " possible files");
                 }
-                if (localFile.isDeleted()) {
-                    continue;
-                }
-                File localCopy = localFile.getDiskFile(getController()
-                    .getFolderRepository());
-                if (!localFile.inSyncWithDisk(localCopy)) {
-                    logFine("Not deleting file from member " + member
-                        + ", local file not in sync with disk: "
-                        + localFile.toDetailString() + " at "
-                        + localCopy.getAbsolutePath());
-                    recommendScanOnNextMaintenance();
-                    continue;
-                }
-
-                if (isFine()) {
-                    logFine("File was deleted by " + member
-                        + ", deleting local: " + localFile.toDetailString()
-                        + " at " + localCopy.getAbsolutePath());
-                }
-
-                // Abort transfers on file.
-                getController().getTransferManager().breakTransfers(localFile);
-
-                synchronized (deleteLock) {
-                    if (localCopy.exists()) {
-                        deleteFile(localFile, localCopy);
+                for (FileInfo remoteFile : fileList) {
+                    if (!remoteFile.isDeleted()) {
+                        // Not interesting...
+                        continue;
                     }
-                }
-                // FIXME: Size might not be correct
-                localFile.setDeleted(true);
-                localFile.setModifiedInfo(remoteFile.getModifiedBy(),
-                    remoteFile.getModifiedDate());
-                localFile.setVersion(remoteFile.getVersion());
+                    boolean modifiedByFriend = remoteFile
+                        .isModifiedByFriend(getController());
+                    boolean syncFromMemberAllowed = (modifiedByFriend && syncProfile
+                        .getConfiguration().isSyncDeletionWithFriends())
+                        || (!modifiedByFriend && syncProfile.getConfiguration()
+                            .isSyncDeletionWithOthers()) || force;
 
-                // File has been removed
-                removedFiles.add(localFile);
-                dao.store(null, localFile);
+                    if (!syncFromMemberAllowed) {
+                        // Not allowed to sync from that guy.
+                        continue;
+                    }
+
+                    FileInfo localFile = getFile(remoteFile);
+                    if (localFile != null && !remoteFile.isNewerThan(localFile))
+                    {
+                        // Local file is newer
+                        continue;
+                    }
+
+                    // Add to local file to database if was deleted on remote
+                    if (localFile == null) {
+                        addFile(remoteFile);
+                        dao.store(null, remoteFile);
+                        localFile = getFile(remoteFile);
+                        // File has been marked as removed at our side
+                        removedFiles.add(localFile);
+                    }
+                    if (localFile.isDeleted()) {
+                        continue;
+                    }
+                    File localCopy = localFile.getDiskFile(getController()
+                        .getFolderRepository());
+                    if (!localFile.inSyncWithDisk(localCopy)) {
+                        logFine("Not deleting file from member " + member
+                            + ", local file not in sync with disk: "
+                            + localFile.toDetailString() + " at "
+                            + localCopy.getAbsolutePath());
+                        recommendScanOnNextMaintenance();
+                        continue;
+                    }
+
+                    if (isFine()) {
+                        logFine("File was deleted by " + member
+                            + ", deleting local: " + localFile.toDetailString()
+                            + " at " + localCopy.getAbsolutePath());
+                    }
+
+                    // Abort transfers on file.
+                    getController().getTransferManager().breakTransfers(
+                        localFile);
+
+                    synchronized (deleteLock) {
+                        if (localCopy.exists()) {
+                            deleteFile(localFile, localCopy);
+                        }
+                    }
+                    // FIXME: Size might not be correct
+                    localFile.setDeleted(true);
+                    localFile.setModifiedInfo(remoteFile.getModifiedBy(),
+                        remoteFile.getModifiedDate());
+                    localFile.setVersion(remoteFile.getVersion());
+
+                    // File has been removed
+                    removedFiles.add(localFile);
+                    dao.store(null, localFile);
+                }
             }
         }
 
