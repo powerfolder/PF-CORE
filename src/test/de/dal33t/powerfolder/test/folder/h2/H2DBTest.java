@@ -15,12 +15,12 @@ import de.dal33t.powerfolder.disk.dao.FileInfoDAO;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAOSQLImpl;
 import de.dal33t.powerfolder.disk.dao.FileInfoSQLConverter;
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.test.folder.db.FileInfoDAOTest;
+import de.dal33t.powerfolder.test.folder.db.FileInfoDAOTestCase;
 import de.dal33t.powerfolder.util.StreamUtils;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.test.TestHelper;
 
-public class H2DBTest extends FileInfoDAOTest {
+public class H2DBTest extends FileInfoDAOTestCase {
     private Connection con;
     private String createTableSQL;
     private FileInfoDAO dao;

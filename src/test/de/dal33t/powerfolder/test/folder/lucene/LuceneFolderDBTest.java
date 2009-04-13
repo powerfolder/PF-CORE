@@ -41,7 +41,7 @@ import org.apache.lucene.store.FSDirectory;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAOLuceneImpl;
 import de.dal33t.powerfolder.disk.dao.FileInfoDocumentConverter;
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.test.folder.db.FileInfoDAOTest;
+import de.dal33t.powerfolder.test.folder.db.FileInfoDAOTestCase;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
 
@@ -50,7 +50,7 @@ import de.dal33t.powerfolder.util.logging.LoggingManager;
  * 
  * @author sprajc
  */
-public class LuceneFolderDBTest extends FileInfoDAOTest {
+public class LuceneFolderDBTest extends FileInfoDAOTestCase {
 
     private FileInfoDAOLuceneImpl dao;
 

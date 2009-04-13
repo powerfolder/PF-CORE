@@ -31,7 +31,7 @@ import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.test.ControllerTestCase;
 
-public abstract class FileInfoDAOTest extends ControllerTestCase {
+public abstract class FileInfoDAOTestCase extends ControllerTestCase {
 
     protected void testFindAll(FileInfoDAO dao, int n) {
         Collection<FileInfo> fInfos = new ArrayList<FileInfo>();
