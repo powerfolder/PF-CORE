@@ -20,7 +20,6 @@
 package de.dal33t.powerfolder.ui;
 
 import com.jgoodies.forms.builder.DefaultFormBuilder;
-import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
@@ -39,6 +38,7 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
 import de.javasoft.plaf.synthetica.SyntheticaRootPaneUI;
 
 import javax.swing.*;
+import javax.swing.event.ChangeListener;
 import javax.swing.plaf.RootPaneUI;
 import java.awt.*;
 import java.awt.event.*;
@@ -82,16 +82,17 @@ public class MainFrame extends PFUIComponent {
      */
     public MainFrame(Controller controller) throws HeadlessException {
         super(controller);
+
+        // Need to do this NOW because everything must be built before anything
+        // affects it, like tab icons.
+        buildUI();
     }
 
     /**
      * Builds the UI
      */
-    public void buildUI() {
-        if (uiComponent == null) {
-            // Initalize components
-            initComponents();
-        }
+    private void buildUI() {
+        initComponents();
 
         FormLayout layout = new FormLayout("fill:pref:grow",
             "0dlu, pref, 1dlu, fill:0:grow, 1dlu, pref");
@@ -327,6 +328,24 @@ public class MainFrame extends PFUIComponent {
     }
 
     /**
+     * Add a change listener to the main tabbed pane selection.
+     *
+     * @param l
+     */
+    public void addTabbedPaneChangeListener(ChangeListener l) {
+        mainTabbedPane.addTabbedPaneChangeListener(l);
+    }
+
+    /**
+     * Remove a change listener from the main tabbed pane.
+     *
+     * @param l
+     */
+    public void removeTabbedPaneChangeListener(ChangeListener l) {
+        mainTabbedPane.removeTabbedPaneChangeListener(l);
+    }
+
+    /**
      * Stores all current window valus.
      */
     public void storeValues() {
@@ -384,6 +403,42 @@ public class MainFrame extends PFUIComponent {
      */
     public void hideOSLines() {
         mainTabbedPane.hideOSLines();
+    }
+
+    /**
+     * Set the Icon for the home tab.
+     *
+     * @param homeIcon
+     */
+    public void setHomeTabIcon(Icon homeIcon) {
+        mainTabbedPane.setHomeIcon(homeIcon);
+    }
+
+    /**
+     * Set the Icon for the folders tab.
+     *
+     * @param homeIcon
+     */
+    public void setFoldersTabIcon(Icon foldersIcon) {
+        mainTabbedPane.setFoldersIcon(foldersIcon);
+    }
+
+    /**
+     * Set the Icon for the computers tab.
+     *
+     * @param homeIcon
+     */
+    public void setComputersTabIcon(Icon computersIcon) {
+        mainTabbedPane.setComputersIcon(computersIcon);
+    }
+
+    /**
+     * Get the selected main tab index.
+     *
+     * @return
+     */
+    public int getSelectedMainTabIndex() {
+        return mainTabbedPane.getSelectedTabIndex();
     }
 
     ///////////////////

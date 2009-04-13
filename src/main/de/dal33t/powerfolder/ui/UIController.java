@@ -35,6 +35,7 @@ import de.dal33t.powerfolder.ui.notification.NotificationHandler;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.ui.dialog.SingleFileTransferDialog;
 import de.dal33t.powerfolder.ui.render.SysTrayBlinkManager;
+import de.dal33t.powerfolder.ui.render.MainFrameBlinkManager;
 import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
@@ -234,28 +235,6 @@ public class UIController extends PFComponent {
             .getTransferManager());
         transferManagerModel.initialize();
 
-        // now load
-        try {
-            EventQueue.invokeAndWait(new Runnable() {
-                public void run() {
-                    logFine("Building UI");
-                    mainFrame.buildUI();
-                    logFine("UI built");
-                }
-            });
-        } catch (InterruptedException e) {
-            logSevere("InterruptedException", e);
-        } catch (InvocationTargetException e) {
-            logSevere("InvocationTargetException", e);
-        }
-
-        // // Show window contents while dragging
-        // Toolkit.getDefaultToolkit().setDynamicLayout(true);
-        // System.setProperty("sun.awt.noerasebackground", "true");
-
-        // Completely loaded now
-        // setLoadingCompletion(100);
-
         if (OSUtil.isSystraySupported()) {
             initalizeSystray();
         } else {
@@ -268,9 +247,7 @@ public class UIController extends PFComponent {
             logWarning("Starting minimized");
         }
 
-        new SysTrayBlinkManager(this);
-
-        // Show mainwindow
+        // Show main window
         try {
             EventQueue.invokeAndWait(new Runnable() {
                 public void run() {
@@ -314,6 +291,14 @@ public class UIController extends PFComponent {
         // Goes to the home page if required.
         gotoHPIfRequired();
         detectAndShowLimitDialog();
+
+        // Start the blinkers later, so the UI is fully displayed first.
+        UIUtil.invokeLaterInEDT(new Runnable() {
+            public void run() {
+                new SysTrayBlinkManager(UIController.this);
+                new MainFrameBlinkManager(UIController.this);
+            }
+        });
     }
 
     private void gotoHPIfRequired() {

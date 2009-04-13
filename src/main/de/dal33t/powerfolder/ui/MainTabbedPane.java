@@ -36,9 +36,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class MainTabbedPane extends PFUIComponent {
 
-    private static final int HOME_INDEX = 0;
-    private static final int FOLDERS_INDEX = 1;
-    private static final int COMPUTERS_INDEX = 2;
+    public static final int HOME_INDEX = 0;
+    public static final int FOLDERS_INDEX = 1;
+    public static final int COMPUTERS_INDEX = 2;
 
     private HomeTab homeTab;
     private FoldersTab foldersTab;
@@ -115,10 +115,55 @@ public class MainTabbedPane extends PFUIComponent {
     }
 
     /**
+     * Add a change listener to the main tabbed pane.
+     *
+     * @param l
+     */
+    public void addTabbedPaneChangeListener(ChangeListener l) {
+        getUIComponent().addChangeListener(l);
+    }
+
+    /**
+     * Remove a change listener from the main tabbed pane.
+     *
+     * @param l
+     */
+    public void removeTabbedPaneChangeListener(ChangeListener l) {
+        getUIComponent().removeChangeListener(l);
+    }
+
+    /**
      * Hide the Online Storage lines in the home tab.
      */
     public void hideOSLines() {
         homeTab.hideOSLines();
+    }
+
+    /**
+     * Set the home tab icon.
+     *
+     * @param homeIcon
+     */
+    public void setHomeIcon(Icon homeIcon) {
+        uiComponent.setIconAt(HOME_INDEX, homeIcon);
+    }
+
+    /**
+     * Set the folders tab icon.
+     *
+     * @param homeIcon
+     */
+    public void setFoldersIcon(Icon foldersIcon) {
+        uiComponent.setIconAt(FOLDERS_INDEX, foldersIcon);
+    }
+
+    /**
+     * Set the computers tab icon.
+     *
+     * @param homeIcon
+     */
+    public void setComputersIcon(Icon computersIcon) {
+        uiComponent.setIconAt(COMPUTERS_INDEX, computersIcon);
     }
 
     /**

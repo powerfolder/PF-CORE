@@ -20,39 +20,43 @@
 package de.dal33t.powerfolder.ui.render;
 
 import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.UIController;
+import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.MainTabbedPane;
 import de.dal33t.powerfolder.ui.chat.ChatModelEvent;
 import de.dal33t.powerfolder.ui.chat.ChatModelListener;
 
 import javax.swing.*;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ChangeEvent;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 
 /**
- * Manages the blinking icon in the Systray. Flash the sys tray every second if
- * UI iconified and (message, invitation, friendship or warning detected).
- * 
+ * Manages the blinking of tab icons in main tabs. Flash every second if
+ * tab not showing and (message, invitation, friendship or warning detected).
+ *
  * @author <a href="mailto:harry@powerfolder.com">Harry Glasgow</a>
  * @version $Revision: 4.0 $
  */
-public class SysTrayBlinkManager extends PFUIComponent {
+public class MainFrameBlinkManager extends PFUIComponent {
 
-    private final AtomicBoolean flashSysTray = new AtomicBoolean();
+    private final AtomicBoolean flashHomeTab = new AtomicBoolean();
+    private final AtomicBoolean flashMemberTab = new AtomicBoolean();
+    private final AtomicInteger selectedMainTab = new AtomicInteger();
 
     private final UIController uiController;
 
     /**
-     * Create a Blink Manager for the system tray
-     * 
+     * Create a Blink Manager for the mainframe tabs
+     *
      * @param uiController
      *            the UIController
      */
-    public SysTrayBlinkManager(UIController uiController) {
+    public MainFrameBlinkManager(UIController uiController) {
         super(uiController.getController());
         this.uiController = uiController;
         MyTimerTask task = new MyTimerTask();
@@ -68,29 +72,49 @@ public class SysTrayBlinkManager extends PFUIComponent {
         uiController.getApplicationModel().getReceivedAskedForFriendshipModel()
                 .getReceivedAskForFriendshipCountVM().addValueChangeListener(
                 new MyFriendshipCountListener());
-        uiController.getMainFrame().getUIComponent().addWindowListener(
-                new MyWindowListener());
+        uiController.getMainFrame().addTabbedPaneChangeListener(
+                new MyMainTabChangeListener());
     }
 
     /**
-     * Update the sys tray icon with the image required.
+     * Update the tabs with the image required.
      */
     private void update() {
+
         boolean blink = (System.currentTimeMillis() / 1000) % 2 != 0;
-        if (blink && flashSysTray.get()) {
-            uiController.setTrayIcon(Icons.BLANK_IMAGE);
+
+        if (blink && flashHomeTab.get()) {
+            uiController.getMainFrame().setHomeTabIcon(Icons.BLANK);
         } else {
-            uiController.setTrayIcon(null); // the default
+            uiController.getMainFrame().setHomeTabIcon(Icons.HOME);
         }
+
+        if (blink && flashMemberTab.get()) {
+            uiController.getMainFrame().setComputersTabIcon(Icons.BLANK);
+        } else {
+            uiController.getMainFrame().setComputersTabIcon(Icons.COMPUTER);
+        }
+
+        // Folder tab seems to loose its icon when we do this. So set it anyway.
+        uiController.getMainFrame().setFoldersTabIcon(Icons.FOLDER);
     }
 
     /**
-     * Sets the icon flashing.
+     * Sets the home icon flashing.
      *
      * @param flash
      */
-    private void flashTrayIcon(boolean flash) {
-        flashSysTray.set(flash);
+    private void flashHomeTabIcon(boolean flash) {
+        flashHomeTab.set(flash);
+    }
+
+    /**
+     * Sets the home icon flashing.
+     *
+     * @param flash
+     */
+    private void flashMemberTabIcon(boolean flash) {
+        flashMemberTab.set(flash);
     }
 
     /* ------------- */
@@ -104,12 +128,12 @@ public class SysTrayBlinkManager extends PFUIComponent {
 
         public void chatChanged(ChatModelEvent event) {
 
-            // Ignore status updates or if ui not iconified
+            // Ignore status updates or if member tab selected
             if (event.isStatus() ||
-                    !uiController.getMainFrame().isIconifiedOrHidden()) {
+                    selectedMainTab.get() == MainTabbedPane.COMPUTERS_INDEX) {
                 return;
             }
-            flashTrayIcon(true);
+            flashMemberTabIcon(true);
             update();
         }
 
@@ -132,29 +156,6 @@ public class SysTrayBlinkManager extends PFUIComponent {
     }
 
     /**
-     * Listen for deiconification to stop flashing icon.
-     */
-    private class MyWindowListener extends WindowAdapter {
-
-        public void windowDeiconified(WindowEvent e) {
-            flashTrayIcon(false);
-            update();
-        }
-
-        /**
-         * Catch cases where UI gets un-hidden - may not also de-iconify.
-         * 
-         * @param e
-         */
-        public void windowActivated(WindowEvent e) {
-            if (!uiController.getMainFrame().isIconifiedOrHidden()) {
-                flashTrayIcon(false);
-                update();
-            }
-        }
-    }
-
-    /**
      * Listen for incoming warnings.
      */
     private class MyWarningsCountListener implements PropertyChangeListener {
@@ -165,11 +166,11 @@ public class SysTrayBlinkManager extends PFUIComponent {
                     .getWarningsModel().getWarningsCountVM().getValue();
 
             if (count == null || count == 0 ||
-                    !uiController.getMainFrame().isIconifiedOrHidden()) {
+                    selectedMainTab.get() == MainTabbedPane.HOME_INDEX) {
                 return;
             }
 
-            flashTrayIcon(true);
+            flashHomeTabIcon(true);
             update();
         }
     }
@@ -186,11 +187,11 @@ public class SysTrayBlinkManager extends PFUIComponent {
                     .getReceivedInvitationsCountVM().getValue();
 
             if (count == null || count == 0 ||
-                    !uiController.getMainFrame().isIconifiedOrHidden()) {
+                    selectedMainTab.get() == MainTabbedPane.HOME_INDEX) {
                 return;
             }
 
-            flashTrayIcon(true);
+            flashHomeTabIcon(true);
             update();
         }
     }
@@ -207,12 +208,32 @@ public class SysTrayBlinkManager extends PFUIComponent {
                     .getReceivedAskForFriendshipCountVM().getValue();
 
             if (count == null || count == 0 ||
-                    !uiController.getMainFrame().isIconifiedOrHidden()) {
+                    selectedMainTab.get() == MainTabbedPane.HOME_INDEX) {
                 return;
             }
 
-            flashTrayIcon(true);
+            flashHomeTabIcon(true);
             update();
+        }
+    }
+
+    /**
+     * Listen to main tab selection changes.
+     */
+    private class MyMainTabChangeListener implements ChangeListener {
+        public void stateChanged(ChangeEvent e) {
+
+            selectedMainTab.set(uiController.getMainFrame()
+                    .getSelectedMainTabIndex());
+
+            if (selectedMainTab.get() == MainTabbedPane.HOME_INDEX) {
+                flashHomeTabIcon(false);
+                update();
+            } else if (selectedMainTab.get() == MainTabbedPane.COMPUTERS_INDEX)
+            {
+                flashMemberTabIcon(false);
+                update();
+            }
         }
     }
 }
