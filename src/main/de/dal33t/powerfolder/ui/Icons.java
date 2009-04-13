@@ -778,6 +778,11 @@ public class Icons {
      * @return The image or null on failure
      */
     public static Image getImageFromIcon(Icon icon) {
+        if (icon == null) {
+            log.log(Level.SEVERE, "Icon is null", new RuntimeException(
+                "Icon is null"));
+            return null;
+        }
 
         // simple case: we have an ImageIcon to get the image from
         if (icon instanceof ImageIcon) {
