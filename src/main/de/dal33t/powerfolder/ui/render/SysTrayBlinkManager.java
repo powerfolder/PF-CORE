@@ -35,7 +35,7 @@ import java.beans.PropertyChangeEvent;
 
 /**
  * Manages the blinking icon in the Systray. Flash the sys tray every second if
- * UI iconified and (message or warning detected).
+ * UI iconified and (message, invitation, friendship or warning detected).
  * 
  * @author <a href="mailto:harry@powerfolder.com">Harry Glasgow</a>
  * @version $Revision: 4.0 $
@@ -59,10 +59,15 @@ public class SysTrayBlinkManager extends PFUIComponent {
         getController().scheduleAndRepeat(task, 1000);
         uiController.getApplicationModel().getChatModel()
                 .addChatModelListener(new MyChatModelListener());
-        uiController.getApplicationModel().getWarningsModel().getWarningsCountVM().addValueChangeListener(
+        uiController.getApplicationModel().getWarningsModel()
+                .getWarningsCountVM().addValueChangeListener(
                 new MyWarningsCountListener());
-        uiController.getApplicationModel().getReceivedInvitationsModel().getReceivedInvitationsCountVM().addValueChangeListener(
+        uiController.getApplicationModel().getReceivedInvitationsModel()
+                .getReceivedInvitationsCountVM().addValueChangeListener(
                 new MyInvitationsCountListener());
+        uiController.getApplicationModel().getReceivedAskedForFriendshipModel()
+                .getReceivedAskForFriendshipCountVM().addValueChangeListener(
+                new MyFriendshipCountListener());
         uiController.getMainFrame().getUIComponent().addWindowListener(
                 new MyWindowListener());
     }
@@ -160,7 +165,7 @@ public class SysTrayBlinkManager extends PFUIComponent {
                     .getWarningsModel().getWarningsCountVM().getValue();
 
             if (count == null || count == 0 ||
-                    !uiController.getMainFrame().isIconified()) {
+                    !uiController.getMainFrame().isIconifiedOrHidden()) {
                 return;
             }
 
@@ -176,11 +181,33 @@ public class SysTrayBlinkManager extends PFUIComponent {
 
         public void propertyChange(PropertyChangeEvent evt) {
 
-            Integer count = (Integer) uiController.getApplicationModel().getReceivedInvitationsModel()
+            Integer count = (Integer) uiController.getApplicationModel()
+                    .getReceivedInvitationsModel()
                     .getReceivedInvitationsCountVM().getValue();
 
             if (count == null || count == 0 ||
-                    !uiController.getMainFrame().isIconified()) {
+                    !uiController.getMainFrame().isIconifiedOrHidden()) {
+                return;
+            }
+
+            flashTrayIcon(true);
+            update();
+        }
+    }
+
+    /**
+     * Listen for friendship messages.
+     */
+    private class MyFriendshipCountListener implements PropertyChangeListener {
+
+        public void propertyChange(PropertyChangeEvent evt) {
+
+            Integer count = (Integer) uiController.getApplicationModel()
+                    .getReceivedAskedForFriendshipModel()
+                    .getReceivedAskForFriendshipCountVM().getValue();
+
+            if (count == null || count == 0 ||
+                    !uiController.getMainFrame().isIconifiedOrHidden()) {
                 return;
             }
 
