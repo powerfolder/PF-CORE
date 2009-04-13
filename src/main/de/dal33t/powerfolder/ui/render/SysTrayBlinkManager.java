@@ -130,9 +130,22 @@ public class SysTrayBlinkManager extends PFUIComponent {
      * Listen for deiconification to stop flashing icon.
      */
     private class MyWindowListener extends WindowAdapter {
+
         public void windowDeiconified(WindowEvent e) {
             flashTrayIcon(false);
             update();
+        }
+
+        /**
+         * Catch cases where UI gets un-hidden - may not also de-iconify.
+         * 
+         * @param e
+         */
+        public void windowActivated(WindowEvent e) {
+            if (!uiController.getMainFrame().isIconifiedOrHidden()) {
+                flashTrayIcon(false);
+                update();
+            }
         }
     }
 
