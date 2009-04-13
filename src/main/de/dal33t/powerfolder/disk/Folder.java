@@ -146,7 +146,7 @@ public class Folder extends PFComponent {
      */
     private final Object deleteLock = new Object();
 
-    /** All members of this folder */
+    /** All members of this folder. Key == Value. Use Map for concurrency. */
     private Map<Member, Member> members;
 
     /**

@@ -34,6 +34,7 @@ import de.dal33t.powerfolder.ui.model.TransferManagerModel;
 import de.dal33t.powerfolder.ui.notification.NotificationHandler;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.ui.dialog.SingleFileTransferDialog;
+import de.dal33t.powerfolder.ui.render.SysTrayBlinkManager;
 import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
@@ -266,6 +267,8 @@ public class UIController extends PFComponent {
         if (getController().isStartMinimized()) {
             logWarning("Starting minimized");
         }
+
+        new SysTrayBlinkManager(this);
 
         // Show mainwindow
         try {

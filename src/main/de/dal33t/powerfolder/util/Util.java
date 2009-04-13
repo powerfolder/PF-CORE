@@ -263,6 +263,9 @@ public class Util {
     public static boolean useSwarming(Controller c, Member other) {
         Reject.ifNull(c, "Controller is null");
         Reject.ifNull(other, "other is null!");
+        if (other.getIdentity() == null) {
+            return false;
+        }
         return other.getIdentity().isSupportingPartTransfers()
             && allowSwarming(c, other.isOnLAN());
     }
