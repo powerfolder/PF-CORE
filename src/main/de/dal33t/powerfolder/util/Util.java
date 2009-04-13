@@ -49,6 +49,7 @@ import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.MemberInfo;
+import de.dal33t.powerfolder.message.Identity;
 import de.dal33t.powerfolder.net.ConnectionListener;
 import de.dal33t.powerfolder.util.os.Win32.ShellLink;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
@@ -263,10 +264,11 @@ public class Util {
     public static boolean useSwarming(Controller c, Member other) {
         Reject.ifNull(c, "Controller is null");
         Reject.ifNull(other, "other is null!");
-        if (other.getIdentity() == null) {
+        Identity id = other.getIdentity();
+        if (id == null) {
             return false;
         }
-        return other.getIdentity().isSupportingPartTransfers()
+        return id.isSupportingPartTransfers()
             && allowSwarming(c, other.isOnLAN());
     }
 
