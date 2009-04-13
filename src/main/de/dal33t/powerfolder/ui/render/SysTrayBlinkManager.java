@@ -101,7 +101,7 @@ public class SysTrayBlinkManager extends PFUIComponent {
 
             // Ignore status updates and if ui not iconified
             if (event.isStatus() ||
-                    !uiController.getMainFrame().isIconified()) {
+                    !uiController.getMainFrame().isIconifiedOrHidden()) {
                 return;
             }
             flashTrayIcon(true);
