@@ -35,7 +35,8 @@ public enum OnlineStorageSubscriptionType {
     /**
      * For JUNIT testing only
      */
-    TEST(),
+    TEST_TRIAL(true),
+    TEST_PAYING(false),
 
     SMALL_ENTERPRISE("OS-20", "20 GB", 20, false, true),
     UNLIMITED("OS-U", "Unlimited", 9999, false, true),
@@ -64,11 +65,11 @@ public enum OnlineStorageSubscriptionType {
     /**
      * For 1 MB test
      */
-    private OnlineStorageSubscriptionType() {
+    private OnlineStorageSubscriptionType(boolean trial) {
         this.articleNo = "TEST";
         this.description = "DONTUSE: 1 MB Test subscription";
         this.storageSize = 1 * 1024 * 1024;
-        this.trial = true;
+        this.trial = trial;
         this.active = false;
     }
     
