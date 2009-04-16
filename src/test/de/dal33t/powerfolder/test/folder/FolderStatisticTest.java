@@ -33,6 +33,7 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.FiveControllerTestCase;
 import de.dal33t.powerfolder.util.test.TestHelper;
@@ -306,7 +307,8 @@ public class FolderStatisticTest extends FiveControllerTestCase {
 
         // 3) Create a SECOND file at Bart. File does not get sync (Still
         // MANUAL DOWNLOAD)
-        TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 500);
+        File testFile2 = TestHelper.createRandomFile(getFolderAtBart()
+            .getLocalBase(), 500);
         scanFolder(getFolderAtBart());
         assertEquals(2, getFolderAtBart().getKnownFilesCount());
         waitForFileListOnTestFolder();
@@ -325,6 +327,8 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         waitForCompletedDownloads(2, 0, 2, 2, 2);
         waitForFileListOnTestFolder();
+        waitForDeletion(testFile1.getName());
+        waitForDeletion(testFile2.getName());
         forceStatsCals();
         assertAllInSync(1, 500);
     }
@@ -362,6 +366,7 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         waitForCompletedDownloads(1, 0, 1, 1, 1);
         waitForFileListOnTestFolder();
+        waitForDeletion(testFile1.getName());
         forceStatsCals();
         assertAllInSync(0, 0);
 
@@ -575,6 +580,26 @@ public class FolderStatisticTest extends FiveControllerTestCase {
             .getIncomingFilesCount());
         assertEquals(maggie, getFolderAtMaggie().getStatistic()
             .getIncomingFilesCount());
+    }
+
+    private void waitForDeletion(final String filename) {
+        TestHelper.waitForCondition(10, new Condition() {
+            public boolean reached() {
+                File fileAtHomer = new File(getFolderAtHomer().getLocalBase(),
+                    filename);
+                File fileAtMarge = new File(getFolderAtMarge().getLocalBase(),
+                    filename);
+                File fileAtBart = new File(getFolderAtBart().getLocalBase(),
+                    filename);
+                File fileAtLisa = new File(getFolderAtLisa().getLocalBase(),
+                    filename);
+                File fileAtMaggier = new File(getFolderAtMaggie()
+                    .getLocalBase(), filename);
+                return !fileAtHomer.exists() && !fileAtMarge.exists()
+                    && !fileAtBart.exists() && !fileAtLisa.exists()
+                    && !fileAtMaggier.exists();
+            }
+        });
     }
 
     private void waitForFileListOnTestFolder() {
