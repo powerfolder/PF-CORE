@@ -23,7 +23,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -372,7 +371,6 @@ public class FolderScanner extends PFComponent {
      * Public for testing
      * 
      * @param files
-     * @return the list of problems
      */
     private void tryFindProblemsInCurrentScan() {
         Map<String, FileInfo> lowerCaseNames = new HashMap<String, FileInfo>();
@@ -604,6 +602,10 @@ public class FolderScanner extends PFComponent {
             if (exists.isDeleted()) {
                 // file restored
                 if (!exists.inSyncWithDisk(fileToScan)) {
+                    logFine("File restored detected: "
+                        + exists.toDetailString() + ". On disk: size: "
+                        + fileToScan.length() + ", lastMod: "
+                        + fileToScan.lastModified());
                     currentScanResult.restoredFiles.add(exists);
                 }
             } else {
@@ -611,30 +613,27 @@ public class FolderScanner extends PFComponent {
                 if (changed) {
                     logFine(
                         "Changed file detected: " + exists.toDetailString()
-                            + ". On disk: size: " + fileToScan.length()
-                            + ", lastMod: " + fileToScan.lastModified());
+                        + ". On disk: size: " + fileToScan.length()
+                        + ", lastMod: " + fileToScan.lastModified());
                     currentScanResult.changedFiles.add(exists);
                 }
             }
-        } else {// file is new
-            if (isFiner()) {
-                logFiner(
-                    "NEW file found: " + fInfo.getName() + " hash: "
-                        + fInfo.hashCode());
-            }
+        } else {
+            // file is new
             FileInfo info = new FileInfo(currentScanningFolder, fileToScan);
-
-            // Not necessary. gets set in constructor.
-            info.setFolderInfo(currentScanningFolder.getInfo());
-            info.setSize(fileToScan.length());
-            info.setModifiedInfo(getController().getMySelf().getInfo(),
-                new Date(fileToScan.lastModified()));
+            info.setModifiedInfo(getController().getMySelf().getInfo(), info
+                .getModifiedDate());
             currentScanResult.newFiles.add(info);
+            if (isFiner()) {
+                logFiner("New file found: " + info.toDetailString());
+            }
         }
         return true;
     }
 
-    /** calculates the subdir of this file relative to the location of the folder */
+    /**
+     * calculates the subdir of this file relative to the location of the folder
+     */
     private static final String getCurrentDirName(Folder folder, File subFile) {
         String fileName = subFile.getName();
         File parent = subFile.getParentFile();
