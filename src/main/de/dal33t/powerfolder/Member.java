@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -114,7 +115,7 @@ public class Member extends PFComponent implements Comparable<Member> {
     private int connectionRetries;
 
     /** The total number of reconnection tries at this moment */
-    private int currentReconTries;
+    private AtomicInteger currentReconTries = new AtomicInteger(0);
 
     /** his member information */
     private MemberInfo info;
@@ -369,7 +370,7 @@ public class Member extends PFComponent implements Comparable<Member> {
      * @return true if currently reconnecting
      */
     public boolean isReconnecting() {
-        return currentReconTries > 0;
+        return currentReconTries.get() > 0;
     }
 
     /**
@@ -647,7 +648,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             // }
 
             // Set reconnecting state
-            currentReconTries++;
+            currentReconTries.incrementAndGet();
 
             // Re-resolve connect address
             String theHostname = getHostName(); // cached hostname
@@ -684,7 +685,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                 handler.shutdown();
             }
         } finally {
-            currentReconTries--;
+            currentReconTries.decrementAndGet();
         }
 
         if (successful) {
@@ -878,7 +879,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             getController().getFolderRepository().getFileRequestor()
                 .triggerFileRequesting(folder.getInfo());
             if (folder.getSyncProfile().isSyncDeletion()) {
-                folder.syncRemoteDeletedFiles(false);
+                folder.triggerSyncRemoteDeletedFiles(false);
             }
         }
 
