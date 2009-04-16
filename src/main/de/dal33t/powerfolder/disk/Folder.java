@@ -47,6 +47,7 @@ import java.util.SortedMap;
 import java.util.TimerTask;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
@@ -91,7 +92,7 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * The main class representing a folder. Scans for new files automatically.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.114 $
  */
@@ -114,6 +115,16 @@ public class Folder extends PFComponent {
      * Date of the last directory scan
      */
     private Date lastScan;
+
+    /**
+     * Date of the folder last went to 100% synchronized with another member(s).
+     */
+    private Date lastSyncDate;
+
+    /**
+     * True if the folder reaches 100% sync with another member connected.
+     */
+    private AtomicBoolean inSyncWithOthers;
 
     /**
      * The result state of the last scan
@@ -213,7 +224,7 @@ public class Folder extends PFComponent {
 
     /**
      * Constructor for folder.
-     * 
+     *
      * @param controller
      * @param fInfo
      * @param folderSettings
@@ -263,6 +274,9 @@ public class Folder extends PFComponent {
 
         whitelist = folderSettings.isWhitelist();
 
+        // Initially there are no other members, so is in sync (with self).
+        inSyncWithOthers = new AtomicBoolean(true);
+
         // Check base dir
         try {
             checkBaseDir(localBase, false);
@@ -272,11 +286,6 @@ public class Folder extends PFComponent {
         }
 
         statistic = new FolderStatistic(this);
-        members = new ConcurrentHashMap<Member, Member>();
-
-        // put myself in membership
-        join0(controller.getMySelf());
-
         logFine("Opening " + toString() + " at '" + localBase.getAbsolutePath()
             + '\'');
 
@@ -301,8 +310,13 @@ public class Folder extends PFComponent {
         // Initialize the DAO
         initFileInfoDAO();
 
+        members = new ConcurrentHashMap<Member, Member>();
+
         // Load folder database
         loadFolderDB(); // will also read the blacklist
+
+        // put myself in membership
+        join0(controller.getMySelf());
 
         // Check desktop ini in Windows environments
         FileUtils.maintainDesktopIni(getController(), localBase);
@@ -357,7 +371,7 @@ public class Folder extends PFComponent {
     /**
      * Commits the scan results into the internal file database. Changes get
      * broadcasted to other members if nessesary.
-     * 
+     *
      * @param scanResult
      *            the scanresult to commit.
      * @param ignoreEmptyCheck
@@ -507,7 +521,7 @@ public class Folder extends PFComponent {
 
     /**
      * Convenience method to add a pattern if it does not exist.
-     * 
+     *
      * @param pattern
      */
     private void addPattern(String pattern) {
@@ -519,7 +533,7 @@ public class Folder extends PFComponent {
 
     /**
      * Retrieves the transferpriorities for file in this folder.
-     * 
+     *
      * @return the associated TransferPriorities object
      */
     public TransferPriorities getTransferPriorities() {
@@ -541,7 +555,7 @@ public class Folder extends PFComponent {
 
     /**
      * Checks the basedir is valid
-     * 
+     *
      * @param baseDir
      *            the base dir to test
      * @throws FolderException
@@ -595,7 +609,7 @@ public class Folder extends PFComponent {
 
     /**
      * Scans a new File, eg from (drag and) drop.
-     * 
+     *
      * @param fileInfo
      *            the file to scan
      */
@@ -607,7 +621,7 @@ public class Folder extends PFComponent {
 
     /**
      * Scans a file that was restored from the recyle bin
-     * 
+     *
      * @param fileInfo
      *            the file to scan
      */
@@ -621,7 +635,7 @@ public class Folder extends PFComponent {
     /**
      * Scans a downloaded file, renames tempfile to real name Moves possible
      * existing file to PowerFolder recycle bin.
-     * 
+     *
      * @param fInfo
      * @param tempFile
      * @return true if the download could be completed and the file got scanned.
@@ -909,7 +923,7 @@ public class Folder extends PFComponent {
      * <p>
      * Package protected because used by Recylcebin to tell, that file was
      * restored.
-     * 
+     *
      * @param fInfo
      *            the file to be scanned
      * @return true if the file was successfully scanned
@@ -1038,7 +1052,7 @@ public class Folder extends PFComponent {
 
     /**
      * Checks a single filename if there are problems with the name
-     * 
+     *
      * @param fileInfo
      */
     private void checkFileName(FileInfo fileInfo) {
@@ -1113,7 +1127,7 @@ public class Folder extends PFComponent {
 
     /**
      * Adds a file to the internal database, does NOT store the DB
-     * 
+     *
      * @param fInfo
      */
     private void addFile(FileInfo fInfo) {
@@ -1124,7 +1138,7 @@ public class Folder extends PFComponent {
         fInfo.setFolderInfo(currentInfo);
 
         TransferPriority prio = transferPriorities.getPriority(fInfo);
-        
+
         // Remove old file from info
         currentInfo.removeFile(fInfo);
 
@@ -1147,7 +1161,7 @@ public class Folder extends PFComponent {
     /**
      * Removes a file on local folder, diskfile will be removed and file tagged
      * as deleted
-     * 
+     *
      * @param fInfo
      * @return true if the folder was changed
      */
@@ -1186,7 +1200,7 @@ public class Folder extends PFComponent {
 
     /**
      * Removes files from the local disk
-     * 
+     *
      * @param fInfos
      */
     public void removeFilesLocal(FileInfo... fInfos) {
@@ -1240,7 +1254,7 @@ public class Folder extends PFComponent {
 
     /**
      * Loads the folder database from disk
-     * 
+     *
      * @param dbFile
      *            the file to load as db file
      * @return true if succeeded
@@ -1317,6 +1331,20 @@ public class Folder extends PFComponent {
                 } catch (Exception e) {
                     logSevere("read ignore error: " + this + e.getMessage(), e);
                 }
+
+                try {
+                    Object object = in.readObject();
+                    lastSyncDate = (Date) object;
+                    if (isFiner()) {
+                        logFiner("lastSyncDate" + lastSyncDate);
+                    }
+                } catch (EOFException e) {
+                    // ignore nothing available for ignore
+                    logFine("ignore nothing for " + this);
+                } catch (Exception e) {
+                    logSevere("read ignore error: " + this + e.getMessage(), e);
+                }
+
                 in.close();
                 fIn.close();
 
@@ -1383,6 +1411,16 @@ public class Folder extends PFComponent {
     }
 
     /**
+     * This is the date that the folder last 100% synced with other members.
+     * It may be null if never synchronized externally.
+     *
+     * @return
+     */
+    public Date getLastSyncDate() {
+        return lastSyncDate;
+    }
+
+    /**
      * Stores the current file-database to disk
      */
     private void storeFolderDB() {
@@ -1420,6 +1458,7 @@ public class Folder extends PFComponent {
             // Old blacklist. Maintained for backward serialization
             // compatability. Do not remove.
             oOut.writeObject(new ArrayList<FileInfo>());
+
             if (lastScan == null) {
                 if (isFiner()) {
                     logFiner("write default time: " + new Date());
@@ -1427,10 +1466,15 @@ public class Folder extends PFComponent {
                 oOut.writeObject(new Date());
             } else {
                 if (isFiner()) {
-                    logFiner("write time: " + lastScan);
+                    logFiner("write lastScan: " + lastScan);
                 }
                 oOut.writeObject(lastScan);
             }
+
+            if (isFiner()) {
+                logFiner("write lastSyncDate: " + lastSyncDate);
+            }
+            oOut.writeObject(lastSyncDate);
 
             oOut.close();
             fOut.close();
@@ -1535,7 +1579,7 @@ public class Folder extends PFComponent {
     /**
      * Set the needed folder/file attributes on windows systems, if we have a
      * desktop.ini
-     * 
+     *
      * @param desktopIni
      */
     private void makeFolderIcon(File desktopIni) {
@@ -1557,7 +1601,7 @@ public class Folder extends PFComponent {
     /**
      * Creates or removes a desktop shortcut for this folder. currently only
      * available on windows systems.
-     * 
+     *
      * @param active
      *            true if the desktop shortcut should be created.
      * @return true if succeeded
@@ -1605,7 +1649,7 @@ public class Folder extends PFComponent {
 
     /**
      * Gets the sync profile.
-     * 
+     *
      * @return the syncprofile of this folder
      */
     public SyncProfile getSyncProfile() {
@@ -1614,7 +1658,7 @@ public class Folder extends PFComponent {
 
     /**
      * Sets the synchronisation profile for this folder
-     * 
+     *
      * @param aSyncProfile
      */
     public void setSyncProfile(SyncProfile aSyncProfile) {
@@ -1709,7 +1753,7 @@ public class Folder extends PFComponent {
      */
     /**
      * Joins a member to the folder,
-     * 
+     *
      * @param member
      */
     public void join(Member member) {
@@ -1721,7 +1765,7 @@ public class Folder extends PFComponent {
 
     /**
      * Joins a member to the folder. Does not fire the event
-     * 
+     *
      * @param member
      * @return true if this member is new to the folder. false if he was already
      *         a member.
@@ -1743,7 +1787,7 @@ public class Folder extends PFComponent {
 
     /**
      * Removes a member from this folder
-     * 
+     *
      * @param member
      */
     public void remove(Member member) {
@@ -1765,7 +1809,7 @@ public class Folder extends PFComponent {
 
     /**
      * Checks if the folder is in Sync, called by FolderRepository
-     * 
+     *
      * @return if this folder synchronizing
      */
     public boolean isTransferring() {
@@ -1784,7 +1828,7 @@ public class Folder extends PFComponent {
 
     /**
      * Checks if the folder is in Downloading, called by FolderRepository
-     * 
+     *
      * @return if this folder downloading
      */
     public boolean isDownloading() {
@@ -1794,7 +1838,7 @@ public class Folder extends PFComponent {
 
     /**
      * Checks if the folder is in Uploading, called by FolderRepository
-     * 
+     *
      * @return if this folder uploading
      */
     public boolean isUploading() {
@@ -1816,7 +1860,7 @@ public class Folder extends PFComponent {
 
     /**
      * Synchronizes the deleted files with local folder
-     * 
+     *
      * @param force
      *            true if the sync is forced with ALL connected members of the
      *            folder. otherwise it checks the modifier.
@@ -1933,7 +1977,7 @@ public class Folder extends PFComponent {
 
     /**
      * Broadcasts a message through the folder
-     * 
+     *
      * @param message
      */
     public void broadcastMessages(Message... message) {
@@ -2010,7 +2054,7 @@ public class Folder extends PFComponent {
 
     /**
      * Callback method from member. Called when a new filelist was send
-     * 
+     *
      * @param from
      * @param newList
      */
@@ -2059,7 +2103,7 @@ public class Folder extends PFComponent {
 
     /**
      * Callback method from member. Called when a filelist delta received
-     * 
+     *
      * @param from
      * @param changes
      */
@@ -2149,7 +2193,7 @@ public class Folder extends PFComponent {
      * This if files moved from node to node without PowerFolder. e.g. just copy
      * over windows share. Helps to identifiy same files and prevents unessesary
      * downloads.
-     * 
+     *
      * @param remoteFileInfos
      */
     private void findSameFiles(Member remotePeer,
@@ -2259,7 +2303,7 @@ public class Folder extends PFComponent {
      * Tries to find same files in the list of remotefiles of all members. This
      * methods takes over the file information from remote under following
      * circumstances: See #findSameFiles(FileInfo[])
-     * 
+     *
      * @see #findSameFiles(FileInfo[])
      */
     private void findSameFilesOnRemote() {
@@ -2375,7 +2419,7 @@ public class Folder extends PFComponent {
 
     /**
      * ATTENTION: DO NOT USE!!
-     * 
+     *
      * @return the internal file database as array. ONLY FOR TESTs
      * @deprecated do not use - ONLY FOR TESTs
      */
@@ -2386,7 +2430,7 @@ public class Folder extends PFComponent {
 
     /**
      * WARNING: Contents may change after getting the collection.
-     * 
+     *
      * @return a unmodifiable collection referecing the internal database
      *         hashmap (keySet).
      */
@@ -2401,7 +2445,7 @@ public class Folder extends PFComponent {
 
     /**
      * get the Directories in this folder (including the subs and files)
-     * 
+     *
      * @return Directory with all sub dirs and files set
      */
     public Directory getDirectory() {
@@ -2420,7 +2464,7 @@ public class Folder extends PFComponent {
     /**
      * Common file delete method. Either deletes the file or moves it to the
      * recycle bin.
-     * 
+     *
      * @param fileInfo
      * @param file
      */
@@ -2452,7 +2496,7 @@ public class Folder extends PFComponent {
     /**
      * Gets all the incoming files. That means files that exist on the remote
      * side with a higher version.
-     * 
+     *
      * @param includeNonFriendFiles
      *            if files should be included, that are modified by non-friends
      * @return the list of files that are incoming/newer available on remote
@@ -2466,7 +2510,7 @@ public class Folder extends PFComponent {
     /**
      * Gets all the incoming files. That means files that exist on the remote
      * side with a higher version.
-     * 
+     *
      * @param includeNonFriendFiles
      *            if files should be included, that are modified by non-friends
      * @param includeDeleted
@@ -2558,7 +2602,7 @@ public class Folder extends PFComponent {
 
     /**
      * This list also includes myself!
-     * 
+     *
      * @return all members in a collection. The collection is a unmodifiable
      *         referece to the internal member storage. May change after has
      *         been returned!
@@ -2746,26 +2790,22 @@ public class Folder extends PFComponent {
 
     }
 
-    // Inner classes **********************************************************
-
     /**
-     * Persister task, persists settings from time to time.
+     * Watch for harmonized sync going from < 100% to 100%.
+     * If so, set a new lastSync date.
      */
-    private class Persister extends TimerTask {
-        @Override
-        public void run() {
-            if (dirty) {
-                persist();
-            }
-            if (diskItemFilter.isDirty()) {
-                diskItemFilter.savePatternsTo(getSystemSubDir());
-            }
+    private void checkLastSyncDate() {
+        boolean newInSync = Double.compare(
+                statistic.getHarmonizedSyncPercentage(), 100.0d) == 0;
+        boolean oldInSync = inSyncWithOthers.getAndSet(newInSync);
+        if (newInSync && !oldInSync) {
+            lastSyncDate = new Date();
         }
     }
 
     /**
      * Whether this folder moves deleted files to the recycle bin.
-     * 
+     *
      * @return true if the recycle bin is used.
      */
     public boolean isUseRecycleBin() {
@@ -2774,7 +2814,7 @@ public class Folder extends PFComponent {
 
     /**
      * Sets whether to use the recycle bin.
-     * 
+     *
      * @param useRecycleBin
      *            true if recycle bin is to be used.
      */
@@ -2875,5 +2915,25 @@ public class Folder extends PFComponent {
     void fireStatisticsCalculated() {
         FolderEvent folderEvent = new FolderEvent(this);
         folderListenerSupport.statisticsCalculated(folderEvent);
+
+        checkLastSyncDate();
     }
+
+    // Inner classes **********************************************************
+
+    /**
+     * Persister task, persists settings from time to time.
+     */
+    private class Persister extends TimerTask {
+        @Override
+        public void run() {
+            if (dirty) {
+                persist();
+            }
+            if (diskItemFilter.isDirty()) {
+                diskItemFilter.savePatternsTo(getSystemSubDir());
+            }
+        }
+    }
+
 }
