@@ -54,6 +54,9 @@ public class OnlineStorageSubscription extends Model implements Serializable {
     // Logic ******************************************************************
 
     /**
+     * Use {@link #isExpired()} for checking exactly if a subcription has
+     * expired. This method returns "0" during the last day of subscription.
+     * 
      * @return the days left until expire. 0 if expired -1 if never expires.
      */
     public int getDaysLeft() {
@@ -66,6 +69,18 @@ public class OnlineStorageSubscription extends Model implements Serializable {
             return daysLeft;
         }
         return 0;
+    }
+
+    /**
+     * @return if the subscription has expired = passed the valid date.
+     */
+    public boolean isExpired() {
+        if (getValidTill() == null) {
+            // never expires
+            return false;
+        }
+        long timeValid = getValidTill().getTime() - System.currentTimeMillis();
+        return timeValid <= 0;
     }
 
     // Getter / Setter ********************************************************
