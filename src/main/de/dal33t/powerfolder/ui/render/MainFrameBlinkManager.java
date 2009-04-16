@@ -129,7 +129,8 @@ public class MainFrameBlinkManager extends PFUIComponent {
         public void chatChanged(ChatModelEvent event) {
 
             // Ignore status updates or if member tab selected
-            if (event.isStatus() ||
+            // or if chat frame visible.
+            if (event.isStatus() || uiController.chatFrameVisible() ||
                     selectedMainTab.get() == MainTabbedPane.COMPUTERS_INDEX) {
                 return;
             }
@@ -143,7 +144,7 @@ public class MainFrameBlinkManager extends PFUIComponent {
     }
 
     /**
-     * Timer task, always running, updates the sys tray icon.
+     * Timer task, always running, updates the tab icons.
      */
     private class MyTimerTask extends TimerTask {
         public void run() {

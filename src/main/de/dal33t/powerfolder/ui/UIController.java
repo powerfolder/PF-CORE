@@ -835,6 +835,10 @@ public class UIController extends PFComponent {
 
     }
 
+    public boolean chatFrameVisible() {
+        return chatFrame.getUIComponent().isVisible();
+    }
+
     ///////////////////
     // Inner Classes //
     ///////////////////
