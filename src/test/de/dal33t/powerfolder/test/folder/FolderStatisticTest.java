@@ -307,8 +307,7 @@ public class FolderStatisticTest extends FiveControllerTestCase {
 
         // 3) Create a SECOND file at Bart. File does not get sync (Still
         // MANUAL DOWNLOAD)
-        File testFile2 = TestHelper.createRandomFile(getFolderAtBart()
-            .getLocalBase(), 500);
+        TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 500);
         scanFolder(getFolderAtBart());
         assertEquals(2, getFolderAtBart().getKnownFilesCount());
         waitForFileListOnTestFolder();
@@ -328,7 +327,6 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         waitForCompletedDownloads(2, 0, 2, 2, 2);
         waitForFileListOnTestFolder();
         waitForDeletion(testFile1.getName());
-        waitForDeletion(testFile2.getName());
         forceStatsCals();
         assertAllInSync(1, 500);
     }
