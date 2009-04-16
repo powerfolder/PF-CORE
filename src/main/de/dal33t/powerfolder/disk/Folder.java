@@ -138,13 +138,8 @@ public class Folder extends PFComponent {
      */
     private TransferPriorities transferPriorities;
 
-    /** Lock for scan */
+    /** Lock for scan / accessing the actual files */
     private final Object scanLock = new Object();
-
-    /**
-     * Lock to prevent multiple threads to execute deletions.
-     */
-    private final Object deleteLock = new Object();
 
     /** All members of this folder. Key == Value. Use Map for concurrency. */
     private Map<Member, Member> members;
@@ -646,13 +641,6 @@ public class Folder extends PFComponent {
             return false;
         }
 
-        synchronized (deleteLock) {
-            if (targetFile.exists()) {
-                // if file was a "newer file" the file already esists here
-                deleteFile(fInfo, targetFile);
-            }
-        }
-
         // Prepare last modification date of tempfile.
         if (!tempFile.setLastModified(fInfo.getModifiedDate().getTime())) {
             logSevere("Failed to set modified date on " + tempFile + " for "
@@ -662,6 +650,10 @@ public class Folder extends PFComponent {
 
         // TODO BOTTLENECK for many transfers
         synchronized (scanLock) {
+            if (targetFile.exists()) {
+                // if file was a "newer file" the file already esists here
+                deleteFile(fInfo, targetFile);
+            }
             if (!tempFile.renameTo(targetFile)) {
                 logWarning("Was not able to rename tempfile, copiing "
                     + tempFile.getAbsolutePath() + " to "
@@ -1177,7 +1169,7 @@ public class Folder extends PFComponent {
 
         File diskFile = getDiskFile(fInfo);
         boolean folderChanged = false;
-        synchronized (deleteLock) {
+        synchronized (scanLock) {
             if (diskFile != null && diskFile.exists()) {
                 deleteFile(fInfo, diskFile);
                 FileInfo localFile = getFile(fInfo);
@@ -1524,12 +1516,18 @@ public class Folder extends PFComponent {
                 logFine("FileInfo expired: " + file.toDetailString());
             }
         }
-        logInfo("Maintained folder db, " + nFilesBefore + " known files, "
-            + expired
-            + " expired FileInfos. Expiring deleted files older than "
-            + new Date(removeBeforeDate));
         if (expired > 0) {
             dirty = true;
+
+            logInfo("Maintained folder db, " + nFilesBefore + " known files, "
+                + expired
+                + " expired FileInfos. Expiring deleted files older than "
+                + new Date(removeBeforeDate));
+        } else if (isFiner()) {
+            logFiner("Maintained folder db, " + nFilesBefore + " known files, "
+                + expired
+                + " expired FileInfos. Expiring deleted files older than "
+                + new Date(removeBeforeDate));
         }
         lastDBMaintenance = new Date();
     }
@@ -1654,7 +1652,7 @@ public class Folder extends PFComponent {
         }
 
         if (syncProfile.isSyncDeletion()) {
-            syncRemoteDeletedFiles(false);
+            triggerSyncRemoteDeletedFiles(false);
         }
 
         recommendScanOnNextMaintenance();
@@ -1804,6 +1802,19 @@ public class Folder extends PFComponent {
     }
 
     /**
+     * Triggers the deletion sync in background.
+     * 
+     * @param force
+     */
+    public void triggerSyncRemoteDeletedFiles(final boolean force) {
+        getController().getIOProvider().startIO(new Runnable() {
+            public void run() {
+                syncRemoteDeletedFiles(force);
+            }
+        });
+    }
+
+    /**
      * Synchronizes the deleted files with local folder
      * 
      * @param force
@@ -1890,10 +1901,8 @@ public class Folder extends PFComponent {
                     getController().getTransferManager().breakTransfers(
                         localFile);
 
-                    synchronized (deleteLock) {
-                        if (localCopy.exists()) {
-                            deleteFile(localFile, localCopy);
-                        }
+                    if (localCopy.exists()) {
+                        deleteFile(localFile, localCopy);
                     }
                     // FIXME: Size might not be correct
                     localFile.setDeleted(true);
@@ -2042,7 +2051,7 @@ public class Folder extends PFComponent {
             // only
             // FIXME: Is called too often, should be called after finish of
             // filelist sending only.
-            syncRemoteDeletedFiles(false);
+            triggerSyncRemoteDeletedFiles(false);
         }
 
         fireRemoteContentsChanged(newList);
@@ -2119,7 +2128,7 @@ public class Folder extends PFComponent {
             // only
             // FIXME: Is called too often, should be called after finish of
             // filelist sending only.
-            syncRemoteDeletedFiles(false);
+            triggerSyncRemoteDeletedFiles(false);
         }
 
         // Fire event
