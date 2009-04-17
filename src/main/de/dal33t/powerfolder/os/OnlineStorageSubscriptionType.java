@@ -36,7 +36,6 @@ public enum OnlineStorageSubscriptionType {
      * For JUNIT testing only
      */
     TEST_TRIAL(true),
-    TEST_PAYING(false),
 
     SMALL_ENTERPRISE("OS-20", "20 GB", 20, false, true),
     UNLIMITED("OS-U", "Unlimited", 9999, false, true),
@@ -44,7 +43,12 @@ public enum OnlineStorageSubscriptionType {
     GB50("OS-50", "50 GB", 50, false, true),
     GB100("OS-100", "100 GB", 100, false, true),
     GB250("OS-250", "250 GB", 250, false, true),
-    TRIAL_5GB("OS-T-5", "5 GB (30 days)", 5, true, false);
+    TRIAL_5GB("OS-T-5", "5 GB (30 days)", 5, true, false),
+    
+    /**
+     * For JUNIT testing only
+     */
+    TEST_PAYING(false);
 
     private String articleNo;
     private String description;
