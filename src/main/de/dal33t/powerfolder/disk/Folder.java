@@ -2327,6 +2327,11 @@ public class Folder extends PFComponent {
      * Persists settings to disk.
      */
     private void persist() {
+        if (isDeviceDisconnected()) {
+            logWarning("Unable to persist database. Device is disconnected: "
+                + getLocalBase());
+            return;
+        }
         logFiner("Persisting settings");
 
         storeFolderDB();
@@ -2912,11 +2917,11 @@ public class Folder extends PFComponent {
     }
 
     /** package protected because fired by FolderStatistics */
-    void fireStatisticsCalculated() {
+    void notifyStatisticsCalculated() {
+        checkLastSyncDate();
+        
         FolderEvent folderEvent = new FolderEvent(this);
         folderListenerSupport.statisticsCalculated(folderEvent);
-
-        checkLastSyncDate();
     }
 
     // Inner classes **********************************************************

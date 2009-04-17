@@ -193,7 +193,7 @@ public class FolderStatistic extends PFComponent {
         }
 
         // Fire event
-        folder.fireStatisticsCalculated();
+        folder.notifyStatisticsCalculated();
     }
 
     /**
@@ -498,7 +498,7 @@ public class FolderStatistic extends PFComponent {
             current.estimatedSyncDate = estimator.updateEstimate(current
                 .getTotalSyncPercentage());
         }
-        folder.fireStatisticsCalculated();
+        folder.notifyStatisticsCalculated();
     }
 
     // Inner classes *********************************************************
