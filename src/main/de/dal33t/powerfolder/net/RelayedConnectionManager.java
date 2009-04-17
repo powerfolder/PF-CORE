@@ -196,14 +196,14 @@ public class RelayedConnectionManager extends PFComponent {
         return null;
     }
 
-    public boolean isRelay(MemberInfo node) {
-        Reject.ifNull(node, "Node info is null");
-        // FIXME: Develop a better strategy
-        return node.id.contains("RELAY");
+    public boolean isRelay(MemberInfo nodeInfo) {
+        Reject.ifNull(nodeInfo, "Node info is null");
+        Member node = nodeInfo.getNode(getController(), false);
+        return node != null && isRelay(node);
     }
 
     public boolean isRelay(Member node) {
-        return isRelay(node.getInfo());
+        return getController().getDistribution().isRelay(node);
     }
 
     public TransferCounter getTransferCounter() {

@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.distribution;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.util.Updater.UpdateSetting;
 
 /**
@@ -61,4 +62,12 @@ public interface Distribution {
      *         default location
      */
     UpdateSetting createUpdateSettings();
+
+    /**
+     * #1488
+     * 
+     * @param node
+     * @return true if this node is a relay server.
+     */
+    boolean isRelay(Member node);
 }
