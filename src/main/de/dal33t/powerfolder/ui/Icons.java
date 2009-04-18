@@ -85,7 +85,7 @@ public class Icons {
     public static final Icon FILTER_TEXT_FIELD_CLEAR_BUTTON_PUSH = getIcon("icons/FilterTextFieldClearButtonPush.png");
     public static final Icon FILTER_TEXT_FIELD_GLASS = getIcon("icons/FilterTextFieldGlass.png");
 
-    public static final Icon BLANK = null;
+    public static final Icon BLANK = getIcon("icons/Blank.gif");
     public static final Icon WARNING = getIcon("icons/Warning.png");
     public static final Icon DEBUG = getIcon("icons/Bug.png");
     public static final Icon UPDATES = getIcon("icons/Updates.gif");

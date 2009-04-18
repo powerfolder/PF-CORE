@@ -233,10 +233,10 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
 
         lowerBuilder.addSeparator(null, cc.xywh(1, 1, 6, 1));
 
-        lowerBuilder.add(syncPercentLabel, cc.xy(2, 3));
+        lowerBuilder.add(syncDateLabel.getUIComponent(), cc.xy(2, 3));
         lowerBuilder.add(openFilesInformationButton, cc.xy(5, 3));
 
-        lowerBuilder.add(syncDateLabel.getUIComponent(), cc.xy(2, 5));
+        lowerBuilder.add(syncPercentLabel, cc.xy(2, 5));
 
         lowerBuilder.add(filesLabel, cc.xy(2, 7));
 
@@ -434,12 +434,22 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
                     "?", "?");
             filesAvailableLabelText = "";
         } else {
+
+            Date lastSyncDate = folder.getLastSyncDate();
+            if (lastSyncDate == null) {
+                syncDateText = Translation.getTranslation(
+                        "exp_folder_view.last_synchronized", "-");
+            } else {
+                String formattedDate = Format.formatDate(lastSyncDate);
+                syncDateText = Translation.getTranslation(
+                        "exp_folder_view.last_synchronized",
+                        formattedDate);
+            }
+
             ScanResult.ResultState state = folder.getLastScanResultState();
             if (state == null) {
                 syncPercentText = Translation.getTranslation(
                         "exp_folder_view.not_yet_scanned");
-                syncDateText = Translation.getTranslation(
-                        "exp_folder_view.last_synchronized", "?");
                 localSizeString = "?";
                 totalSizeString = "?";
                 recycleLabelText = Translation.getTranslation(
@@ -454,24 +464,25 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
                 if (sync > 100) {
                     sync = 100;
                 }
-                syncPercentText = Translation.getTranslation(
-                        "exp_folder_view.synchronized", sync);
 
-                Date date = folder.getStatistic().getEstimatedSyncDate();
-                String formattedDate;
-                if (date == null) {
-                    formattedDate = "-";
-                } else {
-                    formattedDate = Format.formatDate(date);
+                // Sync in progress? Rewrite date as estimate.
+                if (Double.compare(sync, 100.0) != 0) {
+                    Date date = folder.getStatistic().getEstimatedSyncDate();
+                    if (date != null) {
+                        String formattedDate = Format.formatDate(date);
+                        syncDateText = Translation.getTranslation(
+                                "exp_folder_view.estimated_synchronized",
+                                formattedDate);
+                    }
                 }
-                if (Double.compare(sync, 100.0) == 0) {
-                    syncDateText = Translation.getTranslation(
-                            "exp_folder_view.last_synchronized",
-                            formattedDate);
+
+                if (lastSyncDate == null && Double.compare(sync, 100.0) == 0) {
+                    // Never synced with others.
+                    syncPercentText = Translation.getTranslation(
+                            "exp_folder_view.never_synchronized");
                 } else {
-                    syncDateText = Translation.getTranslation(
-                            "exp_folder_view.estimated_synchronized",
-                            formattedDate);
+                    syncPercentText = Translation.getTranslation(
+                            "exp_folder_view.synchronized", sync);
                 }
 
                 long localSize = statistic.getLocalSize();
