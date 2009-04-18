@@ -266,7 +266,9 @@ public class PowerFolder {
             new Thread("Shutdown hook for PowerFolder") {
                 public void run() {
                     // Shut down controller on VM exit
-                    con.shutdown();
+                    if (con.isStarted() && !con.isShuttingDown()) {
+                        con.shutdown();
+                    }
                 }
             });
 
