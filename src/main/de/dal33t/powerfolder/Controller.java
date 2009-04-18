@@ -977,7 +977,9 @@ public class Controller extends PFComponent {
                             FirewallUtil.openport(connectionListener.getPort());
                             portWasOpened = true;
                         } catch (IOException e) {
-                            logSevere("IOException", e);
+                            logWarning("Unable to open port "
+                                + connectionListener.getPort()
+                                + "/TCP in Windows Firewall. " + e);
                         }
                     }
                 }, "Portopener");
@@ -1340,9 +1342,7 @@ public class Controller extends PFComponent {
             .getValueBoolean(this))
             && connectionListener != null)
         {
-            if (FirewallUtil.isFirewallAccessible()
-                && connectionListener != null)
-            {
+            if (FirewallUtil.isFirewallAccessible()) {
                 Thread closer = new Thread(new Runnable() {
                     public void run() {
                         try {
@@ -1350,7 +1350,8 @@ public class Controller extends PFComponent {
                             FirewallUtil
                                 .closeport(connectionListener.getPort());
                         } catch (IOException e) {
-                            logSevere(e.toString());
+                            logWarning("Unable to remove firewall rule in Windows Firewall. "
+                                + e);
                         }
                     }
                 }, "Firewallcloser");
