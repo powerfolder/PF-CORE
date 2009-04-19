@@ -66,7 +66,7 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
     private JCheckBox magneticFrameBox;
     private JCheckBox translucentMainFrameCB;
     private JCheckBox mainAlwaysOnTopCB;
-    private JLabel transPercLabel1;
+    private JLabel transPercLabel;
     private JSlider transPercSlider;
 
     private boolean needsRestart;
@@ -198,7 +198,7 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
             }
         });
 
-        transPercLabel1 = new JLabel(Translation
+        transPercLabel = new JLabel(Translation
                 .getTranslation("preferences.dialog.translucent_text"));
 
         // Windows only...
@@ -303,7 +303,7 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
                 builder.add(translucentMainFrameCB, cc.xyw(3, row, 2));
 
                 row += 2;
-                builder.add(transPercLabel1, cc.xy(1, row));
+                builder.add(transPercLabel, cc.xy(1, row));
                 builder.add(getSpinnerPanel(), cc.xy(3, row));
             }
             panel = builder.getPanel();
@@ -314,7 +314,7 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
     }
 
     private void enableTransPerc() {
-        transPercLabel1.setEnabled(translucentMainFrameCB.isSelected());
+        transPercLabel.setEnabled(translucentMainFrameCB.isSelected());
         transPercSlider.setEnabled(translucentMainFrameCB.isSelected());
     }
 
