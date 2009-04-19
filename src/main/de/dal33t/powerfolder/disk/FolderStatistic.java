@@ -54,7 +54,7 @@ public class FolderStatistic extends PFComponent {
      * to a maximum that can be configured in
      * {@link ConfigurationEntry#FOLDER_STATS_CALC_TIME}
      */
-    private final static int MAX_ITEMS = 5000;
+    private static final int MAX_ITEMS = 5000;
 
     private final Folder folder;
     private final long delay;
@@ -83,12 +83,12 @@ public class FolderStatistic extends PFComponent {
         super(folder.getController());
 
         // Empty at start
-        this.partialSyncStatMap = new ConcurrentHashMap<Member, Map<FileInfo, Long>>();
-        this.current = new CalculationResult();
-        this.estimator = new SimpleTimeEstimator();
+        partialSyncStatMap = new ConcurrentHashMap<Member, Map<FileInfo, Long>>();
+        current = new CalculationResult();
+        estimator = new SimpleTimeEstimator();
         this.folder = folder;
-        this.downloadCounter = new TransferCounter();
-        this.delay = 1000L * ConfigurationEntry.FOLDER_STATS_CALC_TIME
+        downloadCounter = new TransferCounter();
+        delay = 1000L * ConfigurationEntry.FOLDER_STATS_CALC_TIME
             .getValueInt(getController());
 
         folder.addFolderListener(new MyFolderListener());
@@ -687,11 +687,11 @@ public class FolderStatistic extends PFComponent {
                         + " / " + totalSize + " = " + sync);
                 }
 
-                if (sync > 100.0) {
-                    sync = 100.0;
+                if (Double.compare(sync, 100.0) > 0) {
                     logSevere("Sync percentage > 100% - folder="
                         + folder.getInfo().name + ", member="
                         + member.getInfo().nick + ", sync=" + sync);
+                    sync = 100.0;
                 }
                 return sync;
             }
@@ -713,10 +713,10 @@ public class FolderStatistic extends PFComponent {
                 syncSum += getSyncPercentage(member);
             }
             double sync = syncSum / sizesInSync.size();
-            if (sync > 100.0) {
-                sync = 100.0;
+            if (Double.compare(sync, 100.0) > 0) {
                 logSevere("Sync percentage > 100% - folder="
                     + folder.getInfo().name + ", sync=" + sync);
+                sync = 100.0;
             }
             return sync;
         }
