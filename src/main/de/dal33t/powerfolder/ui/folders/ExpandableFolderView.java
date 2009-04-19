@@ -438,7 +438,7 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
             Date lastSyncDate = folder.getLastSyncDate();
             if (lastSyncDate == null) {
                 syncDateText = Translation.getTranslation(
-                        "exp_folder_view.last_synchronized", "-");
+                        "exp_folder_view.never_synchronized");
             } else {
                 String formattedDate = Format.formatDate(lastSyncDate);
                 syncDateText = Translation.getTranslation(
@@ -479,7 +479,7 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
                 if (lastSyncDate == null && Double.compare(sync, 100.0) == 0) {
                     // Never synced with others.
                     syncPercentText = Translation.getTranslation(
-                            "exp_folder_view.never_synchronized");
+                            "exp_folder_view.synchronized", "?");
                 } else {
                     syncPercentText = Translation.getTranslation(
                             "exp_folder_view.synchronized", sync);
