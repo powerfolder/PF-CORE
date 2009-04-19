@@ -655,9 +655,13 @@ public class FolderStatistic extends PFComponent {
          * @return the sync percentage for the given member
          */
         public double getSyncPercentage(Member member) {
+            Long size = sizesInSync.get(member);
+            if (size == null) {
+                size = 0L;
+            }
             if (totalSize == 0) {
                 return 100.0;
-            } else if (sizesInSync.get(member) == 0) {
+            } else if (size == 0) {
                 return 0;
             } else {
 
@@ -675,11 +679,11 @@ public class FolderStatistic extends PFComponent {
 
                 // Sync = synchronized file sizes plus any partials divided by
                 // total size.
-                double sync = 100.0 * (sizesInSync.get(member) + partialTotal)
+                double sync = 100.0 * (size + partialTotal)
                     / totalSize;
                 if (isFiner()) {
                     logFiner("Sync for member " + member.getInfo().nick + ", "
-                        + sizesInSync.get(member) + " + " + partialTotal
+                        + size + " + " + partialTotal
                         + " / " + totalSize + " = " + sync);
                 }
 
