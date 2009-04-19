@@ -228,7 +228,7 @@ public class Icons {
     public static final Image SYSTEM_MONITOR_IMAGE = getImageFromIcon(SYSTEM_MONITOR);
     public static final Image CHAT_IMAGE = getImageFromIcon(CHAT);
     public static final Image DEBUG_IMAGE = getImageFromIcon(DEBUG);
-    public static final Image BLANK_IMAGE = null;
+    public static final Image BLANK_IMAGE = getImageFromIcon(BLANK);
 
     // About stuff
     public final Icon ABOUT_ANIMATION = getIconById("about.animation");
