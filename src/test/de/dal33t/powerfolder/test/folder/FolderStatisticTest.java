@@ -62,6 +62,9 @@ public class FolderStatisticTest extends FiveControllerTestCase {
      * Tests the sync percentage with one file that gets updated
      */
     public void testOneFile() {
+
+        assertSyncDate(false, false, false, false, false);
+
         setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         File testFile = TestHelper.createRandomFile(getFolderAtBart()
             .getLocalBase(), 1000);
@@ -70,6 +73,7 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         waitForFileListOnTestFolder();
         forceStatsCals();
         assertAllInSync(1, testFile.length());
+        assertSyncDate(true, true, true, true, true);
 
         setSyncProfile(SyncProfile.HOST_FILES);
         TestHelper.changeFile(testFile, 500);
@@ -94,6 +98,12 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         waitForFileListOnTestFolder();
         forceStatsCals();
         assertAllInSync(1, testFile.length());
+
+        disconnectAll();
+        connectAll();
+
+        // Make sure that last sync is persisted.
+        assertSyncDate(true, true, true, true, true);
     }
 
     /**
@@ -206,7 +216,7 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         }
         scanFolder(getFolderAtBart());
         int dls = nFiles * 2;
-        totalSize = totalSize * 2;
+        totalSize *= 2;
         waitForCompletedDownloads(dls, 0, dls, dls, dls);
         waitForFileListOnTestFolder();
         forceStatsCals();
@@ -513,6 +523,16 @@ public class FolderStatisticTest extends FiveControllerTestCase {
             maggie);
     }
 
+    private void assertSyncDate(boolean homer, boolean bart, boolean marge,
+        boolean lisa, boolean maggie)
+    {
+        assertEquals(getFolderAtHomer().getLastSyncDate() != null, homer);
+        assertEquals(getFolderAtBart().getLastSyncDate() != null, bart);
+        assertEquals(getFolderAtMarge().getLastSyncDate() != null, marge);
+        assertEquals(getFolderAtLisa().getLastSyncDate() != null, lisa);
+        assertEquals(getFolderAtMaggie().getLastSyncDate() != null, maggie);
+    }
+
     private void assertSyncPercentages(Folder folder, double homer,
         double bart, double marge, double lisa, double maggie)
     {
@@ -635,7 +655,7 @@ public class FolderStatisticTest extends FiveControllerTestCase {
                     + filesOnLisa.size() + " (same:"
                     + identicalFileList(filesLocal, filesOnLisa)
                     + "), Maggie: " + filesOnMaggie.size() + "(same:"
-                    + identicalFileList(filesLocal, filesOnMaggie) + ")";
+                    + identicalFileList(filesLocal, filesOnMaggie) + ')';
             }
 
             public boolean reached() {
@@ -668,14 +688,14 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         });
     }
 
-    private Collection<FileInfo> getFileList(Controller controller,
+    private static Collection<FileInfo> getFileList(Controller controller,
         FolderInfo foInfo, MemberInfo source)
     {
         Folder folder = controller.getFolderRepository().getFolder(foInfo);
         return folder.getFilesAsCollection(source.getNode(controller, false));
     }
 
-    private boolean identicalFileList(Collection<FileInfo> filesA,
+    private static boolean identicalFileList(Collection<FileInfo> filesA,
         Collection<FileInfo> filesB)
     {
         if (filesA == null || filesB == null) {
