@@ -579,12 +579,7 @@ public class FolderScanner extends PFComponent {
         // list
         FileInfo fInfo = new FileInfo(currentScanningFolder.getInfo(), filename);
 
-        // scannedFiles++;
-        // if (scannedFiles % 100 == 0) {
-        // System.err.println("(" + scannedFiles + ") Scanning: "
-        // + fInfo.getName());
-        // }
-
+        // #1531
         FileInfo exists = remaining.remove(fInfo);
         if (exists == null && OSUtil.isWindowsSystem()) {
             // Try harder, same file with the
