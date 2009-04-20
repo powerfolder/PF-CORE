@@ -123,15 +123,6 @@ public class SimpleComponentFactory {
     }
 
     /**
-     * Creates a checkbox
-     * 
-     * @return the fresh intalized checkbox
-     */
-    public static JCheckBox createCheckBox() {
-        return new JCheckBox();
-    }
-
-    /**
      * Creates a checkbox with a title
      * 
      * @param title

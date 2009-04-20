@@ -176,13 +176,10 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
             builder.add(builder2.getPanel(), cc.xy(3, row));
             
             row += 2;
-            builder.addLabel(Translation
-                .getTranslation("preferences.dialog.dyn_dnsAutoUpdate"), cc.xy(
-                1, row));
             builder.add(cbAutoUpdate, cc.xy(3, row));
 
             row += 2;
-            builder.addLabel(Translation
+            builder.addTitle(Translation
                 .getTranslation("preferences.dialog.dyn_dnsLoginPanel"), cc.xy(
                 1, row));
 
@@ -254,7 +251,8 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
         currentIPField = new JLabel();
         updatedIPField = new JLabel();
 
-        cbAutoUpdate = SimpleComponentFactory.createCheckBox();
+        cbAutoUpdate = SimpleComponentFactory.createCheckBox(Translation.
+                getTranslation("preferences.dialog.dyn_dnsAutoUpdate"));
         cbAutoUpdate.setSelected(isUpdateSelected());
 
         updateButton = createUpdateButton(new UpdateDynDnsAction());
