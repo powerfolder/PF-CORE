@@ -280,14 +280,16 @@ public class Folder extends PFComponent {
         // Check base dir
         try {
             checkBaseDir(localBase, false);
+            logFine("Opened " + this.toString() + " at '"
+                + localBase.getAbsolutePath() + "'");
         } catch (FolderException e) {
-            logWarning("local base inaccessible for " + fInfo.name);
+            logWarning("Unable to open " + this.toString() + " at '"
+                + localBase.getAbsolutePath()
+                + "'. Local base directory is inaccessable.");
             deviceDisconnected = true;
         }
 
         statistic = new FolderStatistic(this);
-        logFine("Opening " + toString() + " at '" + localBase.getAbsolutePath()
-            + '\'');
 
         FileFilter allExceptSystemDirFilter = new FileFilter() {
             public boolean accept(File pathname) {
@@ -776,15 +778,27 @@ public class Folder extends PFComponent {
         }
 
         ScanResult result;
-        synchronized (scanLock) {
-            FolderScanner scanner = getController().getFolderRepository()
-                .getFolderScanner();
-            result = scanner.scanFolderWaitIfBusy(this);
-            if (!result.getResultState().equals(ScanResult.ResultState.SCANNED))
-            {
-                logWarning("Scan result: " + result.getResultState());
+        FolderScanner scanner = getController().getFolderRepository()
+            .getFolderScanner();
+        // Aquire the folder wait
+        boolean scannerBusy;
+        do {
+            synchronized (scanLock) {
+                result = scanner.scanFolder(this);
             }
-        }
+            scannerBusy = ScanResult.ResultState.BUSY.equals(result
+                .getResultState());
+            if (scannerBusy) {
+                logFine("Folder scanner is busy, waiting...");
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException e) {
+                    logFiner(e);
+                    return false;
+                }
+            }
+        } while (scannerBusy);
+
 
         try {
             if (result.getResultState().equals(ScanResult.ResultState.SCANNED))
