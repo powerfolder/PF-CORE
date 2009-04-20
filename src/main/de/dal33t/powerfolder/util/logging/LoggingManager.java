@@ -36,6 +36,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.logging.handlers.BufferedHandler;
 import de.dal33t.powerfolder.util.logging.handlers.ConsoleHandler;
 import de.dal33t.powerfolder.util.logging.handlers.DocumentHandler;
 
@@ -61,6 +62,10 @@ public class LoggingManager {
 
     /** The console handler */
     private static final ConsoleHandler consoleHandler;
+    
+    /** The buffer handler */
+    private static final BufferedHandler bufferedHandler;
+
 
     /** The file handler */
     private static FileHandler fileHandler;
@@ -76,6 +81,9 @@ public class LoggingManager {
 
     /** The file logging level */
     private static Level fileLoggingLevel;
+    
+    /** The buffered logging level */
+    private static Level bufferedLoggingLevel;
 
     /** The name of the file logging file */
     private static String fileLoggingFileName;
@@ -106,10 +114,12 @@ public class LoggingManager {
         // Create loggers, thread-safe in the static initializer.
         consoleHandler = new ConsoleHandler();
         documentHandler = new DocumentHandler();
+        bufferedHandler = new BufferedHandler(20);
 
         rootLogger.setFilter(filter);
         consoleHandler.setFilter(filter);
         documentHandler.setFilter(filter);
+        bufferedHandler.setFilter(filter);
     }
 
     /**
@@ -133,6 +143,7 @@ public class LoggingManager {
      * Add handler to root logger if this is the first time.
      *
      * @param level
+     * @param controller 
      */
     public static void setDocumentLogging(Level level, Controller controller) {
         if (documentLoggingLevel == null) {
@@ -168,6 +179,22 @@ public class LoggingManager {
 
         setMinimumBaseLoggingLevel();
     }
+    
+    /**
+     * Set the console handler level. Add handler to root logger if this is the
+     * first time.
+     * 
+     * @param level
+     */
+    public static void setBufferedLogging(Level level) {
+        if (bufferedLoggingLevel == null) {
+            getRootLogger().addHandler(bufferedHandler);
+        }
+        bufferedLoggingLevel = level;
+        bufferedHandler.setLevel(level);
+
+        setMinimumBaseLoggingLevel();
+    }
 
     /**
      * Physically create the file handler.
@@ -197,9 +224,7 @@ public class LoggingManager {
     }
 
     /**
-     * Gets the document handler document for display in the debug panel.
-     *
-     * @return
+     * @return the document handler document for display in the debug panel.
      */
     public static StyledDocument getLogBuffer() {
         Reject.ifNull(documentHandler.getLogBuffer(),
@@ -208,18 +233,21 @@ public class LoggingManager {
     }
 
     /**
-     * Answers if file logging is enabled.
-     *
-     * @return
+     * @return the buffered handler.
+     */
+    public static BufferedHandler getBufferedHandler() {
+        return bufferedHandler;
+    }
+
+    /**
+     * @return if file logging is enabled.
      */
     public static boolean isLogToFile() {
         return fileLoggingLevel != null;
     }
 
     /**
-     * Returns the document logging level.
-     *
-     * @return
+     * @return the document logging level.
      */
     public static Level getDocumentLoggingLevel() {
         if (documentLoggingLevel == null) {
@@ -239,9 +267,7 @@ public class LoggingManager {
     }
 
     /**
-     * Gets the directory that the file logging is written to.
-     *
-     * @return
+     * @return the directory that the file logging is written to.
      */
     public static File getDebugDir() {
         File canidate = new File(DEBUG_DIR);
@@ -280,9 +306,7 @@ public class LoggingManager {
     }
 
     /**
-     * Returns the file logging file name.
-     *
-     * @return
+     * @return the file logging file name.
      */
     public static String getLoggingFileName() {
         synchronized (fileHandlerLock) {
@@ -306,6 +330,11 @@ public class LoggingManager {
             if (fileLoggingLevel != null && fileLoggingLevel.intValue() < level.intValue()) {
                 level = fileLoggingLevel;
             }
+        }
+        if (bufferedLoggingLevel != null
+            && bufferedLoggingLevel.intValue() < level.intValue())
+        {
+            level = bufferedLoggingLevel;
         }
         getRootLogger().setLevel(level);
     }
