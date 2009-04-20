@@ -3,12 +3,12 @@ package de.dal33t.powerfolder.disk.dao;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.logging.Loggable;
+import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
  * A {@link FileInfoDAO} implementation based on fast, in-memory
@@ -17,14 +17,25 @@ import de.dal33t.powerfolder.util.logging.Loggable;
  * @author sprajc
  */
 public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
+    private boolean ignoreFileNameCase;
     private ConcurrentMap<String, Domain> domains = new ConcurrentHashMap<String, Domain>();
+
+    public FileInfoDAOHashMapImpl() {
+        super();
+        ignoreFileNameCase = OSUtil.isWindowsSystem();
+        //ignoreFileNameCase = false;
+    }
 
     public int count(String domain) {
         return getDomain(domain).files.size();
     }
 
     public void delete(String domain, FileInfo info) {
-        getDomain(domain).files.remove(info);
+        if (ignoreFileNameCase) {
+            getDomain(domain).files.remove(info.getLowerCaseName());
+        } else {
+            getDomain(domain).files.remove(info.getName());
+        }
     }
 
     public void deleteDomain(String domain) {
@@ -32,16 +43,16 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
     }
 
     public FileInfo find(FileInfo info, String domain) {
-        return getDomain(domain).files.get(info);
+        if (ignoreFileNameCase) {
+            return getDomain(domain).files.get(info.getLowerCaseName());
+        } else {
+            return getDomain(domain).files.get(info.getName());
+        }
     }
 
     public Collection<FileInfo> findAll(String domain) {
         return Collections.unmodifiableCollection(getDomain(domain).files
             .values());
-    }
-
-    public Map<FileInfo, FileInfo> findAllAsMap(String domain) {
-        return Collections.unmodifiableMap(getDomain(domain).files);
     }
 
     public FileInfo findNewestVersion(FileInfo info, String... domainStrings) {
@@ -50,7 +61,12 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
             Domain d = getDomain(domain);
 
             // Get remote file
-            FileInfo candidateFile = d.files.get(info);
+            FileInfo candidateFile;
+            if (ignoreFileNameCase) {
+                candidateFile = d.files.get(info.getLowerCaseName());
+            } else {
+                candidateFile = d.files.get(info.getName());
+            }
             if (candidateFile == null) {
                 continue;
             }
@@ -76,7 +92,12 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
     public void store(String domain, Collection<FileInfo> infos) {
         Domain d = getDomain(domain);
         for (FileInfo fileInfo : infos) {
-            d.files.put(fileInfo, fileInfo);
+            if (ignoreFileNameCase) {
+                // TODO Might produce a lot extra strings in RAM
+                d.files.put(fileInfo.getLowerCaseName(), fileInfo);
+            } else {
+                d.files.put(fileInfo.getName(), fileInfo);
+            }
         }
     }
 
@@ -99,6 +120,6 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
     }
 
     private static class Domain {
-        private ConcurrentMap<FileInfo, FileInfo> files = new ConcurrentHashMap<FileInfo, FileInfo>();
+        private ConcurrentMap<String, FileInfo> files = new ConcurrentHashMap<String, FileInfo>();
     }
 }

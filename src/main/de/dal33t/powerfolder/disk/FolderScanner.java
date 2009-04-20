@@ -221,7 +221,9 @@ public class FolderScanner extends PFComponent {
 
             File base = currentScanningFolder.getLocalBase();
             remaining.clear();
-            remaining.putAll(currentScanningFolder.getKnownFilesMap());
+            for (FileInfo fInfo : currentScanningFolder.getKnownFiles()) {
+                remaining.put(fInfo, fInfo);
+            }
             if (!scan(base) || failure) {
                 // if false there was an IOError
                 reset();

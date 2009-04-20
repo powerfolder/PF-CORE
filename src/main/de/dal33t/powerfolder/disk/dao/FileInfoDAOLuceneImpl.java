@@ -28,7 +28,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.lucene.analysis.Analyzer;
@@ -333,32 +332,6 @@ public class FileInfoDAOLuceneImpl extends PFComponent implements FileInfoDAO {
                 domain != null ? domain : ""));
             TopDocs docs = searcher.search(domainQuery, null, 1);
             return docs.totalHits;
-        } catch (Exception e) {
-            throw new RuntimeException(
-                "Exception while finding all FileInfo in index for domain: "
-                    + domain + ": " + e.toString(), e);
-        } finally {
-            searcherPool.returnToPool(searcher);
-        }
-    }
-
-    /* (non-Javadoc)
-     * @see de.dal33t.powerfolder.disk.lucene.FileInfoDAO#findAllAsMap(java.lang.String)
-     */
-    public Map<FileInfo, FileInfo> findAllAsMap(String domain) {
-        IndexSearcher searcher = searcherPool.get();
-        try {
-            Query domainQuery = new TermQuery(new Term(FIELD_NAME_DOMAIN,
-                domain != null ? domain : ""));
-            TopDocs docs = searcher.search(domainQuery, null, MAX_ITEMS);
-            ConcurrentHashMap<FileInfo, FileInfo> fInfos = new ConcurrentHashMap<FileInfo, FileInfo>();
-            // docs.scoreDocs.length);
-            for (int i = 0; i < docs.scoreDocs.length; i++) {
-                Document doc = searcher.doc(docs.scoreDocs[i].doc);
-                FileInfo fInfo = convertToFile(doc);
-                fInfos.put(fInfo, fInfo);
-            }
-            return fInfos;
         } catch (Exception e) {
             throw new RuntimeException(
                 "Exception while finding all FileInfo in index for domain: "

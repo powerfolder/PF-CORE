@@ -2443,11 +2443,6 @@ public class Folder extends PFComponent {
         return dao.findAll(null);
     }
 
-    /** package protected, used by FolderScanner */
-    Map<FileInfo, FileInfo> getKnownFilesMap() {
-        return dao.findAllAsMap(null);
-    }
-
     /**
      * get the Directories in this folder (including the subs and files)
      *

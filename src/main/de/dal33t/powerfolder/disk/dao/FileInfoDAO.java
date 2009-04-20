@@ -20,7 +20,6 @@
 package de.dal33t.powerfolder.disk.dao;
 
 import java.util.Collection;
-import java.util.Map;
 
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
@@ -113,14 +112,4 @@ public interface FileInfoDAO {
      * @return the number of FileInfos in this domain
      */
     int count(String domain);
-
-    /**
-     * Finds all {@link FileInfo} objects of the given domain.
-     * 
-     * @param domain
-     * @return all {@link FileInfo} objects of the given domain as
-     *         <code>Map</code>
-     */
-    Map<FileInfo, FileInfo> findAllAsMap(String domain);
-
 }

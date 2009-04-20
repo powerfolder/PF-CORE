@@ -26,6 +26,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -190,7 +191,7 @@ public class FileInfoDAOSQLImpl extends PFComponent implements FileInfoDAO {
         }
     }
 
-    public Map<FileInfo, FileInfo> findAllAsMap(String domain) {
+    public Collection<FileInfo> findAll(String domain) {
         Connection c = openConnection();
         try {
             PreparedStatement ps = c.prepareStatement(tn(SQL_FIND_ALL));
@@ -207,7 +208,7 @@ public class FileInfoDAOSQLImpl extends PFComponent implements FileInfoDAO {
                 }
             }
             ps.close();
-            return fInfos;
+            return Collections.unmodifiableCollection(fInfos.values());
         } catch (SQLException e) {
             throw handleSQLException(e, tn(SQL_FIND_ALL));
         } finally {
@@ -223,10 +224,6 @@ public class FileInfoDAOSQLImpl extends PFComponent implements FileInfoDAO {
         logSevere("Unable to execute database query: " + sql, e);
         throw new RuntimeException("Unable to execute database query: " + sql,
             e);
-    }
-
-    public Collection<FileInfo> findAll(String domain) {
-        return findAllAsMap(domain).keySet();
     }
 
     public FileInfo findNewestVersion(FileInfo info, String... domains) {
