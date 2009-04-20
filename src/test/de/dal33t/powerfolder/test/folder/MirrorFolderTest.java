@@ -97,7 +97,7 @@ public class MirrorFolderTest extends FiveControllerTestCase {
         assertIdenticalTestFolder();
     }
 
-    public void xtestMixedCaseSubdirs() throws IOException {
+    public void testMixedCaseSubdirs() throws IOException {
         getFolderAtHomer().setSyncProfile(SyncProfile.NO_SYNC);
         getFolderAtMarge().setSyncProfile(SyncProfile.NO_SYNC);
         getFolderAtMaggie().setSyncProfile(SyncProfile.NO_SYNC);
@@ -139,6 +139,8 @@ public class MirrorFolderTest extends FiveControllerTestCase {
         assertEquals(0, getContollerLisa().getTransferManager()
             .getCompletedDownloadsCollection().size());
 
+        assertEquals(1, getFolderAtBart().getKnownFilesCount());
+        assertEquals(1, getFolderAtLisa().getKnownFilesCount());
         FileInfo fBart = getFolderAtBart().getKnownFiles().iterator().next();
         FileInfo fLisa = getFolderAtLisa().getKnownFiles().iterator().next();
 
@@ -149,7 +151,6 @@ public class MirrorFolderTest extends FiveControllerTestCase {
         assertEquals(0, fLisa.getVersion());
         assertFalse(fLisa.isDeleted());
         assertFileMatch(fileAtLisa, fLisa, getContollerLisa());
-
     }
 
     private void assertIdenticalTestFolder() {
