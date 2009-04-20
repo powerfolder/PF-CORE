@@ -42,7 +42,6 @@ public class ApplicationModel extends PFUIComponent {
     private ActionModel actionModel;
     private ChatModel chatModel;
     private NodeManagerModel nodeManagerModel;
-    private FolderRepositoryModel folderRepositoryModel;
     private TransferManagerModel transferManagerModel;
     private ServerClientModel serverClientModel;
     private ReceivedInvitationsModel receivedInvitationsModel;
@@ -64,7 +63,6 @@ public class ApplicationModel extends PFUIComponent {
         actionModel = new ActionModel(getController());
         chatModel = new ChatModel(getController());
         nodeManagerModel = new NodeManagerModel(getController());
-        folderRepositoryModel = new FolderRepositoryModel(getController());
         transferManagerModel = new TransferManagerModel(getController()
             .getTransferManager());
         serverClientModel = new ServerClientModel(getController(),
@@ -104,7 +102,6 @@ public class ApplicationModel extends PFUIComponent {
      * Initializes this and all submodels
      */
     public void initialize() {
-        folderRepositoryModel.initialize();
         transferManagerModel.initialize();
     }
 
@@ -120,10 +117,6 @@ public class ApplicationModel extends PFUIComponent {
 
     public NodeManagerModel getNodeManagerModel() {
         return nodeManagerModel;
-    }
-
-    public FolderRepositoryModel getFolderRepositoryModel() {
-        return folderRepositoryModel;
     }
 
     public TransferManagerModel getTransferManagerModel() {

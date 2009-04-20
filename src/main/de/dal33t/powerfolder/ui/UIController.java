@@ -22,6 +22,7 @@ package de.dal33t.powerfolder.ui;
 import de.dal33t.powerfolder.*;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
+import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
@@ -34,6 +35,7 @@ import de.dal33t.powerfolder.ui.model.TransferManagerModel;
 import de.dal33t.powerfolder.ui.notification.NotificationHandler;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.ui.dialog.SingleFileTransferDialog;
+import de.dal33t.powerfolder.ui.dialog.SyncFolderPanel;
 import de.dal33t.powerfolder.ui.render.SysTrayBlinkManager;
 import de.dal33t.powerfolder.ui.render.MainFrameBlinkManager;
 import de.dal33t.powerfolder.util.*;
@@ -713,7 +715,27 @@ public class UIController extends PFComponent {
     }
 
     public void syncFolder(FolderInfo folderInfo) {
-        applicationModel.getFolderRepositoryModel().syncFolder(folderInfo);
+        Folder folder = getController().getFolderRepository().getFolder(folderInfo);
+
+        if (SyncProfile.MANUAL_SYNCHRONIZATION.equals(folder.getSyncProfile()))
+        {
+            // Ask for more sync options on that folder if on project sync
+            new SyncFolderPanel(getController(), folder).open();
+        } else {
+
+            // Let other nodes scan now!
+            folder.broadcastScanCommand();
+
+            // Recommend scan on this
+            folder.recommendScanOnNextMaintenance();
+
+            // Now trigger the scan
+            getController().getFolderRepository().triggerMaintenance();
+
+            // Trigger file requesting.
+            getController().getFolderRepository().getFileRequestor()
+                .triggerFileRequesting(folderInfo);
+        }
     }
 
     public void closeInformationFrame() {
