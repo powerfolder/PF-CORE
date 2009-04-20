@@ -60,10 +60,10 @@ public abstract class FileInfoDAOTestCase extends ControllerTestCase {
         assertEquals(n, dao.findAll("WWW").size());
         assertEquals(0, dao.findAll("123").size());
 
-        assertEquals(n, dao.findAllAsMap(null).size());
-        assertEquals(n, dao.findAllAsMap("XXX").size());
-        assertEquals(n, dao.findAllAsMap("WWW").size());
-        assertEquals(0, dao.findAllAsMap("123").size());
+        assertEquals(n, dao.findAll(null).size());
+        assertEquals(n, dao.findAll("XXX").size());
+        assertEquals(n, dao.findAll("WWW").size());
+        assertEquals(0, dao.findAll("123").size());
     }
 
     protected void testFindNewestVersion(FileInfoDAO dao) {
