@@ -171,8 +171,8 @@ public class PreferencesDialog extends BaseDialog {
         DialogsSettingsTab dialogsSettingsTab = new DialogsSettingsTab(
             getController());
         preferenceTabs.add(dialogsSettingsTab);
-        tabbedPane.addTab(dialogsSettingsTab.getTabName(), Icons.DIALOG,
-            dialogsSettingsTab.getUIPanel(), null);
+        tabbedPane.addTab(dialogsSettingsTab.getTabName(), Icons.getIconById(
+                Icons.DIALOG), dialogsSettingsTab.getUIPanel(), null);
 
         PluginSettingsTab pluginSettingsTab = new PluginSettingsTab(
             getController(), this);

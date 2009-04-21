@@ -410,7 +410,7 @@ public class AboutDialog extends PFUIComponent {
             "about_dialog.system_monitor.tips"));
         systemMonitorButton.setMnemonic(Translation.getTranslation(
             "about_dialog.system_monitor.key").trim().charAt(0));
-        systemMonitorButton.setIcon(Icons.SYSTEM_MONITOR);
+        systemMonitorButton.setIcon(Icons.getIconById(Icons.SYSTEM_MONITOR));
         systemMonitorButton.addActionListener(systemMonitorAction);
         systemMonitorButton.setBackground(Color.WHITE);
         return systemMonitorButton;
@@ -429,7 +429,7 @@ public class AboutDialog extends PFUIComponent {
             "about_dialog.check_for_updates.tips"));
         checkForUpdatesButton.setMnemonic(Translation.getTranslation(
             "about_dialog.check_for_updates.key").trim().charAt(0));
-        checkForUpdatesButton.setIcon(Icons.UPDATES);
+        checkForUpdatesButton.setIcon(Icons.getIconById(Icons.UPDATES));
         checkForUpdatesButton.addActionListener(updateAction);
         checkForUpdatesButton.setBackground(Color.WHITE);
     }

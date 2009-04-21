@@ -86,18 +86,18 @@ public class Icons {
     public static final String BLANK = "blank.icon";
     public static final String WARNING = "warning.icon";
     public static final String DEBUG = "bug.icon";
-    public static final Icon UPDATES = getIcon("icons/Updates.gif");
-    public static final Icon SYSTEM_MONITOR = getIcon("icons/SystemMonitor.png");
-    public static final Icon DIALOG = getIcon("icons/Dialog.gif");
-    public static final Icon STOP = getIcon("icons/Abort.gif");
-    public static final Icon RUN = getIcon("icons/Play.gif");
-    public static final Icon SUSPEND = getIcon("icons/Suspend.gif");
-    public static final Icon HOME = getIcon("icons/Home.png");
+    public static final String UPDATES = "updates.icon";
+    public static final String SYSTEM_MONITOR = "system_monitor.icon";
+    public static final String DIALOG = "dialog.icon";
+    public static final String STOP = "stop.icon";
+    public static final String RUN = "play.icon";
+    public static final String SUSPEND = "suspend.icon";
+    public static final String HOME = "home.icon";
 
-    public static final Icon ADD = getIcon("icons/Add.png");
-    public static final Icon EDIT = getIcon("icons/Edit.png");
-    public static final Icon DELETE = getIcon("icons/Delete.gif");
-    public static final Icon FORCE_UPDATE = getIcon("icons/ForceUpdate.png");
+    public static final String ADD = "add.icon";
+    public static final String EDIT = "edit.icon";
+    public static final String DELETE = "delete.icon";
+    public static final String FORCE_UPDATE = "force_update.icon";
 
     public static final Icon UNKNOWN_FILE = getIcon("icons/Unknown.gif");
     public static final Icon UNKNOWN_FILE_GRAY = getGrayIcon(UNKNOWN_FILE);
@@ -223,10 +223,11 @@ public class Icons {
     // Images icons
     public static final Image POWERFOLDER_IMAGE = getImageFromIcon(SMALL_LOGO);
     public static final Image FOLDER_IMAGE = getImageFromIcon(FOLDER);
-    public static final Image SYSTEM_MONITOR_IMAGE = getImageFromIcon(SYSTEM_MONITOR);
+    public static Image SYSTEM_MONITOR_IMAGE = getImageFromIcon(getIconById(
+            SYSTEM_MONITOR));
     public static final Image CHAT_IMAGE = getImageFromIcon(CHAT);
-    public static final Image DEBUG_IMAGE = getImageFromIcon(getIconById(DEBUG));
-    public static final Image BLANK_IMAGE = getImageFromIcon(getIconById(BLANK));
+    public static Image DEBUG_IMAGE = getImageFromIcon(getIconById(DEBUG));
+    public static Image BLANK_IMAGE = getImageFromIcon(getIconById(BLANK));
 
     // About stuff
     public static final Icon ABOUT_ANIMATION = getIconById("about.animation");
@@ -448,7 +449,7 @@ public class Icons {
             icon = NODE_NON_FRIEND_CONNECTED;
         }
         if (!node.isOnSameNetwork()) {
-            icon = new OverlayedIcon(icon, Icons.DELETE, 0, 0);
+            icon = new OverlayedIcon(icon, getIconById(Icons.DELETE), 0, 0);
         }
         return icon;
     }
@@ -481,7 +482,7 @@ public class Icons {
             }
         }
         if (!node.isOnSameNetwork()) {
-            icon = new OverlayedIcon(icon, Icons.DELETE, 0, 0);
+            icon = new OverlayedIcon(icon, getIconById(Icons.DELETE), 0, 0);
         }
         return icon;
     }
@@ -741,7 +742,7 @@ public class Icons {
                 icon = DOWNLOAD;
             }
         } else if (fInfo.isDeleted()) {
-            icon = DELETE;
+            icon = getIconById(DELETE);
         } else if (fInfo.isExpected(controller.getFolderRepository())) {
             icon = EXPECTED;
         } else if (fInfo.getFolder(controller.getFolderRepository()) == null) {

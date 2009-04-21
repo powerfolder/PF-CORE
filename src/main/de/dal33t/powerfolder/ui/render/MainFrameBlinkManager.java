@@ -86,7 +86,7 @@ public class MainFrameBlinkManager extends PFUIComponent {
         if (blink && flashHomeTab.get()) {
             uiController.getMainFrame().setHomeTabIcon(Icons.getIconById(Icons.BLANK));
         } else {
-            uiController.getMainFrame().setHomeTabIcon(Icons.HOME);
+            uiController.getMainFrame().setHomeTabIcon(Icons.getIconById(Icons.HOME));
         }
 
         if (blink && flashMemberTab.get()) {

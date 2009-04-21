@@ -217,7 +217,7 @@ public class FilesTable extends JTable {
                             // preference goes to deleted, then ignored then available icon
                         } else if (fileInfo.isDeleted()) {
                             setForeground(DELETED);
-                            setIcon(Icons.DELETE);
+                            setIcon(Icons.getIconById(Icons.DELETE));
                             statusForTooltip = Translation.getTranslation("file_info.deleted");
 
                         } else if (folder.getDiskItemFilter().isExcluded(fileInfo)
@@ -252,7 +252,7 @@ public class FilesTable extends JTable {
                                 if (newestVersion.equals(newestDeletedVersion)) {
                                     if (MANUAL_SYNCHRONIZATION.equals(folder.getSyncProfile())) {
                                         // Show remote deletions when in project work sync
-                                        setIcon(Icons.DELETE);
+                                        setIcon(Icons.getIconById(Icons.DELETE));
                                         statusForTooltip = Translation
                                                 .getTranslation("file_info.remote_deleted");
                                     }

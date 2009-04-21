@@ -176,71 +176,71 @@ public class DebugInformationCard extends InformationCard{
 	        showDebugReportsCheckBox.addItemListener(itemListener);
 
 	        shutdownFileRequestorButton = new JButton();
-	        shutdownFileRequestorButton.setIcon(Icons.STOP);
+	        shutdownFileRequestorButton.setIcon(Icons.getIconById(Icons.STOP));
 	        shutdownFileRequestorButton.setToolTipText("Shutdown FileRequestor");
 
 	        startFileRequestorButton = new JButton();
-	        startFileRequestorButton.setIcon(Icons.RUN);
+	        startFileRequestorButton.setIcon(Icons.getIconById(Icons.RUN));
 	        startFileRequestorButton.setEnabled(false);
 	        startFileRequestorButton.setToolTipText("Start FileRequestor");
 
 	        shutdownTransferManagerButton = new JButton();
-	        shutdownTransferManagerButton.setIcon(Icons.STOP);
+	        shutdownTransferManagerButton.setIcon(Icons.getIconById(Icons.STOP));
 	        shutdownTransferManagerButton.setToolTipText("Shutdown TransferManager");
 
 	        startTransferManagerButton = new JButton();
-	        startTransferManagerButton.setIcon(Icons.RUN);
+	        startTransferManagerButton.setIcon(Icons.getIconById(Icons.RUN));
 	        startTransferManagerButton.setEnabled(false);
 	        startTransferManagerButton.setToolTipText("Start TransferManager");
 
 	        suspendEventsTransferManagerToggleButton = new JToggleButton();
-	        suspendEventsTransferManagerToggleButton.setIcon(Icons.SUSPEND);
+	        suspendEventsTransferManagerToggleButton.setIcon(Icons.getIconById(Icons.SUSPEND));
 	        suspendEventsTransferManagerToggleButton
 	                .setToolTipText("Suspend TransferManagerListeners");
 
 	        shutdownNodeManagerButton = new JButton();
-	        shutdownNodeManagerButton.setIcon(Icons.STOP);
+	        shutdownNodeManagerButton.setIcon(Icons.getIconById(Icons.STOP));
 	        shutdownNodeManagerButton.setToolTipText("Shutdown NodeManager");
 
 	        startNodeManagerButton = new JButton();
-	        startNodeManagerButton.setIcon(Icons.RUN);
+	        startNodeManagerButton.setIcon(Icons.getIconById(Icons.RUN));
 	        startNodeManagerButton.setEnabled(false);
 	        startNodeManagerButton.setToolTipText("Start NodeManager");
 
 	        suspendEventsNodeManagerToggleButton = new JToggleButton();
-	        suspendEventsNodeManagerToggleButton.setIcon(Icons.SUSPEND);
+	        suspendEventsNodeManagerToggleButton.setIcon(Icons.getIconById(Icons.SUSPEND));
 	        suspendEventsNodeManagerToggleButton
 	                .setToolTipText("Suspend NodeManagerListeners");
 
 	        shutdownFolderRepository = new JButton();
-	        shutdownFolderRepository.setIcon(Icons.STOP);
+	        shutdownFolderRepository.setIcon(Icons.getIconById(Icons.STOP));
 	        shutdownFolderRepository.setToolTipText("Shutdown FolderRepository");
 
 	        startFolderRepository = new JButton();
-	        startFolderRepository.setIcon(Icons.RUN);
+	        startFolderRepository.setIcon(Icons.getIconById(Icons.RUN));
 	        startFolderRepository.setEnabled(false);
 	        startFolderRepository.setToolTipText("Start FolderRepository");
 
 	        suspendEventsFolderRepositoryToggleButton = new JToggleButton();
-	        suspendEventsFolderRepositoryToggleButton.setIcon(Icons.SUSPEND);
+	        suspendEventsFolderRepositoryToggleButton.setIcon(Icons.getIconById(Icons.SUSPEND));
 	        suspendEventsFolderRepositoryToggleButton
 	                .setToolTipText("Suspend FolderRepositoryListeners");
 
 	        shutdownConnectionListener = new JButton();
-	        shutdownConnectionListener.setIcon(Icons.STOP);
+	        shutdownConnectionListener.setIcon(Icons.getIconById(Icons.STOP));
 	        shutdownConnectionListener.setToolTipText("Shutdown ConnectionListener");
 
 	        startConnectionListener = new JButton();
-	        startConnectionListener.setIcon(Icons.RUN);
+	        startConnectionListener.setIcon(Icons.getIconById(Icons.RUN));
 	        startConnectionListener.setEnabled(false);
 	        startConnectionListener.setToolTipText("Start ConnectionListener");
 
 	        shutdownBroadcastMananger = new JButton();
-	        shutdownBroadcastMananger.setIcon(Icons.STOP);
+	        shutdownBroadcastMananger.setIcon(Icons.getIconById(Icons.STOP));
 	        shutdownBroadcastMananger.setToolTipText("Shutdown BroadcastMananger");
 
 	        startBroadcastMananger = new JButton();
-	        startBroadcastMananger.setIcon(Icons.RUN);
+	        startBroadcastMananger.setIcon(Icons.getIconById(Icons.RUN));
 	        startBroadcastMananger.setEnabled(false);
 	        startBroadcastMananger.setToolTipText("Start BroadcastMananger");
 	        

@@ -64,13 +64,13 @@ public class LANList extends PFComponent {
         networklist = new JList(new DefaultListModel());
         networklist
             .setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        addButton = new JButton(Icons.ADD);
+        addButton = new JButton(Icons.getIconById(Icons.ADD));
         addButton.setText(Translation
             .getTranslation("folder_panel.settings_tab.addbutton.name"));
-        removeButton = new JButton(Icons.DELETE);
+        removeButton = new JButton(Icons.getIconById(Icons.DELETE));
         removeButton.setText(Translation
             .getTranslation("folder_panel.settings_tab.removebutton.name"));
-        editButton = new JButton(Icons.EDIT);
+        editButton = new JButton(Icons.getIconById(Icons.EDIT));
         editButton.setText(Translation
             .getTranslation("folder_panel.settings_tab.editbutton.name"));
 

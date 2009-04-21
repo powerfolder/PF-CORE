@@ -313,7 +313,7 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
     private JButton createUpdateButton(ActionListener listener) {
         updateButton = new JButton(Translation
             .getTranslation("preferences.dialog.dyn_dnsUpdateButton"),
-                Icons.FORCE_UPDATE);
+                Icons.getIconById(Icons.FORCE_UPDATE));
         updateButton.addActionListener(listener);
         return updateButton;
     }
