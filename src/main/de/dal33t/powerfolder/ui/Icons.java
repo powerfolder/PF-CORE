@@ -124,11 +124,12 @@ public class Icons {
 
     // Toolbar
     public static final String SEARCH_NODES = "friends.icon";
-    public static final String NEW_FOLDER = "new_folder.icon";
-    public static final String JOIN_FOLDER = "join_folder.icon";
-    public static final Icon SYNC_FOLDER = getIcon("icons/pictos/Sync-48.png");
-    public static final Icon REMOVE_FOLDER = getIcon("icons/pictos/LeaveFolder-48.png");
-    public static final Icon PREFERENCES = getIcon("icons/Preferences.png");
+    public static final String NEW_FOLDER_48 = "new_folder_48.icon";
+    public static final String JOIN_FOLDER_48 = "join_folder_48.icon";
+    public static final String SYNC_FOLDER_48 = "sync_48.icon";
+    public static final String REMOVE_FOLDER_48 = "leave_folder_48.icon";
+    
+    public static final String PREFERENCES = "preferences.icon";
     public static final Icon PREFERENCES_PICTO = getIcon("icons/pictos/Preferences.png");
     public static final Icon SYNC = getIcon("icons/Sync.png");
     public static final Icon QUESTION = getIcon("icons/Question.gif");

@@ -112,7 +112,7 @@ public class PreviewFolderRemovePanel extends BaseDialog {
     }
 
     protected Icon getIcon() {
-        return Icons.REMOVE_FOLDER;
+        return Icons.getIconById(Icons.REMOVE_FOLDER_48);
     }
 
     protected Component getContent() {

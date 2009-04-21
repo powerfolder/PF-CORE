@@ -148,7 +148,7 @@ public class PreferencesDialog extends BaseDialog {
             getController());
         preferenceTabs.add(generalSettingsTab);
         tabbedPane.addTab(generalSettingsTab.getTabName(),
-            Icons.PREFERENCES, generalSettingsTab.getUIPanel(), null);
+            Icons.getIconById(Icons.PREFERENCES), generalSettingsTab.getUIPanel(), null);
 
         UISettingsTab uiSettingsTab = new UISettingsTab(
             getController());

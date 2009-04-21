@@ -26,7 +26,6 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.binding.value.ValueHolder;
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.message.SingleFileOffer;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.action.BaseAction;
@@ -83,7 +82,7 @@ public class SingleFileAcceptDialog extends BaseDialog {
      * @return
      */
     protected Icon getIcon() {
-        return Icons.SYNC_FOLDER;
+        return Icons.getIconById(Icons.SYNC_FOLDER_48);
     }
 
     /**

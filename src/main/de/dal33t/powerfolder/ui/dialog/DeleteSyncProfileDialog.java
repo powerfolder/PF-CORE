@@ -77,7 +77,7 @@ public class DeleteSyncProfileDialog extends BaseDialog
      * @return
      */
     protected Icon getIcon() {
-        return Icons.REMOVE_FOLDER;
+        return Icons.getIconById(Icons.REMOVE_FOLDER_48);
     }
 
     /**

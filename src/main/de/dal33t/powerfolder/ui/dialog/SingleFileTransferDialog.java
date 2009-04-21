@@ -94,7 +94,7 @@ public class SingleFileTransferDialog extends BaseDialog {
      * @return
      */
     protected Icon getIcon() {
-        return Icons.SYNC_FOLDER;
+        return Icons.getIconById(Icons.SYNC_FOLDER_48);
     }
 
     /**
