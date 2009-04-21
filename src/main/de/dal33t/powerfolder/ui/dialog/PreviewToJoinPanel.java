@@ -136,7 +136,7 @@ public class PreviewToJoinPanel extends BaseDialog {
     }
 
     protected Icon getIcon() {
-        return Icons.JOIN_FOLDER;
+        return Icons.getIconById(Icons.JOIN_FOLDER);
     }
 
     protected Component getContent() {

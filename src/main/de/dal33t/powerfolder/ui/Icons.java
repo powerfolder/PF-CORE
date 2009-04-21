@@ -60,7 +60,13 @@ import de.dal33t.powerfolder.util.ui.OverlayedIcon;
 
 
 /**
- * Contains all icons for the powerfolder application
+ * Contains all icons for the powerfolder application.
+ *
+ * Icons should be got by calling something like
+ * <code>Icons.getIconById(Icon.EXAMPLE)</code>. This will dereference via
+ * Icons.properties and will return the Icon as well as caching it, so that
+ * subsequent calls will return the same object. The advantage of this aproach
+ * is that Icons are only greated as required, saving time and memory.
  *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.74 $
@@ -99,27 +105,27 @@ public class Icons {
     public static final String DELETE = "delete.icon";
     public static final String FORCE_UPDATE = "force_update.icon";
 
-    public static final Icon UNKNOWN_FILE = getIcon("icons/Unknown.gif");
-    public static final Icon UNKNOWN_FILE_GRAY = getGrayIcon(UNKNOWN_FILE);
-    public static final Icon UNKNOWN_FILE_RED = convertToRed(UNKNOWN_FILE_GRAY);
+    public static final String UNKNOWN_FILE = "unknown.icon";
+    public static final String UNKNOWN_FILE_GRAY = "unknown_file_gray";
+    public static final String UNKNOWN_FILE_RED = "unknown_file_red";
 
     public static final String SLEEP = "sleep.icon";
     public static final String WAKE_UP = "wake_up.icon";
 
-    public static final Icon CHAT = getIcon("icons/Chat.gif");
-    public static final Icon SETTINGS = getIcon("icons/Settings.png");
-    public static final Icon ADVANCED = getIcon("icons/Advanced.png");
-    public static final Icon INFORMATION = getIcon("icons/information.png");
-    public static final Icon COMPUTER = getIcon("icons/Computer.png");
+    public static final String CHAT = "chat.icon";
+    public static final String SETTINGS = "settings.icon";
+    public static final String ADVANCED = "advanced.icon";
+    public static final String INFORMATION = "information.icon";
+    public static final String COMPUTER = "computer.icon";
 
     // Wizard Arrows
     public static final String ARROW_LEFT = "arrow_left.icon";
     public static final String ARROW_RIGHT = "arrow_right.icon";
 
     // Toolbar
-    public static final Icon SEARCH_NODES = getIcon("icons/pictos/Friends.png");
-    public static final Icon NEW_FOLDER = getIcon("icons/pictos/NewFolder-48.png");
-    public static final Icon JOIN_FOLDER = getIcon("icons/pictos/JoinFolder-48.png");
+    public static final String SEARCH_NODES = "friends.icon";
+    public static final String NEW_FOLDER = "new_folder.icon";
+    public static final String JOIN_FOLDER = "join_folder.icon";
     public static final Icon SYNC_FOLDER = getIcon("icons/pictos/Sync-48.png");
     public static final Icon REMOVE_FOLDER = getIcon("icons/pictos/LeaveFolder-48.png");
     public static final Icon PREFERENCES = getIcon("icons/Preferences.png");
@@ -225,7 +231,7 @@ public class Icons {
     public static final Image FOLDER_IMAGE = getImageFromIcon(FOLDER);
     public static Image SYSTEM_MONITOR_IMAGE = getImageFromIcon(getIconById(
             SYSTEM_MONITOR));
-    public static final Image CHAT_IMAGE = getImageFromIcon(CHAT);
+    public static final Image CHAT_IMAGE = getImageFromIcon(getIconById(CHAT));
     public static Image DEBUG_IMAGE = getImageFromIcon(getIconById(DEBUG));
     public static Image BLANK_IMAGE = getImageFromIcon(getIconById(BLANK));
 
@@ -297,7 +303,7 @@ public class Icons {
         return Toolkit.getDefaultToolkit().getImage(imageURL);
     }
 
-    private synchronized static Properties getIconProperties() {
+    private static synchronized Properties getIconProperties() {
         if (iconProperties == null) {
             iconProperties = new Properties();
 
@@ -396,6 +402,23 @@ public class Icons {
             return icon;
         }
 
+        // Special cases for unknown file icons.
+        if (id.equals(UNKNOWN_FILE_GRAY)) {
+            icon = getGrayIcon(getIconById(UNKNOWN_FILE));
+            if (icon != null) {
+                log.fine("Cached icon " + id);
+                iconCache.put(id, icon);
+            }
+            return icon;
+        } else if (id.equals(UNKNOWN_FILE_RED)) {
+            icon = convertToRed(getGrayIcon(getIconById(UNKNOWN_FILE)));
+            if (icon != null) {
+                log.fine("Cached icon " + id);
+                iconCache.put(id, icon);
+            }
+            return icon;
+        }
+
         Properties prop = getIconProperties();
         String iconId = prop.getProperty(id);
         if (iconId == null) {
@@ -449,7 +472,7 @@ public class Icons {
             icon = NODE_NON_FRIEND_CONNECTED;
         }
         if (!node.isOnSameNetwork()) {
-            icon = new OverlayedIcon(icon, getIconById(Icons.DELETE), 0, 0);
+            icon = new OverlayedIcon(icon, getIconById(DELETE), 0, 0);
         }
         return icon;
     }
@@ -482,7 +505,7 @@ public class Icons {
             }
         }
         if (!node.isOnSameNetwork()) {
-            icon = new OverlayedIcon(icon, getIconById(Icons.DELETE), 0, 0);
+            icon = new OverlayedIcon(icon, getIconById(DELETE), 0, 0);
         }
         return icon;
     }
@@ -512,7 +535,7 @@ public class Icons {
             if (exists) { // create one if local file is there
                 icon = FileSystemView.getFileSystemView().getSystemIcon(file);
                 if (icon == null) {
-                    return UNKNOWN_FILE;
+                    return getIconById(UNKNOWN_FILE);
                 }
                 if (!hasUniqueIcon(extension)) {// do not cache executables
                     KNOWN_ICONS.put(extension, icon);// put in cache
@@ -525,11 +548,11 @@ public class Icons {
                 if (hasUniqueIcon(extension)) {// if *.exe or *.ico we don't
                     // know the icon
                     // fixes speed with lots of *.ico or *.exe files
-                    icon = UNKNOWN_FILE_GRAY;
+                    icon = getIconById(UNKNOWN_FILE_GRAY);
                 } else {
                     icon = getIconExtension(extension);
                     if (icon == null) {
-                        icon = UNKNOWN_FILE_GRAY;
+                        icon = getIconById(UNKNOWN_FILE_GRAY);
                     } else {
                         Icon disabled = getGrayIcon(icon);
                         if (!hasUniqueIcon(extension)) {// do not cache *.exe
@@ -564,7 +587,7 @@ public class Icons {
     {
         String extension = fileInfo.getExtension();
         if (extension == null) { // no file extension
-            return UNKNOWN_FILE;
+            return getIconById(UNKNOWN_FILE);
         }
         if (KNOWN_ICONS.containsKey(extension)) { // getIcon from cache
             return KNOWN_ICONS.get(extension);
@@ -629,12 +652,12 @@ public class Icons {
         Controller controller)
     {
         if (fileInfo.diskFileExists(controller)) {
-            return UNKNOWN_FILE;
+            return getIconById(UNKNOWN_FILE);
         }
         if (fileInfo.isDeleted()) {
-            return UNKNOWN_FILE_RED;
+            return getIconById(UNKNOWN_FILE_RED);
         }
-        return UNKNOWN_FILE_GRAY;
+        return getIconById(UNKNOWN_FILE_GRAY);
     }
 
     /**

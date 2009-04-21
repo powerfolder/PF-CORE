@@ -93,7 +93,7 @@ public class MainTabbedPane extends PFUIComponent {
                 (int) Character.toUpperCase(key.charAt(0)));
         uiComponent.setToolTipTextAt(COMPUTERS_INDEX,
                 Translation.getTranslation("main_tabbed_pane.computers.description"));
-        uiComponent.setIconAt(COMPUTERS_INDEX, Icons.COMPUTER);
+        uiComponent.setIconAt(COMPUTERS_INDEX, Icons.getIconById(Icons.COMPUTER));
 
         uiComponent.addChangeListener(new MyChagelistener());
 

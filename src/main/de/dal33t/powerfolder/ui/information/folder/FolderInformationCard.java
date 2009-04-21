@@ -143,7 +143,7 @@ public class FolderInformationCard extends InformationCard {
         tabbedPane.addTab(Translation.getTranslation(
                 "folder_information_card.settings.title"),
                 settingsTab.getUIComponent());
-        tabbedPane.setIconAt(TAB_SETTIGNS, Icons.SETTINGS);
+        tabbedPane.setIconAt(TAB_SETTIGNS, Icons.getIconById(Icons.SETTINGS));
         tabbedPane.setToolTipTextAt(TAB_SETTIGNS, Translation.getTranslation(
                 "folder_information_card.settings.tips"));
     }

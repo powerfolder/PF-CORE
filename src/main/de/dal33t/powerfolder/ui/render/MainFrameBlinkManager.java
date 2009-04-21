@@ -92,10 +92,10 @@ public class MainFrameBlinkManager extends PFUIComponent {
         if (blink && flashMemberTab.get()) {
             uiController.getMainFrame().setComputersTabIcon(Icons.getIconById(Icons.BLANK));
         } else {
-            uiController.getMainFrame().setComputersTabIcon(Icons.COMPUTER);
+            uiController.getMainFrame().setComputersTabIcon(Icons.getIconById(Icons.COMPUTER));
         }
 
-        // Folder tab seems to loose its icon when we do this. So set it anyway.
+        // Folder tab seems to lose its icon when we do this. So set it anyway.
         uiController.getMainFrame().setFoldersTabIcon(Icons.FOLDER);
     }
 

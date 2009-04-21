@@ -111,7 +111,7 @@ public class PreferencesDialog extends BaseDialog {
     }
 
     private void showAdvancedTab(boolean enable) {
-        showTab(enable, advancedSettingsTab, ADVANCED_TAB_INDEX, Icons.ADVANCED);
+        showTab(enable, advancedSettingsTab, ADVANCED_TAB_INDEX, Icons.getIconById(Icons.ADVANCED));
     }
 
     void showDynDNSTab(boolean enable) {
@@ -200,7 +200,7 @@ public class PreferencesDialog extends BaseDialog {
             .getValueBoolean(getController()))
         {
             preferenceTabs.add(advancedSettingsTab);
-            tabbedPane.addTab(advancedSettingsTab.getTabName(), Icons.ADVANCED,
+            tabbedPane.addTab(advancedSettingsTab.getTabName(), Icons.getIconById(Icons.ADVANCED),
                 advancedSettingsTab.getUIPanel(), null);
         }
 
