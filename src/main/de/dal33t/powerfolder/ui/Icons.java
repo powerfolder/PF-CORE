@@ -70,12 +70,10 @@ public class Icons {
 
     private static final Logger log = Logger.getLogger(Icons.class.getName());
 
-    private static Icons DEFAULT;
-
     private static final String DEFAULT_ICON_PROPERTIES_FILENAME = "Icons.properties";
     private static String iconPropertiesFilename = DEFAULT_ICON_PROPERTIES_FILENAME;
     private static String overridePropertiesFilename;
-    private Properties iconProperties;
+    private static Properties iconProperties;
 
     private static final String DISABLED_EXTENSION_ADDITION = "_disabled";
     private static final Object FILE_LOCK = new Object();
@@ -218,12 +216,12 @@ public class Icons {
     public static final Image PACMAN_DOT = getImage("icons/pac/pacDot.gif");
 
     public static final Icon PRO_LOGO = getIcon("icons/ProLogo.png");
-    public final Icon SMALL_LOGO = getIconById("powerfolder32x32.icon");
+    public static final Icon SMALL_LOGO = getIconById("powerfolder32x32.icon");
 
-    public final Icon SPLASH = getIconById("splash.icon");
+    public static final Icon SPLASH = getIconById("splash.icon");
 
     // Images icons
-    public final Image POWERFOLDER_IMAGE = getImageFromIcon(SMALL_LOGO);
+    public static final Image POWERFOLDER_IMAGE = getImageFromIcon(SMALL_LOGO);
     public static final Image FOLDER_IMAGE = getImageFromIcon(FOLDER);
     public static final Image SYSTEM_MONITOR_IMAGE = getImageFromIcon(SYSTEM_MONITOR);
     public static final Image CHAT_IMAGE = getImageFromIcon(CHAT);
@@ -231,28 +229,20 @@ public class Icons {
     public static final Image BLANK_IMAGE = getImageFromIcon(BLANK);
 
     // About stuff
-    public final Icon ABOUT_ANIMATION = getIconById("about.animation");
+    public static final Icon ABOUT_ANIMATION = getIconById("about.animation");
 
     // Systray icon file names
-    public final Image SYSTRAY_DEFAULT_ICON = getImageById("systray.default.icon");
+    public static final Image SYSTRAY_DEFAULT_ICON = getImageById("systray.default.icon");
     public static final Image SYSTRAY_CHAT_ICON = getImage("icons/Chat.gif");
     public static final Image SYSTRAY_FRIEND_ICON = getImage("icons/Node_Friend_Connected.gif");
 
     private static final Map<String, Icon> KNOWN_ICONS = new HashMap<String, Icon>();
 
-    protected Icons() {
-    }
-    public static void loadOverrideFile(String iconSetFile) {
-        overridePropertiesFilename = iconSetFile;
-        // Re load icons
-        DEFAULT = new Icons();
+    private Icons() {
     }
 
-    public static Icons getInstance() {
-        if (DEFAULT == null) {
-            DEFAULT = new Icons();
-        }
-        return DEFAULT;
+    public static void loadOverrideFile(String iconSetFile) {
+        overridePropertiesFilename = iconSetFile;
     }
 
     /**
@@ -264,7 +254,7 @@ public class Icons {
      * @param name
      * @return
      */
-    protected static final Icon getIcon(String name) {
+    protected static Icon getIcon(String name) {
         if (name == null) {
             log.severe("Icon name is null");
             return null;
@@ -305,7 +295,7 @@ public class Icons {
         return Toolkit.getDefaultToolkit().getImage(imageURL);
     }
 
-    private synchronized Properties getIconProperties() {
+    private synchronized static Properties getIconProperties() {
         if (iconProperties == null) {
             iconProperties = new Properties();
 
@@ -392,7 +382,7 @@ public class Icons {
      *            the icon id
      * @return the icon
      */
-    public Icon getIconById(String id) {
+    public static Icon getIconById(String id) {
         Properties prop = getIconProperties();
         String iconId = prop.getProperty(id);
         if (iconId == null) {
@@ -409,7 +399,7 @@ public class Icons {
      *            the image id
      * @return the image
      */
-    public final Image getImageById(String id) {
+    public static Image getImageById(String id) {
         Properties prop = getIconProperties();
         String iconId = prop.getProperty(id);
         if (iconId == null) {

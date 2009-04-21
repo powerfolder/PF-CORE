@@ -123,7 +123,7 @@ public class InformationFrame extends MagneticFrame {
             }
         });
 
-        uiComponent.setIconImage(Icons.getInstance().POWERFOLDER_IMAGE);
+        uiComponent.setIconImage(Icons.POWERFOLDER_IMAGE);
     }
 
     /**
