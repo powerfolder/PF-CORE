@@ -105,7 +105,7 @@ public class SettingsTab extends PFUIComponent {
         selectionModel = new SelectionModel();
         localFolderField = new JTextField();
         localFolderField.setEditable(false);
-        localFolderButton = new JButtonMini(Icons.DIRECTORY,
+        localFolderButton = new JButtonMini(Icons.getIconById(Icons.DIRECTORY),
                 Translation.getTranslation(
                         "settings_tab.select_directory.text"));
         localFolderButton.setEnabled(false);

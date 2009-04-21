@@ -540,7 +540,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         locationTF.setText((String) locationModel.getValue());
         builder.add(locationTF, cc.xy(1, 1));
 
-        JButton locationButton = new JButton(Icons.DIRECTORY);
+        JButton locationButton = new JButton(Icons.getIconById(Icons.DIRECTORY));
         locationButton.setToolTipText(Translation
             .getTranslation("wizard.choose_disk_location.select_file"));
         locationButton.addActionListener(new MyActionListener());

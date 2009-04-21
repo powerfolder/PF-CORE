@@ -141,7 +141,7 @@ public class Wizard extends JPanel implements ActionListener {
 
             helpButton.setText(map.get(HELP_I18N));
             helpButton.setToolTipText(map.get(HELP_I18N_DESCRIPTION));
-            helpButton.setIcon(Icons.QUESTION);
+            helpButton.setIcon(Icons.getIconById(Icons.QUESTION));
             helpButton.setActionCommand("Help");
         }
     }

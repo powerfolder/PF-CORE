@@ -156,7 +156,7 @@ public class SingleFileAcceptDialog extends BaseDialog {
 
         builder.add(locationTF, cc.xy(1, 1));
 
-        JButton locationButton = new JButton(Icons.DIRECTORY);
+        JButton locationButton = new JButton(Icons.getIconById(Icons.DIRECTORY));
         locationButton.setToolTipText(Translation
             .getTranslation("dialog.single_file_accept.select_destination"));
         locationButton.addActionListener(new MyActionListener());

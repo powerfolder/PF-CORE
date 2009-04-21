@@ -130,22 +130,22 @@ public class Icons {
     public static final String REMOVE_FOLDER_48 = "leave_folder_48.icon";
     
     public static final String PREFERENCES = "preferences.icon";
-    public static final Icon PREFERENCES_PICTO = getIcon("icons/pictos/Preferences.png");
-    public static final Icon SYNC = getIcon("icons/Sync.png");
-    public static final Icon QUESTION = getIcon("icons/Question.gif");
+    public static final String PREFERENCES_PICTO = "preferences_picto.icon";
+    public static final String SYNC = "sync.icon";
+    public static final String QUESTION = "question.icon";
 
-    public static final Icon SORT_UP = getIcon("icons/SortUp.gif");
-    public static final Icon SORT_DOWN = getIcon("icons/SortDown.gif");
-    public static final Icon SORT_BLANK = getIcon("icons/SortBlank.gif");
-    public static final Icon DYN_DNS = getIcon("icons/DynDns.gif");
+    public static final String SORT_UP = "sort_up.icon";
+    public static final String SORT_DOWN = "sort_down.icon";
+    public static final String SORT_BLANK = "sort_blank.icon";
+    public static final String DYN_DNS = "dyn_dns.icon";
 
     // Directories in navigation tree
-    public static final Icon DIRECTORY = getIcon("icons/Directory.gif");
-    public static final Icon DIRECTORY_OPEN = getIcon("icons/DirectoryOpen.gif");
-    public static final Icon DIRECTORY_GRAY = getIcon("icons/Directory_gray.gif");
-    public static final Icon DIRECTORY_OPEN_GRAY = getIcon("icons/Directory_open_gray.gif");
-    public static final Icon DIRECTORY_RED = getIcon("icons/Directory_red.gif");
-    public static final Icon DIRECTORY_OPEN_RED = getIcon("icons/Directory_open_red.gif");
+    public static final String DIRECTORY = "directory.icon";
+    public static final String DIRECTORY_OPEN = "directory_open.icon";
+    public static final String DIRECTORY_GRAY = "directory_gray.icon";
+    public static final String DIRECTORY_OPEN_GRAY = "directory_open_gray.icon";
+    public static final String DIRECTORY_RED = "directory_red.icon";
+    public static final String DIRECTORY_OPEN_RED = "directory_open_red.icon";
 
     // Node icons
     public static final Icon NODE_FRIEND_CONNECTED = getIcon("icons/NodeFriendConnected.gif");
@@ -740,11 +740,11 @@ public class Icons {
         Controller controller)
     {
         if (dir.isDeleted()) {
-            return isOpen ? DIRECTORY_OPEN_RED : DIRECTORY_RED;
+            return isOpen ? getIconById(DIRECTORY_OPEN_RED) : getIconById(DIRECTORY_RED);
         } else if (dir.isExpected(controller.getFolderRepository())) {
-            return isOpen ? DIRECTORY_OPEN_GRAY : DIRECTORY_GRAY;
+            return isOpen ? getIconById(DIRECTORY_OPEN_GRAY) : getIconById(DIRECTORY_GRAY);
         } else {
-            return isOpen ? DIRECTORY_OPEN : DIRECTORY;
+            return isOpen ? getIconById(DIRECTORY_OPEN) : getIconById(DIRECTORY);
         }
     }
 

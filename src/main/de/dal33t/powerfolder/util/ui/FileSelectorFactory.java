@@ -89,8 +89,8 @@ public class FileSelectorFactory {
         textField.setPreferredSize(p);
 
         // The button
-        final JButton button = new JButtonMini(Icons.DIRECTORY, Translation
-                .getTranslation("folder_create.dialog.select_file.text"));
+        final JButton button = new JButtonMini(Icons.getIconById(Icons.DIRECTORY),
+                Translation.getTranslation("folder_create.dialog.select_file.text"));
         Dimension d = button.getPreferredSize();
         d.height = textField.getPreferredSize().height;
         button.setPreferredSize(d);

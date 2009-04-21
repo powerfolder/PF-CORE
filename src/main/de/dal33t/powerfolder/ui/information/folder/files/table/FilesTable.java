@@ -328,7 +328,7 @@ public class FilesTable extends JTable {
                 setIcon(null);
                 switch (column) {
                     case 0:  // file type
-                        Icon icon = Icons.DIRECTORY;
+                        Icon icon = Icons.getIconById(Icons.DIRECTORY);
                         setIcon(icon);
                         setHorizontalAlignment(LEFT);
                         break;

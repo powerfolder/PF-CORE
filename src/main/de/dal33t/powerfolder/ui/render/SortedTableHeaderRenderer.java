@@ -91,14 +91,14 @@ public class SortedTableHeaderRenderer extends JLabel implements TableCellRender
         // Set icon depending on the sort column / direction
         if (column == sortedTableModel.getSortColumn()) {
             if (sortedTableModel.isSortAscending()) {
-                setIcon(Icons.SORT_UP);
+                setIcon(Icons.getIconById(Icons.SORT_UP));
             } else {
-                setIcon(Icons.SORT_DOWN);
+                setIcon(Icons.getIconById(Icons.SORT_DOWN));
             }
         } else {
 
             // Set to blank icon to stop the text position jumping.
-            setIcon(Icons.SORT_BLANK);
+            setIcon(Icons.getIconById(Icons.SORT_BLANK));
         }
 
         // Since the renderer is a component, return itself.

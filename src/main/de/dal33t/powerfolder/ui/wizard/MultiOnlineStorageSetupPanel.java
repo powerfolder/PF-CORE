@@ -132,7 +132,7 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
 
         localFolderField = new JTextField();
         localFolderField.setEditable(false);
-        localFolderButton = new JButtonMini(Icons.DIRECTORY,
+        localFolderButton = new JButtonMini(Icons.getIconById(Icons.DIRECTORY),
                 Translation.getTranslation(
                         "wizard.multi_online_storage_setup.select_directory"));
         MyActionListener myActionListener = new MyActionListener();

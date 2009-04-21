@@ -105,7 +105,7 @@ public class Help {
         String article)
     {
         String toolTips = Translation.getTranslation("general.what_is_this");
-        return new LinkJButton(Icons.QUESTION, toolTips, getWikiArticleURL(
+        return new LinkJButton(Icons.getIconById(Icons.QUESTION), toolTips, getWikiArticleURL(
             controller, article));
     }
 }

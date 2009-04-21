@@ -186,7 +186,7 @@ public class PreviewToJoinPanel extends BaseDialog {
         locationTF.setText((String) locationModel.getValue());
         builder.add(locationTF, cc.xy(1, 1));
 
-        JButton locationButton = new JButton(Icons.DIRECTORY);
+        JButton locationButton = new JButton(Icons.getIconById(Icons.DIRECTORY));
         locationButton.addActionListener(new MyActionListener());
         builder.add(locationButton, cc.xy(3, 1));
         return builder.getPanel();

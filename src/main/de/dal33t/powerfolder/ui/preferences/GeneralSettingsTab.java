@@ -311,7 +311,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         locationTF.setText((String) locationModel.getValue());
         builder.add(locationTF, cc.xy(1, 1));
 
-        JButton locationButton = new JButtonMini(Icons.DIRECTORY,
+        JButton locationButton = new JButtonMini(Icons.getIconById(Icons.DIRECTORY),
                 Translation.getTranslation("folder_create.dialog.select_file.text"));
         locationButton.addActionListener(new MyActionListener());
         builder.add(locationButton, cc.xy(3, 1));

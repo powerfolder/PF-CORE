@@ -75,7 +75,7 @@ public class PreferencesDialog extends BaseDialog {
     }
 
     protected Icon getIcon() {
-        return Icons.PREFERENCES_PICTO;
+        return Icons.getIconById(Icons.PREFERENCES_PICTO);
     }
 
     public ValueModel getDyndnsModel() {
@@ -120,7 +120,7 @@ public class PreferencesDialog extends BaseDialog {
             dynDnsSettingsTab = new DynDnsSettingsTab(getController(),
                 mydnsndsModel);
         }
-        showTab(enable, dynDnsSettingsTab, DYNDNS_TAB_INDEX, Icons.DYN_DNS);
+        showTab(enable, dynDnsSettingsTab, DYNDNS_TAB_INDEX, Icons.getIconById(Icons.DYN_DNS));
     }
 
     public Component getContent() {
@@ -165,7 +165,7 @@ public class PreferencesDialog extends BaseDialog {
         dynDnsSettingsTab = new DynDnsSettingsTab(getController(),
             mydnsndsModel);
         preferenceTabs.add(dynDnsSettingsTab);
-        tabbedPane.addTab(dynDnsSettingsTab.getTabName(), Icons.DYN_DNS,
+        tabbedPane.addTab(dynDnsSettingsTab.getTabName(), Icons.getIconById(Icons.DYN_DNS),
             dynDnsSettingsTab.getUIPanel(), null);
 
         DialogsSettingsTab dialogsSettingsTab = new DialogsSettingsTab(
