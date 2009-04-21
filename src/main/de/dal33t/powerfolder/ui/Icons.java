@@ -42,6 +42,7 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -60,9 +61,7 @@ import de.dal33t.powerfolder.util.ui.OverlayedIcon;
 
 /**
  * Contains all icons for the powerfolder application
- * <p>
- * TODO Move all icons into Icons instance. Initialize icon fields lazily.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.74 $
  */
@@ -74,6 +73,7 @@ public class Icons {
     private static String iconPropertiesFilename = DEFAULT_ICON_PROPERTIES_FILENAME;
     private static String overridePropertiesFilename;
     private static Properties iconProperties;
+    private static final Map<String, Icon> iconCache = new ConcurrentHashMap<String, Icon>();
 
     private static final String DISABLED_EXTENSION_ADDITION = "_disabled";
     private static final Object FILE_LOCK = new Object();
@@ -103,8 +103,8 @@ public class Icons {
     public static final Icon UNKNOWN_FILE_GRAY = getGrayIcon(UNKNOWN_FILE);
     public static final Icon UNKNOWN_FILE_RED = convertToRed(UNKNOWN_FILE_GRAY);
 
-    public static final Icon SLEEP = getIcon("icons/Sleep.png");
-    public static final Icon WAKE_UP = getIcon("icons/WakeUp.png");
+    public static final String SLEEP = "sleep.icon";
+    public static final String WAKE_UP = "wake_up.icon";
 
     public static final Icon CHAT = getIcon("icons/Chat.gif");
     public static final Icon SETTINGS = getIcon("icons/Settings.png");
@@ -113,8 +113,8 @@ public class Icons {
     public static final Icon COMPUTER = getIcon("icons/Computer.png");
 
     // Wizard Arrows
-    public static final Icon ARROW_LEFT = getIcon("icons/ArrowLeft.gif");
-    public static final Icon ARROW_RIGHT = getIcon("icons/ArrowRight.gif");
+    public static final String ARROW_LEFT = "arrow_left.icon";
+    public static final String ARROW_RIGHT = "arrow_right.icon";
 
     // Toolbar
     public static final Icon SEARCH_NODES = getIcon("icons/pictos/Friends.png");
@@ -170,8 +170,8 @@ public class Icons {
     public static final Icon FOLDER_SYNC_2 = getIcon("icons/FolderSync_2.gif");
     public static final Icon FOLDER_SYNC_3 = getIcon("icons/FolderSync_3.gif");
 
-    public static final Icon MAC = getIcon("icons/Mac.gif");
-    public static final Icon CHECKED = getIcon("icons/Checked.gif");
+    public static final String MAC = "mac.icon";
+    public static final String CHECKED = "checked.icon";
 
     // Online state icons
     public static final Icon CONNECTED = getIcon("icons/ConnectBright.png");
@@ -239,6 +239,7 @@ public class Icons {
     private static final Map<String, Icon> KNOWN_ICONS = new HashMap<String, Icon>();
 
     private Icons() {
+        // No instances - everything is static.
     }
 
     public static void loadOverrideFile(String iconSetFile) {
@@ -383,13 +384,29 @@ public class Icons {
      * @return the icon
      */
     public static Icon getIconById(String id) {
+
+        if (id == null) {
+            log.severe("Icon id null ???");
+            return null;
+        }
+
+        Icon icon = iconCache.get(id);
+        if (icon != null) {
+            return icon;
+        }
+
         Properties prop = getIconProperties();
         String iconId = prop.getProperty(id);
         if (iconId == null) {
             log.severe("Icon not found ID: '" + id + '\'');
             return null;
         }
-        return getIcon(prop.getProperty(id));
+        icon = getIcon(prop.getProperty(id));
+        if (icon != null) {
+            log.fine("Cached icon " + id);
+            iconCache.put(id, icon);
+        }
+        return icon;
     }
 
     /**

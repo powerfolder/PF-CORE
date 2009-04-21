@@ -154,7 +154,7 @@ public class PreferencesDialog extends BaseDialog {
             getController());
         preferenceTabs.add(uiSettingsTab);
         tabbedPane.addTab(uiSettingsTab.getTabName(),
-            Icons.MAC, uiSettingsTab.getUIPanel(), null);
+            Icons.getIconById(Icons.MAC), uiSettingsTab.getUIPanel(), null);
 
         NetworkSettingsTab networkSettingsTab = new NetworkSettingsTab(
             getController());

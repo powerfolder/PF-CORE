@@ -198,7 +198,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             }
         });
 
-        sleepButton = new JButtonMini(Icons.SLEEP,
+        sleepButton = new JButtonMini(Icons.getIconById(Icons.SLEEP),
                 Translation
             .getTranslation("status_bar.sleep.tips"));
         sleepButton.addActionListener(new MyActionListener());
@@ -261,7 +261,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
 
         portLabel = new JLabel(String.valueOf(getController()
             .getConnectionListener().getPort()));
-        portLabel.setIcon(Icons.MAC);
+        portLabel.setIcon(Icons.getIconById(Icons.MAC));
         portLabel
             .setToolTipText(Translation.getTranslation("status.port.text"));
 
@@ -449,11 +449,11 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             UIUtil.invokeLaterInEDT(new Runnable() {
                 public void run() {
                     if (getController().isSilentMode()) {
-                        sleepButton.setIcon(Icons.WAKE_UP);
+                        sleepButton.setIcon(Icons.getIconById(Icons.WAKE_UP));
                         sleepButton.setToolTipText(Translation
                             .getTranslation("status_bar.no_sleep.tips"));
                     } else {
-                        sleepButton.setIcon(Icons.SLEEP);
+                        sleepButton.setIcon(Icons.getIconById(Icons.SLEEP));
                         sleepButton.setToolTipText(Translation
                             .getTranslation("status_bar.sleep.tips"));
                     }

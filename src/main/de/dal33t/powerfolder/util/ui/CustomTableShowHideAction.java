@@ -53,7 +53,7 @@ public class CustomTableShowHideAction extends AbstractAction {
         
         boolean visible = pref.getBoolean(prefName, true);
         if (visible) { // should this column be visible
-            putValue(Action.SMALL_ICON, Icons.CHECKED); // add a chekced
+            putValue(Action.SMALL_ICON, Icons.getIconById(Icons.CHECKED)); // add a chekced
             // icon
         } else {
             putValue(Action.SMALL_ICON, null); // no icon
@@ -79,7 +79,7 @@ public class CustomTableShowHideAction extends AbstractAction {
     public void checkState() {
         boolean visible = customTableModel.isColumnVisible(columnIndex);
         if (visible) {
-            putValue(Action.SMALL_ICON, Icons.CHECKED);
+            putValue(Action.SMALL_ICON, Icons.getIconById(Icons.CHECKED));
         } else {
             putValue(Action.SMALL_ICON, null);
         }

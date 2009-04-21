@@ -124,12 +124,12 @@ public class Wizard extends JPanel implements ActionListener {
 
             nextButton.setText(map.get(NEXT_I18N));
             nextButton.setToolTipText(map.get(NEXT_I18N_DESCRIPTION));
-            nextButton.setIcon(Icons.ARROW_RIGHT);
+            nextButton.setIcon(Icons.getIconById(Icons.ARROW_RIGHT));
             nextButton.setActionCommand("Next >");
 
             backButton.setText(map.get(BACK_I18N));
             backButton.setToolTipText(map.get(BACK_I18N_DESCRIPTION));
-            backButton.setIcon(Icons.ARROW_LEFT);
+            backButton.setIcon(Icons.getIconById(Icons.ARROW_LEFT));
             backButton.setActionCommand("< Back");
 
             finishButton.setActionCommand("Finish");
