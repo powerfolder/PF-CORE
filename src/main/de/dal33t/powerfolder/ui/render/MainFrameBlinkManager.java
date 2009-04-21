@@ -84,13 +84,13 @@ public class MainFrameBlinkManager extends PFUIComponent {
         boolean blink = (System.currentTimeMillis() / 1000) % 2 != 0;
 
         if (blink && flashHomeTab.get()) {
-            uiController.getMainFrame().setHomeTabIcon(Icons.BLANK);
+            uiController.getMainFrame().setHomeTabIcon(Icons.getIconById(Icons.BLANK));
         } else {
             uiController.getMainFrame().setHomeTabIcon(Icons.HOME);
         }
 
         if (blink && flashMemberTab.get()) {
-            uiController.getMainFrame().setComputersTabIcon(Icons.BLANK);
+            uiController.getMainFrame().setComputersTabIcon(Icons.getIconById(Icons.BLANK));
         } else {
             uiController.getMainFrame().setComputersTabIcon(Icons.COMPUTER);
         }

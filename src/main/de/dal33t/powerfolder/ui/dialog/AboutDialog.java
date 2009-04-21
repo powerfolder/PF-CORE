@@ -440,7 +440,7 @@ public class AboutDialog extends PFUIComponent {
     private void createBugReportButton() {
         bugReportButton = new JButton(Translation
             .getTranslation("about_dialog.send_bug_report.text"));
-        bugReportButton.setIcon(Icons.DEBUG);
+        bugReportButton.setIcon(Icons.getIconById(Icons.DEBUG));
         bugReportButton.setToolTipText(Translation.getTranslation(
             "about_dialog.send_bug_report.tips"));
         bugReportButton.setMnemonic(Translation.getTranslation(

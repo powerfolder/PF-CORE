@@ -78,14 +78,14 @@ public class Icons {
     private static final String DISABLED_EXTENSION_ADDITION = "_disabled";
     private static final Object FILE_LOCK = new Object();
 
-    public static final Icon FILTER_TEXT_FIELD_CLEAR_BUTTON_NORMAL = getIcon("icons/FilterTextFieldClearButtonNormal.png");
-    public static final Icon FILTER_TEXT_FIELD_CLEAR_BUTTON_HOVER = getIcon("icons/FilterTextFieldClearButtonHover.png");
-    public static final Icon FILTER_TEXT_FIELD_CLEAR_BUTTON_PUSH = getIcon("icons/FilterTextFieldClearButtonPush.png");
-    public static final Icon FILTER_TEXT_FIELD_GLASS = getIcon("icons/FilterTextFieldGlass.png");
+    public static final String FILTER_TEXT_FIELD_CLEAR_BUTTON_NORMAL = "filter_text_field_clear_button_normal.icon";
+    public static final String FILTER_TEXT_FIELD_CLEAR_BUTTON_HOVER = "filter_text_field_clear_button_hover.icon";
+    public static final String FILTER_TEXT_FIELD_CLEAR_BUTTON_PUSH = "filter_text_field_clear_button_push.icon";
+    public static final String FILTER_TEXT_FIELD_GLASS = "filter_text_field_glass.icon";
 
-    public static final Icon BLANK = getIcon("icons/Blank.gif");
-    public static final Icon WARNING = getIcon("icons/Warning.png");
-    public static final Icon DEBUG = getIcon("icons/Bug.png");
+    public static final String BLANK = "blank.icon";
+    public static final String WARNING = "warning.icon";
+    public static final String DEBUG = "bug.icon";
     public static final Icon UPDATES = getIcon("icons/Updates.gif");
     public static final Icon SYSTEM_MONITOR = getIcon("icons/SystemMonitor.png");
     public static final Icon DIALOG = getIcon("icons/Dialog.gif");
@@ -225,8 +225,8 @@ public class Icons {
     public static final Image FOLDER_IMAGE = getImageFromIcon(FOLDER);
     public static final Image SYSTEM_MONITOR_IMAGE = getImageFromIcon(SYSTEM_MONITOR);
     public static final Image CHAT_IMAGE = getImageFromIcon(CHAT);
-    public static final Image DEBUG_IMAGE = getImageFromIcon(DEBUG);
-    public static final Image BLANK_IMAGE = getImageFromIcon(BLANK);
+    public static final Image DEBUG_IMAGE = getImageFromIcon(getIconById(DEBUG));
+    public static final Image BLANK_IMAGE = getImageFromIcon(getIconById(BLANK));
 
     // About stuff
     public static final Icon ABOUT_ANIMATION = getIconById("about.animation");

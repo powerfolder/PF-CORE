@@ -147,9 +147,9 @@ public class ChatPanel extends PFUIComponent {
         bar.getPanel();
 
         JButton closeButton = new JButton3Icons(
-                Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_NORMAL,
-                Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_HOVER,
-                Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_PUSH);
+                Icons.getIconById(Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_NORMAL),
+                Icons.getIconById(Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_HOVER),
+                Icons.getIconById(Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_PUSH));
         closeButton.setToolTipText(Translation.getTranslation(
                 "chat_panel.close_button.tool_tip", chatPartner.getNick()));
         closeButton.addActionListener(new ActionListener() {

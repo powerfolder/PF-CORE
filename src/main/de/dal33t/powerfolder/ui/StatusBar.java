@@ -279,7 +279,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
         if (getController().isLimitedConnectivity()) {
             limitedConnectivityLabel.setToolTipText(Translation
                 .getTranslation("limited_connection.title"));
-            limitedConnectivityLabel.setIcon(Icons.WARNING);
+            limitedConnectivityLabel.setIcon(Icons.getIconById(Icons.WARNING));
         } else {
             limitedConnectivityLabel.setText("");
             limitedConnectivityLabel.setIcon(null);
@@ -350,7 +350,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
         if (!controller.getNodeManager().isStarted()) {
             label.setToolTipText(Translation
                 .getTranslation("online_label.disabled"));
-            label.setIcon(Icons.WARNING);
+            label.setIcon(Icons.getIconById(Icons.WARNING));
             newState = DISABLED;
         } else if (nOnlineUser > 0) {
             String text = Translation.getTranslation("online_label.online");
