@@ -84,7 +84,7 @@ public class MainTabbedPane extends PFUIComponent {
                 (int) Character.toUpperCase(key.charAt(0)));
         uiComponent.setToolTipTextAt(FOLDERS_INDEX,
                 Translation.getTranslation("main_tabbed_pane.folders.description"));
-        uiComponent.setIconAt(FOLDERS_INDEX, Icons.FOLDER);
+        uiComponent.setIconAt(FOLDERS_INDEX, Icons.getIconById(Icons.FOLDER));
 
         uiComponent.add(Translation.getTranslation("main_tabbed_pane.computers.name"),
                 computersTab.getUIComponent());

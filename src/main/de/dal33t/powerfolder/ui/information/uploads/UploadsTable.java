@@ -49,7 +49,7 @@ public class UploadsTable extends JTable {
         super(transferManagerModel.getUploadsTableModel());
 
         // Table setup
-        setRowHeight(Icons.NODE_FRIEND_CONNECTED.getIconHeight() + 3);
+        setRowHeight(Icons.getIconById(Icons.NODE_FRIEND_CONNECTED).getIconHeight() + 3);
         setColumnSelectionAllowed(false);
         setShowGrid(false);
 

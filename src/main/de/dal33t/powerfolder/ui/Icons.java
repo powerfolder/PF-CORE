@@ -148,18 +148,18 @@ public class Icons {
     public static final String DIRECTORY_OPEN_RED = "directory_open_red.icon";
 
     // Node icons
-    public static final Icon NODE_FRIEND_CONNECTED = getIcon("icons/NodeFriendConnected.gif");
-    public static final Icon NODE_FRIEND_DISCONNECTED = getIcon("icons/NodeFriendDisconnected.gif");
-    public static final Icon NODE_NON_FRIEND_CONNECTED = getIcon("icons/NodeNonFriendConnected.gif");
-    public static final Icon NODE_NON_FRIEND_DISCONNECTED = getIcon("icons/NodeNonFriendDisconnected.gif");
+    public static final String NODE_FRIEND_CONNECTED = "node_friend_connected.icon";
+    public static final String NODE_FRIEND_DISCONNECTED = "node_friend_disconnected.icon";
+    public static final String NODE_NON_FRIEND_CONNECTED = "node_non_friend_connected.icon";
+    public static final String NODE_NON_FRIEND_DISCONNECTED = "node_non_friend_disconnected.icon";
 
-    public static final Icon FOLDER = getIcon("icons/Folder.png");
-    public static final Icon FILES = getIcon("icons/Files.png");
+    public static final String FOLDER = "folder.icon";
+    public static final String FILES = "files.icon";
 
-    public static final Icon LOCAL_FOLDER = getIcon("icons/LocalFolder.png");
-    public static final Icon LOCAL_AND_ONLINE_FOLDER = getIcon("icons/LocalAndOnlineFolder.png");
-    public static final Icon ONLINE_FOLDER = getIcon("icons/OnlineFolder.png");
-    public static final Icon PREVIEW_FOLDER = getIcon("icons/PreviewFolder.png");
+    public static final String LOCAL_FOLDER = "local_folder.icon";
+    public static final String LOCAL_AND_ONLINE_FOLDER = "local_and_online_folder.icon";
+    public static final String ONLINE_FOLDER = "online_folder.icon";
+    public static final String PREVIEW_FOLDER = "preview_folder.icon";
 
     public static final Icon BLACK_LIST = getIcon("icons/BlackList.gif");
     public static final Icon WHITE_LIST = getIcon("icons/WhiteList.gif");
@@ -229,10 +229,10 @@ public class Icons {
 
     // Images icons
     public static final Image POWERFOLDER_IMAGE = getImageFromIcon(SMALL_LOGO);
-    public static final Image FOLDER_IMAGE = getImageFromIcon(FOLDER);
+    public static Image FOLDER_IMAGE = getImageFromIcon(getIconById(FOLDER));
     public static Image SYSTEM_MONITOR_IMAGE = getImageFromIcon(getIconById(
             SYSTEM_MONITOR));
-    public static final Image CHAT_IMAGE = getImageFromIcon(getIconById(CHAT));
+    public static Image CHAT_IMAGE = getImageFromIcon(getIconById(CHAT));
     public static Image DEBUG_IMAGE = getImageFromIcon(getIconById(DEBUG));
     public static Image BLANK_IMAGE = getImageFromIcon(getIconById(BLANK));
 
@@ -461,16 +461,16 @@ public class Icons {
     public static Icon getSimpleIconFor(Member node) {
         if (node == null) {
             // Unknown
-            return NODE_NON_FRIEND_CONNECTED;
+            return getIconById(NODE_NON_FRIEND_CONNECTED);
         }
         Icon icon;
         // Render friendship things
         if (node.isFriend()) {
-            icon = NODE_FRIEND_CONNECTED;
+            icon = getIconById(NODE_FRIEND_CONNECTED);
 
         } else {
             // Orange head for non-friends
-            icon = NODE_NON_FRIEND_CONNECTED;
+            icon = getIconById(NODE_NON_FRIEND_CONNECTED);
         }
         if (!node.isOnSameNetwork()) {
             icon = new OverlayedIcon(icon, getIconById(DELETE), 0, 0);
@@ -487,22 +487,22 @@ public class Icons {
     public static Icon getIconFor(Member node) {
         if (node == null) {
             // Unknown
-            return NODE_NON_FRIEND_CONNECTED;
+            return getIconById(NODE_NON_FRIEND_CONNECTED);
         }
         Icon icon;
 
         boolean connected = node.isCompleteyConnected() || node.isMySelf();
         if (connected) {
             if (node.isFriend()) {
-                icon = NODE_FRIEND_CONNECTED;
+                icon = getIconById(NODE_FRIEND_CONNECTED);
             } else {
-                icon = NODE_NON_FRIEND_CONNECTED;
+                icon = getIconById(NODE_NON_FRIEND_CONNECTED);
             }
         } else {
             if (node.isFriend()) {
-                icon = NODE_FRIEND_DISCONNECTED;
+                icon = getIconById(NODE_FRIEND_DISCONNECTED);
             } else {
-                icon = NODE_NON_FRIEND_DISCONNECTED;
+                icon = getIconById(NODE_NON_FRIEND_DISCONNECTED);
             }
         }
         if (!node.isOnSameNetwork()) {

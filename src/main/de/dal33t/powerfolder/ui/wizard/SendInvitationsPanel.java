@@ -331,7 +331,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
         viaPowerFolderText = BasicComponentFactory.createTextField(
             viaPowerFolderModel, false);
         viaPowerFolderText.setEnabled(false);
-        viaPowerFolderConfigButton = new JButtonMini(Icons.NODE_FRIEND_CONNECTED,
+        viaPowerFolderConfigButton = new JButtonMini(Icons.getIconById(Icons.NODE_FRIEND_CONNECTED),
                 Translation.getTranslation("send_invitation.select_computer.text"));
         viaPowerFolderConfigButton.setEnabled(decision.getValue()
                 == SAVE_TO_FILE);

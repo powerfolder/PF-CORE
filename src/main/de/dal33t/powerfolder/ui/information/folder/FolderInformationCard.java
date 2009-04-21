@@ -129,14 +129,14 @@ public class FolderInformationCard extends InformationCard {
         tabbedPane.addTab(Translation.getTranslation(
                 "folder_information_card.files.title"),
                 filesTab.getUIComponent());
-        tabbedPane.setIconAt(TAB_FILES, Icons.FILES);
+        tabbedPane.setIconAt(TAB_FILES, Icons.getIconById(Icons.FILES));
         tabbedPane.setToolTipTextAt(TAB_FILES, Translation.getTranslation(
                 "folder_information_card.files.tips"));
 
         tabbedPane.addTab(Translation.getTranslation(
                 "folder_information_card.members.title"),
                 membersTab.getUIComponent());
-        tabbedPane.setIconAt(TAB_MEMBERS, Icons.NODE_FRIEND_CONNECTED);
+        tabbedPane.setIconAt(TAB_MEMBERS, Icons.getIconById(Icons.NODE_FRIEND_CONNECTED));
         tabbedPane.setToolTipTextAt(TAB_MEMBERS, Translation.getTranslation(
                 "folder_information_card.members.tips"));
 

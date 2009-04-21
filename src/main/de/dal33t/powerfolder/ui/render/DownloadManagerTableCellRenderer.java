@@ -158,7 +158,7 @@ public class DownloadManagerTableCellRenderer extends DefaultTableCellRenderer {
         } else if (value instanceof FolderInfo) {
             FolderInfo foInfo = (FolderInfo) value;
             setText(foInfo.name);
-            setIcon(Icons.FOLDER);
+            setIcon(Icons.getIconById(Icons.FOLDER));
             setHorizontalAlignment(LEFT);
         } else if (value instanceof Collection) {
             Collection<Download> sources = (Collection<Download>) value;

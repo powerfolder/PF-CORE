@@ -137,7 +137,7 @@ public class FolderDetailsPanel extends PFUIComponent {
         }
 
         nameField.setText(foInfo.name);
-        nameField.setIcon(Icons.FOLDER);
+        nameField.setIcon(Icons.getIconById(Icons.FOLDER));
 
         long bytesTotal = foInfo.bytesTotal;
         int filesCount = foInfo.filesCount;
@@ -280,7 +280,7 @@ public class FolderDetailsPanel extends PFUIComponent {
      */
     private void ensureDims(JComponent comp) {
         Dimension dims = comp.getPreferredSize();
-        dims.height = Math.max(dims.height, Icons.FOLDER.getIconHeight());
+        dims.height = Math.max(dims.height, Icons.getIconById(Icons.FOLDER).getIconHeight());
         dims.width = 10;
         comp.setPreferredSize(dims);
 

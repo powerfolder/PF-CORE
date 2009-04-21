@@ -204,18 +204,18 @@ public class TransferTableCellRenderer extends DefaultTableCellRenderer {
                 } else {
                     setIcon(null);
                 }
-                setHorizontalAlignment(SwingConstants.LEFT);
+                setHorizontalAlignment(LEFT);
             }
         } else if (value instanceof Long) {
             Long size = (Long) value;
             setText(Format.formatBytesShort(size));
             setIcon(null);
-            setHorizontalAlignment(SwingConstants.RIGHT);
+            setHorizontalAlignment(RIGHT);
         } else if (value instanceof FolderInfo) {
             FolderInfo foInfo = (FolderInfo) value;
             setText(foInfo.name);
-            setIcon(Icons.FOLDER);
-            setHorizontalAlignment(SwingConstants.LEFT);
+            setIcon(Icons.getIconById(Icons.FOLDER));
+            setHorizontalAlignment(LEFT);
         } else if (value instanceof Member) {
             Member node = (Member) value;
             String nickText = node.getNick();
@@ -225,14 +225,14 @@ public class TransferTableCellRenderer extends DefaultTableCellRenderer {
             }
             setText(nickText);
             setIcon(Icons.getSimpleIconFor(node));
-            setHorizontalAlignment(SwingConstants.LEFT);
+            setHorizontalAlignment(LEFT);
         } else if (value instanceof MemberInfo) {
             MemberInfo node = (MemberInfo) value;
             String nickText = node.nick;
 
             setText(nickText);
             setIcon(null);
-            setHorizontalAlignment(SwingConstants.LEFT);
+            setHorizontalAlignment(LEFT);
         } else if (value instanceof EstimatedTime) {
             EstimatedTime time = (EstimatedTime) value;
             if (time.isActive()) {
@@ -242,11 +242,11 @@ public class TransferTableCellRenderer extends DefaultTableCellRenderer {
             }
 
             setIcon(null);
-            setHorizontalAlignment(SwingConstants.CENTER);
+            setHorizontalAlignment(CENTER);
         } else {
             setText(Translation.getTranslation("transfers.searching"));
             setIcon(null);
-            setHorizontalAlignment(SwingConstants.LEFT);
+            setHorizontalAlignment(LEFT);
         }
 
         return defaultComp;

@@ -283,21 +283,21 @@ public class ExpandableComputerView extends PFUIComponent implements ExpandableV
 
         if (node.isCompleteyConnected()) {
             if (node.isFriend()) {
-                pictoLabel.setIcon(Icons.NODE_FRIEND_CONNECTED);
+                pictoLabel.setIcon(Icons.getIconById(Icons.NODE_FRIEND_CONNECTED));
                 pictoLabel.setToolTipText(Translation.getTranslation(
                         "exp_computer_view.node_friend_connected_text"));
             } else {
-                pictoLabel.setIcon(Icons.NODE_NON_FRIEND_CONNECTED);
+                pictoLabel.setIcon(Icons.getIconById(Icons.NODE_NON_FRIEND_CONNECTED));
                 pictoLabel.setToolTipText(Translation.getTranslation(
                         "exp_computer_view.node_non_friend_connected_text"));
             }
         } else {
             if (node.isFriend()) {
-                pictoLabel.setIcon(Icons.NODE_FRIEND_DISCONNECTED);
+                pictoLabel.setIcon(Icons.getIconById(Icons.NODE_FRIEND_DISCONNECTED));
                 pictoLabel.setToolTipText(Translation.getTranslation(
                         "exp_computer_view.node_friend_disconnected_text"));
             } else {
-                pictoLabel.setIcon(Icons.NODE_NON_FRIEND_DISCONNECTED);
+                pictoLabel.setIcon(Icons.getIconById(Icons.NODE_NON_FRIEND_DISCONNECTED));
                 pictoLabel.setToolTipText(Translation.getTranslation(
                         "exp_computer_view.node_non_friend_disconnected_text"));
             }

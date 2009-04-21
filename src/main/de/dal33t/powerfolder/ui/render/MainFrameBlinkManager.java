@@ -96,7 +96,7 @@ public class MainFrameBlinkManager extends PFUIComponent {
         }
 
         // Folder tab seems to lose its icon when we do this. So set it anyway.
-        uiController.getMainFrame().setFoldersTabIcon(Icons.FOLDER);
+        uiController.getMainFrame().setFoldersTabIcon(Icons.getIconById(Icons.FOLDER));
     }
 
     /**

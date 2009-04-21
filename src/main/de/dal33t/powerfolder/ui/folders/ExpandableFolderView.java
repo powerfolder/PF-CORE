@@ -575,19 +575,19 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
     private void updateIconAndOS() {
 
         if (folder == null) {
-            jLabel.setIcon(Icons.ONLINE_FOLDER);
+            jLabel.setIcon(Icons.getIconById(Icons.ONLINE_FOLDER));
             jLabel.setToolTipText(Translation.getTranslation(
                     "exp_folder_view.folder_online_text"));
             osComponent.getUIComponent().setVisible(false);
         } else {
             boolean preview = folder.isPreviewOnly();
             if (preview) {
-                jLabel.setIcon(Icons.PREVIEW_FOLDER);
+                jLabel.setIcon(Icons.getIconById(Icons.PREVIEW_FOLDER));
                 jLabel.setToolTipText(Translation.getTranslation(
                         "exp_folder_view.folder_preview_text"));
                 osComponent.getUIComponent().setVisible(false);
             } else if (online) {
-                jLabel.setIcon(Icons.LOCAL_AND_ONLINE_FOLDER);
+                jLabel.setIcon(Icons.getIconById(Icons.LOCAL_AND_ONLINE_FOLDER));
                 jLabel.setToolTipText(Translation.getTranslation(
                         "exp_folder_view.folder_local_online_text"));
                 osComponent.getUIComponent().setVisible(true);
@@ -597,7 +597,7 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
                         .getOSSubscription().isWarnedUsage();
                 osComponent.setSyncPercentage(sync, warned);
             } else {
-                jLabel.setIcon(Icons.LOCAL_FOLDER);
+                jLabel.setIcon(Icons.getIconById(Icons.LOCAL_FOLDER));
                 jLabel.setToolTipText(Translation.getTranslation(
                         "exp_folder_view.folder_local_text"));
                 osComponent.getUIComponent().setVisible(false);

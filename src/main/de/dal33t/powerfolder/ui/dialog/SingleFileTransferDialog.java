@@ -176,7 +176,7 @@ public class SingleFileTransferDialog extends BaseDialog {
         computersText = BasicComponentFactory.createTextField(
                 computersTextModel, false);
         computersText.setEnabled(false);
-        computersSelectButton = new JButtonMini(Icons.NODE_FRIEND_CONNECTED,
+        computersSelectButton = new JButtonMini(Icons.getIconById(Icons.NODE_FRIEND_CONNECTED),
                 Translation.getTranslation(
                         "dialog.single_file_transfer.select_computer.tip"));
         computersSelectButton.addActionListener(new MyActionListener());

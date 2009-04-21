@@ -37,7 +37,7 @@ public class FriendsTable extends JTable {
     public FriendsTable(FriendsNodeTableModel tableModel) {
         super(tableModel);
         
-        setRowHeight(Icons.NODE_FRIEND_CONNECTED.getIconHeight() + 3);
+        setRowHeight(Icons.getIconById(Icons.NODE_FRIEND_CONNECTED).getIconHeight() + 3);
         setShowGrid(false);
         setDefaultRenderer(Member.class, new MemberTableCellRenderer());
         // TODO Support multi selection. not possible atm

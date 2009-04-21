@@ -36,7 +36,7 @@ public class FindComputersTable extends JTable {
 
     public FindComputersTable(SearchNodeTableModel tableModel) {
         super(tableModel);
-        setRowHeight(Icons.NODE_NON_FRIEND_CONNECTED
+        setRowHeight(Icons.getIconById(Icons.NODE_NON_FRIEND_CONNECTED)
             .getIconHeight() + 3);
         setShowGrid(false);
         setDefaultRenderer(Member.class,

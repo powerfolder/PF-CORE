@@ -149,7 +149,7 @@ public class FileDetailsPanel extends PFUIComponent {
         locationField.setCaretPosition(0);
 
         folderField.setText(fileInfo.getFolderInfo().name);
-        folderField.setIcon(Icons.FOLDER);
+        folderField.setIcon(Icons.getIconById(Icons.FOLDER));
         sizeField.setText(Format.formatBytes(fileInfo.getSize()));
 
         statusField.setText(status.toString());

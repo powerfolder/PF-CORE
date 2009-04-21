@@ -46,7 +46,7 @@ public class DownloadManagersTable extends JTable {
         super(transferManagerModel.getDownloadsTableModel());
 
         // Table setup
-        setRowHeight(Icons.NODE_FRIEND_CONNECTED.getIconHeight() + 3);
+        setRowHeight(Icons.getIconById(Icons.NODE_FRIEND_CONNECTED).getIconHeight() + 3);
         setColumnSelectionAllowed(false);
         setShowGrid(false);
 
