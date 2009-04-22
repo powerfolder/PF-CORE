@@ -123,7 +123,7 @@ public class Icons {
     public static final String ARROW_RIGHT = "arrow_right.icon";
 
     // Toolbar
-    public static final String SEARCH_NODES = "friends.icon";
+    public static final String FRIENDS = "friends.icon";
     public static final String NEW_FOLDER_48 = "new_folder_48.icon";
     public static final String JOIN_FOLDER_48 = "join_folder_48.icon";
     public static final String SYNC_FOLDER_48 = "sync_48.icon";
@@ -193,16 +193,22 @@ public class Icons {
     public static final String WEB_SERVICE_PICTO = "web_service_picto.icon";
 
     // Wizard pictos from the quick info panels
-    public final Icon LOGO96X96 = getIconById("picto.logo.icon");
-    public static final Icon LOGO400UI = getIcon("icons/pictos/PowerFolderLogo400UI.png");
-    public static final Icon FRIENDS_PICTO = getIcon("icons/pictos/Friends.png");
-    public static final Icon USER_PICTO = getIcon("icons/pictos/User.png");
-    public static final Icon UPLOAD_PICTO = getIcon("icons/pictos/Upload.png");
-    public static final Icon DOWNLOAD_PICTO = getIcon("icons/pictos/Download.png");
-    public static final Icon MYFOLDERS_PICTO = getIcon("icons/pictos/MyFolders.png");
-    public static final Icon FOLDER_PICTO = getIcon("icons/pictos/Folder.png");
-    public static final Icon RECYCLE_BIN_PICTO = getIcon("icons/pictos/RecycleBin.png");
-    public static final Icon WEBSERVICE_QUICK_INFO_PICTO = getIcon("icons/pictos/WebServiceQuickInfo.png");
+    public static final String LOGO96X96 = "picto.logo.icon";
+    public static final String LOGO400UI = "power_folder_logo_400_ui.icon";
+    public static final String USER_PICTO = "user_picto.icon";
+    public static final String UPLOAD_PICTO = "upload_picto.icon";
+    public static final String DOWNLOAD_PICTO = "download_picto.icon";
+    public static final String MYFOLDERS_PICTO = "my_folders_picto.icon";
+    public static final String FOLDER_PICTO = "folder_picto.icon";
+    public static final String RECYCLE_BIN_PICTO = "recycle_bin_picto.icon";
+    public static final String WEBSERVICE_QUICK_INFO_PICTO = "web_service_quick_info.icon";
+    public static final String PRO_LOGO = "pro_logo.icon";
+    public static final String SMALL_LOGO = "powerfolder_32.icon";
+    public static final String SPLASH = "splash.icon";
+
+    // About stuff
+    public static final String ABOUT_ANIMATION = "about_animation.icon";
+
     public static final Image PACMAN_00 = getImage("icons/pac/pac00.gif");
     public static final Image PACMAN_01 = getImage("icons/pac/pac01.gif");
     public static final Image PACMAN_02 = getImage("icons/pac/pac02.gif");
@@ -222,13 +228,9 @@ public class Icons {
     public static final Image PACMAN_16 = getImage("icons/pac/pac16.gif");
     public static final Image PACMAN_DOT = getImage("icons/pac/pacDot.gif");
 
-    public static final Icon PRO_LOGO = getIcon("icons/ProLogo.png");
-    public static final Icon SMALL_LOGO = getIconById("powerfolder32x32.icon");
-
-    public static final Icon SPLASH = getIconById("splash.icon");
 
     // Images icons
-    public static final Image POWERFOLDER_IMAGE = getImageFromIcon(SMALL_LOGO);
+    public static final Image POWERFOLDER_IMAGE = getImageFromIcon(Icons.getIconById(SMALL_LOGO));
     public static Image FOLDER_IMAGE = getImageFromIcon(getIconById(FOLDER));
     public static Image SYSTEM_MONITOR_IMAGE = getImageFromIcon(getIconById(
             SYSTEM_MONITOR));
@@ -236,8 +238,6 @@ public class Icons {
     public static Image DEBUG_IMAGE = getImageFromIcon(getIconById(DEBUG));
     public static Image BLANK_IMAGE = getImageFromIcon(getIconById(BLANK));
 
-    // About stuff
-    public static final Icon ABOUT_ANIMATION = getIconById("about.animation");
 
     // Systray icon file names
     public static final Image SYSTRAY_DEFAULT_ICON = getImageById("systray.default.icon");

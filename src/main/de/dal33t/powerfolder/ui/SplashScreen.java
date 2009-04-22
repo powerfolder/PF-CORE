@@ -79,7 +79,7 @@ public class SplashScreen extends JWindow {
         long lastStartTookMS = controller.getPreferences().getLong(
                 "lastStartTookMS", 1000);
 
-        image = new JLabel(Icons.SPLASH);
+        image = new JLabel(Icons.getIconById(Icons.SPLASH));
         bar = new JProgressBar(SwingConstants.HORIZONTAL, 0, 100);
         bar.setOpaque(false);
         if (Util.isRunningProVersion()) {

@@ -158,10 +158,10 @@ public class NotificationForm extends JPanel {
         jLabel.setHorizontalAlignment(SwingConstants.LEFT);
         jPanel.add(jLabel, cc.xy(3, 1));
 
-        JLabel logo = new JLabel(Icons.SMALL_LOGO);
+        JLabel logo = new JLabel(Icons.getIconById(Icons.SMALL_LOGO));
         logo.setSize(new Dimension(
-            Icons.SMALL_LOGO.getIconWidth(),
-            Icons.SMALL_LOGO.getIconHeight()));
+            Icons.getIconById(Icons.SMALL_LOGO).getIconWidth(),
+            Icons.getIconById(Icons.SMALL_LOGO).getIconHeight()));
         jPanel.add(logo, cc.xy(1, 1));
 
         addFillComponents(jPanel, new int[]{1, 2}, new int[]{1});

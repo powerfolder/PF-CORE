@@ -102,7 +102,7 @@ public class MainFrame extends PFUIComponent {
         CellConstraints cc = new CellConstraints();
 
         builder.add(menuBar, cc.xy(1, 1));
-        builder.add(new JLabel(Icons.LOGO400UI, SwingConstants.LEFT), cc.xy(1, 2));
+        builder.add(new JLabel(Icons.getIconById(Icons.LOGO400UI), SwingConstants.LEFT), cc.xy(1, 2));
         builder.add(mainTabbedPane.getUIComponent(), cc.xy(1, 4));
         builder.add(statusBar.getUIComponent(), cc.xy(1, 6));
 
