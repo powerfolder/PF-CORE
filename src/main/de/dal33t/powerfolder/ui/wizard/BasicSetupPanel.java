@@ -229,7 +229,7 @@ public class BasicSetupPanel extends PFWizardPanel {
     }
 
     protected JComponent getPictoComponent() {
-        return new JLabel(Icons.PROJECT_WORK_PICTO);
+        return new JLabel(Icons.getIconById(Icons.PROJECT_WORK_PICTO));
     }
 
     // Helper classes *********************************************************

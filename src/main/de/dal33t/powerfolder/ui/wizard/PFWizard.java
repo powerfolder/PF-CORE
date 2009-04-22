@@ -110,7 +110,7 @@ public class PFWizard extends PFUIComponent {
     {
         PFWizard wizard = new PFWizard(controller);
         wizard.getWizardContext().setAttribute(PICTO_ICON,
-            Icons.PROJECT_WORK_PICTO);
+            Icons.getIconById(Icons.PROJECT_WORK_PICTO));
         wizard.getWizardContext().setAttribute(FOLDERINFO_ATTRIBUTE, foInfo);
 
         TextPanelPanel successPanel = new TextPanelPanel(controller,
@@ -135,7 +135,7 @@ public class PFWizard extends PFUIComponent {
     {
         PFWizard wizard = new PFWizard(controller);
         wizard.getWizardContext().setAttribute(PICTO_ICON,
-            Icons.PROJECT_WORK_PICTO);
+            Icons.getIconById(Icons.PROJECT_WORK_PICTO));
 
         TextPanelPanel successPanel = new TextPanelPanel(controller,
             Translation.getTranslation("wizard.send_invitations.send_success"),
@@ -208,7 +208,7 @@ public class PFWizard extends PFUIComponent {
     {
         PFWizard wizard = new PFWizard(controller);
         wizard.getWizardContext().setAttribute(PICTO_ICON,
-            Icons.WEB_SERVICE_PICTO);
+            Icons.getIconById(Icons.WEB_SERVICE_PICTO));
         WizardPanel nextFinishPanel;
         if (folderToSetup != null) {
             nextFinishPanel = new FolderOnlineStoragePanel(controller, folderToSetup);
@@ -232,7 +232,7 @@ public class PFWizard extends PFUIComponent {
                                               Folder folderToSetup) {
         PFWizard wizard = new PFWizard(controller);
         wizard.getWizardContext().setAttribute(PICTO_ICON,
-            Icons.WEB_SERVICE_PICTO);
+            Icons.getIconById(Icons.WEB_SERVICE_PICTO));
         wizard.open(new FolderOnlineStoragePanel(controller, folderToSetup));
     }
 

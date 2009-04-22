@@ -165,7 +165,7 @@ public class FolderOnlineStoragePanel extends PFWizardPanel {
     }
 
     protected JComponent getPictoComponent() {
-        return new JLabel(Icons.WEB_SERVICE_PICTO);
+        return new JLabel(Icons.getIconById(Icons.WEB_SERVICE_PICTO));
     }
 
     protected String getTitle() {

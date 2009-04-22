@@ -171,7 +171,7 @@ public class ConfirmDiskLocationPanel extends PFWizardPanel {
     }
 
     protected JComponent getPictoComponent() {
-        return new JLabel(Icons.FILE_SHARING_PICTO);
+        return new JLabel(Icons.getIconById(Icons.FILE_SHARING_PICTO));
     }
 
     protected String getTitle() {

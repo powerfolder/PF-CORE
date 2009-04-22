@@ -206,7 +206,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
         getController().addPropertyChangeListener(
             Controller.PROPERTY_SILENT_MODE, new MyValueChangeListener());
 
-        upStats = createTransferCounterLabel(getController(), Icons.UPLOAD,
+        upStats = createTransferCounterLabel(getController(), Icons.getIconById(Icons.UPLOAD),
             Translation.getTranslation("status.upload"), getController()
                 .getTransferManager().getUploadCounter(), Translation
                 .getTranslation("status.upload.text"));
@@ -218,7 +218,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
         });
 
         downStats = createTransferCounterLabel(
-            getController(), Icons.DOWNLOAD, Translation
+            getController(), Icons.getIconById(Icons.DOWNLOAD), Translation
                 .getTranslation("status.download"), getController()
                 .getTransferManager().getDownloadCounter(), Translation
                 .getTranslation("status.download.text"));
@@ -364,7 +364,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                     + Translation.getTranslation("general.server_only") + ')';
             }
             label.setToolTipText(text);
-            label.setIcon(Icons.CONNECTED);
+            label.setIcon(Icons.getIconById(Icons.CONNECTED));
             newState = CONNECTED;
         } else {
             String text = Translation.getTranslation("online_label.connecting");
@@ -378,7 +378,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                     + Translation.getTranslation("general.server_only") + ')';
             }
             label.setToolTipText(text);
-            label.setIcon(Icons.DISCONNECTED);
+            label.setIcon(Icons.getIconById(Icons.DISCONNECTED));
             newState = DISCONNECTED;
         }
 

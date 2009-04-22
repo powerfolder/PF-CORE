@@ -206,11 +206,11 @@ public class FilesTable extends JTable {
                                     }
                                     b.append(d.getPartner().getNick());
                                 }
-                                setIcon(Icons.DOWNLOAD_ACTIVE);
+                                setIcon(Icons.getIconById(Icons.DOWNLOAD_ACTIVE));
                                 statusForTooltip = Translation.getTranslation(
                                         "file_info.downloading_from_member", b.toString());
                             } else {
-                                setIcon(Icons.DOWNLOAD);
+                                setIcon(Icons.getIconById(Icons.DOWNLOAD));
                                 statusForTooltip = Translation
                                         .getTranslation("transfers.queued");
                             }
@@ -223,14 +223,14 @@ public class FilesTable extends JTable {
                         } else if (folder.getDiskItemFilter().isExcluded(fileInfo)
                                 && !folder.isWhitelist()) {
                             // Blacklist and file filtered out by blacklist.
-                            setIcon(Icons.BLACK_LIST);
+                            setIcon(Icons.getIconById(Icons.BLACK_LIST));
                             statusForTooltip = replaceSpacesWithNBSP(Translation
                                     .getTranslation("file_info.ignore"));
                             setForeground(NORMAL);
                         } else if (!folder.getDiskItemFilter().isExcluded(fileInfo)
                                 && folder.isWhitelist()) {
                             // Whitelist and file not filtered out by whitelist.
-                            setIcon(Icons.WHITE_LIST);
+                            setIcon(Icons.getIconById(Icons.WHITE_LIST));
                             statusForTooltip = replaceSpacesWithNBSP(Translation
                                     .getTranslation("file_info.ignore"));
                             setForeground(NORMAL);
@@ -238,7 +238,7 @@ public class FilesTable extends JTable {
                         if (fileInfo.isExpected(controller.getFolderRepository())) {
                             setForeground(AVAILABLE);
 
-                            setIcon(Icons.EXPECTED);
+                            setIcon(Icons.getIconById(Icons.EXPECTED));
                             statusForTooltip = Translation.getTranslation("file_info.expected");
 
                         } else
@@ -258,7 +258,7 @@ public class FilesTable extends JTable {
                                     }
                                 }
                             } else {
-                                setIcon(Icons.EXPECTED);
+                                setIcon(Icons.getIconById(Icons.EXPECTED));
                                 statusForTooltip = Translation
                                         .getTranslation("file_info.new_version_available");
                             }

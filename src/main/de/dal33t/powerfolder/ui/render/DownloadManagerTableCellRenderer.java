@@ -141,9 +141,9 @@ public class DownloadManagerTableCellRenderer extends DefaultTableCellRenderer {
                         .getFolderRepository());
                 if (folder != null && folder.getDiskItemFilter().isExcluded(fInfo)) {
                     if (folder.isWhitelist()) {
-                        setIcon(Icons.WHITE_LIST);
+                        setIcon(Icons.getIconById(Icons.WHITE_LIST));
                     } else {
-                        setIcon(Icons.BLACK_LIST);
+                        setIcon(Icons.getIconById(Icons.BLACK_LIST));
                     }
                 } else {
                     setIcon(null);

@@ -121,7 +121,7 @@ public class FolderSetupPanel extends PFWizardPanel {
     protected void initComponents() {
 
         getWizardContext().setAttribute(PFWizard.PICTO_ICON,
-            Icons.FILE_SHARING_PICTO);
+            Icons.getIconById(Icons.FILE_SHARING_PICTO));
 
         // Folder name label
         folderNameTextField = SimpleComponentFactory.createTextField(true);

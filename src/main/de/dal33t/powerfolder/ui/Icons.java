@@ -161,36 +161,36 @@ public class Icons {
     public static final String ONLINE_FOLDER = "online_folder.icon";
     public static final String PREVIEW_FOLDER = "preview_folder.icon";
 
-    public static final Icon BLACK_LIST = getIcon("icons/BlackList.gif");
-    public static final Icon WHITE_LIST = getIcon("icons/WhiteList.gif");
-    public static final Icon DOWNLOAD = getIcon("icons/Download.png");
-    public static final Icon DOWNLOAD_ACTIVE = getIcon("icons/Download_active.gif");
-    public static final Icon UPLOAD = getIcon("icons/Upload.png");
-    public static final Icon UPLOAD_ACTIVE = getIcon("icons/UploadActive.gif");
-    public static final Icon IN_ACTIVE = getIcon("icons/Inactive.gif");
-    public static final Icon EXPECTED = getIcon("icons/Expected.gif");
+    public static final String BLACK_LIST = "black_list.icon";
+    public static final String WHITE_LIST = "white_list.icon";
+    public static final String DOWNLOAD = "download.icon";
+    public static final String DOWNLOAD_ACTIVE = "download_active.icon";
+    public static final String UPLOAD = "icons/Upload.png";
+    public static final String UPLOAD_ACTIVE = "icons/UploadActive.gif";
+    public static final String INACTIVE = "icons/Inactive.gif";
+    public static final String EXPECTED = "icons/Expected.gif";
 
     // Folder syncs
-    public static final Icon FOLDER_SYNC_UNKNOWN = getIcon("icons/FolderSync_unknown.gif");
-    public static final Icon FOLDER_SYNC_0 = getIcon("icons/FolderSync_0.gif");
-    public static final Icon FOLDER_SYNC_1 = getIcon("icons/FolderSync_1.gif");
-    public static final Icon FOLDER_SYNC_2 = getIcon("icons/FolderSync_2.gif");
-    public static final Icon FOLDER_SYNC_3 = getIcon("icons/FolderSync_3.gif");
+    public static final String FOLDER_SYNC_UNKNOWN = "folder_sync_unknown.icon";
+    public static final String FOLDER_SYNC_0 = "folder_sync_0.icon";
+    public static final String FOLDER_SYNC_1 = "folder_sync_1.icon";
+    public static final String FOLDER_SYNC_2 = "folder_sync_2.icon";
+    public static final String FOLDER_SYNC_3 = "folder_sync_3.icon";
 
     public static final String MAC = "mac.icon";
     public static final String CHECKED = "checked.icon";
 
     // Online state icons
-    public static final Icon CONNECTED = getIcon("icons/ConnectBright.png");
-    public static final Icon DISCONNECTED = getIcon("icons/ConnectNot.png");
+    public static final String CONNECTED = "connected_bright.icon";
+    public static final String DISCONNECTED = "connected_not.icon";
 
-    public static final Icon WEBSERVICE = getIcon("icons/WebService.png");
+    public static final String WEB_SERVICE = "web_service.icon";
 
     // Wizard pico icons
-    public static final Icon SYNC_PCS_PICTO = getIcon("icons/pictos/SyncPC.gif");
-    public static final Icon PROJECT_WORK_PICTO = getIcon("icons/pictos/ProjectWork.gif");
-    public static final Icon FILE_SHARING_PICTO = getIcon("icons/pictos/FileShare.gif");
-    public static final Icon WEB_SERVICE_PICTO = getIcon("icons/pictos/WebService.png");
+    public static final String SYNC_PCS_PICTO = "sync_pc_picto.icon";
+    public static final String PROJECT_WORK_PICTO = "project_work_picto.icon";
+    public static final String FILE_SHARING_PICTO = "file_share_picto.icon";
+    public static final String WEB_SERVICE_PICTO = "web_service_picto.icon";
 
     // Wizard pictos from the quick info panels
     public final Icon LOGO96X96 = getIconById("picto.logo.icon");
@@ -761,16 +761,16 @@ public class Icons {
             DownloadManager dl = controller.getTransferManager()
                 .getActiveDownload(fInfo);
             if (dl != null && dl.isStarted()) {
-                icon = DOWNLOAD_ACTIVE;
+                icon = Icons.getIconById(DOWNLOAD_ACTIVE);
             } else {
-                icon = DOWNLOAD;
+                icon = Icons.getIconById(DOWNLOAD);
             }
         } else if (fInfo.isDeleted()) {
             icon = getIconById(DELETE);
         } else if (fInfo.isExpected(controller.getFolderRepository())) {
-            icon = EXPECTED;
+            icon = Icons.getIconById(EXPECTED);
         } else if (fInfo.getFolder(controller.getFolderRepository()) == null) {
-            icon = EXPECTED;
+            icon = Icons.getIconById(EXPECTED);
         } else {
             icon = null;
         }

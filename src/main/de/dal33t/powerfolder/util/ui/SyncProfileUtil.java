@@ -57,15 +57,15 @@ public class SyncProfileUtil {
      */
     public static Icon getSyncIcon(double syncPercentage) {
         if (syncPercentage < 0) {
-            return Icons.FOLDER_SYNC_UNKNOWN;
+            return Icons.getIconById(Icons.FOLDER_SYNC_UNKNOWN);
         } else if (syncPercentage <= 20) {
-            return Icons.FOLDER_SYNC_0;
+            return Icons.getIconById(Icons.FOLDER_SYNC_0);
         } else if (syncPercentage <= 50) {
-            return Icons.FOLDER_SYNC_1;
+            return Icons.getIconById(Icons.FOLDER_SYNC_1);
         } else if (syncPercentage <= 80) {
-            return Icons.FOLDER_SYNC_2;
+            return Icons.getIconById(Icons.FOLDER_SYNC_2);
         } else {
-            return Icons.FOLDER_SYNC_3;
+            return Icons.getIconById(Icons.FOLDER_SYNC_3);
         }
     }
 }

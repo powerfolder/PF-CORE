@@ -159,7 +159,7 @@ public class WhatToDoPanel extends PFWizardPanel {
     private WizardPanel doOnlineOption() {
 
         getWizardContext().setAttribute(PFWizard.PICTO_ICON,
-                Icons.FILE_SHARING_PICTO);
+                Icons.getIconById(Icons.FILE_SHARING_PICTO));
 
         // Do not prompt for send invitation afterwards
         getWizardContext().setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE, false);
@@ -177,7 +177,7 @@ public class WhatToDoPanel extends PFWizardPanel {
 
     private WizardPanel doInviteOption() {
         getWizardContext().setAttribute(PFWizard.PICTO_ICON,
-                Icons.FILE_SHARING_PICTO);
+                Icons.getIconById(Icons.FILE_SHARING_PICTO));
 
         // Reset folderinfo for disk location
         getWizardContext().setAttribute(FOLDERINFO_ATTRIBUTE, null);
@@ -198,7 +198,7 @@ public class WhatToDoPanel extends PFWizardPanel {
 
     private WizardPanel doCustomAction() {
         getWizardContext().setAttribute(PFWizard.PICTO_ICON,
-                Icons.PROJECT_WORK_PICTO);
+                Icons.getIconById(Icons.PROJECT_WORK_PICTO));
 
         // Reset folderinfo for disk location
         getWizardContext().setAttribute(FOLDERINFO_ATTRIBUTE, null);
@@ -230,7 +230,7 @@ public class WhatToDoPanel extends PFWizardPanel {
 
     private WizardPanel doHostOption() {
         getWizardContext().setAttribute(PFWizard.PICTO_ICON,
-                Icons.PROJECT_WORK_PICTO);
+                Icons.getIconById(Icons.PROJECT_WORK_PICTO));
 
         // Reset folderinfo for disk location
         getWizardContext().setAttribute(FOLDERINFO_ATTRIBUTE, null);
@@ -269,7 +269,7 @@ public class WhatToDoPanel extends PFWizardPanel {
 
     private WizardPanel doBackupOption() {
         getWizardContext().setAttribute(PFWizard.PICTO_ICON,
-                Icons.SYNC_PCS_PICTO);
+                Icons.getIconById(Icons.SYNC_PCS_PICTO));
 
         // Reset folderinfo for disk location
         getWizardContext().setAttribute(FOLDERINFO_ATTRIBUTE, null);
@@ -310,7 +310,7 @@ public class WhatToDoPanel extends PFWizardPanel {
 
     private WizardPanel doSyncOption() {
         getWizardContext().setAttribute(PFWizard.PICTO_ICON,
-                Icons.SYNC_PCS_PICTO);
+                Icons.getIconById(Icons.SYNC_PCS_PICTO));
 
         // Reset folderinfo for disk location
         getWizardContext().setAttribute(FOLDERINFO_ATTRIBUTE, null);
@@ -414,7 +414,7 @@ public class WhatToDoPanel extends PFWizardPanel {
     }
 
     protected JComponent getPictoComponent() {
-        return new JLabel(Icons.FILE_SHARING_PICTO);
+        return new JLabel(Icons.getIconById(Icons.FILE_SHARING_PICTO));
     }
 
     protected String getTitle() {

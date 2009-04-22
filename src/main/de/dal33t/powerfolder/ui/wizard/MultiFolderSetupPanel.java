@@ -159,7 +159,7 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
         localBaseCombo.addItemListener(new MyItemListener());
 
         getWizardContext().setAttribute(PFWizard.PICTO_ICON,
-            Icons.FILE_SHARING_PICTO);
+            Icons.getIconById(Icons.FILE_SHARING_PICTO));
 
     }
 

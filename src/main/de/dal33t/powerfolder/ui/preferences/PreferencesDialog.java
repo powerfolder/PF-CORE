@@ -159,7 +159,7 @@ public class PreferencesDialog extends BaseDialog {
         NetworkSettingsTab networkSettingsTab = new NetworkSettingsTab(
             getController());
         preferenceTabs.add(networkSettingsTab);
-        tabbedPane.addTab(networkSettingsTab.getTabName(), Icons.WEBSERVICE,
+        tabbedPane.addTab(networkSettingsTab.getTabName(), Icons.getIconById(Icons.WEB_SERVICE),
             networkSettingsTab.getUIPanel(), null);
 
         dynDnsSettingsTab = new DynDnsSettingsTab(getController(),

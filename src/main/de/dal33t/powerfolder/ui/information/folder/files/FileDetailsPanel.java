@@ -109,7 +109,7 @@ public class FileDetailsPanel extends PFUIComponent {
             // FIXME: Hack, this overwrites the default status icons, since we
             // don't want upload icons in our table view
             // Maybe we need to split up Icons.getIconFor to know its context
-            statusIcon = Icons.UPLOAD;
+            statusIcon = Icons.getIconById(Icons.UPLOAD);
         } else if (fileInfo.isDownloading(getController())) {
             DownloadManager dl = getController().getTransferManager()
                     .getActiveDownload(fileInfo);

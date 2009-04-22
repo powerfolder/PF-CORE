@@ -165,7 +165,7 @@ public class FolderDetailsPanel extends PFUIComponent {
                 + Translation.getTranslation("general.not_available") + " -";
 
             totalSyncField.setText(naText);
-            totalSyncField.setIcon(Icons.FOLDER_SYNC_UNKNOWN);
+            totalSyncField.setIcon(Icons.getIconById(Icons.FOLDER_SYNC_UNKNOWN));
             syncProfileField.setText(naText);
             //syncProfileModel.setValue(null);
             localCopyAtField.setText(naText);

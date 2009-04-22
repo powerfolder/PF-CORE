@@ -148,7 +148,7 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
         folderInfoCombo.addItemListener(new MyItemListener());
 
         getWizardContext().setAttribute(PFWizard.PICTO_ICON,
-            Icons.FILE_SHARING_PICTO);
+            Icons.getIconById(Icons.FILE_SHARING_PICTO));
     }
 
     /**
