@@ -30,7 +30,7 @@ import java.awt.*;
  */
 public class PacmanPanel extends JPanel {
 
-    private volatile Image image = Icons.PACMAN_00;
+    private volatile Image image = Icons.getImageById(Icons.PACMAN_00);
     private volatile int offset;
     private volatile boolean active;
 
@@ -58,7 +58,7 @@ public class PacmanPanel extends JPanel {
             int x = offset + 27;
             while (x < getWidth()) {
                 x += 17;
-                g.drawImage(Icons.PACMAN_DOT, x, 1, 2, 17, this);
+                g.drawImage(Icons.getImageById(Icons.PACMAN_DOT), x, 1, 2, 17, this);
             }
         } else {
             g.setColor(Color.WHITE);
@@ -94,55 +94,56 @@ public class PacmanPanel extends JPanel {
 
                     switch (i) {
                         case 0:
-                            image = Icons.PACMAN_00;
+                            image = Icons.getImageById(Icons.PACMAN_00);
                             break;
                         case 1:
-                            image = Icons.PACMAN_01;
+                            image = Icons.getImageById(Icons.PACMAN_01);
                             break;
                         case 2:
-                            image = Icons.PACMAN_02;
+                            image = Icons.getImageById(Icons.PACMAN_02);
                             break;
                         case 3:
-                            image = Icons.PACMAN_03;
+                            image = Icons.getImageById(Icons.PACMAN_03);
                             break;
-                        case 4: image = Icons.PACMAN_04;
+                        case 4:
+                            image = Icons.getImageById(Icons.PACMAN_04);
                             break;
                         case 5:
-                            image = Icons.PACMAN_05;
+                            image = Icons.getImageById(Icons.PACMAN_05);
                             break;
                         case 6:
-                            image = Icons.PACMAN_06;
+                            image = Icons.getImageById(Icons.PACMAN_06);
                             break;
                         case 7:
-                            image = Icons.PACMAN_07;
+                            image = Icons.getImageById(Icons.PACMAN_07);
                             break;
                         case 8:
-                            image = Icons.PACMAN_08;
+                            image = Icons.getImageById(Icons.PACMAN_08);
                             break;
                         case 9:
-                            image = Icons.PACMAN_09;
+                            image = Icons.getImageById(Icons.PACMAN_09);
                             break;
                         case 10:
-                            image = Icons.PACMAN_10;
+                            image = Icons.getImageById(Icons.PACMAN_10);
                             break;
                         case 11:
-                            image = Icons.PACMAN_11;
+                            image = Icons.getImageById(Icons.PACMAN_11);
                             break;
                         case 12:
-                            image = Icons.PACMAN_12;
+                            image = Icons.getImageById(Icons.PACMAN_12);
                             break;
                         case 13:
-                            image = Icons.PACMAN_13;
+                            image = Icons.getImageById(Icons.PACMAN_13);
                             break;
                         case 14:
-                            image = Icons.PACMAN_14;
+                            image = Icons.getImageById(Icons.PACMAN_14);
                             break;
                         case 15:
-                            image = Icons.PACMAN_15;
+                            image = Icons.getImageById(Icons.PACMAN_15);
                             break;
                         case 16:
                         default:
-                            image = Icons.PACMAN_16; 
+                            image = Icons.getImageById(Icons.PACMAN_16);
                             break;
                     }
 

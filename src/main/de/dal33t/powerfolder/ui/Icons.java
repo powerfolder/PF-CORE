@@ -193,7 +193,7 @@ public class Icons {
     public static final String WEB_SERVICE_PICTO = "web_service_picto.icon";
 
     // Wizard pictos from the quick info panels
-    public static final String LOGO96X96 = "picto.logo.icon";
+    public static final String LOGO96X96 = "picto_logo.icon";
     public static final String LOGO400UI = "power_folder_logo_400_ui.icon";
     public static final String USER_PICTO = "user_picto.icon";
     public static final String UPLOAD_PICTO = "upload_picto.icon";
@@ -209,38 +209,36 @@ public class Icons {
     // About stuff
     public static final String ABOUT_ANIMATION = "about_animation.icon";
 
-    public static final Image PACMAN_00 = getImage("icons/pac/pac00.gif");
-    public static final Image PACMAN_01 = getImage("icons/pac/pac01.gif");
-    public static final Image PACMAN_02 = getImage("icons/pac/pac02.gif");
-    public static final Image PACMAN_03 = getImage("icons/pac/pac03.gif");
-    public static final Image PACMAN_04 = getImage("icons/pac/pac04.gif");
-    public static final Image PACMAN_05 = getImage("icons/pac/pac05.gif");
-    public static final Image PACMAN_06 = getImage("icons/pac/pac06.gif");
-    public static final Image PACMAN_07 = getImage("icons/pac/pac07.gif");
-    public static final Image PACMAN_08 = getImage("icons/pac/pac08.gif");
-    public static final Image PACMAN_09 = getImage("icons/pac/pac09.gif");
-    public static final Image PACMAN_10 = getImage("icons/pac/pac10.gif");
-    public static final Image PACMAN_11 = getImage("icons/pac/pac11.gif");
-    public static final Image PACMAN_12 = getImage("icons/pac/pac12.gif");
-    public static final Image PACMAN_13 = getImage("icons/pac/pac13.gif");
-    public static final Image PACMAN_14 = getImage("icons/pac/pac14.gif");
-    public static final Image PACMAN_15 = getImage("icons/pac/pac15.gif");
-    public static final Image PACMAN_16 = getImage("icons/pac/pac16.gif");
-    public static final Image PACMAN_DOT = getImage("icons/pac/pacDot.gif");
-
+    public static final String PACMAN_00 = "pac_00.icon";
+    public static final String PACMAN_01 = "pac_01.icon";
+    public static final String PACMAN_02 = "pac_02.icon";
+    public static final String PACMAN_03 = "pac_03.icon";
+    public static final String PACMAN_04 = "pac_04.icon";
+    public static final String PACMAN_05 = "pac_05.icon";
+    public static final String PACMAN_06 = "pac_06.icon";
+    public static final String PACMAN_07 = "pac_07.icon";
+    public static final String PACMAN_08 = "pac_08.icon";
+    public static final String PACMAN_09 = "pac_09.icon";
+    public static final String PACMAN_10 = "pac_10.icon";
+    public static final String PACMAN_11 = "pac_11.icon";
+    public static final String PACMAN_12 = "pac_12.icon";
+    public static final String PACMAN_13 = "pac_13.icon";
+    public static final String PACMAN_14 = "pac_14.icon";
+    public static final String PACMAN_15 = "pac_15.icon";
+    public static final String PACMAN_16 = "pac_16.icon";
+    public static final String PACMAN_DOT = "pac_dot.icon";
 
     // Images icons
     public static final Image POWERFOLDER_IMAGE = getImageFromIcon(Icons.getIconById(SMALL_LOGO));
-    public static Image FOLDER_IMAGE = getImageFromIcon(getIconById(FOLDER));
-    public static Image SYSTEM_MONITOR_IMAGE = getImageFromIcon(getIconById(
-            SYSTEM_MONITOR));
-    public static Image CHAT_IMAGE = getImageFromIcon(getIconById(CHAT));
-    public static Image DEBUG_IMAGE = getImageFromIcon(getIconById(DEBUG));
-    public static Image BLANK_IMAGE = getImageFromIcon(getIconById(BLANK));
+    public static final Image FOLDER_IMAGE = getImageFromIcon(getIconById(FOLDER));
+    public static final Image SYSTEM_MONITOR_IMAGE = getImageFromIcon(getIconById(SYSTEM_MONITOR));
+    public static final Image CHAT_IMAGE = getImageFromIcon(getIconById(CHAT));
+    public static final Image DEBUG_IMAGE = getImageFromIcon(getIconById(DEBUG));
+    public static final Image BLANK_IMAGE = getImageFromIcon(getIconById(BLANK));
 
 
     // Systray icon file names
-    public static final Image SYSTRAY_DEFAULT_ICON = getImageById("systray.default.icon");
+    public static final String SYSTRAY_DEFAULT_ICON = "systray_default.icon";
     public static final Image SYSTRAY_CHAT_ICON = getImage("icons/Chat.gif");
     public static final Image SYSTRAY_FRIEND_ICON = getImage("icons/Node_Friend_Connected.gif");
 
