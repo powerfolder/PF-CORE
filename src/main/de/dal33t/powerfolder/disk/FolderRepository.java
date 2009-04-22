@@ -710,8 +710,6 @@ public class FolderRepository extends PFComponent implements Runnable {
             folder = new Folder(getController(), folderInfo, folderSettings);
         }
         
-        folder.addDefaultExcludes();
-        
         folders.put(folder.getInfo(), folder);
         saveFolderConfig(folderInfo, folderSettings, saveConfig);
 

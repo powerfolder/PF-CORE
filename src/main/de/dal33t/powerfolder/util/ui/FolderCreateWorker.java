@@ -90,6 +90,7 @@ public abstract class FolderCreateWorker extends ActivityVisualizationWorker {
     public Object construct() {
         folder = controller.getFolderRepository().createFolder(foInfo,
             folderSettings);
+        folder.addDefaultExcludes();
         if (createShortcut) {
             folder.setDesktopShortcut(true);
         }

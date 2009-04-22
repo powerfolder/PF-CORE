@@ -610,6 +610,9 @@ public class SettingsTab extends PFUIComponent {
                 .getSyncProfile(), false, folder.isUseRecycleBin(), false,
                 false);
             folder = repository.createFolder(fi, fs);
+            if (!moveContent) {
+                folder.addDefaultExcludes();
+            }
 
             // Update with new folder info.
             update();

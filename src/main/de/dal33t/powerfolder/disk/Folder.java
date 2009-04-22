@@ -527,10 +527,7 @@ public class Folder extends PFComponent {
      * @param pattern
      */
     private void addPattern(String pattern) {
-        List<String> patterns = diskItemFilter.getPatterns();
-        if (!patterns.contains(pattern)) {
-            patterns.add(pattern);
-        }
+        diskItemFilter.addPattern(pattern);
     }
 
     /**
@@ -2779,29 +2776,24 @@ public class Folder extends PFComponent {
     /**
      * Ensures that default ignore patterns are set.
      */
-    void addDefaultExcludes() {
-        if (OSUtil.isWindowsSystem()) {
-            // Add thumbs to ignore pattern on windows systems
-            // Don't duplicate thumbs (like when moving a preview folder)
-            addPattern(THUMBS_DB);
+    public void addDefaultExcludes() {
+        // Add thumbs to ignore pattern on windows systems
+        // Don't duplicate thumbs (like when moving a preview folder)
+        addPattern(THUMBS_DB);
 
-            // ... and temporary word files
-            addPattern(WORD_TEMP);
+        // ... and temporary word files
+        addPattern(WORD_TEMP);
 
-            // Add desktop.ini to ignore pattern on windows systems
-            if (!OSUtil.isWindowsVistaSystem()
-                && ConfigurationEntry.USE_PF_ICON
-                    .getValueBoolean(getController()))
-            {
-                addPattern(FileUtils.DESKTOP_INI_FILENAME);
-            }
-        }
-        if (OSUtil.isMacOS()) {
-            // Add dsstore to ignore pattern on mac systems
-            // Don't duplicate dsstore (like when moving a preview folder)
-            addPattern(DS_STORE);
+        // Add desktop.ini to ignore pattern on windows systems
+        if (!OSUtil.isWindowsVistaSystem()
+            && ConfigurationEntry.USE_PF_ICON.getValueBoolean(getController()))
+        {
+            addPattern(FileUtils.DESKTOP_INI_FILENAME);
         }
 
+        // Add dsstore to ignore pattern on mac systems
+        // Don't duplicate dsstore (like when moving a preview folder)
+        addPattern(DS_STORE);
     }
 
     /**

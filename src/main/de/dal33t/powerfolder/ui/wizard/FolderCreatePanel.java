@@ -261,6 +261,7 @@ public class FolderCreatePanel extends PFWizardPanel {
                 FolderSettings folderSettings = configurations.get(folderInfo);
                 Folder folder = getController().getFolderRepository()
                         .createFolder(folderInfo, folderSettings);
+                folder.addDefaultExcludes();
 
                 // Make sure recycle bin was made.
                 if (folderSettings.isUseRecycleBin()) {

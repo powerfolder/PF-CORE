@@ -28,6 +28,7 @@ import de.dal33t.powerfolder.util.PatternMatch;
 import de.dal33t.powerfolder.util.Reject;
 
 import java.io.*;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -249,16 +250,17 @@ public class DiskItemFilter {
 
     /**
      * Returns patterns.
-     *
-     * @return the list of patterns that may match files that should be ignored
+     * 
+     * @return a unmodifable version the list of patterns that may match files
+     *         that should be ignored
      */
     public List<String> getPatterns() {
-        return patterns;
+        return Collections.unmodifiableList(patterns);
     }
 
     /**
-     * Returns the number of items that were filtered out(removed) from the
-     * List when the patterns were applied.
+     * Returns the number of items that were filtered out(removed) from the List
+     * when the patterns were applied.
      */
     public int filterDirectories(List<Directory> directories) {
         int n = 0;

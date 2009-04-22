@@ -41,24 +41,23 @@ public class FolderPreviewHelper {
     private static final String DOT_POWER_FOLDER = ".PowerFolder";
 
     /**
-     * This helper creates FolderSettings for creation of a preview folder.
-     * The local base dir is in the system temp dir and there is no
-     * synchronization for a preview folder.
-     *
+     * This helper creates FolderSettings for creation of a preview folder. The
+     * local base dir is in the system temp dir and there is no synchronization
+     * for a preview folder.
+     * 
      * @param folderName
-     * @return
+     * @return the settings for previewing the folder.
      */
-    public static FolderSettings createPreviewFolderSettings(String folderName) {
-
+    public static FolderSettings createPreviewFolderSettings(String folderName)
+    {
         File localBase = makePreviewBaseDir(folderName);
         return new FolderSettings(localBase, SyncProfile.NO_SYNC, false, false,
-                true, false);
+            true, false);
     }
 
     // Creates a preview folder directory for a folderName.
     // The folder is put in [java.io.tempdir]/.PowerFolder/folderName/
     private static File makePreviewBaseDir(String folderName) {
-
         String javaTempDir = System.getProperty(JAVA_IO_TMPDIR);
         File tempPF = new File(javaTempDir, DOT_POWER_FOLDER);
         return new File(tempPF, folderName);
@@ -69,6 +68,7 @@ public class FolderPreviewHelper {
      *
      * @param controller
      * @param folder
+     * @return if succeeded
      */
     public static boolean convertFolderToPreview(Controller controller,
                                               Folder folder) {
@@ -109,28 +109,25 @@ public class FolderPreviewHelper {
 
     /**
      * Converts a preview folder to a normal folder.
-     *
+     * 
      * @param controller
      * @param folder
+     * @param newFolderSettings 
      * @param deleteSystemSubDir
      */
     public static void convertFolderFromPreview(Controller controller,
-                                         Folder folder,
-                                         FolderSettings newFolderSettings,
-                                         boolean deleteSystemSubDir) {
-
+        Folder folder, FolderSettings newFolderSettings,
+        boolean deleteSystemSubDir)
+    {
         Reject.ifTrue(!folder.isPreviewOnly(),
-                "Can not convert a non-preview folder to non-previrew");
+            "Can not convert a non-preview folder to non-previrew");
         Reject.ifTrue(newFolderSettings.isPreviewOnly(),
-                "Can not convert to a preview folder");
-
+            "Can not convert to a preview folder");
 
         FolderRepository folderRepository = controller.getFolderRepository();
-
         FolderInfo folderInfo = new FolderInfo(folder);
-
         folderRepository.removeFolder(folder, deleteSystemSubDir);
-
-        folderRepository.createFolder(folderInfo, newFolderSettings);
+        Folder f = folderRepository.createFolder(folderInfo, newFolderSettings);
+        f.addDefaultExcludes();
     }
 }
