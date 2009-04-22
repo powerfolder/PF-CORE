@@ -122,7 +122,7 @@ public class ChatFrame extends MagneticFrame {
                 //Ignore.
             }
         });
-        uiComponent.setIconImage(Icons.CHAT_IMAGE);
+        uiComponent.setIconImage(Icons.getImageById(Icons.CHAT));
         uiComponent.setTitle(Translation.getTranslation("chat_frame.title"));
         uiComponent.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         uiComponent.addWindowListener(new WindowAdapter() {

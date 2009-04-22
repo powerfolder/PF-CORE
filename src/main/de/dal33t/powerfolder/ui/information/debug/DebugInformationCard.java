@@ -105,7 +105,7 @@ public class DebugInformationCard extends InformationCard{
 
 	@Override
 	public Image getCardImage() {
-		return Icons.DEBUG_IMAGE;
+		return Icons.getImageById(Icons.DEBUG);
 	}
 
 	@Override

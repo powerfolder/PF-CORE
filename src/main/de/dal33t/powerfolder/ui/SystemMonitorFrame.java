@@ -66,7 +66,7 @@ public class SystemMonitorFrame extends MagneticFrame {
      */
     private void buildUI() {
         uiComponent = new JFrame(Translation.getTranslation("system_monitor.title"));
-        uiComponent.setIconImage(Icons.SYSTEM_MONITOR_IMAGE);
+        uiComponent.setIconImage(Icons.getImageById(Icons.SYSTEM_MONITOR));
         uiComponent.getContentPane().setLayout(new BorderLayout());
         uiComponent.getContentPane().add(systemMonitor, BorderLayout.CENTER);
 

@@ -68,21 +68,13 @@ import de.dal33t.powerfolder.util.ui.OverlayedIcon;
  * subsequent calls will return the same object. The advantage of this aproach
  * is that Icons are only greated as required, saving time and memory.
  *
+ * Similarly, Images should be got by calling something like
+ * <code>Icons.getImageById(Icon.EXAMPLE)</code>.  
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.74 $
  */
 public class Icons {
-
-    private static final Logger log = Logger.getLogger(Icons.class.getName());
-
-    private static final String DEFAULT_ICON_PROPERTIES_FILENAME = "Icons.properties";
-    private static String iconPropertiesFilename = DEFAULT_ICON_PROPERTIES_FILENAME;
-    private static String overridePropertiesFilename;
-    private static Properties iconProperties;
-    private static final Map<String, Icon> iconCache = new ConcurrentHashMap<String, Icon>();
-
-    private static final String DISABLED_EXTENSION_ADDITION = "_disabled";
-    private static final Object FILE_LOCK = new Object();
 
     public static final String FILTER_TEXT_FIELD_CLEAR_BUTTON_NORMAL = "filter_text_field_clear_button_normal.icon";
     public static final String FILTER_TEXT_FIELD_CLEAR_BUTTON_HOVER = "filter_text_field_clear_button_hover.icon";
@@ -128,7 +120,7 @@ public class Icons {
     public static final String JOIN_FOLDER_48 = "join_folder_48.icon";
     public static final String SYNC_FOLDER_48 = "sync_48.icon";
     public static final String REMOVE_FOLDER_48 = "leave_folder_48.icon";
-    
+
     public static final String PREFERENCES = "preferences.icon";
     public static final String PREFERENCES_PICTO = "preferences_picto.icon";
     public static final String SYNC = "sync.icon";
@@ -227,155 +219,31 @@ public class Icons {
     public static final String PACMAN_15 = "pac_15.icon";
     public static final String PACMAN_16 = "pac_16.icon";
     public static final String PACMAN_DOT = "pac_dot.icon";
+    public static final String SYSTRAY_DEFAULT = "systray_default.icon";
 
-    // Images icons
-    public static final Image SYSTEM_MONITOR_IMAGE = getImageFromIcon(getIconById(SYSTEM_MONITOR));
-    public static final Image CHAT_IMAGE = getImageFromIcon(getIconById(CHAT));
-    public static final Image DEBUG_IMAGE = getImageFromIcon(getIconById(DEBUG));
-    public static final Image BLANK_IMAGE = getImageFromIcon(getIconById(BLANK));
+    private static final Logger log = Logger.getLogger(Icons.class.getName());
+    private static final String DEFAULT_ICON_PROPERTIES_FILENAME = "Icons.properties";
+    private static final String DISABLED_EXTENSION_ADDITION = "_disabled";
+    private static final Object FILE_LOCK = new Object();
 
+    /** Map of ID - Icon */
+    private static final Map<String, Icon> ID_ICON_MAP = new ConcurrentHashMap<String, Icon>();
 
-    // Systray icon file names
-    public static final String SYSTRAY_DEFAULT_ICON = "systray_default.icon";
-    public static final Image SYSTRAY_CHAT_ICON = getImage("icons/Chat.gif");
-    public static final Image SYSTRAY_FRIEND_ICON = getImage("icons/Node_Friend_Connected.gif");
+    /** Map of Extension - Icon */
+    private static final Map<String, Icon> EXTENSION_ICON_MAP = new HashMap<String, Icon>();
 
-    private static final Map<String, Icon> KNOWN_ICONS = new HashMap<String, Icon>();
+    private static String overridePropertiesFilename;
+    private static Properties iconProperties;
 
+    /**
+     * Constructor - no instances.
+     */
     protected Icons() {
         // No instances - everything is static.
     }
 
     public static void loadOverrideFile(String iconSetFile) {
         overridePropertiesFilename = iconSetFile;
-    }
-
-    /**
-     * Protected because only this class, subclasses and Translation.properties
-     * refer to images
-     * 
-     * @param name
-     * @return
-     */
-    private static Icon getIcon(String name) {
-        if (name == null) {
-            log.severe("Icon name is null");
-            return null;
-        }
-        if (name.length() <= 6) { // required prefix = icons/
-            // log.error("Icon not found '" + name + "'");
-            return null;
-        }
-        URL iconURL = Thread.currentThread().getContextClassLoader()
-            .getResource(name);
-        if (iconURL == null) {
-            log.severe("Icon not found '" + name + '\'');
-            return null;
-        }
-
-        return new ImageIcon(iconURL);
-    }
-
-    /**
-     * Method to scale an ImageIcon.
-     * 
-     * @param source
-     *            the source ImageIcon to scale
-     * @param scaleFactor
-     *            the factor to scale it by
-     * @return the scaled image
-     */
-    public static ImageIcon scaleIcon(ImageIcon source, double scaleFactor) {
-        Image image = source.getImage().getScaledInstance(
-            (int) (source.getIconWidth() * scaleFactor),
-            (int) (source.getIconHeight() * scaleFactor), Image.SCALE_SMOOTH);
-        return new ImageIcon(image);
-    }
-
-    private static Image getImage(String name) {
-        URL imageURL = Thread.currentThread().getContextClassLoader()
-            .getResource(name);
-        return Toolkit.getDefaultToolkit().getImage(imageURL);
-    }
-
-    private static synchronized Properties getIconProperties() {
-        if (iconProperties == null) {
-            iconProperties = new Properties();
-
-            InputStream in = Thread.currentThread().getContextClassLoader()
-                .getResourceAsStream(iconPropertiesFilename);
-            BufferedInputStream buffered = null;
-            if (in == null) {
-                throw new IllegalArgumentException(
-                    "Icon properties file not found: " + iconPropertiesFilename);
-            }
-
-            try {
-                buffered = new BufferedInputStream(in);
-                iconProperties.load(buffered);
-            } catch (IOException ioe) {
-                log.log(Level.SEVERE, "Cannot read: " + iconPropertiesFilename, ioe);
-            } finally {
-                if (buffered != null) {
-                    try {
-                        buffered.close();
-                    } catch (Exception e) {
-
-                    }
-                }
-            }
-            
-            if (overridePropertiesFilename != null) {
-                in = Thread.currentThread().getContextClassLoader()
-                    .getResourceAsStream(overridePropertiesFilename);
-                buffered = null;
-                if (in == null) {
-                    throw new IllegalArgumentException(
-                        "Icon override properties file not found: " + overridePropertiesFilename);
-                }
-
-                try {
-                    buffered = new BufferedInputStream(in);
-                    iconProperties.load(buffered);
-                } catch (IOException ioe) {
-                    log.log(Level.SEVERE, "Cannot read: " + overridePropertiesFilename, ioe);
-                } finally {
-                    if (buffered != null) {
-                        try {
-                            buffered.close();
-                        } catch (Exception e) {
-
-                        }
-                    }
-                }
-            }
-            
-            if (overridePropertiesFilename != null) {
-                in = Thread.currentThread().getContextClassLoader()
-                    .getResourceAsStream(overridePropertiesFilename);
-                buffered = null;
-                if (in == null) {
-                    throw new IllegalArgumentException(
-                        "Icon override properties file not found: " + overridePropertiesFilename);
-                }
-
-                try {
-                    buffered = new BufferedInputStream(in);
-                    iconProperties.load(buffered);
-                } catch (IOException ioe) {
-                    log.log(Level.SEVERE, "Cannot read: " + overridePropertiesFilename, ioe);
-                } finally {
-                    if (buffered != null) {
-                        try {
-                            buffered.close();
-                        } catch (Exception e) {
-
-                        }
-                    }
-                }
-            }
-        }
-        return iconProperties;
     }
 
     /**
@@ -392,7 +260,7 @@ public class Icons {
             return null;
         }
 
-        Icon icon = iconCache.get(id);
+        Icon icon = ID_ICON_MAP.get(id);
         if (icon != null) {
             return icon;
         }
@@ -402,14 +270,14 @@ public class Icons {
             icon = getGrayIcon(getIconById(UNKNOWN_FILE));
             if (icon != null) {
                 log.fine("Cached icon " + id);
-                iconCache.put(id, icon);
+                ID_ICON_MAP.put(id, icon);
             }
             return icon;
         } else if (id.equals(UNKNOWN_FILE_RED)) {
             icon = convertToRed(getGrayIcon(getIconById(UNKNOWN_FILE)));
             if (icon != null) {
                 log.fine("Cached icon " + id);
-                iconCache.put(id, icon);
+                ID_ICON_MAP.put(id, icon);
             }
             return icon;
         }
@@ -420,11 +288,17 @@ public class Icons {
             log.severe("Icon not found ID: '" + id + '\'');
             return null;
         }
-        icon = getIcon(prop.getProperty(id));
-        if (icon != null) {
-            log.fine("Cached icon " + id);
-            iconCache.put(id, icon);
+
+        URL iconURL = Thread.currentThread().getContextClassLoader()
+            .getResource(prop.getProperty(id));
+        if (iconURL == null) {
+            log.severe("Icon not found '" + id + '\'');
+            return null;
         }
+
+        icon = new ImageIcon(iconURL);
+        log.fine("Cached icon " + id);
+        ID_ICON_MAP.put(id, icon);
         return icon;
     }
 
@@ -442,7 +316,12 @@ public class Icons {
             log.severe("Image not found ID: '" + id + '\'');
             return null;
         }
-        return getImage((String) prop.get(id));
+
+        URL imageURL = Thread.currentThread().getContextClassLoader()
+            .getResource((String) prop.get(id));
+        return Toolkit.getDefaultToolkit().getImage(imageURL);
+
+        // @todo cache
     }
 
     // Open helper
@@ -533,10 +412,10 @@ public class Icons {
                     return getIconById(UNKNOWN_FILE);
                 }
                 if (!hasUniqueIcon(extension)) {// do not cache executables
-                    KNOWN_ICONS.put(extension, icon);// put in cache
+                    EXTENSION_ICON_MAP.put(extension, icon);// put in cache
                     Icon disabled = getGrayIcon(icon);
                     // put in cache
-                    KNOWN_ICONS.put(extension + DISABLED_EXTENSION_ADDITION,
+                    EXTENSION_ICON_MAP.put(extension + DISABLED_EXTENSION_ADDITION,
                         disabled);
                 }
             } else { // local file doesnot exists
@@ -553,8 +432,8 @@ public class Icons {
                         if (!hasUniqueIcon(extension)) {// do not cache *.exe
                             // and *.ico etc
                             // put in cache
-                            KNOWN_ICONS.put(extension, icon);
-                            KNOWN_ICONS.put(extension
+                            EXTENSION_ICON_MAP.put(extension, icon);
+                            EXTENSION_ICON_MAP.put(extension
                                 + DISABLED_EXTENSION_ADDITION, disabled);
                         }
                         icon = disabled;
@@ -584,8 +463,8 @@ public class Icons {
         if (extension == null) { // no file extension
             return getIconById(UNKNOWN_FILE);
         }
-        if (KNOWN_ICONS.containsKey(extension)) { // getIcon from cache
-            return KNOWN_ICONS.get(extension);
+        if (EXTENSION_ICON_MAP.containsKey(extension)) { // getIcon from cache
+            return EXTENSION_ICON_MAP.get(extension);
         }
 
         File file = fileInfo.getDiskFile(controller.getFolderRepository());
@@ -595,17 +474,68 @@ public class Icons {
         if (exists) {
             icon = FileSystemView.getFileSystemView().getSystemIcon(file);
             if (!hasUniqueIcon(extension)) { // do not cache executables
-                KNOWN_ICONS.put(extension, icon);// put in cache
+                EXTENSION_ICON_MAP.put(extension, icon);// put in cache
                 Icon disabled = getGrayIcon(icon); // think ahead we may need
                 // the disabled version somewhere later
                 // put in cache
-                KNOWN_ICONS.put(extension + DISABLED_EXTENSION_ADDITION,
+                EXTENSION_ICON_MAP.put(extension + DISABLED_EXTENSION_ADDITION,
                     disabled);
             }
             return icon;
         }
         // local file doesnot exists
         icon = getIconExtension(extension);
+        return icon;
+    }
+
+    /**
+     * Return the correct icon for a subdirectory
+     *
+     * @param dir
+     *            the directory
+     * @param isOpen
+     *            if it is opend
+     * @param controller
+     * @return the icons
+     */
+    public static Icon getIconFor(Directory dir, boolean isOpen,
+        Controller controller)
+    {
+        if (dir.isDeleted()) {
+            return isOpen ? getIconById(DIRECTORY_OPEN_RED) : getIconById(DIRECTORY_RED);
+        } else if (dir.isExpected(controller.getFolderRepository())) {
+            return isOpen ? getIconById(DIRECTORY_OPEN_GRAY) : getIconById(DIRECTORY_GRAY);
+        } else {
+            return isOpen ? getIconById(DIRECTORY_OPEN) : getIconById(DIRECTORY);
+        }
+    }
+
+    /**
+     * @param controller
+     * @param fInfo
+     *            the file
+     * @return the icon for a file
+     */
+    public static Icon getIconFor(Controller controller, FileInfo fInfo) {
+        Icon icon;
+
+        if (fInfo.isDownloading(controller)) {
+            DownloadManager dl = controller.getTransferManager()
+                .getActiveDownload(fInfo);
+            if (dl != null && dl.isStarted()) {
+                icon = getIconById(DOWNLOAD_ACTIVE);
+            } else {
+                icon = getIconById(DOWNLOAD);
+            }
+        } else if (fInfo.isDeleted()) {
+            icon = getIconById(DELETE);
+        } else if (fInfo.isExpected(controller.getFolderRepository())) {
+            icon = getIconById(EXPECTED);
+        } else if (fInfo.getFolder(controller.getFolderRepository()) == null) {
+            icon = getIconById(EXPECTED);
+        } else {
+            icon = null;
+        }
         return icon;
     }
 
@@ -626,15 +556,15 @@ public class Icons {
     private static Icon getCachedIcon(String extension, boolean disabled)
     {
         if (disabled) {
-            if (KNOWN_ICONS.containsKey(extension)) { // getIcon from cache
-                return KNOWN_ICONS.get(extension);
+            if (EXTENSION_ICON_MAP.containsKey(extension)) { // getIcon from cache
+                return EXTENSION_ICON_MAP.get(extension);
             }
         } else {// file does not exist try to get Disabled icon
-            if (KNOWN_ICONS
+            if (EXTENSION_ICON_MAP
                 .containsKey(extension + DISABLED_EXTENSION_ADDITION))
             {
                 // get disabled Icon from cache
-                return KNOWN_ICONS.get(extension + DISABLED_EXTENSION_ADDITION);
+                return EXTENSION_ICON_MAP.get(extension + DISABLED_EXTENSION_ADDITION);
             }
         }
         return null;
@@ -664,7 +594,7 @@ public class Icons {
      *            the extension to get a Icon for
      * @return the icon
      */
-    public static Icon getIconExtension(String extension) {
+    private static Icon getIconExtension(String extension) {
         File tempFile = new File(Controller.getTempFilesLocation(), "temp."
             + extension);
 
@@ -694,7 +624,7 @@ public class Icons {
     /** converts Icon to red, note: first convert to gray * 
      * @param icon 
      * @return the red icon */
-    public static ImageIcon convertToRed(Icon icon) {
+    private static ImageIcon convertToRed(Icon icon) {
         Image image = getImageFromIcon(icon);
         BufferedImage src = toBufferedImage(image);
 
@@ -721,57 +651,6 @@ public class Icons {
     }
 
     /**
-     * Return the correct icon for a subdirectory
-     * 
-     * @param dir
-     *            the directory
-     * @param isOpen
-     *            if it is opend
-     * @param controller 
-     * @return the icons
-     */
-    public static Icon getIconFor(Directory dir, boolean isOpen,
-        Controller controller)
-    {
-        if (dir.isDeleted()) {
-            return isOpen ? getIconById(DIRECTORY_OPEN_RED) : getIconById(DIRECTORY_RED);
-        } else if (dir.isExpected(controller.getFolderRepository())) {
-            return isOpen ? getIconById(DIRECTORY_OPEN_GRAY) : getIconById(DIRECTORY_GRAY);
-        } else {
-            return isOpen ? getIconById(DIRECTORY_OPEN) : getIconById(DIRECTORY);
-        }
-    }
-
-    /**
-     * @param controller
-     * @param fInfo
-     *            the file
-     * @return the icon for a file
-     */
-    public static Icon getIconFor(Controller controller, FileInfo fInfo) {
-        Icon icon;
-
-        if (fInfo.isDownloading(controller)) {
-            DownloadManager dl = controller.getTransferManager()
-                .getActiveDownload(fInfo);
-            if (dl != null && dl.isStarted()) {
-                icon = Icons.getIconById(DOWNLOAD_ACTIVE);
-            } else {
-                icon = Icons.getIconById(DOWNLOAD);
-            }
-        } else if (fInfo.isDeleted()) {
-            icon = getIconById(DELETE);
-        } else if (fInfo.isExpected(controller.getFolderRepository())) {
-            icon = Icons.getIconById(EXPECTED);
-        } else if (fInfo.getFolder(controller.getFolderRepository()) == null) {
-            icon = Icons.getIconById(EXPECTED);
-        } else {
-            icon = null;
-        }
-        return icon;
-    }
-
-    /**
      * create a disabled (Gray) version of the Icon much better way than
      * GrayFilter, because GrayFilter does not handle the transparancy well.
      * 
@@ -779,7 +658,7 @@ public class Icons {
      *            the icon to convert to gray icon
      * @return icon grayed out for use as disabled icon
      */
-    public static Icon getGrayIcon(Icon icon) {
+    private static Icon getGrayIcon(Icon icon) {
         ColorSpace colorSpace = ColorSpace.getInstance(ColorSpace.CS_GRAY);
         ColorConvertOp colorConvertOp = new ColorConvertOp(colorSpace, null);
 
@@ -803,7 +682,7 @@ public class Icons {
      *            The icon to get the image from.
      * @return The image or null on failure
      */
-    public static Image getImageFromIcon(Icon icon) {
+    private static Image getImageFromIcon(Icon icon) {
         if (icon == null) {
             log.log(Level.SEVERE, "Icon is null", new RuntimeException(
                 "Icon is null"));
@@ -847,7 +726,7 @@ public class Icons {
 
     // This method returns a buffered image with the contents of an image.
     // "Converting" by drawing on image, but there seems to be no other way.
-    public static BufferedImage toBufferedImage(Image image) {
+    private static BufferedImage toBufferedImage(Image image) {
         if (image instanceof BufferedImage) {
             return (BufferedImage) image;
         }
@@ -922,4 +801,86 @@ public class Icons {
         ColorModel cm = pg.getColorModel();
         return cm.hasAlpha();
     }
+
+    private static synchronized Properties getIconProperties() {
+        if (iconProperties == null) {
+            iconProperties = new Properties();
+
+            InputStream in = Thread.currentThread().getContextClassLoader()
+                .getResourceAsStream(DEFAULT_ICON_PROPERTIES_FILENAME);
+            BufferedInputStream buffered = null;
+            if (in == null) {
+                throw new IllegalArgumentException(
+                    "Icon properties file not found: " + DEFAULT_ICON_PROPERTIES_FILENAME);
+            }
+
+            try {
+                buffered = new BufferedInputStream(in);
+                iconProperties.load(buffered);
+            } catch (IOException ioe) {
+                log.log(Level.SEVERE, "Cannot read: " + DEFAULT_ICON_PROPERTIES_FILENAME, ioe);
+            } finally {
+                if (buffered != null) {
+                    try {
+                        buffered.close();
+                    } catch (Exception e) {
+
+                    }
+                }
+            }
+
+            if (overridePropertiesFilename != null) {
+                in = Thread.currentThread().getContextClassLoader()
+                    .getResourceAsStream(overridePropertiesFilename);
+                buffered = null;
+                if (in == null) {
+                    throw new IllegalArgumentException(
+                        "Icon override properties file not found: " + overridePropertiesFilename);
+                }
+
+                try {
+                    buffered = new BufferedInputStream(in);
+                    iconProperties.load(buffered);
+                } catch (IOException ioe) {
+                    log.log(Level.SEVERE, "Cannot read: " + overridePropertiesFilename, ioe);
+                } finally {
+                    if (buffered != null) {
+                        try {
+                            buffered.close();
+                        } catch (Exception e) {
+
+                        }
+                    }
+                }
+            }
+
+            if (overridePropertiesFilename != null) {
+                in = Thread.currentThread().getContextClassLoader()
+                    .getResourceAsStream(overridePropertiesFilename);
+                buffered = null;
+                if (in == null) {
+                    throw new IllegalArgumentException(
+                        "Icon override properties file not found: " + overridePropertiesFilename);
+                }
+
+                try {
+                    buffered = new BufferedInputStream(in);
+                    iconProperties.load(buffered);
+                } catch (IOException ioe) {
+                    log.log(Level.SEVERE, "Cannot read: " + overridePropertiesFilename, ioe);
+                } finally {
+                    if (buffered != null) {
+                        try {
+                            buffered.close();
+                        } catch (Exception e) {
+
+                        }
+                    }
+                }
+            }
+        }
+        return iconProperties;
+    }
+
+
 }
