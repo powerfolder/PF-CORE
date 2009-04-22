@@ -258,12 +258,10 @@ public class Icons {
      * Protected because only this class, subclasses and Translation.properties
      * refer to images
      * 
-     * @deprecated use getIconById to redirect via Icons.properties for better
-     *             configurability
      * @param name
      * @return
      */
-    protected static Icon getIcon(String name) {
+    private static Icon getIcon(String name) {
         if (name == null) {
             log.severe("Icon name is null");
             return null;

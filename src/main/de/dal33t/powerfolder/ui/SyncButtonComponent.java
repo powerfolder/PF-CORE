@@ -71,7 +71,7 @@ public class SyncButtonComponent extends PFUIComponent {
 
     private void initComponents() {
         syncAllLabel = new JLabel(Icons
-            .getIcon("icons/sync/normal/sync_00.png"));
+            .getIconById("sync_normal_00.icon"));
         syncAllLabel.setToolTipText(Translation
             .getTranslation("action_sync_all_folders.description"));
         syncAllLabel.addMouseListener(new MyMouseAdapter());
@@ -145,9 +145,9 @@ public class SyncButtonComponent extends PFUIComponent {
                         directoryString = "normal";
                     }
 
-                    String iconString = "icons/sync/" + directoryString
-                        + "/sync_" + numberString + ".png";
-                    final Icon icon = Icons.getIcon(iconString);
+                    String iconId = "sync_" + directoryString + '_' +
+                            numberString + ".icon";
+                    final Icon icon = Icons.getIconById(iconId);
                     // Move into EDT, otherwise it violates the one thread EDT
                     // rule.
                     UIUtil.invokeAndWaitInEDT(new Runnable() {
