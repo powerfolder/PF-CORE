@@ -71,7 +71,7 @@ public class DownloadsInformationCard extends InformationCard
      * @return
      */
     public Image getCardImage() {
-        return Icons.FOLDER_IMAGE;
+        return Icons.getImageById(Icons.FOLDER);
     }
 
     /**

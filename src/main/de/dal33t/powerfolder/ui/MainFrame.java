@@ -265,7 +265,7 @@ public class MainFrame extends PFUIComponent {
                 }
             }
         });
-        uiComponent.setIconImage(Icons.POWERFOLDER_IMAGE);
+        uiComponent.setIconImage(Icons.getImageById(Icons.SMALL_LOGO));
 
         createMenuBar();
 

@@ -55,7 +55,7 @@ public class TestActivityVisualizationWorker {
         }
 
         final JFrame frame = new JFrame();
-        frame.setIconImage(Icons.POWERFOLDER_IMAGE);
+        frame.setIconImage(Icons.getImageById(Icons.SMALL_LOGO));
         frame.setPreferredSize(new Dimension(200, 100));
         frame.setLocation(500, 500);
 

@@ -229,8 +229,6 @@ public class Icons {
     public static final String PACMAN_DOT = "pac_dot.icon";
 
     // Images icons
-    public static final Image POWERFOLDER_IMAGE = getImageFromIcon(Icons.getIconById(SMALL_LOGO));
-    public static final Image FOLDER_IMAGE = getImageFromIcon(getIconById(FOLDER));
     public static final Image SYSTEM_MONITOR_IMAGE = getImageFromIcon(getIconById(SYSTEM_MONITOR));
     public static final Image CHAT_IMAGE = getImageFromIcon(getIconById(CHAT));
     public static final Image DEBUG_IMAGE = getImageFromIcon(getIconById(DEBUG));
@@ -800,7 +798,7 @@ public class Icons {
      * Extracts the image from an Icon. If the icon is not an ImageIcon but
      * wrapped into an IconUIResource, this method tries to get the image via
      * reflection.
-     * 
+     *
      * @param icon
      *            The icon to get the image from.
      * @return The image or null on failure
