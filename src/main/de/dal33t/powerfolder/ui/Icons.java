@@ -165,10 +165,10 @@ public class Icons {
     public static final String WHITE_LIST = "white_list.icon";
     public static final String DOWNLOAD = "download.icon";
     public static final String DOWNLOAD_ACTIVE = "download_active.icon";
-    public static final String UPLOAD = "icons/Upload.png";
-    public static final String UPLOAD_ACTIVE = "icons/UploadActive.gif";
-    public static final String INACTIVE = "icons/Inactive.gif";
-    public static final String EXPECTED = "icons/Expected.gif";
+    public static final String UPLOAD = "upload.icon";
+    public static final String UPLOAD_ACTIVE = "upload_active.icon";
+    public static final String INACTIVE = "inactive.icon";
+    public static final String EXPECTED = "expected.icon";
 
     // Folder syncs
     public static final String FOLDER_SYNC_UNKNOWN = "folder_sync_unknown.icon";
