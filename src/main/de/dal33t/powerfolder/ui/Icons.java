@@ -229,6 +229,9 @@ public class Icons {
     /** Map of ID - Icon */
     private static final Map<String, Icon> ID_ICON_MAP = new ConcurrentHashMap<String, Icon>();
 
+    /** Map of ID - Image */
+    private static final Map<String, Image> ID_IMAGE_MAP = new ConcurrentHashMap<String, Image>();
+
     /** Map of Extension - Icon */
     private static final Map<String, Icon> EXTENSION_ICON_MAP = new HashMap<String, Icon>();
 
@@ -310,6 +313,12 @@ public class Icons {
      * @return the image
      */
     public static Image getImageById(String id) {
+
+        Image image = ID_IMAGE_MAP.get(id);
+        if (image != null) {
+            return image;
+        }
+
         Properties prop = getIconProperties();
         String iconId = prop.getProperty(id);
         if (iconId == null) {
@@ -319,9 +328,11 @@ public class Icons {
 
         URL imageURL = Thread.currentThread().getContextClassLoader()
             .getResource((String) prop.get(id));
-        return Toolkit.getDefaultToolkit().getImage(imageURL);
+        image = Toolkit.getDefaultToolkit().getImage(imageURL);
+        log.fine("Cached image " + id);
+        ID_IMAGE_MAP.put(id, image);
 
-        // @todo cache
+        return image;
     }
 
     // Open helper
@@ -543,6 +554,7 @@ public class Icons {
      * we don't want to cache icons, executables and screensavers because they
      * have unique icons
      * 
+     * @param extension
      * @return true if extension is one of "EXE", "SCR", "ICO" else false
      */
     private static boolean hasUniqueIcon(String extension) {
@@ -551,6 +563,8 @@ public class Icons {
     }
 
     /**
+     * @param extension
+     * @param disabled
      * @return a icon from cache.
      */
     private static Icon getCachedIcon(String extension, boolean disabled)
@@ -571,6 +585,8 @@ public class Icons {
     }
 
     /**
+     * @param fileInfo
+     * @param controller
      * @return the unknown icon, normal grey or red based on state of fileinfo
      */
     private static Icon getUnknownIcon(FileInfo fileInfo,
@@ -588,7 +604,7 @@ public class Icons {
     /**
      * Creates a tmp file and get icon.
      * FileSystemView.getFileSystemView().getSystemIcon(file) needs a existing
-     * file to get a icon for TODO: Does it really require an "existing" file ?
+     * file to get a icon for.
      * 
      * @param extension
      *            the extension to get a Icon for
@@ -824,7 +840,7 @@ public class Icons {
                     try {
                         buffered.close();
                     } catch (Exception e) {
-
+                        // Ignore
                     }
                 }
             }
@@ -848,7 +864,7 @@ public class Icons {
                         try {
                             buffered.close();
                         } catch (Exception e) {
-
+                            // Ignore
                         }
                     }
                 }
@@ -873,7 +889,7 @@ public class Icons {
                         try {
                             buffered.close();
                         } catch (Exception e) {
-
+                            // Ignore
                         }
                     }
                 }
