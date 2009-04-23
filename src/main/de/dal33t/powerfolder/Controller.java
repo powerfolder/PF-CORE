@@ -620,8 +620,6 @@ public class Controller extends PFComponent {
             LoggingManager.setConsoleLogging(Level.WARNING);
             LoggingManager.setFileLogging(Level.FINE);
 
-            monitorFileLog();
-
             // Switch on the document handler.
             String name = PreferencesEntry.DOCUMENT_LOGGING.getValueString(this);
             if (name == null || name.length() == 0) {
@@ -648,33 +646,6 @@ public class Controller extends PFComponent {
         // Enable debug reports.
         debugReports = ConfigurationEntry.DEBUG_REPORTS
             .getValueBoolean(getController());
-    }
-
-    /**
-     * Start a task that re-sets the log file at midnight,
-     * setting the filename for the new day.
-     */
-    private void monitorFileLog() {
-
-        Calendar cal = new GregorianCalendar();
-        long now = cal.getTime().getTime();
-
-        // Move to midnight, plus a couple of seconds,
-        // so that the new filename is definately for the new day.
-        cal.add(Calendar.DATE, 1);
-        cal.set(Calendar.HOUR_OF_DAY, 0);
-        cal.set(Calendar.MINUTE, 0);
-        cal.set(Calendar.SECOND, 2);
-        long midnight = cal.getTime().getTime();
-
-        // How long to wait initially?
-        long secondsToMidnight = (midnight - now) / 1000;
-        
-        threadPool.scheduleAtFixedRate(new Runnable() {
-            public void run() {
-                LoggingManager.resetFileLogging();
-            }
-        }, secondsToMidnight, 24 * 60 * 60, TimeUnit.SECONDS);
     }
 
     /**
@@ -845,6 +816,7 @@ public class Controller extends PFComponent {
 
         // Schedule a task to reconfigure the Logger file every day.
         Calendar cal = new GregorianCalendar();
+        long now = cal.getTime().getTime();
 
         // Midnight tomorrow morning.
         cal.set(Calendar.MILLISECOND, 0);
@@ -855,17 +827,21 @@ public class Controller extends PFComponent {
 
         // Add a few seconds to be sure the file name definately is for
         // tomorrow.
-        cal.add(Calendar.SECOND, 1);
+        cal.add(Calendar.SECOND, 2);
 
-        Date tomorrowMorning = cal.getTime();
-        logInfo("Initial log reconfigure at " + tomorrowMorning
-            + " milliseconds");
+        long midnight = cal.getTime().getTime();
+        // How long to wait initially?
+        long secondsToMidnight = (midnight - now) / 1000;
+        System.out.println("Initial log reconfigure in " + secondsToMidnight
+            + " seconds");
         threadPool.scheduleAtFixedRate(new TimerTask() {
             public void run() {
+                logInfo("Reconfiguring logs for new day");
                 initLogger();
-                logInfo("Reconfigured log file");
+                LoggingManager.resetFileLogging();
+                logInfo("Reconfigured logs for new day");
             }
-        }, tomorrowMorning.getTime(), 1000L * 24 * 3600, TimeUnit.MILLISECONDS);
+        }, secondsToMidnight, 24 * 3600, TimeUnit.SECONDS);
 
         if (Profiling.ENABLED) {
             threadPool.scheduleWithFixedDelay(new TimerTask() {
@@ -873,7 +849,7 @@ public class Controller extends PFComponent {
                 public void run() {
                     logFine(Profiling.dumpStats());
                 }
-            }, 0, 60L * 1000, TimeUnit.MILLISECONDS);
+            }, 0, 60L, TimeUnit.SECONDS);
         }
     }
 
