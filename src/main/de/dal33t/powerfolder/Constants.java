@@ -125,7 +125,7 @@ public class Constants {
      * The maximum numbers of nodes to connection per kilobytes/s upload in
      * supernode mode
      */
-    public static final double MAX_NODES_CONNECTIONS_PER_KBS_UPLOAD = 5;
+    public static final double MAX_NODES_CONNECTIONS_PER_KBS_UPLOAD = 1;
 
     /**
      * The maximum time for a node to be offline, util no reconnection will be
