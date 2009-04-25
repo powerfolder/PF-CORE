@@ -832,7 +832,7 @@ public class Controller extends PFComponent {
         long midnight = cal.getTime().getTime();
         // How long to wait initially?
         long secondsToMidnight = (midnight - now) / 1000;
-        System.out.println("Initial log reconfigure in " + secondsToMidnight
+        log.info("Initial log reconfigure in " + secondsToMidnight
             + " seconds");
         threadPool.scheduleAtFixedRate(new TimerTask() {
             public void run() {
