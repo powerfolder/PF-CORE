@@ -176,6 +176,7 @@ public class Icons {
     public static final String CONNECTED = "connected_bright.icon";
     public static final String DISCONNECTED = "connected_not.icon";
 
+    // TODO: Rename to ONLINE_STORAGE
     public static final String WEB_SERVICE = "web_service.icon";
 
     // Wizard pico icons
@@ -600,6 +601,24 @@ public class Icons {
         }
         return getIconById(UNKNOWN_FILE_GRAY);
     }
+    
+    /**
+     * Creates a tmp file and get image.
+     * FileSystemView.getFileSystemView().getSystemIcon(file) needs a existing
+     * file to get a image for.
+     * 
+     * @param extension
+     *            the extension to get a Image for
+     * @return the Image
+     */
+    public static Image getImageExtension(String extension) {
+        Icon icon = getIconExtension(extension);
+        if (icon == null) {
+            log.severe("Image Icon not found for extension '" + extension + '\'');
+            return null;
+        }
+        return getImageFromIcon(icon);
+    }
 
     /**
      * Creates a tmp file and get icon.
@@ -740,9 +759,16 @@ public class Icons {
         return image;
     }
 
-    // This method returns a buffered image with the contents of an image.
-    // "Converting" by drawing on image, but there seems to be no other way.
-    private static BufferedImage toBufferedImage(Image image) {
+    /**
+     * This method returns a buffered image with the contents of an image. 
+     * "Converting" by drawing on image, but there seems to be no other way.
+     * <P>
+     * ATTENTION: Needs to be public. Used by PowerFolder Pro code.
+     * 
+     * @param image
+     * @return the buffered image.
+     */
+    public static BufferedImage toBufferedImage(Image image) {
         if (image instanceof BufferedImage) {
             return (BufferedImage) image;
         }
