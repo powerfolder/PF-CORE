@@ -301,6 +301,64 @@ public class UIController extends PFComponent {
                 new MainFrameBlinkManager(UIController.this);
             }
         });
+
+        // Warn if there are any folders that have not been synchronized
+        // recently.
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                warnAboutOldSyncs();
+            }
+        });
+    }
+
+    /**
+     * This creates a warning about folders that have not been synchronized
+     * in a long time.
+     */
+    private void warnAboutOldSyncs() {
+        if (!PreferencesEntry.FOLDER_SYNC_USE.getValueBoolean(getController())) {
+            return;
+        }
+
+        // Calculate the date that folders should be synced by.
+        Integer syncWarnDays =
+                PreferencesEntry.FOLDER_SYNC_WARN.getValueInt(getController());
+        Calendar cal = new GregorianCalendar();
+        cal.add(Calendar.DATE, -syncWarnDays);
+        Date warningDate = cal.getTime();
+
+        List<Folder> unsyncedFolders = new ArrayList<Folder>();
+
+        for (Folder folder :
+                getController().getFolderRepository().getFolders()) {
+            Date lastSyncDate = folder.getLastSyncDate();
+            if (lastSyncDate != null) {
+                if (lastSyncDate.before(warningDate)) {
+                    unsyncedFolders.add(folder);
+                }
+            }
+        }
+
+        if (unsyncedFolders.isEmpty()) {
+            return;
+        }
+
+        String message;
+        if (unsyncedFolders.size() == 1) {
+            // Warn about a single unsynced folder.
+            message = Translation.getTranslation(
+                    "uicontroller.unsynchronized_folder.single",
+                    unsyncedFolders.get(0).getInfo().name, syncWarnDays);
+        } else {
+            // Warn about multiple unsynced folders.
+            message = Translation.getTranslation(
+                    "uicontroller.unsynchronized_folder.multiple",
+                    syncWarnDays);
+        }
+        WarningEvent warning = new WarningEvent(getController(),
+                Translation.getTranslation(
+                    "uicontroller.unsynchronized_folder.title"), message);
+        applicationModel.getWarningsModel().pushWarning(warning);
     }
 
     private void gotoHPIfRequired() {
