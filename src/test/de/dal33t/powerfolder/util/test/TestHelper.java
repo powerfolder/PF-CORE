@@ -555,7 +555,8 @@ public class TestHelper {
 
         // Scan
         if (!folder.scanLocalFiles()) {
-            throw new RuntimeException("Unable to scan " + folder);
+            throw new RuntimeException("Unable to scan " + folder
+                + ". Last scan result: " + folder.getLastScanResultState());
         }
         folder.getController().setSilentMode(silentModeBefore);
     }
