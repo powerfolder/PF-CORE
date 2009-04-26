@@ -23,7 +23,16 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
     public FileInfoDAOHashMapImpl() {
         super();
         ignoreFileNameCase = OSUtil.isWindowsSystem();
-        //ignoreFileNameCase = false;
+        // ignoreFileNameCase = false;
+    }
+
+    /**
+     * FOR TESTS ONLY!!!.
+     * 
+     * @param ignoreFileNameCase
+     */
+    public void setIgnoreFileNameCase(boolean ignoreFileNameCase) {
+        this.ignoreFileNameCase = ignoreFileNameCase;
     }
 
     public int count(String domain) {

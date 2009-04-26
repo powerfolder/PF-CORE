@@ -30,6 +30,7 @@ import java.util.logging.Level;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 
 import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.disk.dao.FileInfoDAOHashMapImpl;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
 import de.dal33t.powerfolder.light.FileInfo;
@@ -98,6 +99,13 @@ public class MirrorFolderTest extends FiveControllerTestCase {
     }
 
     public void testMixedCaseSubdirs() throws IOException {
+        // Emulate Windows.
+        ((FileInfoDAOHashMapImpl) getFolderAtBart().getDAO())
+            .setIgnoreFileNameCase(false);
+        ((FileInfoDAOHashMapImpl) getFolderAtMarge().getDAO())
+            .setIgnoreFileNameCase(false);
+        ((FileInfoDAOHashMapImpl) getFolderAtMaggie().getDAO())
+            .setIgnoreFileNameCase(false);
         getFolderAtHomer().setSyncProfile(SyncProfile.NO_SYNC);
         getFolderAtMarge().setSyncProfile(SyncProfile.NO_SYNC);
         getFolderAtMaggie().setSyncProfile(SyncProfile.NO_SYNC);
