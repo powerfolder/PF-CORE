@@ -92,6 +92,9 @@ public class PowerFolderClient extends AbstractDistribution {
 
     private static void setDefaultValue(Controller c, ConfigurationEntry entry)
     {
-        entry.setValue(c, entry.getDefaultValue());
+        if (!entry.getValue(c).equals(entry.getDefaultValue())) {
+            // Change back to default
+            entry.setValue(c, entry.getDefaultValue());
+        }
     }
 }
