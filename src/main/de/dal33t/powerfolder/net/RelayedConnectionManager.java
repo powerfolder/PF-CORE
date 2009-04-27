@@ -257,8 +257,10 @@ public class RelayedConnectionManager extends PFComponent {
                 nRelayedMsgs++;
             }
         } catch (ConnectionException e) {
-            log.log(Level.WARNING, "Connection broken while relaying message to "
-                + destinationMember.getNick(), e);
+            log.log(Level.WARNING,
+                "Connection broken while relaying message to "
+                    + destinationMember.getNick() + ". " + e);
+            log.log(Level.FINER, e.toString(), e);
             RelayedMessage eofMsg = new RelayedMessage(Type.EOF, message
                 .getDestination(), message.getSource(), message
                 .getConnectionId(), null);
