@@ -96,8 +96,10 @@ public class UDTSocket {
     private static boolean supported = false;
 
     static {
-        if (OSUtil.loadLibrary(UDTSocket.class, "udt")
-                && OSUtil.loadLibrary(UDTSocket.class, "udt4j"))
+        // Supported on windows only ATM.
+        if (OSUtil.isWindowsSystem()
+            && OSUtil.loadLibrary(UDTSocket.class, "udt")
+            && OSUtil.loadLibrary(UDTSocket.class, "udt4j"))
         {
             initIDs();
             supported = true;
