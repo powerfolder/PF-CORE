@@ -1433,7 +1433,11 @@ public class TransferManager extends PFComponent {
         synchronized (man) {
             downloadsCount.remove(download.getPartner());
             if (man.hasSource(download)) {
-                man.removeSource(download);
+                try {
+                    man.removeSource(download);
+                } catch (Exception e) {
+                    logSevere("Unable to remove download: " + download, e);
+                }
                 if (!man.hasSources()) {
                     logFine("No further sources in that manager, removing it!");
                     if (!man.isDone()) {
