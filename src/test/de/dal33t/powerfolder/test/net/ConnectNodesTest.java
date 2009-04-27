@@ -264,11 +264,19 @@ public class ConnectNodesTest extends FiveControllerTestCase {
 //        getContollerMarge().setNetworkingMode(NetworkingMode.TRUSTEDONLYMODE);
 //
 //        // All connections should be detected as on internet.
-//        Feature.CORRECT_LAN_DETECTION.enable();
-//        Feature.CORRECT_INTERNET_DETECTION.disable();
-//
-//        folderConnect();
-//    }
+    // Feature.CORRECT_LAN_DETECTION.enable();
+    // Feature.CORRECT_INTERNET_DETECTION.disable();
+    //
+    // folderConnect();
+    // }
+
+    public void testFolderConnectInternetMultiple() throws Exception {
+        for (int i = 0; i < 10; i++) {
+            testFolderConnectInternet();
+            tearDown();
+            setUp();
+        }
+    }
 
     public void testFolderConnectInternet() throws InvalidIdentityException {
         getContollerLisa().setNetworkingMode(NetworkingMode.PRIVATEMODE);
