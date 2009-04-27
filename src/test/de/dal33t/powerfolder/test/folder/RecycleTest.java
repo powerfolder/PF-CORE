@@ -41,7 +41,7 @@ public class RecycleTest extends ControllerTestCase {
         File localbase = getFolder().getLocalBase();
         File testFile = new File(localbase, "test.txt");
         if (testFile.exists()) {
-            testFile.delete();
+            assertTrue(testFile.delete());
         }
 
         assertTrue(testFile.createNewFile());
