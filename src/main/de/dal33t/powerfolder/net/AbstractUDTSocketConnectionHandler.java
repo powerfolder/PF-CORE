@@ -932,8 +932,13 @@ public abstract class AbstractUDTSocketConnectionHandler extends PFComponent
                         if (isFiner()) {
                             logFiner("Received remote identity: " + obj);
                         }
-                        // the remote identity
-                        identity = (Identity) obj;
+
+                        // Trigger identitywaiter
+                        synchronized (identityWaiter) {
+                            // the remote identity
+                            identity = (Identity) obj;
+                            identityWaiter.notifyAll();
+                        }
 
                         // Get magic id
                         if (isFiner()) {
@@ -941,20 +946,15 @@ public abstract class AbstractUDTSocketConnectionHandler extends PFComponent
                                 + identity.getMagicId());
                         }
 
-                        // Trigger identitywaiter
-                        synchronized (identityWaiter) {
-                            identityWaiter.notifyAll();
-                        }
-
                     } else if (obj instanceof IdentityReply) {
                         if (isFiner()) {
                             logFiner("Received identity reply: " + obj);
                         }
-                        // remote side accpeted our identity
-                        identityReply = (IdentityReply) obj;
 
                         // Trigger identity accept waiter
                         synchronized (identityAcceptWaiter) {
+                            // remote side accpeted our identity
+                            identityReply = (IdentityReply) obj;
                             identityAcceptWaiter.notifyAll();
                         }
 

@@ -688,28 +688,27 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
                 if (isFiner()) {
                     logFiner("Received remote identity: " + obj);
                 }
-                // the remote identity
-                identity = (Identity) obj;
-
-                // Get magic id
-                if (isFiner()) {
-                    logFiner("Received magicId: " + identity.getMagicId());
-                }
 
                 // Trigger identitywaiter
                 synchronized (identityWaiter) {
+                    // the remote identity
+                    identity = (Identity) obj;
                     identityWaiter.notifyAll();
+                }
+                // Get magic id
+                if (isFiner()) {
+                    logFiner("Received magicId: " + identity.getMagicId());
                 }
 
             } else if (obj instanceof IdentityReply) {
                 if (isFiner()) {
                     logFiner("Received identity reply: " + obj);
                 }
-                // remote side accpeted our identity
-                identityReply = (IdentityReply) obj;
 
                 // Trigger identity accept waiter
                 synchronized (identityAcceptWaiter) {
+                    // remote side accpeted our identity
+                    identityReply = (IdentityReply) obj;
                     identityAcceptWaiter.notifyAll();
                 }
 
