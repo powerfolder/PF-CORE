@@ -607,8 +607,7 @@ public class SettingsTab extends PFUIComponent {
             // Create the new Folder in the repository.
             FolderInfo fi = new FolderInfo(folder);
             FolderSettings fs = new FolderSettings(newDirectory, folder
-                .getSyncProfile(), false, folder.isUseRecycleBin(), false,
-                false);
+                .getSyncProfile(), false, folder.isUseRecycleBin());
             folder = repository.createFolder(fi, fs);
             if (!moveContent) {
                 folder.addDefaultExcludes();

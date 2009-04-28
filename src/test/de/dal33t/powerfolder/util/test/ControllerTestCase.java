@@ -172,7 +172,7 @@ public class ControllerTestCase extends TestCase {
         SyncProfile profile, boolean useRecycleBin)
     {
         FolderSettings folderSettings = new FolderSettings(baseDir, profile,
-            false, useRecycleBin, false, false);
+            false, useRecycleBin);
         return getController().getFolderRepository().createFolder(foInfo,
             folderSettings);
     }
