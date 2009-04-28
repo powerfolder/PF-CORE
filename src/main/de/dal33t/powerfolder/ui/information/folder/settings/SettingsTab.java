@@ -57,6 +57,7 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
@@ -205,10 +206,12 @@ public class SettingsTab extends PFUIComponent {
         builder.add(localFolderField, cc.xy(4, row));
         builder.add(localFolderButton, cc.xy(6, row));
 
-        row += 2;
-        builder.addLabel(Translation
-            .getTranslation("settings_tab.download_script"), cc.xy(2, row));
-        builder.add(createScriptField(), cc.xy(4, row));
+        if (Feature.DOWNLOAD_SCRIPT.isEnabled()) {
+            row += 2;
+            builder.addLabel(Translation
+                .getTranslation("settings_tab.download_script"), cc.xy(2, row));
+            builder.add(createScriptField(), cc.xy(4, row));
+        }
 
         row += 2;
         builder.add(new JLabel(Translation
