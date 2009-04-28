@@ -28,6 +28,7 @@ import de.dal33t.powerfolder.security.SecurityManager;
 import de.dal33t.powerfolder.util.NamedThreadFactory;
 import de.dal33t.powerfolder.util.Range;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.WrapperExecutorService;
 
 import java.util.Collection;
 import java.util.Date;
@@ -91,8 +92,8 @@ public class IOProvider extends PFComponent {
 
     public void start() {
         // For basic IO
-        ioThreadPool = Executors.newCachedThreadPool(new NamedThreadFactory(
-            "IOThread-"));
+        ioThreadPool = new WrapperExecutorService(Executors
+            .newCachedThreadPool(new NamedThreadFactory("IOThread-")));
         started = true;
         startIO(new KeepAliveChecker());
         relayedConManager.start();

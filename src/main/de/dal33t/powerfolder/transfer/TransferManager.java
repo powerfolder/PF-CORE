@@ -63,6 +63,7 @@ import de.dal33t.powerfolder.util.NamedThreadFactory;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.TransferCounter;
 import de.dal33t.powerfolder.util.Validate;
+import de.dal33t.powerfolder.util.WrapperExecutorService;
 import de.dal33t.powerfolder.util.compare.MemberComparator;
 import de.dal33t.powerfolder.util.compare.ReverseComparator;
 import de.dal33t.powerfolder.util.delta.FilePartsRecord;
@@ -272,8 +273,8 @@ public class TransferManager extends PFComponent {
 
         bandwidthProvider.start();
 
-        threadPool = Executors.newCachedThreadPool(new NamedThreadFactory(
-            "TMThread-"));
+        threadPool = new WrapperExecutorService(Executors
+            .newCachedThreadPool(new NamedThreadFactory("TMThread-")));
 
         myThread = new Thread(new TransferChecker(), "Transfer manager");
         myThread.start();

@@ -39,7 +39,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -66,7 +65,6 @@ import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.MessageListenerSupport;
-import de.dal33t.powerfolder.util.NamedThreadFactory;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.net.AddressRange;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
@@ -82,11 +80,6 @@ import de.dal33t.powerfolder.util.task.SendMessageTask;
 public class NodeManager extends PFComponent {
 
     private static final Logger log = Logger.getLogger(NodeManager.class.getName());
-
-    /**
-     * Threadpool to handle incoming connections.
-     */
-    private ExecutorService threadPool;
 
     /** The list of active acceptors for incoming connections */
     List<AbstractAcceptor> acceptors;
@@ -205,14 +198,6 @@ public class NodeManager extends PFComponent {
             logWarning("Not starting NodeManager. disabled by config");
             return;
         }
-        // Starting own threads, which cares about incoming node connections
-        threadPool = Executors.newCachedThreadPool(new NamedThreadFactory(
-            "NodeManager-Thread-"));
-
-        // Alternative:
-        // threadPool = Executors.newFixedThreadPool(
-        // Constants.MAX_INCOMING_CONNECTIONS, new NamedThreadFactory(
-        // "Incoming-Connection-"));
 
         // load local nodes
         Thread nodefileLoader = new Thread("Nodefile loader") {
@@ -242,12 +227,6 @@ public class NodeManager extends PFComponent {
         // Store the latest supernodes
         // Note: This call is here to save the nodes before shutting them down.
         storeOnlineSupernodes();
-
-        // Stop threadpool
-        if (threadPool != null) {
-            logFine("Shutting down incoming connection threadpool");
-            threadPool.shutdownNow();
-        }
 
         logFine("Shutting down " + acceptors.size()
             + " incoming connections (Acceptors)");
@@ -881,14 +860,13 @@ public class NodeManager extends PFComponent {
 
         // Enqueue for later processing
         acceptors.add(acceptor);
-        threadPool.submit(acceptor);
+        getController().getIOProvider().startIO(acceptor);
 
         // Throttle acception a bit depending on how much incoming connections
         // we are currently processing.
         long waitTime = (acceptors.size() * Controller.getWaitTime()) / 400;
         if (isFiner()) {
-            logFiner(
-                "Currently processing incoming connections ("
+            logFiner("Currently processing incoming connections ("
                 + acceptors.size() + "), throttled (" + waitTime + "ms wait)");
         }
         if (acceptors.size() > Constants.MAX_INCOMING_CONNECTIONS) {
@@ -1105,7 +1083,7 @@ public class NodeManager extends PFComponent {
                 }
             }
         };
-        threadPool.submit(broadcaster);
+        getController().getIOProvider().startIO(broadcaster);
     }
 
     /**
@@ -1448,17 +1426,11 @@ public class NodeManager extends PFComponent {
     private class AcceptorsChecker extends TimerTask {
         @Override
         public void run() {
-            ThreadPoolExecutor es = (ThreadPoolExecutor) threadPool;
             int size = acceptors.size();
-            logFine(
-                "Checking incoming connection queue (" + size + ", "
-                    + es.getActiveCount() + "/" + es.getCorePoolSize()
-                    + " threads)");
+            logFine("Checking incoming connection queue (" + size + ")");
             if (size > Constants.MAX_INCOMING_CONNECTIONS) {
-                logWarning(
-                    "Processing too many incoming connections (" + size + ", "
-                        + es.getActiveCount() + "/" + es.getCorePoolSize()
-                        + " threads)");
+                logWarning("Processing too many incoming connections (" + size
+                    + ")");
             }
             List<AbstractAcceptor> timeouted = new ArrayList<AbstractAcceptor>();
             for (AbstractAcceptor acceptor : acceptors) {
