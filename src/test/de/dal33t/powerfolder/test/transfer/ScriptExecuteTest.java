@@ -114,7 +114,7 @@ public class ScriptExecuteTest extends TwoControllerTestCase {
         } else {
             content = ("echo $* >\"" + outputFile.getAbsolutePath() + '"')
                 .getBytes();
-            cmdLine = "sh " + testScript.getAbsolutePath() + " \"$file\"";
+            cmdLine = "sh " + testScript.getAbsolutePath() + " $file";
         }
         FileUtils.copyFromStreamToFile(new ByteArrayInputStream(content),
             testScript);
