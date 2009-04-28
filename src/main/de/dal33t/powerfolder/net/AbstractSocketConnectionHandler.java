@@ -935,29 +935,26 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                         if (isFiner()) {
                             logFiner("Received remote identity: " + obj);
                         }
-                        // the remote identity
-                        identity = (Identity) obj;
 
+                        // Trigger identitywaiter
+                        synchronized (identityWaiter) {
+                            // the remote identity
+                            identity = (Identity) obj;
+                            identityWaiter.notifyAll();
+                        }
                         // Get magic id
                         if (isFiner()) {
                             logFiner("Received magicId: "
                                 + identity.getMagicId());
                         }
-
-                        // Trigger identitywaiter
-                        synchronized (identityWaiter) {
-                            identityWaiter.notifyAll();
-                        }
-
                     } else if (obj instanceof IdentityReply) {
                         if (isFiner()) {
                             logFiner("Received identity reply: " + obj);
                         }
-                        // remote side accpeted our identity
-                        identityReply = (IdentityReply) obj;
-
                         // Trigger identity accept waiter
                         synchronized (identityAcceptWaiter) {
+                            // remote side accpeted our identity
+                            identityReply = (IdentityReply) obj;
                             identityAcceptWaiter.notifyAll();
                         }
                     } else if (obj instanceof Pong) {
