@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.disk;
 
 import de.dal33t.powerfolder.util.Reject;
@@ -24,8 +24,8 @@ import de.dal33t.powerfolder.util.Reject;
 import java.io.File;
 
 /**
- * Class to consolidate the settings for creating a folder.
- * Used as constructor arg for the Folder class.
+ * Class to consolidate the settings for creating a folder. Used as constructor
+ * arg for the Folder class.
  */
 public class FolderSettings {
 
@@ -38,6 +38,7 @@ public class FolderSettings {
     public static final String FOLDER_SETTINGS_DIR = ".dir";
     public static final String FOLDER_SETTINGS_LAST_LOCAL = ".last-localbase";
     public static final String FOLDER_SETTINGS_WHITELIST = ".whitelist";
+    public static final String FOLDER_SETTINGS_DOWNLOAD_SCRIPT = ".dlscript";
     public static final String FOLDER_SETTINGS_NAME = ".name"; // V4 only
     public static final String FOLDER_SETTINGS_RECYCLE = ".recycle"; // V4 only
 
@@ -73,20 +74,27 @@ public class FolderSettings {
     private boolean whitelist;
 
     /**
+     * #1538: Script that gets executed after a download has been completed
+     * successfully.
+     */
+    private String downloadScript;
+
+    /**
      * Constructor. Creates a new FolderSettings object.
+     * 
      * @param localBaseDir
      * @param syncProfile
      * @param createInvitationFile
      * @param useRecycleBin
      * @param previewOnly
      * @param whitelist
+     * @param downloadScript
      */
-    public FolderSettings(File localBaseDir,
-                          SyncProfile syncProfile,
-                          boolean createInvitationFile,
-                          boolean useRecycleBin,
-                          boolean previewOnly,
-                          boolean whitelist) {
+    public FolderSettings(File localBaseDir, SyncProfile syncProfile,
+        boolean createInvitationFile, boolean useRecycleBin,
+        boolean previewOnly, boolean whitelist, String downloadScript)
+    {
+
         Reject.ifNull(localBaseDir, "Local base dir required");
         Reject.ifNull(syncProfile, "Sync profile required");
         this.localBaseDir = localBaseDir;
@@ -95,25 +103,28 @@ public class FolderSettings {
         this.useRecycleBin = useRecycleBin;
         this.previewOnly = previewOnly;
         this.whitelist = whitelist;
+        this.downloadScript = downloadScript;
     }
-    
+
     /**
-     * Constructor. Creates a new FolderSettings object.
+     * Constructor. Creates a new FolderSettings object. NON preview, NON
+     * whitelisted, NO download script.
+     * 
      * @param localBaseDir
      * @param syncProfile
      * @param createInvitationFile
      * @param useRecycleBin
      */
-    public FolderSettings(File localBaseDir,
-                          SyncProfile syncProfile,
-                          boolean createInvitationFile,
-                          boolean useRecycleBin) {
-       this(localBaseDir, syncProfile, createInvitationFile, useRecycleBin, false, false);
+    public FolderSettings(File localBaseDir, SyncProfile syncProfile,
+        boolean createInvitationFile, boolean useRecycleBin)
+    {
+        this(localBaseDir, syncProfile, createInvitationFile, useRecycleBin,
+            false, false, null);
     }
 
-    ///////////////
+    // /////////////
     // Accessors //
-    ///////////////
+    // /////////////
 
     public File getLocalBaseDir() {
         return localBaseDir;
@@ -137,5 +148,9 @@ public class FolderSettings {
 
     public boolean isWhitelist() {
         return whitelist;
+    }
+
+    public String getDownloadScript() {
+        return downloadScript;
     }
 }

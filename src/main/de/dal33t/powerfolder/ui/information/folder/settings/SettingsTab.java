@@ -19,22 +19,37 @@
 */
 package de.dal33t.powerfolder.ui.information.folder.settings;
 
-import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_RECYCLE;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX_V4;
+import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_RECYCLE;
 
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
-import javax.swing.*;
+import javax.swing.DefaultListModel;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComponent;
+import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import com.jgoodies.binding.adapter.BasicComponentFactory;
+import com.jgoodies.binding.value.ValueHolder;
+import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -61,7 +76,13 @@ import de.dal33t.powerfolder.ui.dialog.PreviewToJoinPanel;
 import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
-import de.dal33t.powerfolder.util.*;
+import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.Help;
+import de.dal33t.powerfolder.util.PatternMatch;
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.StringUtils;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
 import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
@@ -88,6 +109,7 @@ public class SettingsTab extends PFUIComponent {
     private ServerClient serverClient;
     private PreviewFolderAction previewFolderAction;
     private DeleteFolderAction deleteFolderAction;
+    private ValueModel scriptModel;
 
     /**
      * Constructor
@@ -118,6 +140,7 @@ public class SettingsTab extends PFUIComponent {
         previewFolderAction.setEnabled(false);
         deleteFolderAction = new DeleteFolderAction(getController());
         serverClient.addListener(new MyServerClientListener());
+        scriptModel = new ValueHolder(null, false);
     }
 
     /**
@@ -133,15 +156,14 @@ public class SettingsTab extends PFUIComponent {
         folder.getDiskItemFilter().addListener(patternChangeListener);
         transferModeSelectorPanel.setUpdateableFolder(folder);
         useRecycleBinBox.setSelected(folder.isUseRecycleBin());
+        scriptModel.setValue(folder.getDownloadScript());
         update();
         enableConfigOSAction();
         enablePreviewFolderAction();
     }
 
     /**
-     * Gets the ui component
-     *
-     * @return
+     * @return the ui component
      */
     public JPanel getUIComponent() {
         if (uiComponent == null) {
@@ -157,39 +179,51 @@ public class SettingsTab extends PFUIComponent {
                   // label           folder       butn   padding
         FormLayout layout = new FormLayout(
             "3dlu, right:pref, 3dlu, 122dlu, 3dlu, pref, pref:grow",
-                "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
+                "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
+        int row = 2;
         builder.add(new JLabel(Translation.getTranslation(
                 "general.transfer_mode")),
-                cc.xy(2, 2));
-        builder.add(transferModeSelectorPanel.getUIComponent(), cc.xyw(4, 2, 4));
+                cc.xy(2, row));
+        builder.add(transferModeSelectorPanel.getUIComponent(), cc.xyw(4, row, 4));
 
-        builder.add(useRecycleBinBox, cc.xyw(4, 4, 4));
+        row+=2;
+        builder.add(useRecycleBinBox, cc.xyw(4, row, 4));
 
+        row+=2;
         builder.add(new JLabel(Translation.getTranslation(
                 "settings_tab.ignore_patterns")),
-                cc.xy(2, 6));
-        builder.add(createPatternsPanel(), cc.xyw(4, 6, 4));
+                cc.xy(2, row));
+        builder.add(createPatternsPanel(), cc.xyw(4, row, 4));
         
-        builder.add(new JLabel(Translation.getTranslation(
-                "settings_tab.local_folder_location")),
-                cc.xy(2, 8));
-        builder.add(localFolderField, cc.xy(4, 8));
-        builder.add(localFolderButton, cc.xy(6, 8));
+        row += 2;
+        builder.add(new JLabel(Translation
+            .getTranslation("settings_tab.local_folder_location")), cc.xy(2,
+            row));
+        builder.add(localFolderField, cc.xy(4, row));
+        builder.add(localFolderButton, cc.xy(6, row));
 
-        builder.add(new JLabel(Translation.getTranslation("settings_tab.online_storage")),
-                cc.xy(2, 10));
-        builder.add(createConfigurePanel(), cc.xy(4, 10));
+        row += 2;
+        builder.addLabel(Translation
+            .getTranslation("settings_tab.download_script"), cc.xy(2, row));
+        builder.add(createScriptField(), cc.xy(4, row));
 
+        row += 2;
+        builder.add(new JLabel(Translation
+            .getTranslation("settings_tab.online_storage")), cc.xy(2, row));
+        builder.add(createConfigurePanel(), cc.xy(4, row));
+
+        row+=2;
         builder.add(new JLabel(Translation.getTranslation("settings_tab.folder_preview")),
-                cc.xy(2, 12));
-        builder.add(createPreviewPanel(), cc.xy(4, 12));
+                cc.xy(2, row));
+        builder.add(createPreviewPanel(), cc.xy(4, row));
 
+        row+=2;
         builder.add(new JLabel(Translation.getTranslation("settings_tab.delete_folder")),
-                cc.xy(2, 14));
-        builder.add(createDeletePanel(), cc.xy(4, 14));
+                cc.xy(2, row));
+        builder.add(createDeletePanel(), cc.xy(4, row));
 
         uiComponent = builder.getPanel();
     }
@@ -243,6 +277,59 @@ public class SettingsTab extends PFUIComponent {
         return builder.getPanel();
     }
 
+    /**
+     * Creates a pair of location text field and button.
+     * 
+     * @return
+     */
+    private JComponent createScriptField() {
+        scriptModel.addValueChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                folder.setDownloadScript(String.valueOf(evt.getNewValue()));
+            }
+        });
+
+        FormLayout layout = new FormLayout(
+            "pref:grow, 4dlu, 15dlu, 4dlu, pref", "pref");
+
+        PanelBuilder builder = new PanelBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+
+        JTextField locationTF = BasicComponentFactory.createTextField(
+            scriptModel, false);
+        locationTF.setEditable(true);
+        builder.add(locationTF, cc.xy(1, 1));
+
+        JButton locationButton = new JButton(Icons.DIRECTORY);
+        locationButton.setToolTipText(Translation
+            .getTranslation("settings_tab.download_script"));
+        locationButton.addActionListener(new SelectScriptListener());
+        builder.add(locationButton, cc.xy(3, 1));
+        builder.add(Help.createWikiLinkButton(getController(),
+            "Script_execution"), cc.xy(5, 1));
+        return builder.getPanel();
+    }
+
+    /**
+     * Action listener for the location button. Opens a choose dir dialog and
+     * sets the location model with the result.
+     */
+    private class SelectScriptListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            String initial = (String) scriptModel.getValue();
+            JFileChooser chooser = DialogFactory.createFileChooser();
+            chooser.setSelectedFile(new File(initial));
+            int res = chooser.showDialog(getUIController().getMainFrame()
+                .getUIComponent(), Translation
+                .getTranslation("settings_tab.download_script.select"));
+
+            if (res == JFileChooser.APPROVE_OPTION) {
+                String script = chooser.getSelectedFile().getAbsolutePath();
+                scriptModel.setValue(script);
+            }
+        }
+    }
+    
     /** refreshes the UI elements with the current data */
     private void update() {
         rebuildPatterns();
@@ -607,7 +694,9 @@ public class SettingsTab extends PFUIComponent {
             // Create the new Folder in the repository.
             FolderInfo fi = new FolderInfo(folder);
             FolderSettings fs = new FolderSettings(newDirectory, folder
-                .getSyncProfile(), false, folder.isUseRecycleBin());
+                .getSyncProfile(), false, folder.isUseRecycleBin(), folder
+                .isPreviewOnly(), folder.isWhitelist(), folder
+                .getDownloadScript());
             folder = repository.createFolder(fi, fs);
             if (!moveContent) {
                 folder.addDefaultExcludes();

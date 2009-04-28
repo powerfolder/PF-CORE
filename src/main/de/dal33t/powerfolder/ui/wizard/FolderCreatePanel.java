@@ -162,8 +162,8 @@ public class FolderCreatePanel extends PFWizardPanel {
 
         // Either we have FOLDER_CREATE_ITEMS ... 
         List<FolderCreateItem> folderCreateItems = (List<FolderCreateItem>)
-                getWizardContext().getAttribute(WizardContextAttributes.
-                        FOLDER_CREATE_ITEMS);
+                getWizardContext()
+            .getAttribute(WizardContextAttributes.FOLDER_CREATE_ITEMS);
         if (folderCreateItems != null && !folderCreateItems.isEmpty()) {
             for (FolderCreateItem folderCreateItem : folderCreateItems) {
                 File localBase = folderCreateItem.getLocalBase();
@@ -176,8 +176,8 @@ public class FolderCreatePanel extends PFWizardPanel {
                     folderInfo = createFolderInfo(localBase);
                 }
                 FolderSettings folderSettings = new FolderSettings(localBase,
-                        syncProfile, saveLocalInvite, useRecycleBin, previewFolder,
-                        false);
+                    syncProfile, saveLocalInvite, useRecycleBin, previewFolder,
+                    false, null);
                 configurations.put(folderInfo, folderSettings);
             }
         } else {
@@ -188,18 +188,19 @@ public class FolderCreatePanel extends PFWizardPanel {
             SyncProfile syncProfile = (SyncProfile) getWizardContext()
                 .getAttribute(WizardContextAttributes.SYNC_PROFILE_ATTRIBUTE);
             Reject.ifNull(localBase, "Local base for folder is null/not set");
-            Reject.ifNull(syncProfile, "Sync profile for folder is null/not set");
+            Reject.ifNull(syncProfile,
+                "Sync profile for folder is null/not set");
 
             // Optional
-            FolderInfo folderInfo = (FolderInfo) getWizardContext().
-                    getAttribute(FOLDERINFO_ATTRIBUTE);
+            FolderInfo folderInfo = (FolderInfo) getWizardContext()
+                .getAttribute(FOLDERINFO_ATTRIBUTE);
             if (folderInfo == null) {
                 folderInfo = createFolderInfo(localBase);
             }
 
             FolderSettings folderSettings = new FolderSettings(localBase,
-                    syncProfile, saveLocalInvite, useRecycleBin, previewFolder,
-                    false);
+                syncProfile, saveLocalInvite, useRecycleBin, previewFolder,
+                false, null);
             configurations.put(folderInfo, folderSettings);
         }
 

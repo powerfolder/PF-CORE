@@ -20,10 +20,10 @@
 package de.dal33t.powerfolder.disk;
 
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX_V4;
-import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_SYNC_PROFILE;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.EOFException;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
@@ -33,7 +33,6 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
-import java.io.EOFException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -223,8 +222,14 @@ public class Folder extends PFComponent {
     private boolean deviceDisconnected;
 
     /**
+     * #1538: Script that gets executed after a download has been completed
+     * successfully.
+     */
+    private String downloadScript;
+
+    /**
      * Constructor for folder.
-     *
+     * 
      * @param controller
      * @param fInfo
      * @param folderSettings
@@ -255,24 +260,21 @@ public class Folder extends PFComponent {
         }
         Reject.ifNull(folderSettings.getSyncProfile(), "Sync profile is null");
 
+        // Create listener support
+        folderListenerSupport = ListenerSupportFactory
+            .createListenerSupport(FolderListener.class);
+        folderMembershipListenerSupport = ListenerSupportFactory
+            .createListenerSupport(FolderMembershipListener.class);
+        
         // Not until first scan or db load
         hasOwnDatabase = false;
         dirty = false;
 
         localBase = folderSettings.getLocalBaseDir();
-
         syncProfile = folderSettings.getSyncProfile();
-
-        // Create listener support
-        folderListenerSupport = ListenerSupportFactory
-            .createListenerSupport(FolderListener.class);
-
-        folderMembershipListenerSupport = ListenerSupportFactory
-            .createListenerSupport(FolderMembershipListener.class);
-
         useRecycleBin = folderSettings.isUseRecycleBin();
-
         whitelist = folderSettings.isWhitelist();
+        downloadScript = folderSettings.getDownloadScript();
 
         // Initially there are no other members, so is in sync (with self).
         inSyncWithOthers = new AtomicBoolean(true);
@@ -665,7 +667,13 @@ public class Folder extends PFComponent {
         synchronized (scanLock) {
             if (targetFile.exists()) {
                 // if file was a "newer file" the file already esists here
-                deleteFile(fInfo, targetFile);
+                if (!deleteFile(fInfo, targetFile)) {
+                    logWarning("Unable to scan downloaded file. Was not able to move old file to recycle bin "
+                        + targetFile.getAbsolutePath()
+                        + ". "
+                        + fInfo.toDetailString());
+                    return false;
+                }
             }
             if (!tempFile.renameTo(targetFile)) {
                 logWarning("Was not able to rename tempfile, copiing "
@@ -1196,7 +1204,14 @@ public class Folder extends PFComponent {
         boolean folderChanged = false;
         synchronized (scanLock) {
             if (diskFile != null && diskFile.exists()) {
-                deleteFile(fInfo, diskFile);
+                if (!deleteFile(fInfo, diskFile)) {
+                    logWarning("Unable to remove local file. Was not able to move old file to recycle bin "
+                        + diskFile.getAbsolutePath()
+                        + ". "
+                        + fInfo.toDetailString());
+                    // Failure.
+                    return false;
+                }
                 FileInfo localFile = getFile(fInfo);
                 folderChanged = localFile.syncFromDiskIfRequired(
                     getController(), diskFile);
@@ -1657,6 +1672,31 @@ public class Folder extends PFComponent {
         // Remove shortcuts to folder
         Util.removeDesktopShortcut(shortCutName);
     }
+    
+    /**
+     * @return the script to be executed after a successful download or null if
+     *         none set.
+     */
+    public String getDownloadScript() {
+        return downloadScript;
+    }
+
+    /**
+     * @param downloadScript
+     *            the new
+     */
+    public void setDownloadScript(String downloadScript) {
+        this.downloadScript = downloadScript;
+        // Store on disk
+        String md5 = new String(Util.encodeHex(Util.md5(currentInfo.id
+            .getBytes())));
+        String confKey = FOLDER_SETTINGS_PREFIX_V4 + md5
+            + FolderSettings.FOLDER_SETTINGS_DOWNLOAD_SCRIPT;
+        String confVal = downloadScript != null ? downloadScript : "";
+        getController().getConfig().put(confKey, downloadScript);
+        logInfo("Download script set to '" + confVal + "'");
+        getController().saveConfig();
+    }
 
     /**
      * Gets the sync profile.
@@ -1690,7 +1730,7 @@ public class Folder extends PFComponent {
         String md5 = new String(Util.encodeHex(Util.md5(currentInfo.id
             .getBytes())));
         String syncProfKey = FOLDER_SETTINGS_PREFIX_V4 + md5
-            + FOLDER_SETTINGS_SYNC_PROFILE;
+            + FolderSettings.FOLDER_SETTINGS_SYNC_PROFILE;
         getController().getConfig()
             .put(syncProfKey, syncProfile.getFieldList());
         getController().saveConfig();
@@ -1718,7 +1758,8 @@ public class Folder extends PFComponent {
      * Recommends the scan of the local filesystem on the next maintenace run.
      * Useful when files are detected that have been changed.
      * <p>
-     * ATTENTION: Does not force a scan if "hot" auto-detection is not enabled.
+     * ATTENTION: Does not force a scan if continuous auto-detection is disabled
+     * or scheduled sync is setup.
      */
     public void recommendScanOnNextMaintenance() {
         if (!syncProfile.isAutoDetectLocalChanges()
@@ -1957,7 +1998,13 @@ public class Folder extends PFComponent {
                         localFile);
 
                     if (localCopy.exists()) {
-                        deleteFile(localFile, localCopy);
+                        if (!deleteFile(localFile, localCopy)) {
+                            logWarning("Unable to deleted. was not able to move old file to recycle bin "
+                                + localCopy.getAbsolutePath()
+                                + ". "
+                                + localFile.toDetailString());
+                            continue;
+                        }
                     }
                     // FIXME: Size might not be correct
                     localFile.setDeleted(true);
@@ -2475,11 +2522,11 @@ public class Folder extends PFComponent {
     /**
      * Common file delete method. Either deletes the file or moves it to the
      * recycle bin.
-     *
+     * 
      * @param fileInfo
      * @param file
      */
-    private void deleteFile(FileInfo newFileInfo, File file) {
+    private boolean deleteFile(FileInfo newFileInfo, File file) {
         FileInfo fileInfo = getFile(newFileInfo);
         if (useRecycleBin) {
             if (isFine()) {
@@ -2492,7 +2539,9 @@ public class Folder extends PFComponent {
                 if (!file.delete()) {
                     logSevere("Unable to delete file " + file);
                 }
+                return false;
             }
+            return true;
         } else {
             if (isFine()) {
                 logFine("Deleting file " + fileInfo.toDetailString()
@@ -2500,7 +2549,9 @@ public class Folder extends PFComponent {
             }
             if (!file.delete()) {
                 logSevere("Unable to delete file " + file);
+                return false;
             }
+            return true;
         }
     }
 

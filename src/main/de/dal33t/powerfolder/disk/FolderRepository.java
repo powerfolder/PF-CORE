@@ -29,6 +29,7 @@ import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREVIEW;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_RECYCLE;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_SYNC_PROFILE;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_WHITELIST;
+import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_DOWNLOAD_SCRIPT;
 
 import java.io.File;
 import java.io.IOException;
@@ -365,9 +366,11 @@ public class FolderRepository extends PFComponent implements Runnable {
             + folderName + FOLDER_SETTINGS_WHITELIST);
         boolean whitelist = whitelistSetting != null
             && "true".equalsIgnoreCase(whitelistSetting);
-
+        
+        String dlScript = config.getProperty(FOLDER_SETTINGS_PREFIX_V3
+            + folderName + FOLDER_SETTINGS_DOWNLOAD_SCRIPT);
         return new FolderSettings(new File(folderDir), syncProfile, false,
-            useRecycleBin, preview, whitelist);
+            useRecycleBin, preview, whitelist, dlScript);
     }
 
     /**
@@ -499,9 +502,12 @@ public class FolderRepository extends PFComponent implements Runnable {
             + folderMD5 + FOLDER_SETTINGS_WHITELIST);
         boolean whitelist = whitelistSetting != null
             && "true".equalsIgnoreCase(whitelistSetting);
+        
+        String dlScript = config.getProperty(FOLDER_SETTINGS_PREFIX_V4
+            + folderMD5 + FOLDER_SETTINGS_DOWNLOAD_SCRIPT);
 
         return new FolderSettings(new File(folderDir), syncProfile, false,
-            useRecycleBin, preview, whitelist);
+            useRecycleBin, preview, whitelist, dlScript);
     }
 
     /**
@@ -773,6 +779,11 @@ public class FolderRepository extends PFComponent implements Runnable {
         config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
             + FOLDER_SETTINGS_WHITELIST, String.valueOf(folderSettings
             .isWhitelist()));
+        String dlScript = folderSettings.getDownloadScript() != null
+            ? folderSettings.getDownloadScript()
+            : "";
+        config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
+            + FOLDER_SETTINGS_DOWNLOAD_SCRIPT, dlScript);
 
         if (saveConfig) {
             getController().saveConfig();

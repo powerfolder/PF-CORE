@@ -28,7 +28,16 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.text.DecimalFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -61,6 +70,7 @@ import de.dal33t.powerfolder.transfer.swarm.VolatileFileRecordProvider;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.NamedThreadFactory;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.TransferCounter;
 import de.dal33t.powerfolder.util.Validate;
 import de.dal33t.powerfolder.util.WrapperExecutorService;
@@ -728,7 +738,11 @@ public class TransferManager extends PFComponent {
 
             assert getActiveUploads(fInfo).isEmpty();
 
-            if (!folder.scanDownloadFile(fInfo, dlManager.getTempFile())) {
+            if (folder.scanDownloadFile(fInfo, dlManager.getTempFile())) {
+                if (StringUtils.isNotBlank(folder.getDownloadScript())) {
+                    executeDownloadScript(fInfo, folder);
+                }
+            } else {
                 logSevere("Scanning of completed file failed: "
                     + fInfo.toDetailString() + " at " + dlManager.getTempFile());
                 dlManager.setBroken("Scanning of completed file failed: "
@@ -753,6 +767,30 @@ public class TransferManager extends PFComponent {
                 logFiner("Auto-cleaned " + dlManager.getSources());
             }
             clearCompletedDownload(dlManager);
+        }
+    }
+
+    /**
+     * #1538
+     * <p>
+     * http://www.powerfolder.com/wiki/Script_execution
+     * 
+     * @param fInfo
+     * @param folder
+     */
+    private void executeDownloadScript(FileInfo fInfo, Folder folder) {
+        Reject
+            .ifBlank(folder.getDownloadScript(), "Download script is not set");
+        File dlFile = fInfo.getDiskFile(getController().getFolderRepository());
+        String command = folder.getDownloadScript().replace("$file",
+            dlFile.getAbsolutePath());
+        try {
+            logInfo("Executing command: " + command);
+            Runtime.getRuntime().exec(command);
+        } catch (IOException e) {
+            logSevere("Unable to execute script after download. '"
+                + folder.getDownloadScript() + "' file: " + dlFile + ". " + e,
+                e);
         }
     }
 
@@ -1592,20 +1630,25 @@ public class TransferManager extends PFComponent {
             // Check if we have the file already downloaded in the meantime.
             // Or we have this file actual on disk but not in own db yet.
             if (localFile != null && !fileToDl.isNewerThan(localFile)) {
-                logFiner("NOT requesting download, already has latest file in own db: "
-                    + fInfo.toDetailString());
+                if (isFiner()) {
+                    logFiner("NOT requesting download, already has latest file in own db: "
+                        + fInfo.toDetailString());
+                }
                 return null;
             } else if (fileToDl.inSyncWithDisk(fInfo
                 .getDiskFile(getController().getFolderRepository())))
             {
-                logFiner("NOT requesting download, file seems already to exists on disk: "
-                    + fInfo.toDetailString());
-                // DB seems to be out of sync. Recommend scan
-                Folder f = fInfo.getFolder(getController()
-                    .getFolderRepository());
-                if (f != null) {
-                    f.recommendScanOnNextMaintenance();
+                if (isFiner()) {
+                    logFiner("NOT requesting download, file seems already to exists on disk: "
+                        + fInfo.toDetailString());
                 }
+                // Disabled: Causes bottleneck on many transfers
+                // DB seems to be out of sync. Recommend scan
+                // Folder f = fInfo.getFolder(getController()
+                // .getFolderRepository());
+                // if (f != null) {
+                // f.recommendScanOnNextMaintenance();
+                // }
                 return null;
             }
 

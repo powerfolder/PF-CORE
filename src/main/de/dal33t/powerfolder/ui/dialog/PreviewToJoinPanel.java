@@ -94,22 +94,23 @@ public class PreviewToJoinPanel extends BaseDialog {
 
         // Buttons
         joinButton = new JButton(Translation.getTranslation("folder_join.join"));
-        joinButton.setMnemonic(Translation.getTranslation("folder_join.join.key")
-            .trim().charAt(0));
+        joinButton.setMnemonic(Translation.getTranslation(
+            "folder_join.join.key").trim().charAt(0));
 
         final FolderSettings existingFoldersSettings = getController()
-                .getFolderRepository().loadV3FolderSettings(folder.getName());
+            .getFolderRepository().loadV3FolderSettings(folder.getName());
         joinButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                FolderSettings newFolderSettings = new FolderSettings(
-                        new File((String) locationModel.getValue()),
-                        syncProfileSelectorPanel.getSyncProfile(),
-                        false, existingFoldersSettings.isUseRecycleBin(), false,
-                        existingFoldersSettings.isWhitelist());
+                FolderSettings newFolderSettings = new FolderSettings(new File(
+                    (String) locationModel.getValue()),
+                    syncProfileSelectorPanel.getSyncProfile(), false,
+                    existingFoldersSettings.isUseRecycleBin(), false,
+                    existingFoldersSettings.isWhitelist(),
+                    existingFoldersSettings.getDownloadScript());
 
                 FolderPreviewHelper.convertFolderFromPreview(getController(),
-                        folder, newFolderSettings, false);
+                    folder, newFolderSettings, false);
 
                 // Dispose before parent is closed.
                 close();
