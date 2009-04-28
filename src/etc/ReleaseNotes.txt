@@ -1,22 +1,19 @@
-PowerFolder Version 3.1.7 - http://www.powerfolder.com
+PowerFolder Version 3.1.8 - http://www.powerfolder.com
 
 New features and improvements:
- * Added support for separated peer-to-peer networks
-   (http://www.powerfolder.com/wiki/Network_ID).
- * Simplified connection setup to custom server
-   (http://www.powerfolder.com/wiki/Server_client_deployment).
- * Does not longer initially load nodes file from PowerFolder website
-   for Internet use.
- * Added support for direct UDT high speed connections.
- * Added low level network tuning options
-   (http://www.powerfolder.com/wiki/Low_level_network_settings).
- * Several minor improvements.
+ * Optimized speed of folder initial scan / when detecting new files.
+ * Reduced number of connection when running as supernode (fix DNS or dynDNS).
+ * Several other performance improvements.
 
 Bugfixes:
- * Fixes auto start problem, that caused PowerFolder to start twice.
- * Fixed bug that caused invitation files failed to get opened.
- * Fixed stuck uploads/downloads problem.
- * Several minor bugfixes. 
+ * Fixed bug, that prevented remote deletions to be locally synchronized.
+ * Fixed bug, that causes to download a old file version if file could not
+   be moved into recycle bin on remote computer, e.g. if file was open during
+   the download. Now rolls back complete download in such a case.
+ * Default ignore patterns (e.g. Office temporary files) are added correctly
+   added when joining a folder. This fixes the wrong sync percentage display.
+ * Fixed race condition, that caused files to be moved into recycle bin.
+ * Added more debug log output on "duplicate connection" problem.
 
 
 Please give us feedback and request improvements at our forum:
@@ -49,6 +46,28 @@ External libraries used:
 
 
 History:
+
+Version 3.1.7
+-------------
+
+New features and improvements:
+ * Added support for separated peer-to-peer networks
+   (http://www.powerfolder.com/wiki/Network_ID).
+ * Simplified connection setup to custom server
+   (http://www.powerfolder.com/wiki/Server_client_deployment).
+ * Does not longer initially load nodes file from PowerFolder website
+   for Internet use.
+ * Added support for direct UDT high speed connections.
+ * Added low level network tuning options
+   (http://www.powerfolder.com/wiki/Low_level_network_settings).
+ * Several minor improvements.
+
+Bugfixes:
+ * Fixes auto start problem, that caused PowerFolder to start twice.
+ * Fixed bug that caused invitation files failed to get opened.
+ * Fixed stuck uploads/downloads problem.
+ * Several minor bugfixes. 
+
  
 Version 3.1.6
 -------------
