@@ -512,7 +512,7 @@ public class ReconnectManager extends PFComponent {
                                     + currentNode.getNick()
                                     + ", already reconnecting/connected");
                             }
-                            continue;
+                            currentNode = null;
                         }
                     }
                 }
