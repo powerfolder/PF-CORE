@@ -27,6 +27,7 @@ import java.util.logging.Logger;
  * A Callable that wraps an deligate and logs all exceptions and errors
  * 
  * @author sprajc
+ * @param <V>
  */
 public class WrappedCallable<V> implements Callable<V> {
     private static final Logger log = Logger.getLogger(WrappedCallable.class
