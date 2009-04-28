@@ -648,7 +648,11 @@ public class Member extends PFComponent implements Comparable<Member> {
             // }
 
             // Set reconnecting state
-            currentReconTries.incrementAndGet();
+            int reconTries = currentReconTries.incrementAndGet();
+            if (reconTries >= 2) {
+                logWarning("Multiple reconnection tries detected ("
+                    + reconTries + ")", new RuntimeException("from here"));
+            }
 
             // Re-resolve connect address
             String theHostname = getHostName(); // cached hostname
