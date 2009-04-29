@@ -10,8 +10,8 @@ Bugfixes:
  * Fixed bug, that causes to download a old file version if file could not
    be moved into recycle bin on remote computer, e.g. if file was open during
    the download. Now rolls back complete download in such a case.
- * Default ignore patterns (e.g. Office temporary files) are added correctly
-   added when joining a folder. This fixes the wrong sync percentage display.
+ * Default ignore patterns (e.g. Office temporary files) are correctly added
+   when joining a folder. This fixes the wrong sync percentage display.
  * Fixed race condition, that caused files to be moved into recycle bin.
  * Added more debug log output on "duplicate connection" problem.
 
