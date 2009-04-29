@@ -20,11 +20,13 @@
 package de.dal33t.powerfolder.ui;
 
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.PowerFolder;
 import de.javasoft.plaf.synthetica.*;
 
 import javax.swing.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 
 /**
  * Class which offers several helper methods for handling with LookAndFeels.
@@ -67,7 +69,13 @@ public class LookAndFeelSupport {
      */
     public static synchronized String[] getAvailableLookAndFeelNames() {
         if (availableLafNames == null) {
-            availableLafNames = new String[AVAILABLE_LAF_CLASSES.length];
+            SyntheticaLookAndFeel customLaf = getCustomLaf();
+            if (customLaf == null) {
+                availableLafNames = new String[AVAILABLE_LAF_CLASSES.length];
+            } else {
+                availableLafNames = new String[AVAILABLE_LAF_CLASSES.length + 1];
+            }
+
             for (int i = 0; i < AVAILABLE_LAF_CLASSES.length; i++) {
                 try {
                     Class lafClass = AVAILABLE_LAF_CLASSES[i];
@@ -107,8 +115,32 @@ public class LookAndFeelSupport {
                     log.log(Level.SEVERE, "Unable to initalize look and feel name", e);
                 }
             }
+            if (customLaf != null) {
+                availableLafNames[availableLafNames.length - 1] = customLaf.getName();
+            }
         }
         return availableLafNames;
+    }
+
+    private static SyntheticaLookAndFeel getCustomLaf() {
+        String customName = PowerFolder.customLookAndFeel;
+        if (customName != null && customName.length() > 0) {
+            try {
+                Class clazz = Class.forName(customName);
+                Object instance = clazz.newInstance();
+                if (instance instanceof SyntheticaLookAndFeel) {
+                    return (SyntheticaLookAndFeel) instance;
+                }
+            } catch (InstantiationException e) {
+                log.severe("Could not instantiate custom Synthetica class " + customName);
+            } catch (IllegalAccessException e) {
+                log.severe("Could not access custom Synthetica class " + customName);
+            } catch (ClassNotFoundException e) {
+                log.severe("Could not locate custom Synthetica class " + customName);
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -118,7 +150,12 @@ public class LookAndFeelSupport {
      */
     public static synchronized LookAndFeel[] getAvailableLookAndFeels() {
         if (availableLafs == null) {
-            availableLafs = new LookAndFeel[AVAILABLE_LAF_CLASSES.length];
+            SyntheticaLookAndFeel customLaf = getCustomLaf();
+            if (customLaf == null) {
+                availableLafs = new LookAndFeel[AVAILABLE_LAF_CLASSES.length];
+            } else {
+                availableLafs = new LookAndFeel[AVAILABLE_LAF_CLASSES.length + 1];
+            }
             for (int i = 0; i < AVAILABLE_LAF_CLASSES.length; i++) {
                 try {
                     availableLafs[i] = (LookAndFeel) AVAILABLE_LAF_CLASSES[i]
@@ -128,6 +165,9 @@ public class LookAndFeelSupport {
                 } catch (IllegalAccessException e) {
                     log.log(Level.SEVERE, "Unable to initalize look and feel", e);
                 }
+            }
+            if (customLaf != null) {
+                availableLafs[availableLafs.length - 1] = customLaf;
             }
         }
         return availableLafs;

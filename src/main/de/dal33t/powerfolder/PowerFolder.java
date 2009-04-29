@@ -53,6 +53,7 @@ public class PowerFolder {
     private static final Logger log = Logger.getLogger(PowerFolder.class
         .getName());
     public static final Options COMMAND_LINE_OPTIONS;
+    public static String customLookAndFeel;
     static {
         // Command line parsing
         Options options = new Options();
@@ -76,6 +77,8 @@ public class PowerFolder {
                 "<language> Sets the language to use (e.g. \"--language de\", sets language to german)");
         options.addOption("p", "createfolder", true,
                 "<createfolder> Creates a new PowerFolder");
+        options.addOption("y", "synthetica", true,
+                "<custom.name> Custom Synthetica Look and Feel full class name (e.g. --synthetica demo.CustomLookAndFeel)");
         options.addOption("z", "nowarn", false,
                 "Do not warn if already running");
         COMMAND_LINE_OPTIONS = options;
@@ -137,12 +140,12 @@ public class PowerFolder {
             .hasRunningInstance();
 
         if (commandLine.hasOption("k")) {
-            if (!runningInstanceFound) {
-                System.err.println("PowerFolder not running");
-            } else {
+            if (runningInstanceFound) {
                 System.out.println("Stopping PowerFolder");
                 // Send quit command
                 RemoteCommandManager.sendCommand(RemoteCommandManager.QUIT);
+            } else {
+                System.err.println("PowerFolder not running");
             }
 
             // stop
@@ -155,14 +158,18 @@ public class PowerFolder {
                 commandLine.getOptionValue("g"));
         }
 
+        if (commandLine.hasOption("y")) {
+            customLookAndFeel = commandLine.getOptionValue("y");
+        }
+
         // The controller.
         Controller controller = Controller.createController();
 
         String[] files = commandLine.getArgs();
         // Parsing of command line completed
 
-        boolean commandContainsRemoteCommands = (files != null && files.length >= 1)
-            || commandLine.hasOption("p");
+        boolean commandContainsRemoteCommands = files != null && files.length >= 1
+                || commandLine.hasOption("p");
         // Try to start controller
         boolean startController = !commandContainsRemoteCommands
             || !runningInstanceFound;
@@ -177,8 +184,8 @@ public class PowerFolder {
             // Send remote command if there a files in commandline
             if (files != null && files.length > 0) {
                 // Parse filenames and build remote command
-                StringBuffer openFilesRCommand = new StringBuffer(
-                    RemoteCommandManager.OPEN);
+                StringBuilder openFilesRCommand = new StringBuilder(
+                        RemoteCommandManager.OPEN);
 
                 for (String file : files) {
                     openFilesRCommand.append(file);

@@ -64,7 +64,7 @@ For creation of the installer:
 		<property name="jwf.src.dir" location="src/jwf" />
         <property name="etc.dir" location="src/etc" />
         <property name="applet.dir" location="src/applet" />
-
+        <property name="demo.src.dir" location="src/demo" />
 		<property name="src.test.dir" location="src/test" />
 
 		<!-- External Libraries -->
@@ -349,5 +349,40 @@ For creation of the installer:
             </manifest>
         </jar>-->
     </target>
+
+    <target name="demo" depends="init" description="Builds a demo Synthetica style jar">
+
+        <delete dir="${build.dir}"/>
+        <delete dir="${dist.dir}"/>
+
+        <mkdir dir="${build.dir}" />
+        <mkdir dir="${dist.dir}" />
+
+        <javac destdir="${build.dir}" source="1.5" target="1.5" encoding="UTF-8" nowarn="${NoCompileWarnings}" debug="${Debug}" deprecation="${Deprecation}" optimize="${Optimize}">
+
+            <!-- javac 1.5 specific warnings -->
+            <compilerarg value="-Xlint:${Unchecked}" />
+            <compilerarg value="-Xlint:${Fallthrough}" />
+
+            <classpath>
+                <fileset refid="libs" />
+                <fileset refid="testlibs" />
+            </classpath>
+
+            <src path="${demo.src.dir}" />
+        </javac>
+
+        <copy file="${demo.src.dir}/demo/synth.xml" todir="${build.dir}/demo"/>
+
+        <jar jarfile="${dist.dir}/CustomLookAndFeel.jar" basedir="${build.dir}" update="true">
+            <manifest>
+                <attribute name="Built-By" value="${BuildBy}" />
+                <attribute name="BuildDateTime" value="${BuildDateTime}" />
+                <attribute name="Sealed" value="false" />
+            </manifest>
+        </jar>
+
+    </target>
+
 
 </project>
