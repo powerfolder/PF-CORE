@@ -58,8 +58,6 @@ import de.dal33t.powerfolder.event.FileNameProblemHandler;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
-import de.dal33t.powerfolder.event.SynchronizationStatsEvent;
-import de.dal33t.powerfolder.event.SynchronizationStatsListener;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.transfer.FileRequestor;
 import de.dal33t.powerfolder.util.FileUtils;
@@ -99,9 +97,6 @@ public class FolderRepository extends PFComponent implements Runnable {
     /** folder repository listeners */
     private FolderRepositoryListener folderRepositoryListenerSupport;
 
-    /** synchronization stats listeners */
-    private SynchronizationStatsListener synchronizationStatsListenerSupport;
-
     /** handler if files with posible filename problems are found */
     private FileNameProblemHandler fileNameProblemHandler;
 
@@ -139,8 +134,6 @@ public class FolderRepository extends PFComponent implements Runnable {
         // Create listener support
         folderRepositoryListenerSupport = ListenerSupportFactory
             .createListenerSupport(FolderRepositoryListener.class);
-        synchronizationStatsListenerSupport = ListenerSupportFactory
-            .createListenerSupport(SynchronizationStatsListener.class);
     }
 
     /** @return the handler that takes care of filename problems */
@@ -1090,27 +1083,11 @@ public class FolderRepository extends PFComponent implements Runnable {
     private void fireMaintanceStarted(Folder folder) {
         folderRepositoryListenerSupport.maintenanceStarted(new FolderRepositoryEvent(this,
             folder));
-        // TODO Why not to use existing event maintenanceStarted/fireMaintenanceFinished?
-        // @todo harry to implement real event
-        synchronizationStatsListenerSupport.synchronizationStatsChanged(
-                new SynchronizationStatsEvent(this, new Date(), true));
     }
 
     private void fireMaintenanceFinished(Folder folder) {
         folderRepositoryListenerSupport.maintenanceFinished(new FolderRepositoryEvent(this,
             folder));
-        // TODO Why not to use existing event maintenanceStarted/fireMaintenanceFinished?
-        // @todo harry to implement real event
-        synchronizationStatsListenerSupport.synchronizationStatsChanged(
-                new SynchronizationStatsEvent(this, new Date(), false));
-    }
-
-    public void addSynchronizationStatsListener(SynchronizationStatsListener l) {
-        ListenerSupportFactory.addListener(synchronizationStatsListenerSupport, l);
-    }
-
-    public void removeSynchronizationStatsListener(SynchronizationStatsListener l) {
-        ListenerSupportFactory.removeListener(synchronizationStatsListenerSupport, l);
     }
 
     public void addFolderRepositoryListener(FolderRepositoryListener listener) {

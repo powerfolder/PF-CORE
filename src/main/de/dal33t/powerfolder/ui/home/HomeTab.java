@@ -111,9 +111,6 @@ public class HomeTab extends PFUIComponent {
         newWarningsCountVM = getUIController().getApplicationModel()
                 .getWarningsModel().getWarningsCountVM();
         newWarningsCountVM.addValueChangeListener(new MyWarningsListener());
-        controller.getFolderRepository().addSynchronizationStatsListener(
-                new MySynchronizationStatsListener());
-
     }
 
     /**
@@ -651,21 +648,6 @@ public class HomeTab extends PFUIComponent {
 
         public void serverDisconnected(ServerClientEvent event) {
             updateOnlineStorageDetails();
-        }
-    }
-
-    /**
-     * Class to listen for SynchronizationStatsEvents, affects the label text. 
-     */
-    private class MySynchronizationStatsListener implements
-            SynchronizationStatsListener {
-        public void synchronizationStatsChanged(SynchronizationStatsEvent event) {
-            displaySyncStats(event.getSynchronizationDate(),
-                    event.isSynchronizing());
-        }
-
-        public boolean fireInEventDispatchThread() {
-            return true;
         }
     }
 

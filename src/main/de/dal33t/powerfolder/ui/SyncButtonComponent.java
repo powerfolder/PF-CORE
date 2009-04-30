@@ -21,7 +21,6 @@ package de.dal33t.powerfolder.ui;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.ui.action.SyncAllFoldersAction;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.UIUtil;
@@ -53,9 +52,6 @@ public class SyncButtonComponent extends PFUIComponent {
         folderRepositorySyncing = new AtomicBoolean();
         mousePressed = new AtomicBoolean();
 
-        // Start listening for synchronizatoin stats.
-        controller.getFolderRepository().addSynchronizationStatsListener(
-                new MySynchronizationStatsListener());
         controller.getThreadPool().submit(new MyRunnable());
     }
 
@@ -75,17 +71,6 @@ public class SyncButtonComponent extends PFUIComponent {
         syncAllLabel.setToolTipText(Translation
             .getTranslation("action_sync_all_folders.description"));
         syncAllLabel.addMouseListener(new MyMouseAdapter());
-    }
-
-    private class MySynchronizationStatsListener implements SynchronizationStatsListener {
-        public void synchronizationStatsChanged(SynchronizationStatsEvent event) {
-            folderRepositorySyncing.set(event.isSynchronizing());
-        }
-
-        public boolean fireInEventDispatchThread() {
-            // simple implementation - so do it now
-            return false;
-        }
     }
 
     /**

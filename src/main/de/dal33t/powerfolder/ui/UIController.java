@@ -180,10 +180,6 @@ public class UIController extends PFComponent {
         chatFrame = new ChatFrame(getController());
         systemMonitorFrame = new SystemMonitorFrame(getController());
         started = false;
-
-        // Start listening for synchronization stats events.
-        controller.getFolderRepository().addSynchronizationStatsListener(
-                new MySynchronizationStatsListener());
     }
 
     /**
@@ -823,7 +819,7 @@ public class UIController extends PFComponent {
      * member.
      *
      * @param file
-     * @param nodeInfo
+     * @param node
      */
     public void transferSingleFile(File file, Member node) {
         SingleFileTransferDialog sftd = new SingleFileTransferDialog(
@@ -922,22 +918,6 @@ public class UIController extends PFComponent {
     ///////////////////
     // Inner Classes //
     ///////////////////
-
-    /**
-     * Class to listen for SynchronizationStatsEvents, affect the tooltip text.
-     */
-    private class MySynchronizationStatsListener implements
-            SynchronizationStatsListener {
-
-        public void synchronizationStatsChanged(SynchronizationStatsEvent event) {
-            folderRepositorySynchronizing.set(event.isSynchronizing());
-        }
-
-        public boolean fireInEventDispatchThread() {
-            // simple implementation, so do it now.
-            return false;
-        }
-    }
 
     private class UpdateSystrayTask extends TimerTask {
         public void run() {
@@ -1072,7 +1052,7 @@ public class UIController extends PFComponent {
     /**
      * Sets the icon of the systray
      * 
-     * @param iconName
+     * @param icon
      */
     public synchronized void setTrayIcon(Image icon) {
         if (!OSUtil.isSystraySupported()) {
