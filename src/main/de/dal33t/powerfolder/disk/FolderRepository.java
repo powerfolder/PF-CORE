@@ -319,7 +319,23 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
     }
 
-    public FolderSettings loadV3FolderSettings(String folderName) {
+    /**
+     * Load a folder's settings from disk. This will try to use the V4 way,
+     * and fall back to V3 for older folders.
+     *
+     * @param folderInfo
+     * @return
+     */
+    public FolderSettings loadFolderSettings(FolderInfo folderInfo) {
+        String md5 = new String(Util.encodeHex(Util.md5(folderInfo.id.getBytes())));
+        FolderSettings settings = loadV4FolderSettings(md5);
+        if (settings == null) {
+            settings = loadV3FolderSettings(folderInfo.name);
+        }
+        return settings;
+    }
+
+    private FolderSettings loadV3FolderSettings(String folderName) {
 
         Properties config = getController().getConfig();
 
@@ -456,7 +472,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
     }
 
-    public FolderSettings loadV4FolderSettings(String folderMD5) {
+    private FolderSettings loadV4FolderSettings(String folderMD5) {
 
         Properties config = getController().getConfig();
 

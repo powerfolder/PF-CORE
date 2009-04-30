@@ -76,13 +76,13 @@ public class PreviewToJoinPanel extends BaseDialog {
      */
     private void initComponents() {
 
-        FolderSettings folderSettings = getController().getFolderRepository()
-                .loadV3FolderSettings(folder.getName());
+        final FolderSettings existingFoldersSettings = getController()
+            .getFolderRepository().loadFolderSettings(folder.getInfo());
 
         syncProfileSelectorPanel = new SyncProfileSelectorPanel(
-            getController(), folderSettings.getSyncProfile());
+            getController(), existingFoldersSettings.getSyncProfile());
 
-        locationModel = new ValueHolder(folderSettings
+        locationModel = new ValueHolder(existingFoldersSettings
                 .getLocalBaseDir().getAbsolutePath());
 
         // Behavior
@@ -97,8 +97,6 @@ public class PreviewToJoinPanel extends BaseDialog {
         joinButton.setMnemonic(Translation.getTranslation(
             "folder_join.join.key").trim().charAt(0));
 
-        final FolderSettings existingFoldersSettings = getController()
-            .getFolderRepository().loadV3FolderSettings(folder.getName());
         joinButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
