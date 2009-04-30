@@ -40,6 +40,7 @@ import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.util.MemoryMonitor;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
+import de.dal33t.powerfolder.ui.Icons;
 
 /**
  * Main class for the PowerFolder application.
@@ -77,6 +78,8 @@ public class PowerFolder {
                 "<language> Sets the language to use (e.g. \"--language de\", sets language to german)");
         options.addOption("p", "createfolder", true,
                 "<createfolder> Creates a new PowerFolder");
+        options.addOption("i", "icons", true,
+                "<icons.properties> Custom icons properties file. Referenced icons must be in the classpath");
         options.addOption("y", "synthetica", true,
                 "<custom.name> Custom Synthetica Look and Feel full class name (e.g. --synthetica demo.CustomLookAndFeel)");
         options.addOption("z", "nowarn", false,
@@ -160,6 +163,10 @@ public class PowerFolder {
 
         if (commandLine.hasOption("y")) {
             customLookAndFeel = commandLine.getOptionValue("y");
+        }
+
+        if (commandLine.hasOption("i")) {
+            Icons.loadOverrideFile(commandLine.getOptionValue("i"));
         }
 
         // The controller.

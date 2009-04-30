@@ -33,10 +33,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.ColorConvertOp;
 import java.awt.image.ColorModel;
 import java.awt.image.PixelGrabber;
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.HashMap;
@@ -237,6 +234,7 @@ public class Icons {
 
     private static String overridePropertiesFilename;
     private static Properties iconProperties;
+    private static Properties overrideIconProperties;
 
     /**
      * Constructor - no instances.
@@ -245,7 +243,15 @@ public class Icons {
         // No instances - everything is static.
     }
 
+    /**
+     * Configure PowerFolder to use a different properties file / icons.
+     * If PF can not find the icon in the override set, it will default to
+     * internal icons, so users do not need to define a full set of icons.
+     *
+     * @param iconSetFile
+     */
     public static void loadOverrideFile(String iconSetFile) {
+        log.info("Loaded override icons file " + iconSetFile);
         overridePropertiesFilename = iconSetFile;
     }
 
@@ -285,15 +291,14 @@ public class Icons {
             return icon;
         }
 
-        Properties prop = getIconProperties();
-        String iconId = prop.getProperty(id);
+        String iconId = getIconId(id);
         if (iconId == null) {
             log.severe("Icon not found ID: '" + id + '\'');
             return null;
         }
 
         URL iconURL = Thread.currentThread().getContextClassLoader()
-            .getResource(prop.getProperty(id));
+            .getResource(iconId);
         if (iconURL == null) {
             log.severe("Icon not found '" + id + '\'');
             return null;
@@ -319,15 +324,14 @@ public class Icons {
             return image;
         }
 
-        Properties prop = getIconProperties();
-        String iconId = prop.getProperty(id);
+        String iconId = getIconId(id);
         if (iconId == null) {
             log.severe("Image not found ID: '" + id + '\'');
             return null;
         }
 
         URL imageURL = Thread.currentThread().getContextClassLoader()
-            .getResource((String) prop.get(id));
+            .getResource(iconId);
         image = Toolkit.getDefaultToolkit().getImage(imageURL);
         log.fine("Cached image " + id);
         ID_IMAGE_MAP.put(id, image);
@@ -335,7 +339,28 @@ public class Icons {
         return image;
     }
 
-    // Open helper
+    /**
+     * Get the icon id from the properties for an id.
+     * So if there is a line
+     * <pre>stop.icon=icons/Abort.gif</pre>
+     * then id of 'stop.icon' would return 'icons/Abort.gif'.
+     * Tries override properties first, then the normal PowerFolder ones.
+     *
+     * @param id
+     * @return
+     */
+    private static String getIconId(String id) {
+        Properties overrideProperties = getOverrideIconProperties();
+        if (overrideProperties != null) {
+            String iconId = overrideProperties.getProperty(id);
+            if (iconId != null) {
+                return iconId;
+            }
+        }
+
+        // Not found in override icon set, try local.
+        return getIconProperties().getProperty(id);
+    }
 
     /**
      * @param node
@@ -869,59 +894,41 @@ public class Icons {
                     }
                 }
             }
-
-            if (overridePropertiesFilename != null) {
-                in = Thread.currentThread().getContextClassLoader()
-                    .getResourceAsStream(overridePropertiesFilename);
-                buffered = null;
-                if (in == null) {
-                    throw new IllegalArgumentException(
-                        "Icon override properties file not found: " + overridePropertiesFilename);
-                }
-
-                try {
-                    buffered = new BufferedInputStream(in);
-                    iconProperties.load(buffered);
-                } catch (IOException ioe) {
-                    log.log(Level.SEVERE, "Cannot read: " + overridePropertiesFilename, ioe);
-                } finally {
-                    if (buffered != null) {
-                        try {
-                            buffered.close();
-                        } catch (Exception e) {
-                            // Ignore
-                        }
-                    }
-                }
-            }
-
-            if (overridePropertiesFilename != null) {
-                in = Thread.currentThread().getContextClassLoader()
-                    .getResourceAsStream(overridePropertiesFilename);
-                buffered = null;
-                if (in == null) {
-                    throw new IllegalArgumentException(
-                        "Icon override properties file not found: " + overridePropertiesFilename);
-                }
-
-                try {
-                    buffered = new BufferedInputStream(in);
-                    iconProperties.load(buffered);
-                } catch (IOException ioe) {
-                    log.log(Level.SEVERE, "Cannot read: " + overridePropertiesFilename, ioe);
-                } finally {
-                    if (buffered != null) {
-                        try {
-                            buffered.close();
-                        } catch (Exception e) {
-                            // Ignore
-                        }
-                    }
-                }
-            }
         }
         return iconProperties;
     }
 
+    /**
+     * This gets icon mappings from an override set. Referenced icons must be
+     * in the classpath. On Windows environments, file separators in the
+     * properties file need to be \\
+     *
+     * e.g. play.icon=myIcons\\Play.gif
+     *
+     * @return
+     */
+    private static synchronized Properties getOverrideIconProperties() {
+
+        if (overridePropertiesFilename != null && overrideIconProperties == null) {
+            overrideIconProperties = new Properties();
+
+            BufferedInputStream buf = null;
+            try {
+                buf = new BufferedInputStream(new FileInputStream(overridePropertiesFilename));
+                overrideIconProperties.load(buf);
+            } catch (IOException ioe) {
+                log.log(Level.SEVERE, "Cannot read: " + overridePropertiesFilename, ioe);
+            } finally {
+                if (buf != null) {
+                    try {
+                        buf.close();
+                    } catch (Exception e) {
+                        // Ignore
+                    }
+                }
+            }
+        }
+        return overrideIconProperties;
+    }
 
 }
