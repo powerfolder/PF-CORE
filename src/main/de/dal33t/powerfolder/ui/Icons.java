@@ -176,8 +176,7 @@ public class Icons {
     public static final String CONNECTED = "connected_bright.icon";
     public static final String DISCONNECTED = "connected_not.icon";
 
-    // TODO: Rename to ONLINE_STORAGE
-    public static final String WEB_SERVICE = "web_service.icon";
+    public static final String ONLINE_STORAGE = "web_service.icon";
 
     // Wizard pico icons
     public static final String SYNC_PCS_PICTO = "sync_pc_picto.icon";
