@@ -80,10 +80,10 @@ public class TestFileNameProblemUI {
 
         List<FileInfo> fileInfoList = new ArrayList<FileInfo>();
 
-        fileInfoList.add(new FileInfo(folderInfo, "sub/AUX"));
-        fileInfoList.add(new FileInfo(folderInfo, "?hhh."));
-        fileInfoList.add(new FileInfo(folderInfo, "lowercase"));
-        fileInfoList.add(new FileInfo(folderInfo, "LOWERCASE"));
+        fileInfoList.add(FileInfo.getTemplate(folderInfo, "sub/AUX"));
+        fileInfoList.add(FileInfo.getTemplate(folderInfo, "?hhh."));
+        fileInfoList.add(FileInfo.getTemplate(folderInfo, "lowercase"));
+        fileInfoList.add(FileInfo.getTemplate(folderInfo, "LOWERCASE"));
         Map<FileInfo, List<FilenameProblem>> problemFiles = getProblems(fileInfoList);
         scanResult.setProblemFiles(problemFiles);
         handler.fileNameProblemsDetected(new FileNameProblemEvent(folder,

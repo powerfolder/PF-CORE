@@ -60,24 +60,24 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
     private static final long serialVersionUID = 100L;
 
     /** The filename (including the path from the base of the folder) */
-    private String fileName;
+    private final String fileName;
 
     /** The size of the file */
-    private Long size;
+    private final Long size;
 
     /** modified info */
-    private MemberInfo modifiedBy;
+    private final MemberInfo modifiedBy;
     /** modified in folder on date */
-    private Date lastModifiedDate;
+    private final Date lastModifiedDate;
 
     /** Version number of this file */
-    private int version;
+    private final int version;
 
     /** the deleted flag */
-    private boolean deleted;
+    private final boolean deleted;
 
     /** the folder */
-    private FolderInfo folderInfo;
+    private final FolderInfo folderInfo;
 
     /**
      * Contains some cached string.
@@ -86,23 +86,50 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
 
     protected FileInfo() {
         // ONLY for backward compatibility to MP3FileInfo
+
+        fileName = null;
+        size = null;
+        modifiedBy = null;
+        lastModifiedDate = null;
+        version = 0;
+        deleted = false;
+        folderInfo = null;
     }
 
-    /**
-     * Used to initalize fileinfo from link
-     * 
-     * @param foInfo
-     * @param name
-     */
-    public FileInfo(FolderInfo foInfo, String name) {
-        if (foInfo == null) {
-            throw new NullPointerException("Folderinfo is null");
-        }
-        if (StringUtils.isEmpty(name)) {
-            throw new IllegalArgumentException("Filename is empty");
-        }
-        this.folderInfo = foInfo;
+    protected FileInfo(String fileName, long size, MemberInfo modifiedBy,
+        Date lastModifiedDate, int version, boolean deleted,
+        FolderInfo folderInfo)
+    {
+        this.fileName = fileName;
+        this.size = Long.valueOf(size);
+        this.modifiedBy = modifiedBy;
+        this.lastModifiedDate = lastModifiedDate;
+        this.version = version;
+        this.deleted = deleted;
+        this.folderInfo = folderInfo;
+        validate();
+    }
+
+    protected FileInfo(FolderInfo folder, String name) {
+        Reject.ifNull(folder, "folder is null!");
+        Reject.ifNull(name, "folder is null!");
         this.fileName = name;
+        this.folderInfo = folder;
+
+        this.size = null;
+        this.modifiedBy = null;
+        this.lastModifiedDate = null;
+        this.version = 0;
+        this.deleted = false;
+    }
+
+    public static FileInfo getTemplate(FolderInfo folder, String name) {
+        return new FileInfo(folder, name);
+    }
+
+    public static FileInfo getTemplate(Folder folder, File file) {
+        String fn = buildFileName(folder, file);
+        return getTemplate(folder.getInfo(), fn);
     }
 
     /**
@@ -110,18 +137,68 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
      * 
      * @param folder
      * @param localFile
+     * @param creator
      */
-    public FileInfo(Folder folder, File localFile) {
-        Reject.ifNull(folder, "Folder is null");
-        Reject.ifNull(localFile, "LocalFile is null");
+    public static FileInfo newFile(Folder folder, File localFile,
+        MemberInfo creator)
+    {
+        return new FileInfo(buildFileName(folder, localFile), localFile
+            .length(), creator, new Date(localFile.lastModified()), 0, false,
+            folder.getInfo());
+    }
 
-        this.folderInfo = folder.getInfo();
-        this.size = new Long(localFile.length());
-        this.fileName = localFile.getName();
-        this.lastModifiedDate = new Date(localFile.lastModified());
-        this.deleted = false;
+    public static FileInfo unmarshallExistingFile(FolderInfo fi,
+        String fileName, long size, MemberInfo modby, Date modDate, int version)
+    {
+        return new FileInfo(fileName, size, modby, modDate, version, false, fi);
+    }
 
-        File parent = localFile.getParentFile();
+    public static FileInfo unmarshallDelectedFile(FolderInfo fi,
+        String fileName, MemberInfo modby, Date modDate, int version)
+    {
+        return new FileInfo(fileName, 0, modby, modDate, version, true, fi);
+    }
+
+    public FileInfo modifiedFile(FolderRepository rep, File localFile,
+        MemberInfo modby)
+    {
+        Reject.ifTrue(isTemplate(), "Cannot modify template FileInfo!");
+        String fn = buildFileName(getFolder(rep), localFile);
+        if (fileName.equals(fn)) {
+            fn = fileName;
+        }
+        return new FileInfo(fn, localFile.length(), modby, new Date(localFile
+            .lastModified()), version + 1, false, folderInfo);
+    }
+
+    /**
+     * Returns a FileInfo with changed FolderInfo. No version update etc.
+     * whatsoever happens.
+     * 
+     * @param fi
+     * @return
+     */
+    @Deprecated
+    public FileInfo changedFolderInfo(FolderInfo fi) {
+        return new FileInfo(fileName, size, modifiedBy, lastModifiedDate,
+            version, deleted, fi);
+    }
+
+    @Deprecated
+    public FileInfo updatedVersion(int newVersion) {
+        return new FileInfo(fileName, size, modifiedBy, lastModifiedDate,
+            newVersion, deleted, folderInfo);
+    }
+
+    public FileInfo deletedFile(MemberInfo delby, Date delDate) {
+        Reject.ifTrue(isTemplate(), "Cannot delete template FileInfo!");
+        return new FileInfo(fileName, 0L, delby, delDate, version + 1, true,
+            folderInfo);
+    }
+
+    private static String buildFileName(Folder folder, File file) {
+        String fn = file.getName();
+        File parent = file.getParentFile();
         File folderBase = folder.getLocalBase();
 
         while (!folderBase.equals(parent)) {
@@ -129,25 +206,10 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
                 throw new IllegalArgumentException(
                     "Local file seems not to be in a subdir of the local powerfolder copy");
             }
-            fileName = parent.getName() + "/" + fileName;
+            fn = parent.getName() + "/" + fn;
             parent = parent.getParentFile();
         }
-    }
-
-    /**
-     * Gets filled with all important data from the other file info
-     * 
-     * @param other
-     * @deprecated Method is ugly shit. Main oppenent of TRAC #1924
-     */
-    public void copyFrom(FileInfo other) {
-        this.fileName = other.fileName;
-        this.size = other.size;
-        this.modifiedBy = other.modifiedBy;
-        this.lastModifiedDate = other.lastModifiedDate;
-        this.version = other.version;
-        this.deleted = other.deleted;
-        this.folderInfo = other.folderInfo;
+        return fn;
     }
 
     /**
@@ -158,16 +220,17 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
      * @param controller
      * @param diskFile
      *            the diskfile of this file, not gets it from controller !
-     * @return if the file was synced or false if file is in sync
+     * @return the new FileInfo if the file was synced or null if the file is in
+     *         sync
      */
-    public boolean syncFromDiskIfRequired(Controller controller, File diskFile)
+    public FileInfo syncFromDiskIfRequired(Controller controller, File diskFile)
     {
         if (controller == null) {
             throw new NullPointerException("controller is null");
         }
 
         if (diskFile == null) {
-            return false;
+            throw new NullPointerException("diskFile is null");
         }
 
         // Check if files match
@@ -181,23 +244,17 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         // log.warning("File does not exsists on disk: " + toDetailString());
         // }
 
-        boolean filesDiffered = !inSyncWithDisk(diskFile);
-        if (filesDiffered) {
-            this.version++;
-            setDeleted(!diskFile.exists());
-
-            if (!isDeleted()) {
-                setModifiedInfo(controller.getMySelf().getInfo(), new Date(
-                    diskFile.lastModified()));
-                setSize(diskFile.length());
+        if (!inSyncWithDisk(diskFile)) {
+            if (diskFile.exists()) {
+                return modifiedFile(controller.getFolderRepository(), diskFile,
+                    controller.getMySelf().getInfo());
             } else {
-                setModifiedInfo(controller.getMySelf().getInfo(), new Date());
-                setSize(0);
+                return deletedFile(controller.getMySelf().getInfo(), new Date());
             }
             // log.warning("File updated to: " + this.toDetailString());
         }
 
-        return filesDiffered;
+        return null;
     }
 
     /**
@@ -214,23 +271,6 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
             diskFile.lastModified(), lastModifiedDate.getTime());
         boolean sizeSync = size.longValue() == diskFile.length();
         return existanceSync && lastModificationSync && sizeSync;
-    }
-
-    /**
-     * @param size
-     */
-    public void setSize(long size) {
-        this.size = new Long(size);
-    }
-
-    /**
-     * Sets the new folder info for this file
-     * 
-     * @param folderInfo
-     */
-    public void setFolderInfo(FolderInfo folderInfo) {
-        Reject.ifNull(folderInfo, "Folder is null");
-        this.folderInfo = folderInfo;
     }
 
     /** @return The filename (including the path from the base of the folder) */
@@ -338,13 +378,6 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
     }
 
     /**
-     * @param b
-     */
-    public void setDeleted(boolean b) {
-        deleted = b;
-    }
-
-    /**
      * @param repo
      * @return if this file is expeced
      */
@@ -423,19 +456,8 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         return version;
     }
 
-    public void setVersion(int version) {
-        this.version = version;
-    }
-
-    /**
-     * Sets the mofification info.
-     * 
-     * @param by
-     * @param when
-     */
-    public void setModifiedInfo(MemberInfo by, Date when) {
-        modifiedBy = by;
-        lastModifiedDate = when;
+    public boolean isTemplate() {
+        return size == null;
     }
 
     /**
@@ -696,21 +718,10 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
 
         return false;
     }
-    
+
     public String toString() {
         return "[" + folderInfo.name + "]:" + (deleted ? "(del) /" : "/")
             + fileName;
-    }
-
-    @Override
-    public Object clone() {
-        try {
-            FileInfo info = (FileInfo) super.clone();
-            return info;
-        } catch (CloneNotSupportedException e) {
-            // Rethrow as unchecked exception
-            throw new RuntimeException(e);
-        }
     }
 
     /**
@@ -756,7 +767,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
      * @throws IllegalArgumentException
      *             if the state is corrupt
      */
-    public void validate() {
+    private void validate() {
         Reject.ifTrue(StringUtils.isEmpty(fileName), "Filename is empty");
         Reject.ifNull(size, "Size is null");
         Reject.ifFalse(size >= 0, "Negative file size");
@@ -774,6 +785,8 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         ClassNotFoundException
     {
         in.defaultReadObject();
-        fileName = fileName.intern();
+        // Internalized strings are not guaranteed to be garbage collected!
+        // fileName = fileName.intern();
+        validate();
     }
 }

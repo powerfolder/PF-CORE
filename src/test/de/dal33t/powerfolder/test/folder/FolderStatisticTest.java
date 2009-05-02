@@ -188,11 +188,11 @@ public class FolderStatisticTest extends FiveControllerTestCase {
     }
 
     public void testMultipleFiles() {
-//        assertFalse(getContollerHomer().isSilentMode());
-//        assertFalse(getContollerBart().isSilentMode());
-//        assertFalse(getContollerMarge().isSilentMode());
-//        assertFalse(getContollerLisa().isSilentMode());
-//        assertFalse(getContollerMaggie().isSilentMode());
+        // assertFalse(getContollerHomer().isSilentMode());
+        // assertFalse(getContollerBart().isSilentMode());
+        // assertFalse(getContollerMarge().isSilentMode());
+        // assertFalse(getContollerLisa().isSilentMode());
+        // assertFalse(getContollerMaggie().isSilentMode());
         int nFiles = 100;
         int totalSize = 0;
         List<File> files = new ArrayList<File>();
@@ -276,8 +276,9 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         FileInfo fInfoAtLisa = getFolderAtLisa().getKnownFiles().iterator()
             .next();
         // Make FileInfo inconsistent. #968
-        fInfoAtLisa.setModifiedInfo(getContollerLisa().getMySelf().getInfo(),
-            fInfoAtLisa.getModifiedDate());
+        fail("Make the file inconsistent in a 'new' way?");
+        // fInfoAtLisa.setModifiedInfo(getContollerLisa().getMySelf().getInfo(),
+        // fInfoAtLisa.getModifiedDate());
 
         disconnectAll();
         connectAll();
@@ -424,7 +425,7 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         File testFile = TestHelper.createRandomFile(getFolderAtBart()
             .getLocalBase());
         scanFolder(getFolderAtBart());
-        
+
         getFolderAtMarge()
             .setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         getFolderAtMaggie().setSyncProfile(
@@ -649,8 +650,8 @@ public class FolderStatisticTest extends FiveControllerTestCase {
                     + filesOnHomer.size() + " (same:"
                     + identicalFileList(filesLocal, filesOnHomer) + "), Bart: "
                     + filesOnBart.size() + " (same:"
-                    + identicalFileList(filesLocal, filesOnBart)
-                    + "), Marge: " + filesOnMarge.size() + " (same:"
+                    + identicalFileList(filesLocal, filesOnBart) + "), Marge: "
+                    + filesOnMarge.size() + " (same:"
                     + identicalFileList(filesLocal, filesOnMarge) + "), Lisa: "
                     + filesOnLisa.size() + " (same:"
                     + identicalFileList(filesLocal, filesOnLisa)

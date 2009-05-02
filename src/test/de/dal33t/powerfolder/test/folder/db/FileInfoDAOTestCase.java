@@ -68,15 +68,13 @@ public abstract class FileInfoDAOTestCase extends ControllerTestCase {
 
     protected void testFindNewestVersion(FileInfoDAO dao) {
         FileInfo expected = createRandomFileInfo(10, "MyExcelsheet.xls");
-        expected.setVersion(1);
+        expected = expected.updatedVersion(1);
         dao.store(null, expected);
 
-        FileInfo remote = (FileInfo) expected.clone();
-        remote.setVersion(0);
+        FileInfo remote = expected.updatedVersion(0);
         dao.store("REMOTE1", remote);
 
-        FileInfo remote2 = (FileInfo) expected.clone();
-        remote2.setVersion(2);
+        FileInfo remote2 = expected.updatedVersion(2);
         dao.store("REMOTE2", remote2);
 
         assertNotNull(dao.findNewestVersion(expected, ""));
@@ -93,8 +91,8 @@ public abstract class FileInfoDAOTestCase extends ControllerTestCase {
     protected void testIndexFileInfo(FileInfoDAO dao) {
         FileInfo expected = createRandomFileInfo(10, "MyExcelsheet.xls");
         dao.store(null, expected);
-        FileInfo retrieved = dao.find(new FileInfo(expected.getFolderInfo(),
-            expected.getName()), null);
+        FileInfo retrieved = dao.find(FileInfo.getTemplate(expected
+            .getFolderInfo(), expected.getName()), null);
         assertNotNull("Retrieved FileInfo is null", retrieved);
         assertEquals(expected, retrieved);
 
@@ -107,13 +105,11 @@ public abstract class FileInfoDAOTestCase extends ControllerTestCase {
 
     protected static FileInfo createRandomFileInfo(int n, String name) {
         FolderInfo foInfo = createRandomFolderInfo();
-        FileInfo fInfo = new FileInfo(foInfo, "subdir1/SUBDIR2/" + name + "-"
-            + n);
-        fInfo.setSize((long) Math.random() * Long.MAX_VALUE);
+        String fn = "subdir1/SUBDIR2/" + name + "-" + n;
         MemberInfo mInfo = new MemberInfo(IdGenerator.makeId(), IdGenerator
             .makeId(), IdGenerator.makeId());
-        fInfo.setModifiedInfo(mInfo, new Date());
-        return fInfo;
+        return FileInfo.unmarshallExistingFile(foInfo, fn, (long) Math.random()
+            * Long.MAX_VALUE, mInfo, new Date(), 0);
     }
 
     protected static FolderInfo createRandomFolderInfo() {

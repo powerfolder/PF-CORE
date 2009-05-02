@@ -1,33 +1,32 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.disk;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.Translation;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
 
 /**
  * Identifies problems with filenames. Note the directory names mostly have the
@@ -43,10 +42,13 @@ import java.util.List;
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  */
 public class FilenameProblem {
-    /** The fileinfo that has problems, immutable field*/
+    /** The fileinfo that has problems, immutable field */
     private FileInfo fileInfo;
 
-    /** The FileInfo that hold the same name (but with differnt case), immutable field */
+    /**
+     * The FileInfo that hold the same name (but with differnt case), immutable
+     * field
+     */
     private FileInfo fileInfoDupe;
 
     private ProblemType problemType;
@@ -54,7 +56,7 @@ public class FilenameProblem {
     public enum ProblemType {
         /** to long on various systems (most have a 255 limit) */
         TO_LONG,
-        /** 0-31 and |\?*<":>/ */
+/** 0-31 and |\?*<":>/ */
         CONTAINS_ILLEGAL_WINDOWS_CHARS,
         /** : and / are illegal on Mac OSX */
         CONTAINS_ILLEGAL_MACOSX_CHARS,
@@ -84,7 +86,9 @@ public class FilenameProblem {
         }
     }
 
-    /** creates a FileName Problem. only used internal use the getProblems method */
+    /**
+     * creates a FileName Problem. only used internal use the getProblems method
+     */
     private FilenameProblem(FileInfo fileInfo, ProblemType problemType) {
         this.fileInfo = fileInfo;
         this.problemType = problemType;
@@ -172,9 +176,8 @@ public class FilenameProblem {
             .getLocationInFolder()
             + "/" + newName);
         if (file.renameTo(newFile)) {
-            FileInfo renamedFileInfo = new FileInfo(folder, newFile);
-            renamedFileInfo.setModifiedInfo(controller.getNodeManager()
-                .getMySelf().getInfo(), new Date(newFile.lastModified()));
+            FileInfo renamedFileInfo = FileInfo.newFile(folder, newFile,
+                controller.getMySelf().getInfo());
             return renamedFileInfo;
         }
         return null;
@@ -367,7 +370,7 @@ public class FilenameProblem {
             .toLowerCase());
     }
 
-    /** 0-31 and |\?*<":>/ */
+/** 0-31 and |\?*<":>/ */
     public static final boolean containsIllegalWindowsChars(String filename) {
         int s = filename.length();
         for (int i = 0; i < s; i++) {

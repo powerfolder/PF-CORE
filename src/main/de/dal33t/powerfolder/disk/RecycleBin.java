@@ -110,7 +110,7 @@ public class RecycleBin extends PFComponent {
 
     /**
      * Counts the number of files in the recycle bin for a specific folder.
-     *
+     * 
      * @param folderInfo
      * @return
      */
@@ -124,10 +124,9 @@ public class RecycleBin extends PFComponent {
         return count;
     }
 
-
     /**
      * Accumulates the size of files in the recycle bin for a specific folder.
-     *
+     * 
      * @param folderInfo
      * @return
      */
@@ -310,7 +309,7 @@ public class RecycleBin extends PFComponent {
         int folderIndex = -1;
         for (Folder folder : folders) {
             folderIndex++;
-            
+
             // First of four stages for this folder.
             // Find FileInfos to be removed.
             if (progressListener != null) {
@@ -365,7 +364,7 @@ public class RecycleBin extends PFComponent {
 
     /**
      * Return / make recyclebin directory for a FolderInfo.
-     *
+     * 
      * @param fileInfo
      * @return
      */
@@ -531,7 +530,7 @@ public class RecycleBin extends PFComponent {
         // Let folder scan the restored file
         // This updated internal version numbers and broadcasts changes to
         // remote users
-        folder.scanRestoredFile(new FileInfo(folder, target));
+        folder.scanRestoredFile(FileInfo.getTemplate(folder, target));
         removeFile(fileInfo);
         removeEmptyDirs(recycleBinDir);
         return true;

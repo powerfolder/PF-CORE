@@ -70,8 +70,7 @@ public class Upload extends Transfer {
      * @param dl
      */
     Upload(TransferManager manager, Member member, RequestDownload dl) {
-        super(manager, (FileInfo) ((dl == null) ? null : dl.file.clone()),
-            member);
+        super(manager, (FileInfo) ((dl == null) ? null : dl.file), member);
         if (dl == null) {
             throw new NullPointerException("Download request is null");
         }

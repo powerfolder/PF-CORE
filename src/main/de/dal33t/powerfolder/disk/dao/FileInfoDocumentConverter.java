@@ -61,7 +61,6 @@ public class FileInfoDocumentConverter {
      */
     public static final Document convertToDocument(FileInfo fInfo) {
         Reject.ifNull(fInfo, "FileInfo is null");
-        fInfo.validate();
         Document doc = new Document();
         doc.add(new Field(FileInfo.PROPERTYNAME_FILE_NAME, fInfo.getName(),
             Field.Store.YES, Field.Index.NOT_ANALYZED));
@@ -124,13 +123,6 @@ public class FileInfoDocumentConverter {
                 "Unable to retrieve folder from controller. ID: " + folderId
                     + " file: " + fileName);
         }
-        FileInfo fInfo = new FileInfo(foInfo, fileName);
-
-        fInfo.setSize(Long.valueOf(doc.get(FileInfo.PROPERTYNAME_SIZE)));
-        fInfo.setVersion(Integer
-            .valueOf(doc.get(FileInfo.PROPERTYNAME_VERSION)));
-        fInfo.setDeleted(Boolean
-            .valueOf(doc.get(FileInfo.PROPERTYNAME_DELETED)));
 
         String modifiedByNodeId = doc.get(FIELDNAME_MODIFIED_BY_NODE_ID);
         Member modifiedBy = controller != null ? controller.getNodeManager()
@@ -140,14 +132,21 @@ public class FileInfoDocumentConverter {
             modifiedByInfo = modifiedBy.getInfo();
         } else {
             LOG.warning("Unable to retrieve modifier from controller. ID: "
-                + modifiedByNodeId + " file: " + fInfo.getFolderInfo() + "/"
-                + fInfo.getName());
+                + modifiedByNodeId + " file: " + foInfo + "/" + fileName);
             modifiedByInfo = new MemberInfo("<unknonw>", modifiedByNodeId, null);
         }
         long modifiedTime = Long.valueOf(doc
             .get(FileInfo.PROPERTYNAME_LAST_MODIFIED_DATE));
-        fInfo.setModifiedInfo(modifiedByInfo, new Date(modifiedTime));
 
-        return fInfo;
+        if (Boolean.valueOf(doc.get(FileInfo.PROPERTYNAME_DELETED))) {
+            return FileInfo.unmarshallDelectedFile(foInfo, fileName,
+                modifiedByInfo, new Date(modifiedTime), Integer.parseInt(doc
+                    .get(FileInfo.PROPERTYNAME_VERSION)));
+        } else {
+            return FileInfo.unmarshallExistingFile(foInfo, fileName, Long
+                .parseLong(doc.get(FileInfo.PROPERTYNAME_SIZE)),
+                modifiedByInfo, new Date(modifiedTime), Integer.parseInt(doc
+                    .get(FileInfo.PROPERTYNAME_VERSION)));
+        }
     }
 }

@@ -134,7 +134,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
     {
         Reject.noNullElements(controller, file);
 
-        this.fileInfo = (FileInfo) file.clone();
+        this.fileInfo = file;
         this.automatic = automatic;
 
         this.controller = controller;
@@ -510,9 +510,9 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         }
 
         if (isInfo()) {
-            logInfo("Download completed: " + fileInfo.toDetailString());    
+            logInfo("Download completed: " + fileInfo.toDetailString());
         }
-        
+
         setState(InternalState.COMPLETED);
         shutdown();
         deleteMetaData();

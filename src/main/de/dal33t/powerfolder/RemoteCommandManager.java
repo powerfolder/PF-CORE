@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder;
 
 import java.awt.Frame;
@@ -77,7 +77,8 @@ import de.dal33t.powerfolder.util.Util;
  */
 public class RemoteCommandManager extends PFComponent implements Runnable {
 
-    private static final Logger log = Logger.getLogger(RemoteCommandManager.class.getName());
+    private static final Logger log = Logger
+        .getLogger(RemoteCommandManager.class.getName());
 
     // The default port to listen for remote commands
     private static final int DEFAULT_REMOTECOMMAND_PORT = 1338;
@@ -129,8 +130,8 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
                     testSocket.close();
                 } catch (IOException e) {
                     log.log(Level.SEVERE,
-                            "Unable to close already running test socket. "
-                        + testSocket, e);
+                        "Unable to close already running test socket. "
+                            + testSocket, e);
                 }
             }
         }
@@ -146,7 +147,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
      */
     public static boolean sendCommand(String command) {
         try {
-            log.log(Level.SEVERE, "Sending remote command '" + command + '\'') ;
+            log.log(Level.SEVERE, "Sending remote command '" + command + '\'');
             Socket socket = new Socket("127.0.0.1", 1338);
             PrintWriter writer = new PrintWriter(new OutputStreamWriter(socket
                 .getOutputStream(), ENCODING));
@@ -176,14 +177,12 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
             myThread = new Thread(this, "Remote command Manager");
             myThread.start();
         } catch (UnknownHostException e) {
-            log.warning(
-                "Unable to open remote command manager on port "
-                    + DEFAULT_REMOTECOMMAND_PORT + ": " + e);
+            log.warning("Unable to open remote command manager on port "
+                + DEFAULT_REMOTECOMMAND_PORT + ": " + e);
             log.log(Level.FINER, "UnknownHostException", e);
         } catch (IOException e) {
-            log.warning(
-                "Unable to open remote command manager on port "
-                    + DEFAULT_REMOTECOMMAND_PORT + ": " + e);
+            log.warning("Unable to open remote command manager on port "
+                + DEFAULT_REMOTECOMMAND_PORT + ": " + e);
             log.log(Level.FINER, "IOException", e);
         }
     }
@@ -205,9 +204,8 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
     }
 
     public void run() {
-        log.info(
-            "Listening for remote commands on port "
-                + serverSocket.getLocalPort());
+        log.info("Listening for remote commands on port "
+            + serverSocket.getLocalPort());
         while (!Thread.currentThread().isInterrupted()) {
             Socket socket;
             try {
@@ -320,7 +318,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
                 FolderInfo folder = new FolderInfo(name, id);
 
                 String filename = Util.decodeFromURL(nizer.nextToken());
-                FileInfo fInfo = new FileInfo(folder, filename);
+                FileInfo fInfo = FileInfo.getTemplate(folder, filename);
 
                 // FIXME: Show warning/join panel if not on folder
 
@@ -374,12 +372,12 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
             PFWizard wizard = new PFWizard(getController());
             wizard.getWizardContext().setAttribute(PFWizard.PICTO_ICON,
                 Icons.getIconById(Icons.FILE_SHARING_PICTO));
-            wizard.getWizardContext().setAttribute(WizardContextAttributes
-                    .INITIAL_FOLDER_NAME, name);
+            wizard.getWizardContext().setAttribute(
+                WizardContextAttributes.INITIAL_FOLDER_NAME, name);
             wizard.open(panel);
         } else {
-            log.warning(
-                    "Remote creation of folders in non-gui mode is not supported yet.");
+            log
+                .warning("Remote creation of folders in non-gui mode is not supported yet.");
         }
     }
 
@@ -404,11 +402,14 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
 
             return nodesArrary;
         } catch (IOException e) {
-            log.log(Level.SEVERE, "Unable to load nodes from file '" + file + "'.", e);
+            log.log(Level.SEVERE, "Unable to load nodes from file '" + file
+                + "'.", e);
         } catch (ClassCastException e) {
-            log.log(Level.SEVERE, "Illegal format of nodes file '" + file + "'.", e);
+            log.log(Level.SEVERE, "Illegal format of nodes file '" + file
+                + "'.", e);
         } catch (ClassNotFoundException e) {
-            log.log(Level.SEVERE, "Illegal format of nodes file '" + file + "'.", e);
+            log.log(Level.SEVERE, "Illegal format of nodes file '" + file
+                + "'.", e);
         }
 
         return null;

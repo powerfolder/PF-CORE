@@ -515,7 +515,7 @@ public class ScanFolderTest extends ControllerTestCase {
      * @return the fileinfo in the test folder for this file.
      */
     private FileInfo retrieveFileInfo(File file) {
-        return getFolder().getFile(new FileInfo(getFolder(), file));
+        return getFolder().getFile(FileInfo.getTemplate(getFolder(), file));
     }
 
     private void scanFolder() {

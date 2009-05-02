@@ -141,11 +141,10 @@ public class FileInfoSQLConverter {
                 "Unable to retrieve folder from controller. ID: " + folderId
                     + " file: " + fileName);
         }
-        FileInfo fInfo = new FileInfo(foInfo, fileName);
 
-        fInfo.setSize(rs.getLong(FileInfo.PROPERTYNAME_SIZE));
-        fInfo.setVersion(rs.getInt(FileInfo.PROPERTYNAME_VERSION));
-        fInfo.setDeleted(rs.getBoolean(FileInfo.PROPERTYNAME_DELETED));
+        long size = rs.getLong(FileInfo.PROPERTYNAME_SIZE);
+        int version = rs.getInt(FileInfo.PROPERTYNAME_VERSION);
+        boolean deleted = rs.getBoolean(FileInfo.PROPERTYNAME_DELETED);
 
         String modifiedByNodeId = rs.getString(FIELDNAME_MODIFIED_BY_NODE_ID);
         Member modifiedBy = controller != null ? controller.getNodeManager()
@@ -155,14 +154,19 @@ public class FileInfoSQLConverter {
             modifiedByInfo = modifiedBy.getInfo();
         } else {
             LOG.warning("Unable to retrieve modifier from controller. ID: "
-                + modifiedByNodeId + " file: " + fInfo.getFolderInfo() + "/"
-                + fInfo.getName());
+                + modifiedByNodeId + " file: " + foInfo + "/" + fileName);
             modifiedByInfo = new MemberInfo("<unknonw>", modifiedByNodeId, null);
         }
         long modifiedTime = rs
             .getLong(FileInfo.PROPERTYNAME_LAST_MODIFIED_DATE);
-        fInfo.setModifiedInfo(modifiedByInfo, new Date(modifiedTime));
+        Date modDate = new Date(modifiedTime);
 
-        return fInfo;
+        if (deleted) {
+            return FileInfo.unmarshallDelectedFile(foInfo, fileName,
+                modifiedByInfo, modDate, version);
+        } else {
+            return FileInfo.unmarshallExistingFile(foInfo, fileName, size,
+                modifiedByInfo, modDate, version);
+        }
     }
 }

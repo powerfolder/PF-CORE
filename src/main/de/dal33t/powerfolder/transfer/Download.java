@@ -78,7 +78,7 @@ public class Download extends Transfer {
      * <code>request(Member)</code>
      */
     Download(TransferManager tm, FileInfo file, boolean automatic) {
-        super(tm, (FileInfo) file.clone(), null);
+        super(tm, (FileInfo) file, null);
         // from can be null
         this.lastTouch = new Date();
         this.automatic = automatic;
@@ -264,7 +264,7 @@ public class Download extends Transfer {
      * 
      * @param startOffset
      */
-    synchronized void request(long startOffset) {
+    void request(long startOffset) {
         Reject.ifTrue(startOffset < 0 || startOffset >= getFile().getSize(),
             "Invalid startOffset: " + startOffset);
         requestCheckState();

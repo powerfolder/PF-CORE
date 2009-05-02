@@ -1,23 +1,30 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.util;
+
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
@@ -27,13 +34,6 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.net.NodeManager;
-
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-import java.util.logging.Logger;
 
 /** converts various stuff */
 public class Convert {
@@ -45,9 +45,9 @@ public class Convert {
     }
 
     // The local offset to UTC time in MS
-    private static final long TIMEZONE_OFFSET_TO_UTC_MS =
-            Calendar.getInstance().get(Calendar.ZONE_OFFSET)
-                    + Calendar.getInstance().get(Calendar.DST_OFFSET);
+    private static final long TIMEZONE_OFFSET_TO_UTC_MS = Calendar
+        .getInstance().get(Calendar.ZONE_OFFSET)
+        + Calendar.getInstance().get(Calendar.DST_OFFSET);
 
     /**
      * Converts an int to a 4 bytes arrays
@@ -158,19 +158,22 @@ public class Convert {
      * @param list
      *            the list to cleanup.
      */
+    @Deprecated
     public static void cleanFileList(Controller controller, FileInfo[] list) {
-        cleanFolderInfos(controller.getFolderRepository(), list);
-        cleanMemberInfos(controller.getNodeManager(), list);
+        // cleanFolderInfos(controller.getFolderRepository(), list);
+        // cleanMemberInfos(controller.getNodeManager(), list);
     }
 
     /**
-     * Replaces duplicate instances of <code>FolderInfo</code>s with that
-     * from nodemanager.
+     * Replaces duplicate instances of <code>FolderInfo</code>s with that from
+     * nodemanager.
      * 
      * @param list
      */
+    @Deprecated
     public static void cleanFolderInfos(FolderRepository repo, FileInfo[] list)
     {
+        // FIXME This doesn't work so well for immutable FileInfos
         Reject.ifNull(repo, "Repository is null");
         if (list == null) {
             return;
@@ -188,7 +191,8 @@ public class Convert {
             }
             Folder folder = repo.getFolder(fileFoInfo);
             if (folder == null) {
-                log.warning("Unable to cleanup file info instance. Folder not joined: "
+                log
+                    .warning("Unable to cleanup file info instance. Folder not joined: "
                         + fileFoInfo);
                 // FIXME: For list of folders that are not joined!
                 // Currently not used because no preview/public mode exists
@@ -203,10 +207,12 @@ public class Convert {
             // }
             // Instances not SAME! Saved memory
             // Assoiate with "our" instance of folder info for that folder
-            file.setFolderInfo(folder.getInfo());
+
+            // file.setFolderInfo(folder.getInfo());
         }
         // long took = System.currentTimeMillis() - start;
-        // Loggable.logWarningStatic(Convert.class,  "Completed clean folder infos on list with " + list.length
+        // Loggable.logWarningStatic(Convert.class,
+        // "Completed clean folder infos on list with " + list.length
         // + " files. took " + took + "ms. Removed " + instances.size()
         // + " unnessesary folder info instances");
     }
@@ -216,14 +222,17 @@ public class Convert {
      * 
      * @param list
      */
+    @Deprecated
     public static void cleanMemberInfos(NodeManager nm, FileInfo[] list) {
+        // FIXME This doesn't work so well for immutable FileInfos
         Reject.ifNull(nm, "NodeMananger is null");
         if (list == null) {
             return;
         }
         // Collection<MemberInfo> instances = new ArrayList<MemberInfo>();
         // long start = System.currentTimeMillis();
-        // Loggable.logWarningStatic(Convert.class,  "Started clean member infos on list with " + list.length
+        // Loggable.logWarningStatic(Convert.class,
+        // "Started clean member infos on list with " + list.length
         // + " files.");
         for (FileInfo file : list) {
             MemberInfo fMInfo = file.getModifiedBy();
@@ -251,81 +260,21 @@ public class Convert {
             // }
 
             // Instances not SAME! Saved memory
-            file.setModifiedInfo(dbMInfo, file.getModifiedDate());
+            // file.setModifiedInfo(dbMInfo, file.getModifiedDate());
         }
         // long took = System.currentTimeMillis() - start;
-        // Loggable.logWarningStatic(Convert.class,  "Completed clean member infos on list with " + list.length
+        // Loggable.logWarningStatic(Convert.class,
+        // "Completed clean member infos on list with " + list.length
         // + " files. took " + took + "ms. Removed " + instances.size()
         // + " unnessesary member info instances");
     }
 
-    /**
-     * Cleans the FileInfo. Saves memory by setting <code>MemberInfo</code>
-     * and <code>FolderInfo</code> with those instance already existing in
-     * controller context. Afterwards unused <code>MemberInfo</code> and
-     * <code>FolderInfo</code> objects may be collected by the garbage
-     * collector.
-     * 
-     * @param controller
-     * @param fInfo
-     *            the file to cleanup.
-     */
-    public static void cleanFileInfo(Controller controller, FileInfo file) {
-        Reject.ifNull(controller, "Controller is null");
-        Reject.ifNull(file, "FileInfo is null");
-
-        NodeManager nm = controller.getNodeManager();
-        FolderRepository repo = controller.getFolderRepository();
-
-        // 1) Cleanup of member Info
-        MemberInfo fMInfo = file.getModifiedBy();
-        if (fMInfo == null) {
-            log.severe("Got fileinfo with modificator: null. "
-                + file.toDetailString());
-            return;
-        }
-        Member member = nm.getNode(fMInfo.id);
-        if (member == null) {
-            member = nm.addNode(fMInfo);
-        }
-        MemberInfo dbMInfo = member != null
-            ? nm.getNode(fMInfo.id).getInfo()
-            : null;
-        if (fMInfo != dbMInfo) {
-            // Instances not SAME! Saved memory
-            file.setModifiedInfo(dbMInfo, file.getModifiedDate());
-        }
-
-        // 2) Cleanup of FolderInfo
-        FolderInfo fileFoInfo = file.getFolderInfo();
-        if (fileFoInfo == null) {
-            log.severe("Got fileinfo with folderinfo: null. "
-                + file.toDetailString());
-            return;
-        }
-        Folder folder = repo.getFolder(fileFoInfo);
-        if (folder == null) {
-            log.finer("Unable to cleanup file info instance. "
-                + "Folder not joined: " + fileFoInfo);
-            // FIXME: For list of folders that are not joined!
-            // Currently not used because no preview/public mode exists
-            return;
-        }
-        if (fileFoInfo != folder.getInfo()) {
-            // Instances not SAME! Saved memory
-            // Assoiate with "our" instance of folder info for that folder
-            file.setFolderInfo(folder.getInfo());
-        }
-    }
-
-    @SuppressWarnings("unused")
-    private static boolean containsInstance(Collection c, Object canidate)
-    {
-        for (Object instance : c) {
-            if (instance == canidate) {
-                return true;
-            }
-        }
-        return false;
-    }
+    // private static boolean containsInstance(Collection c, Object canidate) {
+    // for (Object instance : c) {
+    // if (instance == canidate) {
+    // return true;
+    // }
+    // }
+    // return false;
+    // }
 }

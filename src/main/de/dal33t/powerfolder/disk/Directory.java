@@ -71,7 +71,8 @@ public class Directory implements Comparable<Directory>, DiskItem {
     private Folder rootFolder;
     /** The parent Directory (may be null, if no parent!) */
     private Directory parent;
-    private static final Logger log = Logger.getLogger(Directory.class.getName());
+    private static final Logger log = Logger.getLogger(Directory.class
+        .getName());
 
     /**
      * @param name
@@ -79,7 +80,9 @@ public class Directory implements Comparable<Directory>, DiskItem {
      * @param path
      *            The path to this folder
      */
-    public Directory(Directory parent, String name, String path, Folder rootFolder) {
+    public Directory(Directory parent, String name, String path,
+        Folder rootFolder)
+    {
         this.parent = parent;
         this.name = name;
         this.path = path;
@@ -151,7 +154,7 @@ public class Directory implements Comparable<Directory>, DiskItem {
      * @param file
      */
     public void add(File file) {
-        FileInfo fileInfo = new FileInfo(rootFolder, file);
+        FileInfo fileInfo = FileInfo.getTemplate(rootFolder, file);
         rootFolder.scanNewFile(fileInfo);
     }
 
@@ -198,7 +201,7 @@ public class Directory implements Comparable<Directory>, DiskItem {
             if (tmpFile != null) {
                 if (!tmpFile.renameTo(newFile)) {
                     log.severe("Couldn't rename " + newFile.getAbsolutePath()
-                            + " to " + tmpFile.getAbsolutePath());
+                        + " to " + tmpFile.getAbsolutePath());
                 }
             }
         }
@@ -647,7 +650,7 @@ public class Directory implements Comparable<Directory>, DiskItem {
     public String getName() {
         return name;
     }
-    
+
     public String getFilenameOnly() {
         return name;
     }
