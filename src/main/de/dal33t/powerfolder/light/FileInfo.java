@@ -186,6 +186,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
 
     @Deprecated
     public FileInfo updatedVersion(int newVersion) {
+        Reject.ifTrue(isTemplate(), "Cannot update template FileInfo!");
         return new FileInfo(fileName, size, modifiedBy, lastModifiedDate,
             newVersion, deleted, folderInfo);
     }
