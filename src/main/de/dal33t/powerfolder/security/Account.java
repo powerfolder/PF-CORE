@@ -320,6 +320,19 @@ public class Account extends Model implements Serializable {
         return licenseKeyFiles;
     }
 
+    /**
+     * @return the days since the user has registered
+     */
+    public int getDaysSinceRegistration() {
+        if (registerDate == null) {
+            return -1;
+        }
+        long daysSinceRegistration = (System.currentTimeMillis() - registerDate
+            .getTime())
+            / (1000L * 60 * 60 * 24);
+        return (int) daysSinceRegistration;
+    }
+
     public String toString() {
         return "Account '" + username + "', " + permissions.size()
             + " permissions";
@@ -460,8 +473,8 @@ public class Account extends Model implements Serializable {
             if (folder == null) {
                 continue;
             }
-            if (log.isLoggable(Level.FINE)) {
-                log.fine("Disable download of new files for folder: " + folder
+            if (log.isLoggable(Level.FINER)) {
+                log.finer("Disable download of new files for folder: " + folder
                     + " for " + getUsername());
             }
             if (!folder.getSyncProfile().equals(SyncProfile.DISABLED)) {
