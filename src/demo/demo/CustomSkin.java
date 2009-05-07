@@ -8,7 +8,7 @@ public class CustomSkin implements Skin {
         return null;
     }
 
-    public Class getLookAndFeel() {
+    public Class getLookAndFeelClass() {
         return CustomLookAndFeel.class;
     }
 

@@ -54,7 +54,6 @@ public class PowerFolder {
     private static final Logger log = Logger.getLogger(PowerFolder.class
         .getName());
     public static final Options COMMAND_LINE_OPTIONS;
-    public static String customLookAndFeel;
     static {
         // Command line parsing
         Options options = new Options();
@@ -80,8 +79,6 @@ public class PowerFolder {
                 "<createfolder> Creates a new PowerFolder");
         options.addOption("i", "icons", true,
                 "<icons.properties> Custom icons properties file. Referenced icons must be in the classpath");
-        options.addOption("y", "synthetica", true,
-                "<custom.name> Custom Synthetica Look and Feel full class name (e.g. --synthetica demo.CustomLookAndFeel)");
         options.addOption("z", "nowarn", false,
                 "Do not warn if already running");
         COMMAND_LINE_OPTIONS = options;
@@ -159,10 +156,6 @@ public class PowerFolder {
         if (commandLine.hasOption("g")) {
             Preferences.userNodeForPackage(Translation.class).put("locale",
                 commandLine.getOptionValue("g"));
-        }
-
-        if (commandLine.hasOption("y")) {
-            customLookAndFeel = commandLine.getOptionValue("y");
         }
 
         if (commandLine.hasOption("i")) {

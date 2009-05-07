@@ -478,9 +478,9 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
     private JComboBox createLookAndFeelChooser() {
         JComboBox chooser = new JComboBox();
         final LookAndFeel[] availableLafs = LookAndFeelSupport
-            .getAvailableLookAndFeels();
+            .getAvailableLookAndFeels(getController());
         String[] availableLafNames = LookAndFeelSupport
-                .getAvailableLookAndFeelNames();
+                .getAvailableLookAndFeelNames(getController());
         for (int i = 0; i < availableLafs.length; i++) {
             chooser.addItem(availableLafNames[i]);
             if (availableLafs[i].getClass().getName().equals(

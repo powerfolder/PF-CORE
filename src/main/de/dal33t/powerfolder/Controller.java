@@ -1499,6 +1499,15 @@ public class Controller extends PFComponent {
     }
 
     /**
+     * Returns the skin - may be null;
+     * 
+     * @return
+     */
+    public Skin getSkin() {
+        return skin;
+    }
+
+    /**
      * @return the currently configured update settings
      */
     public Updater.UpdateSetting getUpdateSettings() {

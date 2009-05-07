@@ -21,6 +21,8 @@ package de.dal33t.powerfolder.ui;
 
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.PowerFolder;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.skin.Skin;
 import de.javasoft.plaf.synthetica.*;
 
 import javax.swing.*;
@@ -67,9 +69,9 @@ public class LookAndFeelSupport {
      *
      * @return
      */
-    public static synchronized String[] getAvailableLookAndFeelNames() {
+    public static synchronized String[] getAvailableLookAndFeelNames(Controller controller) {
         if (availableLafNames == null) {
-            SyntheticaLookAndFeel customLaf = getCustomLaf();
+            SyntheticaLookAndFeel customLaf = getCustomLaf(controller);
             if (customLaf == null) {
                 availableLafNames = new String[AVAILABLE_LAF_CLASSES.length];
             } else {
@@ -122,21 +124,19 @@ public class LookAndFeelSupport {
         return availableLafNames;
     }
 
-    private static SyntheticaLookAndFeel getCustomLaf() {
-        String customName = PowerFolder.customLookAndFeel;
-        if (customName != null && customName.length() > 0) {
+    private static SyntheticaLookAndFeel getCustomLaf(Controller controller) {
+        Skin skin = controller.getSkin();
+        if (skin != null) {
+            Class clazz = skin.getLookAndFeelClass();
             try {
-                Class clazz = Class.forName(customName);
                 Object instance = clazz.newInstance();
                 if (instance instanceof SyntheticaLookAndFeel) {
                     return (SyntheticaLookAndFeel) instance;
                 }
             } catch (InstantiationException e) {
-                log.severe("Could not instantiate custom Synthetica class " + customName);
+                log.severe("Could not instantiate custom Synthetica class " + clazz.getName());
             } catch (IllegalAccessException e) {
-                log.severe("Could not access custom Synthetica class " + customName);
-            } catch (ClassNotFoundException e) {
-                log.severe("Could not locate custom Synthetica class " + customName);
+                log.severe("Could not access custom Synthetica class " + clazz.getName());
             }
         }
 
@@ -148,9 +148,9 @@ public class LookAndFeelSupport {
      *
      * @return
      */
-    public static synchronized LookAndFeel[] getAvailableLookAndFeels() {
+    public static synchronized LookAndFeel[] getAvailableLookAndFeels(Controller controller) {
         if (availableLafs == null) {
-            SyntheticaLookAndFeel customLaf = getCustomLaf();
+            SyntheticaLookAndFeel customLaf = getCustomLaf(controller);
             if (customLaf == null) {
                 availableLafs = new LookAndFeel[AVAILABLE_LAF_CLASSES.length];
             } else {

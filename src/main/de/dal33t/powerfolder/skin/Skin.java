@@ -28,6 +28,6 @@ package de.dal33t.powerfolder.skin;
  */
 public interface Skin {
     String getName();
-    Class getLookAndFeel();
+    Class getLookAndFeelClass();
     Object getIcons(); // Don't know how this one is going to work yet...
 }
