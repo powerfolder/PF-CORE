@@ -19,8 +19,6 @@
  */
 package de.dal33t.powerfolder.skin;
 
-import de.javasoft.plaf.synthetica.SyntheticaLookAndFeel;
-
 /**
  * Interface which describes the information that can be retrieved from a skin,
  * which contains look-and-feel and image information.
@@ -30,6 +28,6 @@ import de.javasoft.plaf.synthetica.SyntheticaLookAndFeel;
  */
 public interface Skin {
     String getName();
-    SyntheticaLookAndFeel getLookAndFeel();
+    Class getLookAndFeel();
     Object getIcons(); // Don't know how this one is going to work yet...
 }
