@@ -916,7 +916,6 @@ public class Icons {
             try {
                 InputStream inputStream = Thread.currentThread().getContextClassLoader()
                         .getResourceAsStream(overridePropertiesFilename);
-                System.out.println("hghg -------------- " + (inputStream  != null));
                 buf = new BufferedInputStream(inputStream);
                 overrideIconProperties.load(buf);
             } catch (IOException ioe) {

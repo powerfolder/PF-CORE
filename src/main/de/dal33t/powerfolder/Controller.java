@@ -2003,12 +2003,8 @@ public class Controller extends PFComponent {
         }
         logInfo("Running skin: " + skin.getName());
 
-        System.out.println("hghg 1");
         String fileName = skin.getIconsPropertiesFileName();
-        System.out.println("hghg 3.5 " + (fileName == null));
-        System.out.println("hghg 5");
         Icons.loadOverrideFile(fileName);
-        System.out.println("hghg 6");
     }
 
     private void initDistribution() {

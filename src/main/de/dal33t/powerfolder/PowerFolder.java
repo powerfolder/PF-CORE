@@ -40,7 +40,6 @@ import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.util.MemoryMonitor;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
-import de.dal33t.powerfolder.ui.Icons;
 
 /**
  * Main class for the PowerFolder application.
