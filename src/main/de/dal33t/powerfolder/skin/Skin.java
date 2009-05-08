@@ -29,5 +29,5 @@ package de.dal33t.powerfolder.skin;
 public interface Skin {
     String getName();
     Class getLookAndFeelClass();
-    Object getIcons(); // Don't know how this one is going to work yet...
+    String getIconsPropertiesFileName();
 }

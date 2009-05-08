@@ -77,8 +77,6 @@ public class PowerFolder {
                 "<language> Sets the language to use (e.g. \"--language de\", sets language to german)");
         options.addOption("p", "createfolder", true,
                 "<createfolder> Creates a new PowerFolder");
-        options.addOption("i", "icons", true,
-                "<icons.properties> Custom icons properties file. Referenced icons must be in the classpath");
         options.addOption("z", "nowarn", false,
                 "Do not warn if already running");
         COMMAND_LINE_OPTIONS = options;
@@ -156,10 +154,6 @@ public class PowerFolder {
         if (commandLine.hasOption("g")) {
             Preferences.userNodeForPackage(Translation.class).put("locale",
                 commandLine.getOptionValue("g"));
-        }
-
-        if (commandLine.hasOption("i")) {
-            Icons.loadOverrideFile(commandLine.getOptionValue("i"));
         }
 
         // The controller.

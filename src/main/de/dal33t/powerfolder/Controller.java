@@ -21,12 +21,7 @@ package de.dal33t.powerfolder;
 
 import java.awt.Component;
 import java.awt.GraphicsEnvironment;
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.security.Security;
@@ -67,6 +62,7 @@ import de.dal33t.powerfolder.plugin.PluginManager;
 import de.dal33t.powerfolder.security.SecurityManager;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.UIController;
+import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.os.OSUtil;
@@ -2006,6 +2002,13 @@ public class Controller extends PFComponent {
             return;
         }
         logInfo("Running skin: " + skin.getName());
+
+        System.out.println("hghg 1");
+        String fileName = skin.getIconsPropertiesFileName();
+        System.out.println("hghg 3.5 " + (fileName == null));
+        System.out.println("hghg 5");
+        Icons.loadOverrideFile(fileName);
+        System.out.println("hghg 6");
     }
 
     private void initDistribution() {

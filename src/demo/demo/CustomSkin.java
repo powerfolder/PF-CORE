@@ -4,8 +4,8 @@ import de.dal33t.powerfolder.skin.Skin;
 
 public class CustomSkin implements Skin {
 
-    public Object getIcons() {
-        return null;
+    public String getIconsPropertiesFileName() {
+        return "CustomIcons.properties";
     }
 
     public Class getLookAndFeelClass() {

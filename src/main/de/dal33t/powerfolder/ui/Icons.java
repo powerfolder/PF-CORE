@@ -914,7 +914,10 @@ public class Icons {
 
             BufferedInputStream buf = null;
             try {
-                buf = new BufferedInputStream(new FileInputStream(overridePropertiesFilename));
+                InputStream inputStream = Thread.currentThread().getContextClassLoader()
+                        .getResourceAsStream(overridePropertiesFilename);
+                System.out.println("hghg -------------- " + (inputStream  != null));
+                buf = new BufferedInputStream(inputStream);
                 overrideIconProperties.load(buf);
             } catch (IOException ioe) {
                 log.log(Level.SEVERE, "Cannot read: " + overridePropertiesFilename, ioe);

@@ -352,43 +352,49 @@ For creation of the installer:
 
     <target name="demo" depends="init" description="Builds a demo Synthetica style">
 
-            <delete dir="${build.dir}"/>
-            <delete dir="${dist.dir}"/>
+        <delete dir="${build.dir}"/>
+        <delete dir="${dist.dir}"/>
 
-            <mkdir dir="${build.dir}" />
-            <mkdir dir="${dist.dir}" />
+        <mkdir dir="${build.dir}"/>
+        <mkdir dir="${dist.dir}"/>
 
-            <javac destdir="${build.dir}" source="1.5" target="1.5" encoding="UTF-8" nowarn="${NoCompileWarnings}" debug="${Debug}" deprecation="${Deprecation}" optimize="${Optimize}">
+        <javac destdir="${build.dir}" source="1.5" target="1.5" encoding="UTF-8" nowarn="${NoCompileWarnings}"
+               debug="${Debug}" deprecation="${Deprecation}" optimize="${Optimize}">
 
-                <!-- javac 1.5 specific warnings -->
-                <compilerarg value="-Xlint:${Unchecked}" />
-                <compilerarg value="-Xlint:${Fallthrough}" />
+            <!-- javac 1.5 specific warnings -->
+            <compilerarg value="-Xlint:${Unchecked}"/>
+            <compilerarg value="-Xlint:${Fallthrough}"/>
 
-                <classpath>
-                    <fileset refid="libs" />
-                    <fileset refid="testlibs" />
-                </classpath>
+            <classpath>
+                <fileset refid="libs"/>
+                <fileset refid="testlibs"/>
+            </classpath>
 
-                <src path="${demo.src.dir}" />
-                <src path="${main.src.dir}" />
-                <src path="${jwf.src.dir}" />
+            <src path="${demo.src.dir}"/>
+            <src path="${main.src.dir}"/>
+            <src path="${jwf.src.dir}"/>
 
-            </javac>
+        </javac>
 
-            <copy file="${demo.src.dir}/demo/synth.xml" todir="${build.dir}/demo"/>
-            <copy file="${demo.src.dir}/META-INF/services/de.dal33t.powerfolder.skin.Skin" todir="${build.dir}/META-INF/services"/>
+        <copy file="${demo.src.dir}/demo/synth.xml" todir="${build.dir}/demo"/>
+        <copy file="${demo.src.dir}/CustomIcons.properties" todir="${build.dir}"/>
+        <copy file="${demo.src.dir}/icons/PowerFolderDemo.png" todir="${build.dir}/icons"/>
+        <copy file="${demo.src.dir}/META-INF/services/de.dal33t.powerfolder.skin.Skin"
+              todir="${build.dir}/META-INF/services"/>
 
-            <jar jarfile="${dist.dir}/CustomLookAndFeel.jar" basedir="${build.dir}" update="true">
-                <include name="demo/**"/>
-                <include name="META-INF/**"/>
-                <manifest>
-                    <attribute name="Built-By" value="${BuildBy}" />
-                    <attribute name="BuildDateTime" value="${BuildDateTime}" />
-                    <attribute name="Sealed" value="false" />
-                </manifest>
-            </jar>
+        <jar jarfile="${dist.dir}/CustomLookAndFeel.jar" basedir="${build.dir}" update="true">
+            <include name="demo/**"/>
+            <include name="icons/**"/>
+            <include name="META-INF/**"/>
+            <include name="CustomIcons.properties"/>
+            <manifest>
+                <attribute name="Built-By" value="${BuildBy}"/>
+                <attribute name="BuildDateTime" value="${BuildDateTime}"/>
+                <attribute name="Sealed" value="false"/>
+            </manifest>
+        </jar>
 
-        </target>
+    </target>
 
 
 </project>
