@@ -136,6 +136,19 @@ public class JavaVersionTest extends TestCase {
     }
 
     /**
+     * Test non-standard OpenJDK version format.
+     */
+    public void testOpenJDKVersion() {
+        // OpenJDK Client VM - like 1.6.0-b09
+        JavaVersion openJDKVersion = JavaVersion.parse("1.6.0-b09");
+        JavaVersion normalVersion = JavaVersion.parse("1.6.0");
+        assertTrue("Compare eq", openJDKVersion.compareTo(normalVersion) == 0);
+        assertTrue("Equals eq", openJDKVersion.equals(normalVersion));
+        assertTrue("HashCode eq", openJDKVersion.hashCode() ==
+                normalVersion.hashCode());
+    }
+
+    /**
      * Test that the system version is a single instance.
      */
     public void testSystemSingleton() {

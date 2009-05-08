@@ -304,6 +304,11 @@ public class JavaVersion implements Comparable<JavaVersion> {
             }
         }
 
+        // OpenJDK seems to have a non-standard version, so remove after 'point'
+        if (pointString.contains("-")) {
+            pointString = pointString.split("-")[0];
+        }
+
         return new JavaVersion(Integer.parseInt(majorString),
                 Integer.parseInt(minorString), Integer.parseInt(pointString),
                 Integer.parseInt(updateString), Integer.parseInt(buildString));
