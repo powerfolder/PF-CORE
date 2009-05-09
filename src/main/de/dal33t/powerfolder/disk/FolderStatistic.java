@@ -508,6 +508,11 @@ public class FolderStatistic extends PFComponent {
             calculate0();
             calculatorTask = null;
         }
+        
+        @Override
+        public String toString() {
+            return "FolderStatistic calculator for '" + folder;
+        }
     }
 
     /**

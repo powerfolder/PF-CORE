@@ -3012,6 +3012,10 @@ public class Folder extends PFComponent {
                 diskItemFilter.savePatternsTo(getSystemSubDir());
             }
         }
+        @Override
+        public String toString() {
+            return "FolderPersister for '" + Folder.this;
+        }
     }
 
 }
