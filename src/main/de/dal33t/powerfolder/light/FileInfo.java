@@ -180,8 +180,12 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
      */
     @Deprecated
     public FileInfo changedFolderInfo(FolderInfo fi) {
-        return new FileInfo(fileName, size, modifiedBy, lastModifiedDate,
-            version, deleted, fi);
+        if (isTemplate()) {
+            return getTemplate(fi, fileName);
+        } else {
+            return new FileInfo(fileName, size, modifiedBy, lastModifiedDate,
+                version, deleted, fi);
+        }
     }
 
     @Deprecated
