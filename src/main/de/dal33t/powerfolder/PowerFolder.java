@@ -66,6 +66,7 @@ public class PowerFolder {
                 "<ip/dns>. Sets the dns/ip to listen to. May also be a dyndns address");
         options.addOption("h", "help", false, "Displays this help");
         options.addOption("n", "nick", true, "<nickname> Sets the nickname");
+        options.addOption("d", "data", true, "Set the default base data directory for PowerFolder");
         options.addOption("k", "kill", false,
                 "Shuts down a running PowerFolder instance");
         options.addOption("l", "log", true,

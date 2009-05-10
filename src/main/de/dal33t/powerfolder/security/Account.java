@@ -516,6 +516,17 @@ public class Account extends Model implements Serializable {
     }
 
     /**
+     * Answers if the user is allowed to write into the folder.
+     * 
+     * @param foInfo
+     *            the folder to check
+     * @return true if the user is allowed to write into the folder.
+     */
+    public boolean hasWritePermissions(FolderInfo foInfo) {
+        return hasReadWritePermissions(foInfo);
+    }
+
+    /**
      * @param foInfo
      * @return true if the user is admin of the folder.
      */

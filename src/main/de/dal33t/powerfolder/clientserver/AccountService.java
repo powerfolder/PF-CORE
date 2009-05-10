@@ -41,10 +41,10 @@ public interface AccountService {
      *            the password
      * @param newsLetter
      *            true if the users wants to subscribe to the newsletter.
-     * @return if the registration was successfully. false is not possible or
-     *         already taken even if password match.
+     * @return the Account if registration was successfully. null if not
+     *         possible or already taken even if password match.
      */
-    boolean register(String username, String password, boolean newsLetter);
+    Account register(String username, String password, boolean newsLetter);
 
     /**
      * Logs in from a remote location.
