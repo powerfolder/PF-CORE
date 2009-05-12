@@ -81,7 +81,7 @@ public enum ConfigurationEntry {
      */
     PROVIDER_URL(
         "provider.url.main",
-        "http://www.powerfolder.com/home_client.html?utm_source=client&utm_medium=client&utm_campaign=Client"),
+        "http://www.powerfolder.com/?utm_source=client&utm_medium=client&utm_campaign=Client"),
 
     /**
      * URL of the Online Storage features
@@ -115,7 +115,7 @@ public enum ConfigurationEntry {
      * URL of the PowerFolder Pro page
      */
     PROVIDER_BUY_URL("provider.url.buy",
-        "http://www.powerfolder.com/buynow_client.html?utm_source=client&utm_medium=client&utm_campaign=Client"),
+        "http://www.powerfolder.com/buynow.html?utm_source=client&utm_medium=client&utm_campaign=Client"),
 
     /**
      * URL where the contact form resides
