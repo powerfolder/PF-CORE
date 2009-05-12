@@ -60,14 +60,7 @@ import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.transfer.FileRequestor;
-import de.dal33t.powerfolder.util.FileUtils;
-import de.dal33t.powerfolder.util.Profiling;
-import de.dal33t.powerfolder.util.ProfilingEntry;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.StringUtils;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.util.Waiter;
+import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.compare.FolderComparator;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
@@ -182,14 +175,24 @@ public class FolderRepository extends PFComponent implements Runnable {
                 {
                     String title = Translation
                         .getTranslation("folder_repository.warn_on_close.title");
-                    String text = Translation.getTranslation(
-                        "folder_repository.warn_on_close.text", folderslist
-                            .toString());
+                    String text;
+                    if (getController().getFolderRepository().isSynchronizing()) {
+                        Date syncDate = getController().getFolderRepository()
+                                .getSynchronizationDate();
+                        text = Translation.getTranslation(
+                            "folder_repository.warn_on_close_eta.text",
+                                folderslist.toString(),
+                                Format.formatDate(syncDate));
+                    } else {
+                        text = Translation.getTranslation(
+                            "folder_repository.warn_on_close.text", folderslist
+                                .toString());
+                    }
                     String question = Translation
                         .getTranslation("general.neverAskAgain");
                     NeverAskAgainResponse response = DialogFactory
                         .genericDialog(getController(), title, text, new String[]{
-                            Translation.getTranslation("general.ok"),
+                            Translation.getTranslation("folder_repository.continue_exit"),
                             Translation.getTranslation("general.cancel")}, 0,
                             GenericDialogType.QUESTION, question);
                     if (response.isNeverAskAgain()) {
@@ -1048,8 +1051,6 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     /**
      * Returns true if any folders are synchronizing.
-     * Only use to initialize values - register a SynchronizationStatsListener
-     * for on-going updates.
      *
      * @return
      */
@@ -1059,9 +1060,8 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
-     * Returns sync date.
-     * Only use to initialize values - register a SynchronizationStatsListener
-     * for on-going updates.
+     * Returns sync date. This will return the last date all folders were
+     * synchronized OR the ETA if sync is in progress.
      *
      * @return
      */
