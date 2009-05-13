@@ -554,6 +554,15 @@ public class FolderScanner extends PFComponent {
                         + fileToScan.getAbsolutePath()
                         + ", dbFile: "
                         + otherFInfo.toDetailString());
+                    if (fInfo.getName().equals(otherFInfo.getName())
+                        && !fInfo.equals(otherFInfo))
+                    {
+                        throw new RuntimeException(
+                            "Bad failure: FileInfos not equal. "
+                                + fInfo.toDetailString() + " and "
+                                + otherFInfo.toDetailString()
+                                + " Probably FolderInfo objects are not equal?");
+                    }
                     remaining.remove(otherFInfo);
                     exists = otherFInfo;
                 }
