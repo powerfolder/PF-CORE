@@ -46,6 +46,7 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -54,10 +55,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
-import de.dal33t.powerfolder.event.FileNameProblemHandler;
-import de.dal33t.powerfolder.event.FolderRepositoryEvent;
-import de.dal33t.powerfolder.event.FolderRepositoryListener;
-import de.dal33t.powerfolder.event.ListenerSupportFactory;
+import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.transfer.FileRequestor;
 import de.dal33t.powerfolder.util.*;
@@ -86,6 +84,7 @@ public class FolderRepository extends PFComponent implements Runnable {
     // The trigger to start scanning
     private Object scanTrigger = new Object();
     private boolean triggered;
+    private final FolderListener folderListener;
 
     /** folder repository listeners */
     private FolderRepositoryListener folderRepositoryListenerSupport;
@@ -95,6 +94,8 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     /** The disk scanner */
     private FolderScanner folderScanner;
+
+    private final AtomicBoolean allInSync = new AtomicBoolean(true);
     
     /**
      * The current synchronizater of all folder memberships
@@ -107,6 +108,8 @@ public class FolderRepository extends PFComponent implements Runnable {
      * target for #787.
      */
     private static final String PRE_777_BACKUP_TARGET_FIELD_LIST = "true,true,true,true,0,false,12,0,m";
+
+    private final OverallFolderStatListener overallFolderStatListenerSupport;
 
     /**
      * Constructor
@@ -127,6 +130,21 @@ public class FolderRepository extends PFComponent implements Runnable {
         // Create listener support
         folderRepositoryListenerSupport = ListenerSupportFactory
             .createListenerSupport(FolderRepositoryListener.class);
+
+        folderListener = new MyFolderListener();
+
+        overallFolderStatListenerSupport = ListenerSupportFactory
+            .createListenerSupport(OverallFolderStatListener.class);
+    }
+
+    public void addOverallFolderStatListener(OverallFolderStatListener listener) {
+        ListenerSupportFactory.addListener(overallFolderStatListenerSupport,
+            listener);
+    }
+
+    public void removeOverallFolderStatListener(OverallFolderStatListener listener) {
+        ListenerSupportFactory.removeListener(overallFolderStatListenerSupport,
+            listener);
     }
 
     /** @return the handler that takes care of filename problems */
@@ -154,6 +172,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         logFine("setSuspendFireEvents: " + suspended);
     }
 
+    // @todo This shold go into the UI.
     public boolean isShutdownAllowed() {
         boolean warnOnClose = PreferencesEntry.WARN_ON_CLOSE
             .getValueBoolean(getController());
@@ -176,17 +195,17 @@ public class FolderRepository extends PFComponent implements Runnable {
                     String title = Translation
                         .getTranslation("folder_repository.warn_on_close.title");
                     String text;
-                    if (getController().getFolderRepository().isSynchronizing()) {
+                    if (getController().getFolderRepository().isSynchronized()) {
+                        text = Translation.getTranslation(
+                            "folder_repository.warn_on_close.text", folderslist
+                                .toString());
+                    } else {
                         Date syncDate = getController().getFolderRepository()
                                 .getSynchronizationDate();
                         text = Translation.getTranslation(
                             "folder_repository.warn_on_close_eta.text",
                                 folderslist.toString(),
                                 Format.formatDate(syncDate));
-                    } else {
-                        text = Translation.getTranslation(
-                            "folder_repository.warn_on_close.text", folderslist
-                                .toString());
                     }
                     String question = Translation
                         .getTranslation("general.neverAskAgain");
@@ -728,6 +747,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             folder = new Folder(getController(), folderInfo, folderSettings);
         }
         
+        folder.addFolderListener(folderListener);
         folders.put(folder.getInfo(), folder);
         saveFolderConfig(folderInfo, folderSettings, saveConfig);
 
@@ -826,6 +846,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         // Remove internal
         folders.remove(folder.getInfo());
+        folder.removeFolderListener(folderListener);
         
         // Break transfers
         getController().getTransferManager().breakTransfers(folder.getInfo());
@@ -1050,13 +1071,12 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
-     * Returns true if any folders are synchronizing.
+     * Returns true if all folders are synchronized.
      *
      * @return
      */
-    public boolean isSynchronizing() {
-        // @todo harry to implement
-        return false;
+    public boolean isSynchronized() {
+        return allInSync.get();
     }
 
     /**
@@ -1130,6 +1150,27 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
     }
 
+    /**
+     * When a folder updates its stats, check all folders to get whether any
+     * folders are syncing and what the greatest estimated / last sync date is.
+     */
+    private void calculateOverallStats() {
+        boolean foldersInSync = true;
+        for (Folder folder : folders.values()) {
+            boolean inSync = Double.compare(folder.getStatistic()
+                    .getHarmonizedSyncPercentage(), 100.0) == 0;
+            if (!inSync) {
+                foldersInSync = false;
+                break;
+            }
+        }
+
+        allInSync.set(foldersInSync);
+
+        overallFolderStatListenerSupport.statCalculated(
+                new OverallFolderStatEvent(foldersInSync));
+    }
+
     private class AllFolderMembershipSynchronizer implements Runnable {
         private volatile boolean canceled;
 
@@ -1168,6 +1209,32 @@ public class FolderRepository extends PFComponent implements Runnable {
                     }
                 }
             }
+        }
+    }
+
+    private class MyFolderListener implements FolderListener {
+
+        public void statisticsCalculated(FolderEvent folderEvent) {
+            calculateOverallStats();
+        }
+
+        public void syncProfileChanged(FolderEvent folderEvent) {
+        }
+
+        public void remoteContentsChanged(FolderEvent folderEvent) {
+        }
+
+        public void scanResultCommited(FolderEvent folderEvent) {
+        }
+
+        public void fileChanged(FolderEvent folderEvent) {
+        }
+
+        public void filesDeleted(FolderEvent folderEvent) {
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return true;
         }
     }
 }

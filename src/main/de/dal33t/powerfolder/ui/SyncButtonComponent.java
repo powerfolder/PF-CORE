@@ -21,6 +21,8 @@ package de.dal33t.powerfolder.ui;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.event.OverallFolderStatListener;
+import de.dal33t.powerfolder.event.OverallFolderStatEvent;
 import de.dal33t.powerfolder.ui.action.SyncAllFoldersAction;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.UIUtil;
@@ -53,6 +55,7 @@ public class SyncButtonComponent extends PFUIComponent {
         mousePressed = new AtomicBoolean();
 
         controller.getThreadPool().submit(new MyRunnable());
+        controller.getFolderRepository().addOverallFolderStatListener(new MyOverallFolderStatListener());
     }
 
     /**
@@ -146,6 +149,16 @@ public class SyncButtonComponent extends PFUIComponent {
                 }
             }
             logFine("Thread terminated");
+        }
+    }
+
+    private class MyOverallFolderStatListener implements OverallFolderStatListener {
+        public void statCalculated(OverallFolderStatEvent e) {
+            folderRepositorySyncing.set(!e.isAllInSync());
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return true;
         }
     }
 }

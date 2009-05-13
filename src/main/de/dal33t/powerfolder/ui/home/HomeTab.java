@@ -111,6 +111,8 @@ public class HomeTab extends PFUIComponent {
         newWarningsCountVM = getUIController().getApplicationModel()
                 .getWarningsModel().getWarningsCountVM();
         newWarningsCountVM.addValueChangeListener(new MyWarningsListener());
+        controller.getFolderRepository().addOverallFolderStatListener(
+                new MyOverallFolderStatListener());
     }
 
     /**
@@ -214,9 +216,9 @@ public class HomeTab extends PFUIComponent {
     }
 
     private void initialSyncStats() {
-        boolean synchronizing = getController().getFolderRepository().isSynchronizing();
+        boolean synced = getController().getFolderRepository().isSynchronized();
         Date syncDate = getController().getFolderRepository().getSynchronizationDate();
-        displaySyncStats(syncDate, synchronizing);
+        displaySyncStats(syncDate, synced);
     }
 
     /**
@@ -472,17 +474,17 @@ public class HomeTab extends PFUIComponent {
         }
     }
 
-    private void displaySyncStats(Date syncDate, boolean syncing) {
+    private void displaySyncStats(Date syncDate, boolean synced) {
 
-        String syncStatsText = syncing
-                ? Translation.getTranslation("home_tab.synchronizing")
-                : Translation.getTranslation("home_tab.in_sync");
+        String syncStatsText = synced
+                ? Translation.getTranslation("home_tab.in_sync")
+                : Translation.getTranslation("home_tab.synchronizing");
         synchronizationStatusLabel.setText(syncStatsText);
 
         String date = Format.formatDate(syncDate);
-        String syncDateText = syncing
-                ? Translation.getTranslation("home_tab.sync_eta", date)
-                : Translation.getTranslation("home_tab.last_synced", date);
+        String syncDateText = synced
+                ? Translation.getTranslation("home_tab.last_synced", date)
+                : Translation.getTranslation("home_tab.sync_eta", date);
         synchronizationDateLabel.setText(syncDateText);
     }
 
@@ -760,6 +762,17 @@ public class HomeTab extends PFUIComponent {
 
         public void propertyChange(PropertyChangeEvent evt) {
             updateNewWarningsText();
+        }
+    }
+
+    private class MyOverallFolderStatListener implements OverallFolderStatListener {
+
+        public void statCalculated(OverallFolderStatEvent e) {
+            displaySyncStats(new Date(), e.isAllInSync());
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return true;
         }
     }
 }
