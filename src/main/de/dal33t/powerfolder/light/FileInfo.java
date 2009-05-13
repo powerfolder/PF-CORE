@@ -59,8 +59,13 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         .getLogger(FileInfo.class.getName());
     private static final long serialVersionUID = 100L;
 
-    /** The filename (including the path from the base of the folder) */
-    private final String fileName;
+    /**
+     * The filename (including the path from the base of the folder)
+     * <p>
+     * Actually 'final'. Only non-final because of serialization readObject()
+     * fileName.intern();
+     */
+    private String fileName;
 
     /** The size of the file */
     private final Long size;
@@ -112,7 +117,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
 
     protected FileInfo(FolderInfo folder, String name) {
         Reject.ifNull(folder, "folder is null!");
-        Reject.ifNull(name, "folder is null!");
+        Reject.ifNull(name, "name is null!");
         this.fileName = name;
         this.folderInfo = folder;
 
@@ -791,7 +796,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
     {
         in.defaultReadObject();
         // Internalized strings are not guaranteed to be garbage collected!
-        // fileName = fileName.intern();
-        validate();
+        fileName = fileName.intern();
+        // validate();
     }
 }
