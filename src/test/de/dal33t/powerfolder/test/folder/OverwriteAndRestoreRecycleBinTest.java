@@ -54,15 +54,14 @@ public class OverwriteAndRestoreRecycleBinTest extends TwoControllerTestCase {
 
         scanFolder(getFolderAtBart());
 
-        final FileInfo fInfoBart = getFolderAtBart().getKnownFiles().iterator()
+        FileInfo fInfoBart = getFolderAtBart().getKnownFiles().iterator()
             .next();
 
         TestHelper.waitForCondition(10, new Condition() {
             public boolean reached() {
-                return getFolderAtLisa().getKnownFilesCount() >= 1;
+                return getFolderAtLisa().getKnownFilesCount() == 1;
             }
         });
-        assertEquals(1, getFolderAtLisa().getKnownFilesCount());
         FileInfo fInfoLisa = getFolderAtLisa().getKnownFiles().iterator()
             .next();
         final File testFileLisa = fInfoLisa.getDiskFile(getContollerLisa()
@@ -78,14 +77,29 @@ public class OverwriteAndRestoreRecycleBinTest extends TwoControllerTestCase {
 
         TestHelper.waitMilliSeconds(500);
 
-        TestHelper.waitForCondition(10, new Condition() {
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
             public boolean reached() {
                 FileInfo fInfoLisa = getFolderAtLisa().getKnownFiles()
+                    .iterator().next();
+                FileInfo fInfoBart = getFolderAtBart().getKnownFiles()
                     .iterator().next();
                 return fInfoLisa.isVersionAndDateIdentical(fInfoBart)
                     && (testFileBart.length() == testFileLisa.length());
             }
+
+            public String message() {
+                FileInfo fInfoLisa = getFolderAtLisa().getKnownFiles()
+                    .iterator().next();
+                FileInfo fInfoBart = getFolderAtBart().getKnownFiles()
+                    .iterator().next();
+                return "At Lisa: " + fInfoLisa.toDetailString() + " At Bart: "
+                    + fInfoBart.toDetailString();
+            }
         });
+        assertEquals(4, getFolderAtLisa().getKnownFiles().iterator().next()
+            .getSize());
+        assertEquals(4, getFolderAtBart().getKnownFiles().iterator().next()
+            .getSize());
 
         RecycleBin binAtLisa = getContollerLisa().getRecycleBin();
         assertTrue(binAtLisa.isInRecycleBin(fInfoLisa));
@@ -111,12 +125,16 @@ public class OverwriteAndRestoreRecycleBinTest extends TwoControllerTestCase {
             public boolean reached() {
                 FileInfo fInfoLisa = getFolderAtLisa().getKnownFiles()
                     .iterator().next();
+                FileInfo fInfoBart = getFolderAtBart().getKnownFiles()
+                    .iterator().next();
                 return fInfoLisa.isVersionAndDateIdentical(fInfoBart)
                     && (testFileBart.length() == testFileLisa.length());
             }
 
             public String message() {
                 FileInfo fInfoLisa = getFolderAtLisa().getKnownFiles()
+                    .iterator().next();
+                FileInfo fInfoBart = getFolderAtBart().getKnownFiles()
                     .iterator().next();
                 return "Bart's file: " + fInfoBart.toDetailString()
                     + ", Lisa's file: " + fInfoLisa.toDetailString();
