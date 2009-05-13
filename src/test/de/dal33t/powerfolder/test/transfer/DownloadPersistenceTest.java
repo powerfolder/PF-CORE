@@ -98,14 +98,6 @@ public class DownloadPersistenceTest extends TwoControllerTestCase {
                 TestHelper.changeFile(file);
             }
         }
-        System.err.println("BART: ");
-        for (FileInfo fi : getFolderAtBart().getKnownFiles()) {
-            System.err.println(fi.toDetailString());
-        }
-        System.err.println("LISA: ");
-        for (FileInfo fi : getFolderAtLisa().getKnownFiles()) {
-            System.err.println(fi.toDetailString());
-        }
         scanFolder(getFolderAtBart());
         TestHelper.waitForCondition(nFiles, new ConditionWithMessage() {
             public boolean reached() {
