@@ -48,6 +48,10 @@ public class DownloadPersistenceTest extends TwoControllerTestCase {
             }
         });
 
+        for (FileInfo f : getFolderAtLisa().getKnownFiles()) {
+            assertEquals(0, f.getVersion());
+        }
+
         getContollerLisa().shutdown();
 
         for (DownloadManager dlManager : getContollerLisa()
@@ -60,8 +64,19 @@ public class DownloadPersistenceTest extends TwoControllerTestCase {
         }
 
         startControllerLisa();
+
         connectBartAndLisa();
         joinTestFolder(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
+
+        TestHelper.waitMilliSeconds(2000);
+
+        for (FileInfo f : getFolderAtLisa().getKnownFiles()) {
+            assertEquals(0, f.getVersion());
+        }
+
+        for (FileInfo f : getFolderAtBart().getKnownFiles()) {
+            assertEquals(0, f.getVersion());
+        }
 
         assertEquals(nFiles, getContollerLisa().getTransferManager()
             .getCompletedDownloadsCollection().size());
@@ -83,6 +98,14 @@ public class DownloadPersistenceTest extends TwoControllerTestCase {
                 TestHelper.changeFile(file);
             }
         }
+        System.err.println("BART: ");
+        for (FileInfo fi : getFolderAtBart().getKnownFiles()) {
+            System.err.println(fi.toDetailString());
+        }
+        System.err.println("LISA: ");
+        for (FileInfo fi : getFolderAtLisa().getKnownFiles()) {
+            System.err.println(fi.toDetailString());
+        }
         scanFolder(getFolderAtBart());
         TestHelper.waitForCondition(nFiles, new ConditionWithMessage() {
             public boolean reached() {
@@ -96,7 +119,7 @@ public class DownloadPersistenceTest extends TwoControllerTestCase {
                         .getCompletedDownloadsCollection().size();
             }
         });
-        
+
         scanFolder(getFolderAtBart());
         for (FileInfo fInfo : getFolderAtBart().getKnownFiles()) {
             assertFileMatch(fInfo.getDiskFile(getContollerBart()

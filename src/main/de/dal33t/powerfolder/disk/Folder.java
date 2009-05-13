@@ -385,7 +385,6 @@ public class Folder extends PFComponent {
     private void commitScanResult(ScanResult scanResult,
         boolean ignoreEmptyCheck)
     {
-
         // See if everything has been deleted.
         // Does the user want to stop managing this folder?
         if (getKnownFilesCount() > 0 && !scanResult.getDeletedFiles().isEmpty()
@@ -1046,8 +1045,7 @@ public class Folder extends PFComponent {
                                 .getVersion());
                     }
 
-                    addFile(fInfo);
-                    dao.store(null, fInfo);
+                    dao.store(null, addFile(fInfo));
 
                     // update directory
                     // don't do this in the server version
@@ -1165,7 +1163,7 @@ public class Folder extends PFComponent {
      * 
      * @param fInfo
      */
-    private void addFile(FileInfo fInfo) {
+    private FileInfo addFile(FileInfo fInfo) {
         if (fInfo == null) {
             throw new NullPointerException("File is null");
         }
@@ -1183,6 +1181,7 @@ public class Folder extends PFComponent {
         currentInfo.addFile(fInfo);
 
         transferPriorities.setPriority(fInfo, prio);
+        return fInfo;
     }
 
     /**
@@ -1319,14 +1318,14 @@ public class Folder extends PFComponent {
                 Convert.cleanMemberInfos(getController().getNodeManager(),
                     files);
                 synchronized (dbAccessLock) {
-                    for (FileInfo fileInfo : files) {
-                        if (fileInfo.getName().contains(
+                    for (int i = 0; i < files.length; i++) {
+                        if (files[i].getName().contains(
                             Constants.POWERFOLDER_SYSTEM_SUBDIR))
                         {
                             // Skip #1411
                             continue;
                         }
-                        addFile(fileInfo);
+                        files[i] = addFile(files[i]);
                     }
                     dao.store(null, files);
                 }
@@ -1985,7 +1984,7 @@ public class Folder extends PFComponent {
 
                     // Add to local file to database if was deleted on remote
                     if (localFile == null) {
-                        addFile(remoteFile);
+                        remoteFile = addFile(remoteFile);
                         dao.store(null, remoteFile);
                         localFile = getFile(remoteFile);
                         // File has been marked as removed at our side
@@ -2362,8 +2361,7 @@ public class Folder extends PFComponent {
                         // Copy over
                         // localFileInfo.copyFrom(remoteFileInfo);
                         // Re-Add and index
-                        addFile(remoteFileInfo);
-                        dao.store(null, remoteFileInfo);
+                        dao.store(null, addFile(remoteFileInfo));
                     }
 
                     // FIXME That might produce a LOT of traffic! Single
@@ -3012,6 +3010,7 @@ public class Folder extends PFComponent {
                 diskItemFilter.savePatternsTo(getSystemSubDir());
             }
         }
+
         @Override
         public String toString() {
             return "FolderPersister for '" + Folder.this;
