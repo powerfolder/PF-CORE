@@ -56,7 +56,7 @@ public class ConnectResult {
     @Override
     public String toString() {
         return "Connection " + (success ? "successful" : "failed")
-            + (message != null ? " :" + message : "");
+            + (message != null ? ": " + message : "");
     }
 
 }
