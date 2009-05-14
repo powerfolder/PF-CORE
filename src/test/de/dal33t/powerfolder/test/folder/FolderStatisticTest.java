@@ -264,30 +264,6 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         assertAllInSync(1, testFile.length());
     }
 
-    public void testBuggyFilelist() {
-        setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
-        TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 1000);
-        scanFolder(getFolderAtBart());
-        waitForCompletedDownloads(1, 0, 1, 1, 1);
-        waitForFileListOnTestFolder();
-        forceStatsCals();
-        assertAllInSync(1, 1000);
-
-        FileInfo fInfoAtLisa = getFolderAtLisa().getKnownFiles().iterator()
-            .next();
-        // Make FileInfo inconsistent. #968
-        fail("Make the file inconsistent in a 'new' way?");
-        // fInfoAtLisa.setModifiedInfo(getContollerLisa().getMySelf().getInfo(),
-        // fInfoAtLisa.getModifiedDate());
-
-        disconnectAll();
-        connectAll();
-
-        waitForFileListOnTestFolder();
-        forceStatsCals();
-        assertAllInSync(1, 1000);
-    }
-
     public void testDeletedFiles() {
         // 1) Sync ONE file to all simpsons
         setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
