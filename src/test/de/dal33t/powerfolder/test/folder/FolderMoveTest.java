@@ -48,6 +48,7 @@ public class FolderMoveTest extends ControllerTestCase {
         super.setUp();
 
         // Setup a test folder; delete previous tests.
+        getController().setSilentMode(true);
         setupTestFolder(SyncProfile.HOST_FILES, true);
         folder = getFolder();
         File localBase = folder.getLocalBase();
@@ -100,6 +101,14 @@ public class FolderMoveTest extends ControllerTestCase {
         writer.write("This is the dummy text.\n\n sdlkja hsdjfksd f90a-7s w t");
         writer.close();
     }
+    
+    public void testFolderMoveMultiple() throws Exception {
+        for (int i = 0; i < 100; i++) {
+            testFolderMove();
+            tearDown();
+            setUp();
+        }
+    }
 
     /**
      * Tests that a valid move is passed by canMoveFiles. Test move goes okay.
@@ -151,7 +160,8 @@ public class FolderMoveTest extends ControllerTestCase {
             assertTrue(foundTest2);
 
             // The old location should be gone.
-            assertTrue(!oldLocalBase.exists());
+            assertFalse("Old location still existing!:  " + oldLocalBase,
+                oldLocalBase.exists());
         } catch (IOException e) {
             e.printStackTrace();
         }

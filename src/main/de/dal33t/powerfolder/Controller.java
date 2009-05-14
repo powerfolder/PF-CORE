@@ -134,10 +134,10 @@ public class Controller extends PFComponent {
     private Date startTime;
 
     /** Are we in started state? */
-    private boolean started;
+    private volatile boolean started;
 
     /** Are we trying to shutdown? */
-    private boolean shuttingDown;
+    private volatile boolean shuttingDown;
 
     /** Is a restart requested */
     private boolean restartRequested;
@@ -151,7 +151,7 @@ public class Controller extends PFComponent {
     /**
      * If running is silent mode
      */
-    private boolean silentMode;
+    private volatile boolean silentMode;
 
     /**
      * Contains the configuration for the update check
