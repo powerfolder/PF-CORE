@@ -353,6 +353,12 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         waitForFileListOnTestFolder();
         waitForDeletion(testFile1.getName());
         forceStatsCals();
+
+        assertEquals(4, getContollerMarge().getNodeManager()
+            .getConnectedNodes().size());
+        assertEquals(1, getFolderAtMarge().getKnownFilesCount());
+        assertTrue(getFolderAtMarge().getKnownFiles().iterator().next()
+            .isDeleted());
         assertAllInSync(0, 0);
 
         // 4) Disconnect them
