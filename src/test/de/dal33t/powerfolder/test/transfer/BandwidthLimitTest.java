@@ -23,7 +23,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.Executors;
-import java.util.logging.Level;
 
 import junit.framework.TestCase;
 
@@ -33,8 +32,6 @@ import de.dal33t.powerfolder.transfer.BandwidthLimiter;
 import de.dal33t.powerfolder.transfer.BandwidthProvider;
 import de.dal33t.powerfolder.transfer.LimitedInputStream;
 import de.dal33t.powerfolder.transfer.LimitedOutputStream;
-import de.dal33t.powerfolder.util.Debug;
-import de.dal33t.powerfolder.util.logging.LoggingManager;
 
 public class BandwidthLimitTest extends TestCase {
     BandwidthProvider provider = new BandwidthProvider(Executors
