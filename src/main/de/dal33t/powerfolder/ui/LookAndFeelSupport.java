@@ -20,7 +20,6 @@
 package de.dal33t.powerfolder.ui;
 
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.PowerFolder;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.skin.Skin;
 import de.javasoft.plaf.synthetica.*;
@@ -28,7 +27,6 @@ import de.javasoft.plaf.synthetica.*;
 import javax.swing.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.prefs.Preferences;
 
 /**
  * Class which offers several helper methods for handling with LookAndFeels.
@@ -125,7 +123,7 @@ public class LookAndFeelSupport {
     }
 
     private static SyntheticaLookAndFeel getCustomLaf(Controller controller) {
-        Skin skin = controller.getSkin();
+        Skin skin = controller.getUIController().getSkin();
         if (skin != null) {
             Class clazz = skin.getLookAndFeelClass();
             try {

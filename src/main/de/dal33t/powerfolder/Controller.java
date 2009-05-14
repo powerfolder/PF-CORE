@@ -62,14 +62,12 @@ import de.dal33t.powerfolder.plugin.PluginManager;
 import de.dal33t.powerfolder.security.SecurityManager;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.UIController;
-import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.FirewallUtil;
 import de.dal33t.powerfolder.util.task.PersistentTaskManager;
 import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker;
-import de.dal33t.powerfolder.skin.Skin;
 
 /**
  * Central class gives access to all core components in PowerFolder. Make sure
@@ -124,11 +122,6 @@ public class Controller extends PFComponent {
      * The distribution running.
      */
     private Distribution distribution;
-
-    /**
-     * The distribution running.
-     */
-    private Skin skin;
 
     /** Program start time */
     private Date startTime;
@@ -382,9 +375,6 @@ public class Controller extends PFComponent {
 
         // Initialize branding/preconfiguration of the client
         initDistribution();
-
-        // Initialize look and feel / icon set
-        initSkin();
 
         // Load and set http proxy settings
         HTTPProxySettings.loadFromConfig(this);
@@ -1495,15 +1485,6 @@ public class Controller extends PFComponent {
     }
 
     /**
-     * Returns the skin - may be null;
-     * 
-     * @return
-     */
-    public Skin getSkin() {
-        return skin;
-    }
-
-    /**
      * @return the currently configured update settings
      */
     public Updater.UpdateSetting getUpdateSettings() {
@@ -1986,25 +1967,6 @@ public class Controller extends PFComponent {
             logSevere(message);
         }
         exit(1);
-    }
-
-    private void initSkin() {
-        ServiceLoader<Skin> skinLoader = ServiceLoader.load(Skin.class);
-        for (Skin sk : skinLoader) {
-            if (skin != null) {
-                logSevere("Found multiple skin classes: " + sk.getName()
-                    + ", got already " + skin.getName());
-            }
-            skin = sk;
-        }
-        if (skin == null) {
-            // None supplied; no worries.
-            return;
-        }
-        logInfo("Running skin: " + skin.getName());
-
-        String fileName = skin.getIconsPropertiesFileName();
-        Icons.loadOverrideFile(fileName);
     }
 
     private void initDistribution() {

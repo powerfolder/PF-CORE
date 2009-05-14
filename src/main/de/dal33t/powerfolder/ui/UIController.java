@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.ui;
 
 import de.dal33t.powerfolder.*;
+import de.dal33t.powerfolder.skin.Skin;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.SyncProfile;
@@ -106,6 +107,11 @@ public class UIController extends PFComponent {
     private final AtomicInteger activeFrame = new AtomicInteger();
 
     /**
+     * The UI distribution running.
+     */
+    private Skin skin;
+
+    /**
      * Initializes a new UI controller. open UI with #start
      * 
      * @param controller
@@ -116,6 +122,9 @@ public class UIController extends PFComponent {
         folderRepositorySynchronizing = new AtomicBoolean();
 
         configureOomeHandler();
+
+        // Initialize look and feel / icon set
+        initSkin();
 
         pendingJobs = Collections.synchronizedList(new LinkedList<Runnable>());
 
@@ -638,6 +647,34 @@ public class UIController extends PFComponent {
 
     public TransferManagerModel getTransferManagerModel() {
         return transferManagerModel;
+    }
+
+    /**
+     * Returns the skin - may be null;
+     *
+     * @return
+     */
+    public Skin getSkin() {
+        return skin;
+    }
+
+    private void initSkin() {
+        ServiceLoader<Skin> skinLoader = ServiceLoader.load(Skin.class);
+        for (Skin sk : skinLoader) {
+            if (skin != null) {
+                logSevere("Found multiple skin classes: " + sk.getName()
+                    + ", got already " + skin.getName());
+            }
+            skin = sk;
+        }
+        if (skin == null) {
+            // None supplied; no worries.
+            return;
+        }
+        logInfo("Running skin: " + skin.getName());
+
+        String fileName = skin.getIconsPropertiesFileName();
+        Icons.loadOverrideFile(fileName);
     }
 
     /**
