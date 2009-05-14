@@ -346,10 +346,11 @@ public class MembersTab extends PFUIComponent {
 
                     // Now execute the connect
                     try {
-                        if (!selectedMember.reconnect()) {
-                            throw new ConnectionException(Translation.getTranslation(
+                        if (selectedMember.reconnect().isFailure()) {
+                            throw new ConnectionException(Translation
+                                .getTranslation(
                                     "dialog.unable_to_connect_to_member",
-                                selectedMember.getNick()));
+                                    selectedMember.getNick()));
                         }
                     } catch (ConnectionException ex) {
                         connectDialog.close();

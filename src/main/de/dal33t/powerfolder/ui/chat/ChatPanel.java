@@ -450,7 +450,7 @@ public class ChatPanel extends PFUIComponent {
 
                     // Now execute the connect
                     try {
-                        if (!chatPartner.reconnect()) {
+                        if (chatPartner.reconnect().isFailure()) {
                             throw new ConnectionException(Translation.getTranslation(
                                     "dialog.unable_to_connect_to_member",
                                 chatPartner.getNick()));

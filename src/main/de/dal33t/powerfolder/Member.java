@@ -474,9 +474,9 @@ public class Member extends PFComponent implements Comparable<Member> {
      *            The peer / connection handler to set
      * @throws InvalidIdentityException
      *             if peer identity doesn't match this member.
-     * @return true if the peer was accepted and is now active.
+     * @return the result of the connection attempt
      */
-    public boolean setPeer(ConnectionHandler newPeer)
+    public ConnectResult setPeer(ConnectionHandler newPeer)
         throws InvalidIdentityException
     {
         Reject.ifNull(newPeer, "Illegal call of setPeer(null)");
@@ -484,7 +484,7 @@ public class Member extends PFComponent implements Comparable<Member> {
         if (!newPeer.isConnected()) {
             logWarning("Peer disconnected while initializing connection: "
                 + newPeer);
-            return false;
+            return ConnectResult.failure("Peer disconnected while initializing connection");
         }
 
         if (isFiner()) {
@@ -547,7 +547,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             // Shutdown this member
             newPeer.shutdown();
             logFiner("Remote side did not accept our identity: " + newPeer);
-            return false;
+            return ConnectResult.failure("Remote side did not accept our identity");
         }
 
         synchronized (peerInitalizeLock) {
@@ -616,16 +616,16 @@ public class Member extends PFComponent implements Comparable<Member> {
     /**
      * Tries to reconnect peer
      * 
-     * @return true if succeeded
+     * @return the result of the connection attempt.
      * @throws InvalidIdentityException
      */
-    public boolean reconnect() throws InvalidIdentityException {
+    public ConnectResult reconnect() throws InvalidIdentityException {
         // do not reconnect if controller is not running
         if (!getController().isStarted()) {
-            return false;
+            return ConnectResult.failure("Controller is not started");
         }
         if (isConnected()) {
-            return true;
+            return ConnectResult.success();
         }
         // #1334
         // if (info.getConnectAddress() == null) {
@@ -637,7 +637,7 @@ public class Member extends PFComponent implements Comparable<Member> {
         }
 
         connectionRetries++;
-        boolean successful = false;
+        ConnectResult connectResult;
         ConnectionHandler handler = null;
         try {
             // #1334
@@ -667,13 +667,13 @@ public class Member extends PFComponent implements Comparable<Member> {
 
             // Another check: do not reconnect if controller is not running
             if (!getController().isStarted()) {
-                return false;
+                return ConnectResult.failure("Controller is not started");
             }
 
             // Try to establish a low-level connection.
             handler = getController().getIOProvider()
                 .getConnectionHandlerFactory().tryToConnect(this.getInfo());
-            successful = setPeer(handler);
+            connectResult = setPeer(handler);
         } catch (InvalidIdentityException e) {
             logFiner(e);
             // Shut down reconnect handler
@@ -688,11 +688,12 @@ public class Member extends PFComponent implements Comparable<Member> {
             if (handler != null) {
                 handler.shutdown();
             }
+            connectResult = ConnectResult.failure(e.getMessage());
         } finally {
             currentReconTries.decrementAndGet();
         }
 
-        if (successful) {
+        if (connectResult.isSuccess()) {
             isConnectedToNetwork = true;
             connectionRetries = 0;
         } else {
@@ -706,20 +707,20 @@ public class Member extends PFComponent implements Comparable<Member> {
 
         // logWarning("Reconnect over, now connected: " + successful);
 
-        return successful;
+        return connectResult;
     }
 
     /**
      * Completes the handshake between nodes. Exchanges the relevant information
      * 
-     * @return true when handshake was successfully and user is now connected
+     * @return the result of the connection attempt.
      */
-    private boolean completeHandshake() {
+    private ConnectResult completeHandshake() {
         if (!isConnected()) {
-            return false;
+            return ConnectResult.failure("Not connected");
         }
         if (peer == null) {
-            return false;
+            return ConnectResult.failure("Peer is not set");
         }
         boolean thisHandshakeCompleted = true;
         Identity identity = peer.getIdentity();
@@ -727,7 +728,7 @@ public class Member extends PFComponent implements Comparable<Member> {
         synchronized (peerInitalizeLock) {
             if (!isConnected() || identity == null) {
                 logFine("Disconnected while completing handshake");
-                return false;
+                return ConnectResult.failure("Disconnected while completing handshake");
             }
             // Send node informations now
             // Send joined folders to synchronize
@@ -742,19 +743,23 @@ public class Member extends PFComponent implements Comparable<Member> {
         synchronized (peerInitalizeLock) {
             if (!isConnected()) {
                 logFine("Disconnected while completing handshake");
-                return false;
+                return ConnectResult
+                    .failure("Disconnected while completing handshake");
             }
             if (!receivedFolderList) {
                 if (isConnected()) {
                     logFine("Did not receive a folder list after 60s, disconnecting");
-                    return false;
+                    return ConnectResult
+                        .failure("Did not receive a folder list after 60s, disconnecting (1)");
                 }
                 shutdown();
-                return false;
+                return ConnectResult
+                    .failure("Did not receive a folder list after 60s, disconnecting (2)");
             }
             if (!isConnected()) {
                 logFine("Disconnected while waiting for folder list");
-                return false;
+                return ConnectResult
+                    .failure("Disconnected while waiting for folder list");
             }
         }
 
@@ -765,7 +770,8 @@ public class Member extends PFComponent implements Comparable<Member> {
         synchronized (peerInitalizeLock) {
             if (!isConnected()) {
                 logFine("Disconnected while completing handshake");
-                return false;
+                return ConnectResult
+                    .failure("Disconnected while completing handshake");
             }
 
             if (!isInteresting()) {
@@ -795,13 +801,14 @@ public class Member extends PFComponent implements Comparable<Member> {
             && acceptByConnectionHandler;
 
         if (!thisHandshakeCompleted) {
+            String message = "not handshaked: connected? " + isConnected()
+                + ", acceptByCH?a " + acceptByConnectionHandler
+                + ", interesting? " + isInteresting() + ", peer " + peer;
             if (isFiner()) {
-                logFiner("not handshaked: connected? " + isConnected()
-                    + ", acceptByCH?a " + acceptByConnectionHandler
-                    + ", interesting? " + isInteresting() + ", peer " + peer);
+                logFiner(message);
             }
             shutdown();
-            return false;
+            return ConnectResult.failure(message);
         }
 
         List<Folder> joinedFolders = getJoinedFolders();
@@ -828,7 +835,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                     + hasCompleteFileListFor(folder.getInfo()));
             }
             shutdown();
-            return false;
+            return ConnectResult.failure("Disconnecting. Did not receive the full filelists");
         }
         if (isFiner()) {
             logFiner("Got complete filelists");
@@ -840,18 +847,22 @@ public class Member extends PFComponent implements Comparable<Member> {
             long start = System.currentTimeMillis();
             if (!waitForHandshakeCompletion()) {
                 long took = System.currentTimeMillis() - start;
+                String message = null;
                 if (peer == null || !peer.isConnected()) {
                     if (lastProblem == null) {
-                        logWarning("Peer disconnected while waiting for handshake acknownledge (or problem)");
+                        message = "Peer disconnected while waiting for handshake acknownledge (or problem)";
                     }
                 } else {
                     if (lastProblem == null) {
-                        logWarning("Did not receive a handshake not acknownledged (or problem) by remote side after "
-                            + (int) (took / 1000) + 's');
+                        message = "Did not receive a handshake not acknownledged (or problem) by remote side after "
+                            + (int) (took / 1000) + 's';
                     }
                 }
                 shutdown();
-                return false;
+                if (message != null && isWarning()) {
+                    logWarning(message);
+                }
+                return ConnectResult.failure(message);
             } else if (isFiner()) {
                 logFiner("Got handshake completion!!");
             }
@@ -860,7 +871,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             handshaked = true;
         } else {
             shutdown();
-            return false;
+            return ConnectResult.failure("Unknown reason");
         }
 
 
@@ -894,7 +905,11 @@ public class Member extends PFComponent implements Comparable<Member> {
             sendMessageAsynchron(new RequestNodeInformation(), null);
         }
 
-        return handshaked;
+        if (handshaked) {
+            return ConnectResult.success();
+        } else {
+            return ConnectResult.failure("Not handshaked");
+        }
     }
 
     private boolean waitForScan(Folder folder) {

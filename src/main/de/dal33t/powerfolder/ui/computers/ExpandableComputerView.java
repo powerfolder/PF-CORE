@@ -465,10 +465,11 @@ public class ExpandableComputerView extends PFUIComponent implements ExpandableV
 
                     // Now execute the connect
                     try {
-                        if (!node.reconnect()) {
-                            throw new ConnectionException(Translation.getTranslation(
-                                    "dialog.unable_to_connect_to_member",
-                                node.getNick()));
+                        if (node.reconnect().isFailure()) {
+                            throw new ConnectionException(Translation
+                                .getTranslation(
+                                    "dialog.unable_to_connect_to_member", node
+                                        .getNick()));
                         }
                     } catch (ConnectionException ex) {
                         connectDialog.close();

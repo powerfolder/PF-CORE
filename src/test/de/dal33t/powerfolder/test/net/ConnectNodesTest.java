@@ -20,7 +20,7 @@
 package de.dal33t.powerfolder.test.net;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Constants;
+import de.dal33t.powerfolder.ConnectResult;
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.NetworkingMode;
@@ -236,7 +236,7 @@ public class ConnectNodesTest extends FiveControllerTestCase {
 
         // Should connect, because friendship message is pending.
         margeAtLisa.shutdown();
-        assertTrue(margeAtLisa.reconnect());
+        assertTrue(margeAtLisa.reconnect().isSuccess());
         assertTrue(margeAtLisa.isCompleteyConnected());
         margeAtLisa.shutdown();
 
@@ -304,7 +304,8 @@ public class ConnectNodesTest extends FiveControllerTestCase {
         // Join testfolder.
         joinTestFolder(SyncProfile.MANUAL_SYNCHRONIZATION, false);
 
-        assertTrue(margeAtLisa.reconnect());
+        ConnectResult conRes = margeAtLisa.reconnect();
+        assertTrue(conRes.toString(), conRes.isSuccess());
 
         TestHelper.waitForCondition(100, new ConditionWithMessage() {
             public String message() {
@@ -351,7 +352,7 @@ public class ConnectNodesTest extends FiveControllerTestCase {
         // Trigger connect
         bartAtHomer.setFriend(true, "");
         try {
-            assertFalse(bartAtHomer.reconnect());
+            assertFalse(bartAtHomer.reconnect().isSuccess());
             fail("Should not be able to connect. Identity is lisas!");
         } catch (InvalidIdentityException e) {
             // OK!
