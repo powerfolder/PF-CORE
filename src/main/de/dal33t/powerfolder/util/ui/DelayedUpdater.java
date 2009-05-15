@@ -123,7 +123,7 @@ public class DelayedUpdater {
             if (nextMandatoryEvent < 0) {
                 nextMandatoryEvent = now + delay;
             }
-            long delayUntilEvent = nextMandatoryEvent - now;
+            long delayUntilEvent = Math.max(nextMandatoryEvent - now, 0);
             scheduledES.schedule(currentTask, delayUntilEvent,
                 TimeUnit.MILLISECONDS);
         } catch (Exception e) {
