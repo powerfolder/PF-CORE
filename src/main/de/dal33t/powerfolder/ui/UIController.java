@@ -137,7 +137,8 @@ public class UIController extends PFComponent {
             boolean lafInitalized = false;
             try {
                 // Now setup the theme
-                String lafName = getUILookAndFeelConfig();
+                String lafName = PreferencesEntry.UI_LOOK_AND_FEEL
+                        .getValueString(getController());
                 if (lafName != null) {
 
                     // Check that the required laf is in the available list.
@@ -1079,13 +1080,6 @@ public class UIController extends PFComponent {
         }
 
         started = false;
-    }
-
-    /**
-     * @return the setted ui laf as String (classname)
-     */
-    public String getUILookAndFeelConfig() {
-        return PreferencesEntry.UI_LOOK_AND_FEEL.getValueString(getController());
     }
 
     /**

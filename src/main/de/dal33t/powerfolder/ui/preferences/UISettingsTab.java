@@ -78,7 +78,9 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
 
     private boolean needsRestart;
     // The original look and feel
-    private LookAndFeel oldLaf;
+    private String oldLafClassName;
+    // The changed look and feel
+    private String newLafClassName;
     // The triggers the writing into core
     private Trigger writeTrigger;
 
@@ -99,18 +101,10 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
         return true;
     }
 
-    // Exposing *************************************************************
-
     public void undoChanges() {
-        LookAndFeel activeLaf = UIManager.getLookAndFeel();
-        // Reset to old look and feel
-        if (!Util.equals(oldLaf, activeLaf)) {
-            try {
-                LookAndFeelSupport.setLookAndFeel(oldLaf);
-            } catch (UnsupportedLookAndFeelException e) {
-                logSevere(e);
-            }
-            lookAndFeelChooser.setSelectedItem(oldLaf);
+        if (oldLafClassName != null) {
+            PreferencesEntry.UI_LOOK_AND_FEEL.setValue(getController(),
+                    oldLafClassName);
         }
     }
 
@@ -131,7 +125,6 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
             checkForUpdate);
 
         // Build color theme chooser
-        oldLaf = UIManager.getLookAndFeel();
         lookAndFeelChooser = createLookAndFeelChooser();
 
         // Create xBehaviorchooser
@@ -322,6 +315,12 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
                     cc.xy(1, row));
             builder.add(xBehaviorChooser, cc.xy(3, row));
 
+            if (getUIController().getSkins().length > 1) {
+                row += 2;
+                builder.add(skinLabel, cc.xy(1, row));
+                builder.add(skinCombo, cc.xy(3, row));
+            }
+
             row += 2;
             builder.add(new JLabel(Translation
                 .getTranslation("preferences.dialog.color_theme")), cc
@@ -362,12 +361,6 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
                 row += 2;
                 builder.add(folderSyncLabel, cc.xy(1, row));
                 builder.add(getFolderSpinnerPanel(), cc.xy(3, row));
-            }
-
-            if (getUIController().getSkins().length > 1) {
-                row += 2;
-                builder.add(skinLabel, cc.xy(1, row));
-                builder.add(skinCombo, cc.xy(3, row));
             }
 
             panel = builder.getPanel();
@@ -426,12 +419,18 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
         PreferencesEntry.CHECK_UPDATE.setValue(getController(), checkForUpdate);
 
         // Store ui laf
-        LookAndFeel laf = UIManager.getLookAndFeel();
-        if (!Util.equals(laf, oldLaf)) {
-            PreferencesEntry.UI_LOOK_AND_FEEL.setValue(getController(),
-                    laf.getClass().getName());
-            needsRestart = true;
+        if (!Util.equals(oldLafClassName, newLafClassName)) {
+            LookAndFeel[] availableLafs = LookAndFeelSupport
+                .getAvailableLookAndFeels(getUIController());
+            for (LookAndFeel availableLaf : availableLafs) {
+                if (Util.equals(newLafClassName, availableLaf.getClass().getName())) {
+                    PreferencesEntry.UI_LOOK_AND_FEEL.setValue(getController(),
+                            availableLaf.getClass().getName());
+                    needsRestart = true;
+                }
+            }
         }
+        
         // Use underlines
         PreferencesEntry.UNDERLINE_LINKS.setValue(getController(),
             underlineLinkBox.isSelected());
@@ -518,9 +517,10 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
         for (int i = 0; i < availableLafs.length; i++) {
             chooser.addItem(availableLafNames[i]);
             if (availableLafs[i].getClass().getName().equals(
-                getUIController().getUILookAndFeelConfig()))
+                    PreferencesEntry.UI_LOOK_AND_FEEL.getValueString(getController())))
             {
                 chooser.setSelectedIndex(i);
+                oldLafClassName = availableLafs[i].getClass().getName();
             }
         }
         chooser.addItemListener(new ItemListener() {
@@ -530,12 +530,7 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
                 }
                 LookAndFeel laf = availableLafs[lookAndFeelChooser
                     .getSelectedIndex()];
-                try {
-                    LookAndFeelSupport.setLookAndFeel(laf);
-                } catch (UnsupportedLookAndFeelException e1) {
-                    logSevere(e1);
-                }
-
+                    newLafClassName = laf.getClass().getName();
             }
         });
         return chooser;

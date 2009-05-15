@@ -230,8 +230,12 @@ public class Util {
 
     public static final boolean equals(Object a, Object b) {
         if (a == null) {
-            // a == null here
+            // a == null
             return b == null;
+        }
+        if (b == null) {
+            // a != null
+            return false;
         }
         if (a == b) {
             return true;
