@@ -180,13 +180,16 @@ public class UIController extends PFComponent {
                     if (customLaf != null) {
                         // We have a custom Skin laf available! Use that one.
                         LookAndFeelSupport.setLookAndFeel(customLaf);
+                        PreferencesEntry.UI_LOOK_AND_FEEL.setValue(getController(),
+                                customLaf.getClass().getName());
                     } else {
                         // Set default l&f
-                        LookAndFeelSupport.setLookAndFeel(
-                                new SyntheticaSilverMoonLookAndFeel());
+                        SyntheticaSilverMoonLookAndFeel lookAndFeel
+                                = new SyntheticaSilverMoonLookAndFeel();
+                        LookAndFeelSupport.setLookAndFeel(lookAndFeel);
+                        PreferencesEntry.UI_LOOK_AND_FEEL.setValue(getController(),
+                                lookAndFeel.getClass().getName());
                     }
-                    PreferencesEntry.UI_LOOK_AND_FEEL.setValue(getController(),
-                            customLaf.getClass().getName());
                 } catch (UnsupportedLookAndFeelException e) {
                     logSevere("Unable to set look and feel", e);
                 } catch (ParseException e) {

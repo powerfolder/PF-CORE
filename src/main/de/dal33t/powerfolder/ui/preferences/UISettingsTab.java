@@ -455,10 +455,13 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
         PreferencesEntry.FOLDER_SYNC_WARN.setValue(getController(),
                 folderSyncSlider.getValue());
 
-        int skindex = PreferencesEntry.SKIN_INDEX.getValueInt(getController());
-        if (skinCombo.getSelectedIndex() != skindex) {
-            PreferencesEntry.SKIN_INDEX.setValue(getController(), skinCombo.getSelectedIndex());
-            needsRestart = true;
+        if (skinCombo != null) {
+            int skindex = PreferencesEntry.SKIN_INDEX.getValueInt(getController());
+            if (skinCombo.getSelectedIndex() != skindex) {
+                PreferencesEntry.SKIN_INDEX.setValue(getController(),
+                        skinCombo.getSelectedIndex());
+                needsRestart = true;
+            }
         }
     }
 
