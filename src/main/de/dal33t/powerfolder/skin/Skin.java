@@ -27,7 +27,25 @@ package de.dal33t.powerfolder.skin;
  * @version $Revision$
  */
 public interface Skin {
+
+    /**
+     * Descriptive name of the skin.
+     *
+     * @return
+     */
     String getName();
+
+    /**
+     * SyntheticaLookAndFeel subclass.
+     *
+     * @return
+     */
     Class getLookAndFeelClass();
+
+    /**
+     * Name of an icon properties file with icon overrides.
+     * 
+     * @return
+     */
     String getIconsPropertiesFileName();
 }

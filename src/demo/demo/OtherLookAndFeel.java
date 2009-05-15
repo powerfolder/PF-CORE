@@ -25,7 +25,7 @@ import de.javasoft.plaf.synthetica.SyntheticaLookAndFeel;
 import java.text.ParseException;
 
 /**
- * Simple custom look and feel to demonstrate the -y command line parameter.
+ * Simple custom look and feel to demonstrate Skins.
  */
 public class OtherLookAndFeel extends SyntheticaLookAndFeel {
 
