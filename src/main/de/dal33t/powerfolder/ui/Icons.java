@@ -253,6 +253,9 @@ public class Icons {
     public static void loadOverrideFile(String iconSetFile) {
         log.info("Loaded override icons file " + iconSetFile);
         overridePropertiesFilename = iconSetFile;
+        overrideIconProperties = null;
+        ID_ICON_MAP.clear();
+        ID_IMAGE_MAP.clear();
     }
 
     /**

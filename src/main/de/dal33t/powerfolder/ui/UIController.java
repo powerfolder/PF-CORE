@@ -45,6 +45,7 @@ import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 import de.javasoft.plaf.synthetica.SyntheticaSilverMoonLookAndFeel;
+import de.javasoft.plaf.synthetica.SyntheticaLookAndFeel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -136,11 +137,24 @@ public class UIController extends PFComponent {
             boolean lafInitalized = false;
             try {
                 // Now setup the theme
-                if (getUILookAndFeelConfig() != null) {
-                    Class<?> lafClass = Class.forName(getUILookAndFeelConfig());
-                    LookAndFeel laf = (LookAndFeel) lafClass.newInstance();
-                    LookAndFeelSupport.setLookAndFeel(laf);
-                    lafInitalized = true;
+                String lafName = getUILookAndFeelConfig();
+                if (lafName != null) {
+
+                    // Check that the required laf is in the available list.
+                    boolean found = false;
+                    for (LookAndFeel laf : LookAndFeelSupport
+                            .getAvailableLookAndFeels(this)) {
+                        if (laf.getClass().getName().equals(lafName)) {
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (found) {
+                        Class<?> lafClass = Class.forName(lafName);
+                        LookAndFeel laf = (LookAndFeel) lafClass.newInstance();
+                        LookAndFeelSupport.setLookAndFeel(laf);
+                        lafInitalized = true;
+                    }
                 }
             } catch (IllegalAccessException e) {
                 log.log(Level.SEVERE,
@@ -161,8 +175,18 @@ public class UIController extends PFComponent {
 
             if (!lafInitalized) {
                 try {
-                    // Set default l&f
-                    LookAndFeelSupport.setLookAndFeel(new SyntheticaSilverMoonLookAndFeel());
+                    SyntheticaLookAndFeel customLaf =
+                            LookAndFeelSupport.getCustomLaf(this);
+                    if (customLaf != null) {
+                        // We have a custom Skin laf available! Use that one.
+                        LookAndFeelSupport.setLookAndFeel(customLaf);
+                    } else {
+                        // Set default l&f
+                        LookAndFeelSupport.setLookAndFeel(
+                                new SyntheticaSilverMoonLookAndFeel());
+                    }
+                    PreferencesEntry.UI_LOOK_AND_FEEL.setValue(getController(),
+                            customLaf.getClass().getName());
                 } catch (UnsupportedLookAndFeelException e) {
                     logSevere("Unable to set look and feel", e);
                 } catch (ParseException e) {
@@ -687,8 +711,14 @@ public class UIController extends PFComponent {
             String fileName = activeSkin.getIconsPropertiesFileName();
             Icons.loadOverrideFile(fileName);
         } else if (skins.length > 1) {
-            // @todo harry - temporary - need a preference entry here
-            activeSkin = skins[0];
+            Integer skindex = PreferencesEntry.SKIN_INDEX.getValueInt(getController());
+            if (skindex < skins.length) {
+                activeSkin = skins[skindex];
+            } else {
+                // Fewer skins than the selected one ? - use first.
+                activeSkin = skins[0];
+                PreferencesEntry.SKIN_INDEX.setValue(getController(), 0);
+            }
             String fileName = activeSkin.getIconsPropertiesFileName();
             Icons.loadOverrideFile(fileName);
         }

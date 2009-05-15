@@ -136,7 +136,10 @@ public enum PreferencesEntry {
     FOLDER_SYNC_USE("folder.sync.use", true),
 
     /** Days before warning about unsynced folders. */
-    FOLDER_SYNC_WARN("folder.sync.warn", 10);
+    FOLDER_SYNC_WARN("folder.sync.warn", 10),
+
+    /** Skin index. */
+    SKIN_INDEX("skin.index", 0);
 
     /** String, Boolean, Integer */
     private Class type;

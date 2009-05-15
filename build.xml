@@ -350,7 +350,7 @@ For creation of the installer:
         </jar>-->
     </target>
 
-    <target name="demo" depends="init" description="Builds a demo Synthetica style">
+    <target name="demo" depends="init" description="Builds a pair of demo Skins">
 
         <delete dir="${build.dir}"/>
         <delete dir="${dist.dir}"/>
@@ -377,8 +377,11 @@ For creation of the installer:
         </javac>
 
         <copy file="${demo.src.dir}/demo/synth.xml" todir="${build.dir}/demo"/>
+        <copy file="${demo.src.dir}/demo/synth2.xml" todir="${build.dir}/demo"/>
         <copy file="${demo.src.dir}/CustomIcons.properties" todir="${build.dir}"/>
+        <copy file="${demo.src.dir}/OtherIcons.properties" todir="${build.dir}"/>
         <copy file="${demo.src.dir}/icons/PowerFolderDemo.png" todir="${build.dir}/icons"/>
+        <copy file="${demo.src.dir}/icons/PowerFolderDemo2.png" todir="${build.dir}/icons"/>
         <copy file="${demo.src.dir}/META-INF/services/de.dal33t.powerfolder.skin.Skin"
               todir="${build.dir}/META-INF/services"/>
 
@@ -387,6 +390,7 @@ For creation of the installer:
             <include name="icons/**"/>
             <include name="META-INF/**"/>
             <include name="CustomIcons.properties"/>
+            <include name="OtherIcons.properties"/>
             <manifest>
                 <attribute name="Built-By" value="${BuildBy}"/>
                 <attribute name="BuildDateTime" value="${BuildDateTime}"/>
@@ -395,6 +399,5 @@ For creation of the installer:
         </jar>
 
     </target>
-
 
 </project>

@@ -74,7 +74,6 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
     private JSlider folderSyncSlider;
 
     private JLabel skinLabel;
-    private DefaultComboBoxModel skinComboModel;
     private JComboBox skinCombo;
 
     private boolean needsRestart;
@@ -262,12 +261,16 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
 
         if (getUIController().getSkins().length > 1) {
             skinLabel = new JLabel(Translation.getTranslation("preferences.dialog.skin_text"));
-            skinComboModel = new DefaultComboBoxModel();
+            DefaultComboBoxModel skinComboModel = new DefaultComboBoxModel();
             for (Skin skin : getUIController().getSkins()) {
                 skinComboModel.addElement(skin.getName());
             }
             skinCombo = new JComboBox(skinComboModel);
-            // @todo - harry - to load and save selected with preference entry - requires restart
+
+            int skindex = PreferencesEntry.SKIN_INDEX.getValueInt(getController());
+            if (skindex < skinCombo.getItemCount()) {
+                skinCombo.setSelectedIndex(skindex);
+            }
         }
     }
 
@@ -451,6 +454,12 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
 
         PreferencesEntry.FOLDER_SYNC_WARN.setValue(getController(),
                 folderSyncSlider.getValue());
+
+        int skindex = PreferencesEntry.SKIN_INDEX.getValueInt(getController());
+        if (skinCombo.getSelectedIndex() != skindex) {
+            PreferencesEntry.SKIN_INDEX.setValue(getController(), skinCombo.getSelectedIndex());
+            needsRestart = true;
+        }
     }
 
     /**
@@ -500,9 +509,9 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
     private JComboBox createLookAndFeelChooser() {
         JComboBox chooser = new JComboBox();
         final LookAndFeel[] availableLafs = LookAndFeelSupport
-            .getAvailableLookAndFeels(getController());
+            .getAvailableLookAndFeels(getUIController());
         String[] availableLafNames = LookAndFeelSupport
-                .getAvailableLookAndFeelNames(getController());
+                .getAvailableLookAndFeelNames(getUIController());
         for (int i = 0; i < availableLafs.length; i++) {
             chooser.addItem(availableLafNames[i]);
             if (availableLafs[i].getClass().getName().equals(
