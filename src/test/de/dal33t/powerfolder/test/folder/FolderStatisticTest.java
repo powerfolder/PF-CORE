@@ -425,6 +425,14 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         forceStatsCalc(getFolderAtMarge());
         forceStatsCalc(getFolderAtLisa());
         forceStatsCalc(getFolderAtMaggie());
+
+        try {
+            // Give all controllers a chance to calculate their own stats,
+            // otherwise we get occasional rate conditions.
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+        }
+
     }
 
     private static final void forceStatsCalc(Folder folder) {
