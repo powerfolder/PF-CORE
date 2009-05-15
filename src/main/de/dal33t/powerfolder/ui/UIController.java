@@ -109,7 +109,9 @@ public class UIController extends PFComponent {
     /**
      * The UI distribution running.
      */
-    private Skin skin;
+    private Skin[] skins;
+
+    private Skin activeSkin;
 
     /**
      * Initializes a new UI controller. open UI with #start
@@ -650,31 +652,41 @@ public class UIController extends PFComponent {
     }
 
     /**
-     * Returns the skin - may be null;
+     * Returns the skin - may be empty;
      *
      * @return
      */
-    public Skin getSkin() {
-        return skin;
+    public Skin[] getSkins() {
+        return skins;
+    }
+
+    /**
+     * Returns the active skin - may be null.
+     * @return
+     */
+    public Skin getActiveSkin() {
+        return activeSkin;
     }
 
     private void initSkin() {
         ServiceLoader<Skin> skinLoader = ServiceLoader.load(Skin.class);
+        List<Skin> skinList = new ArrayList<Skin>();
         for (Skin sk : skinLoader) {
-            if (skin != null) {
-                logSevere("Found multiple skin classes: " + sk.getName()
-                    + ", got already " + skin.getName());
-            }
-            skin = sk;
+            skinList.add(sk);
         }
-        if (skin == null) {
-            // None supplied; no worries.
-            return;
-        }
-        logInfo("Running skin: " + skin.getName());
 
-        String fileName = skin.getIconsPropertiesFileName();
-        Icons.loadOverrideFile(fileName);
+        skins = new Skin[skinList.size()];
+        int i = 0;
+        for (Skin skin : skinList) {
+            skins[i++] = skin;
+        }
+
+        // @todo temporary - harry
+        if (skins.length > 0) {
+            activeSkin = skins[0];
+            String fileName = activeSkin.getIconsPropertiesFileName();
+            Icons.loadOverrideFile(fileName);
+        }
     }
 
     /**

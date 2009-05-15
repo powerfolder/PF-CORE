@@ -123,7 +123,7 @@ public class LookAndFeelSupport {
     }
 
     private static SyntheticaLookAndFeel getCustomLaf(Controller controller) {
-        Skin skin = controller.getUIController().getSkin();
+        Skin skin = controller.getUIController().getActiveSkin();
         if (skin != null) {
             Class clazz = skin.getLookAndFeelClass();
             try {
