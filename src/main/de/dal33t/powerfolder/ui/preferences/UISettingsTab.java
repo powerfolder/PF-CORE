@@ -45,6 +45,7 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.*;
+import de.dal33t.powerfolder.skin.Skin;
 import de.dal33t.powerfolder.ui.LookAndFeelSupport;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
@@ -71,6 +72,10 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
     private JCheckBox folderSyncCB;
     private JLabel folderSyncLabel;
     private JSlider folderSyncSlider;
+
+    private JLabel skinLabel;
+    private DefaultComboBoxModel skinComboModel;
+    private JComboBox skinCombo;
 
     private boolean needsRestart;
     // The original look and feel
@@ -254,6 +259,16 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
                     });
             }
         }
+
+        if (getUIController().getSkins().length > 1) {
+            skinLabel = new JLabel(Translation.getTranslation("preferences.dialog.skin_text"));
+            skinComboModel = new DefaultComboBoxModel();
+            for (Skin skin : getUIController().getSkins()) {
+                skinComboModel.addElement(skin.getName());
+            }
+            skinCombo = new JComboBox(skinComboModel);
+            // @todo - harry - to load and save selected with preference entry - requires restart
+        }
     }
 
     private void doMainOnTop(Boolean onTop) {
@@ -285,7 +300,7 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
         if (panel == null) {
             FormLayout layout = new FormLayout(
                 "right:pref, 3dlu, 140dlu, pref:grow",
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
 
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
@@ -345,6 +360,13 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
                 builder.add(folderSyncLabel, cc.xy(1, row));
                 builder.add(getFolderSpinnerPanel(), cc.xy(3, row));
             }
+
+            if (getUIController().getSkins().length > 1) {
+                row += 2;
+                builder.add(skinLabel, cc.xy(1, row));
+                builder.add(skinCombo, cc.xy(3, row));
+            }
+
             panel = builder.getPanel();
 
             enableTransPerc();

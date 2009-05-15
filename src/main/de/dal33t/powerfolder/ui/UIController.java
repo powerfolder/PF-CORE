@@ -681,8 +681,13 @@ public class UIController extends PFComponent {
             skins[i++] = skin;
         }
 
-        // @todo temporary - harry
-        if (skins.length > 0) {
+        if (skins.length == 1) {
+            // Single skin? - use this one.
+            activeSkin = skins[0];
+            String fileName = activeSkin.getIconsPropertiesFileName();
+            Icons.loadOverrideFile(fileName);
+        } else if (skins.length > 1) {
+            // @todo harry - temporary - need a preference entry here
             activeSkin = skins[0];
             String fileName = activeSkin.getIconsPropertiesFileName();
             Icons.loadOverrideFile(fileName);
