@@ -32,6 +32,7 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderStatistic;
 import de.dal33t.powerfolder.disk.RecycleBin;
 import de.dal33t.powerfolder.disk.ScanResult;
+import static de.dal33t.powerfolder.disk.FolderStatistic.UNKNOWN_SYNC_STATUS;
 import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.Icons;
@@ -436,6 +437,7 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
         } else {
 
             Date lastSyncDate = folder.getLastSyncDate();
+
             if (lastSyncDate == null) {
                 syncDateText = Translation.getTranslation(
                         "exp_folder_view.never_synchronized");
@@ -458,15 +460,16 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
             } else {
                 FolderStatistic statistic = folder.getStatistic();
                 double sync = statistic.getHarmonizedSyncPercentage();
-                if (sync < 0) {
-                    sync = 0;
+                if (sync < UNKNOWN_SYNC_STATUS) {
+                    sync = UNKNOWN_SYNC_STATUS;
                 }
                 if (sync > 100) {
                     sync = 100;
                 }
 
                 // Sync in progress? Rewrite date as estimate.
-                if (Double.compare(sync, 100.0) != 0) {
+                if (Double.compare(sync, 100.0) < 0  && Double.compare(sync,
+                        UNKNOWN_SYNC_STATUS) > 0)  {
                     Date date = folder.getStatistic().getEstimatedSyncDate();
                     if (date != null) {
                         String formattedDate = Format.formatDate(date);
@@ -476,13 +479,16 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
                     }
                 }
 
-                if (lastSyncDate == null && Double.compare(sync, 100.0) == 0) {
+                if (lastSyncDate == null && (Double.compare(sync, 100.0) == 0
+                        || Double.compare(sync, UNKNOWN_SYNC_STATUS) == 0)) {
                     // Never synced with others.
                     syncPercentText = Translation.getTranslation(
                             "exp_folder_view.synchronized", "?");
                 } else {
                     syncPercentText = Translation.getTranslation(
-                            "exp_folder_view.synchronized", sync);
+                            "exp_folder_view.synchronized",
+                            Double.compare(sync, UNKNOWN_SYNC_STATUS) == 0 ? "?"
+                                    : sync);
                 }
 
                 long localSize = statistic.getLocalSize();

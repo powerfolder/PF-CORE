@@ -1159,10 +1159,14 @@ public class FolderRepository extends PFComponent implements Runnable {
      */
     private void calculateOverallStats() {
         boolean foldersInSync = true;
+
+        // Check for folders that are currently synchronizing.
         for (Folder folder : folders.values()) {
-            boolean inSync = Double.compare(folder.getStatistic()
-                    .getHarmonizedSyncPercentage(), 100.0) == 0;
-            if (!inSync) {
+            double percentage = folder.getStatistic().getHarmonizedSyncPercentage();
+            boolean synchronizing = Double.compare(percentage, 100.0) < 0 &&
+                    Double.compare(percentage,
+                            FolderStatistic.UNKNOWN_SYNC_STATUS) > 0;
+            if (synchronizing) {
                 foldersInSync = false;
                 break;
             }

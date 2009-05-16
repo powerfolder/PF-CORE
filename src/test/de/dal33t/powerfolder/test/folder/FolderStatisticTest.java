@@ -175,9 +175,9 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         assertEquals(1, getFolderAtLisa().getStatistic().getTotalFilesCount());
 
         assertEquals(20.0, getFolderAtBart().getStatistic()
-            .getTotalSyncPercentage());
+            .getAverageSyncPercentage());
         assertEquals(20.0, getFolderAtLisa().getStatistic()
-            .getTotalSyncPercentage());
+            .getAverageSyncPercentage());
 
         // Bring them in sync
         setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
@@ -565,15 +565,15 @@ public class FolderStatisticTest extends FiveControllerTestCase {
 
     private void assertTotalSyncPercentage(double totalSync) {
         assertEquals(totalSync, getFolderAtHomer().getStatistic()
-            .getTotalSyncPercentage());
+            .getAverageSyncPercentage());
         assertEquals(totalSync, getFolderAtBart().getStatistic()
-            .getTotalSyncPercentage());
+            .getAverageSyncPercentage());
         assertEquals(totalSync, getFolderAtMarge().getStatistic()
-            .getTotalSyncPercentage());
+            .getAverageSyncPercentage());
         assertEquals(totalSync, getFolderAtLisa().getStatistic()
-            .getTotalSyncPercentage());
+            .getAverageSyncPercentage());
         assertEquals(totalSync, getFolderAtMaggie().getStatistic()
-            .getTotalSyncPercentage());
+            .getAverageSyncPercentage());
     }
 
     private void assertIncomingFiles(int homer, int bart, int marge, int lisa,

@@ -1208,7 +1208,7 @@ public class UIController extends PFComponent {
             for (Folder folder : folders) {
                 if (folder.isTransferring()
                     || Double.compare(folder.getStatistic()
-                        .getTotalSyncPercentage(), 100.0d) != 0)
+                        .getAverageSyncPercentage(), 100.0d) != 0)
                 {
                     synchronizingFolders++;
                 }

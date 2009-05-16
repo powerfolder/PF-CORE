@@ -49,6 +49,8 @@ import de.dal33t.powerfolder.util.ui.SimpleTimeEstimator;
  */
 public class FolderStatistic extends PFComponent {
 
+    public static final int UNKNOWN_SYNC_STATUS = -1;
+
     /**
      * if the number of files is more than MAX_ITEMS the updates will be delayed
      * to a maximum that can be configured in
@@ -165,7 +167,7 @@ public class FolderStatistic extends PFComponent {
 
         // Update the estimator with the new total sync.
         calculating.estimatedSyncDate = estimator.updateEstimate(calculating
-            .getTotalSyncPercentage());
+            .getAverageSyncPercentage());
 
         // Switch figures
         current = calculating;
@@ -413,10 +415,10 @@ public class FolderStatistic extends PFComponent {
     }
 
     /**
-     * @return the total sync percentange across all members.
+     * @return the average sync percentange across all members.
      */
-    public double getTotalSyncPercentage() {
-        return current.getTotalSyncPercentage();
+    public double getAverageSyncPercentage() {
+        return current.getAverageSyncPercentage();
     }
 
     /**
@@ -439,23 +441,27 @@ public class FolderStatistic extends PFComponent {
      *         -1 if unknown
      */
     public double getHarmonizedSyncPercentage() {
+
+        // If there are no members connected, the sync percentage is unknown.
+        if (folder.getConnectedMembersCount() == 0) {
+            return UNKNOWN_SYNC_STATUS;
+        }
+
         if (SyncProfile.AUTOMATIC_SYNCHRONIZATION.equals(folder
-            .getSyncProfile()))
-        {
-            return getTotalSyncPercentage();
+                .getSyncProfile())) {
+            // Average of all folder member sync percentages.
+            return getAverageSyncPercentage();
         } else if (SyncProfile.BACKUP_SOURCE.equals(folder.getSyncProfile())) {
             // In this case only remote sides matter.
-            // Calc average sync % of remote sides.
-            double maxSync = -1;
-            for (Member member : folder.getMembersAsCollection()) {
-                if (member.isMySelf()) {
-                    continue;
-                }
+            // Calc maximum sync % of remote sides.
+            double maxSync = 0;
+            for (Member member : folder.getConnectedMembers()) {
                 double memberSync = getSyncPercentage(member);
                 maxSync = Math.max(maxSync, memberSync);
             }
             return maxSync;
         }
+        // Otherwise, just return the local sync percentage.
         return getLocalSyncPercentage();
     }
 
@@ -496,7 +502,7 @@ public class FolderStatistic extends PFComponent {
         memberMap.put(fileInfo, bytesTransferred);
         if (current != null) {
             current.estimatedSyncDate = estimator.updateEstimate(current
-                .getTotalSyncPercentage());
+                .getAverageSyncPercentage());
         }
         folder.notifyStatisticsCalculated();
     }
@@ -703,13 +709,12 @@ public class FolderStatistic extends PFComponent {
         }
 
         /**
-         * Calculate the total sync percentage for a folder. This is the sync
-         * percentage for each member divided by the number of members (the
-         * average).
+         * Calculate the average sync percentage for a folder. This is the sync
+         * percentage for each member divided by the number of members.
          * 
          * @return the total sync percentage for a folder
          */
-        public double getTotalSyncPercentage() {
+        public double getAverageSyncPercentage() {
             if (sizesInSync.isEmpty()) {
                 return 100.0;
             }
