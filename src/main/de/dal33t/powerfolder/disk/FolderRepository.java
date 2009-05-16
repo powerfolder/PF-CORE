@@ -95,7 +95,11 @@ public class FolderRepository extends PFComponent implements Runnable {
     /** The disk scanner */
     private FolderScanner folderScanner;
 
+    /** true if all folders are in sync. */
     private final AtomicBoolean allInSync = new AtomicBoolean(true);
+
+    /** Date all folders were last synchronized or the most future estimated sync date. */
+    private Date allSyncOrEstimatedDate;
     
     /**
      * The current synchronizater of all folder memberships
@@ -1086,8 +1090,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      * @return
      */
     public Date getSynchronizationDate() {
-        // @todo harry to implement
-        return new Date();
+        return allSyncOrEstimatedDate;
     }
 
     // Event support **********************************************************
@@ -1167,8 +1170,27 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         allInSync.set(foldersInSync);
 
+        // Find the folder with the most recent synchronized date / most
+        // future estimated date.
+        Date syncDate = null;
+        for (Folder folder : folders.values()) {
+            Date date;
+            if (foldersInSync) {
+                date = folder.getLastSyncDate();
+            } else {
+                date = folder.getStatistic().getEstimatedSyncDate();
+            }
+            if (date != null) {
+                if (syncDate == null || date.after(syncDate)) {
+                    syncDate = date;
+                }
+            }
+        }
+
+        allSyncOrEstimatedDate = syncDate;
+
         overallFolderStatListenerSupport.statCalculated(
-                new OverallFolderStatEvent(foldersInSync));
+                new OverallFolderStatEvent(foldersInSync, syncDate));
     }
 
     private class AllFolderMembershipSynchronizer implements Runnable {

@@ -480,11 +480,15 @@ public class HomeTab extends PFUIComponent {
                 ? Translation.getTranslation("home_tab.in_sync")
                 : Translation.getTranslation("home_tab.synchronizing");
         synchronizationStatusLabel.setText(syncStatsText);
-
-        String date = Format.formatDate(syncDate);
-        String syncDateText = synced
-                ? Translation.getTranslation("home_tab.last_synced", date)
-                : Translation.getTranslation("home_tab.sync_eta", date);
+        String syncDateText;
+        if (syncDate == null) {
+            syncDateText = Translation.getTranslation("home_tab.never_synced");
+        } else {
+            String date = Format.formatDate(syncDate);
+            syncDateText = synced
+                    ? Translation.getTranslation("home_tab.last_synced", date)
+                    : Translation.getTranslation("home_tab.sync_eta", date);
+        }
         synchronizationDateLabel.setText(syncDateText);
     }
 

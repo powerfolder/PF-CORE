@@ -19,18 +19,32 @@
 */
 package de.dal33t.powerfolder.event;
 
+import java.util.Date;
+
 /**
  * Event with overall stats about the state of folders.
  */
 public class OverallFolderStatEvent {
 
+    /** True if all folders are in sync. */
     private boolean allInSync;
 
-    public OverallFolderStatEvent(boolean allInSync) {
+    /**
+     * Date all folders were last in sync
+     * OR date when all folders are expected to be synchronized.
+     */
+    private Date syncDate;
+
+    public OverallFolderStatEvent(boolean allInSync, Date syncDate) {
         this.allInSync = allInSync;
+        this.syncDate = syncDate;
     }
 
     public boolean isAllInSync() {
         return allInSync;
+    }
+
+    public Date getSyncDate() {
+        return syncDate;
     }
 }
