@@ -184,4 +184,12 @@ public class UtilTest extends TestCase {
         assertTrue(Util.compareVersions("2.0.1", "2.0.0"));
         assertFalse(Util.compareVersions("2.0.0", "2.0.1"));
     }
+
+    public void testEqual() {
+        assertFalse(Util.equals(null, "bob"));
+        assertFalse(Util.equals("bob", null));
+        assertFalse(Util.equals("bob", "jim"));
+        assertTrue(Util.equals("bob", "bob"));
+        assertTrue(Util.equals(null, null));
+    }
 }
