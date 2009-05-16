@@ -54,26 +54,18 @@ public class SyncButtonComponent extends PFUIComponent {
         folderRepositorySyncing = new AtomicBoolean();
         mousePressed = new AtomicBoolean();
 
-        controller.getThreadPool().submit(new MyRunnable());
-        controller.getFolderRepository().addOverallFolderStatListener(new MyOverallFolderStatListener());
-    }
-
-    /**
-     * @return the sync 'button'.
-     */
-    public Component getUIComponent() {
-        if (syncAllLabel == null) {
-            initComponents();
-        }
-        return syncAllLabel;
-    }
-
-    private void initComponents() {
         syncAllLabel = new JLabel(Icons
             .getIconById("sync_normal_00.icon"));
         syncAllLabel.setToolTipText(Translation
             .getTranslation("action_sync_all_folders.description"));
         syncAllLabel.addMouseListener(new MyMouseAdapter());
+
+        controller.getThreadPool().submit(new MyRunnable());
+        controller.getFolderRepository().addOverallFolderStatListener(new MyOverallFolderStatListener());
+    }
+
+    public Component getUIComponent() {
+        return syncAllLabel;
     }
 
     /**
