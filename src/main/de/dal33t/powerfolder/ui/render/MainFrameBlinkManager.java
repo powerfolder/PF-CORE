@@ -23,6 +23,7 @@ import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.MainTabbedPane;
+import de.dal33t.powerfolder.ui.MainFrame;
 import de.dal33t.powerfolder.ui.chat.ChatModelEvent;
 import de.dal33t.powerfolder.ui.chat.ChatModelListener;
 
@@ -45,6 +46,7 @@ import java.beans.PropertyChangeEvent;
 public class MainFrameBlinkManager extends PFUIComponent {
 
     private final AtomicBoolean flashHomeTab = new AtomicBoolean();
+    private final AtomicBoolean flashFolderTab = new AtomicBoolean();
     private final AtomicBoolean flashMemberTab = new AtomicBoolean();
     private final AtomicInteger selectedMainTab = new AtomicInteger();
 
@@ -83,20 +85,24 @@ public class MainFrameBlinkManager extends PFUIComponent {
 
         boolean blink = (System.currentTimeMillis() / 1000) % 2 != 0;
 
+        MainFrame mainFrame = uiController.getMainFrame();
         if (blink && flashHomeTab.get()) {
-            uiController.getMainFrame().setHomeTabIcon(Icons.getIconById(Icons.BLANK));
+            mainFrame.setHomeTabIcon(Icons.getIconById(Icons.BLANK));
         } else {
-            uiController.getMainFrame().setHomeTabIcon(Icons.getIconById(Icons.HOME));
+            mainFrame.setHomeTabIcon(Icons.getIconById(Icons.HOME));
+        }
+
+        if (blink && flashFolderTab.get()) {
+            mainFrame.setFoldersTabIcon(Icons.getIconById(Icons.BLANK));
+        } else {
+            mainFrame.setFoldersTabIcon(Icons.getIconById(Icons.FOLDER));
         }
 
         if (blink && flashMemberTab.get()) {
-            uiController.getMainFrame().setComputersTabIcon(Icons.getIconById(Icons.BLANK));
+            mainFrame.setComputersTabIcon(Icons.getIconById(Icons.BLANK));
         } else {
-            uiController.getMainFrame().setComputersTabIcon(Icons.getIconById(Icons.COMPUTER));
+            mainFrame.setComputersTabIcon(Icons.getIconById(Icons.COMPUTER));
         }
-
-        // Folder tab seems to lose its icon when we do this. So set it anyway.
-        uiController.getMainFrame().setFoldersTabIcon(Icons.getIconById(Icons.FOLDER));
     }
 
     /**
