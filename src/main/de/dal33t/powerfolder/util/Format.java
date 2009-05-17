@@ -43,15 +43,15 @@ public class Format {
         double number = bytes;
         String suffix = "Bytes";
 
-        if (number > 800) {
+        if (number >= 1024) {
             number /= 1024;
             suffix = "KBytes";
         }
-        if (number > 800) {
+        if (number >= 1024) {
             number /= 1024;
             suffix = "MBytes";
         }
-        if (number > 800) {
+        if (number >= 1024) {
             number /= 1024;
             suffix = "GBytes";
         }
@@ -70,11 +70,11 @@ public class Format {
 
         number /= 1024;
         String suffix = "KB";
-        if (number > 800) {
+        if (number >= 1024) {
             number /= 1024;
             suffix = "MB";
         }
-        if (number > 800) {
+        if (number >= 1024) {
             number /= 1024;
             suffix = "GB";
         }

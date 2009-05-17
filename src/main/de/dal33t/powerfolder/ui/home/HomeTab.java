@@ -332,11 +332,11 @@ public class HomeTab extends PFUIComponent {
         // Copied from Format.formatBytesShort()
         totalSize /= 1024;
         String suffix = "KB";
-        if (totalSize > 800) {
+        if (totalSize >= 1024) {
             totalSize /= 1024;
             suffix = "MB";
         }
-        if (totalSize > 800) {
+        if (totalSize >= 1024) {
             totalSize /= 1024;
             suffix = "GB";
         }
