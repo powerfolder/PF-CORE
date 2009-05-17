@@ -118,9 +118,6 @@ public class MessageListenerSupport {
      */
     public void removeMessageListener(MessageListener aListener) {
         if (aListener.fireInEventDispatchThread()) {
-            if (messageListenersInDispatchThread == null) {
-                return;
-            }
             synchronized (messageListenersInDispatchThread) {
                 for (Collection<MessageListener> listeners :
                         messageListenersInDispatchThread.values()) {
@@ -128,9 +125,6 @@ public class MessageListenerSupport {
                 }
             }
         } else {
-            if (messageListenersNotInDispatchThread == null) {
-                return;
-            }
             synchronized (messageListenersNotInDispatchThread) {
                 for (Collection<MessageListener> listeners :
                         messageListenersNotInDispatchThread.values()) {
