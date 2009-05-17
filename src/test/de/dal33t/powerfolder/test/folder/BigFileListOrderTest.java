@@ -119,8 +119,6 @@ public class BigFileListOrderTest extends TwoControllerTestCase {
     }
 
     private final class MyMessageListener implements MessageListener {
-        private MyMessageListener() {
-        }
 
         public void handleMessage(Member source, Message message) {
             System.err.println("Received: " + message);
@@ -135,6 +133,10 @@ public class BigFileListOrderTest extends TwoControllerTestCase {
                 }
             }
             receiveMessages.add(message);
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return true;
         }
     }
 }

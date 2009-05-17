@@ -165,5 +165,9 @@ public class RequestExecutor extends PFComponent {
                 notifyAndcleanup();
             }
         }
+
+        public boolean fireInEventDispatchThread() {
+            return true;
+        }
     }
 }

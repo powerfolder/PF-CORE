@@ -106,5 +106,9 @@ public class SendFileListTest extends TwoControllerTestCase {
                 messages.add(message);
             }
         }
+
+        public boolean fireInEventDispatchThread() {
+            return true;
+        }
     }
 }

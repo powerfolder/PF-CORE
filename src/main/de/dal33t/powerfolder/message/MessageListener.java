@@ -20,16 +20,16 @@
 package de.dal33t.powerfolder.message;
 
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.event.CoreListener;
 
 /**
  * A message listener, which can by added to a member.
  * <p>
- * TODO Make this extend CoreListener
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.1 $
  */
-public interface MessageListener {
+public interface MessageListener extends CoreListener {
     /**
      * Handles the received message.
      * 

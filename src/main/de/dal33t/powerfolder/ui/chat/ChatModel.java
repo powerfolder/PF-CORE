@@ -45,7 +45,7 @@ import java.util.Collection;
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.1 $
  */
-public class ChatModel implements MessageListener {
+public class ChatModel {
 
     private Map<Member, ChatBox> chatBoxMap = new HashMap<Member, ChatBox>();
     private ChatModelListener chatModelListeners;
@@ -63,7 +63,8 @@ public class ChatModel implements MessageListener {
         this.controller = controller;
         repository = controller.getFolderRepository();
         NodeManager nodeManager = controller.getNodeManager();
-        nodeManager.addMessageListenerToAllNodes(this);
+        MessageListener messageListener = new MyMessageListener();
+        nodeManager.addMessageListenerToAllNodes(messageListener);
         nodeManager.addNodeManagerListener(new MyNodeManagerListener());
         folderMembershipListener = new MyFolderMembershipListener();
         addListenerToExsistingFolders();
@@ -133,18 +134,6 @@ public class ChatModel implements MessageListener {
             chatBoxMap.put(member, chat);
         }
         return chat;
-    }
-
-    /**
-     * Called if a message is received from a remote Member.
-     * This can be any type of message.
-     * We only handle chat messages.
-     */
-    public void handleMessage(Member source, Message message) {
-        if (message instanceof MemberChatMessage) {
-            MemberChatMessage mcMessage = (MemberChatMessage) message;
-            addChatLine(source, source, mcMessage.text);
-        }
     }
 
     /**
@@ -290,6 +279,25 @@ public class ChatModel implements MessageListener {
 
         public boolean fireInEventDispatchThread() {
             return false;
+        }
+    }
+
+    private class MyMessageListener implements MessageListener {
+
+        /**
+         * Called if a message is received from a remote Member.
+         * This can be any type of message.
+         * We only handle chat messages.
+         */
+        public void handleMessage(Member source, Message message) {
+            if (message instanceof MemberChatMessage) {
+                MemberChatMessage mcMessage = (MemberChatMessage) message;
+                addChatLine(source, source, mcMessage.text);
+            }
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return true;
         }
     }
 }
