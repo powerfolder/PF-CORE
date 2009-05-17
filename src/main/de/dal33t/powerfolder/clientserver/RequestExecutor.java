@@ -167,7 +167,7 @@ public class RequestExecutor extends PFComponent {
         }
 
         public boolean fireInEventDispatchThread() {
-            return true;
+            return false;
         }
     }
 }

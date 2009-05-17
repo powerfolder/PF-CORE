@@ -108,7 +108,7 @@ public class SendFileListTest extends TwoControllerTestCase {
         }
 
         public boolean fireInEventDispatchThread() {
-            return true;
+            return false;
         }
     }
 }

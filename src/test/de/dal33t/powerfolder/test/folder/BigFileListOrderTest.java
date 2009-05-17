@@ -136,7 +136,7 @@ public class BigFileListOrderTest extends TwoControllerTestCase {
         }
 
         public boolean fireInEventDispatchThread() {
-            return true;
+            return false;
         }
     }
 }
