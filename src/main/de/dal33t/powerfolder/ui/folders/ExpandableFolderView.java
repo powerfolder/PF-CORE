@@ -92,6 +92,7 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
     private MyFolderListener myFolderListener;
     private MyFolderMembershipListener myFolderMembershipListener;
     private MyServerClientListener myServerClientListener;
+    private MyNodeManagerListener myNodeManagerListener;
 
     private ExpansionListener listenerSupport;
 
@@ -385,6 +386,8 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
             folder.addFolderListener(myFolderListener);
             myFolderMembershipListener = new MyFolderMembershipListener();
             folder.addMembershipListener(myFolderMembershipListener);
+            myNodeManagerListener = new MyNodeManagerListener();
+            getController().getNodeManager().addNodeManagerListener(myNodeManagerListener);
         }
     }
 
@@ -400,6 +403,10 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
             if (myFolderMembershipListener != null) {
                 folder.removeMembershipListener(myFolderMembershipListener);
                 myFolderMembershipListener = null;
+            }
+            if (myNodeManagerListener != null) {
+                getController().getNodeManager().removeNodeManagerListener(myNodeManagerListener);
+                myNodeManagerListener = null;
             }
         }
     }
@@ -418,6 +425,7 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
     private void updateStatsDetails() {
 
         String syncPercentText;
+        String syncPercentTip = null;
         String syncDateText;
         String localSizeString;
         String totalSizeString;
@@ -483,12 +491,17 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
                         || Double.compare(sync, UNKNOWN_SYNC_STATUS) == 0)) {
                     // Never synced with others.
                     syncPercentText = Translation.getTranslation(
-                            "exp_folder_view.synchronized", "?");
+                            "exp_folder_view.unsynchronized");
                 } else {
-                    syncPercentText = Translation.getTranslation(
-                            "exp_folder_view.synchronized",
-                            Double.compare(sync, UNKNOWN_SYNC_STATUS) == 0 ? "?"
-                                    : sync);
+                    if (Double.compare(sync, UNKNOWN_SYNC_STATUS) == 0) {
+                        syncPercentText = Translation.getTranslation(
+                                "exp_folder_view.unsynchronized");
+                        syncPercentTip = Translation.getTranslation(
+                                "exp_folder_view.unsynchronized.tip");
+                    } else {
+                        syncPercentText = Translation.getTranslation(
+                                "exp_folder_view.synchronized", sync);
+                    }
                 }
 
                 long localSize = statistic.getLocalSize();
@@ -519,6 +532,7 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
         }
 
         syncPercentLabel.setText(syncPercentText);
+        syncPercentLabel.setToolTipText(syncPercentTip);
         syncDateLabel.setText(syncDateText);
         localSizeLabel.setText(Translation.getTranslation("exp_folder_view.local",
                 localSizeString));
@@ -569,13 +583,16 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
      */
     private void updateFolderMembershipDetails() {
         String countText;
+        String connectedCountText;
         if (folder == null) {
             countText = "?";
+            connectedCountText = "?";
         } else {
             countText = String.valueOf(folder.getMembersCount());
+            connectedCountText = String.valueOf(folder.getConnectedMembersCount());
         }
         membersLabel.setText(Translation.getTranslation(
-                "exp_folder_view.members", countText));
+                "exp_folder_view.members", countText, connectedCountText));
     }
 
     private void updateIconAndOS() {
@@ -661,6 +678,43 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
     ///////////////////
     // Inner Classes //
     ///////////////////
+
+    public class MyNodeManagerListener implements NodeManagerListener {
+
+        public void nodeRemoved(NodeManagerEvent e) {
+            updateFolderMembershipDetails();
+        }
+
+        public void nodeAdded(NodeManagerEvent e) {
+            updateFolderMembershipDetails();
+        }
+
+        public void nodeConnected(NodeManagerEvent e) {
+            updateFolderMembershipDetails();
+        }
+
+        public void nodeDisconnected(NodeManagerEvent e) {
+            updateFolderMembershipDetails();
+        }
+
+        public void friendAdded(NodeManagerEvent e) {
+            updateFolderMembershipDetails();
+        }
+
+        public void friendRemoved(NodeManagerEvent e) {
+            updateFolderMembershipDetails();
+        }
+
+        public void settingsChanged(NodeManagerEvent e) {
+        }
+
+        public void startStop(NodeManagerEvent e) {
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return true;
+        }
+    }
 
     /**
      * Class to respond to folder events.

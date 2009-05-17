@@ -159,8 +159,7 @@ public class HomeTab extends PFUIComponent {
         synchronizationDateLabel = new JLabel();
         numberOfFoldersLine = new HomeTabLine(getController(),
                 Translation.getTranslation("home_tab.folders"),
-                Translation.getTranslation("home_tab.no_folders"),
-                false, true);
+                null, false, true);
         sizeOfFoldersLine = new HomeTabLine(getController(),
                 Translation.getTranslation("home_tab.total", "KB"),
                 null, true, false);
@@ -475,13 +474,19 @@ public class HomeTab extends PFUIComponent {
     }
 
     private void displaySyncStats(Date syncDate, boolean synced) {
-        String syncStatsText = synced
+        String syncStatsText;
+        if (getController().getFolderRepository().getFoldersCount() == 0) {
+            syncStatsText = Translation.getTranslation("home_tab.no_folders");
+        } else {
+        syncStatsText = synced
                 ? Translation.getTranslation("home_tab.in_sync")
                 : Translation.getTranslation("home_tab.synchronizing");
+        }
         synchronizationStatusLabel.setText(syncStatsText);
+
         String syncDateText;
         if (syncDate == null) {
-            syncDateText = Translation.getTranslation("home_tab.never_synced");
+            syncDateText = Translation.getTranslation("home_tab.none_synced");
         } else {
             String date = Format.formatDate(syncDate);
             syncDateText = synced
