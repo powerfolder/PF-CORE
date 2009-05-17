@@ -23,11 +23,16 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.awt.*;
 
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.message.MessageListener;
 import de.dal33t.powerfolder.util.logging.Loggable;
+import de.dal33t.powerfolder.util.ui.UIUtil;
+
+import javax.swing.*;
 
 /**
  * Helper class to handle message listener/firing
@@ -36,9 +41,15 @@ import de.dal33t.powerfolder.util.logging.Loggable;
  * @version $Revision: 1.8 $
  */
 public class MessageListenerSupport {
+
+    // AWT system check
+    private static final boolean AWT_AVAILABLE = UIUtil.isAWTAvailable();
+
     private Loggable source;
+
     // Listeners for incoming messages
-    private Map<Class<?>, CopyOnWriteArrayList<MessageListener>> messageListener;
+    private final Map<Class<?>, CopyOnWriteArrayList<MessageListener>> messageListenersInDispatchThread;
+    private final Map<Class<?>, CopyOnWriteArrayList<MessageListener>> messageListenersNotInDispatchThread;
 
     /**
      * Initializes the the message listener support with a logger from the
@@ -52,6 +63,10 @@ public class MessageListenerSupport {
         if (this.source == null) {
             throw new NullPointerException("Source in null");
         }
+        messageListenersNotInDispatchThread = new ConcurrentHashMap<Class<?>,
+                CopyOnWriteArrayList<MessageListener>>(2, 0.75f, 8);
+        messageListenersInDispatchThread = new ConcurrentHashMap<Class<?>,
+                CopyOnWriteArrayList<MessageListener>>(2, 0.75f, 8);
     }
 
     // Message listener de-/registering ***************************************
@@ -78,13 +93,19 @@ public class MessageListenerSupport {
         if (aListener == null) {
             return;
         }
-        synchronized (this) {
-            CopyOnWriteArrayList<MessageListener> listeners = getListenersMap()
-                .get(messageType);
-            if (listeners == null) {
-                // Build new list for this type of message
-                listeners = new CopyOnWriteArrayList<MessageListener>();
-                getListenersMap().put(messageType, listeners);
+        CopyOnWriteArrayList<MessageListener> listeners;
+        if (aListener.fireInEventDispatchThread()) {
+            listeners = messageListenersInDispatchThread.get(messageType);
+        } else {
+            listeners = messageListenersNotInDispatchThread.get(messageType);
+        }
+        if (listeners == null) {
+            // Build new list for this type of message
+            listeners = new CopyOnWriteArrayList<MessageListener>();
+            if (aListener.fireInEventDispatchThread()) {
+                messageListenersInDispatchThread.put(messageType, listeners);
+            } else {
+                messageListenersNotInDispatchThread.put(messageType, listeners);
             }
             listeners.addIfAbsent(aListener);
         }
@@ -96,13 +117,20 @@ public class MessageListenerSupport {
      * @param aListener
      */
     public void removeMessageListener(MessageListener aListener) {
-        if (messageListener == null) {
-            return;
-        }
-        synchronized (this) {
-            for (Collection<MessageListener> listeners : messageListener
-                .values())
-            {
+        if (aListener.fireInEventDispatchThread()) {
+            if (messageListenersInDispatchThread == null) {
+                return;
+            }
+            for (Collection<MessageListener> listeners :
+                    messageListenersInDispatchThread.values()) {
+                listeners.remove(aListener);
+            }
+        } else {
+            if (messageListenersNotInDispatchThread == null) {
+                return;
+            }
+            for (Collection<MessageListener> listeners :
+                    messageListenersInDispatchThread.values()) {
                 listeners.remove(aListener);
             }
         }
@@ -112,16 +140,13 @@ public class MessageListenerSupport {
      * Removes all message listener
      */
     public void removeAllListeners() {
-        if (messageListener == null) {
-            return;
+        for (Collection<MessageListener> listeners :
+                messageListenersInDispatchThread.values()) {
+            listeners.clear();
         }
-        synchronized (this) {
-            // Remove message listeners
-            for (Collection<MessageListener> listeners : messageListener
-                .values())
-            {
-                listeners.clear();
-            }
+        for (Collection<MessageListener> listeners :
+                messageListenersNotInDispatchThread.values()) {
+            listeners.clear();
         }
     }
 
@@ -135,15 +160,8 @@ public class MessageListenerSupport {
      * @param message
      *            the message to fire
      */
-    public void fireMessage(Member theSource, Message message) {
+    public void fireMessage(final Member theSource, final Message message) {
         if (message == null) {
-            return;
-        }
-        if (messageListener == null) {
-            // No Listener / No-one to fire to.
-            return;
-        }
-        if (messageListener.isEmpty()) {
             return;
         }
         if (theSource == null) {
@@ -151,46 +169,68 @@ public class MessageListenerSupport {
                 "Unable to fire message, source is null");
         }
 
-        int lGenCount = 0;
-        int lSpcCount = 0;
         // Fire general listener
-
-        Collection<MessageListener> generalListeners = messageListener
-            .get(All.class);
+        final AtomicInteger lGenCount = new AtomicInteger();
+        Collection<MessageListener> generalListeners =
+                messageListenersNotInDispatchThread.get(All.class);
         if (generalListeners != null && !generalListeners.isEmpty()) {
             for (MessageListener genListener : generalListeners) {
                 genListener.handleMessage(theSource, message);
-                lGenCount++;
+                lGenCount.incrementAndGet();
             }
         }
 
         // Fire special listeners
-        Collection<MessageListener> specialListeners = messageListener
-            .get(message.getClass());
+        Collection<MessageListener> specialListeners =
+                messageListenersNotInDispatchThread.get(message.getClass());
+        final AtomicInteger lSpcCount = new AtomicInteger();
         if (specialListeners != null && !specialListeners.isEmpty()) {
-            for (MessageListener sepcListener : specialListeners) {
-                sepcListener.handleMessage(theSource, message);
-                lSpcCount++;
+            for (MessageListener specListener : specialListeners) {
+                specListener.handleMessage(theSource, message);
+                lSpcCount.incrementAndGet();
             }
         }
 
-        if (lSpcCount > 0 || lGenCount > 0) {
+        Runnable runner = new Runnable() {
+            public void run() {
+                Collection<MessageListener> innerGeneralListeners = 
+                        messageListenersInDispatchThread.get(All.class);
+                if (innerGeneralListeners != null && !innerGeneralListeners.isEmpty()) {
+                    for (MessageListener genListener : innerGeneralListeners) {
+                        genListener.handleMessage(theSource, message);
+                        lGenCount.incrementAndGet();
+                    }
+                }
+
+                // Fire special listeners
+                Collection<MessageListener> innerSpecialListeners =
+                        messageListenersInDispatchThread.get(message.getClass());
+                if (innerSpecialListeners != null && !innerSpecialListeners.isEmpty()) {
+                    for (MessageListener specListener : innerSpecialListeners) {
+                        specListener.handleMessage(theSource, message);
+                        lSpcCount.incrementAndGet();
+                    }
+                }
+            }
+        };
+        if (!AWT_AVAILABLE || EventQueue.isDispatchThread()) {
+            // No awt system ? do not put in swing thread
+            // Already in swing thread ? also don't wrap
+            runner.run();
+        } else {
+            // Put runner in swingthread
+            SwingUtilities.invokeLater(runner);
+        }
+
+//        if (lSpcCount > 0 || lGenCount > 0) {
             // theSource.getLogger().verbose(
             // "Deligated message (" + message.getClass().getName() + ") to "
             // + lGenCount + " general and " + lSpcCount
             // + " special message listener");
-        }
+//        }
     }
 
-    private synchronized Map<Class<?>, CopyOnWriteArrayList<MessageListener>> getListenersMap()
-    {
-        if (messageListener == null) {
-            messageListener = new ConcurrentHashMap<Class<?>, CopyOnWriteArrayList<MessageListener>>(
-                2, 0.75f, 8);
-        }
-        return messageListener;
-    }
 
-    private class All {
+    private static class All {
     }
 }
