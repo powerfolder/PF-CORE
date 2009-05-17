@@ -700,7 +700,7 @@ public class FolderStatistic extends PFComponent {
                 }
 
                 if (Double.compare(sync, 100.0) > 0) {
-                    logSevere("Sync percentage > 100% - folder="
+                    logWarning("Sync percentage > 100% - folder="
                         + folder.getInfo().name + ", member="
                         + member.getInfo().nick + ", sync=" + sync);
                     sync = 100.0;
@@ -725,7 +725,7 @@ public class FolderStatistic extends PFComponent {
             }
             double sync = syncSum / sizesInSync.size();
             if (Double.compare(sync, 100.0) > 0) {
-                logSevere("Sync percentage > 100% - folder="
+                logWarning("Average sync percentage > 100% - folder="
                     + folder.getInfo().name + ", sync=" + sync);
                 sync = 100.0;
             }
