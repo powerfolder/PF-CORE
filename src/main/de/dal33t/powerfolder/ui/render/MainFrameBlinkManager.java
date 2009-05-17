@@ -115,6 +115,15 @@ public class MainFrameBlinkManager extends PFUIComponent {
     }
 
     /**
+     * Sets the folder icon flashing.
+     *
+     * @param flash
+     */
+    private void flashFolderTabIcon(boolean flash) {
+        flashFolderTab.set(flash);
+    }
+
+    /**
      * Sets the home icon flashing.
      *
      * @param flash
