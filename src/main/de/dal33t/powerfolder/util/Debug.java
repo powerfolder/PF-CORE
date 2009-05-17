@@ -38,7 +38,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
@@ -276,16 +275,15 @@ public class Debug {
 
             if (c.isStarted()) {
                 // All folders
-                Folder[] folders = c.getFolderRepository().getFolders();
+                Collection<Folder> folders = c.getFolderRepository().getFolders();
 
-                b.append("\nFolders (" + folders.length + " joined)");
-                for (int i = 0; i < folders.length; i++) {
+                b.append("\nFolders (" + folders.size() + " joined)");
+                for (Folder folder : folders) {
                     b.append("\n ");
-                    Folder folder = folders[i];
                     addDetailInfo(b, folder);
                 }
                 b.append('\n');
-                if (folders.length == 0) {
+                if (folders.isEmpty()) {
                     b.append(" (none)\n");
                 }
 
@@ -311,7 +309,7 @@ public class Debug {
                     }
                 }
                 b.append('\n');
-                if (downloads.size() == 0) {
+                if (downloads.isEmpty()) {
                     b.append(" (none)\n");
                 }
 
@@ -334,14 +332,14 @@ public class Debug {
                 List<Upload> uploads = new ArrayList<Upload>();
                 uploads.addAll(tm.getActiveUploads());
                 uploads.addAll(tm.getQueuedUploads());
-                for (Iterator it = uploads.iterator(); it.hasNext();) {
-                    Upload upload = (Upload) it.next();
+                for (Object upload1 : uploads) {
+                    Upload upload = (Upload) upload1;
                     b.append("\n ");
                     b.append(upload.isStarted() ? "(active)" : "(queued)");
                     b.append(" " + upload);
                 }
                 b.append('\n');
-                if (uploads.size() == 0) {
+                if (uploads.isEmpty()) {
                     b.append(" (none)\n");
                 }
 
@@ -359,10 +357,10 @@ public class Debug {
                     + " known, " + c.getNodeManager().countSupernodes()
                     + " supernodes, " + c.getNodeManager().countFriends()
                     + " friend(s)):");
-                for (int i = 0; i < knownMembers.length; i++) {
-                    if (knownMembers[i].isConnectedToNetwork()) {
+                for (Member knownMember : knownMembers) {
+                    if (knownMember.isConnectedToNetwork()) {
                         b.append("\n ");
-                        addDetailInfo(b, knownMembers[i]);
+                        addDetailInfo(b, knownMember);
                     }
                 }
                 b.append('\n');
@@ -379,18 +377,18 @@ public class Debug {
             // Sort config by name
             List sortedConfigKeys = new ArrayList(config.keySet());
             Collections.sort(sortedConfigKeys);
-            for (Iterator it = sortedConfigKeys.iterator(); it.hasNext();) {
-                String key = (String) it.next();
+            for (Object sortedConfigKey : sortedConfigKeys) {
+                String key = (String) sortedConfigKey;
                 String value = config.getProperty(key);
                 // Erase folder ids, keep it secret!
                 if (key.indexOf(FOLDER_SETTINGS_ID) >= 5) {
                     value = "XXX-erased-XXX";
                 }
                 // Erase all passwords
-                if (key.toLowerCase().indexOf("password") != -1) {
+                if (key.toLowerCase().contains("password")) {
                     value = "XXX-erased-XXX";
                 }
-                if (key.toLowerCase().indexOf("license") != -1) {
+                if (key.toLowerCase().contains("license")) {
                     value = "XXX-erased-XXX";
                 }
                 b.append("\n   " + key + " = " + value);
@@ -427,7 +425,7 @@ public class Debug {
      */
     private static String toDetailInfo(Member m) {
         Reject.ifNull(m, "Member is null");
-        StringBuffer b = new StringBuffer();
+        StringBuilder b = new StringBuilder();
         if (m.isMySelf()) {
             b.append("(myself) ");
         } else if (m.isConnected()) {
@@ -459,7 +457,7 @@ public class Debug {
      */
     private static String toCSVLine(Member m) {
         Reject.ifNull(m, "Member is null");
-        StringBuffer b = new StringBuffer();
+        StringBuilder b = new StringBuilder();
 
         if (m.isMySelf()) {
             b.append("myself");
@@ -489,7 +487,7 @@ public class Debug {
 
         b.append(';');
         Identity id = m.getIdentity();
-        b.append((id != null ? id.getProgramVersion() : "-"));
+        b.append(id != null ? id.getProgramVersion() : "-");
 
         b.append(";" + m.getReconnectAddress());
         b.append(";" + m.getLastConnectTime());
@@ -743,7 +741,7 @@ public class Debug {
             return "";
         }
 
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
         buffer.append(detailedObjectState0(c.getSuperclass(), o));
 
         Field[] fields = c.getDeclaredFields();
@@ -767,7 +765,7 @@ public class Debug {
     }
 
     public static String detailedObjectState(Object o) {
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
         buffer.append("Class: ").append(o.getClass().getName());
         buffer.append(detailedObjectState0(o.getClass(), o));
         return buffer.toString();

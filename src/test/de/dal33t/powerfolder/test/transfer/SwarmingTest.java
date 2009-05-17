@@ -113,7 +113,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
                     if (c == getContoller("4")) {
                         continue;
                     }
-                    if (c.getFolderRepository().getFolders()[0]
+                    if (c.getFolderRepository().getFolders().iterator().next()
                         .getKnownFilesCount() != 1)
                     {
                         return false;

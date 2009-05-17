@@ -88,15 +88,15 @@ public class PowerFolderInvitationTest extends TwoControllerTestCase {
 
         // controller bart should now have one folder
         assertEquals(1,
-            getContollerBart().getFolderRepository().getFolders().length);
-        String otherID = getContollerBart().getFolderRepository().getFolders()[0]
+            getContollerBart().getFolderRepository().getFolders().size());
+        String otherID = getContollerBart().getFolderRepository().getFolders().iterator().next()
             .getId();
         // Id's should match
         assertEquals(otherID, folderAtLisa.getId());
         // and both folders should have 2 members, this may fail if not
         // connected yet
         assertEquals(2,
-            getContollerBart().getFolderRepository().getFolders()[0]
+            getContollerBart().getFolderRepository().getFolders().iterator().next()
                 .getMembersCount());
         assertEquals(2, folderAtLisa.getMembersCount());
     }
@@ -113,15 +113,15 @@ public class PowerFolderInvitationTest extends TwoControllerTestCase {
 
         // controller bart should now have one folder
         assertEquals(1,
-            getContollerBart().getFolderRepository().getFolders().length);
-        String otherID = getContollerBart().getFolderRepository().getFolders()[0]
+            getContollerBart().getFolderRepository().getFolders().size());
+        String otherID = getContollerBart().getFolderRepository().getFolders().iterator().next()
             .getId();
         // Id's should match
         assertEquals(otherID, folderAtLisa.getId());
         // and both folders should have 2 members, this may fail if not
         // connected yet
         assertEquals(2,
-            getContollerBart().getFolderRepository().getFolders()[0]
+            getContollerBart().getFolderRepository().getFolders().iterator().next()
                 .getMembersCount());
         assertEquals(2, folderAtLisa.getMembersCount());
     }

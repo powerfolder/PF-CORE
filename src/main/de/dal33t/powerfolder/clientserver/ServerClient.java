@@ -571,7 +571,7 @@ public class ServerClient extends PFComponent {
     public List<Folder> getJoinedFolders() {
         List<Folder> mirroredFolders = new ArrayList<Folder>();
         for (Folder folder : getController().getFolderRepository()
-            .getFoldersAsCollection())
+            .getFolders())
         {
             if (hasJoined(folder)) {
                 mirroredFolders.add(folder);

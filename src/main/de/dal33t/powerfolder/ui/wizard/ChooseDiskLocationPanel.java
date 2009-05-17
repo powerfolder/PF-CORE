@@ -526,7 +526,6 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
     /**
      * Creates a pair of location text field and button.
      * 
-     * @param folderInfo
      * @return
      */
     private JComponent createLocationField() {

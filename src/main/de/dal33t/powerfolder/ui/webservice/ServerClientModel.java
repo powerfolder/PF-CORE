@@ -120,7 +120,7 @@ public class ServerClientModel extends PFUIComponent {
 
         // Setup folder membership stuff
         for (Folder folder : getController().getFolderRepository()
-            .getFoldersAsCollection())
+            .getFolders())
         {
             folder.addMembershipListener(membershipListener);
         }

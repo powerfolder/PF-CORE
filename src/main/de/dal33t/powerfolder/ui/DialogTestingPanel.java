@@ -82,7 +82,7 @@ public class DialogTestingPanel extends PFUIComponent implements UIPanel {
         final FolderRepository folderRepository = getController()
             .getFolderRepository();
         JButton button;
-        if (folderRepository.getFolders().length == 0) {
+        if (folderRepository.getFolders().isEmpty()) {
             button = new JButton(
                 "Need some folders to display FileNameProblemDialog");
             button.setEnabled(false);
@@ -90,7 +90,7 @@ public class DialogTestingPanel extends PFUIComponent implements UIPanel {
             button = new JButton("FileNameProblemDialog");
             button.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    Folder folder = folderRepository.getFolders()[0];
+                    Folder folder = folderRepository.getFolders().iterator().next();
                     Map<FileInfo, List<FilenameProblem>> map = new HashMap<FileInfo, List<FilenameProblem>>();
                     FileInfo fileInfo = FileInfo.getTemplate(folder.getInfo(),
                         "test");

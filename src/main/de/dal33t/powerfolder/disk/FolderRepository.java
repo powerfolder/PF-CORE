@@ -181,9 +181,10 @@ public class FolderRepository extends PFComponent implements Runnable {
         boolean warnOnClose = PreferencesEntry.WARN_ON_CLOSE
             .getValueBoolean(getController());
         if (warnOnClose) {
+            Collection<Folder> folderCollection = getFolders();
             List<Folder> foldersToWarn = new ArrayList<Folder>(
-                getFolders().length);
-            for (Folder folder : getFolders()) {
+                folderCollection.size());
+            for (Folder folder : folderCollection) {
                 if (folder.isTransferring()) {
                     logWarning("Close warning on folder: " + folder);
                     foldersToWarn.add(folder);
@@ -633,21 +634,12 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
-     * TODO Replace calls to this by {@link #getFoldersAsCollection()}
-     * 
-     * @return the folders
-     */
-    public Folder[] getFolders() {
-        return folders.values().toArray(new Folder[folders.values().size()]);
-    }
-
-    /**
      * The indirect reference to the internal concurrect hashmap. Contents may
      * changed after get. Very fast.
      * 
      * @return the folders as unmodifiable collection
      */
-    public Collection<Folder> getFoldersAsCollection() {
+    public Collection<Folder> getFolders() {
         return Collections.unmodifiableCollection(folders.values());
     }
 

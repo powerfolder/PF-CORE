@@ -149,7 +149,7 @@ public class FoldersList extends PFUIComponent {
             // Get combined list of repo and client folders.
             List<FolderBean> folderBeanList = new ArrayList<FolderBean>();
 
-            for (Folder folder : repo.getFoldersAsCollection()) {
+            for (Folder folder : repo.getFolders()) {
                 FolderInfo folderInfo = folder.getInfo();
                 FolderBean bean = new FolderBean(folderInfo);
                 bean.setFolder(folder);

@@ -158,7 +158,7 @@ public class FolderOnlineStoragePanel extends PFWizardPanel {
     protected void initComponents() {
         ServerClient ws = getController().getOSClient();
         List<Folder> folders = new ArrayList<Folder>(getController()
-                .getFolderRepository().getFoldersAsCollection());
+                .getFolderRepository().getFolders());
         folders.removeAll(ws.getJoinedFolders());
         folderLabel = new JLabel(folder.getInfo().name);
         updateButtons();

@@ -1816,7 +1816,7 @@ public class Member extends PFComponent implements Comparable<Member> {
         try {
             FolderRepository repo = getController().getFolderRepository();
             Set<FolderInfo> joinedFolders = new HashSet<FolderInfo>();
-            Collection<Folder> localFolders = repo.getFoldersAsCollection();
+            Collection<Folder> localFolders = repo.getFolders();
 
             String myMagicId = fromPeer != null
                 ? fromPeer.getMyMagicId()
@@ -1947,7 +1947,7 @@ public class Member extends PFComponent implements Comparable<Member> {
      */
     public boolean hasJoinedAnyFolder() {
         for (Folder folder : getController().getFolderRepository()
-            .getFoldersAsCollection())
+            .getFolders())
         {
             if (folder.hasMember(this)) {
                 return true;
@@ -1962,7 +1962,7 @@ public class Member extends PFComponent implements Comparable<Member> {
     public List<Folder> getJoinedFolders() {
         List<Folder> joinedFolders = new ArrayList<Folder>();
         for (Folder folder : getController().getFolderRepository()
-            .getFoldersAsCollection())
+            .getFolders())
         {
             if (folder.hasMember(this)) {
                 joinedFolders.add(folder);

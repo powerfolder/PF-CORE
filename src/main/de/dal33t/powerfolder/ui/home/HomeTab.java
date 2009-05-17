@@ -26,6 +26,7 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
 import java.util.Date;
 import java.util.List;
+import java.util.Collection;
 import java.io.File;
 import java.io.IOException;
 import java.beans.PropertyChangeListener;
@@ -321,8 +322,8 @@ public class HomeTab extends PFUIComponent {
      * Updates the text for the number and size of the folders.
      */
     private void updateFoldersText() {
-        Folder[] folders = getController().getFolderRepository().getFolders();
-        int numberOfFolder = folders.length;
+        Collection<Folder> folders = getController().getFolderRepository().getFolders();
+        int numberOfFolder = folders.size();
         numberOfFoldersLine.setValue(numberOfFolder);
         long totalSize = 0;
         for (Folder folder : folders) {
@@ -394,7 +395,7 @@ public class HomeTab extends PFUIComponent {
      * Sums the number of incoming files in all folders.
      */
     private void recalculateFilesAvailable() {
-        Folder[] folders = getController().getFolderRepository().getFolders();
+        Collection<Folder> folders = getController().getFolderRepository().getFolders();
         long count = 0;
         for (Folder folder : folders) {
             count += folder.getStatistic().getIncomingFilesCount();

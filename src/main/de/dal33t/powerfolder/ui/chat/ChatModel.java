@@ -35,6 +35,7 @@ import de.dal33t.powerfolder.util.Translation;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Collection;
 
 /**
  * Holds all Chat data. A ChatBox per Member.
@@ -170,7 +171,7 @@ public class ChatModel implements MessageListener {
      * Adds the listener to all previously created folders
      */
     private void addListenerToExsistingFolders() {
-        Folder[] folders = repository.getFolders();
+        Collection<Folder> folders = repository.getFolders();
         for (Folder folder : folders) {
             folder.addMembershipListener(folderMembershipListener);
         }
@@ -246,7 +247,7 @@ public class ChatModel implements MessageListener {
                     "chat_panel.member_connected_at_time", node.getNick(),
                     Format.getTimeOnlyDateFormat().format(new Date())) + '\n';
                 addStatusChatLine(node, statusMessage);
-                for (Folder folder : repository.getFoldersAsCollection()) {
+                for (Folder folder : repository.getFolders()) {
                     if (folder.hasMember(node)) {
                         addStatusChatLine(node, statusMessage);
                     }
@@ -261,7 +262,7 @@ public class ChatModel implements MessageListener {
                     "chat_panel.member_disconnected_at_time", node.getNick(),
                     Format.getTimeOnlyDateFormat().format(new Date())) + '\n';
                 addStatusChatLine(node, statusMessage);
-                for (Folder folder : repository.getFoldersAsCollection()) {
+                for (Folder folder : repository.getFolders()) {
                     if (folder.hasMember(node)) {
                         addStatusChatLine(node, statusMessage);
                     }

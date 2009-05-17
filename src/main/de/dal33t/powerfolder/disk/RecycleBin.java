@@ -73,7 +73,7 @@ public class RecycleBin extends PFComponent {
     /** Move the old recycle bin to the new location */
     private void moveFolders() {
         FolderRepository folderRepo = getController().getFolderRepository();
-        Folder[] folders = folderRepo.getFolders();
+        Collection<Folder> folders = folderRepo.getFolders();
         for (Folder folder : folders) {
             File oldRecycleBinDir = getOldRecycleBinDirectory(folder);
             File recycleBinDir = getRecycleBinDirectory(folder);
@@ -97,7 +97,7 @@ public class RecycleBin extends PFComponent {
     private List<FileInfo> readRecyledFiles() {
         List<FileInfo> recycledFiles = new ArrayList<FileInfo>();
         FolderRepository folderRepo = getController().getFolderRepository();
-        for (Folder folder : folderRepo.getFoldersAsCollection()) {
+        for (Folder folder : folderRepo.getFolders()) {
             Collection<FileInfo> fileInfos = folder.getKnownFiles();
             for (FileInfo fileInfo : fileInfos) {
                 if (isInRecycleBin(fileInfo)) {
@@ -304,8 +304,8 @@ public class RecycleBin extends PFComponent {
      */
     public void emptyRecycleBin(ProgressListener progressListener) {
         FolderRepository repo = getController().getFolderRepository();
-        Folder[] folders = repo.getFolders();
-        int numberOfFolder = folders.length;
+        Collection<Folder> folders = repo.getFolders();
+        int numberOfFolder = folders.size();
         int folderIndex = -1;
         for (Folder folder : folders) {
             folderIndex++;

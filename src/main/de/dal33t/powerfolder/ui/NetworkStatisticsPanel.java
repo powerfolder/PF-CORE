@@ -41,6 +41,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Collection;
 
 /**
  * Displays some network statistics and file statistics.
@@ -209,32 +210,32 @@ public class NetworkStatisticsPanel extends PFUIComponent implements UIPanel {
         }
 
         connectedUsers.setText(connected + " (" + sConnected + ") X: "
-            + nDirectConnect + " R: " + nDontConnect + " ");
-        onlineUsers.setText(online + " (" + sOnline + ")");
-        knownUsers.setText(known + " (" + sKnown + ")");
+            + nDirectConnect + " R: " + nDontConnect + ' ');
+        onlineUsers.setText(online + " (" + sOnline + ')');
+        knownUsers.setText(known + " (" + sKnown + ')');
         reconnectionQueueSize.setText(""
             + getController().getReconnectManager().countReconnectionQueue());
 
         FolderRepository repo = getController().getFolderRepository();
         // List list = repo.getUnjoinedFoldersList();
-        long totalUnjoinedBytes = 0;
-        long totalUnjoinedFiles = 0;
         // for (int i = 0; i < list.size(); i++) {
         // FolderInfo folderInfo = (FolderInfo) list.get(i);
         // totalUnjoinedBytes += folderInfo.bytesTotal;
         // totalUnjoinedFiles += folderInfo.filesCount;
         // }
-        Folder[] folders = repo.getFolders();
+        Collection<Folder> folders = repo.getFolders();
 
         long totalJoinedFiles = 0;
         long totalJoinedBytes = 0;
-        for (int i = 0; i < folders.length; i++) {
-            totalJoinedFiles += folders[i].getKnownFilesCount();
-            totalJoinedBytes += folders[i].getStatistic().getSize(
+        for (Folder folder : folders) {
+            totalJoinedFiles += folder.getKnownFilesCount();
+            totalJoinedBytes += folder.getStatistic().getSize(
                 getController().getMySelf());
         }
+        long totalUnjoinedBytes = 0;
         publicFoldersSize.setText(Format.formatBytes(totalUnjoinedBytes));
         localFoldersSize.setText(Format.formatBytes(totalJoinedBytes));
+        long totalUnjoinedFiles = 0;
         numberOfPublicFiles.setText(Format.formatLong(totalUnjoinedFiles));
         numberOfLocalFiles.setText(Format.formatLong(totalJoinedFiles));
 

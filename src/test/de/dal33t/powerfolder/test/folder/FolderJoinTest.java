@@ -113,16 +113,16 @@ public class FolderJoinTest extends TwoControllerTestCase {
                 + f.getMembersAsCollection(), 2, f.getMembersCount());
         }
 
-        Folder[] bartsFolders = getContollerBart().getFolderRepository()
-            .getFolders();
-        Folder[] lisasFolders = getContollerLisa().getFolderRepository()
+        Collection<Folder> bartsFolders = getContollerBart().getFolderRepository()
+                .getFolders();
+        Collection<Folder> lisasFolders = getContollerLisa().getFolderRepository()
             .getFolders();
         assertEquals(nFolders, getContollerBart().getFolderRepository()
             .getFoldersCount());
         assertEquals(nFolders, getContollerLisa().getFolderRepository()
             .getFoldersCount());
-        assertEquals(nFolders, bartsFolders.length);
-        assertEquals(nFolders, lisasFolders.length);
+        assertEquals(nFolders, bartsFolders.size());
+        assertEquals(nFolders, lisasFolders.size());
         for (Folder folder : lisasFolders) {
             assertEquals(2, folder.getMembersCount());
         }

@@ -435,7 +435,7 @@ public class UIController extends PFComponent {
     private long calculateTotalLocalSharedSize() {
         long totalSize = 0L;
         for (Folder folder : getController().getFolderRepository()
-            .getFoldersAsCollection())
+            .getFolders())
         {
             totalSize += folder.getStatistic().getSize(
                 getController().getMySelf());
@@ -1202,7 +1202,7 @@ public class UIController extends PFComponent {
         private void checkStatus() {
             long nTotalBytes = 0;
             FolderRepository repo = getController().getFolderRepository();
-            Folder[] folders = repo.getFolders();
+            Collection<Folder> folders = repo.getFolders();
 
             int synchronizingFolders = 0;
             for (Folder folder : folders) {
@@ -1244,7 +1244,7 @@ public class UIController extends PFComponent {
             {
                 String text2 = Translation.getTranslation(
                     "quickinfo.my_folders.powerfolders", Format
-                        .formatBytes(nTotalBytes), folders.length);
+                        .formatBytes(nTotalBytes), folders.size());
 
                 notifyMessage(Translation
                     .getTranslation("quickinfo.my_folders.title"), text1

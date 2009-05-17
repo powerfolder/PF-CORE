@@ -29,6 +29,7 @@ import de.dal33t.powerfolder.util.Reject;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import java.util.Collection;
 
 /**
  * Action to sync all folders.
@@ -61,7 +62,7 @@ public class SyncAllFoldersAction extends BaseAction {
         repo.broadcastScanCommandOnAllFolders();
 
         // Force scan on all folders, of repository was selected
-        Folder[] folders = repo.getFolders();
+        Collection<Folder> folders = repo.getFolders();
         for (Folder folder : folders) {
 
             // Never sync preview folders

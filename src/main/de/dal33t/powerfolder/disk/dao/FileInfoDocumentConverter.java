@@ -109,7 +109,7 @@ public class FileInfoDocumentConverter {
         // TODO Speed this UP!
         if (controller != null) {
             for (Folder folder : controller.getFolderRepository()
-                .getFoldersAsCollection())
+                .getFolders())
             {
                 if (folder.getId().equals(folderId)) {
                     foInfo = folder.getInfo();
