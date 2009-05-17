@@ -58,6 +58,7 @@ import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAO;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAOHashMapImpl;
+import static de.dal33t.powerfolder.disk.FolderStatistic.*;
 import de.dal33t.powerfolder.event.FileNameProblemEvent;
 import de.dal33t.powerfolder.event.FileNameProblemHandler;
 import de.dal33t.powerfolder.event.FolderEvent;
@@ -2868,15 +2869,17 @@ public class Folder extends PFComponent {
 
     /**
      * Watch for harmonized sync going from < 100% to 100%. If so, set a new
-     * lastSync date.
+     * lastSync date. UNKNOWN_SYNC_STATUS to 100% is not a valid transition. 
      */
     private void checkLastSyncDate() {
-        boolean newInSync = Double.compare(statistic
-            .getHarmonizedSyncPercentage(), 100.0d) == 0;
+        double percentage = statistic.getHarmonizedSyncPercentage();
+        boolean newInSync = Double.compare(percentage, 100.0d) == 0
+                || Double.compare(percentage, UNKNOWN_SYNC_STATUS) == 0;
         boolean oldInSync = inSyncWithOthers.getAndSet(newInSync);
         if (newInSync && !oldInSync) {
             lastSyncDate = new Date();
-        }
+            dirty = true;
+        }                         
     }
 
     /**
