@@ -475,7 +475,6 @@ public class HomeTab extends PFUIComponent {
     }
 
     private void displaySyncStats(Date syncDate, boolean synced) {
-
         String syncStatsText = synced
                 ? Translation.getTranslation("home_tab.in_sync")
                 : Translation.getTranslation("home_tab.synchronizing");
@@ -772,7 +771,7 @@ public class HomeTab extends PFUIComponent {
     private class MyOverallFolderStatListener implements OverallFolderStatListener {
 
         public void statCalculated(OverallFolderStatEvent e) {
-            displaySyncStats(new Date(), e.isAllInSync());
+            displaySyncStats(e.getSyncDate(), e.isAllInSync());
         }
 
         public boolean fireInEventDispatchThread() {
