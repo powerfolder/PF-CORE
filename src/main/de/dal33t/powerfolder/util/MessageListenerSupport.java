@@ -121,17 +121,21 @@ public class MessageListenerSupport {
             if (messageListenersInDispatchThread == null) {
                 return;
             }
-            for (Collection<MessageListener> listeners :
-                    messageListenersInDispatchThread.values()) {
-                listeners.remove(aListener);
+            synchronized (messageListenersInDispatchThread) {
+                for (Collection<MessageListener> listeners :
+                        messageListenersInDispatchThread.values()) {
+                    listeners.remove(aListener);
+                }
             }
         } else {
             if (messageListenersNotInDispatchThread == null) {
                 return;
             }
-            for (Collection<MessageListener> listeners :
-                    messageListenersInDispatchThread.values()) {
-                listeners.remove(aListener);
+            synchronized (messageListenersNotInDispatchThread) {
+                for (Collection<MessageListener> listeners :
+                        messageListenersNotInDispatchThread.values()) {
+                    listeners.remove(aListener);
+                }
             }
         }
     }
@@ -140,13 +144,17 @@ public class MessageListenerSupport {
      * Removes all message listener
      */
     public void removeAllListeners() {
-        for (Collection<MessageListener> listeners :
-                messageListenersInDispatchThread.values()) {
-            listeners.clear();
+        synchronized (messageListenersInDispatchThread) {
+            for (Collection<MessageListener> listeners :
+                    messageListenersInDispatchThread.values()) {
+                listeners.clear();
+            }
         }
-        for (Collection<MessageListener> listeners :
-                messageListenersNotInDispatchThread.values()) {
-            listeners.clear();
+        synchronized (messageListenersNotInDispatchThread) {
+            for (Collection<MessageListener> listeners :
+                    messageListenersNotInDispatchThread.values()) {
+                listeners.clear();
+            }
         }
     }
 
