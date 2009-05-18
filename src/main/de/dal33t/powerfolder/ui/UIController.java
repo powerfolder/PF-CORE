@@ -715,13 +715,19 @@ public class UIController extends PFComponent {
             String fileName = activeSkin.getIconsPropertiesFileName();
             Icons.loadOverrideFile(fileName);
         } else if (skins.length > 1) {
-            Integer skindex = PreferencesEntry.SKIN_INDEX.getValueInt(getController());
-            if (skindex < skins.length) {
-                activeSkin = skins[skindex];
-            } else {
-                // Fewer skins than the selected one ? - use first.
+            String skinName = PreferencesEntry.SKIN_NAME.getValueString(getController());
+            boolean found = false;
+            for (Skin skin : skins) {
+                if (skin.getName().equals(skinName)) {
+                    activeSkin = skin;
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                // Can not find one with this name - use the first one.
                 activeSkin = skins[0];
-                PreferencesEntry.SKIN_INDEX.setValue(getController(), 0);
+                PreferencesEntry.SKIN_NAME.setValue(getController(), activeSkin.getName());
             }
             String fileName = activeSkin.getIconsPropertiesFileName();
             Icons.loadOverrideFile(fileName);

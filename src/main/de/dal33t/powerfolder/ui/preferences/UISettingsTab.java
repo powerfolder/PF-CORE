@@ -255,14 +255,20 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
         if (getUIController().getSkins().length > 1) {
             skinLabel = new JLabel(Translation.getTranslation("preferences.dialog.skin_text"));
             DefaultComboBoxModel skinComboModel = new DefaultComboBoxModel();
+            String skinName = PreferencesEntry.SKIN_NAME.getValueString(getController());
+            int selected = -1;
+            int i = 0;
             for (Skin skin : getUIController().getSkins()) {
                 skinComboModel.addElement(skin.getName());
+                if (skin.getName().equals(skinName)) {
+                    selected = i;
+                }
+                i++;
             }
             skinCombo = new JComboBox(skinComboModel);
 
-            int skindex = PreferencesEntry.SKIN_INDEX.getValueInt(getController());
-            if (skindex < skinCombo.getItemCount()) {
-                skinCombo.setSelectedIndex(skindex);
+            if (selected > -1) {
+                skinCombo.setSelectedIndex(selected);
             }
         }
     }
@@ -455,10 +461,10 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
                 folderSyncSlider.getValue());
 
         if (skinCombo != null) {
-            int skindex = PreferencesEntry.SKIN_INDEX.getValueInt(getController());
-            if (skinCombo.getSelectedIndex() != skindex) {
-                PreferencesEntry.SKIN_INDEX.setValue(getController(),
-                        skinCombo.getSelectedIndex());
+            String skinName = PreferencesEntry.SKIN_NAME.getValueString(getController());
+            if (!skinCombo.getSelectedItem().equals(skinName)) {
+                PreferencesEntry.SKIN_NAME.setValue(getController(),
+                        (String) skinCombo.getSelectedItem());
                 needsRestart = true;
             }
         }

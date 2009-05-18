@@ -138,8 +138,8 @@ public enum PreferencesEntry {
     /** Days before warning about unsynced folders. */
     FOLDER_SYNC_WARN("folder.sync.warn", 10),
 
-    /** Skin index. */
-    SKIN_INDEX("skin.index", 0);
+    /** Skin name. */
+    SKIN_NAME("skin.name", "");
 
     /** String, Boolean, Integer */
     private Class type;
