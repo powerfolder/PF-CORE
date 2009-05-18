@@ -20,6 +20,8 @@
 package de.dal33t.powerfolder.ui.render;
 
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.disk.problem.ProblemListener;
+import de.dal33t.powerfolder.disk.problem.Problem;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.ui.chat.ChatModelEvent;
@@ -70,13 +72,15 @@ public class SysTrayBlinkManager extends PFUIComponent {
                 new MyFriendshipCountListener());
         uiController.getMainFrame().getUIComponent().addWindowListener(
                 new MyWindowListener());
+        uiController.getController().getFolderRepository().addProblemListener(
+                new MyProblemListener());
     }
 
     /**
      * Update the sys tray icon with the image required.
      */
     private void update() {
-        boolean blink = (System.currentTimeMillis() / 1000) % 2 != 0;
+        boolean blink = System.currentTimeMillis() / 1000 % 2 != 0;
         if (blink && flashSysTray.get()) {
             uiController.setTrayIcon(Icons.getImageById(Icons.BLANK));
         } else {
@@ -213,6 +217,26 @@ public class SysTrayBlinkManager extends PFUIComponent {
 
             flashTrayIcon(true);
             update();
+        }
+    }
+
+    private class MyProblemListener implements ProblemListener {
+
+        public void problemAdded(Problem problem) {
+            if (!uiController.getMainFrame().isIconifiedOrHidden()) {
+                return;
+            }
+
+            flashTrayIcon(true);
+            update();
+        }
+
+        public void problemRemoved(Problem problem) {
+            // Don't care.
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return true;
         }
     }
 }
