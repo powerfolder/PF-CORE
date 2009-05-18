@@ -104,9 +104,9 @@ public class Debug {
      * @param memberName
      * @param fileInfos
      * @param header
-     * @return true if succeeded
+     * @return the CSV file. Or null if failed
      */
-    public static boolean writeFileListCSV(String folderName,
+    public static File writeFileListCSV(String folderName,
         String memberName, Collection<FileInfo> fileInfos, String header)
     {
         Reject.ifBlank(folderName, "folderName is null");
@@ -128,9 +128,9 @@ public class Debug {
      * @param logFile
      * @param fileInfos
      * @param header
-     * @return true if succeeded
+     * @return the CSV file or null if failed.
      */
-    public static boolean writeFileListCSV(File logFile,
+    public static File writeFileListCSV(File logFile,
         Collection<FileInfo> fileInfos, String header)
     {
         if (!logFile.exists()) {
@@ -140,12 +140,12 @@ public class Debug {
             } catch (IOException e) {
                 log.severe("Unable to write filelist to " + logFile.getAbsolutePath());
                 log.log(Level.FINER, "IOException", e);
-                return false;
+                return null;
             }
         }
         if (!logFile.canWrite()) {
             log.severe("Unable to write filelist to " + logFile.getAbsolutePath());
-            return false;
+            return null;
         }
 
         // Copy & Sort
@@ -163,13 +163,14 @@ public class Debug {
                 fOut.write(toCSVLine(aList).getBytes("UTF-8"));
             }
             fOut.close();
+            return logFile;
         } catch (IOException e) {
             log.severe("Unable to write nodelist to '" + logFile.getAbsolutePath()
                     + '\'');
             log.log(Level.FINER, "IOException", e);
         }
 
-        return false;
+        return null;
     }
 
     /**

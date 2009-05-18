@@ -68,12 +68,12 @@ public class FolderDBDebug {
             totalSize += fileInfo.getSize();
         }
         // Write filelist to disk
-        Debug.writeFileListCSV("PowerBuilder", fName, Arrays.asList(files),
-            "FileList of folder " + fName);
+        File outFile = Debug.writeFileListCSV("PowerBuilder", fName, Arrays
+            .asList(files), "FileList of folder " + fName);
 
         System.out.println("Read " + files.length + " files ("
             + Format.formatBytesShort(totalSize) + ") from " + args[0]
-            + ". \nOutput: " + fName);
+            + ". \nOutput: " + outFile.getCanonicalPath());
     }
 
     private static boolean checkForDupes(FileInfo[] list) {
