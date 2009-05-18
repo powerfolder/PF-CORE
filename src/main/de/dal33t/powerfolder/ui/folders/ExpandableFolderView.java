@@ -70,6 +70,7 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
     private JButtonMini openSettingsInformationButton;
     private JButtonMini openFilesInformationButton;
     private JButtonMini inviteButton;
+    private JButtonMini problemButton;
     private JButtonMini syncFolderButton;
     private JButtonMini joinOnlineStorageButton;
     private ActionLabel membersLabel;
@@ -204,8 +205,8 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
     private void buildUI() {
 
         // Build ui
-                                            //  icon        name   space            # files     sync / join
-        FormLayout upperLayout = new FormLayout("pref, 3dlu, pref, pref:grow, 3dlu, pref, 3dlu, pref",
+                                             //  icon        name  space            # files     probs sync / join
+        FormLayout upperLayout = new FormLayout("pref, 3dlu, pref, pref:grow, 3dlu, pref, 3dlu, pref, pref",
             "pref");
         PanelBuilder upperBuilder = new PanelBuilder(upperLayout);
         CellConstraints cc = new CellConstraints();
@@ -216,9 +217,11 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
         upperBuilder.add(new JLabel(folderInfo.name), cc.xy(3, 1));
         upperBuilder.add(filesAvailableLabel.getUIComponent(), cc.xy(6, 1));
 
+        upperBuilder.add(problemButton, cc.xy(8, 1));
+
         // syncFolderButton and joinOnlineStorageButton share same slot.
-        upperBuilder.add(syncFolderButton, cc.xy(8, 1));
-        upperBuilder.add(joinOnlineStorageButton, cc.xy(8, 1));
+        upperBuilder.add(syncFolderButton, cc.xy(9, 1));
+        upperBuilder.add(joinOnlineStorageButton, cc.xy(9, 1));
 
         upperPanel = upperBuilder.getPanel();
         upperPanel.setToolTipText(
@@ -303,6 +306,8 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
         mostRecentChangesAction = new MyMostRecentChangesAction(getController());
         openExplorerAction = new MyOpenExplorerAction(getController());
 
+        MyProblemAction myProblemAction =
+                new MyProblemAction(getController());
         MySyncFolderAction mySyncFolderAction =
                 new MySyncFolderAction(getController());
         MyJoinOnlineStorageAction myJoinOnlineStorageAction =
@@ -319,6 +324,7 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
                 true);
 
         inviteButton = new JButtonMini(inviteAction, true);
+        problemButton = new JButtonMini(myProblemAction, true);
         syncFolderButton = new JButtonMini(mySyncFolderAction, true);
         joinOnlineStorageButton = new JButtonMini(myJoinOnlineStorageAction, true);
         filesLabel = new JLabel();
@@ -338,7 +344,8 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
         updateFolderMembershipDetails();
         updateTransferMode();
         updateButtons();
-
+        updateProblems();
+        
         myServerClientListener = new MyServerClientListener();
         getController().getOSClient().addListener(myServerClientListener);
     }
@@ -675,11 +682,20 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
         return expandedContextMenu;
     }
 
+    /**
+     * This is called when a Problem has been added / removed for this folder.
+     * If there are problems for this folder, show icon.
+     */
+    public void updateProblems() {
+        problemButton.setVisible(getController().getFolderRepository()
+                .haveProblems(folderInfo));
+    }
+
     ///////////////////
     // Inner Classes //
     ///////////////////
 
-    public class MyNodeManagerListener implements NodeManagerListener {
+    private class MyNodeManagerListener implements NodeManagerListener {
 
         public void nodeRemoved(NodeManagerEvent e) {
             updateFolderMembershipDetails();
@@ -888,6 +904,17 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
 
         public void actionPerformed(ActionEvent e) {
             getController().getUIController().syncFolder(folderInfo);
+        }
+    }
+
+    private class MyProblemAction extends BaseAction {
+
+        private MyProblemAction(Controller controller) {
+            super("action_folder_problem", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            // todo display the problems
         }
     }
 

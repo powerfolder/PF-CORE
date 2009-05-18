@@ -1245,6 +1245,21 @@ public class FolderRepository extends PFComponent implements Runnable {
                 new OverallFolderStatEvent(foldersInSync, syncDate));
     }
 
+    /**
+     * Are there any problems for this folder?
+     *
+     * @param folderInfo
+     * @return
+     */
+    public boolean haveProblems(FolderInfo folderInfo) {
+        for (Problem problem : problems) {
+            if (problem.getFolderInfo().equals(folderInfo)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private class AllFolderMembershipSynchronizer implements Runnable {
         private volatile boolean canceled;
 

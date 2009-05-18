@@ -45,6 +45,8 @@ import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
+import de.dal33t.powerfolder.disk.problem.ProblemListener;
+import de.dal33t.powerfolder.disk.problem.Problem;
 import de.dal33t.powerfolder.event.ExpansionEvent;
 import de.dal33t.powerfolder.event.ExpansionListener;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
@@ -85,6 +87,8 @@ public class FoldersList extends PFUIComponent {
 
         views = new CopyOnWriteArrayList<ExpandableFolderView>();
 
+        controller.getFolderRepository().addProblemListener(
+                new MyProblemListener());
         buildUI();
     }
 
@@ -273,6 +277,24 @@ public class FoldersList extends PFUIComponent {
     }
 
     /**
+     * See if problem relates to any views.
+     *
+     * @param problem
+     */
+    private void handleProblem(Problem problem) {
+        for (ExpandableFolderView view : views) {
+            if (view.getFolderInfo().equals(problem.getFolderInfo())) {
+                // View should verify if there are any remaining own problems.
+                view.updateProblems();
+            }
+        }
+    }
+
+    ///////////////////
+    // Inner classes //
+    ///////////////////
+
+    /**
      * Listener for changes to folder repository folder set.
      */
     private class MyFolderRepositoryListener implements FolderRepositoryListener {
@@ -417,6 +439,21 @@ public class FoldersList extends PFUIComponent {
         public int compare(FolderBean o1, FolderBean o2) {
             return o1.getFolderInfo().name.compareToIgnoreCase(o2
                 .getFolderInfo().name);
+        }
+    }
+
+    private class MyProblemListener implements ProblemListener {
+
+        public void problemAdded(Problem problem) {
+            handleProblem(problem);
+        }
+
+        public void problemRemoved(Problem problem) {
+            handleProblem(problem);
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return true;
         }
     }
 }
