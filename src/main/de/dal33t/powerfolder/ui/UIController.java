@@ -706,6 +706,12 @@ public class UIController extends PFComponent {
         skins = new Skin[skinList.size()];
         int i = 0;
         for (Skin skin : skinList) {
+            // Check for dupes.
+            for (int j = 0; j < i; j++) {
+                if (skins[j].getName().equals(skin.getName())) {
+                    logSevere("Multiple skins with name: " + skin.getName());
+                }
+            }
             skins[i++] = skin;
         }
 
