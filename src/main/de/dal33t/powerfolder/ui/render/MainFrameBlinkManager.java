@@ -20,6 +20,8 @@
 package de.dal33t.powerfolder.ui.render;
 
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.disk.problem.ProblemListener;
+import de.dal33t.powerfolder.disk.problem.Problem;
 import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.MainTabbedPane;
@@ -76,6 +78,7 @@ public class MainFrameBlinkManager extends PFUIComponent {
                 new MyFriendshipCountListener());
         uiController.getMainFrame().addTabbedPaneChangeListener(
                 new MyMainTabChangeListener());
+        uiController.getController().getFolderRepository().addProblemListener(new MyProblemListener());
     }
 
     /**
@@ -83,7 +86,7 @@ public class MainFrameBlinkManager extends PFUIComponent {
      */
     private void update() {
 
-        boolean blink = (System.currentTimeMillis() / 1000) % 2 != 0;
+        boolean blink = System.currentTimeMillis() / 1000 % 2 != 0;
 
         MainFrame mainFrame = uiController.getMainFrame();
         if (blink && flashHomeTab.get()) {
@@ -234,6 +237,28 @@ public class MainFrameBlinkManager extends PFUIComponent {
     }
 
     /**
+     * Listen to added folder problems.
+     */
+    private class MyProblemListener implements ProblemListener {
+        public void problemAdded(Problem problem) {
+            if (selectedMainTab.get() == MainTabbedPane.FOLDERS_INDEX) {
+                return;
+            }
+
+            flashFolderTabIcon(true);
+            update();
+        }
+
+        public void problemRemoved(Problem problem) {
+            // Don't care
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return true;
+        }
+    }
+
+    /**
      * Listen to main tab selection changes.
      */
     private class MyMainTabChangeListener implements ChangeListener {
@@ -245,8 +270,10 @@ public class MainFrameBlinkManager extends PFUIComponent {
             if (selectedMainTab.get() == MainTabbedPane.HOME_INDEX) {
                 flashHomeTabIcon(false);
                 update();
-            } else if (selectedMainTab.get() == MainTabbedPane.COMPUTERS_INDEX)
-            {
+            } else if (selectedMainTab.get() == MainTabbedPane.FOLDERS_INDEX) {
+                flashFolderTabIcon(false);
+                update();
+            } else if (selectedMainTab.get() == MainTabbedPane.COMPUTERS_INDEX) {
                 flashMemberTabIcon(false);
                 update();
             }
