@@ -30,6 +30,8 @@ import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_RECYCLE;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_SYNC_PROFILE;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_WHITELIST;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_DOWNLOAD_SCRIPT;
+import de.dal33t.powerfolder.disk.problem.ProblemListener;
+import de.dal33t.powerfolder.disk.problem.Problem;
 
 import java.io.File;
 import java.io.IOException;
@@ -45,6 +47,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -115,6 +118,10 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     private final OverallFolderStatListener overallFolderStatListenerSupport;
 
+    private final ProblemListener problemListenerSupport;
+
+    private final CopyOnWriteArrayList<Problem> problems;
+
     /**
      * Constructor
      *
@@ -139,6 +146,55 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         overallFolderStatListenerSupport = ListenerSupportFactory
             .createListenerSupport(OverallFolderStatListener.class);
+
+        problems = new CopyOnWriteArrayList<Problem>();
+
+        problemListenerSupport = ListenerSupportFactory.createListenerSupport(
+                ProblemListener.class);
+    }
+
+    public void addProblemListener(ProblemListener l) {
+        ListenerSupportFactory.addListener(problemListenerSupport, l);
+    }
+
+    public void removeProblemListener(ProblemListener l) {
+        ListenerSupportFactory.removeListener(problemListenerSupport, l);
+    }
+
+    /**
+     * Add a problem to the list of problems. The problem must be for a folder
+     * in the repository's folders map.
+     *
+     * @param problem
+     */
+    public void addProblem(Problem problem) {
+        FolderInfo folderInfo = problem.getFolderInfo();
+        for (Folder folder : folders.values()) {
+            if (folder.getInfo().equals(folderInfo)) {
+                problems.add(problem);
+                problemListenerSupport.problemAdded(problem);
+                logFiner("Added problem for folder: "
+                        + problem.getFolderInfo().name);
+                return;
+            }
+        }
+        log.warning("Failed to add problem because of unknown folder: "
+                + problem.getFolderInfo().name);
+    }
+
+    /**
+     * Remove a problem from the list of known problems.
+     *
+     * @param problem
+     */
+    public void removeProblem(Problem problem) {
+        boolean removed = problems.remove(problem);
+        if (removed) {
+            problemListenerSupport.problemRemoved(problem);
+        } else {
+            log.warning("Failed to remove problem for folder: "
+                    + problem.getFolderInfo().name);
+        }
     }
 
     public void addOverallFolderStatListener(OverallFolderStatListener listener) {

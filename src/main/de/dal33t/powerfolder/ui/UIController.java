@@ -24,6 +24,8 @@ import de.dal33t.powerfolder.skin.Skin;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.disk.problem.Problem;
+import de.dal33t.powerfolder.disk.problem.UnsynchronizedFolderProblem;
 import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
@@ -362,38 +364,21 @@ public class UIController extends PFComponent {
         cal.add(Calendar.DATE, -syncWarnDays);
         Date warningDate = cal.getTime();
 
-        List<Folder> unsyncedFolders = new ArrayList<Folder>();
-
+        // Add problems for any offending folders.
         for (Folder folder :
                 getController().getFolderRepository().getFolders()) {
             Date lastSyncDate = folder.getLastSyncDate();
             if (lastSyncDate != null) {
                 if (lastSyncDate.before(warningDate)) {
-                    unsyncedFolders.add(folder);
+                    String message = Translation.getTranslation(
+                                "uicontroller.unsynchronized_folder.single",
+                                folder.getInfo().name, syncWarnDays);
+                    Problem problem = new UnsynchronizedFolderProblem(
+                            folder.getInfo(), message);
+                    getController().getFolderRepository().addProblem(problem);
                 }
             }
         }
-
-        if (unsyncedFolders.isEmpty()) {
-            return;
-        }
-
-        String message;
-        if (unsyncedFolders.size() == 1) {
-            // Warn about a single unsynced folder.
-            message = Translation.getTranslation(
-                    "uicontroller.unsynchronized_folder.single",
-                    unsyncedFolders.get(0).getInfo().name, syncWarnDays);
-        } else {
-            // Warn about multiple unsynced folders.
-            message = Translation.getTranslation(
-                    "uicontroller.unsynchronized_folder.multiple",
-                    syncWarnDays);
-        }
-        WarningEvent warning = new WarningEvent(getController(),
-                Translation.getTranslation(
-                    "uicontroller.unsynchronized_folder.title"), message);
-        applicationModel.getWarningsModel().pushWarning(warning);
     }
 
     private void gotoHPIfRequired() {
