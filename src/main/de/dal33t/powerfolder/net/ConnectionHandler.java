@@ -164,6 +164,11 @@ public interface ConnectionHandler {
      * @return the last time a message was received
      */
     Date getLastKeepaliveMessageTime();
+    
+    /**
+     * @return the quality of this connection.
+     */
+    ConnectionQuality getConnectionQuality();
 
     // IO Operations **********************************************************
 

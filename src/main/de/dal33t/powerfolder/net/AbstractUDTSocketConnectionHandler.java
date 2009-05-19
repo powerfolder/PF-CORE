@@ -588,6 +588,10 @@ public abstract class AbstractUDTSocketConnectionHandler extends PFComponent
     public String getRemoteMagicId() {
         return identity != null ? identity.getMagicId() : null;
     }
+    
+    public ConnectionQuality getConnectionQuality() {
+        return ConnectionQuality.MEDIUM;
+    }
 
     /**
      * Waits until we received the remote identity

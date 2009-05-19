@@ -511,6 +511,10 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
         return identity != null ? identity.getMagicId() : null;
     }
 
+    public ConnectionQuality getConnectionQuality() {
+        return ConnectionQuality.POOR;
+    }
+
     /**
      * Waits until we received the remote identity
      */

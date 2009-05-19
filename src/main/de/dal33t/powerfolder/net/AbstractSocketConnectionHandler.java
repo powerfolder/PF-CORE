@@ -586,6 +586,10 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
     public String getRemoteMagicId() {
         return identity != null ? identity.getMagicId() : null;
     }
+    
+    public ConnectionQuality getConnectionQuality() {
+        return ConnectionQuality.GOOD;
+    }
 
     /**
      * Waits until we received the remote identity
