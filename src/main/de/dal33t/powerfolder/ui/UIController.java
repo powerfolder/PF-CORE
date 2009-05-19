@@ -979,7 +979,7 @@ public class UIController extends PFComponent {
                                 "uicontroller.empty_folder.stop_managing"),
                         Translation.getTranslation(
                                 "uicontroller.empty_folder.send_deletions")},
-                        1, "Total-Folder-Delete", GenericDialogType.WARN);
+                        1, WikiLinks.TOTAL_FOLDER_DELETE, GenericDialogType.WARN);
                 if (result == 0) { // Leave folder
                     logInfo("User decided to leave forlder "
                             + folder.getInfo().name

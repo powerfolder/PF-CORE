@@ -24,4 +24,6 @@ package de.dal33t.powerfolder.ui;
  * Any references to the PowerFolder Wiki should go here, so that we can ensure the Wiki is up-to-date.
  */
 public interface WikiLinks {
+
+    String TOTAL_FOLDER_DELETE = "Total-Folder-Delete";
 }
