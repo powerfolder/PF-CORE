@@ -20,8 +20,6 @@
 package de.dal33t.powerfolder.ui.render;
 
 import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.disk.problem.ProblemListener;
-import de.dal33t.powerfolder.disk.problem.Problem;
 import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.MainTabbedPane;
