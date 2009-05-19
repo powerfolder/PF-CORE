@@ -217,8 +217,7 @@ public class FolderCreatePanel extends PFWizardPanel {
 
     private FolderInfo createFolderInfo(File localBase) {
         // Create new folder info
-        String name = getController().getMySelf().getNick() + '-'
-            + localBase.getName();
+        String name = localBase.getName();
         String folderId = '[' + IdGenerator.makeId() + ']';
         return new FolderInfo(name, folderId);        
     }

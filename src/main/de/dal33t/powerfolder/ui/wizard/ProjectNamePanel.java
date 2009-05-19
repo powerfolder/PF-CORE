@@ -81,7 +81,7 @@ public class ProjectNamePanel extends PFWizardPanel {
 
     public WizardPanel next() {
         // Create new folder info
-        String name = "Project-" + nameField.getText();
+        String name = nameField.getText();
         String folderId = '[' + IdGenerator.makeId() + ']';
         FolderInfo folder = new FolderInfo(name, folderId);
         getWizardContext().setAttribute(FOLDERINFO_ATTRIBUTE, folder);
