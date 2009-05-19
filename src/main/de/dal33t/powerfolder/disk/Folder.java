@@ -2794,6 +2794,13 @@ public class Folder extends PFComponent {
     }
 
     /**
+     * @return the date of the last maintenance.
+     */
+    public Date getLastDBMaintenanceDate() {
+        return lastDBMaintenance;
+    }
+    
+    /**
      * @return the info object of this folder
      */
     public FolderInfo getInfo() {
