@@ -47,6 +47,7 @@ import java.util.SortedMap;
 import java.util.TimerTask;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
@@ -59,6 +60,8 @@ import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAO;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAOHashMapImpl;
 import static de.dal33t.powerfolder.disk.FolderStatistic.*;
+import de.dal33t.powerfolder.disk.problem.ProblemListener;
+import de.dal33t.powerfolder.disk.problem.Problem;
 import de.dal33t.powerfolder.event.FileNameProblemEvent;
 import de.dal33t.powerfolder.event.FileNameProblemHandler;
 import de.dal33t.powerfolder.event.FolderEvent;
@@ -229,6 +232,10 @@ public class Folder extends PFComponent {
      */
     private String downloadScript;
 
+    private final ProblemListener problemListenerSupport;
+
+    private final CopyOnWriteArrayList<Problem> problems;
+
     /**
      * Constructor for folder.
      * 
@@ -372,11 +379,58 @@ public class Folder extends PFComponent {
 
         // Initialized lazyliy
         rootDirectory = null;
+
+        problems = new CopyOnWriteArrayList<Problem>();
+
+        problemListenerSupport = ListenerSupportFactory.createListenerSupport(
+                ProblemListener.class);
+    }
+
+    public void addProblemListener(ProblemListener l) {
+        ListenerSupportFactory.addListener(problemListenerSupport, l);
+    }
+
+    public void removeProblemListener(ProblemListener l) {
+        ListenerSupportFactory.removeListener(problemListenerSupport, l);
+    }
+
+    /**
+     * Add a problem to the list of problems.
+     *
+     * @param problem
+     */
+    public void addProblem(Problem problem) {
+        problems.add(problem);
+        problemListenerSupport.problemAdded(problem);
+        logFiner("Added problem");
+    }
+
+    /**
+     * Remove a problem from the list of known problems.
+     *
+     * @param problem
+     */
+    public void removeProblem(Problem problem) {
+        boolean removed = problems.remove(problem);
+        if (removed) {
+            problemListenerSupport.problemRemoved(problem);
+        } else {
+            logWarning("Failed to remove problem");
+        }
+    }
+
+    /**
+     * Count problems in folder?
+     *
+     * @return
+     */
+    public int countProblems() {
+        return problems.size();
     }
 
     /**
      * Commits the scan results into the internal file database. Changes get
-     * broadcasted to other members if nessesary.
+     * broadcasted to other members if necessary.
      * 
      * @param scanResult
      *            the scanresult to commit.
@@ -2405,9 +2459,9 @@ public class Folder extends PFComponent {
      * Persists settings to disk.
      */
     private void persist() {
-        if (isDeviceDisconnected()) {
+        if (deviceDisconnected) {
             logWarning("Unable to persist database. Device is disconnected: "
-                + getLocalBase());
+                + localBase);
             return;
         }
         logFiner("Persisting settings");

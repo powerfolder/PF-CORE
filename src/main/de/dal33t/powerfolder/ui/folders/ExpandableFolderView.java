@@ -61,7 +61,7 @@ import java.io.IOException;
  * Class to render expandable view of a folder.
  */
 public class ExpandableFolderView extends PFUIComponent implements ExpandableView {
-
+                                       
     private final FolderInfo folderInfo;
     private Folder folder;
     private boolean local;
@@ -134,7 +134,6 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
      */
     public void configure(Folder folderArg, boolean localArg, boolean onlineArg)
     {
-
         boolean changed = false;
         if (folderArg != null && folder == null) {
             changed = true;
@@ -166,6 +165,7 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
         updateFolderMembershipDetails();
         updateIconAndOS();
         updateButtons();
+        updateProblems();
 
         registerFolderListeners();
     }
@@ -687,8 +687,7 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
      * If there are problems for this folder, show icon.
      */
     public void updateProblems() {
-        problemButton.setVisible(getController().getFolderRepository()
-                .haveProblems(folderInfo));
+        problemButton.setVisible(folder != null && folder.countProblems() > 0);
     }
 
     ///////////////////

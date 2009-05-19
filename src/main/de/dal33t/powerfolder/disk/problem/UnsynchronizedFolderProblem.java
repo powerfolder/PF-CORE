@@ -19,17 +19,14 @@
  */
 package de.dal33t.powerfolder.disk.problem;
 
-import de.dal33t.powerfolder.light.FolderInfo;
-
 /**
  * Problem where a folder has not been synchronized in n days.
  */
-public class UnsynchronizedFolderProblem extends Problem {
+public class UnsynchronizedFolderProblem implements Problem {
 
     private String message;
 
-    public UnsynchronizedFolderProblem(FolderInfo folderInfo, String message) {
-        super(folderInfo);
+    public UnsynchronizedFolderProblem(String message) {
         this.message = message;
     }
 

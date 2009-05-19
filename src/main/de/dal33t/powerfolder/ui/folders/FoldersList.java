@@ -46,7 +46,6 @@ import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.problem.ProblemListener;
-import de.dal33t.powerfolder.disk.problem.Problem;
 import de.dal33t.powerfolder.event.ExpansionEvent;
 import de.dal33t.powerfolder.event.ExpansionListener;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
@@ -87,8 +86,8 @@ public class FoldersList extends PFUIComponent {
 
         views = new CopyOnWriteArrayList<ExpandableFolderView>();
 
-        controller.getFolderRepository().addProblemListener(
-                new MyProblemListener());
+        controller.getFolderRepository().getProblemCountVM()
+                .addValueChangeListener(new MyProblemListener());
         buildUI();
     }
 
@@ -277,16 +276,11 @@ public class FoldersList extends PFUIComponent {
     }
 
     /**
-     * See if problem relates to any views.
-     *
-     * @param problem
+     * Update all views with its folder's problems.
      */
-    private void handleProblem(Problem problem) {
+    private void updateProblems() {
         for (ExpandableFolderView view : views) {
-            if (view.getFolderInfo().equals(problem.getFolderInfo())) {
-                // View should verify if there are any remaining own problems.
-                view.updateProblems();
-            }
+            view.updateProblems();
         }
     }
 
@@ -442,18 +436,9 @@ public class FoldersList extends PFUIComponent {
         }
     }
 
-    private class MyProblemListener implements ProblemListener {
-
-        public void problemAdded(Problem problem) {
-            handleProblem(problem);
-        }
-
-        public void problemRemoved(Problem problem) {
-            handleProblem(problem);
-        }
-
-        public boolean fireInEventDispatchThread() {
-            return true;
+    private class MyProblemListener implements PropertyChangeListener {
+        public void propertyChange(PropertyChangeEvent evt) {
+            updateProblems();
         }
     }
 }

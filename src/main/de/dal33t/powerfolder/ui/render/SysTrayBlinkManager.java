@@ -20,8 +20,6 @@
 package de.dal33t.powerfolder.ui.render;
 
 import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.disk.problem.ProblemListener;
-import de.dal33t.powerfolder.disk.problem.Problem;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.ui.chat.ChatModelEvent;
@@ -72,8 +70,8 @@ public class SysTrayBlinkManager extends PFUIComponent {
                 new MyFriendshipCountListener());
         uiController.getMainFrame().getUIComponent().addWindowListener(
                 new MyWindowListener());
-        uiController.getController().getFolderRepository().addProblemListener(
-                new MyProblemListener());
+        uiController.getController().getFolderRepository().getProblemCountVM()
+                .addValueChangeListener(new MyProblemListener());
     }
 
     /**
@@ -220,23 +218,19 @@ public class SysTrayBlinkManager extends PFUIComponent {
         }
     }
 
-    private class MyProblemListener implements ProblemListener {
+    private class MyProblemListener implements PropertyChangeListener {
 
-        public void problemAdded(Problem problem) {
-            if (!uiController.getMainFrame().isIconifiedOrHidden()) {
-                return;
+        public void propertyChange(PropertyChangeEvent evt) {
+            int oldV = (Integer) evt.getOldValue();
+            int newV = (Integer) evt.getNewValue();
+            if (newV > oldV) {
+                if (!uiController.getMainFrame().isIconifiedOrHidden()) {
+                    return;
+                }
+
+                flashTrayIcon(true);
+                update();
             }
-
-            flashTrayIcon(true);
-            update();
-        }
-
-        public void problemRemoved(Problem problem) {
-            // Don't care.
-        }
-
-        public boolean fireInEventDispatchThread() {
-            return true;
         }
     }
 }

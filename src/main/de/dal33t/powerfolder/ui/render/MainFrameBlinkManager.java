@@ -78,7 +78,8 @@ public class MainFrameBlinkManager extends PFUIComponent {
                 new MyFriendshipCountListener());
         uiController.getMainFrame().addTabbedPaneChangeListener(
                 new MyMainTabChangeListener());
-        uiController.getController().getFolderRepository().addProblemListener(new MyProblemListener());
+        uiController.getController().getFolderRepository().getProblemCountVM()
+                .addValueChangeListener(new MyProblemListener());
     }
 
     /**
@@ -239,22 +240,20 @@ public class MainFrameBlinkManager extends PFUIComponent {
     /**
      * Listen to added folder problems.
      */
-    private class MyProblemListener implements ProblemListener {
-        public void problemAdded(Problem problem) {
-            if (selectedMainTab.get() == MainTabbedPane.FOLDERS_INDEX) {
-                return;
+    private class MyProblemListener implements PropertyChangeListener {
+
+        public void propertyChange(PropertyChangeEvent evt) {
+
+            int oldV = (Integer) evt.getOldValue();
+            int newV = (Integer) evt.getNewValue();
+            if (newV > oldV) {
+                if (selectedMainTab.get() == MainTabbedPane.FOLDERS_INDEX) {
+                    return;
+                }
+
+                flashFolderTabIcon(true);
+                update();
             }
-
-            flashFolderTabIcon(true);
-            update();
-        }
-
-        public void problemRemoved(Problem problem) {
-            // Don't care
-        }
-
-        public boolean fireInEventDispatchThread() {
-            return true;
         }
     }
 

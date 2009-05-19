@@ -47,7 +47,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -67,6 +66,8 @@ import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
 import de.dal33t.powerfolder.util.ui.NeverAskAgainResponse;
 import de.dal33t.powerfolder.util.ui.UIUtil;
+import com.jgoodies.binding.value.ValueModel;
+import com.jgoodies.binding.value.ValueHolder;
 
 /**
  * Repository of all known power folders. Local and unjoined.
@@ -118,9 +119,8 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     private final OverallFolderStatListener overallFolderStatListenerSupport;
 
-    private final ProblemListener problemListenerSupport;
-
-    private final CopyOnWriteArrayList<Problem> problems;
+    private ProblemListener myProblemListener;
+    private final ValueModel problemCountVM;
 
     /**
      * Constructor
@@ -147,54 +147,17 @@ public class FolderRepository extends PFComponent implements Runnable {
         overallFolderStatListenerSupport = ListenerSupportFactory
             .createListenerSupport(OverallFolderStatListener.class);
 
-        problems = new CopyOnWriteArrayList<Problem>();
-
-        problemListenerSupport = ListenerSupportFactory.createListenerSupport(
-                ProblemListener.class);
-    }
-
-    public void addProblemListener(ProblemListener l) {
-        ListenerSupportFactory.addListener(problemListenerSupport, l);
-    }
-
-    public void removeProblemListener(ProblemListener l) {
-        ListenerSupportFactory.removeListener(problemListenerSupport, l);
+        problemCountVM = new ValueHolder(0);
+        myProblemListener = new MyProblemListener();
     }
 
     /**
-     * Add a problem to the list of problems. The problem must be for a folder
-     * in the repository's folders map.
+     * Value model giving a count of all problems in all managed folders.
      *
-     * @param problem
+     * @return
      */
-    public void addProblem(Problem problem) {
-        FolderInfo folderInfo = problem.getFolderInfo();
-        for (Folder folder : folders.values()) {
-            if (folder.getInfo().equals(folderInfo)) {
-                problems.add(problem);
-                problemListenerSupport.problemAdded(problem);
-                logFiner("Added problem for folder: "
-                        + problem.getFolderInfo().name);
-                return;
-            }
-        }
-        log.warning("Failed to add problem because of unknown folder: "
-                + problem.getFolderInfo().name);
-    }
-
-    /**
-     * Remove a problem from the list of known problems.
-     *
-     * @param problem
-     */
-    public void removeProblem(Problem problem) {
-        boolean removed = problems.remove(problem);
-        if (removed) {
-            problemListenerSupport.problemRemoved(problem);
-        } else {
-            log.warning("Failed to remove problem for folder: "
-                    + problem.getFolderInfo().name);
-        }
+    public ValueModel getProblemCountVM() {
+        return problemCountVM;
     }
 
     public void addOverallFolderStatListener(OverallFolderStatListener listener) {
@@ -800,6 +763,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
         
         folder.addFolderListener(folderListener);
+        folder.addProblemListener(myProblemListener);
         folders.put(folder.getInfo(), folder);
         saveFolderConfig(folderInfo, folderSettings, saveConfig);
 
@@ -899,7 +863,8 @@ public class FolderRepository extends PFComponent implements Runnable {
         // Remove internal
         folders.remove(folder.getInfo());
         folder.removeFolderListener(folderListener);
-        
+        folder.removeProblemListener(myProblemListener);
+
         // Break transfers
         getController().getTransferManager().breakTransfers(folder.getInfo());
 
@@ -1141,14 +1106,27 @@ public class FolderRepository extends PFComponent implements Runnable {
         return allSyncOrEstimatedDate;
     }
 
+    /**
+     * Sum all problems in all folders.
+     */
+    private void recalculateAllProblemsCount() {
+        int count = 0;
+        for (Folder folder : getFolders()) {
+            count += folder.countProblems();
+        }
+        problemCountVM.setValue(count);
+    }
+
     // Event support **********************************************************
 
     private void fireFolderCreated(Folder folder) {
         folderRepositoryListenerSupport.folderCreated(new FolderRepositoryEvent(this, folder));
+        recalculateAllProblemsCount();
     }
 
     private void fireFolderRemoved(Folder folder) {
         folderRepositoryListenerSupport.folderRemoved(new FolderRepositoryEvent(this, folder));
+        recalculateAllProblemsCount();
     }
 
     private void fireMaintanceStarted(Folder folder) {
@@ -1245,21 +1223,6 @@ public class FolderRepository extends PFComponent implements Runnable {
                 new OverallFolderStatEvent(foldersInSync, syncDate));
     }
 
-    /**
-     * Are there any problems for this folder?
-     *
-     * @param folderInfo
-     * @return
-     */
-    public boolean haveProblems(FolderInfo folderInfo) {
-        for (Problem problem : problems) {
-            if (problem.getFolderInfo().equals(folderInfo)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     private class AllFolderMembershipSynchronizer implements Runnable {
         private volatile boolean canceled;
 
@@ -1324,6 +1287,21 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         public boolean fireInEventDispatchThread() {
             return true;
+        }
+    }
+
+    private class MyProblemListener implements ProblemListener {
+
+        public void problemAdded(Problem problem) {
+            recalculateAllProblemsCount();
+        }
+
+        public void problemRemoved(Problem problem) {
+            recalculateAllProblemsCount();
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return false;
         }
     }
 }

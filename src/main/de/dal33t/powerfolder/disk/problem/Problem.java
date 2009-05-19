@@ -19,20 +19,8 @@
 */
 package de.dal33t.powerfolder.disk.problem;
 
-import de.dal33t.powerfolder.light.FolderInfo;
-
 /**
- * Base class of folder problems.
+ * Base of folder problems.
  */
-public abstract class Problem {
-
-    private FolderInfo folderInfo;
-
-    protected Problem(FolderInfo folderInfo) {
-        this.folderInfo = folderInfo;
-    }
-
-    public FolderInfo getFolderInfo() {
-        return folderInfo;
-    }
+public interface Problem {
 }
