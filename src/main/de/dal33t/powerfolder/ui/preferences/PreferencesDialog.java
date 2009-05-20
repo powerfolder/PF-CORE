@@ -30,8 +30,13 @@ import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.WikiLinks;
+import de.dal33t.powerfolder.ui.action.BaseAction;
+import de.dal33t.powerfolder.ui.widget.LinkJButton;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Help;
+import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.ui.BaseDialog;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
@@ -47,19 +52,28 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.io.IOException;
 
 public class PreferencesDialog extends BaseDialog {
 
     private ValueModel mydnsndsModel;
     private JButton okButton;
     private JButton cancelButton;
+    private JButton helpButton;
     private List<PreferenceTab> preferenceTabs;
     private JTabbedPane tabbedPane;
 
-    private DynDnsSettingsTab dynDnsSettingsTab;
-    private AdvancedSettingsTab advancedSettingsTab;
     private static final int DYNDNS_TAB_INDEX = 3;
     private static final int ADVANCED_TAB_INDEX = 4;
+
+    private GeneralSettingsTab generalSettingsTab;
+    private UISettingsTab uiSettingsTab;
+    private NetworkSettingsTab networkSettingsTab;
+    private DialogsSettingsTab dialogsSettingsTab;
+    private DynDnsSettingsTab dynDnsSettingsTab;
+    private AdvancedSettingsTab advancedSettingsTab;
+    private PluginSettingsTab pluginSettingsTab;
 
     public PreferencesDialog(Controller controller) {
         super(controller, true, false);
@@ -144,19 +158,19 @@ public class PreferencesDialog extends BaseDialog {
         tabbedPane = new JTabbedPane(SwingConstants.TOP, 
                 JTabbedPane.WRAP_TAB_LAYOUT);
 
-        GeneralSettingsTab generalSettingsTab = new GeneralSettingsTab(
+        generalSettingsTab = new GeneralSettingsTab(
             getController());
         preferenceTabs.add(generalSettingsTab);
         tabbedPane.addTab(generalSettingsTab.getTabName(),
             Icons.getIconById(Icons.PREFERENCES), generalSettingsTab.getUIPanel(), null);
 
-        UISettingsTab uiSettingsTab = new UISettingsTab(
+        uiSettingsTab = new UISettingsTab(
             getController());
         preferenceTabs.add(uiSettingsTab);
         tabbedPane.addTab(uiSettingsTab.getTabName(),
             Icons.getIconById(Icons.MAC), uiSettingsTab.getUIPanel(), null);
 
-        NetworkSettingsTab networkSettingsTab = new NetworkSettingsTab(
+        networkSettingsTab = new NetworkSettingsTab(
             getController());
         preferenceTabs.add(networkSettingsTab);
         tabbedPane.addTab(networkSettingsTab.getTabName(), Icons.getIconById(Icons.ONLINE_STORAGE),
@@ -168,13 +182,13 @@ public class PreferencesDialog extends BaseDialog {
         tabbedPane.addTab(dynDnsSettingsTab.getTabName(), Icons.getIconById(Icons.DYN_DNS),
             dynDnsSettingsTab.getUIPanel(), null);
 
-        DialogsSettingsTab dialogsSettingsTab = new DialogsSettingsTab(
+        dialogsSettingsTab = new DialogsSettingsTab(
             getController());
         preferenceTabs.add(dialogsSettingsTab);
         tabbedPane.addTab(dialogsSettingsTab.getTabName(), Icons.getIconById(
                 Icons.DIALOG), dialogsSettingsTab.getUIPanel(), null);
 
-        PluginSettingsTab pluginSettingsTab = new PluginSettingsTab(
+        pluginSettingsTab = new PluginSettingsTab(
             getController(), this);
         if (getController().getPluginManager().countPlugins() > 0) {
             preferenceTabs.add(pluginSettingsTab);
@@ -220,6 +234,16 @@ public class PreferencesDialog extends BaseDialog {
         // Buttons
         okButton = createOKButton();
         cancelButton = createCancelButton();
+        helpButton = createHelpButton();
+    }
+
+    private JButton createHelpButton() {
+        Action action = new BaseAction("action_help", getController()) {
+            public void actionPerformed(ActionEvent e) {
+                helpAction();
+            }
+        };
+        return new JButton(action);
     }
 
     /**
@@ -298,7 +322,7 @@ public class PreferencesDialog extends BaseDialog {
     }
 
     protected Component getButtonBar() {
-        return ButtonBarFactory.buildCenteredBar(okButton, cancelButton);
+        return ButtonBarFactory.buildCenteredBar(helpButton, okButton, cancelButton);
     }
 
     private void saveSettings() {
@@ -338,5 +362,33 @@ public class PreferencesDialog extends BaseDialog {
             }
         }
         return false;
+    }
+
+        public void helpAction() {
+            Component component = tabbedPane.getSelectedComponent();
+            String article = "";
+            if (generalSettingsTab != null && component == generalSettingsTab.getUIPanel()) {
+                article = WikiLinks.SETTINGS_GENERAL;
+            } else if (uiSettingsTab != null && component == uiSettingsTab.getUIPanel()) {
+                article = WikiLinks.SETTINGS_UI;
+            } else if (networkSettingsTab != null && component == networkSettingsTab.getUIPanel()) {
+                article = WikiLinks.SETTINGS_NETWORK;
+            } else if (dialogsSettingsTab != null && component == dialogsSettingsTab.getUIPanel()) {
+                article = WikiLinks.SETTINGS_DIALOG;
+            } else if (dynDnsSettingsTab != null && component == dynDnsSettingsTab.getUIPanel()) {
+                article = WikiLinks.SETTINGS_DYN_DNS;
+            } else if (advancedSettingsTab != null && component == advancedSettingsTab.getUIPanel()) {
+                article = WikiLinks.SETTINGS_ADVANCED;
+            } else if (pluginSettingsTab != null && component == pluginSettingsTab.getUIPanel()) {
+                article = WikiLinks.SETTINGS_PLUGIN;
+            }
+
+            String wikiArticleURL = Help.getWikiArticleURL(getController(), article);
+            try {
+                BrowserLauncher.openURL(wikiArticleURL);
+            } catch (IOException e1) {
+                logSevere("IOException", e1);
+            }
+
     }
 }
