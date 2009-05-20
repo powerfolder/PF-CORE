@@ -172,7 +172,13 @@ public class MainFrame extends PFUIComponent {
              */
             public void windowIconified(WindowEvent e) {
                 getUIController().hideChildPanels();
-                super.windowIconified(e);
+                boolean minToSysTray = PreferencesEntry.MIN_TO_SYS_TRAY
+                            .getValueBoolean(getController());
+                if (minToSysTray) {
+                    uiComponent.setVisible(false);
+                } else {
+                    super.windowIconified(e);
+                }
             }
 
             /**

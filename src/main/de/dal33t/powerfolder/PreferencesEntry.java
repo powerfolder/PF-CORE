@@ -139,7 +139,10 @@ public enum PreferencesEntry {
     FOLDER_SYNC_WARN("folder.sync.warn", 10),
 
     /** Skin name. */
-    SKIN_NAME("skin.name", "");
+    SKIN_NAME("skin.name", ""),
+
+    /** Minimize to system tray */
+    MIN_TO_SYS_TRAY("min.to.sys.tray", false);
 
     /** String, Boolean, Integer */
     private Class type;

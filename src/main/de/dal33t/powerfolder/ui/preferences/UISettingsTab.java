@@ -63,6 +63,7 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
     private JComboBox languageChooser;
     private JComboBox lookAndFeelChooser;
     private JComboBox xBehaviorChooser;
+    private JCheckBox minToSysTrayCB;
     private JCheckBox underlineLinkBox;
     private JCheckBox magneticFrameBox;
     private JCheckBox translucentMainFrameCB;
@@ -139,6 +140,12 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
             // Display exit on x if not enabled
             xBehaviorModel.setValue(Boolean.TRUE);
         }
+
+        ValueModel minToSysTrayModel = new ValueHolder(
+            PreferencesEntry.MIN_TO_SYS_TRAY.getValueBoolean(getController()));
+        minToSysTrayCB = BasicComponentFactory.createCheckBox(
+            new BufferedValueModel(minToSysTrayModel, writeTrigger), Translation
+                .getTranslation("preferences.dialog.min_to_sys_tray"));
 
         ValueModel ulModel = new ValueHolder(
             PreferencesEntry.UNDERLINE_LINKS.getValueBoolean(getController()));
@@ -315,12 +322,6 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
                 .getTranslation("preferences.dialog.language")), cc.xy(1, row));
             builder.add(languageChooser, cc.xy(3, row));
 
-            row += 2;
-            builder.add(new JLabel(Translation
-                    .getTranslation("preferences.dialog.exit_behavior")),
-                    cc.xy(1, row));
-            builder.add(xBehaviorChooser, cc.xy(3, row));
-
             if (getUIController().getSkins().length > 1) {
                 row += 2;
                 builder.add(skinLabel, cc.xy(1, row));
@@ -332,6 +333,15 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
                 .getTranslation("preferences.dialog.color_theme")), cc
                 .xy(1, row));
             builder.add(lookAndFeelChooser, cc.xy(3, row));
+
+            row += 2;
+            builder.add(new JLabel(Translation
+                    .getTranslation("preferences.dialog.exit_behavior")),
+                    cc.xy(1, row));
+            builder.add(xBehaviorChooser, cc.xy(3, row));
+
+            row += 2;
+            builder.add(minToSysTrayCB, cc.xy(3, row));
 
             row += 2;
             builder.add(updateCheck, cc.xyw(3, row, 2));
@@ -450,6 +460,9 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
 
         PreferencesEntry.MAIN_ALWAYS_ON_TOP.setValue(getController(),
            mainAlwaysOnTopCB.isSelected());
+
+        PreferencesEntry.MIN_TO_SYS_TRAY.setValue(getController(),
+           minToSysTrayCB.isSelected());
 
         PreferencesEntry.TRANSLUCENT_PERCENTAGE.setValue(getController(),
                 transPercSlider.getValue());
