@@ -36,6 +36,7 @@ import de.dal33t.powerfolder.util.TransferCounter;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.EstimatedTime;
 import de.dal33t.powerfolder.util.ui.UIUtil;
+import de.dal33t.powerfolder.util.ui.ColorUtil;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -247,6 +248,11 @@ public class TransferTableCellRenderer extends DefaultTableCellRenderer {
             setText(Translation.getTranslation("transfers.searching"));
             setIcon(null);
             setHorizontalAlignment(LEFT);
+        }
+
+        if (!isSelected) {
+            setBackground(row % 2 == 0 ? ColorUtil.EVEN_TABLE_ROW_COLOR
+                    : ColorUtil.ODD_TABLE_ROW_COLOR);
         }
 
         return defaultComp;

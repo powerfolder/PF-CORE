@@ -369,7 +369,7 @@ public class UIController extends PFComponent {
                 getController().getFolderRepository().getFolders()) {
             Date lastSyncDate = folder.getLastSyncDate();
             if (lastSyncDate != null) {
-                if (!lastSyncDate.before(warningDate)) {
+                if (lastSyncDate.before(warningDate)) {
                     String message = Translation.getTranslation(
                                 "uicontroller.unsynchronized_folder.single",
                                 folder.getInfo().name, syncWarnDays);

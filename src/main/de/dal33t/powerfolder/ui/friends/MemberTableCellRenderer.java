@@ -24,6 +24,7 @@ import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.UIUtil;
+import de.dal33t.powerfolder.util.ui.ColorUtil;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -39,7 +40,7 @@ class MemberTableCellRenderer extends DefaultTableCellRenderer {
         boolean isSelected, boolean hasFocus, int row, int column)
     {
         int actualColumn = UIUtil.toModel(table, column);
-        setHorizontalAlignment(SwingConstants.LEFT);
+        setHorizontalAlignment(LEFT);
         setIcon(null);
         if (value instanceof String) {// no user found
             if (actualColumn != 0) {
@@ -75,7 +76,7 @@ class MemberTableCellRenderer extends DefaultTableCellRenderer {
                             : "n/a";
                         value = value + " (" + lastMsg + ")";
                     }
-                    setHorizontalAlignment(SwingConstants.RIGHT);
+                    setHorizontalAlignment(RIGHT);
                     break;
                 }
                     // case 2 : {
@@ -89,15 +90,16 @@ class MemberTableCellRenderer extends DefaultTableCellRenderer {
                     value = replaceNullWithNA(member.getIP());
                     int port = member.getPort();
                     if (port != 1337) {
-                        value = (String) value + ":" + port;
+                        value = value + ":" + port;
                     }
-                    setHorizontalAlignment(SwingConstants.RIGHT);
+                    setHorizontalAlignment(RIGHT);
                     break;
                 }
                 case 3 : {
                     JCheckBox box = new JCheckBox("", member.isOnLAN());
-                    box.setBackground(Color.WHITE);
-                    box.setHorizontalAlignment(SwingConstants.CENTER);
+                    box.setBackground(row % 2 == 0 ? ColorUtil.EVEN_TABLE_ROW_COLOR
+                    : ColorUtil.ODD_TABLE_ROW_COLOR);
+                    box.setHorizontalAlignment(CENTER);
                     return box;
                 }
 
@@ -106,11 +108,16 @@ class MemberTableCellRenderer extends DefaultTableCellRenderer {
             throw new IllegalStateException("don't know how to render this");
         }
 
+        if (!isSelected) {
+            setBackground(row % 2 == 0 ? ColorUtil.EVEN_TABLE_ROW_COLOR
+                    : ColorUtil.ODD_TABLE_ROW_COLOR);
+        }
+
         return super.getTableCellRendererComponent(table, value, isSelected,
             hasFocus, row, column);
     }
 
-    private final static String replaceNullWithNA(String original) {
+    private static final String replaceNullWithNA(String original) {
         return original == null ? Translation
             .getTranslation("friends_panel.n_a") : original;
     }

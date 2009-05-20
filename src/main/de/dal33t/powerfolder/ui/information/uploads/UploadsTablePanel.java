@@ -29,7 +29,6 @@ import de.dal33t.powerfolder.transfer.Upload;
 import de.dal33t.powerfolder.ui.model.TransferManagerModel;
 import de.dal33t.powerfolder.util.ui.SwingWorker;
 import de.dal33t.powerfolder.util.ui.UIUtil;
-import de.dal33t.powerfolder.util.os.OSUtil;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionListener;

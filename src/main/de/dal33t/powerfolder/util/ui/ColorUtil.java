@@ -29,8 +29,11 @@ import java.awt.*;
  */
 public class ColorUtil {
 
-    /** Color for odd rows in tables, even rows are white. */
+    /** Color for odd rows in tables. */
     public static final Color ODD_TABLE_ROW_COLOR = new Color(240, 240, 240);
+
+    /** Color for even rows in tables. */
+    public static final Color EVEN_TABLE_ROW_COLOR = Color.white;
 
     /**
      * Creates a '#rrggbb' String for a Color.

@@ -148,7 +148,6 @@ public class FilesTable extends JTable {
         public Component getTableCellRendererComponent(JTable table, Object value,
                 boolean isSelected, boolean hasFocus, int row, int column) {
             DiskItem diskItem = (DiskItem) value;
-            setBackground(row % 2 == 0 ? Color.white : ColorUtil.ODD_TABLE_ROW_COLOR);
             String myValue = "";
             if (diskItem instanceof FileInfo) {
                 FileInfo fileInfo = (FileInfo) diskItem;
@@ -346,6 +345,11 @@ public class FilesTable extends JTable {
                     c.setFont(new Font(getFont().getName(), Font.BOLD,
                             getFont().getSize()));
                 }
+            }
+
+            if (!isSelected) {
+                setBackground(row % 2 == 0 ? ColorUtil.EVEN_TABLE_ROW_COLOR
+                        : ColorUtil.ODD_TABLE_ROW_COLOR);
             }
 
             return c;

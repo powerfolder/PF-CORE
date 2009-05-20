@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.ui.information.folder.members;
 
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.util.ui.ColorUtil;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.render.SortedTableHeaderRenderer;
 
@@ -57,6 +58,7 @@ public class MembersTable extends JTable {
         MemberTableCellRenderer memberCellRenderer =
                 new MemberTableCellRenderer();
         setDefaultRenderer(Member.class, memberCellRenderer);
+        setDefaultRenderer(String.class, memberCellRenderer);
 
         // Associate a header renderer with all columns.
         SortedTableHeaderRenderer.associateHeaderRenderer(
@@ -120,8 +122,15 @@ public class MembersTable extends JTable {
                 Member node = (Member) value;
                 Icon icon = Icons.getIconFor(node);
                 setIcon(icon);
+            } else {
+                setIcon(null);
             }
 
+            if (!isSelected) {
+                setBackground(row % 2 == 0 ? ColorUtil.EVEN_TABLE_ROW_COLOR
+                        : ColorUtil.ODD_TABLE_ROW_COLOR);
+            }
+            
             return defaultComp;
         }
     }
