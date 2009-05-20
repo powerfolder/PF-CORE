@@ -29,6 +29,9 @@ import java.awt.*;
  */
 public class ColorUtil {
 
+    /** Color for odd rows in tables, even rows are white. */
+    public static final Color ODD_TABLE_ROW_COLOR = new Color(240, 240, 240);
+
     /**
      * Creates a '#rrggbb' String for a Color.
      *

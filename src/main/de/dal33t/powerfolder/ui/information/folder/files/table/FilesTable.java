@@ -21,10 +21,7 @@ package de.dal33t.powerfolder.ui.information.folder.files.table;
 
 import static de.dal33t.powerfolder.disk.SyncProfile.MANUAL_SYNCHRONIZATION;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Font;
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
@@ -54,6 +51,7 @@ import de.dal33t.powerfolder.ui.render.SortedTableHeaderRenderer;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.ColorUtil;
 
 /**
  * Table to display files of a folder.
@@ -150,6 +148,7 @@ public class FilesTable extends JTable {
         public Component getTableCellRendererComponent(JTable table, Object value,
                 boolean isSelected, boolean hasFocus, int row, int column) {
             DiskItem diskItem = (DiskItem) value;
+            setBackground(row % 2 == 0 ? Color.white : ColorUtil.ODD_TABLE_ROW_COLOR);
             String myValue = "";
             if (diskItem instanceof FileInfo) {
                 FileInfo fileInfo = (FileInfo) diskItem;
