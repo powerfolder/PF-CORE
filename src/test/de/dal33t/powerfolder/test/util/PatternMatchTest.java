@@ -38,5 +38,6 @@ public class PatternMatchTest extends TestCase {
         assertTrue(PatternMatch.isMatch("c:/test/file.name", "*test*/*name"));
         assertTrue(PatternMatch.isMatch("c:/test/file.name", "c*/*/*name"));
         assertFalse(PatternMatch.isMatch("c:/test/file.name", "c*/huh/*name"));
+        assertTrue(PatternMatch.isMatch("c:/test/file.name", "c:/*.name"));
     }
 }
