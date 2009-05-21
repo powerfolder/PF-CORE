@@ -43,7 +43,7 @@ import java.util.regex.Pattern;
  *
  * Initial tests indicate a 2:1 speed improvement.
  *
- * http://en.wikipedia.org/wiki/Regular_expression
+ * http://en.wikipedia.org/wiki/Regular_expression#Lazy_quantification
  */
 public class PatternMatchBench extends Bench {
 
