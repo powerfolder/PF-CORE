@@ -79,47 +79,51 @@ public class PatternMatch {
      * <P>
      * Also, please note that the pattern check IS case-IN-sensitive!
      */
-    public static boolean isMatch(String checkString, String pattern) {
-        char patternChar;
-        int patternPos = 0;        
-        char thisChar;
-        int i, j;
+    public static boolean isMatch(String checkStringArg, String patternArg) {
 
-        for (i = 0; i < checkString.length(); i++) {
+        String checkString = checkStringArg.toLowerCase().trim();
+        String pattern = patternArg.toLowerCase().trim();
+
+        // If pattern does not contain a '*', then we can do a simple equals.
+        if (!pattern.contains("*")) {
+            return pattern.equals(checkString);
+        }
+
+        int patternPos = 0;
+
+        for (int i = 0; i < checkString.length(); i++) {
             // if we're at the end of the pattern but not the end
             // of the string, return false
-            if (patternPos >= pattern.length())
+            if (patternPos >= pattern.length()) {
                 return false;
+            }
 
             // grab the characters we'll be looking at
-            patternChar = Character.toLowerCase(pattern.charAt(patternPos));
-            thisChar = Character.toLowerCase(checkString.charAt(i));
+            char patternChar = pattern.charAt(patternPos);
+            char thisChar = checkString.charAt(i);
 
-            switch (patternChar) {
-                // check for '*', which is zero or more characters
-                case '*' :
-                    // if this is the last thing we're matching,
-                    // we have a match
-                    if (patternPos >= (pattern.length() - 1))
+            if (patternChar == '*') {
+                // if this is the last thing we're matching, we have a match
+                if (patternPos >= pattern.length() - 1) {
+                    return true;
+                }
+
+                // otherwise, do a recursive search
+                for (int j = i; j < checkString.length(); j++) {
+                    if (isMatch(checkString.substring(j), pattern
+                            .substring(patternPos + 1))) {
                         return true;
-
-                    // otherwise, do a recursive search
-                    for (j = i; j < checkString.length(); j++) {
-                        if (isMatch(checkString.substring(j), pattern
-                            .substring(patternPos + 1)))
-                            return true;
                     }
+                }
 
-                    // if we never returned from that, there is no match
-                    return false;
+                // if we never returned from that, there is no match
+                return false;
 
-                    // check for '?', which is a single character
-                
-                default :
-                    // the default condition is to do an exact character match
-                    if (thisChar != patternChar)
-                        return false;
+            }
 
+            // the default condition is to do an exact character match
+            if (thisChar != patternChar) {
+                return false;
             }
 
             // advance the patternPos before we loop again
@@ -130,17 +134,16 @@ public class PatternMatch {
         // if there's still something in the pattern string, check to
         // see if it's one or more '*' characters. If that's all it is,
         // just advance to the end
-        for (j = patternPos; j < pattern.length(); j++) {
-            if (pattern.charAt(j) != '*')
+        int k;
+        for (k = patternPos; k < pattern.length(); k++) {
+            if (pattern.charAt(k) != '*') {
                 break;
+            }
         }
-        patternPos = j;
+        patternPos = k;
 
         // at the end of all this, if we're at the end of the pattern
         // then we have a good match
-        if (patternPos == pattern.length()) {
-            return true;
-        }
-        return false;
+        return patternPos == pattern.length();
     }
 }
