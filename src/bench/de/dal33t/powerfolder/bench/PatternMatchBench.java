@@ -28,8 +28,8 @@ import java.util.Date;
 import java.util.regex.Pattern;
 
 /**
- * This is a bench test to see if we can get better performance using a DFA
- * compiled regex matcher over the existing NFA implementation.
+ * This is a bench test to see if we can get better performance using a
+ * compiled regex matcher over the existing implementation.
  *
  * The test loops 1000 times over 10 check strings over 10 patterns.
  *
@@ -43,7 +43,6 @@ import java.util.regex.Pattern;
  *
  * Initial tests indicate a 2:1 speed improvement.
  *
- * http://en.wikipedia.org/wiki/State_diagram
  * http://en.wikipedia.org/wiki/Regular_expression
  */
 public class PatternMatchBench extends Bench {
