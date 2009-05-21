@@ -30,14 +30,22 @@ public class PatternMatchTest extends TestCase {
         assertTrue(PatternMatch.isMatch("SdFgKjH", "sdfgkjh"));
         assertFalse(PatternMatch.isMatch("sdfxxxxxgkjh", "sdfgkjh"));
         assertFalse(PatternMatch.isMatch("sdfgkjh", "sdfxxxxxgkjh"));
+
         assertTrue(PatternMatch.isMatch("sdfxxxxxgkjh", "sdf*gkjh"));
         assertTrue(PatternMatch.isMatch("sdfgkjh", "sdf*gkjh"));
         assertTrue(PatternMatch.isMatch("sdfgkjh", "sdf*g*h"));
+        assertTrue(PatternMatch.isMatch("", "*"));
+        assertTrue(PatternMatch.isMatch(" ", "*"));
+
         assertTrue(PatternMatch.isMatch("c:/test/file.name", "*file*"));
         assertTrue(PatternMatch.isMatch("c:/test/file.name", "*test*"));
         assertTrue(PatternMatch.isMatch("c:/test/file.name", "*test*/*name"));
         assertTrue(PatternMatch.isMatch("c:/test/file.name", "c*/*/*name"));
         assertFalse(PatternMatch.isMatch("c:/test/file.name", "c*/huh/*name"));
         assertTrue(PatternMatch.isMatch("c:/test/file.name", "c:/*.name"));
+        assertTrue(PatternMatch.isMatch("c:/test/file.name", "c:/*"));
+        assertTrue(PatternMatch.isMatch("c:/test/file.name", "*.name"));
+
+        assertTrue(PatternMatch.isMatch("c:\\test\\file.name", "c:\\*"));
     }
 }
