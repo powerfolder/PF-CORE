@@ -369,9 +369,6 @@ public class UIController extends PFComponent {
         for (Folder folder :
                 getController().getFolderRepository().getFolders()) {
             
-            Problem problemy = new UnsynchronizedFolderProblem("Test warning");
-            folder.addProblem(problemy);
-            
             Date lastSyncDate = folder.getLastSyncDate();
             if (lastSyncDate != null) {
                 if (lastSyncDate.before(warningDate)) {
