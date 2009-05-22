@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.test.util;
 
 import junit.framework.TestCase;
 import de.dal33t.powerfolder.util.PatternMatch;
+import de.dal33t.powerfolder.util.CompilingPatternMatch;
 
 public class PatternMatchTest extends TestCase {
 
@@ -47,5 +48,31 @@ public class PatternMatchTest extends TestCase {
         assertTrue(PatternMatch.isMatch("c:/test/file.name", "*.name"));
 
         assertTrue(PatternMatch.isMatch("c:\\test\\file.name", "c:\\*"));
+    }
+
+    public void testCompiledPatterns() {
+        assertTrue(new CompilingPatternMatch("sdfgkjh").isMatch("sdfgkjh"));
+        assertTrue(new CompilingPatternMatch("sdfgkjh").isMatch("SdFgKjH"));
+        assertTrue(new CompilingPatternMatch("SdFgKjH").isMatch("sdfgkjh"));
+        assertFalse(new CompilingPatternMatch("sdfxxxxxgkjh").isMatch("sdfgkjh"));
+        assertFalse(new CompilingPatternMatch("sdfgkjh").isMatch("sdfxxxxxgkjh"));
+
+        assertTrue(new CompilingPatternMatch("sdf*gkjh").isMatch("sdfxxxxxgkjh"));
+        assertTrue(new CompilingPatternMatch("sdf*gkjh").isMatch("sdfgkjh"));
+        assertTrue(new CompilingPatternMatch("sdf*g*h").isMatch("sdfgkjh"));
+        assertTrue(new CompilingPatternMatch("*").isMatch(""));
+        assertTrue(new CompilingPatternMatch("*").isMatch(" "));
+
+        assertTrue(new CompilingPatternMatch("*file*").isMatch("c:/test/file.name"));
+        assertTrue(new CompilingPatternMatch("*test*").isMatch("c:/test/file.name"));
+        assertTrue(new CompilingPatternMatch("*test*/*name").isMatch("c:/test/file.name"));
+        assertTrue(new CompilingPatternMatch("c*/*/*name").isMatch("c:/test/file.name"));
+        assertFalse(new CompilingPatternMatch("c*/huh/*name").isMatch("c:/test/file.name"));
+        assertTrue(new CompilingPatternMatch("c:/*.name").isMatch("c:/test/file.name"));
+        assertTrue(new CompilingPatternMatch("c:/*").isMatch("c:/test/file.name"));
+        assertTrue(new CompilingPatternMatch("*.name").isMatch("c:/test/file.name"));
+
+        assertTrue(new CompilingPatternMatch("c:\\*").isMatch("c:\\test\\file.name"));
+        assertTrue(new CompilingPatternMatch("x\\~!@#$%^-&*()_+={}][:';,.<>|y").isMatch("x\\~!@#$%^-&*()_+={}][:';,.<>|y"));
     }
 }

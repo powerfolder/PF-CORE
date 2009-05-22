@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.bench;
 
 import de.dal33t.powerfolder.util.PatternMatch;
 import de.dal33t.powerfolder.util.StringUtils;
+import de.dal33t.powerfolder.util.CompilingPatternMatch;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -66,10 +67,10 @@ public class PatternMatchBench extends Bench {
             "h sdf",
             "s hj*s j",
             "hkjh as ",
-            "ye",
+            " *.ye",
             "as*dl j*lkja ",
             "iui*ajj",
-            "kj",
+            " *.exe",
             "hlksj",
             "j*j*j",
             "hlkah"
@@ -103,6 +104,7 @@ public class PatternMatchBench extends Bench {
         HashMap<String, Comparable> map = new HashMap<String, Comparable>();
         map.put("Existing implementation", doExistingRun());
         map.put("Regex implementation", doRegexRun());
+        map.put("New implementation", doNewRun());
         return map;
     }
 
@@ -112,7 +114,7 @@ public class PatternMatchBench extends Bench {
      * @return
      *          the run time in milliseconds.
      */
-    private Comparable doExistingRun() {
+    private static Comparable doExistingRun() {
 
         // Iterate test
         Date start = new Date();
@@ -135,7 +137,7 @@ public class PatternMatchBench extends Bench {
      * @return
      *          the run time in milliseconds.
      */
-    private Comparable doRegexRun() {
+    private static Comparable doRegexRun() {
 
         // Compile patterns
         Pattern[] patterns = new Pattern[PATTERN_STRINGS.length];
@@ -158,4 +160,25 @@ public class PatternMatchBench extends Bench {
         Date end = new Date();
         return end.getTime() - start.getTime();
     }
+
+    private static Comparable doNewRun() {
+        CompilingPatternMatch[] patterns = new CompilingPatternMatch[PATTERN_STRINGS.length];
+        for (int i = 0; i < PATTERN_STRINGS.length; i++) {
+            String modifiedPattern = PATTERN_STRINGS[i];
+            patterns[i] = new CompilingPatternMatch(modifiedPattern);
+        }
+
+        // Iterate test
+        Date start = new Date();
+        for (int i = 0; i < 1000; i++) {
+            for (String checkString : CHECK_STRINGS) {
+                for (CompilingPatternMatch pattern : patterns) {
+                    pattern.isMatch(checkString);
+                }
+            }
+        }
+        Date end = new Date();
+        return end.getTime() - start.getTime();
+    }
+
 }
