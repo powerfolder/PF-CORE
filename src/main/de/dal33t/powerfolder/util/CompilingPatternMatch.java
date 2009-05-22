@@ -62,7 +62,7 @@ public class CompilingPatternMatch {
                 case '.':
                 case '|':
                     // Escape metacharacters
-                    builder.append("\\").append(patternString.charAt(i));
+                    builder.append('\\').append(patternString.charAt(i));
                     break;
                 default:
                     builder.append(patternString.charAt(i));
