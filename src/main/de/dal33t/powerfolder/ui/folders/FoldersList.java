@@ -45,6 +45,8 @@ import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
+import de.dal33t.powerfolder.disk.problem.Problem;
+import de.dal33t.powerfolder.disk.problem.ProblemListener;
 import de.dal33t.powerfolder.event.ExpansionEvent;
 import de.dal33t.powerfolder.event.ExpansionListener;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
@@ -75,23 +77,26 @@ public class FoldersList extends PFUIComponent {
      * @param controller
      */
     public FoldersList(Controller controller, FoldersTab foldersTab,
-                       ValueModel folderSelectionTypeVM) {
+                       ValueModel folderSelectionTypeVM)
+    {
         super(controller);
         this.foldersTab = foldersTab;
         expansionListener = new MyExpansionListener();
 
-        folderSelectionTypeVM.addValueChangeListener(new MyPropertyChangeListener());
+        folderSelectionTypeVM
+            .addValueChangeListener(new MyPropertyChangeListener());
         folderSelectionType = (Integer) folderSelectionTypeVM.getValue();
 
         views = new CopyOnWriteArrayList<ExpandableFolderView>();
 
-        controller.getFolderRepository().getProblemCountVM()
-                .addValueChangeListener(new MyProblemListener());
+        controller.getFolderRepository().addProblemListenerToAllFolders(
+            new MyProblemListener());
         buildUI();
     }
 
     /**
      * Gets the UI component.
+     * 
      * @return
      */
     public JPanel getUIComponent() {
@@ -435,9 +440,17 @@ public class FoldersList extends PFUIComponent {
         }
     }
 
-    private class MyProblemListener implements PropertyChangeListener {
-        public void propertyChange(PropertyChangeEvent evt) {
+    private class MyProblemListener implements ProblemListener {
+        public void problemAdded(Problem problem) {
             updateProblems();
+        }
+
+        public void problemRemoved(Problem problem) {
+            updateProblems();
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return true;
         }
     }
 }
