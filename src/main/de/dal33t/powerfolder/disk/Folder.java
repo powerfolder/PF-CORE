@@ -387,10 +387,12 @@ public class Folder extends PFComponent {
     }
 
     public void addProblemListener(ProblemListener l) {
+        Reject.ifNull(l, "Listener is null");
         ListenerSupportFactory.addListener(problemListenerSupport, l);
     }
 
     public void removeProblemListener(ProblemListener l) {
+        Reject.ifNull(l, "Listener is null");
         ListenerSupportFactory.removeListener(problemListenerSupport, l);
     }
 

@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.disk;
 
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_DIR;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_DONT_RECYCLE;
+import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_DOWNLOAD_SCRIPT;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_ID;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_NAME;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX_V3;
@@ -29,9 +30,6 @@ import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREVIEW;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_RECYCLE;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_SYNC_PROFILE;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_WHITELIST;
-import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_DOWNLOAD_SCRIPT;
-import de.dal33t.powerfolder.disk.problem.ProblemListener;
-import de.dal33t.powerfolder.disk.problem.Problem;
 
 import java.io.File;
 import java.io.IOException;
@@ -47,8 +45,8 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -57,17 +55,31 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
-import de.dal33t.powerfolder.event.*;
+import de.dal33t.powerfolder.disk.problem.ProblemListener;
+import de.dal33t.powerfolder.event.FileNameProblemHandler;
+import de.dal33t.powerfolder.event.FolderEvent;
+import de.dal33t.powerfolder.event.FolderListener;
+import de.dal33t.powerfolder.event.FolderRepositoryEvent;
+import de.dal33t.powerfolder.event.FolderRepositoryListener;
+import de.dal33t.powerfolder.event.ListenerSupportFactory;
+import de.dal33t.powerfolder.event.OverallFolderStatEvent;
+import de.dal33t.powerfolder.event.OverallFolderStatListener;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.transfer.FileRequestor;
-import de.dal33t.powerfolder.util.*;
+import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.Profiling;
+import de.dal33t.powerfolder.util.ProfilingEntry;
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.StringUtils;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.Waiter;
 import de.dal33t.powerfolder.util.compare.FolderComparator;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
 import de.dal33t.powerfolder.util.ui.NeverAskAgainResponse;
 import de.dal33t.powerfolder.util.ui.UIUtil;
-import com.jgoodies.binding.value.ValueModel;
-import com.jgoodies.binding.value.ValueHolder;
 
 /**
  * Repository of all known power folders. Local and unjoined.
@@ -119,12 +131,15 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     private final OverallFolderStatListener overallFolderStatListenerSupport;
 
-    private ProblemListener myProblemListener;
-    private final ValueModel problemCountVM;
+    /**
+     * Registered to ALL folders to deligate problem event of any folder to
+     * registered listeners.
+     */
+    private ProblemListener valveProblemListenerSupport;
 
     /**
      * Constructor
-     *
+     * 
      * @param controller
      */
     public FolderRepository(Controller controller) {
@@ -147,19 +162,10 @@ public class FolderRepository extends PFComponent implements Runnable {
         overallFolderStatListenerSupport = ListenerSupportFactory
             .createListenerSupport(OverallFolderStatListener.class);
 
-        problemCountVM = new ValueHolder(0);
-        myProblemListener = new MyProblemListener();
+        valveProblemListenerSupport = ListenerSupportFactory
+            .createListenerSupport(ProblemListener.class);
     }
-
-    /**
-     * Value model giving a count of all problems in all managed folders.
-     *
-     * @return
-     */
-    public ValueModel getProblemCountVM() {
-        return problemCountVM;
-    }
-
+    
     public void addOverallFolderStatListener(OverallFolderStatListener listener) {
         ListenerSupportFactory.addListener(overallFolderStatListenerSupport,
             listener);
@@ -167,6 +173,16 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     public void removeOverallFolderStatListener(OverallFolderStatListener listener) {
         ListenerSupportFactory.removeListener(overallFolderStatListenerSupport,
+            listener);
+    }
+
+    public void addProblemListenerToAllFolders(ProblemListener listener) {
+        ListenerSupportFactory.addListener(valveProblemListenerSupport,
+            listener);
+    }
+
+    public void removeProblemListenerFromAllFolders(ProblemListener listener) {
+        ListenerSupportFactory.removeListener(valveProblemListenerSupport,
             listener);
     }
 
@@ -763,7 +779,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
         
         folder.addFolderListener(folderListener);
-        folder.addProblemListener(myProblemListener);
+        folder.addProblemListener(valveProblemListenerSupport);
         folders.put(folder.getInfo(), folder);
         saveFolderConfig(folderInfo, folderSettings, saveConfig);
 
@@ -863,7 +879,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         // Remove internal
         folders.remove(folder.getInfo());
         folder.removeFolderListener(folderListener);
-        folder.removeProblemListener(myProblemListener);
+        folder.removeProblemListener(valveProblemListenerSupport);
 
         // Break transfers
         getController().getTransferManager().breakTransfers(folder.getInfo());
@@ -1106,27 +1122,14 @@ public class FolderRepository extends PFComponent implements Runnable {
         return allSyncOrEstimatedDate;
     }
 
-    /**
-     * Sum all problems in all folders.
-     */
-    private void recalculateAllProblemsCount() {
-        int count = 0;
-        for (Folder folder : getFolders()) {
-            count += folder.countProblems();
-        }
-        problemCountVM.setValue(count);
-    }
-
     // Event support **********************************************************
 
     private void fireFolderCreated(Folder folder) {
         folderRepositoryListenerSupport.folderCreated(new FolderRepositoryEvent(this, folder));
-        recalculateAllProblemsCount();
     }
 
     private void fireFolderRemoved(Folder folder) {
         folderRepositoryListenerSupport.folderRemoved(new FolderRepositoryEvent(this, folder));
-        recalculateAllProblemsCount();
     }
 
     private void fireMaintanceStarted(Folder folder) {
@@ -1283,21 +1286,6 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
 
         public void filesDeleted(FolderEvent folderEvent) {
-        }
-
-        public boolean fireInEventDispatchThread() {
-            return true;
-        }
-    }
-
-    private class MyProblemListener implements ProblemListener {
-
-        public void problemAdded(Problem problem) {
-            recalculateAllProblemsCount();
-        }
-
-        public void problemRemoved(Problem problem) {
-            recalculateAllProblemsCount();
         }
 
         public boolean fireInEventDispatchThread() {

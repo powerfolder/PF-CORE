@@ -364,9 +364,14 @@ public class UIController extends PFComponent {
         cal.add(Calendar.DATE, -syncWarnDays);
         Date warningDate = cal.getTime();
 
+       
         // Add problems for any offending folders.
         for (Folder folder :
                 getController().getFolderRepository().getFolders()) {
+            
+            Problem problemy = new UnsynchronizedFolderProblem("Test warning");
+            folder.addProblem(problemy);
+            
             Date lastSyncDate = folder.getLastSyncDate();
             if (lastSyncDate != null) {
                 if (lastSyncDate.before(warningDate)) {

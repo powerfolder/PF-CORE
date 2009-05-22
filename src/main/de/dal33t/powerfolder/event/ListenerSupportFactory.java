@@ -311,7 +311,15 @@ public class ListenerSupportFactory {
                 && listenersNotInDispatchThread.isEmpty())
             {
                 // No listeners, skip
-                return null;
+                return false;
+            }
+            
+            if (method.getName().equals("fireInEventDispatchThread")) {
+                // Uhh we are getting registered somewhere else and
+                // the other ListenerSupport is asking us about
+                // EDT. Better stay away from the AWT. Let our listeners
+                // decide were they want to be executed!
+                return false;
             }
 
             // Create runner
@@ -397,7 +405,7 @@ public class ListenerSupportFactory {
                     }
                 }
             }
-            return null;
+            return false;
 
         }
 
