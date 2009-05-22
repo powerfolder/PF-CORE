@@ -1,25 +1,27 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.ui.render;
 
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.disk.problem.Problem;
+import de.dal33t.powerfolder.disk.problem.ProblemListener;
 import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.MainTabbedPane;
@@ -37,9 +39,9 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 
 /**
- * Manages the blinking of tab icons in main tabs. Flash every second if
- * tab not showing and (message, invitation, friendship or warning detected).
- *
+ * Manages the blinking of tab icons in main tabs. Flash every second if tab not
+ * showing and (message, invitation, friendship or warning detected).
+ * 
  * @author <a href="mailto:harry@powerfolder.com">Harry Glasgow</a>
  * @version $Revision: 4.0 $
  */
@@ -54,7 +56,7 @@ public class MainFrameBlinkManager extends PFUIComponent {
 
     /**
      * Create a Blink Manager for the mainframe tabs
-     *
+     * 
      * @param uiController
      *            the UIController
      */
@@ -63,21 +65,21 @@ public class MainFrameBlinkManager extends PFUIComponent {
         this.uiController = uiController;
         MyTimerTask task = new MyTimerTask();
         getController().scheduleAndRepeat(task, 1000);
-        uiController.getApplicationModel().getChatModel()
-                .addChatModelListener(new MyChatModelListener());
+        uiController.getApplicationModel().getChatModel().addChatModelListener(
+            new MyChatModelListener());
         uiController.getApplicationModel().getWarningsModel()
-                .getWarningsCountVM().addValueChangeListener(
+            .getWarningsCountVM().addValueChangeListener(
                 new MyWarningsCountListener());
         uiController.getApplicationModel().getReceivedInvitationsModel()
-                .getReceivedInvitationsCountVM().addValueChangeListener(
+            .getReceivedInvitationsCountVM().addValueChangeListener(
                 new MyInvitationsCountListener());
         uiController.getApplicationModel().getReceivedAskedForFriendshipModel()
-                .getReceivedAskForFriendshipCountVM().addValueChangeListener(
+            .getReceivedAskForFriendshipCountVM().addValueChangeListener(
                 new MyFriendshipCountListener());
         uiController.getMainFrame().addTabbedPaneChangeListener(
-                new MyMainTabChangeListener());
-        uiController.getController().getFolderRepository().getProblemCountVM()
-                .addValueChangeListener(new MyProblemListener());
+            new MyMainTabChangeListener());
+        uiController.getController().getFolderRepository().addProblemListenerToAllFolders(
+            new MyProblemListener());
     }
 
     /**
@@ -109,7 +111,7 @@ public class MainFrameBlinkManager extends PFUIComponent {
 
     /**
      * Sets the home icon flashing.
-     *
+     * 
      * @param flash
      */
     private void flashHomeTabIcon(boolean flash) {
@@ -118,7 +120,7 @@ public class MainFrameBlinkManager extends PFUIComponent {
 
     /**
      * Sets the folder icon flashing.
-     *
+     * 
      * @param flash
      */
     private void flashFolderTabIcon(boolean flash) {
@@ -127,7 +129,7 @@ public class MainFrameBlinkManager extends PFUIComponent {
 
     /**
      * Sets the home icon flashing.
-     *
+     * 
      * @param flash
      */
     private void flashMemberTabIcon(boolean flash) {
@@ -147,8 +149,9 @@ public class MainFrameBlinkManager extends PFUIComponent {
 
             // Ignore status updates or if member tab selected
             // or if chat frame visible.
-            if (event.isStatus() || uiController.chatFrameVisible() ||
-                    selectedMainTab.get() == MainTabbedPane.COMPUTERS_INDEX) {
+            if (event.isStatus() || uiController.chatFrameVisible()
+                || selectedMainTab.get() == MainTabbedPane.COMPUTERS_INDEX)
+            {
                 return;
             }
             flashMemberTabIcon(true);
@@ -181,10 +184,11 @@ public class MainFrameBlinkManager extends PFUIComponent {
         public void propertyChange(PropertyChangeEvent evt) {
 
             Integer count = (Integer) uiController.getApplicationModel()
-                    .getWarningsModel().getWarningsCountVM().getValue();
+                .getWarningsModel().getWarningsCountVM().getValue();
 
-            if (count == null || count == 0 ||
-                    selectedMainTab.get() == MainTabbedPane.HOME_INDEX) {
+            if (count == null || count == 0
+                || selectedMainTab.get() == MainTabbedPane.HOME_INDEX)
+            {
                 return;
             }
 
@@ -201,11 +205,12 @@ public class MainFrameBlinkManager extends PFUIComponent {
         public void propertyChange(PropertyChangeEvent evt) {
 
             Integer count = (Integer) uiController.getApplicationModel()
-                    .getReceivedInvitationsModel()
-                    .getReceivedInvitationsCountVM().getValue();
+                .getReceivedInvitationsModel().getReceivedInvitationsCountVM()
+                .getValue();
 
-            if (count == null || count == 0 ||
-                    selectedMainTab.get() == MainTabbedPane.HOME_INDEX) {
+            if (count == null || count == 0
+                || selectedMainTab.get() == MainTabbedPane.HOME_INDEX)
+            {
                 return;
             }
 
@@ -222,11 +227,12 @@ public class MainFrameBlinkManager extends PFUIComponent {
         public void propertyChange(PropertyChangeEvent evt) {
 
             Integer count = (Integer) uiController.getApplicationModel()
-                    .getReceivedAskedForFriendshipModel()
-                    .getReceivedAskForFriendshipCountVM().getValue();
+                .getReceivedAskedForFriendshipModel()
+                .getReceivedAskForFriendshipCountVM().getValue();
 
-            if (count == null || count == 0 ||
-                    selectedMainTab.get() == MainTabbedPane.HOME_INDEX) {
+            if (count == null || count == 0
+                || selectedMainTab.get() == MainTabbedPane.HOME_INDEX)
+            {
                 return;
             }
 
@@ -238,20 +244,23 @@ public class MainFrameBlinkManager extends PFUIComponent {
     /**
      * Listen to added folder problems.
      */
-    private class MyProblemListener implements PropertyChangeListener {
+    private class MyProblemListener implements ProblemListener {
 
-        public void propertyChange(PropertyChangeEvent evt) {
-
-            int oldV = (Integer) evt.getOldValue();
-            int newV = (Integer) evt.getNewValue();
-            if (newV > oldV) {
-                if (selectedMainTab.get() == MainTabbedPane.FOLDERS_INDEX) {
-                    return;
-                }
-
-                flashFolderTabIcon(true);
-                update();
+        public void problemAdded(Problem problem) {
+            if (selectedMainTab.get() == MainTabbedPane.FOLDERS_INDEX) {
+                return;
             }
+
+            flashFolderTabIcon(true);
+            update();
+        }
+
+        public void problemRemoved(Problem problem) {
+            // Do nothing
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return true;
         }
     }
 
@@ -262,7 +271,7 @@ public class MainFrameBlinkManager extends PFUIComponent {
         public void stateChanged(ChangeEvent e) {
 
             selectedMainTab.set(uiController.getMainFrame()
-                    .getSelectedMainTabIndex());
+                .getSelectedMainTabIndex());
 
             if (selectedMainTab.get() == MainTabbedPane.HOME_INDEX) {
                 flashHomeTabIcon(false);
@@ -270,7 +279,8 @@ public class MainFrameBlinkManager extends PFUIComponent {
             } else if (selectedMainTab.get() == MainTabbedPane.FOLDERS_INDEX) {
                 flashFolderTabIcon(false);
                 update();
-            } else if (selectedMainTab.get() == MainTabbedPane.COMPUTERS_INDEX) {
+            } else if (selectedMainTab.get() == MainTabbedPane.COMPUTERS_INDEX)
+            {
                 flashMemberTabIcon(false);
                 update();
             }
