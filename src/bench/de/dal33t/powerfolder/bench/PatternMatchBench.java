@@ -38,9 +38,6 @@ import java.util.regex.Pattern;
  *
  * The second run pre-compiles the patterns, then tests with those.
  * Note that the compile time is not included in the run time.
- * Also the regex pattrn has '*' characters replaced with '.*?', which (I
- * believe) is a general non-greedy quantifier. Other regex symbols will need
- * to be escaped in the final implementation.
  *
  * Initial tests indicate a 2:1 speed improvement.
  *
