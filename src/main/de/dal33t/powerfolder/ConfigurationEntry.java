@@ -88,7 +88,7 @@ public enum ConfigurationEntry {
      */
     PROVIDER_ABOUT_URL(
         "provider.url.about",
-        "http://www.powerfolder.com/online_storage_features.html?utm_source=client&utm_medium=client&utm_campaign=Client"),
+        "http://www.powerfolder.com/wiki/Online_Storage?utm_source=client&utm_medium=client&utm_campaign=Client"),
 
     /**
      * Quickstart guides to PowerFolder
@@ -115,7 +115,7 @@ public enum ConfigurationEntry {
      * URL of the PowerFolder Pro page
      */
     PROVIDER_BUY_URL("provider.url.buy",
-        "http://www.powerfolder.com/buynow.html?utm_source=client&utm_medium=client&utm_campaign=Client"),
+        "http://www.powerfolder.com/buy_business.html?utm_source=client&utm_medium=client&utm_campaign=Client"),
 
     /**
      * URL where the contact form resides
