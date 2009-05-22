@@ -67,10 +67,10 @@ public class PatternMatchBench extends Bench {
             "h sdf",
             "s hj*s j",
             "hkjh as ",
-            " *.ye",
+            "*.ye",
             "as*dl j*lkja ",
             "iui*ajj",
-            " *.exe",
+            "*.exe",
             "hlksj",
             "j*j*j",
             "hlkah"
@@ -103,7 +103,6 @@ public class PatternMatchBench extends Bench {
     protected Map<String, Comparable> getResults() {
         HashMap<String, Comparable> map = new HashMap<String, Comparable>();
         map.put("Existing implementation", doExistingRun());
-        map.put("Regex implementation", doRegexRun());
         map.put("New implementation", doNewRun());
         return map;
     }
@@ -122,38 +121,6 @@ public class PatternMatchBench extends Bench {
             for (String checkString : CHECK_STRINGS) {
                 for (String patternString : PATTERN_STRINGS) {
                     PatternMatch.isMatch(checkString, patternString);
-                }
-            }
-        }
-        Date end = new Date();
-        return end.getTime() - start.getTime();
-    }
-
-    /**
-     * Compile Patterns, the test by iterating the check strings
-     * and the patterns and do matching. Compile time is not included in the
-     * results.
-     *
-     * @return
-     *          the run time in milliseconds.
-     */
-    private static Comparable doRegexRun() {
-
-        // Compile patterns
-        Pattern[] patterns = new Pattern[PATTERN_STRINGS.length];
-        for (int i = 0; i < PATTERN_STRINGS.length; i++) {
-            String modifiedPattern = PATTERN_STRINGS[i];
-            // Replace '*' with a general regex non-greedy quantifier.
-            modifiedPattern = StringUtils.replace(modifiedPattern, "*", ".*?");
-            patterns[i] = Pattern.compile(modifiedPattern);
-        }
-
-        // Iterate test
-        Date start = new Date();
-        for (int i = 0; i < 1000; i++) {
-            for (String checkString : CHECK_STRINGS) {
-                for (Pattern pattern : patterns) {
-                    pattern.matcher(checkString).matches();
                 }
             }
         }
