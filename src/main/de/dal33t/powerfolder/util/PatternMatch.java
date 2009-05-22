@@ -45,20 +45,9 @@ package de.dal33t.powerfolder.util;
  * @author Julian Robichaux
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version 1.00
+ * @deprecated use CompilingPatternMatch - faster - see PatternMatchBench.
  */
 public class PatternMatch {
-    /**
-     * The main method has been provided to allow you to test the class, and to
-     * give you an example of calling the isMatch method.
-     */
-    public static void main(String[] args) {
-        if (args.length < 2) {
-            System.out.println("Usage: PatternMatch <string> <pattern>\n");
-            return;
-        }        
-        System.out.println(PatternMatch.isMatch(args[0], args[1]));
-
-    }
 
     /**
      * Returns a boolean value indicating whether or not checkString matches the

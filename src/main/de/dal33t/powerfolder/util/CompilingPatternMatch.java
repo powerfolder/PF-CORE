@@ -20,6 +20,8 @@
 package de.dal33t.powerfolder.util;
 
 import java.util.regex.Pattern;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 /**
  * Compiling pattern matcher that uses regex Pattern to match '*' characters
@@ -27,10 +29,17 @@ import java.util.regex.Pattern;
  */
 public class CompilingPatternMatch {
 
+    private static final Logger log = Logger.getLogger(CompilingPatternMatch.class.getName());
+
     /**
      * True if pattern ends with '*'.
      */
-    private Pattern pattern;
+    private final Pattern pattern;
+
+    /**
+     * Original pattern text.
+     */
+    private final String patternText;
 
     /**
      * Constructor.
@@ -71,6 +80,11 @@ public class CompilingPatternMatch {
 
         // Match it
         pattern = Pattern.compile(builder.toString());
+
+        patternText = patternStringArg;
+
+        // Do a test now. Better now than when checking a file name...
+        pattern.matcher("24y98&TB(*&^#8tqi875tnc8i7t86O*&VTB#87q43").matches();
     }
 
     /**
@@ -80,7 +94,36 @@ public class CompilingPatternMatch {
      * @return
      */
     public boolean isMatch(String matchStringArg) {
-        return pattern.matcher(matchStringArg.toLowerCase().trim()).matches();
+        try {
+            return pattern.matcher(matchStringArg.toLowerCase().trim()).matches();
+        } catch (Exception e) {
+            log.log(Level.SEVERE, "Pattern match problem "
+                    + (pattern == null ? "null" : pattern.pattern()), e);
+            return false;
+        }
     }
 
+    public String getPatternText() {
+        return patternText;
+    }
+
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
+
+        CompilingPatternMatch that = (CompilingPatternMatch) obj;
+
+        return !(patternText != null
+                ? !patternText.equals(that.patternText) 
+                : that.patternText != null);
+
+    }
+
+    public int hashCode() {
+        return patternText != null ? patternText.hashCode() : 0;
+    }
 }

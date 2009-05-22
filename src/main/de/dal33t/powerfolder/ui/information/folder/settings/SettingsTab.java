@@ -29,9 +29,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
+import java.util.List;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -77,13 +77,7 @@ import de.dal33t.powerfolder.ui.dialog.PreviewToJoinPanel;
 import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
-import de.dal33t.powerfolder.util.FileUtils;
-import de.dal33t.powerfolder.util.Help;
-import de.dal33t.powerfolder.util.PatternMatch;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.StringUtils;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
 import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
@@ -394,7 +388,7 @@ public class SettingsTab extends PFUIComponent {
      */
     public void removePatterns(String patterns) {
 
-        String[] options = new String[]{
+        String[] options = {
             Translation.getTranslation("remove_pattern.remove"),
             Translation.getTranslation("remove_pattern.dont"),
             Translation.getTranslation("general.cancel")};
@@ -404,18 +398,17 @@ public class SettingsTab extends PFUIComponent {
             String pattern = st.nextToken();
 
             // Match any patterns for this file.
+            CompilingPatternMatch patternMatch = new CompilingPatternMatch(pattern);
             for (String blackListPattern :
                     folder.getDiskItemFilter().getPatterns()) {
-                if (PatternMatch.isMatch(pattern.toLowerCase(),
-                        blackListPattern)) {
+                if (patternMatch.isMatch(blackListPattern)) {
 
                     // Confirm that the user wants to remove this.
                     int result = DialogFactory.genericDialog(getController(),
                             Translation.getTranslation("remove_pattern.title"),
                             Translation.getTranslation("remove_pattern.prompt",
-                                    pattern), options, 0, GenericDialogType.INFO); // Default
-                    // is
-                    // remove.
+                                    pattern), options, 0, GenericDialogType.INFO);
+                    // Default is remove.
                     if (result == 0) { // Remove
                         // Remove pattern and update.
                         folder.getDiskItemFilter().removePattern(blackListPattern);

@@ -24,13 +24,11 @@ import de.dal33t.powerfolder.event.PatternChangeListener;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.event.PatternChangedEvent;
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.util.PatternMatch;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.CompilingPatternMatch;
 
 import java.io.*;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -63,7 +61,8 @@ public class DiskItemFilter {
     /**
      * The patterns that will be used to match DiskItems with.
      */
-    private final List<String> patterns = new CopyOnWriteArrayList<String>();
+    private final List<CompilingPatternMatch> patterns =
+            new CopyOnWriteArrayList<CompilingPatternMatch>();
 
     /**
      * Whether the pattens have been modified since the last save.
@@ -141,8 +140,8 @@ public class DiskItemFilter {
         try {
             file.createNewFile();
             writer = new FileWriter(file);
-            for (String pattern : patterns) {
-                writer.write(pattern + "\r\n");
+            for (CompilingPatternMatch pattern : patterns) {
+                writer.write(pattern.getPatternText() + "\r\n");
             }
             dirty = false;
         } catch (IOException e) {
@@ -168,19 +167,21 @@ public class DiskItemFilter {
      *
      * @param pattern
      */
-    public void addPattern(String pattern) {
-        Reject.ifBlank(pattern, "Pattern is blank");
+    public void addPattern(String patternText) {
+        Reject.ifBlank(patternText, "Pattern is blank");
+        CompilingPatternMatch pattern =
+                new CompilingPatternMatch(patternText.toLowerCase());
         if (patterns.contains(pattern)) {
             // Already contained
             return;
         }
         try {
-            patterns.add(pattern.toLowerCase());
+            patterns.add(pattern);
             listenerSupport.patternAdded(
-                    new PatternChangedEvent(this, pattern, true));
+                    new PatternChangedEvent(this, patternText, true));
         } catch (PatternSyntaxException e) {
             log.log(Level.SEVERE,
-                    "Problem adding pattern " + pattern, e);
+                    "Problem adding pattern " + pattern.getPatternText(), e);
         }
         dirty = true;
     }
@@ -191,12 +192,16 @@ public class DiskItemFilter {
      * NOTE: This should probably be called through the Folder.removePattern method,
      * so that the folder becomes dirty and persists the change.
      *
-     * @param pattern
+     * @param patternText
      */
-    public void removePattern(String pattern) {
-        patterns.remove(pattern.toLowerCase());
+    public void removePattern(String patternText) {
+        for (CompilingPatternMatch patternMatch : patterns) {
+            if (patternMatch.getPatternText().equals(patternText.toLowerCase())) {
+                patterns.remove(patternMatch);
+            }
+        }
         listenerSupport.patternRemoved(
-                new PatternChangedEvent(this, pattern, false));
+                new PatternChangedEvent(this, patternText, false));
         dirty = true;
     }
 
@@ -230,16 +235,16 @@ public class DiskItemFilter {
             Directory dir = (Directory) diskItem;
             String dirName = dir.getName() + "/*";
 
-            for (String pattern : patterns) {
-                if (PatternMatch.isMatch(dirName, pattern)) {
+            for (CompilingPatternMatch pattern : patterns) {
+                if (pattern.isMatch(dirName)) {
                     return true;
                 }
             }
         } else if (diskItem instanceof FileInfo) {
             String name = ((FileInfo) diskItem).getName();
 
-            for (String pattern : patterns) {
-                if (PatternMatch.isMatch(name, pattern)) {
+            for (CompilingPatternMatch pattern : patterns) {
+                if (pattern.isMatch(name)) {
                     return true;
                 }
             }
@@ -255,7 +260,11 @@ public class DiskItemFilter {
      *         that should be ignored
      */
     public List<String> getPatterns() {
-        return Collections.unmodifiableList(patterns);
+        List<String> result = new ArrayList<String>();
+        for (CompilingPatternMatch pattern : patterns) {
+            result.add(pattern.getPatternText());
+        }
+        return result;
     }
 
     /**
