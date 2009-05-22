@@ -20,13 +20,11 @@
 package de.dal33t.powerfolder.bench;
 
 import de.dal33t.powerfolder.util.PatternMatch;
-import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.CompilingPatternMatch;
 
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Date;
-import java.util.regex.Pattern;
 
 /**
  * This is a bench test to see if we can get better performance using a
@@ -40,8 +38,6 @@ import java.util.regex.Pattern;
  * Note that the compile time is not included in the run time.
  *
  * Initial tests indicate a 2:1 speed improvement.
- *
- * http://en.wikipedia.org/wiki/Regular_expression#Lazy_quantification
  */
 public class PatternMatchBench extends Bench {
 
@@ -144,5 +140,5 @@ public class PatternMatchBench extends Bench {
         Date end = new Date();
         return end.getTime() - start.getTime();
     }
-
+    
 }
