@@ -52,7 +52,8 @@ public class PatternMatchBench extends Bench {
             "jhiu  ads bnbkajhsbf kh",
             "akjkhlkjbxkjhgad fkh as",
             "jjjjjjjjjjjjjjjjjjjjjjj",
-            "  lkjhk   kj    jkk h  "
+            "  lkjhk   kj    jkk h  ",
+            "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab"
     };
 
     /** Ten patterns, some with '*' characters */
@@ -66,7 +67,8 @@ public class PatternMatchBench extends Bench {
             "*.exe",
             "hlksj",
             "j*j*j",
-            "hlkah"
+            "hlkah",
+            "a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a"
     };
 
     /**
