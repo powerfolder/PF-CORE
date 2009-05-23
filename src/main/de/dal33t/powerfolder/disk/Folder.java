@@ -1411,7 +1411,7 @@ public class Folder extends PFComponent {
                         }
                     }
                 } catch (EOFException e) {
-                    logFine("ignore nothing for " + this);
+                    logFiner("Ignore nothing for " + this);
                 } catch (Exception e) {
                     logSevere("read ignore error: " + this + e.getMessage(), e);
                 }
