@@ -913,7 +913,7 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
         }
 
         public void actionPerformed(ActionEvent e) {
-            // todo display the problems
+            getController().getUIController().openProblemsInformation(folderInfo);
         }
     }
 

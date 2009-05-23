@@ -30,6 +30,8 @@ import javax.swing.plaf.RootPaneUI;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.MagneticFrame;
+import de.dal33t.powerfolder.event.FolderRepositoryListener;
+import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.UIController;
@@ -51,6 +53,9 @@ public class InformationFrame extends MagneticFrame {
     private UploadsInformationCard uploadsInformationCard;
     private DebugInformationCard debugInformationCard;
 
+    private boolean showingFolder;
+    private FolderInfo currentFolderInfo;
+
     /**
      * Constructor
      *
@@ -58,6 +63,8 @@ public class InformationFrame extends MagneticFrame {
      */
     public InformationFrame(Controller controller) {
         super(controller);
+        controller.getFolderRepository().addFolderRepositoryListener(
+                new MyFolderRepositoryListener());
     }
 
     /**
@@ -161,6 +168,8 @@ public class InformationFrame extends MagneticFrame {
         folderInformationCard.setFolderInfo(folderInfo, directoryFilterMode);
         folderInformationCard.showFiles();
         displayCard(folderInformationCard);
+        showingFolder = true;
+        currentFolderInfo = folderInfo;
     }
 
     /**
@@ -174,6 +183,8 @@ public class InformationFrame extends MagneticFrame {
         folderInformationCard.setFolderInfoLatest(folderInfo);
         folderInformationCard.showFiles();
         displayCard(folderInformationCard);
+        showingFolder = true;
+        currentFolderInfo = folderInfo;
     }
 
     /**
@@ -186,6 +197,8 @@ public class InformationFrame extends MagneticFrame {
         folderInformationCard.setFolderInfo(folderInfo, Integer.MIN_VALUE);
         folderInformationCard.showSettings();
         displayCard(folderInformationCard);
+        showingFolder = true;
+        currentFolderInfo = folderInfo;
     }
 
     /**
@@ -198,21 +211,40 @@ public class InformationFrame extends MagneticFrame {
         folderInformationCard.setFolderInfo(folderInfo, Integer.MIN_VALUE);
         folderInformationCard.showMembers();
         displayCard(folderInformationCard);
+        showingFolder = true;
+        currentFolderInfo = folderInfo;
+    }
+
+    /**
+     * Displays folder problems
+     *
+     * @param folderInfo
+     */
+    public void displayFolderProblems(FolderInfo folderInfo) {
+        buildFolderInformationCard();
+        folderInformationCard.setFolderInfo(folderInfo, Integer.MIN_VALUE);
+        folderInformationCard.showProblems();
+        displayCard(folderInformationCard);
+        showingFolder = true;
+        currentFolderInfo = folderInfo;
     }
 
     public void displayDownloads() {
         buildDownloadsInformationCard();
         displayCard(downloadsInformationCard);
+        showingFolder = false;
     }
 
     public void displayUploads() {
         buildUploadsInformationCard();
         displayCard(uploadsInformationCard);
+        showingFolder = false;
     }
     
     public void displayDebug() {
     	buildDebugInformationCard();
         displayCard(debugInformationCard);
+        showingFolder = false;
     }
     
     /**
@@ -260,6 +292,41 @@ public class InformationFrame extends MagneticFrame {
     private void buildDebugInformationCard() {
         if (debugInformationCard == null) {
         	debugInformationCard = new DebugInformationCard(getController());
+        }
+    }
+
+    /**
+     * Fires when a folder is removed. Hide this if showing the folder.
+     *
+     * @param folderInfo
+     */
+    private void removedFolder(FolderInfo folderInfo) {
+        if (showingFolder && currentFolderInfo != null
+                && currentFolderInfo.equals(folderInfo)) {
+            getUIComponent().setVisible(false);
+        }
+    }
+
+    private class MyFolderRepositoryListener implements FolderRepositoryListener {
+
+        public void folderRemoved(FolderRepositoryEvent e) {
+            removedFolder(e.getFolderInfo());
+        }
+
+        public void folderCreated(FolderRepositoryEvent e) {
+            // Don't care.
+        }
+
+        public void maintenanceStarted(FolderRepositoryEvent e) {
+            // Don't care.
+        }
+
+        public void maintenanceFinished(FolderRepositoryEvent e) {
+            // Don't care.
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return true;
         }
     }
 }

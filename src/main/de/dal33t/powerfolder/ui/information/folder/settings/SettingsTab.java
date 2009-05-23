@@ -866,10 +866,6 @@ public class SettingsTab extends PFUIComponent {
 
                     // Convert folder to preview.
                     FolderPreviewHelper.convertFolderToPreview(getController(), folder);
-
-                    // So this folder no longer actually exists, so we need to
-                    // close the information frame.
-                    getController().getUIController().closeInformationFrame();
                 }
             } else {
 

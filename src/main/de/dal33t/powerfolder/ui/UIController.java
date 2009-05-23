@@ -363,7 +363,6 @@ public class UIController extends PFComponent {
         Calendar cal = new GregorianCalendar();
         cal.add(Calendar.DATE, -syncWarnDays);
         Date warningDate = cal.getTime();
-
        
         // Add problems for any offending folders.
         for (Folder folder :
@@ -805,13 +804,24 @@ public class UIController extends PFComponent {
     }
 
     /**
-     * Opens the Memberss information for a folder.
+     * Opens the Members information for a folder.
      *
      * @param folderInfo info of the folder to display member computer
      * information for.
      */
     public void openMembersInformation(FolderInfo folderInfo) {
         informationFrame.displayFolderMembers(folderInfo);
+        displayInformationWindow();
+    }
+
+    /**
+     * Opens the Problems information for a folder.
+     *
+     * @param folderInfo info of the folder to display problems
+     * information for.
+     */
+    public void openProblemsInformation(FolderInfo folderInfo) {
+        informationFrame.displayFolderProblems(folderInfo);
         displayInformationWindow();
     }
 
@@ -876,10 +886,6 @@ public class UIController extends PFComponent {
             getController().getFolderRepository().getFileRequestor()
                 .triggerFileRequesting(folderInfo);
         }
-    }
-
-    public void closeInformationFrame() {
-        informationFrame.getUIComponent().setVisible(false);
     }
 
     /**

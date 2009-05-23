@@ -866,6 +866,9 @@ public class FolderRepository extends PFComponent implements Runnable {
         // Remove the desktop shortcut
         folder.removeDesktopShortcut();
 
+        // Detach any problem listeners.
+        folder.clearAllProblemListeners();
+
         // Remove desktop ini if it exists
         FileUtils.deleteDesktopIni(folder.getLocalBase());
 

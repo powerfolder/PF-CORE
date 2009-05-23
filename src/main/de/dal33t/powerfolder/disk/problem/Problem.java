@@ -23,4 +23,5 @@ package de.dal33t.powerfolder.disk.problem;
  * Base of folder problems.
  */
 public interface Problem {
+    String getMessage();
 }

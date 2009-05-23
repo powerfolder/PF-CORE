@@ -60,9 +60,8 @@ public class FolderRemovePanel extends BaseDialog {
     /**
      * Contructor when used on choosen folder
      * 
-     * @param action
      * @param controller
-     * @param foInfo
+     * @param folder
      */
     public FolderRemovePanel(Controller controller, Folder folder) {
         super(controller, true);
@@ -228,9 +227,6 @@ public class FolderRemovePanel extends BaseDialog {
 
         // Dispose before closing parent frame.
         close();
-
-        // Folder is gone. Close the information frame 
-        getUIController().closeInformationFrame();
     }
 
     ///////////////////

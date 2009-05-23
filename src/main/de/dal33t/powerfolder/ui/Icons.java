@@ -103,6 +103,7 @@ public class Icons {
 
     public static final String CHAT = "chat.icon";
     public static final String SETTINGS = "settings.icon";
+    public static final String PROBLEMS = "problems.icon";
     public static final String ADVANCED = "advanced.icon";
     public static final String INFORMATION = "information.icon";
     public static final String COMPUTER = "computer.icon";

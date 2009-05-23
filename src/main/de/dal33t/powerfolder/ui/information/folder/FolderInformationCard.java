@@ -26,6 +26,7 @@ import de.dal33t.powerfolder.ui.information.InformationCard;
 import de.dal33t.powerfolder.ui.information.folder.files.FilesTab;
 import de.dal33t.powerfolder.ui.information.folder.members.MembersTab;
 import de.dal33t.powerfolder.ui.information.folder.settings.SettingsTab;
+import de.dal33t.powerfolder.ui.information.folder.problems.ProblemsTab;
 import de.dal33t.powerfolder.util.Translation;
 
 import javax.swing.*;
@@ -39,12 +40,14 @@ public class FolderInformationCard extends InformationCard {
     private static final int TAB_FILES = 0;
     private static final int TAB_MEMBERS = 1;
     private static final int TAB_SETTIGNS = 2;
+    private static final int TAB_PROBLEMS = 3;
 
     private FolderInfo folderInfo;
     private JTabbedPane tabbedPane;
-    private SettingsTab settingsTab;
-    private MembersTab membersTab;
     private FilesTab filesTab;
+    private MembersTab membersTab;
+    private SettingsTab settingsTab;
+    private ProblemsTab problemsTab;
 
     /**
      * Constructor
@@ -53,9 +56,10 @@ public class FolderInformationCard extends InformationCard {
      */
     public FolderInformationCard(Controller controller) {
         super(controller);
-        settingsTab = new SettingsTab(getController());
-        membersTab = new MembersTab(getController());
         filesTab = new FilesTab(getController());
+        membersTab = new MembersTab(getController());
+        settingsTab = new SettingsTab(getController());
+        problemsTab = new ProblemsTab(getController());
     }
 
     /**
@@ -66,22 +70,24 @@ public class FolderInformationCard extends InformationCard {
      */
     public void setFolderInfo(FolderInfo folderInfo, int directoryFilterMode) {
         this.folderInfo = folderInfo;
-        settingsTab.setFolderInfo(folderInfo);
-        membersTab.setFolderInfo(folderInfo);
         filesTab.setFolderInfo(folderInfo, directoryFilterMode);
+        membersTab.setFolderInfo(folderInfo);
+        settingsTab.setFolderInfo(folderInfo);
+        problemsTab.setFolderInfo(folderInfo);
     }
 
     /**
-     * Sets the folder in the tabs ith local and incoming set and sort date
+     * Sets the folder in the tabs with local and incoming set and sort date
      * descending.
      *
      * @param folderInfo
      */
     public void setFolderInfoLatest(FolderInfo folderInfo) {
         this.folderInfo = folderInfo;
-        settingsTab.setFolderInfo(folderInfo);
-        membersTab.setFolderInfo(folderInfo);
         filesTab.setFolderInfoLatest(folderInfo);
+        membersTab.setFolderInfo(folderInfo);
+        settingsTab.setFolderInfo(folderInfo);
+        problemsTab.setFolderInfo(folderInfo);
     }
 
     /**
@@ -146,6 +152,13 @@ public class FolderInformationCard extends InformationCard {
         tabbedPane.setIconAt(TAB_SETTIGNS, Icons.getIconById(Icons.SETTINGS));
         tabbedPane.setToolTipTextAt(TAB_SETTIGNS, Translation.getTranslation(
                 "folder_information_card.settings.tips"));
+
+        tabbedPane.addTab(Translation.getTranslation(
+                "folder_information_card.problems.title"),
+                problemsTab.getUIComponent());
+        tabbedPane.setIconAt(TAB_PROBLEMS, Icons.getIconById(Icons.PROBLEMS));
+        tabbedPane.setToolTipTextAt(TAB_PROBLEMS, Translation.getTranslation(
+                "folder_information_card.problems.tips"));
     }
 
     /**
@@ -167,5 +180,12 @@ public class FolderInformationCard extends InformationCard {
      */
     public void showSettings() {
         ((JTabbedPane) getUIComponent()).setSelectedIndex(TAB_SETTIGNS);
+    }
+
+    /**
+     * Display the problems tab.
+     */
+    public void showProblems() {
+        ((JTabbedPane) getUIComponent()).setSelectedIndex(TAB_PROBLEMS);
     }
 }

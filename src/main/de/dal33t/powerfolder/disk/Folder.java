@@ -431,6 +431,15 @@ public class Folder extends PFComponent {
     }
 
     /**
+     * Return unmodifyable list of problems.
+     * 
+     * @return
+     */
+    public List<Problem> getProblems() {
+        return Collections.unmodifiableList(problems);
+    }
+
+    /**
      * Commits the scan results into the internal file database. Changes get
      * broadcasted to other members if necessary.
      * 
@@ -3059,6 +3068,13 @@ public class Folder extends PFComponent {
 
         FolderEvent folderEvent = new FolderEvent(this);
         folderListenerSupport.statisticsCalculated(folderEvent);
+    }
+
+    /**
+     * Call when a folder is being removed to clear any references.
+     */
+    public void clearAllProblemListeners() {
+        ListenerSupportFactory.removeAllListeners(problemListenerSupport);
     }
 
     // Inner classes **********************************************************
