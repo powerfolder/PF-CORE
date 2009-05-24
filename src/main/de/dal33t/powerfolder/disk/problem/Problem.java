@@ -19,10 +19,13 @@
 */
 package de.dal33t.powerfolder.disk.problem;
 
+import java.util.Date;
+
 /**
  * Base of folder problems.
  */
 public interface Problem {
-    String getMessage();
+    String getDescription();
     String getWikiLinkKey();
+    Date getDate();
 }

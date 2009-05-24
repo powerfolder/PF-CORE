@@ -22,18 +22,14 @@ package de.dal33t.powerfolder.ui.information.folder.problems;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.ui.UIUtil;
-import de.dal33t.powerfolder.ui.information.folder.members.MembersTable;
 import de.dal33t.powerfolder.ui.action.BaseAction;
-import de.dal33t.powerfolder.disk.problem.ProblemListener;
 import de.dal33t.powerfolder.disk.problem.Problem;
-import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FolderInfo;
 
 import javax.swing.*;
 
 import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 
@@ -50,9 +46,13 @@ public class ProblemsTab extends PFUIComponent {
     private MyClearProblemAction clearProblemAction;
 
     private FolderInfo folderInfo;
+    private ProblemsTable problemsTable;
+    private ProblemsTableModel problemsTableModel;
 
     public ProblemsTab(Controller controller) {
         super(controller);
+        problemsTableModel = new ProblemsTableModel(controller);
+        problemsTable = new ProblemsTable(problemsTableModel);
     }
 
     /**
@@ -72,10 +72,10 @@ public class ProblemsTab extends PFUIComponent {
         openProblemAction = new MyOpenProblemAction(getController());
         clearProblemAction = new MyClearProblemAction(getController());
 
-        scrollPane = new JScrollPane(new JLabel("test"));
+        scrollPane = new JScrollPane(problemsTable);
 
         // Whitestrip
-//        UIUtil.whiteStripTable(membersTable);
+        UIUtil.whiteStripTable(problemsTable);
         UIUtil.removeBorder(scrollPane);
         UIUtil.setZeroHeight(scrollPane);
     }
