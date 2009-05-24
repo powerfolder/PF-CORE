@@ -20,6 +20,9 @@
 package de.dal33t.powerfolder.ui.information.folder;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.disk.problem.ProblemListener;
+import de.dal33t.powerfolder.disk.problem.Problem;
+import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.information.InformationCard;
@@ -31,6 +34,7 @@ import de.dal33t.powerfolder.util.Translation;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.List;
 
 /**
  * Information card for a folder. Includes files, members and settings tabs.
@@ -40,7 +44,7 @@ public class FolderInformationCard extends InformationCard {
     private static final int TAB_FILES = 0;
     private static final int TAB_MEMBERS = 1;
     private static final int TAB_SETTIGNS = 2;
-    private static final int TAB_PROBLEMS = 3;
+    private static final int TAB_PROBLEMS = 3; // Must be the last tab.
 
     private FolderInfo folderInfo;
     private JTabbedPane tabbedPane;
@@ -48,6 +52,8 @@ public class FolderInformationCard extends InformationCard {
     private MembersTab membersTab;
     private SettingsTab settingsTab;
     private ProblemsTab problemsTab;
+
+    private final ProblemListener problemListener;
 
     /**
      * Constructor
@@ -60,6 +66,12 @@ public class FolderInformationCard extends InformationCard {
         membersTab = new MembersTab(getController());
         settingsTab = new SettingsTab(getController());
         problemsTab = new ProblemsTab(getController());
+        problemListener = new MyProblemListener();
+
+        initialize();
+        buildUIComponent();
+
+        updateProblems();
     }
 
     /**
@@ -69,11 +81,14 @@ public class FolderInformationCard extends InformationCard {
      * @param directoryFilterMode
      */
     public void setFolderInfo(FolderInfo folderInfo, int directoryFilterMode) {
+        detachProblemListener();
         this.folderInfo = folderInfo;
         filesTab.setFolderInfo(folderInfo, directoryFilterMode);
         membersTab.setFolderInfo(folderInfo);
         settingsTab.setFolderInfo(folderInfo);
         problemsTab.setFolderInfo(folderInfo);
+        atachProblemListener();
+        updateProblems();
     }
 
     /**
@@ -83,11 +98,71 @@ public class FolderInformationCard extends InformationCard {
      * @param folderInfo
      */
     public void setFolderInfoLatest(FolderInfo folderInfo) {
+        detachProblemListener();
         this.folderInfo = folderInfo;
         filesTab.setFolderInfoLatest(folderInfo);
         membersTab.setFolderInfo(folderInfo);
         settingsTab.setFolderInfo(folderInfo);
         problemsTab.setFolderInfo(folderInfo);
+        atachProblemListener();
+        updateProblems();
+    }
+
+    private void detachProblemListener() {
+
+        if (folderInfo != null) {
+            Folder folder = getController().getFolderRepository()
+                    .getFolder(folderInfo);
+            if (folder != null) {
+                folder.removeProblemListener(problemListener);
+            }
+        }
+    }
+
+    private void atachProblemListener() {
+        getController().getFolderRepository().getFolder(folderInfo)
+                .addProblemListener(problemListener);
+    }
+
+    /**
+     * Control the folder's problems from here so that the tab can be removed
+     * if there are no poblems.
+     */
+    private void updateProblems() {
+        if (folderInfo == null) {
+            //  No fi, no show.
+            removeProblemsTab();
+        } else {
+            List<Problem> problemList = getController().getFolderRepository()
+                    .getFolder(folderInfo).getProblems();
+            if (problemList.isEmpty()) {
+                removeProblemsTab();
+            } else {
+                addProblemsTab();
+            }
+            problemsTab.updateProblems(problemList);
+        }
+    }
+
+    /**
+     * Add the problems tab to the pane.
+     */
+    private void addProblemsTab() {
+        tabbedPane.addTab(Translation.getTranslation(
+                "folder_information_card.problems.title"),
+                problemsTab.getUIComponent());
+        tabbedPane.setIconAt(TAB_PROBLEMS, Icons.getIconById(Icons.PROBLEMS));
+        tabbedPane.setToolTipTextAt(TAB_PROBLEMS, Translation.getTranslation(
+                "folder_information_card.problems.tips"));
+    }
+
+    /**
+     * Remove the problems tab if displayed.
+     */
+    private void removeProblemsTab() {
+        if (tabbedPane.getComponentCount() >= 1 + TAB_PROBLEMS) {
+            tabbedPane.remove(TAB_PROBLEMS);
+        }
     }
 
     /**
@@ -114,10 +189,6 @@ public class FolderInformationCard extends InformationCard {
      * @return
      */
     public JComponent getUIComponent() {
-        if (tabbedPane == null) {
-            initialize();
-            buildUIComponent();
-        }
         return tabbedPane;
     }
 
@@ -153,12 +224,6 @@ public class FolderInformationCard extends InformationCard {
         tabbedPane.setToolTipTextAt(TAB_SETTIGNS, Translation.getTranslation(
                 "folder_information_card.settings.tips"));
 
-        tabbedPane.addTab(Translation.getTranslation(
-                "folder_information_card.problems.title"),
-                problemsTab.getUIComponent());
-        tabbedPane.setIconAt(TAB_PROBLEMS, Icons.getIconById(Icons.PROBLEMS));
-        tabbedPane.setToolTipTextAt(TAB_PROBLEMS, Translation.getTranslation(
-                "folder_information_card.problems.tips"));
     }
 
     /**
@@ -188,4 +253,19 @@ public class FolderInformationCard extends InformationCard {
     public void showProblems() {
         ((JTabbedPane) getUIComponent()).setSelectedIndex(TAB_PROBLEMS);
     }
+
+    private class MyProblemListener implements ProblemListener {
+        public void problemAdded(Problem problem) {
+            updateProblems();
+        }
+
+        public void problemRemoved(Problem problem) {
+            updateProblems();
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return true;
+        }
+    }
+
 }

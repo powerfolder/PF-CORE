@@ -40,11 +40,8 @@ public class ProblemsTab extends PFUIComponent {
 
     private FolderInfo folderInfo;
 
-    private final ProblemListener problemListener;
-
     public ProblemsTab(Controller controller) {
         super(controller);
-        problemListener = new MyProblemListener();
     }
 
     /**
@@ -72,45 +69,15 @@ public class ProblemsTab extends PFUIComponent {
     }
 
     public void setFolderInfo(FolderInfo folderInfo) {
-        detachProblemListener();
         this.folderInfo = folderInfo;
-        attachProblemListener();
-        updateProblems();
     }
 
-    private void attachProblemListener() {
-        getController().getFolderRepository().getFolder(folderInfo)
-                .addProblemListener(problemListener);
-    }
-
-    private void detachProblemListener() {
-        if (folderInfo != null) {
-            Folder folder = getController().getFolderRepository().getFolder(folderInfo);
-            if (folder != null) {
-                folder.removeProblemListener(problemListener);
-            }
-        }
-    }
-
-    private void updateProblems() {
-        List<Problem> problemList = getController().getFolderRepository()
-                .getFolder(folderInfo).getProblems();
-        for (Problem problem : problemList) {
-            // @todo something...
-        }
-    }
-
-    private class MyProblemListener implements ProblemListener {
-        public void problemAdded(Problem problem) {
-            updateProblems();
-        }
-
-        public void problemRemoved(Problem problem) {
-            updateProblems();
-        }
-
-        public boolean fireInEventDispatchThread() {
-            return true;
-        }
+    /**
+     * Display problems.
+     * 
+     * @param problemList
+     */
+    public void updateProblems(List<Problem> problemList) {
+        // @todo something...
     }
 }
