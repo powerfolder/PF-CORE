@@ -21,6 +21,9 @@ package de.dal33t.powerfolder.ui.information.folder.problems;
 
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.util.ui.UIUtil;
+import de.dal33t.powerfolder.ui.information.folder.members.MembersTable;
+import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.disk.problem.ProblemListener;
 import de.dal33t.powerfolder.disk.problem.Problem;
 import de.dal33t.powerfolder.disk.Folder;
@@ -31,12 +34,20 @@ import javax.swing.*;
 import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.builder.DefaultFormBuilder;
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.builder.ButtonBarBuilder;
 
 import java.util.List;
+import java.awt.*;
+import java.awt.event.ActionEvent;
 
 public class ProblemsTab extends PFUIComponent {
 
     private JPanel uiComponent;
+    private JScrollPane scrollPane;
+
+    private MyOpenProblemAction openProblemAction;
+    private MyClearProblemAction clearProblemAction;
 
     private FolderInfo folderInfo;
 
@@ -51,21 +62,46 @@ public class ProblemsTab extends PFUIComponent {
      */
     public JPanel getUIComponent() {
         if (uiComponent == null) {
+            initialize();
             buildUIComponent();
         }
         return uiComponent;
+    }
+
+    private void initialize() {
+        openProblemAction = new MyOpenProblemAction(getController());
+        clearProblemAction = new MyClearProblemAction(getController());
+
+        scrollPane = new JScrollPane(new JLabel("test"));
+
+        // Whitestrip
+//        UIUtil.whiteStripTable(membersTable);
+        UIUtil.removeBorder(scrollPane);
+        UIUtil.setZeroHeight(scrollPane);
     }
 
     /**
      * Bulds the ui component.
      */
     private void buildUIComponent() {
-        FormLayout layout = new FormLayout("3dlu, pref:grow, 3dlu",
-                "3dlu, pref, 3dlu, pref, 3dlu, fill:pref:grow, 3dlu, pref, pref");
-        DefaultFormBuilder builder = new DefaultFormBuilder(layout);
+        FormLayout layout = new FormLayout("3dlu, fill:pref:grow, 3dlu",
+            "3dlu, pref, 3dlu, pref , 3dlu, fill:0:grow, 3dlu");
+        PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
+        builder.add(createToolBar(), cc.xy(2, 2));
+        builder.addSeparator(null, cc.xyw(1, 4, 3));
+        builder.add(scrollPane, cc.xy(2, 6));
 
         uiComponent = builder.getPanel();
+    }
+
+    private Component createToolBar() {
+        ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
+        bar.addGridded(new JButton(openProblemAction));
+        bar.addRelatedGap();
+        bar.addGridded(new JButton(clearProblemAction));
+        return bar.getPanel();
+
     }
 
     public void setFolderInfo(FolderInfo folderInfo) {
@@ -80,4 +116,29 @@ public class ProblemsTab extends PFUIComponent {
     public void updateProblems(List<Problem> problemList) {
         // @todo something...
     }
+
+    ///////////////////
+    // Inner Classes //
+    ///////////////////
+
+    private class MyOpenProblemAction extends BaseAction {
+
+        private MyOpenProblemAction(Controller controller) {
+            super("action_open_problem", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+        }
+    }
+
+    private class MyClearProblemAction extends BaseAction {
+        MyClearProblemAction(Controller controller) {
+            super("action_clear_problem", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+        }
+    }
+
+
 }
