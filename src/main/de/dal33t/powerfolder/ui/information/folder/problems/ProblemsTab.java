@@ -24,9 +24,12 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.disk.problem.Problem;
+import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FolderInfo;
 
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -48,11 +51,16 @@ public class ProblemsTab extends PFUIComponent {
     private FolderInfo folderInfo;
     private ProblemsTable problemsTable;
     private ProblemsTableModel problemsTableModel;
+    private Problem selectedProblem;
 
     public ProblemsTab(Controller controller) {
         super(controller);
         problemsTableModel = new ProblemsTableModel(controller);
         problemsTable = new ProblemsTable(problemsTableModel);
+        problemsTable.getSelectionModel().setSelectionMode(
+                ListSelectionModel.SINGLE_SELECTION);
+        problemsTable.getSelectionModel().addListSelectionListener(
+                new MySelectionListener());
     }
 
     /**
@@ -64,6 +72,7 @@ public class ProblemsTab extends PFUIComponent {
         if (uiComponent == null) {
             initialize();
             buildUIComponent();
+            enableOnSelection();
         }
         return uiComponent;
     }
@@ -117,6 +126,21 @@ public class ProblemsTab extends PFUIComponent {
         problemsTableModel.updateProblems(problemList);
     }
 
+    /**
+     * Enable the invite action on the table selection.
+     */
+    private void enableOnSelection() {
+        int selectedRow = problemsTable.getSelectedRow();
+        if (selectedRow >= 0) {
+            selectedProblem = (Problem) problemsTableModel.getValueAt(
+                    problemsTable.getSelectedRow(), 0);
+            openProblemAction.setEnabled(true);
+        } else {
+            selectedProblem = null;
+            openProblemAction.setEnabled(false);
+        }
+    }
+
     ///////////////////
     // Inner Classes //
     ///////////////////
@@ -137,8 +161,23 @@ public class ProblemsTab extends PFUIComponent {
         }
 
         public void actionPerformed(ActionEvent e) {
+            Folder folder = getController().getFolderRepository().getFolder(folderInfo);
+            if (folder != null) {
+                if (selectedProblem == null) {
+                    folder.removeAllProblems();
+                } else {
+                    folder.removeProblem(selectedProblem);
+                }
+            }
         }
     }
 
-
+    /**
+     * Class to detect table selection changes.
+     */
+    private class MySelectionListener implements ListSelectionListener {
+        public void valueChanged(ListSelectionEvent e) {
+            enableOnSelection();
+        }
+    }
 }

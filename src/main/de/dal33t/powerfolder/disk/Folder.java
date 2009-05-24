@@ -422,6 +422,20 @@ public class Folder extends PFComponent {
     }
 
     /**
+     * Remove all problems from the list of known problems.
+     *
+     * @param problem
+     */
+    public void removeAllProblems() {
+        List<Problem> list = new ArrayList<Problem>();
+        list.addAll(problems);
+        problems.clear();
+        for (Problem problem : list) {
+            problemListenerSupport.problemRemoved(problem);
+        }
+    }
+
+    /**
      * Count problems in folder?
      *
      * @return
