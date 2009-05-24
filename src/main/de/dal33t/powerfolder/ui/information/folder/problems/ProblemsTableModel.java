@@ -23,12 +23,18 @@ import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.problem.Problem;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.compare.ReverseComparator;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 import de.dal33t.powerfolder.ui.model.SortedTableModel;
 
 import javax.swing.table.TableModel;
 import javax.swing.event.TableModelListener;
+import javax.swing.event.TableModelEvent;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Collections;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Class to model a folder's problems.
@@ -37,17 +43,26 @@ import java.util.ArrayList;
 public class ProblemsTableModel extends PFUIComponent implements TableModel,
         SortedTableModel {
 
+    private static final int COL_DESCRIPTION = 0;
+    private static final int COL_DATE = 1;
+    private static final int COL_WIKI = 2;
+
     private String[] columnHeaders = {
-        Translation.getTranslation("folder_problem.table_model.date"), // 0
-        Translation.getTranslation("folder_problem.table_model.description"), // 1
+        Translation.getTranslation("folder_problem.table_model.description"), // 0
+        Translation.getTranslation("folder_problem.table_model.date"), // 1
         Translation.getTranslation("folder_problem.table_model.wiki")}; // 2
 
     private final List<Problem> problems;
 
+    private final List<TableModelListener> listeners;
+
+    private int sortColumn = -1;
+    private boolean sortAscending = true;
+
     public ProblemsTableModel(Controller controller) {
         super(controller);
         problems = new ArrayList<Problem>();
-
+        listeners = new CopyOnWriteArrayList<TableModelListener>();
     }
 
     public int getRowCount() {
@@ -80,20 +95,106 @@ public class ProblemsTableModel extends PFUIComponent implements TableModel,
     }
 
     public void addTableModelListener(TableModelListener l) {
+        listeners.add(l);
     }
 
     public void removeTableModelListener(TableModelListener l) {
+        listeners.remove(l);
     }
 
     public int getSortColumn() {
-        return 0;
+        return sortColumn;
     }
 
     public boolean isSortAscending() {
-        return false;
+        return sortAscending;
     }
 
     public boolean sortBy(int columnIndex) {
-        return false;
+        boolean newSortColumn = sortColumn != columnIndex;
+        sortColumn = columnIndex;
+        switch (columnIndex) {
+            case COL_DESCRIPTION :
+                sortMe(FolderProblemComparator.BY_DESCRIPTION, newSortColumn);
+                break;
+            case COL_DATE :
+                sortMe(FolderProblemComparator.BY_DATE, newSortColumn);
+                break;
+            case COL_WIKI :
+                sortMe(FolderProblemComparator.BY_WIKI, newSortColumn);
+                break;
+        }
+        return true;
+    }
+
+    private void sortMe(FolderProblemComparator comparator, boolean newSortColumn) {
+
+        if (!newSortColumn) {
+            // Reverse list.
+            sortAscending = !sortAscending;
+        }
+
+        if (sortAscending) {
+            Collections.sort(problems, comparator);
+        } else {
+            Collections.sort(problems, new ReverseComparator(comparator));
+        }
+
+        modelChanged(new TableModelEvent(this, 0, problems.size() - 1));
+    }
+
+    public void updateProblems(List<Problem> problemList) {
+        problems.clear();
+        problems.addAll(problemList);
+        modelChanged(new TableModelEvent(this, 0, problems.size() - 1));
+    }
+
+    /**
+     * Fires a model event to all listeners, that model has changed
+     */
+    private void modelChanged(final TableModelEvent e) {
+        Runnable runner = new Runnable() {
+            public void run() {
+                synchronized (listeners) {
+                    for (TableModelListener listener : listeners) {
+                        listener.tableChanged(e);
+                    }
+                }
+            }
+        };
+        UIUtil.invokeLaterInEDT(runner);
+    }
+
+    private static class FolderProblemComparator implements Comparator<Problem> {
+
+        private static final int TYPE_DESCRIPTION = 0;
+        private static final int TYPE_DATE = 1;
+        private static final int TYPE_WIKI = 2;
+
+        public static final FolderProblemComparator BY_DESCRIPTION =
+                new FolderProblemComparator(TYPE_DESCRIPTION);
+
+        public static final FolderProblemComparator BY_DATE =
+                new FolderProblemComparator(TYPE_DATE);
+
+        public static final FolderProblemComparator BY_WIKI =
+                new FolderProblemComparator(TYPE_WIKI);
+
+        private int type;
+
+        private FolderProblemComparator(int type) {
+            this.type = type;
+        }
+
+        public int compare(Problem o1, Problem o2) {
+            if (type == TYPE_DESCRIPTION) {
+                return o1.getDescription().compareTo(o2.getDescription());
+            } else if (type == TYPE_DATE) {
+                return o1.getDate().compareTo(o2.getDate());
+            } else if (type == TYPE_WIKI) {
+                return o1.getWikiLinkKey().compareTo(o2.getWikiLinkKey());
+            }
+            return 0;
+        }
     }
 }

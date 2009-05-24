@@ -114,7 +114,7 @@ public class ProblemsTab extends PFUIComponent {
      * @param problemList
      */
     public void updateProblems(List<Problem> problemList) {
-        // @todo something...
+        problemsTableModel.updateProblems(problemList);
     }
 
     ///////////////////

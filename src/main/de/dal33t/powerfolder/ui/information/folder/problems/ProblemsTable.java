@@ -20,10 +20,19 @@
 package de.dal33t.powerfolder.ui.information.folder.problems;
 
 import de.dal33t.powerfolder.ui.render.SortedTableHeaderRenderer;
+import de.dal33t.powerfolder.ui.information.folder.members.MembersTableModel;
+import de.dal33t.powerfolder.disk.problem.Problem;
+import de.dal33t.powerfolder.util.ui.ColorUtil;
+import de.dal33t.powerfolder.util.Format;
 
 import javax.swing.*;
 import javax.swing.table.TableColumn;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableModel;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class ProblemsTable extends JTable {
 
@@ -33,6 +42,12 @@ public class ProblemsTable extends JTable {
         setShowGrid(false);
 
         setupColumns();
+
+        getTableHeader().addMouseListener(new TableHeaderMouseListener());
+
+        ProblemTableCellRenderer problemTableCellRenderer =
+                new ProblemTableCellRenderer();
+        setDefaultRenderer(Problem.class, problemTableCellRenderer);
 
         // Associate a header renderer with all columns.
         SortedTableHeaderRenderer.associateHeaderRenderer(
@@ -47,10 +62,58 @@ public class ProblemsTable extends JTable {
         getTableHeader().setPreferredSize(new Dimension(totalWidth, 20));
 
         TableColumn column = getColumn(getColumnName(0));
-        column.setPreferredWidth(20);
-        column = getColumn(getColumnName(1));
         column.setPreferredWidth(80);
+        column = getColumn(getColumnName(1));
+        column.setPreferredWidth(20);
         column = getColumn(getColumnName(2));
         column.setPreferredWidth(20);
     }
+
+    private static class ProblemTableCellRenderer extends DefaultTableCellRenderer {
+
+        public Component getTableCellRendererComponent(JTable table, Object value,
+                                                       boolean isSelected,
+                                                       boolean hasFocus,
+                                                       int row, int column) {
+
+            Component defaultComp = super.getTableCellRendererComponent(table,
+                    value, isSelected, hasFocus, row, column);
+
+            if (value instanceof Problem) {
+                Problem problem = (Problem) value;
+                if (column == 0) {
+                    setText(problem.getDescription());
+                } else if (column == 1) {
+                    setText(Format.formatDate(problem.getDate()));
+                } else if (column == 2) {
+                    setText(problem.getWikiLinkKey());
+                }
+            }
+
+            if (!isSelected) {
+                setBackground(row % 2 == 0 ? ColorUtil.EVEN_TABLE_ROW_COLOR
+                        : ColorUtil.ODD_TABLE_ROW_COLOR);
+            }
+
+            return defaultComp;
+        }
+    }
+
+    private class TableHeaderMouseListener extends MouseAdapter {
+        public void mouseClicked(MouseEvent e) {
+            if (SwingUtilities.isLeftMouseButton(e)) {
+                JTableHeader tableHeader = (JTableHeader) e.getSource();
+                int columnNo = tableHeader.columnAtPoint(e.getPoint());
+                TableColumn column = tableHeader.getColumnModel().getColumn(
+                    columnNo);
+                int modelColumnNo = column.getModelIndex();
+                TableModel model = tableHeader.getTable().getModel();
+                if (model instanceof ProblemsTableModel) {
+                    ProblemsTableModel problemsTableModel = (ProblemsTableModel) model;
+                    problemsTableModel.sortBy(modelColumnNo);
+                }
+            }
+        }
+    }
+
 }
