@@ -24,4 +24,5 @@ package de.dal33t.powerfolder.disk.problem;
  */
 public interface Problem {
     String getMessage();
+    String getWikiLinkKey();
 }

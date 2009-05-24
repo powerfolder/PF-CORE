@@ -339,13 +339,13 @@ public class UIController extends PFComponent {
             }
         });
 
-        // Warn if there are any folders that have not been synchronized
-        // recently.
-        SwingUtilities.invokeLater(new Runnable() {
+        // Warn if any folders have not been synchronized recently.
+        // Defer 30 seconds, so it is not 'in-your-face' at start up.
+        getController().schedule(new TimerTask() {
             public void run() {
                 warnAboutOldSyncs();
             }
-        });
+        }, 30000);
     }
 
     /**
@@ -371,10 +371,8 @@ public class UIController extends PFComponent {
             Date lastSyncDate = folder.getLastSyncDate();
             if (lastSyncDate != null) {
                 if (lastSyncDate.before(warningDate)) {
-                    String message = Translation.getTranslation(
-                                "uicontroller.unsynchronized_folder.single",
-                                folder.getInfo().name, syncWarnDays);
-                    Problem problem = new UnsynchronizedFolderProblem(message);
+                    Problem problem = new UnsynchronizedFolderProblem(
+                            folder.getInfo(), syncWarnDays);
                     folder.addProblem(problem);
                 }
             }

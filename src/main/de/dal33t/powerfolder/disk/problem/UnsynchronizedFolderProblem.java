@@ -19,18 +19,28 @@
  */
 package de.dal33t.powerfolder.disk.problem;
 
+import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.ui.WikiLinks;
+import de.dal33t.powerfolder.util.Translation;
+
 /**
  * Problem where a folder has not been synchronized in n days.
  */
 public class UnsynchronizedFolderProblem implements Problem {
 
     private String message;
+    private String wikiLinkKey = WikiLinks.PROBLEM_UNSYNCED;
 
-    public UnsynchronizedFolderProblem(String message) {
-        this.message = message;
+    public UnsynchronizedFolderProblem(FolderInfo folderInfo, int days) {
+        message = Translation.getTranslation("folder_problem.unsynchronized",
+                folderInfo.name, days);
     }
 
     public String getMessage() {
         return message;
+    }
+
+    public String getWikiLinkKey() {
+        return wikiLinkKey;
     }
 }

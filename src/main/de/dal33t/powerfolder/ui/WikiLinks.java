@@ -34,4 +34,5 @@ public interface WikiLinks {
     String SETTINGS_DYN_DNS = "DYN-Dns";
     String SETTINGS_ADVANCED = "Settings-Advanced";
     String SETTINGS_PLUGIN = "Settings-Plugin";
+    String PROBLEM_UNSYNCED = "Unsynchronized-Folder";
 }
