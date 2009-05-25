@@ -24,8 +24,6 @@ import de.dal33t.powerfolder.skin.Skin;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.SyncProfile;
-import de.dal33t.powerfolder.disk.problem.Problem;
-import de.dal33t.powerfolder.disk.problem.UnsynchronizedFolderProblem;
 import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
@@ -340,43 +338,17 @@ public class UIController extends PFComponent {
         });
 
         // Warn if any folders have not been synchronized recently.
-        // Defer 30 seconds, so it is not 'in-your-face' at start up.
-        getController().schedule(new TimerTask() {
+        TimerTask timerTask = new TimerTask() {
             public void run() {
-                warnAboutOldSyncs();
-            }
-        }, 30000);
-    }
-
-    /**
-     * This creates a warning about folders that have not been synchronized
-     * in a long time.
-     */
-    private void warnAboutOldSyncs() {
-        if (!PreferencesEntry.FOLDER_SYNC_USE.getValueBoolean(getController())) {
-            return;
-        }
-
-        // Calculate the date that folders should be synced by.
-        Integer syncWarnDays =
-                PreferencesEntry.FOLDER_SYNC_WARN.getValueInt(getController());
-        Calendar cal = new GregorianCalendar();
-        cal.add(Calendar.DATE, -syncWarnDays);
-        Date warningDate = cal.getTime();
-       
-        // Add problems for any offending folders.
-        for (Folder folder :
-                getController().getFolderRepository().getFolders()) {
-            
-            Date lastSyncDate = folder.getLastSyncDate();
-            if (lastSyncDate != null) {
-                if (lastSyncDate.before(warningDate)) {
-                    Problem problem = new UnsynchronizedFolderProblem(
-                            folder.getInfo(), syncWarnDays);
-                    folder.addProblem(problem);
+                for (Folder folder : getController().getFolderRepository().getFolders()) {
+                    folder.warnAboutOldSyncs();
                 }
             }
-        }
+        };
+
+        // Defer 30 seconds, so it is not 'in-your-face' at start up.
+        // Also run this each day, for long-running installations.
+        getController().scheduleAndRepeat(timerTask, 30000, 24 * 3600 * 1000);
     }
 
     private void gotoHPIfRequired() {

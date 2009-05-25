@@ -62,6 +62,7 @@ import de.dal33t.powerfolder.disk.dao.FileInfoDAOHashMapImpl;
 import static de.dal33t.powerfolder.disk.FolderStatistic.*;
 import de.dal33t.powerfolder.disk.problem.ProblemListener;
 import de.dal33t.powerfolder.disk.problem.Problem;
+import de.dal33t.powerfolder.disk.problem.UnsynchronizedFolderProblem;
 import de.dal33t.powerfolder.event.FileNameProblemEvent;
 import de.dal33t.powerfolder.event.FileNameProblemHandler;
 import de.dal33t.powerfolder.event.FolderEvent;
@@ -3089,6 +3090,31 @@ public class Folder extends PFComponent {
      */
     public void clearAllProblemListeners() {
         ListenerSupportFactory.removeAllListeners(problemListenerSupport);
+    }
+
+    /**
+     * This creates a warning if the folder has not been synchronized
+     * in a long time.
+     */
+    public void warnAboutOldSyncs() {
+        if (!ConfigurationEntry.FOLDER_SYNC_USE.getValueBoolean(getController())) {
+            return;
+        }
+
+        // Calculate the date that folders should be synced by.
+        Integer syncWarnDays =
+                ConfigurationEntry.FOLDER_SYNC_WARN.getValueInt(getController());
+        Calendar cal = new GregorianCalendar();
+        cal.add(Calendar.DATE, -syncWarnDays);
+        Date warningDate = cal.getTime();
+
+        if (lastSyncDate != null) {
+            if (!lastSyncDate.before(warningDate)) {
+                Problem problem = new UnsynchronizedFolderProblem(
+                        currentInfo, syncWarnDays);
+                addProblem(problem);
+            }
+        }
     }
 
     // Inner classes **********************************************************
