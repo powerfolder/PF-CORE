@@ -238,8 +238,7 @@ public class Controller extends PFComponent {
     private Socket currentConnectingSocket;
 
     /** global Threadpool */
-    private ScheduledExecutorService threadPool;
-   
+    private ScheduledExecutorService threadPool;   
 
     /** Remembers if a port on the local firewall was opened */
     private boolean portWasOpened = false;
@@ -310,7 +309,7 @@ public class Controller extends PFComponent {
      *            "getConfigLocationBase()")
      */
     public void startConfig(String filename) {
-        if (isStarted()) {
+        if (started) {
             throw new IllegalStateException(
                 "Configuration already started, shutdown controller first");
         }
@@ -1895,7 +1894,16 @@ public class Controller extends PFComponent {
      * @return the file base, a directory
      */
     public static File getMiscFilesLocation() {
-        File base = new File(System.getProperty("user.home") + "/.PowerFolder");
+        File base;
+        File unixConfigDir = new File(System.getProperty("user.home")
+                + "/.PowerFolder");
+        if (OSUtil.isWindowsSystem()) {
+            File windowsConfigDir = new File(System.getenv("APPDATA")
+                    + "/PowerFolder");
+            base = migrateWindowsMiscLocation(unixConfigDir, windowsConfigDir);
+        } else {
+            base = unixConfigDir;
+        }
         if (!base.exists()) {
             if (!base.mkdirs()) {
                 log.severe("Failed to create " + base.getAbsolutePath());
@@ -1906,6 +1914,44 @@ public class Controller extends PFComponent {
             }
         }
         return base;
+    }
+
+    /**
+     * Migrate config dir (if necessary) in Windows from user.home to APPDATA.
+     * Pre Version 4, the config was in 'user.home'/.PowerFolder.
+     * 'APPDATA'/PowerFolder is a more normal Windows location for application
+     * data.
+     *
+     * @param unixBaseDir
+     *              the old user.home based config directory.
+     * @param windowsBaseDir
+     *              the preferred APPDATA based config directory.
+     * @return
+     *              windowsBaseDir, with the migrated config file.
+     */
+    private static File migrateWindowsMiscLocation(File unixBaseDir,
+                                                   File windowsBaseDir) {
+        if (windowsBaseDir.exists()) {
+            return windowsBaseDir;
+        }
+
+        if (windowsBaseDir.mkdirs()) {
+            log.info("Created " + windowsBaseDir.getAbsolutePath());
+            if (unixBaseDir.exists()) {
+                String powerFolderConfig = "PowerFolder.config";
+                try {
+                    FileUtils.copyFile(new File(unixBaseDir, powerFolderConfig),
+                        new File(windowsBaseDir, powerFolderConfig));
+                    log.info("Migrated " + powerFolderConfig);
+                } catch (IOException e) {
+                    log.severe("Failed to migrate " + powerFolderConfig);
+                }
+            }
+            return windowsBaseDir;
+        }
+
+        log.severe("Failed to create " + windowsBaseDir.getAbsolutePath());
+        return windowsBaseDir;
     }
 
     /**
