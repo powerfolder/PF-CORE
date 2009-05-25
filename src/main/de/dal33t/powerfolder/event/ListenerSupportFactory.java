@@ -182,8 +182,8 @@ public class ListenerSupportFactory {
 
     /**
      * Removes all listeners from a listener support. The listener support has
-     * to be created via <code>createListenerSupport</code> before. Otherwise
-     * an exception is thrown
+     * to be created via <code>createListenerSupport</code> before. Otherwise an
+     * exception is thrown
      * 
      * @param listenerSupport
      */
@@ -313,7 +313,7 @@ public class ListenerSupportFactory {
                 // No listeners, skip
                 return false;
             }
-            
+
             if (method.getName().equals("fireInEventDispatchThread")) {
                 // Uhh we are getting registered somewhere else and
                 // the other ListenerSupport is asking us about
@@ -342,19 +342,19 @@ public class ListenerSupportFactory {
                                         "Received an exception from listener '"
                                             + listener + "', class '"
                                             + listener.getClass().getName()
-                                            + '\'', e);
+                                            + "'. " + e, e);
                                 } catch (IllegalAccessException e) {
                                     log.log(Level.SEVERE,
                                         "Received an exception from listener '"
                                             + listener + "', class '"
                                             + listener.getClass().getName()
-                                            + '\'', e);
+                                            + "'. " + e, e);
                                 } catch (InvocationTargetException e) {
                                     log.log(Level.SEVERE,
                                         "Received an exception from listener '"
                                             + listener + "', class '"
                                             + listener.getClass().getName()
-                                            + '\'', e.getCause());
+                                            + "'. " + e, e.getCause());
                                     // Also log original exception
                                     log.log(Level.FINER,
                                         "InvocationTargetException", e);
