@@ -54,10 +54,8 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
 
     private JTextField syncProfileName;
     private JComboBox syncProfilesCombo;
-    private JCheckBox autoDownloadFromFriendsBox;
-    private JCheckBox autoDownloadFromOthersBox;
-    private JCheckBox syncDeletionWithFriendsBox;
-    private JCheckBox syncDeletionWithOthersBox;
+    private JCheckBox autoDownloadBox;
+    private JCheckBox syncDeletionBox;
     private SpinnerNumberModel scanTimeModel;
     private JSpinner scanTimeSpinner;
     private SyncProfileSelectorPanel syncProfileSelectorPanel;
@@ -122,37 +120,42 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
         initComponents();
         FormLayout layout = new FormLayout(
             "right:pref, 3dlu, pref",
-            "pref, 14dlu, pref, 14dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 14dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
+            "pref, 15dlu, pref, 15dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
         builder.setBorder(Borders.createEmptyBorder("0, 0, 30dlu, 0"));
 
         // Profile name
-        builder.add(new JLabel(Translation
-            .getTranslation("dialog.create_edit_profile.profile_name")), cc.xy(1, 1));
+        builder.add(new JLabel(Translation.getTranslation(
+                "dialog.create_edit_profile.profile_name")), cc.xy(1, 1));
         builder.add(syncProfileName, cc.xy(3, 1));
 
-        builder.add(new JLabel(Translation
-            .getTranslation("dialog.create_edit_profile.configure_from")), cc
-            .xy(1, 3));
+        builder.add(new JLabel(Translation.getTranslation(
+                "dialog.create_edit_profile.configure_from")),
+                cc.xy(1, 3));
         builder.add(createSyncComboPanel(), cc.xy(3, 3));
 
-        builder.add(autoDownloadFromFriendsBox, cc.xy(3, 5));
-        builder.add(autoDownloadFromOthersBox, cc.xy(3, 7));
-        builder.add(syncDeletionWithFriendsBox, cc.xy(3, 9));
-        builder.add(syncDeletionWithOthersBox, cc.xy(3, 11));
+        builder.addSeparator(Translation.getTranslation(
+                "dialog.create_edit_profile.synchronization"), cc.xyw(1, 5, 3));
+
+        builder.add(autoDownloadBox, cc.xy(3, 7));
+        builder.add(syncDeletionBox, cc.xy(3, 9));
+
+        builder.addSeparator(Translation.getTranslation(
+                "dialog.create_edit_profile.change_detection"), cc.xyw(1, 11, 3));
 
         builder.add(periodicRadioButton, cc.xy(3, 13));
 
-        builder.add(new JLabel(Translation
-            .getTranslation("dialog.create_edit_profile.time_between_scans")), cc
-            .xy(1, 15));
+        builder.add(new JLabel(Translation.getTranslation(
+                "dialog.create_edit_profile.time_between_scans")),
+                cc.xy(1, 15));
         builder.add(createRegularPanel(), cc.xy(3, 15));
 
         builder.add(dailyRadioButton, cc.xy(3, 17));
 
         builder.add(new JLabel(Translation
-            .getTranslation("dialog.create_edit_profile.hour_day_sync")), cc.xy(1, 19));
+            .getTranslation("dialog.create_edit_profile.hour_day_sync")),
+                cc.xy(1, 19));
         builder.add(createDailyComboPanel(), cc.xy(3, 19));
 
         ButtonGroup bg = new ButtonGroup();
@@ -218,14 +221,10 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
             }
         });
 
-        autoDownloadFromFriendsBox = new JCheckBox(Translation
-            .getTranslation("dialog.create_edit_profile.auto_download_from_friends"));
-        autoDownloadFromOthersBox = new JCheckBox(Translation
-            .getTranslation("dialog.create_edit_profile.auto_download_from_other"));
-        syncDeletionWithFriendsBox = new JCheckBox(Translation
-            .getTranslation("dialog.create_edit_profile.sync_deletion_with_friends"));
-        syncDeletionWithOthersBox = new JCheckBox(Translation
-            .getTranslation("dialog.create_edit_profile.sync_deletion_with_others"));
+        autoDownloadBox = new JCheckBox(Translation
+            .getTranslation("dialog.create_edit_profile.auto_download"));
+        syncDeletionBox = new JCheckBox(Translation
+            .getTranslation("dialog.create_edit_profile.sync_deletion"));
 
         scanTimeModel = new SpinnerNumberModel(0, 0, 9999, 1);
         scanTimeSpinner = new JSpinner(scanTimeModel);
@@ -273,14 +272,10 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
         SyncProfile syncProfile = syncProfileSelectorPanel.getSyncProfile();
         SyncProfileConfiguration configuration = syncProfile
                 .getConfiguration();
-        autoDownloadFromFriendsBox.setSelected(configuration
+        autoDownloadBox.setSelected(configuration
                 .isAutoDownloadFromFriends());
-        autoDownloadFromOthersBox.setSelected(configuration
-                .isAutoDownloadFromOthers());
-        syncDeletionWithFriendsBox.setSelected(configuration
+        syncDeletionBox.setSelected(configuration
                 .isSyncDeletionWithFriends());
-        syncDeletionWithOthersBox.setSelected(configuration
-            .isSyncDeletionWithOthers());
         scanTimeModel.setValue(configuration.getTimeBetweenRegularScans());
         dailyRadioButton.setSelected(configuration.isDailySync());
         periodicRadioButton.setSelected(!configuration.isDailySync());
@@ -371,14 +366,10 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
             SyncProfile syncProfile = SyncProfile.getSyncProfilesCopy().get(index);
             SyncProfileConfiguration configuration = syncProfile
                     .getConfiguration();
-            autoDownloadFromFriendsBox.setSelected(configuration
+            autoDownloadBox.setSelected(configuration
                 .isAutoDownloadFromFriends());
-            autoDownloadFromOthersBox.setSelected(configuration
-                .isAutoDownloadFromOthers());
-            syncDeletionWithFriendsBox.setSelected(configuration
+            syncDeletionBox.setSelected(configuration
                 .isSyncDeletionWithFriends());
-            syncDeletionWithOthersBox.setSelected(configuration
-                .isSyncDeletionWithOthers());
             scanTimeModel.setValue(configuration.getTimeBetweenRegularScans());
             periodicRadioButton.setSelected(!configuration.isDailySync());
             dailyRadioButton.setSelected(configuration.isDailySync());
@@ -441,12 +432,12 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
         }
 
         SyncProfileConfiguration newConfiguration = new SyncProfileConfiguration(
-           autoDownloadFromFriendsBox.isSelected(),
-                autoDownloadFromOthersBox.isSelected(),
-            syncDeletionWithFriendsBox.isSelected(), syncDeletionWithOthersBox
-                .isSelected(), scanTimeModel.getNumber().intValue(),
-            dailyRadioButton.isSelected(), hourModel.getNumber().intValue(),
-            dayCombo.getSelectedIndex(), timeType
+                autoDownloadBox.isSelected(),
+                autoDownloadBox.isSelected(),
+                syncDeletionBox.isSelected(), syncDeletionBox.isSelected(),
+                scanTimeModel.getNumber().intValue(),
+                dailyRadioButton.isSelected(), hourModel.getNumber().intValue(),
+                dayCombo.getSelectedIndex(), timeType
         );
 
         String newProfileName = syncProfileName.getText().trim();
