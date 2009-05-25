@@ -3109,7 +3109,7 @@ public class Folder extends PFComponent {
         Date warningDate = cal.getTime();
 
         if (lastSyncDate != null) {
-            if (!lastSyncDate.before(warningDate)) {
+            if (lastSyncDate.before(warningDate)) {
                 Problem problem = new UnsynchronizedFolderProblem(
                         currentInfo, syncWarnDays);
                 addProblem(problem);
