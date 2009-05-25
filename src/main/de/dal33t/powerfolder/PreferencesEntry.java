@@ -120,12 +120,6 @@ public enum PreferencesEntry {
     /** Main frame always on top. */
     MAIN_ALWAYS_ON_TOP("main.stay.on.top", false),
 
-    /** Warning about unsyned folders. */
-    FOLDER_SYNC_USE("folder.sync.use", true),
-
-    /** Days before warning about unsynced folders. */
-    FOLDER_SYNC_WARN("folder.sync.warn", 10),
-
     /** Skin name. */
     SKIN_NAME("skin.name", ""),
 

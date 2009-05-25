@@ -49,7 +49,7 @@ import de.dal33t.powerfolder.util.logging.Loggable;
  * After both controllers are connected, Lisa runs in normal node, Bart as
  * supernode.
  * <p>
- * It is possible to access both controllers and do manupulating/testing stuff
+ * It is possible to access both controllers and do manipulating/testing stuff
  * on them.
  * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>

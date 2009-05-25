@@ -508,7 +508,13 @@ public enum ConfigurationEntry {
      * Days until auto cleanup of downloads.
      * Zero = cleanup on completion.
      */
-    DOWNLOAD_AUTO_CLEANUP_FREQUENCY("download.auto.cleanup.frequency", "5");
+    DOWNLOAD_AUTO_CLEANUP_FREQUENCY("download.auto.cleanup.frequency", "5"),
+
+    /** Warning about unsyned folders. */
+    FOLDER_SYNC_USE("sync.folder.use", Boolean.TRUE.toString()),
+
+    /** Days before warning about unsynced folders. */
+    FOLDER_SYNC_WARN("sync.folder.warn", "10");
 
 
     // Methods/Constructors ***************************************************

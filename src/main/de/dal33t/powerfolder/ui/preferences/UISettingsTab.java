@@ -210,13 +210,13 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
 
         folderSyncCB = new JCheckBox(Translation.getTranslation(
                 "preferences.dialog.folder_sync_warn.use"));
-        folderSyncCB.setSelected(PreferencesEntry.FOLDER_SYNC_USE
+        folderSyncCB.setSelected(ConfigurationEntry.FOLDER_SYNC_USE
                 .getValueBoolean(getController()));
 
         folderSyncSlider = new JSlider();
         folderSyncSlider.setMinimum(1);
         folderSyncSlider.setMaximum(30);
-        folderSyncSlider.setValue(PreferencesEntry.FOLDER_SYNC_WARN
+        folderSyncSlider.setValue(ConfigurationEntry.FOLDER_SYNC_WARN
                 .getValueInt(getController()));
         folderSyncSlider.setMinorTickSpacing(1);
 
@@ -467,11 +467,13 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
         PreferencesEntry.TRANSLUCENT_PERCENTAGE.setValue(getController(),
                 transPercSlider.getValue());
 
-        PreferencesEntry.FOLDER_SYNC_USE.setValue(getController(),
-                folderSyncCB.isSelected());
+        ConfigurationEntry.FOLDER_SYNC_USE.setValue(getController(),
+                String.valueOf(folderSyncCB.isSelected()));
 
-        PreferencesEntry.FOLDER_SYNC_WARN.setValue(getController(),
-                folderSyncSlider.getValue());
+        ConfigurationEntry.FOLDER_SYNC_WARN.setValue(getController(),
+                String.valueOf(folderSyncSlider.getValue()));
+
+        getController().saveConfig();
 
         if (skinCombo != null) {
             String skinName = PreferencesEntry.SKIN_NAME.getValueString(getController());
