@@ -73,6 +73,9 @@ public class PatternMatchTest extends TestCase {
         assertTrue(new CompilingPatternMatch("*.name").isMatch("c:/test/file.name"));
 
         assertTrue(new CompilingPatternMatch("c:\\*").isMatch("c:\\test\\file.name"));
-        assertTrue(new CompilingPatternMatch("x\\~!@#$%^-&*()_+={}][:';,.<>|y").isMatch("x\\~!@#$%^-&*()_+={}][:';,.<>|y"));
+        assertTrue(new CompilingPatternMatch("x\\~!@#$%^-&()_+={}][:';,.<>|y")
+                .isMatch("x\\~!@#$%^-&()_+={}][:';,.<>|y"));
+        assertTrue(new CompilingPatternMatch("a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*ab")
+                .isMatch("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab"));
     }
 }

@@ -19,22 +19,20 @@
 */
 package de.dal33t.powerfolder.util;
 
-import java.util.regex.Pattern;
-import java.util.logging.Logger;
-import java.util.logging.Level;
-
 /**
- * Compiling pattern matcher that uses regex Pattern to match '*' characters
+ * Compiling pattern matcher that uses compiled parts to match '*' characters
  * to any text. So 'a*c' would match 'ac', 'abc', 'asdfkhc', etc.
  */
 public class CompilingPatternMatch {
 
-    private static final Logger log = Logger.getLogger(CompilingPatternMatch.class.getName());
+    /** Precompiled parts to match on. */
+    private String[] parts;
 
-    /**
-     * True if pattern ends with '*'.
-     */
-    private final Pattern pattern;
+    /** True if pattern begins with '*'. */
+    private boolean firstStar;
+
+    /** True if pattern ends with '*'. */
+    private boolean lastStar;
 
     /**
      * Original pattern text.
@@ -51,57 +49,91 @@ public class CompilingPatternMatch {
         // Everything is case-insensitive.
         String patternString = patternStringArg.toLowerCase().trim();
 
-        // Escape metacharacters with '\'
-        StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < patternString.length(); i++) {
-            switch (patternString.charAt(i)) {
-                case '*':
-                    // Match any text
-                    builder.append(".*");
-                    break;
-                case '\\':
-                case '^':
-                case '$':
-                case '[':
-                case ']':
-                case '(':
-                case ')':
-                case '?':
-                case '+':
-                case '.':
-                case '|':
-                    // Escape metacharacters
-                    builder.append('\\').append(patternString.charAt(i));
-                    break;
-                default:
-                    builder.append(patternString.charAt(i));
-            }
+        // If it starts with a '*', we can scan forward to find an initial match.
+        if (patternString.startsWith("*")) {
+            patternString = patternString.substring(1);
+            firstStar = true;
         }
 
-        // Match it
-        pattern = Pattern.compile(builder.toString());
+        // If it ends with a '*', there can be tail characters in the match string.
+        if (patternString.endsWith("*")) {
+            patternString = patternString.substring(0, patternString.length() - 1);
+            lastStar = true;
+        }
 
-        patternText = patternStringArg;
+        // Precompile pattern into parts.
+        parts = patternString.split("\\*");
 
-        // Do a test now. Better now than when checking a file name...
-        pattern.matcher("24y98&TB(*&^#8tqi875tnc8i7t86O*&VTB#87q43").matches();
+        patternText = patternString;
     }
 
-    /**
-     * Does this string match the pattern?
-     *
-     * @param matchStringArg
-     * @return
-     */
     public boolean isMatch(String matchStringArg) {
-        try {
-            return pattern.matcher(matchStringArg.toLowerCase().trim()).matches();
-        } catch (Exception e) {
-            log.log(Level.SEVERE, "Pattern match problem "
-                    + (pattern == null ? "null" : pattern.pattern()), e);
-            return false;
+
+        // Everything is case-insensitive.
+        String matchString = matchStringArg.toLowerCase().trim();
+
+        // Precalculate the length of the match string.
+        int matchStringLength = matchString.length();
+
+        // Initially this is the first part.
+        boolean firstPart = true;
+
+        // Point to the first character of the matchString.
+        int matchPointer = 0;
+
+        // Iterate the pattern parts.
+        for (String part : parts) {
+
+            // Check that we have enough characters left to match on.
+            int partLength = part.length();
+
+            // We can scan from this point if there was a '*' at the begining of
+            // the pattern or if this is not the first part.
+            boolean scanning = firstStar || !firstPart;
+
+            // Check and scan forward until we get a match or cannot continue.
+            do {
+
+                // Current part is longer than the remaining section of the
+                // matchString, so can not match.
+                if (partLength > matchStringLength - matchPointer) {
+                    return false;
+                }
+
+                // Look for match of part with current position of matchString.
+                String currentMatchPart = matchString.substring(matchPointer,
+                        matchPointer + partLength);
+                if (part.equals(currentMatchPart)) {
+
+                    // Good so far, next part on the next section of the matchString.
+                    matchPointer += partLength;
+
+                    // Exit scan loop.
+                    scanning = false;
+
+                } else if (scanning) {
+
+                    // Try the next text position
+                    matchPointer++;
+
+                } else {
+
+                    // Mismatch and cannot scan. Overall match has failed.
+                    return false;
+
+                }
+
+            } while (scanning);
+
+            // Next part is not the first.
+            firstPart = false;
         }
+
+        // Match if finally pointing at end of matchString or if there was a '*'
+        // at the end of the pattern.
+        return lastStar || matchPointer == matchStringLength;
     }
+
 
     public String getPatternText() {
         return patternText;
@@ -120,7 +152,6 @@ public class CompilingPatternMatch {
         return !(patternText != null
                 ? !patternText.equals(that.patternText) 
                 : that.patternText != null);
-
     }
 
     public int hashCode() {

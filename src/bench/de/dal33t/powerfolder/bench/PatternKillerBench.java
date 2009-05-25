@@ -27,44 +27,28 @@ import java.util.HashMap;
 import java.util.Date;
 
 /**
- * This is a bench test to see if we can get better performance using a
- * compiled regex matcher over the existing implementation.
+ * This is a bench test to performance test pattern matching with long * chains.
+ * The original implementation does not handle these well, because of
+ * exponential depth processing. The new implementation has a linear
+ * implementation.
  *
- * The test loops 1000 times over 10 check strings over 10 patterns.
+ * The test loops 1000 times over the string for the pattern.
  *
  * The first run uses the existing PatternMatch.isMatch() method.
  *
- * The second run pre-compiles the patterns, then tests with those.
+ * The second run pre-compiles the pattern, then tests with check string.
  * Note that the compile time is not included in the run time.
  */
-public class PatternMatchBench extends Bench {
+public class PatternKillerBench extends Bench {
 
-    /** Ten check strings */
+    /** Check strings */
     private static final String[] CHECK_STRINGS = {
-            "a uhui iauwehru hdkab f",
-            "asdfk as,jhlk uhelkh kj",
-            "a dfjhlkuahw fklhkljha ",
-            "lkjlkhaseu hasjdflbkbsd",
-            "a lkhasduy uhj sfja kj ",
-            "iuhba bkadsf kjhbkjhba ",
-            "jhiu  ads bnbkajhsbf kh",
-            "akjkhlkjbxkjhgad fkh as",
-            "jjjjjjjjjjjjjjjjjjjjjjj",
-            "  lkjhk   kj    jkk h  "
+            "aaaaaaaaaaaaaaaaaaaaaaaaaab"
     };
 
-    /** Ten patterns, some with '*' characters */
+    /** Patterns, with many '*' characters */
     private static final String[] PATTERN_STRINGS = {
-            "h sdf",
-            "s hj*s j",
-            "hkjh as ",
-            "*.ye",
-            "as*dl j*lkja ",
-            "iui*ajj",
-            "*.exe",
-            "hlksj",
-            "j*j*j",
-            "hlkah"
+            "a*a*a*a*a"
     };
 
     /**
@@ -73,7 +57,7 @@ public class PatternMatchBench extends Bench {
      * @param args
      */
     public static void main(String[] args) {
-        PatternMatchBench bench = new PatternMatchBench();
+        PatternKillerBench bench = new PatternKillerBench();
         bench.run();
     }
 
