@@ -51,7 +51,6 @@ import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
@@ -314,7 +313,7 @@ public class TransferManager extends PFComponent {
         if (ConfigurationEntry.UPLOADS_AUTO_CLEANUP
             .getValueBoolean(getController()))
         {
-            Integer uploadCleanupFrequency = PreferencesEntry.UPLOAD_AUTO_CLEANUP_FREQUENCY
+            Integer uploadCleanupFrequency = ConfigurationEntry.UPLOAD_AUTO_CLEANUP_FREQUENCY
                 .getValueInt(getController());
             for (Upload completedUpload : completedUploads) {
                 long numberOfDays = calcDays(completedUpload.getCompletedDate());
@@ -329,7 +328,7 @@ public class TransferManager extends PFComponent {
         if (ConfigurationEntry.DOWNLOADS_AUTO_CLEANUP
             .getValueBoolean(getController()))
         {
-            Integer downloadCleanupFrequency = PreferencesEntry.UPLOAD_AUTO_CLEANUP_FREQUENCY
+            Integer downloadCleanupFrequency = ConfigurationEntry.UPLOAD_AUTO_CLEANUP_FREQUENCY
                 .getValueInt(getController());
             for (DownloadManager completedDownload : completedDownloads) {
                 long numberOfDays = calcDays(completedDownload
@@ -486,7 +485,7 @@ public class TransferManager extends PFComponent {
     /**
      * Returns the MultiSourceDownload, that's managing the given info.
      * 
-     * @param loaddownload
+     * @param info
      * @return
      */
     private DownloadManager getDownloadManagerFor(FileInfo info) {
@@ -763,7 +762,7 @@ public class TransferManager extends PFComponent {
 
         if (ConfigurationEntry.DOWNLOADS_AUTO_CLEANUP
             .getValueBoolean(getController())
-            && PreferencesEntry.DOWNLOAD_AUTO_CLEANUP_FREQUENCY
+            && ConfigurationEntry.DOWNLOAD_AUTO_CLEANUP_FREQUENCY
                 .getValueInt(getController()) == 0)
         {
             if (isFiner()) {
@@ -911,7 +910,7 @@ public class TransferManager extends PFComponent {
             // Auto cleanup of uploads
             if (ConfigurationEntry.UPLOADS_AUTO_CLEANUP
                 .getValueBoolean(getController())
-                && PreferencesEntry.UPLOAD_AUTO_CLEANUP_FREQUENCY
+                && ConfigurationEntry.UPLOAD_AUTO_CLEANUP_FREQUENCY
                     .getValueInt(getController()) == 0)
             {
                 if (isFiner()) {
@@ -1977,8 +1976,8 @@ public class TransferManager extends PFComponent {
     /**
      * Invoked by Download, if a new chunk was received
      * 
+     * @param d
      * @param chunk
-     * @param from
      */
     public void chunkAdded(Download d, FileChunk chunk) {
         Reject.noNullElements(d, chunk);

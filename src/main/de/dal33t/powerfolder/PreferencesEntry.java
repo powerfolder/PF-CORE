@@ -57,18 +57,6 @@ public enum PreferencesEntry {
 
     ASK_FOR_FRIENDSHIP_MESSAGE("AskForFriendshipMessage", true),
 
-    /**
-     * Days until auto cleanup of uploads.
-     * Zero = cleanup on completion.
-     */
-    UPLOAD_AUTO_CLEANUP_FREQUENCY("UploadAutoCleanupFrequency", 5),
-
-    /**
-     * Days until auto cleanup of downloads.
-     * Zero = cleanup on completion.
-     */
-    DOWNLOAD_AUTO_CLEANUP_FREQUENCY("DownloadAutoCleanupFrequency", 5),
-
     SHOW_PREVIEW_PANEL("ShowPreviewPanel", false),
 
     UI_LOOK_AND_FEEL("UILookAndFeel", null),

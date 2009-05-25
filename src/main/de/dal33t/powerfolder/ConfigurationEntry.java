@@ -496,7 +496,20 @@ public enum ConfigurationEntry {
     /**
      * The http password proxy to use for HTTP tunneled connections
      */
-    HTTP_PROXY_PASSWORD("http.proxy.password");
+    HTTP_PROXY_PASSWORD("http.proxy.password"),
+
+    /**
+     * Days until auto cleanup of uploads.
+     * Zero = cleanup on completion.
+     */
+    UPLOAD_AUTO_CLEANUP_FREQUENCY("upload.auto.cleanup.frequency", "5"),
+
+    /**
+     * Days until auto cleanup of downloads.
+     * Zero = cleanup on completion.
+     */
+    DOWNLOAD_AUTO_CLEANUP_FREQUENCY("download.auto.cleanup.frequency", "5");
+
 
     // Methods/Constructors ***************************************************
 

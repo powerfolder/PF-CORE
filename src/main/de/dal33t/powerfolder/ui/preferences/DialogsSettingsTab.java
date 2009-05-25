@@ -128,7 +128,7 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
         });
 
         notificationDisplaySlider = new JSlider();
-        notificationDisplaySlider.setMinimum(5);
+        notificationDisplaySlider.setMinimum(0);
         notificationDisplaySlider.setMaximum(30);
         notificationDisplaySlider.setValue(PreferencesEntry.NOTIFICATION_DISPLAY
                 .getValueInt(getController()));
@@ -139,8 +139,7 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
         notificationDisplaySlider.setPaintLabels(true);
 
         Dictionary<Integer, JLabel> dictionary = new Hashtable<Integer, JLabel>();
-        dictionary.put(5, new JLabel(String.valueOf(5)));
-        for (int i = 10; i <= 30; i += notificationDisplaySlider.getMajorTickSpacing())
+        for (int i = 0; i <= 30; i += notificationDisplaySlider.getMajorTickSpacing())
         {
             dictionary.put(i, new JLabel(Integer.toString(i)));
         }

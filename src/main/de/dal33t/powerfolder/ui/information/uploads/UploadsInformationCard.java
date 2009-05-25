@@ -25,7 +25,6 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.information.HasDetailsPanel;
@@ -123,7 +122,7 @@ public class UploadsInformationCard extends InformationCard
         autoCleanupCB.addActionListener(new MyActionListener());
 
         cleanupSlider = new JSlider(0, 10,
-                PreferencesEntry.UPLOAD_AUTO_CLEANUP_FREQUENCY
+                ConfigurationEntry.UPLOAD_AUTO_CLEANUP_FREQUENCY
                         .getValueInt(getController())) {
             public Dimension getPreferredSize() {
                 return new Dimension(20, (int) super.getPreferredSize()
@@ -188,8 +187,9 @@ public class UploadsInformationCard extends InformationCard
     }
 
     private void updateCleanupLabel() {
-        PreferencesEntry.UPLOAD_AUTO_CLEANUP_FREQUENCY
-                .setValue(getController(), cleanupSlider.getValue());
+        ConfigurationEntry.UPLOAD_AUTO_CLEANUP_FREQUENCY
+                .setValue(getController(), String.valueOf(cleanupSlider.getValue()));
+        getController().saveConfig();
         if (cleanupSlider.getValue() == 0) {
             cleanupLabel.setText(Translation.getTranslation(
                     "uploads_information_card.auto_cleanup.immediate"));
