@@ -139,6 +139,14 @@ public class CompilingPatternMatch {
         return patternText;
     }
 
+    public boolean isFirstStar() {
+        return firstStar;
+    }
+
+    public boolean isLastStar() {
+        return lastStar;
+    }
+
     public boolean equals(Object obj) {
         if (this == obj) {
             return true;

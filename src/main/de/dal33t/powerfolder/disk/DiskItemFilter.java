@@ -165,7 +165,7 @@ public class DiskItemFilter {
      * NOTE: This should probably be called through the Folder.removePattern method,
      * so that the folder becomes dirty and persists the change.
      *
-     * @param pattern
+     * @param patternText
      */
     public void addPattern(String patternText) {
         Reject.ifBlank(patternText, "Pattern is blank");
@@ -196,7 +196,10 @@ public class DiskItemFilter {
      */
     public void removePattern(String patternText) {
         for (CompilingPatternMatch patternMatch : patterns) {
-            if (patternMatch.getPatternText().equals(patternText.toLowerCase())) {
+            String text = (patternMatch.isFirstStar() ? "*" : "") +
+                    patternMatch.getPatternText() +
+                    (patternMatch.isLastStar() ? "*" : "");
+            if (text.equals(patternText.toLowerCase())) {
                 patterns.remove(patternMatch);
             }
         }
