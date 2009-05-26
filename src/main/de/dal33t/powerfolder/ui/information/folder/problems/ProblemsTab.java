@@ -22,6 +22,8 @@ package de.dal33t.powerfolder.ui.information.folder.problems;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.ui.UIUtil;
+import de.dal33t.powerfolder.util.Help;
+import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.disk.problem.Problem;
 import de.dal33t.powerfolder.disk.Folder;
@@ -39,6 +41,7 @@ import com.jgoodies.forms.builder.ButtonBarBuilder;
 import java.util.List;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.io.IOException;
 
 public class ProblemsTab extends PFUIComponent {
 
@@ -152,6 +155,17 @@ public class ProblemsTab extends PFUIComponent {
         }
 
         public void actionPerformed(ActionEvent e) {
+            int selectedRow = problemsTable.getSelectedRow();
+            Problem problem = (Problem) problemsTableModel.getValueAt(
+                    selectedRow, 0);
+            String wikiArticleURL = Help.getWikiArticleURL(getController(),
+                    problem.getWikiLinkKey());
+            try {
+                BrowserLauncher.openURL(wikiArticleURL);
+            } catch (IOException e1) {
+                logSevere("IOException", e1);
+            }
+
         }
     }
 
