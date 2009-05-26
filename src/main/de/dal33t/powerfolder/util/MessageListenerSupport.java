@@ -87,7 +87,7 @@ public class MessageListenerSupport {
      * @param messageType
      * @param aListener
      */
-    public void addMessageListener(Class<?> messageType,
+    public synchronized void addMessageListener(Class<?> messageType,
         MessageListener aListener)
     {
         if (aListener == null) {
@@ -107,8 +107,8 @@ public class MessageListenerSupport {
             } else {
                 messageListenersNotInDispatchThread.put(messageType, listeners);
             }
-            listeners.addIfAbsent(aListener);
         }
+        listeners.addIfAbsent(aListener);
     }
 
     /**
@@ -193,7 +193,7 @@ public class MessageListenerSupport {
             }
         }
 
-        Runnable runner = new Runnable() {
+        Runnable inEDTRunner = new Runnable() {
             public void run() {
                 Collection<MessageListener> innerGeneralListeners = 
                         messageListenersInDispatchThread.get(All.class);
@@ -203,7 +203,10 @@ public class MessageListenerSupport {
                         lGenCount.incrementAndGet();
                     }
                 }
-
+            }
+        };
+        Runnable exEDTRunner = new Runnable() {
+            public void run() {
                 // Fire special listeners
                 Collection<MessageListener> innerSpecialListeners =
                         messageListenersInDispatchThread.get(message.getClass());
@@ -218,10 +221,12 @@ public class MessageListenerSupport {
         if (!AWT_AVAILABLE || EventQueue.isDispatchThread()) {
             // No awt system ? do not put in swing thread
             // Already in swing thread ? also don't wrap
-            runner.run();
+            exEDTRunner.run();
+            inEDTRunner.run();
         } else {
             // Put runner in swingthread
-            SwingUtilities.invokeLater(runner);
+            exEDTRunner.run();
+            SwingUtilities.invokeLater(inEDTRunner);
         }
 
 //        if (lSpcCount > 0 || lGenCount > 0) {
