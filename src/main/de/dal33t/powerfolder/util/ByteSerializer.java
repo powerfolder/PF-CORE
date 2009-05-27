@@ -97,7 +97,7 @@ public class ByteSerializer extends Loggable {
             byteOut = outBufferRef.get();
             byteOut.reset();
         } else {
-            logFiner("Creating send buffer (512bytes)");
+            //logFiner("Creating send buffer (512bytes)");
             // Create new bytearray output, 512b buffer
             byteOut = new ByteArrayOutputStream(512);
             if (CACHE_OUT_BUFFER) {
@@ -175,9 +175,9 @@ public class ByteSerializer extends Loggable {
 
         // Dont cache buffer
         if (expectedSize > MAX_CACHE_BUFFER_SIZE) {
-            if (isFiner()) {
-                logFiner("Uncached buffer: " + expectedSize);
-            }
+            //if (isFiner()) {
+            //    logFiner("Uncached buffer: " + expectedSize);
+            //}
             byteIn = new byte[expectedSize];
             // Read into receivebuffer
             StreamUtils.read(in, byteIn, 0, expectedSize);
