@@ -1941,13 +1941,11 @@ public class Controller extends PFComponent {
         if (windowsBaseDir.mkdirs()) {
             log.info("Created " + windowsBaseDir.getAbsolutePath());
             if (unixBaseDir.exists()) {
-                String powerFolderConfig = "PowerFolder.config";
                 try {
-                    FileUtils.copyFile(new File(unixBaseDir, powerFolderConfig),
-                        new File(windowsBaseDir, powerFolderConfig));
-                    log.info("Migrated " + powerFolderConfig);
+                    FileUtils.recursiveCopy(unixBaseDir, windowsBaseDir);
+                    log.info("Migrated unix config to window");
                 } catch (IOException e) {
-                    log.severe("Failed to migrate " + powerFolderConfig);
+                    log.severe("Failed to unix config to window");
                 }
             }
             return windowsBaseDir;

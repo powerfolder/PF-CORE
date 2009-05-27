@@ -134,4 +134,140 @@ public class FileUtilsTest extends TestCase {
         assertEquals(0, actual3.list().length);
         assertEquals("hümmers  rüttenscheiß Wichtige Doxx", actual3.getName());
     }
+
+    /**
+     * Move of ...
+     *
+     * build/test/a
+     * build/test/dir/b
+     * build/test/dir/c
+     * build/test/dir/sub/d
+     *
+     * ... to ...
+     *
+     * build/move/
+     *
+     * @throws IOException
+     */
+    public void testFileMove() throws IOException {
+
+        File baseDir = new File("build/test");
+        FileUtils.recursiveDelete(baseDir);
+        FileUtils.recursiveDelete(new File("build/move"));
+
+        // Setup base dir with dirs and files.
+        assertTrue(baseDir.mkdir());
+        File dir = new File(baseDir, "dir");
+        assertTrue(dir.mkdir());
+        File sub = new File(dir, "sub");
+        assertTrue(sub.mkdir());
+        TestHelper.createRandomFile(baseDir, "a");
+        TestHelper.createRandomFile(dir, "b");
+        TestHelper.createRandomFile(dir, "c");
+        TestHelper.createRandomFile(sub, "d");
+
+        // Move it.
+        File moveDir = new File("build/move");
+        FileUtils.recursiveMove(baseDir, moveDir);
+
+        // Check move.
+        assertTrue(moveDir.exists());
+        System.out.println(moveDir.listFiles().length);
+        assertTrue(moveDir.listFiles().length == 2); // dir and a
+        boolean foundDir = false;
+        boolean foundSub = false;
+        for (File dirFile : moveDir.listFiles()) {
+            if (dirFile.isDirectory()) {
+                foundDir = true;
+                assertTrue(dirFile.listFiles().length == 3); // b, c, and sub
+                for (File subFile : dirFile.listFiles()) {
+                    if (subFile.isDirectory()) {
+                        foundSub = true;
+                        assertTrue(subFile.listFiles().length == 1); // d
+                    }
+                }
+            }
+        }
+        assertTrue(foundDir);
+        assertTrue(foundSub);
+
+        // Check the original is gone.
+        assertTrue(!baseDir.exists());
+    }
+
+    /**
+     * Copy of ...
+     *
+     * build/test/a
+     * build/test/dir/b
+     * build/test/dir/c
+     * build/test/dir/sub/d
+     *
+     * ... to ...
+     *
+     * build/copy/
+     *
+     * @throws IOException
+     */
+    public void testFileCopy() throws IOException {
+
+        File baseDir = new File("build/test");
+        FileUtils.recursiveDelete(baseDir);
+        FileUtils.recursiveDelete(new File("build/copy"));
+
+        // Setup base dir with dirs and files.
+        assertTrue(baseDir.mkdir());
+        File dir = new File(baseDir, "dir");
+        assertTrue(dir.mkdir());
+        File sub = new File(dir, "sub");
+        assertTrue(sub.mkdir());
+        TestHelper.createRandomFile(baseDir, "a");
+        TestHelper.createRandomFile(dir, "b");
+        TestHelper.createRandomFile(dir, "c");
+        TestHelper.createRandomFile(sub, "d");
+
+        // Copy it.
+        File copyDir = new File("build/copy");
+        FileUtils.recursiveCopy(baseDir, copyDir);
+
+        // Check copy.
+        assertTrue(copyDir.exists());
+        assertTrue(copyDir.listFiles().length == 2); // a and dir
+        boolean foundDir = false;
+        boolean foundSub = false;
+        for (File dirFile : copyDir.listFiles()) {
+            if (dirFile.isDirectory()) {
+                foundDir = true;
+                assertTrue(dirFile.listFiles().length == 3); // b, c and sub
+                for (File subFile : dirFile.listFiles()) {
+                    if (subFile.isDirectory()) {
+                        foundSub = true;
+                        assertTrue(subFile.listFiles().length == 1); // d
+                    }
+                }
+            }
+        }
+        assertTrue(foundDir);
+        assertTrue(foundSub);
+
+        // Check the original is still there.
+        assertTrue(baseDir.exists());
+        foundDir = false;
+        foundSub = false;
+        for (File dirFile : baseDir.listFiles()) { // a and dir
+            if (dirFile.isDirectory()) {
+                foundDir = true;
+                assertTrue(dirFile.listFiles().length == 3); // b, c, and sub
+                for (File subFile : dirFile.listFiles()) {
+                    if (subFile.isDirectory()) {
+                        foundSub = true;
+                        assertTrue(subFile.listFiles().length == 1); // d
+                    }
+                }
+            }
+        }
+        assertTrue(foundDir);
+        assertTrue(foundSub);
+    }
+
 }

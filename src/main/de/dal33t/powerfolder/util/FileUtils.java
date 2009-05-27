@@ -390,7 +390,7 @@ public class FileUtils {
 
     /**
      * A recursive move of one directory to another.
-     * 
+     *
      * @param sourceFile
      * @param targetFile
      * @throws IOException
@@ -424,7 +424,7 @@ public class FileUtils {
             sourceFile.renameTo(targetFile);
         } else {
             throw new UnsupportedOperationException(
-                "Can only copy directory to directory or file to file: "
+                "Can only move directory to directory or file to file: "
                     + sourceFile.getAbsolutePath() + " --> "
                     + targetFile.getAbsolutePath());
         }
@@ -432,6 +432,47 @@ public class FileUtils {
         // Hide target if original is hidden.
         if (sourceFile.isHidden()) {
             makeHiddenOnWindows(targetFile);
+        }
+    }
+
+
+    /**
+     * A recursive copy of one directory to another.
+     *
+     * @param sourceFile
+     * @param targetFile
+     * @throws IOException
+     */
+    public static void recursiveCopy(File sourceFile, File targetFile)
+        throws IOException
+    {
+        Reject.ifNull(sourceFile, "Source directory is null");
+        Reject.ifNull(targetFile, "Target directory is null");
+
+        if (!sourceFile.exists()) {
+            // Do nothing.
+            return;
+        }
+
+        if (sourceFile.isDirectory() && !targetFile.exists()) {
+            targetFile.mkdirs();
+        }
+
+        if (sourceFile.isDirectory() && targetFile.isDirectory()) {
+            File[] files = sourceFile.listFiles();
+            for (File nextOriginalFile : files) {
+                // Synthesize target file name.
+                String lastPart = nextOriginalFile.getName();
+                File nextTargetFile = new File(targetFile, lastPart);
+                recursiveCopy(nextOriginalFile, nextTargetFile);
+            }
+        } else if (!sourceFile.isDirectory() && !targetFile.isDirectory()) {
+            copyFile(sourceFile, targetFile);
+        } else {
+            throw new UnsupportedOperationException(
+                "Can only copy directory to directory or file to file: "
+                    + sourceFile.getAbsolutePath() + " --> "
+                    + targetFile.getAbsolutePath());
         }
     }
 
