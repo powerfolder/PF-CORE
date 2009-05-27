@@ -31,7 +31,10 @@ import java.util.UUID;
 import java.util.Map.Entry;
 
 import junit.framework.TestCase;
-import de.dal33t.powerfolder.*;
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Feature;
+import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
@@ -128,8 +131,6 @@ public abstract class MultipleControllerTestCase extends TestCase {
         // triggerAndWaitForInitialMaitenenace(controller);
         controller.getPreferences().putBoolean("createdesktopshortcuts", false);
         // Clean up on completion.
-        ConfigurationEntry.UPLOAD_AUTO_CLEANUP_FREQUENCY.setValue(controller, "0");
-        ConfigurationEntry.DOWNLOAD_AUTO_CLEANUP_FREQUENCY.setValue(controller, "0");
         controllers.put(id, controller);
         return controller;
     }

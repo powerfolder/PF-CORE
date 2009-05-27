@@ -27,7 +27,10 @@ import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
 import junit.framework.TestCase;
-import de.dal33t.powerfolder.*;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Feature;
+import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.PowerFolder;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
@@ -165,9 +168,6 @@ public class TwoControllerTestCase extends TestCase {
         // triggerAndWaitForInitialMaitenenace(controllerBart);
         controllerBart.getPreferences().putBoolean("createdesktopshortcuts",
             false);
-        // Clean up on completion.
-        ConfigurationEntry.DOWNLOAD_AUTO_CLEANUP_FREQUENCY.setValue(controllerBart, "0");
-        ConfigurationEntry.UPLOAD_AUTO_CLEANUP_FREQUENCY.setValue(controllerBart, "0");
     }
 
     protected void startControllerLisa() {
@@ -179,9 +179,6 @@ public class TwoControllerTestCase extends TestCase {
         // triggerAndWaitForInitialMaitenenace(controllerLisa);
         controllerLisa.getPreferences().putBoolean("createdesktopshortcuts",
             false);
-        // Clean up on completion.
-        ConfigurationEntry.DOWNLOAD_AUTO_CLEANUP_FREQUENCY.setValue(controllerLisa, "0");
-        ConfigurationEntry.UPLOAD_AUTO_CLEANUP_FREQUENCY.setValue(controllerLisa, "0");
     }
 
     /**
