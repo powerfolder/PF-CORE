@@ -363,10 +363,10 @@ public class FileTransferTest extends TwoControllerTestCase {
 
     public void testMultipleFilesCopy() {
         // Register listeners
-        final MyTransferManagerListener tm1Listener = new MyTransferManagerListener();
-        getContollerBart().getTransferManager().addListener(tm1Listener);
-        final MyTransferManagerListener tm2Listener = new MyTransferManagerListener();
-        getContollerLisa().getTransferManager().addListener(tm2Listener);
+        final MyTransferManagerListener bartsListener = new MyTransferManagerListener();
+        getContollerBart().getTransferManager().addListener(bartsListener);
+        final MyTransferManagerListener lisasListener = new MyTransferManagerListener();
+        getContollerLisa().getTransferManager().addListener(lisasListener);
 
         final int nFiles = 35;
         for (int i = 0; i < nFiles; i++) {
@@ -378,31 +378,38 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(nFiles, getFolderAtBart().getKnownFilesCount());
 
         // Wait for copy (timeout 50)
-        TestHelper.waitForCondition(200, new Condition() {
+        TestHelper.waitForCondition(200, new ConditionWithMessage() {
             public boolean reached() {
-                return tm2Listener.downloadRequested >= nFiles
-                    && tm2Listener.downloadCompleted >= nFiles
-                    && tm1Listener.uploadCompleted >= nFiles;
+                return lisasListener.downloadRequested >= nFiles
+                    && lisasListener.downloadCompleted >= nFiles
+                    && bartsListener.uploadCompleted >= nFiles;
+            }
+
+            public String message() {
+                return "lisa dl req: " + lisasListener.downloadRequested
+                    + ", lisa dl comp: " + lisasListener.downloadCompleted
+                    + ", bart ul comp: " + bartsListener.uploadCompleted
+                    + " should be " + nFiles;
             }
         });
 
         // Check correct event fireing
-        assertEquals(0, tm1Listener.uploadAborted);
-        assertEquals(0, tm1Listener.uploadBroken);
-        assertEquals(nFiles, tm1Listener.uploadRequested);
-        assertEquals(nFiles, tm1Listener.uploadStarted);
-        assertEquals(nFiles, tm1Listener.uploadCompleted);
+        assertEquals(0, bartsListener.uploadAborted);
+        assertEquals(0, bartsListener.uploadBroken);
+        assertEquals(nFiles, bartsListener.uploadRequested);
+        assertEquals(nFiles, bartsListener.uploadStarted);
+        assertEquals(nFiles, bartsListener.uploadCompleted);
 
         // Check correct event fireing
-        assertEquals(nFiles, tm2Listener.downloadRequested);
+        assertEquals(nFiles, lisasListener.downloadRequested);
         // We can't rely on that all downloads have been queued.
         // Might be started fast! So now queued message is sent
         // assertEquals(nFiles, tm2Listener.downloadQueued);
-        assertEquals(nFiles, tm2Listener.downloadStarted);
-        assertEquals(nFiles, tm2Listener.downloadCompleted);
-        assertEquals(0, tm2Listener.downloadAborted);
-        assertEquals(0, tm2Listener.downloadBroken);
-        assertEquals(0, tm2Listener.downloadsCompletedRemoved);
+        assertEquals(nFiles, lisasListener.downloadStarted);
+        assertEquals(nFiles, lisasListener.downloadCompleted);
+        assertEquals(0, lisasListener.downloadAborted);
+        assertEquals(0, lisasListener.downloadBroken);
+        assertEquals(0, lisasListener.downloadsCompletedRemoved);
 
         // Test ;)
         assertEquals(nFiles, getFolderAtLisa().getKnownFilesCount());
@@ -414,7 +421,7 @@ public class FileTransferTest extends TwoControllerTestCase {
             .countActiveDownloads());
 
         clearCompletedDownloadsAtLisa();
-        assertEquals(nFiles, tm2Listener.downloadsCompletedRemoved);
+        assertEquals(nFiles, lisasListener.downloadsCompletedRemoved);
 
         TestHelper.assertIncompleteFilesGone(this);
     }
