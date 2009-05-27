@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.clientserver;
 
 import java.util.Collection;
+import java.util.List;
 
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.clientserver.AccountDetails;
@@ -117,10 +118,18 @@ public interface AccountService {
      * @return all license key content for this account. or null if no key was
      *         found.
      */
-    String[] getLicenseKeyContents();
+    List<String> getLicenseKeyContents();
 
     /**
      * @return the folder containing the license keys.
      */
+    @Deprecated
     FolderInfo getLicenseKeyFolder();
+
+    /**
+     * http://www.powerfolder.com/wiki/Server_maintenance_folder
+     * 
+     * @return the maint folder.
+     */
+    FolderInfo getMaintenanceFolder();
 }
