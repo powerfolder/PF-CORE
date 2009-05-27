@@ -34,16 +34,8 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
-import javax.swing.JTextField;
+import javax.swing.*;
 
 import jwf.WizardPanel;
 
@@ -86,7 +78,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
     private JComponent ccBox;
     private JComponent saveToFileButton;
     private JRadioButton sendViaPowerFolderButton;
-    private JTextField invitationTextField;
+    private JTextArea invitationTextField;
 
     private ValueModel emailModel;
     private ValueModel invitationFileModel;
@@ -202,7 +194,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
     protected JPanel buildContent() {
         FormLayout layout = new FormLayout(
             "pref, 3dlu, 140dlu, pref:grow",
-            "pref, 3dlu, pref, 6dlu, pref, $rg, pref, 6dlu, pref, $rg, "
+            "pref, 3dlu, pref, 6dlu, pref, 3dlu, pref, 6dlu, pref, 3dlu, "
                 + "pref, 3dlu, pref, 6dlu, pref, 3dlu, pref, 6dlu, pref, 3dlu, "
                 + "pref, 3dlu, pref, 3dlu, pref");
 
@@ -224,7 +216,9 @@ public class SendInvitationsPanel extends PFWizardPanel {
             1, row, 4));
 
         row += 2;
-        builder.add(invitationTextField, cc.xy(1, row));
+        JScrollPane invTextScroll = new JScrollPane(invitationTextField);
+        invTextScroll.setPreferredSize(new Dimension(50, 60));
+        builder.add(invTextScroll, cc.xy(1, row));
 
         row += 2;
         builder.add(sendByMailButton, cc.xyw(1, row, 3));
@@ -319,11 +313,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
             invitationFileModel, JFileChooser.FILES_ONLY, // Save invitation
             InvitationUtil.createInvitationsFilefilter(), false);
         invitationFileField.setOpaque(false);
-        
-        invitationTextField = new JTextField(Translation.getTranslation(
-            "wizard.send_invitations.invitation_text_sample", folder.name));
-        JScrollPane invTextScroll = new JScrollPane(invitationTextField);
-        invTextScroll.setPreferredSize(new Dimension(50, 80));
+        invitationTextField = new JTextArea();
 
         viaPowerFolderModel = new ValueHolder();
         viaPowerFolderModel.setValue(Translation
