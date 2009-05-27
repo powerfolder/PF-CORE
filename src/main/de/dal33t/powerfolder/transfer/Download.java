@@ -374,13 +374,16 @@ public class Download extends Transfer {
             return true;
         }
         // timeout is, when dl is not enqued at remote side,
-        // and has timeout
-        boolean timedOut = System.currentTimeMillis()
-            - Constants.DOWNLOAD_REQUEST_TIMEOUT_LIMIT > lastTouch.getTime()
-            && !queued;
-        if (timedOut) {
-            logFine("Break cause: Timeout.");
-            return true;
+        // and has timeout. Don't check timeout during filehasing of UPLOADER
+        if (getState() != TransferState.FILERECORD_REQUEST) {
+            boolean timedOut = System.currentTimeMillis()
+                - Constants.DOWNLOAD_REQUEST_TIMEOUT_LIMIT > lastTouch
+                .getTime()
+                && !queued;
+            if (timedOut) {
+                logFine("Break cause: Timeout.");
+                return true;
+            }
         }
         // Check queueing at remote side
         boolean isQueuedAtPartner = stillQueuedAtPartner();
