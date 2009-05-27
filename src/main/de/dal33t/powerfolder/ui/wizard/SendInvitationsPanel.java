@@ -24,11 +24,11 @@ import static de.dal33t.powerfolder.ui.wizard.SendInvitationsPanel.OPTIONS.SEND_
 import static de.dal33t.powerfolder.ui.wizard.SendInvitationsPanel.OPTIONS.SEND_DIRECT;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
 
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
