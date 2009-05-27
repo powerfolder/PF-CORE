@@ -71,10 +71,12 @@ public class BufferedHandler extends Handler {
         if (!isLoggable(record)) {
             return;
         }
-        logRecords.add(0, record);
-        if (logRecords.size() > size) {
-            // Discard the oldest log record
-            logRecords.remove(logRecords.size() - 1);
+        synchronized (logRecords) {
+            logRecords.add(0, record);
+            if (logRecords.size() > size) {
+                // Discard the oldest log record
+                logRecords.remove(logRecords.size() - 1);
+            }
         }
     }
 
