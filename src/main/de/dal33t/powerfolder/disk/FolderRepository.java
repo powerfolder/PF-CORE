@@ -42,6 +42,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TimerTask;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
@@ -602,6 +603,11 @@ public class FolderRepository extends PFComponent implements Runnable {
         // Start filerequestor
         fileRequestor.start();
 
+        // Defer 30 seconds, so it is not 'in-your-face' at start up.
+        // Also run this each day, for long-running installations.
+        getController().scheduleAndRepeat(new OldSyncWarningCheckTask(), 30000,
+            24 * 3600 * 1000);
+
         started = true;
     }
 
@@ -1107,19 +1113,15 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
-     * Returns true if all folders are synchronized.
-     *
-     * @return
+     * @return  true if all folders are synchronized.
      */
     public boolean isSynchronized() {
         return allInSync.get();
     }
 
     /**
-     * Returns sync date. This will return the last date all folders were
+     * @return sync date. This will return the last date all folders were
      * synchronized OR the ETA if sync is in progress.
-     *
-     * @return
      */
     public Date getSynchronizationDate() {
         return allSyncOrEstimatedDate;
@@ -1227,6 +1229,14 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         overallFolderStatListenerSupport.statCalculated(
                 new OverallFolderStatEvent(foldersInSync, syncDate));
+    }
+
+    private final class OldSyncWarningCheckTask extends TimerTask {
+        public void run() {
+            for (Folder folder : getController().getFolderRepository().getFolders()) {
+                folder.warnAboutOldSyncs();
+            }
+        }
     }
 
     private class AllFolderMembershipSynchronizer implements Runnable {

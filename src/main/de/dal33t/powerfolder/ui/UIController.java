@@ -336,19 +336,6 @@ public class UIController extends PFComponent {
                 new MainFrameBlinkManager(UIController.this);
             }
         });
-
-        // Warn if any folders have not been synchronized recently.
-        TimerTask timerTask = new TimerTask() {
-            public void run() {
-                for (Folder folder : getController().getFolderRepository().getFolders()) {
-                    folder.warnAboutOldSyncs();
-                }
-            }
-        };
-
-        // Defer 30 seconds, so it is not 'in-your-face' at start up.
-        // Also run this each day, for long-running installations.
-        getController().scheduleAndRepeat(timerTask, 30000, 24 * 3600 * 1000);
     }
 
     private void gotoHPIfRequired() {
