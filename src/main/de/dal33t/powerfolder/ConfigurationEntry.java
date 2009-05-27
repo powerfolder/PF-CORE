@@ -388,6 +388,16 @@ public enum ConfigurationEntry {
      * Whether to log verbose.
      */
     VERBOSE("verbose", Boolean.FALSE.toString()),
+    
+    /**
+     * The loglevel to write to debug file when verbose=true
+     */
+    LOG_LEVEL_FILE("log.file.level", Level.FINE.getName()),
+    
+    /**
+     * The loglevel to print to console when verbose=true
+     */
+    LOG_LEVEL_CONSOLE("log.console.level", Level.WARNING.getName()),
 
     /**
      * Whether to request debug reports

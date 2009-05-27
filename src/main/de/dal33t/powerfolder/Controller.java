@@ -92,7 +92,7 @@ public class Controller extends PFComponent {
     /**
      * program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "4.0.0 - 1.0.1.7";
+    public static final String PROGRAM_VERSION = "4.0.0 - 1.0.1.8";
 
     /** general wait time for all threads (5000 is a balanced value) */
     private static final long WAIT_TIME = 5000;
@@ -610,22 +610,25 @@ public class Controller extends PFComponent {
         // This logs to file for analysis.
         verbose = ConfigurationEntry.VERBOSE.getValueBoolean(getController());
         if (verbose) {
+            String str = ConfigurationEntry.LOG_LEVEL_CONSOLE.getValue(this);
+            Level consoleLevel = LoggingManager.levelForName(str);
+            LoggingManager.setConsoleLogging(consoleLevel != null
+                ? consoleLevel
+                : Level.WARNING);
+
             // Enable file logging
-            LoggingManager.setConsoleLogging(Level.WARNING);
-            LoggingManager.setFileLogging(Level.FINE);
+            str = ConfigurationEntry.LOG_LEVEL_FILE.getValue(this);
+            Level fileLevel = LoggingManager.levelForName(str);
+            LoggingManager.setFileLogging(fileLevel != null
+                ? fileLevel
+                : Level.WARNING);
 
             // Switch on the document handler.
-            String name = PreferencesEntry.DOCUMENT_LOGGING.getValueString(this);
-            if (name == null || name.length() == 0) {
-                LoggingManager.setDocumentLogging(Level.WARNING, this);
-            } else {
-                Level level = LoggingManager.levelForName(name);
-                if (level == null) {
-                    LoggingManager.setDocumentLogging(Level.WARNING, this);
-                } else {
-                    LoggingManager.setDocumentLogging(level, this);
-                }
-            }
+            str = PreferencesEntry.DOCUMENT_LOGGING.getValueString(this);
+            Level uiLogLevel = LoggingManager.levelForName(str);
+            LoggingManager.setDocumentLogging(uiLogLevel != null
+                ? uiLogLevel
+                : Level.WARNING, this);
 
             if (LoggingManager.isLogToFile()) {
                 logInfo("Running in VERBOSE mode, logging to file '"
