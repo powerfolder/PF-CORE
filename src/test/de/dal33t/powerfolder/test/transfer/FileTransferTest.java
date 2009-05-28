@@ -1321,17 +1321,27 @@ public class FileTransferTest extends TwoControllerTestCase {
      * TRAC #1086
      */
     public void testSwitchSyncProfile() {
+
         getContollerBart().setSilentMode(true);
         getContollerLisa().setSilentMode(true);
         getContollerBart().getTransferManager().setAllowedUploadCPSForLAN(
             1000000);
         getContollerLisa().getTransferManager().setAllowedUploadCPSForLAN(
             1000000);
+        // Instant cleanup
+        ConfigurationEntry.UPLOADS_AUTO_CLEANUP.setValue(getContollerBart(),
+            Boolean.TRUE.toString());
+        ConfigurationEntry.UPLOAD_AUTO_CLEANUP_FREQUENCY.setValue(
+            getContollerBart(), "0");
+        ConfigurationEntry.UPLOADS_AUTO_CLEANUP.setValue(getContollerLisa(),
+            Boolean.TRUE.toString());
+        ConfigurationEntry.UPLOAD_AUTO_CLEANUP_FREQUENCY.setValue(
+            getContollerLisa(), "0");
 
         // Prepare
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         TestHelper.createRandomFile(getFolderAtBart().getLocalBase(),
-            8 * 1024 * 1024);
+            4 * 1024 * 1024);
         scanFolder(getFolderAtBart());
 
         TestHelper.waitForCondition(10, new Condition() {
