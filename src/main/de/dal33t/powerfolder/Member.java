@@ -1456,7 +1456,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                 }
                 nExpected -= 1;
                 expectedListMessages.put(changes.folder, nExpected);
-                
+
                 TransferManager tm = getController().getTransferManager();
                 if (changes.added != null) {
                     for (int i = 0; i < changes.added.length; i++) {
@@ -1467,12 +1467,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                             continue;
                             // #1411
                         }
-                        // file "changed" so if downloading break the
-                        // download
-                        if (isFiner()) {
-                            logFiner("downloading changed file, breaking it! "
-                                + file + " " + this);
-                        }
+                        // TODO Optimize: Don't break if files are same.
                         tm.abortDownload(file, this);
                     }
                 }
@@ -1485,11 +1480,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                             continue;
                             // #1411
                         }
-                        // file removed so if downloading break the download
-                        if (isFiner()) {
-                            logFiner("downloading removed file, breaking it! "
-                                + file + ' ' + this);
-                        }
+                        // TODO Optimize: Don't break if files are same.
                         tm.abortDownload(file, this);
                     }
                 }
