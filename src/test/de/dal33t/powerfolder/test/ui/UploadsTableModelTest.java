@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id: AddLicenseHeader.java 4282 2008-06-16 03:25:09Z tot $
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id: AddLicenseHeader.java 4282 2008-06-16 03:25:09Z tot $
+ */
 package de.dal33t.powerfolder.test.ui;
 
 import java.util.ArrayList;
@@ -58,6 +58,13 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         bartModel = new UploadsTableModel(new TransferManagerModel(
             getContollerBart().getTransferManager()), false);
         bartModel.addTableModelListener(bartModelListener);
+
+        // Instant cleanup
+        ConfigurationEntry.UPLOADS_AUTO_CLEANUP.setValue(getContollerBart(),
+            Boolean.TRUE.toString());
+        ConfigurationEntry.UPLOAD_AUTO_CLEANUP_FREQUENCY.setValue(
+            getContollerBart(), "0");
+
     }
 
     public void testSingleFileUpload() {
@@ -73,20 +80,24 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         // Check correct events from model
         assertEquals(bartModelListener.events.toString(), 4,
             bartModelListener.events.size());
-        assertTrue(bartModelListener.events.get(0).getType() == TableModelEvent.INSERT); // Upload Requested
-        assertTrue(bartModelListener.events.get(1).getType() == TableModelEvent.UPDATE); // Upload started
-        assertTrue(bartModelListener.events.get(2).getType() == TableModelEvent.UPDATE); // Upload completed
-        assertTrue(bartModelListener.events.get(3).getType() == TableModelEvent.DELETE); // Completed upload removed
+        assertTrue(bartModelListener.events.get(0).getType() == TableModelEvent.INSERT); // Upload
+        // Requested
+        assertTrue(bartModelListener.events.get(1).getType() == TableModelEvent.UPDATE); // Upload
+        // started
+        assertTrue(bartModelListener.events.get(2).getType() == TableModelEvent.UPDATE); // Upload
+        // completed
+        assertTrue(bartModelListener.events.get(3).getType() == TableModelEvent.DELETE); // Completed
+        // upload
+        // removed
     }
 
     /**
-     * This tests UPLOADS_AUTO_CLEANUP ConfigurationEntry.
-     * By default this is true.
-     * Setting to FALSE stops completed uploads being removed.
+     * This tests UPLOADS_AUTO_CLEANUP ConfigurationEntry. By default this is
+     * true. Setting to FALSE stops completed uploads being removed.
      */
     public void testSingleFileUploadNoAutoCleanup() {
         ConfigurationEntry.UPLOADS_AUTO_CLEANUP.setValue(getContollerBart(),
-                Boolean.FALSE.toString());
+            Boolean.FALSE.toString());
         TestHelper.createRandomFile(getFolderAtBart().getLocalBase());
         scanFolder(getFolderAtBart());
 
@@ -99,9 +110,12 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         // Check correct events from model
         assertEquals(bartModelListener.events.toString(), 3,
             bartModelListener.events.size());
-        assertTrue(bartModelListener.events.get(0).getType() == TableModelEvent.INSERT); // Upload Requested
-        assertTrue(bartModelListener.events.get(1).getType() == TableModelEvent.UPDATE); // Upload started
-        assertTrue(bartModelListener.events.get(2).getType() == TableModelEvent.UPDATE); // Upload completed
+        assertTrue(bartModelListener.events.get(0).getType() == TableModelEvent.INSERT); // Upload
+        // Requested
+        assertTrue(bartModelListener.events.get(1).getType() == TableModelEvent.UPDATE); // Upload
+        // started
+        assertTrue(bartModelListener.events.get(2).getType() == TableModelEvent.UPDATE); // Upload
+        // completed
     }
 
     public void testRunningUpload() {
