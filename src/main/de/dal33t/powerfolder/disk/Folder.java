@@ -1997,6 +1997,8 @@ public class Folder extends PFComponent {
 
     /**
      * Triggers the deletion sync in background.
+     * <p>
+     * TODO Optimize: Sync only with selected member.
      * 
      * @param force
      */
@@ -2010,6 +2012,8 @@ public class Folder extends PFComponent {
 
     /**
      * Synchronizes the deleted files with local folder
+     * <p>
+     * TODO Optimize: Sync only with selected member.
      * 
      * @param force
      *            true if the sync is forced with ALL connected members of the
