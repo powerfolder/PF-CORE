@@ -1939,6 +1939,10 @@ public class TransferManager extends PFComponent {
         Download download = getActiveDownload(from, fileInfo);
         if (download != null) {
             assert download.getPartner().equals(from);
+            if (isFiner()) {
+                logFiner("downloading changed file, aborting it! "
+                    + fileInfo.toDetailString() + " " + from);
+            }
             download.abort(false);
         } else {
             for (Download pendingDL : pendingDownloads) {
@@ -1946,6 +1950,10 @@ public class TransferManager extends PFComponent {
                     && pendingDL.getPartner() != null
                     && pendingDL.getPartner().equals(from))
                 {
+                    if (isFiner()) {
+                        logFiner("Aborting pending download! "
+                            + fileInfo.toDetailString() + " " + from);
+                    }
                     pendingDL.abort(false);
                 }
             }
