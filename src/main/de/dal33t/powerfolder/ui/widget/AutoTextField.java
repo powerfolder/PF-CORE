@@ -108,14 +108,25 @@ public class AutoTextField extends JTextField {
             }
             String startText = getText(0, offs);
             String match = getMatch(startText + str);
-            int selectionStart = offs + str.length();
+
+            // No match? Just enter text.
             if (match.length() == 0) {
                 super.insertString(offs, str, a);
                 return;
             }
+
+            // Enter match and highlight the guessed part.
             super.remove(0, getLength());
-            super.insertString(0, match, a);
-            setSelectionStart(selectionStart);
+
+            // Enter the inserted text, then the remaining match text.
+            // Must do this to preserve entered upper/lower case.
+            super.insertString(0, startText, a);
+            super.insertString(offs, str, a);
+            super.insertString(offs + str.length(), match.substring(
+                    offs + str.length(), match.length()), a);
+
+            // Select the guessed bit.
+            setSelectionStart(offs + str.length());
             setSelectionEnd(getLength());
         }
 
@@ -134,19 +145,25 @@ public class AutoTextField extends JTextField {
             // Try to match on text entered so far.
             String match = getMatch(getText(0, selectionStart));
             if (match.length() == 0) {
+                // No match. Just remove the text.
                 super.remove(offs, len);
             } else {
+                String text = getText(0, getLength());
                 super.remove(0, getLength());
-                super.insertString(0, match, null);
+
+                // Enter the existing text, then the remaining match text.
+                // Must do this to preserve entered upper/lower case.
+                super.insertString(0, text.substring(0, offs), null);
+                super.insertString(offs, match.substring(offs, match.length()),
+                        null);
             }
             try {
                 setSelectionStart(selectionStart);
                 setSelectionEnd(getLength());
             } catch (Exception exception) {
+                // Don't really care.
             }
         }
-
     }
-
 }
 
