@@ -828,14 +828,17 @@ public class Member extends PFComponent implements Comparable<Member> {
 
         boolean ok = waitForFileLists(joinedFolders);
         if (!ok) {
-            logWarning("Disconnecting. Did not receive the full filelists");
-
-            for (Folder folder : joinedFolders) {
-                logFine("Got filelist for " + folder.getName() + " ? "
-                    + hasCompleteFileListFor(folder.getInfo()));
+            String reason = "Disconnecting. Did not receive the full filelists for "
+                + joinedFolders.size() + " folders";
+            logWarning(reason);
+            if (isFine()) {
+                for (Folder folder : joinedFolders) {
+                    logFine("Got filelist for " + folder.getName() + " ? "
+                        + hasCompleteFileListFor(folder.getInfo()));
+                }
             }
             shutdown();
-            return ConnectResult.failure("Disconnecting. Did not receive the full filelists");
+            return ConnectResult.failure(reason);
         }
         if (isFiner()) {
             logFiner("Got complete filelists");
