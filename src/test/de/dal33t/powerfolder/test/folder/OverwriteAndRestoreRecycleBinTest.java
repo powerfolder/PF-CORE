@@ -67,7 +67,7 @@ public class OverwriteAndRestoreRecycleBinTest extends TwoControllerTestCase {
         final File testFileLisa = fInfoLisa.getDiskFile(getContollerLisa()
             .getFolderRepository());
 
-        assertTrue(fInfoLisa.isVersionAndDateIdentical(fInfoBart));
+        assertTrue(fInfoLisa.isVersionDateAndSizeIdentical(fInfoBart));
         assertEquals(testFileBart.length(), testFileLisa.length());
 
         // overwrite file at Bart
@@ -83,7 +83,7 @@ public class OverwriteAndRestoreRecycleBinTest extends TwoControllerTestCase {
                     .iterator().next();
                 FileInfo fInfoBart = getFolderAtBart().getKnownFiles()
                     .iterator().next();
-                return fInfoLisa.isVersionAndDateIdentical(fInfoBart)
+                return fInfoLisa.isVersionDateAndSizeIdentical(fInfoBart)
                     && (testFileBart.length() == testFileLisa.length());
             }
 
@@ -127,7 +127,7 @@ public class OverwriteAndRestoreRecycleBinTest extends TwoControllerTestCase {
                     .iterator().next();
                 FileInfo fInfoBart = getFolderAtBart().getKnownFiles()
                     .iterator().next();
-                return fInfoLisa.isVersionAndDateIdentical(fInfoBart)
+                return fInfoLisa.isVersionDateAndSizeIdentical(fInfoBart)
                     && (testFileBart.length() == testFileLisa.length());
             }
 

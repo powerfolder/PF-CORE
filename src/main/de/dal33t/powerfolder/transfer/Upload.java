@@ -112,7 +112,7 @@ public class Upload extends Transfer {
 
         // Requests for different files on the same transfer connection are not
         // supported currently
-        if (!pr.getFile().isVersionAndDateIdentical(getFile())
+        if (!pr.getFile().isVersionDateAndSizeIdentical(getFile())
             || pr.getRange().getLength() <= 0)
         {
             logSevere("Received invalid part request!");

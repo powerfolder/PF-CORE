@@ -491,7 +491,7 @@ public class TransferManager extends PFComponent {
     private DownloadManager getDownloadManagerFor(FileInfo info) {
         Validate.notNull(info);
         DownloadManager man = dlManagers.get(info);
-        if (man != null && man.getFileInfo().isVersionAndDateIdentical(info)) {
+        if (man != null && man.getFileInfo().isVersionDateAndSizeIdentical(info)) {
             return man;
         }
         return null;
@@ -1191,7 +1191,7 @@ public class TransferManager extends PFComponent {
 
         FileInfo localFile = dl.file.getLocalFileInfo(repo);
         boolean fileInSyncWithDb = localFile != null
-            && localFile.isVersionAndDateIdentical(dl.file);
+            && localFile.isVersionDateAndSizeIdentical(dl.file);
         if (!fileInSyncWithDb) {
             logWarning("File not in sync with db: '" + dl.file.toDetailString()
                 + "', but I have " + localFile.toDetailString());
@@ -1286,7 +1286,7 @@ public class TransferManager extends PFComponent {
         Upload abortedUpload = null;
 
         for (Upload upload : queuedUploads) {
-            if (upload.getFile().isVersionAndDateIdentical(fInfo)
+            if (upload.getFile().isVersionDateAndSizeIdentical(fInfo)
                 && to.equals(upload.getPartner()))
             {
                 // Remove upload from queue
@@ -1302,7 +1302,7 @@ public class TransferManager extends PFComponent {
         }
 
         for (Upload upload : activeUploads) {
-            if (upload.getFile().isVersionAndDateIdentical(fInfo)
+            if (upload.getFile().isVersionDateAndSizeIdentical(fInfo)
                 && to.equals(upload.getPartner()))
             {
                 // Remove upload from queue
@@ -1528,7 +1528,7 @@ public class TransferManager extends PFComponent {
 
         Folder folder = fInfo.getFolder(getController().getFolderRepository());
         FileInfo localFile = folder != null ? folder.getFile(fInfo) : null;
-        if (localFile != null && fInfo.isVersionAndDateIdentical(localFile)) {
+        if (localFile != null && fInfo.isVersionDateAndSizeIdentical(localFile)) {
             logWarning("Not adding pending download, already have: " + fInfo);
             return false;
         }
@@ -1655,7 +1655,7 @@ public class TransferManager extends PFComponent {
                     continue;
                 }
                 // Skip "wrong" sources
-                if (!fileToDl.isVersionAndDateIdentical(remoteFile)) {
+                if (!fileToDl.isVersionDateAndSizeIdentical(remoteFile)) {
                     continue;
                 }
                 if (bestSources == null) {
@@ -1721,7 +1721,7 @@ public class TransferManager extends PFComponent {
                 }
                 return;
             }
-            if (fInfo.isVersionAndDateIdentical(fInfo.getFolder(
+            if (fInfo.isVersionDateAndSizeIdentical(fInfo.getFolder(
                 getController().getFolderRepository()).getFile(fInfo)))
             {
                 // Skip exact same version etc.
@@ -1735,7 +1735,7 @@ public class TransferManager extends PFComponent {
             man = dlManagers.get(fInfo);
 
             if (man == null
-                || !fInfo.isVersionAndDateIdentical(man.getFileInfo()))
+                || !fInfo.isVersionDateAndSizeIdentical(man.getFileInfo()))
             {
                 if (man != null) {
                     if (!man.isDone()) {
@@ -1767,7 +1767,7 @@ public class TransferManager extends PFComponent {
         }
 
         synchronized (man) {
-            if (fInfo.isVersionAndDateIdentical(fInfo.getFolder(
+            if (fInfo.isVersionDateAndSizeIdentical(fInfo.getFolder(
                 getController().getFolderRepository()).getFile(fInfo)))
             {
                 // Skip exact same version etc.
@@ -2043,14 +2043,14 @@ public class TransferManager extends PFComponent {
      */
     public Upload getUpload(Member to, FileInfo fInfo) {
         for (Upload u : activeUploads) {
-            if (u.getFile().isVersionAndDateIdentical(fInfo)
+            if (u.getFile().isVersionDateAndSizeIdentical(fInfo)
                 && u.getPartner().equals(to))
             {
                 return u;
             }
         }
         for (Upload u : queuedUploads) {
-            if (u.getFile().isVersionAndDateIdentical(fInfo)
+            if (u.getFile().isVersionDateAndSizeIdentical(fInfo)
                 && u.getPartner().equals(to))
             {
                 return u;
@@ -2085,7 +2085,7 @@ public class TransferManager extends PFComponent {
      */
     public DownloadManager getCompletedDownload(FileInfo fInfo) {
         for (DownloadManager dlManager : completedDownloads) {
-            if (dlManager.getFileInfo().isVersionAndDateIdentical(fInfo)) {
+            if (dlManager.getFileInfo().isVersionDateAndSizeIdentical(fInfo)) {
                 return dlManager;
             }
         }
@@ -2337,7 +2337,7 @@ public class TransferManager extends PFComponent {
                 if (download.isCompleted()) {
                     DownloadManager man = null;
                     for (DownloadManager tmp : completedDownloads) {
-                        if (tmp.getFileInfo().isVersionAndDateIdentical(
+                        if (tmp.getFileInfo().isVersionDateAndSizeIdentical(
                             download.getFile()))
                         {
                             man = tmp;

@@ -183,7 +183,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
     public synchronized void chunkReceived(Download download, FileChunk chunk) {
         Reject.noNullElements(download, chunk);
         validateDownload(download);
-        assert chunk.file.isVersionAndDateIdentical(getFileInfo());
+        assert chunk.file.isVersionDateAndSizeIdentical(getFileInfo());
         try {
             receivedChunk0(download, chunk);
         } catch (BrokenDownloadException e) {
@@ -734,7 +734,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
 
     private void validateDownload(Download download) {
         Reject.ifNull(download, "Download is null!");
-        Reject.ifTrue(!download.getFile().isVersionAndDateIdentical(
+        Reject.ifTrue(!download.getFile().isVersionDateAndSizeIdentical(
             getFileInfo()), "Download FileInfo differs: "
             + download.getFile().toDetailString() + " vs mine: "
             + getFileInfo().toDetailString());
@@ -887,7 +887,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         ObjectInputStream in = new ObjectInputStream(new FileInputStream(mf));
         try {
             FileInfo fi = (FileInfo) in.readObject();
-            if (fi.isVersionAndDateIdentical(fileInfo)) {
+            if (fi.isVersionDateAndSizeIdentical(fileInfo)) {
                 List<?> content = (List<?>) in.readObject();
                 for (Object o : content) {
                     if (o.getClass() == FilePartsState.class) {

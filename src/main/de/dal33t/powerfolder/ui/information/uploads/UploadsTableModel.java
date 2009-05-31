@@ -288,7 +288,7 @@ public class UploadsTableModel extends PFComponent implements TableModel,
     private int findUploadIndex(Upload uploadArg) {
         for (int i = 0; i < uploads.size(); i++) {
             Upload ul = uploads.get(i);
-            if (ul.getFile().isVersionAndDateIdentical(uploadArg.getFile())
+            if (ul.getFile().isVersionDateAndSizeIdentical(uploadArg.getFile())
                 && Util.equals(ul.getPartner(), uploadArg.getPartner()))
             {
                 return i;

@@ -124,7 +124,7 @@ public class LuceneFolderDBTest extends FileInfoDAOTestCase {
         assertEquals(expected.getName(), actual.getName());
         assertEquals(expected.getFolderInfo(), actual.getFolderInfo());
         assertEquals(expected, actual);
-        assertTrue(expected.isVersionAndDateIdentical(actual));
+        assertTrue(expected.isVersionDateAndSizeIdentical(actual));
         assertTrue(expected.isCompletelyIdentical(actual));
         assertEquals(expected.getModifiedBy(), actual.getModifiedBy());
         assertEquals(expected.getModifiedDate(), actual.getModifiedDate());

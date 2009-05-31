@@ -108,7 +108,7 @@ public class Download extends Transfer {
 
     public synchronized void setDownloadManager(DownloadManager handler) {
         Reject.ifNull(handler, "Handler is null!");
-        Reject.ifFalse(handler.getFileInfo().isVersionAndDateIdentical(
+        Reject.ifFalse(handler.getFileInfo().isVersionDateAndSizeIdentical(
             getFile()), "Fileinfos mismatch. expected "
             + getFile().toDetailString() + ", got "
             + handler.getFileInfo().toDetailString());
@@ -469,7 +469,7 @@ public class Download extends Transfer {
     }
 
     private void checkFileInfo(FileInfo fileInfo) {
-        Reject.ifFalse(fileInfo.isVersionAndDateIdentical(getFile()),
+        Reject.ifFalse(fileInfo.isVersionDateAndSizeIdentical(getFile()),
             "FileInfo mismatch!");
     }
 }

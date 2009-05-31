@@ -445,7 +445,7 @@ public class DownloadManagersTableModel extends PFComponent implements TableMode
                 .hasNext();)
             {
                 DownloadManager downloadManager = iter.next();
-                if (dl.getFile().isVersionAndDateIdentical(
+                if (dl.getFile().isVersionDateAndSizeIdentical(
                     downloadManager.getFileInfo()))
                 {
                     iter.remove();
@@ -482,7 +482,7 @@ public class DownloadManagersTableModel extends PFComponent implements TableMode
             for (int i = 0; i < downloadManagers.size(); i++) {
                 DownloadManager downloadManager = downloadManagers.get(i);
                 for (Download download : downloadManager.getSources()) {
-                    if (download.getFile().isVersionAndDateIdentical(
+                    if (download.getFile().isVersionDateAndSizeIdentical(
                         dl.getFile())
                         && (Util.equals(download.getPartner(), dl.getPartner()) || download
                             .isPending()))

@@ -653,7 +653,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
      * @param otherFile
      * @return true if the file name, version and date is equal.
      */
-    public boolean isVersionAndDateIdentical(FileInfo otherFile) {
+    public boolean isVersionDateAndSizeIdentical(FileInfo otherFile) {
         if (otherFile == null) {
             return false;
         }
@@ -663,8 +663,9 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
             return false;
         }
 
-        return this.getVersion() == otherFile.getVersion()
-            && this.getModifiedDate().equals(otherFile.getModifiedDate());
+        return this.version == otherFile.version
+            && Util.equals(size, otherFile.size)
+            && this.lastModifiedDate.equals(otherFile.lastModifiedDate);
     }
 
     /**
@@ -673,16 +674,13 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
      * initial scans on both sides. WHO wins then? NOBODY, FileInfos then have
      * version 0 same date but DIFFRENT modifiers. If you are seeking a way of
      * checking if a FileInfo is newer/or in sync use the method
-     * <code>{@link #isNewerThan(FileInfo)}</code>
-     * <p>
-     * PROPOSED SOLUTION: Add a method which compares name AND version:
-     * isIdenticalVersion.
+     * <code>{@link #isVersionDateAndSizeIdentical(FileInfo)}</code>
      * 
      * @param otherFile
      *            the other file to compare with
      * @return if the the two files are completely identical, also checks
      *         version, date and modified user
-     * @see #isNewerThan(FileInfo)
+     * @see #isVersionDateAndSizeIdentical(FileInfo)
      * @deprecated
      */
     public boolean isCompletelyIdentical(FileInfo otherFile) {

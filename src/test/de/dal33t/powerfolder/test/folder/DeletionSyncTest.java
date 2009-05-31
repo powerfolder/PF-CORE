@@ -200,7 +200,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         File testFileLisa = fInfoLisa.getDiskFile(getContollerLisa()
             .getFolderRepository());
 
-        assertTrue(fInfoLisa.isVersionAndDateIdentical(fInfoBart));
+        assertTrue(fInfoLisa.isVersionDateAndSizeIdentical(fInfoBart));
         assertEquals(testFileBart.length(), testFileLisa.length());
 
         // Now delete the file at lisa
