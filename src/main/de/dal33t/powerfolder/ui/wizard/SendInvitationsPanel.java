@@ -19,45 +19,32 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
-import static de.dal33t.powerfolder.ui.wizard.SendInvitationsPanel.OPTIONS.SAVE_TO_FILE;
-import static de.dal33t.powerfolder.ui.wizard.SendInvitationsPanel.OPTIONS.SEND_BY_MAIL;
-import static de.dal33t.powerfolder.ui.wizard.SendInvitationsPanel.OPTIONS.SEND_DIRECT;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
+import de.dal33t.powerfolder.ui.widget.AutoTextField;
+import de.dal33t.powerfolder.ui.widget.JButtonMini;
+import de.dal33t.powerfolder.ui.action.BaseAction;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 import java.awt.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.File;
+import java.awt.event.*;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.List;
 
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 import jwf.WizardPanel;
 
-import com.jgoodies.binding.adapter.BasicComponentFactory;
-import com.jgoodies.binding.value.ValueHolder;
-import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
-import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.ui.widget.JButtonMini;
-import de.dal33t.powerfolder.ui.dialog.NodesSelectDialog;
-import de.dal33t.powerfolder.util.InvitationUtil;
 import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.FileSelectorFactory;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
@@ -65,87 +52,24 @@ import de.dal33t.powerfolder.util.ui.FileSelectorFactory;
  */
 public class SendInvitationsPanel extends PFWizardPanel {
 
-    // The options of this screen
-    enum OPTIONS {
-        SAVE_TO_FILE, SEND_BY_MAIL, SEND_DIRECT
-    }
-
-    private boolean firstFocusGainOfEmailField;
-    private Invitation invitation;
-    private JComponent invitationFileField;
-    private JComponent sendByMailButton;
-    private JComponent emailField;
-    private JComponent ccBox;
-    private JComponent saveToFileButton;
-    private JRadioButton sendViaPowerFolderButton;
     private JTextArea invitationTextField;
+    private JButtonMini addButton;
+    private JButtonMini searchButton;
+    private JButtonMini removeButton;
+    private AutoTextField viaPowerFolderText;
+    private JList inviteesList;
+    private DefaultListModel inviteesListModel;
 
-    private ValueModel emailModel;
-    private ValueModel invitationFileModel;
-    private ValueModel decision;
-    private ValueModel viaPowerFolderModel;
-    private ValueModel ccValue;
-    private JTextField viaPowerFolderText;
-    private JButton viaPowerFolderConfigButton;
+    private List<String> friendNames;
+    private Invitation invitation;
 
-    private final Collection<Member> viaPowerFolderMembers = new ArrayList<Member>();
-
-    public SendInvitationsPanel(Controller controller)
-    {
+    public SendInvitationsPanel(Controller controller) {
         super(controller);
-        firstFocusGainOfEmailField = true;
-    }
-
-    /**
-     * Handles the invitation to disk option.
-     * 
-     * @return true if saved otherwise false
-     */
-    private boolean saveInvitationToFile() {
-        if (StringUtils.isBlank((String) invitationFileModel.getValue())) {
-            return false;
-        }
-        if (invitation == null) {
-            return false;
-        }
-        String filename = (String) invitationFileModel.getValue();
-        if (!filename.endsWith(".invitation")) {
-            filename += ".invitation";
-        }
-        File file = new File(filename);
-        if (file.exists()) {
-            // TODO: Add confirm dialog
-        }
-        return InvitationUtil.invitationToDisk(getController(), invitation,
-            file);
-    }
-
-    /**
-     * Handles the invitation to mail option.
-     * 
-     * @return true if mailed otherwise false
-     */
-    private boolean sendInvitationByMail() {
-        if (invitation == null) {
-            return false;
-        }
-        if (firstFocusGainOfEmailField) {
-            emailModel.setValue("");
-        }
-        if (getController().getOSClient().isLastLoginOK()) {
-            InvitationUtil.invitationByServer(getController(), invitation,
-                (String) emailModel.getValue(), (Boolean) ccValue.getValue());
-            // TODO Could fail, but that's a "latent" event.
-            return true;
-        }
-        // TODO Think about total removal of this crappy thing.
-        return InvitationUtil.invitationToMail(getController(), invitation,
-            (String) emailModel.getValue());
     }
 
     /**
      * Handles the invitation to nodes option.
-     * 
+     *
      * @return true if send otherwise false
      */
     private boolean sendInvitationToNodes() {
@@ -153,67 +77,51 @@ public class SendInvitationsPanel extends PFWizardPanel {
             return false;
         }
         boolean theResult = false;
-        for (Member member : viaPowerFolderMembers) {
-            InvitationUtil
-                .invitationToNode(getController(), invitation, member);
-            // Do not evaulate return value. Because invitation is
-            // always sent or enqueued for later sending.
+        for (Object o : inviteesListModel.toArray()) {
+            String invitee = (String) o;
+//            InvitationUtil.invitationToNode(getController(), invitation,
+//                    member);
             theResult = true;
         }
         return theResult;
     }
 
-    // From WizardPanel *******************************************************
-
     public boolean hasNext() {
-        return true;
+        return !inviteesListModel.isEmpty();
     }
 
     public boolean validateNext() {
         invitation.setInvitationText(invitationTextField.getText());
-        boolean ok = false;
-        if (decision.getValue() == SEND_BY_MAIL) {
-            // Send by email
-            ok = sendInvitationByMail();
-        } else if (decision.getValue() == SAVE_TO_FILE) {
-            // Store now
-            ok = saveInvitationToFile();
-        } else if (decision.getValue() == SEND_DIRECT) {
-            // Send now
-            ok = sendInvitationToNodes();
-        }
-        return ok;
+        return sendInvitationToNodes();
     }
 
     public WizardPanel next() {
         // Show success panel
         return (WizardPanel) getWizardContext().getAttribute(
-            PFWizard.SUCCESS_PANEL);
+                PFWizard.SUCCESS_PANEL);
     }
 
     protected JPanel buildContent() {
         FormLayout layout = new FormLayout(
-            "pref, 3dlu, 140dlu, pref:grow",
-            "pref, 3dlu, pref, 6dlu, pref, 3dlu, pref, 6dlu, pref, 3dlu, "
-                + "pref, 3dlu, pref, 6dlu, pref, 3dlu, pref, 6dlu, pref, 3dlu, "
-                + "pref, 3dlu, pref, 3dlu, pref");
-
+                "140dlu, pref:grow",
+                "pref, 3dlu, pref, 6dlu, pref, 3dlu, pref, 6dlu, pref, pref, 3dlu, pref, 3dlu, pref, pref");
+              // inv join    untrust     inv text    inv fdl     hint1 hint2       auto        list  remove
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
         int row = 1;
-        builder.addLabel(Translation
-            .getTranslation("wizard.send_invitations.join"), cc.xyw(1, row, 4));
+        builder.addLabel(Translation.getTranslation(
+                "wizard.send_invitations.join"), cc.xyw(1, row, 2));
 
         row += 2;
-        builder.addLabel(Translation
-            .getTranslation("wizard.send_invitations.never_untrusted"), cc.xyw(
-            1, row, 4));
+        builder.addLabel(Translation.getTranslation(
+                "wizard.send_invitations.never_untrusted"), cc.xyw(
+                1, row, 2));
 
         row += 2;
-        builder.addLabel(Translation
-            .getTranslation("wizard.send_invitations.invitation_text"), cc.xyw(
-            1, row, 4));
+        builder.addLabel(Translation.getTranslation(
+                "wizard.send_invitations.invitation_text"), cc.xyw(
+                1, row, 2));
 
         row += 2;
         JScrollPane invTextScroll = new JScrollPane(invitationTextField);
@@ -221,28 +129,43 @@ public class SendInvitationsPanel extends PFWizardPanel {
         builder.add(invTextScroll, cc.xy(1, row));
 
         row += 2;
-        builder.add(sendByMailButton, cc.xyw(1, row, 3));
-        row += 2;        
-        builder.add(ccBox, cc.xy(1, row));
-        row += 2;
-        builder.add(emailField, cc.xy(1, row));
+
+        builder.addLabel(Translation
+                .getTranslation("wizard.send_invitations.invitation_hint1"), cc.xyw(
+                1, row, 2));
+
+        row++;
+
+        builder.addLabel(Translation
+                .getTranslation("wizard.send_invitations.invitation_hint2"), cc.xyw(
+                1, row, 2));
 
         row += 2;
-        builder.add(saveToFileButton, cc.xyw(1, row, 3));
-        row += 2;
-        builder.add(invitationFileField, cc.xy(1, row));
 
-        row += 2;
-        builder.add(sendViaPowerFolderButton, cc.xyw(1, row, 3));
-        row += 2;
-
-        FormLayout layout2 = new FormLayout("122dlu, 3dlu, pref", "pref");
+        FormLayout layout2 = new FormLayout("107dlu, 3dlu, pref, pref", "pref");
         PanelBuilder builder2 = new PanelBuilder(layout2);
         builder2.add(viaPowerFolderText, cc.xy(1, 1));
-        builder2.add(viaPowerFolderConfigButton, cc.xy(3, 1));
+        builder2.add(addButton, cc.xy(3, 1));
+        builder2.add(searchButton, cc.xy(4, 1));
         JPanel panel2 = builder2.getPanel();
         panel2.setOpaque(false);
         builder.add(panel2, cc.xy(1, row));
+
+        row += 2;
+
+        JScrollPane scrollPane = new JScrollPane(inviteesList);
+        UIUtil.removeBorder(scrollPane);
+        scrollPane.setPreferredSize(new Dimension(getPreferredSize().width, 50));
+        builder.add(new JScrollPane(scrollPane), cc.xy(1, row));
+
+        row += 1;
+
+        FormLayout layout3 = new FormLayout("pref, pref:grow", "pref");
+        PanelBuilder builder3 = new PanelBuilder(layout3);
+        builder3.add(removeButton, cc.xy(1, 1));
+        JPanel panel3 = builder3.getPanel();
+        panel3.setOpaque(false);
+        builder.add(panel3, cc.xy(1, row));
 
         return builder.getPanel();
     }
@@ -252,94 +175,31 @@ public class SendInvitationsPanel extends PFWizardPanel {
      */
     protected void initComponents() {
         FolderInfo folder = (FolderInfo) getWizardContext().getAttribute(
-            FOLDERINFO_ATTRIBUTE);
+                FOLDERINFO_ATTRIBUTE);
         Reject.ifNull(folder, "Unable to send invitation, folder is null");
 
         // Clear folder attribute
         getWizardContext().setAttribute(FOLDERINFO_ATTRIBUTE, null);
 
         invitation = folder.getFolder(getController()).createInvitation();
-
-        invitationFileModel = new ValueHolder();
-        emailModel = new ValueHolder(Translation
-            .getTranslation("send_invitation.example_email_address"));
-        ccValue = new ValueHolder(true);
-        decision = new ValueHolder(SEND_BY_MAIL, true);
-
-        sendByMailButton = BasicComponentFactory.createRadioButton(decision,
-            SEND_BY_MAIL, Translation
-                .getTranslation("wizard.send_invitations.send_by_mail"));
-        sendByMailButton.setOpaque(false);
-
-        emailField = BasicComponentFactory.createTextField(emailModel);
-        emailField.addFocusListener(new FocusListener() {
-            public void focusGained(FocusEvent e) {
-                if (firstFocusGainOfEmailField) {
-                    emailModel.setValue("");
-                    firstFocusGainOfEmailField = false;
-                }
-            }
-
-            public void focusLost(FocusEvent e) {
-            }
-        });
-
-        ccBox = BasicComponentFactory.createCheckBox(ccValue, Translation
-            .getTranslation("wizard.send_invitations.send_by_mail.cc_me"));
-        ccBox.setOpaque(false);
-
-        saveToFileButton = BasicComponentFactory.createRadioButton(decision,
-            SAVE_TO_FILE, Translation
-                .getTranslation("wizard.send_invitations.save_to_file"));
-        saveToFileButton.setOpaque(false);
-
-        sendViaPowerFolderButton = BasicComponentFactory.createRadioButton(
-            decision, SEND_DIRECT, Translation
-                .getTranslation("wizard.send_invitations.over_powerfolder"));
-        sendViaPowerFolderButton.setOpaque(false);
-        sendViaPowerFolderButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                if (viaPowerFolderModel.getValue() == null
-                    || viaPowerFolderModel.getValue().equals(
-                        Translation.getTranslation("dialog.node_select.no_computers")))
-                {
-                    openNodesSelectDialog();
-                }
-            }
-        });
-
-        invitationFileField = FileSelectorFactory.createFileSelectionField(
-            Translation.getTranslation("wizard.send_invitations.select"),
-            invitationFileModel, JFileChooser.FILES_ONLY, // Save invitation
-            InvitationUtil.createInvitationsFilefilter(), false);
-        invitationFileField.setOpaque(false);
         invitationTextField = new JTextArea();
 
-        viaPowerFolderModel = new ValueHolder();
-        viaPowerFolderModel.setValue(Translation
-            .getTranslation("dialog.node_select.no_computers"));
-        viaPowerFolderText = BasicComponentFactory.createTextField(
-            viaPowerFolderModel, false);
-        viaPowerFolderText.setEnabled(false);
-        viaPowerFolderConfigButton = new JButtonMini(Icons.getIconById(Icons.NODE_FRIEND_CONNECTED),
-                Translation.getTranslation("send_invitation.select_computer.text"));
-        viaPowerFolderConfigButton.setEnabled(decision.getValue()
-                == SAVE_TO_FILE);
-        viaPowerFolderConfigButton.addActionListener(new MyActionListener());
+        addButton = new JButtonMini(new MyAddAction(getController()));
+        removeButton = new JButtonMini(new MyRemoveAction(getController()));
+        searchButton = new JButtonMini(new MySearchAction(getController()));
 
-        emailField.setEnabled(decision.getValue() == SEND_BY_MAIL);
-        invitationFileField.setEnabled(decision.getValue() == SAVE_TO_FILE);
+        friendNames = new ArrayList<String>();
+        viaPowerFolderText = new AutoTextField(friendNames);
+        viaPowerFolderText.addKeyListener(new MyKeyListener());
 
-        decision.addValueChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                emailField.setEnabled(decision.getValue() == SEND_BY_MAIL);
-                ccBox.setEnabled(decision.getValue() == SEND_BY_MAIL);
-                invitationFileField
-                    .setEnabled(decision.getValue() == SAVE_TO_FILE);
-                viaPowerFolderConfigButton
-                    .setEnabled(decision.getValue() == SEND_DIRECT);
-            }
-        });
+        inviteesListModel = new DefaultListModel();
+        inviteesList = new JList(inviteesListModel);
+        inviteesList.getSelectionModel().setSelectionMode(
+                ListSelectionModel.SINGLE_SELECTION);
+        inviteesList.getSelectionModel().addListSelectionListener(new MyListSelectionListener());
+
+        enableAddButton();
+        enableRemoveButton();
     }
 
     protected JComponent getPictoComponent() {
@@ -347,28 +207,87 @@ public class SendInvitationsPanel extends PFWizardPanel {
     }
 
     protected String getTitle() {
-        return Translation
-            .getTranslation("wizard.send_invitations.title");
+        return Translation.getTranslation("wizard.send_invitations.title");
     }
 
-    private void openNodesSelectDialog() {
-        NodesSelectDialog dialog = new NodesSelectDialog(getController(),
-            viaPowerFolderModel, viaPowerFolderMembers);
-        dialog.open();
+    private void enableAddButton() {
+        addButton.setEnabled(viaPowerFolderText.getText().length() > 0);
     }
 
-    /**
-     * Listen for activation of the via powerfolder button.
-     */
-    private class MyActionListener implements ActionListener {
+    private void enableRemoveButton() {
+        removeButton.setEnabled(!inviteesListModel.isEmpty()
+                && inviteesList.getSelectedIndex() >= 0);
+    }
 
-        /**
-         * Open a UserSelectDialog
-         * 
-         * @param e
-         */
+    private void processInvitee() {
+        String text = viaPowerFolderText.getText();
+        if (text.length() > 0) {
+            inviteesListModel.addElement(text);
+            viaPowerFolderText.clear();
+            updateButtons();
+            enableAddButton();
+            enableRemoveButton();
+        }
+    }
+
+    ///////////////////
+    // Inner classes //
+    ///////////////////
+
+    private class MyAddAction extends BaseAction {
+
+        MyAddAction(Controller controller) {
+            super("action_add_invitee", controller);
+        }
+
         public void actionPerformed(ActionEvent e) {
-            openNodesSelectDialog();
+            processInvitee();
+        }
+    }
+
+    private class MySearchAction extends BaseAction {
+
+        MySearchAction(Controller controller) {
+            super("action_search_invitee", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+        }
+    }
+
+    private class MyRemoveAction extends BaseAction {
+
+        MyRemoveAction(Controller controller) {
+            super("action_remove_invitee", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            int index = inviteesList.getSelectedIndex();
+            if (index >= 0) {
+                inviteesListModel.remove(index);
+                enableRemoveButton();
+            }
+        }
+    }
+
+    private class MyKeyListener implements KeyListener {
+
+        public void keyTyped(KeyEvent e) {
+        }
+
+        public void keyPressed(KeyEvent e) {
+        }
+
+        public void keyReleased(KeyEvent e) {
+            enableAddButton();
+        }
+    }
+
+    private class MyListSelectionListener implements ListSelectionListener {
+
+        public void valueChanged(ListSelectionEvent e) {
+            enableRemoveButton();
+            updateButtons();
         }
     }
 }

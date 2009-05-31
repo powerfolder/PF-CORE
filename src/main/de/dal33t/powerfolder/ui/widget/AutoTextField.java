@@ -90,6 +90,22 @@ public class AutoTextField extends JTextField {
         }
     }
 
+    public String getText() {
+        try {
+            return getDocument().getText(0, getDocument().getLength());
+        } catch (BadLocationException e) {
+            return "";
+        }
+    }
+
+    public void clear() {
+        try {
+            getDocument().remove(0, getDocument().getLength());
+        } catch (BadLocationException e) {
+            // Ignore
+        }
+    }
+
     /**
      * Autodocument extension that highlights the best match.
      */
