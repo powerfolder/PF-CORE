@@ -103,12 +103,14 @@ public class SendInvitationsAdvancedPanel extends BaseDialog {
 
     protected Component getContent() {
         FormLayout layout = new FormLayout("pref, pref:grow",
-                "pref, pref, 3dlu, pref");
+                "pref, pref, 3dlu, pref, 3dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
         builder.add(new JLabel(Translation.getTranslation(
                 "send_invitations_advanced.save_as_file")), cc.xy(1, 1));
         builder.add(new JLabel(fileName), cc.xy(1, 2));
+        builder.add(new JLabel(Translation.getTranslation(
+                "send_invitations_advanced.select_hint")), cc.xy(1, 4));
 
         FormLayout layout2 = new FormLayout("107dlu, 3dlu, pref, pref", "pref");
         PanelBuilder builder2 = new PanelBuilder(layout2);
@@ -117,7 +119,7 @@ public class SendInvitationsAdvancedPanel extends BaseDialog {
         builder2.add(clearButton, cc.xy(4, 1));
         JPanel panel2 = builder2.getPanel();
         panel2.setOpaque(false);
-        builder.add(panel2, cc.xy(1, 4));
+        builder.add(panel2, cc.xy(1, 6));
 
         return builder.getPanel();
     }

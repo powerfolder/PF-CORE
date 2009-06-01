@@ -115,6 +115,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
             File file = new File((String) value, constructInviteFileName());
             InvitationUtil.invitationToDisk(getController(), invitation,
                     file);
+            theResult = true;
         }
 
         return theResult;
