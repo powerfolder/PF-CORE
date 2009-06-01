@@ -330,6 +330,9 @@ public class SendInvitationsPanel extends PFWizardPanel {
         }
 
         public void actionPerformed(ActionEvent e) {
+            SendInvitationsAdvancedPanel advPanel =
+                    new SendInvitationsAdvancedPanel(getController());
+            advPanel.open();
         }
     }
 }
