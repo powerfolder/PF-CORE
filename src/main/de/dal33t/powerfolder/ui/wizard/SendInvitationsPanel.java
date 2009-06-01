@@ -22,12 +22,14 @@ package de.dal33t.powerfolder.ui.wizard;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
 import de.dal33t.powerfolder.ui.widget.AutoTextField;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
+import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Collection;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
@@ -45,6 +47,7 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.InvitationUtil;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
@@ -59,8 +62,9 @@ public class SendInvitationsPanel extends PFWizardPanel {
     private JButtonMini removeButton;
     private AutoTextField viaPowerFolderText;
     private JList inviteesList;
-    private DefaultListModel inviteesListModel;
+    private ActionLabel advancedLink;
 
+    private DefaultListModel inviteesListModel;
     private Invitation invitation;
 
     public SendInvitationsPanel(Controller controller) {
@@ -77,10 +81,26 @@ public class SendInvitationsPanel extends PFWizardPanel {
             return false;
         }
         boolean theResult = false;
+        Collection<Member> members = getController().getNodeManager()
+                .getNodesAsCollection();
+
         for (Object o : inviteesListModel.toArray()) {
             String invitee = (String) o;
-//            InvitationUtil.invitationToNode(getController(), invitation,
-//                    member);
+            boolean sent = false;
+            for (Member member : members) {
+                if (invitee.equalsIgnoreCase(member.getNick())) {
+                    InvitationUtil.invitationToNode(getController(), invitation,
+                            member);
+                    sent = true;
+                    break;
+                }                
+            }
+            if (!sent) {
+                if (invitee.contains("@")) {
+                    InvitationUtil.invitationToMail(getController(), invitation,
+                            invitee);
+                }
+            }
             theResult = true;
         }
         return theResult;
@@ -104,8 +124,8 @@ public class SendInvitationsPanel extends PFWizardPanel {
     protected JPanel buildContent() {
         FormLayout layout = new FormLayout(
                 "140dlu, pref:grow",
-                "pref, 3dlu, pref, 6dlu, pref, 3dlu, pref, 6dlu, pref, pref, 3dlu, pref, 3dlu, pref, pref");
-              // inv join    untrust     inv text    inv fdl     hint1 hint2       auto        list  remove
+                "pref, 3dlu, pref, 6dlu, pref, 3dlu, pref, 6dlu, pref, pref, 3dlu, pref, 3dlu, pref, pref, 6dlu, pref");
+              // inv join    untrust     inv text    inv fdl     hint1 hint2       auto        list  remove      adv
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
@@ -167,6 +187,10 @@ public class SendInvitationsPanel extends PFWizardPanel {
         panel3.setOpaque(false);
         builder.add(panel3, cc.xy(1, row));
 
+        row += 2;
+
+        builder.add(advancedLink.getUIComponent(), cc.xy(1, row));
+
         return builder.getPanel();
     }
 
@@ -203,6 +227,8 @@ public class SendInvitationsPanel extends PFWizardPanel {
             friendNicks.add(friend.getNick());
         }
         viaPowerFolderText.setDataList(friendNicks);
+        advancedLink = new ActionLabel(getController(),
+                new MyAdvanceAction(getController()));
         
         enableAddButton();
         enableRemoveButton();
@@ -294,6 +320,16 @@ public class SendInvitationsPanel extends PFWizardPanel {
         public void valueChanged(ListSelectionEvent e) {
             enableRemoveButton();
             updateButtons();
+        }
+    }
+
+    private class MyAdvanceAction extends BaseAction {
+
+        MyAdvanceAction(Controller controller) {
+            super("action_invite_advanced", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
         }
     }
 }
