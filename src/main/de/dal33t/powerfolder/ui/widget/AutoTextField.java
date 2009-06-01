@@ -35,14 +35,21 @@ public class AutoTextField extends JTextField {
 
     /**
      * Constructor
+     */
+    public AutoTextField() {
+        this(null);
+    }
+
+    /**
+     * Constructor
      *
      * @param list
      */
     public AutoTextField(List<String> list) {
         if (list != null) {
             dataList.addAll(list);
-            setDocument(new AutoDocument());
         }
+        setDocument(new AutoDocument());
     }
 
     /**
@@ -92,7 +99,14 @@ public class AutoTextField extends JTextField {
 
     public String getText() {
         try {
-            return getDocument().getText(0, getDocument().getLength());
+            String text = getDocument().getText(0, getDocument().getLength());
+            // Try to get correct case match from list.
+            for (String item : dataList) {
+                if (item.equalsIgnoreCase(text)) {
+                    return item;
+                }
+            }
+            return text;
         } catch (BadLocationException e) {
             return "";
         }
@@ -147,6 +161,13 @@ public class AutoTextField extends JTextField {
         }
 
         public void remove(int offs, int len) throws BadLocationException {
+
+            // Do not match if everything is deleted.
+            if (offs == 0 && len == getLength()) {
+                super.remove(0, getLength());
+                return;
+            }
+
             int selectionStart = getSelectionStart();
             if (selectionStart > 0) {
                 selectionStart--;

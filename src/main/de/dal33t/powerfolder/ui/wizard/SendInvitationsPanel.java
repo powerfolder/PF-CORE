@@ -40,6 +40,7 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.util.Reject;
@@ -60,7 +61,6 @@ public class SendInvitationsPanel extends PFWizardPanel {
     private JList inviteesList;
     private DefaultListModel inviteesListModel;
 
-    private List<String> friendNames;
     private Invitation invitation;
 
     public SendInvitationsPanel(Controller controller) {
@@ -188,16 +188,22 @@ public class SendInvitationsPanel extends PFWizardPanel {
         removeButton = new JButtonMini(new MyRemoveAction(getController()));
         searchButton = new JButtonMini(new MySearchAction(getController()));
 
-        friendNames = new ArrayList<String>();
-        viaPowerFolderText = new AutoTextField(friendNames);
+        viaPowerFolderText = new AutoTextField();
         viaPowerFolderText.addKeyListener(new MyKeyListener());
 
         inviteesListModel = new DefaultListModel();
         inviteesList = new JList(inviteesListModel);
         inviteesList.getSelectionModel().setSelectionMode(
                 ListSelectionModel.SINGLE_SELECTION);
-        inviteesList.getSelectionModel().addListSelectionListener(new MyListSelectionListener());
+        inviteesList.getSelectionModel().addListSelectionListener(
+                new MyListSelectionListener());
 
+        List<String> friendNicks = new ArrayList<String>();
+        for (Member friend : getController().getNodeManager().getFriends()) {
+            friendNicks.add(friend.getNick());
+        }
+        viaPowerFolderText.setDataList(friendNicks);
+        
         enableAddButton();
         enableRemoveButton();
     }
