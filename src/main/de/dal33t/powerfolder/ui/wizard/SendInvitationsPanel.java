@@ -30,6 +30,9 @@ import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Collection;
+import java.io.File;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
@@ -40,6 +43,8 @@ import jwf.WizardPanel;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+import com.jgoodies.binding.value.ValueModel;
+import com.jgoodies.binding.value.ValueHolder;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
@@ -63,6 +68,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
     private AutoTextField viaPowerFolderText;
     private JList inviteesList;
     private ActionLabel advancedLink;
+    private ValueModel locationModel;
 
     private DefaultListModel inviteesListModel;
     private Invitation invitation;
@@ -103,11 +109,21 @@ public class SendInvitationsPanel extends PFWizardPanel {
             }
             theResult = true;
         }
+
+        Object value = locationModel.getValue();
+        if (value != null && ((String) value).length() > 0) {
+            File file = new File((String) value, constructInviteFileName());
+            InvitationUtil.invitationToDisk(getController(), invitation,
+                    file);
+        }
+
         return theResult;
     }
 
     public boolean hasNext() {
-        return !inviteesListModel.isEmpty();
+        return !inviteesListModel.isEmpty()
+                || locationModel.getValue() != null
+                && ((String) locationModel.getValue()).length() > 0;
     }
 
     public boolean validateNext() {
@@ -229,9 +245,13 @@ public class SendInvitationsPanel extends PFWizardPanel {
         viaPowerFolderText.setDataList(friendNicks);
         advancedLink = new ActionLabel(getController(),
                 new MyAdvanceAction(getController()));
+
+        locationModel = new ValueHolder("");
+        locationModel.addValueChangeListener(new MyPropertyChangeListener());
         
         enableAddButton();
         enableRemoveButton();
+
     }
 
     protected JComponent getPictoComponent() {
@@ -260,6 +280,10 @@ public class SendInvitationsPanel extends PFWizardPanel {
             enableAddButton();
             enableRemoveButton();
         }
+    }
+
+    private String constructInviteFileName() {
+        return invitation.folder.name + ".invitation";
     }
 
     ///////////////////
@@ -331,8 +355,16 @@ public class SendInvitationsPanel extends PFWizardPanel {
 
         public void actionPerformed(ActionEvent e) {
             SendInvitationsAdvancedPanel advPanel =
-                    new SendInvitationsAdvancedPanel(getController());
+                    new SendInvitationsAdvancedPanel(getController(),
+                            locationModel, constructInviteFileName());
             advPanel.open();
+        }
+    }
+
+    private class MyPropertyChangeListener implements PropertyChangeListener {
+        public void propertyChange(PropertyChangeEvent evt) {
+            System.out.println("hghg " + locationModel.getValue());
+            updateButtons();
         }
     }
 }

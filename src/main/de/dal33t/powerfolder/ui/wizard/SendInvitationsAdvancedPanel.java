@@ -23,7 +23,9 @@ import javax.swing.*;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.util.ui.BaseDialog;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.Translation;
 
 import java.awt.*;
@@ -34,34 +36,94 @@ import com.jgoodies.forms.factories.ButtonBarFactory;
 import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.binding.value.ValueModel;
 
 /**
- * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
- * @version $Revision: 1.12 $
+ * @author <a href="mailto:harry@powerfolder.com">Harry Glasgow</a>
+ * @version $Revision: 4.0 $
  */
 public class SendInvitationsAdvancedPanel extends BaseDialog {
 
-    private JButton closeButton;
+    private JButton okButton;
+    private JButton cancelButton;
+    private JTextField locationDirectoryField;
+    private JButton locationButton;
+    private JButton clearButton;
+    private final ValueModel locationModel;
+    private String location;
+    private final String fileName;
 
-    public SendInvitationsAdvancedPanel(Controller controller) {
+    public SendInvitationsAdvancedPanel(Controller controller,
+                                        ValueModel locationModel,
+                                        String fileName) {
         super(controller, true);
+        this.locationModel = locationModel;
+        this.fileName = fileName;
         initComponents();
     }
 
     private void initComponents() {
-        closeButton = createCloseButton();
+        okButton = createOKButton(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                ok();
+            }
+        });
+        cancelButton = createCancelButton(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                cancel();
+            }
+        });
+        locationDirectoryField = new JTextField();
+        locationDirectoryField.setEnabled(false);
+        locationButton = new JButtonMini(Icons.getIconById(Icons.DIRECTORY),
+                Translation.getTranslation("send_invitations_advanced.location_tip"));
+        locationButton.addActionListener(new MyActionListener());
+        clearButton = new JButtonMini(Icons.getIconById(Icons.DELETE),
+                Translation.getTranslation("send_invitations_advanced.clear_tip"));
+        clearButton.addActionListener(new MyActionListener());
+        location = (String) locationModel.getValue();
+        locationDirectoryField.setText(location);
+        updateButtons();
+    }
+
+    private void ok() {
+        if (location != null) {
+            locationModel.setValue(location);
+        }
+        close();
+    }
+
+    private void cancel() {
+        close();
     }
 
     protected Component getButtonBar() {
-        return ButtonBarFactory.buildCenteredBar(closeButton);
+        return ButtonBarFactory.buildCenteredBar(okButton,  cancelButton);
     }
 
     protected Component getContent() {
-        FormLayout layout = new FormLayout("pref, pref:grow", "pref");
+        FormLayout layout = new FormLayout("pref, pref:grow",
+                "pref, pref, 3dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
-        builder.add(new JLabel("test"), cc.xy(1, 1));
+        builder.add(new JLabel(Translation.getTranslation(
+                "send_invitations_advanced.save_as_file")), cc.xy(1, 1));
+        builder.add(new JLabel(fileName), cc.xy(1, 2));
+
+        FormLayout layout2 = new FormLayout("107dlu, 3dlu, pref, pref", "pref");
+        PanelBuilder builder2 = new PanelBuilder(layout2);
+        builder2.add(locationDirectoryField, cc.xy(1, 1));
+        builder2.add(locationButton, cc.xy(3, 1));
+        builder2.add(clearButton, cc.xy(4, 1));
+        JPanel panel2 = builder2.getPanel();
+        panel2.setOpaque(false);
+        builder.add(panel2, cc.xy(1, 4));
+
         return builder.getPanel();
+    }
+
+    private void updateButtons() {
+        clearButton.setEnabled(location != null && location.length() > 0);
     }
 
     protected Icon getIcon() {
@@ -73,14 +135,20 @@ public class SendInvitationsAdvancedPanel extends BaseDialog {
                 "wizard.send_invitations_advanced.title");
     }
 
-    /**
-     * Creates the okay button for the whole pref dialog
-     */
-    private JButton createCloseButton() {
-        return createCloseButton(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                close();
+    private class MyActionListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            if (e.getSource() == clearButton) {
+                location = "";
+                locationDirectoryField.setText("");
+                updateButtons();
+            } else if (e.getSource() == locationButton) {
+                String initial = (String) locationModel.getValue();
+                String file = DialogFactory.chooseDirectory(getController(),
+                    initial);
+                location = file;
+                locationDirectoryField.setText(file);
+                updateButtons();
             }
-        });
+        }
     }
 }
