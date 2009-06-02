@@ -26,6 +26,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -50,6 +51,7 @@ import org.apache.lucene.store.FSDirectory;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.light.FileHistory;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.Profiling;
 import de.dal33t.powerfolder.util.ProfilingEntry;
@@ -532,5 +534,18 @@ public class FileInfoDAOLuceneImpl extends PFComponent implements FileInfoDAO {
                 pool.remove(searcher);
             }
         }
+    }
+
+    public Iterator<FileInfo> findDifferentFiles(int maxResults,
+        String... domains)
+    {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public Iterator<FileHistory> getFileHistory(Collection<FileInfo> fileInfos)
+    {
+        // TODO Auto-generated method stub
+        return null;
     }
 }

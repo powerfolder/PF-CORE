@@ -20,9 +20,11 @@
 package de.dal33t.powerfolder.disk.dao;
 
 import java.util.Collection;
+import java.util.Iterator;
 
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.light.FileHistory;
 import de.dal33t.powerfolder.light.FileInfo;
 
 /**
@@ -99,11 +101,37 @@ public interface FileInfoDAO {
 
     /**
      * Finds all {@link FileInfo} objects of the given domain.
+     * <P>
+     * TODO: Think about the usage of this method. 2. Change return value to
+     * Iterator<FileInfo>
      * 
      * @param domain
      * @return all {@link FileInfo} objects of the given domain.
+     * @deprecated Try to implement a more intelligent method to obtain FileInfo
+     *             database information. Activation/Loading all FileInfos is a
+     *             BAD idea generally.
      */
+    @Deprecated
     Collection<FileInfo> findAll(String domain);
+
+    /**
+     * @param fileInfos
+     *            the <code>FileInfo</code> to retrieve the file history for.
+     * @return the list of file histories for the given fileInfos.
+     */
+    Iterator<FileHistory> getFileHistory(Collection<FileInfo> fileInfos);
+
+    /**
+     * TODO: return CloseableIterator
+     * 
+     * @param maxResults
+     *            The maximum results to retrieve from the persistence layer.
+     * @param domains
+     *            the Members to be checked.
+     * @return a iterator of FileInfos that are different that in our own domain
+     *         (myself).
+     */
+    Iterator<FileInfo> findDifferentFiles(int maxResults, String... domains);
 
     /**
      * Counts all {@link FileInfo} objects of the given domain.

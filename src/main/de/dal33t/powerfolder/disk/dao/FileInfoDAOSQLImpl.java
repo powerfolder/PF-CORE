@@ -28,6 +28,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import org.h2.jdbcx.JdbcConnectionPool;
@@ -35,6 +36,7 @@ import org.h2.jdbcx.JdbcDataSource;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.light.FileHistory;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StreamUtils;
@@ -360,5 +362,18 @@ public class FileInfoDAOSQLImpl extends PFComponent implements FileInfoDAO {
             ps.setString(1, fileName);
         }
         return ps;
+    }
+
+    public Iterator<FileInfo> findDifferentFiles(int maxResults,
+        String... domains)
+    {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public Iterator<FileHistory> getFileHistory(Collection<FileInfo> fileInfos)
+    {
+        // TODO Auto-generated method stub
+        return null;
     }
 }

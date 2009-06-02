@@ -3,9 +3,11 @@ package de.dal33t.powerfolder.disk.dao;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import de.dal33t.powerfolder.light.FileHistory;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.logging.Loggable;
 import de.dal33t.powerfolder.util.os.OSUtil;
@@ -130,5 +132,18 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
 
     private static class Domain {
         private ConcurrentMap<String, FileInfo> files = new ConcurrentHashMap<String, FileInfo>();
+    }
+
+    public Iterator<FileInfo> findDifferentFiles(int maxResults,
+        String... domains)
+    {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public Iterator<FileHistory> getFileHistory(Collection<FileInfo> fileInfos)
+    {
+        // TODO Auto-generated method stub
+        return null;
     }
 }
