@@ -89,27 +89,6 @@ public class Directory implements Comparable<Directory>, DiskItem {
         this.rootFolder = rootFolder;
     }
 
-    private static DataFlavor dataFlavor;
-
-    /**
-     * Data flavor for Drag and Drop. We use this to find the source of the
-     * drag. If drag and drop is within the same folder we MOVE files, else COPY
-     * of files. Do not use for getting files Use DataFlavor.javaFileListFlavor
-     * for that.
-     */
-    public static DataFlavor getDataFlavor() {
-        if (dataFlavor == null) {
-            try {
-                dataFlavor = new DataFlavor(
-                    DataFlavor.javaJVMLocalObjectMimeType + ";class="
-                        + Directory.class.getName());
-            } catch (ClassNotFoundException e) {
-                throw new IllegalStateException();
-            }
-        }
-        return dataFlavor;
-    }
-
     public boolean isRetained() {
         return rootFolder.getDiskItemFilter().isRetained(this);
     }
