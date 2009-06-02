@@ -78,7 +78,7 @@ public class FolderScanner extends PFComponent {
      * Maximum number of DirectoryCrawlers after test of a big folder this seams
      * the optimum number.
      */
-    private final static int MAX_CRAWLERS = 3;
+    private final static int MAX_CRAWLERS = 1;
 
     /**
      * The files which could not be scanned
