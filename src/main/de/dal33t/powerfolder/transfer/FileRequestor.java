@@ -143,6 +143,8 @@ public class FileRequestor extends PFComponent {
         if (!folder.hasOwnDatabase()) {
             return;
         }
+        
+        // TODO: Detect conflicts. Raise problem.
 
         Collection<FileInfo> incomingFiles = folder
             .getIncomingFiles(requestFromOthers, false);
