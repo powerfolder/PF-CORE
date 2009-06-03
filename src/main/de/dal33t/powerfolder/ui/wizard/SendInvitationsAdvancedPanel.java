@@ -22,6 +22,7 @@ package de.dal33t.powerfolder.ui.wizard;
 import javax.swing.*;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.util.ui.BaseDialog;
@@ -52,9 +53,12 @@ public class SendInvitationsAdvancedPanel extends BaseDialog {
     private final ValueModel locationModel;
     private String location;
     private final String fileName;
+    private DefaultComboBoxModel permissionsModel;
+    private JComboBox permissionsCombo;
 
     public SendInvitationsAdvancedPanel(Controller controller,
                                         ValueModel locationModel,
+                                        ValueModel permissionsModel,
                                         String fileName) {
         super(controller, true);
         this.locationModel = locationModel;
@@ -83,6 +87,11 @@ public class SendInvitationsAdvancedPanel extends BaseDialog {
         clearButton.addActionListener(new MyActionListener());
         location = (String) locationModel.getValue();
         locationDirectoryField.setText(location);
+        permissionsModel = new DefaultComboBoxModel(new String[]{
+                Invitation.getNameForPermission(Invitation.READ_WRITE_PERMISSION),
+                Invitation.getNameForPermission(Invitation.READ_PERMISSION),
+                Invitation.getNameForPermission(Invitation.ADMIN_PERMISSION)});
+        permissionsCombo = new JComboBox(permissionsModel);
         updateButtons();
     }
 
@@ -98,17 +107,28 @@ public class SendInvitationsAdvancedPanel extends BaseDialog {
     }
 
     protected Component getButtonBar() {
-        return ButtonBarFactory.buildCenteredBar(okButton,  cancelButton);
+        return ButtonBarFactory.buildCenteredBar(okButton, cancelButton);
     }
 
     protected Component getContent() {
-        FormLayout layout = new FormLayout("pref, pref:grow",
-                "pref, 3dlu, pref");
+        FormLayout layout = new FormLayout("right:pref, 3dlu, pref, pref:grow",
+                "pref, 3dlu, pref, 3dlu, pref, 6dlu, pref, 3dlu, pref");
+             //  file sep    file name   file dir    perm sep    combo
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
-        builder.add(new JLabel(Translation.getTranslation(
-                "send_invitations_advanced.select_hint", fileName)), cc.xy(1, 1));
 
+        // File separator
+        builder.addSeparator(Translation.getTranslation(
+                "send_invitations_advanced.file_label"), cc.xyw(1, 1, 3));
+
+        // File name
+        builder.add(new JLabel(Translation.getTranslation(
+                "send_invitations_advanced.filename")), cc.xy(1, 3));
+        builder.add(new JLabel(fileName), cc.xy(3, 3));
+
+        // File dir
+        builder.add(new JLabel(Translation.getTranslation(
+                "send_invitations_advanced.file_hint")), cc.xy(1, 5));
         FormLayout layout2 = new FormLayout("107dlu, 3dlu, pref, pref", "pref");
         PanelBuilder builder2 = new PanelBuilder(layout2);
         builder2.add(locationDirectoryField, cc.xy(1, 1));
@@ -116,7 +136,21 @@ public class SendInvitationsAdvancedPanel extends BaseDialog {
         builder2.add(clearButton, cc.xy(4, 1));
         JPanel panel2 = builder2.getPanel();
         panel2.setOpaque(false);
-        builder.add(panel2, cc.xy(1, 3));
+        builder.add(panel2, cc.xy(3, 5));
+
+        // Permission separator
+        builder.addSeparator(Translation.getTranslation(
+                "send_invitations_advanced.permissions_label"), cc.xyw(1, 7, 3));
+
+        builder.add(new JLabel(Translation.getTranslation(
+                "send_invitations_advanced.permissions_hint")), cc.xy(1, 9));
+        FormLayout layout3 = new FormLayout("pref, pref:grow", "pref");
+        PanelBuilder builder3 = new PanelBuilder(layout3);
+        builder3.add(permissionsCombo, cc.xy(1, 1));
+        JPanel panel3 = builder3.getPanel();
+        panel3.setOpaque(false);
+        builder.add(panel3, cc.xy(3, 9));
+
 
         return builder.getPanel();
     }
@@ -143,7 +177,7 @@ public class SendInvitationsAdvancedPanel extends BaseDialog {
             } else if (e.getSource() == locationButton) {
                 String initial = (String) locationModel.getValue();
                 String file = DialogFactory.chooseDirectory(getController(),
-                    initial);
+                        initial);
                 location = file;
                 locationDirectoryField.setText(file);
                 updateButtons();

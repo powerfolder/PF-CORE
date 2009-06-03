@@ -69,6 +69,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
     private JList inviteesList;
     private ActionLabel advancedLink;
     private ValueModel locationModel;
+    private ValueModel permissionsModel;
 
     private DefaultListModel inviteesListModel;
     private Invitation invitation;
@@ -249,7 +250,10 @@ public class SendInvitationsPanel extends PFWizardPanel {
 
         locationModel = new ValueHolder("");
         locationModel.addValueChangeListener(new MyPropertyChangeListener());
-        
+
+        permissionsModel = new ValueHolder();
+        permissionsModel = new ValueHolder(Invitation.READ_WRITE_PERMISSION);
+
         enableAddButton();
         enableRemoveButton();
 
@@ -357,7 +361,8 @@ public class SendInvitationsPanel extends PFWizardPanel {
         public void actionPerformed(ActionEvent e) {
             SendInvitationsAdvancedPanel advPanel =
                     new SendInvitationsAdvancedPanel(getController(),
-                            locationModel, constructInviteFileName());
+                            locationModel, permissionsModel,
+                            constructInviteFileName());
             advPanel.open();
         }
     }
