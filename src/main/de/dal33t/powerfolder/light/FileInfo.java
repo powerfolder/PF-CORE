@@ -206,7 +206,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
             folderInfo);
     }
 
-    private static String buildFileName(Folder folder, File file) {
+    protected static String buildFileName(Folder folder, File file) {
         String fn = file.getName();
         File parent = file.getParentFile();
         File folderBase = folder.getLocalBase();
