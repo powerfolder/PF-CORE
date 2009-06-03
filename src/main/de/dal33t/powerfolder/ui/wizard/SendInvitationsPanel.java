@@ -364,7 +364,6 @@ public class SendInvitationsPanel extends PFWizardPanel {
 
     private class MyPropertyChangeListener implements PropertyChangeListener {
         public void propertyChange(PropertyChangeEvent evt) {
-            System.out.println("hghg " + locationModel.getValue());
             updateButtons();
         }
     }
