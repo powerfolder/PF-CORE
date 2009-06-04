@@ -64,7 +64,7 @@ public class Invitation extends FolderRelatedMessage {
     private String suggestedSyncProfileConfig;
     private String suggestedLocalBasePath;
     private int relative;
-    private int permission;
+    private int permissions;
 
     public Invitation(FolderInfo folder, MemberInfo invitor) {
         this.folder = folder;
@@ -187,8 +187,8 @@ public class Invitation extends FolderRelatedMessage {
         return relative;
     }
 
-    public int getPermission() {
-        return permission;
+    public int getPermissions() {
+        return permissions;
     }
 
     public static String getNameForPermission(int permission) {
@@ -228,6 +228,10 @@ public class Invitation extends FolderRelatedMessage {
 
     private static String getUserHomeDir() {
         return System.getProperty("user.home");
+    }
+
+    public void setPermissions(int permissions) {
+        this.permissions = permissions;
     }
 
 }

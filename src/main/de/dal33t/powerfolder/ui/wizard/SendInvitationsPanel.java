@@ -253,6 +253,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
 
         permissionsModel = new ValueHolder();
         permissionsModel = new ValueHolder(Invitation.READ_WRITE_PERMISSION);
+        permissionsModel.addValueChangeListener(new MyPropertyChangeListener());
 
         enableAddButton();
         enableRemoveButton();
@@ -369,7 +370,11 @@ public class SendInvitationsPanel extends PFWizardPanel {
 
     private class MyPropertyChangeListener implements PropertyChangeListener {
         public void propertyChange(PropertyChangeEvent evt) {
-            updateButtons();
+            if (evt.getSource() == locationModel) {
+                updateButtons();
+            } else if (evt.getSource() == permissionsModel) {
+                invitation.setPermissions((Integer) permissionsModel.getValue());
+            }
         }
     }
 }

@@ -32,6 +32,8 @@ import de.dal33t.powerfolder.util.Translation;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.event.ItemListener;
+import java.awt.event.ItemEvent;
 
 import com.jgoodies.forms.factories.ButtonBarFactory;
 import com.jgoodies.forms.layout.FormLayout;
@@ -50,18 +52,20 @@ public class SendInvitationsAdvancedPanel extends BaseDialog {
     private JTextField locationDirectoryField;
     private JButton locationButton;
     private JButton clearButton;
-    private final ValueModel locationModel;
+    private final ValueModel locationValueModel;
+    private final ValueModel permissionsValueModel;
     private String location;
     private final String fileName;
     private DefaultComboBoxModel permissionsModel;
     private JComboBox permissionsCombo;
 
     public SendInvitationsAdvancedPanel(Controller controller,
-                                        ValueModel locationModel,
-                                        ValueModel permissionsModel,
+                                        ValueModel locationValueModel,
+                                        ValueModel permissionsValueModel,
                                         String fileName) {
         super(controller, true);
-        this.locationModel = locationModel;
+        this.locationValueModel = locationValueModel;
+        this.permissionsValueModel = permissionsValueModel;
         this.fileName = fileName;
         initComponents();
     }
@@ -85,19 +89,26 @@ public class SendInvitationsAdvancedPanel extends BaseDialog {
         clearButton = new JButtonMini(Icons.getIconById(Icons.DELETE),
                 Translation.getTranslation("send_invitations_advanced.clear_tip"));
         clearButton.addActionListener(new MyActionListener());
-        location = (String) locationModel.getValue();
+        location = (String) locationValueModel.getValue();
         locationDirectoryField.setText(location);
         permissionsModel = new DefaultComboBoxModel(new String[]{
                 Invitation.getNameForPermission(Invitation.READ_WRITE_PERMISSION),
                 Invitation.getNameForPermission(Invitation.READ_PERMISSION),
                 Invitation.getNameForPermission(Invitation.ADMIN_PERMISSION)});
         permissionsCombo = new JComboBox(permissionsModel);
+        permissionsCombo.addItemListener(new ItemListener() {
+            public void itemStateChanged(ItemEvent e) {
+                // Slight generalization here: assume Invite.permissions are 
+                // sequential from zero.
+                permissionsValueModel.setValue(permissionsCombo.getSelectedIndex());
+            }
+        });
         updateButtons();
     }
 
     private void ok() {
         if (location != null) {
-            locationModel.setValue(location);
+            locationValueModel.setValue(location);
         }
         close();
     }
@@ -175,7 +186,7 @@ public class SendInvitationsAdvancedPanel extends BaseDialog {
                 locationDirectoryField.setText("");
                 updateButtons();
             } else if (e.getSource() == locationButton) {
-                String initial = (String) locationModel.getValue();
+                String initial = (String) locationValueModel.getValue();
                 String file = DialogFactory.chooseDirectory(getController(),
                         initial);
                 location = file;
