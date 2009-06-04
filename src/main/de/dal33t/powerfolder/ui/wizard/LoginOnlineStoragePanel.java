@@ -150,7 +150,7 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
     protected JPanel buildContent() {
         FormLayout layout = new FormLayout(
             "right:pref, 3dlu, 140dlu, pref:grow",
-            "pref, 6dlu, pref, 3dlu, pref, 3dlu, pref, 10dlu, pref, 10dlu, pref, 10dlu, pref");
+            "pref, 6dlu, pref, 3dlu, pref, 3dlu, pref, 10dlu, pref, 10dlu, pref, 10dlu, pref, 10dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
@@ -197,6 +197,12 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
                 .getTranslation("wizard.webservice.learn_more"),
                 ConfigurationEntry.PROVIDER_ABOUT_URL.getValue(getController()));
             builder.add(link.getUiComponent(), cc.xyw(1, row, 4));
+            row += 2;
+
+            builder.add(new LinkLabel(getController(), Translation
+                .getTranslation("wizard.webservice.recover_password"),
+                    "http://powerfolder.com/storage_login.html")
+                    .getUiComponent(), cc.xyw(1, row, 4));
             row += 2;
         }
 
