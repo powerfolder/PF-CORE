@@ -56,7 +56,6 @@ public class SendInvitationsAdvancedPanel extends BaseDialog {
     private final ValueModel permissionsValueModel;
     private String location;
     private final String fileName;
-    private DefaultComboBoxModel permissionsModel;
     private JComboBox permissionsCombo;
 
     public SendInvitationsAdvancedPanel(Controller controller,
@@ -91,18 +90,20 @@ public class SendInvitationsAdvancedPanel extends BaseDialog {
         clearButton.addActionListener(new MyActionListener());
         location = (String) locationValueModel.getValue();
         locationDirectoryField.setText(location);
-        permissionsModel = new DefaultComboBoxModel(new String[]{
-                Invitation.getNameForPermission(Invitation.READ_WRITE_PERMISSION),
-                Invitation.getNameForPermission(Invitation.READ_PERMISSION),
-                Invitation.getNameForPermission(Invitation.ADMIN_PERMISSION)});
+        DefaultComboBoxModel permissionsModel = new DefaultComboBoxModel(
+                new String[]{
+                        Invitation.getNameForPermission(Invitation.READ_WRITE_PERMISSION),
+                        Invitation.getNameForPermission(Invitation.READ_PERMISSION),
+                        Invitation.getNameForPermission(Invitation.ADMIN_PERMISSION)});
         permissionsCombo = new JComboBox(permissionsModel);
         permissionsCombo.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
-                // Slight generalization here: assume Invite.permissions are 
-                // sequential from zero.
+                // Slight generalization here: Assume that Invite.permissions
+                // are sequential from zero.
                 permissionsValueModel.setValue(permissionsCombo.getSelectedIndex());
             }
         });
+        permissionsCombo.setSelectedIndex((Integer) permissionsValueModel.getValue());
         updateButtons();
     }
 
