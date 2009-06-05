@@ -172,7 +172,7 @@ public class SendInvitationsAdvancedPanel extends BaseDialog {
     }
 
     protected Icon getIcon() {
-        return Icons.getIconById(Icons.PROJECT_WORK_PICTO);
+        return null;
     }
 
     public String getTitle() {

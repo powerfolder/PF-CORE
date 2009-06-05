@@ -24,6 +24,7 @@ import de.dal33t.powerfolder.ui.widget.AutoTextField;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.action.BaseAction;
+import de.dal33t.powerfolder.ui.dialog.NodesSelectDialog2;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -39,6 +40,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import jwf.WizardPanel;
+import jwf.Wizard;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -315,6 +317,25 @@ public class SendInvitationsPanel extends PFWizardPanel {
         }
 
         public void actionPerformed(ActionEvent e) {
+
+            Collection<Member> selectedMembers = new ArrayList<Member>();
+            NodesSelectDialog2 nsd2 = new NodesSelectDialog2(getController(),
+                    (Dialog) getWizardContext().getAttribute(Wizard.DIALOG_ATTRIBUTE),
+                    selectedMembers);
+            nsd2.open();
+            for (Member selectedMember : selectedMembers) {
+                boolean got = false;
+                for (Object o : inviteesListModel.toArray()) {
+                    String invitee = (String) o;
+                    if (selectedMember.getNick().equals(invitee)) {
+                        got = true;
+                        break;
+                    }
+                }
+                if (!got) {
+                    inviteesListModel.addElement(selectedMember.getNick());
+                }
+            }
         }
     }
 
