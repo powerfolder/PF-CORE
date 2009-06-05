@@ -48,6 +48,7 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.io.File;
 import java.io.IOException;
@@ -79,7 +80,7 @@ public class ExpandableComputerView extends PFUIComponent implements ExpandableV
      * Constructor
      *
      * @param controller
-     * @param member
+     * @param node
      */
     public ExpandableComputerView(Controller controller, Member node) {
         super(controller);
@@ -139,6 +140,7 @@ public class ExpandableComputerView extends PFUIComponent implements ExpandableV
         upperBuilder.add(chatButton, cc.xy(6, 1));
 
         upperPanel = upperBuilder.getPanel();
+        upperPanel.setOpaque(false);
         upperPanel.setToolTipText(
                 Translation.getTranslation("exp_computer_view.expand"));
         MouseAdapter ma = new MyMouseAdapter();
@@ -159,12 +161,14 @@ public class ExpandableComputerView extends PFUIComponent implements ExpandableV
         lowerBuilder.add(reconnectButton, cc.xy(6, 3));
 
         JPanel lowerPanel = lowerBuilder.getPanel();
+        lowerPanel.setOpaque(false);
 
         // Build spacer then lower outer with lower panel
         FormLayout lowerOuterLayout = new FormLayout("pref:grow",
             "3dlu, pref");
         PanelBuilder lowerOuterBuilder = new PanelBuilder(lowerOuterLayout);
         lowerOuterPanel = lowerOuterBuilder.getPanel();
+        lowerOuterPanel.setOpaque(false);
         lowerOuterPanel.setVisible(false);
         lowerOuterBuilder.add(lowerPanel, cc.xy(1, 2));
 
@@ -173,8 +177,11 @@ public class ExpandableComputerView extends PFUIComponent implements ExpandableV
             "3dlu, pref, pref, 3dlu");
         PanelBuilder borderBuilder = new PanelBuilder(borderLayout);
         borderBuilder.add(upperPanel, cc.xy(2, 2));
-        borderBuilder.add(lowerOuterBuilder.getPanel(), cc.xy(2, 3));
+        JPanel panel = lowerOuterBuilder.getPanel();
+        panel.setOpaque(false);
+        borderBuilder.add(panel, cc.xy(2, 3));
         JPanel borderPanel = borderBuilder.getPanel();
+        borderPanel.setOpaque(false);
         borderPanel.setBorder(BorderFactory.createEtchedBorder());
 
         // Build ui with vertical space before the next one.
@@ -184,6 +191,7 @@ public class ExpandableComputerView extends PFUIComponent implements ExpandableV
         outerBuilder.add(borderPanel, cc.xy(2, 1));
 
         uiComponent = outerBuilder.getPanel();
+        uiComponent.setOpaque(false);
 
         uiComponent.setTransferHandler(new MyTransferHandler());
     }
@@ -597,7 +605,7 @@ public class ExpandableComputerView extends PFUIComponent implements ExpandableV
         private File getFileList(TransferSupport support) {
             Transferable t = support.getTransferable();
             try {
-                java.util.List list = (java.util.List) t.getTransferData(
+                List list = (List) t.getTransferData(
                         DataFlavor.javaFileListFlavor);
                 if (list.size() == 1) {
                     for (Object o : list) {

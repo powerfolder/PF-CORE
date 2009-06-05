@@ -224,6 +224,7 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
         upperBuilder.add(joinOnlineStorageButton, cc.xy(9, 1));
 
         upperPanel = upperBuilder.getPanel();
+        upperPanel.setOpaque(false);
         upperPanel.setToolTipText(
                 Translation.getTranslation("exp_folder_view.expand"));
         upperPanel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -264,6 +265,7 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
         lowerBuilder.add(osComponent.getUIComponent(), cc.xywh(2, 22, 4, 1));
 
         JPanel lowerPanel = lowerBuilder.getPanel();
+        lowerPanel.setOpaque(false);
 
         // Build spacer then lower outer with lower panel
         FormLayout lowerOuterLayout = new FormLayout("pref:grow",
@@ -278,8 +280,11 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
             "3dlu, pref, pref, 3dlu");
         PanelBuilder borderBuilder = new PanelBuilder(borderLayout);
         borderBuilder.add(upperPanel, cc.xy(2, 2));
-        borderBuilder.add(lowerOuterBuilder.getPanel(), cc.xy(2, 3));
+        JPanel panel = lowerOuterBuilder.getPanel();
+        panel.setOpaque(false);
+        borderBuilder.add(panel, cc.xy(2, 3));
         JPanel borderPanel = borderBuilder.getPanel();
+        borderPanel.setOpaque(false);
         borderPanel.setBorder(BorderFactory.createEtchedBorder());
 
         // Build ui with vertical space before the next one
@@ -289,6 +294,7 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
         outerBuilder.add(borderPanel, cc.xy(2, 1));
 
         uiComponent = outerBuilder.getPanel();
+        uiComponent.setOpaque(false);
     }
 
     /**
