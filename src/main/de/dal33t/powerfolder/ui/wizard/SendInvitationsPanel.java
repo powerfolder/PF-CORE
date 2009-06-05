@@ -48,6 +48,7 @@ import com.jgoodies.binding.value.ValueHolder;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.util.Reject;
@@ -252,7 +253,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
         locationModel.addValueChangeListener(new MyPropertyChangeListener());
 
         permissionsModel = new ValueHolder();
-        permissionsModel = new ValueHolder(Invitation.READ_WRITE_PERMISSION);
+        permissionsModel = new ValueHolder(FolderPermission.READ_WRITE_PERMISSION);
         permissionsModel.addValueChangeListener(new MyPropertyChangeListener());
 
         enableAddButton();

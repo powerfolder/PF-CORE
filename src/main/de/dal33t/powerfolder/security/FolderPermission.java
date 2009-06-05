@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.security;
 
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.Translation;
 
 /**
  * A generic subclass for all permissions that are related to a certain folder.
@@ -32,7 +33,11 @@ public abstract class FolderPermission implements Permission {
     private static final long serialVersionUID = 100L;
     
     public static final String PROPERTYNAME_FOLDER = "folder";
-    
+
+    public static int READ_WRITE_PERMISSION = 0;
+    public static int READ_PERMISSION = 1;
+    public static int ADMIN_PERMISSION = 2;
+
     protected FolderInfo folder;
 
     protected FolderPermission(FolderInfo foInfo) {
@@ -72,4 +77,17 @@ public abstract class FolderPermission implements Permission {
     public String toString() {
         return getClass().getSimpleName() + " on " + folder;
     }
+
+    public static String getNameForPermission(int permission) {
+        if (permission == READ_PERMISSION) {
+            return Translation.getTranslation("permissions.read");
+        } else if (permission == READ_WRITE_PERMISSION) {
+            return Translation.getTranslation("permissions.read_write");
+        } else if (permission == ADMIN_PERMISSION) {
+            return Translation.getTranslation("permissions.admin");
+        } else {
+            return Translation.getTranslation("permissions.unknown", permission);
+        }
+    }
+    
 }

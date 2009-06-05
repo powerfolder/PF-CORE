@@ -53,10 +53,6 @@ public class Invitation extends FolderRelatedMessage {
     /** suggestedLocalBase is relative to user home directory. */
     private static final int RELATIVE_USER_HOME = 3;
 
-    public static int READ_WRITE_PERMISSION = 0;
-    public static int READ_PERMISSION = 1;
-    public static int ADMIN_PERMISSION = 2;
-
     private MemberInfo invitor;
     // For backward compatibilty to pre 3.1.2 versions.
     private File suggestedLocalBase;
@@ -189,18 +185,6 @@ public class Invitation extends FolderRelatedMessage {
 
     public int getPermissions() {
         return permissions;
-    }
-
-    public static String getNameForPermission(int permission) {
-        if (permission == READ_PERMISSION) {
-            return Translation.getTranslation("invitation.read_permission");
-        } else if (permission == READ_WRITE_PERMISSION) {
-            return Translation.getTranslation("invitation.read_write_permission");
-        } else if (permission == ADMIN_PERMISSION) {
-            return Translation.getTranslation("invitation.admin_permission");
-        } else {
-            return Translation.getTranslation("invitation.unknown_permission", permission);
-        }
     }
 
     public SyncProfile getSuggestedSyncProfile() {
