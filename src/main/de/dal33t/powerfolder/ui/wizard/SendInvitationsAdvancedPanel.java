@@ -22,7 +22,7 @@ package de.dal33t.powerfolder.ui.wizard;
 import javax.swing.*;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.message.Invitation;
+import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.util.ui.BaseDialog;
@@ -92,9 +92,9 @@ public class SendInvitationsAdvancedPanel extends BaseDialog {
         locationDirectoryField.setText(location);
         DefaultComboBoxModel permissionsModel = new DefaultComboBoxModel(
                 new String[]{
-                        Invitation.getNameForPermission(Invitation.READ_WRITE_PERMISSION),
-                        Invitation.getNameForPermission(Invitation.READ_PERMISSION),
-                        Invitation.getNameForPermission(Invitation.ADMIN_PERMISSION)});
+                        FolderPermission.getNameForPermission(FolderPermission.READ_WRITE_PERMISSION),
+                        FolderPermission.getNameForPermission(FolderPermission.READ_PERMISSION),
+                        FolderPermission.getNameForPermission(FolderPermission.ADMIN_PERMISSION)});
         permissionsCombo = new JComboBox(permissionsModel);
         permissionsCombo.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
