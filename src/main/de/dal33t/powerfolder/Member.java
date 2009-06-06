@@ -1402,54 +1402,6 @@ public class Member extends PFComponent implements Comparable<Member> {
                 Convert.cleanFileList(getController(), changes.added);
                 Convert.cleanFileList(getController(), changes.removed);
 
-                // #1022 - Mass delete detection. Switch to a safe profile if
-                // a large percent of files would get deleted by another node.
-                if (targetFolder != null && changes.removed != null
-                        && getController().isUIEnabled()
-                        && PreferencesEntry.MASS_DELETE_PROTECTION
-                        .getValueBoolean(getController())) {
-                    int delsCount = changes.removed.length;
-                    int knownFilesCount = targetFolder.getKnownFilesCount();
-                    if (knownFilesCount > 0) {
-                        int delPercentage = 100 * delsCount / knownFilesCount;
-                        logFine("FolderFilesChanged delete percentage "
-                                + delPercentage + '%');
-                        if (delPercentage >= PreferencesEntry
-                                .MASS_DELETE_THRESHOLD.getValueInt(
-                                getController())) {
-                            SyncProfileConfiguration config = targetFolder
-                                    .getSyncProfile().getConfiguration();
-                            if (config.isSyncDeletionWithFriends() ||
-                                    config.isSyncDeletionWithOthers()) {
-                                String originalName = targetFolder
-                                        .getSyncProfile().getProfileName();
-                                targetFolder.setSyncProfile(SyncProfile.HOST_FILES);
-                                logWarning("Received a FolderFilesChanged message from "
-                                        + fromPeer.getMember().getInfo().nick
-                                        + " which will delete " + delPercentage
-                                        + " percent of known files in folder "
-                                        + targetFolder.getInfo().name + ". The "
-                                        + " sync profile has been switched from " +
-                                        originalName + " to "
-                                        + targetFolder.getSyncProfile().getProfileName()
-                                        + " to protect the files.");
-                                WarningEvent we = new WarningEvent(getController(),
-                                        Translation.getTranslation(
-                                                "member.mass_delete.warning_title"),
-                                        Translation.getTranslation(
-                                                "member.mass_delete.warning_message",
-                                                fromPeer.getMember().getInfo().nick,
-                                                delPercentage,
-                                                targetFolder.getInfo().name,
-                                                originalName,
-                                                targetFolder.getSyncProfile()
-                                                        .getProfileName()));
-                                getController().pushWarningEvent(we);
-                            }
-                        }
-                    }
-                }
-
                 Integer nExpected = expectedListMessages.get(changes.folder);
                 if (nExpected == null) {
                     logSevere("Received folder changes on "

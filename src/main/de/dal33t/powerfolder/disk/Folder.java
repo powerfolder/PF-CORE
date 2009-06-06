@@ -63,13 +63,7 @@ import static de.dal33t.powerfolder.disk.FolderStatistic.*;
 import de.dal33t.powerfolder.disk.problem.ProblemListener;
 import de.dal33t.powerfolder.disk.problem.Problem;
 import de.dal33t.powerfolder.disk.problem.UnsynchronizedFolderProblem;
-import de.dal33t.powerfolder.event.FileNameProblemEvent;
-import de.dal33t.powerfolder.event.FileNameProblemHandler;
-import de.dal33t.powerfolder.event.FolderEvent;
-import de.dal33t.powerfolder.event.FolderListener;
-import de.dal33t.powerfolder.event.FolderMembershipEvent;
-import de.dal33t.powerfolder.event.FolderMembershipListener;
-import de.dal33t.powerfolder.event.ListenerSupportFactory;
+import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
@@ -2273,6 +2267,49 @@ public class Folder extends PFComponent {
     public void fileListChanged(Member from, FolderFilesChanged changes) {
         if (shutdown) {
             return;
+        }
+
+        // #1022 - Mass delete detection. Switch to a safe profile if
+        // a large percent of files would get deleted by another node.
+        if (changes.removed != null && PreferencesEntry.MASS_DELETE_PROTECTION
+                .getValueBoolean(getController())) {
+            int delsCount = changes.removed.length;
+            int knownFilesCount = getKnownFilesCount();
+            if (knownFilesCount > 0) {
+                int delPercentage = 100 * delsCount / knownFilesCount;
+                logFine("FolderFilesChanged delete percentage " + delPercentage
+                        + '%');
+                if (delPercentage >= PreferencesEntry.MASS_DELETE_THRESHOLD
+                        .getValueInt(getController())) {
+                    SyncProfileConfiguration config = syncProfile
+                            .getConfiguration();
+                    if (config.isSyncDeletionWithFriends() ||
+                            config.isSyncDeletionWithOthers()) {
+                        String originalName = syncProfile.getProfileName();
+                        setSyncProfile(SyncProfile.HOST_FILES);
+                        logWarning("Received a FolderFilesChanged message from "
+                                + from.getInfo().nick
+                                + " which will delete " + delPercentage
+                                + " percent of known files in folder "
+                                + currentInfo.name + ". The "
+                                + " sync profile has been switched from " +
+                                originalName + " to "
+                                + syncProfile.getProfileName()
+                                + " to protect the files.");
+                        WarningEvent we = new WarningEvent(getController(),
+                                Translation.getTranslation(
+                                        "member.mass_delete.warning_title"),
+                                Translation.getTranslation(
+                                        "member.mass_delete.warning_message",
+                                        from.getInfo().nick,
+                                        delPercentage,
+                                        currentInfo.name,
+                                        originalName,
+                                        syncProfile.getProfileName()));
+                        getController().pushWarningEvent(we);
+                    }
+                }
+            }
         }
 
         // Try to find same files
