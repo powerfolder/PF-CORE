@@ -475,26 +475,30 @@ public class HomeTab extends PFUIComponent {
     }
 
     private void displaySyncStats(Date syncDate, boolean synced) {
-        String syncStatsText;
-        if (getController().getFolderRepository().getFoldersCount() == 0) {
-            syncStatsText = Translation.getTranslation("home_tab.no_folders");
-        } else {
-        syncStatsText = synced
-                ? Translation.getTranslation("home_tab.in_sync")
-                : Translation.getTranslation("home_tab.synchronizing");
+        if (synchronizationStatusLabel != null) {
+            String syncStatsText;
+            if (getController().getFolderRepository().getFoldersCount() == 0) {
+                syncStatsText = Translation.getTranslation("home_tab.no_folders");
+            } else {
+            syncStatsText = synced
+                    ? Translation.getTranslation("home_tab.in_sync")
+                    : Translation.getTranslation("home_tab.synchronizing");
+            }
+            synchronizationStatusLabel.setText(syncStatsText);
         }
-        synchronizationStatusLabel.setText(syncStatsText);
 
-        String syncDateText;
-        if (syncDate == null) {
-            syncDateText = Translation.getTranslation("home_tab.none_synced");
-        } else {
-            String date = Format.formatDate(syncDate);
-            syncDateText = synced
-                    ? Translation.getTranslation("home_tab.last_synced", date)
-                    : Translation.getTranslation("home_tab.sync_eta", date);
+        if (synchronizationDateLabel != null) {
+            String syncDateText;
+            if (syncDate == null) {
+                syncDateText = Translation.getTranslation("home_tab.none_synced");
+            } else {
+                String date = Format.formatDate(syncDate);
+                syncDateText = synced
+                        ? Translation.getTranslation("home_tab.last_synced", date)
+                        : Translation.getTranslation("home_tab.sync_eta", date);
+            }
+            synchronizationDateLabel.setText(syncDateText);
         }
-        synchronizationDateLabel.setText(syncDateText);
     }
 
     /**
