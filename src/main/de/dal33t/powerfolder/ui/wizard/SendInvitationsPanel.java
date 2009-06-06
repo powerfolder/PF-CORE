@@ -336,6 +336,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
                     inviteesListModel.addElement(selectedMember.getNick());
                 }
             }
+            updateButtons();
         }
     }
 
