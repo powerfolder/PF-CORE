@@ -22,6 +22,7 @@ package de.dal33t.powerfolder.ui.friends;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.ColorUtil;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -35,7 +36,7 @@ public class NodesSelectTableCellRenderer extends DefaultTableCellRenderer {
     public Component getTableCellRendererComponent(JTable table, Object value,
         boolean isSelected, boolean hasFocus, int row, int column)
     {
-        setHorizontalAlignment(SwingConstants.LEFT);
+        setHorizontalAlignment(LEFT);
         setIcon(null);
         Object myValue = null;
 
@@ -48,7 +49,7 @@ public class NodesSelectTableCellRenderer extends DefaultTableCellRenderer {
                     if (member.isOnLAN()) {
                         text += " ("
                             + Translation.getTranslation("general.localnet")
-                            + ")";
+                            + ')';
                     }
                     myValue = text;
                     setIcon(Icons.getIconFor(member));
@@ -59,11 +60,19 @@ public class NodesSelectTableCellRenderer extends DefaultTableCellRenderer {
             myValue = value;
         } else {
             throw new IllegalStateException(
-                "Don't know how to render " + value == null ? "null" : value
-                    .getClass().getName());
+                "Don't know how to render " + (value == null ? "null" : value
+                    .getClass().getName()));
         }
 
-        return super.getTableCellRendererComponent(table, myValue, isSelected,
-            hasFocus, row, column);
+        Component rendererComponent = super.getTableCellRendererComponent(table,
+                myValue, isSelected, hasFocus, row, column);
+
+        if (!isSelected) {
+            setBackground(row % 2 == 0 ? ColorUtil.EVEN_TABLE_ROW_COLOR
+                    : ColorUtil.ODD_TABLE_ROW_COLOR);
+        }
+
+
+        return rendererComponent;
     }
 }
