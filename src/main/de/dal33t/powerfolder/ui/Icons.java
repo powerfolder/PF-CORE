@@ -529,28 +529,6 @@ public class Icons {
     }
 
     /**
-     * Return the correct icon for a subdirectory
-     *
-     * @param dir
-     *            the directory
-     * @param isOpen
-     *            if it is opend
-     * @param controller
-     * @return the icons
-     */
-    public static Icon getIconFor(Directory dir, boolean isOpen,
-        Controller controller)
-    {
-        if (dir.isDeleted()) {
-            return isOpen ? getIconById(DIRECTORY_OPEN_RED) : getIconById(DIRECTORY_RED);
-        } else if (dir.isExpected(controller.getFolderRepository())) {
-            return isOpen ? getIconById(DIRECTORY_OPEN_GRAY) : getIconById(DIRECTORY_GRAY);
-        } else {
-            return isOpen ? getIconById(DIRECTORY_OPEN) : getIconById(DIRECTORY);
-        }
-    }
-
-    /**
      * @param controller
      * @param fInfo
      *            the file
