@@ -115,6 +115,17 @@ public interface FileInfoDAO {
     Collection<FileInfo> findAll(String domain);
 
     /**
+     * @param path
+     *            the directory
+     * @param domains
+     *            the domains to search in for.
+     * @return the files in this dir (not the files in the subs). All OWN
+     *         FileInfos will remain. List might contain additional FileInfos
+     *         from other domains.
+     */
+    Collection<FileInfo> findInDirectory(String path, String... domains);
+
+    /**
      * @param fileInfos
      *            the <code>FileInfo</code> to retrieve the file history for.
      * @return the list of file histories for the given fileInfos.

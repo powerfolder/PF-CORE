@@ -548,4 +548,10 @@ public class FileInfoDAOLuceneImpl extends PFComponent implements FileInfoDAO {
         // TODO Auto-generated method stub
         return null;
     }
+
+    public Collection<FileInfo> findInDirectory(String path, String... domains)
+    {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }

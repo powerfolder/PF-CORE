@@ -3,12 +3,15 @@ package de.dal33t.powerfolder.disk.dao;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import de.dal33t.powerfolder.light.FileHistory;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.logging.Loggable;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
@@ -145,5 +148,50 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
     {
         // TODO Auto-generated method stub
         return null;
+    }
+
+    public Collection<FileInfo> findInDirectory(String path, String... domains)
+    {
+        Map<FileInfo, FileInfo> files = new HashMap<FileInfo, FileInfo>();
+        boolean findInOwnDomain = false;
+        for (String domain : domains) {
+            if (StringUtils.isBlank(domain)) {
+                findInOwnDomain = true;
+                // Add later.
+                continue;
+            }
+            Domain d = getDomain(domain);
+            for (FileInfo fInfo : d.files.values()) {
+                if (isInSubDir(fInfo, path)) {
+                    // In subdir, do not consider
+                    continue;
+                }
+                FileInfo existingFInfo = files.get(fInfo);
+                if (existingFInfo == null || fInfo.isNewerThan(fInfo)) {
+                    // Add to files if not in or newer.
+                    files.put(fInfo, fInfo);
+                }
+            }
+        }
+
+        if (findInOwnDomain) {
+            Domain own = getDomain(null);
+            for (FileInfo fInfo : own.files.values()) {
+                if (isInSubDir(fInfo, path)) {
+                    // In subdir, do not consider
+                    continue;
+                }
+                files.put(fInfo, fInfo);
+            }
+        }
+        logWarning("Found " + files.size() + " files in subdir '" + path + "'");
+        return files.keySet();
+    }
+
+    private boolean isInSubDir(FileInfo fInfo, String path) {
+        if (!fInfo.getName().startsWith(path)) {
+            return false;
+        }
+        return fInfo.getName().indexOf('/', path.length() + 1) == -1;
     }
 }
