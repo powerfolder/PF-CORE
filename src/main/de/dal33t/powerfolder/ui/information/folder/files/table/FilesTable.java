@@ -21,7 +21,10 @@ package de.dal33t.powerfolder.ui.information.folder.files.table;
 
 import static de.dal33t.powerfolder.disk.SyncProfile.MANUAL_SYNCHRONIZATION;
 
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
@@ -36,9 +39,8 @@ import javax.swing.table.TableModel;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.DiskItem;
-import de.dal33t.powerfolder.disk.FileInfoHolder;
-import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.Directory;
+import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.ImageFileInfo;
 import de.dal33t.powerfolder.light.MP3FileInfo;
@@ -110,8 +112,6 @@ public class FilesTable extends JTable {
         column = getColumn(getColumnName(3));
         column.setPreferredWidth(80);
         column = getColumn(getColumnName(4));
-        column.setPreferredWidth(80);
-        column = getColumn(getColumnName(5));
         column.setPreferredWidth(80);
     }
 
@@ -303,22 +303,6 @@ public class FilesTable extends JTable {
                         myValue = Format.formatDate(fileInfo.getModifiedDate());
                         setHorizontalAlignment(RIGHT);
                         break;
-                    case 5:  // availability
-
-                        // See if it is in the recicle bin.
-                        if (fileInfo.isDeleted()
-                                && controller.getRecycleBin().isInRecycleBin(fileInfo)) {
-                            myValue = Translation.getTranslation(
-                                    "file_info.in_recycle_bin");
-                        } else {
-                            FileInfoHolder holder = folder.getDirectory()
-                                    .getFileInfoHolder(fileInfo);
-                            if (holder == null) {
-                                myValue = "0";
-                            } else {
-                                myValue = String.valueOf(holder.getAvailability());
-                            }
-                        }
                 }
             } else if (diskItem instanceof Directory) {
                 Directory dir = (Directory) diskItem;

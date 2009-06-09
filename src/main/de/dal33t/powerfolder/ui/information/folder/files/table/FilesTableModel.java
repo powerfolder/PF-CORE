@@ -55,15 +55,13 @@ public class FilesTableModel extends PFComponent implements TableModel,
         Translation.getTranslation("files_table_model.name"),
         Translation.getTranslation("files_table_model.size"),
         Translation.getTranslation("files_table_model.modified_by"),
-        Translation.getTranslation("files_table_model.date"),
-        Translation.getTranslation("files_table_model.availability")};
+        Translation.getTranslation("files_table_model.date")};
 
     private static final int COL_FILE_TYPE = 0;
     private static final int COL_NAME = 1;
     public static final int COL_SIZE = 2;
     private static final int COL_MEMBER = 3;
     private static final int COL_MODIFIED_DATE = 4;
-    private static final int COL_AVAILABILITY = 5;
 
     private Folder folder;
     private File selectedDirectory;
@@ -304,8 +302,6 @@ public class FilesTableModel extends PFComponent implements TableModel,
                 return sortMe(DiskItemComparator.BY_MEMBER);
             case COL_MODIFIED_DATE:
                 return sortMe(DiskItemComparator.BY_MODIFIED_DATE);
-            case COL_AVAILABILITY :
-                return sortMe(DiskItemComparator.BY_AVAILABILITY);
         }
 
         sortColumn = -1;
