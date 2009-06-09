@@ -23,7 +23,6 @@ import java.util.Comparator;
 
 import de.dal33t.powerfolder.DiskItem;
 import de.dal33t.powerfolder.disk.Directory;
-import de.dal33t.powerfolder.disk.FileInfoHolder;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.logging.Loggable;
 
@@ -43,8 +42,7 @@ public class DiskItemComparator extends Loggable implements
     public static final int BY_SIZE = 2;
     public static final int BY_MEMBER = 3;
     public static final int BY_MODIFIED_DATE = 4;
-    public static final int BY_AVAILABILITY = 5;
-    public static final int BY_FOLDER = 6;
+    public static final int BY_FOLDER = 5;
 
     private static final int BEFORE = -1;
     private static final int AFTER = 1;
@@ -54,13 +52,12 @@ public class DiskItemComparator extends Loggable implements
     private static final DiskItemComparator[] comparators;
 
     static {
-        comparators = new DiskItemComparator[7];
+        comparators = new DiskItemComparator[6];
         comparators[BY_FILE_TYPE] = new DiskItemComparator(BY_FILE_TYPE);
         comparators[BY_NAME] = new DiskItemComparator(BY_NAME);
         comparators[BY_SIZE] = new DiskItemComparator(BY_SIZE);
         comparators[BY_MEMBER] = new DiskItemComparator(BY_MEMBER);
         comparators[BY_MODIFIED_DATE] = new DiskItemComparator(BY_MODIFIED_DATE);
-        comparators[BY_AVAILABILITY] = new DiskItemComparator(BY_AVAILABILITY);
         comparators[BY_FOLDER] = new DiskItemComparator(BY_FOLDER);
     }
 
@@ -139,36 +136,6 @@ public class DiskItemComparator extends Loggable implements
                     return sortByFileName(o1, o2);
                 }
                 return x;
-            case BY_AVAILABILITY :
-                if (o1 instanceof Directory && o2 instanceof Directory) {
-                    return sortByFileName(o1, o2);
-                } else if (o1 instanceof Directory) {
-                    return BEFORE;
-                } else if (o2 instanceof Directory) {
-                    return AFTER;
-                }
-
-                if (directory == null) {
-                    throw new IllegalStateException(
-                        "need a directoy to compare by BY_AVAILABILITY");
-                }
-
-                FileInfoHolder holder1 = directory
-                    .getFileInfoHolder((FileInfo) o1);
-                FileInfoHolder holder2 = directory
-                    .getFileInfoHolder((FileInfo) o2);
-                if (holder1 != null && holder2 != null) {
-                    int av1 = holder1.getAvailability();
-                    int av2 = holder2.getAvailability();
-                    if (av1 == av2) {
-                        return sortByFileName(o1, o2);
-                    }
-                    if (av1 < av2) {
-                        return BEFORE;
-                    }
-                    return AFTER;
-                }
-                return sortByFileName(o1, o2);
             case BY_FOLDER :
                 if (o1.getFolderInfo() == null && o2.getFolderInfo() == null) {
                     return sortByFileName(o1, o2);
@@ -218,9 +185,6 @@ public class DiskItemComparator extends Loggable implements
                 break;
             case BY_MODIFIED_DATE :
                 text = stub +  "modified date";
-                break;
-            case BY_AVAILABILITY :
-                text = stub +  "availability";
                 break;
             default:
                 text = "???";
