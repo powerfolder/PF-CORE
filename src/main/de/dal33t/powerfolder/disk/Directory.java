@@ -19,14 +19,12 @@
  */
 package de.dal33t.powerfolder.disk;
 
-import java.awt.datatransfer.DataFlavor;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -223,67 +221,6 @@ public class Directory implements Comparable<Directory>, DiskItem {
         return removed;
     }
 
-    /**
-     * @param fileInfo
-     *            the fileinfo
-     * @return the holder of the fileinfo
-     */
-    public FileInfoHolder getFileInfoHolder(FileInfo fileInfo) {
-        FileInfoHolder holder = fileInfoHolderMap.get(fileInfo);
-        if (holder != null) {
-            return holder;
-        }
-        String thePath = fileInfo.getLocationInFolder();
-        String dirName;
-        String rest;
-        int index = thePath.indexOf('/');
-        if (index == -1) {
-            dirName = thePath;
-            rest = "";
-        } else {
-            dirName = thePath.substring(0, index);
-            rest = thePath.substring(index + 1, thePath.length());
-        }
-        if (dirName.length() == 0) {
-            return null;
-        }
-        Directory dir = subDirectoriesMap.get(dirName);
-        if (dir == null) {
-            // should not happen but this saves a crash (white screen)
-            // throw new IllegalStateException("dir not found: " + dirName + " |
-            // "
-            // + fileInfo.getName());
-            return null;
-        }
-        if (rest.length() == 0) {
-            return dir.getFileInfoHolder(fileInfo);
-        }
-        return dir.getFileInfoHolder(fileInfo, rest);
-    }
-
-    private FileInfoHolder getFileInfoHolder(FileInfo fileInfo, String restPath)
-    {
-        String dirName;
-        String rest;
-        int index = restPath.indexOf('/');
-        if (index == -1) {
-            dirName = restPath;
-            rest = "";
-        } else {
-            dirName = restPath.substring(0, index);
-            rest = restPath.substring(index + 1, restPath.length());
-        }
-        Directory dir = subDirectoriesMap.get(dirName);
-        if (dir == null) {
-            throw new IllegalStateException("dir not found: " + dirName + " | "
-                + fileInfo.getName());
-        }
-        if (rest.length() == 0) {
-            return dir.getFileInfoHolder(fileInfo);
-        }
-        return dir.getFileInfoHolder(fileInfo, rest);
-    }
-
     public Directory getSubDirectory(String dirName) {
         String tmpDirName;
         String rest;
@@ -339,23 +276,6 @@ public class Directory implements Comparable<Directory>, DiskItem {
     }
 
     /**
-     * @return the list of subdirectories in this directory, that are NOT
-     *         deleted.
-     */
-    public List<Directory> listSubDirectories() {
-        List<Directory> list = new ArrayList<Directory>(subDirectoriesMap
-            .values());
-        for (Iterator<Directory> iterator = list.iterator(); iterator.hasNext();)
-        {
-            Directory directory = iterator.next();
-            if (directory.isDeleted()) {
-                iterator.remove();
-            }
-        }
-        return list;
-    }
-
-    /**
      * @return a references to the internal directory collection. Collection
      *         might change after return.
      */
@@ -404,12 +324,6 @@ public class Directory implements Comparable<Directory>, DiskItem {
         return path.compareToIgnoreCase(other.path);
     }
 
-    /** does this Direcory allready has this exact file on disk */
-    public boolean alreadyHasFileOnDisk(File file) {
-        File toCheck = new File(getFile(), file.getName());
-        return toCheck.exists();
-    }
-
     /**
      * Adds a FileInfo to this Directory
      * 
@@ -443,189 +357,6 @@ public class Directory implements Comparable<Directory>, DiskItem {
         }
     }
 
-    /**
-     * Answers if all files in this dir and in subdirs are expected.
-     * 
-     * @param folderRepository
-     * @return if the directory is expected
-     */
-    public boolean isExpected(FolderRepository folderRepository) {
-        for (FileInfoHolder holder : fileInfoHolderMap.values()) {
-            FileInfo fInfo = holder.getFileInfo();
-            if (fInfo.isDeleted()) {
-                // Don't consider deleted
-                continue;
-            }
-            if (!fInfo.isExpected(folderRepository)) {
-                return false;
-            }
-        }
-
-        for (Directory dir : subDirectoriesMap.values()) {
-            if (!dir.isExpected(folderRepository)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
-     * @return true if all filesInfos and filesInfos in subdirectories are
-     *         deleted
-     */
-    public boolean isDeleted() {
-        if (fileInfoHolderMap.isEmpty() && subDirectoriesMap.isEmpty()) {
-            return false;
-        }
-        for (FileInfoHolder holder : fileInfoHolderMap.values()) {
-            if (!holder.getFileInfo().isDeleted()) {
-                return false; // one file not deleted
-            }
-        }
-        for (Directory dir : subDirectoriesMap.values()) {
-            if (!dir.isDeleted()) {
-                return false;
-            }
-        }
-        return true; // this dir is deleted
-    }
-
-    /**
-     * @return true if at least one filesInfos in any subdirectories is found
-     *         that is deleted.
-     */
-    public boolean containsDeleted() {
-        if (fileInfoHolderMap.isEmpty() && subDirectoriesMap.isEmpty()) {
-            return false;
-        }
-        for (FileInfoHolder fileInfoHolder : fileInfoHolderMap.values()) {
-            if (fileInfoHolder.getFileInfo().isDeleted()) {
-                return true;
-            }
-        }
-        for (Directory directory : subDirectoriesMap.values()) {
-            if (directory.containsDeleted()) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * @return True if this directory contains any local files.
-     */
-    public boolean containsLocalFiles() {
-        if (fileInfoHolderMap.isEmpty() && subDirectoriesMap.isEmpty()) {
-            return false;
-        }
-        for (FileInfoHolder fileInfoHolder : fileInfoHolderMap.values()) {
-            FileInfo fileInfo = fileInfoHolder.getFileInfo();
-            FileInfo newestVersion = null;
-            if (fileInfo.getFolder(rootFolder.getController()
-                .getFolderRepository()) != null)
-            {
-                newestVersion = fileInfo.getNewestNotDeletedVersion(rootFolder
-                    .getController().getFolderRepository());
-            }
-
-            boolean isIncoming = fileInfo.isDownloading(rootFolder
-                .getController())
-                || fileInfo.isExpected(rootFolder.getController()
-                    .getFolderRepository())
-                || newestVersion != null
-                && newestVersion.isNewerThan(fileInfo);
-            if (!isIncoming && !fileInfo.isDeleted()) {
-                return true;
-            }
-        }
-        for (Directory directory : subDirectoriesMap.values()) {
-            if (directory.containsLocalFiles()) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * @return true if the directory contains any incoming files.
-     */
-    public boolean containsIncomingFiles() {
-        if (fileInfoHolderMap.isEmpty() && subDirectoriesMap.isEmpty()) {
-            return false;
-        }
-        for (FileInfoHolder fileInfoHolder : fileInfoHolderMap.values()) {
-            FileInfo fileInfo = fileInfoHolder.getFileInfo();
-            FileInfo newestVersion = null;
-            if (fileInfo.getFolder(rootFolder.getController()
-                .getFolderRepository()) != null)
-            {
-                newestVersion = fileInfo.getNewestNotDeletedVersion(rootFolder
-                    .getController().getFolderRepository());
-            }
-
-            boolean isIncoming = fileInfo.isDownloading(rootFolder
-                .getController())
-                || fileInfo.isExpected(rootFolder.getController()
-                    .getFolderRepository())
-                || newestVersion != null
-                && newestVersion.isNewerThan(fileInfo);
-            if (isIncoming) {
-                return true;
-            }
-        }
-        for (Directory directory : subDirectoriesMap.values()) {
-            if (directory.containsIncomingFiles()) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * TODO: Optimize: Run through all recently completed downloads instead of
-     * all files. Afterwards remove
-     * NavTreeCellRenderer.containsRecentlyCompleted()
-     * 
-     * @return true if this directory (or any subdirectory) contains a completed
-     *         download.
-     */
-    public boolean containsCompletedDownloads() {
-        if (fileInfoHolderMap.isEmpty() && subDirectoriesMap.isEmpty()) {
-            return false;
-        }
-        for (FileInfoHolder fInfoHolder : fileInfoHolderMap.values()) {
-            // TODO UARG ugly access to controller.
-            if (rootFolder.getController().getTransferManager()
-                .isCompletedDownload(fInfoHolder.getFileInfo()))
-            {
-                return true;
-            }
-        }
-        for (Directory dir : subDirectoriesMap.values()) {
-            if (dir.containsCompletedDownloads()) {
-                return true;
-            }
-        }
-        return false; // nothing found.
-    }
-
-    /**
-     * returns a list of all valid FileInfo s, so not the remotely deleted
-     * <p>
-     * TODO Valid state of FileInfo is highly questionable.
-     * 
-     * @return the list of files
-     */
-    public List<FileInfo> getValidFiles() {
-        List<FileInfo> files = new ArrayList<FileInfo>();
-        for (FileInfoHolder holder : fileInfoHolderMap.values()) {
-            if (holder.isValid()) {
-                files.add(holder.getFileInfo());
-            }
-        }
-        return files;
-    }
-
     public String getName() {
         return name;
     }
@@ -643,11 +374,6 @@ public class Directory implements Comparable<Directory>, DiskItem {
      */
     public Folder getRootFolder() {
         return rootFolder;
-    }
-
-    public void copyListsFrom(Directory other) {
-        fileInfoHolderMap = other.fileInfoHolderMap;
-        subDirectoriesMap = other.subDirectoriesMap;
     }
 
     /**
@@ -738,45 +464,6 @@ public class Directory implements Comparable<Directory>, DiskItem {
                 }
             }
         }
-    }
-
-    public String toAscii() {
-        StringBuilder str = new StringBuilder();
-        str.append(rootFolder.getName());
-        str.append('\n');
-        return toAscii(str, 0).toString();
-    }
-
-    private StringBuilder toAscii(StringBuilder str, int depth) {
-        int newdepth = depth + 1;
-        String tabs = getTabs(depth);
-        for (Directory dir : subDirectoriesMap.values()) {
-            str.append(tabs);
-            str.append("<DIR>");
-            str.append(dir.name);
-            str.append('\n');
-            dir.toAscii(str, newdepth);
-        }
-        tabs = getTabs(newdepth);
-        for (FileInfoHolder holder : fileInfoHolderMap.values()) {
-            str.append(tabs);
-            str.append("<FILE>");
-            FileInfo file = holder.getFileInfo();
-            str.append(file.getFilenameOnly());
-            str.append('\n');
-        }
-
-        return str;
-    }
-
-    private static final String tabChars = "--";
-
-    private static final String getTabs(int number) {
-        String str = "";
-        for (int i = 0; i < number; i++) {
-            str += (tabChars);
-        }
-        return str;
     }
 
     // ////////////////////////////
