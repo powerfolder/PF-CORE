@@ -1806,14 +1806,13 @@ public class Folder extends PFComponent {
      */
     public void setSyncProfile(SyncProfile aSyncProfile) {
         Reject.ifNull(aSyncProfile, "Unable to set null sync profile");
-        if (previewOnly) {
-            throw new IllegalStateException(
-                "Can not set Sync Profile in Preview mode.");
-        }
+
         if (aSyncProfile.equals(syncProfile)) {
             // Not changed
             return;
         }
+        Reject.ifTrue(previewOnly,
+            "Can not change Sync Profile in Preview mode.");
 
         logFine("Setting " + aSyncProfile.getProfileName());
         syncProfile = aSyncProfile;
