@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.disk;
 
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX_V4;
+import static de.dal33t.powerfolder.disk.FolderStatistic.UNKNOWN_SYNC_STATUS;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -59,11 +60,17 @@ import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAO;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAOHashMapImpl;
-import static de.dal33t.powerfolder.disk.FolderStatistic.*;
-import de.dal33t.powerfolder.disk.problem.ProblemListener;
 import de.dal33t.powerfolder.disk.problem.Problem;
+import de.dal33t.powerfolder.disk.problem.ProblemListener;
 import de.dal33t.powerfolder.disk.problem.UnsynchronizedFolderProblem;
-import de.dal33t.powerfolder.event.*;
+import de.dal33t.powerfolder.event.FileNameProblemEvent;
+import de.dal33t.powerfolder.event.FileNameProblemHandler;
+import de.dal33t.powerfolder.event.FolderEvent;
+import de.dal33t.powerfolder.event.FolderListener;
+import de.dal33t.powerfolder.event.FolderMembershipEvent;
+import de.dal33t.powerfolder.event.FolderMembershipListener;
+import de.dal33t.powerfolder.event.ListenerSupportFactory;
+import de.dal33t.powerfolder.event.RemoteMassDeletionEvent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
@@ -103,7 +110,7 @@ public class Folder extends PFComponent {
     public static final String DS_STORE = "*.DS_Store";
 
     /** The base location of the folder. */
-    private File localBase;
+    private final File localBase;
 
     /**
      * TRAC #1422: The DAO to store the FileInfos in.
@@ -123,7 +130,7 @@ public class Folder extends PFComponent {
     /**
      * True if the folder reaches 100% sync with another member connected.
      */
-    private AtomicBoolean inSyncWithOthers;
+    private final AtomicBoolean inSyncWithOthers;
 
     /**
      * The result state of the last scan
@@ -141,18 +148,18 @@ public class Folder extends PFComponent {
     private final Object dbAccessLock = new Object();
 
     /** files that should(not) be downloaded in auto download */
-    private DiskItemFilter diskItemFilter;
+    private final DiskItemFilter diskItemFilter;
 
     /**
      * Stores the priorities for downloading of the files in this folder.
      */
-    private TransferPriorities transferPriorities;
+    private final TransferPriorities transferPriorities;
 
     /** Lock for scan / accessing the actual files */
     private final Object scanLock = new Object();
 
     /** All members of this folder. Key == Value. Use Map for concurrency. */
-    private Map<Member, Member> members;
+    private final Map<Member, Member> members;
 
     /**
      * The lock to hold when initializing the root directory.
@@ -166,7 +173,7 @@ public class Folder extends PFComponent {
      * the folder info, contains important information about
      * id/hash/name/filescount
      */
-    private FolderInfo currentInfo;
+    private final FolderInfo currentInfo;
 
     /**
      * Folders sync profile Always access using getSyncProfile (#76 - preview
@@ -202,10 +209,12 @@ public class Folder extends PFComponent {
      */
     // private Map<FileInfo, List<FilenameProblem>> problemFiles;
     /** The statistic for this folder */
-    private FolderStatistic statistic;
+    private final FolderStatistic statistic;
 
-    private FolderListener folderListenerSupport;
-    private FolderMembershipListener folderMembershipListenerSupport;
+    private FileArchiver fileArchiver;
+
+    private final FolderListener folderListenerSupport;
+    private final FolderMembershipListener folderMembershipListenerSupport;
 
     /** Whether to move deleted items to the recycle bin */
     private boolean useRecycleBin;
@@ -377,8 +386,8 @@ public class Folder extends PFComponent {
 
         problems = new CopyOnWriteArrayList<Problem>();
 
-        problemListenerSupport = ListenerSupportFactory.createListenerSupport(
-                ProblemListener.class);
+        problemListenerSupport = ListenerSupportFactory
+            .createListenerSupport(ProblemListener.class);
     }
 
     public void addProblemListener(ProblemListener l) {
@@ -393,7 +402,7 @@ public class Folder extends PFComponent {
 
     /**
      * Add a problem to the list of problems.
-     *
+     * 
      * @param problem
      */
     public void addProblem(Problem problem) {
@@ -404,7 +413,7 @@ public class Folder extends PFComponent {
 
     /**
      * Remove a problem from the list of known problems.
-     *
+     * 
      * @param problem
      */
     public void removeProblem(Problem problem) {
@@ -418,7 +427,7 @@ public class Folder extends PFComponent {
 
     /**
      * Remove all problems from the list of known problems.
-     *
+     * 
      * @param problem
      */
     public void removeAllProblems() {
@@ -432,7 +441,7 @@ public class Folder extends PFComponent {
 
     /**
      * Count problems in folder?
-     *
+     * 
      * @return
      */
     public int countProblems() {
@@ -458,14 +467,16 @@ public class Folder extends PFComponent {
     private void commitScanResult(ScanResult scanResult) {
 
         // See if everything has been deleted.
-        if (getKnownFilesCount() > 0 && !scanResult.getDeletedFiles().isEmpty()
-                && scanResult.getTotalFilesCount() == 0
-                && PreferencesEntry.MASS_DELETE_PROTECTION
-                .getValueBoolean(getController())) {
+        if (getKnownFilesCount() > 0
+            && !scanResult.getDeletedFiles().isEmpty()
+            && scanResult.getTotalFilesCount() == 0
+            && PreferencesEntry.MASS_DELETE_PROTECTION
+                .getValueBoolean(getController()))
+        {
 
             // Advise controller of the carnage.
             getController().remoteMassDeletionDetected(
-                    new RemoteMassDeletionEvent(currentInfo));
+                new RemoteMassDeletionEvent(currentInfo));
 
             // Quit here, so deletions are not broadcast to other members.
             return;
@@ -743,8 +754,11 @@ public class Folder extends PFComponent {
         // TODO BOTTLENECK for many transfers
         synchronized (scanLock) {
             if (targetFile.exists()) {
-                // if file was a "newer file" the file already esists here
-                if (!deleteFile(fInfo, targetFile)) {
+                // if file was a "newer file" the file already exists here
+                if (fileArchiver != null) {
+                    fileArchiver.archive(fInfo, targetFile, false);
+                }
+                if (targetFile.exists() && !deleteFile(fInfo, targetFile)) {
                     logWarning("Unable to scan downloaded file. Was not able to move old file to recycle bin "
                         + targetFile.getAbsolutePath()
                         + ". "
@@ -2255,33 +2269,40 @@ public class Folder extends PFComponent {
 
         // #1022 - Mass delete detection. Switch to a safe profile if
         // a large percent of files would get deleted by another node.
-        if (changes.removed != null && PreferencesEntry.MASS_DELETE_PROTECTION
-                .getValueBoolean(getController())) {
+        if (changes.removed != null
+            && PreferencesEntry.MASS_DELETE_PROTECTION
+                .getValueBoolean(getController()))
+        {
             int delsCount = changes.removed.length;
             int knownFilesCount = getKnownFilesCount();
             if (knownFilesCount > 0) {
                 int delPercentage = 100 * delsCount / knownFilesCount;
                 logFine("FolderFilesChanged delete percentage " + delPercentage
-                        + '%');
+                    + '%');
                 if (delPercentage >= PreferencesEntry.MASS_DELETE_THRESHOLD
-                        .getValueInt(getController())) {
+                    .getValueInt(getController()))
+                {
                     SyncProfileConfiguration config = syncProfile
-                            .getConfiguration();
-                    if (config.isSyncDeletionWithFriends() ||
-                            config.isSyncDeletionWithOthers()) {
+                        .getConfiguration();
+                    if (config.isSyncDeletionWithFriends()
+                        || config.isSyncDeletionWithOthers())
+                    {
                         String originalName = syncProfile.getProfileName();
                         setSyncProfile(SyncProfile.HOST_FILES);
                         logWarning("Received a FolderFilesChanged message from "
-                                + from.getInfo().nick
-                                + " which will delete " + delPercentage
-                                + " percent of known files in folder "
-                                + currentInfo.name + ". The "
-                                + " sync profile has been switched from " +
-                                originalName + " to "
-                                + syncProfile.getProfileName()
-                                + " to protect the files.");
+                            + from.getInfo().nick
+                            + " which will delete "
+                            + delPercentage
+                            + " percent of known files in folder "
+                            + currentInfo.name
+                            + ". The "
+                            + " sync profile has been switched from "
+                            + originalName
+                            + " to "
+                            + syncProfile.getProfileName()
+                            + " to protect the files.");
                         getController().remoteMassDeletionDetected(
-                                new RemoteMassDeletionEvent(currentInfo));
+                            new RemoteMassDeletionEvent(currentInfo));
                     }
                 }
             }
@@ -2602,6 +2623,7 @@ public class Folder extends PFComponent {
      * @return the internal file database as array. ONLY FOR TESTs
      * @deprecated do not use - ONLY FOR TESTs
      */
+    @Deprecated
     public FileInfo[] getKnowFilesAsArray() {
         Collection<FileInfo> infoCollection = dao.findAll(null);
         return infoCollection.toArray(new FileInfo[infoCollection.size()]);
@@ -2895,7 +2917,7 @@ public class Folder extends PFComponent {
     public Date getLastDBMaintenanceDate() {
         return lastDBMaintenance;
     }
-    
+
     /**
      * @return the info object of this folder
      */
@@ -2936,6 +2958,7 @@ public class Folder extends PFComponent {
         return inv;
     }
 
+    @Override
     public String toString() {
         return currentInfo.toString();
     }
@@ -2972,17 +2995,17 @@ public class Folder extends PFComponent {
 
     /**
      * Watch for harmonized sync going from < 100% to 100%. If so, set a new
-     * lastSync date. UNKNOWN_SYNC_STATUS to 100% is not a valid transition. 
+     * lastSync date. UNKNOWN_SYNC_STATUS to 100% is not a valid transition.
      */
     private void checkLastSyncDate() {
         double percentage = statistic.getHarmonizedSyncPercentage();
         boolean newInSync = Double.compare(percentage, 100.0d) == 0
-                || Double.compare(percentage, UNKNOWN_SYNC_STATUS) == 0;
+            || Double.compare(percentage, UNKNOWN_SYNC_STATUS) == 0;
         boolean oldInSync = inSyncWithOthers.getAndSet(newInSync);
         if (newInSync && !oldInSync) {
             lastSyncDate = new Date();
             dirty = true;
-        }                         
+        }
     }
 
     /**
@@ -3109,25 +3132,27 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * This creates a warning if the folder has not been synchronized
-     * in a long time.
+     * This creates a warning if the folder has not been synchronized in a long
+     * time.
      */
     public void warnAboutOldSyncs() {
-        if (!ConfigurationEntry.FOLDER_SYNC_USE.getValueBoolean(getController())) {
+        if (!ConfigurationEntry.FOLDER_SYNC_USE
+            .getValueBoolean(getController()))
+        {
             return;
         }
 
         // Calculate the date that folders should be synced by.
-        Integer syncWarnDays =
-                ConfigurationEntry.FOLDER_SYNC_WARN.getValueInt(getController());
+        Integer syncWarnDays = ConfigurationEntry.FOLDER_SYNC_WARN
+            .getValueInt(getController());
         Calendar cal = new GregorianCalendar();
         cal.add(Calendar.DATE, -syncWarnDays);
         Date warningDate = cal.getTime();
 
         if (lastSyncDate != null) {
             if (lastSyncDate.before(warningDate)) {
-                Problem problem = new UnsynchronizedFolderProblem(
-                        currentInfo, syncWarnDays);
+                Problem problem = new UnsynchronizedFolderProblem(currentInfo,
+                    syncWarnDays);
                 addProblem(problem);
             }
         }
