@@ -424,9 +424,6 @@ public class Controller extends PFComponent {
         }
         taskManager.start();
 
-        // Load anything that was not handled last time.
-        loadPersistentObjects();
-
         setLoadingCompletion(30, 35);
 
         // Start the nodemanager
@@ -497,6 +494,9 @@ public class Controller extends PFComponent {
             logFine("Opening UI");
             openUI();
         }
+
+        // Load anything that was not handled last time.
+        loadPersistentObjects();
 
         setLoadingCompletion(100, 100);
         if (!isConsoleMode()) {
@@ -2146,45 +2146,16 @@ public class Controller extends PFComponent {
 
         if (isUIEnabled()) {
 
-            // Save unhandled friendship events.
-            AskForFriendshipEvent event;
-            List<AskForFriendshipEvent> events
-                    = new ArrayList<AskForFriendshipEvent>();
-            while((event = uiController.getApplicationModel()
-                    .getReceivedAskedForFriendshipModel().popEvent()) != null) {
-                event.getMessage();
-            }
-            String filename = getController().getConfigName() + ".affes";
-            File file = new File(getMiscFilesLocation(), filename);
-            ObjectOutputStream outputStream = null;
-            try {
-                logInfo("There are " + events.size() + " unhandled events.");
-                outputStream = new ObjectOutputStream(
-                        new FileOutputStream(file));
-                outputStream.writeUnshared(events);
-            } catch (FileNotFoundException e) {
-                logSevere("FileNotFoundException", e);
-            } catch (IOException e) {
-                logSevere("IOException", e);
-            } finally {
-                if (outputStream != null) {
-                    try {
-                        outputStream.close();
-                    } catch (IOException e) {
-                        logSevere("IOException", e);
-                    }
-                }
-            }
-
             // Save unhandled invitations.
             Invitation invitation;
             List<Invitation> invitations = new ArrayList<Invitation>();
             while((invitation = uiController.getApplicationModel()
                     .getReceivedInvitationsModel().popInvitation()) != null) {
-                invitation.getInvitationText();
+                invitations.add(invitation);
             }
-            filename = getController().getConfigName() + ".invitations";
-            file = new File(getMiscFilesLocation(), filename);
+            String filename = getController().getConfigName() + ".invitations";
+            File file = new File(getMiscFilesLocation(), filename);
+            ObjectOutputStream outputStream = null; 
             try {
                 logInfo("There are " + invitations.size()
                         + " unhandled invitations.");
@@ -2214,50 +2185,9 @@ public class Controller extends PFComponent {
 
         if (isUIEnabled()) {
 
-            // Load friendship events.
-            String filename = getController().getConfigName() + ".affes";
-            File file = new File(getMiscFilesLocation(), filename);
-            if (file.exists()) {
-                logInfo("Loading ask for friendship events");
-                ObjectInputStream inputStream = null;
-                try {
-                    inputStream = new ObjectInputStream(
-                            new FileInputStream(file));
-                    List<AskForFriendshipEvent> events
-                            = (List<AskForFriendshipEvent>)
-                            inputStream.readObject();
-                    inputStream.close();
-                    for (AskForFriendshipEvent event : events) {
-                        uiController.getApplicationModel()
-                                .getReceivedAskedForFriendshipModel()
-                                .askForFriendship(event);
-                    }
-                    logInfo("Loaded " + events.size()
-                            + " ask for friendship events.");
-                } catch (FileNotFoundException e) {
-                    logSevere("FileNotFoundException", e);
-                } catch (IOException e) {
-                    logSevere("IOException", e);
-                } catch (ClassNotFoundException e) {
-                    logSevere("ClassNotFoundException", e);
-                } catch (ClassCastException e) {
-                    logSevere("ClassCastException", e);
-                } finally {
-                    if (inputStream != null) {
-                        try {
-                            inputStream.close();
-                        } catch (IOException e) {
-                            logSevere("IOException", e);
-                        }
-                    }
-                }
-            } else {
-                logInfo("No ask for friendship events found.");
-            }
-
             // Load invitations.
-            filename = getController().getConfigName() + ".invitations";
-            file = new File(getMiscFilesLocation(), filename);
+            String filename = getController().getConfigName() + ".invitations";
+            File file = new File(getMiscFilesLocation(), filename);
             if (file.exists()) {
                 logInfo("Loading invitations");
                 ObjectInputStream inputStream = null;
