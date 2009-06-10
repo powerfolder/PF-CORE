@@ -201,8 +201,9 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
 
             builder.add(new LinkLabel(getController(), Translation
                 .getTranslation("wizard.webservice.recover_password"),
-                    "http://powerfolder.com/storage_login.html")
-                    .getUiComponent(), cc.xyw(1, row, 4));
+                    getController().getOSClient().getWebURL() +
+                            "/storage_login.html").getUiComponent(),
+                    cc.xyw(1, row, 4));
             row += 2;
         }
 
