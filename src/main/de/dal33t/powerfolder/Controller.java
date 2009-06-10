@@ -184,6 +184,7 @@ public class Controller extends PFComponent {
     private final List<InvitationHandler> invitationHandlers;
     private final List<SingleFileOfferHandler> singleFileOfferHandlers;
     private final List<WarningHandler> warningHandlers;
+    private final List<MassDeletionHandler> massDeletionHandlers;
 
     /** The BroadcastManager send "broadcasts" on the LAN so we can */
     private BroadcastMananger broadcastManager;
@@ -260,6 +261,7 @@ public class Controller extends PFComponent {
         invitationHandlers = new CopyOnWriteArrayList<InvitationHandler>();
         singleFileOfferHandlers = new CopyOnWriteArrayList<SingleFileOfferHandler>();
         warningHandlers = new CopyOnWriteArrayList<WarningHandler>();
+        massDeletionHandlers = new CopyOnWriteArrayList<MassDeletionHandler>();
     }
 
     /**
@@ -557,6 +559,24 @@ public class Controller extends PFComponent {
      */
     public void removeInvitationHandler(InvitationHandler l) {
         invitationHandlers.remove(l);
+    }
+
+    /**
+     * Add mass delete listener.
+     *
+     * @param l
+     */
+    public void addMassDeletionHandler(MassDeletionHandler l) {
+        massDeletionHandlers.add(l);
+    }
+
+    /**
+     * Remove mass delete listener.
+     *
+     * @param l
+     */
+    public void removeMassDeletionHandler(MassDeletionHandler l) {
+        massDeletionHandlers.remove(l);
     }
 
     /**
@@ -2093,6 +2113,28 @@ public class Controller extends PFComponent {
     }
 
     /**
+     * Distribute local mass deletion notifications.
+     *
+     * @param event
+     */
+    public void localMassDeletionDetected(LocalMassDeletionEvent event) {
+        for (MassDeletionHandler massDeletionHandler : massDeletionHandlers) {
+            massDeletionHandler.localMassDeletion(event);
+        }
+    }
+
+    /**
+     * Distribute remote mass deletion notifications.
+     *
+     * @param event
+     */
+    public void remoteMassDeletionDetected(RemoteMassDeletionEvent event) {
+        for (MassDeletionHandler massDeletionHandler : massDeletionHandlers) {
+            massDeletionHandler.remoteMassDeletion(event);
+        }
+    }
+
+    /**
      * Process receipt of a SingleFileOffer.
      * 
      * @param singleFileOffer
@@ -2119,24 +2161,6 @@ public class Controller extends PFComponent {
         for (WarningHandler warningHandler : warningHandlers) {
             warningHandler.pushWarning(event);
         }
-    }
-
-    /**
-     * Handle case when all files are deleted from a folder.
-     *
-     * @param folder
-     * @param folder
-     * @return true if deletion is considered dangerous and controller should
-     *         quit the scan.
-     */
-    public boolean handleTotalFolderDeletion(Folder folder) {
-        if (isUIEnabled()) {
-            uiController.handleTotalFolderDeletion(folder);
-            return true;
-        }
-
-        // No UI - ignore - continue as normal.
-        return false;
     }
 
     /**

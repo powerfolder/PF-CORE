@@ -924,42 +924,6 @@ public class UIController extends PFComponent {
         mainFrame.hideOSLines();
     }
 
-    /**
-     * Handle the case where all files have been deleted from a folder.
-     * Perhaps the user actually wants to stop managing the folder?
-     *
-     * @param folder
-     */
-    public void handleTotalFolderDeletion(final Folder folder) {
-        Runnable runnable = new Runnable() {
-            public void run() {
-                int result = DialogFactory.genericDialog(getController(),
-                        Translation.getTranslation(
-                                "uicontroller.empty_folder.title"),
-                        Translation.getTranslation(
-                                "uicontroller.empty_folder.message",
-                                folder.getName()), new String[]{
-                        Translation.getTranslation(
-                                "uicontroller.empty_folder.stop_managing"),
-                        Translation.getTranslation(
-                                "uicontroller.empty_folder.send_deletions")},
-                        1, WikiLinks.TOTAL_FOLDER_DELETE, GenericDialogType.WARN);
-                if (result == 0) { // Leave folder
-                    logInfo("User decided to leave forlder "
-                            + folder.getInfo().name
-                            + " because all files are deleted.");
-                    getController().getFolderRepository().removeFolder(
-                            folder, true);
-                } else { // Broadcast as usual.
-                    folder.scanLocalFiles(true);
-                }
-            }
-        };
-        WarningEvent we = new WarningEvent("local folder delete", runnable);
-        getController().pushWarningEvent(we);
-
-    }
-
     public boolean chatFrameVisible() {
         return chatFrame.getUIComponent().isVisible();
     }

@@ -454,23 +454,21 @@ public class Folder extends PFComponent {
      * 
      * @param scanResult
      *            the scanresult to commit.
-     * @param ignoreEmptyCheck
-     *            ignore the check for empty folders.
      */
-    private void commitScanResult(ScanResult scanResult,
-        boolean ignoreEmptyCheck)
-    {
+    private void commitScanResult(ScanResult scanResult) {
+
         // See if everything has been deleted.
-        // Does the user want to stop managing this folder?
         if (getKnownFilesCount() > 0 && !scanResult.getDeletedFiles().isEmpty()
-            && scanResult.getTotalFilesCount() == 0 && !ignoreEmptyCheck)
-        {
-            boolean quitHere = getController().handleTotalFolderDeletion(this);
+                && scanResult.getTotalFilesCount() == 0
+                && PreferencesEntry.MASS_DELETE_PROTECTION
+                .getValueBoolean(getController())) {
+
+            // Advise controller of the carnage.
+            getController().remoteMassDeletionDetected(
+                    new RemoteMassDeletionEvent(currentInfo));
 
             // Quit here, so deletions are not broadcast to other members.
-            if (quitHere) {
-                return;
-            }
+            return;
         }
 
         synchronized (scanLock) {
@@ -815,19 +813,6 @@ public class Folder extends PFComponent {
      * @return if the local files where scanned
      */
     public boolean scanLocalFiles() {
-        return scanLocalFiles(false);
-    }
-
-    /**
-     * Scans the local directory for new files. Be carefull! This method is not
-     * Thread safe. In most cases you want to use
-     * recommendScanOnNextMaintenance() followed by maintain().
-     * 
-     * @param ignoreEmptyCheck
-     *            ignore the check for empty folders.
-     * @return if the local files where scanned
-     */
-    public boolean scanLocalFiles(boolean ignoreEmptyCheck) {
 
         boolean wasDeviceDisconnected = deviceDisconnected;
         /**
@@ -896,7 +881,7 @@ public class Folder extends PFComponent {
                                 this, result));
                     }
                 }
-                commitScanResult(result, ignoreEmptyCheck);
+                commitScanResult(result);
                 lastScan = new Date();
                 return true;
             }
@@ -2295,17 +2280,8 @@ public class Folder extends PFComponent {
                                 originalName + " to "
                                 + syncProfile.getProfileName()
                                 + " to protect the files.");
-                        WarningEvent we = new WarningEvent(getController(),
-                                Translation.getTranslation(
-                                        "member.mass_delete.warning_title"),
-                                Translation.getTranslation(
-                                        "member.mass_delete.warning_message",
-                                        from.getInfo().nick,
-                                        delPercentage,
-                                        currentInfo.name,
-                                        originalName,
-                                        syncProfile.getProfileName()));
-                        getController().pushWarningEvent(we);
+                        getController().remoteMassDeletionDetected(
+                                new RemoteMassDeletionEvent(currentInfo));
                     }
                 }
             }

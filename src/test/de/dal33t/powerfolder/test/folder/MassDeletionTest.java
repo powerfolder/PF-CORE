@@ -20,20 +20,9 @@
 package de.dal33t.powerfolder.test.folder;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.List;
-import java.util.prefs.Preferences;
-
-import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PreferencesEntry;
-import de.dal33t.powerfolder.disk.RecycleBin;
 import de.dal33t.powerfolder.disk.SyncProfile;
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.util.test.Condition;
-import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 
