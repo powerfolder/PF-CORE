@@ -166,6 +166,10 @@ public class FolderCreatePanel extends PFWizardPanel {
         ArchiveMode archiveMode = (ArchiveMode) getWizardContext()
             .getAttribute(WizardContextAttributes.ARCHIVE_MODE);
 
+        if (archiveMode == null) {
+            archiveMode = ArchiveMode.NO_BACKUP;
+        }
+
         createShortcut = (Boolean) getWizardContext().getAttribute(
             WizardContextAttributes.CREATE_DESKTOP_SHORTCUT);
         Boolean osAtt = (Boolean) getWizardContext().getAttribute(

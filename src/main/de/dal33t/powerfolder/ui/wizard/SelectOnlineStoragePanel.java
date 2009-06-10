@@ -141,8 +141,7 @@ public class SelectOnlineStoragePanel extends PFWizardPanel {
         row += 2;
 
         builder.add(new JLabel(Translation
-            .getTranslation("settings_tab.archive_local_files")), cc.xyw(1,
-            row, 2));
+            .getTranslation("settings_tab.archive_mode")), cc.xyw(1, row, 2));
 
         row += 2;
 
