@@ -683,6 +683,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
      * @see #isVersionDateAndSizeIdentical(FileInfo)
      * @deprecated
      */
+    @Deprecated
     public boolean isCompletelyIdentical(FileInfo otherFile) {
         if (otherFile == null) {
             return false;
@@ -708,12 +709,14 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         return identical;
     }
 
+    @Override
     public int hashCode() {
         int hash = fileName.hashCode();
         hash += folderInfo.hashCode();
         return hash;
     }
 
+    @Override
     public boolean equals(Object other) {
         if (this == other) {
             return true;
@@ -727,6 +730,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         return false;
     }
 
+    @Override
     public String toString() {
         return "[" + folderInfo.name + "]:" + (deleted ? "(del) /" : "/")
             + fileName;

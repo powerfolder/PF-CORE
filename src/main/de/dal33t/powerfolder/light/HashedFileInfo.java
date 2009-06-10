@@ -24,42 +24,41 @@ import java.util.Arrays;
 
 import de.dal33t.powerfolder.util.Reject;
 
-public class VersionedFile implements Serializable {
+public class HashedFileInfo implements Serializable {
     private static final long serialVersionUID = -3233726429455214290L;
 
     private final FileInfo fileInfo;
-    private final byte[] id;
+    private final byte[] md5;
 
-    private boolean hashed = false;
     private int hashCode;
 
-    public VersionedFile(FileInfo fileInfo, byte[] id) {
+    public HashedFileInfo(FileInfo fileInfo, byte[] md5) {
         super();
         Reject.ifNull(fileInfo, "FileInfo is null!");
         Reject.ifTrue(fileInfo.isTemplate(), "FileInfo must not be template!");
-        Reject.ifNull(id, "id is null!");
+        Reject.ifNull(md5, "MD5 is null!");
+        Reject.ifTrue(md5.length != 16, "Invalid MD5 of length: " + md5.length);
         this.fileInfo = fileInfo;
-        this.id = Arrays.copyOf(id, id.length);
+        this.md5 = Arrays.copyOf(md5, md5.length);
     }
 
     public FileInfo getFileInfo() {
         return fileInfo;
     }
 
-    public byte[] getId() {
-        return Arrays.copyOf(id, id.length);
+    public byte[] getMD5() {
+        return Arrays.copyOf(md5, md5.length);
     }
 
     @Override
     public int hashCode() {
-        if (!hashed) {
-            hashed = true;
+        if (hashCode == 0) {
             final int prime = 31;
             int result = 1;
             result = prime * result
                 + ((fileInfo == null) ? 0 : fileInfo.hashCode());
-            result = prime * result + Arrays.hashCode(id);
-            hashCode = result;
+            result = prime * result + Arrays.hashCode(md5);
+            hashCode = result != 0 ? result : -1;
         }
         return hashCode;
     }
@@ -72,10 +71,10 @@ public class VersionedFile implements Serializable {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        VersionedFile other = (VersionedFile) obj;
-        if (!fileInfo.isCompletelyIdentical(other.fileInfo))
+        HashedFileInfo other = (HashedFileInfo) obj;
+        if (!fileInfo.isVersionDateAndSizeIdentical(other.fileInfo))
             return false;
-        if (!Arrays.equals(id, other.id))
+        if (!Arrays.equals(md5, other.md5))
             return false;
         return true;
     }
