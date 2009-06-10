@@ -1,29 +1,30 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.disk;
+
+import java.io.File;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.Reject;
-
-import java.io.File;
 
 /**
  * Utility class with methods for creating and converting preview folders.
@@ -52,7 +53,7 @@ public class FolderPreviewHelper {
     {
         File localBase = makePreviewBaseDir(folderName);
         return new FolderSettings(localBase, SyncProfile.NO_SYNC, false, false,
-            true, false, null);
+            ArchiveMode.NO_BACKUP, true, false, null);
     }
 
     // Creates a preview folder directory for a folderName.
@@ -65,45 +66,44 @@ public class FolderPreviewHelper {
 
     /**
      * Converts a normal folder to a preview folder.
-     *
+     * 
      * @param controller
      * @param folder
      * @return if succeeded
      */
     public static boolean convertFolderToPreview(Controller controller,
-                                              Folder folder) {
+        Folder folder)
+    {
 
         Reject.ifTrue(folder.isPreviewOnly(),
-                "Can not convert a preview folder to preview");
+            "Can not convert a preview folder to preview");
 
         FolderRepository folderRepository = controller.getFolderRepository();
 
         FolderSettings initialFolderSettings = folderRepository
-                .loadFolderSettings(folder.getInfo());
+            .loadFolderSettings(folder.getInfo());
 
         if (initialFolderSettings == null) {
             return false;
         }
 
-        FolderSettings previewFolderSettings =
-                createPreviewFolderSettings(folder.getName());
+        FolderSettings previewFolderSettings = createPreviewFolderSettings(folder
+            .getName());
         FolderInfo folderInfo = new FolderInfo(folder);
 
         // Saved FolderSettings are like initial, but preview is true.
         FolderSettings savedFolderSettings = new FolderSettings(
-                initialFolderSettings.getLocalBaseDir(),
-                initialFolderSettings.getSyncProfile(),
-                initialFolderSettings.isCreateInvitationFile(),
-                initialFolderSettings.isUseRecycleBin(),
-                true,
-                initialFolderSettings.isWhitelist(),
-                initialFolderSettings.getDownloadScript());
+            initialFolderSettings.getLocalBaseDir(), initialFolderSettings
+                .getSyncProfile(), initialFolderSettings
+                .isCreateInvitationFile(), initialFolderSettings
+                .isUseRecycleBin(), initialFolderSettings.getArchiveMode(),
+            true, initialFolderSettings.isWhitelist(), initialFolderSettings
+                .getDownloadScript());
 
         folderRepository.removeFolder(folder, false);
-        folderRepository.createPreviewFolder(folderInfo,
-                previewFolderSettings);
-        folderRepository.saveFolderConfig(folderInfo,
-                savedFolderSettings, true);
+        folderRepository.createPreviewFolder(folderInfo, previewFolderSettings);
+        folderRepository
+            .saveFolderConfig(folderInfo, savedFolderSettings, true);
 
         return true;
     }
@@ -113,7 +113,7 @@ public class FolderPreviewHelper {
      * 
      * @param controller
      * @param folder
-     * @param newFolderSettings 
+     * @param newFolderSettings
      * @param deleteSystemSubDir
      */
     public static void convertFolderFromPreview(Controller controller,

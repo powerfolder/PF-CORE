@@ -19,9 +19,35 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SET_DEFAULT_SYNCHRONIZED_FOLDER;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JProgressBar;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+
+import jwf.Wizard;
+import jwf.WizardPanel;
+
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.clientserver.ServerClient;
@@ -31,24 +57,12 @@ import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.dialog.SyncFolderPanel;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SET_DEFAULT_SYNCHRONIZED_FOLDER;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
+import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SwingWorker;
-import jwf.Wizard;
-import jwf.WizardPanel;
-
-import javax.swing.*;
-import java.io.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
 
 /**
  * A panel that actually starts the creation process of a folder on display.
@@ -63,14 +77,15 @@ import java.util.HashMap;
  */
 public class FolderCreatePanel extends PFWizardPanel {
 
-    private static final Logger log = Logger.getLogger(FolderCreatePanel.class.getName());
+    private static final Logger log = Logger.getLogger(FolderCreatePanel.class
+        .getName());
 
-    private Map<FolderInfo, FolderSettings> configurations;
+    private final Map<FolderInfo, FolderSettings> configurations;
     private boolean backupByOS;
     private boolean sendInvitations;
     private boolean createShortcut;
 
-    private List<Folder> folders;
+    private final List<Folder> folders;
 
     private JLabel statusLabel;
     private JTextArea errorArea;
@@ -90,7 +105,7 @@ public class FolderCreatePanel extends PFWizardPanel {
 
     /**
      * Folders created; can not change that.
-     *
+     * 
      * @return
      */
     @Override
@@ -98,6 +113,7 @@ public class FolderCreatePanel extends PFWizardPanel {
         return false;
     }
 
+    @Override
     protected JPanel buildContent() {
         FormLayout layout = new FormLayout("pref, $lcg, $wfield",
             "pref, 3dlu, pref, 3dlu, pref");
@@ -139,13 +155,16 @@ public class FolderCreatePanel extends PFWizardPanel {
 
         boolean useRecycleBin;
         Object attribute = getWizardContext().getAttribute(
-                WizardContextAttributes.USE_RECYCLE_BIN);
+            WizardContextAttributes.USE_RECYCLE_BIN);
         if (attribute == null) {
-            useRecycleBin = ConfigurationEntry.USE_RECYCLE_BIN.getValueBoolean(
-                    getController());
+            useRecycleBin = ConfigurationEntry.USE_RECYCLE_BIN
+                .getValueBoolean(getController());
         } else {
             useRecycleBin = (Boolean) attribute;
         }
+
+        ArchiveMode archiveMode = (ArchiveMode) getWizardContext()
+            .getAttribute(WizardContextAttributes.ARCHIVE_MODE);
 
         createShortcut = (Boolean) getWizardContext().getAttribute(
             WizardContextAttributes.CREATE_DESKTOP_SHORTCUT);
@@ -154,15 +173,14 @@ public class FolderCreatePanel extends PFWizardPanel {
         backupByOS = osAtt != null && osAtt;
         if (backupByOS) {
             getController().getUIController().getApplicationModel()
-                    .getServerClientModel().checkAndSetupAccount();
+                .getServerClientModel().checkAndSetupAccount();
         }
         Boolean sendInvsAtt = (Boolean) getWizardContext().getAttribute(
             WizardContextAttributes.SEND_INVIATION_AFTER_ATTRIBUTE);
         sendInvitations = sendInvsAtt == null || sendInvsAtt;
 
-        // Either we have FOLDER_CREATE_ITEMS ... 
-        List<FolderCreateItem> folderCreateItems = (List<FolderCreateItem>)
-                getWizardContext()
+        // Either we have FOLDER_CREATE_ITEMS ...
+        List<FolderCreateItem> folderCreateItems = (List<FolderCreateItem>) getWizardContext()
             .getAttribute(WizardContextAttributes.FOLDER_CREATE_ITEMS);
         if (folderCreateItems != null && !folderCreateItems.isEmpty()) {
             for (FolderCreateItem folderCreateItem : folderCreateItems) {
@@ -176,8 +194,8 @@ public class FolderCreatePanel extends PFWizardPanel {
                     folderInfo = createFolderInfo(localBase);
                 }
                 FolderSettings folderSettings = new FolderSettings(localBase,
-                    syncProfile, saveLocalInvite, useRecycleBin, previewFolder,
-                    false, null);
+                    syncProfile, saveLocalInvite, useRecycleBin, archiveMode,
+                    previewFolder, false, null);
                 configurations.put(folderInfo, folderSettings);
             }
         } else {
@@ -199,8 +217,8 @@ public class FolderCreatePanel extends PFWizardPanel {
             }
 
             FolderSettings folderSettings = new FolderSettings(localBase,
-                syncProfile, saveLocalInvite, useRecycleBin, previewFolder,
-                false, null);
+                syncProfile, saveLocalInvite, useRecycleBin, archiveMode,
+                previewFolder, false, null);
             configurations.put(folderInfo, folderSettings);
         }
 
@@ -219,16 +237,19 @@ public class FolderCreatePanel extends PFWizardPanel {
         // Create new folder info
         String name = localBase.getName();
         String folderId = '[' + IdGenerator.makeId() + ']';
-        return new FolderInfo(name, folderId);        
+        return new FolderInfo(name, folderId);
     }
 
+    @Override
     protected void initComponents() {
     }
 
+    @Override
     protected JComponent getPictoComponent() {
         return new JLabel(getContextPicto());
     }
 
+    @Override
     protected String getTitle() {
         return Translation.getTranslation("wizard.create_folder.title");
     }
@@ -260,16 +281,16 @@ public class FolderCreatePanel extends PFWizardPanel {
             for (FolderInfo folderInfo : configurations.keySet()) {
                 FolderSettings folderSettings = configurations.get(folderInfo);
                 Folder folder = getController().getFolderRepository()
-                        .createFolder(folderInfo, folderSettings);
+                    .createFolder(folderInfo, folderSettings);
                 folder.addDefaultExcludes();
 
                 // Make sure recycle bin was made.
                 if (folderSettings.isUseRecycleBin()) {
                     File recycleBinFolder = getController().getRecycleBin()
-                            .makeRecycleBinDirectory(folderInfo);
+                        .makeRecycleBinDirectory(folderInfo);
                     if (recycleBinFolder == null) {
-                        addProblem(Translation.getTranslation(
-                                "folder_create.recycle_error.text",
+                        addProblem(Translation
+                            .getTranslation("folder_create.recycle_error.text",
                                 folderInfo.name));
                     }
                 }
@@ -280,7 +301,7 @@ public class FolderCreatePanel extends PFWizardPanel {
                 if (configurations.size() == 1) {
                     // Set for SendInvitationsPanel
                     getWizardContext().setAttribute(FOLDERINFO_ATTRIBUTE,
-                            folder.getInfo());
+                        folder.getInfo());
                 }
 
                 if (backupByOS && client.isLastLoginOK()) {
@@ -288,8 +309,8 @@ public class FolderCreatePanel extends PFWizardPanel {
                         // Try to back this up by online storage.
                         if (client.hasJoined(folder)) {
                             // Already have this os folder.
-                            log.log(Level.WARNING,
-                                "Already have os folder " + folderInfo.name);
+                            log.log(Level.WARNING, "Already have os folder "
+                                + folderInfo.name);
                             continue;
                         }
 
@@ -301,10 +322,11 @@ public class FolderCreatePanel extends PFWizardPanel {
                         Object attribute = getWizardContext().getAttribute(
                             SET_DEFAULT_SYNCHRONIZED_FOLDER);
                         if (attribute != null && (Boolean) attribute) {
-                            // TODO: Ugly. Use abstraction: Runnable? Callback with
+                            // TODO: Ugly. Use abstraction: Runnable? Callback
+                            // with
                             // folder? Which is placed on WizardContext.
-                            client.getFolderService().setDefaultSynchronizedFolder(
-                                folderInfo);
+                            client.getFolderService()
+                                .setDefaultSynchronizedFolder(folderInfo);
                             client.refreshAccountDetails();
                             createDefaultFolderHelpFile(folder);
                             folder.recommendScanOnNextMaintenance();
@@ -316,10 +338,10 @@ public class FolderCreatePanel extends PFWizardPanel {
                         }
                     } catch (FolderException e) {
                         addProblem(Translation.getTranslation(
-                                "folder_create.os_error.text", e.fInfo.name) +
-                                '\n' + e.getMessage());
+                            "folder_create.os_error.text", e.fInfo.name)
+                            + '\n' + e.getMessage());
                         log.log(Level.SEVERE,
-                                "Unable to backup folder to online storage", e);
+                            "Unable to backup folder to online storage", e);
                     }
                 }
             }
@@ -329,8 +351,7 @@ public class FolderCreatePanel extends PFWizardPanel {
 
         private void addProblem(String problem) {
             problems = true;
-            StringBuilder stringBuilder = new StringBuilder(
-                    errorArea.getText());
+            StringBuilder stringBuilder = new StringBuilder(errorArea.getText());
             if (stringBuilder.length() > 0) {
                 stringBuilder.append("\n\n");
             }
@@ -348,11 +369,14 @@ public class FolderCreatePanel extends PFWizardPanel {
             Writer w = null;
             try {
                 w = new OutputStreamWriter(new FileOutputStream(helpFile));
-                w.write("This is the default synchronized folder of PowerFolder.\r\n");
-                w.write("Simply place files into this directory to sync them\r\n");
+                w
+                    .write("This is the default synchronized folder of PowerFolder.\r\n");
+                w
+                    .write("Simply place files into this directory to sync them\r\n");
                 w.write("across all your computers running PowerFolder.\r\n");
                 w.write("\r\n");
-                w.write("More information: http://wiki.powerfolder.com/wiki/Default_Folder");
+                w
+                    .write("More information: http://wiki.powerfolder.com/wiki/Default_Folder");
                 w.close();
             } catch (IOException e) {
                 // Doesn't matter.
@@ -380,7 +404,8 @@ public class FolderCreatePanel extends PFWizardPanel {
             } else {
                 for (Folder folder : folders) {
                     if (SyncProfile.MANUAL_SYNCHRONIZATION.equals(folder
-                        .getSyncProfile())) {
+                        .getSyncProfile()))
+                    {
                         // Show sync folder panel after created a project folder
                         new SyncFolderPanel(getController(), folder).open();
                     }

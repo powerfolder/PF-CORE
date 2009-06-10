@@ -19,27 +19,40 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.PREVIEW_FOLDER_ATTIRBUTE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.PROMPT_TEXT_ATTRIBUTE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SAVE_INVITE_LOCALLY;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SEND_INVIATION_AFTER_ATTRIBUTE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SYNC_PROFILE_ATTRIBUTE;
+
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.logging.Logger;
+
+import javax.swing.JCheckBox;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+
+import jwf.WizardPanel;
+
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.ui.Icons;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.*;
+import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.ui.SyncProfileSelectorPanel;
-import jwf.WizardPanel;
-
-import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.List;
-import java.util.logging.Logger;
 
 /**
  * Class to do folder creation for a specified invite.
@@ -49,7 +62,8 @@ import java.util.logging.Logger;
  */
 public class ReceivedInvitationPanel extends PFWizardPanel {
 
-    private static final Logger log = Logger.getLogger(ReceivedInvitationPanel.class.getName());
+    private static final Logger log = Logger
+        .getLogger(ReceivedInvitationPanel.class.getName());
 
     private final Invitation invitation;
 
@@ -74,10 +88,12 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
     /**
      * Can procede if an invitation exists.
      */
+    @Override
     public boolean hasNext() {
         return invitation != null;
     }
 
+    @Override
     public boolean validateNext() {
         return !previewOnlyCB.isSelected() || createPreviewFolder();
     }
@@ -86,13 +102,15 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
 
         FolderSettings folderSettings = new FolderSettings(invitation
             .getSuggestedLocalBase(getController()), syncProfileSelectorPanel
-            .getSyncProfile(), false, false, true, false, null);
+            .getSyncProfile(), false, false, ArchiveMode.NO_BACKUP, true,
+            false, null);
 
         getController().getFolderRepository().createFolder(invitation.folder,
             folderSettings);
         return true;
     }
 
+    @Override
     public WizardPanel next() {
 
         // Set sync profile
@@ -111,8 +129,11 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
             previewOnlyCB.isSelected());
 
         // Setup choose disk location panel
-        getWizardContext().setAttribute(PROMPT_TEXT_ATTRIBUTE,
-            Translation.getTranslation("wizard.what_to_do.invite.select_local"));
+        getWizardContext()
+            .setAttribute(
+                PROMPT_TEXT_ATTRIBUTE,
+                Translation
+                    .getTranslation("wizard.what_to_do.invite.select_local"));
 
         // Setup sucess panel of this wizard path
         TextPanelPanel successPanel = new TextPanelPanel(getController(),
@@ -126,8 +147,7 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
                 PFWizard.SUCCESS_PANEL);
         } else {
 
-            getWizardContext().setAttribute(SAVE_INVITE_LOCALLY,
-                Boolean.FALSE);
+            getWizardContext().setAttribute(SAVE_INVITE_LOCALLY, Boolean.FALSE);
 
             return new ChooseDiskLocationPanel(getController(), invitation
                 .getSuggestedLocalBase(getController()).getAbsolutePath(),
@@ -135,6 +155,7 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
         }
     }
 
+    @Override
     protected JPanel buildContent() {
 
         FormLayout layout = new FormLayout("$wlabel, $lcg, $wfield, 0:g",
@@ -182,6 +203,7 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
     /**
      * Initalizes all nessesary components
      */
+    @Override
     protected void initComponents() {
 
         getWizardContext().setAttribute(PFWizard.PICTO_ICON,
@@ -236,10 +258,12 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
         loadInvitation();
     }
 
+    @Override
     protected JComponent getPictoComponent() {
         return new JLabel(getContextPicto());
     }
 
+    @Override
     protected String getTitle() {
         return Translation.getTranslation("wizard.folder_invitation.title");
     }

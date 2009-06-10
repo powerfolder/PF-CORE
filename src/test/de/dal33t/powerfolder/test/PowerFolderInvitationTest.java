@@ -23,14 +23,15 @@ import java.io.File;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.disk.FolderSettings;
+import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.event.InvitationHandler;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
+import de.dal33t.powerfolder.util.ArchiveMode;
+import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.InvitationUtil;
-import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.task.SendMessageTask;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 
@@ -51,10 +52,12 @@ public class PowerFolderInvitationTest extends TwoControllerTestCase {
                 File dir = new File(getContollerBart().getFolderRepository()
                     .getFoldersBasedir()
                     + System.getProperty("file.separator")
-                    + FileUtils.removeInvalidFilenameChars(invitation.folder.name));
+                    + FileUtils
+                        .removeInvalidFilenameChars(invitation.folder.name));
                 try {
                     FolderSettings folderSettings = new FolderSettings(dir,
-                        SyncProfile.HOST_FILES, false, true);
+                        SyncProfile.HOST_FILES, false, true,
+                        ArchiveMode.NO_BACKUP);
                     getContollerBart().getFolderRepository().createFolder(
                         invitation.folder, folderSettings);
                 } catch (Exception e) {
@@ -69,7 +72,8 @@ public class PowerFolderInvitationTest extends TwoControllerTestCase {
             .makeId());
 
         FolderSettings folderSettings = new FolderSettings(
-            TESTFOLDER_BASEDIR_LISA, SyncProfile.HOST_FILES, false, true);
+            TESTFOLDER_BASEDIR_LISA, SyncProfile.HOST_FILES, false, true,
+            ArchiveMode.NO_BACKUP);
         folderAtLisa = getContollerLisa().getFolderRepository().createFolder(
             testFolder, folderSettings);
 
@@ -87,17 +91,16 @@ public class PowerFolderInvitationTest extends TwoControllerTestCase {
         Thread.sleep(1000);
 
         // controller bart should now have one folder
-        assertEquals(1,
-            getContollerBart().getFolderRepository().getFolders().size());
-        String otherID = getContollerBart().getFolderRepository().getFolders().iterator().next()
-            .getId();
+        assertEquals(1, getContollerBart().getFolderRepository().getFolders()
+            .size());
+        String otherID = getContollerBart().getFolderRepository().getFolders()
+            .iterator().next().getId();
         // Id's should match
         assertEquals(otherID, folderAtLisa.getId());
         // and both folders should have 2 members, this may fail if not
         // connected yet
-        assertEquals(2,
-            getContollerBart().getFolderRepository().getFolders().iterator().next()
-                .getMembersCount());
+        assertEquals(2, getContollerBart().getFolderRepository().getFolders()
+            .iterator().next().getMembersCount());
         assertEquals(2, folderAtLisa.getMembersCount());
     }
 
@@ -112,17 +115,16 @@ public class PowerFolderInvitationTest extends TwoControllerTestCase {
         Thread.sleep(1000);
 
         // controller bart should now have one folder
-        assertEquals(1,
-            getContollerBart().getFolderRepository().getFolders().size());
-        String otherID = getContollerBart().getFolderRepository().getFolders().iterator().next()
-            .getId();
+        assertEquals(1, getContollerBart().getFolderRepository().getFolders()
+            .size());
+        String otherID = getContollerBart().getFolderRepository().getFolders()
+            .iterator().next().getId();
         // Id's should match
         assertEquals(otherID, folderAtLisa.getId());
         // and both folders should have 2 members, this may fail if not
         // connected yet
-        assertEquals(2,
-            getContollerBart().getFolderRepository().getFolders().iterator().next()
-                .getMembersCount());
+        assertEquals(2, getContollerBart().getFolderRepository().getFolders()
+            .iterator().next().getMembersCount());
         assertEquals(2, folderAtLisa.getMembersCount());
     }
 }

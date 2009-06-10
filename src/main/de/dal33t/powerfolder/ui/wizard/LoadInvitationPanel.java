@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.ui.wizard;
 
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
@@ -52,6 +52,7 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.message.Invitation;
+import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.InvitationUtil;
 import de.dal33t.powerfolder.util.Translation;
@@ -67,7 +68,8 @@ import de.dal33t.powerfolder.util.ui.SyncProfileSelectorPanel;
  */
 public class LoadInvitationPanel extends PFWizardPanel {
 
-    private static final Logger log = Logger.getLogger(LoadInvitationPanel.class.getName());
+    private static final Logger log = Logger
+        .getLogger(LoadInvitationPanel.class.getName());
 
     private JComponent locationField;
     private Invitation invitation;
@@ -91,10 +93,12 @@ public class LoadInvitationPanel extends PFWizardPanel {
      * Can procede if an invitation is selected.
      */
 
+    @Override
     public boolean hasNext() {
         return invitation != null;
     }
 
+    @Override
     public WizardPanel next() {
 
         // Set sync profile
@@ -106,8 +110,7 @@ public class LoadInvitationPanel extends PFWizardPanel {
             .setAttribute(FOLDERINFO_ATTRIBUTE, invitation.folder);
 
         // Do not prompt for send invitation afterwards
-        getWizardContext().setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE,
-            false);
+        getWizardContext().setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE, false);
 
         // Whether to load as preview
         getWizardContext().setAttribute(PREVIEW_FOLDER_ATTIRBUTE,
@@ -120,36 +123,37 @@ public class LoadInvitationPanel extends PFWizardPanel {
         } else {
             File base = invitation.getSuggestedLocalBase(getController());
             if (base == null) {
-                base = new File(getController().getFolderRepository().getFoldersBasedir());
+                base = new File(getController().getFolderRepository()
+                    .getFoldersBasedir());
             }
 
-            getWizardContext().setAttribute(SAVE_INVITE_LOCALLY,
-                Boolean.FALSE);
+            getWizardContext().setAttribute(SAVE_INVITE_LOCALLY, Boolean.FALSE);
 
-            return new ChooseDiskLocationPanel(getController(),
-                base.getAbsolutePath(),
-                new FolderCreatePanel(getController()));
+            return new ChooseDiskLocationPanel(getController(), base
+                .getAbsolutePath(), new FolderCreatePanel(getController()));
         }
     }
 
+    @Override
     public boolean validateNext() {
         return !previewOnlyCB.isSelected() || createPreviewFolder();
     }
 
     private boolean createPreviewFolder() {
 
-        FolderSettings folderSettings = new FolderSettings(
-        invitation.getSuggestedLocalBase(getController()), syncProfileSelectorPanel
-            .getSyncProfile(), false, true, true, false, null);
+        FolderSettings folderSettings = new FolderSettings(invitation
+            .getSuggestedLocalBase(getController()), syncProfileSelectorPanel
+            .getSyncProfile(), false, true, ArchiveMode.NO_BACKUP, true, false,
+            null);
 
-        getController().getFolderRepository().createFolder(
-            invitation.folder, folderSettings);
+        getController().getFolderRepository().createFolder(invitation.folder,
+            folderSettings);
         return true;
     }
 
+    @Override
     protected JPanel buildContent() {
-        FormLayout layout = new FormLayout(
-            "pref, 3dlu, 140dlu, pref:grow",
+        FormLayout layout = new FormLayout("pref, 3dlu, 140dlu, pref:grow",
             "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, "
                 + "3dlu, pref, 3dlu, pref, 3dlu, pref");
 
@@ -184,8 +188,7 @@ public class LoadInvitationPanel extends PFWizardPanel {
         JPanel p = (JPanel) syncProfileSelectorPanel.getUIComponent();
         p.setOpaque(false);
 
-        FormLayout layout2 = new FormLayout(
-            "pref, pref:grow", "pref");
+        FormLayout layout2 = new FormLayout("pref, pref:grow", "pref");
         PanelBuilder builder2 = new PanelBuilder(layout2);
         builder2.add(p, cc.xy(1, 1));
 
@@ -202,6 +205,7 @@ public class LoadInvitationPanel extends PFWizardPanel {
     /**
      * Initalizes all nessesary components
      */
+    @Override
     protected void initComponents() {
 
         ValueModel locationModel = new ValueHolder();
@@ -220,7 +224,7 @@ public class LoadInvitationPanel extends PFWizardPanel {
             locationModel, JFileChooser.FILES_AND_DIRECTORIES, InvitationUtil
                 .createInvitationsFilefilter(), true);
         locationField.setOpaque(false);
-        
+
         // Folder name label
         folderHintLabel = new JLabel(Translation
             .getTranslation("general.folder"));
@@ -268,10 +272,12 @@ public class LoadInvitationPanel extends PFWizardPanel {
         });
     }
 
+    @Override
     protected JComponent getPictoComponent() {
         return new JLabel(getContextPicto());
     }
 
+    @Override
     protected String getTitle() {
         return Translation.getTranslation("wizard.load_invitation.select");
     }
@@ -295,8 +301,8 @@ public class LoadInvitationPanel extends PFWizardPanel {
             invitationMessageHintLabel.setEnabled(true);
             invitationMessageLabel
                 .setText(invitation.getInvitationText() == null
-                ? ""
-                : invitation.getInvitationText());
+                    ? ""
+                    : invitation.getInvitationText());
 
             estimatedSizeHintLabel.setEnabled(true);
             estimatedSize.setText(Format

@@ -27,6 +27,7 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.test.ControllerTestCase;
 
@@ -43,13 +44,14 @@ public class FolderMoveTest extends ControllerTestCase {
      * 
      * @throws Exception
      */
+    @Override
     public void setUp() throws Exception {
 
         super.setUp();
 
         // Setup a test folder; delete previous tests.
         getController().setSilentMode(true);
-        setupTestFolder(SyncProfile.HOST_FILES, true);
+        setupTestFolder(SyncProfile.HOST_FILES, true, ArchiveMode.NO_BACKUP);
         folder = getFolder();
         File localBase = folder.getLocalBase();
 
@@ -101,7 +103,7 @@ public class FolderMoveTest extends ControllerTestCase {
         writer.write("This is the dummy text.\n\n sdlkja hsdjfksd f90a-7s w t");
         writer.close();
     }
-    
+
     public void testFolderMoveMultiple() throws Exception {
         for (int i = 0; i < 100; i++) {
             testFolderMove();
@@ -139,7 +141,7 @@ public class FolderMoveTest extends ControllerTestCase {
             // Create new folder
             FolderSettings folderSettings = new FolderSettings(testFolder2,
                 getFolder().getSyncProfile(), false, getFolder()
-                    .isUseRecycleBin());
+                    .isUseRecycleBin(), getFolder().getArchiveMode());
 
             // Move the folder
             folder = repository.createFolder(folder.getInfo(), folderSettings);

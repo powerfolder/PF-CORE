@@ -19,23 +19,25 @@
  */
 package de.dal33t.powerfolder.test.folder;
 
+import java.io.File;
+
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.test.ControllerTestCase;
-
-import java.io.File;
 
 /**
  * This test checks that a FileInfo expires after a period if deleted.
  */
 public class FolderExpireTest extends ControllerTestCase {
 
+    @Override
     public void setUp() throws Exception {
 
         super.setUp();
 
         // Setup a test folder.
-        setupTestFolder(SyncProfile.HOST_FILES, true);
+        setupTestFolder(SyncProfile.HOST_FILES, true, ArchiveMode.NO_BACKUP);
 
         File localBase = getFolder().getLocalBase();
 
@@ -54,8 +56,8 @@ public class FolderExpireTest extends ControllerTestCase {
         assertTrue(deletedFile.createNewFile());
 
         // Speed things up!
-        ConfigurationEntry.DB_MAINTENANCE_SECONDS.setValue(getController(),
-            "5");
+        ConfigurationEntry.DB_MAINTENANCE_SECONDS
+            .setValue(getController(), "5");
 
         scanFolder(getFolder());
 

@@ -19,6 +19,7 @@
  */
 package de.dal33t.powerfolder.disk;
 
+import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_ARCHIVE;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_DIR;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_DONT_RECYCLE;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_DOWNLOAD_SCRIPT;
@@ -67,6 +68,7 @@ import de.dal33t.powerfolder.event.OverallFolderStatEvent;
 import de.dal33t.powerfolder.event.OverallFolderStatListener;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.transfer.FileRequestor;
+import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Profiling;
@@ -92,37 +94,40 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     private static final Logger log = Logger.getLogger(FolderRepository.class
         .getName());
-    private Map<FolderInfo, Folder> folders;
+    private final Map<FolderInfo, Folder> folders;
     private Thread myThread;
-    private FileRequestor fileRequestor;
+    private final FileRequestor fileRequestor;
     private Folder currentlyMaintaitingFolder;
     // Flag if the repo is already started
     private boolean started;
     // The trigger to start scanning
-    private Object scanTrigger = new Object();
+    private final Object scanTrigger = new Object();
     private boolean triggered;
     private final FolderListener folderListener;
 
     /** folder repository listeners */
-    private FolderRepositoryListener folderRepositoryListenerSupport;
+    private final FolderRepositoryListener folderRepositoryListenerSupport;
 
     /** handler if files with posible filename problems are found */
     private FileNameProblemHandler fileNameProblemHandler;
 
     /** The disk scanner */
-    private FolderScanner folderScanner;
+    private final FolderScanner folderScanner;
 
     /** true if all folders are in sync. */
     private final AtomicBoolean allInSync = new AtomicBoolean(true);
 
-    /** Date all folders were last synchronized or the most future estimated sync date. */
+    /**
+     * Date all folders were last synchronized or the most future estimated sync
+     * date.
+     */
     private Date allSyncOrEstimatedDate;
-    
+
     /**
      * The current synchronizater of all folder memberships
      */
     private AllFolderMembershipSynchronizer folderMembershipSynchronizer;
-    private Object folderMembershipSynchronizerLock = new Object();
+    private final Object folderMembershipSynchronizerLock = new Object();
 
     /**
      * Field list for backup taget pre #777. Used to convert to new backup
@@ -136,7 +141,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      * Registered to ALL folders to deligate problem event of any folder to
      * registered listeners.
      */
-    private ProblemListener valveProblemListenerSupport;
+    private final ProblemListener valveProblemListenerSupport;
 
     /**
      * Constructor
@@ -166,13 +171,16 @@ public class FolderRepository extends PFComponent implements Runnable {
         valveProblemListenerSupport = ListenerSupportFactory
             .createListenerSupport(ProblemListener.class);
     }
-    
-    public void addOverallFolderStatListener(OverallFolderStatListener listener) {
+
+    public void addOverallFolderStatListener(OverallFolderStatListener listener)
+    {
         ListenerSupportFactory.addListener(overallFolderStatListenerSupport,
             listener);
     }
 
-    public void removeOverallFolderStatListener(OverallFolderStatListener listener) {
+    public void removeOverallFolderStatListener(
+        OverallFolderStatListener listener)
+    {
         ListenerSupportFactory.removeListener(overallFolderStatListenerSupport,
             listener);
     }
@@ -208,7 +216,8 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     public void setSuspendFireEvents(boolean suspended) {
-        ListenerSupportFactory.setSuspended(folderRepositoryListenerSupport, suspended);
+        ListenerSupportFactory.setSuspended(folderRepositoryListenerSupport,
+            suspended);
         logFine("setSuspendFireEvents: " + suspended);
     }
 
@@ -218,8 +227,8 @@ public class FolderRepository extends PFComponent implements Runnable {
             .getValueBoolean(getController());
         if (warnOnClose) {
             Collection<Folder> folderCollection = getFolders();
-            List<Folder> foldersToWarn = new ArrayList<Folder>(
-                folderCollection.size());
+            List<Folder> foldersToWarn = new ArrayList<Folder>(folderCollection
+                .size());
             for (Folder folder : folderCollection) {
                 if (folder.isTransferring()) {
                     logWarning("Close warning on folder: " + folder);
@@ -236,25 +245,32 @@ public class FolderRepository extends PFComponent implements Runnable {
                     String title = Translation
                         .getTranslation("folder_repository.warn_on_close.title");
                     String text;
-                    if (getController().getFolderRepository().isSynchronized()) {
+                    if (getController().getFolderRepository().isSynchronized())
+                    {
                         text = Translation.getTranslation(
                             "folder_repository.warn_on_close.text", folderslist
                                 .toString());
                     } else {
                         Date syncDate = getController().getFolderRepository()
-                                .getSynchronizationDate();
-                        text = Translation.getTranslation(
-                            "folder_repository.warn_on_close_eta.text",
-                                folderslist.toString(),
-                                Format.formatDate(syncDate));
+                            .getSynchronizationDate();
+                        text = Translation
+                            .getTranslation(
+                                "folder_repository.warn_on_close_eta.text",
+                                folderslist.toString(), Format
+                                    .formatDate(syncDate));
                     }
                     String question = Translation
                         .getTranslation("general.neverAskAgain");
                     NeverAskAgainResponse response = DialogFactory
-                        .genericDialog(getController(), title, text, new String[]{
-                            Translation.getTranslation("folder_repository.continue_exit"),
-                            Translation.getTranslation("general.cancel")}, 0,
-                            GenericDialogType.QUESTION, question);
+                        .genericDialog(
+                            getController(),
+                            title,
+                            text,
+                            new String[]{
+                                Translation
+                                    .getTranslation("folder_repository.continue_exit"),
+                                Translation.getTranslation("general.cancel")},
+                            0, GenericDialogType.QUESTION, question);
                     if (response.isNeverAskAgain()) {
                         PreferencesEntry.WARN_ON_CLOSE.setValue(
                             getController(), false);
@@ -293,8 +309,8 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     /**
      * Version 3 (and earlier) folder format was like 'folder.<folderName>.XXXX
-     * This is replaced with V4 format, allowing folders with the same name
-     * to be saved.
+     * This is replaced with V4 format, allowing folders with the same name to
+     * be saved.
      */
     private void processV3Format() {
         final Properties config = getController().getConfig();
@@ -321,8 +337,8 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
         }
 
-        // Load with 6 concurrent threads. 
-        final Semaphore loadPermit = new Semaphore(6); 
+        // Load with 6 concurrent threads.
+        final Semaphore loadPermit = new Semaphore(6);
         final AtomicInteger nCreated = new AtomicInteger();
         // Scan config for all found folder names.
         for (final String folderName : allFolderNames) {
@@ -376,14 +392,15 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
-     * Load a folder's settings from disk. This will try to use the V4 way,
-     * and fall back to V3 for older folders.
-     *
+     * Load a folder's settings from disk. This will try to use the V4 way, and
+     * fall back to V3 for older folders.
+     * 
      * @param folderInfo
      * @return
      */
     public FolderSettings loadFolderSettings(FolderInfo folderInfo) {
-        String md5 = new String(Util.encodeHex(Util.md5(folderInfo.id.getBytes())));
+        String md5 = new String(Util.encodeHex(Util.md5(folderInfo.id
+            .getBytes())));
         FolderSettings settings = loadV4FolderSettings(md5);
         if (settings == null) {
             settings = loadV3FolderSettings(folderInfo.name);
@@ -424,8 +441,9 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
 
         // Inverse logic for backward compatability.
-        String dontRecycleSetting = config.getProperty(FOLDER_SETTINGS_PREFIX_V3
-            + folderName + FOLDER_SETTINGS_DONT_RECYCLE);
+        String dontRecycleSetting = config
+            .getProperty(FOLDER_SETTINGS_PREFIX_V3 + folderName
+                + FOLDER_SETTINGS_DONT_RECYCLE);
         boolean useRecycleBin = dontRecycleSetting == null
             || !"true".equalsIgnoreCase(dontRecycleSetting);
 
@@ -438,16 +456,16 @@ public class FolderRepository extends PFComponent implements Runnable {
             + folderName + FOLDER_SETTINGS_WHITELIST);
         boolean whitelist = whitelistSetting != null
             && "true".equalsIgnoreCase(whitelistSetting);
-        
+
         String dlScript = config.getProperty(FOLDER_SETTINGS_PREFIX_V3
             + folderName + FOLDER_SETTINGS_DOWNLOAD_SCRIPT);
         return new FolderSettings(new File(folderDir), syncProfile, false,
-            useRecycleBin, preview, whitelist, dlScript);
+            useRecycleBin, ArchiveMode.NO_BACKUP, preview, whitelist, dlScript);
     }
 
     /**
      * Version 4 format is like f.<md5>.XXXX, where md5 is the MD5 of the folder
-     * id. This format allows folders with the same name to be stored. 
+     * id. This format allows folders with the same name to be stored.
      */
     private void processV4Format() {
         final Properties config = getController().getConfig();
@@ -488,10 +506,12 @@ public class FolderRepository extends PFComponent implements Runnable {
             Runnable folderCreator = new Runnable() {
                 public void run() {
                     try {
-                        String folderId = config.getProperty(FOLDER_SETTINGS_PREFIX_V4
-                            + folderMD5 + FOLDER_SETTINGS_ID);
-                        String folderName = config.getProperty(FOLDER_SETTINGS_PREFIX_V4
-                            + folderMD5 + FOLDER_SETTINGS_NAME);
+                        String folderId = config
+                            .getProperty(FOLDER_SETTINGS_PREFIX_V4 + folderMD5
+                                + FOLDER_SETTINGS_ID);
+                        String folderName = config
+                            .getProperty(FOLDER_SETTINGS_PREFIX_V4 + folderMD5
+                                + FOLDER_SETTINGS_NAME);
                         FolderInfo foInfo = new FolderInfo(folderName, folderId);
                         FolderSettings folderSettings = loadV4FolderSettings(folderMD5);
 
@@ -565,6 +585,16 @@ public class FolderRepository extends PFComponent implements Runnable {
         boolean useRecycleBin = recycleSetting == null
             && "true".equalsIgnoreCase(recycleSetting);
 
+        String archiveSetting = config.getProperty(FOLDER_SETTINGS_PREFIX_V4
+            + folderMD5 + FOLDER_SETTINGS_ARCHIVE);
+        ArchiveMode archiveMode;
+        try {
+            archiveMode = ArchiveMode.valueOf(archiveSetting);
+        } catch (Exception e) {
+            log.log(Level.WARNING, "Unsupported ArchiveMode: " + archiveSetting
+                + ", falling back to NO_BACKUP!", e);
+            archiveMode = ArchiveMode.NO_BACKUP;
+        }
         String previewSetting = config.getProperty(FOLDER_SETTINGS_PREFIX_V4
             + folderMD5 + FOLDER_SETTINGS_PREVIEW);
         boolean preview = previewSetting != null
@@ -574,12 +604,12 @@ public class FolderRepository extends PFComponent implements Runnable {
             + folderMD5 + FOLDER_SETTINGS_WHITELIST);
         boolean whitelist = whitelistSetting != null
             && "true".equalsIgnoreCase(whitelistSetting);
-        
+
         String dlScript = config.getProperty(FOLDER_SETTINGS_PREFIX_V4
             + folderMD5 + FOLDER_SETTINGS_DOWNLOAD_SCRIPT);
 
         return new FolderSettings(new File(folderDir), syncProfile, false,
-            useRecycleBin, preview, whitelist, dlScript);
+            useRecycleBin, archiveMode, preview, whitelist, dlScript);
     }
 
     /**
@@ -783,7 +813,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         } else {
             folder = new Folder(getController(), folderInfo, folderSettings);
         }
-        
+
         folder.addFolderListener(folderListener);
         folder.addProblemListener(valveProblemListenerSupport);
         folders.put(folder.getInfo(), folder);
@@ -826,13 +856,15 @@ public class FolderRepository extends PFComponent implements Runnable {
         // #1448 - remove any old V3 config entries before saving V4 ones.
         removeConfigEntries(FOLDER_SETTINGS_PREFIX_V3 + folderInfo.name);
 
-        String md5 = new String(Util.encodeHex(Util.md5(folderInfo.id.getBytes())));
+        String md5 = new String(Util.encodeHex(Util.md5(folderInfo.id
+            .getBytes())));
         // store folder in config
         Properties config = getController().getConfig();
         config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
             + FOLDER_SETTINGS_NAME, folderInfo.name);
-        config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
-            + FOLDER_SETTINGS_ID, folderInfo.id);
+        config
+            .setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5 + FOLDER_SETTINGS_ID,
+                folderInfo.id);
         config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
             + FOLDER_SETTINGS_DIR, folderSettings.getLocalBaseDir()
             .getAbsolutePath());
@@ -843,6 +875,8 @@ public class FolderRepository extends PFComponent implements Runnable {
         config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
             + FOLDER_SETTINGS_RECYCLE, String.valueOf(folderSettings
             .isUseRecycleBin()));
+        config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
+            + FOLDER_SETTINGS_ARCHIVE, folderSettings.getArchiveMode().name());
         config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
             + FOLDER_SETTINGS_PREVIEW, String.valueOf(folderSettings
             .isPreviewOnly()));
@@ -879,7 +913,8 @@ public class FolderRepository extends PFComponent implements Runnable {
         FileUtils.deleteDesktopIni(folder.getLocalBase());
 
         // remove folder from config
-        String md5 = new String(Util.encodeHex(Util.md5(folder.getInfo().id.getBytes())));
+        String md5 = new String(Util.encodeHex(Util.md5(folder.getInfo().id
+            .getBytes())));
         removeConfigEntries(FOLDER_SETTINGS_PREFIX_V4 + md5);
 
         // Save config
@@ -913,7 +948,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             } catch (IOException e) {
                 logSevere("Failed to delete: " + folder.getSystemSubDir());
             }
-            
+
             // Try to delete the invitation.
             File invite = new File(folder.getLocalBase(), folder.getName()
                 + ".invitation");
@@ -972,9 +1007,10 @@ public class FolderRepository extends PFComponent implements Runnable {
                 // Cancel the syncer
                 folderMembershipSynchronizer.canceled = true;
             }
-            folderMembershipSynchronizer =  new AllFolderMembershipSynchronizer();
+            folderMembershipSynchronizer = new AllFolderMembershipSynchronizer();
             if (getController().getThreadPool() != null) {
-                getController().getThreadPool().submit(folderMembershipSynchronizer);
+                getController().getThreadPool().submit(
+                    folderMembershipSynchronizer);
             }
         }
     }
@@ -1000,8 +1036,8 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
-     * Triggers the maintenance on all folders. may or may not scan the folders -
-     * depending on settings.
+     * Triggers the maintenance on all folders. may or may not scan the folders
+     * - depending on settings.
      */
     public void triggerMaintenance() {
         if (isFiner()) {
@@ -1108,12 +1144,13 @@ public class FolderRepository extends PFComponent implements Runnable {
      * General ****************************************************************
      */
 
+    @Override
     public String toString() {
         return "Folders of " + getController().getMySelf().getNick();
     }
 
     /**
-     * @return  true if all folders are synchronized.
+     * @return true if all folders are synchronized.
      */
     public boolean isSynchronized() {
         return allInSync.get();
@@ -1121,7 +1158,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     /**
      * @return sync date. This will return the last date all folders were
-     * synchronized OR the ETA if sync is in progress.
+     *         synchronized OR the ETA if sync is in progress.
      */
     public Date getSynchronizationDate() {
         return allSyncOrEstimatedDate;
@@ -1130,30 +1167,34 @@ public class FolderRepository extends PFComponent implements Runnable {
     // Event support **********************************************************
 
     private void fireFolderCreated(Folder folder) {
-        folderRepositoryListenerSupport.folderCreated(new FolderRepositoryEvent(this, folder));
+        folderRepositoryListenerSupport
+            .folderCreated(new FolderRepositoryEvent(this, folder));
     }
 
     private void fireFolderRemoved(Folder folder) {
-        folderRepositoryListenerSupport.folderRemoved(new FolderRepositoryEvent(this, folder));
+        folderRepositoryListenerSupport
+            .folderRemoved(new FolderRepositoryEvent(this, folder));
     }
 
     private void fireMaintanceStarted(Folder folder) {
-        folderRepositoryListenerSupport.maintenanceStarted(new FolderRepositoryEvent(this,
-            folder));
+        folderRepositoryListenerSupport
+            .maintenanceStarted(new FolderRepositoryEvent(this, folder));
     }
 
     private void fireMaintenanceFinished(Folder folder) {
-        folderRepositoryListenerSupport.maintenanceFinished(new FolderRepositoryEvent(this,
-            folder));
+        folderRepositoryListenerSupport
+            .maintenanceFinished(new FolderRepositoryEvent(this, folder));
     }
 
     public void addFolderRepositoryListener(FolderRepositoryListener listener) {
-        ListenerSupportFactory.addListener(folderRepositoryListenerSupport, listener);
+        ListenerSupportFactory.addListener(folderRepositoryListenerSupport,
+            listener);
     }
 
     public void removeFolderRepositoryListener(FolderRepositoryListener listener)
     {
-        ListenerSupportFactory.removeListener(folderRepositoryListenerSupport, listener);
+        ListenerSupportFactory.removeListener(folderRepositoryListenerSupport,
+            listener);
     }
 
     /**
@@ -1168,8 +1209,9 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
-     * Expect something like 'f.c70001efd21928644ee14e327aa94724'
-     * or 'folder.TEST-Contacts' to remove config entries beginning with these.
+     * Expect something like 'f.c70001efd21928644ee14e327aa94724' or
+     * 'folder.TEST-Contacts' to remove config entries beginning with these.
+     * 
      * @param prefix
      */
     private void removeConfigEntries(String prefix) {
@@ -1196,10 +1238,11 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         // Check for folders that are currently synchronizing.
         for (Folder folder : folders.values()) {
-            double percentage = folder.getStatistic().getHarmonizedSyncPercentage();
-            boolean synchronizing = Double.compare(percentage, 100.0) < 0 &&
-                    Double.compare(percentage,
-                            FolderStatistic.UNKNOWN_SYNC_STATUS) > 0;
+            double percentage = folder.getStatistic()
+                .getHarmonizedSyncPercentage();
+            boolean synchronizing = Double.compare(percentage, 100.0) < 0
+                && Double.compare(percentage,
+                    FolderStatistic.UNKNOWN_SYNC_STATUS) > 0;
             if (synchronizing) {
                 foldersInSync = false;
                 break;
@@ -1227,13 +1270,16 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         allSyncOrEstimatedDate = syncDate;
 
-        overallFolderStatListenerSupport.statCalculated(
-                new OverallFolderStatEvent(foldersInSync, syncDate));
+        overallFolderStatListenerSupport
+            .statCalculated(new OverallFolderStatEvent(foldersInSync, syncDate));
     }
 
     private final class OldSyncWarningCheckTask extends TimerTask {
+        @Override
         public void run() {
-            for (Folder folder : getController().getFolderRepository().getFolders()) {
+            for (Folder folder : getController().getFolderRepository()
+                .getFolders())
+            {
                 folder.warnAboutOldSyncs();
             }
         }

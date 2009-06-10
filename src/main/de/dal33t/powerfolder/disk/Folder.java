@@ -81,6 +81,7 @@ import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.message.ScanCommand;
 import de.dal33t.powerfolder.transfer.TransferPriorities;
 import de.dal33t.powerfolder.transfer.TransferPriorities.TransferPriority;
+import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.FileUtils;
@@ -211,7 +212,8 @@ public class Folder extends PFComponent {
     /** The statistic for this folder */
     private final FolderStatistic statistic;
 
-    private FileArchiver fileArchiver;
+    private volatile ArchiveMode archiveMode;
+    private volatile FileArchiver fileArchiver;
 
     private final FolderListener folderListenerSupport;
     private final FolderMembershipListener folderMembershipListenerSupport;
@@ -388,6 +390,8 @@ public class Folder extends PFComponent {
 
         problemListenerSupport = ListenerSupportFactory
             .createListenerSupport(ProblemListener.class);
+
+        setArchiveMode(folderSettings.getArchiveMode());
     }
 
     public void addProblemListener(ProblemListener l) {
@@ -455,6 +459,21 @@ public class Folder extends PFComponent {
      */
     public List<Problem> getProblems() {
         return Collections.unmodifiableList(problems);
+    }
+
+    /**
+     * Sets the FileArchiver to be used.
+     * 
+     * @param mode
+     *            the ArchiveMode
+     */
+    public void setArchiveMode(ArchiveMode mode) {
+        this.archiveMode = mode;
+        this.fileArchiver = mode.getInstance(this);
+    }
+
+    public ArchiveMode getArchiveMode() {
+        return archiveMode;
     }
 
     /**
@@ -755,8 +774,12 @@ public class Folder extends PFComponent {
         synchronized (scanLock) {
             if (targetFile.exists()) {
                 // if file was a "newer file" the file already exists here
-                if (fileArchiver != null) {
-                    fileArchiver.archive(fInfo, targetFile, false);
+                // Using local var since fileArchiver could be "unset" in the
+                // mean time
+                FileArchiver arch = fileArchiver;
+                if (arch != null) {
+                    arch.archive(fInfo.getLocalFileInfo(getController()
+                        .getFolderRepository()), targetFile, false);
                 }
                 if (targetFile.exists() && !deleteFile(fInfo, targetFile)) {
                     logWarning("Unable to scan downloaded file. Was not able to move old file to recycle bin "

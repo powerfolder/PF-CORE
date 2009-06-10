@@ -1,23 +1,35 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.ui.dialog;
+
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.File;
+
+import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JTextField;
 
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
@@ -25,6 +37,7 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.ButtonBarFactory;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderPreviewHelper;
@@ -36,23 +49,15 @@ import de.dal33t.powerfolder.util.ui.BaseDialog;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.SyncProfileSelectorPanel;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.File;
-
 /**
  * Panel displayed when wanting to move a folder from preview to join
- *
+ * 
  * @author <a href="mailto:harry@powerfolder.com">Harry Glasgow </a>
  * @version $Revision: 2.3 $
  */
 public class PreviewToJoinPanel extends BaseDialog {
 
-    private Folder folder;
+    private final Folder folder;
     private JButton joinButton;
     private JButton cancelButton;
     private SyncProfileSelectorPanel syncProfileSelectorPanel;
@@ -61,7 +66,7 @@ public class PreviewToJoinPanel extends BaseDialog {
 
     /**
      * Contructor when used on choosen folder
-     *
+     * 
      * @param controller
      * @param foInfo
      */
@@ -83,7 +88,7 @@ public class PreviewToJoinPanel extends BaseDialog {
             getController(), existingFoldersSettings.getSyncProfile());
 
         locationModel = new ValueHolder(existingFoldersSettings
-                .getLocalBaseDir().getAbsolutePath());
+            .getLocalBaseDir().getAbsolutePath());
 
         // Behavior
         locationModel.addValueChangeListener(new PropertyChangeListener() {
@@ -103,7 +108,8 @@ public class PreviewToJoinPanel extends BaseDialog {
                 FolderSettings newFolderSettings = new FolderSettings(new File(
                     (String) locationModel.getValue()),
                     syncProfileSelectorPanel.getSyncProfile(), false,
-                    existingFoldersSettings.isUseRecycleBin(), false,
+                    existingFoldersSettings.isUseRecycleBin(),
+                    existingFoldersSettings.getArchiveMode(), false,
                     existingFoldersSettings.isWhitelist(),
                     existingFoldersSettings.getDownloadScript());
 
@@ -124,21 +130,23 @@ public class PreviewToJoinPanel extends BaseDialog {
 
     // Methods for BaseDialog *************************************************
 
+    @Override
     public String getTitle() {
-        return Translation.getTranslation("folder_join.dialog.title",
-            folder.getName());
+        return Translation.getTranslation("folder_join.dialog.title", folder
+            .getName());
     }
 
+    @Override
     protected Icon getIcon() {
         return Icons.getIconById(Icons.JOIN_FOLDER_48);
     }
 
+    @Override
     protected Component getContent() {
         initComponents();
 
         FormLayout layout = new FormLayout(
-            "right:pref, 3dlu, max(120dlu;pref):grow",
-            "pref, 3dlu, pref");
+            "right:pref, 3dlu, max(120dlu;pref):grow", "pref, 3dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
 
         CellConstraints cc = new CellConstraints();
@@ -150,8 +158,8 @@ public class PreviewToJoinPanel extends BaseDialog {
 
         row += 2;
 
-        builder.addLabel(Translation.getTranslation("general.local_copy_at"), cc
-            .xy(1, row));
+        builder.addLabel(Translation.getTranslation("general.local_copy_at"),
+            cc.xy(1, row));
         builder.add(createLocationField(), cc.xy(3, row));
 
         row += 2;
@@ -159,13 +167,14 @@ public class PreviewToJoinPanel extends BaseDialog {
         return builder.getPanel();
     }
 
+    @Override
     protected Component getButtonBar() {
         return ButtonBarFactory.buildCenteredBar(joinButton, cancelButton);
     }
 
     /**
      * Creates a pair of location text field and button.
-     *
+     * 
      * @param folderInfo
      * @return
      */

@@ -31,6 +31,7 @@ import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
 
@@ -55,6 +56,7 @@ public class ControllerTestCase extends TestCase {
     // The optional test folders
     private Folder folder;
 
+    @Override
     protected void setUp() throws Exception {
         System.setProperty("user.home", new File("build/test/home")
             .getCanonicalPath());
@@ -85,6 +87,7 @@ public class ControllerTestCase extends TestCase {
         System.out.println("Controller started");
     }
 
+    @Override
     protected void tearDown() throws Exception {
         super.tearDown();
         controller.shutdown();
@@ -134,12 +137,12 @@ public class ControllerTestCase extends TestCase {
      *            whether to folder supports the recycle bin.
      */
     protected void setupTestFolder(SyncProfile syncprofile,
-        boolean useRecycleBin)
+        boolean useRecycleBin, ArchiveMode archiveMode)
     {
         FolderInfo testFolder = new FolderInfo("testFolder", UUID.randomUUID()
             .toString());
         folder = joinFolder(testFolder, TESTFOLDER_BASEDIR, syncprofile,
-            useRecycleBin);
+            useRecycleBin, archiveMode);
         System.out.println(folder.getLocalBase());
     }
 
@@ -150,7 +153,7 @@ public class ControllerTestCase extends TestCase {
      * @see #getFolder()
      */
     protected void setupTestFolder(SyncProfile syncprofile) {
-        setupTestFolder(syncprofile, true);
+        setupTestFolder(syncprofile, true, ArchiveMode.NO_BACKUP);
     }
 
     /**
@@ -165,10 +168,10 @@ public class ControllerTestCase extends TestCase {
      * @return the folder joined
      */
     protected Folder joinFolder(FolderInfo foInfo, File baseDir,
-        SyncProfile profile, boolean useRecycleBin)
+        SyncProfile profile, boolean useRecycleBin, ArchiveMode archiveMode)
     {
         FolderSettings folderSettings = new FolderSettings(baseDir, profile,
-            false, useRecycleBin);
+            false, useRecycleBin, archiveMode);
         return getController().getFolderRepository().createFolder(foInfo,
             folderSettings);
     }

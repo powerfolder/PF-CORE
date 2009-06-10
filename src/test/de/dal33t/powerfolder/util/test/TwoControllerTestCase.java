@@ -37,6 +37,7 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.net.ConnectionException;
+import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Reject;
@@ -72,6 +73,7 @@ public class TwoControllerTestCase extends TestCase {
     private Folder folderBart;
     private Folder folderLisa;
 
+    @Override
     protected void setUp() throws Exception {
         System.setProperty("user.home", new File("build/test/home")
             .getCanonicalPath());
@@ -127,6 +129,7 @@ public class TwoControllerTestCase extends TestCase {
             .println("-------------- Controllers started -----------------");
     }
 
+    @Override
     protected void tearDown() throws Exception {
         System.out.println("-------------- tearDown -----------------");
         super.tearDown();
@@ -447,12 +450,12 @@ public class TwoControllerTestCase extends TestCase {
         final Folder folder1;
         final Folder folder2;
         FolderSettings folderSettings1 = new FolderSettings(baseDir1, profile,
-            false, true);
+            false, true, ArchiveMode.NO_BACKUP);
         folder1 = getContollerBart().getFolderRepository().createFolder(foInfo,
             folderSettings1);
 
         FolderSettings folderSettings2 = new FolderSettings(baseDir2, profile,
-            false, true);
+            false, true, ArchiveMode.NO_BACKUP);
         folder2 = getContollerLisa().getFolderRepository().createFolder(foInfo,
             folderSettings2);
         if (folder1.isDeviceDisconnected() || folder2.isDeviceDisconnected()) {

@@ -19,9 +19,10 @@
  */
 package de.dal33t.powerfolder.disk;
 
-import de.dal33t.powerfolder.util.Reject;
-
 import java.io.File;
+
+import de.dal33t.powerfolder.util.ArchiveMode;
+import de.dal33t.powerfolder.util.Reject;
 
 /**
  * Class to consolidate the settings for creating a folder. Used as constructor
@@ -41,6 +42,7 @@ public class FolderSettings {
     public static final String FOLDER_SETTINGS_DOWNLOAD_SCRIPT = ".dlscript";
     public static final String FOLDER_SETTINGS_NAME = ".name"; // V4 only
     public static final String FOLDER_SETTINGS_RECYCLE = ".recycle"; // V4 only
+    public static final String FOLDER_SETTINGS_ARCHIVE = ".archive"; // V4 only
 
     /**
      * Base location of files in the folder.
@@ -64,20 +66,25 @@ public class FolderSettings {
     private final boolean useRecycleBin;
 
     /**
+     * How to archive local files
+     */
+    private final ArchiveMode archiveMode;
+
+    /**
      * Whether this sould only be a preview of the folder.
      */
-    private boolean previewOnly;
+    private final boolean previewOnly;
 
     /**
      * Whether the folder is a black- or white-list.
      */
-    private boolean whitelist;
+    private final boolean whitelist;
 
     /**
      * #1538: Script that gets executed after a download has been completed
      * successfully.
      */
-    private String downloadScript;
+    private final String downloadScript;
 
     /**
      * Constructor. Creates a new FolderSettings object.
@@ -92,7 +99,8 @@ public class FolderSettings {
      */
     public FolderSettings(File localBaseDir, SyncProfile syncProfile,
         boolean createInvitationFile, boolean useRecycleBin,
-        boolean previewOnly, boolean whitelist, String downloadScript)
+        ArchiveMode archiveMode, boolean previewOnly, boolean whitelist,
+        String downloadScript)
     {
 
         Reject.ifNull(localBaseDir, "Local base dir required");
@@ -101,6 +109,7 @@ public class FolderSettings {
         this.syncProfile = syncProfile;
         this.createInvitationFile = createInvitationFile;
         this.useRecycleBin = useRecycleBin;
+        this.archiveMode = archiveMode;
         this.previewOnly = previewOnly;
         this.whitelist = whitelist;
         this.downloadScript = downloadScript;
@@ -116,10 +125,11 @@ public class FolderSettings {
      * @param useRecycleBin
      */
     public FolderSettings(File localBaseDir, SyncProfile syncProfile,
-        boolean createInvitationFile, boolean useRecycleBin)
+        boolean createInvitationFile, boolean useRecycleBin,
+        ArchiveMode archiveMode)
     {
         this(localBaseDir, syncProfile, createInvitationFile, useRecycleBin,
-            false, false, null);
+            archiveMode, false, false, null);
     }
 
     // /////////////
@@ -140,6 +150,10 @@ public class FolderSettings {
 
     public boolean isUseRecycleBin() {
         return useRecycleBin;
+    }
+
+    public ArchiveMode getArchiveMode() {
+        return archiveMode;
     }
 
     public boolean isPreviewOnly() {

@@ -39,10 +39,11 @@ import de.dal33t.powerfolder.event.FileNameProblemEvent;
 import de.dal33t.powerfolder.event.FileNameProblemHandler;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.test.TestHelper;
 
 public class TestFileNameProblemUI {
-    private Controller controller;
+    private final Controller controller;
     private static final File TESTFOLDER_BASEDIR = new File(TestHelper
         .getTestDir(), "/ControllerBart/testFolder");
     private Folder folder;
@@ -147,7 +148,7 @@ public class TestFileNameProblemUI {
     {
         final Folder aFolder;
         FolderSettings folderSettings = new FolderSettings(baseDir, profile,
-            false, true);
+            false, true, ArchiveMode.NO_BACKUP);
         aFolder = controller.getFolderRepository().createFolder(foInfo,
             folderSettings);
         if (aFolder.isDeviceDisconnected()) {

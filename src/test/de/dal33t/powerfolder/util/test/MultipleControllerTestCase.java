@@ -41,6 +41,7 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.net.ConnectionException;
+import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.PropertiesUtil;
@@ -62,10 +63,11 @@ import de.dal33t.powerfolder.util.logging.Loggable;
  * @version $Revision: 1.2 $
  */
 public abstract class MultipleControllerTestCase extends TestCase {
-    private Map<String, Controller> controllers = new HashMap<String, Controller>();
+    private final Map<String, Controller> controllers = new HashMap<String, Controller>();
     private FolderInfo mctFolder;
     private int port = 4000;
 
+    @Override
     protected void setUp() throws Exception {
         System.setProperty("user.home", new File("build/test/home")
             .getCanonicalPath());
@@ -92,13 +94,14 @@ public abstract class MultipleControllerTestCase extends TestCase {
                 }
             });
         Feature.setupForTests();
-        
+
         // Cleanup
         TestHelper.cleanTestDir();
         FileUtils.recursiveDelete(new File(Controller.getMiscFilesLocation(),
             "build"));
     }
 
+    @Override
     protected void tearDown() throws Exception {
         System.out.println("-------------- tearDown -----------------");
         super.tearDown();
@@ -280,7 +283,7 @@ public abstract class MultipleControllerTestCase extends TestCase {
         Controller controller, SyncProfile profile)
     {
         FolderSettings folderSettings = new FolderSettings(baseDir, profile,
-            false, true);
+            false, true, ArchiveMode.NO_BACKUP);
         return controller.getFolderRepository().createFolder(foInfo,
             folderSettings);
     }
@@ -329,7 +332,8 @@ public abstract class MultipleControllerTestCase extends TestCase {
     }
 
     protected void connectAll() {
-        Controller entries[] = controllers.values().toArray(new Controller[controllers.values().size()]);
+        Controller entries[] = controllers.values().toArray(
+            new Controller[controllers.values().size()]);
         for (int i = 0; i < entries.length; i++) {
             for (int j = 0; j < i; j++) {
                 tryToConnect(entries[i], entries[j]);
@@ -339,7 +343,7 @@ public abstract class MultipleControllerTestCase extends TestCase {
 
     protected void disconnectAll() {
         final Controller entries[] = controllers.values().toArray(
-                new Controller[controllers.values().size()]);
+            new Controller[controllers.values().size()]);
         for (int i = 0; i < entries.length; i++) {
             for (int j = 0; j < i; j++) {
                 entries[j].getNodeManager().getNode(
