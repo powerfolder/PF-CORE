@@ -424,6 +424,9 @@ public class Controller extends PFComponent {
         }
         taskManager.start();
 
+        // Load anything that was not handled last time.
+        loadPersistentObjects();
+
         setLoadingCompletion(30, 35);
 
         // Start the nodemanager
@@ -1298,6 +1301,9 @@ public class Controller extends PFComponent {
             taskManager.shutdown();
         }
 
+        // Save anything important that has not bben handled.
+        savePersistentObjects();
+
         if (threadPool != null) {
             logFine("Shutting down global threadpool");
             threadPool.shutdownNow();
@@ -2131,5 +2137,162 @@ public class Controller extends PFComponent {
 
         // No UI - ignore - continue as normal.
         return false;
+    }
+
+    /**
+     * Save anything important that was not handled.
+     */
+    private void savePersistentObjects() {
+
+        if (isUIEnabled()) {
+
+            // Save unhandled friendship events.
+            AskForFriendshipEvent event;
+            List<AskForFriendshipEvent> events
+                    = new ArrayList<AskForFriendshipEvent>();
+            while((event = uiController.getApplicationModel()
+                    .getReceivedAskedForFriendshipModel().popEvent()) != null) {
+                event.getMessage();
+            }
+            String filename = getController().getConfigName() + ".affes";
+            File file = new File(getMiscFilesLocation(), filename);
+            ObjectOutputStream outputStream = null;
+            try {
+                logInfo("There are " + events.size() + " unhandled events.");
+                outputStream = new ObjectOutputStream(
+                        new FileOutputStream(file));
+                outputStream.writeUnshared(events);
+            } catch (FileNotFoundException e) {
+                logSevere("FileNotFoundException", e);
+            } catch (IOException e) {
+                logSevere("IOException", e);
+            } finally {
+                if (outputStream != null) {
+                    try {
+                        outputStream.close();
+                    } catch (IOException e) {
+                        logSevere("IOException", e);
+                    }
+                }
+            }
+
+            // Save unhandled invitations.
+            Invitation invitation;
+            List<Invitation> invitations = new ArrayList<Invitation>();
+            while((invitation = uiController.getApplicationModel()
+                    .getReceivedInvitationsModel().popInvitation()) != null) {
+                invitation.getInvitationText();
+            }
+            filename = getController().getConfigName() + ".invitations";
+            file = new File(getMiscFilesLocation(), filename);
+            try {
+                logInfo("There are " + invitations.size()
+                        + " unhandled invitations.");
+                outputStream = new ObjectOutputStream(
+                        new FileOutputStream(file));
+                outputStream.writeUnshared(invitations);
+            } catch (FileNotFoundException e) {
+                logSevere("FileNotFoundException", e);
+            } catch (IOException e) {
+                logSevere("IOException", e);
+            } finally {
+                if (outputStream != null) {
+                    try {
+                        outputStream.close();
+                    } catch (IOException e) {
+                        logSevere("IOException", e);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Load anything that was not handled last time.
+     */
+    private void loadPersistentObjects() {
+
+        if (isUIEnabled()) {
+
+            // Load friendship events.
+            String filename = getController().getConfigName() + ".affes";
+            File file = new File(getMiscFilesLocation(), filename);
+            if (file.exists()) {
+                logInfo("Loading ask for friendship events");
+                ObjectInputStream inputStream = null;
+                try {
+                    inputStream = new ObjectInputStream(
+                            new FileInputStream(file));
+                    List<AskForFriendshipEvent> events
+                            = (List<AskForFriendshipEvent>)
+                            inputStream.readObject();
+                    inputStream.close();
+                    for (AskForFriendshipEvent event : events) {
+                        uiController.getApplicationModel()
+                                .getReceivedAskedForFriendshipModel()
+                                .askForFriendship(event);
+                    }
+                    logInfo("Loaded " + events.size()
+                            + " ask for friendship events.");
+                } catch (FileNotFoundException e) {
+                    logSevere("FileNotFoundException", e);
+                } catch (IOException e) {
+                    logSevere("IOException", e);
+                } catch (ClassNotFoundException e) {
+                    logSevere("ClassNotFoundException", e);
+                } catch (ClassCastException e) {
+                    logSevere("ClassCastException", e);
+                } finally {
+                    if (inputStream != null) {
+                        try {
+                            inputStream.close();
+                        } catch (IOException e) {
+                            logSevere("IOException", e);
+                        }
+                    }
+                }
+            } else {
+                logInfo("No ask for friendship events found.");
+            }
+
+            // Load invitations.
+            filename = getController().getConfigName() + ".invitations";
+            file = new File(getMiscFilesLocation(), filename);
+            if (file.exists()) {
+                logInfo("Loading invitations");
+                ObjectInputStream inputStream = null;
+                try {
+                    inputStream = new ObjectInputStream(
+                            new FileInputStream(file));
+                    List<Invitation> invitations
+                            = (List<Invitation>) inputStream.readObject();
+                    inputStream.close();
+                    for (Invitation invitation : invitations) {
+                        uiController.getApplicationModel()
+                                .getReceivedInvitationsModel()
+                                .gotInvitation(invitation,  false);
+                    }
+                    logInfo("Loaded " + invitations.size() + " invitations.");
+                } catch (FileNotFoundException e) {
+                    logSevere("FileNotFoundException", e);
+                } catch (IOException e) {
+                    logSevere("IOException", e);
+                } catch (ClassNotFoundException e) {
+                    logSevere("ClassNotFoundException", e);
+                } catch (ClassCastException e) {
+                    logSevere("ClassCastException", e);
+                } finally {
+                    if (inputStream != null) {
+                        try {
+                            inputStream.close();
+                        } catch (IOException e) {
+                            logSevere("IOException", e);
+                        }
+                    }
+                }
+            } else {
+                logInfo("No invitations found - probably first start of PF.");
+            }
+        }
     }
 }
