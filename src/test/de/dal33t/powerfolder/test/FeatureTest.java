@@ -24,6 +24,12 @@ import junit.framework.TestCase;
 
 public class FeatureTest extends TestCase {
 
+    protected void setUp() throws Exception {
+        super.setUp();
+        Feature.OS_CLIENT.enable();
+        Feature.EXIT_ON_SHUTDOWN.enable();
+    }
+
     public void testFeatureDefaults() {
         assertTrue(Feature.OS_CLIENT.isEnabled());
         assertTrue(Feature.EXIT_ON_SHUTDOWN.isEnabled());
