@@ -1259,7 +1259,7 @@ public class UIController extends PFComponent {
                     Translation.getTranslation(
                             "uicontroller.local_mass_delete.title"),
                     Translation.getTranslation(
-                            "uicontroller.local_amss_delete.message",
+                            "uicontroller.local_mass_delete.message",
                             event.getFolderInfo().name));
             applicationModel.getWarningsModel().pushWarning(warningEvent);
         }
