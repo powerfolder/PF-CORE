@@ -37,7 +37,6 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import de.dal33t.powerfolder.disk.*;
 import de.dal33t.powerfolder.event.AskForFriendshipEvent;
-import de.dal33t.powerfolder.event.WarningEvent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;

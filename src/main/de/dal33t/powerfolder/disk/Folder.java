@@ -63,14 +63,7 @@ import de.dal33t.powerfolder.disk.dao.FileInfoDAOHashMapImpl;
 import de.dal33t.powerfolder.disk.problem.Problem;
 import de.dal33t.powerfolder.disk.problem.ProblemListener;
 import de.dal33t.powerfolder.disk.problem.UnsynchronizedFolderProblem;
-import de.dal33t.powerfolder.event.FileNameProblemEvent;
-import de.dal33t.powerfolder.event.FileNameProblemHandler;
-import de.dal33t.powerfolder.event.FolderEvent;
-import de.dal33t.powerfolder.event.FolderListener;
-import de.dal33t.powerfolder.event.FolderMembershipEvent;
-import de.dal33t.powerfolder.event.FolderMembershipListener;
-import de.dal33t.powerfolder.event.ListenerSupportFactory;
-import de.dal33t.powerfolder.event.RemoteMassDeletionEvent;
+import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
@@ -483,22 +476,21 @@ public class Folder extends PFComponent {
      * @param scanResult
      *            the scanresult to commit.
      */
-    private void commitScanResult(ScanResult scanResult) {
+    private boolean commitScanResult(ScanResult scanResult) {
 
         // See if everything has been deleted.
         if (getKnownFilesCount() > 0
-            && !scanResult.getDeletedFiles().isEmpty()
-            && scanResult.getTotalFilesCount() == 0
-            && PreferencesEntry.MASS_DELETE_PROTECTION
-                .getValueBoolean(getController()))
-        {
+                && !scanResult.getDeletedFiles().isEmpty()
+                && scanResult.getTotalFilesCount() == 0
+                && PreferencesEntry.MASS_DELETE_PROTECTION
+                .getValueBoolean(getController())) {
 
             // Advise controller of the carnage.
-            getController().remoteMassDeletionDetected(
-                new RemoteMassDeletionEvent(currentInfo));
+            getController().localMassDeletionDetected(
+                new LocalMassDeletionEvent(currentInfo));
 
-            // Quit here, so deletions are not broadcast to other members.
-            return;
+            return false;
+
         }
 
         synchronized (scanLock) {
@@ -584,6 +576,8 @@ public class Folder extends PFComponent {
         if (isFiner()) {
             logFiner("commitScanResult DONE");
         }
+
+        return true;
     }
 
     // Disabled, causing bug #293
@@ -918,11 +912,12 @@ public class Folder extends PFComponent {
                                 this, result));
                     }
                 }
-                commitScanResult(result);
-                lastScan = new Date();
-                return true;
+                if (commitScanResult(result)) {
+                    lastScan = new Date();
+                    return true;
+                }
             }
-            // scan aborted or hardware broken?
+            // scan aborted, hardware broken, mass local delete?
             return false;
         } finally {
             lastScanResultState = result.getResultState();
@@ -2311,21 +2306,27 @@ public class Folder extends PFComponent {
                         || config.isSyncDeletionWithOthers())
                     {
                         String originalName = syncProfile.getProfileName();
+
+                        // Emergency profile switch to something safe.
                         setSyncProfile(SyncProfile.HOST_FILES);
+
                         logWarning("Received a FolderFilesChanged message from "
                             + from.getInfo().nick
                             + " which will delete "
                             + delPercentage
                             + " percent of known files in folder "
                             + currentInfo.name
-                            + ". The "
-                            + " sync profile has been switched from "
+                            + ". The sync profile has been switched from "
                             + originalName
                             + " to "
                             + syncProfile.getProfileName()
                             + " to protect the files.");
+
+                        // Advise the controller of the problem.
                         getController().remoteMassDeletionDetected(
-                            new RemoteMassDeletionEvent(currentInfo));
+                            new RemoteMassDeletionEvent(currentInfo,
+                                    from.getInfo(), delPercentage, originalName,
+                                    syncProfile.getProfileName()));
                     }
                 }
             }

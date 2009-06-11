@@ -20,16 +20,46 @@
 package de.dal33t.powerfolder.event;
 
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.light.MemberInfo;
 
+/**
+ * Notification that 
+ */
 public class RemoteMassDeletionEvent {
 
     private final FolderInfo folderInfo;
+    private final MemberInfo memberInfo;
+    private final int deletePercentage;
+    private String oldProfileName;
+    private String newProfileName;
 
-    public RemoteMassDeletionEvent(FolderInfo folderInfo) {
+    public RemoteMassDeletionEvent(FolderInfo folderInfo, MemberInfo memberInfo,
+                                   int deletePercentage, String oldProfileName,
+                                   String newProfileName) {
         this.folderInfo = folderInfo;
+        this.memberInfo = memberInfo;
+        this.deletePercentage = deletePercentage;
+        this.oldProfileName = oldProfileName;
+        this.newProfileName = newProfileName;
     }
 
     public FolderInfo getFolderInfo() {
         return folderInfo;
+    }
+
+    public MemberInfo getMemberInfo() {
+        return memberInfo;
+    }
+
+    public int getDeletePercentage() {
+        return deletePercentage;
+    }
+
+    public String getOldProfileName() {
+        return oldProfileName;
+    }
+
+    public String getNewProfileName() {
+        return newProfileName;
     }
 }
