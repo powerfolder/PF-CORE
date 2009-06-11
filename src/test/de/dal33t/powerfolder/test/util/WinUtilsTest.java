@@ -28,27 +28,27 @@ import de.dal33t.powerfolder.util.os.Win32.ShellLink;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import de.dal33t.powerfolder.util.test.TestHelper;
 
+/**
+ * Note: You need desktoputils.dll in the test classpath for this to work.
+ */
 public class WinUtilsTest extends TestCase {
 	public void testSystemFolders() {
-		if (!OSUtil.isWindowsSystem())
-			return;
+		if (!OSUtil.isWindowsSystem()) {
+            return;
+        }
 		WinUtils wu = WinUtils.getInstance();
-		assertNotNull(wu
-				.getSystemFolderPath(WinUtils.CSIDL_STARTUP, false));
-		assertNotNull(wu
-		    .getSystemFolderPath(WinUtils.CSIDL_PERSONAL, false));
+        assertNotNull(wu);
+		assertNotNull(wu.getSystemFolderPath(WinUtils.CSIDL_STARTUP, false));
+		assertNotNull(wu.getSystemFolderPath(WinUtils.CSIDL_PERSONAL, false));
 	}
 	
 	public void testLinkCreation() throws IOException {
-		if (!OSUtil.isWindowsSystem())
-			return;
-		ShellLink sl = new ShellLink("test1 test2", "Link creation test", "Dummy", null);
-		WinUtils wu = null;
-        try {
-            wu = WinUtils.getInstance();
-        } catch (Throwable e) {
-            e.printStackTrace();
+		if (!OSUtil.isWindowsSystem()) {
+            return;
         }
+		ShellLink sl = new ShellLink("test1 test2", "Link creation test", "Dummy", null);
+		WinUtils wu = WinUtils.getInstance();
+        assertNotNull(wu);
 		File f = new File(TestHelper.getTestDir(), "test.lnk");
 		f.getParentFile().mkdirs();
 		wu.createLink(sl, f.getAbsolutePath());
