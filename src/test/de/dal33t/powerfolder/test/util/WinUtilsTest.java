@@ -37,7 +37,8 @@ public class WinUtilsTest extends TestCase {
             return;
         }
 		WinUtils wu = WinUtils.getInstance();
-        assertNotNull(wu);
+        assertNotNull("Could not get instance. Is desktoputils.dll in the classpath?"
+                , wu);
 		assertNotNull(wu.getSystemFolderPath(WinUtils.CSIDL_STARTUP, false));
 		assertNotNull(wu.getSystemFolderPath(WinUtils.CSIDL_PERSONAL, false));
 	}
@@ -46,9 +47,11 @@ public class WinUtilsTest extends TestCase {
 		if (!OSUtil.isWindowsSystem()) {
             return;
         }
-		ShellLink sl = new ShellLink("test1 test2", "Link creation test", "Dummy", null);
+		ShellLink sl = new ShellLink("test1 test2", "Link creation test", "Dummy"
+                , null);
 		WinUtils wu = WinUtils.getInstance();
-        assertNotNull(wu);
+        assertNotNull("Could not get instance. Is desktoputils.dll in the classpath?"
+                , wu);
 		File f = new File(TestHelper.getTestDir(), "test.lnk");
 		f.getParentFile().mkdirs();
 		wu.createLink(sl, f.getAbsolutePath());
