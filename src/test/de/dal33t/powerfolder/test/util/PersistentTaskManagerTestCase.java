@@ -81,6 +81,7 @@ public class PersistentTaskManagerTestCase extends TwoControllerTestCase {
             .getConnectedNodes().iterator().next();
 
         disconnectBartAndLisa();
+        final int bartInitialTasks = getContollerBart().getTaskManager().activeTaskCount();
 
         getContollerLisa().getFolderRepository().removeFolder(
             getFolderAtLisa(), true);
@@ -88,7 +89,8 @@ public class PersistentTaskManagerTestCase extends TwoControllerTestCase {
             getContollerBart().getMySelf().getInfo());
         InvitationUtil.invitationToNode(getContollerBart(), inv, lisaAtBart);
         TestHelper.waitMilliSeconds(2000);
-        assertEquals(1, getContollerBart().getTaskManager().activeTaskCount());
+        // Should have one more task now.
+        assertEquals(1 + bartInitialTasks, getContollerBart().getTaskManager().activeTaskCount());
 
         Mockery mock = new Mockery();
         final InvitationHandler handler = mock
@@ -104,7 +106,8 @@ public class PersistentTaskManagerTestCase extends TwoControllerTestCase {
         connectBartAndLisa();
         TestHelper.waitForCondition(30, new Condition() {
             public boolean reached() {
-                return getContollerBart().getTaskManager().activeTaskCount() == 0;
+                // Additional task should now be gone.
+                return getContollerBart().getTaskManager().activeTaskCount() == bartInitialTasks;
             }
         });
 
