@@ -218,6 +218,7 @@ public class UIController extends PFComponent {
         informationFrame = new InformationFrame(getController());
         chatFrame = new ChatFrame(getController());
         systemMonitorFrame = new SystemMonitorFrame(getController());
+        getController().addMassDeletionHandler(new MyMassDeletionHandler());
         started = false;
     }
 
@@ -1245,6 +1246,36 @@ public class UIController extends PFComponent {
             if (runIfShown) {
                 task.run();
             }
+        }
+    }
+
+    /**
+     * Class to handle local and remote mass deletion events.
+     * This pushes warnings into the app model.
+     */
+    private class MyMassDeletionHandler implements MassDeletionHandler {
+        public void localMassDeletion(LocalMassDeletionEvent event) {
+            WarningEvent warningEvent = new WarningEvent(getController(),
+                    Translation.getTranslation(
+                            "uicontroller.local_mass_delete.title"),
+                    Translation.getTranslation(
+                            "uicontroller.local_amss_delete.message",
+                            event.getFolderInfo().name));
+            applicationModel.getWarningsModel().pushWarning(warningEvent);
+        }
+
+        public void remoteMassDeletion(RemoteMassDeletionEvent event) {
+            WarningEvent warningEvent = new WarningEvent(getController(),
+                    Translation.getTranslation(
+                            "uicontroller.remote_mass_delete.warning_title"),
+                    Translation.getTranslation(
+                            "uicontroller.remote_mass_delete.warning_message",
+                            event.getMemberInfo().nick,
+                            event.getDeletePercentage(),
+                            event.getFolderInfo().name,
+                            event.getOldProfileName(),
+                            event.getNewProfileName()));
+            applicationModel.getWarningsModel().pushWarning(warningEvent);
         }
     }
 }
