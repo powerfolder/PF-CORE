@@ -46,7 +46,7 @@ import de.dal33t.powerfolder.util.Format;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.2 $
  */
-public class ControllerTestCase extends TestCase {
+public abstract class ControllerTestCase extends TestCase {
     // For the optional test folder.
     private static final File TESTFOLDER_BASEDIR = new File(TestHelper
         .getTestDir(), "/ControllerBart/testFolder");

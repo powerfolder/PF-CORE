@@ -59,7 +59,7 @@ import de.dal33t.powerfolder.util.logging.Loggable;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.2 $
  */
-public class TwoControllerTestCase extends TestCase {
+public abstract class TwoControllerTestCase extends TestCase {
     // For the optional test folder.
     protected static final File TESTFOLDER_BASEDIR_BART = new File(TestHelper
         .getTestDir(), "ControllerBart/testFolder");
