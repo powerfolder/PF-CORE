@@ -476,7 +476,7 @@ public class Folder extends PFComponent {
      * @param scanResult
      *            the scanresult to commit.
      */
-    private boolean commitScanResult(ScanResult scanResult) {
+    private void commitScanResult(ScanResult scanResult) {
 
         // See if everything has been deleted.
         if (getKnownFilesCount() > 0
@@ -489,7 +489,7 @@ public class Folder extends PFComponent {
             getController().localMassDeletionDetected(
                 new LocalMassDeletionEvent(currentInfo));
 
-            return false;
+            return;
 
         }
 
@@ -577,7 +577,7 @@ public class Folder extends PFComponent {
             logFiner("commitScanResult DONE");
         }
 
-        return true;
+        return;
     }
 
     // Disabled, causing bug #293
@@ -912,10 +912,9 @@ public class Folder extends PFComponent {
                                 this, result));
                     }
                 }
-                if (commitScanResult(result)) {
-                    lastScan = new Date();
-                    return true;
-                }
+                commitScanResult(result);
+                lastScan = new Date();
+                return true;
             }
             // scan aborted, hardware broken, mass local delete?
             return false;
