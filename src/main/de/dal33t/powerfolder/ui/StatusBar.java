@@ -44,13 +44,10 @@ import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
-import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.NetworkingMode;
-import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.*;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
-import de.dal33t.powerfolder.net.ConnectionListener;
+import de.dal33t.powerfolder.net.*;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.util.TransferCounter;
 import de.dal33t.powerfolder.util.Translation;
@@ -73,7 +70,8 @@ public class StatusBar extends PFUIComponent implements UIPanel {
     private static final int DISCONNECTED = 2;
 
     private Component comp;
-    private JLabel onlineStateInfo;
+    private final JLabel onlineStateInfo = new JLabel();
+    private final JLabel connectionQualityInfo = new JLabel();
     private JButton sleepButton;
     private JLabel limitedConnectivityLabel;
     private JLabel upStats;
@@ -134,15 +132,19 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                     "pref");
             } else {
                 lowerLayout = new FormLayout(
-                 //  online      limit                 down        sep         up
-                    "pref, 3dlu, pref, fill:pref:grow, pref, 3dlu, pref, 3dlu, pref",
+                 //  online      con quality limit                 down        sep         up
+                    "pref, 3dlu, pref, 3dlu, pref, fill:pref:grow, pref, 3dlu, pref, 3dlu, pref",
                     "pref");
             }
             DefaultFormBuilder lowerBuilder = new DefaultFormBuilder(
                 lowerLayout);
 
             int col = 1;
+
             lowerBuilder.add(onlineStateInfo, cc.xy(col, 1));
+            col += 2;
+
+            lowerBuilder.add(connectionQualityInfo, cc.xy(col, 1));
             col += 2;
 
             lowerBuilder.add(limitedConnectivityLabel, cc.xy(col, 1));
@@ -182,8 +184,9 @@ public class StatusBar extends PFUIComponent implements UIPanel {
     }
 
     private void initComponents() {
-        // Create online state info
-        onlineStateInfo = createOnlineStateLabel(getController());
+
+        configureConnectionLabels();
+
         // Add behavior
         onlineStateInfo.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
@@ -197,6 +200,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                 }
             }
         });
+
 
         sleepButton = new JButtonMini(Icons.getIconById(Icons.SLEEP),
                 Translation
@@ -275,6 +279,48 @@ public class StatusBar extends PFUIComponent implements UIPanel {
         syncButtonComponent = new SyncButtonComponent(getController());
     }
 
+    private void configureConnectionLabels() {
+        NodeManagerListener nodeListener = new NodeManagerListener() {
+            public void friendAdded(NodeManagerEvent e) {
+            }
+
+            public void friendRemoved(NodeManagerEvent e) {
+            }
+
+            public void nodeAdded(NodeManagerEvent e) {
+                updateConnectionLabels();
+            }
+
+            public void nodeConnected(NodeManagerEvent e) {
+                updateConnectionLabels();
+            }
+
+            public void nodeDisconnected(NodeManagerEvent e) {
+                updateConnectionLabels();
+            }
+
+            public void nodeRemoved(NodeManagerEvent e) {
+                updateConnectionLabels();
+            }
+
+            public void settingsChanged(NodeManagerEvent e) {
+            }
+
+            public void startStop(NodeManagerEvent e) {
+                updateConnectionLabels();
+            }
+
+            public boolean fireInEventDispatchThread() {
+                return true;
+            }
+        };
+
+        // Add behavior
+        getController().getNodeManager().addNodeManagerListener(nodeListener);
+
+        updateConnectionLabels();
+    }
+
     private void updateLimitedConnectivityLabel() {
         if (getController().isLimitedConnectivity()) {
             limitedConnectivityLabel.setToolTipText(Translation
@@ -286,99 +332,83 @@ public class StatusBar extends PFUIComponent implements UIPanel {
         }
     }
 
-    /**
-     * Creates a label which shows the online state of a controller
-     * 
-     * @param controller
-     *            the controller.
-     * @return the label.
-     */
-    private JLabel createOnlineStateLabel(final Controller controller) {
-
-        final JLabel label = new JLabel();
-
-        NodeManagerListener nodeListener = new NodeManagerListener() {
-            public void friendAdded(NodeManagerEvent e) {
+    private void updateConnectionLabels() {
+        Controller controller = getController();
+        IOProvider ioProvider = controller.getIOProvider();
+        Icon icon = null;
+        String text = null;
+        if (ioProvider != null) {
+            ConnectionHandlerFactory factory = ioProvider.getConnectionHandlerFactory();
+            if (factory != null) {
+                ConnectionQuality quality = factory.getConnectionQuality();
+                if (quality != null) {
+                    switch (quality) {
+                        case GOOD:
+                            icon = Icons.getIconById(
+                                    Icons.CONNECTION_GOOD);
+                            text = Translation.getTranslation(
+                                    "connection_quality_good.text");
+                            break;
+                        case MEDIUM:
+                            icon = Icons.getIconById(
+                                    Icons.CONNECTION_MEDIUM);
+                            text = Translation.getTranslation(
+                                    "connection_quality_medium.text");
+                            break;
+                        case POOR:
+                            icon = Icons.getIconById(
+                                    Icons.CONNECTION_POOR);
+                            text = Translation.getTranslation(
+                                    "connection_quality_poor.text");
+                            break;
+                    }
+                }
             }
+        }
+        if (icon == null) {
+            icon = Icons.getIconById(Icons.BLANK);
+        }
+        connectionQualityInfo.setIcon(icon);
+        connectionQualityInfo.setToolTipText(text);
 
-            public void friendRemoved(NodeManagerEvent e) {
-            }
 
-            public void nodeAdded(NodeManagerEvent e) {
-                updateOnlineStateLabel(label, controller);
-            }
-
-            public void nodeConnected(NodeManagerEvent e) {
-                updateOnlineStateLabel(label, controller);
-            }
-
-            public void nodeDisconnected(NodeManagerEvent e) {
-                updateOnlineStateLabel(label, controller);
-            }
-
-            public void nodeRemoved(NodeManagerEvent e) {
-                updateOnlineStateLabel(label, controller);
-            }
-
-            public void settingsChanged(NodeManagerEvent e) {
-            }
-
-            public void startStop(NodeManagerEvent e) {
-                updateOnlineStateLabel(label, controller);
-            }
-
-            public boolean fireInEventDispatchThread() {
-                return true;
-            }
-        };
-        // set initial values
-        updateOnlineStateLabel(label, controller);
-
-        // Add behavior
-        controller.getNodeManager().addNodeManagerListener(nodeListener);
-
-        return label;
-    }
-
-    private void updateOnlineStateLabel(JLabel label, Controller controller) {
-        // Get connectes node count
+        // Get connected node count
         int nOnlineUser = controller.getNodeManager().countConnectedNodes();
 
         int newState;
 
-        // System.err.println("Got " + nOnlineUser + " online users");
         if (!controller.getNodeManager().isStarted()) {
-            label.setToolTipText(Translation
+            onlineStateInfo.setToolTipText(Translation
                 .getTranslation("online_label.disabled"));
-            label.setIcon(Icons.getIconById(Icons.WARNING));
+            onlineStateInfo.setIcon(Icons.getIconById(Icons.WARNING));
             newState = DISABLED;
         } else if (nOnlineUser > 0) {
-            String text = Translation.getTranslation("online_label.online");
+            text = Translation.getTranslation("online_label.online");
             if (controller.isLanOnly()) {
                 text += " (" + Translation.getTranslation("general.lan_only")
                     + ')';
-            } else if (controller.getNetworkingMode().equals(
-                NetworkingMode.SERVERONLYMODE))
+            } else if (controller.getNetworkingMode() ==
+                    NetworkingMode.SERVERONLYMODE)
             {
                 text += " ("
                     + Translation.getTranslation("general.server_only") + ')';
             }
-            label.setToolTipText(text);
-            label.setIcon(Icons.getIconById(Icons.CONNECTED));
+            onlineStateInfo.setToolTipText(text);
+            onlineStateInfo.setIcon(Icons.getIconById(Icons.CONNECTED));
             newState = CONNECTED;
         } else {
-            String text = Translation.getTranslation("online_label.connecting");
+            text = Translation.getTranslation("online_label.connecting");
             if (controller.isLanOnly()) {
                 text += " (" + Translation.getTranslation("general.lan_only")
                     + ')';
-            } else if (controller.getNetworkingMode().equals(
-                NetworkingMode.SERVERONLYMODE))
+            } else if (controller.getNetworkingMode() ==
+                    NetworkingMode.SERVERONLYMODE)
             {
                 text += " ("
                     + Translation.getTranslation("general.server_only") + ')';
             }
-            label.setToolTipText(text);
-            label.setIcon(Icons.getIconById(Icons.DISCONNECTED));
+            onlineStateInfo.setToolTipText(text);
+            onlineStateInfo.setIcon(Icons.getIconById(Icons.DISCONNECTED));
             newState = DISCONNECTED;
         }
 
@@ -411,8 +441,8 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                 }
             }
         }
-    }
 
+    }
 
     public static JLabel createTransferCounterLabel(
         Controller controller, final Icon icon, final String format,

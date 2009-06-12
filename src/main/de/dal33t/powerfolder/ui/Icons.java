@@ -172,6 +172,9 @@ public class Icons {
 
     // Online state icons
     public static final String CONNECTED = "connected_bright.icon";
+    public static final String CONNECTION_GOOD = "connection_good.icon";
+    public static final String CONNECTION_MEDIUM = "connection_medium.icon";
+    public static final String CONNECTION_POOR = "connection_poor.icon";
     public static final String DISCONNECTED = "connected_not.icon";
 
     public static final String ONLINE_STORAGE = "web_service.icon";

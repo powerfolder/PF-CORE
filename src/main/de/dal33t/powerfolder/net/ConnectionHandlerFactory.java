@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.concurrent.atomic.AtomicLong;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
@@ -48,6 +49,11 @@ import de.dal33t.powerfolder.util.net.UDTSocket;
  * @version $Revision: 1.5 $
  */
 public class ConnectionHandlerFactory extends PFComponent {
+
+    private final AtomicLong goodConnections = new AtomicLong();
+    private final AtomicLong mediumConnections = new AtomicLong();
+    private final AtomicLong poorConnections = new AtomicLong();
+
     public ConnectionHandlerFactory(Controller controller) {
         super(controller);
     }
@@ -63,7 +69,7 @@ public class ConnectionHandlerFactory extends PFComponent {
      * <p>
      * B) Relayed connection
      * <p>
-     * B) PRO only: HTTP tunneled connection
+     * C) PRO only: HTTP tunneled connection
      * 
      * @param remoteNode
      *            the node to reconnect to.
@@ -80,14 +86,19 @@ public class ConnectionHandlerFactory extends PFComponent {
 
         if (!nullIP) {
             try {
-                return tryToConnectTCP(remoteNode.getConnectAddress());
+                ConnectionHandler handler = tryToConnectTCP(remoteNode.getConnectAddress());
+                goodConnections.incrementAndGet();
+                return handler;
             } catch (ConnectionException e) {
                 logFiner(e);
             }
         }
+
         try {
             if (useUDTConnections() && !isOnLAN(remoteNode) && !nullIP) {
-                return tryToConnectUDTRendezvous(remoteNode);
+                ConnectionHandler handler = tryToConnectUDTRendezvous(remoteNode);
+                mediumConnections.incrementAndGet();
+                return handler;
             }
         } catch (ConnectionException e) {
             logFiner(e);
@@ -95,7 +106,9 @@ public class ConnectionHandlerFactory extends PFComponent {
 
         try {
             if (useRelayedConnections() && !isOnLAN(remoteNode)) {
-                return tryToConnectRelayed(remoteNode);
+                ConnectionHandler handler = tryToConnectRelayed(remoteNode);
+                poorConnections.incrementAndGet();
+                return handler;
             }
         } catch (ConnectionException e) {
             logFiner(e);
@@ -288,5 +301,27 @@ public class ConnectionHandlerFactory extends PFComponent {
             return false;
         }
         return getController().getNodeManager().isOnLANorConfiguredOnLAN(adr);
+    }
+
+    public ConnectionQuality getConnectionQuality() {
+        if (isFiner()) {
+            logFiner("Connections ==> good: " + goodConnections.get() +
+                    ", medium: " + mediumConnections.get() +
+                    ", poor: " + poorConnections.get());
+        }
+
+        if (goodConnections.get() == 0 &&
+                mediumConnections.get() == 0 &&
+                poorConnections.get() == 0) {
+            return null;
+        }
+        
+        if (goodConnections.get() > poorConnections.get()
+                && goodConnections.get() > mediumConnections.get()) {
+            return ConnectionQuality.GOOD;
+        } else if (mediumConnections.get() > poorConnections.get()) {
+            return ConnectionQuality.MEDIUM;
+        }
+        return ConnectionQuality.POOR;
     }
 }

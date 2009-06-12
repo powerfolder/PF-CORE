@@ -30,9 +30,9 @@ public enum ConnectionQuality {
     MEDIUM(20), 
     POOR(10);
 
-    int order;
+    private int order;
 
-    private ConnectionQuality(int order) {
+    ConnectionQuality(int order) {
         this.order = order;
     }
 
