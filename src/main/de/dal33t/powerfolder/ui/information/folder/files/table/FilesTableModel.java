@@ -41,9 +41,9 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Class to model files selected from the tree.
@@ -65,7 +65,7 @@ public class FilesTableModel extends PFComponent implements TableModel,
 
     private Folder folder;
     private File selectedDirectory;
-    private final Map<File, List<DiskItem>> directories;
+    private final ConcurrentMap<File, List<DiskItem>> directories;
     private final List<DiskItem> diskItems;
     private final List<TableModelListener> tableModelListeners;
     private int fileInfoComparatorType = -1;
@@ -117,9 +117,7 @@ public class FilesTableModel extends PFComponent implements TableModel,
      */
     public void setFilteredDirectoryModel(FilteredDirectoryModel model,
                                           boolean flat) {
-        synchronized (directories) {
-            directories.clear();
-        }
+        directories.clear();
         walkFilteredDirectoryModel(model, flat);
         update();
     }
@@ -137,9 +135,7 @@ public class FilesTableModel extends PFComponent implements TableModel,
         if (!flat) {
             diskItemList.addAll(model.getSubdirectoryDirectories());
         }
-        synchronized (directories) {
-            directories.put(file, diskItemList);
-        }
+        directories.putIfAbsent(file, diskItemList);
         for (FilteredDirectoryModel subModel : model.getSubdirectories()) {
             walkFilteredDirectoryModel(subModel, flat);
         }
@@ -167,23 +163,13 @@ public class FilesTableModel extends PFComponent implements TableModel,
             return;
         }
 
-        boolean found = false;
-
-        synchronized (directories) {
-            if (directories.isEmpty()) {
-                return;
-            }
-
-            for (File file : directories.keySet()) {
-                if (selectedDirectory.equals(file)) {
-                    logInfo("Found " + selectedDirectory + " in directories");
-                    found = true;
-                    break;
-                }
-            }
+        if (directories.isEmpty()) {
+            return;
         }
 
-        if (!found) {
+        if (directories.keySet().contains(selectedDirectory)) {
+            logInfo("Found " + selectedDirectory + " in directories");
+        } else {
             return;
         }
 
@@ -195,10 +181,7 @@ public class FilesTableModel extends PFComponent implements TableModel,
                     tempList.addAll(diskItems);
 
                     // Look for extra items in the selectedDiskItems list to insert.
-                    List<DiskItem> selectedDiskItems;
-                    synchronized (directories) {
-                        selectedDiskItems = directories.get(selectedDirectory);
-                    }
+                    List<DiskItem> selectedDiskItems = directories.get(selectedDirectory);
                     boolean changed = false;
                     for (DiskItem selectedDiskItem : selectedDiskItems) {
                         boolean b = false;
