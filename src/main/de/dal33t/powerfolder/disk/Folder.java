@@ -770,11 +770,9 @@ public class Folder extends PFComponent {
                 // if file was a "newer file" the file already exists here
                 // Using local var since fileArchiver could be "unset" in the
                 // mean time
-                FileArchiver arch = fileArchiver;
-                if (arch != null) {
-                    arch.archive(fInfo.getLocalFileInfo(getController()
-                        .getFolderRepository()), targetFile, false);
-                }
+                fileArchiver.archive(fInfo.getLocalFileInfo(getController()
+                    .getFolderRepository()), targetFile, false);
+
                 if (targetFile.exists() && !deleteFile(fInfo, targetFile)) {
                     logWarning("Unable to scan downloaded file. Was not able to move old file to recycle bin "
                         + targetFile.getAbsolutePath()
