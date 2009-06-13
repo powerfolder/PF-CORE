@@ -592,7 +592,8 @@ public class FolderRepository extends PFComponent implements Runnable {
             archiveMode = ArchiveMode.valueOf(archiveSetting);
         } catch (Exception e) {
             log.log(Level.WARNING, "Unsupported ArchiveMode: " + archiveSetting
-                + ", falling back to NO_BACKUP!", e);
+                + ", falling back to NO_BACKUP!");
+            log.log(Level.FINE, e.toString(), e);
             archiveMode = ArchiveMode.NO_BACKUP;
         }
         String previewSetting = config.getProperty(FOLDER_SETTINGS_PREFIX_V4
