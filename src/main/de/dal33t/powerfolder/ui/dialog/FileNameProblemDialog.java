@@ -26,9 +26,10 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.disk.FilenameProblem;
+import de.dal33t.powerfolder.disk.FilenameProblemHelper;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.ScanResult;
+import de.dal33t.powerfolder.disk.FilenameProblem;
 import de.dal33t.powerfolder.event.FileNameProblemEvent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.Reject;
@@ -274,18 +275,18 @@ public class FileNameProblemDialog extends PFUIComponent {
             fileInfo);
         // FIXME: Solve only the first problem?!?!
         FilenameProblem problem = problems.get(0);
-        FileInfo fileInfoSolved = problem.solve(getController());
+        FileInfo fileInfoSolved = FilenameProblemHelper.solve(getController(), problem);
         FileInfo problemFileInfo = problem.getFileInfo();
         if (fileInfoSolved != null) {
             int count = 1;
             while (fileInfoSolved != null
-                && FilenameProblem
+                && FilenameProblemHelper
                     .hasProblems(fileInfoSolved.getFilenameOnly()))
             {
                 if (problems.size() >= count++) {
                     problem = problems.get(count);
                     // make sure to use the correct new filename
-                    fileInfoSolved = problem.solve(getController());
+                    fileInfoSolved = FilenameProblemHelper.solve(getController(), problem);
                 } else {
                     break;
                 }

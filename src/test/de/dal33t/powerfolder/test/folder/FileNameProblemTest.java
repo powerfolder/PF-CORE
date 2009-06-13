@@ -22,54 +22,54 @@ package de.dal33t.powerfolder.test.folder;
 import java.lang.reflect.Method;
 
 import junit.framework.TestCase;
-import de.dal33t.powerfolder.disk.FilenameProblem;
+import de.dal33t.powerfolder.disk.FilenameProblemHelper;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 
 public class FileNameProblemTest extends TestCase {
 
     public void testForWindows() {
-        assertFalse(FilenameProblem
+        assertFalse(FilenameProblemHelper
             .containsIllegalWindowsChars("a valid filename.txt"));
         // /\?*<":>+[]
 
-        assertTrue(FilenameProblem.containsIllegalWindowsChars("fhf/fjf"));
-        assertTrue(FilenameProblem.containsIllegalWindowsChars("hhhh\\"));
-        assertTrue(FilenameProblem.containsIllegalWindowsChars("?hhh"));
-        assertTrue(FilenameProblem.containsIllegalWindowsChars("ddfgd*"));
-        assertTrue(FilenameProblem.containsIllegalWindowsChars("<hhf"));
-        assertTrue(FilenameProblem.containsIllegalWindowsChars("\"gfgfg"));
-        assertTrue(FilenameProblem.containsIllegalWindowsChars(":sds"));
-        assertTrue(FilenameProblem.containsIllegalWindowsChars("gfgf>"));
-        assertTrue(FilenameProblem.containsIllegalWindowsChars("ssdffd<"));
-        assertFalse(FilenameProblem.containsIllegalWindowsChars("日本語でのテスト"));
+        assertTrue(FilenameProblemHelper.containsIllegalWindowsChars("fhf/fjf"));
+        assertTrue(FilenameProblemHelper.containsIllegalWindowsChars("hhhh\\"));
+        assertTrue(FilenameProblemHelper.containsIllegalWindowsChars("?hhh"));
+        assertTrue(FilenameProblemHelper.containsIllegalWindowsChars("ddfgd*"));
+        assertTrue(FilenameProblemHelper.containsIllegalWindowsChars("<hhf"));
+        assertTrue(FilenameProblemHelper.containsIllegalWindowsChars("\"gfgfg"));
+        assertTrue(FilenameProblemHelper.containsIllegalWindowsChars(":sds"));
+        assertTrue(FilenameProblemHelper.containsIllegalWindowsChars("gfgf>"));
+        assertTrue(FilenameProblemHelper.containsIllegalWindowsChars("ssdffd<"));
+        assertFalse(FilenameProblemHelper.containsIllegalWindowsChars("日本語でのテスト"));
 
         // controll chars
         for (int i = 0; i <= 31; i++) {
-            assertFalse(FilenameProblem.containsIllegalWindowsChars(((char) i)
+            assertFalse(FilenameProblemHelper.containsIllegalWindowsChars(((char) i)
                 + "123"));
         }
         // >=32 is no controll char
-        assertFalse(FilenameProblem.containsIllegalWindowsChars(((char) 32)
+        assertFalse(FilenameProblemHelper.containsIllegalWindowsChars(((char) 32)
             + "123"));
 
         // reserved windows words like AUX (extentions behind it are also not
         // allowed)
-        assertTrue(FilenameProblem.isReservedWindowsFilename("AUX"));
-        assertTrue(FilenameProblem.isReservedWindowsFilename("AUX.txt"));
-        assertTrue(FilenameProblem.isReservedWindowsFilename("LPT1"));
-        assertFalse(FilenameProblem.isReservedWindowsFilename("xLPT1"));
-        assertFalse(FilenameProblem.isReservedWindowsFilename("xAUX.txt"));
+        assertTrue(FilenameProblemHelper.isReservedWindowsFilename("AUX"));
+        assertTrue(FilenameProblemHelper.isReservedWindowsFilename("AUX.txt"));
+        assertTrue(FilenameProblemHelper.isReservedWindowsFilename("LPT1"));
+        assertFalse(FilenameProblemHelper.isReservedWindowsFilename("xLPT1"));
+        assertFalse(FilenameProblemHelper.isReservedWindowsFilename("xAUX.txt"));
 
     }
 
     public void testFilenameProblems() {
         FolderInfo folderInfo = new FolderInfo("testFolder", "ID");
-        assertFalse(FilenameProblem.hasProblems("a valid filename.whatever"));
+        assertFalse(FilenameProblemHelper.hasProblems("a valid filename.whatever"));
         // cannot end with . and space ( ) on windows
-        assertEquals(1, FilenameProblem.getProblems(
+        assertEquals(1, FilenameProblemHelper.getProblems(
             FileInfo.getTemplate(folderInfo, "dddd.")).size());
-        assertEquals(1, FilenameProblem.getProblems(
+        assertEquals(1, FilenameProblemHelper.getProblems(
             FileInfo.getTemplate(folderInfo, "dddd ")).size());
 
         // Windows/Unix/Mac
@@ -79,22 +79,22 @@ public class FileNameProblemTest extends TestCase {
         // FilenameProblem.getProblems(FileInfo.getTemplate(folderInfo,
         // "ddd/d")).size());
         // windows/Mac
-        assertEquals(2, FilenameProblem.getProblems(
+        assertEquals(2, FilenameProblemHelper.getProblems(
             FileInfo.getTemplate(folderInfo, "ddd:d")).size());
         // windows
-        assertEquals(1, FilenameProblem.getProblems(
+        assertEquals(1, FilenameProblemHelper.getProblems(
             FileInfo.getTemplate(folderInfo, "AUX")).size());
-        assertEquals(1, FilenameProblem.getProblems(
+        assertEquals(1, FilenameProblemHelper.getProblems(
             FileInfo.getTemplate(folderInfo, "aux")).size());
-        assertEquals(1, FilenameProblem.getProblems(
+        assertEquals(1, FilenameProblemHelper.getProblems(
             FileInfo.getTemplate(folderInfo, "aux.txt")).size());
         // 255 chars
-        assertFalse(FilenameProblem
+        assertFalse(FilenameProblemHelper
             .hasProblems("012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234"));
         // 256 chars
         assertEquals(
             1,
-            FilenameProblem
+            FilenameProblemHelper
                 .getProblems(
                     FileInfo
                         .getTemplate(
@@ -106,7 +106,7 @@ public class FileNameProblemTest extends TestCase {
     public void testStripExtension() {
         try {
             boolean foundMethod = false;
-            final Method[] methods = FilenameProblem.class.getDeclaredMethods();
+            Method[] methods = FilenameProblemHelper.class.getDeclaredMethods();
             for (int i = 0; i < methods.length; ++i) {
                 Method method = methods[i];
                 if (method.getName().equals("stripExtension")) {

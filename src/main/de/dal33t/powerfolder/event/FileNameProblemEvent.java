@@ -23,9 +23,10 @@ import java.util.EventObject;
 import java.util.List;
 import java.util.Map;
 
-import de.dal33t.powerfolder.disk.FilenameProblem;
+import de.dal33t.powerfolder.disk.FilenameProblemHelper;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.ScanResult;
+import de.dal33t.powerfolder.disk.FilenameProblem;
 import de.dal33t.powerfolder.light.FileInfo;
 
 public class FileNameProblemEvent extends EventObject {

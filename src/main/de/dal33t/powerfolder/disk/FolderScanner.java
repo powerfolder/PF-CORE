@@ -78,7 +78,7 @@ public class FolderScanner extends PFComponent {
      * Maximum number of DirectoryCrawlers after test of a big folder this seams
      * the optimum number.
      */
-    private final static int MAX_CRAWLERS = 1;
+    private static final int MAX_CRAWLERS = 1;
 
     /**
      * The files which could not be scanned
@@ -242,7 +242,7 @@ public class FolderScanner extends PFComponent {
             }
 
             if (isWarning()) {
-                if (unableToScanFiles.size() > 0) {
+                if (!unableToScanFiles.isEmpty()) {
                     logWarning("Unable to scan " + unableToScanFiles.size()
                         + " file(s)");
                 } else {
@@ -359,22 +359,20 @@ public class FolderScanner extends PFComponent {
             // #836
             if (!OSUtil.isWindowsSystem()) {
                 if (lowerCaseNames.containsKey(fileInfo.getLowerCaseName())) {
-                    // possible dupe because of same filename but with different
-                    // case
                     FilenameProblem problem = new FilenameProblem(fileInfo,
                         lowerCaseNames.get(fileInfo.getLowerCaseName()));
-                    problemList = new ArrayList<FilenameProblem>(1);
+                    problemList = new ArrayList<FilenameProblem>();
                     problemList.add(problem);
                 } else {
                     lowerCaseNames.put(fileInfo.getLowerCaseName(), fileInfo);
                 }
             }
 
-            if (FilenameProblem.hasProblems(fileInfo.getFilenameOnly())) {
+            if (FilenameProblemHelper.hasProblems(fileInfo.getFilenameOnly())) {
                 if (problemList == null) {
-                    problemList = new ArrayList<FilenameProblem>(1);
+                    problemList = new ArrayList<FilenameProblem>();
                 }
-                problemList.addAll(FilenameProblem.getProblems(fileInfo));
+                problemList.addAll(FilenameProblemHelper.getProblems(fileInfo));
 
             }
             if (problemList != null) {
@@ -474,7 +472,7 @@ public class FolderScanner extends PFComponent {
     private boolean isReady() {
         boolean ready;
         synchronized (directoryCrawlersPool) {
-            ready = activeDirectoryCrawlers.size() == 0
+            ready = activeDirectoryCrawlers.isEmpty()
                 && directoryCrawlersPool.size() == MAX_CRAWLERS;
         }
         return ready;
@@ -519,7 +517,7 @@ public class FolderScanner extends PFComponent {
      * @return true on success and false on IOError (disk failure or file
      *         removed in the meantime)
      */
-    private final boolean scanFile(File fileToScan, String currentDirName) {
+    private boolean scanFile(File fileToScan, String currentDirName) {
         Reject.ifNull(currentScanningFolder,
             "currentScanningFolder must not be null");
 
@@ -603,7 +601,7 @@ public class FolderScanner extends PFComponent {
     /**
      * calculates the subdir of this file relative to the location of the folder
      */
-    private static final String getCurrentDirName(Folder folder, File subFile) {
+    private static String getCurrentDirName(Folder folder, File subFile) {
         String fileName = subFile.getName();
         File parent = subFile.getParentFile();
         File folderBase = folder.getLocalBase();

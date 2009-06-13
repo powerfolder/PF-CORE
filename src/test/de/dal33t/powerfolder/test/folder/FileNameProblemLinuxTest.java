@@ -23,8 +23,9 @@ import java.io.File;
 import java.util.List;
 import java.util.Map;
 
-import de.dal33t.powerfolder.disk.FilenameProblem;
+import de.dal33t.powerfolder.disk.FilenameProblemHelper;
 import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.disk.FilenameProblem;
 import de.dal33t.powerfolder.event.FileNameProblemEvent;
 import de.dal33t.powerfolder.event.FileNameProblemHandler;
 import de.dal33t.powerfolder.light.FileInfo;
@@ -129,7 +130,7 @@ public class FileNameProblemLinuxTest extends ControllerTestCase {
         }
     }
 
-    private final class MyFileNameProblemHandler implements
+    private class MyFileNameProblemHandler implements
         FileNameProblemHandler
     {
         public void fileNameProblemsDetected(
@@ -145,8 +146,8 @@ public class FileNameProblemLinuxTest extends ControllerTestCase {
 
                 for (FilenameProblem problem : problemList) {
                     // solve it
-                    FileInfo solved = problem.solve(getController());
-                    if (!FilenameProblem.hasProblems(solved.getFilenameOnly()))
+                    FileInfo solved = FilenameProblemHelper.solve(getController(), problem);
+                    if (!FilenameProblemHelper.hasProblems(solved.getFilenameOnly()))
                     {
                         break;
                     }

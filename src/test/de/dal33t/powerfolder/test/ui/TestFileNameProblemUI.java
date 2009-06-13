@@ -30,11 +30,8 @@ import java.util.UUID;
 import org.apache.commons.io.FileUtils;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.disk.FilenameProblem;
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.FolderSettings;
-import de.dal33t.powerfolder.disk.ScanResult;
-import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.disk.FilenameProblemHelper;
+import de.dal33t.powerfolder.disk.*;
 import de.dal33t.powerfolder.event.FileNameProblemEvent;
 import de.dal33t.powerfolder.event.FileNameProblemHandler;
 import de.dal33t.powerfolder.light.FileInfo;
@@ -97,7 +94,7 @@ public class TestFileNameProblemUI {
     {
         Map<FileInfo, List<FilenameProblem>> p = new HashMap<FileInfo, List<FilenameProblem>>();
         for (FileInfo fileInfo : files) {
-            p.put(fileInfo, FilenameProblem.getProblems(fileInfo));
+            p.put(fileInfo, FilenameProblemHelper.getProblems(fileInfo));
         }
         return p;
     }

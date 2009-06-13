@@ -82,9 +82,9 @@ public class ScanResult {
     }
 
     public boolean isChangeDetected() {
-        return changedFiles.size() > 0 || deletedFiles.size() > 0
-            || newFiles.size() > 0 || movedFiles.size() > 0
-            || restoredFiles.size() > 0;
+        return !changedFiles.isEmpty() || !deletedFiles.isEmpty()
+            || !newFiles.isEmpty() || !movedFiles.isEmpty()
+            || !restoredFiles.isEmpty();
     }
 
     public Collection<FileInfo> getChangedFiles() {
