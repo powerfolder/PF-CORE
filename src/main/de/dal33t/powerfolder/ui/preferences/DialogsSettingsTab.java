@@ -69,6 +69,9 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
     /** warn if changing profile for multiple folders */
     private JCheckBox warnOnDuplicateFolders;
 
+    /** warn if connection quality is poor */
+    private JCheckBox warnOnPoorConnectionQuality;
+
     private JPanel panel;
 
     private boolean needsRestart;
@@ -176,6 +179,8 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
             .getValueBoolean(getController());
         boolean duplicateFolders = PreferencesEntry.DUPLICATE_FOLDER_USE
             .getValueBoolean(getController());
+        boolean poorConnection = PreferencesEntry.WARN_POOR_QUALITY
+            .getValueBoolean(getController());
         askForFriendship = new JCheckBox(
             Translation
                 .getTranslation("preferences.dialog.dialogs.ask_to_add_to_friends_if_node_becomes_member_of_folder"),
@@ -200,6 +205,10 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
             Translation
                 .getTranslation("preferences.dialog.dialogs.warn_on_duplicate_folders"),
             duplicateFolders);
+        warnOnPoorConnectionQuality = new JCheckBox(
+            Translation
+                .getTranslation("preferences.dialog.dialogs.warn_on_poor_connection_quality"),
+            poorConnection);
     }
 
     /**
@@ -210,7 +219,7 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
     public JPanel getUIPanel() {
         if (panel == null) {
             FormLayout layout = new FormLayout("right:pref, 3dlu, pref",
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
                 .createEmptyBorder("3dlu, 3dlu, 3dlu, 3dlu"));
@@ -234,6 +243,9 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
 
             row += 2;
             builder.add(warnOnDuplicateFolders, cc.xy(3, row));
+
+            row += 2;
+            builder.add(warnOnPoorConnectionQuality, cc.xy(3, row));
 
             ////////////////////////////////////////
             // Notification stuff only below here //
@@ -303,6 +315,7 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
         boolean askFriendship = askForFriendship.isSelected();
         boolean askFriendshipMessage = askForFriendshipMessage.isSelected();
         boolean duplicateFolders = warnOnDuplicateFolders.isSelected();
+        boolean poorConnection = warnOnPoorConnectionQuality.isSelected();
 
         if (showChatNotificationBox != null) {
             applicationModel.getChatNotificationsValueModel().setValue(
@@ -331,6 +344,8 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
             .setValue(getController(), filenamCheck);
         PreferencesEntry.DUPLICATE_FOLDER_USE
             .setValue(getController(), duplicateFolders);
+        PreferencesEntry.WARN_POOR_QUALITY
+            .setValue(getController(), poorConnection);
     }
 
     /**

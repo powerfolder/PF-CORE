@@ -47,14 +47,13 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.*;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
+import de.dal33t.powerfolder.event.WarningEvent;
 import de.dal33t.powerfolder.net.*;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.util.TransferCounter;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker;
-import de.dal33t.powerfolder.util.ui.UIPanel;
-import de.dal33t.powerfolder.util.ui.UIUtil;
+import de.dal33t.powerfolder.util.ui.*;
 
 /**
  * The status bar on the lower side of the main window.
@@ -81,6 +80,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
     private JButton openPreferencesButton;
     private JButton openDebugButton;
     private SyncButtonComponent syncButtonComponent;
+    private boolean shownQualityWarningToday;
 
     /** Connection state */
     private final AtomicInteger state = new AtomicInteger(UNKNOWN);
@@ -344,22 +344,25 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                 if (quality != null) {
                     switch (quality) {
                         case GOOD:
-                            icon = Icons.getIconById(
-                                    Icons.CONNECTION_GOOD);
+                            icon = Icons.getIconById(Icons.CONNECTION_GOOD);
                             text = Translation.getTranslation(
                                     "connection_quality_good.text");
                             break;
                         case MEDIUM:
-                            icon = Icons.getIconById(
-                                    Icons.CONNECTION_MEDIUM);
+                            icon = Icons.getIconById(Icons.CONNECTION_MEDIUM);
                             text = Translation.getTranslation(
                                     "connection_quality_medium.text");
                             break;
                         case POOR:
-                            icon = Icons.getIconById(
-                                    Icons.CONNECTION_POOR);
+                            icon = Icons.getIconById(Icons.CONNECTION_POOR);
                             text = Translation.getTranslation(
                                     "connection_quality_poor.text");
+
+                            // Only show warning once!
+                            if (!shownQualityWarningToday) {
+                                shownQualityWarningToday = true;
+                                showQualityWarning(controller);
+                            }
                             break;
                     }
                 }
@@ -442,6 +445,35 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             }
         }
 
+    }
+
+    private static void showQualityWarning(final Controller controller) {
+        Boolean warn = PreferencesEntry.WARN_POOR_QUALITY.getValueBoolean(
+                        controller);
+        if (warn) {
+            // Advise user of quality issue.
+            Runnable runnable = new Runnable() {
+                public void run() {
+                    NeverAskAgainResponse response =
+                            DialogFactory.genericDialog(controller,
+                                    Translation.getTranslation(
+                                            "status_bar.poor_quality_warning.title"),
+                                    Translation.getTranslation(
+                                            "status_bar.poor_quality_warning.text"),
+                                    new String[]{Translation.getTranslation(
+                                            "general.ok")}, 0,
+                                    GenericDialogType.INFO, Translation.
+                                            getTranslation(
+                                            "general.neverAskAgain"));
+                    if (response.isNeverAskAgain()) {
+                        PreferencesEntry.WARN_POOR_QUALITY.setValue(controller, false);
+                    }
+                }
+            };
+            WarningEvent warningEvent = new WarningEvent("qwer", runnable);
+            controller.getUIController().getApplicationModel()
+                    .getWarningsModel().pushWarning(warningEvent);
+        }
     }
 
     public static JLabel createTransferCounterLabel(

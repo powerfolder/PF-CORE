@@ -124,7 +124,10 @@ public enum PreferencesEntry {
     SKIN_NAME("skin.name", ""),
 
     /** Minimize to system tray */
-    MIN_TO_SYS_TRAY("min.to.sys.tray", false);
+    MIN_TO_SYS_TRAY("min.to.sys.tray", false),
+
+    /** Warn user if connection is poor. */
+    WARN_POOR_QUALITY("warn.poor.quality", true);
 
     /** String, Boolean, Integer */
     private Class type;
