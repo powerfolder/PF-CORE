@@ -27,6 +27,8 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.net.ConnectionException;
+import de.dal33t.powerfolder.net.ConnectionHandler;
+import de.dal33t.powerfolder.net.ConnectionQuality;
 import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.ExpandableView;
@@ -65,6 +67,7 @@ public class ExpandableComputerView extends PFUIComponent implements ExpandableV
     private JButtonMini reconnectButton;
     private JButtonMini addRemoveButton;
     private JLabel pictoLabel;
+    private JLabel connectionQualityLabel;
     private JButtonMini chatButton;
     private JPanel upperPanel;
     private MyAddRemoveFriendAction addRemoveFriendAction;
@@ -149,7 +152,8 @@ public class ExpandableComputerView extends PFUIComponent implements ExpandableV
         pictoLabel.addMouseListener(ma);
 
         // Build lower detials with line border.
-        FormLayout lowerLayout = new FormLayout("3dlu, pref, pref:grow, 3dlu, pref, pref, 3dlu",
+                                                //     last,       qual                   rmve  recon
+        FormLayout lowerLayout = new FormLayout("3dlu, pref, 3dlu, pref, pref:grow, 3dlu, pref, pref, 3dlu",
             "pref, 3dlu, pref");
           // sep,        last
         PanelBuilder lowerBuilder = new PanelBuilder(lowerLayout);
@@ -157,8 +161,9 @@ public class ExpandableComputerView extends PFUIComponent implements ExpandableV
         lowerBuilder.addSeparator(null, cc.xyw(1, 1, 7));
 
         lowerBuilder.add(lastSeenLabel, cc.xy(2, 3));
-        lowerBuilder.add(addRemoveButton, cc.xy(5, 3));
-        lowerBuilder.add(reconnectButton, cc.xy(6, 3));
+        lowerBuilder.add(connectionQualityLabel, cc.xy(4, 3));
+        lowerBuilder.add(addRemoveButton, cc.xy(7, 3));
+        lowerBuilder.add(reconnectButton, cc.xy(8, 3));
 
         JPanel lowerPanel = lowerBuilder.getPanel();
         lowerPanel.setOpaque(false);
@@ -202,6 +207,7 @@ public class ExpandableComputerView extends PFUIComponent implements ExpandableV
     private void initComponent() {
         expanded = new AtomicBoolean();
 
+        connectionQualityLabel = new JLabel();
         lastSeenLabel = new JLabel();
         reconnectAction = new MyReconnectAction(getController());
         reconnectButton = new JButtonMini(reconnectAction, true);
@@ -279,6 +285,34 @@ public class ExpandableComputerView extends PFUIComponent implements ExpandableV
      * Updates the displayed details of the member.
      */
     private void updateDetails() {
+        String iconName = Icons.BLANK;
+        String text = null;
+        ConnectionHandler peer = node.getPeer();
+        if (peer != null) {
+            ConnectionQuality quality = peer.getConnectionQuality();
+            if (quality != null) {
+                switch(quality) {
+                    case GOOD:
+                        iconName = Icons.CONNECTION_GOOD;
+                        text = Translation.getTranslation(
+                                "connection_quality_good.text");
+                        break;
+                    case MEDIUM:
+                        iconName = Icons.CONNECTION_MEDIUM;
+                        text = Translation.getTranslation(
+                                "connection_quality_medium.text");
+                        break;
+                    case POOR:
+                        iconName = Icons.CONNECTION_POOR;
+                        text = Translation.getTranslation(
+                                "connection_quality_poor.text");
+                        break;
+                }
+            }
+        }
+        connectionQualityLabel.setToolTipText(text);
+        connectionQualityLabel.setIcon(Icons.getIconById(iconName));
+        
         Date time = node.getLastConnectTime();
         String lastConnectedTime;
         if (time == null) {
