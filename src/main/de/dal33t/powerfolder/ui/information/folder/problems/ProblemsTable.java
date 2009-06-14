@@ -21,8 +21,10 @@ package de.dal33t.powerfolder.ui.information.folder.problems;
 
 import de.dal33t.powerfolder.ui.render.SortedTableHeaderRenderer;
 import de.dal33t.powerfolder.disk.problem.Problem;
+import de.dal33t.powerfolder.disk.problem.SolvableProblem;
 import de.dal33t.powerfolder.util.ui.ColorUtil;
 import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.Translation;
 
 import javax.swing.*;
 import javax.swing.table.TableColumn;
@@ -66,6 +68,8 @@ public class ProblemsTable extends JTable {
         column.setPreferredWidth(20);
         column = getColumn(getColumnName(2));
         column.setPreferredWidth(20);
+        column = getColumn(getColumnName(3));
+        column.setPreferredWidth(20);
     }
 
     private static class ProblemTableCellRenderer extends DefaultTableCellRenderer {
@@ -86,6 +90,14 @@ public class ProblemsTable extends JTable {
                     setText(Format.formatDate(problem.getDate()));
                 } else if (column == 2) {
                     setText(problem.getWikiLinkKey());
+                } else if (column == 3) {
+                    if (problem instanceof SolvableProblem) {
+                        // @todo harry add action
+                        setText("TBA");
+                    } else {
+                        setText(Translation.getTranslation(
+                                "folder_problem.table_model.not_available"));
+                    }
                 }
             }
 

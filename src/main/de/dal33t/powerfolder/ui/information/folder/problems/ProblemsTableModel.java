@@ -46,11 +46,13 @@ public class ProblemsTableModel extends PFUIComponent implements TableModel,
     private static final int COL_DESCRIPTION = 0;
     private static final int COL_DATE = 1;
     private static final int COL_WIKI = 2;
+    private static final int COL_SOLUTION = 3;
 
     private String[] columnHeaders = {
-        Translation.getTranslation("folder_problem.table_model.description"), // 0
-        Translation.getTranslation("folder_problem.table_model.date"), // 1
-        Translation.getTranslation("folder_problem.table_model.wiki_link")}; // 2
+            Translation.getTranslation("folder_problem.table_model.description"), // 0
+            Translation.getTranslation("folder_problem.table_model.date"), // 1
+            Translation.getTranslation("folder_problem.table_model.wiki_link"), // 2
+            Translation.getTranslation("folder_problem.table_model.solution")}; // 3
 
     private final List<Problem> problems;
 
@@ -123,6 +125,9 @@ public class ProblemsTableModel extends PFUIComponent implements TableModel,
             case COL_WIKI :
                 sortMe(FolderProblemComparator.BY_WIKI, newSortColumn);
                 break;
+            case COL_SOLUTION :
+                sortMe(FolderProblemComparator.BY_WIKI, newSortColumn);
+                break;
         }
         return true;
     }
@@ -170,6 +175,7 @@ public class ProblemsTableModel extends PFUIComponent implements TableModel,
         private static final int TYPE_DESCRIPTION = 0;
         private static final int TYPE_DATE = 1;
         private static final int TYPE_WIKI = 2;
+        private static final int TYPE_SOLUTION = 3;
 
         public static final FolderProblemComparator BY_DESCRIPTION =
                 new FolderProblemComparator(TYPE_DESCRIPTION);
@@ -179,6 +185,9 @@ public class ProblemsTableModel extends PFUIComponent implements TableModel,
 
         public static final FolderProblemComparator BY_WIKI =
                 new FolderProblemComparator(TYPE_WIKI);
+
+        public static final FolderProblemComparator BY_SOLUTION =
+                new FolderProblemComparator(TYPE_SOLUTION);
 
         private int type;
 
@@ -193,6 +202,9 @@ public class ProblemsTableModel extends PFUIComponent implements TableModel,
                 return o1.getDate().compareTo(o2.getDate());
             } else if (type == TYPE_WIKI) {
                 return o1.getWikiLinkKey().compareTo(o2.getWikiLinkKey());
+            } else if (type == TYPE_SOLUTION) {
+                // No real sort order available - sort on description
+                return o1.getDescription().compareTo(o2.getDescription());
             }
             return 0;
         }
