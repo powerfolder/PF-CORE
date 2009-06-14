@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -273,6 +274,45 @@ public class Directory implements Comparable<Directory>, DiskItem {
             files.addAll(dir.getFilesRecursive());
         }
         return files;
+    }
+    
+    /**
+     * @return true if all filesInfos and filesInfos in subdirectories are
+     *         deleted
+     */
+    public boolean isDeleted() {
+        if (fileInfoHolderMap.isEmpty() && subDirectoriesMap.isEmpty()) {
+            return false;
+        }
+        for (FileInfoHolder holder : fileInfoHolderMap.values()) {
+            if (!holder.getFileInfo().isDeleted()) {
+                return false; // one file not deleted
+            }
+        }
+        for (Directory dir : subDirectoriesMap.values()) {
+            if (!dir.isDeleted()) {
+                return false;
+            }
+        }
+        return true; // this dir is deleted
+    }
+    
+    /**
+     * @return the list of subdirectories in this directory, that are NOT
+     *         deleted.
+     */
+    public List<Directory> listSubDirectories() {
+        List<Directory> list = new ArrayList<Directory>(subDirectoriesMap
+            .values());
+        for (Iterator<Directory> iterator = list.iterator(); iterator.hasNext();)
+        {
+            Directory directory = iterator.next();
+            if (directory.isDeleted()) {
+                iterator.remove();
+            }
+        }
+        Collections.sort(list);
+        return list;
     }
 
     /**
