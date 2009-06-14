@@ -22,6 +22,7 @@ package de.dal33t.powerfolder.disk.problem;
 /**
  * Problem types that are solvable by PowerFolder.
  */
-public interface SolvableProblem extends Problem {
-    Runnable solution();
+public abstract class SolvableProblem extends Problem {
+
+    abstract Runnable solution();
 }

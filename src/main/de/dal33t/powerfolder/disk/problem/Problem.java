@@ -23,14 +23,20 @@ import java.util.Date;
 
 /**
  * Base of folder problems.
- * <p>
- * TODO Force implementation of {@link #equals(Object)} and
- * {@link #equals(Object)} on interface impls.
  */
-public interface Problem {
-    String getDescription();
+public abstract class Problem {
 
-    String getWikiLinkKey();
+    private final Date date;
 
-    Date getDate();
+    protected Problem() {
+        date = new Date();
+    }
+
+    abstract String getDescription();
+
+    abstract String getWikiLinkKey();
+
+    public Date getDate() {
+        return date;
+    }
 }
