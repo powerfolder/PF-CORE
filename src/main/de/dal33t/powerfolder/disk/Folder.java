@@ -63,7 +63,15 @@ import de.dal33t.powerfolder.disk.dao.FileInfoDAOHashMapImpl;
 import de.dal33t.powerfolder.disk.problem.Problem;
 import de.dal33t.powerfolder.disk.problem.ProblemListener;
 import de.dal33t.powerfolder.disk.problem.UnsynchronizedFolderProblem;
-import de.dal33t.powerfolder.event.*;
+import de.dal33t.powerfolder.event.FileNameProblemEvent;
+import de.dal33t.powerfolder.event.FileNameProblemHandler;
+import de.dal33t.powerfolder.event.FolderEvent;
+import de.dal33t.powerfolder.event.FolderListener;
+import de.dal33t.powerfolder.event.FolderMembershipEvent;
+import de.dal33t.powerfolder.event.FolderMembershipListener;
+import de.dal33t.powerfolder.event.ListenerSupportFactory;
+import de.dal33t.powerfolder.event.LocalMassDeletionEvent;
+import de.dal33t.powerfolder.event.RemoteMassDeletionEvent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
@@ -480,10 +488,11 @@ public class Folder extends PFComponent {
 
         // See if everything has been deleted.
         if (getKnownFilesCount() > 0
-                && !scanResult.getDeletedFiles().isEmpty()
-                && scanResult.getTotalFilesCount() == 0
-                && PreferencesEntry.MASS_DELETE_PROTECTION
-                .getValueBoolean(getController())) {
+            && !scanResult.getDeletedFiles().isEmpty()
+            && scanResult.getTotalFilesCount() == 0
+            && PreferencesEntry.MASS_DELETE_PROTECTION
+                .getValueBoolean(getController()))
+        {
 
             // Advise controller of the carnage.
             getController().localMassDeletionDetected(
@@ -768,11 +777,16 @@ public class Folder extends PFComponent {
         synchronized (scanLock) {
             if (targetFile.exists()) {
                 // if file was a "newer file" the file already exists here
-                // Using local var since fileArchiver could be "unset" in the
-                // mean time
-                fileArchiver.archive(fInfo.getLocalFileInfo(getController()
-                    .getFolderRepository()), targetFile, false);
-
+                // Using local var because of possible race condition!!
+                FileArchiver arch = fileArchiver;
+                if (arch != null) {
+                    try {
+                        arch.archive(fInfo.getLocalFileInfo(getController()
+                            .getFolderRepository()), targetFile, false);
+                    } catch (IOException e) {
+                        logSevere(e);
+                    }
+                }
                 if (targetFile.exists() && !deleteFile(fInfo, targetFile)) {
                     logWarning("Unable to scan downloaded file. Was not able to move old file to recycle bin "
                         + targetFile.getAbsolutePath()
@@ -2321,9 +2335,9 @@ public class Folder extends PFComponent {
 
                         // Advise the controller of the problem.
                         getController().remoteMassDeletionDetected(
-                            new RemoteMassDeletionEvent(currentInfo,
-                                    from.getInfo(), delPercentage, originalName,
-                                    syncProfile.getProfileName()));
+                            new RemoteMassDeletionEvent(currentInfo, from
+                                .getInfo(), delPercentage, originalName,
+                                syncProfile.getProfileName()));
                     }
                 }
             }

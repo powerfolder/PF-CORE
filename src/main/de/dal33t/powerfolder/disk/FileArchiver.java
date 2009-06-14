@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.disk;
 
 import java.io.File;
+import java.io.IOException;
 
 import de.dal33t.powerfolder.light.FileInfo;
 
@@ -43,5 +44,6 @@ public interface FileArchiver {
      *            given in the source parameter. Otherwise it <b>may</b> keep or
      *            delete the file.
      */
-    void archive(FileInfo fileInfo, File source, boolean forcekeepSource);
+    void archive(FileInfo fileInfo, File source, boolean forcekeepSource)
+        throws IOException;
 }

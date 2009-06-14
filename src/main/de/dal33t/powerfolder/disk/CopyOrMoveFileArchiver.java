@@ -21,7 +21,6 @@ package de.dal33t.powerfolder.disk;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.light.FileInfo;
@@ -49,6 +48,7 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
     }
 
     public void archive(FileInfo fileInfo, File source, boolean forceKeepSource)
+        throws IOException
     {
         Reject.notNull(fileInfo, "fileInfo");
         Reject.notNull(source, "source");
@@ -61,7 +61,8 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
             return;
         }
 
-        if (target.getParentFile().mkdirs()) {
+        if (target.getParentFile().exists() || target.getParentFile().mkdirs())
+        {
             boolean tryCopy = forceKeepSource;
             if (!forceKeepSource) {
                 if (!source.renameTo(target)) {
@@ -71,14 +72,11 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
                 }
             }
             if (tryCopy) {
-                try {
-                    FileUtils.copyFile(source, target);
-                } catch (IOException e) {
-                    log.log(Level.SEVERE, "Failed to copy " + source, e);
-                }
+                FileUtils.copyFile(source, target);
             }
         } else {
-            log.severe("Failed to create directory: " + target.getParent());
+            throw new IOException("Failed to create directory: "
+                + target.getParent());
         }
     }
 
