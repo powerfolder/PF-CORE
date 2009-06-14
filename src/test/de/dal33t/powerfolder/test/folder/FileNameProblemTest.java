@@ -46,11 +46,11 @@ public class FileNameProblemTest extends TestCase {
 
         // controll chars
         for (int i = 0; i <= 31; i++) {
-            assertFalse(FilenameProblemHelper.containsIllegalWindowsChars(((char) i)
+            assertFalse(FilenameProblemHelper.containsIllegalWindowsChars((char) i
                 + "123"));
         }
         // >=32 is no controll char
-        assertFalse(FilenameProblemHelper.containsIllegalWindowsChars(((char) 32)
+        assertFalse(FilenameProblemHelper.containsIllegalWindowsChars((char) 32
             + "123"));
 
         // reserved windows words like AUX (extentions behind it are also not
@@ -107,16 +107,15 @@ public class FileNameProblemTest extends TestCase {
         try {
             boolean foundMethod = false;
             Method[] methods = FilenameProblemHelper.class.getDeclaredMethods();
-            for (int i = 0; i < methods.length; ++i) {
-                Method method = methods[i];
+            for (Method method : methods) {
                 if (method.getName().equals("stripExtension")) {
                     foundMethod = true;
                     method.setAccessible(true);
                     // null because it's a static method
                     assertEquals("test", (String) method.invoke(null,
-                        new Object[]{"test.text"}));
+                            "test.text"));
                     assertEquals("test", (String) method.invoke(null,
-                        new Object[]{"test"}));
+                            "test"));
                     break;
                 }
             }

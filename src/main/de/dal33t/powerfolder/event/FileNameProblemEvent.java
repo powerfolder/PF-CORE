@@ -23,15 +23,14 @@ import java.util.EventObject;
 import java.util.List;
 import java.util.Map;
 
-import de.dal33t.powerfolder.disk.FilenameProblemHelper;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.ScanResult;
-import de.dal33t.powerfolder.disk.FilenameProblem;
+import de.dal33t.powerfolder.disk.problem.Problem;
 import de.dal33t.powerfolder.light.FileInfo;
 
 public class FileNameProblemEvent extends EventObject {
     private ScanResult scanResult;
-    private Map<FileInfo, List<FilenameProblem>> problems;
+    private Map<FileInfo, List<Problem>> problems;
 
     public FileNameProblemEvent(Folder folder, ScanResult scanResult) {
         this(folder, scanResult.getProblemFiles());
@@ -39,7 +38,7 @@ public class FileNameProblemEvent extends EventObject {
     }
 
     public FileNameProblemEvent(Folder folder,
-        Map<FileInfo, List<FilenameProblem>> problems)
+        Map<FileInfo, List<Problem>> problems)
     {
         super(folder);
         this.problems = problems;
@@ -49,7 +48,7 @@ public class FileNameProblemEvent extends EventObject {
         return scanResult;
     }
 
-    public Map<FileInfo, List<FilenameProblem>> getProblems() {
+    public Map<FileInfo, List<Problem>> getProblems() {
         return problems;
     }
 

@@ -32,6 +32,7 @@ import org.apache.commons.io.FileUtils;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.FilenameProblemHelper;
 import de.dal33t.powerfolder.disk.*;
+import de.dal33t.powerfolder.disk.problem.Problem;
 import de.dal33t.powerfolder.event.FileNameProblemEvent;
 import de.dal33t.powerfolder.event.FileNameProblemHandler;
 import de.dal33t.powerfolder.light.FileInfo;
@@ -82,17 +83,17 @@ public class TestFileNameProblemUI {
         fileInfoList.add(FileInfo.getTemplate(folderInfo, "?hhh."));
         fileInfoList.add(FileInfo.getTemplate(folderInfo, "lowercase"));
         fileInfoList.add(FileInfo.getTemplate(folderInfo, "LOWERCASE"));
-        Map<FileInfo, List<FilenameProblem>> problemFiles = getProblems(fileInfoList);
+        Map<FileInfo, List<Problem>> problemFiles = getProblems(fileInfoList);
         scanResult.setProblemFiles(problemFiles);
         handler.fileNameProblemsDetected(new FileNameProblemEvent(folder,
             scanResult));
         // controller.shutdown();
     }
 
-    private Map<FileInfo, List<FilenameProblem>> getProblems(
+    private Map<FileInfo, List<Problem>> getProblems(
         Collection<FileInfo> files)
     {
-        Map<FileInfo, List<FilenameProblem>> p = new HashMap<FileInfo, List<FilenameProblem>>();
+        Map<FileInfo, List<Problem>> p = new HashMap<FileInfo, List<Problem>>();
         for (FileInfo fileInfo : files) {
             p.put(fileInfo, FilenameProblemHelper.getProblems(fileInfo));
         }

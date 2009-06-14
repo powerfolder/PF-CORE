@@ -20,7 +20,6 @@
 package de.dal33t.powerfolder.ui.information.folder.problems;
 
 import de.dal33t.powerfolder.ui.render.SortedTableHeaderRenderer;
-import de.dal33t.powerfolder.ui.information.folder.members.MembersTableModel;
 import de.dal33t.powerfolder.disk.problem.Problem;
 import de.dal33t.powerfolder.util.ui.ColorUtil;
 import de.dal33t.powerfolder.util.Format;

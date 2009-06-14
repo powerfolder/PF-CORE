@@ -20,19 +20,27 @@
 package de.dal33t.powerfolder.disk.problem;
 
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.ui.WikiLinks;
 import de.dal33t.powerfolder.util.Translation;
 
 /**
- * Problem where a folder has not been synchronized in n days.
+ * Filename too long on various systems (most have a 255 limit)
  */
-public class UnsynchronizedFolderProblem extends Problem {
+public class TooLongFilenameProblem extends SolvableProblem {
 
     private final String description;
+    private final FileInfo fileInfo;
 
-    public UnsynchronizedFolderProblem(FolderInfo folderInfo, int days) {
+    public TooLongFilenameProblem(FileInfo fileInfo) {
+        this.fileInfo = fileInfo;
+        // @todo hghg real description
         description = Translation.getTranslation("folder_problem.unsynchronized",
-                folderInfo.name, days);
+                fileInfo.getFilenameOnly());
+    }
+
+    public FileInfo getFileInfo() {
+        return fileInfo;
     }
 
     public String getDescription() {
@@ -40,6 +48,12 @@ public class UnsynchronizedFolderProblem extends Problem {
     }
 
     public String getWikiLinkKey() {
+        // @todo hghg real link
         return WikiLinks.PROBLEM_UNSYNCED;
+    }
+
+    Runnable solution() {
+        // @todo hghg real solution
+        return null;
     }
 }

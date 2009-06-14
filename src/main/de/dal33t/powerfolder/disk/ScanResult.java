@@ -28,6 +28,7 @@ import java.util.Map;
 
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.disk.problem.Problem;
 
 /**
  * This class lists all the differences between the database of files in a
@@ -55,7 +56,7 @@ public class ScanResult {
      */
     Collection<FileInfo> restoredFiles;
     /** files with potential problems in filenames (like 2 long or illegal chars) */
-    Map<FileInfo, List<FilenameProblem>> problemFiles;
+    Map<FileInfo, List<Problem>> problemFiles;
     volatile int totalFilesCount = 0;
 
     public ScanResult(ResultState result) {
@@ -77,7 +78,7 @@ public class ScanResult {
             restoredFiles = Collections
                 .synchronizedList(new ArrayList<FileInfo>());
             problemFiles = Collections
-                .synchronizedMap(new HashMap<FileInfo, List<FilenameProblem>>());
+                .synchronizedMap(new HashMap<FileInfo, List<Problem>>());
         }
     }
 
@@ -120,7 +121,7 @@ public class ScanResult {
     // this.newFiles = new ArrayList<FileInfo>(newFiles);
     // }
 
-    public Map<FileInfo, List<FilenameProblem>> getProblemFiles() {
+    public Map<FileInfo, List<Problem>> getProblemFiles() {
         return Collections.unmodifiableMap(problemFiles);
     }
 
@@ -129,7 +130,7 @@ public class ScanResult {
      * @deprecated for tests only
      */
     public void setProblemFiles(
-        Map<FileInfo, List<FilenameProblem>> problemFiles)
+        Map<FileInfo, List<Problem>> problemFiles)
     {
         this.problemFiles = problemFiles;
     }

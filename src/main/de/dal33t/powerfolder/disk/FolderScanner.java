@@ -37,6 +37,8 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.disk.ScanResult.ResultState;
+import de.dal33t.powerfolder.disk.problem.Problem;
+import de.dal33t.powerfolder.disk.problem.DuplicateFilenameProblem;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Reject;
@@ -354,14 +356,14 @@ public class FolderScanner extends PFComponent {
         Map<String, FileInfo> lowerCaseNames)
     {
         for (FileInfo fileInfo : files) {
-            List<FilenameProblem> problemList = null;
+            List<Problem> problemList = null;
 
             // #836
             if (!OSUtil.isWindowsSystem()) {
                 if (lowerCaseNames.containsKey(fileInfo.getLowerCaseName())) {
-                    FilenameProblem problem = new FilenameProblem(fileInfo,
+                    Problem problem = new DuplicateFilenameProblem(fileInfo,
                         lowerCaseNames.get(fileInfo.getLowerCaseName()));
-                    problemList = new ArrayList<FilenameProblem>();
+                    problemList = new ArrayList<Problem>();
                     problemList.add(problem);
                 } else {
                     lowerCaseNames.put(fileInfo.getLowerCaseName(), fileInfo);
@@ -370,7 +372,7 @@ public class FolderScanner extends PFComponent {
 
             if (FilenameProblemHelper.hasProblems(fileInfo.getFilenameOnly())) {
                 if (problemList == null) {
-                    problemList = new ArrayList<FilenameProblem>();
+                    problemList = new ArrayList<Problem>();
                 }
                 problemList.addAll(FilenameProblemHelper.getProblems(fileInfo));
 

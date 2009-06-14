@@ -32,9 +32,9 @@ public abstract class Problem {
         date = new Date();
     }
 
-    abstract String getDescription();
+    public abstract String getDescription();
 
-    abstract String getWikiLinkKey();
+    public abstract String getWikiLinkKey();
 
     public Date getDate() {
         return date;

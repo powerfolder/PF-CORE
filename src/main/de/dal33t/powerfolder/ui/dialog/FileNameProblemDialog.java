@@ -29,7 +29,7 @@ import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.disk.FilenameProblemHelper;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.ScanResult;
-import de.dal33t.powerfolder.disk.FilenameProblem;
+import de.dal33t.powerfolder.disk.problem.Problem;
 import de.dal33t.powerfolder.event.FileNameProblemEvent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.Reject;
@@ -58,29 +58,29 @@ import java.util.Map;
  */
 public class FileNameProblemDialog extends PFUIComponent {
 
-    private String[] columns = new String[]{
+    private enum Solution {
+        NOTHING, RENAME, ADD_TO_IGNORE
+    }
+
+    private static final String[] COLUMNS = {
         Translation.getTranslation("file_list.name"),
         Translation.getTranslation("general.description"),
         Translation.getTranslation("filename_problem.dialog.solution")};
 
-    private int option = -1;
+    private static final int rowHeigth = 65;
+
     public static final int OK = 1;
     public static final int CANCEL = 2;
     private static final int FILENAME_COLUMN = 0;
     private static final int PROBLEM_COLUMN = 1;
     private static final int SOLUTION_COLUMN = 2;
 
-    private final int rowHeigth = 65;
-
+    private int option = -1;
     private JDialog dialog;
     private JPanel panel;
     private JScrollPane tableScroller;
     private JPanel toolbar;
     private JCheckBox neverAskAgainJCheckBox;
-
-    private enum Solution {
-        NOTHING, RENAME, ADD_TO_IGNORE
-    }
 
     private Map<FileInfo, Solution> solutionsMap;
 
@@ -91,8 +91,6 @@ public class FileNameProblemDialog extends PFUIComponent {
     private List<FileInfo> problemList;
 
     private FileNameProblemEvent problemEvent;
-
-    private JTable table;
 
     public FileNameProblemDialog(Controller controller,
         FileNameProblemEvent problemEvent)
@@ -213,7 +211,7 @@ public class FileNameProblemDialog extends PFUIComponent {
     private void initComponents() {
         neverAskAgainJCheckBox = new JCheckBox(Translation
             .getTranslation("general.neverAskAgain"));
-        table = new JTable(new ProblemTableModel());
+        JTable table = new JTable(new ProblemTableModel());
         ProblemTableCellRenderer problemTableCellRenderer = new ProblemTableCellRenderer();
         table.setDefaultRenderer(Object.class, problemTableCellRenderer);
         table.setDefaultEditor(Object.class, problemTableCellRenderer);
@@ -247,19 +245,16 @@ public class FileNameProblemDialog extends PFUIComponent {
         for (FileInfo fileInfo : solutionsMap.keySet()) {
             Solution solution = solutionsMap.get(fileInfo);
             switch (solution) {
-                case NOTHING : {
+                case NOTHING :
                     break;
-                }
-                case RENAME : {
+                case RENAME :
                     doRename(fileInfo);
                     break;
-                }
-                case ADD_TO_IGNORE : {
+                case ADD_TO_IGNORE :
                     Folder folder = getController().getFolderRepository()
                         .getFolder(fileInfo.getFolderInfo());
                     folder.getDiskItemFilter().addPattern(fileInfo.getName());
                     break;
-                }
                 default :
                     throw new IllegalStateException("illegal solution");
             }
@@ -271,12 +266,15 @@ public class FileNameProblemDialog extends PFUIComponent {
      * not solved after first solution
      */
     private void doRename(FileInfo fileInfo) {
-        List<FilenameProblem> problems = problemEvent.getProblems().get(
+        List<Problem> problems = problemEvent.getProblems().get(
             fileInfo);
         // FIXME: Solve only the first problem?!?!
-        FilenameProblem problem = problems.get(0);
-        FileInfo fileInfoSolved = FilenameProblemHelper.solve(getController(), problem);
-        FileInfo problemFileInfo = problem.getFileInfo();
+        Problem problem = problems.get(0);
+        // @todo harry fix
+//        FileInfo fileInfoSolved = FilenameProblemHelper.solve(getController(), problem);
+        FileInfo fileInfoSolved = null;
+//        FileInfo problemFileInfo = problem.getFileInfo();
+        FileInfo problemFileInfo = null;
         if (fileInfoSolved != null) {
             int count = 1;
             while (fileInfoSolved != null
@@ -286,7 +284,8 @@ public class FileNameProblemDialog extends PFUIComponent {
                 if (problems.size() >= count++) {
                     problem = problems.get(count);
                     // make sure to use the correct new filename
-                    fileInfoSolved = FilenameProblemHelper.solve(getController(), problem);
+                    // @todo harryfix 
+//                    fileInfoSolved = FilenameProblemHelper.solve(getController(), problem);
                 } else {
                     break;
                 }
@@ -329,7 +328,7 @@ public class FileNameProblemDialog extends PFUIComponent {
     private class ProblemTableModel extends AbstractTableModel {
 
         public int getColumnCount() {
-            return columns.length;
+            return COLUMNS.length;
         }
 
         public int getRowCount() {
@@ -342,7 +341,7 @@ public class FileNameProblemDialog extends PFUIComponent {
 
         @Override
         public String getColumnName(int columnIndex) {
-            return columns[columnIndex];
+            return COLUMNS[columnIndex];
         }
 
         @Override
@@ -373,20 +372,17 @@ public class FileNameProblemDialog extends PFUIComponent {
         {
             FileInfo fileInfo = (FileInfo) value;
             switch (column) {
-                case FILENAME_COLUMN : {
+                case FILENAME_COLUMN :
                     JLabel label = new JLabel(fileInfo.getName());
                     label.setBorder(Borders
                         .createEmptyBorder("3dlu, 3dlu, 3dlu, 3dlu"));
                     label.setToolTipText(fileInfo.getName());
                     return label;
-                }
-                case PROBLEM_COLUMN : {
+                case PROBLEM_COLUMN :
                     return getProblemComponent(fileInfo);
 
-                }
-                case SOLUTION_COLUMN : {
+                case SOLUTION_COLUMN :
                     return getSolutionComponent(fileInfo);
-                }
             }
             return null;
         }
@@ -454,62 +450,43 @@ public class FileNameProblemDialog extends PFUIComponent {
 
         private Component getProblemComponent(FileInfo fileInfo) {
             // display only first problem
-            FilenameProblem problem = problemEvent.getProblems().get(fileInfo)
-                .get(0);
-            JLabel label = SimpleComponentFactory.createLabel(problem
-                .shortDescription());
-            label.setBackground(Color.WHITE);
-            label.setToolTipText(getTooltip(fileInfo));
-            label
-                .setBorder(Borders.createEmptyBorder("3dlu, 3dlu, 3dlu, 3dlu"));
-            return label;
-            // VisualLinkLabel detailsLabel = new VisualLinkLabel("details");
-            // FormLayout layout = new FormLayout("pref:grow", "pref, pref");
-            // CellConstraints cc = new CellConstraints();
-            // PanelBuilder builder = new PanelBuilder(layout);
-            // builder.setBorder(Borders
-            // .createEmptyBorder("3dlu, 3dlu, 3dlu, 3dlu"));
-            // builder.setBackground(Color.WHITE);
-            // builder.add(label, cc.xy(1, 1));
-            // builder.add(detailsLabel, cc.xy(1, 2));
-            // JPanel probComponent = builder.getPanel();
-            // probComponent.setToolTipText(getTooltip(fileInfo));
-            // return probComponent;
+//            FilenameProblem problem = problemEvent.getProblems().get(fileInfo)
+//                .get(0);
+//            JLabel label = SimpleComponentFactory.createLabel(problem
+//                .shortDescription());
+//            label.setBackground(Color.WHITE);
+//            label.setToolTipText(getTooltip(fileInfo));
+//            label
+//                .setBorder(Borders.createEmptyBorder("3dlu, 3dlu, 3dlu, 3dlu"));
+//            return label;
+            return null;
         }
 
-        private String getTooltip(FileInfo fileInfo) {
-            List<FilenameProblem> problemDesctiptions = problemEvent
-                .getProblems().get(fileInfo);
-            String tooltip = "";
-            String line = "";
-            for (FilenameProblem aProblem : problemDesctiptions) {
-                tooltip += line + aProblem.describeProblem();
-                line = "<hr>";
-            }
-            int index = tooltip.indexOf("\n");
-            while (index != -1) {
-                String before = tooltip.substring(0, index);
-                String after = tooltip.substring(index + 1, tooltip.length());
-                tooltip = before + "<br>" + after;
-                index = tooltip.indexOf("\n");
-            }
-            tooltip = "<html>" + tooltip + "</html>";
-            return tooltip;
-        }
-
-        // private class VisualLinkLabel extends AntialiasedLabel {
-        // public VisualLinkLabel(String text) {
-        // super("<html><font color=\"#00000\"><a href=\"\">" + text
-        // + "</a></font></html>");
-        // setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        // }
-        // }
+//        private String getTooltip(FileInfo fileInfo) {
+//            List<FilenameProblem> problemDesctiptions = problemEvent
+//                .getProblems().get(fileInfo);
+//            String tooltip = "";
+//            String line = "";
+//            for (FilenameProblem aProblem : problemDesctiptions) {
+//                tooltip += line + aProblem.describeProblem();
+//                line = "<hr>";
+//            }
+//            int index = tooltip.indexOf("\n");
+//            while (index != -1) {
+//                String before = tooltip.substring(0, index);
+//                String after = tooltip.substring(index + 1, tooltip.length());
+//                tooltip = before + "<br>" + after;
+//                index = tooltip.indexOf("\n");
+//            }
+//            tooltip = "<html>" + tooltip + "</html>";
+//            return tooltip;
+//        }
 
         public Object getCellEditorValue() {
             return null;
         }
 
-        public Component getTableCellEditorComponent(JTable aTable,
+        public Component getTableCellEditorComponent(JTable table,
             Object value, boolean isSelected, int row, int column)
         {
             if (!(column == PROBLEM_COLUMN || column == SOLUTION_COLUMN)) {

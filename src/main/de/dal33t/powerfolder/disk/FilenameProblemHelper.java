@@ -23,45 +23,21 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.io.File;
 
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.disk.problem.*;
 
 /**
  * Identifies problems with filenames. Note the directory names mostly have the
  * same restrictions!<BR>
- * FIXME this should be fixed for directries to, now only the filename part is
- * handled<BR>
  * Ref: <A HREF="http://en.wikipedia.org/wiki/Filename">Wikepedia/Filename</A>
  * <p/>
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  */
 public class FilenameProblemHelper {
 
-    /** There is a duplicate filename (but with different case) */
-    public static final int DUPLICATE_FOUND = 0;
-
-    /** / is illegal on Unix */
-    public static final int CONTAINS_ILLEGAL_LINUX_CHARS = 1;
-
-    /** : and / are illegal on Mac OSX */
-    public static final int CONTAINS_ILLEGAL_MACOSX_CHARS = 2;
-
-    /** 0-31 and |\?*<":>/ */
-    public static final int CONTAINS_ILLEGAL_WINDOWS_CHARS = 3;
-
-    /** filename in winds may not end with . and space ( ) */
-    public static final int ENDS_WITH_ILLEGAL_WINDOWS_CHARS = 4;
-
-    /** like AUX (excludes the extension) */
-    public static final int IS_RESERVED_WINDOWS_WORD = 5;
-
-    /** to long on various systems (most have a 255 limit) */
-    public static final int TOO_LONG = 6;
-
     /**
-     * all names the are not allowed on windows
+     * All names the are not allowed on windows
      */
     private static final String[] RESERVED_WORDS = {"CON", "PRN", "AUX",
             "CLOCK$", "NUL", "COM0", "COM1", "COM2", "COM3", "COM4", "COM5",
@@ -69,7 +45,7 @@ public class FilenameProblemHelper {
             "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"};
 
     /**
-     * for performace reasons the reserved filenames are put in a hashmap
+     * For performace reasons the reserved filenames are put in a hashmap
      */
     private static final Map<String, String> RESERVED_WORDS_HASH_MAP;
 
@@ -80,6 +56,12 @@ public class FilenameProblemHelper {
         }
     }
 
+    /**
+     * See if there are any problems.
+     *
+     * @param filename
+     * @return
+     */
     public static boolean hasProblems(String filename) {
         return containsIllegalLinuxChar(filename)
                 || containsIllegalMacOSXChar(filename)
@@ -88,46 +70,45 @@ public class FilenameProblemHelper {
                 || isReservedWindowsFilename(filename) || isToLong(filename);
     }
 
-    public static List<FilenameProblem> getProblems(FileInfo fileInfo) {
+    /**
+     * Create problems for the file.
+     *
+     * @param fileInfo
+     * @return
+     */
+    public static List<Problem> getProblems(FileInfo fileInfo) {
         String filename = fileInfo.getFilenameOnly();
-        if (!hasProblems(filename)) {
-            throw new IllegalArgumentException(
-                    "filename must have problems before we can create the problem ;)");
-        }
-        List<FilenameProblem> returnValue = new ArrayList<FilenameProblem>();
+        List<Problem> returnValue = new ArrayList<Problem>();
+
         if (containsIllegalLinuxChar(filename)) {
-            returnValue.add(new FilenameProblem(fileInfo,
-                    CONTAINS_ILLEGAL_LINUX_CHARS));
+            returnValue.add(new IllegalLinuxCharsFilenameProblem(fileInfo));
         }
 
         if (containsIllegalMacOSXChar(filename)) {
-            returnValue.add(new FilenameProblem(fileInfo,
-                    CONTAINS_ILLEGAL_MACOSX_CHARS));
+            returnValue.add(new IllegalMacosxCharsFilenameProblem(fileInfo));
         }
 
         if (containsIllegalWindowsChars(filename)) {
-            returnValue.add(new FilenameProblem(fileInfo,
-                    CONTAINS_ILLEGAL_WINDOWS_CHARS));
+            returnValue.add(new IllegalWindowsCharsFilenameProblem(fileInfo));
         }
 
         if (endsWithIllegalWindowsChar(filename)) {
-            returnValue.add(new FilenameProblem(fileInfo,
-                    ENDS_WITH_ILLEGAL_WINDOWS_CHARS));
+            returnValue.add(new EndIllegalCharsFilenameProblem(fileInfo));
         }
 
         if (isReservedWindowsFilename(filename)) {
-            returnValue.add(new FilenameProblem(fileInfo,
-                    IS_RESERVED_WINDOWS_WORD));
+            returnValue.add(new ReservedWordFilenameProblem(fileInfo));
         }
 
         if (isToLong(filename)) {
-            returnValue.add(new FilenameProblem(fileInfo, TOO_LONG));
+            returnValue.add(new TooLongFilenameProblem(fileInfo));
         }
         return returnValue;
     }
 
     /**
      * Will also return true if file is called AUX.txt or aux!
+     * Note: Only public for test access.
      */
     public static boolean isReservedWindowsFilename(String filename) {
         return RESERVED_WORDS_HASH_MAP.containsKey(stripExtension(filename)
@@ -211,145 +192,144 @@ public class FilenameProblemHelper {
         return filename.length() > 255;
     }
 
-    /**
-     * This method tryes to rename the file to a unique filename without
-     * problems.
-     *
-     * @return a new FileInfo object or null if solving fails.
-     */
-    public static FileInfo solve(Controller controller, FilenameProblem problem) {
+//    /**
+//     * This method tryes to rename the file to a unique filename without
+//     * problems.
+//     *
+//     * @return a new FileInfo object or null if solving fails.
+//     */
+//    public static FileInfo solve(Controller controller, Problem problem) {
+//
+//        FileInfo fileInfo = problem.getFileInfo();
+//
+//        Folder folder = controller.getFolderRepository().getFolder(
+//            fileInfo.getFolderInfo());
+//        File file = folder.getDiskFile(fileInfo);
+//        if (!file.exists()) {
+//            return null;
+//        }
+//
+//        String newName = null;
+//        switch (filenameProblemType) {
+//            case CONTAINS_ILLEGAL_LINUX_CHARS :
+//                // this wont happen now anyway (we will fail te read those files
+//                // correct)
+//                // String newName = removeChars(fileInfo.getFilenameOnly(), "/"
+//                // );
+//                // new File(folder.getLocalBase(),
+//                // fileInfo.getLocationInFolder() + "/");
+//                break;
+//            case CONTAINS_ILLEGAL_MACOSX_CHARS :
+//                newName = removeChars(fileInfo.getFilenameOnly(), ":/");
+//                newName = makeUniqueAndValid(controller, newName, fileInfo);
+//                break;
+//            case CONTAINS_ILLEGAL_WINDOWS_CHARS :
+//                newName = removeChars(fileInfo.getFilenameOnly(), "|\\?*<\":>/");
+//                newName = makeUniqueAndValid(controller, newName, fileInfo);
+//                break;
+//            case ENDS_WITH_ILLEGAL_WINDOWS_CHARS : // add a -1 to the filename
+//                newName = fileInfo.getFilenameOnly() + "-1";
+//                int count = 2;
+//                while (!isUnique(controller, newName, fileInfo)) {
+//                    newName = fileInfo.getFilenameOnly() + '-' + count++;
+//                }
+//                break;
+//            case IS_RESERVED_WINDOWS_WORD :
+//                newName = addSuffix(controller, fileInfo);
+//                break;
+//            case TOO_LONG :  // shorten till unique filename found
+//                newName = fileInfo.getFilenameOnly().substring(0, 254);
+//                int length = 253;
+//                while (!isUnique(controller, newName, fileInfo)) {
+//                    newName = fileInfo.getFilenameOnly().substring(0, length--);
+//                }
+//                break;
+//            case DUPLICATE_FOUND :
+//                newName = addSuffix(controller, fileInfo);
+//                break;
+//            default :
+//                throw new IllegalStateException("invalid FilenameProblemType: "
+//                    + filenameProblemType);
+//        }
+//        if (newName == null) {
+//            return null;
+//        }
+//
+//        File newFile = new File(folder.getLocalBase(), fileInfo
+//            .getLocationInFolder()
+//            + '/' + newName);
+//        if (file.renameTo(newFile)) {
+//            return FileInfo.newFile(folder, newFile,
+//                controller.getMySelf().getInfo());
+//        }
+//        return null;
+//    }
 
-        FileInfo fileInfo = problem.getFileInfo();
-        int filenameProblemType = problem.getFilenameProblemType();
+//    private static String removeChars(String filenameArg, String charsToRemove) {
+//        String filename = filenameArg;
+//        for (int i = 0; i < charsToRemove.length(); i++) {
+//            char c = charsToRemove.charAt(i);
+//            while (filename.indexOf(c) != -1) {
+//                int index = filename.indexOf(c);
+//                filename = filename.substring(0, index)
+//                    + filename.substring(index + 1, filename.length());
+//            }
+//        }
+//        return filename;
+//    }
 
-        Folder folder = controller.getFolderRepository().getFolder(
-            fileInfo.getFolderInfo());
-        File file = folder.getDiskFile(fileInfo);
-        if (!file.exists()) {
-            return null;
-        }
-
-        String newName = null;
-        switch (filenameProblemType) {
-            case CONTAINS_ILLEGAL_LINUX_CHARS :
-                // this wont happen now anyway (we will fail te read those files
-                // correct)
-                // String newName = removeChars(fileInfo.getFilenameOnly(), "/"
-                // );
-                // new File(folder.getLocalBase(),
-                // fileInfo.getLocationInFolder() + "/");
-                break;
-            case CONTAINS_ILLEGAL_MACOSX_CHARS :
-                newName = removeChars(fileInfo.getFilenameOnly(), ":/");
-                newName = makeUniqueAndValid(controller, newName, fileInfo);
-                break;
-            case CONTAINS_ILLEGAL_WINDOWS_CHARS :
-                newName = removeChars(fileInfo.getFilenameOnly(), "|\\?*<\":>/");
-                newName = makeUniqueAndValid(controller, newName, fileInfo);
-                break;
-            case ENDS_WITH_ILLEGAL_WINDOWS_CHARS : // add a -1 to the filename
-                newName = fileInfo.getFilenameOnly() + "-1";
-                int count = 2;
-                while (!isUnique(controller, newName, fileInfo)) {
-                    newName = fileInfo.getFilenameOnly() + '-' + count++;
-                }
-                break;
-            case IS_RESERVED_WINDOWS_WORD :
-                newName = addSuffix(controller, fileInfo);
-                break;
-            case TOO_LONG :  // shorten till unique filename found
-                newName = fileInfo.getFilenameOnly().substring(0, 254);
-                int length = 253;
-                while (!isUnique(controller, newName, fileInfo)) {
-                    newName = fileInfo.getFilenameOnly().substring(0, length--);
-                }
-                break;
-            case DUPLICATE_FOUND :
-                newName = addSuffix(controller, fileInfo);
-                break;
-            default :
-                throw new IllegalStateException("invalid FilenameProblemType: "
-                    + filenameProblemType);
-        }
-        if (newName == null) {
-            return null;
-        }
-
-        File newFile = new File(folder.getLocalBase(), fileInfo
-            .getLocationInFolder()
-            + '/' + newName);
-        if (file.renameTo(newFile)) {
-            return FileInfo.newFile(folder, newFile,
-                controller.getMySelf().getInfo());
-        }
-        return null;
-    }
-
-    private static String removeChars(String filenameArg, String charsToRemove) {
-        String filename = filenameArg;
-        for (int i = 0; i < charsToRemove.length(); i++) {
-            char c = charsToRemove.charAt(i);
-            while (filename.indexOf(c) != -1) {
-                int index = filename.indexOf(c);
-                filename = filename.substring(0, index)
-                    + filename.substring(index + 1, filename.length());
-            }
-        }
-        return filename;
-    }
-
-    private static String makeUniqueAndValid(Controller controller, String newNameArg, FileInfo fileInfo) {
-        StringBuilder newName = new StringBuilder(newNameArg);
-        if (newName.length() == 0) {
-            newName.append("-1");
-            int count = 2;
-            while (!isUnique(controller, newName.toString(), fileInfo)) {
-                newName.append("-" + count++);
-            }
-        } else {
-            int count = 1;
-            while (!isUnique(controller, newName.toString(), fileInfo)) {
-                newName.append("-" + count++);
-            }
-        }
-        return newName.toString();
-    }
+//    private static String makeUniqueAndValid(Controller controller, String newNameArg, FileInfo fileInfo) {
+//        StringBuilder newName = new StringBuilder(newNameArg);
+//        if (newName.length() == 0) {
+//            newName.append("-1");
+//            int count = 2;
+//            while (!isUnique(controller, newName.toString(), fileInfo)) {
+//                newName.append("-" + count++);
+//            }
+//        } else {
+//            int count = 1;
+//            while (!isUnique(controller, newName.toString(), fileInfo)) {
+//                newName.append("-" + count++);
+//            }
+//        }
+//        return newName.toString();
+//    }
 
     /**
      * add a -1 (or -2 etc if filename not unique) to the filename part (before
      * the extension)
      */
-    private static String addSuffix(Controller controller, FileInfo fileInfo) {
-        int index = fileInfo.getFilenameOnly().lastIndexOf('.');
-        if (index > 0) { // extention found
-            String extension = fileInfo.getFilenameOnly().substring(index,
-                fileInfo.getFilenameOnly().length());
-            String newName = stripExtension(fileInfo.getFilenameOnly()) + "-1"
-                + extension;
-            int count = 2;
-            while (!isUnique(controller, newName, fileInfo)) {
-                newName = stripExtension(fileInfo.getFilenameOnly()) + '-'
-                    + count++ + extension;
-            }
-            return newName;
-        }
-        // no extention
-        String newName = fileInfo.getFilenameOnly() + "-1";
-        int count = 2;
-        while (!isUnique(controller, newName, fileInfo)) {
-            newName = fileInfo.getFilenameOnly() + '-' + count++;
-        }
-        return newName;
-    }
+//    private static String addSuffix(Controller controller, FileInfo fileInfo) {
+//        int index = fileInfo.getFilenameOnly().lastIndexOf('.');
+//        if (index > 0) { // extention found
+//            String extension = fileInfo.getFilenameOnly().substring(index,
+//                fileInfo.getFilenameOnly().length());
+//            String newName = stripExtension(fileInfo.getFilenameOnly()) + "-1"
+//                + extension;
+//            int count = 2;
+//            while (!isUnique(controller, newName, fileInfo)) {
+//                newName = stripExtension(fileInfo.getFilenameOnly()) + '-'
+//                    + count++ + extension;
+//            }
+//            return newName;
+//        }
+//        // no extention
+//        String newName = fileInfo.getFilenameOnly() + "-1";
+//        int count = 2;
+//        while (!isUnique(controller, newName, fileInfo)) {
+//            newName = fileInfo.getFilenameOnly() + '-' + count++;
+//        }
+//        return newName;
+//    }
 
     /** unique if a file with that name does not exist */
-    private static boolean isUnique(Controller controller, String newName, FileInfo fileInfo) {
-        Folder folder = controller.getFolderRepository().getFolder(
-            fileInfo.getFolderInfo());
-        File newFile = new File(folder.getLocalBase(), fileInfo
-            .getLocationInFolder()
-            + '/' + newName);
-        return !newFile.exists();
-    }
+//    private static boolean isUnique(Controller controller, String newName, FileInfo fileInfo) {
+//        Folder folder = controller.getFolderRepository().getFolder(
+//            fileInfo.getFolderInfo());
+//        File newFile = new File(folder.getLocalBase(), fileInfo
+//            .getLocationInFolder()
+//            + '/' + newName);
+//        return !newFile.exists();
+//    }
 
 }
