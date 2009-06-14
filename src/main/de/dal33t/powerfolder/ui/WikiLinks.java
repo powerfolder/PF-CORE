@@ -34,5 +34,10 @@ public interface WikiLinks {
     String SETTINGS_DYN_DNS = "DYN-Dns";
     String SETTINGS_ADVANCED = "Settings-Advanced";
     String SETTINGS_PLUGIN = "Settings-Plugin";
-    String PROBLEM_UNSYNCED = "Unsynchronized-Folder";
+    String PROBLEM_UNSYNCED_FOLDER = "Unsynchronized-Folder";
+    String PROBLEM_DUPLICATE_FILENAME = "Duplicate-Filename";
+    String PROBLEM_ILLEGAL_END_CHARS = "Illegal-End-Chars";
+    String PROBLEM_ILLEGAL_CHARS = "Illegal-Chars";
+    String PROBLEM_RESERVED_WORD = "Reserved-Word";
+    String PROBLEM_FILENAME_TOO_LONG = "File-Name-Too-Long";
 }

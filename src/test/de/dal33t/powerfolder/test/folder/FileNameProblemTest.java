@@ -22,7 +22,7 @@ package de.dal33t.powerfolder.test.folder;
 import java.lang.reflect.Method;
 
 import junit.framework.TestCase;
-import de.dal33t.powerfolder.disk.FilenameProblemHelper;
+import de.dal33t.powerfolder.disk.problem.FilenameProblemHelper;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 

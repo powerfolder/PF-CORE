@@ -39,6 +39,7 @@ import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.disk.ScanResult.ResultState;
 import de.dal33t.powerfolder.disk.problem.Problem;
 import de.dal33t.powerfolder.disk.problem.DuplicateFilenameProblem;
+import de.dal33t.powerfolder.disk.problem.FilenameProblemHelper;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Reject;

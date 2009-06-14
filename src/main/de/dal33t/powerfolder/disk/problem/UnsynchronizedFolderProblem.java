@@ -40,6 +40,6 @@ public class UnsynchronizedFolderProblem extends Problem {
     }
 
     public String getWikiLinkKey() {
-        return WikiLinks.PROBLEM_UNSYNCED;
+        return WikiLinks.PROBLEM_UNSYNCED_FOLDER;
     }
 }

@@ -17,7 +17,7 @@
  *
  * $Id$
  */
-package de.dal33t.powerfolder.disk;
+package de.dal33t.powerfolder.disk.problem;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.disk.problem.*;
 
 /**
  * Identifies problems with filenames. Note the directory names mostly have the

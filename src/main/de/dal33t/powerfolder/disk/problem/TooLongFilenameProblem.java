@@ -19,7 +19,6 @@
  */
 package de.dal33t.powerfolder.disk.problem;
 
-import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.ui.WikiLinks;
 import de.dal33t.powerfolder.util.Translation;
@@ -34,8 +33,7 @@ public class TooLongFilenameProblem extends SolvableProblem {
 
     public TooLongFilenameProblem(FileInfo fileInfo) {
         this.fileInfo = fileInfo;
-        // @todo hghg real description
-        description = Translation.getTranslation("folder_problem.unsynchronized",
+        description = Translation.getTranslation("filename_problem.too_long",
                 fileInfo.getFilenameOnly());
     }
 
@@ -48,8 +46,7 @@ public class TooLongFilenameProblem extends SolvableProblem {
     }
 
     public String getWikiLinkKey() {
-        // @todo hghg real link
-        return WikiLinks.PROBLEM_UNSYNCED;
+        return WikiLinks.PROBLEM_FILENAME_TOO_LONG;
     }
 
     Runnable solution() {

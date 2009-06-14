@@ -30,7 +30,7 @@ import java.util.UUID;
 import org.apache.commons.io.FileUtils;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.disk.FilenameProblemHelper;
+import de.dal33t.powerfolder.disk.problem.FilenameProblemHelper;
 import de.dal33t.powerfolder.disk.*;
 import de.dal33t.powerfolder.disk.problem.Problem;
 import de.dal33t.powerfolder.event.FileNameProblemEvent;
