@@ -182,6 +182,9 @@ public class FilesTableModel extends PFComponent implements TableModel,
 
                     // Look for extra items in the selectedDiskItems list to insert.
                     List<DiskItem> selectedDiskItems = directories.get(selectedDirectory);
+                    if (selectedDiskItems == null) {
+                        selectedDiskItems = new ArrayList<DiskItem>();
+                    }
                     boolean changed = false;
                     for (DiskItem selectedDiskItem : selectedDiskItems) {
                         boolean b = false;
