@@ -16,7 +16,7 @@ public enum ArchiveMode {
             return new NullFileArchiver();
         }
     },
-    NORMAL_BACKUP("archive.full_backup") {
+    FULL_BACKUP("archive.full_backup") {
 
         @Override
         public FileArchiver getInstance(Folder f) {

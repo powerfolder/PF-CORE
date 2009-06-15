@@ -30,7 +30,7 @@ public class FileArchiverTest extends TwoControllerTestCase {
 
         FileInfo fib = fb.getKnowFilesAsArray()[0];
 
-        FileArchiver fa = ArchiveMode.NORMAL_BACKUP.getInstance(fb);
+        FileArchiver fa = ArchiveMode.FULL_BACKUP.getInstance(fb);
         try {
             fa.archive(fib, tb, false);
         } catch (IOException e) {
@@ -44,7 +44,7 @@ public class FileArchiverTest extends TwoControllerTestCase {
 
     public void testBackupOnDownload() {
         final Folder fb = getFolderAtBart();
-        fb.setArchiveMode(ArchiveMode.NORMAL_BACKUP);
+        fb.setArchiveMode(ArchiveMode.FULL_BACKUP);
 
         Folder fl = getFolderAtLisa();
         File tl = TestHelper.createRandomFile(fl.getLocalBase(), 1024);

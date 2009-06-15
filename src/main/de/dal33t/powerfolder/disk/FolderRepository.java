@@ -589,7 +589,13 @@ public class FolderRepository extends PFComponent implements Runnable {
             + folderMD5 + FOLDER_SETTINGS_ARCHIVE);
         ArchiveMode archiveMode;
         try {
-            archiveMode = ArchiveMode.valueOf(archiveSetting);
+            if (archiveSetting != null) {
+                archiveMode = ArchiveMode.valueOf(archiveSetting);
+            } else {
+                log.log(Level.WARNING, "ArchiveMode not set: " + archiveSetting
+                    + ", falling back to NO_BACKUP!");
+                archiveMode = ArchiveMode.NO_BACKUP;
+            }
         } catch (Exception e) {
             log.log(Level.WARNING, "Unsupported ArchiveMode: " + archiveSetting
                 + ", falling back to NO_BACKUP!");
