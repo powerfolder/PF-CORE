@@ -43,6 +43,8 @@ public interface FileArchiver {
      *            if this is true the archiver <b>must</b> not remove the file
      *            given in the source parameter. Otherwise it <b>may</b> keep or
      *            delete the file.
+     * @throws IOException
+     *             if the archiving failed
      */
     void archive(FileInfo fileInfo, File source, boolean forcekeepSource)
         throws IOException;

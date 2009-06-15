@@ -784,7 +784,10 @@ public class Folder extends PFComponent {
                         arch.archive(fInfo.getLocalFileInfo(getController()
                             .getFolderRepository()), targetFile, false);
                     } catch (IOException e) {
-                        logSevere(e);
+                        // Same behavior as below, on failure drop out
+                        // TODO Maybe raise folder-problem....
+                        logWarning("Unable to archive old file!", e);
+                        return false;
                     }
                 }
                 if (targetFile.exists() && !deleteFile(fInfo, targetFile)) {
