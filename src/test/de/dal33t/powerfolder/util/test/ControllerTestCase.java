@@ -26,6 +26,7 @@ import java.util.UUID;
 import junit.framework.TestCase;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
@@ -83,6 +84,7 @@ public abstract class ControllerTestCase extends TestCase {
         // Wait for initial maintenance
         // triggerAndWaitForInitialMaitenenace(controller);
         controller.getPreferences().putBoolean("createdesktopshortcuts", false);
+        PreferencesEntry.MASS_DELETE_PROTECTION.setValue(controller, false);
 
         System.out.println("Controller started");
     }
