@@ -24,5 +24,7 @@ package de.dal33t.powerfolder.disk.problem;
  */
 public abstract class SolvableProblem extends Problem {
 
-    abstract Runnable solution();
+    public abstract Runnable solution();
+
+    public abstract String getSolutionDescription();
 }

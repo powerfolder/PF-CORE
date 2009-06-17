@@ -49,8 +49,13 @@ public class TooLongFilenameProblem extends SolvableProblem {
         return WikiLinks.PROBLEM_FILENAME_TOO_LONG;
     }
 
-    Runnable solution() {
-        // @todo hghg real solution
+    public Runnable solution() {
+        // @todo harry real solution
         return null;
+    }
+
+    public String getSolutionDescription() {
+        // @todo harry real solution
+        return "TBA";
     }
 }

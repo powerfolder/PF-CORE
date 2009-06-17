@@ -49,8 +49,14 @@ public class EndIllegalCharsFilenameProblem extends SolvableProblem {
         return WikiLinks.PROBLEM_ILLEGAL_END_CHARS;
     }
 
-    Runnable solution() {
-        // @todo hghg real solution
+    public Runnable solution() {
+        // @todo harry real solution
         return null;
     }
+
+    public String getSolutionDescription() {
+        // @todo harry real solution
+        return "TBA";
+    }
+
 }

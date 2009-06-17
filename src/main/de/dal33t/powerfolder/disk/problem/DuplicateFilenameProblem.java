@@ -49,8 +49,13 @@ public class DuplicateFilenameProblem extends SolvableProblem {
         return WikiLinks.PROBLEM_DUPLICATE_FILENAME;
     }
 
-    Runnable solution() {
-        // @todo hghg real solution
+    public Runnable solution() {
+        // @todo harry real solution
         return null;
+    }
+
+    public String getSolutionDescription() {
+
+        return "TBA";
     }
 }

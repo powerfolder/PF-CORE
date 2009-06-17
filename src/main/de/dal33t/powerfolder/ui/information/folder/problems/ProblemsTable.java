@@ -92,8 +92,8 @@ public class ProblemsTable extends JTable {
                     setText(problem.getWikiLinkKey());
                 } else if (column == 3) {
                     if (problem instanceof SolvableProblem) {
-                        // @todo harry add action
-                        setText("TBA");
+                        SolvableProblem solvableProblem = (SolvableProblem) problem;
+                        setText(solvableProblem.getSolutionDescription());
                     } else {
                         setText(Translation.getTranslation(
                                 "folder_problem.table_model.not_available"));
