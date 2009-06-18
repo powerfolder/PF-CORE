@@ -63,8 +63,6 @@ import de.dal33t.powerfolder.disk.dao.FileInfoDAOHashMapImpl;
 import de.dal33t.powerfolder.disk.problem.Problem;
 import de.dal33t.powerfolder.disk.problem.ProblemListener;
 import de.dal33t.powerfolder.disk.problem.UnsynchronizedFolderProblem;
-import de.dal33t.powerfolder.event.FileNameProblemEvent;
-import de.dal33t.powerfolder.event.FileNameProblemHandler;
 import de.dal33t.powerfolder.event.FolderEvent;
 import de.dal33t.powerfolder.event.FolderListener;
 import de.dal33t.powerfolder.event.FolderMembershipEvent;
@@ -902,8 +900,8 @@ public class Folder extends PFComponent {
             synchronized (scanLock) {
                 result = scanner.scanFolder(this);
             }
-            scannerBusy = ScanResult.ResultState.BUSY.equals(result
-                .getResultState());
+            scannerBusy =
+                    ScanResult.ResultState.BUSY == result.getResultState();
             if (scannerBusy) {
                 logFine("Folder scanner is busy, waiting...");
                 try {
@@ -916,15 +914,15 @@ public class Folder extends PFComponent {
         } while (scannerBusy);
 
         try {
-            if (result.getResultState().equals(ScanResult.ResultState.SCANNED))
-            {
-                if (!result.getProblemFiles().isEmpty()) {
-                    FileNameProblemHandler handler = getController()
-                        .getFolderRepository().getFileNameProblemHandler();
-                    if (handler != null) {
-                        handler
-                            .fileNameProblemsDetected(new FileNameProblemEvent(
-                                this, result));
+            if (result.getResultState() == ScanResult.ResultState.SCANNED) {
+
+                // Push any file problems into the Folder's problems.
+                Map<FileInfo, List<Problem>> filenameProblems
+                        = result.getProblemFiles();
+                for (Map.Entry<FileInfo, List<Problem>> fileInfoListEntry
+                        : filenameProblems.entrySet()) {
+                    for (Problem problem : fileInfoListEntry.getValue()) {
+                        addProblem(problem);
                     }
                 }
                 commitScanResult(result);

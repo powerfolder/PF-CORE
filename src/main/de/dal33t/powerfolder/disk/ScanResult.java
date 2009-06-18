@@ -55,9 +55,11 @@ public class ScanResult {
      * are collected here.
      */
     Collection<FileInfo> restoredFiles;
+
     /** files with potential problems in filenames (like 2 long or illegal chars) */
-    Map<FileInfo, List<Problem>> problemFiles;
-    volatile int totalFilesCount = 0;
+    private Map<FileInfo, List<Problem>> problemFiles;
+    
+    private volatile int totalFilesCount;
 
     public ScanResult(ResultState result) {
         this(false);
@@ -151,12 +153,20 @@ public class ScanResult {
     // this.restoredFiles = new ArrayList<FileInfo>(restoredFiles);
     // }
 
+    public void putFileProblems(FileInfo fileInfo, List<Problem> problemList) {
+        problemFiles.put(fileInfo, problemList);
+    }
+
     public ResultState getResultState() {
         return resultState;
     }
 
     public void setResultState(ResultState resultState) {
         this.resultState = resultState;
+    }
+
+    public void incrementTotalFilesCount() {
+            totalFilesCount++;
     }
 
     public String toString() {

@@ -379,7 +379,7 @@ public class FolderScanner extends PFComponent {
 
             }
             if (problemList != null) {
-                currentScanResult.problemFiles.put(fileInfo, problemList);
+                currentScanResult.putFileProblems(fileInfo, problemList);
             }
         }
     }
@@ -532,7 +532,7 @@ public class FolderScanner extends PFComponent {
 
         // logFiner(
         // "scanFile: " + fileToScan + " curdirname: " + currentDirName);
-        currentScanResult.totalFilesCount++;
+        currentScanResult.incrementTotalFilesCount();
         String filename;
         if (currentDirName.length() == 0) {
             filename = fileToScan.getName();
