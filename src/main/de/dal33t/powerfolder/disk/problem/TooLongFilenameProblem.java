@@ -55,7 +55,6 @@ public class TooLongFilenameProblem extends SolvableProblem {
     }
 
     public String getSolutionDescription() {
-        // @todo harry real solution
-        return "TBA";
+        return Translation.getTranslation("filename_problem.too_long.soln_desc");
     }
 }

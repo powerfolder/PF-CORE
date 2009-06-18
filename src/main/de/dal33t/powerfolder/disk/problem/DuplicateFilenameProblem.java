@@ -55,7 +55,6 @@ public class DuplicateFilenameProblem extends SolvableProblem {
     }
 
     public String getSolutionDescription() {
-
-        return "TBA";
+       return Translation.getTranslation("filename_problem.duplicate.soln_desc");
     }
 }

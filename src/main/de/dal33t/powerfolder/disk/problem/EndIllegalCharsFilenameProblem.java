@@ -55,8 +55,7 @@ public class EndIllegalCharsFilenameProblem extends SolvableProblem {
     }
 
     public String getSolutionDescription() {
-        // @todo harry real solution
-        return "TBA";
+        return Translation.getTranslation("filename_problem.ends_with_illegal_char.soln_desc");
     }
 
 }

@@ -55,8 +55,7 @@ public class IllegalMacosxCharsFilenameProblem extends SolvableProblem {
     }
 
     public String getSolutionDescription() {
-        // @todo harry real solution
-        return "TBA";
+        return Translation.getTranslation("filename_problem.not_recommended_chars.soln_desc");
     }
     
 }

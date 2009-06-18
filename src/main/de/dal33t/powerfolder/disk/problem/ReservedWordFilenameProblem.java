@@ -55,8 +55,7 @@ public class ReservedWordFilenameProblem extends SolvableProblem {
     }
 
     public String getSolutionDescription() {
-        // @todo harry real solution
-        return "TBA";
+        return Translation.getTranslation("filename_problem.reserved_filename.soln_desc");
     }
 
 }
