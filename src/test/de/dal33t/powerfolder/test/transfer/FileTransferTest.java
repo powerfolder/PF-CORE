@@ -27,12 +27,9 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.disk.SyncProfile;
-import de.dal33t.powerfolder.event.FileNameProblemEvent;
-import de.dal33t.powerfolder.event.FileNameProblemHandler;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
 import de.dal33t.powerfolder.light.FileInfo;
@@ -40,7 +37,6 @@ import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
@@ -1208,12 +1204,6 @@ public class FileTransferTest extends TwoControllerTestCase {
      * TRAC #232
      */
     public void testFilenameCaseProblemDetection() {
-        MyFilenameProblemHandler lisasHandler = new MyFilenameProblemHandler();
-        MyFilenameProblemHandler bartsHandler = new MyFilenameProblemHandler();
-        getContollerLisa().getFolderRepository().setFileNameProblemHandler(
-            lisasHandler);
-        getContollerBart().getFolderRepository().setFileNameProblemHandler(
-            bartsHandler);
 
         TestHelper.createRandomFile(getFolderAtBart().getLocalBase(),
             "TESTFILE.TXT");
@@ -1234,8 +1224,7 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         // Problem detection should happen
         // if (OSUtil.isWindowsSystem()) {
-        assertEquals(0, lisasHandler.events.size());
-        assertEquals(0, bartsHandler.events.size());
+        // @todo harry test
         // } else {
         // assertEquals(1, lisasHandler.events.size());
         // assertEquals(1, bartsHandler.events.size());
@@ -1394,18 +1383,6 @@ public class FileTransferTest extends TwoControllerTestCase {
         });
 
         TestHelper.assertIncompleteFilesGone(this);
-    }
-
-    private final class MyFilenameProblemHandler implements
-        FileNameProblemHandler
-    {
-        public List<FileNameProblemEvent> events = new ArrayList<FileNameProblemEvent>();
-
-        public void fileNameProblemsDetected(
-            FileNameProblemEvent fileNameProblemEvent)
-        {
-            events.add(fileNameProblemEvent);
-        }
     }
 
     /**

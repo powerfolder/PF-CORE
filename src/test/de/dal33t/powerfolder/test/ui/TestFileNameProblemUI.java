@@ -33,8 +33,6 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.problem.FilenameProblemHelper;
 import de.dal33t.powerfolder.disk.*;
 import de.dal33t.powerfolder.disk.problem.Problem;
-import de.dal33t.powerfolder.event.FileNameProblemEvent;
-import de.dal33t.powerfolder.event.FileNameProblemHandler;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.ArchiveMode;
@@ -69,11 +67,6 @@ public class TestFileNameProblemUI {
 
         setupTestFolder(SyncProfile.HOST_FILES);
 
-        FileNameProblemHandler handler = controller.getFolderRepository()
-            .getFileNameProblemHandler();
-        if (handler == null) {
-            throw new NullPointerException();
-        }
         ScanResult scanResult = new ScanResult(ScanResult.ResultState.SCANNED);
         FolderInfo folderInfo = folder.getInfo();
 
@@ -84,10 +77,7 @@ public class TestFileNameProblemUI {
         fileInfoList.add(FileInfo.getTemplate(folderInfo, "lowercase"));
         fileInfoList.add(FileInfo.getTemplate(folderInfo, "LOWERCASE"));
         Map<FileInfo, List<Problem>> problemFiles = getProblems(fileInfoList);
-        scanResult.setProblemFiles(problemFiles);
-        handler.fileNameProblemsDetected(new FileNameProblemEvent(folder,
-            scanResult));
-        // controller.shutdown();
+        // @todo harry test
     }
 
     private Map<FileInfo, List<Problem>> getProblems(

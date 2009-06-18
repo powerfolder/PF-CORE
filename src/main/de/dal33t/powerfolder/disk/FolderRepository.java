@@ -58,7 +58,6 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.problem.ProblemListener;
-import de.dal33t.powerfolder.event.FileNameProblemHandler;
 import de.dal33t.powerfolder.event.FolderEvent;
 import de.dal33t.powerfolder.event.FolderListener;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
@@ -107,9 +106,6 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     /** folder repository listeners */
     private final FolderRepositoryListener folderRepositoryListenerSupport;
-
-    /** handler if files with posible filename problems are found */
-    private FileNameProblemHandler fileNameProblemHandler;
 
     /** The disk scanner */
     private final FolderScanner folderScanner;
@@ -193,21 +189,6 @@ public class FolderRepository extends PFComponent implements Runnable {
     public void removeProblemListenerFromAllFolders(ProblemListener listener) {
         ListenerSupportFactory.removeListener(valveProblemListenerSupport,
             listener);
-    }
-
-    /** @return the handler that takes care of filename problems */
-    public FileNameProblemHandler getFileNameProblemHandler() {
-        return fileNameProblemHandler;
-    }
-
-    /**
-     * @param fileNameProblemHandler
-     *            the handler that takes care of filename problems
-     */
-    public void setFileNameProblemHandler(
-        FileNameProblemHandler fileNameProblemHandler)
-    {
-        this.fileNameProblemHandler = fileNameProblemHandler;
     }
 
     /** @return The folder scanner that performs the scanning of files on disk */

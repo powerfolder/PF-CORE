@@ -255,8 +255,6 @@ public class UIController extends PFComponent {
             // RepaintManager
             // .setCurrentManager(new CheckThreadViolationRepaintManager());
         }
-        // set default implementations for handlers
-        registerCoreHandlers();
 
         // The central application model
         applicationModel = new ApplicationModel(getController());
@@ -539,15 +537,6 @@ public class UIController extends PFComponent {
         {
             addFolderToSysTray(folder);
         }
-    }
-
-    /**
-     * Registeres handlers/listeners for core callbacks
-     */
-    private void registerCoreHandlers() {
-        FolderRepository repo = getController().getFolderRepository();
-        repo.setFileNameProblemHandler(new FileNameProblemHandlerDefaultImpl(
-            getController()));
     }
 
     /**

@@ -20,14 +20,8 @@
 package de.dal33t.powerfolder.test.folder;
 
 import java.io.File;
-import java.util.List;
-import java.util.Map;
 
 import de.dal33t.powerfolder.disk.SyncProfile;
-import de.dal33t.powerfolder.disk.problem.Problem;
-import de.dal33t.powerfolder.event.FileNameProblemEvent;
-import de.dal33t.powerfolder.event.FileNameProblemHandler;
-import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.test.ControllerTestCase;
 import de.dal33t.powerfolder.util.test.TestHelper;
@@ -38,8 +32,6 @@ import de.dal33t.powerfolder.util.test.TestHelper;
  */
 public class FileNameProblemLinuxTest extends ControllerTestCase {
 
-    private int handlerCalledCount = 0;
-
     protected void setUp() throws Exception {
         if (OSUtil.isLinux()) {
             System.out.println("running linux specific Filename problem test");
@@ -47,8 +39,7 @@ public class FileNameProblemLinuxTest extends ControllerTestCase {
 
             setupTestFolder(SyncProfile.HOST_FILES);
 
-            getController().getFolderRepository().setFileNameProblemHandler(
-                new MyFileNameProblemHandler());
+            // @todo harry test
         }
     }
 
@@ -104,6 +95,7 @@ public class FileNameProblemLinuxTest extends ControllerTestCase {
             // ScanResult result = folderScanner.syncFolder(getFolder());
             // assertEquals(12, result.getNewFiles().size());
 
+            int handlerCalledCount = 0;
             assertEquals(1, handlerCalledCount);
             File folderBaseDir = getFolder().getLocalBase();
 
@@ -126,34 +118,6 @@ public class FileNameProblemLinuxTest extends ControllerTestCase {
     protected void tearDown() throws Exception {
         if (OSUtil.isLinux()) {
             super.tearDown();
-        }
-    }
-
-    private class MyFileNameProblemHandler implements
-        FileNameProblemHandler
-    {
-        public void fileNameProblemsDetected(
-            FileNameProblemEvent fileNameProblemEvent)
-        {
-            handlerCalledCount++;
-            Map<FileInfo, List<Problem>> problems = fileNameProblemEvent
-                .getScanResult().getProblemFiles();
-            assertEquals(10, problems.size());
-            for (FileInfo problemFileInfo : problems.keySet()) {
-                List<Problem> problemList = problems
-                    .get(problemFileInfo);
-
-                for (Problem problem : problemList) {
-                    // solve it
-                    // @todo harry to fix
-//                    FileInfo solved = FilenameProblemHelper.solve(getController(), problem);
-//                    if (!FilenameProblemHelper.hasProblems(solved.getFilenameOnly()))
-//                    {
-//                        break;
-//                    }
-                }
-
-            }
         }
     }
 }
