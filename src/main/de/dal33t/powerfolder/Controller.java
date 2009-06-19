@@ -2167,7 +2167,7 @@ public class Controller extends PFComponent {
      */
     private void savePersistentObjects() {
 
-        if (isUIEnabled()) {
+        if (started && isUIEnabled()) {
 
             // Save unhandled invitations.
             Invitation invitation;
