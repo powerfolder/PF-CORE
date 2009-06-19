@@ -44,6 +44,7 @@ public enum OnlineStorageSubscriptionType {
     GB100("OS-100", "100 GB", 100, false, true),
     GB250("OS-250", "250 GB", 250, false, true),
     TRIAL_5GB("OS-T-5", "5 GB (30 days)", 5, true, false),
+    TRIAL_10GB("OS-T-10", "10 GB (30 days)", 10, true, false),
     
     /**
      * For JUNIT testing only
