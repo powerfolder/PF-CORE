@@ -22,6 +22,7 @@ package de.dal33t.powerfolder.disk.problem;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.ui.WikiLinks;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.Controller;
 
 /**
  * Chars : and / are illegal on Mac OSX
@@ -49,7 +50,7 @@ public class IllegalMacosxCharsFilenameProblem extends ResolvableProblem {
         return WikiLinks.PROBLEM_ILLEGAL_CHARS;
     }
 
-    public Runnable resolution() {
+    public Runnable resolution(Controller controller) {
         // @todo harry real resolution
         return null;
     }

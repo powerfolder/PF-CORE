@@ -22,6 +22,7 @@ package de.dal33t.powerfolder.disk.problem;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.ui.WikiLinks;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.Controller;
 
 /**
  * Filename too long on various systems (most have a 255 limit)
@@ -49,9 +50,15 @@ public class TooLongFilenameProblem extends ResolvableProblem {
         return WikiLinks.PROBLEM_FILENAME_TOO_LONG;
     }
 
-    public Runnable resolution() {
-        // @todo harry real resolution
-        return null;
+    public Runnable resolution(final Controller controller) {
+        return new Runnable() {
+            public void run() {
+                String newFilename = FilenameProblemHelper.getShorterFilename(
+                        controller, fileInfo);
+                FilenameProblemHelper.resolve(controller, fileInfo, newFilename,
+                        TooLongFilenameProblem.this);
+            }
+        };
     }
 
     public String getResolutionDescription() {

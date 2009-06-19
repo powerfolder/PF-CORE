@@ -22,6 +22,7 @@ package de.dal33t.powerfolder.disk.problem;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.ui.WikiLinks;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.Controller;
 
 /**
  * Filenames like AUX (excludes the extension) are reserved system words. 
@@ -49,7 +50,7 @@ public class ReservedWordFilenameProblem extends ResolvableProblem {
         return WikiLinks.PROBLEM_RESERVED_WORD;
     }
 
-    public Runnable resolution() {
+    public Runnable resolution(Controller controller) {
         // @todo harry real resolution
         return null;
     }

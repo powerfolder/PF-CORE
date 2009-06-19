@@ -19,12 +19,12 @@
  */
 package de.dal33t.powerfolder.disk.problem;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.io.File;
 
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.Controller;
 
 /**
  * Identifies problems with filenames. Note the directory names mostly have the
@@ -42,6 +42,8 @@ public class FilenameProblemHelper {
             "CLOCK$", "NUL", "COM0", "COM1", "COM2", "COM3", "COM4", "COM5",
             "COM6", "COM7", "COM8", "COM9", "LPT0", "LPT1", "LPT2", "LPT3", "LPT4",
             "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"};
+
+    private static final int MAX_FILENAME_LENGTH = 255;
 
     /**
      * For performace reasons the reserved filenames are put in a hashmap
@@ -188,81 +190,37 @@ public class FilenameProblemHelper {
     }
 
     public static boolean isToLong(String filename) {
-        return filename.length() > 255;
+        return filename.length() > MAX_FILENAME_LENGTH;
     }
 
-//    /**
-//     * This method tryes to rename the file to a unique filename without
-//     * problems.
-//     *
-//     * @return a new FileInfo object or null if solving fails.
-//     */
-//    public static FileInfo solve(Controller controller, Problem problem) {
-//
-//        FileInfo fileInfo = problem.getFileInfo();
-//
-//        Folder folder = controller.getFolderRepository().getFolder(
-//            fileInfo.getFolderInfo());
-//        File file = folder.getDiskFile(fileInfo);
-//        if (!file.exists()) {
-//            return null;
-//        }
-//
-//        String newName = null;
-//        switch (filenameProblemType) {
-//            case CONTAINS_ILLEGAL_LINUX_CHARS :
-//                // this wont happen now anyway (we will fail te read those files
-//                // correct)
-//                // String newName = removeChars(fileInfo.getFilenameOnly(), "/"
-//                // );
-//                // new File(folder.getLocalBase(),
-//                // fileInfo.getLocationInFolder() + "/");
-//                break;
-//            case CONTAINS_ILLEGAL_MACOSX_CHARS :
-//                newName = removeChars(fileInfo.getFilenameOnly(), ":/");
-//                newName = makeUniqueAndValid(controller, newName, fileInfo);
-//                break;
-//            case CONTAINS_ILLEGAL_WINDOWS_CHARS :
-//                newName = removeChars(fileInfo.getFilenameOnly(), "|\\?*<\":>/");
-//                newName = makeUniqueAndValid(controller, newName, fileInfo);
-//                break;
-//            case ENDS_WITH_ILLEGAL_WINDOWS_CHARS : // add a -1 to the filename
-//                newName = fileInfo.getFilenameOnly() + "-1";
-//                int count = 2;
-//                while (!isUnique(controller, newName, fileInfo)) {
-//                    newName = fileInfo.getFilenameOnly() + '-' + count++;
-//                }
-//                break;
-//            case IS_RESERVED_WINDOWS_WORD :
-//                newName = addSuffix(controller, fileInfo);
-//                break;
-//            case TOO_LONG :  // shorten till unique filename found
-//                newName = fileInfo.getFilenameOnly().substring(0, 254);
-//                int length = 253;
-//                while (!isUnique(controller, newName, fileInfo)) {
-//                    newName = fileInfo.getFilenameOnly().substring(0, length--);
-//                }
-//                break;
-//            case DUPLICATE_FOUND :
-//                newName = addSuffix(controller, fileInfo);
-//                break;
-//            default :
-//                throw new IllegalStateException("invalid FilenameProblemType: "
-//                    + filenameProblemType);
-//        }
-//        if (newName == null) {
-//            return null;
-//        }
-//
-//        File newFile = new File(folder.getLocalBase(), fileInfo
-//            .getLocationInFolder()
-//            + '/' + newName);
-//        if (file.renameTo(newFile)) {
-//            return FileInfo.newFile(folder, newFile,
-//                controller.getMySelf().getInfo());
-//        }
-//        return null;
-//    }
+    /**
+     * This method tries to rename the file to a better filename without
+     * problems.
+     */
+    public static void resolve(Controller controller, FileInfo fileInfo,
+                             String newFilename, Problem problem) {
+
+        Folder folder = controller.getFolderRepository().getFolder(
+            fileInfo.getFolderInfo());
+        File file = folder.getDiskFile(fileInfo);
+        if (!file.exists()) {
+            return;
+        }
+
+        File newFile = new File(folder.getLocalBase(),
+                fileInfo.getLocationInFolder() + '/' + newFilename);
+        if (file.renameTo(newFile)) {
+            FileInfo renamedFileInfo = FileInfo.newFile(folder, newFile,
+                controller.getMySelf().getInfo());
+            if (folder.isKnown(fileInfo)) {
+                folder.removeFilesLocal(fileInfo);
+            }
+            folder.scanNewFile(renamedFileInfo);
+            fileInfo.getFolder(controller.getFolderRepository()).removeProblem(
+                    problem);
+
+        }
+    }
 
 //    private static String removeChars(String filenameArg, String charsToRemove) {
 //        String filename = filenameArg;
@@ -321,14 +279,44 @@ public class FilenameProblemHelper {
 //        return newName;
 //    }
 
-    /** unique if a file with that name does not exist */
-//    private static boolean isUnique(Controller controller, String newName, FileInfo fileInfo) {
-//        Folder folder = controller.getFolderRepository().getFolder(
-//            fileInfo.getFolderInfo());
-//        File newFile = new File(folder.getLocalBase(), fileInfo
-//            .getLocationInFolder()
-//            + '/' + newName);
-//        return !newFile.exists();
-//    }
+    /**
+     * Unique if a file with that name does not exist
+     */
+    public static boolean isUnique(Controller controller, String newName,
+                                   FileInfo fileInfo) {
+        Folder folder = controller.getFolderRepository().getFolder(
+            fileInfo.getFolderInfo());
+        File newFile = new File(folder.getLocalBase(), fileInfo
+            .getLocationInFolder()
+            + '/' + newName);
+        return !newFile.exists();
+    }
 
+    /**
+     * Tries to find a shorter, unique filename in a folder for a file that has
+     * a really long name.
+     *
+     * @see #isToLong(String)
+     * @see TooLongFilenameProblem
+     *
+     * @param controller
+     * @param fileInfo
+     * @return
+     */
+    public static String getShorterFilename(Controller controller,
+                                           FileInfo fileInfo) {
+        int length = Math.min(MAX_FILENAME_LENGTH,
+                fileInfo.getFilenameOnly().length());
+
+        while (!isUnique(controller,
+                fileInfo.getFilenameOnly().substring(0, length), fileInfo)) {
+            length--;
+            if (length < 1) {
+                throw new IllegalStateException("Length too small when shortening " +
+                        fileInfo.getFilenameOnly());
+            }
+        }
+
+        return fileInfo.getFilenameOnly().substring(0, length);
+    }
 }

@@ -23,10 +23,15 @@ import java.lang.reflect.Method;
 
 import junit.framework.TestCase;
 import de.dal33t.powerfolder.disk.problem.FilenameProblemHelper;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.test.ControllerTest;
+import de.dal33t.powerfolder.util.test.ControllerTestCase;
+import de.dal33t.powerfolder.util.test.TestHelper;
 
-public class FileNameProblemTest extends TestCase {
+public class FileNameProblemTest extends ControllerTestCase {
 
     public void testForWindows() {
         assertFalse(FilenameProblemHelper
@@ -124,5 +129,32 @@ public class FileNameProblemTest extends TestCase {
             e.printStackTrace();
             fail(e.getMessage());
         }
+    }
+
+    /**
+     * Test the getShorterFilename() method in FilenameProblemHelper
+     */
+    public void testShorterFileName() {
+        setupTestFolder(SyncProfile.BACKUP_SOURCE);
+
+        // Test that abcdef gets shortened to abc because of other files.
+        TestHelper.createRandomFile(getFolder().getLocalBase(), "abcd");
+        TestHelper.createRandomFile(getFolder().getLocalBase(), "abcde");
+        TestHelper.createRandomFile(getFolder().getLocalBase(), "abcdef");
+        String s = FilenameProblemHelper.getShorterFilename(getController(), 
+                FileInfo.getTemplate(getFolder().getInfo(), "abcdef"));
+        assertEquals("Failed to shorten abcdef to abc", s, "abc");
+
+        // Test that other does not get touched.
+        s = FilenameProblemHelper.getShorterFilename(getController(),
+                FileInfo.getTemplate(getFolder().getInfo(), "other"));
+        assertEquals("Other affected", s, "other");
+
+        // Test that R E A L L Y long names get shortened.
+        s = FilenameProblemHelper.getShorterFilename(getController(),
+                FileInfo.getTemplate(getFolder().getInfo(), "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz"));
+        assertEquals("Not shortened", s, "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstu");
+
+
     }
 }

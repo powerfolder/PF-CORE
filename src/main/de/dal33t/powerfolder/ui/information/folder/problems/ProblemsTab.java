@@ -203,7 +203,8 @@ public class ProblemsTab extends PFUIComponent {
                     selectedProblem instanceof ResolvableProblem) {
                 ResolvableProblem resolvableProblem = (ResolvableProblem)
                         selectedProblem;
-                SwingUtilities.invokeLater(resolvableProblem.resolution());
+                SwingUtilities.invokeLater(resolvableProblem.resolution(
+                        getController()));
             } else {
                 logSevere("Tried to resolve a non-resolvable problem " +
                 (selectedProblem == null ? null :
