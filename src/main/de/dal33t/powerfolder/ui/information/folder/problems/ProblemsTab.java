@@ -26,6 +26,7 @@ import de.dal33t.powerfolder.util.Help;
 import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.disk.problem.Problem;
+import de.dal33t.powerfolder.disk.problem.SolvableProblem;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FolderInfo;
 
@@ -50,6 +51,7 @@ public class ProblemsTab extends PFUIComponent {
 
     private MyOpenProblemAction openProblemAction;
     private MyClearProblemAction clearProblemAction;
+    private MySolveProblemAction solveProblemAction;
 
     private FolderInfo folderInfo;
     private ProblemsTable problemsTable;
@@ -83,6 +85,7 @@ public class ProblemsTab extends PFUIComponent {
     private void initialize() {
         openProblemAction = new MyOpenProblemAction(getController());
         clearProblemAction = new MyClearProblemAction(getController());
+       solveProblemAction = new MySolveProblemAction(getController());
 
         scrollPane = new JScrollPane(problemsTable);
 
@@ -112,6 +115,8 @@ public class ProblemsTab extends PFUIComponent {
         bar.addGridded(new JButton(openProblemAction));
         bar.addRelatedGap();
         bar.addGridded(new JButton(clearProblemAction));
+        bar.addRelatedGap();
+        bar.addGridded(new JButton(solveProblemAction));
         return bar.getPanel();
 
     }
@@ -138,9 +143,11 @@ public class ProblemsTab extends PFUIComponent {
             selectedProblem = (Problem) problemsTableModel.getValueAt(
                     problemsTable.getSelectedRow(), 0);
             openProblemAction.setEnabled(true);
+            solveProblemAction.setEnabled(selectedProblem instanceof SolvableProblem);
         } else {
             selectedProblem = null;
             openProblemAction.setEnabled(false);
+            solveProblemAction.setEnabled(false);
         }
     }
 
@@ -183,6 +190,15 @@ public class ProblemsTab extends PFUIComponent {
                     folder.removeProblem(selectedProblem);
                 }
             }
+        }
+    }
+
+    private class MySolveProblemAction extends BaseAction {
+        MySolveProblemAction(Controller controller) {
+            super("action_solve_problem", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
         }
     }
 
