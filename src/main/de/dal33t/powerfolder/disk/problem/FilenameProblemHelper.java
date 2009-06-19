@@ -235,23 +235,6 @@ public class FilenameProblemHelper {
 //        return filename;
 //    }
 
-//    private static String makeUniqueAndValid(Controller controller, String newNameArg, FileInfo fileInfo) {
-//        StringBuilder newName = new StringBuilder(newNameArg);
-//        if (newName.length() == 0) {
-//            newName.append("-1");
-//            int count = 2;
-//            while (!isUnique(controller, newName.toString(), fileInfo)) {
-//                newName.append("-" + count++);
-//            }
-//        } else {
-//            int count = 1;
-//            while (!isUnique(controller, newName.toString(), fileInfo)) {
-//                newName.append("-" + count++);
-//            }
-//        }
-//        return newName.toString();
-//    }
-
     /**
      * add a -1 (or -2 etc if filename not unique) to the filename part (before
      * the extension)
@@ -318,5 +301,22 @@ public class FilenameProblemHelper {
         }
 
         return fileInfo.getFilenameOnly().substring(0, length);
+    }
+
+    /**
+     * Makes a unique filename in a folder.
+     *
+     * @param controller
+     * @param fileInfo
+     * @return
+     */
+    public static String makeUnique(Controller controller, FileInfo fileInfo) {
+        String filename = fileInfo.getFilenameOnly();
+        String extra = "-1";
+            int count = 1;
+            while (!isUnique(controller, filename + extra, fileInfo)) {
+                extra = "-" + count++;
+            }
+        return filename + extra;
     }
 }

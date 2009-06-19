@@ -21,13 +21,10 @@ package de.dal33t.powerfolder.test.folder;
 
 import java.lang.reflect.Method;
 
-import junit.framework.TestCase;
 import de.dal33t.powerfolder.disk.problem.FilenameProblemHelper;
-import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.test.ControllerTest;
 import de.dal33t.powerfolder.util.test.ControllerTestCase;
 import de.dal33t.powerfolder.util.test.TestHelper;
 
@@ -141,7 +138,7 @@ public class FileNameProblemTest extends ControllerTestCase {
         TestHelper.createRandomFile(getFolder().getLocalBase(), "abcd");
         TestHelper.createRandomFile(getFolder().getLocalBase(), "abcde");
         TestHelper.createRandomFile(getFolder().getLocalBase(), "abcdef");
-        String s = FilenameProblemHelper.getShorterFilename(getController(), 
+        String s = FilenameProblemHelper.getShorterFilename(getController(),
                 FileInfo.getTemplate(getFolder().getInfo(), "abcdef"));
         assertEquals("Failed to shorten abcdef to abc", s, "abc");
 
@@ -154,7 +151,19 @@ public class FileNameProblemTest extends ControllerTestCase {
         s = FilenameProblemHelper.getShorterFilename(getController(),
                 FileInfo.getTemplate(getFolder().getInfo(), "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz"));
         assertEquals("Not shortened", s, "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstu");
+    }
 
+    /**
+     * Test the makeUnique() method in FilenameProblemHelper
+     */
+    public void testUniqueFileName() {
+        setupTestFolder(SyncProfile.BACKUP_SOURCE);
 
+        // Test that abcd gets changed to abcd-2 because of other files.
+        TestHelper.createRandomFile(getFolder().getLocalBase(), "abcd");
+        TestHelper.createRandomFile(getFolder().getLocalBase(), "abcd-1");
+        String s = FilenameProblemHelper.makeUnique(getController(),
+                FileInfo.getTemplate(getFolder().getInfo(), "abcd"));
+        assertEquals("Failed to make uniquen abcd to abcd-2", s, "abcd-2");
     }
 }
