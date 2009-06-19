@@ -3,6 +3,7 @@ package de.dal33t.powerfolder.test.folder;
 import java.io.File;
 import java.io.IOException;
 
+import de.dal33t.powerfolder.disk.CopyOrMoveFileArchiver;
 import de.dal33t.powerfolder.disk.FileArchiver;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
@@ -63,16 +64,60 @@ public class FileArchiverTest extends TwoControllerTestCase {
         File eLisa = new File(fl.getSystemSubDir(), "archive");
         eLisa = new File(eLisa, fib.getName() + "_K_" + fib.getVersion());
 
-        TestHelper.changeFile(tl);
+        modLisaFile(tl, fib);
+
+        assertTrue(eBart.exists());
+        assertFalse(eLisa.exists());
+    }
+
+    public void testLimitedVersions() {
+        final Folder fb = getFolderAtBart();
+        fb.setArchiveMode(ArchiveMode.FULL_BACKUP);
+        ((CopyOrMoveFileArchiver) fb.getFileArchiver()).setVersionsPerFile(3);
+
+        Folder fl = getFolderAtLisa();
+        File tl = TestHelper.createRandomFile(fl.getLocalBase(), 1024);
+
         scanFolder(fl);
 
         TestHelper.waitForCondition(5, new Condition() {
             public boolean reached() {
-                return fb.getKnowFilesAsArray()[0].getVersion() > 0;
+                return fb.getKnowFilesAsArray().length > 0;
             }
         });
+        FileInfo fib = fb.getKnowFilesAsArray()[0];
 
-        assertTrue(eBart.exists());
-        assertFalse(eLisa.exists());
+        for (int i = 0; i < 4; i++) {
+            modLisaFile(tl, fib);
+        }
+
+        File e0 = new File(fb.getSystemSubDir(), "archive");
+        e0 = new File(e0, fib.getName() + "_K_0");
+        File e1 = new File(fb.getSystemSubDir(), "archive");
+        e1 = new File(e1, fib.getName() + "_K_1");
+
+        assertFalse(e0.exists());
+        assertTrue(e1.exists());
+
+        modLisaFile(tl, fib);
+        assertFalse(e1.exists());
+    }
+
+    private void modLisaFile(File file, final FileInfo fInfo) {
+        TestHelper.changeFile(file);
+        scanFolder(getFolderAtLisa());
+
+        final FileInfo scanned = getFolderAtLisa().getFile(fInfo);
+
+        TestHelper.waitForCondition(5, new Condition() {
+            public boolean reached() {
+                for (FileInfo fi : getFolderAtBart().getKnownFiles()) {
+                    if (fi.isVersionDateAndSizeIdentical(scanned)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        });
     }
 }

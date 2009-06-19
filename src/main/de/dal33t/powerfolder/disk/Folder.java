@@ -471,8 +471,22 @@ public class Folder extends PFComponent {
         this.fileArchiver = mode.getInstance(this);
     }
 
+    /**
+     * Returns the active ArchiveMode
+     * 
+     * @return
+     */
     public ArchiveMode getArchiveMode() {
         return archiveMode;
+    }
+
+    /**
+     * Returns the FileArchiver used
+     * 
+     * @return
+     */
+    public FileArchiver getFileArchiver() {
+        return fileArchiver;
     }
 
     /**
@@ -900,8 +914,8 @@ public class Folder extends PFComponent {
             synchronized (scanLock) {
                 result = scanner.scanFolder(this);
             }
-            scannerBusy =
-                    ScanResult.ResultState.BUSY == result.getResultState();
+            scannerBusy = ScanResult.ResultState.BUSY == result
+                .getResultState();
             if (scannerBusy) {
                 logFine("Folder scanner is busy, waiting...");
                 try {
@@ -917,10 +931,11 @@ public class Folder extends PFComponent {
             if (result.getResultState() == ScanResult.ResultState.SCANNED) {
 
                 // Push any file problems into the Folder's problems.
-                Map<FileInfo, List<Problem>> filenameProblems
-                        = result.getProblemFiles();
-                for (Map.Entry<FileInfo, List<Problem>> fileInfoListEntry
-                        : filenameProblems.entrySet()) {
+                Map<FileInfo, List<Problem>> filenameProblems = result
+                    .getProblemFiles();
+                for (Map.Entry<FileInfo, List<Problem>> fileInfoListEntry : filenameProblems
+                    .entrySet())
+                {
                     for (Problem problem : fileInfoListEntry.getValue()) {
                         addProblem(problem);
                     }

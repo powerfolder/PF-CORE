@@ -22,6 +22,7 @@ package de.dal33t.powerfolder.disk;
 import java.io.File;
 
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.util.ArchiveMode;
 
 /**
  * An implementation of {@link FileArchiver} that does nothing.
@@ -37,6 +38,10 @@ public class NullFileArchiver implements FileArchiver {
     public void archive(FileInfo fileInfo, File source, boolean forceKeepSource)
     {
         // Basically does nothing!
+    }
+
+    public ArchiveMode getArchiveMode() {
+        return ArchiveMode.NO_BACKUP;
     }
 
 }

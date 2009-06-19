@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.util.ArchiveMode;
 
 /**
  * This class represents an archive for Files. Subclasses can store file as they
@@ -48,4 +49,6 @@ public interface FileArchiver {
      */
     void archive(FileInfo fileInfo, File source, boolean forcekeepSource)
         throws IOException;
+
+    ArchiveMode getArchiveMode();
 }
