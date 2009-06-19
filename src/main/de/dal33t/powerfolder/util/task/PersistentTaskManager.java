@@ -130,7 +130,7 @@ public class PersistentTaskManager extends PFComponent {
     public synchronized void shutdown() {
         shuttingDown = true;
         if (tasks == null || pendingTasks == null) {
-            logSevere("Shutdown before initialization!");
+            logFine("Shutdown before initialization!");
             return;
         }
         waitForPendingTasks();
