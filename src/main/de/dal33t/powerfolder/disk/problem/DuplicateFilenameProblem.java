@@ -26,7 +26,7 @@ import de.dal33t.powerfolder.util.Translation;
 /**
  * There is a duplicate filename (but with different case)
  */
-public class DuplicateFilenameProblem extends SolvableProblem {
+public class DuplicateFilenameProblem extends ResolvableProblem {
 
     private final String description;
     private final FileInfo fileInfo;
@@ -49,12 +49,12 @@ public class DuplicateFilenameProblem extends SolvableProblem {
         return WikiLinks.PROBLEM_DUPLICATE_FILENAME;
     }
 
-    public Runnable solution() {
-        // @todo harry real solution
+    public Runnable resolution() {
+        // @todo harry real resolution
         return null;
     }
 
-    public String getSolutionDescription() {
+    public String getResolutionDescription() {
        return Translation.getTranslation("filename_problem.duplicate.soln_desc");
     }
 }

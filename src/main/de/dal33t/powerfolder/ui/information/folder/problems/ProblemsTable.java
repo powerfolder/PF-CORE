@@ -21,7 +21,7 @@ package de.dal33t.powerfolder.ui.information.folder.problems;
 
 import de.dal33t.powerfolder.ui.render.SortedTableHeaderRenderer;
 import de.dal33t.powerfolder.disk.problem.Problem;
-import de.dal33t.powerfolder.disk.problem.SolvableProblem;
+import de.dal33t.powerfolder.disk.problem.ResolvableProblem;
 import de.dal33t.powerfolder.util.ui.ColorUtil;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
@@ -91,9 +91,9 @@ public class ProblemsTable extends JTable {
                 } else if (column == 2) {
                     setText(problem.getWikiLinkKey());
                 } else if (column == 3) {
-                    if (problem instanceof SolvableProblem) {
-                        SolvableProblem solvableProblem = (SolvableProblem) problem;
-                        setText(solvableProblem.getSolutionDescription());
+                    if (problem instanceof ResolvableProblem) {
+                        ResolvableProblem solvableProblem = (ResolvableProblem) problem;
+                        setText(solvableProblem.getResolutionDescription());
                     } else {
                         setText(Translation.getTranslation(
                                 "folder_problem.table_model.not_available"));

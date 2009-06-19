@@ -20,11 +20,11 @@
 package de.dal33t.powerfolder.disk.problem;
 
 /**
- * Problem types that are solvable by PowerFolder.
+ * Problem types that are resolvable by PowerFolder.
  */
-public abstract class SolvableProblem extends Problem {
+public abstract class ResolvableProblem extends Problem {
 
-    public abstract Runnable solution();
+    public abstract Runnable resolution();
 
-    public abstract String getSolutionDescription();
+    public abstract String getResolutionDescription();
 }

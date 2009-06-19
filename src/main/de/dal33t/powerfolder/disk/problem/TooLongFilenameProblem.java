@@ -26,7 +26,7 @@ import de.dal33t.powerfolder.util.Translation;
 /**
  * Filename too long on various systems (most have a 255 limit)
  */
-public class TooLongFilenameProblem extends SolvableProblem {
+public class TooLongFilenameProblem extends ResolvableProblem {
 
     private final String description;
     private final FileInfo fileInfo;
@@ -49,12 +49,12 @@ public class TooLongFilenameProblem extends SolvableProblem {
         return WikiLinks.PROBLEM_FILENAME_TOO_LONG;
     }
 
-    public Runnable solution() {
-        // @todo harry real solution
+    public Runnable resolution() {
+        // @todo harry real resolution
         return null;
     }
 
-    public String getSolutionDescription() {
+    public String getResolutionDescription() {
         return Translation.getTranslation("filename_problem.too_long.soln_desc");
     }
 }

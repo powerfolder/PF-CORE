@@ -26,7 +26,7 @@ import de.dal33t.powerfolder.util.Translation;
 /**
  * Chars : and / are illegal on Mac OSX
  */
-public class IllegalMacosxCharsFilenameProblem extends SolvableProblem {
+public class IllegalMacosxCharsFilenameProblem extends ResolvableProblem {
 
     private final String description;
     private final FileInfo fileInfo;
@@ -49,13 +49,13 @@ public class IllegalMacosxCharsFilenameProblem extends SolvableProblem {
         return WikiLinks.PROBLEM_ILLEGAL_CHARS;
     }
 
-    public Runnable solution() {
-        // @todo harry real solution
+    public Runnable resolution() {
+        // @todo harry real resolution
         return null;
     }
 
-    public String getSolutionDescription() {
+    public String getResolutionDescription() {
         return Translation.getTranslation("filename_problem.not_recommended_chars.soln_desc");
     }
-    
+
 }

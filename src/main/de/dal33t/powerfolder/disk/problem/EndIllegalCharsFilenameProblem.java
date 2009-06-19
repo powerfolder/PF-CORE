@@ -26,7 +26,7 @@ import de.dal33t.powerfolder.util.Translation;
 /**
  * Filename in windows may not end with . and space ( )
  */
-public class EndIllegalCharsFilenameProblem extends SolvableProblem {
+public class EndIllegalCharsFilenameProblem extends ResolvableProblem {
 
     private final String description;
     private final FileInfo fileInfo;
@@ -49,12 +49,12 @@ public class EndIllegalCharsFilenameProblem extends SolvableProblem {
         return WikiLinks.PROBLEM_ILLEGAL_END_CHARS;
     }
 
-    public Runnable solution() {
-        // @todo harry real solution
+    public Runnable resolution() {
+        // @todo harry real resolution
         return null;
     }
 
-    public String getSolutionDescription() {
+    public String getResolutionDescription() {
         return Translation.getTranslation("filename_problem.ends_with_illegal_char.soln_desc");
     }
 

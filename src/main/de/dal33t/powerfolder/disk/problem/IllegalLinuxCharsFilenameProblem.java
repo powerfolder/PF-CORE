@@ -26,7 +26,7 @@ import de.dal33t.powerfolder.util.Translation;
 /**
  * Char / is illegal on Unix
  */
-public class IllegalLinuxCharsFilenameProblem extends SolvableProblem {
+public class IllegalLinuxCharsFilenameProblem extends ResolvableProblem {
 
     private final String description;    
     private final FileInfo fileInfo;
@@ -49,12 +49,12 @@ public class IllegalLinuxCharsFilenameProblem extends SolvableProblem {
         return WikiLinks.PROBLEM_ILLEGAL_CHARS;
     }
 
-    public Runnable solution() {
-        // @todo harry real solution
+    public Runnable resolution() {
+        // @todo harry real resolution
         return null;
     }
 
-    public String getSolutionDescription() {
+    public String getResolutionDescription() {
         return Translation.getTranslation("filename_problem.not_recommended_chars.soln_desc");
     }
 

@@ -26,7 +26,7 @@ import de.dal33t.powerfolder.util.Translation;
 /**
  * Filenames like AUX (excludes the extension) are reserved system words. 
  */
-public class ReservedWordFilenameProblem extends SolvableProblem {
+public class ReservedWordFilenameProblem extends ResolvableProblem {
 
     private final String description;
     private final FileInfo fileInfo;
@@ -49,12 +49,12 @@ public class ReservedWordFilenameProblem extends SolvableProblem {
         return WikiLinks.PROBLEM_RESERVED_WORD;
     }
 
-    public Runnable solution() {
-        // @todo harry real solution
+    public Runnable resolution() {
+        // @todo harry real resolution
         return null;
     }
 
-    public String getSolutionDescription() {
+    public String getResolutionDescription() {
         return Translation.getTranslation("filename_problem.reserved_filename.soln_desc");
     }
 
