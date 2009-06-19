@@ -32,10 +32,9 @@ public class DuplicateFilenameProblem extends ResolvableProblem {
     private final String description;
     private final FileInfo fileInfo;
 
-    public DuplicateFilenameProblem(FileInfo fileInfo, FileInfo otherFileInfo) {
+    public DuplicateFilenameProblem(FileInfo fileInfo) {
         this.fileInfo = fileInfo;
-        description = Translation.getTranslation("filename_problem.duplicate",
-                fileInfo.getFilenameOnly());
+        description = Translation.getTranslation("filename_problem.duplicate");
     }
 
     public FileInfo getFileInfo() {
@@ -50,9 +49,15 @@ public class DuplicateFilenameProblem extends ResolvableProblem {
         return WikiLinks.PROBLEM_DUPLICATE_FILENAME;
     }
 
-    public Runnable resolution(Controller controller) {
-        // @todo harry real resolution
-        return null;
+    public Runnable resolution(final Controller controller) {
+        return new Runnable() {
+            public void run() {
+                String newFilename = FilenameProblemHelper.makeUnique(
+                        controller, fileInfo);
+                FilenameProblemHelper.resolve(controller, fileInfo, newFilename,
+                        DuplicateFilenameProblem.this);
+            }
+        };
     }
 
     public String getResolutionDescription() {

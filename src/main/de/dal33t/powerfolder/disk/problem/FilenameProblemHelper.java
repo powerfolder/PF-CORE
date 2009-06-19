@@ -68,7 +68,7 @@ public class FilenameProblemHelper {
                 || containsIllegalMacOSXChar(filename)
                 || containsIllegalWindowsChars(filename)
                 || endsWithIllegalWindowsChar(filename)
-                || isReservedWindowsFilename(filename) || isToLong(filename);
+                || isReservedWindowsFilename(filename) || isTooLong(filename);
     }
 
     /**
@@ -101,7 +101,7 @@ public class FilenameProblemHelper {
             returnValue.add(new ReservedWordFilenameProblem(fileInfo));
         }
 
-        if (isToLong(filename)) {
+        if (isTooLong(filename)) {
             returnValue.add(new TooLongFilenameProblem(fileInfo));
         }
         return returnValue;
@@ -189,7 +189,7 @@ public class FilenameProblemHelper {
         return filename.contains("/");
     }
 
-    public static boolean isToLong(String filename) {
+    public static boolean isTooLong(String filename) {
         return filename.length() > MAX_FILENAME_LENGTH;
     }
 
@@ -279,7 +279,7 @@ public class FilenameProblemHelper {
      * Tries to find a shorter, unique filename in a folder for a file that has
      * a really long name.
      *
-     * @see #isToLong(String)
+     * @see #isTooLong(String)
      * @see TooLongFilenameProblem
      *
      * @param controller

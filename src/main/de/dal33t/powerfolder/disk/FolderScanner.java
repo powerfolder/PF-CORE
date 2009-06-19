@@ -163,7 +163,7 @@ public class FolderScanner extends PFComponent {
      * @return true if abort has been initiated, false if not currently scanning
      */
     public boolean abortScan() {
-        if ((currentScanningFolder != null)) {
+        if (currentScanningFolder != null) {
             abort = true;
             return true;
         }
@@ -245,12 +245,12 @@ public class FolderScanner extends PFComponent {
             }
 
             if (isWarning()) {
-                if (!unableToScanFiles.isEmpty()) {
-                    logWarning("Unable to scan " + unableToScanFiles.size()
-                        + " file(s)");
-                } else {
+                if (unableToScanFiles.isEmpty()) {
                     logFiner("Unable to scan " + unableToScanFiles.size()
-                        + " file(s)");
+                            + " file(s)");
+                } else {
+                    logWarning("Unable to scan " + unableToScanFiles.size()
+                            + " file(s)");
                 }
             }
             // Remaining files = deleted! But only if they are not already
@@ -362,8 +362,7 @@ public class FolderScanner extends PFComponent {
             // #836
             if (!OSUtil.isWindowsSystem()) {
                 if (lowerCaseNames.containsKey(fileInfo.getLowerCaseName())) {
-                    Problem problem = new DuplicateFilenameProblem(fileInfo,
-                        lowerCaseNames.get(fileInfo.getLowerCaseName()));
+                    Problem problem = new DuplicateFilenameProblem(fileInfo);
                     problemList = new ArrayList<Problem>();
                     problemList.add(problem);
                 } else {
