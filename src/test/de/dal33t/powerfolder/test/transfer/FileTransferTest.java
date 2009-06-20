@@ -219,7 +219,7 @@ public class FileTransferTest extends TwoControllerTestCase {
 
     public void testEmptyFileCopy() throws IOException {
         // Register listeners
-        final MyTransferManagerListener tm1Listener = new MyTransferManagerListener();
+        MyTransferManagerListener tm1Listener = new MyTransferManagerListener();
         getContollerBart().getTransferManager().addListener(tm1Listener);
         final MyTransferManagerListener tm2Listener = new MyTransferManagerListener();
         getContollerLisa().getTransferManager().addListener(tm2Listener);
@@ -440,7 +440,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         long totalSize = 0;
         final int nFiles = 450;
         for (int i = 0; i < nFiles; i++) {
-            final File f = TestHelper.createRandomFile(getFolderAtBart()
+            File f = TestHelper.createRandomFile(getFolderAtBart()
                 .getLocalBase(), (long) (Math.random() * 40) + 1);
             totalSize += f.length();
         }
@@ -616,7 +616,7 @@ public class FileTransferTest extends TwoControllerTestCase {
 
     public void testMany0SizeFilesCopy() {
         // Register listeners
-        final MyTransferManagerListener bartsListener = new MyTransferManagerListener();
+        MyTransferManagerListener bartsListener = new MyTransferManagerListener();
         getContollerBart().getTransferManager().addListener(bartsListener);
         final MyTransferManagerListener lisasListener = new MyTransferManagerListener();
         getContollerLisa().getTransferManager().addListener(lisasListener);
@@ -677,7 +677,7 @@ public class FileTransferTest extends TwoControllerTestCase {
             .setValue(getContollerLisa(), "true");
 
         // Register listeners
-        final MyTransferManagerListener bartsListener = new MyTransferManagerListener();
+        MyTransferManagerListener bartsListener = new MyTransferManagerListener();
         getContollerBart().getTransferManager().addListener(bartsListener);
         final MyTransferManagerListener lisasListener = new MyTransferManagerListener();
         getContollerLisa().getTransferManager().addListener(lisasListener);
@@ -959,9 +959,9 @@ public class FileTransferTest extends TwoControllerTestCase {
 
     public void testBrokenTransferFileChanged() {
         // Register listeners
-        final MyTransferManagerListener bartListener = new MyTransferManagerListener();
+        MyTransferManagerListener bartListener = new MyTransferManagerListener();
         getContollerBart().getTransferManager().addListener(bartListener);
-        final MyTransferManagerListener lisaListener = new MyTransferManagerListener();
+        MyTransferManagerListener lisaListener = new MyTransferManagerListener();
         getContollerLisa().getTransferManager().addListener(lisaListener);
 
         // 1 Meg testfile
@@ -1195,40 +1195,6 @@ public class FileTransferTest extends TwoControllerTestCase {
             - oldByteCount < fbart.length() / 2);
 
         TestHelper.assertIncompleteFilesGone(this);
-    }
-
-    /**
-     * Checks the problem detection that get caused by diffrent cases of
-     * filenames on a non-case sensitive OS (like Windows).
-     * <P>
-     * TRAC #232
-     */
-    public void testFilenameCaseProblemDetection() {
-
-        TestHelper.createRandomFile(getFolderAtBart().getLocalBase(),
-            "TESTFILE.TXT");
-        TestHelper.createRandomFile(getFolderAtLisa().getLocalBase(),
-            "testFile.txt");
-        TestHelper.createRandomFile(getFolderAtBart().getLocalBase(),
-            "samedir/OTHER/case/xxx.xls");
-        TestHelper.createRandomFile(getFolderAtLisa().getLocalBase(),
-            "SAMEDIR/other/case/xxx.xls");
-
-        disconnectBartAndLisa();
-
-        // Let them scan the new content
-        scanFolder(getFolderAtBart());
-        scanFolder(getFolderAtLisa());
-
-        connectBartAndLisa();
-
-        // Problem detection should happen
-        // if (OSUtil.isWindowsSystem()) {
-        // @todo harry test
-        // } else {
-        // assertEquals(1, lisasHandler.events.size());
-        // assertEquals(1, bartsHandler.events.size());
-        // }
     }
 
     /**

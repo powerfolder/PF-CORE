@@ -39,7 +39,6 @@ public class FileNameProblemLinuxTest extends ControllerTestCase {
 
             setupTestFolder(SyncProfile.HOST_FILES);
 
-            // @todo harry test
         }
     }
 
