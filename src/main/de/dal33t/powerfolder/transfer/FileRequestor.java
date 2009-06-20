@@ -54,7 +54,7 @@ import de.dal33t.powerfolder.util.Reject;
  */
 public class FileRequestor extends PFComponent {
     private Thread myThread;
-    private final ExecutorService conflictChecker;
+    private ExecutorService conflictChecker;
     private final Queue<Folder> folderQueue;
     private final Queue<FileInfo> pendingRequests;
 
@@ -62,7 +62,6 @@ public class FileRequestor extends PFComponent {
         super(controller);
         folderQueue = new ConcurrentLinkedQueue<Folder>();
         pendingRequests = new ConcurrentLinkedQueue<FileInfo>();
-        conflictChecker = Executors.newSingleThreadExecutor();
     }
 
     /**
@@ -72,6 +71,8 @@ public class FileRequestor extends PFComponent {
         myThread = new Thread(new Worker(), "FileRequestor");
         myThread.setPriority(Thread.MIN_PRIORITY);
         myThread.start();
+        conflictChecker = Executors.newSingleThreadExecutor();
+
         logFine("Started");
 
         long waitTime = Controller.getWaitTime() * 12;
@@ -130,6 +131,9 @@ public class FileRequestor extends PFComponent {
     public void shutdown() {
         if (myThread != null) {
             myThread.interrupt();
+        }
+        if (conflictChecker != null) {
+            conflictChecker.shutdown();
         }
         synchronized (folderQueue) {
             folderQueue.notifyAll();
