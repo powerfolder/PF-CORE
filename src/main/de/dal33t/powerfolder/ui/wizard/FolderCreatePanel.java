@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.ui.wizard;
 
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SET_DEFAULT_SYNCHRONIZED_FOLDER;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.MAKE_FRIEND_AFTER;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -50,12 +51,14 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderException;
 import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.ui.dialog.SyncFolderPanel;
 import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.FileUtils;
@@ -184,8 +187,9 @@ public class FolderCreatePanel extends PFWizardPanel {
         sendInvitations = sendInvsAtt == null || sendInvsAtt;
 
         // Either we have FOLDER_CREATE_ITEMS ...
-        List<FolderCreateItem> folderCreateItems = (List<FolderCreateItem>) getWizardContext()
-            .getAttribute(WizardContextAttributes.FOLDER_CREATE_ITEMS);
+        List<FolderCreateItem> folderCreateItems = (List<FolderCreateItem>)
+                getWizardContext().getAttribute(WizardContextAttributes
+                        .FOLDER_CREATE_ITEMS);
         if (folderCreateItems != null && !folderCreateItems.isEmpty()) {
             for (FolderCreateItem folderCreateItem : folderCreateItems) {
                 File localBase = folderCreateItem.getLocalBase();
@@ -237,7 +241,7 @@ public class FolderCreatePanel extends PFWizardPanel {
         updateButtons();
     }
 
-    private FolderInfo createFolderInfo(File localBase) {
+    private static FolderInfo createFolderInfo(File localBase) {
         // Create new folder info
         String name = localBase.getName();
         String folderId = '[' + IdGenerator.makeId() + ']';
@@ -282,20 +286,21 @@ public class FolderCreatePanel extends PFWizardPanel {
         @Override
         public Object construct() {
             ServerClient client = getController().getOSClient();
-            for (FolderInfo folderInfo : configurations.keySet()) {
-                FolderSettings folderSettings = configurations.get(folderInfo);
+            for (Map.Entry<FolderInfo, FolderSettings> folderInfoFolderSettingsEntry
+                    : configurations.entrySet()) {
+                FolderSettings folderSettings = folderInfoFolderSettingsEntry.getValue();
                 Folder folder = getController().getFolderRepository()
-                    .createFolder(folderInfo, folderSettings);
+                    .createFolder(folderInfoFolderSettingsEntry.getKey(), folderSettings);
                 folder.addDefaultExcludes();
 
                 // Make sure recycle bin was made.
                 if (folderSettings.isUseRecycleBin()) {
                     File recycleBinFolder = getController().getRecycleBin()
-                        .makeRecycleBinDirectory(folderInfo);
+                        .makeRecycleBinDirectory(folderInfoFolderSettingsEntry.getKey());
                     if (recycleBinFolder == null) {
                         addProblem(Translation
                             .getTranslation("folder_create.recycle_error.text",
-                                folderInfo.name));
+                                folderInfoFolderSettingsEntry.getKey().name));
                     }
                 }
                 if (createShortcut) {
@@ -308,29 +313,45 @@ public class FolderCreatePanel extends PFWizardPanel {
                         folder.getInfo());
                 }
 
+                // Is there a member to make a friend?
+                // Invitation invitors are automatically made friends.
+                Object attribute = getWizardContext().getAttribute(
+                        MAKE_FRIEND_AFTER);
+                if (attribute != null && attribute instanceof MemberInfo) {
+                    MemberInfo memberInfo = (MemberInfo) attribute;
+                    Member member = getController().getNodeManager().getNode(
+                            memberInfo);
+                    if (member != null) {
+                        if (!getController().getNodeManager().isFriend(member)) {
+                            getController().getNodeManager().friendStateChanged(
+                                    member, true, null);
+                        }
+                    }
+                }
+
                 if (backupByOS && client.isLastLoginOK()) {
                     try {
                         // Try to back this up by online storage.
                         if (client.hasJoined(folder)) {
                             // Already have this os folder.
                             log.log(Level.WARNING, "Already have os folder "
-                                + folderInfo.name);
+                                + folderInfoFolderSettingsEntry.getKey().name);
                             continue;
                         }
 
-                        client.getFolderService().createFolder(folderInfo,
+                        client.getFolderService().createFolder(folderInfoFolderSettingsEntry.getKey(),
                             SyncProfile.BACKUP_TARGET_NO_CHANGE_DETECT);
                         client.refreshAccountDetails();
 
                         // Set as default synced folder?
-                        Object attribute = getWizardContext().getAttribute(
+                        attribute = getWizardContext().getAttribute(
                             SET_DEFAULT_SYNCHRONIZED_FOLDER);
                         if (attribute != null && (Boolean) attribute) {
                             // TODO: Ugly. Use abstraction: Runnable? Callback
                             // with
                             // folder? Which is placed on WizardContext.
                             client.getFolderService()
-                                .setDefaultSynchronizedFolder(folderInfo);
+                                .setDefaultSynchronizedFolder(folderInfoFolderSettingsEntry.getKey());
                             client.refreshAccountDetails();
                             createDefaultFolderHelpFile(folder);
                             folder.recommendScanOnNextMaintenance();

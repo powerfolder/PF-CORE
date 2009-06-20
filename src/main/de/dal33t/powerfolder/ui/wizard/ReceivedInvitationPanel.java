@@ -23,6 +23,7 @@ import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.PREVIEW_FOLDER_ATTIRBUTE;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.PROMPT_TEXT_ATTRIBUTE;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SAVE_INVITE_LOCALLY;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.MAKE_FRIEND_AFTER;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SEND_INVIATION_AFTER_ATTRIBUTE;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SYNC_PROFILE_ATTRIBUTE;
 
@@ -118,8 +119,8 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
             syncProfileSelectorPanel.getSyncProfile());
 
         // Set folder info
-        getWizardContext()
-            .setAttribute(FOLDERINFO_ATTRIBUTE, invitation.folder);
+        getWizardContext().setAttribute(FOLDERINFO_ATTRIBUTE,
+                invitation.folder);
 
         // Do not prompt for send invitation afterwards
         getWizardContext().setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE, false);
@@ -129,10 +130,7 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
             previewOnlyCB.isSelected());
 
         // Setup choose disk location panel
-        getWizardContext()
-            .setAttribute(
-                PROMPT_TEXT_ATTRIBUTE,
-                Translation
+        getWizardContext().setAttribute(PROMPT_TEXT_ATTRIBUTE, Translation
                     .getTranslation("wizard.what_to_do.invite.select_local"));
 
         // Setup sucess panel of this wizard path
@@ -148,6 +146,10 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
         } else {
 
             getWizardContext().setAttribute(SAVE_INVITE_LOCALLY, Boolean.FALSE);
+
+            System.out.println("hghg a " + invitation.getInvitor());
+            getWizardContext().setAttribute(MAKE_FRIEND_AFTER,
+                    invitation.getInvitor());
 
             return new ChooseDiskLocationPanel(getController(), invitation
                 .getSuggestedLocalBase(getController()).getAbsolutePath(),
@@ -168,8 +170,8 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
         // Invite info
 
         builder.addLabel(Translation.getTranslation(
-            "wizard.folder_invitation.intro", invitation.folder.name), cc.xyw(
-            1, 1, 3));
+            "wizard.folder_invitation.intro", invitation.getInvitor().nick,
+                invitation.folder.name), cc.xyw(1, 1, 3));
 
         // Message
 

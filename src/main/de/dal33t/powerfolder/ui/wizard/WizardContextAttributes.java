@@ -63,6 +63,12 @@ public interface WizardContextAttributes {
     String SAVE_INVITE_LOCALLY = "save.invitation.locally";
 
     /**
+     * Whether to make the Member a friend on creation of a folder. This is 
+     * done when creating a folder from an invitation.
+     */
+    String MAKE_FRIEND_AFTER = "make.friend.after";
+
+    /**
      * Whether to use recycle bin.
      */
     String USE_RECYCLE_BIN = "use.recycle.bin";
