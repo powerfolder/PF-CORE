@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.Queue;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
@@ -52,15 +54,15 @@ import de.dal33t.powerfolder.util.Reject;
  */
 public class FileRequestor extends PFComponent {
     private Thread myThread;
+    private final ExecutorService conflictChecker;
     private final Queue<Folder> folderQueue;
     private final Queue<FileInfo> pendingRequests;
-    private final Queue<FileHistoryReply> fhQueue;
 
     public FileRequestor(Controller controller) {
         super(controller);
         folderQueue = new ConcurrentLinkedQueue<Folder>();
         pendingRequests = new ConcurrentLinkedQueue<FileInfo>();
-        fhQueue = new ConcurrentLinkedQueue<FileHistoryReply>();
+        conflictChecker = Executors.newSingleThreadExecutor();
     }
 
     /**
@@ -268,7 +270,12 @@ public class FileRequestor extends PFComponent {
 
     private void prepareDownload(FileInfo fInfo, boolean autoDownload) {
         TransferManager tm = getController().getTransferManager();
-        if (autoDownload && !pendingRequests.contains(fInfo)) {
+        if (autoDownload
+            && fInfo.getLocalFileInfo(getController().getFolderRepository()) != null)
+        {
+            if (pendingRequests.contains(fInfo)) {
+                return;
+            }
             // FIXME Currently only support for automatically requested files,
             // additional features require some rewriting of the whole requests
             // thing.
@@ -304,6 +311,7 @@ public class FileRequestor extends PFComponent {
             if (fhReq != null) {
                 pendingRequests.add(fInfo);
                 fhReq.sendMessageAsynchron(new FileHistoryRequest(fInfo), null);
+                return;
             }
         }
         tm.downloadNewestVersion(fInfo, autoDownload);
@@ -314,16 +322,54 @@ public class FileRequestor extends PFComponent {
      * 
      * @param fhReply
      */
-    public void receivedFileHistory(FileHistoryReply fhReply) {
+    public void receivedFileHistory(final FileHistoryReply fhReply) {
         Reject.notNull(fhReply, "fhReply");
         if (!pendingRequests.remove(fhReply.getRequestFileInfo())) {
             logWarning("Received FileHistory for unrequested FileInfo "
                 + fhReply.getRequestFileInfo());
             return;
         }
-        fhQueue.add(fhReply);
-        synchronized (folderQueue) {
-            folderQueue.notifyAll();
+        conflictChecker.execute(new Runnable() {
+            public void run() {
+                checkForConflict(fhReply);
+            }
+        });
+    }
+
+    private void checkForConflict(FileHistoryReply fhRepl) {
+        FileInfo fi = fhRepl.getRequestFileInfo();
+        FileHistory fh = fhRepl.getFileHistory();
+        if (fh == null) {
+            logWarning("Remote client claims not to have a history for " + fi
+                + ", not downloading!");
+            logSevere("That was a lie, since there are no FileHistories I'll download it anyways!");
+            // FIXME But it should not download the file and
+            // abort instead if FileHistories come available!
+            getController().getTransferManager()
+                .downloadNewestVersion(fi, true);
+        } else {
+            FileHistory localHistory = fi.getFolder(
+                getController().getFolderRepository()).getDAO().getFileHistory(
+                fi);
+            if (localHistory == null) {
+                logSevere("Local FileHistory missing for " + fi
+                    + ", not downloading!");
+            } else {
+                Conflict conflict = localHistory.getConflictWith(fh);
+                if (conflict != null) {
+                    if (ProblemUtil.resolveConflict(conflict)) {
+                        // The code currently only supports
+                        // autoDownloads!
+                        getController().getTransferManager()
+                            .downloadNewestVersion(fi, true);
+                    }
+                } else {
+                    // The code currently only supports
+                    // autoDownloads!
+                    getController().getTransferManager().downloadNewestVersion(
+                        fi, true);
+                }
+            }
         }
     }
 
@@ -340,41 +386,6 @@ public class FileRequestor extends PFComponent {
                     if (folderQueue.isEmpty()) {
                         synchronized (folderQueue) {
                             folderQueue.wait();
-                        }
-                    }
-                    logInfo("Checking conflicts for " + fhQueue.size()
-                        + " histories.");
-                    FileHistoryReply fhRepl;
-                    while ((fhRepl = fhQueue.poll()) != null) {
-                        FileInfo fi = fhRepl.getRequestFileInfo();
-                        FileHistory fh = fhRepl.getFileHistory();
-                        if (fh == null) {
-                            logWarning("Remote client claims not to have a history for "
-                                + fi + ", not downloading!");
-                        } else {
-                            FileHistory localHistory = fi.getFolder(
-                                getController().getFolderRepository()).getDAO()
-                                .getFileHistory(fi);
-                            if (localHistory == null) {
-                                logSevere("Local FileHistory missing for " + fi
-                                    + ", not downloading!");
-                            } else {
-                                Conflict conflict = localHistory
-                                    .getConflictWith(fh);
-                                if (conflict != null) {
-                                    if (ProblemUtil.resolveConflict(conflict)) {
-                                        // The code currently only supports
-                                        // autoDownloads!
-                                        getController().getTransferManager()
-                                            .downloadNewestVersion(fi, true);
-                                    }
-                                } else {
-                                    // The code currently only supports
-                                    // autoDownloads!
-                                    getController().getTransferManager()
-                                        .downloadNewestVersion(fi, true);
-                                }
-                            }
                         }
                     }
 
@@ -405,6 +416,7 @@ public class FileRequestor extends PFComponent {
                 }
             }
         }
+
     }
 
     /**
