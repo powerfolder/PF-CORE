@@ -58,9 +58,9 @@ public class Identity extends Message {
     private boolean acknowledgesHandshakeCompletion;
 
     // uses program version
-    private String programVersion = Controller.PROGRAM_VERSION;
+    private final String programVersion = Controller.PROGRAM_VERSION;
 
-    private Calendar timeGMT = Calendar.getInstance();
+    private final Calendar timeGMT = Calendar.getInstance();
 
     // Supports requests for single parts and filepartsrecords.
     // Earlier this was based on a user setting, but that's wrong since we
@@ -68,9 +68,11 @@ public class Identity extends Message {
     // remote side to decide how it wants to download.
     // Leftover for semi-old clients
     @SuppressWarnings("unused")
-    private boolean supportingPartTransfers = true;
+    private final boolean supportingPartTransfers = true;
 
     private Boolean useCompressedStream;
+
+    private final boolean supportingFileHistoryRequests = true;
 
     /**
      * If I got interesting pending messages for you. Better keep the
@@ -145,6 +147,10 @@ public class Identity extends Message {
         return supportingPartTransfers;
     }
 
+    public boolean isSupportingFileHistoryRequests() {
+        return supportingFileHistoryRequests;
+    }
+
     /**
      * @return true, if the stream is compressed; false, if the stream is not
      *         compressed; null, if we don't know
@@ -183,6 +189,7 @@ public class Identity extends Message {
         return timeGMT;
     }
 
+    @Override
     public String toString() {
         return "Identity: " + member;
     }

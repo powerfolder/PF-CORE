@@ -39,6 +39,7 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
  * An implementation of {@link FileArchiver} that tries to move a file to an
@@ -63,6 +64,12 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
     private final File archDir;
     private volatile int versionsPerFile;
 
+    /**
+     * Constructs a new FileArchiver which stores backups in the given
+     * directory.
+     * 
+     * @param archiveDirectory
+     */
     public CopyOrMoveFileArchiver(File archiveDirectory) {
         Reject.notNull(archiveDirectory, "archiveDirectory");
         Reject.ifFalse(archiveDirectory.isDirectory(),
@@ -70,6 +77,10 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
         this.archDir = archiveDirectory;
     }
 
+    /**
+     * @see de.dal33t.powerfolder.disk.FileArchiver#archive(de.dal33t.powerfolder.light.FileInfo,
+     *      java.io.File, boolean)
+     */
     public void archive(FileInfo fileInfo, File source, boolean forceKeepSource)
         throws IOException
     {
@@ -145,10 +156,12 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
     /**
      * Tries to ensure that only the allowed amount of versions per file is in
      * the archive.
+     * 
+     * @return true the maintenance worked successfully for all files, false if
+     *         it failed for at least one file
      */
     public boolean maintain() {
-        Set<File> checked = new HashSet<File>();
-        return checkRecursive(archDir, checked);
+        return checkRecursive(archDir, new HashSet<File>());
     }
 
     private boolean checkRecursive(File dir, Set<File> checked) {
@@ -218,12 +231,12 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
         });
     }
 
-    // TODO On windows this might not catch all fish since some
-    // files may just differ in case.
     private boolean belongsTo(String name, String baseName) {
         Matcher m = BASE_NAME.matcher(name);
         if (m.matches()) {
-            return m.group(1).equals(baseName);
+            return OSUtil.isWindowsSystem()
+                && m.group(1).equalsIgnoreCase(baseName)
+                || m.group(1).equals(baseName);
         }
         return false;
     }

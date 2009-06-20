@@ -29,10 +29,13 @@ import java.util.TimerTask;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.util.FileInfoFilter;
+import de.dal33t.powerfolder.util.ProblemUtil;
 import de.dal33t.powerfolder.util.Profiling;
 import de.dal33t.powerfolder.util.ProfilingEntry;
 import de.dal33t.powerfolder.util.Reject;
@@ -46,10 +49,12 @@ import de.dal33t.powerfolder.util.Reject;
 public class FileRequestor extends PFComponent {
     private Thread myThread;
     private final Queue<Folder> folderQueue;
+    private final Queue<FileInfo> pendingRequests;
 
     public FileRequestor(Controller controller) {
         super(controller);
         folderQueue = new ConcurrentLinkedQueue<Folder>();
+        pendingRequests = new ConcurrentLinkedQueue<FileInfo>();
     }
 
     /**
@@ -97,8 +102,7 @@ public class FileRequestor extends PFComponent {
      */
     public void triggerFileRequesting() {
         ProfilingEntry pe = Profiling.start();
-        for (Folder folder : getController().getFolderRepository()
-            .getFolders())
+        for (Folder folder : getController().getFolderRepository().getFolders())
         {
             if (folderQueue.contains(folder)) {
                 continue;
@@ -136,37 +140,28 @@ public class FileRequestor extends PFComponent {
      * @param requestFromOthers
      * @param autoDownload
      */
-    public void requestMissingFiles(Folder folder, boolean requestFromFriends,
-        boolean requestFromOthers, boolean autoDownload)
+    public void requestMissingFiles(Folder folder,
+        final boolean requestFromFriends, final boolean requestFromOthers,
+        boolean autoDownload)
     {
         // Dont request files until has own database
         if (!folder.hasOwnDatabase()) {
             return;
         }
-        
+
         // TODO: Detect conflicts. Raise problem.
 
-        Collection<FileInfo> incomingFiles = folder
-            .getIncomingFiles(requestFromOthers, false);
-        TransferManager tm = getController().getTransferManager();
-        for (FileInfo fInfo : incomingFiles) {
-            if (fInfo.isDeleted() || tm.isDownloadingActive(fInfo)
-                || tm.isDownloadingPending(fInfo))
-            {
-                // Already downloading/file is deleted
-                continue;
-            }
+        Collection<FileInfo> incomingFiles = folder.getIncomingFiles(
+            requestFromOthers, false);
 
-            // Arrange for a download.
-            boolean download = requestFromOthers
-                || requestFromFriends
-                && fInfo.getModifiedBy().getNode(getController(), true)
-                    .isFriend();
-
-            if (download) {
-                tm.downloadNewestVersion(fInfo, autoDownload);
+        downloadNewestVersions(folder, incomingFiles, new FileInfoFilter() {
+            public boolean accept(FileInfo fInfo) {
+                return requestFromOthers
+                    || requestFromFriends
+                    && fInfo.getModifiedBy().getNode(getController(), true)
+                        .isFriend();
             }
-        }
+        }, autoDownload);
     }
 
     /**
@@ -177,7 +172,7 @@ public class FileRequestor extends PFComponent {
      * @param folder
      *            the folder to request missing files on.
      */
-    private void requestMissingFilesForAutodownload(Folder folder) {
+    private void requestMissingFilesForAutodownload(final Folder folder) {
         if (!folder.getSyncProfile().isAutodownload()) {
             if (isFiner()) {
                 logFiner("Skipping " + folder + ". not on auto donwload");
@@ -185,9 +180,8 @@ public class FileRequestor extends PFComponent {
             return;
         }
         if (isFiner()) {
-            logFiner(
-                "Requesting files (autodownload), has own DB? "
-                    + folder.hasOwnDatabase());
+            logFiner("Requesting files (autodownload), has own DB? "
+                + folder.hasOwnDatabase());
         }
 
         // Dont request files until has own database
@@ -197,32 +191,56 @@ public class FileRequestor extends PFComponent {
         }
         if (folder.getConnectedMembersCount() == 0) {
             if (isFiner()) {
-                logFiner(
-                    "Not requesting files. No member connected on " + folder);
+                logFiner("Not requesting files. No member connected on "
+                    + folder);
             }
             return;
         }
         if (!folder.hasUploadCapacity()) {
             if (isFiner()) {
-                logFiner(
-                    "Not requesting files. Members of folder don't have upload capacity "
-                        + folder);
+                logFiner("Not requesting files. Members of folder don't have upload capacity "
+                    + folder);
             }
             return;
         }
         Collection<FileInfo> incomingFiles = folder.getIncomingFiles(folder
-            .getSyncProfile().getConfiguration().isAutoDownloadFromOthers(), false);
+            .getSyncProfile().getConfiguration().isAutoDownloadFromOthers(),
+            false);
         if (incomingFiles.isEmpty()) {
             if (isFiner()) {
-                logFiner(
-                    "Not requesting files. No incoming files " + folder);
+                logFiner("Not requesting files. No incoming files " + folder);
             }
             return;
         }
-        List<FileInfo> filesToDownload = new ArrayList<FileInfo>(incomingFiles
-            .size());
+
+        downloadNewestVersions(folder, incomingFiles, new FileInfoFilter() {
+            public boolean accept(FileInfo info) {
+                return folder.getSyncProfile().getConfiguration()
+                    .isAutoDownloadFromOthers()
+                    || folder.getSyncProfile().getConfiguration()
+                        .isAutoDownloadFromFriends()
+                    && info.getModifiedBy().getNode(getController(), true)
+                        .isFriend();
+            }
+        }, true);
+    }
+
+    /**
+     * Utility method that will download the newest version of all given files
+     * provided that the given filter accepts a file.
+     * 
+     * @param folder
+     * @param fInfos
+     * @param dlFilter
+     * @param autoDownload
+     */
+    private void downloadNewestVersions(Folder folder,
+        Collection<FileInfo> fInfos, FileInfoFilter dlFilter,
+        boolean autoDownload)
+    {
         TransferManager tm = getController().getTransferManager();
-        for (FileInfo fInfo : incomingFiles) {
+        List<FileInfo> filesToDownload = new ArrayList<FileInfo>(fInfos.size());
+        for (FileInfo fInfo : fInfos) {
             if (fInfo.isDeleted() || tm.isDownloadingActive(fInfo)
                 || tm.isDownloadingPending(fInfo))
             {
@@ -230,23 +248,56 @@ public class FileRequestor extends PFComponent {
                 continue;
             }
 
-            // Arrange for a download.
-            boolean download = folder.getSyncProfile().getConfiguration()
-                .isAutoDownloadFromOthers()
-                || folder.getSyncProfile().getConfiguration()
-                    .isAutoDownloadFromFriends()
-                && fInfo.getModifiedBy().getNode(getController(), true)
-                    .isFriend();
-
-            if (download) {
+            if (dlFilter.accept(fInfo)) {
                 filesToDownload.add(fInfo);
             }
         }
         Collections.sort(filesToDownload, folder.getTransferPriorities()
             .getComparator());
         for (FileInfo fInfo : filesToDownload) {
-            tm.downloadNewestVersion(fInfo, true);
+            prepareDownload(fInfo.getNewestVersion(getController()
+                .getFolderRepository()), autoDownload);
         }
+    }
+
+    private void prepareDownload(FileInfo fInfo, boolean autoDownload) {
+        TransferManager tm = getController().getTransferManager();
+        if (autoDownload) {
+            // FIXME Currently only support for automatically requested files,
+            // additional features require some rewriting of the whole requests
+            // thing.
+            Collection<Member> sources = tm.getSourcesForVersion(fInfo
+                .getNewestVersion(getController().getFolderRepository()));
+            Member FhReq = null;
+            Member oldSource = null;
+            for (Member m : sources) {
+                if (m.getIdentity().isSupportingFileHistoryRequests()) {
+                    // TODO Send History request!
+                    FhReq = m;
+                    break;
+                } else {
+                    oldSource = m;
+                }
+            }
+
+            // No source at all?
+            if (FhReq == null && oldSource == null) {
+                if (!autoDownload) {
+                    pendingRequests.add(fInfo);
+                }
+                return;
+            }
+
+            if (FhReq == null && oldSource != null) {
+                if (!ProblemUtil.resolveNoFileHistorySupport(fInfo
+                    .getFolder(getController().getFolderRepository()), fInfo,
+                    oldSource))
+                {
+                    return;
+                }
+            }
+        }
+        tm.downloadNewestVersion(fInfo, autoDownload);
     }
 
     /**
@@ -266,9 +317,8 @@ public class FileRequestor extends PFComponent {
                     }
 
                     int nFolders = folderQueue.size();
-                    logInfo(
-                            "Start requesting files for " + nFolders
-                                + " folder(s)");
+                    logInfo("Start requesting files for " + nFolders
+                        + " folder(s)");
                     long start = System.currentTimeMillis();
                     for (Iterator<Folder> it = folderQueue.iterator(); it
                         .hasNext();)
@@ -278,9 +328,8 @@ public class FileRequestor extends PFComponent {
                     }
                     if (isFiner()) {
                         long took = System.currentTimeMillis() - start;
-                        logFiner(
-                            "Requesting files for " + nFolders
-                                + " folder(s) took " + took + "ms.");
+                        logFiner("Requesting files for " + nFolders
+                            + " folder(s) took " + took + "ms.");
                     }
 
                     // Sleep a bit to avoid spamming
@@ -305,4 +354,5 @@ public class FileRequestor extends PFComponent {
             triggerFileRequesting();
         }
     }
+
 }

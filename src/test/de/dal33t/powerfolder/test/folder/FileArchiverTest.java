@@ -91,16 +91,29 @@ public class FileArchiverTest extends TwoControllerTestCase {
             modLisaFile(tl, fib);
         }
 
-        File e0 = new File(fb.getSystemSubDir(), "archive");
-        e0 = new File(e0, fib.getName() + "_K_0");
-        File e1 = new File(fb.getSystemSubDir(), "archive");
-        e1 = new File(e1, fib.getName() + "_K_1");
+        File ver[] = new File[4];
+        File archdir = new File(fb.getSystemSubDir(), "archive");
+        for (int i = 0; i < ver.length; i++) {
+            ver[i] = new File(archdir, fib.getName() + "_K_" + i);
+        }
 
-        assertFalse(e0.exists());
-        assertTrue(e1.exists());
+        assertFalse(ver[0].exists());
+        assertTrue(ver[1].exists());
 
         modLisaFile(tl, fib);
-        assertFalse(e1.exists());
+        assertFalse(ver[1].exists());
+        assertTrue(ver[2].exists());
+
+        ((CopyOrMoveFileArchiver) fb.getFileArchiver()).setVersionsPerFile(5);
+        modLisaFile(tl, fib);
+        assertTrue(ver[2].exists());
+
+        modLisaFile(tl, fib);
+        assertTrue(ver[2].exists());
+
+        modLisaFile(tl, fib);
+        assertFalse(ver[2].exists());
+        assertTrue(ver[3].exists());
     }
 
     private void modLisaFile(File file, final FileInfo fInfo) {

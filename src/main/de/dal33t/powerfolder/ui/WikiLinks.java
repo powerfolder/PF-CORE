@@ -20,9 +20,8 @@
 package de.dal33t.powerfolder.ui;
 
 /**
- * Repository of links to Wiki pages.
- * Any references to the PowerFolder Wiki should go here, so that we can ensure
- * the Wiki is up to date.
+ * Repository of links to Wiki pages. Any references to the PowerFolder Wiki
+ * should go here, so that we can ensure the Wiki is up to date.
  */
 public interface WikiLinks {
 
@@ -40,4 +39,5 @@ public interface WikiLinks {
     String PROBLEM_ILLEGAL_CHARS = "Illegal-Chars";
     String PROBLEM_RESERVED_WORD = "Reserved-Word";
     String PROBLEM_FILENAME_TOO_LONG = "File-Name-Too-Long";
+    String PROBLEM_NO_CONFLICT_DETECTION_POSSIBLE = "Version_Conflict_With_Old_Client";
 }

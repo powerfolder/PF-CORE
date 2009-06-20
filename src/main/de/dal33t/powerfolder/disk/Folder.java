@@ -765,6 +765,11 @@ public class Folder extends PFComponent {
      *         false if any problem happend.
      */
     public boolean scanDownloadFile(FileInfo fInfo, File tempFile) {
+        // FIXME What happens if the file was locally modified before the
+        // download finished? There should be a check here if the current local
+        // version differs from the version when the download began. In that
+        // case a conflict has to be raised!
+
         // rename file
         File targetFile = fInfo.getDiskFile(getController()
             .getFolderRepository());

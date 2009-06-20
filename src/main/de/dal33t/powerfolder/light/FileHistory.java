@@ -44,6 +44,48 @@ public class FileHistory implements Serializable {
 
     private final ImmutableList<Record> history;
 
+    public static class Conflict {
+        private final FileInfo localFileInfo;
+        private final FileInfo otherFileInfo;
+        private final FileInfo ancestorFileInfo;
+
+        public Conflict(FileInfo localFileInfo, FileInfo otherFileInfo,
+            FileInfo ancestorFileInfo)
+        {
+            this.localFileInfo = localFileInfo;
+            this.otherFileInfo = otherFileInfo;
+            this.ancestorFileInfo = ancestorFileInfo;
+        }
+
+        /**
+         * Returns the most recent FileInfo of this FileHistory.
+         * 
+         * @return
+         */
+        public FileInfo getLocalFileInfo() {
+            return localFileInfo;
+        }
+
+        /**
+         * Returns the most recent FileInfo of the other FileHistory.
+         * 
+         * @return
+         */
+        public FileInfo getOtherFileInfo() {
+            return otherFileInfo;
+        }
+
+        /**
+         * Returns the FileInfo ancestor common to both, the local and the
+         * remote, FileInfos.
+         * 
+         * @return a common ancestor FileInfo or null if there isn't one
+         */
+        public FileInfo getAncestorFileInfo() {
+            return ancestorFileInfo;
+        }
+    }
+
     public static class Record {
         private final FileInfo mergedFirst;
         private final FileInfo mergedSecond;
@@ -146,21 +188,33 @@ public class FileHistory implements Serializable {
     /**
      * Tests if the given FileHistory has a version conflict with this one. A
      * conflict happens if both histories have a common VersionedFile which is
-     * not the most recent version for any of the histories.
+     * not the most recent version for any of the histories or if they do not
+     * have a common ancestor.
      * 
      * @param other
      *            another history
-     * @return true, if there's a conflict between this history and the given
-     *         one
+     * @return a {@link Conflict} or null if none was detected
      */
-    public boolean hasConflictWith(FileHistory other) {
-        Reject.ifNull(other, "other is null!");
-        if (getRecord().equals(other.getRecord())) {
-            return false;
+    public Conflict getConflictWith(FileHistory other) {
+        Reject.notNull(other, "other");
+
+        if (getRecord().getFileInfo().isVersionDateAndSizeIdentical(
+            other.getRecord().getFileInfo())
+            || !getRecord().getFileInfo().equals(
+                other.getRecord().getFileInfo()))
+        {
+            return null;
         }
-        FileInfo cf = getCommonVersion(other);
-        return cf != null && !cf.equals(getRecord().fileInfo)
-            && !getRecord().fileInfo.equals(cf);
+        FileInfo cv = getCommonVersion(other);
+        if (cv == null
+            || !cv.isVersionDateAndSizeIdentical(getRecord().getFileInfo())
+            && !cv.isVersionDateAndSizeIdentical(other.getRecord()
+                .getFileInfo()))
+        {
+            return new Conflict(getRecord().getFileInfo(), other.getRecord()
+                .getFileInfo(), cv);
+        }
+        return null;
     }
 
     /**

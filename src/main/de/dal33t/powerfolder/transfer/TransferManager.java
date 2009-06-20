@@ -101,25 +101,25 @@ public class TransferManager extends PFComponent {
 
     private Thread myThread;
     /** Uploads that are waiting to start */
-    private List<Upload> queuedUploads;
+    private final List<Upload> queuedUploads;
     /** currently uploading */
-    private List<Upload> activeUploads;
+    private final List<Upload> activeUploads;
     /** The list of completed download */
-    private List<Upload> completedUploads;
+    private final List<Upload> completedUploads;
     /** currenly downloading */
-    private ConcurrentMap<FileInfo, DownloadManager> dlManagers;
+    private final ConcurrentMap<FileInfo, DownloadManager> dlManagers;
     /**
      * The # of active and queued downloads of this node. Cached value. Only
      * used for performance optimization
      */
-    private ConcurrentMap<Member, Integer> downloadsCount;
+    private final ConcurrentMap<Member, Integer> downloadsCount;
     /** A set of pending files, which should be downloaded */
-    private List<Download> pendingDownloads;
+    private final List<Download> pendingDownloads;
     /** The list of completed download */
-    private List<DownloadManager> completedDownloads;
+    private final List<DownloadManager> completedDownloads;
 
     /** The trigger, where transfermanager waits on */
-    private Object waitTrigger = new Object();
+    private final Object waitTrigger = new Object();
     private boolean transferCheckTriggered;
     /**
      * To lock the transfer checker. Lock this to make sure no transfer checks
@@ -130,8 +130,8 @@ public class TransferManager extends PFComponent {
      * To lock the transfer checker. Lock this to make sure no transfer checks
      * are executed untill the lock is released.
      */
-    private Lock uploadsLock = new ReentrantLock();
-    private Object downloadRequestLock = new Object();
+    private final Lock uploadsLock = new ReentrantLock();
+    private final Object downloadRequestLock = new Object();
 
     private FileRecordProvider fileRecordProvider;
 
@@ -142,31 +142,31 @@ public class TransferManager extends PFComponent {
     private TransferStatus transferStatus;
 
     /** The maximum concurrent uploads */
-    private int allowedUploads;
+    private final int allowedUploads;
 
     /** the counter for uploads (effecitve) */
-    private TransferCounter uploadCounter;
+    private final TransferCounter uploadCounter;
     /** the counter for downloads (effecitve) */
-    private TransferCounter downloadCounter;
+    private final TransferCounter downloadCounter;
 
     /** the counter for up traffic (real) */
-    private TransferCounter totalUploadTrafficCounter;
+    private final TransferCounter totalUploadTrafficCounter;
     /** the counter for download traffic (real) */
-    private TransferCounter totalDownloadTrafficCounter;
+    private final TransferCounter totalDownloadTrafficCounter;
 
     /** Provides bandwidth for the transfers */
-    private BandwidthProvider bandwidthProvider;
+    private final BandwidthProvider bandwidthProvider;
 
     /** Input limiter, currently shared between all LAN connections */
-    private BandwidthLimiter sharedLANInputHandler;
+    private final BandwidthLimiter sharedLANInputHandler;
     /** Input limiter, currently shared between all WAN connections */
-    private BandwidthLimiter sharedWANInputHandler;
+    private final BandwidthLimiter sharedWANInputHandler;
     /** Output limiter, currently shared between all LAN connections */
-    private BandwidthLimiter sharedLANOutputHandler;
+    private final BandwidthLimiter sharedLANOutputHandler;
     /** Output limiter, currently shared between all WAN connections */
-    private BandwidthLimiter sharedWANOutputHandler;
+    private final BandwidthLimiter sharedWANOutputHandler;
 
-    private TransferManagerListener listenerSupport;
+    private final TransferManagerListener listenerSupport;
 
     private DownloadManagerFactory downloadManagerFactory = MultiSourceDownloadManager.factory;
 
@@ -491,7 +491,9 @@ public class TransferManager extends PFComponent {
     private DownloadManager getDownloadManagerFor(FileInfo info) {
         Validate.notNull(info);
         DownloadManager man = dlManagers.get(info);
-        if (man != null && man.getFileInfo().isVersionDateAndSizeIdentical(info)) {
+        if (man != null
+            && man.getFileInfo().isVersionDateAndSizeIdentical(info))
+        {
             return man;
         }
         return null;
@@ -1528,7 +1530,8 @@ public class TransferManager extends PFComponent {
 
         Folder folder = fInfo.getFolder(getController().getFolderRepository());
         FileInfo localFile = folder != null ? folder.getFile(fInfo) : null;
-        if (localFile != null && fInfo.isVersionDateAndSizeIdentical(localFile)) {
+        if (localFile != null && fInfo.isVersionDateAndSizeIdentical(localFile))
+        {
             logWarning("Not adding pending download, already have: " + fInfo);
             return false;
         }
@@ -1805,6 +1808,9 @@ public class TransferManager extends PFComponent {
         }
     }
 
+    // TODO Does all this "sources" management really belong to the
+    // TransferManager?
+
     /**
      * Finds the sources for the file. Returns only sources which are connected
      * The members are sorted in order of best source.
@@ -1816,6 +1822,40 @@ public class TransferManager extends PFComponent {
      */
     public List<Member> getSourcesFor(FileInfo fInfo) {
         return getSourcesFor0(fInfo, false);
+    }
+
+    /**
+     * Returns only sources which are connected and have "exactly" the given
+     * FileInfo version.
+     * 
+     * @param fInfo
+     * @return
+     */
+    public Collection<Member> getSourcesForVersion(FileInfo fInfo) {
+        Reject.notNull(fInfo, "fInfo");
+
+        Folder folder = fInfo.getFolder(getController().getFolderRepository());
+        if (folder == null) {
+            throw new NullPointerException("Folder not joined of file: "
+                + fInfo);
+        }
+        List<Member> sources = null;
+        for (Member node : folder.getMembersAsCollection()) {
+            FileInfo rInfo = node.getFile(fInfo);
+            if (node.isCompleteyConnected() && !node.isMySelf()
+                && fInfo.isVersionDateAndSizeIdentical(rInfo))
+            {
+                // node is connected and has file
+                if (sources == null) {
+                    sources = new ArrayList<Member>();
+                }
+                sources.add(node);
+            }
+        }
+        if (sources == null) {
+            sources = Collections.emptyList();
+        }
+        return sources;
     }
 
     private List<Member> getSourcesWithFreeUploadCapacity(FileInfo fInfo) {
@@ -2765,6 +2805,7 @@ public class TransferManager extends PFComponent {
      * count.
      */
     private class PartialTransferStatsUpdater extends TimerTask {
+        @Override
         public void run() {
             FolderRepository folderRepository = getController()
                 .getFolderRepository();
@@ -2788,6 +2829,7 @@ public class TransferManager extends PFComponent {
     }
 
     private class TransferCleaner extends TimerTask {
+        @Override
         public void run() {
             cleanupOldTransfers();
         }
