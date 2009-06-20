@@ -23,7 +23,7 @@ import de.dal33t.powerfolder.util.os.OSUtil;
  */
 public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
     private boolean ignoreFileNameCase;
-    private ConcurrentMap<String, Domain> domains = new ConcurrentHashMap<String, Domain>();
+    private final ConcurrentMap<String, Domain> domains = new ConcurrentHashMap<String, Domain>();
 
     public FileInfoDAOHashMapImpl() {
         super();
@@ -134,7 +134,7 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
     }
 
     private static class Domain {
-        private ConcurrentMap<String, FileInfo> files = new ConcurrentHashMap<String, FileInfo>();
+        private final ConcurrentMap<String, FileInfo> files = new ConcurrentHashMap<String, FileInfo>();
     }
 
     public Iterator<FileInfo> findDifferentFiles(int maxResults,
@@ -144,8 +144,7 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
         return null;
     }
 
-    public Iterator<FileHistory> getFileHistory(Collection<FileInfo> fileInfos)
-    {
+    public FileHistory getFileHistory(FileInfo fileInfo) {
         // TODO Auto-generated method stub
         return null;
     }

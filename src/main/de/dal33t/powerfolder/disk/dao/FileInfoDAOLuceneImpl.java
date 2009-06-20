@@ -70,18 +70,21 @@ public class FileInfoDAOLuceneImpl extends PFComponent implements FileInfoDAO {
     private static final String FIELD_NAME_DOMAIN = "domain";
     private static final int MAX_ITEMS = 400000;
 
-    private boolean ignoreFileNameCase;
+    private final boolean ignoreFileNameCase;
     private volatile boolean started;
-    private Directory directory;
-    private IndexWriter iwriter;
-    private IndexSearcherPool searcherPool;
+    private final Directory directory;
+    private final IndexWriter iwriter;
+    private final IndexSearcherPool searcherPool;
 
     /**
-     * @param controller the controller
-     * @param indexDir the directory where to store the index information
+     * @param controller
+     *            the controller
+     * @param indexDir
+     *            the directory where to store the index information
      * @throws IOException
      */
-    public FileInfoDAOLuceneImpl(Controller controller, File indexDir) throws IOException
+    public FileInfoDAOLuceneImpl(Controller controller, File indexDir)
+        throws IOException
     {
         super(controller);
         Analyzer analyzer = new StandardAnalyzer();
@@ -93,23 +96,24 @@ public class FileInfoDAOLuceneImpl extends PFComponent implements FileInfoDAO {
         // iwriter.setMaxFieldLength(25000);
         searcherPool = new IndexSearcherPool();
         ignoreFileNameCase = OSUtil.isWindowsSystem();
-//        controller.getThreadPool().scheduleWithFixedDelay(new Runnable() {
-//
-//            public void run() {
-//                if (started) {
-//                    try {
-//                        iwriter.optimize();
-//                        iwriter.commit();
-//                    } catch (Exception e) {
-//                        logSevere("Unable to optimize folder db index: " + e, e);
-//                    }
-//                }
-//            }
-//        }, 0, 10, TimeUnit.SECONDS);
+        // controller.getThreadPool().scheduleWithFixedDelay(new Runnable() {
+        //
+        // public void run() {
+        // if (started) {
+        // try {
+        // iwriter.optimize();
+        // iwriter.commit();
+        // } catch (Exception e) {
+        // logSevere("Unable to optimize folder db index: " + e, e);
+        // }
+        // }
+        // }
+        // }, 0, 10, TimeUnit.SECONDS);
         started = true;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
      * @see de.dal33t.powerfolder.disk.lucene.FileInfoDAO#stop()
      */
     public void stop() {
@@ -122,15 +126,21 @@ public class FileInfoDAOLuceneImpl extends PFComponent implements FileInfoDAO {
         }
     }
 
-    /* (non-Javadoc)
-     * @see de.dal33t.powerfolder.disk.lucene.FileInfoDAO#store(java.lang.String, de.dal33t.powerfolder.light.FileInfo)
+    /*
+     * (non-Javadoc)
+     * @see
+     * de.dal33t.powerfolder.disk.lucene.FileInfoDAO#store(java.lang.String,
+     * de.dal33t.powerfolder.light.FileInfo)
      */
     public void store(String domain, FileInfo... fInfos) {
         store(domain, Arrays.asList(fInfos));
     }
 
-    /* (non-Javadoc)
-     * @see de.dal33t.powerfolder.disk.lucene.FileInfoDAO#store(java.lang.String, java.util.Collection)
+    /*
+     * (non-Javadoc)
+     * @see
+     * de.dal33t.powerfolder.disk.lucene.FileInfoDAO#store(java.lang.String,
+     * java.util.Collection)
      */
     public void store(String domain, Collection<FileInfo> fInfos) {
         Reject.ifNull(fInfos, "FileInfos is null");
@@ -177,8 +187,11 @@ public class FileInfoDAOLuceneImpl extends PFComponent implements FileInfoDAO {
         searcherPool.invalidateActiveSearcher();
     }
 
-    /* (non-Javadoc)
-     * @see de.dal33t.powerfolder.disk.lucene.FileInfoDAO#findNewestVersion(de.dal33t.powerfolder.light.FileInfo, java.lang.String)
+    /*
+     * (non-Javadoc)
+     * @see
+     * de.dal33t.powerfolder.disk.lucene.FileInfoDAO#findNewestVersion(de.dal33t
+     * .powerfolder.light.FileInfo, java.lang.String)
      */
     public FileInfo findNewestVersion(FileInfo fInfo, String... domains) {
         Reject.ifNull(fInfo, "FolderId is blank");
@@ -220,15 +233,20 @@ public class FileInfoDAOLuceneImpl extends PFComponent implements FileInfoDAO {
         }
     }
 
-    /* (non-Javadoc)
-     * @see de.dal33t.powerfolder.disk.lucene.FileInfoDAO#find(de.dal33t.powerfolder.light.FileInfo, java.lang.String)
+    /*
+     * (non-Javadoc)
+     * @see
+     * de.dal33t.powerfolder.disk.lucene.FileInfoDAO#find(de.dal33t.powerfolder
+     * .light.FileInfo, java.lang.String)
      */
     public FileInfo find(FileInfo fInfo, String domain) {
         return find(fInfo.getName(), fInfo.getFolderInfo().id, domain);
     }
 
-    /* (non-Javadoc)
-     * @see de.dal33t.powerfolder.disk.lucene.FileInfoDAO#find(java.lang.String, java.lang.String, java.lang.String)
+    /*
+     * (non-Javadoc)
+     * @see de.dal33t.powerfolder.disk.lucene.FileInfoDAO#find(java.lang.String,
+     * java.lang.String, java.lang.String)
      */
     public FileInfo find(String fileName, String folderId, String domain) {
         Reject.ifBlank(fileName, "Filename is blank");
@@ -253,8 +271,11 @@ public class FileInfoDAOLuceneImpl extends PFComponent implements FileInfoDAO {
         return fileNameQuery;
     }
 
-    /* (non-Javadoc)
-     * @see de.dal33t.powerfolder.disk.lucene.FileInfoDAO#findByNameIgnoreCase(java.lang.String, java.lang.String, java.lang.String)
+    /*
+     * (non-Javadoc)
+     * @see
+     * de.dal33t.powerfolder.disk.lucene.FileInfoDAO#findByNameIgnoreCase(java
+     * .lang.String, java.lang.String, java.lang.String)
      */
 
     public FileInfo findByNameIgnoreCase(String fileName, String folderId,
@@ -272,16 +293,22 @@ public class FileInfoDAOLuceneImpl extends PFComponent implements FileInfoDAO {
         return convertToFile(doc);
     }
 
-    /* (non-Javadoc)
-     * @see de.dal33t.powerfolder.disk.lucene.FileInfoDAO#delete(java.lang.String, de.dal33t.powerfolder.light.FileInfo)
+    /*
+     * (non-Javadoc)
+     * @see
+     * de.dal33t.powerfolder.disk.lucene.FileInfoDAO#delete(java.lang.String,
+     * de.dal33t.powerfolder.light.FileInfo)
      */
     public void delete(String domain, FileInfo fInfo) {
         deleteDocument(fInfo.getName(), fInfo.getFolderInfo().id, domain, true);
 
     }
 
-    /* (non-Javadoc)
-     * @see de.dal33t.powerfolder.disk.lucene.FileInfoDAO#deleteDomain(java.lang.String)
+    /*
+     * (non-Javadoc)
+     * @see
+     * de.dal33t.powerfolder.disk.lucene.FileInfoDAO#deleteDomain(java.lang.
+     * String)
      */
     public void deleteDomain(String domain) {
         try {
@@ -295,8 +322,10 @@ public class FileInfoDAOLuceneImpl extends PFComponent implements FileInfoDAO {
         }
     }
 
-    /* (non-Javadoc)
-     * @see de.dal33t.powerfolder.disk.lucene.FileInfoDAO#findAll(java.lang.String)
+    /*
+     * (non-Javadoc)
+     * @see
+     * de.dal33t.powerfolder.disk.lucene.FileInfoDAO#findAll(java.lang.String)
      */
     public List<FileInfo> findAll(String domain) {
         IndexSearcher searcher = searcherPool.get();
@@ -324,8 +353,10 @@ public class FileInfoDAOLuceneImpl extends PFComponent implements FileInfoDAO {
         }
     }
 
-    /* (non-Javadoc)
-     * @see de.dal33t.powerfolder.disk.lucene.FileInfoDAO#count(java.lang.String)
+    /*
+     * (non-Javadoc)
+     * @see
+     * de.dal33t.powerfolder.disk.lucene.FileInfoDAO#count(java.lang.String)
      */
     public int count(String domain) {
         IndexSearcher searcher = searcherPool.get();
@@ -430,7 +461,7 @@ public class FileInfoDAOLuceneImpl extends PFComponent implements FileInfoDAO {
 
     private class IndexSearcherPool {
         private IndexSearcher activeSearcher;
-        private Map<IndexSearcher, AtomicInteger> pool = new HashMap<IndexSearcher, AtomicInteger>();
+        private final Map<IndexSearcher, AtomicInteger> pool = new HashMap<IndexSearcher, AtomicInteger>();
 
         private synchronized void close() {
             if (activeSearcher != null && pool.get(activeSearcher).get() == 0) {
@@ -466,7 +497,7 @@ public class FileInfoDAOLuceneImpl extends PFComponent implements FileInfoDAO {
                         e);
 
                 }
-               
+
                 // TODO: optimize thru reopening reader
                 // IndexReader ireader = activeSearcher.getIndexReader();
                 // try {
@@ -543,8 +574,7 @@ public class FileInfoDAOLuceneImpl extends PFComponent implements FileInfoDAO {
         return null;
     }
 
-    public Iterator<FileHistory> getFileHistory(Collection<FileInfo> fileInfos)
-    {
+    public FileHistory getFileHistory(FileInfo fileInfo) {
         // TODO Auto-generated method stub
         return null;
     }

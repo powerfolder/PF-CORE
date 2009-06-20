@@ -35,7 +35,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import de.dal33t.powerfolder.disk.*;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.FolderRepository;
+import de.dal33t.powerfolder.disk.ScanResult;
 import de.dal33t.powerfolder.event.AskForFriendshipEvent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -45,6 +47,8 @@ import de.dal33t.powerfolder.message.AbortUpload;
 import de.dal33t.powerfolder.message.AddFriendNotification;
 import de.dal33t.powerfolder.message.DownloadQueued;
 import de.dal33t.powerfolder.message.FileChunk;
+import de.dal33t.powerfolder.message.FileHistoryReply;
+import de.dal33t.powerfolder.message.FileHistoryRequest;
 import de.dal33t.powerfolder.message.FileList;
 import de.dal33t.powerfolder.message.FolderFilesChanged;
 import de.dal33t.powerfolder.message.FolderList;
@@ -86,7 +90,15 @@ import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.transfer.Upload;
-import de.dal33t.powerfolder.util.*;
+import de.dal33t.powerfolder.util.Convert;
+import de.dal33t.powerfolder.util.Debug;
+import de.dal33t.powerfolder.util.MessageListenerSupport;
+import de.dal33t.powerfolder.util.Profiling;
+import de.dal33t.powerfolder.util.ProfilingEntry;
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.StringUtils;
+import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.Waiter;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
 
 /**
@@ -114,28 +126,28 @@ public class Member extends PFComponent implements Comparable<Member> {
     private int connectionRetries;
 
     /** The total number of reconnection tries at this moment */
-    private AtomicInteger currentReconTries = new AtomicInteger(0);
+    private final AtomicInteger currentReconTries = new AtomicInteger(0);
 
     /** his member information */
-    private MemberInfo info;
+    private final MemberInfo info;
 
     /** The last time, the node was seen on the network */
     private Date lastNetworkConnectTime;
 
     /** Lock when peer is going to be initalized */
-    private Object peerInitalizeLock = new Object();
+    private final Object peerInitalizeLock = new Object();
 
     /** Folderlist waiter */
-    private Object folderListWaiter = new Object();
+    private final Object folderListWaiter = new Object();
 
     /** Handshake completed waiter */
-    private Object handshakeCompletedWaiter = new Object();
+    private final Object handshakeCompletedWaiter = new Object();
 
     /**
      * Lock to ensure that only one thread executes the folder membership
      * synchronization.
      */
-    private Lock folderJoinLock = new ReentrantLock();
+    private final Lock folderJoinLock = new ReentrantLock();
 
     /**
      * The last message indicating that the handshake was completed
@@ -353,7 +365,6 @@ public class Member extends PFComponent implements Comparable<Member> {
             return true;
         }
 
-
         // Try to hold connection to supernode if max connections not reached
         // yet.
         if (conSlotAvail && isSupernode()) {
@@ -483,7 +494,8 @@ public class Member extends PFComponent implements Comparable<Member> {
         if (!newPeer.isConnected()) {
             logWarning("Peer disconnected while initializing connection: "
                 + newPeer);
-            return ConnectResult.failure("Peer disconnected while initializing connection");
+            return ConnectResult
+                .failure("Peer disconnected while initializing connection");
         }
 
         if (isFiner()) {
@@ -519,14 +531,15 @@ public class Member extends PFComponent implements Comparable<Member> {
                 + " Remote peer has wrong identity. remote ID: " + identityId
                 + ", expected ID: " + getId(), newPeer);
         }
-        
+
         // #1373
         if (!remoteMemberInfo.isOnSameNetwork(getController())) {
-            logWarning(
-                "Closing connection to node with diffrent network ID. Our netID: "
-                    + getController().getNodeManager().getNetworkId()
-                    + ", remote netID: " + remoteMemberInfo.networkId + " on "
-                    + remoteMemberInfo);
+            logWarning("Closing connection to node with diffrent network ID. Our netID: "
+                + getController().getNodeManager().getNetworkId()
+                + ", remote netID: "
+                + remoteMemberInfo.networkId
+                + " on "
+                + remoteMemberInfo);
             newPeer.shutdown();
             throw new InvalidIdentityException(
                 "Closing connection to node with diffrent network ID. Our netID: "
@@ -546,7 +559,8 @@ public class Member extends PFComponent implements Comparable<Member> {
             // Shutdown this member
             newPeer.shutdown();
             logFiner("Remote side did not accept our identity: " + newPeer);
-            return ConnectResult.failure("Remote side did not accept our identity");
+            return ConnectResult
+                .failure("Remote side did not accept our identity");
         }
 
         synchronized (peerInitalizeLock) {
@@ -727,7 +741,8 @@ public class Member extends PFComponent implements Comparable<Member> {
         synchronized (peerInitalizeLock) {
             if (!isConnected() || identity == null) {
                 logFine("Disconnected while completing handshake");
-                return ConnectResult.failure("Disconnected while completing handshake");
+                return ConnectResult
+                    .failure("Disconnected while completing handshake");
             }
             // Send node informations now
             // Send joined folders to synchronize
@@ -875,7 +890,6 @@ public class Member extends PFComponent implements Comparable<Member> {
             shutdown();
             return ConnectResult.failure("Unknown reason");
         }
-
 
         // Reset things
         connectionRetries = 0;
@@ -1449,7 +1463,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                             + " additional deltas. " + message);
                     }
                 }
-                
+
                 if (targetFolder != null) {
                     // Inform folder
                     targetFolder.fileListChanged(this, changes);
@@ -1517,11 +1531,10 @@ public class Member extends PFComponent implements Comparable<Member> {
                 expectedTime = 50;
 
             } else if (message instanceof AddFriendNotification) {
-                AddFriendNotification notification = (AddFriendNotification)
-                        message;
+                AddFriendNotification notification = (AddFriendNotification) message;
                 AskForFriendshipEvent event = new AskForFriendshipEvent(
-                        notification.getMemberInfo(),
-                        notification.getPersonalMessage());
+                    notification.getMemberInfo(), notification
+                        .getPersonalMessage());
                 getController().addAskForFriendship(event);
                 expectedTime = 50;
             } else if (message instanceof Notification) {
@@ -1533,9 +1546,8 @@ public class Member extends PFComponent implements Comparable<Member> {
                 } else {
                     switch (not.getEvent()) {
                         case ADDED_TO_FRIENDS :
-                            AskForFriendshipEvent event =
-                                    new AskForFriendshipEvent(getInfo(),
-                                    not.getPersonalMessage());
+                            AskForFriendshipEvent event = new AskForFriendshipEvent(
+                                getInfo(), not.getPersonalMessage());
                             getController().addAskForFriendship(event);
                             break;
                         default :
@@ -1557,8 +1569,8 @@ public class Member extends PFComponent implements Comparable<Member> {
 
             } else if (message instanceof StartUpload) {
                 StartUpload su = (StartUpload) message;
-                Download dl = getController().getTransferManager().getActiveDownload(
-                    this, su.getFile());
+                Download dl = getController().getTransferManager()
+                    .getActiveDownload(this, su.getFile());
                 if (dl != null) {
                     dl.uploadStarted(su.getFile());
                 } else if (downloadRecentlyCompleted(su.getFile())) {
@@ -1610,15 +1622,39 @@ public class Member extends PFComponent implements Comparable<Member> {
                     .handleUDTMessage(this, (UDTMessage) message);
                 expectedTime = 50;
 
+            } else if (message instanceof FileHistoryRequest) {
+                final FileInfo requested = ((FileHistoryRequest) message)
+                    .getFileInfo();
+                // No need to wait for the FileDAO to have built the FileHistory
+                getController().getThreadPool().execute(new Runnable() {
+                    public void run() {
+                        Folder f = getController().getFolderRepository()
+                            .getFolder(requested.getFolderInfo());
+                        if (f == null) {
+                            logWarning("Illegal FileHistoryRequest from "
+                                + this
+                                + ": This client is not member of the folder.");
+                            return;
+                        }
+                        sendMessageAsynchron(new FileHistoryReply(f.getDAO()
+                            .getFileHistory(requested), requested),
+                            "Failed to send FileHistoryReply.");
+                    }
+                });
+
+            } else if (message instanceof FileHistoryReply) {
+                getController().getFolderRepository().getFileRequestor()
+                    .receivedFileHistory((FileHistoryReply) message);
+
             } else if (message instanceof SingleFileOffer) {
-                getController().singleFileOfferReceived((SingleFileOffer) message);
+                getController().singleFileOfferReceived(
+                    (SingleFileOffer) message);
                 expectedTime = 50;
 
             } else if (message instanceof SingleFileAccept) {
-//                getController().getTransferManager().processSingleFileAcceptance(
-//                        (SingleFileAccept) message, fromPeer.getMember().getInfo());
+                // getController().getTransferManager().processSingleFileAcceptance(
+                // (SingleFileAccept) message, fromPeer.getMember().getInfo());
                 expectedTime = 50;
-
             } else {
                 logFiner("Message not known to message handling code, "
                     + "maybe handled in listener: " + message);
@@ -1676,6 +1712,7 @@ public class Member extends PFComponent implements Comparable<Member> {
     /**
      * Overridden, removes message listeners.
      */
+    @Override
     public void removeAllListeners() {
         if (isFiner()) {
             logFiner("Removing all listeners from member. " + this);
@@ -1741,7 +1778,8 @@ public class Member extends PFComponent implements Comparable<Member> {
                     + "did not received folderlist from remote");
             }
 
-            FolderList myFolderList = new FolderList(joinedFolders, remoteMagicId);
+            FolderList myFolderList = new FolderList(joinedFolders,
+                remoteMagicId);
             sendMessageAsynchron(myFolderList, null);
         } finally {
             folderJoinLock.unlock();
@@ -1821,7 +1859,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                     + " folder(s)");
                 if (!isFriend()) {
                     AskForFriendshipEvent event = new AskForFriendshipEvent(
-                            getInfo(), joinedFolders);
+                        getInfo(), joinedFolders);
                     getController().addAskForFriendship(event);
                 }
             }
@@ -1891,8 +1929,7 @@ public class Member extends PFComponent implements Comparable<Member> {
      * @return true if user joined any folder
      */
     public boolean hasJoinedAnyFolder() {
-        for (Folder folder : getController().getFolderRepository()
-            .getFolders())
+        for (Folder folder : getController().getFolderRepository().getFolders())
         {
             if (folder.hasMember(this)) {
                 return true;
@@ -1906,8 +1943,7 @@ public class Member extends PFComponent implements Comparable<Member> {
      */
     public List<Folder> getJoinedFolders() {
         List<Folder> joinedFolders = new ArrayList<Folder>();
-        for (Folder folder : getController().getFolderRepository()
-            .getFolders())
+        for (Folder folder : getController().getFolderRepository().getFolders())
         {
             if (folder.hasMember(this)) {
                 joinedFolders.add(folder);
@@ -1983,7 +2019,7 @@ public class Member extends PFComponent implements Comparable<Member> {
         // Fire event on nodemanager
         getController().getNodeManager().fireNodeSettingsChanged(this);
     }
-    
+
     /**
      * #1373
      * 
@@ -2184,7 +2220,7 @@ public class Member extends PFComponent implements Comparable<Member> {
     public void setAskedForFriendship(boolean flag) {
         askedForFriendship = flag;
     }
-    
+
     private boolean downloadRecentlyCompleted(FileInfo fInfo) {
         Reject.ifNull(fInfo, "FileInfo is null");
         Download dl = getController().getTransferManager()
@@ -2214,6 +2250,7 @@ public class Member extends PFComponent implements Comparable<Member> {
      * General
      */
 
+    @Override
     public String toString() {
         String connect;
 
@@ -2233,6 +2270,7 @@ public class Member extends PFComponent implements Comparable<Member> {
      * @param other
      * @return true if the ID's of the memberInfo objects are equal
      */
+    @Override
     public boolean equals(Object other) {
         if (this == other) {
             return true;
@@ -2245,6 +2283,7 @@ public class Member extends PFComponent implements Comparable<Member> {
         return false;
     }
 
+    @Override
     public int hashCode() {
         return (info.id == null) ? 0 : info.id.hashCode();
     }

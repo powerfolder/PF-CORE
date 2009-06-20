@@ -126,11 +126,11 @@ public interface FileInfoDAO {
     Collection<FileInfo> findInDirectory(String path, String... domains);
 
     /**
-     * @param fileInfos
+     * @param fileInfo
      *            the <code>FileInfo</code> to retrieve the file history for.
-     * @return the list of file histories for the given fileInfos.
+     * @return the FileHistory for the given FileInfo.
      */
-    Iterator<FileHistory> getFileHistory(Collection<FileInfo> fileInfos);
+    FileHistory getFileHistory(FileInfo fileInfo);
 
     /**
      * TODO: return CloseableIterator

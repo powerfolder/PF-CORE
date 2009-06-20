@@ -32,8 +32,12 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.light.FileHistory;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.light.FileHistory.Conflict;
+import de.dal33t.powerfolder.message.FileHistoryReply;
+import de.dal33t.powerfolder.message.FileHistoryRequest;
 import de.dal33t.powerfolder.util.FileInfoFilter;
 import de.dal33t.powerfolder.util.ProblemUtil;
 import de.dal33t.powerfolder.util.Profiling;
@@ -50,11 +54,13 @@ public class FileRequestor extends PFComponent {
     private Thread myThread;
     private final Queue<Folder> folderQueue;
     private final Queue<FileInfo> pendingRequests;
+    private final Queue<FileHistoryReply> fhQueue;
 
     public FileRequestor(Controller controller) {
         super(controller);
         folderQueue = new ConcurrentLinkedQueue<Folder>();
         pendingRequests = new ConcurrentLinkedQueue<FileInfo>();
+        fhQueue = new ConcurrentLinkedQueue<FileHistoryReply>();
     }
 
     /**
@@ -262,18 +268,18 @@ public class FileRequestor extends PFComponent {
 
     private void prepareDownload(FileInfo fInfo, boolean autoDownload) {
         TransferManager tm = getController().getTransferManager();
-        if (autoDownload) {
+        if (autoDownload && !pendingRequests.contains(fInfo)) {
             // FIXME Currently only support for automatically requested files,
             // additional features require some rewriting of the whole requests
             // thing.
             Collection<Member> sources = tm.getSourcesForVersion(fInfo
                 .getNewestVersion(getController().getFolderRepository()));
-            Member FhReq = null;
+            Member fhReq = null;
             Member oldSource = null;
             for (Member m : sources) {
                 if (m.getIdentity().isSupportingFileHistoryRequests()) {
                     // TODO Send History request!
-                    FhReq = m;
+                    fhReq = m;
                     break;
                 } else {
                     oldSource = m;
@@ -281,14 +287,12 @@ public class FileRequestor extends PFComponent {
             }
 
             // No source at all?
-            if (FhReq == null && oldSource == null) {
-                if (!autoDownload) {
-                    pendingRequests.add(fInfo);
-                }
+            if (fhReq == null && oldSource == null) {
+                // This is autoDownlad so just drop out
                 return;
             }
 
-            if (FhReq == null && oldSource != null) {
+            if (fhReq == null && oldSource != null) {
                 if (!ProblemUtil.resolveNoFileHistorySupport(fInfo
                     .getFolder(getController().getFolderRepository()), fInfo,
                     oldSource))
@@ -296,8 +300,31 @@ public class FileRequestor extends PFComponent {
                     return;
                 }
             }
+
+            if (fhReq != null) {
+                pendingRequests.add(fInfo);
+                fhReq.sendMessageAsynchron(new FileHistoryRequest(fInfo), null);
+            }
         }
         tm.downloadNewestVersion(fInfo, autoDownload);
+    }
+
+    /**
+     * Called if a FileHistory was received.
+     * 
+     * @param fhReply
+     */
+    public void receivedFileHistory(FileHistoryReply fhReply) {
+        Reject.notNull(fhReply, "fhReply");
+        if (!pendingRequests.remove(fhReply.getRequestFileInfo())) {
+            logWarning("Received FileHistory for unrequested FileInfo "
+                + fhReply.getRequestFileInfo());
+            return;
+        }
+        fhQueue.add(fhReply);
+        synchronized (folderQueue) {
+            folderQueue.notifyAll();
+        }
     }
 
     /**
@@ -313,6 +340,41 @@ public class FileRequestor extends PFComponent {
                     if (folderQueue.isEmpty()) {
                         synchronized (folderQueue) {
                             folderQueue.wait();
+                        }
+                    }
+                    logInfo("Checking conflicts for " + fhQueue.size()
+                        + " histories.");
+                    FileHistoryReply fhRepl;
+                    while ((fhRepl = fhQueue.poll()) != null) {
+                        FileInfo fi = fhRepl.getRequestFileInfo();
+                        FileHistory fh = fhRepl.getFileHistory();
+                        if (fh == null) {
+                            logWarning("Remote client claims not to have a history for "
+                                + fi + ", not downloading!");
+                        } else {
+                            FileHistory localHistory = fi.getFolder(
+                                getController().getFolderRepository()).getDAO()
+                                .getFileHistory(fi);
+                            if (localHistory == null) {
+                                logSevere("Local FileHistory missing for " + fi
+                                    + ", not downloading!");
+                            } else {
+                                Conflict conflict = localHistory
+                                    .getConflictWith(fh);
+                                if (conflict != null) {
+                                    if (ProblemUtil.resolveConflict(conflict)) {
+                                        // The code currently only supports
+                                        // autoDownloads!
+                                        getController().getTransferManager()
+                                            .downloadNewestVersion(fi, true);
+                                    }
+                                } else {
+                                    // The code currently only supports
+                                    // autoDownloads!
+                                    getController().getTransferManager()
+                                        .downloadNewestVersion(fi, true);
+                                }
+                            }
                         }
                     }
 
@@ -354,5 +416,4 @@ public class FileRequestor extends PFComponent {
             triggerFileRequesting();
         }
     }
-
 }

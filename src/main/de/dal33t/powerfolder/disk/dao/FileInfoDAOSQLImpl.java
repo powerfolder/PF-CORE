@@ -61,7 +61,7 @@ public class FileInfoDAOSQLImpl extends PFComponent implements FileInfoDAO {
     private static final String SQL_DELETE_DOMAIN = "DELETE FROM %TABLE_NAME% WHERE domain = ?";
 
     private String tableName;
-    private JdbcConnectionPool connectionPool;
+    private final JdbcConnectionPool connectionPool;
     private boolean ignoreFileNameCase;
 
     public FileInfoDAOSQLImpl(Controller controller, String dbURL,
@@ -371,8 +371,7 @@ public class FileInfoDAOSQLImpl extends PFComponent implements FileInfoDAO {
         return null;
     }
 
-    public Iterator<FileHistory> getFileHistory(Collection<FileInfo> fileInfos)
-    {
+    public FileHistory getFileHistory(FileInfo fileInfo) {
         // TODO Auto-generated method stub
         return null;
     }
