@@ -147,7 +147,6 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
 
             getWizardContext().setAttribute(SAVE_INVITE_LOCALLY, Boolean.FALSE);
 
-            System.out.println("hghg a " + invitation.getInvitor());
             getWizardContext().setAttribute(MAKE_FRIEND_AFTER,
                     invitation.getInvitor());
 
