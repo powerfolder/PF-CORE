@@ -164,6 +164,20 @@ public class FileNameProblemTest extends ControllerTestCase {
         TestHelper.createRandomFile(getFolder().getLocalBase(), "abcd-1");
         String s = FilenameProblemHelper.makeUnique(getController(),
                 FileInfo.getTemplate(getFolder().getInfo(), "abcd"));
-        assertEquals("Failed to make uniquen abcd to abcd-2", s, "abcd-2");
+        assertEquals("Failed to make unique abcd to abcd-2", s, "abcd-2");
+    }
+
+    /**
+     * Test the makeUnique() method in FilenameProblemHelper with file extension
+     */
+    public void testUniqueFileNameExt() {
+        setupTestFolder(SyncProfile.BACKUP_SOURCE);
+
+        // Test that abcd gets changed to abcd-2 because of other files.
+        TestHelper.createRandomFile(getFolder().getLocalBase(), "abcd.txt");
+        TestHelper.createRandomFile(getFolder().getLocalBase(), "abcd-1.txt");
+        String s = FilenameProblemHelper.makeUnique(getController(),
+                FileInfo.getTemplate(getFolder().getInfo(), "abcd.txt"));
+        assertEquals("Failed to make unique abcd.txt to abcd-2.txt", s, "abcd-2.txt");
     }
 }

@@ -40,8 +40,8 @@ public class FilenameProblemHelper {
      */
     private static final String[] RESERVED_WORDS = {"CON", "PRN", "AUX",
             "CLOCK$", "NUL", "COM0", "COM1", "COM2", "COM3", "COM4", "COM5",
-            "COM6", "COM7", "COM8", "COM9", "LPT0", "LPT1", "LPT2", "LPT3", "LPT4",
-            "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"};
+            "COM6", "COM7", "COM8", "COM9", "LPT0", "LPT1", "LPT2", "LPT3",
+            "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"};
 
     private static final int MAX_FILENAME_LENGTH = 255;
 
@@ -51,18 +51,6 @@ public class FilenameProblemHelper {
             "\"", "*", "<", ":", ">", "/"};
 
     public static final String[] ILLEGAL_MACOSX_CHARS = {"/", ":"};
-
-    /**
-     * For performace reasons the reserved filenames are put in a hashmap
-     */
-    private static final Map<String, String> RESERVED_WORDS_HASH_MAP;
-
-    static {
-        RESERVED_WORDS_HASH_MAP = new HashMap<String, String>();
-        for (String filename : RESERVED_WORDS) {
-            RESERVED_WORDS_HASH_MAP.put(filename.toLowerCase(), filename);
-        }
-    }
 
     /**
      * See if there are any problems.
@@ -115,12 +103,16 @@ public class FilenameProblemHelper {
     }
 
     /**
-     * Will also return true if file is called AUX.txt or aux!
-     * Note: Only public for test access.
+     * Will also return true if file is called AUX.txt or aux
      */
     public static boolean isReservedWindowsFilename(String filename) {
-        return RESERVED_WORDS_HASH_MAP.containsKey(stripExtension(filename)
-                .toLowerCase());
+        String filePart = stripExtension(filename).toUpperCase();
+        for (String reservedWord : RESERVED_WORDS) {
+            if (reservedWord.equals(filePart)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -224,33 +216,6 @@ public class FilenameProblemHelper {
     }
 
     /**
-     * add a -1 (or -2 etc if filename not unique) to the filename part (before
-     * the extension)
-     */
-//    private static String addSuffix(Controller controller, FileInfo fileInfo) {
-//        int index = fileInfo.getFilenameOnly().lastIndexOf('.');
-//        if (index > 0) { // extention found
-//            String extension = fileInfo.getFilenameOnly().substring(index,
-//                fileInfo.getFilenameOnly().length());
-//            String newName = stripExtension(fileInfo.getFilenameOnly()) + "-1"
-//                + extension;
-//            int count = 2;
-//            while (!isUnique(controller, newName, fileInfo)) {
-//                newName = stripExtension(fileInfo.getFilenameOnly()) + '-'
-//                    + count++ + extension;
-//            }
-//            return newName;
-//        }
-//        // no extention
-//        String newName = fileInfo.getFilenameOnly() + "-1";
-//        int count = 2;
-//        while (!isUnique(controller, newName, fileInfo)) {
-//            newName = fileInfo.getFilenameOnly() + '-' + count++;
-//        }
-//        return newName;
-//    }
-
-    /**
      * Unique if a file with that name does not exist
      */
     public static boolean isUnique(Controller controller, String newName,
@@ -300,11 +265,16 @@ public class FilenameProblemHelper {
      */
     public static String makeUnique(Controller controller, FileInfo fileInfo) {
         String filename = fileInfo.getFilenameOnly();
+        String extension = "";
+        if (filename.contains(".")) {
+            extension = filename.substring(filename.lastIndexOf('.'));
+            filename = filename.substring(0, filename.lastIndexOf('.'));
+        }
         String extra = "-1";
             int count = 1;
-            while (!isUnique(controller, filename + extra, fileInfo)) {
+            while (!isUnique(controller, filename + extra + extension, fileInfo)) {
                 extra = "-" + count++;
             }
-        return filename + extra;
+        return filename + extra + extension;
     }
 }

@@ -60,7 +60,6 @@ public class IllegalWindowsCharsFilenameProblem extends ResolvableProblem {
                         IllegalWindowsCharsFilenameProblem.this);
             }
         };
-
     }
 
     public String getResolutionDescription() {

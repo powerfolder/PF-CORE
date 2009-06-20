@@ -50,9 +50,15 @@ public class ReservedWordFilenameProblem extends ResolvableProblem {
         return WikiLinks.PROBLEM_RESERVED_WORD;
     }
 
-    public Runnable resolution(Controller controller) {
-        // @todo harry real resolution
-        return null;
+    public Runnable resolution(final Controller controller) {
+        return new Runnable() {
+            public void run() {
+                String newFilename = FilenameProblemHelper.makeUnique(
+                        controller, fileInfo);
+                FilenameProblemHelper.resolve(controller, fileInfo, newFilename,
+                        ReservedWordFilenameProblem.this);
+            }
+        };
     }
 
     public String getResolutionDescription() {
