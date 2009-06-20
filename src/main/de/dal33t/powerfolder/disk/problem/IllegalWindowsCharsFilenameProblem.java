@@ -50,9 +50,17 @@ public class IllegalWindowsCharsFilenameProblem extends ResolvableProblem {
         return WikiLinks.PROBLEM_ILLEGAL_CHARS;
     }
 
-    public Runnable resolution(Controller controller) {
-        // @todo harry real resolution
-        return null;
+    public Runnable resolution(final Controller controller) {
+        return new Runnable() {
+            public void run() {
+                String newFilename = FilenameProblemHelper.removeChars(
+                        fileInfo.getFilenameOnly(),
+                        FilenameProblemHelper.ILLEGAL_WINDOWS_CHARS);
+                FilenameProblemHelper.resolve(controller, fileInfo, newFilename,
+                        IllegalWindowsCharsFilenameProblem.this);
+            }
+        };
+
     }
 
     public String getResolutionDescription() {

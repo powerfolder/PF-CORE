@@ -45,6 +45,13 @@ public class FilenameProblemHelper {
 
     private static final int MAX_FILENAME_LENGTH = 255;
 
+    public static final String[] ILLEGAL_LINUX_CHARS = {"/"};
+
+    public static final String[] ILLEGAL_WINDOWS_CHARS = {"|", "\\", "?",
+            "\"", "*", "<", ":", ">", "/"};
+
+    public static final String[] ILLEGAL_MACOSX_CHARS = {"/", ":"};
+
     /**
      * For performace reasons the reserved filenames are put in a hashmap
      */
@@ -128,40 +135,11 @@ public class FilenameProblemHelper {
     }
 
     /**
-     * 0-31 and |\?*<":>/
+     * |\?*<":>/ illegal in windows
      */
     public static boolean containsIllegalWindowsChars(String filename) {
-        int s = filename.length();
-        for (int i = 0; i < s; i++) {
-            char aChar = filename.charAt(i);
-            // if (aChar <= 31) {
-            // return true;
-            // }
-            if (aChar == '|') {
-                return true;
-            }
-            if (aChar == '\\') {
-                return true;
-            }
-            if (aChar == '/') {
-                return true;
-            }
-            if (aChar == '?') {
-                return true;
-            }
-            if (aChar == '*') {
-                return true;
-            }
-            if (aChar == '"') {
-                return true;
-            }
-            if (aChar == ':') {
-                return true;
-            }
-            if (aChar == '<') {
-                return true;
-            }
-            if (aChar == '>') {
+        for (String illegalLinuxChar : ILLEGAL_WINDOWS_CHARS) {
+            if (filename.contains(illegalLinuxChar)) {
                 return true;
             }
         }
@@ -179,14 +157,24 @@ public class FilenameProblemHelper {
      * : and / are illegal on Mac OSX
      */
     private static boolean containsIllegalMacOSXChar(String filename) {
-        return filename.contains("/") || filename.contains(":");
+        for (String illegalLinuxChar : ILLEGAL_MACOSX_CHARS) {
+            if (filename.contains(illegalLinuxChar)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
      * / is illegal on Unix
      */
     private static boolean containsIllegalLinuxChar(String filename) {
-        return filename.contains("/");
+        for (String illegalLinuxChar : ILLEGAL_LINUX_CHARS) {
+            if (filename.contains(illegalLinuxChar)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static boolean isTooLong(String filename) {
@@ -222,18 +210,18 @@ public class FilenameProblemHelper {
         }
     }
 
-//    private static String removeChars(String filenameArg, String charsToRemove) {
-//        String filename = filenameArg;
-//        for (int i = 0; i < charsToRemove.length(); i++) {
-//            char c = charsToRemove.charAt(i);
-//            while (filename.indexOf(c) != -1) {
-//                int index = filename.indexOf(c);
-//                filename = filename.substring(0, index)
-//                    + filename.substring(index + 1, filename.length());
-//            }
-//        }
-//        return filename;
-//    }
+    public static String removeChars(String filenameArg,
+                                     String[] charsToRemove) {
+        String filename = filenameArg;
+        for (String c : charsToRemove) {
+            while (filename.contains(c)) {
+                int index = filename.indexOf(c);
+                filename = filename.substring(0, index)
+                    + filename.substring(index + 1, filename.length());
+            }
+        }
+        return filename;
+    }
 
     /**
      * add a -1 (or -2 etc if filename not unique) to the filename part (before
