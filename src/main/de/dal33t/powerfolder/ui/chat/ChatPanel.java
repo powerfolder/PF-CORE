@@ -44,10 +44,7 @@ import de.dal33t.powerfolder.util.ui.GenericDialogType;
 import javax.swing.*;
 import javax.swing.text.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
+import java.awt.event.*;
 
 /**
  * Class to show a chat session with a member.
@@ -210,6 +207,9 @@ public class ChatPanel extends PFUIComponent {
             chatInput.setBackground(Color.LIGHT_GRAY);
         }
         chatInput.setEnabled(connected);
+        if (connected) {
+            chatInput.requestFocus();
+        }
     }
 
     /**
