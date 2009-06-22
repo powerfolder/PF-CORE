@@ -117,7 +117,7 @@ public class ByteSerializer extends Loggable {
         ObjectOutputStream objOut = new ObjectOutputStream(targetOut);
 
         // Write
-        objOut.writeObject(target);
+        objOut.writeUnshared(target);
         objOut.close();
 
         if (padToSize > 0) {
