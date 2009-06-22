@@ -612,7 +612,6 @@ public class UIController extends PFComponent {
         try {
             LookAndFeelSupport.setLookAndFeel((LookAndFeel) 
                     activeSkin.getLookAndFeelClass().newInstance());
-            System.out.println("hghg -----------");
         } catch (InstantiationException e) {
             logSevere("Failed to set look and feel for skin " +
                     activeSkin.getName(), e);
