@@ -24,6 +24,7 @@ import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX_V
 import java.awt.Component;
 import java.awt.GraphicsEnvironment;
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -2211,18 +2212,19 @@ public class Controller extends PFComponent {
             // Save unhandled invitations.
             Invitation invitation;
             List<Invitation> invitations = new ArrayList<Invitation>();
-            while((invitation = uiController.getApplicationModel()
-                    .getReceivedInvitationsModel().popInvitation()) != null) {
+            while ((invitation = uiController.getApplicationModel()
+                .getReceivedInvitationsModel().popInvitation()) != null)
+            {
                 invitations.add(invitation);
             }
             String filename = getController().getConfigName() + ".invitations";
             File file = new File(getMiscFilesLocation(), filename);
-            ObjectOutputStream outputStream = null; 
+            ObjectOutputStream outputStream = null;
             try {
                 logInfo("There are " + invitations.size()
-                        + " unhandled invitations.");
-                outputStream = new ObjectOutputStream(
-                        new FileOutputStream(file));
+                    + " unhandled invitations.");
+                outputStream = new ObjectOutputStream(new BufferedOutputStream(
+                    new FileOutputStream(file)));
                 outputStream.writeUnshared(invitations);
             } catch (FileNotFoundException e) {
                 logSevere("FileNotFoundException", e);
@@ -2255,14 +2257,13 @@ public class Controller extends PFComponent {
                 ObjectInputStream inputStream = null;
                 try {
                     inputStream = new ObjectInputStream(
-                            new FileInputStream(file));
-                    List<Invitation> invitations
-                            = (List<Invitation>) inputStream.readObject();
+                        new BufferedInputStream(new FileInputStream(file)));
+                    List<Invitation> invitations = (List<Invitation>) inputStream
+                        .readObject();
                     inputStream.close();
                     for (Invitation invitation : invitations) {
                         uiController.getApplicationModel()
-                                .getReceivedInvitationsModel()
-                                .gotInvitation(invitation,  false);
+                            .getReceivedInvitationsModel().gotInvitation(invitation,  false);
                     }
                     logInfo("Loaded " + invitations.size() + " invitations.");
                 } catch (FileNotFoundException e) {
