@@ -61,7 +61,6 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
     private JCheckBox updateCheck;
 
     private JComboBox languageChooser;
-    private JComboBox lookAndFeelChooser;
     private JComboBox xBehaviorChooser;
     private JCheckBox minToSysTrayCB;
     private JCheckBox underlineLinkBox;
@@ -78,10 +77,6 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
     private JComboBox skinCombo;
 
     private boolean needsRestart;
-    // The original look and feel
-    private String oldLafClassName;
-    // The changed look and feel
-    private String newLafClassName;
     // The triggers the writing into core
     private Trigger writeTrigger;
 
@@ -103,10 +98,6 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
     }
 
     public void undoChanges() {
-        if (oldLafClassName != null) {
-            PreferencesEntry.UI_LOOK_AND_FEEL.setValue(getController(),
-                    oldLafClassName);
-        }
     }
 
     /**
@@ -124,9 +115,6 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
             Translation
                 .getTranslation("preferences.dialog.dialogs.check_for_program_updates"),
             checkForUpdate);
-
-        // Build color theme chooser
-        lookAndFeelChooser = createLookAndFeelChooser();
 
         // Create xBehaviorchooser
         ValueModel xBehaviorModel = PreferencesEntry.QUIT_ON_X
@@ -322,17 +310,9 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
                 .getTranslation("preferences.dialog.language")), cc.xy(1, row));
             builder.add(languageChooser, cc.xy(3, row));
 
-            if (getUIController().getSkins().length > 1) {
-                row += 2;
-                builder.add(skinLabel, cc.xy(1, row));
-                builder.add(skinCombo, cc.xy(3, row));
-            }
-
             row += 2;
-            builder.add(new JLabel(Translation
-                .getTranslation("preferences.dialog.color_theme")), cc
-                .xy(1, row));
-            builder.add(lookAndFeelChooser, cc.xy(3, row));
+            builder.add(skinLabel, cc.xy(1, row));
+            builder.add(skinCombo, cc.xy(3, row));
 
             row += 2;
             builder.add(new JLabel(Translation
@@ -434,19 +414,6 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
         boolean checkForUpdate = updateCheck.isSelected();
         PreferencesEntry.CHECK_UPDATE.setValue(getController(), checkForUpdate);
 
-        // Store ui laf
-        if (!Util.equals(oldLafClassName, newLafClassName)) {
-            LookAndFeel[] availableLafs = LookAndFeelSupport
-                .getAvailableLookAndFeels(getUIController());
-            for (LookAndFeel availableLaf : availableLafs) {
-                if (Util.equals(newLafClassName, availableLaf.getClass().getName())) {
-                    PreferencesEntry.UI_LOOK_AND_FEEL.setValue(getController(),
-                            availableLaf.getClass().getName());
-                    needsRestart = true;
-                }
-            }
-        }
-        
         // Use underlines
         PreferencesEntry.UNDERLINE_LINKS.setValue(getController(),
             underlineLinkBox.isSelected());
@@ -523,37 +490,6 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
         // Initialize chooser with the active locale.
         chooser.setSelectedItem(Translation.getActiveLocale());
 
-        return chooser;
-    }
-
-    /**
-     * Build the ui look and feel chooser combobox
-     */
-    private JComboBox createLookAndFeelChooser() {
-        JComboBox chooser = new JComboBox();
-        final LookAndFeel[] availableLafs = LookAndFeelSupport
-            .getAvailableLookAndFeels(getUIController());
-        String[] availableLafNames = LookAndFeelSupport
-                .getAvailableLookAndFeelNames(getUIController());
-        for (int i = 0; i < availableLafs.length; i++) {
-            chooser.addItem(availableLafNames[i]);
-            if (availableLafs[i].getClass().getName().equals(
-                    PreferencesEntry.UI_LOOK_AND_FEEL.getValueString(getController())))
-            {
-                chooser.setSelectedIndex(i);
-                oldLafClassName = availableLafs[i].getClass().getName();
-            }
-        }
-        chooser.addItemListener(new ItemListener() {
-            public void itemStateChanged(ItemEvent e) {
-                if (e.getStateChange() != ItemEvent.SELECTED) {
-                    return;
-                }
-                LookAndFeel laf = availableLafs[lookAndFeelChooser
-                    .getSelectedIndex()];
-                    newLafClassName = laf.getClass().getName();
-            }
-        });
         return chooser;
     }
 

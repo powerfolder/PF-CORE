@@ -20,7 +20,7 @@
 package de.dal33t.powerfolder.ui;
 
 import de.dal33t.powerfolder.*;
-import de.dal33t.powerfolder.skin.Skin;
+import de.dal33t.powerfolder.skin.*;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.SyncProfile;
@@ -44,8 +44,6 @@ import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
 import de.dal33t.powerfolder.util.ui.UIUtil;
-import de.javasoft.plaf.synthetica.SyntheticaSilverMoonLookAndFeel;
-import de.javasoft.plaf.synthetica.SyntheticaLookAndFeel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -54,7 +52,6 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.ref.WeakReference;
-import java.text.ParseException;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -130,74 +127,6 @@ public class UIController extends PFComponent {
         initSkin();
 
         pendingJobs = Collections.synchronizedList(new LinkedList<Runnable>());
-
-        boolean defaultLFsupported = !(OSUtil.isWindowsMEorOlder() ||
-                OSUtil.isMacOS());
-        if (defaultLFsupported) {
-            boolean lafInitalized = false;
-            try {
-                // Now setup the theme
-                String lafName = PreferencesEntry.UI_LOOK_AND_FEEL
-                        .getValueString(getController());
-                if (lafName != null) {
-
-                    // Check that the required laf is in the available list.
-                    boolean found = false;
-                    for (LookAndFeel laf : LookAndFeelSupport
-                            .getAvailableLookAndFeels(this)) {
-                        if (laf.getClass().getName().equals(lafName)) {
-                            found = true;
-                            break;
-                        }
-                    }
-                    if (found) {
-                        Class<?> lafClass = Class.forName(lafName);
-                        LookAndFeel laf = (LookAndFeel) lafClass.newInstance();
-                        LookAndFeelSupport.setLookAndFeel(laf);
-                        lafInitalized = true;
-                    }
-                }
-            } catch (IllegalAccessException e) {
-                log.log(Level.SEVERE,
-                    "Unable to set look and feel, switching back to default", e);
-            } catch (ClassNotFoundException e) {
-                log.log(Level.SEVERE,
-                    "Unable to set look and feel, switching back to default", e);
-            } catch (InstantiationException e) {
-                log.log(Level.SEVERE,
-                    "Unable to set look and feel, switching back to default", e);
-            } catch (UnsupportedLookAndFeelException e) {
-                log.log(Level.SEVERE,
-                    "Unable to set look and feel, switching back to default", e);
-            } catch (ClassCastException e) {
-                log.log(Level.SEVERE,
-                    "Unable to set look and feel, switching back to default", e);
-            }
-
-            if (!lafInitalized) {
-                try {
-                    SyntheticaLookAndFeel customLaf =
-                            LookAndFeelSupport.getCustomLaf(this);
-                    if (customLaf != null) {
-                        // We have a custom Skin laf available! Use that one.
-                        LookAndFeelSupport.setLookAndFeel(customLaf);
-                        PreferencesEntry.UI_LOOK_AND_FEEL.setValue(getController(),
-                                customLaf.getClass().getName());
-                    } else {
-                        // Set default l&f
-                        SyntheticaSilverMoonLookAndFeel lookAndFeel
-                                = new SyntheticaSilverMoonLookAndFeel();
-                        LookAndFeelSupport.setLookAndFeel(lookAndFeel);
-                        PreferencesEntry.UI_LOOK_AND_FEEL.setValue(getController(),
-                                lookAndFeel.getClass().getName());
-                    }
-                } catch (UnsupportedLookAndFeelException e) {
-                    logSevere("Unable to set look and feel", e);
-                } catch (ParseException e) {
-                    logSevere("Unable to set look and feel", e);
-                }
-            }
-        }
 
         if (!controller.isStartMinimized()) {
             // Show splash if not starting minimized
@@ -629,8 +558,24 @@ public class UIController extends PFComponent {
     }
 
     private void initSkin() {
-        ServiceLoader<Skin> skinLoader = ServiceLoader.load(Skin.class);
+
         List<Skin> skinList = new ArrayList<Skin>();
+
+        // Load our defaults.
+        skinList.add(new BlackMoonSkin(Translation.getTranslation("skin.black_moon")));
+        skinList.add(new BlackStarSkin(Translation.getTranslation("skin.black_star")));
+        skinList.add(new BlueIceSkin(Translation.getTranslation("skin.blue_ice")));
+        skinList.add(new BlueMoonSkin(Translation.getTranslation("skin.blue_moon")));
+        skinList.add(new BlueSteelSkin(Translation.getTranslation("skin.blue_steel")));
+        skinList.add(new GreenDreamSkin(Translation.getTranslation("skin.green_dream")));
+        skinList.add(new MauveMetallicSkin(Translation.getTranslation("skin.mauve_metallic")));
+        skinList.add(new OrangeMetallicSkin(Translation.getTranslation("skin.orange_metallic")));
+        skinList.add(new SilverMoonSkin(Translation.getTranslation("skin.silver_moon")));
+        skinList.add(new SkyMetallicSkin(Translation.getTranslation("skin.sky_metallic")));
+        skinList.add(new WhiteVisionSkin(Translation.getTranslation("skin.white_vision")));
+
+        // Now load any others
+        ServiceLoader<Skin> skinLoader = ServiceLoader.load(Skin.class);
         for (Skin sk : skinLoader) {
             skinList.add(sk);
         }
@@ -647,28 +592,36 @@ public class UIController extends PFComponent {
             skins[i++] = skin;
         }
 
-        if (skins.length == 1) {
-            // Single skin? - use this one.
+        String skinName = PreferencesEntry.SKIN_NAME.getValueString(getController());
+        boolean found = false;
+        for (Skin skin : skins) {
+            if (skin.getName().equals(skinName)) {
+                activeSkin = skin;
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            // Can not find one with this name - use the first one.
             activeSkin = skins[0];
-            String fileName = activeSkin.getIconsPropertiesFileName();
-            Icons.loadOverrideFile(fileName);
-        } else if (skins.length > 1) {
-            String skinName = PreferencesEntry.SKIN_NAME.getValueString(getController());
-            boolean found = false;
-            for (Skin skin : skins) {
-                if (skin.getName().equals(skinName)) {
-                    activeSkin = skin;
-                    found = true;
-                    break;
-                }
-            }
-            if (!found) {
-                // Can not find one with this name - use the first one.
-                activeSkin = skins[0];
-                PreferencesEntry.SKIN_NAME.setValue(getController(), activeSkin.getName());
-            }
-            String fileName = activeSkin.getIconsPropertiesFileName();
-            Icons.loadOverrideFile(fileName);
+            PreferencesEntry.SKIN_NAME.setValue(getController(), activeSkin.getName());
+        }
+
+        String fileName = activeSkin.getIconsPropertiesFileName();
+        Icons.loadOverrideFile(fileName);
+        try {
+            LookAndFeelSupport.setLookAndFeel((LookAndFeel) 
+                    activeSkin.getLookAndFeelClass().newInstance());
+            System.out.println("hghg -----------");
+        } catch (InstantiationException e) {
+            logSevere("Failed to set look and feel for skin " +
+                    activeSkin.getName(), e);
+        } catch (IllegalAccessException e) {
+            logSevere("Failed to set look and feel for skin " +
+                    activeSkin.getName(), e);
+        } catch (UnsupportedLookAndFeelException e) {
+            logSevere("Failed to set look and feel for skin " +
+                    activeSkin.getName(), e);
         }
     }
 

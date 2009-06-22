@@ -59,8 +59,6 @@ public enum PreferencesEntry {
 
     SHOW_PREVIEW_PANEL("ShowPreviewPanel", false),
 
-    UI_LOOK_AND_FEEL("UILookAndFeel", null),
-
     SHOW_ADVANCED_SETTINGS("ShowAdvancedSettings", false),
 
     UNDERLINE_LINKS("UnderlineLinks", true),
