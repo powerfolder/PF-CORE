@@ -26,6 +26,7 @@ import java.util.UUID;
 
 import de.dal33t.powerfolder.disk.dao.FileInfoDAO;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.IdGenerator;
@@ -68,13 +69,13 @@ public abstract class FileInfoDAOTestCase extends ControllerTestCase {
 
     protected void testFindNewestVersion(FileInfoDAO dao) {
         FileInfo expected = createRandomFileInfo(10, "MyExcelsheet.xls");
-        expected = expected.updatedVersion(1);
+        expected = FileInfoFactory.updatedVersion(expected, 1);
         dao.store(null, expected);
 
-        FileInfo remote = expected.updatedVersion(0);
+        FileInfo remote = FileInfoFactory.updatedVersion(expected, 0);
         dao.store("REMOTE1", remote);
 
-        FileInfo remote2 = expected.updatedVersion(2);
+        FileInfo remote2 = FileInfoFactory.updatedVersion(expected, 2);
         dao.store("REMOTE2", remote2);
 
         assertNotNull(dao.findNewestVersion(expected, ""));
@@ -108,7 +109,7 @@ public abstract class FileInfoDAOTestCase extends ControllerTestCase {
         String fn = "subdir1/SUBDIR2/" + name + "-" + n;
         MemberInfo mInfo = new MemberInfo(IdGenerator.makeId(), IdGenerator
             .makeId(), IdGenerator.makeId());
-        return FileInfo.unmarshallExistingFile(foInfo, fn, (long) Math.random()
+        return FileInfoFactory.unmarshallExistingFile(foInfo, fn, (long) Math.random()
             * Long.MAX_VALUE, mInfo, new Date(), 0);
     }
 
