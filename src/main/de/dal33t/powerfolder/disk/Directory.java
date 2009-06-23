@@ -127,16 +127,6 @@ public class Directory implements Comparable<Directory>, DiskItem {
     }
 
     /**
-     * notify this Directory that a file is added
-     * 
-     * @param file
-     */
-    public void add(File file) {
-        FileInfo fileInfo = FileInfo.getTemplate(rootFolder, file);
-        rootFolder.scanNewFile(fileInfo);
-    }
-
-    /**
      * move a file from this source to this Directory, overwrites target if
      * exisits!
      * 
@@ -532,5 +522,13 @@ public class Directory implements Comparable<Directory>, DiskItem {
 
     public FolderInfo getFolderInfo() {
         return null;
+    }
+
+    public boolean isDiretory() {
+        return true;
+    }
+
+    public boolean isFile() {
+        return false;
     }
 }

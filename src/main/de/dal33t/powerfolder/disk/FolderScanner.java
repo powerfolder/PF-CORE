@@ -37,10 +37,12 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.disk.ScanResult.ResultState;
-import de.dal33t.powerfolder.disk.problem.Problem;
 import de.dal33t.powerfolder.disk.problem.DuplicateFilenameProblem;
 import de.dal33t.powerfolder.disk.problem.FilenameProblemHelper;
+import de.dal33t.powerfolder.disk.problem.Problem;
+import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.os.OSUtil;
@@ -195,6 +197,9 @@ public class FolderScanner extends PFComponent {
             File base = currentScanningFolder.getLocalBase();
             remaining.clear();
             for (FileInfo fInfo : currentScanningFolder.getKnownFiles()) {
+                remaining.put(fInfo, fInfo);
+            }
+            for (FileInfo fInfo : currentScanningFolder.getKnownDirectories()) {
                 remaining.put(fInfo, fInfo);
             }
             if (!scan(base) || failure) {
@@ -590,8 +595,8 @@ public class FolderScanner extends PFComponent {
             }
         } else {
             // file is new
-            FileInfo info = FileInfo.newFile(currentScanningFolder, fileToScan,
-                getController().getMySelf().getInfo());
+            FileInfo info = FileInfoFactory.newFile(currentScanningFolder,
+                fileToScan, getController().getMySelf().getInfo());
             currentScanResult.newFiles.add(info);
             if (isFiner()) {
                 logFiner("New file found: " + info.toDetailString());
@@ -599,6 +604,100 @@ public class FolderScanner extends PFComponent {
         }
         return true;
     }
+
+    /**
+     * scans a single directory.
+     * 
+     * @param dirToScan
+     *            the disk directory to examine.
+     * @param currentDirName
+     *            The location the use when creating a FileInfo. This is that
+     *            same for each file in the same directory and so not neccesary
+     *            to "calculate" this per file.
+     * @return true on success and false on IOError (disk failure or file
+     *         removed in the meantime)
+     */
+    private boolean scanDirectory(File dirToScan, String currentDirName) {
+        Reject.ifNull(currentScanningFolder,
+            "currentScanningFolder must not be null");
+        if (isFiner()) {
+            logFiner("Scanning subdir " + dirToScan + " / " + currentDirName);
+        }
+        // logWarning("Scanning " + fileToScan.getAbsolutePath());
+        if (!dirToScan.exists()) {
+            // hardware no longer available
+            return false;
+        }
+
+        // logFiner(
+        // "scanFile: " + fileToScan + " curdirname: " + currentDirName);
+        currentScanResult.incrementTotalFilesCount();
+        String pathname = currentDirName;
+      
+
+        // this is a incomplete fileinfo just find one fast in the remaining
+        // list
+        DirectoryInfo dirInfo = DirectoryInfo.getTemplate(currentScanningFolder.getInfo(),
+            pathname);
+
+        // #1531
+        FileInfo exists = remaining.remove(dirInfo);
+        //logWarning("Existing dir for " + dirInfo + ": " + exists + " remaining: " + remaining);
+        if (exists == null && OSUtil.isWindowsSystem()) {
+            // Try harder, same file with the
+            for (FileInfo otherFInfo : remaining.values()) {
+                if (otherFInfo.getName().equalsIgnoreCase(pathname)) {
+                    logWarning("Found local directory with diffrent name-case in db. file: "
+                        + dirToScan.getAbsolutePath()
+                        + ", dbDir: "
+                        + otherFInfo.toDetailString());
+                    if (dirInfo.getName().equals(otherFInfo.getName())
+                        && !dirInfo.equals(otherFInfo))
+                    {
+                        throw new RuntimeException(
+                            "Bad failure: DirectoryInfos not equal. "
+                                + dirInfo.toDetailString() + " and "
+                                + otherFInfo.toDetailString()
+                                + " Probably FolderInfo objects are not equal?");
+                    }
+                    remaining.remove(otherFInfo);
+                    exists = otherFInfo;
+                }
+            }
+        }
+
+        if (exists != null) {// file was known
+            if (exists.isDeleted()) {
+                // file restored
+                if (!exists.inSyncWithDisk(dirToScan)) {
+                    logWarning("Directory restored detected: "
+                        + exists.toDetailString() + ". On disk: size: "
+                        + dirToScan.length() + ", lastMod: "
+                        + dirToScan.lastModified());
+                    currentScanResult.restoredFiles.add(exists);
+                }
+            } else {
+                boolean changed = !exists.inSyncWithDisk(dirToScan);
+                if (changed) {
+                    logWarning("Changed directory detected: " + exists.toDetailString()
+                        + ". On disk: size: " + dirToScan.length()
+                        + ", lastMod: "
+                        + dirToScan.lastModified());
+                    currentScanResult.changedFiles.add(exists);
+                }
+            }
+        } else {
+            // is new
+            FileInfo info = FileInfoFactory.newFile(currentScanningFolder,
+                dirToScan, getController().getMySelf().getInfo());
+            currentScanResult.newFiles.add(info);
+            if (isFiner()) {
+                logWarning("New directory found: " + info.toDetailString());
+            }
+        }
+        return true;
+    }
+
 
     /**
      * calculates the subdir of this file relative to the location of the folder
@@ -698,6 +797,8 @@ public class FolderScanner extends PFComponent {
                 "current scanning folder must not be null");
             String currentDirName = getCurrentDirName(currentScanningFolder,
                 dirToScan);
+            
+            scanDirectory(dirToScan, currentDirName);
             File[] files = dirToScan.listFiles();
             if (files == null) { // hardware failure
                 logWarning("Unable to scan dir: " + dirToScan.getAbsolutePath()

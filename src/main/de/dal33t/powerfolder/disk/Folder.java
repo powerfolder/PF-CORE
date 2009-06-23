@@ -70,7 +70,9 @@ import de.dal33t.powerfolder.event.FolderMembershipListener;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.event.LocalMassDeletionEvent;
 import de.dal33t.powerfolder.event.RemoteMassDeletionEvent;
+import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.FileList;
@@ -372,14 +374,6 @@ public class Folder extends PFComponent {
             1000L * ConfigurationEntry.FOLDER_DB_PERSIST_TIME
                 .getValueInt(getController()));
 
-        // Create invitation
-        if (folderSettings.isCreateInvitationFile()) {
-            Invitation inv = createInvitation();
-            InvitationUtil.save(inv, new File(folderSettings.getLocalBaseDir(),
-                FileUtils.removeInvalidFilenameChars(inv.folder.name)
-                    + ".invitation"));
-        }
-
         previewOnly = folderSettings.isPreviewOnly();
 
         // Initialized lazyliy
@@ -391,6 +385,14 @@ public class Folder extends PFComponent {
             .createListenerSupport(ProblemListener.class);
 
         setArchiveMode(folderSettings.getArchiveMode());
+        
+     // Create invitation
+        if (folderSettings.isCreateInvitationFile()) {
+            Invitation inv = createInvitation();
+            InvitationUtil.save(inv, new File(folderSettings.getLocalBaseDir(),
+                FileUtils.removeInvalidFilenameChars(inv.folder.name)
+                    + ".invitation"));
+        }
     }
 
     public void addProblemListener(ProblemListener l) {
@@ -534,8 +536,8 @@ public class Folder extends PFComponent {
                 Collection<FileInfo> fiList = new LinkedList<FileInfo>();
                 // deleted files
                 for (FileInfo deletedFileInfo : scanResult.getDeletedFiles()) {
-                    fiList.add(deletedFileInfo.deletedFile(getController()
-                        .getMySelf().getInfo(), new Date()));
+                    fiList.add(FileInfoFactory.deletedFile(deletedFileInfo,
+                        getController().getMySelf().getInfo(), new Date()));
 
                 }
                 scanResult.deletedFiles = fiList;
@@ -546,7 +548,7 @@ public class Folder extends PFComponent {
                 for (FileInfo restoredFileInfo : scanResult.getRestoredFiles())
                 {
                     File diskFile = getDiskFile(restoredFileInfo);
-                    fiList.add(restoredFileInfo.modifiedFile(getController()
+                    fiList.add(FileInfoFactory.modifiedFile(restoredFileInfo, getController()
                         .getFolderRepository(), diskFile, getController()
                         .getMySelf().getInfo()));
                 }
@@ -557,14 +559,10 @@ public class Folder extends PFComponent {
                 // changed files
                 for (FileInfo changedFileInfo : scanResult.getChangedFiles()) {
                     File diskFile = getDiskFile(changedFileInfo);
-                    if (diskFile.exists()) {
-                        fiList.add(changedFileInfo.modifiedFile(getController()
-                            .getFolderRepository(), diskFile, getController()
-                            .getMySelf().getInfo()));
-                    } else {
-                        fiList.add(changedFileInfo.deletedFile(getController()
-                            .getMySelf().getInfo(), new Date()));
-                    }
+                    fiList.add(FileInfoFactory.modifiedFile(changedFileInfo,
+                        getController().getFolderRepository(), diskFile,
+                        getController().getMySelf().getInfo()));
+
                     // DISABLED because of #644
                     // changedFileInfo.invalidateFilePartsRecord();
                 }
@@ -1136,7 +1134,8 @@ public class Folder extends PFComponent {
         synchronized (scanLock) {
             synchronized (dbAccessLock) {
                 // link new file to our folder
-                fInfo = fInfo.changedFolderInfo(currentInfo);
+                // TODO Remove this call
+                fInfo = FileInfoFactory.changedFolderInfo(fInfo, currentInfo);
                 if (!isKnown(fInfo)) {
                     if (isFiner()) {
                         logFiner(fInfo + ", modified by: "
@@ -1160,13 +1159,13 @@ public class Folder extends PFComponent {
                     }
 
                     if (fInfo.isDeleted()) {
-                        fInfo = FileInfo.unmarshallDelectedFile(currentInfo,
-                            fInfo.getName(), modifiedBy, modDate, fInfo
-                                .getVersion());
+                        fInfo = FileInfoFactory.unmarshallDelectedFile(
+                            currentInfo, fInfo.getName(), modifiedBy, modDate,
+                            fInfo.getVersion());
                     } else {
-                        fInfo = FileInfo.unmarshallExistingFile(currentInfo,
-                            fInfo.getName(), size, modifiedBy, modDate, fInfo
-                                .getVersion());
+                        fInfo = FileInfoFactory.unmarshallExistingFile(
+                            currentInfo, fInfo.getName(), size, modifiedBy,
+                            modDate, fInfo.getVersion());
                     }
 
                     dao.store(null, addFile(fInfo));
@@ -1201,6 +1200,127 @@ public class Folder extends PFComponent {
                 }
                 if (isFiner()) {
                     logFiner("File already known: " + fInfo);
+                }
+                return syncFile != null ? syncFile : dbFile;
+            }
+        }
+    }
+
+    /**
+     * Scans one directory
+     * <p>
+     * Package protected because used by Recylcebin to tell, that file was
+     * restored.
+     * 
+     * @param dirInfo
+     *            the file to be scanned
+     * @return null, if the file hasn't changed, the new FileInfo otherwise
+     */
+    public FileInfo scanDirectory(DirectoryInfo dirInfo) {
+        Reject.ifNull(dirInfo, "DirInfo is null");
+        if (isFiner()) {
+            logFiner("Scanning dir: " + dirInfo);
+        }
+        
+        if (!dirInfo.getFolderInfo().equals(currentInfo)) {
+            logSevere("Unable to scan of directory. not on folder: " + dirInfo.toDetailString());
+            return null;
+        }
+        
+        File dir = getDiskFile(dirInfo);
+
+        if (!dir.canRead()) {
+            // ignore not readable
+            logWarning("File not readable: " + dir);
+            return null;
+        }
+
+        if (dir.equals(getSystemSubDir())) {
+            logWarning("Ignoring scan of folder system subdirectory: " + dir);
+            return null;
+        }
+        
+        // ignore our database file
+        if (dir.getName().equals(DB_FILENAME)
+            || dir.getName().equals(DB_BACKUP_FILENAME))
+        {
+            if (!dir.isHidden()) {
+                FileUtils.makeHiddenOnWindows(dir);
+            }
+            logFiner("Ignoring folder database file: " + dir);
+            return null;
+        }
+     
+        if (PreferencesEntry.FILE_NAME_CHECK.getValueBoolean(getController())) {
+            checkFileName(dirInfo);
+        }
+
+        synchronized (scanLock) {
+            synchronized (dbAccessLock) {
+                if (!isKnown(dirInfo)) {
+                    if (isFiner()) {
+                        logFiner(dirInfo + ", modified by: "
+                            + dirInfo.getModifiedBy());
+                    }
+                    // Update last - modified data
+                    MemberInfo modifiedBy = dirInfo.getModifiedBy();
+                    if (modifiedBy == null) {
+                        modifiedBy = getController().getMySelf().getInfo();
+                    }
+                    Member from = modifiedBy.getNode(getController(), true);
+                    Date modDate = dirInfo.getModifiedDate();
+                    long size = dirInfo.getSize();
+                    if (from != null) {
+                        modifiedBy = from.getInfo();
+                    }
+
+                    if (dir.exists()) {
+                        modDate = new Date(dir.lastModified());
+                        size = dir.length();
+                    }
+
+//                    if (dirInfo.isDeleted()) {
+//                        fInfo = FileInfo.unmarshallDelectedFile(currentInfo,
+//                            fInfo.getName(), modifiedBy, modDate, fInfo
+//                                .getVersion());
+//                    } else {
+//                        fInfo = FileInfo.unmarshallExistingFile(currentInfo,
+//                            fInfo.getName(), size, modifiedBy, modDate, fInfo
+//                                .getVersion());
+//                    }
+
+                    dao.store(null, addFile(dirInfo));
+
+                    // update directory
+                    // don't do this in the server version
+                    if (rootDirectory != null) {
+                        rootDirectory.add(getController().getMySelf(), dirInfo);
+                    }
+
+                    // get folder icon info and set it
+                    if (FileUtils.isDesktopIni(dir)) {
+                        makeFolderIcon(dir);
+                    }
+
+                    // Fire folder change event
+                    // fireEvent(new FolderChanged());
+
+                    if (isFiner()) {
+                        logFiner(toString() + ": Local file scanned: "
+                            + dirInfo.toDetailString());
+                    }
+                    return dirInfo;
+                }
+
+                // Now process/check existing files
+                FileInfo dbFile = getFile(dirInfo);
+                FileInfo syncFile = dbFile.syncFromDiskIfRequired(
+                    getController(), dir);
+                if (syncFile != null) {
+                    dao.store(null, syncFile);
+                }
+                if (isFiner()) {
+                    logFiner("File already known: " + dirInfo.toDetailString());
                 }
                 return syncFile != null ? syncFile : dbFile;
             }
@@ -1292,7 +1412,7 @@ public class Folder extends PFComponent {
             throw new NullPointerException("File is null");
         }
         // Add to this folder
-        fInfo = fInfo.changedFolderInfo(currentInfo);
+        fInfo = FileInfoFactory.changedFolderInfo(fInfo, currentInfo);
 
         TransferPriority prio = transferPriorities.getPriority(fInfo);
 
@@ -2062,8 +2182,8 @@ public class Folder extends PFComponent {
      *            folder. otherwise it checks the modifier.
      */
     public void syncRemoteDeletedFiles(boolean force) {
-        if (isFiner()) {
-            logFiner("Deleting files, which are deleted by friends. con-members: "
+        if (isFine()) {
+            logFine("Deleting files, which are deleted by friends. con-members: "
                 + Arrays.asList(getConnectedMembers()));
         }
 
@@ -2076,93 +2196,31 @@ public class Folder extends PFComponent {
                 }
 
                 Collection<FileInfo> fileList = getFilesAsCollection(member);
-                if (fileList == null) {
-                    continue;
+                if (fileList != null) {
+                    if (isFiner()) {
+                        logFiner("RemoteFileDeletion sync. Member '"
+                            + member.getNick() + "' has " + fileList.size()
+                            + " possible files");
+                    }
+                    for (FileInfo remoteFile : fileList) {
+                        handleFileDeletion(remoteFile, force, member,
+                            removedFiles);
+                    }
                 }
 
-                if (isFiner()) {
-                    logFiner("RemoteFileDeletion sync. Member '"
-                        + member.getNick() + "' has " + fileList.size()
-                        + " possible files");
+                Collection<DirectoryInfo> dirList = getDirectoriesAsCollection(member);
+                if (dirList != null) {
+                    if (isFiner()) {
+                        logFiner("RemoteDirDeletion sync. Member '"
+                            + member.getNick() + "' has " + dirList.size()
+                            + " possible files");
+                    }
+                    for (FileInfo remoteDir : dirList) {
+                        handleFileDeletion(remoteDir, force, member,
+                            removedFiles);
+                    }
                 }
-                for (FileInfo remoteFile : fileList) {
-                    if (!remoteFile.isDeleted()) {
-                        // Not interesting...
-                        continue;
-                    }
-                    boolean modifiedByFriend = remoteFile
-                        .isModifiedByFriend(getController());
-                    boolean syncFromMemberAllowed = (modifiedByFriend && syncProfile
-                        .getConfiguration().isSyncDeletionWithFriends())
-                        || (!modifiedByFriend && syncProfile.getConfiguration()
-                            .isSyncDeletionWithOthers()) || force;
 
-                    if (!syncFromMemberAllowed) {
-                        // Not allowed to sync from that guy.
-                        continue;
-                    }
-
-                    FileInfo localFile = getFile(remoteFile);
-                    if (localFile != null && !remoteFile.isNewerThan(localFile))
-                    {
-                        // Local file is newer
-                        continue;
-                    }
-
-                    // Add to local file to database if was deleted on remote
-                    if (localFile == null) {
-                        remoteFile = addFile(remoteFile);
-                        dao.store(null, remoteFile);
-                        localFile = getFile(remoteFile);
-                        // File has been marked as removed at our side
-                        removedFiles.add(localFile);
-                    }
-                    if (localFile.isDeleted()) {
-                        continue;
-                    }
-                    File localCopy = localFile.getDiskFile(getController()
-                        .getFolderRepository());
-                    if (!localFile.inSyncWithDisk(localCopy)) {
-                        logFine("Not deleting file from member " + member
-                            + ", local file not in sync with disk: "
-                            + localFile.toDetailString() + " at "
-                            + localCopy.getAbsolutePath());
-                        recommendScanOnNextMaintenance();
-                        continue;
-                    }
-
-                    if (isFine()) {
-                        logFine("File was deleted by " + member
-                            + ", deleting local: " + localFile.toDetailString()
-                            + " at " + localCopy.getAbsolutePath());
-                    }
-
-                    // Abort transfers on file.
-                    getController().getTransferManager().breakTransfers(
-                        localFile);
-
-                    if (localCopy.exists()) {
-                        if (!deleteFile(localFile, localCopy)) {
-                            logWarning("Unable to deleted. was not able to move old file to recycle bin "
-                                + localCopy.getAbsolutePath()
-                                + ". "
-                                + localFile.toDetailString());
-                            continue;
-                        }
-                    }
-                    // FIXME: Size might not be correct
-                    /*
-                     * localFile.setDeleted(true);
-                     * localFile.setModifiedInfo(remoteFile.getModifiedBy(),
-                     * remoteFile.getModifiedDate());
-                     * localFile.setVersion(remoteFile.getVersion());
-                     */
-
-                    // File has been removed
-                    // Changed localFile -> remoteFile
-                    removedFiles.add(remoteFile);
-                    dao.store(null, remoteFile);
-                }
             }
         }
 
@@ -2178,6 +2236,92 @@ public class Folder extends PFComponent {
                 .size()]);
             broadcastMessages(changes);
         }
+    }
+
+    private void handleFileDeletion(FileInfo remoteFile, boolean force,
+        Member member, List<FileInfo> removedFiles)
+    {
+        if (!remoteFile.isDeleted()) {
+            // Not interesting...
+            return;
+        }
+        boolean modifiedByFriend = remoteFile
+            .isModifiedByFriend(getController());
+        boolean syncFromMemberAllowed = (modifiedByFriend && syncProfile
+            .getConfiguration().isSyncDeletionWithFriends())
+            || (!modifiedByFriend && syncProfile.getConfiguration()
+                .isSyncDeletionWithOthers()) || force;
+
+        if (!syncFromMemberAllowed) {
+            // Not allowed to sync from that guy.
+            return;
+        }
+
+        FileInfo localFile = getFile(remoteFile);
+        if (localFile != null && !remoteFile.isNewerThan(localFile)) {
+            // Local file is newer
+            return;
+        }
+
+        // Add to local file to database if was deleted on remote
+        if (localFile == null) {
+            remoteFile = addFile(remoteFile);
+            dao.store(null, remoteFile);
+            localFile = getFile(remoteFile);
+            // File has been marked as removed at our side
+            removedFiles.add(localFile);
+        }
+        if (localFile.isDeleted()) {
+            return;
+        }
+        File localCopy = localFile.getDiskFile(getController()
+            .getFolderRepository());
+        if (!localFile.inSyncWithDisk(localCopy)) {
+            logFine("Not deleting file from member " + member
+                + ", local file not in sync with disk: "
+                + localFile.toDetailString() + " at "
+                + localCopy.getAbsolutePath());
+            recommendScanOnNextMaintenance();
+            return;
+        }
+
+        if (isFine()) {
+            logFine("File was deleted by " + member
+                + ", deleting local: " + localFile.toDetailString()
+                + " at " + localCopy.getAbsolutePath());
+        }
+
+        // Abort transfers on file.
+        getController().getTransferManager().breakTransfers(
+            localFile);
+
+        if (localFile.isDiretory() && localCopy.isDirectory()) {
+            logWarning("---DELETING directory from remote: "
+                + localFile.toDetailString());
+            if (localCopy.list().length == 0) {
+                localCopy.delete();
+            }
+        } else if (localCopy.exists()) {
+            if (!deleteFile(localFile, localCopy)) {
+                logWarning("Unable to deleted. was not able to move old file to recycle bin "
+                    + localCopy.getAbsolutePath()
+                    + ". "
+                    + localFile.toDetailString());
+                return;
+            }
+        }
+        // FIXME: Size might not be correct
+        /*
+         * localFile.setDeleted(true);
+         * localFile.setModifiedInfo(remoteFile.getModifiedBy(),
+         * remoteFile.getModifiedDate());
+         * localFile.setVersion(remoteFile.getVersion());
+         */
+
+        // File has been removed
+        // Changed localFile -> remoteFile
+        removedFiles.add(remoteFile);
+        dao.store(null, remoteFile);
     }
 
     /**
@@ -2385,13 +2529,13 @@ public class Folder extends PFComponent {
         }
 
         // Avoid hammering of sync remote deletion
-        boolean singleFileMsg = changes.added != null
+        boolean singleFileAddMsg = changes.added != null
             && changes.added.length == 1 && changes.removed == null;
 
         if (syncProfile.isAutodownload()) {
             // Check if we need to trigger the filerequestor
             boolean triggerFileRequestor = from.isCompleteyConnected();
-            if (triggerFileRequestor && singleFileMsg) {
+            if (triggerFileRequestor && singleFileAddMsg) {
                 // This was caused by a completed download
                 // TODO Maybe check this also on bigger lists!
                 FileInfo localfileInfo = getFile(changes.added[0]);
@@ -2419,7 +2563,7 @@ public class Folder extends PFComponent {
         }
 
         // Handle remote deleted files
-        if (!singleFileMsg && syncProfile.isSyncDeletion()) {
+        if (!singleFileAddMsg && syncProfile.isSyncDeletion()) {
             // FIXME: Is wrong, since it syncs with completely connected members
             // only
             // FIXME: Is called too often, should be called after finish of
@@ -2688,11 +2832,21 @@ public class Folder extends PFComponent {
     /**
      * WARNING: Contents may change after getting the collection.
      * 
-     * @return a unmodifiable collection referecing the internal database
+     * @return a unmodifiable collection referecing the internal file database
      *         hashmap (keySet).
      */
     public Collection<FileInfo> getKnownFiles() {
         return dao.findAll(null);
+    }
+
+    /**
+     * WARNING: Contents may change after getting the collection.
+     * 
+     * @return a unmodifiable collection referecing the internal directory
+     *         database hashmap (keySet).
+     */
+    public Collection<DirectoryInfo> getKnownDirectories() {
+        return dao.findDirectories(null);
     }
 
     /**
@@ -2781,7 +2935,7 @@ public class Folder extends PFComponent {
         // Map<FileInfo, FileInfo> incomingFiles = new HashMap<FileInfo,
         // FileInfo>();
         SortedMap<FileInfo, FileInfo> incomingFiles = new TreeMap<FileInfo, FileInfo>(
-            new DiskItemComparator(DiskItemComparator.BY_NAME));
+            new DiskItemComparator(DiskItemComparator.BY_FULL_NAME));
         // add expeced files
         for (Member member : getMembersAsCollection()) {
             if (!member.isCompleteyConnected()) {
@@ -2797,38 +2951,74 @@ public class Folder extends PFComponent {
             }
 
             Collection<FileInfo> memberFiles = getFilesAsCollection(member);
-            if (memberFiles == null) {
-                continue;
-            }
-            for (FileInfo remoteFile : memberFiles) {
-                boolean modificatorOk = includeNonFriendFiles
-                    || remoteFile.isModifiedByFriend(getController());
-                if (!modificatorOk) {
-                    continue;
-                }
-                if (remoteFile.isDeleted() && !includeDeleted) {
-                    continue;
-                }
+            if (memberFiles != null) {
+                for (FileInfo remoteFile : memberFiles) {
+                    boolean modificatorOk = includeNonFriendFiles
+                        || remoteFile.isModifiedByFriend(getController());
+                    if (!modificatorOk) {
+                        continue;
+                    }
+                    if (remoteFile.isDeleted() && !includeDeleted) {
+                        continue;
+                    }
 
-                // Check if remote file is newer
-                FileInfo localFile = getFile(remoteFile);
-                FileInfo alreadyIncoming = incomingFiles.get(remoteFile);
-                boolean notLocal = localFile == null;
-                boolean newerThanLocal = localFile != null
-                    && remoteFile.isNewerThan(localFile);
-                // Check if this remote file is newer than one we may
-                // already have.
-                boolean newestRemote = alreadyIncoming == null
-                    || remoteFile.isNewerThan(alreadyIncoming);
-                if (notLocal && remoteFile.isDeleted()) {
-                    // A remote deleted file is not incoming!
-                    // TODO Maby download deleted files from archive of remote?
-                    // and put it directly into own recycle bin.
-                    continue;
+                    // Check if remote file is newer
+                    FileInfo localFile = getFile(remoteFile);
+                    FileInfo alreadyIncoming = incomingFiles.get(remoteFile);
+                    boolean notLocal = localFile == null;
+                    boolean newerThanLocal = localFile != null
+                        && remoteFile.isNewerThan(localFile);
+                    // Check if this remote file is newer than one we may
+                    // already have.
+                    boolean newestRemote = alreadyIncoming == null
+                        || remoteFile.isNewerThan(alreadyIncoming);
+                    if (notLocal && remoteFile.isDeleted()) {
+                        // A remote deleted file is not incoming!
+                        // TODO Maby download deleted files from archive of
+                        // remote?
+                        // and put it directly into own recycle bin.
+                        continue;
+                    }
+                    if (notLocal || (newerThanLocal && newestRemote)) {
+                        // Okay this one is expected
+                        incomingFiles.put(remoteFile, remoteFile);
+                    }
                 }
-                if (notLocal || (newerThanLocal && newestRemote)) {
-                    // Okay this one is expected
-                    incomingFiles.put(remoteFile, remoteFile);
+            }
+            Collection<DirectoryInfo> memberDirs = dao.findDirectories(member
+                .getId());
+            if (memberDirs != null) {
+                for (DirectoryInfo remoteDir : memberDirs) {
+                    boolean modificatorOk = includeNonFriendFiles
+                        || remoteDir.isModifiedByFriend(getController());
+                    if (!modificatorOk) {
+                        continue;
+                    }
+                    if (remoteDir.isDeleted() && !includeDeleted) {
+                        continue;
+                    }
+
+                    // Check if remote file is newer
+                    FileInfo localFile = getFile(remoteDir);
+                    FileInfo alreadyIncoming = incomingFiles.get(remoteDir);
+                    boolean notLocal = localFile == null;
+                    boolean newerThanLocal = localFile != null
+                        && remoteDir.isNewerThan(localFile);
+                    // Check if this remote file is newer than one we may
+                    // already have.
+                    boolean newestRemote = alreadyIncoming == null
+                        || remoteDir.isNewerThan(alreadyIncoming);
+                    if (notLocal && remoteDir.isDeleted()) {
+                        // A remote deleted file is not incoming!
+                        // TODO Maby download deleted files from archive of
+                        // remote?
+                        // and put it directly into own recycle bin.
+                        continue;
+                    }
+                    if (notLocal || (newerThanLocal && newestRemote)) {
+                        // Okay this one is expected
+                        incomingFiles.put(remoteDir, remoteDir);
+                    }
                 }
             }
         }
@@ -2836,7 +3026,10 @@ public class Folder extends PFComponent {
         if (incomingFiles.isEmpty()) {
             logFiner("No Incoming files");
         } else {
-            logFine("Incoming files " + incomingFiles.size());
+            if (isFine()) {
+                logFine("Incoming files (" + incomingFiles.size() + "): "
+                    + incomingFiles);
+            }
         }
 
         return Collections.unmodifiableCollection(incomingFiles.keySet());
@@ -2854,6 +3047,20 @@ public class Folder extends PFComponent {
             return dao.findAll(null);
         }
         return dao.findAll(member.getId());
+    }
+
+    /**
+     * @param member
+     * @return the list of directories from a member as unmodifiable collection
+     */
+    public Collection<DirectoryInfo> getDirectoriesAsCollection(Member member) {
+        if (member == null) {
+            throw new NullPointerException("Member is null");
+        }
+        if (member.isMySelf()) {
+            return dao.findDirectories(null);
+        }
+        return dao.findDirectories(member.getId());
     }
 
     /**

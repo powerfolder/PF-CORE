@@ -19,12 +19,14 @@
  */
 package de.dal33t.powerfolder.disk.problem;
 
-import java.util.*;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
-import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.FileInfoFactory;
 
 /**
  * Identifies problems with filenames. Note the directory names mostly have the
@@ -187,10 +189,11 @@ public class FilenameProblemHelper {
             return;
         }
 
-        File newFile = new File(folder.getLocalBase(),
-                fileInfo.getLocationInFolder() + '/' + newFilename);
+        File newFile = new File(folder.getLocalBase(), fileInfo
+            .getLocationInFolder()
+            + '/' + newFilename);
         if (file.renameTo(newFile)) {
-            FileInfo renamedFileInfo = FileInfo.newFile(folder, newFile,
+            FileInfo renamedFileInfo = FileInfoFactory.newFile(folder, newFile,
                 controller.getMySelf().getInfo());
             if (folder.isKnown(fileInfo)) {
                 folder.removeFilesLocal(fileInfo);

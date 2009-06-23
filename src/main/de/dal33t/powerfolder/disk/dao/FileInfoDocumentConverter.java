@@ -30,6 +30,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.Reject;
@@ -139,12 +140,12 @@ public class FileInfoDocumentConverter {
             .get(FileInfo.PROPERTYNAME_LAST_MODIFIED_DATE));
 
         if (Boolean.valueOf(doc.get(FileInfo.PROPERTYNAME_DELETED))) {
-            return FileInfo.unmarshallDelectedFile(foInfo, fileName,
+            return FileInfoFactory.unmarshallDelectedFile(foInfo, fileName,
                 modifiedByInfo, new Date(modifiedTime), Integer.parseInt(doc
                     .get(FileInfo.PROPERTYNAME_VERSION)));
         } else {
-            return FileInfo.unmarshallExistingFile(foInfo, fileName, Long
-                .parseLong(doc.get(FileInfo.PROPERTYNAME_SIZE)),
+            return FileInfoFactory.unmarshallExistingFile(foInfo, fileName,
+                Long.parseLong(doc.get(FileInfo.PROPERTYNAME_SIZE)),
                 modifiedByInfo, new Date(modifiedTime), Integer.parseInt(doc
                     .get(FileInfo.PROPERTYNAME_VERSION)));
         }

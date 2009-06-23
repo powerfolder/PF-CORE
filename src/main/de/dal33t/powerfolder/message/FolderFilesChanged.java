@@ -19,16 +19,18 @@
 */
 package de.dal33t.powerfolder.message;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.logging.Logger;
+
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.disk.DiskItemFilter;
+import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.Reject;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.logging.Logger;
 
 
 /**
@@ -94,7 +96,30 @@ public class FolderFilesChanged extends FolderRelatedMessage {
      * @return the splitted list or NULL if nothing to send.
      */
     public static FolderFilesChanged[] createFolderFilesChangedMessages(
-        FolderInfo foInfo, Collection<FileInfo> files, DiskItemFilter fileInfoFilter,
+        FolderInfo foInfo, Collection<FileInfo> files,
+        DiskItemFilter fileInfoFilter, boolean added)
+    {
+        return createFolderFilesChangedMessages(foInfo, files,
+            Collections.EMPTY_LIST, fileInfoFilter, added);
+    }
+
+    /**
+     * Splits the filelist into small delta message. Splits into multiple
+     * <code>FolderFilesChanged</code> messages
+     * 
+     * @param foInfo
+     *            the folder for the message
+     * @param files
+     *            the new fileinfos to include.
+     * @param blacklist
+     *            the blacklist to apply
+     * @param added
+     *            true if the the files are put into the "added" field,
+     *            otherwise into "removed"
+     * @return the splitted list or NULL if nothing to send.
+     */
+    public static FolderFilesChanged[] createFolderFilesChangedMessages(
+        FolderInfo foInfo, Collection<FileInfo> files, Collection<DirectoryInfo> dirs, DiskItemFilter fileInfoFilter,
         boolean added)
     {
         Reject.ifNull(foInfo, "Folder info is null");

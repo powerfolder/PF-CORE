@@ -19,6 +19,7 @@
  */
 package de.dal33t.powerfolder.transfer;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -34,6 +35,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FileHistory;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -166,7 +168,7 @@ public class FileRequestor extends PFComponent {
         Collection<FileInfo> incomingFiles = folder.getIncomingFiles(
             requestFromOthers, false);
 
-        downloadNewestVersions(folder, incomingFiles, new FileInfoFilter() {
+        retrieveNewestVersions(folder, incomingFiles, new FileInfoFilter() {
             public boolean accept(FileInfo fInfo) {
                 return requestFromOthers
                     || requestFromFriends
@@ -225,7 +227,7 @@ public class FileRequestor extends PFComponent {
             return;
         }
 
-        downloadNewestVersions(folder, incomingFiles, new FileInfoFilter() {
+        retrieveNewestVersions(folder, incomingFiles, new FileInfoFilter() {
             public boolean accept(FileInfo info) {
                 return folder.getSyncProfile().getConfiguration()
                     .isAutoDownloadFromOthers()
@@ -238,31 +240,47 @@ public class FileRequestor extends PFComponent {
     }
 
     /**
-     * Utility method that will download the newest version of all given files
-     * provided that the given filter accepts a file.
+     * Utility method that will retrieve (download or make directory) the newest
+     * version of all given files provided that the given filter accepts a file.
      * 
      * @param folder
      * @param fInfos
      * @param dlFilter
      * @param autoDownload
      */
-    private void downloadNewestVersions(Folder folder,
+    private void retrieveNewestVersions(Folder folder,
         Collection<FileInfo> fInfos, FileInfoFilter dlFilter,
         boolean autoDownload)
     {
         TransferManager tm = getController().getTransferManager();
         List<FileInfo> filesToDownload = new ArrayList<FileInfo>(fInfos.size());
         for (FileInfo fInfo : fInfos) {
-            if (fInfo.isDeleted() || tm.isDownloadingActive(fInfo)
-                || tm.isDownloadingPending(fInfo))
-            {
-                // Already downloading/file is deleted
+            if (fInfo.isDeleted()) {
+                // Dont retrieve deleted. done in a different place:
+                // Folder.syncRemoteDeletions.
                 continue;
+            }
+            if (fInfo.isFile()) {
+                if (tm.isDownloadingActive(fInfo)
+                    || tm.isDownloadingPending(fInfo))
+                {
+                    // Already downloading/file
+                    continue;
+                }
             }
 
             if (dlFilter.accept(fInfo)) {
-                filesToDownload.add(fInfo);
+                if (fInfo.isFile()) {
+                    filesToDownload.add(fInfo);
+                } else if (fInfo.isDiretory()) {
+                    // TODO Move this into a extra thread?
+                    createDirectory((DirectoryInfo) fInfo);
+                }
             }
+        }
+        if (filesToDownload.isEmpty()) {
+            // Quit here.
+            return;
         }
         Collections.sort(filesToDownload, folder.getTransferPriorities()
             .getComparator());
@@ -270,6 +288,17 @@ public class FileRequestor extends PFComponent {
             prepareDownload(fInfo.getNewestVersion(getController()
                 .getFolderRepository()), autoDownload);
         }
+    }
+    
+    private void createDirectory(DirectoryInfo dirInfo) {
+        logWarning("Creating direcory: " + dirInfo.toDetailString());
+        File dirFile = dirInfo.getDiskFile(getController().getFolderRepository());
+        dirFile.mkdirs();
+        Folder folder = dirInfo.getFolder(getController().getFolderRepository());
+        folder.scanDirectory(dirInfo);
+        //logWarning("SCANNING WHOLE FOLDER for NEW DIR!!");
+        //folder.scanLocalFiles();
+        //dirFile.setLastModified(dirInfo.getModifiedDate().getTime());
     }
 
     private void prepareDownload(FileInfo fInfo, boolean autoDownload) {

@@ -22,12 +22,14 @@ package de.dal33t.powerfolder.message;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.disk.DiskItemFilter;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.Reject;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -96,6 +98,26 @@ public class FileList extends FolderRelatedMessage {
     public static Message[] createFileListMessages(FolderInfo foInfo,
         Collection<FileInfo> files, DiskItemFilter diskItemFilter)
     {
+        return createFileListMessages(foInfo, files, Collections.EMPTY_LIST, diskItemFilter);
+    }
+
+    /**
+     * Splits the filelist into smaller ones. Always splits into one
+     * <code>FileList</code> and (if required) multiple
+     * <code>FolderFilesChanged</code> messages
+     * 
+     * @param foInfo
+     *            the folder for the message
+     * @param files
+     *            the fileinfos to include.
+     * @param blacklist
+     *            the blacklist to apply
+     * @return the splitted list
+     */
+    public static Message[] createFileListMessages(FolderInfo foInfo,
+        Collection<FileInfo> files, Collection<DirectoryInfo> dirs,
+        DiskItemFilter diskItemFilter)
+    {
         Reject.ifNull(foInfo, "Folder info is null");
         Reject.ifNull(files, "Files is null");
         Reject.ifNull(diskItemFilter, "DiskItemFilter is null");
@@ -103,7 +125,7 @@ public class FileList extends FolderRelatedMessage {
             "Unable to split filelist. nFilesPerMessage: "
                 + Constants.FILE_LIST_MAX_FILES_PER_MESSAGE);
 
-        if (files.isEmpty()) {
+        if (files.isEmpty() && dirs.isEmpty()) {
             return new Message[]{new FileList(foInfo, new FileInfo[0], 0)};
         }
 
@@ -130,6 +152,25 @@ public class FileList extends FolderRelatedMessage {
                 curMsgIndex = 0;
             }
         }
+        for (DirectoryInfo dirInfo : dirs) {
+            if (diskItemFilter.isExcluded(dirInfo)) {
+                continue;
+            }
+            messageFiles[curMsgIndex] = dirInfo;
+            curMsgIndex++;
+            if (curMsgIndex >= Constants.FILE_LIST_MAX_FILES_PER_MESSAGE) {
+                if (firstMessage) {
+                    messages.add(new FileList(foInfo, messageFiles, 0));
+                    firstMessage = false;
+                } else {
+                    nDeltas++;
+                    messages.add(new FolderFilesChanged(foInfo, messageFiles));
+                }
+                messageFiles = new FileInfo[Constants.FILE_LIST_MAX_FILES_PER_MESSAGE];
+                curMsgIndex = 0;
+            }
+        }
+
 
         if (firstMessage && curMsgIndex == 0) {
             // Only ignored files

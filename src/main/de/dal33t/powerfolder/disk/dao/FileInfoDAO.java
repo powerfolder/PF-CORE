@@ -24,6 +24,7 @@ import java.util.Iterator;
 
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FileHistory;
 import de.dal33t.powerfolder.light.FileInfo;
 
@@ -115,15 +116,15 @@ public interface FileInfoDAO {
     Collection<FileInfo> findAll(String domain);
 
     /**
-     * @param path
-     *            the directory
+     * All directories in the given base directory. optionally adds ALL
+     * subdirectories recursively.
+     * 
+     * @param dir
+     * @param recursive
      * @param domains
-     *            the domains to search in for.
-     * @return the files in this dir (not the files in the subs). All OWN
-     *         FileInfos will remain. List might contain additional FileInfos
-     *         from other domains.
+     * @return the collection of available directories
      */
-    Collection<FileInfo> findInDirectory(String path, String... domains);
+    Collection<DirectoryInfo> findDirectories(String domain);
 
     /**
      * @param fileInfo

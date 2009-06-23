@@ -65,29 +65,29 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
      * Actually 'final'. Only non-final because of serialization readObject()
      * fileName.intern();
      */
-    private String fileName;
+    protected String fileName;
 
     /** The size of the file */
-    private final Long size;
+    protected final Long size;
 
     /** modified info */
-    private final MemberInfo modifiedBy;
+    protected final MemberInfo modifiedBy;
     /** modified in folder on date */
-    private final Date lastModifiedDate;
+    protected final Date lastModifiedDate;
 
     /** Version number of this file */
-    private final int version;
+    protected final int version;
 
     /** the deleted flag */
-    private final boolean deleted;
+    protected final boolean deleted;
 
     /** the folder */
-    private final FolderInfo folderInfo;
+    protected final FolderInfo folderInfo;
 
     /**
      * Contains some cached string.
      */
-    private transient Reference<FileInfoStrings> cachedStrings;
+    protected transient Reference<FileInfoStrings> cachedStrings;
 
     protected FileInfo() {
         // ONLY for backward compatibility to MP3FileInfo
@@ -128,98 +128,25 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         this.deleted = false;
     }
 
-    public static FileInfo getTemplate(FolderInfo folder, String name) {
-        return new FileInfo(folder, name);
-    }
-
-    public static FileInfo getTemplate(Folder folder, File file) {
-        String fn = buildFileName(folder, file);
-        return getTemplate(folder.getInfo(), fn);
-    }
-
     /**
-     * Initalize within a folder
-     * 
      * @param folder
-     * @param localFile
-     * @param creator
+     * @param name
+     * @return the lookup fileinfo
+     * @deprecated Use
+     *             {@link FileInfoFactory#lookupInstance(FolderInfo, String)}
      */
-    public static FileInfo newFile(Folder folder, File localFile,
-        MemberInfo creator)
-    {
-        return new FileInfo(buildFileName(folder, localFile), localFile
-            .length(), creator, new Date(localFile.lastModified()), 0, false,
-            folder.getInfo());
-    }
-
-    public static FileInfo unmarshallExistingFile(FolderInfo fi,
-        String fileName, long size, MemberInfo modby, Date modDate, int version)
-    {
-        return new FileInfo(fileName, size, modby, modDate, version, false, fi);
-    }
-
-    public static FileInfo unmarshallDelectedFile(FolderInfo fi,
-        String fileName, MemberInfo modby, Date modDate, int version)
-    {
-        return new FileInfo(fileName, 0, modby, modDate, version, true, fi);
-    }
-
-    public FileInfo modifiedFile(FolderRepository rep, File localFile,
-        MemberInfo modby)
-    {
-        Reject.ifTrue(isTemplate(), "Cannot modify template FileInfo!");
-        String fn = buildFileName(getFolder(rep), localFile);
-        if (fileName.equals(fn)) {
-            fn = fileName;
-        }
-        return new FileInfo(fn, localFile.length(), modby, new Date(localFile
-            .lastModified()), version + 1, false, folderInfo);
+    public static FileInfo getTemplate(FolderInfo folder, String name) {
+        return FileInfoFactory.lookupInstance(folder, name);
     }
 
     /**
-     * Returns a FileInfo with changed FolderInfo. No version update etc.
-     * whatsoever happens.
-     * 
-     * @param fi
-     * @return
+     * @param folder
+     * @param file
+     * @return the lookup instance
+     * @deprecated Use {@link FileInfoFactory#lookupInstance(Folder, File)}
      */
-    @Deprecated
-    public FileInfo changedFolderInfo(FolderInfo fi) {
-        if (isTemplate()) {
-            return getTemplate(fi, fileName);
-        } else {
-            return new FileInfo(fileName, size, modifiedBy, lastModifiedDate,
-                version, deleted, fi);
-        }
-    }
-
-    @Deprecated
-    public FileInfo updatedVersion(int newVersion) {
-        Reject.ifTrue(isTemplate(), "Cannot update template FileInfo!");
-        return new FileInfo(fileName, size, modifiedBy, lastModifiedDate,
-            newVersion, deleted, folderInfo);
-    }
-
-    public FileInfo deletedFile(MemberInfo delby, Date delDate) {
-        Reject.ifTrue(isTemplate(), "Cannot delete template FileInfo!");
-        return new FileInfo(fileName, 0L, delby, delDate, version + 1, true,
-            folderInfo);
-    }
-
-    protected static String buildFileName(Folder folder, File file) {
-        String fn = file.getName();
-        File parent = file.getParentFile();
-        File folderBase = folder.getLocalBase();
-
-        while (!folderBase.equals(parent)) {
-            if (parent == null) {
-                throw new IllegalArgumentException(
-                    "Local file seems not to be in a subdir of the local powerfolder copy");
-            }
-            fn = parent.getName() + "/" + fn;
-            parent = parent.getParentFile();
-        }
-        return fn;
+    public static FileInfo getTemplate(Folder folder, File file) {
+        return FileInfoFactory.lookupInstance(folder, file);
     }
 
     /**
@@ -256,10 +183,12 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
 
         if (!inSyncWithDisk(diskFile)) {
             if (diskFile.exists()) {
-                return modifiedFile(controller.getFolderRepository(), diskFile,
-                    controller.getMySelf().getInfo());
+                return FileInfoFactory.modifiedFile(this, controller
+                    .getFolderRepository(), diskFile, controller.getMySelf()
+                    .getInfo());
             } else {
-                return deletedFile(controller.getMySelf().getInfo(), new Date());
+                return FileInfoFactory.deletedFile(this, controller.getMySelf()
+                    .getInfo(), new Date());
             }
             // log.warning("File updated to: " + this.toDetailString());
         }
@@ -273,10 +202,26 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
      * @return true if the fileinfo is in sync with the file on disk.
      */
     public boolean inSyncWithDisk(File diskFile) {
+        return inSyncWithDisk0(diskFile, false);
+    }
+
+    /**
+     * @param diskFile
+     *            the file on disk.
+     * @param ignoreSize
+     *            ignore the reported size of the diskfile/dir.
+     * @return true if the fileinfo is in sync with the file on disk.
+     */
+    protected boolean inSyncWithDisk0(File diskFile,
+        boolean ignoreSizeAndModDate)
+    {
         Reject.ifNull(diskFile, "Diskfile is null");
         boolean diskFileDeleted = !diskFile.exists();
         boolean existanceSync = diskFileDeleted && isDeleted()
             || !diskFileDeleted && !isDeleted();
+        if (ignoreSizeAndModDate) {
+            return existanceSync;
+        }
         boolean lastModificationSync = Util.equalsFileDateCrossPlattform(
             diskFile.lastModified(), lastModifiedDate.getTime());
         boolean sizeSync = size.longValue() == diskFile.length();
@@ -468,6 +413,14 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
 
     public boolean isTemplate() {
         return size == null;
+    }
+
+    public boolean isDiretory() {
+        return false;
+    }
+
+    public boolean isFile() {
+        return true;
     }
 
     /**

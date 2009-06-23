@@ -30,6 +30,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.Reject;
@@ -162,10 +163,10 @@ public class FileInfoSQLConverter {
         Date modDate = new Date(modifiedTime);
 
         if (deleted) {
-            return FileInfo.unmarshallDelectedFile(foInfo, fileName,
+            return FileInfoFactory.unmarshallDelectedFile(foInfo, fileName,
                 modifiedByInfo, modDate, version);
         } else {
-            return FileInfo.unmarshallExistingFile(foInfo, fileName, size,
+            return FileInfoFactory.unmarshallExistingFile(foInfo, fileName, size,
                 modifiedByInfo, modDate, version);
         }
     }

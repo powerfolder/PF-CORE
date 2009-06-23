@@ -27,6 +27,7 @@ import java.util.logging.Logger;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.disk.DiskItemFilter;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.FileChunk;
@@ -91,7 +92,7 @@ public class TestSerialize {
         String fn = "subdir/" + Math.random()
             + "/and another/test filename.gif";
 
-        return FileInfo.unmarshallExistingFile(generateFolderInfo(), fn,
+        return FileInfoFactory.unmarshallExistingFile(generateFolderInfo(), fn,
             (long) (Math.random() * 100000), generateMemberInfo(), new Date(),
             0);
     }

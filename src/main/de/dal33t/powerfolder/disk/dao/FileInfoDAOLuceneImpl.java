@@ -51,6 +51,7 @@ import org.apache.lucene.store.FSDirectory;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FileHistory;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.Profiling;
@@ -581,6 +582,11 @@ public class FileInfoDAOLuceneImpl extends PFComponent implements FileInfoDAO {
 
     public Collection<FileInfo> findInDirectory(String path, String... domains)
     {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public Collection<DirectoryInfo> findDirectories(String domain) {
         // TODO Auto-generated method stub
         return null;
     }
