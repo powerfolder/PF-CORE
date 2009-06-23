@@ -305,7 +305,8 @@ public class Member extends PFComponent implements Comparable<Member> {
     public boolean isPre4Client() {
         Identity id = getIdentity();
         if (id != null) {
-            return Util.compareVersions("4.0.0", id.getProgramVersion());
+            // Not "4.0.0", because version "4.0.0 - 1.0.1" is before "4.0.0"
+            return Util.compareVersions("3.9.9", id.getProgramVersion());
         }
         return false;
     }
