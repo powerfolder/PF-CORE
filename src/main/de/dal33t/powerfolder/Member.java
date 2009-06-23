@@ -547,12 +547,14 @@ public class Member extends PFComponent implements Comparable<Member> {
 
         // #1373
         if (!remoteMemberInfo.isOnSameNetwork(getController())) {
-            logWarning("Closing connection to node with diffrent network ID. Our netID: "
-                + getController().getNodeManager().getNetworkId()
-                + ", remote netID: "
-                + remoteMemberInfo.networkId
-                + " on "
-                + remoteMemberInfo);
+            if (isFine()) {
+                logFine("Closing connection to node with diffrent network ID. Our netID: "
+                    + getController().getNodeManager().getNetworkId()
+                    + ", remote netID: "
+                    + remoteMemberInfo.networkId
+                    + " on "
+                    + remoteMemberInfo);
+            }
             newPeer.shutdown();
             throw new InvalidIdentityException(
                 "Closing connection to node with diffrent network ID. Our netID: "
