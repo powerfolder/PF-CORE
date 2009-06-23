@@ -35,6 +35,7 @@ import de.dal33t.powerfolder.*;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.net.ConnectionException;
@@ -395,9 +396,11 @@ public abstract class MultipleControllerTestCase extends TestCase {
         boolean deleteStatusMatch = diskFile.exists() == !fInfo.isDeleted();
         boolean lastModifiedMatch = diskFile.lastModified() == fInfo
             .getModifiedDate().getTime();
+        boolean isDir = fInfo.isDiretory() && fInfo instanceof DirectoryInfo;
+        boolean dirMatch = isDir == diskFile.isDirectory();
 
         // Skip last modification test when diskfile is deleted.
-        boolean matches = !diskFile.isDirectory() && nameMatch && sizeMatch
+        boolean matches = dirMatch && nameMatch && sizeMatch
             && (!diskFile.exists() || lastModifiedMatch) && deleteStatusMatch
             && fileObjectEquals;
 
@@ -408,7 +411,43 @@ public abstract class MultipleControllerTestCase extends TestCase {
             + diskFile.lastModified() + ")" + "\n\nWhat matches?:\nName: "
             + nameMatch + "\nSize: " + sizeMatch + "\nlastModifiedMatch: "
             + lastModifiedMatch + "\ndeleteStatus: " + deleteStatusMatch
-            + "\nFileObjectEquals: " + fileObjectEquals, matches);
+            + "\ndirMatch: " + dirMatch + "\nFileObjectEquals: "
+            + fileObjectEquals, matches);
+    }
+
+    /**
+     * Tests if the diskfile matches the fileinfo. Checks name and the deletion
+     * status.
+     * 
+     * @param diskFile
+     *            the diskfile to compare
+     * @param fInfo
+     *            the fileinfo
+     * @param controller
+     *            the controller to use.
+     */
+    protected void assertDirMatch(File diskFile, DirectoryInfo fInfo,
+        Controller controller)
+    {
+        boolean nameMatch = diskFile.getName().equals(fInfo.getFilenameOnly());
+        boolean fileObjectEquals = diskFile.equals(fInfo.getDiskFile(controller
+            .getFolderRepository()));
+        boolean deleteStatusMatch = diskFile.exists() == !fInfo.isDeleted();
+        // Skip directory match if not existing.
+        boolean dirMatch = !diskFile.exists()
+            || fInfo.isDiretory() == diskFile.isDirectory();
+
+        boolean matches = dirMatch && nameMatch && deleteStatusMatch
+            && fileObjectEquals;
+
+        assertTrue("DirectoryInfo does not match physical dir. \nFileInfo:\n "
+            + fInfo.toDetailString() + "\nFile:\n " + diskFile.getName()
+            + ", size: " + Format.formatBytes(diskFile.length())
+            + ", lastModified: " + new Date(diskFile.lastModified()) + " ("
+            + diskFile.lastModified() + ")" + "\n\nWhat matches?:\nName: "
+            + nameMatch + "\ndeleteStatus: " + deleteStatusMatch
+            + "\ndirMatch: " + dirMatch + "\nFileObjectEquals: "
+            + fileObjectEquals, matches);
     }
 
     // Helpers ****************************************************************
