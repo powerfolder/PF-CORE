@@ -289,16 +289,20 @@ public class FileRequestor extends PFComponent {
                 .getFolderRepository()), autoDownload);
         }
     }
-    
+
     private void createDirectory(DirectoryInfo dirInfo) {
         logWarning("Creating direcory: " + dirInfo.toDetailString());
-        File dirFile = dirInfo.getDiskFile(getController().getFolderRepository());
+        File dirFile = dirInfo.getDiskFile(getController()
+            .getFolderRepository());
+        Folder folder = dirInfo
+            .getFolder(getController().getFolderRepository());
+        if (folder == null || dirFile == null) {
+            logWarning("Unable to created directory. not longer on folder: "
+                + dirInfo.toDetailString());
+            return;
+        }
         dirFile.mkdirs();
-        Folder folder = dirInfo.getFolder(getController().getFolderRepository());
         folder.scanDirectory(dirInfo);
-        //logWarning("SCANNING WHOLE FOLDER for NEW DIR!!");
-        //folder.scanLocalFiles();
-        //dirFile.setLastModified(dirInfo.getModifiedDate().getTime());
     }
 
     private void prepareDownload(FileInfo fInfo, boolean autoDownload) {
