@@ -301,6 +301,7 @@ public class FileRequestor extends PFComponent {
                 + dirInfo.toDetailString());
             return;
         }
+        // TODO Don't create new if already existing.
         dirFile.mkdirs();
         folder.scanDirectory(dirInfo);
     }
