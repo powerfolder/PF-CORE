@@ -286,14 +286,6 @@ public class ConnectNodesTest extends FiveControllerTestCase {
         Feature.CORRECT_LAN_DETECTION.enable();
         Feature.CORRECT_INTERNET_DETECTION.disable();
 
-        folderConnect();
-    }
-
-    private void folderConnect() throws InvalidIdentityException {
-        // All connections should be detected as on internet.
-        Feature.CORRECT_LAN_DETECTION.enable();
-        Feature.CORRECT_INTERNET_DETECTION.disable();
-
         // Reconnect manager has to be started therefore!
         getContollerLisa().getReconnectManager().start();
 
