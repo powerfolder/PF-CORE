@@ -270,7 +270,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(0, tm2Listener.downloadsCompletedRemoved);
 
         // Test ;)
-        assertEquals(2, getFolderAtLisa().getKnownFilesCount());
+        assertEquals(3, getFolderAtLisa().getKnownFilesCount());
         // 3 physical files (1 file + 1 system dir + 1 subdir)
         assertEquals(3, getFolderAtLisa().getLocalBase().list().length);
 
