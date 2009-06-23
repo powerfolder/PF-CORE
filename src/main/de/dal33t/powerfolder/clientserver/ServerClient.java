@@ -68,6 +68,7 @@ public class ServerClient extends PFComponent {
     // The last used username and password.
     // Tries to re-login with these if re-connection happens
     private String username;
+    // TODO Convert to char[] for security reasons.
     private String password;
 
     private Member server;
@@ -401,7 +402,7 @@ public class ServerClient extends PFComponent {
                 PREFS_PREFIX + '.' + server.getIP() + ".info", null);
         }
 
-        if (!StringUtils.isBlank(un)) {
+        if (!StringUtils.isBlank(un) && !StringUtils.isBlank(pw)) {
             return login(un, pw);
         }
         // Fallback
