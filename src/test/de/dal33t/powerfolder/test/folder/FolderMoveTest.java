@@ -148,8 +148,8 @@ public class FolderMoveTest extends ControllerTestCase {
 
             scanFolder(folder);
 
-            // The folder should have the test files.
-            assertEquals(2, folder.getKnownFilesCount());
+            // The folder should have the test files plus 2 subdirs
+            assertEquals(4, folder.getKnownFilesCount());
 
             // Sub dir should contain one file; test2.txt
             boolean foundTest2 = false;

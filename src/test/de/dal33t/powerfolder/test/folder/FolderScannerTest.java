@@ -81,8 +81,8 @@ public class FolderScannerTest extends ControllerTestCase {
 
         Collection<FileInfo> newFiles = result.getNewFiles();
         System.out.println("Scan result: " + result);
-        // new Scan should find 4
-        assertEquals(result.toString(), 4, newFiles.size());
+        // new Scan should find 4 + 20 dirs
+        assertEquals(result.toString(), 4 + 20, newFiles.size());
         getFolder().setSyncProfile(SyncProfile.HOST_FILES);
         scanFolder(getFolder());
 
@@ -91,8 +91,8 @@ public class FolderScannerTest extends ControllerTestCase {
             System.out.print(fileInfo + ",");
         }
         System.out.println();
-        // old Scan should find 4
-        assertEquals(4, getFolder().getKnownFilesCount());
+        // old Scan should find 4 + 20 dirs
+        assertEquals(4 + 20, getFolder().getKnownFilesCount());
 
         // delete a file
         file1.delete();

@@ -319,7 +319,8 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         // Let him scan the new content
         scanFolder(getFolderAtBart());
 
-        assertEquals(3, getFolderAtBart().getKnownFilesCount());
+        // 3 files + 2 dirs
+        assertEquals(5, getFolderAtBart().getKnownFilesCount());
 
         // Give them time to copy
         TestHelper.waitForCondition(20, new Condition() {
@@ -331,7 +332,9 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         });
 
         // Test ;)
-        assertEquals(3, getFolderAtLisa().getKnownFilesCount());
+        // 3 files + 2 dirs
+        assertEquals(getFolderAtLisa().getKnownDirectories().toString(), 5,
+            getFolderAtLisa().getKnownFilesCount());
 
         // Version should be the 0 for new files
         for (FileInfo fileInfo : getFolderAtBart().getKnowFilesAsArray()) {
@@ -390,7 +393,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
             recycleBin.restoreFromRecycleBin(deletedFileAtLisa);
         }
 
-        // all 3 must not be deleted at folder2
+        // all 3 must not be deleted at lisas folder
         for (FileInfo fileAtLisa : getFolderAtLisa().getKnowFilesAsArray()) {
             assertFalse(fileAtLisa.isDeleted());
             assertEquals(2, fileAtLisa.getVersion());
@@ -403,15 +406,17 @@ public class DeletionSyncTest extends TwoControllerTestCase {
                 .lastModified());
         }
 
-        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+        TestHelper.waitForCondition(2, new ConditionWithMessage() {
             public String message() {
                 return "Bart incoming: "
-                    + getFolderAtBart().getIncomingFiles(true, true);
+                    + getFolderAtBart().getIncomingFiles(true, true)
+                    + " Lisa known files: "
+                    + getFolderAtLisa().getKnownFilesCount();
             }
 
             public boolean reached() {
-                return getFolderAtBart().getIncomingFiles(true, true).size() == getFolderAtLisa()
-                    .getKnownFilesCount();
+                // Only files should be incoming
+                return getFolderAtBart().getIncomingFiles(true, true).size() == 3;
             }
         });
 
@@ -423,8 +428,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         TestHelper.waitForCondition(10, new ConditionWithMessage() {
             public boolean reached() {
                 return getContollerBart().getTransferManager()
-                    .countCompletedDownloads() >= getFolderAtBart()
-                    .getKnownFilesCount();
+                    .countCompletedDownloads() >= 3;
             }
 
             public String message() {
@@ -465,6 +469,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         final File testFileBart = TestHelper.createRandomFile(getFolderAtBart()
             .getLocalBase());
         scanFolder(getFolderAtBart());
+        assertEquals(1, getFolderAtBart().getKnownFilesCount());
         assertFileMatch(testFileBart, getFolderAtBart().getKnownFiles()
             .iterator().next(), getContollerBart());
         assertEquals(0, getFolderAtBart().getKnownFiles().iterator().next()
@@ -473,6 +478,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         TestHelper.waitMilliSeconds(50);
         scanFolder(getFolderAtBart());
 
+        assertEquals(1, getFolderAtBart().getKnownFilesCount());
         assertFileMatch(testFileBart, getFolderAtBart().getKnownFiles()
             .iterator().next(), getContollerBart());
         assertEquals(1, getFolderAtBart().getKnownFiles().iterator().next()
@@ -499,6 +505,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
             }
         });
         scanFolder(getFolderAtLisa());
+        assertEquals(1, getFolderAtLisa().getKnownFilesCount());
 
         TestHelper.waitForCondition(100, new Condition() {
             public boolean reached() {

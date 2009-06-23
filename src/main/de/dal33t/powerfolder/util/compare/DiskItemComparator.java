@@ -23,6 +23,7 @@ import java.util.Comparator;
 
 import de.dal33t.powerfolder.DiskItem;
 import de.dal33t.powerfolder.disk.Directory;
+import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.logging.Loggable;
 
@@ -39,10 +40,11 @@ public class DiskItemComparator extends Loggable implements
     // All the available file comparators
     public static final int BY_FILE_TYPE = 0;
     public static final int BY_NAME = 1;
-    public static final int BY_SIZE = 2;
-    public static final int BY_MEMBER = 3;
-    public static final int BY_MODIFIED_DATE = 4;
-    public static final int BY_FOLDER = 5;
+    public static final int BY_FULL_NAME = 2;
+    public static final int BY_SIZE = 3;
+    public static final int BY_MEMBER = 4;
+    public static final int BY_MODIFIED_DATE = 5;
+    public static final int BY_FOLDER = 6;
 
     private static final int BEFORE = -1;
     private static final int AFTER = 1;
@@ -52,9 +54,10 @@ public class DiskItemComparator extends Loggable implements
     private static final DiskItemComparator[] comparators;
 
     static {
-        comparators = new DiskItemComparator[6];
+        comparators = new DiskItemComparator[7];
         comparators[BY_FILE_TYPE] = new DiskItemComparator(BY_FILE_TYPE);
         comparators[BY_NAME] = new DiskItemComparator(BY_NAME);
+        comparators[BY_FULL_NAME] = new DiskItemComparator(BY_FULL_NAME);
         comparators[BY_SIZE] = new DiskItemComparator(BY_SIZE);
         comparators[BY_MEMBER] = new DiskItemComparator(BY_MEMBER);
         comparators[BY_MODIFIED_DATE] = new DiskItemComparator(BY_MODIFIED_DATE);
@@ -85,19 +88,21 @@ public class DiskItemComparator extends Loggable implements
     public int compare(DiskItem o1, DiskItem o2) {
 
         switch (sortBy) {
-            case BY_FILE_TYPE:
+            case BY_FILE_TYPE :
                 String ext1 = o1.getExtension();
                 String ext2 = o2.getExtension();
                 if (ext1 == null || ext2 == null) {
-                    return sortByFileName(o1, o2);
+                    return sortByFileName(o1, o2, false);
                 }
                 int x = ext1.compareTo(ext2);
                 if (x == 0) {
-                    return sortByFileName(o1, o2);
+                    return sortByFileName(o1, o2, false);
                 }
                 return x;
             case BY_NAME :
-                return sortByFileName(o1, o2);
+                return sortByFileName(o1, o2, false);
+            case BY_FULL_NAME :
+                return sortByFileName(o1, o2, true);
             case BY_SIZE :
 
                 if (o1.getSize() < o2.getSize()) {
@@ -106,10 +111,10 @@ public class DiskItemComparator extends Loggable implements
                 if (o1.getSize() > o2.getSize()) {
                     return AFTER;
                 }
-                return sortByFileName(o1, o2);
+                return sortByFileName(o1, o2, false);
             case BY_MEMBER :
                 if (o1.getModifiedBy() == null && o2.getModifiedBy() == null) {
-                    return sortByFileName(o1, o2);
+                    return sortByFileName(o1, o2, false);
                 } else if (o1.getModifiedBy() == null) {
                     return BEFORE;
                 } else if (o2.getModifiedBy() == null) {
@@ -118,14 +123,14 @@ public class DiskItemComparator extends Loggable implements
                 x = o1.getModifiedBy().nick.toLowerCase().compareTo(
                     o2.getModifiedBy().nick.toLowerCase());
                 if (x == 0) {
-                    return sortByFileName(o1, o2);
+                    return sortByFileName(o1, o2, false);
                 }
                 return x;
             case BY_MODIFIED_DATE :
                 if (o1.getModifiedDate() == null
                     && o2.getModifiedDate() == null)
                 {
-                    return sortByFileName(o1, o2);
+                    return sortByFileName(o1, o2, false);
                 } else if (o1.getModifiedDate() == null) {
                     return BEFORE;
                 } else if (o2.getModifiedDate() == null) {
@@ -133,12 +138,12 @@ public class DiskItemComparator extends Loggable implements
                 }
                 x = o2.getModifiedDate().compareTo(o1.getModifiedDate());
                 if (x == 0) {
-                    return sortByFileName(o1, o2);
+                    return sortByFileName(o1, o2, false);
                 }
                 return x;
             case BY_FOLDER :
                 if (o1.getFolderInfo() == null && o2.getFolderInfo() == null) {
-                    return sortByFileName(o1, o2);
+                    return sortByFileName(o1, o2, false);
                 } else if (o1.getFolderInfo() == null) {
                     return BEFORE;
                 } else if (o2.getFolderInfo() == null) {
@@ -147,22 +152,32 @@ public class DiskItemComparator extends Loggable implements
                 x = o1.getFolderInfo().name.compareToIgnoreCase(o2
                     .getFolderInfo().name);
                 if (x == 0) {
-                    return sortByFileName(o1, o2);
+                    return sortByFileName(o1, o2, false);
                 }
                 return x;
         }
         return 0;
     }
 
-    private static int sortByFileName(DiskItem o1, DiskItem o2) {
+    private static int sortByFileName(DiskItem o1, DiskItem o2, boolean fullName)
+    {
 
         // Sort directories before files.
-        if (o1 instanceof Directory && o2 instanceof FileInfo) {
+        if ((o1 instanceof Directory || o1 instanceof DirectoryInfo)
+            && o2 instanceof FileInfo)
+        {
             return -1;
-        } else if (o1 instanceof FileInfo && o2 instanceof Directory) {
+        } else if (o1 instanceof FileInfo
+            && (o2 instanceof Directory || o2 instanceof DirectoryInfo))
+        {
             return 1;
         }
-        return o1.getFilenameOnly().compareToIgnoreCase(o2.getFilenameOnly());
+        if (fullName) {
+            return o1.getName().compareToIgnoreCase(o2.getFilenameOnly());
+        } else {
+            return o1.getFilenameOnly().compareToIgnoreCase(
+                o2.getFilenameOnly());
+        }
     }
 
     // General ****************************************************************
@@ -171,22 +186,22 @@ public class DiskItemComparator extends Loggable implements
         String stub = "FileInfo comparator, sorting by ";
         String text;
         switch (sortBy) {
-            case BY_FILE_TYPE:
+            case BY_FILE_TYPE :
                 text = stub + "file type";
                 break;
             case BY_NAME :
                 text = stub + "name";
                 break;
             case BY_SIZE :
-                text = stub +  "size";
+                text = stub + "size";
                 break;
             case BY_MEMBER :
-                text = stub +  "member";
+                text = stub + "member";
                 break;
             case BY_MODIFIED_DATE :
-                text = stub +  "modified date";
+                text = stub + "modified date";
                 break;
-            default:
+            default :
                 text = "???";
         }
         return text;

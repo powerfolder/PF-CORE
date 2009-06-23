@@ -29,6 +29,7 @@ import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.DiskItemFilter;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.FileList;
@@ -114,7 +115,7 @@ public class BigFileListOrderTest extends TwoControllerTestCase {
 
     private static FileInfo createRandomFileInfo(FolderInfo foInfo) {
         MemberInfo m = new MemberInfo("test", "ID", null);
-        return FileInfo.unmarshallExistingFile(foInfo, UUID.randomUUID()
+        return FileInfoFactory.unmarshallExistingFile(foInfo, UUID.randomUUID()
             .toString().intern(), 0, m, new Date(), 0);
     }
 
