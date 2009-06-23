@@ -35,6 +35,7 @@ import de.dal33t.powerfolder.event.RecycleBinConfirmationHandler;
 import de.dal33t.powerfolder.event.RecycleBinEvent;
 import de.dal33t.powerfolder.event.RecycleBinListener;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.ProgressListener;
@@ -530,7 +531,7 @@ public class RecycleBin extends PFComponent {
         // Let folder scan the restored file
         // This updated internal version numbers and broadcasts changes to
         // remote users
-        folder.scanRestoredFile(FileInfo.getTemplate(folder, target));
+        folder.scanRestoredFile(FileInfoFactory.lookupInstance(folder, target));
         removeFile(fileInfo);
         removeEmptyDirs(recycleBinDir);
         return true;

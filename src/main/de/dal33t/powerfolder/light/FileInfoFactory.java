@@ -97,7 +97,7 @@ public final class FileInfoFactory {
         Reject.ifNull(original, "Original FileInfo is null");
         if (original.isTemplate()) {
             // TODO Check if this causes problems with DirectoryInfo
-            return FileInfo.getTemplate(fi, original.fileName);
+            return lookupInstance(fi, original.fileName);
         } else {
             if (original.folderInfo.equals(fi)) {
                 return original;

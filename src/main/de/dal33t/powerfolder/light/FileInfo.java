@@ -129,27 +129,6 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
     }
 
     /**
-     * @param folder
-     * @param name
-     * @return the lookup fileinfo
-     * @deprecated Use
-     *             {@link FileInfoFactory#lookupInstance(FolderInfo, String)}
-     */
-    public static FileInfo getTemplate(FolderInfo folder, String name) {
-        return FileInfoFactory.lookupInstance(folder, name);
-    }
-
-    /**
-     * @param folder
-     * @param file
-     * @return the lookup instance
-     * @deprecated Use {@link FileInfoFactory#lookupInstance(Folder, File)}
-     */
-    public static FileInfo getTemplate(Folder folder, File file) {
-        return FileInfoFactory.lookupInstance(folder, file);
-    }
-
-    /**
      * Syncs fileinfo with diskfile. If diskfile has other lastmodified date
      * that this. Assume that file has changed on disk and update its modified
      * info.

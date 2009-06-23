@@ -92,7 +92,7 @@ public abstract class FileInfoDAOTestCase extends ControllerTestCase {
     protected void testIndexFileInfo(FileInfoDAO dao) {
         FileInfo expected = createRandomFileInfo(10, "MyExcelsheet.xls");
         dao.store(null, expected);
-        FileInfo retrieved = dao.find(FileInfo.getTemplate(expected
+        FileInfo retrieved = dao.find(FileInfoFactory.lookupInstance(expected
             .getFolderInfo(), expected.getName()), null);
         assertNotNull("Retrieved FileInfo is null", retrieved);
         assertEquals(expected, retrieved);

@@ -27,6 +27,7 @@ import junit.framework.TestCase;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.disk.DiskItemFilter;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.FileList;
 import de.dal33t.powerfolder.message.FolderFilesChanged;
@@ -166,8 +167,8 @@ public class FileListTest extends TestCase {
 
     private static FileInfo createRandomFileInfo(int n) {
         FolderInfo foInfo = createRandomFolderInfo();
-        FileInfo fInfo = FileInfo.getTemplate(foInfo, "F # " + n + " / "
-            + UUID.randomUUID().toString());
+        FileInfo fInfo = FileInfoFactory.lookupInstance(foInfo, "F # " + n
+            + " / " + UUID.randomUUID().toString());
         return fInfo;
     }
 

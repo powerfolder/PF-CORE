@@ -31,7 +31,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Semaphore;
 
-import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
@@ -220,8 +219,8 @@ public class FolderScanner extends PFComponent {
             int n = unableToScanFiles.size();
             for (int i = 0; i < n; i++) {
                 File file = unableToScanFiles.get(i);
-                FileInfo fInfo = FileInfo.getTemplate(currentScanningFolder,
-                    file);
+                FileInfo fInfo = FileInfoFactory.lookupInstance(
+                    currentScanningFolder, file);
                 remaining.remove(fInfo);
                 // TRAC #523
                 if (file.isDirectory()) {
@@ -546,8 +545,8 @@ public class FolderScanner extends PFComponent {
 
         // this is a incomplete fileinfo just find one fast in the remaining
         // list
-        FileInfo fInfo = FileInfo.getTemplate(currentScanningFolder.getInfo(),
-            filename);
+        FileInfo fInfo = FileInfoFactory.lookupInstance(currentScanningFolder
+            .getInfo(), filename);
 
         // #1531
         FileInfo exists = remaining.remove(fInfo);

@@ -28,6 +28,7 @@ import java.util.Set;
 
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ControllerTestCase;
 import de.dal33t.powerfolder.util.test.TestHelper;
@@ -527,7 +528,7 @@ public class ScanFolderTest extends ControllerTestCase {
      * @return the fileinfo in the test folder for this file.
      */
     private FileInfo retrieveFileInfo(File file) {
-        return getFolder().getFile(FileInfo.getTemplate(getFolder(), file));
+        return getFolder().getFile(FileInfoFactory.lookupInstance(getFolder(), file));
     }
 
     private void scanFolder() {

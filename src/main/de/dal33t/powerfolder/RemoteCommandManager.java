@@ -41,6 +41,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Invitation;
@@ -318,7 +319,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
                 FolderInfo folder = new FolderInfo(name, id);
 
                 String filename = Util.decodeFromURL(nizer.nextToken());
-                FileInfo fInfo = FileInfo.getTemplate(folder, filename);
+                FileInfo fInfo = FileInfoFactory.lookupInstance(folder, filename);
 
                 // FIXME: Show warning/join panel if not on folder
 
