@@ -169,8 +169,9 @@ public class FileListTest extends TestCase {
 
     private static FileInfo createRandomFileInfo(int n) {
         FolderInfo foInfo = createRandomFolderInfo();
+        boolean dir = Math.random() > 0.70f;
         FileInfo fInfo = FileInfoFactory.lookupInstance(foInfo, "F # " + n
-            + " / " + UUID.randomUUID().toString());
+            + " / " + UUID.randomUUID().toString(), dir);
         return fInfo;
     }
 

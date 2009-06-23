@@ -36,14 +36,34 @@ public final class FileInfoFactory {
         // No instance allowed
     }
 
+    /**
+     * @param folder
+     * @param name
+     * @return a ACTUAL FileInfo object use to lookup other FileInfo instances.
+     */
     public static FileInfo lookupInstance(FolderInfo folder, String name) {
-        // TODO DIRECTORY
+        return lookupInstance(folder, name, false);
+    }
+
+    /**
+     * @param folder
+     * @param name
+     * @param dir
+     * @return a FileInfo or DirectoryInfo object use to lookup other File or
+     *         DirectoryInfo instances.
+     */
+    public static FileInfo lookupInstance(FolderInfo folder, String name,
+        boolean dir)
+    {
+        if (dir) {
+            return new DirectoryInfo(folder, name);
+        }
         return new FileInfo(folder, name);
     }
 
     public static FileInfo lookupInstance(Folder folder, File file) {
         String fn = buildFileName(folder, file);
-        return lookupInstance(folder.getInfo(), fn);
+        return lookupInstance(folder.getInfo(), fn, file.isDirectory());
     }
 
     public static FileInfo unmarshallExistingFile(FolderInfo fi,
