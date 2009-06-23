@@ -71,7 +71,6 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
     private JCheckBox verboseBox;
     private boolean originalVerbose;
     private JCheckBox useDeltaSyncOnInternetCheckBox;
-    private JCheckBox deleteEmtpyDirsBox;
     private JCheckBox useSwarmingOnLanCheckBox;
     private JCheckBox useSwarmingOnInternetCheckBox;
 
@@ -227,12 +226,6 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
                 .getValueBoolean(getController()));
         }
 
-        deleteEmtpyDirsBox = SimpleComponentFactory.createCheckBox(Translation
-                .getTranslation("preferences.dialog.delete_empty_dirs"));
-        deleteEmtpyDirsBox
-            .setSelected(ConfigurationEntry.DELETE_EMPTY_DIRECTORIES
-                .getValueBoolean(getController()));
-
         originalVerbose = ConfigurationEntry.VERBOSE
             .getValueBoolean(getController());
         verboseBox = SimpleComponentFactory.createCheckBox(Translation
@@ -251,7 +244,7 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
         if (panel == null) {
             String rows = "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, "
                 + "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref,"
-                + "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu";
+                + "3dlu, pref, 3dlu, pref, 3dlu";
             if (FirewallUtil.isFirewallAccessible()) {
                 rows = "pref, 3dlu, " + rows;
             }
@@ -313,9 +306,6 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
             
             row += 2;
             builder.add(useSwarmingOnLanCheckBox, cc.xyw(3, row, 2));
-
-            row += 2;
-            builder.add(deleteEmtpyDirsBox, cc.xyw(3, row, 2));
 
             row += 2;
             builder.add(verboseBox, cc.xyw(3, row, 2));
@@ -473,9 +463,6 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
 
         ConfigurationEntry.VERBOSE.setValue(
             getController(), Boolean.toString(verboseBox.isSelected()));
-
-        ConfigurationEntry.DELETE_EMPTY_DIRECTORIES.setValue(
-            getController(), Boolean.toString(deleteEmtpyDirsBox.isSelected()));
 
         // LAN list
         needsRestart |= lanList.save();

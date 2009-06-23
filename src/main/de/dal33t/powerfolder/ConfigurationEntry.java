@@ -412,11 +412,6 @@ public enum ConfigurationEntry {
     DIALOG_TESTING("dialog.testing", Boolean.FALSE.toString()),
 
     /**
-     * #593 Ugly workaround for #378. Remove empty directories.
-     */
-    DELETE_EMPTY_DIRECTORIES("delete.empty.dirs", Boolean.FALSE.toString()),
-
-    /**
      * Whether to do auto-cleanup for downloads.
      */
     DOWNLOADS_AUTO_CLEANUP("downloads.auto.cleanup", Boolean.TRUE.toString()),

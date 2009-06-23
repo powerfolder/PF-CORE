@@ -813,17 +813,6 @@ public class FolderScanner extends PFComponent {
                 return false;
             }
             if (files.length == 0) {
-                // HACK alert # 593
-                if (ConfigurationEntry.DELETE_EMPTY_DIRECTORIES
-                    .getValueBoolean(getController()))
-                {
-                    logWarning("Found EMPTY DIR, deleting it: "
-                        + dirToScan.getAbsolutePath());
-                    if (!dirToScan.delete()) {
-                        logSevere("Failed to delete: "
-                            + dirToScan.getAbsolutePath());
-                    }
-                }
                 return true;
             }
             for (File subFile : files) {

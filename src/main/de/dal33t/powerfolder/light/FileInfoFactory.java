@@ -26,6 +26,11 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.util.Reject;
 
+/**
+ * Factory to create {@link FileInfo} and {@link DirectoryInfo} objects.
+ * 
+ * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
+ */
 public final class FileInfoFactory {
     private FileInfoFactory() {
         // No instance allowed
