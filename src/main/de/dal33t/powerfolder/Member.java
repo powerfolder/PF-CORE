@@ -298,6 +298,8 @@ public class Member extends PFComponent implements Comparable<Member> {
     }
 
     /**
+     * TODO Remove after major distribution of 4.0
+     * 
      * @return true if this client is a pre 4.0 client.
      */
     public boolean isPre4Client() {

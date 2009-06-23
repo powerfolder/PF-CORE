@@ -26,6 +26,7 @@ import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.disk.DiskItemFilter;
+import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.Reject;
@@ -90,11 +91,14 @@ public class FolderFilesChanged extends FolderRelatedMessage {
      *            the filter to apply
      * @param added
      *            if set added instead of removed
+     * @param includeDirs
+     *            if directoryinfos should be included or filtered out in the
+     *            list.
      * @return the messages
      */
     public static FolderFilesChanged[] createFolderFilesChangedMessages(
         FolderInfo foInfo, Collection<FileInfo> files,
-        DiskItemFilter fileInfoFilter, boolean added)
+        DiskItemFilter fileInfoFilter, boolean added, boolean includeDirs)
     {
         Reject.ifNull(foInfo, "Folder info is null");
         Reject.ifNull(files, "Files is null");
@@ -112,6 +116,10 @@ public class FolderFilesChanged extends FolderRelatedMessage {
         int curMsgIndex = 0;
         FileInfo[] messageFiles = new FileInfo[Constants.FILE_LIST_MAX_FILES_PER_MESSAGE];
         for (FileInfo fileInfo : files) {
+            if (fileInfo instanceof DirectoryInfo && !includeDirs) {
+                // No
+                continue;
+            }
             if (!fileInfoFilter.isRetained(fileInfo)) {
                 continue;
             }

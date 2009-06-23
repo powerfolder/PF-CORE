@@ -125,7 +125,8 @@ public class FileListTest extends TestCase {
 
         // Now split. Empty blacklist
         Message[] msgs = FolderFilesChanged.createFolderFilesChangedMessages(
-            createRandomFolderInfo(), files, new DiskItemFilter(false), true);
+            createRandomFolderInfo(), files, new DiskItemFilter(false), true,
+            false);
 
         // Test
         for (int i = 0; i < msgs.length; i++) {
@@ -149,7 +150,8 @@ public class FileListTest extends TestCase {
 
         // Now split. Empty blacklist
         Message[] msgs = FolderFilesChanged.createFolderFilesChangedMessages(
-            createRandomFolderInfo(), files, new DiskItemFilter(false), false);
+            createRandomFolderInfo(), files, new DiskItemFilter(false), false,
+            false);
 
         // Test
         for (int i = 0; i < msgs.length; i++) {
